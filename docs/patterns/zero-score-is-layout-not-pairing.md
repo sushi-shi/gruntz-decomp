@@ -38,6 +38,6 @@ the end, took the body from 290 to 300/300 instructions and 938 to 952/952 bytes
 from **0.00% to 98.46%**. WALL when the funnel is cl's own cross-jumper picking a different merge
 factor (`CGameObject::Play` 0x151150 — retail merges the LOAD+POSTLOAD arms whole, cl merges
 PRESAVE+SAVE+LOAD's restore; ~15 spellings did not move it). Screen with
-`sema disasm --blocks --diff --lite`; the percentage is useless below the clamp, and
-`gruntz.core.report.fn_fuzzy()` is the only correct way to read the missing key (it means 0.0,
+`gruntz walls diagnose --asm`; the percentage is useless below the clamp, and
+`gruntz.verify.scores.fn_fuzzy()` is the only correct way to read the missing key (it means 0.0,
 never "unknown", never 100).

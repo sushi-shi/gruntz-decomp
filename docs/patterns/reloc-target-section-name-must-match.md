@@ -20,7 +20,7 @@ the comparison: the target symbol's **section NAME** must be equal on both sides
 and (for a data target) the bytes it points at must be equal.
 
 That makes a whole class of mismatch invisible to every other view. `--diff`,
-`--blocks --diff` and `--branches --diff` all mask address operands, and a byte
+`gruntz walls diagnose --asm` and `gruntz walls diagnose` all mask address operands, and a byte
 compare of the two objects shows nothing either, because the operand is a
 relocation placeholder on both sides. The only surface it appears on is the
 per-instruction `diff_kind` in `objdiff-cli diff --format json`.
@@ -43,7 +43,7 @@ sat at exactly 97.5% - 10 bytes, two instructions, one of them permanently wrong
 
 ## The fix
 
-`gruntz.build.canonicalize_data_symbols._canonicalize_eh_section_names` renames the
+`gruntz.compare.canonicalize._canonicalize_eh_section_names` renames the
 BASE's grouped sections to the section the linker put them in - `.text$x` -> `.text`,
 `.xdata$x` -> `.rdata` - in the normalized comparison copy only. `$x` is an ordering
 key, not part of a section's identity (the same reading the delinker's own

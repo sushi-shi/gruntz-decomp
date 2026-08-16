@@ -71,8 +71,8 @@ less than one build of the real tree and gives a categorical answer.
    `dist2` in `owner`'s; we do the reverse) went 91.33 -> 82.26, reverted. Read WHICH
    variable is in the home first.
 2. **Retail genuinely wants the early return.** Count the `ret`s / read the exit tails
-   before inverting - `rets()` in `gruntz.core.branches`, or
-   `gruntz sema disasm <rva> --branches --diff`. `CPlay::DrawCursorSaveUnder` 0xd0b30
+   before inverting - the ret counts in `gruntz walls diagnose`, or
+   `gruntz walls diagnose <rva>`. `CPlay::DrawCursorSaveUnder` 0xd0b30
    has the same call+early-return+DDSCAPS shape, but retail emits a SEPARATE early-exit
    epilogue (`jne` into its own `xor eax,eax` / pops / `ret 4`); inverting the guard
    merges that tail away and cost 99.99 -> 90.57, reverted. Same caveat as

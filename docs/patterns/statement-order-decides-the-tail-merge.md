@@ -1,7 +1,7 @@
 # Two arms tail-merge that retail kept apart: the STATEMENT ORDER inside them is the knob
 
 tags: cpp:branch cpp:return cpp:local | asm:dec asm:mov asm:jmp | topic:codegen-idiom topic:tail-merge
-symptoms: `--blocks --diff --lite` shows one base block ending in `ret` where retail has
+symptoms: `gruntz walls diagnose --asm` shows one base block ending in `ret` where retail has
   `N i [jmp B<k>]` (or the reverse), the two sides' instruction streams are otherwise
   identical, and the merged side turns a read-modify-write (`dec DWORD PTR [m]`,
   `or DWORD PTR [m],imm`) into the shared block while retail's copy has the load split
@@ -42,7 +42,7 @@ ret
 
 STEERABLE. `CSBI_ImageSetAni::Render` @0xe7b00 **91.49 -> 99.44** on the swap alone
 (13 instructions); adding an explicit `return 1;` after the store changed nothing by
-itself - only the order did. Screen with `--blocks --diff --lite`. THIS knob is for
+itself - only the order did. Screen with `gruntz walls diagnose --asm`. THIS knob is for
 the direction where WE merged and retail did not: base `1i [fall Bk]` (or a short
 block flowing into a shared tail) against retail `Ni [ret]` with a full inline
 epilogue. The OPPOSITE reading - base `Ni [ret]` against retail `Mi [jmp Bk]`, M < N,

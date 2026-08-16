@@ -5,7 +5,7 @@
 
 ## Symptom
 
-`reloc_multiset` reports a Win32 import referenced **once more** on the base side than
+`gruntz verify assert-relocs` reports a Win32 import referenced **once more** on the base side than
 on the target side, in a loop that calls it twice:
 
     __imp__ScreenToClient@8      base  2  target  1

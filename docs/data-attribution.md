@@ -24,27 +24,27 @@ never inflate a false match. The real `base/` and `delink/` objs are untouched.
 
 `scripts/gruntz/build/normalize_objs.py` drives it from one ninja edge (keyed on the base
 objs + the delink stamp; mtime-skips unchanged objs); `objdiff.json` pairs the normalized
-copies (`configure.py:emit_objdiff`). It is matching-neutral: over all base+target objs the
+copies (`gruntz.compare.project`). It is matching-neutral: over all base+target objs the
 exact-match count is unchanged (247136 code / 2366 fns), with a small fuzzy gain from the
 jump-table alignment. Its full string/const **pairing** payoff unlocks once the delinker
 emits per-symbol MSVC-private data names on the target side (§3) — today the stock delinker
 emits almost none, so `matched_data` stays ~4/69184.
 
-Audit any object: `python -m gruntz.build.canonicalize_data_symbols --input X.obj
+Audit any object: `python3 -m gruntz.compare.canonicalize --input X.obj
 --output /tmp/X.obj --sidecar /tmp/X.tsv` (the `.symbols.tsv` sidecar lists every rename +
 its proof). Corpus census: `--summary-root build/objdiff/base --summary-root
 build/objdiff/target`.
 
-## 2. Retail data attribution + fingerprint — `gruntz data-audit` (wired)
+## 2. Retail data attribution + fingerprint — `gruntz verify data-access` (wired)
 
 `scripts/gruntz/core/data_audit.py` ports homm2's pure-PE evidence core
 (`link_exe.py: read_pe / classify_pe_storage / read_pe_payload_evidence`). Reading ONLY the
 retail `GRUNTZ.EXE` (no delinker/PDB/wine), for every `kind=data` symbol in
-`symbol_names.csv` it:
+the Model it:
 
 - classifies PE storage (`.rdata` ro / `.data` initialized / `.data` **unprovable tail** /
   `.data` loader-zero tail / other / outside);
-- resolves an EXTENT: reviewed `symbol_names.csv` size, else the next-data-symbol gap
+- resolves an EXTENT: reviewed the Model size, else the next-data-symbol gap
   (flagged `next-symbol-gap`);
 - reads that span, zeroes every HIGHLOW base-relocation field, and records
   `sha256`, `normalized_sha256`, and the HIGHLOW offset set — a base-independent
@@ -84,10 +84,10 @@ This is the retail oracle a real data-byte loop gates against: once source data
 initializers relink (or the delinked target carries typed data), compare candidate bytes
 (relocs normalized) to these digests.
 
-## 2b. Link-side DATA static-storage audit — `gruntz audit exe-diff` §E (wired)
+## 2b. Link-side DATA static-storage audit — `gruntz verify link-tier` §E (wired)
 
 `gruntz link` (Phase 2, VC5 link.exe 5.10.7303, `/FORCE`) links the base objs into a
-candidate `GRUNTZ.EXE` + `.map`. `gruntz audit exe-diff` already audits `.text` layout/bytes; it
+candidate `GRUNTZ.EXE` + `.map`. `gruntz verify link-tier` already audits `.text` layout/bytes; it
 now also runs a **DATA static-storage** audit (§E), ported from homm2's
 `link_exe.py: static_symbol_diagnostics` + `classify_pe_storage`. It joins each retail data
 symbol to its candidate `.map` entry, classifies `.rdata` / initialized `.data` /
@@ -99,7 +99,7 @@ relink; later rows are cumulative consequences).
 
 This is the DATA analog of the `.text` layout levers: it verifies each global lands at its
 retail offset *within its section after a real link* — something no per-object diff can see.
-Retail data owners come from Ghidra + `DATA()` (`symbol_names.csv`), substituting for
+Retail data owners come from Ghidra + `DATA()` (the Model), substituting for
 homm2's CodeView `sstModule` inventory (GRUNTZ.EXE has no debug stream).
 
 Measured on the first real candidate link (392 objs, 4886 unresolved externs under
@@ -171,7 +171,7 @@ gaps.
 - **Bump DONE** — `flake.nix` pins the reviewed-data-topology rev and `delink.py`
   passes `--recover-data-relocs-from-pdb`. **exact 2366 → 2385 (+19)**: the branch
   retains real PDB identities instead of coalescing byte-identical function groups.
-- **(b) mechanism PROVEN, coverage incomplete.** `gruntz.build.data_manifest`
+- **(b) mechanism PROVEN, coverage incomplete.** `gruntz.delink.data_manifest`
   generates the manifest from the type-derived extents (519 enrolled). With it the
   delinker runs in STRICT mode (`RVA 0x229328` cleared, 407 objs) and the metric
   finally moves:
@@ -199,7 +199,7 @@ gaps.
   `g_loadedFlag`), `g_panTable` (mangles `PAHA` = `int*` = 4 but the declared type
   sized 0x20), and `g_imageCache` (`CPtrArray` 0x14 swallows
   `g_imageCacheIndex`). Audit it with
-  `python -m gruntz.build.data_manifest --report`.
+  `gruntz.delink.data_manifest --report`.
 
 ### 3b. `--data-section-manifest` is IN — the container artifact is dead (DONE)
 
@@ -224,7 +224,7 @@ rows, `total_data` 704148 → 694617 and `matched_data` 16.40% → **17.74%**, w
 `fuzzy_match_percent` (91.9774) and `matched_code` (475702) **bit-identical** — it
 cannot touch function scoring. But the all-or-nothing credit lives in `report.rs` and
 has no config key, so splitting the sections just makes more of them miss 100.0.
-⇒ **report both numbers instead of choosing one.** `gruntz.core.report.data_measures()`
+⇒ **report both numbers instead of choosing one.** `gruntz.verify.scores`
 computes the size-weighted figure from the report's own per-section rows; the build
 scoreboard and the README block print it beside `matched_data`. Today: **99.16%
 size-weighted over 704,148 B** (`.bss` 99.76, `.data` 95.89, `.rdata` 99.28) against
@@ -296,7 +296,7 @@ payloads that content-match a retail data symbol reach the manifest).
 **Build-graph fix shipped with it:** `delink.py` regenerates both manifests in-process on
 every run, but the ninja edge did not depend on `data_manifest.py` — so editing the
 generator left objdiff scoring the *previous* manifest until `--force-delink`.
-`configure.py` now declares it an implicit dep.
+`gruntz configure` now declares it an implicit dep.
 
 **Contribution ranges are still BLOCKED (measured)** — but only the `$T` pools and
 absolute-RVA layout now depend on them. GRUNTZ.EXE has no NB09, so they must come from
@@ -469,7 +469,7 @@ build and fails loudly otherwise. Measured 508 weak `??_E<C>@@UAEPAXI@Z` referen
 strong `??_E` definitions, and the two name sets are disjoint — the strong ones are
 non-virtual `QAEPAXI@Z` bodies and `W7AEPAXI@Z` thunks, a different mangling.
 
-**3. MFC base slots** (155 sites over 52 vtables). `gruntz.audit.vtable_slot_labels` reads
+**3. MFC base slots** (155 sites over 52 vtables). the vtable-slot label oracle (retired) reads
 `(name → retail rva)` out of the vtable slots themselves: the base object names slot *i*, the
 retail vtable holds its address. Accepted only when the map is 1:1 in BOTH directions, only
 for rvas no src claim (address or extent) and no active library row already covers, and with
@@ -567,17 +567,17 @@ IS the emitted name), a float's bits must sit in the TU's `$T` FP pool (emitted
 spelling `$T<rva>`, which only has to satisfy canonicalize's VOLATILE_T - both sides
 content-address to `$anon_f64_<bits>`, so the volatile counter never matters). The
 claim travels as an ordinary `kind=data` row in the TU's label fragment into
-`symbol_names.csv`; the data manifest enrolls it through `candidates()`
+the Model; the data manifest enrolls it through `candidates()`
 (`src-DATA-sizeof`), and a float claim additionally feeds the `fp_pool_rows()`
 bridge for its stranded slot (`src-DATA_COMPGEN-fp-pool`). There is no separate
 claims table: `build/gen/data_compgen.csv` and `compgen_rows()` are RETIRED — the
 per-TU fragment build had left that channel dead (the table was clobbered per TU at
-a path nothing read) while the symbol_names channel carried every claim, measured
+a path nothing read) while the label channel carried every claim, measured
 by A/B removal (2026-08-13).
 
-**Cross-TU discipline is enforced downstream, not in labels.py** (each ninja label
-invocation sees one TU): two names at one rva withhold BOTH in the manifest, and any
-de-enrolled datum fails the FATAL `data_denominator` partition gate on the same
+**Cross-TU discipline is enforced downstream, not in extraction** (each ninja
+label invocation sees one TU): two names at one rva withhold BOTH in the manifest,
+and any de-enrolled datum fails the FATAL data-census partition gate on the same
 build. Byte-identical string payloads from N TUs legitimately coalesce onto one
 `??_C@` name (/Gf pooling, `docs/string-pooling.md`), and two of our TUs may both
 spill the FP literal that retail's TU boundary put in ONE pool slot (the
@@ -618,12 +618,12 @@ position to encode (contrast `RVA_COMPGEN`, whose position IS its TU-ownership p
 is ratcheted by `compgen_order`).
 
 Columns `rva`/`size`/`symbol`/`emitter`; only the retail ADDRESS is stated. Per TU,
-`labels.compgen_data_tu` emits a `symbol_names.csv` row only when that unit's base obj has
-the symbol as a COMMON of exactly the pinned size, so every emitting unit re-proves the
-pin (`write_symbol_names` then dedups the copies to one representative row per rva, and
-`candidates()` enrolls it in the data manifest as ordinary `bss`).
-`gruntz.audit.compgen_data` (normal tier, FATAL) adds spelling, the `symbol_names` binding,
-and a **coverage ratchet**: every COMMON in any base obj must be pinned.
+extraction emits a Model row only when that unit's base obj has the symbol as a
+COMMON of exactly the pinned size, so every emitting unit re-proves the pin (the
+Model then resolves the copies to one binding per rva, and `candidates()` enrolls
+it in the data manifest as ordinary `bss`). `gruntz delink` adds the authority
+half: a `class=common` row with no emitting base obj is an error, and the owner is
+the earliest-arriving module in link order among the objs that do emit it.
 
 Coverage is the point. Nothing else in the pipeline can see this class: objdiff masks
 relocations so an unnamed COMMON costs 0%, and it links cleanly (`gruntz link` resolves
@@ -650,7 +650,7 @@ steerable from `src/`.
 **Resolution (2026-08-09).** `objdiff-cli` is now built from source with
 `nix/patches/objdiff-bss-inferred-extent.patch`: a BSS symbol's size is compared only
 when at least one side actually STATES one. It is not a relaxation of a real check — a
-census of the whole tree (`python -m gruntz.audit.bss_extents`) found 363 paired `.bss`
+census of the whole tree (`gruntz verify data-coverage`) found 363 paired `.bss`
 symbols with 50 extent disagreements and **every delta 3 or 4 bytes**, i.e. sub-alignment
 padding, none of them a size.
 Unpaired symbols are still a mismatch, and the extent audit that does bite is
@@ -835,13 +835,13 @@ of the 515 data sections is exactly 100.0.
 "the largest power of two ≤ 8 dividing BOTH the retail rva and the size" — a rule with no
 counterpart in the compiler. It hands a `char` guard byte alignment 1, a `short` 2, and a
 12-byte struct 4. `docs/compiler-data-layout.md` reverse-engineered what c2 actually does
-(probe-validated 41/41 on a blind TU) and `gruntz.audit.data_layout.obj_align` implements
+(probe-validated 41/41 on a blind TU) and the MSVC5 data-layout oracle's `obj_align` implements
 it; the manifest now CALLS that function instead of guessing. Its inputs:
 
 * **size** — already proven (`labels.sizeof_qualtype`);
 * **object kind** — the declared type, from two oracles that are both the compiler's own
   statement: `build/gen/globals.json` (clang's printed qualType for the `DATA()` pin,
-  written by the same labels merge edge that writes `symbol_names.csv`) and, for anything
+  written by the same labels merge edge that writes the Model) and, for anything
   it does not cover, the MSVC mangled type inside a `?`-decorated symbol name. cl's `$T`
   pool is float/double by construction, so its extent names its type.
 * **the per-section ratchet** — **NOT RECOVERABLE**, see below.
@@ -925,7 +925,7 @@ unchanged (0 defect rows, 0 orphans).
 §3d-ii's 100.00% is over a denominator **we chose**: a datum `src/` never models — or
 models too small, an `int` where retail has `int[10]` — is carved into neither object, so
 it enters neither side of the pair and the section scores 100.0 around the hole
-(`gruntz.audit.data_coverage`'s defect class, now inside the loop instead of beside it).
+(`gruntz verify data-coverage`'s defect class, now inside the loop instead of beside it).
 
 `data_manifest.gap_rows()` closes the loop from RETAIL's side: every byte run strictly
 between two enrolled claims of **one** unit is carved into that unit's target object as a
@@ -990,7 +990,7 @@ a secondary/MI RTTI record the enrolment machinery still withholds — the targe
 made the combined `.rdata$r` comparable and the deferred MI record now costs. That is
 the MI-RTTI "later pass" surfacing, not a regression of these units' modeling.
 
-## 4. The reloc-TARGET audit (`gruntz.audit.data_relocs`, gated at `--normal`)
+## 4. The reloc-TARGET audit (`gruntz verify data-relocs`, gated at `--normal`)
 
 Everything above measures whether the right BYTES are in the right place. This
 measures whether the POINTERS in them point where retail's do, which no byte
@@ -1009,7 +1009,7 @@ hiding at 95–99%.
   the address retail points at. No symbol name enters into it. It also needs no
   delinked object, so it reaches data the delinker never carved.
 * `paired` — for a datum both objects define, each side's referent resolves to an
-  RVA (`symbol_names.csv`, Ghidra's address-carrying auto-labels, the delinker's
+  RVA (the Model, Ghidra's address-carrying auto-labels, the delinker's
   `const_<rva>`, plus `functions_static_libs.tsv` minus its `vtable-slot-oracle` rows,
   because a label derived from a vtable slot cannot adjudicate a vtable slot).
 
@@ -1102,14 +1102,14 @@ there; the delinker has no name for it and spells all six
 `functions_static_libs.tsv` is a FUNCTION carve-out list feeding the executable map, so a
 data row belongs in the data pin channel, not in it.
 
-## The access map (`gruntz.audit.data_access`)
+## The access map (`gruntz verify data-access`)
 
-The mis-typed-globals audit: `python -m gruntz.audit.data_access` decodes EVERY
+The mis-typed-globals audit: `gruntz verify data-access` decodes EVERY
 `.text` reloc site into `.rdata`/`.data` (objdump over the whole section, one
 pass) into an access event — width, direct/indexed/imm/lea/indcall mode,
 read/write, movzx/movsx signedness, FPU f32/f64 witness — plus every data-side
 reloc cell (fn-ptr vs data-ptr content). Attribution charges a symbol only up
-to its DECLARED size (reviewed `symbol_names.csv`, else `globals.json` sizeof);
+to its DECLARED size (reviewed the Model, else `globals.json` sizeof);
 everything past coverage clusters into candidate missing-global RUNS, with the
 unpinnable string pool down-ranked by a byte peek. A `TypeOracle` over
 `structs.json` keeps the verdict flags honest (a struct whose fields contain
@@ -1134,16 +1134,16 @@ claimed from pfn evidence), the DirectInput GUID triple, and ~40 per-slot
 zero-init globals in owner TUs. The 31 residual runs are ALL accessed only
 by unreconstructed (<gap>) code - their owner TUs are unprovable until the
 accessor fns are matched, so they stay on the queue rather than taking
-fabricated homes (`python -m gruntz.audit.data_access --unclaimed`).
+fabricated homes (`gruntz verify data-access --unclaimed`).
 Library runs (CRT/MFC/zlib data) are policy-excluded like library code;
 string-pool runs are the unpinnable pooled literals.
 
 ### The per-ACCESS map (2026-08-09, lane/data-access-map)
 
-`gruntz.audit.data_access` above is a per-SYMBOL aggregate recomputed on every
+`gruntz verify data-access` above is a per-SYMBOL aggregate recomputed on every
 invocation. Its per-access evidence — which byte range each instruction covers,
 how wide, in which direction, through which addressing form — is now persisted
-and queryable as `gruntz.audit.data_access_map`
+and queryable as `gruntz verify data-access`
 (**`docs/data-access-map.md`**): a sqlite index plus a grep-able TSV, with
 `--at` / `--range` / `--symbol` / `--fn` / `--sql`, an offset-resolved field map
 per claim, five derived categories, a control-set calibration, and an
@@ -1220,7 +1220,7 @@ either to a pair struct would be aggregation without a stride witness.
 
 ## 5. The coverage partition covers `.bss` (2026-08-10, data-coverage-close)
 
-`gruntz.audit.data_denominator` partitions the loader zero-fill region with the
+the data census partitions the loader zero-fill region with the
 same fail-closed machinery as initialized data, under `.bss`-specific oracles —
 payload proves nothing in zero fill, so a verdict rests on:
 
@@ -1282,7 +1282,7 @@ regressions (one −0.02 current-% dip blessed, MAX held).
 **Closed** (the drain, in landing order): the .bss partition + library-pointer
 propagation + alignment slack; reloc-bearing runs un-blanketed from the literal
 exclusion; typedef-linkage records into structs.json (SFMAN globals enrolled);
-the two CPlay guard pins; `gruntz.audit.init_funclets` — the XCU walk — plus the
+the two CPlay guard pins; the `.CRT$XCU` walk (retired) — the XCU walk — plus the
 ctor-immediate decode oracle that named every GruntDirectionCell copy
 (22 TUs gained `<Gruntz/GruntDirStatics.h>` retail provably compiled, ~200 cells
 enrolled/renamed, five direction-misnamed aliases corrected); the library-gap

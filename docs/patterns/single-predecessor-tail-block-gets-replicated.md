@@ -11,7 +11,7 @@ fall into the function's terminal `return`, merging two epilogues retail keeps a
 
 ## Symptom
 
-`gruntz sema disasm <rva> --blocks --diff --lite` reports the first true divergence at
+`gruntz walls diagnose <rva> --asm` reports the first true divergence at
 the branch itself, with the *kind* mismatched, and everything after it renumbered:
 
 ```
@@ -24,7 +24,7 @@ the branch itself, with the *kind* mismatched, and everything after it renumbere
 Two cheap corroborations before you touch the source:
 
 - `--lite | grep -c ret` on both sides — the base is short by one.
-- `python -m gruntz.audit.base_size --min-pct 0` — the base is short by about one
+- `gruntz walls diagnose <rva>` — the base is short by about one
   epilogue's worth of bytes (13 B for `mov eax,N` + four `pop` + `add esp,N` + `ret`).
 
 ## Cause

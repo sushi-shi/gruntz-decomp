@@ -4,7 +4,7 @@ Reverse-engineered from the toolchain's own `link.exe` (5.10.7303, the retail
 linker, Ghidra on `$MSVC_DIR/bin/link.exe`, image base 0x400000) and validated
 by probes linked with that exact binary under wine. Companion to
 `docs/compiler-data-layout.md` (cl's side of the same question) and the reason
-`gruntz.audit.tu_order_check` now models one legitimate exception instead of
+`gruntz verify tu-order` now models one legitimate exception instead of
 failing on 80 interleaving TU-pairs.
 
 **The verdict up front: the one-contiguous-ascending-block invariant SURVIVES.**
@@ -227,7 +227,7 @@ with other objs, or genuinely misordered pins. They stay frozen in the ratchet.
    order, lib members in pull order, kept COMDATs at first includer: retail
    `.text` order encodes the original project's file list and link line.
    `config/retail/link-order.tsv` (derived + re-proven by
-   `gruntz.audit.link_line`, gated in `build --full`) is that recovery: 238
+   the retired link-line derivation, see [tooling-map](tooling-map.md)) is that recovery: 238
    thunk-proven command-line objs in order, 89 lib members in pull order, and a
    relink with the derived order reproduces the cross-TU layout exactly
    (Kendall 0.0000 vs 0.4508 for the alphabetical baseline). See
@@ -237,6 +237,6 @@ with other objs, or genuinely misordered pins. They stay frozen in the ratchet.
 
 ## Reproduce
 
-    python -m gruntz.audit.tu_order_check            # gate + exile accounting
+    gruntz verify tu-order            # gate + exile accounting
     # probes: scratchpad linkprobe/run.sh (cl+link under wine, see Probe record)
     # link.exe reversing: Ghidra project on $MSVC_DIR/bin/link.exe; addresses above

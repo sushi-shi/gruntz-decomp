@@ -57,7 +57,7 @@ while (node) {
 `CMenuPage::FocusNext` @0x183c50 and `CMenuPage::FocusPrev` @0x183d10, 97.18 → **100.00 EXACT**
 each (2026-07-28). Both had also needed the positive-form wrap gate
 ([positive-gate-enables-shrink-wrap](positive-gate-enables-shrink-wrap.md)) to get to 97.18; this
-is the last piece, and it is invisible to `sema disasm --diff` because the whole difference is two
+is the last piece, and it is invisible to `gruntz walls diagnose --asm` because the whole difference is two
 instructions plus a masked displacement.
 
 ## Related
@@ -65,5 +65,4 @@ instructions plus a masked displacement.
 - [retry-loop-bail-while-goto-no-peel](retry-loop-bail-while-goto-no-peel.md) — the other
   `break`-is-wrong loop family (there the answer is a `goto` past the success block, because the
   bail must skip code the bottom test would run).
-- [masked-diff-hides-branch-target](masked-diff-hides-branch-target.md) — `python -m
-  gruntz.audit.jcc_sieve` is what surfaces these.
+- [masked-diff-hides-branch-target](masked-diff-hides-branch-target.md) — `gruntz walls diagnose <rva>` is what surfaces these.

@@ -1,6 +1,6 @@
 # Retail gives each entry guard its own `return` epilogue where cl shares one
 tags: cpp:branch cpp:switch cpp:goto | asm:jcc asm:ret asm:jmp | topic:codegen-idiom topic:wall
-symptoms: base and target agree instruction-for-instruction but the base has FEWER `ret` blocks; `--blocks --diff` shows `jcc <shared tail>` in the base against `jcc <continue> | fall <inline epilogue>` in the target; the base is short by a whole multiple of one epilogue; `insn_count` reports a negative delta with no operand differences anywhere
+symptoms: base and target agree instruction-for-instruction but the base has FEWER `ret` blocks; `gruntz walls diagnose --asm` shows `jcc <shared tail>` in the base against `jcc <continue> | fall <inline epilogue>` in the target; the base is short by a whole multiple of one epilogue; `insn_count` reports a negative delta with no operand differences anywhere
 confidence: 9/10
 variants: tail-block-placement-cross-jump-wall.md, single-predecessor-tail-block-gets-replicated.md, error-report-guard-falls-through-to-a-shared-return.md
 

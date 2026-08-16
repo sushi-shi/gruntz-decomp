@@ -31,7 +31,7 @@ the recompile is SHORTER than retail: our table computed ~30 fabricated zero cha
 that CSE into three, retail computed the real ones.
 
 Decode it mechanically instead of by eye — a ~150-line symbolic interpreter over
-`sema disasm --target --lite` (track `mov reg,imm`, `sar/shl reg,cl` tagged by WHICH
+`gruntz sema disasm  --lite` (track `mov reg,imm`, `sar/shl reg,cl` tagged by WHICH
 global `ecx` holds, `or`, and the `[esp+N]` slots) recovers both the constant list and
 the store program exactly, including the dword-duplication (`mov ax,bx; mov cx,ax; shl
 ecx,0x10; mov cx,ax`) and `rep stos` runs. Two cross-checks that caught the bug:

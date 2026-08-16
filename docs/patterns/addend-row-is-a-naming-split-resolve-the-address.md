@@ -4,7 +4,7 @@
 
 ## Symptom
 
-`python -m gruntz.audit.reloc_addends` reports "same symbol, same reference count,
+`gruntz verify assert-relocs` reports "same symbol, same reference count,
 different offsets" - e.g. base `?g_battlezLastMaxGruntz@@3PAHA + 0x10` where retail
 has `+ 0x0` - and the function looks like it indexes the wrong element of a
 file-scope array. Reading the two sides' bytes shows the instruction is
@@ -40,9 +40,9 @@ folds to `&rects[0].bottom` is `g_levelMsgRectsB + 0xc`, which the delinker call
 ## The fix (in the tooling, never in the source)
 
 **Resolve both sides to an absolute retail RVA and compare THOSE.**
-`build/gen/symbol_names.csv` maps name -> rva for every named symbol, and the
+`build/gen/bindings.tsv` maps name -> rva for every named symbol, and the
 delinker's `DAT_<hex>` / `$gap_<hex>` placeholders carry their rva in the name.
-`gruntz.audit.reloc_addends` now does this per function: it builds the multiset of
+`gruntz verify assert-relocs` now does this per function: it builds the multiset of
 resolved addresses on each side, subtracts, and only an addend landing in the
 *difference* counts as a defect. Rows where every differing addend resolves to an
 address both sides reach are re-classed **`NAMING`** and are not work.

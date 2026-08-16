@@ -57,7 +57,7 @@ from assembly alone.
 Do not classify the source by adjacency alone. A search such as
 `rg -U ' new .*\n.*if'` also finds an author-written allocation-failure check or
 the first method call after construction. Build a `/Z7` object and use
-`gruntz sema disasm <rva> --base --rich`: the allocation, compiler null guard,
+`gruntz walls diagnose <rva> --asm`: the allocation, compiler null guard,
 and constructor body are attributed to the `new` line, while a second test
 attributed to the following `if` is source control flow. Retail's six
 `CWorldSoundSet` factories and `WinMain` contain both tests and are exact with

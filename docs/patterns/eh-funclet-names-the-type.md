@@ -1,6 +1,6 @@
 # An unwind funclet NAMES the type of the object it destroys - it is a member/base oracle
 tags: cpp:eh cpp:ctor cpp:dtor cpp:class | asm:jmp asm:call | topic:identity topic:correctness
-symptoms: a wrapper struct with one member; an invented intermediate base class; a class-level `operator new`/`operator delete` that only forwards to the global; a `.cpp`-pinned function whose only retail callers are unwind funclets; `python -m gruntz.audit.eh_band --census` reporting `different-targets`
+symptoms: a wrapper struct with one member; an invented intermediate base class; a class-level `operator new`/`operator delete` that only forwards to the global; a `.cpp`-pinned function whose only retail callers are unwind funclets; `gruntz.delink.eh_band --census` reporting `different-targets`
 confidence: 10/10
 
 ## The oracle
@@ -21,7 +21,7 @@ the two are byte-identical there. Only the destructor path tells them apart,
 because a wrapper gets its own compiler-generated `??1Wrapper@@QAE@XZ` COMDAT that
 calls the member's, while the plain member is destroyed directly.
 
-`python -m gruntz.audit.eh_band --census --top N` reads both sides' funclets out of
+`gruntz.delink.eh_band --census --top N` reads both sides' funclets out of
 the normalized objects, masks the relocation operands and histograms
 `ours -> retail` over the ones that disagree. One row there is ONE modelling
 decision, however many TUs repeat it.

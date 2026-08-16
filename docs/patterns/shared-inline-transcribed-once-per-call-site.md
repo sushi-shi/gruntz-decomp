@@ -1,4 +1,4 @@
-# A small header inline was transcribed once per call site — find them with `inline_clones`
+# A small header inline was transcribed once per call site — find them by clone signature
 tags: cpp:inline cpp:global cpp:call | asm:imul asm:lea asm:cmp | topic:identity topic:codegen-idiom
 symptoms: the same 8-20 instruction block appears verbatim in many unrelated functions; an odd
 immediate (`0x269ec3`, `0x939`) recurs at unrelated RVAs; N near-identical `static inline`
@@ -11,9 +11,10 @@ it, so a small header inline gets transcribed once per call site. It is a system
 a one-off: `GetRandomNumber` was 14 open-coded copies of the guard-and-LCG across 11 TUs, and the
 act-name find-or-create was 61 open-coded copies across 34.
 
-`python -m gruntz.audit.inline_clones` is the sweep. Two detectors, because they fail differently.
+The tree-wide clone sweep is retired. Two detectors used to run, and they fail
+differently - both are reproducible by hand from the normalized objects.
 
-## `--consts` — repeated unusual immediates
+## Detector 1 — repeated unusual immediates
 
 Histograms every numeric operand in retail `.text` that is NOT an address. The `.reloc` table is
 the oracle: a value sitting at an `IMAGE_REL_BASED_HIGHLOW` site is a pointer, never a constant.
@@ -22,8 +23,8 @@ dropped, EXCEPT when large: cl strength-reduces `x*K + C` into `lea r,[r + s*r +
 addend of a magic multiply hides in a displacement field. That is where `GetRandomNumber`'s
 `0x269ec3` (= 2531011L) lives.
 
-    python -m gruntz.audit.inline_clones --consts --min-fns 4
-    python -m gruntz.audit.inline_clones --value 0x269ec3     # every site, named
+    # collect the immediates of every base function, keep those recurring in >=4
+    # unrelated functions, then name each site from the Model
 
 Cheap and high precision, but it finds two different things and you must tell them apart:
 
@@ -36,7 +37,7 @@ Cheap and high precision, but it finds two different things and you must tell th
 enum. So is `0x366` (a sound id), `0xcf84f`, `0x504358`. Blind to any helper without a
 distinctive constant.
 
-## `--ngrams` — normalized instruction-sequence clustering
+## Detector 2 — normalized instruction-sequence clustering
 
 Every instruction is reduced to a shape token: registers alpha-renamed by first appearance INSIDE
 the window (so regalloc permutation does not split a cluster), frame displacements → `[S]`,
@@ -44,14 +45,14 @@ relocated addresses → `A`, branch targets → `L`. Immediates and non-frame di
 — a struct offset and a magic number are exactly the discriminators. Windows of `-n` tokens are
 hashed; a hash occurring in several unrelated functions is a candidate inlined body.
 
-    python -m gruntz.audit.inline_clones --ngrams -n 8 --min-fns 5
-    python -m gruntz.audit.inline_clones --show <cluster-id> -n 8
+    # hash every 8-instruction window of masked opcodes; a hash appearing in >=5
+    # unrelated functions is a candidate inlined body
 
 n=8 is the useful default: shorter drowns in glue, longer misses helpers whose two expansions
 schedule differently. Clusters are ranked by interest x spread, where interest counts real
 computation and zeroes out four boilerplate families (SEH frames, `` `scalar deleting destructor' ``,
 `rep movs`/`repne scas`/`rep stos`). Without that filter the entire top of the list is
-compiler-generated. Sites are attributed through `build/gen/symbol_names.csv` +
+compiler-generated. Sites are attributed through `build/gen/bindings.tsv` +
 `config/retail/functions_static_libs.tsv`, and `--game-only` (the default) drops the CRT/MFC band, which
 is the largest remaining false-positive family.
 

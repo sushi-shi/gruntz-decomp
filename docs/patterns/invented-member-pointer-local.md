@@ -19,8 +19,8 @@ every later `[this+N]` load disappears. Retail re-reads the member at each use, 
 2-3 instructions SHORTER per block, one push LONGER at entry, and every register after the
 prologue is rotated. The diff reads like regalloc noise; it is not.
 
-**Tell:** `python -m gruntz.audit.shrink_wrap` reports `+1` (base pushes more at entry), and the
-first hunk of `sema disasm --diff --lite` shows a prologue `mov <callee-saved>,[esi+N]` in base that
+**Tell:** `gruntz walls diagnose <rva> --asm` shows one more callee-save push at entry, and the
+first hunk of `gruntz walls diagnose --asm` shows a prologue `mov <callee-saved>,[esi+N]` in base that
 the target does not have, followed by `[<callee-saved>+k]` where the target has `mov eax,[esi+N]` /
 `[eax+k]`. Sieve the source for `^\s+T\*\s+\w+\s*=\s*m_\w+;` in the functions the sieve names.
 

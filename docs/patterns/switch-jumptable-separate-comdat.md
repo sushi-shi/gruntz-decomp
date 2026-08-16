@@ -2,7 +2,7 @@
 
 **Symptom.** A dense `switch` (a contiguous run of cases) that MSVC lowers to a
 jump table — `jmp DWORD PTR [eax*4 + <table>]` — plateaus around **75–80%** even
-when the function's *code* is byte-for-byte identical to retail. `gruntz status`
+when the function's *code* is byte-for-byte identical to retail. `gruntz verify status`
 shows the function stuck; nothing in the code differs.
 
 **Cause (confirmed `llvm-objdump -dr` base vs target).** The instruction stream

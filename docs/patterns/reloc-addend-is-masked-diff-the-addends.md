@@ -10,8 +10,8 @@
 ## Symptom
 
 A function that indexes a file-scope array scores clean, or near-clean, while it
-addresses the **wrong element** at run time. Nothing in `--diff`, `--blocks --diff`
-or `--branches --diff` shows it, and the reloc-SYMBOL sequence
+addresses the **wrong element** at run time. Nothing in `--diff`, `gruntz walls diagnose --asm`
+or `gruntz walls diagnose` shows it, and the reloc-SYMBOL sequence
 ([reloc-sequence-diff-finds-wrong-referents](reloc-sequence-diff-finds-wrong-referents.md))
 agrees perfectly: both sides reference `g_tbl` in the same order and the same number
 of times.

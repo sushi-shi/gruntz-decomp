@@ -29,7 +29,7 @@ closer to its producing store; ours moves it.
 Exhausted without a lever:
 * every body spelling — named local for the receiver, explicit read-modify-write,
   `this->`, a local for the flag word, `(*m_wwdObject)`;
-* the wall-breaker, `match_variants --state-trials 48 --max-depth 2 --limit 320`
+* the wall-breaker, the retired permuter
   on `??0CSingleAnimation` — 320 variants, **all flat at 99.2381%**, and the AST
   engine reports zero legal atomic mutations in the body (commutative_order=0,
   independent_statement_order=0, declaration_split=0, ...), so only TU state was

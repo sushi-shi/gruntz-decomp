@@ -1,10 +1,10 @@
 # A site that RELOADS a frame slot where you recompute names the constant you invented
 
 tags: cpp:const cpp:struct cpp:local | asm:lea asm:add asm:mov | topic:mis-model topic:tooling
-symptoms: a widget/rect builder stuck in the 70s-80s with `--branches --diff` clean; retail's
+symptoms: a widget/rect builder stuck in the 70s-80s with `gruntz walls diagnose` clean; retail's
 frame is bigger than yours by 4 bytes per shared constant; at some call sites retail computes
 `lea eax,[by_reg+N]` and at others it just does `mov eax,[esp+M]` with no arithmetic anywhere
-near; `gruntz.audit.immediates --strong` shows an `OURS-ONLY !0xNN` row
+near; the immediate multisets in `gruntz walls diagnose <rva> --asm` show an ours-only `0xNN`
 confidence: 10/10
 
 When a builder fills the same `RECT` argument at many sites, the constants that are SHARED
@@ -33,8 +33,7 @@ own arguments — and record, per slot, which `lea <r>,[<by>+N]` last stored it:
 1030f8 LOAD  S+0x2c  by+0x135      <- mov eax,[esp+0x48];  mov [ecx+4],eax
 ```
 
-The `LOAD` line is the answer for that site. Cross-check with `gruntz.audit.immediates
---strong`: a value the source has and retail does not is the constant to replace (mind the
+The `LOAD` line is the answer for that site. Cross-check with `gruntz walls diagnose <rva> --asm`: a value the source has and retail does not is the constant to replace (mind the
 caveat that the sieve does not count `lea` displacements, and that retail encodes a subtraction
 as `add reg,0xffffffbb`, so `0x45` "missing" is a false positive).
 
@@ -48,5 +47,5 @@ as `add reg,0xffffffbb`, so `0x45` "missing" is a false positive).
 * `CStatusBarMgr::LoadTabSprites` 0x102250 — **86.68 → 91.63**. One site's top was
   `by + 0x1a6`; retail reloads the slot holding `by + 0x135`.
 
-Both functions' `--branches --diff` was already 100% clean, which is exactly why the bug
+Both functions' `gruntz walls diagnose` was already 100% clean, which is exactly why the bug
 survived: a wrong CONSTANT changes no branch, no block and no ret — only bytes.

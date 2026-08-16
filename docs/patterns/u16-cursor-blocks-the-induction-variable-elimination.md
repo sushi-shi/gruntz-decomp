@@ -75,7 +75,7 @@ retail's 327; `BlitShadedForward` 1785 -> 1822 vs retail's 1855).
 
 ## How to spot it
 
-`gruntz sema disasm <rva> --diff --lite` and look in the loop *preheader* for a `sub <reg>,<reg>`
+`gruntz walls diagnose <rva> --asm` and look in the loop *preheader* for a `sub <reg>,<reg>`
 whose operands are two different buffer bases: that subtraction IS a bias, and it means retail
 reduced an IV you still carry. The residue after the fix is ordinary register rotation.
 

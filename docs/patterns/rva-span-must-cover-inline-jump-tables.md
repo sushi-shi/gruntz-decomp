@@ -12,7 +12,7 @@ correct the body is, while its neighbours in the same unit score normally. The
 
 **The trap that hides it:** objdiff omits `fuzzy_match_percent` entirely when the value
 is `0.0` (serde default-skip). So in `report.json` a genuine 0 and a *never scored*
-function are indistinguishable, and both render as `0.00` in `gruntz status`. Listing
+function are indistinguishable, and both render as `0.00` in `gruntz verify status`. Listing
 the functions with **no** `fuzzy_match_percent` key is the way to find the family:
 
 ```python
@@ -98,7 +98,7 @@ Corollary: a function with `switchdata` relocs is worth auditing even at a HIGH 
 the span alone. Sweep a unit for the family with:
 
 ```sh
-for r in $(awk -F, '$3=="<unit>" && $5=="func" {print $1}' build/gen/symbol_names.csv); do
+for r in $(awk -F, '$3=="<unit>" && $5=="func" {print $1}' build/gen/bindings.tsv); do
   gruntz sema disasm $r 2>/dev/null | grep -q switchdata && echo $r
 done
 ```
@@ -106,7 +106,7 @@ done
 ## What this does NOT fix (measured, so you can stop early)
 
 A body that is genuinely **shorter than retail** scores 0 for a different reason, and
-no span helps. Check with `python -m gruntz.audit.base_size --all` first: if the
+no span helps. Check with `gruntz walls diagnose <rva>` first: if the
 compiled length is far below the annotated one, the body is under-reconstructed.
 Reverted after testing, all still 0 at every span: `CPlay::Render` (-276 bytes),
 `CGrunt::StepArrivalDrop` (-253), `CFaderMgr::Add` (-546), and `CGameObject::Play`

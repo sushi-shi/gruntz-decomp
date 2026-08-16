@@ -2,7 +2,7 @@
 
 tags: data:objdiff cpp:switch | asm:int3 asm:jmp | topic:scoring-artifact topic:tooling
 symptoms: a big `switch`-heavy function stuck far below 100% with no plausible source
-  bug; `gruntz sema disasm <rva> --target` ends in a long run of `int3`; the target
+  bug; `gruntz sema disasm <rva>` ends in a long run of `int3`; the target
   instruction count is hundreds larger than the base's and the excess is ALL `int3`;
   `objdiff` `size` for the function is much larger than the base `.text` COMDAT
 confidence: 10/10
@@ -29,7 +29,7 @@ RVA(0x0004dd50, 0x2400)   // ends at the last table byte -> 87.11%
 
 Steerable, and mechanical: the extent ends at the first `0xCC` run of >= 8 bytes before
 the next admitted function start. Screen the whole tree with
-`python -m gruntz.audit.jump_tables --kind extent` (0/3455 false positives on the
+`gruntz sema disasm --switch` (0/3455 false positives on the
 byte-exact set; it reports both the LONG and the SHORT direction, and a long claim MASKS
 a short one so fix these first).
 

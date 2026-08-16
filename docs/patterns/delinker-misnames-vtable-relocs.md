@@ -19,7 +19,7 @@ vtable-heavy TU, not a reconstruction defect — do not "fix" the source for it.
 
 ## What it is NOT (measured 2026-08-07)
 
-The obvious hypothesis — that the catalogued game vtables reach `symbol_names.csv` with an
+The obvious hypothesis — that the catalogued game vtables reach the Model with an
 EMPTY size column (`labels.py`: `size = row["size"] if row["kind"] == "template" else None`),
 leaving the synth PDB unable to bound the symbol — is **wrong**. Carrying the real catalog
 size through (and skipping the cosmetic `vtables` unit in `data_manifest.py` so the rows

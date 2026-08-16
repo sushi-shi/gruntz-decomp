@@ -351,6 +351,19 @@
   "spread": 2.0692111959287534
  },
  {
+  "file": "src/DDrawMgr/DirPal.cpp",
+  "n": 24,
+  "bytes": 4660,
+  "lo": 1340304,
+  "hi": 1345591,
+  "span": 5287,
+  "frags": 1,
+  "avg_cluster": 24.0,
+  "frag_ratio": 0.041666666666666664,
+  "occupancy": 0.8814072252695291,
+  "spread": 1.1345493562231759
+ },
+ {
   "file": "src/Gruntz/LightFxRender.cpp",
   "n": 23,
   "bytes": 20302,
@@ -388,19 +401,6 @@
   "frag_ratio": 0.043478260869565216,
   "occupancy": 0.40422159786758877,
   "spread": 2.4738905720905366
- },
- {
-  "file": "src/DDrawMgr/DirPal.cpp",
-  "n": 23,
-  "bytes": 4541,
-  "lo": 1340304,
-  "hi": 1345471,
-  "span": 5167,
-  "frags": 1,
-  "avg_cluster": 23.0,
-  "frag_ratio": 0.043478260869565216,
-  "occupancy": 0.8788465260305787,
-  "spread": 1.137855097996036
  },
  {
   "file": "src/DDrawMgr/DDrawSurfacePair.cpp",
@@ -1846,6 +1846,19 @@
   "spread": 1.20327868852459
  },
  {
+  "file": "src/Gruntz/LevelRezPath.cpp",
+  "n": 3,
+  "bytes": 1192,
+  "lo": 605504,
+  "hi": 607021,
+  "span": 1517,
+  "frags": 1,
+  "avg_cluster": 3.0,
+  "frag_ratio": 0.3333333333333333,
+  "occupancy": 0.7857613711272248,
+  "spread": 1.2726510067114094
+ },
+ {
   "file": "src/Gruntz/InGameWorkerHandlers.cpp",
   "n": 3,
   "bytes": 726,
@@ -2879,19 +2892,6 @@
   "lo": 546048,
   "hi": 546083,
   "span": 35,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/LevelRezPath.cpp",
-  "n": 1,
-  "bytes": 1139,
-  "lo": 605504,
-  "hi": 606643,
-  "span": 1139,
   "frags": 1,
   "avg_cluster": 1.0,
   "frag_ratio": 1.0,

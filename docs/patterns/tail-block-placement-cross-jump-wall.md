@@ -30,7 +30,7 @@ same source. Recognize it and stop; do not restructure the source to chase it.
 
 ## What was tried and did NOT move it
 
-- `gruntz permute variants --max-depth 2` on 0x151b90 and 0x18e40: 9 and 6 candidates,
+- the retired permuter on 0x151b90 and 0x18e40: 9 and 6 candidates,
   no improvement (these functions have too few atomic mutation sites to search).
 - Nesting the following test into the arm's `else` (PlaySound arm K) — byte-identical.
 - Reordering the label bodies / moving the far label past the function's natural end

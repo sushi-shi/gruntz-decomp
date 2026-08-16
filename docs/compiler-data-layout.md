@@ -7,7 +7,9 @@ names — 9 `.data` + 5 `.rdata` + 27 `.bss`, covering collisions, extern
 pinning, local/class statics, and every alignment branch. Probe flags were the
 real unit flags (`/nologo /c /O2 /MT /GX /GR`).
 
-Checkable predictor + reverse tool: `python -m gruntz.audit.data_layout`
+Checkable predictor + reverse tool: the retired `data_layout` oracle (see
+[tooling-map](tooling-map.md)); `gruntz.delink.data_manifest` calls its
+alignment function
 (`predict` = declaration list -> section layouts; `infer` = observed slots ->
 name/decl-order constraints; `hash` = per-name h/check16/bucket).
 

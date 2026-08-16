@@ -45,7 +45,7 @@ string-COMDAT name and are attributed to SEVERAL objects at once:
 
 2289 of 3482 manifest rows are `??_C@` string COMDATs, 2468 rows fall inside the
 pool region, spread over 186 objects, and 372 rvas legitimately have more than
-one owner. `gruntz.audit.data_tu_order`'s `COMDAT_NAME_RE` (plus its
+one owner. `gruntz verify data-tu-order`'s `COMDAT_NAME_RE` (plus its
 multiple-owner rule) exempts exactly these from the per-(TU, storage) band
 invariant. Only **ordinary** data is linearly TU-attributed.
 
@@ -78,6 +78,6 @@ objects:
 That run (plus the same shape in `.bss`) proved six `.cpp` files were ONE
 rasterizer object; they were merged into `src/Image/ImagePolyClip.cpp`
 (2026-07-29). The corresponding `.text` test is
-`python -m gruntz.audit.tu_order_check` — a TU whose whole span sits strictly
+`gruntz verify tu-order` — a TU whose whole span sits strictly
 inside another's, bracketed by that TU's functions, is a slice of it, and
 `gruntz sema disasm` on the bracketing addresses confirms it.

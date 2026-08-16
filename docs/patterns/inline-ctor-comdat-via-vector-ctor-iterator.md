@@ -44,7 +44,7 @@ The pin travels with the COMDAT, so put `RVA()` on the header definition and let
 0xc84b5), inside play's contribution, not in sbi_rectonly's span. The function
 census (`config/retail/gruntz_functions.tsv`) keys on RVAs, so the move passes
 with the rows re-homed; a row that VANISHES rather than moves fails
-`gruntz build --full`.
+`gruntz verify check --tier full`.
 
 ## Evidence
 

@@ -6,8 +6,8 @@ not have; retail's `ret` blocks leave eax holding whatever the last call returne
 paired with an extra callee-saved `push` in the prologue
 confidence: 9/10
 
-`gruntz.audit.void_return_type` finds functions we declared `void` that retail returns a
-value from. The **inverse** is just as common and much easier to miss, because a wrong
+[void-return-collapses-the-guard-ret](void-return-collapses-the-guard-ret.md)
+covers functions we declared `void` that retail returns a value from. The **inverse** is just as common and much easier to miss, because a wrong
 `int` return type has no tell of its own - it only shows as a couple of `xor eax,eax`
 rows plus, very often, a whole rotated register allocation, since the extra live value
 costs a register and blocks
@@ -24,13 +24,11 @@ inlined body is `int n = m_nSize; SetAtGrow(n, x);` and cl then reloads `this` f
 home slot after the call instead of parking it in a callee-saved register, which is what
 retail does.)
 
-## The sieve
+## The screen
 
-    python -m gruntz.audit.int_return_type          # the worklist
-    python -m gruntz.audit.int_return_type --all    # + every reject, with its reason
-    python -m gruntz.audit.int_return_type --why S  # per-call-site eax verdicts
-
-It is the conjunction of two conditions, and **condition 1 alone is a 90% false-positive
+The tree-wide return-type sieve is retired; `gruntz walls diagnose <rva>` gives
+the per-function evidence (`--asm` for the pair). The verdict is the conjunction
+of two conditions, and **condition 1 alone is a 90% false-positive
 rate** - it is what produces the `MoveRising` family:
 
 1. retail materialises nothing into the return register at any `ret` (read off the
@@ -56,7 +54,7 @@ Two traps the sieve had to learn, both of which produce confident wrong answers:
 
 ## How to confirm before you flip
 
-1. `gruntz sema disasm <rva> --target --lite | grep -n 'eax\|al,'` - if the only writes to
+1. `gruntz sema disasm <rva> --lite | grep -n 'eax\|al,'` - if the only writes to
    the return register are call results and address arithmetic, and no `ret` is preceded
    by a constant load into it, the function is `void`.
 2. `gruntz sema xref <rva>` the callers and check the result is discarded. **A caller that
@@ -72,7 +70,7 @@ Two traps the sieve had to learn, both of which produce confident wrong answers:
 A VALUE row the call graph rejects is still worth a look: the return type is right, but
 we materialise a constant on an exit path retail does not have.
 
-Sieve: `python -m gruntz.audit.shrink_wrap` will usually flag these too, because the
+Sieve: `gruntz walls diagnose --asm` will usually flag these too, because the
 spurious return value is what blocks the shrink-wrap.
 
 related: [void-return-collapses-the-guard-ret.md](void-return-collapses-the-guard-ret.md),

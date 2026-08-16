@@ -71,11 +71,11 @@ Enumerate every suspect SITE and every legal SPELLING per site, put the whole fa
 one manifest, and score the product in one run:
 
 ```bash
-python -m gruntz.permute.batch_source_variants /tmp/<fn>-axes.json --top 10 --output /tmp/<fn>-out
+the retired permuter /tmp/<fn>-axes.json --top 10 --output /tmp/<fn>-out
 ```
 
 Use `batch_source_variants` directly when the axes are hand-authored - it runs only the
-manifest. (`match_variants --axes-from` also emits AST mutations, which can overlap a
+manifest. (the retired permuter also emits AST mutations, which can overlap a
 hand-authored axis and abort the run with `axis <name> overlaps an edit in candidate ...`;
 `--max-depth 0` suppresses them where the flag is supported.)
 
@@ -92,7 +92,7 @@ options in Python. The product is preserved; only the axis boundaries move.
 
 The product is only worth running over sites you have reason to suspect. Three negative
 results from the same campaign, both after the control flow was already proven identical
-(`sema disasm --branches --diff` reporting AGREE):
+(`gruntz walls diagnose` reporting AGREE):
 
 * `SoundStream::ParseWave` (0x137b70, 99.82%) - 72 cells over the declaration order,
   merged-vs-separate declarations, and scoping of every local. **Every cell scored
@@ -114,7 +114,7 @@ results from the same campaign, both after the control flow was already proven i
   it. `while`, `for(;;)` + top `break`, and `do/while` compile **byte-identically**, so
   the loop keyword is not the axis; do not spend cells on it.
 
-**The shape of the negative result matters.** In both cases `sema disasm --branches --diff`
+**The shape of the negative result matters.** In both cases `gruntz walls diagnose`
 already reported AGREE and the block skeleton already matched, so what was left had to be
 either instruction selection or frame/register allocation. The matrix is how you tell those
 two apart: if *every* cell over the declaration sites scores identically, the sites are not

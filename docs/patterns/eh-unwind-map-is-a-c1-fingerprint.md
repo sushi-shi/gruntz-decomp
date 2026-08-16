@@ -1,7 +1,7 @@
 # The EH unwind map is a C1 fingerprint: dead TRACEs allocate states and caller cb
 
 tags: cpp:trace cpp:temp cpp:inline | asm:funcinfo | topic:codegen-idiom topic:wall
-symptoms: `gruntz.audit.eh_band` reports a C1 state-count or map-topology
+symptoms: `gruntz.delink.eh_band` reports a C1 state-count or map-topology
 difference; a retail-only NULL-action state with no corresponding state store
 is evidence for an eliminated destructible scope, while action and funclet
 differences expose ctor/dtor inline cuts, object identity, and frame layout
@@ -29,7 +29,7 @@ STATE-ALLOCATED before C2 deletes the false arm. Two consequences are measured:
 Run:
 
 ```text
-python -m gruntz.audit.eh_band --nonexact \
+gruntz.delink.eh_band --nonexact \
   --nonexact-tsv /tmp/eh-nonexact.tsv
 ```
 

@@ -39,7 +39,7 @@ prologue, the epilogue, the frame size and the register allocation of the entire
 ## Consequences for the worklist
 
 Any function whose `eh 0->1` differs in
-`python -m gruntz.audit.insn_count`-style prologue comparison and which contains a `new` of
+a `gruntz walls diagnose --asm` prologue comparison, and which contains a `new` of
 a deeply-derived class is in this family. Until the heuristic is understood these are
 `@early-stop` walls, and the OOL bodies retail emitted (`??0CSBI_RectOnly@@QAE@XZ` @0x101fa0
 is still unnamed) need `RVA_COMPGEN` pins in whichever TU emits the COMDAT.

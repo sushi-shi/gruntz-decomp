@@ -25,7 +25,7 @@ temporary score. The objective is per-function historical MAX fuzzy = 100%.
 ## Choose work by historical MAX
 
 - Work the lowest `hist_pct` rows first, excluding only functions already
-  bounded by reproducible evidence in `wall-break.md`.
+  already parked with `@early-stop` on reproducible evidence.
 - `hist_pct` is the campaign objective. Current fuzzy, current exact count, and
   aggregate fuzzy are navigation signals, not acceptance gates.
 - `best_pct` belongs to the current per-function source fingerprint. A source
@@ -134,9 +134,9 @@ stamp is transitional reconstruction debt, not original source.
 
 The permute machinery is RETIRED (MSVC5 is stable enough that grinding
 orderings is not worth the tooling). Classify a plateau with the project
-`wall-identifier` skill (`gruntz sema diagnose <rva>`); a register/schedule
+`wall-identifier` skill (`gruntz walls diagnose <rva>`); a register/schedule
 wall on a complete, credible body is PARKED with `@early-stop` and its
-byte-level reason (bounded walls go to `wall-break.md`), not ground.
+byte-level reason (a bounded wall is parked with `@early-stop`), not ground.
 
 - A targeted, hypothesis-named hand A/B spelling is allowed as a disposable
   experiment; keep only the winning spelling.
@@ -146,9 +146,10 @@ byte-level reason (bounded walls go to `wall-break.md`), not ground.
 - If unchanged function source reaches exact under a disposable TU state, bank
   MAX while exact, remove the perturbation, rebuild, and retain the historical
   proof.
-- Stop grinding once controlled evidence bounds a residue. Record it in
-  `wall-break.md` with the before/after historical MAX, retained lever, negative
-  controls, and remaining mismatch class. Keep history out of C++ comments.
+- Stop grinding once controlled evidence bounds a residue. Park it with
+  `@early-stop` and report the before/after historical MAX, retained lever,
+  negative controls, and remaining mismatch class. The worklist itself is DERIVED
+  (`gruntz walls inventory`), never hand-kept. Keep history out of C++ comments.
 
 `@early-stop` is permitted only for a complete reconstruction with a reproducible
 bounded residue. It never excuses missing logic, wrong referents, or an unresolved
@@ -160,7 +161,7 @@ Before committing:
 
 1. Recheck the target's branch structure, raw constants, and ordered
    relocations/referents.
-2. Run `gruntz format` only on the intended tree; never format `vendor/`.
+2. Run `clang-format` only on the intended tree; never format `vendor/`.
 3. Stage only the focused source and documentation before the full build so a
    new MAX is banked against the intended fingerprint.
 4. Run full `gruntz build`.

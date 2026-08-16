@@ -65,8 +65,8 @@ retail); see
 
 `&Temporary()` is a hard error in clang (`-Waddress-of-temporary`), and the build's
 annotation reader, the record-layout dumper and the clangd DB are all clang. The
-three flag sites (`gruntz.core.ir`, `gruntz.build.ghidra_metadata_generate`,
-`gruntz.init.clangd`) now pass `-Wno-address-of-temporary`. That is byte-neutral -
+three flag sites (`gruntz.tool.clang`, `the retired Ghidra metadata generator`,
+`gruntz.graph.compdb`) now pass `-Wno-address-of-temporary`. That is byte-neutral -
 clang never produces object code here.
 
 ## The other half: a payload struct built as a stack temporary

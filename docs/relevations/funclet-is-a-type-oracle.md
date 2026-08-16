@@ -28,7 +28,7 @@ name, in the binary. If retail's funclet jumps to `zBitVec::~zBitVec` and ours j
 `CUserBaseLink::~CUserBaseLink`, the two builds disagree about *what that member is* — not
 about how to schedule instructions.
 
-The census that reads this is `python -m gruntz.audit.eh_band --census`, and its
+The census that reads this is `gruntz.delink.eh_band --census`, and its
 `different-targets` bucket is the type-defect bucket:
 
 ```
@@ -179,7 +179,7 @@ function's own bytes.
 
 ## How to use this
 
-1. `python -m gruntz.audit.eh_band --census --top 40`.
+1. `gruntz.delink.eh_band --census --top 40`.
 2. Work the **`different-targets`** rows first. Each says: *the object at this frame slot is
    not the type we think it is.* Read the two jump targets; the retail one names the truth.
 3. `frame-offset` rows are the weaker sibling — our locals are laid out differently (an

@@ -1,7 +1,7 @@
 # A `switch`'s arm BODIES come out in SOURCE order — read the retail index table to recover it
 
 tags: cpp:switch | asm:jmp asm:cmp | topic:codegen-idiom topic:tooling
-symptoms: a switch-heavy function is stuck in the high 90s; `sema disasm --diff` shows a
+symptoms: a switch-heavy function is stuck in the high 90s; `gruntz walls diagnose --asm` shows a
   huge one-sided hunk starting at `jmp dword ptr [reg*4]` because the BASE side is truncated
   there; once the whole COMDAT is read, two arm bodies appear in the opposite order and every
   other instruction agrees; or the code agrees completely and only the byte index table differs
@@ -14,7 +14,7 @@ is invisible in the dispatch and shows up only as two bodies swapped in `.text`.
 
 ## Why the diff hides it
 
-`sema disasm --diff` (and `--blocks --diff`) stop the BASE side at an in-function
+`gruntz walls diagnose --asm` (and `gruntz walls diagnose --asm`) stop the BASE side at an in-function
 `jmp dword ptr [reg*4]`, so everything after the dispatch reads as a target-only
 addition. `llvm-objdump -d` on the base obj is not enough either: it restarts its
 listing at every `$L…` label, so a naive "grab the lines under `<sym>`" also stops at
@@ -94,7 +94,7 @@ Order alone, on the same TU: `CStatusBarMgr::UpdateStatusBarTabHighlight` @0xfe9
 seven arms, table 0x4ff4a0 sorting to tab 0,5,1,4,2,3,6 against our ascending
 0..6 — **55.34 → 85.03 from the reorder alone**.
 
-Trap that hides this whole family: `sema disasm --base` and `--diff` stop at the
+Trap that hides this whole family: every symbol-scoped disassembly stops at the
 indirect `jmp`, because llvm-objdump's `--disassemble-symbols` restarts at the `$L`
 label the table lives under. A one-sided `@@ -1,15 +1,497 @@` hunk is that
 truncation, not a 480-instruction divergence — dump the whole section and cut it at

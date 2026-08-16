@@ -1,6 +1,6 @@
 # The gap between `Fuzzy` and `Fuzzy Max` — what is actually in it
 
-`gruntz status` / the README print two numbers per module:
+`gruntz verify status` / the README print two numbers per module:
 
 ```
 | Module   | Units |       Functions exact |  Fuzzy | Fuzzy Max |
@@ -12,7 +12,7 @@ functions now below their peak. Every point of that gap is **a source state we h
 and lost**. Nobody had ever opened the set. This is what is in it, why, and what to
 do differently.
 
-Tool: `python -m gruntz.audit.max_divergence [--history]`.
+Tool: `gruntz walls inventory [--history]`.
 
 The history cache also retains every per-function source fingerprint that actually
 earned a peak. `--history --same-source-only` separates code that merely resembles
@@ -163,7 +163,7 @@ Ranked by points, with the mechanism each one turned out to be:
 each with a recorded peak of 100.000%. A uniform score across dozens of functions is
 never regalloc; it is one shape.
 
-**Evidence** (`gruntz sema disasm 0x0003d3f0 --diff --lite`, `_CreateExitTrigger`):
+**Evidence** (`gruntz walls diagnose 0x0003d3f0 --asm`, `_CreateExitTrigger`):
 
 ```
  cmp eax,0x1d
@@ -221,18 +221,21 @@ and read it as regalloc noise.
 
 Concrete, in the order they pay:
 
-1. **A campaign that retypes a `switch` selector re-runs
-   `python -m gruntz.audit.jcc_sieve --summary` before it lands.** Enum domains,
+1. **A campaign that retypes a `switch` selector re-checks the branch shape of
+   every function it touched before it lands** (`gruntz walls diagnose <rva>`
+   prints both sides' branch counts; the tree-wide jcc sieve is retired). Enum domains,
    `i32` → named type, swapping a raw read for a typed accessor — all of them can
    flip a signed ladder to unsigned or back. 63 EXACT functions, one command.
 2. **A campaign that edits a shared header measures the TREE, not its own
    functions.** Cross-TU ripple is 57% of all fall events. It is invisible from
-   inside the lane's unit. `gruntz status check` after the change, and put the
+   inside the lane's unit. `gruntz verify check` after the change, and put the
    collateral count in the commit message — `88798ee98` cost 62 functions 2,330
    points and said nothing.
-3. **`--accept-regressions` must record what it flattened.** Today it silently
-   rewrites `best = cur`; 1,274 rows / 6,851 points have gone that way since the
-   ratchet was fixed, and 2,512 more went before it. Until the tool logs them, use
+3. **Blessing a regression must record what it flattened.** The old
+   `--accept-regressions` silently rewrote `best = cur`; 1,274 rows / 6,851 points
+   went that way after the ratchet was fixed and 2,512 before it. `hist_pct` is the
+   answer that landed: it never resets, so a flattened `best` still leaves the peak
+   visible as known headroom. Until a bank logs them explicitly, use
    `max_divergence --history`, which reads the peaks back out of git.
 4. **Do not chase a partial peak recorded before 2026-07-10.** A different scorer
    produced it. `--history` marks these `[pre-bump peak]`. A **100.0** peak from any
@@ -278,13 +281,14 @@ Concrete, in the order they pay:
 ## 7. Incidental fixes made while measuring
 
 - **`config/labels_manifest.tsv` at `638503cf4` was unbuildable from clean.** That
-  commit's cherry-pick restored `gamelevel 75`; the tree emits 74 (lowered by
-  `03a16f99e`), so `labels.py`'s denominator gate fails any build that actually
-  re-runs `merge_labels`. `main` did not notice because the manifest is not a ninja
-  input, so the edge never re-ran. Corrected to 74.
-- **`gruntz.core.branches` raised on `jecxz`**, taking `jcc_sieve` down entirely.
-  cl5 does emit it ahead of an inline `rep` block. Added to `JCC` (no signed/unsigned
-  twin, so a flip involving it lands in `OTHER`).
+  commit's cherry-pick restored `gamelevel 75`; the tree emitted 74 (lowered by
+  `03a16f99e`), so the label denominator gate failed any build that actually re-ran
+  the merge. `main` did not notice because the manifest was not a ninja input, so
+  the edge never re-ran. Corrected to 74. (The manifest itself is retired - the
+  Model is the denominator now, and every one of its inputs is a graph input.)
+- **The branch decoder raised on `jecxz`**, taking the whole jcc sieve down.
+  cl5 does emit it ahead of an inline `rep` block. It had to be added to the JCC
+  set (no signed/unsigned twin, so a flip involving it lands in `OTHER`).
 
 ---
 
@@ -306,7 +310,7 @@ not.**
 | two DIFFERENT worktrees, different absolute paths, same commit | identical |
 | INCREMENTAL (built at `c088e0a6f`, then `git checkout` HEAD, rebuild) vs from-scratch | identical |
 
-`build/gen/symbol_names.csv` is identical too. Two independent `cl` invocations on the
+`build/gen/bindings.tsv` is identical too. Two independent `cl` invocations on the
 same source differ in exactly **2 bytes** — the COFF header `TimeDateStamp` at offset
 4 — which is why every base `.obj` md5 changes between runs while nothing downstream
 does. 27 of 343 delinked target objs also differ byte-wise run to run, and likewise
@@ -314,7 +318,7 @@ score identically. **Do not chase an obj-hash difference; chase `report.json`.**
 
 ### What actually moved: the baseline is a hand-taken snapshot with no provenance
 
-`cur_pct` records the build that the last `python -m gruntz.match.status update` saw.
+`cur_pct` records the build that the last `gruntz verify status update` saw.
 **Nothing regenerates it.** `gruntz build` only *reads* the file (`status check`); the
 integrate step banks `README.md` automatically (it is written inside the build, by
 `status summary --write-readme`) but the baseline only ever changes when a human runs
@@ -336,7 +340,7 @@ enough: **a baseline that cannot reproduce launders regressions.**
 ### Two real tool bugs found underneath it
 
 Both were `cmd_check` disagreeing with `cmd_update` about the same row. Fixed, and
-pinned by `TestCheckReportsWhatUpdateAlreadyKnows` in `gruntz.match.gate_selftest`.
+pinned by `TestCheckReportsWhatUpdateAlreadyKnows` in `gruntz verify selftest`.
 
 1. **TOUCHED pre-empted REGRESS.** `classify` tested `real_edit()` *before*
    `pct < best`, so an **edited** function's drop below its own high-water was never

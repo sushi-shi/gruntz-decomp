@@ -15,8 +15,8 @@ whichever arm the source puts FIRST as the branch-not-taken fall-through:
 | `if (elapsed >= g) g = 0; else g -= elapsed;` | `jb <subtract-arm>` … zero store falls through |
 
 Retail is the **second** form everywhere this appeared. The tell is purely the
-condition-code twin (`jae` vs `jb`), which `gruntz sema disasm --branches --diff` and
-`python -m gruntz.audit.jcc_sieve` both surface directly — the instruction multiset is
+condition-code twin (`jae` vs `jb`), which `gruntz walls diagnose` and
+`gruntz walls diagnose <rva>` surfaces it directly — the instruction multiset is
 identical, so a flat `--diff` looks like harmless "block reordering" and is easy to
 dismiss as a layout wall.
 

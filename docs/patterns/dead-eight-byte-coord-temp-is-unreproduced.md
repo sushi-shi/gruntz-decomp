@@ -69,7 +69,7 @@ that uses it. **cl deleted the local in every one.**
 reach - the TU declaration count that re-colours other functions
 ([declaration-count-window-steers-regalloc.md](declaration-count-window-steers-regalloc.md))
 - is dead flat here. 50 `tu_state_*` island cells per function
-(`match_variants --families "" --state-trials 60`), across all ten families:
+(the retired permuter), across all ten families:
 
 | fn | rva | cells | result |
 |---|---|---|---|

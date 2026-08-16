@@ -4,16 +4,16 @@ Tracked targets for the reconstruction's **type/call/name layer** — the goal i
 clean, portable C++ source (the single source of truth), not just byte-matches.
 Each metric is matching-neutral to drive toward its target unless noted.
 
-**Live tracking.** These counts are computed by `gruntz.cleanliness.board`
+**Live tracking.** These counts are computed by `gruntz verify board`
 (comment- and string-stripped, so prose/`//` annotations don't inflate) and printed
-in the **`gruntz build` report** right under the match summary, each with a **delta
-vs the committed text/semantic baselines** (`config/cleanliness/cleanliness-*-baseline.tsv`) —
-`down = good`. So a
-matcher sees its own cast/placeholder/view change the moment it builds and steers on
-it. Normal builds measure only the fast text metrics; `gruntz build --full` also
-measures the build/IR-derived semantic metrics. Bless text floors with
-`python -m gruntz.cleanliness.board --update`, or both families with
-`python -m gruntz.cleanliness.board --semantic --update` (the
+as the fast tier's `board` gate, each with a **delta vs the committed
+text/semantic baselines** (`config/cleanliness/cleanliness-*-baseline.tsv`) —
+`down = good`. So a matcher sees its own cast/placeholder/view change the moment
+it builds and steers on it. The default build measures only the fast text
+metrics; `gruntz verify check --tier full` also measures the build/IR-derived
+semantic metrics. The gate NEVER writes a baseline: bless text floors with
+`gruntz verify board --update`, or both families with
+`gruntz verify board --semantic --update` (the
 orchestrator refreshes it at integration, like `match_baseline.tsv`).
 
 **No counts are written down here.** The tables below name each metric's row key in
@@ -70,7 +70,7 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 | directly nested casts | `nested static_casts` (semantic baseline) | 0 through correct typing/conversions — inspect the reported source/intermediate/final types; never hide a pair in a helper/local |
 | hand-rolled vtables | `*Vtbl structs`, `->vtbl accesses`, `g_*Vtbl globals`, `m_vtbl/m_vptr members`, `placeholder vtable slots` | 0 — model real virtuals |
 | `.cpp` extern decls / external prototypes | `cpp extern decls`, `cpp external prototypes` | 0 (declare in the owning header) |
-| the same symbol `extern`-declared in 2+ headers (or twice in one) | `duplicate header externs` | 0 — **one** declaration, in the owner header, which consumers `#include`. List them with `python -m gruntz.cleanliness.board --dup-externs` |
+| the same symbol `extern`-declared in 2+ headers (or twice in one) | `duplicate header externs` | 0 — **one** declaration, in the owner header, which consumers `#include`. List them with `gruntz verify board --dup-externs` |
 
 > `cpp extern decls` reads 0 and always did once the .cpp copies were drained — but the
 > construct had simply moved into headers, where that metric does not look: 52 symbols
@@ -92,16 +92,21 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 
 | metric | command | state |
 |---|---|---|
-| Vtable catalog | `python -m gruntz.cleanliness.class_vtables --assert-unique` | **FATAL** — catalog rows are structurally valid (proven-absent `??_7` carry `VTBL_ABSENT`) |
-| src claims ∩ functions_static_libs.tsv | `python -m gruntz.match.verify_library_overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
-| stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | **FATAL** |
-| compiler-generated DATA pins | `python -m gruntz.audit.compgen_data` | **FATAL** — spelling + authority + binding + COVERAGE (every COFF COMMON in any base obj is pinned in `config/retail/data_compgen.tsv`) |
-| narrow-complement masks | `python -m gruntz.audit.mask_immediates` | `truncated masks` (semantic baseline), ratcheted at **0** — our base masks a 32-bit word with the 8/16-bit complement of retail's constant (`andl $0xdf` vs `andb $0xdf`), so the write clears the intended bit AND everything above the byte. Always a width or union-member slip; NOT the MSVC5 enum story (`docs/patterns/enum-complement-is-sixteen-bit.md`). Full mode also prints every base-vs-target mask-constant difference — the wrong-magic-number class objdiff's masked diff hides |
+| Vtable catalog | `gruntz verify vtables` | **FATAL** — catalog rows are structurally valid; a class whose `??_7` retail never emitted simply has no `data_vtables.tsv` row |
+| src claims ∩ functions_static_libs.tsv | `gruntz verify library-overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
+| compiler-generated DATA pins | `gruntz delink` | **FATAL** — every `class=common` row in `config/retail/data_compgen.tsv` must be emitted as a COFF COMMON by some base obj, and a COMMON with no emitting obj is an error |
+
+The `truncated masks` row survives in the semantic baseline at **0** with no
+instrument behind it — the immediate-mask sieve is retired (see
+[tooling-map](tooling-map.md)). The defect it caught: our base masks a 32-bit
+word with the 8/16-bit complement of retail's constant (`andl $0xdf` vs
+`andb $0xdf`), so the write clears the intended bit AND everything above the
+byte. Always a width or union-member slip; NOT the MSVC5 enum story
+(`docs/patterns/enum-complement-is-sixteen-bit.md`).
 
 ## Match (the binary-matching goal)
 
-`python -m gruntz.match.status --report build/objdiff/report.json summary`, or just
-`gruntz status`. Never write the number down — see the note at the top of this file.
+`gruntz verify status`. Never write the number down — see the note at the top of this file.
 
 ## Workstreams
 
@@ -111,17 +116,18 @@ reconstruct real calls.
 
 ## Aggregate suspicion queues
 
-Cast counts cannot detect a flattened aggregate when code legally takes the address of
-its first scalar field. Run `python -m gruntz.audit.flattened_aggregates` to find every
-integer or floating-point pointer initialized from a scalar member/global, plus I/O that
-spans beyond a scalar's declared extent. Pointer indexing and arithmetic strengthen a
-row but are not required for reporting: the scalar address escape is itself suspicious.
-This is an investigation queue, not a ratchet; confirm each row from retail accesses and
-serialization boundaries before regrouping fields.
-
-For the other global form—multiple `DATA()` symbols pinned at interior offsets of one
-typed object—run `python -m gruntz.audit.shredded`. That audit uses compiler-derived
-object extents; mere RVA adjacency is not treated as proof that globals share an owner.
+Cast counts cannot detect a flattened aggregate when code legally takes the
+address of its first scalar field. The shape to look for: an integer or
+floating-point pointer initialized from a scalar member/global, plus I/O that
+spans beyond a scalar's declared extent. Pointer indexing and arithmetic
+strengthen a row but are not required: the scalar address escape is itself
+suspicious. The other global form is multiple `DATA()` symbols pinned at
+interior offsets of one typed object — the Model reports the interior claim, and
+`gruntz verify data-access` reports what retail actually touches there. Mere RVA
+adjacency is never proof that globals share an owner; confirm each row from
+retail accesses and serialization boundaries before regrouping fields. (The two
+one-shot discovery scans that first produced these queues are retired — see
+[tooling-map](tooling-map.md).)
 
 
 ## Numeric-domain metrics (the enum campaign)
@@ -138,20 +144,15 @@ Naming a value is matching-neutral - `docs/patterns/enum-domains.md` measures
 literal -> enumerator as leaving `.text` byte-identical - so all of this is pure
 debt, not a trade-off against the score.
 
-Two companion gates run beside them:
+One companion gate runs beside them: **`gruntz verify enum-domains`** (fast
+tier) — a `_SPLIT` domain's declared storage must match every `GZ_ENUM_STORAGE`
+width used for it, no bare `enum X {` outside the macros (single-enumerator tag
+types exempt), range tests name boundaries rather than members, and enumerator
+names follow the domain convention. Negative controls live in
+`gruntz verify selftest`.
 
-- **`gruntz audit enum-domains`** (`--gate`, normal tier) - split-domain storage
-  widths must agree tree-wide, no bare `enum` in a header (single-enumerator tag
-  types exempt), range tests name boundaries rather than members, and enumerator
-  names follow the domain convention. Negative controls live in
-  `gruntz.match.gate_selftest`.
-- **`gruntz audit strict-enums`** - compiles the tree at `/std:c++20`, where the
-  domains become `enum class`, and reports what the MSVC build cannot see: a
-  domain used as a raw array index, a domain silently widened through an `i32`
-  parameter, two domains conflated behind one `i32`. Floor in
-  `config/cleanliness/strict-enums-baseline.tsv`. **Expect the count to RISE before it falls**
-  — it measures how much of the tree still treats domains as ints, so declaring a
-  new domain increases it until that domain's consumers are typed. It is NOT
-  drivable to zero mechanically: the residual sites each need a judgement about
-  which domain an integer carries, and some carry more than one. Ratcheted
-  down-only; drain with evidence, never by guessing a type.
+The `/std:c++20` strict-enum probe that once ran beside it (compiling the tree
+with the domains as `enum class`, to surface a domain used as a raw array index
+or silently widened through an `i32`) is retired along with its baseline file.
+The judgement it demanded stands: which domain an integer carries is decided
+from evidence, never guessed.

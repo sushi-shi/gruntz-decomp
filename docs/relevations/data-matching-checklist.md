@@ -24,7 +24,7 @@ getting it wrong.
 | 2 | **wrong extent** | slack is zero-filled and looks like padding | §2 |
 | 3 | **wrong referent** | placeholder bytes match; the pointer aims elsewhere | §3b |
 | 4 | **wrong addend** | `sym+K` — stored INLINE in the masked displacement | §3c |
-| 5 | **wrong field read/written** | same instruction, different offset | `store_offsets` |
+| 5 | **wrong field read/written** | same instruction, different offset | `gruntz verify data-access` |
 | 6 | **wrong TYPE** | destruction path only | `funclet-is-a-type-oracle.md` |
 | 7 | **absent entirely** | a body retail expanded and we call; no percentage measures absence | `eh-band-is-where-a-declined-inline-shows.md` |
 
@@ -34,14 +34,12 @@ bias, do not trust the pin. (`g_clut` shipped a rendering bug for months this wa
 ## Tools, in build order
 
 ```
-gruntz audit data_access_map --symbol <name|rva>   # is it even compared? --findings unclaimed
-gruntz audit data_denominator                      # the reachability partition (regenerate, review)
-gruntz audit data_relocs / assert_relocs           # is the referent right?
-python -m gruntz.audit.reloc_addends               # is the ADDEND right? (multisets, not positions)
-python -m gruntz.audit.store_offsets               # is it WRITTEN where retail writes it?
-python -m gruntz.audit.immediates --strong         # is a bare constant wrong?
-python -m gruntz.audit.eh_band --census / --check  # is the TYPE right?
-python -m gruntz.audit.link_sections --undersized  # is the extent right?
+gruntz verify data-access --symbol <name|rva>  # is it even compared? --findings unclaimed
+gruntz verify data-coverage                    # the claim-side gap census
+gruntz verify data-relocs / assert-relocs      # is the referent (and its ADDEND) right?
+gruntz walls diagnose <fn> --asm               # is it WRITTEN where retail writes it?
+                                               # and is a bare constant wrong?
+gruntz verify data-access --at <rva>           # is the TYPE / width right at one address?
 ```
 
 ## Scoring config that must be deliberate

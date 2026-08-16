@@ -39,7 +39,7 @@ on the base obj agrees; it is cl, not the delinker.
 
 ## The block-skeleton symptom is the SAME defect
 
-`gruntz sema disasm <rva> --blocks --diff --lite` on the victims reports a large block
+`gruntz walls diagnose <rva> --asm` on the victims reports a large block
 divergence (e.g. `base 70 vs target 52` for `SetPoint`) whose first row is a set of
 short arms all `jmp`-ing to one tail where retail has a different shape. That is not an
 independent "switch-arm" problem to attack separately:
@@ -120,7 +120,7 @@ instruction-sequence diff; none restores the destructor.
 
 ## How to spot it
 
-`gruntz sema disasm <rva> --base` and count the destructor in the function's
+`gruntz walls diagnose <rva> --asm` and count the destructor in the function's
 relocations — the in-body ones only, i.e. skip the `mov eax, DWORD PTR $T…[ebp-4]`
 unwind funclets:
 

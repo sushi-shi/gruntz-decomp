@@ -59,7 +59,7 @@ a `volatile` local, a named result local, `== 0` instead of `!`, or an interveni
 store changes it (all seven measured on a `if (!m_p) goto fail; if (!m_p->IsLoaded())
 goto fail; ... fail: return 0;` probe).
 
-Screen: `python -m gruntz.audit.exit_merge_sieve --dup` (base ret count > target's).
+Screen: `gruntz walls diagnose <rva>` (base ret count > target's).
 
 Measured 2026-08-08:
 `CSBI_ImageSetAni::Init` 0xe7980 88.49 -> 96.43 (rets 6->4, exits byte-exact),

@@ -8,7 +8,7 @@ You are the **parallel match orchestrator** in the top-level session (so you CAN
 dispatch subagents). Drive the campaign per **`.claude/agents/orchestrator.md`**
 (fan-out pool + serial integration; target cross-check, STOP-EARLY, `@early-stop`,
 COMMIT-EACH-MATCHER) and **`.claude/agents/matcher.md`** (the reconstruction doctrine
-+ the `permute` skill at walls). There is **no module**
++ the `wall-identifier` skill at walls). There is **no module**
 to pick — Gruntz is a single binary; go straight to building the queue.
 
 Pool size / concurrency: **N = $1** (if empty, default **4** — the provisioned
@@ -34,8 +34,8 @@ In short (full rules in the two agent docs):
    So a restart of this command does NOT regenerate the pool. Verify one can `gruntz build`
    before dispatching; add/remove slots to match N.
 2. **Queue:** regenerate the worklist in a build shell —
-   `nix develop .#build --command python3 -m gruntz.match.residual_queue` — then read
-   `build/gen/residual_function_queue.tsv` (via `python -m gruntz.match.residual_queue`). **Filter out already-reconstructed RVAs** (orchestrator.md target cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
+   `gruntz walls inventory` — then read
+   `gruntz walls inventory`'s output (via `gruntz walls inventory --json`). **Filter out already-reconstructed RVAs** (orchestrator.md target cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
    and skip anything already `@early-stop`. **Target priority — drain these BEFORE any
    %-recovery of already-matched functions:** (1) the `@stub` backlog (`src/Stub/` —
    biggest files first: ApiCallers, Backlog, Discovered, then the per-class tail), and
@@ -51,7 +51,7 @@ In short (full rules in the two agent docs):
    per dispatch; if one TU/cluster can't supply 20, extend to a sibling TU to reach it).
    Each prompt: absolute worktree path +
    `cd` there first, absolute paths everywhere, the target RVAs/names/sizes/file, the 8-digit
-   address convention, STOP-EARLY + `@early-stop`, **forbid `gruntz format` in the worktree**,
+   address convention, STOP-EARLY + `@early-stop`, **forbid `clang-format` in the worktree**,
    allow stub→real-TU migrations, and report the final % + a one-line summary + the full
    `git diff`. **Lane discipline:** route all targets of one multi-stub file through ONE slot
    (avoids same-file integration collisions); other slots take distinct-file targets.
@@ -62,7 +62,7 @@ In short (full rules in the two agent docs):
    means "I banked my best %", not "I produced nothing".
 4. **Integrate SERIALLY (the heart):** process completed matchers one at a time —
    guard main clean → apply only that matcher's file(s) → `gruntz build` → confirm % →
-   `gruntz status update` (`--accept-regressions` only for a migration's LOST stub or
+   `gruntz verify bank` (`--accept-regressions` only for a migration's LOST stub or
    trivial cross-fn fuzzy drift) → commit ONLY those files + `config/match_baseline.tsv`
    as `match: <fn> -> <result>` with the Co-Authored-By trailer — **always include the
    build-refreshed `README.md` stats block in that commit** (`gruntz build` regenerates it;
@@ -70,7 +70,7 @@ In short (full rules in the two agent docs):
    **ALWAYS integrate the matcher's banked work — never hold or revert for a small net-exact
    regression.** When a body added to a shared aggregate TU (e.g. `engine_label_stubs`/`All.cpp`)
    reshuffles neighbors and knocks one off 100% (aggregate codegen-leak), still integrate it and
-   `gruntz status update --accept-regressions`. The **best-%/Fuzzy Max** baseline column retains
+   `gruntz verify bank`. The **best-%/Fuzzy Max** baseline column retains
    each function's prior high, so nothing is truly lost — that metric exists precisely to capture
    these cases. **Net % movement (recovering such neighbor regressions, usually by re-homing the
    new body out of the shared aggregate into its own unit) is deferred to the end-of-campaign

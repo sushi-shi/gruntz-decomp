@@ -6,10 +6,12 @@
   `CGrunt::AdvanceMotion` @0x5f310 **64.14 -> 79.03** (-192 -> -71);
   `CGrunt::ScanNearestTarget` @0xf42f0 **51.30 -> 65.71** (-212 -> -54).
 
-## The tool
+## The method
 
-    python -m gruntz.audit.insn_seq <rva>          # histogram + sequence
-    python -m gruntz.audit.insn_seq <rva> --seq    # sequence only
+`gruntz walls diagnose <rva>` classifies the wall and, for the REFERENT class,
+prints the ordered relocation pairs that differ. For the general case build the
+sequence yourself: `gruntz sema dump <rva>` lists retail's relocation targets in
+program order, and the normalized base object carries the same list for our side.
 
 Keep only the instructions that CARRY a relocation, as `(mnemonic, symbol)` pairs
 in program order, and run difflib over the two sides. That list is the function's
@@ -17,8 +19,8 @@ in program order, and run difflib over the two sides. That list is the function'
 instruction stream it survives register allocation and block scheduling (the
 optimizer reorders *within* a block, not across a call).
 
-`insn_count` says a bug exists; the mnemonic histogram says which *idiom* is
-wrong; this says which *statement* is missing, extra or in the wrong place.
+The instruction count says a bug exists; the mnemonic histogram says which
+*idiom* is wrong; this says which *statement* is missing, extra or in the wrong place.
 
 ## Reading it
 
@@ -56,7 +58,7 @@ related:
 
 ## USE THE SHARED TOOL — do not rebuild the technique
 
-`python -m gruntz.audit.insn_seq <rva>` is the maintained implementation. A lane that
+`gruntz walls diagnose <rva>` is the maintained entry point. A lane that
 re-derived the same idea by hand shipped three false-positive bugs and acted on one,
 regressing `CGameLevel::ResolveFloorCollision` 94.65 -> 34.58 before catching it:
 

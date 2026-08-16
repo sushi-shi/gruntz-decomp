@@ -11,7 +11,7 @@ from a header-inline's local static has no owning TU, and a per-TU header-static
 copy's owner is positional — see `docs/build-system.md` § "Compiler-generated
 DATA pins"). Comments carry exactly one
 other kind of machine-visible content: **state markers**, a `// @name` leading a
-comment line. The vocabulary is CLOSED and gated (`gruntz.audit.label_style`,
+comment line. The vocabulary is CLOSED and gated (`gruntz verify label-style`,
 FATAL in the build tail): a comment line leading with any other `@name` fails the
 build — ad-hoc markers rot into pseudo-conventions no tool reads (the 2026-07-22
 sweep retired `@orphan`, `@flag`, `@fold-TODO`, `@identity-recovered`,
@@ -20,21 +20,20 @@ prose). Mid-line `@name` mentions are prose and stay free.
 
 | Marker | Read by | Meaning |
 |---|---|---|
-| `// @stub` | `gruntz.match.verify_stubs` (gate) | An empty, not-yet-reconstructed body. The contiguous `// @tag:` lines directly above it form its evidence block; `@confidence:` and `@source:` are REQUIRED. |
-| `// @confidence: high\|med\|low` | `verify_stubs` (required stub tag) | How solid the stub's identity evidence is. |
-| `// @source: <evidence>` | `verify_stubs` (required stub tag) | The identity evidence itself (`xref`, `vtable-slot`, `rtti-vptr`, `winapi:<fns>`, `string-xref`, …). |
-| `// @early-stop` | `gruntz.audit.stale_walls`; the final-sweep worklist is `rg '@early-stop' src` | A COMPLETE reconstruction parked below 100% match. Re-derive the current residue from disassembly; causal wall prose and percentages become stale. |
-| `// @identity-TODO` | `stale_walls`, doctrine in `CLAUDE.md` | An unproven class/owner identity — leave it, never fabricate. State what was tried / what would prove it. |
-| `// @interleaver <sym> …` | none (structured record) | A linker-pooled out-of-line member emitted INSIDE another unit's contribution range (see `docs/` interleaver notes + the `interleavers` tool that detects them from layout). Records the placement proof at the site. |
-| `// @dead-code` | `gruntz.cleanliness.board` (identity metric) | A PROVEN-zero-ref function — no rel32 caller, no data-slot, no `.text` address-taking anywhere in the image (verify with `gruntz sema xref` — the default `--tree` surfaces all three). Retail kept it (no `/OPT:REF`) but nothing reaches it, so its identity is genuinely unrecoverable and worthless to recover. The identity metric blanks the marked function, excluding its placeholder name like a library carve-out. MUST state the zero-ref proof — an unproven `@dead-code` is a lie. |
+| `// @early-stop` | `gruntz walls stale-markers`; the final-sweep worklist is `rg '@early-stop' src` | A COMPLETE reconstruction parked below 100% match. Re-derive the current residue from disassembly; causal wall prose and percentages become stale. |
+| `// @identity-TODO` | doctrine in `CLAUDE.md` | An unproven class/owner identity — leave it, never fabricate. State what was tried / what would prove it. |
+| `// @interleaver <sym> …` | none (structured record) | A linker-pooled out-of-line member emitted INSIDE another unit's contribution range (see `docs/` interleaver notes). Records the placement proof at the site. |
+| `// @dead-code` | `gruntz verify board` (identity metric) | A PROVEN-zero-ref function — no rel32 caller, no data-slot, no `.text` address-taking anywhere in the image (verify with `gruntz sema xref` — the default `--tree` surfaces all three). Retail kept it (no `/OPT:REF`) but nothing reaches it, so its identity is genuinely unrecoverable and worthless to recover. The identity metric blanks the marked function, excluding its placeholder name like a library carve-out. MUST state the zero-ref proof — an unproven `@dead-code` is a lie. |
 
 Rules of use:
 
 - A marker LEADS its comment line (`^\s*// @name`); everything after it on the
   line is free prose.
-- `@stub` / `@early-stop` / `@identity-TODO` are the three FUNCTION-STATE
-  markers (`CLAUDE.md`): a reconstructed method is either ~100% (unmarked) or
-  `@early-stop`; a stub is `@stub`; an unproven identity is `@identity-TODO`.
+- `@early-stop` and `@identity-TODO` are the FUNCTION-STATE markers
+  (`CLAUDE.md`): a reconstructed method is either ~100% (unmarked) or
+  `@early-stop`; an unproven identity is `@identity-TODO`. (`@stub`, with its
+  `@confidence:`/`@source:` tags, died with its campaign — zero `@stub` sites
+  remain in `src/`.)
 - Anything else you are tempted to tag — a TODO, a recovered identity, an
   orphan note, a naming conflict — is PROSE. Write the fact in words. The
   vocabulary is meant to stay this size: 99 times out of 100 the answer to the

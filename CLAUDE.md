@@ -110,8 +110,7 @@
   data extents. Do not split one retail object into overlapping globals, and do
   not invent an aggregate merely because it changes a score.
 - For polymorphic classes, derive declarations mechanically from
-  `gruntz sema class <Class>` or
-  `python -m gruntz.core.vtable_hierarchy --class <Class>`:
+  `gruntz sema class <Class>` (slot-by-slot, every vtable the class holds):
   inherited slots are not redeclared, overrides use `OVERRIDE`, and new slots
   are plain `virtual`. Never pad a vtable with dummy virtual methods.
 - Define a symbol or label only when evidence supports it. Never add fake code,
@@ -124,8 +123,8 @@
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
   A `$E` dynamic-init helper is pinned at its OWNER instead:
   `RVA_DYNINIT(rva, size, owner)` on the owning datum's definition line
-  (`gruntz.core.dyninit` scrapes the pins; the current build's ordinal is
-  derived from the emitting obj when needed, never stored).
+  (`gruntz labels` scrapes the pins into the `src_dyninit` channel; the current
+  build's ordinal is derived from the emitting obj when needed, never stored).
 - Compiler-generated data follows ONE rule: identity comes from the automatic
   oracles, and a pin exists only where they cannot reach. Use-site literals
   (pooled `??_C@` strings, `$T` FP-pool constants) are written bare — the
@@ -143,7 +142,8 @@
   `class=common` names the COFF COMMONs cl emits from a header-inline's local
   static (plus the `??_B` guard byte beside it, which has no source spelling at
   all) — no owning TU exists, so only the retail address is stated and
-  `gruntz.audit.compgen_data` re-proves the rest against the base objs;
+  `gruntz delink` re-proves the rest against the base objs' COMMON tables
+  (a row with no emitting base obj is an error);
   `class=copy` names the per-TU copies of header statics (the GruntDirStatics
   device), whose owner is the emitting TU. Details:
   `docs/data-attribution.md` §3b-iii.

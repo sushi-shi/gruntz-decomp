@@ -1,8 +1,8 @@
 # A spilled discriminant BLOCKS the `else if` jump-thread: the reload lands in the shared predecessor
 
 tags: cpp:if cpp:branch cpp:local | asm:jcc asm:mov asm:test | topic:wall topic:regalloc topic:codegen-idiom
-symptoms: `--branches --diff` reports equal branch counts and ONE `TOPOLOGY` row - one `jcc`
-lands one block later in retail than in the recompile - while `--diff` and `--blocks --diff`
+symptoms: `gruntz walls diagnose` reports equal branch counts and ONE `TOPOLOGY` row - one `jcc`
+lands one block later in retail than in the recompile - while `--diff` and `gruntz walls diagnose --asm`
 read identical instruction for instruction
 confidence: 8/10 (CDDrawShadeBlit::BlitCopyMirrored 0x149d00, 55/55 branches, one topology row)
 variants: masked-diff-hides-branch-target.md, over-merge-is-decided-before-layout.md

@@ -171,8 +171,8 @@ instrument found 3 groups where the real number is 11.
 ## How to run it
 
 ```
-python -m gruntz.audit.eh_band --census --top 40   # identical / different-targets / frame-offset / permuted
-python -m gruntz.audit.eh_band --check             # our maxState vs retail's, per group
+gruntz.delink.eh_band --census --top 40   # identical / different-targets / frame-offset / permuted
+gruntz.delink.eh_band --check             # our maxState vs retail's, per group
 ```
 
 Read a `--check` row like this:

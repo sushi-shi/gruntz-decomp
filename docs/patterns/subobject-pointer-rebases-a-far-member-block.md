@@ -3,7 +3,7 @@
 tags: cpp:member cpp:struct cpp:local | asm:add asm:lea asm:mov | topic:codegen-idiom topic:identity
 symptoms: retail spends one extra `add eax,0xNNN` and then uses `[eax]`/`[eax+0x4]`/`[eax+0xc]`
 where you emit `[eax+0x290]`/`[eax+0x294]`/`[eax+0x29c]`; retail's block is a few bytes
-SHORTER than yours (`python -m gruntz.audit.base_size` shows a positive delta); the FIRST
+SHORTER than yours (`gruntz walls diagnose <rva>` shows the byte-length delta); the FIRST
 store of the block still uses the full disp32 on both sides
 confidence: 9/10
 variants: member-aggregate-copied-not-field-by-field.md, i64-zero-store-batching-reveals-subobjects.md

@@ -62,7 +62,7 @@ return tmp;
 
 The second half is read straight off the branch: retail's `jg <assign>` means the *assigning* arm
 is the jump TARGET, so the source must test the inverse and let the do-nothing arm fall through.
-`gruntz sema disasm <rva> --branches --diff` names it (`#1 base jle -> target jg`).
+`gruntz walls diagnose <rva>` names it (`#1 base jle -> target jg`).
 
 ## Why it is not just "the positive gate"
 

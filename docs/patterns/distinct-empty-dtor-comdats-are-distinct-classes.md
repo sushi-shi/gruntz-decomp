@@ -35,7 +35,7 @@ mov  DWORD PTR [esi+0x10],edi
 ## Reading the retail side
 
 `eh_band --census` prints `retail -` when the funclet's target carries no name in
-`symbol_names.csv`, and `FUN_<va>` when it goes through an ILT thunk. Both mean
+the Model, and `FUN_<va>` when it goes through an ILT thunk. Both mean
 **an unpinned COMDAT**, not a missing function. Resolve the `e9` chain by hand and
 read the body:
 

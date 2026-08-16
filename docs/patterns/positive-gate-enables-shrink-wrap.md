@@ -357,7 +357,7 @@ and the disassembly of the `int` function is indistinguishable from a `void` one
 `void`, the empty returns cross-jump; declared `i32`, all three are byte-exact.
 0x115440 / 0x1154b0 / 0x115520 **94.29 -> 100.00 EXACT** each, and `SaveFrontBufferShotImpl`
 @0x114f00 **87.69 -> 100.00** on the identical flip. Sweep the tree for the rest with
-`python -m gruntz.audit.void_return_type`; the mechanism is
+`gruntz walls diagnose <rva>`; the mechanism is
 [void-return-collapses-the-guard-ret](void-return-collapses-the-guard-ret.md).
 
 So `rets N -> N+1` is *diagnosed, not actionable* only AFTER the declared return type has been

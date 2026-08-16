@@ -47,8 +47,8 @@ return 0;
     jmp    0x305dd          ; unconditional back-edge
 ```
 STEERABLE. `CBattlezMapConfig::IsCoordOccupied` 0x305b0 69.91 -> 92.15 with
-`--branches --diff` going from one POLARITY row to "branch sequences AGREE"; its
-residue is regalloc only afterwards. Screen for it with `--blocks --diff --lite`:
+`gruntz walls diagnose` going from one POLARITY row to "branch sequences AGREE"; its
+residue is regalloc only afterwards. Screen for it with `gruntz walls diagnose --asm`:
 retail has `1i [jmp B<n>^]` where the base has `1i [fall B<n>]`. The INVERSE
 direction (base takes the unconditional back-edge, retail the conditional one) is
 the epilogue tail-merge wall, not this.

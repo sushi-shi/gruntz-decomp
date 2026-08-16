@@ -1,7 +1,7 @@
 # `sub esp,N` is a LOCAL COUNT the masked diff hides - sweep the band for it
 
 tags: cpp:local cpp:array | asm:sub asm:mov | topic:codegen-idiom topic:audit
-symptoms: a function in the high 90s whose `--blocks --diff` and `--branches --diff`
+symptoms: a function in the high 90s whose `gruntz walls diagnose --asm` and `gruntz walls diagnose`
   are both clean and whose instruction count matches, yet it is not 100. The
   prologue's `sub esp,N` differs by a multiple of 4 and EVERY `[esp+K]`
   displacement after it is shifted by the same amount - which `--diff` shows as a

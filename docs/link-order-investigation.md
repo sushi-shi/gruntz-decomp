@@ -12,7 +12,7 @@ consequences for matching.
 > **See also** [tu-spatial-structure.md](tu-spatial-structure.md) — what sits
 > *inside* one TU's block (tight method runs vs. the exiled-destructor COMDAT
 > pools) and how to attribute *unnamed* functions to a class by RVA proximity
-> (`gruntz.audit.tu_layout` / `gen_attributed_stubs`).
+> (the retired TU-layout probe / `gen_attributed_stubs`).
 
 ## The missing tool: we can now link
 
@@ -41,7 +41,7 @@ function's link-assigned RVA and *source object*. Layout study uses
 ## The three-level layout model (verified)
 
 `scripts/gruntz/audit/link_order.py` cross-references the candidate `.map` (our link's
-RVA + object per function) with `build/gen/symbol_names.csv` (retail RVA → unit).
+RVA + object per function) with `build/gen/bindings.tsv` (retail RVA → unit).
 
 ### 1. Intra-TU order = source-definition order
 
@@ -105,7 +105,7 @@ game glue. These should be split into separate units as reconstruction proceeds.
   not-yet-matched ones; exact TU block boundaries need fuller coverage. The
   min-RVA ordering is the inferred link order, robust at the unit level.
 - A handful of wide-span units are driven by a single outlier function (a shared
-  inline, or a mislabel in `symbol_names.csv`) rather than true interleaving —
+  inline, or a mislabel in the Model) rather than true interleaving —
   worth a case-by-case look, not a layout conclusion.
 - `/OPT:ICF` (COMDAT folding) collapses identical functions to one address; retail
   used it, so some "missing" functions are folds, not gaps.
@@ -126,10 +126,11 @@ contributions append at the group tail in arrival order; nothing splits an obj's
 `.text`; libraries follow all command-line objs), band-start order stopped being
 a heuristic and became a reading of the original link line.
 
-`gruntz.audit.link_line` derives it from four independent inputs and
-cross-checks them:
+It was derived from four independent inputs, cross-checked (the derivation
+tool is retired — see [tooling-map](tooling-map.md) — but the tsv it produced is
+tracked and the inputs are re-readable):
 
-  * **band extents** — RVA() pins per unit (the tu_order_check universe;
+  * **band extents** — RVA() pins per unit (the `gruntz verify tu-order` universe;
     kept-COMDAT exiles + the 3 demo-oracle ilink moves excluded, outliers peeled
     by the same gap law);
   * **the incremental-thunk oracle** — a thunk target PROVES a band's obj was on
@@ -150,12 +151,9 @@ kept inside a host's contribution). 48 units sit in interleaving bands (the
 tu-partition backlog) - order between those members is ambiguous until the
 partitions are fixed.
 
-    python -m gruntz.audit.link_line             # derivation report
-    python -m gruntz.audit.link_line --emit      # regenerate the tsv
-    python -m gruntz.audit.link_line --check     # gate (build --full): re-derives
-    python -m gruntz.audit.link_line --objlist F # obj order for `gruntz link --order F`
-    python -m gruntz.audit.link_line --measure M # a candidate .map vs the derivation
-    python -m gruntz.audit.link_line --exiles    # kept-COMDAT keeper prediction
+`gruntz link --order <file>` still consumes an object order, so the tracked tsv
+is directly usable as a link-line experiment; measuring a candidate `.map`
+against it is a Kendall-tau over the two orders.
 
 **Measured (2026-08-09, real link.exe):** linking with the derived order takes
 the candidate's cross-TU order from Kendall-tau distance **0.4508** (alphabetical
@@ -182,11 +180,13 @@ ledger's `levelplane` (which starts 0x48 after it) — the ledger hosts there we
 recorded against sprawling spans, and the referencer vote says the group is
 gamelevel's deferred-inline tail.
 
-`gruntz link` gives the candidate; **`gruntz audit exe-diff`**
-(`gruntz.audit.exe_diff`) diffs that whole image against retail — one level up
-from per-object objdiff. It parses both PEs (headers / section table), name-aligns
-every reconstructed function (candidate `.map` RVA ⇄ retail `symbol_names.csv` RVA),
-and reports layout + linked-byte fidelity. The tracked numbers, measured at
+`gruntz link` gives the candidate; **`gruntz verify check --tier link`** diffs it
+against retail — one level up from per-object objdiff. It parses both PEs
+(headers / section table), name-aligns every reconstructed function (candidate
+`.map` RVA ⇄ the Model's retail RVA), and reports layout + linked-byte fidelity.
+The whole-image layout percentages below came from an exploratory mode of the
+retired image-diff instrument (see [tooling-map](tooling-map.md)); the live tier
+carries the gate-bearing half. Measured at
 1868/3354 objdiff-exact (65.5% fuzzy):
 
 | number | now | what moves it |

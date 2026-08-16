@@ -121,7 +121,6 @@ almost always a member or global that wants to be unsigned.
 
 ## Related
 
-- [masked-diff-hides-branch-target](masked-diff-hides-branch-target.md) — `python -m
-  gruntz.audit.jcc_sieve` enumerates these tree-wide.
+- [masked-diff-hides-branch-target](masked-diff-hides-branch-target.md) — `gruntz walls diagnose <fn>` names the class.
 - [if-body-owns-the-fallthrough](if-body-owns-the-fallthrough.md) — the other single-flip family
   (block layout rather than operator).

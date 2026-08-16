@@ -4,7 +4,7 @@
 
 ## Symptom
 
-`gruntz audit reloc_multiset` reports, in one function, our base naming a static
+`gruntz verify assert-relocs` reports, in one function, our base naming a static
 and the delinked target naming something else at the same place:
 
 ```

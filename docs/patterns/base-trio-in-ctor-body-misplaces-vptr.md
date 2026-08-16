@@ -53,4 +53,4 @@ forces cl's implicit vptr-first store"), `CAniAdvanceCursor::CAniAdvanceCursor` 
 ctors*), `CDDrawWorkerHost::CDDrawWorkerHost` @0x1615a0 67.71 → **100**, and
 `CGameObject::EnsureWorker80/88/90` @0x150eb0/0x150f90/0x151070 90.82 → **100** each (there the
 whole inline ctor had been hand-spelled with the vptr store dropped — 6 bytes short of the
-annotated size, which `gruntz.audit.base_size` shows and objdiff cannot).
+annotated size, which `gruntz walls diagnose <rva>` shows and objdiff cannot).

@@ -41,7 +41,7 @@ or   ax,[edi+edx+table0]
 STEERABLE only through authentic TU composition. Use the effect in reverse when an
 otherwise-correct later function has a scheduling/register residue: restore missing
 retail predecessors and their real control-flow shape, in evidence-backed ownership and
-order, then remeasure. `gruntz permute variants ... --state-trials` can test whether the
+order, then remeasure. the retired permuter can test whether the
 residue belongs to this family. Never add fake functions, padding, declarations, or
 reorder proven owners solely to select a compiler state; preserve MAX-fuzzy while the
 real predecessor set lands.

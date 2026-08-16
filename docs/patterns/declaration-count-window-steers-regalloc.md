@@ -25,11 +25,11 @@ Put N throwaway prototypes above the first project include and sweep N:
 ```
 
 ```
-python -m gruntz.permute.match_variants <src> <rva> --max-depth 0 --axes-from a.json -o m.json
+the retired permuter <src> <rva> --max-depth 0 --axes-from a.json -o m.json
 python - <<'EOF'
 import json; p='m.json'; d=json.load(open(p)); d.pop('candidates',None); json.dump(d,open(p,'w'))
 EOF
-python -m gruntz.permute.batch_source_variants m.json --limit 32 --top 8
+the retired permuter m.json --limit 32 --top 8
 ```
 
 `CRezImage::FillRectAt` 0x176da0, N = 0..24 - a clean **period 16 with an 8-wide window**:

@@ -5,7 +5,7 @@ delinker's "per-unit target packing" (a distant rva mis-packing a unit's `.text`
 block). **That mechanism is false.** Reproduced end-to-end in a throwaway worktree:
 
 - **The delinker is innocent.** Re-attributing `CBrickzGrid::ComputeCellFlags`
-  (0x77790) brickz→rockbreakparticles in `symbol_names.csv` and re-delinking *with no
+  (0x77790) brickz→rockbreakparticles in the Model and re-delinking *with no
   base recompile* — the exact "far rva into a distant unit" the old note blamed — left
   `BuildRockBreakParticles` at **80.82 → 80.74%** (unchanged), `ApplyMove` 70.13 → 70.09.
   `object_files.rs` groups functions by the PDB line-program file and `append_section_data`s

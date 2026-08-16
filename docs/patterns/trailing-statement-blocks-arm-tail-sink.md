@@ -1,6 +1,6 @@
 # cl sinks identical TRAILING STATEMENTS out of sibling arms — a differing last statement blocks it
 tags: cpp:branch cpp:if cpp:local cpp:return | asm:jmp asm:call | topic:codegen-idiom topic:tail-merge
-symptoms: retail emits two if/else arms in FULL (equal-length blocks, ~20i each) where the base leaves 4i stubs and a fat join block; `--blocks --diff --lite` shows base `Ni [jmp Bj]` / `Ni [fall Bj]` with a join much LARGER than the target's, and the arm sizes short by the same amount the join is long; total instruction count matches, only the placement differs
+symptoms: retail emits two if/else arms in FULL (equal-length blocks, ~20i each) where the base leaves 4i stubs and a fat join block; `gruntz walls diagnose --asm` shows base `Ni [jmp Bj]` / `Ni [fall Bj]` with a join much LARGER than the target's, and the arm sizes short by the same amount the join is long; total instruction count matches, only the placement differs
 confidence: 9/10
 variants: identical-arms-need-distinct-locals.md, statement-order-decides-the-tail-merge.md, single-predecessor-tail-block-gets-replicated.md
 
@@ -94,7 +94,7 @@ Measured 2026-08-08 on `CGrunt::StepEntranceReinit` 0x637a0:
 
 ## Screening
 
-`gruntz sema disasm <rva> --blocks --diff --lite` and look for arm blocks SHORTER
+`gruntz walls diagnose <rva> --asm` and look for arm blocks SHORTER
 than the target's with a join LONGER by the same total. The exit-merge sieve does
 **not** catch this family — ret counts are equal, because nothing about the
 function's exits changed.

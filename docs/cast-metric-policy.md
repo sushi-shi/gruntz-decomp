@@ -46,11 +46,11 @@ the existing type cannot express the operation.
 
 ### Directly nested `static_cast` review
 
-`python -m gruntz.audit.nested_static_casts` reports an AST cast whose operand is
+`gruntz verify casts --nested` reports an AST cast whose operand is
 another `static_cast`; neighboring casts in separate statements do not count. Its
 `source -> intermediate -> final` output is a review queue, not a claim that every
 pair has pointer-reinterpretation semantics. The audit is semantic and therefore
-runs only in `gruntz build --full`.
+runs only in `gruntz verify check --tier full`.
 
 Remove value-preserving detours. A source already typed `u32` does not need
 `i64 -> double`, `u32 -> i64`, or `i32 -> u32` staging. Fix an incorrectly signed
@@ -82,7 +82,7 @@ a helper merely to evade the audit.
 
 All of the above is matching-neutral: a C++ named cast compiles to the same bytes as the C-style cast,
 a named member access to the same bytes as the offset-cast, a renamed member/method to the same bytes
-under /O2. Verify per change (`gruntz build --fast`, touched unit % unchanged) and gate on
+under /O2. Verify per change (`gruntz build`, touched unit % unchanged) and gate on
 MAX-fuzzy — see [max-fuzzy gate](../README.md).
 
 ## Clean-room mandate

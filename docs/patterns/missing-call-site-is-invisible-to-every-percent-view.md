@@ -5,8 +5,8 @@
 
 ## Symptom
 
-The function scores in the 80s-90s, `--diff` and `--blocks --diff` report the
-surrounding code as matching, `--branches --diff` reports the branch sequence as
+The function scores in the 80s-90s, `--diff` and `gruntz walls diagnose --asm` report the
+surrounding code as matching, `gruntz walls diagnose` reports the branch sequence as
 equal, and the game still faults — or silently never runs an initializer. Nothing
 in the matching toolchain points at the hole, because every % view scores the
 instructions that ARE there and objdiff masks address operands.

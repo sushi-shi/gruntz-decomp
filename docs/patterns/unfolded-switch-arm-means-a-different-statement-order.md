@@ -21,7 +21,7 @@ if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) { m_arrivalFlags |= 0x10; }
 // NERFGUN / ROCK (cases 10, 11): the other order, and they fold into each other
 ```
 
-Use the relocation list, not the disassembly: `gruntz sema disasm <rva> --target`
+Use the relocation list, not the disassembly: `gruntz sema disasm <rva>`
 prints `@<site> -> <addr>  <name>`; diff consecutive sites against your base obj's
 `llvm-objdump -dr` reloc offsets and every arm whose length differs is a lead.
 Twenty-one of `LoadGruntTypeTable`'s twenty-three tool arms already matched to the

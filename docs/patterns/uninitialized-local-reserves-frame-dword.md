@@ -34,7 +34,7 @@ while (pos != 0) { ... child = ...; ... }
     ret
 ```
 
-The frame-size cross-check is decisive: `python -m gruntz.audit.base_size` (or just the
+The frame-size cross-check is decisive: `gruntz walls diagnose <rva>` (or just the
 `sub esp,N`/`push` count) shows retail's frame is exactly 4 bytes larger with no local to
 account for it.
 

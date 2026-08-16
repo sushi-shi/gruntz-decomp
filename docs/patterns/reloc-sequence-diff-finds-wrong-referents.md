@@ -6,7 +6,7 @@
 
 A function sits well below 100% with no obvious instruction-shape difference, or the
 shapes differ everywhere and the diff is too noisy to read. `--diff` and
-`--blocks --diff` mask address operands, and `--branches --diff` only covers branch
+`gruntz walls diagnose --asm` mask address operands, and `gruntz walls diagnose` only covers branch
 targets - so a **wrong callee**, a **wrong global**, a **rotated set of string arms**,
 a **missing call** or a **wrong argument count** is invisible in all three views.
 
@@ -33,7 +33,7 @@ structural classes that always differ, then `difflib` the lists:
 Retail is `/Gf` and the linker folded identical literals, so a target reloc is often
 named by the **nearest owned symbol plus an addend** - `_s_IMPACTMM4$S34310+0x24`
 is `s_IMPACTMM3`, and `??_C@_07HCON@ToyPeek?$AA@-20` is whatever static sits 20 bytes
-earlier. Resolve the addend through `build/gen/symbol_names.csv` before believing a
+earlier. Resolve the addend through `build/gen/bindings.tsv` before believing a
 string mismatch; a bare name difference between a `??_C@…` on one side and a `_s_…`
 on the other is nearly always this artifact, not a bug.
 
@@ -75,12 +75,12 @@ also exposes arms that do not exist in the reconstruction at all -
 
 ## Second trap: the delinked obj's string names disagree with the raw disasm
 
-The reloc NAMES on the target side come from whatever `symbol_names.csv` resolved
+The reloc NAMES on the target side come from whatever the Model resolved
 retail's address to, and for one-character literals that resolution is often a
 different literal at a nearby address. A sequence diff that reports retail
 comparing against `"J"` and `"R"` where you compare against `"L"` and `"P"` is
 usually this artifact, not a wrong letter. **Confirm every string finding against
-`gruntz sema disasm <rva> --target`**, whose reloc table prints the raw retail
+`gruntz sema disasm <rva>`**, whose reloc table prints the raw retail
 address - then map addresses to letters once (they are consecutive in `.rdata`)
 and reuse that map. `CTriggerMgr::ApplyTriggerB` looked like three wrong letters
 and was in fact three missing re-resolutions of the same name.

@@ -21,7 +21,7 @@ rather than a two-instruction one.
 
 The corollary is the cheap check: **count `jcc`s that share a target**. N
 branches to one label means N source tests, and the reconstruction must spell all
-N. `--diff` shows this fine (the branches are adjacent); `--blocks --diff` shows
+N. `--diff` shows this fine (the branches are adjacent); `gruntz walls diagnose --asm` shows
 it as an early `!!` kind mismatch.
 
 `CDDrawShadeBlit`'s four blitters all open with this RLE row-skip loop.

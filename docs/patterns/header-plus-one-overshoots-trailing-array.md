@@ -13,7 +13,7 @@ retail:  add  esi, 0x20        ; esi = pid + 0x20
 ours:    add  esi, 0x24        ; esi = pid + 0x24
 ```
 
-`gruntz.audit.immediates --strong` is what makes this visible: `0x24` appears
+`gruntz walls diagnose <rva> --asm` is what makes this visible: `0x24` appears
 nowhere in retail's 371 bytes, and `0x20` nowhere in ours. Nothing else reports
 it — `--diff` masks the operand class, `store_offsets` sees where the copy lands
 and not where it starts, and the reloc-addend sieve only covers relocated

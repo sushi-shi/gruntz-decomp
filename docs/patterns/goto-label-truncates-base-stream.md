@@ -2,7 +2,7 @@
 
 tags: cpp:goto | topic:tooling topic:scoring-artifact
 symptoms: `insn_seq --multiset` says `base=0 tgt=1` for a callee the source
-plainly calls; `insn_count`/`sema disasm --base` show a huge one-sided deficit;
+plainly calls; `insn_count`/`gruntz walls diagnose --asm` show a huge one-sided deficit;
 the last printed base instruction is a `jmp`/`jcc` to an address the listing
 never reaches; the source contains a `goto`
 confidence: 10/10
@@ -24,8 +24,8 @@ truncated the function there.
 0000040c <$loop_restart$32243>:   ; llvm-objdump: same header syntax as a function
 ```
 
-Tooling, not codegen: `gruntz.core.branches.is_local_label` is now the single
-predicate (`^\$(?:L\d+|\w+\$\d+)$`), shared by `sema disasm --base`,
+Tooling, not codegen: the local-label predicate is now the single
+predicate (`^\$(?:L\d+|\w+\$\d+)$`), shared by `gruntz walls diagnose --asm`,
 `insn_seq`, `insn_count` and `branches.parse_objdump`. It reported
 `CAniAdvanceCursor::Advance` as 320 instructions against 457 and as never
 calling `LeafCue::PlayIfElapsed` / never reading `g_sndCueTag`; the real numbers

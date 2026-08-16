@@ -1,12 +1,19 @@
 # Image diff — which bytes of the candidate differ from retail, and why
 
+> **Instrument note.** The whole-image byte-budget partitions in this document
+> were produced by the retired `image_diff`/`link_sections` instruments (see
+> [tooling-map](tooling-map.md)). `gruntz verify check --tier link` carries the
+> gate-bearing half — the section census, the link-defect closure, and the
+> reloc-masked diff of exact bodies at their link-assigned RVAs. The percentages
+> below are DATED measurements, not live output.
+
 Three questions, three tools, and only the third is answered here:
 
 | tool | question |
 |---|---|
 | **objdiff** | does each **object** match the object we carved out of retail? |
-| **`gruntz.audit.link_sections`** | is each **section** the SIZE retail shipped? |
-| **`gruntz.audit.image_diff`** | **which bytes** of each section differ, and why? |
+| **`gruntz verify link-tier`** | is each **section** the SIZE retail shipped? |
+| **`gruntz verify link-tier`** | **which bytes** of each section differ, and why? |
 
 Section-size parity is necessary and nowhere near sufficient: two images can agree
 on every section length and share almost no content. `.idata` and `.rsrc` both sit
@@ -18,16 +25,16 @@ halves, and the tool refuses to print either without the other:
   row rather than quietly dropped. That remainder is the honest worklist.
 * a **byte similarity** — objdiff's method lifted to the linked image.
 
-    python -m gruntz.audit.image_diff                    # the report
-    python -m gruntz.audit.image_diff --section .text --detail 20
-    python -m gruntz.audit.image_diff --referents 30     # the wrong-referent worklist
-    python -m gruntz.audit.image_diff --ordering 20      # the ordering-only worklist
-    python -m gruntz.audit.image_diff --multiplicity 20  # same identities, different counts
-    python -m gruntz.audit.image_diff --selftest         # plant defects, find them
-    python -m gruntz.audit.image_diff --tsv f.tsv --json f.json
+    gruntz verify link-tier                    # the report
+    gruntz verify link-tier --section .text --detail 20
+    gruntz verify link-tier --referents 30     # the wrong-referent worklist
+    gruntz verify link-tier --ordering 20      # the ordering-only worklist
+    gruntz verify link-tier --multiplicity 20  # same identities, different counts
+    gruntz verify link-tier --selftest         # plant defects, find them
+    gruntz verify link-tier --tsv f.tsv --json f.json
 
 Needs `ninja candidate` (both images + the `.map`) and a `gruntz build`
-(`build/gen/symbol_names.csv`, `build/gen/delink_data_manifest.tsv`). Runs in ~4 s.
+(`build/gen/bindings.tsv`, `build/gen/delink_data_manifest.tsv`). Runs in ~4 s.
 
 ## Method
 
@@ -36,8 +43,8 @@ Needs `ninja candidate` (both images + the `.map`) and a `gruntz build`
 Our `.text` is 25,813 B short, so everything downstream of the first divergence
 sits at a different RVA. A positional differ reports near-0% for the whole image —
 true and useless. Regions are therefore paired by **name**: retail's side from
-`config/retail/functions.tsv` × `symbol_names.csv` × `functions_static_libs.tsv` (via
-`gruntz.core.exe_map`) plus `delink_data_manifest.tsv` for data; ours from the link
+`config/retail/functions.tsv` × the Model × `functions_static_libs.tsv` (via
+`gruntz.sema.exe_map`) plus `delink_data_manifest.tsv` for data; ours from the link
 `.map`'s publics. Pairing is placement-independent by construction, which is what
 makes it survive the layout rules in `docs/link-text-layout.md` — a kept-COMDAT
 exile or a group reordering moves a body without changing its name.
@@ -190,7 +197,7 @@ Both headlines are dominated by content that cannot be aligned honestly:
 Same 16 DLLs in the same order, **456 of 456 imports paired by name, 0 unpaired
 on either side, all 15,169 retail bytes measured, 0 differing** (2026-08-13).
 Two changes closed it: the synthesised RAD libs reproduce retail's hint values
-(`gruntz.build.import_lib`), and `do_idata` completes its pairing to the whole
+(`gruntz.graph.implib`), and `do_idata` completes its pairing to the whole
 section — each hint/name blob and DLL-name string travels with its
 even-alignment pad byte, by-ordinal slot pairs compare by ordinal identity, and
 the incremental-link slack (inter-array growth room, the pre-pool gap, the pool
@@ -428,7 +435,7 @@ against the section counters — a truncated listing is not a worklist. The domi
 current shape is a game-object constructor whose asset-key literal sits one
 statement away from where retail evaluates it.
 
-All three counts are ratcheted together by `gruntz.audit.data_integrity`
+All three counts are ratcheted together by the data-integrity audit
 (`config/retail/data-integrity-ratchet.tsv`, full tier): none can silently increase,
 and a genuine lower count must be banked with `--write`.
 

@@ -1,6 +1,6 @@
-# `--branches` says DUP-EXIT: the guards that reach retail's merged exit share ONE `return` — spell it as `goto fail;`
+# DUP-EXIT: the guards that reach retail's merged exit share ONE `return` — spell it as a `goto`
 tags: cpp:branch cpp:return | asm:jmp asm:ret | topic:codegen-idiom
-symptoms: `gruntz sema disasm <rva> --branches --diff` prints `base N ret(s) | target M ret(s)  DUP-EXIT`; the asm diff shows an extra `xor eax,eax; pop…; ret` block on our side and a branch whose polarity is inverted (`jns` where retail has `js`)
+symptoms: `gruntz walls diagnose <rva>` prints `base N ret(s) | target M ret(s)  DUP-EXIT`; the asm diff shows an extra `xor eax,eax; pop…; ret` block on our side and a branch whose polarity is inverted (`jns` where retail has `js`)
 confidence: 9/10
 variants: positive-gate-enables-shrink-wrap.md, identical-return-epilogue-tailmerge.md
 

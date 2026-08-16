@@ -1,7 +1,7 @@
 # Splitting the conflated TUs — plan
 
 **Status: PLAN ONLY. Nothing here is applied.** Written 2026-08-03 from the cluster
-census (`gruntz.core.vtable_scan`-adjacent analysis over `build/gen/symbol_names.csv` +
+census (`gruntz verify vtable-scan`-adjacent analysis over `build/gen/bindings.tsv` +
 retail RVAs). The rule this rests on is measured, not assumed:
 
 > The linker lays each object's `.text` down as **one contiguous run**. Measured on our
@@ -122,7 +122,7 @@ orphans of another object (re-home).
 4. **Register the new unit** in `config/units.toml` (profile `cpp`, or `cpp-rtti` if it
    is a Gruntz-project TU — check against the RTTI descriptor oracle, below).
 5. **Verify, in this order:**
-   - `gruntz audit tu_order_check` — the new unit must be contiguous, and the
+   - `gruntz verify tu-order` — the new unit must be contiguous, and the
      interleaving-pair count must go **down**;
    - the RTTI descriptor oracle (diff `.?AV`/`.?AU` in `.data`, candidate vs retail) —
      must stay at 2 extra / 1 missing or improve. For `gamelevel` this is the *point*:

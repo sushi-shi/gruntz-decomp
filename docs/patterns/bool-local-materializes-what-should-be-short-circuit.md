@@ -2,7 +2,7 @@
 tags: cpp:branch cpp:local cpp:loop | asm:jmp asm:jcc asm:test | topic:codegen-idiom
 symptoms: base has ~25% MORE basic blocks than target with the same instruction total; base's
 extra blocks are 1-2 instructions ending in `jmp`, and the target's are uniform 5-instruction
-compare-and-branch blocks; a `--blocks --diff --lite` skeleton where base reads
+compare-and-branch blocks; a `gruntz walls diagnose --asm` skeleton where base reads
 `2i [jcc] / 2i [jmp] / 2i [jcc] / 2i [jmp] / 1i [fall] / 2i [jcc]` against target
 `5i [jcc] / 5i [jcc] / 5i [jcc] / 5i [jcc]`
 confidence: 9/10
@@ -46,7 +46,7 @@ jump-thread the first compare into the second clause. (Same non-threading as
 
 The block COUNT is the screen, and it is visible in one command:
 
-    gruntz sema disasm <rva> --blocks --diff --lite
+    gruntz walls diagnose <rva> --asm
 
 If base has more blocks than target and the extra ones are tiny `jmp` blocks, some
 condition in your source is being computed as a value instead of branched on. There is no

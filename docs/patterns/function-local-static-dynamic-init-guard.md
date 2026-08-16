@@ -72,7 +72,7 @@ non-trivial dtor; see [[msvc-static-object-e-helper-family]]), and the ordinal i
 volatile to pin, so they can never carry an `RVA()` and there is no body for anyone to
 write. The last one is MFC's four `CWnd` statics (`wndTop`/`wndBottom`/`wndTopMost`/
 `wndNoTopMost`, i.e. `HWND_TOP`/`BOTTOM`/`TOPMOST`/`NOTOPMOST` = 0/1/-1/-2 through
-`??0CWnd@@AAE@PAUHWND__@@@Z`), which is carved out. `python -m gruntz.audit.static_guards`
+`??0CWnd@@AAE@PAUHWND__@@@Z`), which is carved out. `a static-guard census (retired)
 buckets all four cases; `--verify` proves the `$E` bucket byte-for-byte against the base
 objs rather than assuming it. A guard whose `$E` body does NOT reproduce is a real defect -
 that check is what found the `/GX` inlining mismatch in

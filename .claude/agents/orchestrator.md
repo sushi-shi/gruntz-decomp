@@ -67,11 +67,11 @@ done
 
 Verify a slot can build before dispatching — **cd-first** so `GRUNTZ_DIR`/`REPO`
 resolve to the worktree, NOT main:
-`cd .claude/worktrees/matcher-1 && nix develop .#build --command gruntz build --fast`.
+`cd .claude/worktrees/matcher-1 && nix develop .#build --command gruntz build`.
 **`cd` AFTER `nix develop` builds *main*** (`GRUNTZ_DIR` is fixed at shell entry).
-Better: open ONE `nix develop .#build` shell per slot and run `gruntz build --fast`/status
+Better: open ONE `nix develop .#build` shell per slot and run `gruntz build`/status
 inside it — avoids `nix develop` startup per command. **Brief every agent to iterate with
-`gruntz build --fast`** (full ninja + delink + objdiff %, skips the ~20 s gate tail) and run
+`gruntz build`** (full ninja + delink + objdiff %, skips the ~20 s gate tail) and run
 ONE full `gruntz build` only before committing — the full gate/`clean` is the orchestrator's
 integration step (§ below), NOT the agent inner loop.
 
@@ -96,7 +96,7 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
 3. Carry the standard matcher task (target RVA/name/size/file), the 8-digit
    address convention, and the STOP-EARLY + `@early-stop` rule (marker line + reason
    on the next line, **no percentage** — the baseline tracks %).
-4. **Forbid `gruntz format` in the worktree.** It reflows trailing-comment
+4. **Forbid `clang-format` in the worktree.** It reflows trailing-comment
    alignment across *unrelated* clean files (measured: ~9 files swept in), which
    you then have to discard at integration. Tell the matcher: edit only its
    target file(s); leave formatting to the orchestrator.
@@ -110,12 +110,12 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
 6b. **Name the `sema` structure tools in EVERY brief — do not assume the lane
    remembers.** Getting the CONTROL-FLOW SHAPE right is what makes a reconstruction
    match, so the brief says: first look is
-   `gruntz sema disasm <rva> --blocks --diff --lite` (basic-block topology: in-edges,
+   `gruntz walls diagnose <rva> --asm` (basic-block topology: in-edges,
    branch arrows, loop back-edges, shared ret tails) — never rebuild the shape by hand
-   from jump targets; `--rich` only once the shape is right. And carry the trap:
-   `--diff`/`--blocks --diff` MASK address operands, hiding intra-function branch
+   from jump targets. And carry the trap: every masked view MASKS address
+   operands, hiding intra-function branch
    displacements, so a control-flow divergence reads "identical" at <100% — that is
-   what **`--branches --diff`** is for (targets named by branch index). Ten of twelve
+   what the branch/`ret` counts in `gruntz walls diagnose` are for. Ten of twelve
    functions in the 2026-07-28 sieve were invisible to the first look.
 7. **Never fabricate an identity.** Recover the real class/symbol from the binary
    (RTTI, vtable, xrefs, disasm) or say you couldn't. A wrong-shape hack that scores
@@ -217,7 +217,7 @@ once — main has a single `build/` and a single HEAD):
    `cp <worktree>/<file> <main>/<file>`. For a **migration** (real TU + header +
    stub removal) copy each of those files. **Never copy the matcher's `README.md`
    or `config/match_baseline.tsv`** — those are regenerated/blessed in main. If
-   the matcher ran `gruntz format` and swept unrelated files, copy ONLY its real
+   the matcher ran `clang-format` and swept unrelated files, copy ONLY its real
    targets (confirm each is unchanged in main since the worktree's base:
    `git diff --quiet <base> HEAD -- <file>`). Touch only that matcher's file(s).
    **Strip stale comments from the files you just applied** (integration is where

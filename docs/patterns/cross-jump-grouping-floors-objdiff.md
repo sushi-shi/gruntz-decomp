@@ -72,8 +72,7 @@ Before parking one of these, rule out the things that DO look like this and are 
 
 ## Steerability
 
-The original conclusion that this instance was unsteerable was false. `gruntz permute
-variants --state-trials 48 --max-depth 2 --limit 192` did produce **192 candidates that
+The original conclusion that this instance was unsteerable was false. the retired permuter did produce **192 candidates that
 all compiled to the identical 380-byte body**, but that sweep searched declaration and
 parser-state axes while the missing lever was the function's real CFG.
 

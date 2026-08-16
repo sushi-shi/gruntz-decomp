@@ -19,6 +19,7 @@
   hashes. It records known headroom, not proof of the current implementation.
 - Raw instructions, constants, and ordered relocations decide whether a
   reconstruction is correct.
+
 ## Session And Evidence Discipline
 
 - Work in the pinned `nix develop` environment.
@@ -30,34 +31,50 @@
 - Run a full `gruntz build` before hand-off or commit. A generated report
   alone is not authoritative.
 
-## Historical-MAX Wall Campaign
+## The Wall Campaign
 
-- Work the lowest historical-MAX functions first, except rows already bounded
-  by reproducible evidence in `wall-break.md`. Do not preferentially select easy
-  high-score functions while lower structural mismatches remain.
-- Classify a plateau in this order: inline/call-set divergence, CFG/branch
-  divergence, then register allocation and scheduling. A branch-count mismatch
-  is a structural reconstruction problem; matching branch sequences and return
-  counts are evidence that the remaining wall is instruction selection,
-  lifetime, or allocation.
-- Use compiler-state or permutation experiments only as disposable A/B tests.
-  Never retain unused includes, declarations, fake locals, manual `STATE`
-  probes, volatile carriers, or source distortions to steer codegen. These are
-  not appropriate while a function's structure is still unresolved and are
-  rarely justified below 90%.
+- The easy matches are drained: what remains of the matching objective IS the
+  walls. The worklist is DERIVED, never hand-kept:
+  `gruntz walls inventory` joins the current compare report, the Model, and
+  `config/match_baseline.tsv`, ordered by ascending historical MAX. Work the
+  lowest bank first; do not preferentially select easy high-score rows while
+  lower structural mismatches remain.
+- Classify before touching source: `gruntz walls diagnose <rva|name>` reads
+  the normalized base/target pair and names the FIRST divergence class -
+  referent (masked bytes identical, relocation targets differ: an identity
+  question, fix the claim), inline/call-set (call-target multisets differ),
+  CFG (branch/return skeleton differs: a structural reconstruction problem),
+  then regalloc/scheduling (same calls and skeleton: instruction selection,
+  lifetime, or allocation).
+- Per class, the proven levers:
+  * inline/call-set: `gruntz walls inline-model --gap` predicts the
+    budget-starved sites and quantifies the finish-the-caller lever
+    (cl 5.0-validated; `--measure-cb` titrates a callee with the real
+    compiler).
+  * front-end TU-state: the cl 5.0 IL tap (capture `/d1il`, feed `/d2il`;
+    recipe and normalization in the tu-state-probe pattern's quantified
+    section) - an inert-source A/B whose IL differs is C1 handle state, and
+    the probe-kind stride table (typedef +1 ... class +11) is the steering
+    lever.
+  * regalloc: one piece is proven on cl 5.0's `c2.exe` - the preference
+    table `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is present, and the first
+    call-crossing value USED after the call takes EBX; reorder that value's
+    first post-call use to steer the pick
+    (docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md).
+- Levers are applied as disposable A/B tests. Never retain unused includes,
+  declarations, fake locals, manual `STATE` probes, volatile carriers, or
+  source distortions to steer codegen. Blind permutation search stays
+  removed: walls are broken by understood levers, not ground.
 - Historical MAX is banked only by a real build against the same per-function
-  source fingerprint. If an unchanged function reaches exact under a disposable
-  TU-state experiment, update the ledger while exact, remove the experiment,
-  rebuild, and keep the historical proof. Do not call a current dip a regression
-  when the MAX gate remains green.
-- Record every structural break and every genuinely bounded wall in
-  `wall-break.md`: the before/after historical MAX, the retail evidence, the
-  retained source lever, negative controls, and the remaining mismatch class.
-  Keep investigation history there, not in C++ comments.
-- Classify a plateau with the project `wall-identifier` skill
-  (`gruntz sema diagnose <rva>`): inline/call-set → CFG → register →
-  masked/referent, with only cl 5.0-proven levers. HoMM3's VC6 mechanics
-  (register model, IL capture) stay hypothesis-only until re-proven here.
+  source fingerprint. If an unchanged function reaches exact under a
+  disposable TU-state experiment, bank while exact, remove the experiment,
+  rebuild, and keep the proof. Do not call a current dip a regression while
+  the MAX gate remains green.
+- A broken wall's reusable mechanism goes to `docs/patterns/` (+ INDEX) with
+  the controlled A/B evidence and detection signature; a genuinely bounded
+  wall keeps its state in the derived inventory (the report and the MAX
+  ledger), never in a hand-kept ledger file or C++ comments.
+
 ## Source Modeling Rules
 
 - A class has one real definition in a shared header. Do not create `.cpp`-local
@@ -93,8 +110,7 @@
   data extents. Do not split one retail object into overlapping globals, and do
   not invent an aggregate merely because it changes a score.
 - For polymorphic classes, derive declarations mechanically from
-  `gruntz sema class <Class>` or
-  `python -m gruntz.core.vtable_hierarchy --class <Class>`:
+  `gruntz sema class <Class>` (slot-by-slot, every vtable the class holds):
   inherited slots are not redeclared, overrides use `OVERRIDE`, and new slots
   are plain `virtual`. Never pad a vtable with dummy virtual methods.
 - Define a symbol or label only when evidence supports it. Never add fake code,
@@ -102,27 +118,35 @@
 
 ## Address Annotations And State Markers
 
-- Address labels live in `include/rva.h` macros, never comments. Let the
-  label-style gate enforce mechanical spelling rather than duplicating it here.
+- Address labels live in `include/rva.h` macros.
 - Never bind volatile compiler ordinals such as `_$E<n>` with
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
   A `$E` dynamic-init helper is pinned at its OWNER instead:
   `RVA_DYNINIT(rva, size, owner)` on the owning datum's definition line
-  (`gruntz.core.dyninit` scrapes the pins; the current build's ordinal is
-  derived from the emitting obj when needed, never stored).
-- `DATA_SYMBOL` is RETIRED and gone from `rva.h`; there is no declaration-only
-  data pin. Every datum is a real C++ definition carrying `DATA(rva)`.
+  (`gruntz labels` scrapes the pins into the `src_dyninit` channel; the current
+  build's ordinal is derived from the emitting obj when needed, never stored).
 - Compiler-generated data follows ONE rule: identity comes from the automatic
   oracles, and a pin exists only where they cannot reach. Use-site literals
-  (pooled `??_C@` strings, `$T` FP-pool constants) are written bare; a
-  `DATA_COMPGEN(rva, value)` wrap is kept only for an ambiguous string payload
-  or an FP slot with no reloc-corroborated referrer (removal is
-  self-verifying via the FATAL `data_denominator` gate). Separately — and
-  disjointly — `config/retail/data_compgen.tsv` is a manifest, not
-  a macro: it names the COFF COMMONs cl emits from a header-inline's local
-  static (plus the `??_B` guard byte beside it); no owning TU, so only the
-  retail address is stated and `gruntz.audit.compgen_data` re-proves the rest.
-  Details: `docs/data-attribution.md` §3b-iii.
+  (pooled `??_C@` strings, `$T` FP-pool constants) are written bare — the
+  string content oracle and the retail-reloc FP oracle re-prove them every
+  build. A `DATA_COMPGEN(rva, value)` wrap is kept only for an ambiguous
+  string payload or an FP slot with no reloc-corroborated referrer — all 17
+  current pins are measured load-bearing. The pins extract as the
+  `src_data_compgen` channel: a pin is admitted only when the TU's own base
+  obj emitted that exact payload AND the retail image holds those bytes at
+  the pinned address; a site that fails to bind is FATAL. Removing a
+  load-bearing pin is adjudicated by compare (the identity degrades to a
+  `$gap_`/`DAT_` referent and the referencing functions' scores dip).
+  Separately — and disjointly —
+  `config/retail/data_compgen.tsv` is a manifest, not a macro, in two classes:
+  `class=common` names the COFF COMMONs cl emits from a header-inline's local
+  static (plus the `??_B` guard byte beside it, which has no source spelling at
+  all) — no owning TU exists, so only the retail address is stated and
+  `gruntz delink` re-proves the rest against the base objs' COMMON tables
+  (a row with no emitting base obj is an error);
+  `class=copy` names the per-TU copies of header statics (the GruntDirStatics
+  device), whose owner is the emitting TU. Details:
+  `docs/data-attribution.md` §3b-iii.
 
 - The marker vocabulary is closed by `docs/comment-markers.md`. `@early-stop`
   means a complete, evidence-bounded body, not missing logic or unresolved

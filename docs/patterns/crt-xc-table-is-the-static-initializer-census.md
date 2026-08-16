@@ -67,7 +67,7 @@ The real `_inc` is LIBCMT `input.c`'s one-character reader, `0x129da0`, 33 bytes
 The other 965 rows were a short masked signature landing on a 5-byte `jmp` - `e9 rel32`
 carries almost no entropy - at starts an older Ghidra table admitted. 963 of them were XC
 initializer thunks and 2 were already-attributed compiler-helper forwards. They are
-pruned. LOW rows never carved anything (`gruntz.core.library_labels.is_active`), so this
+pruned. LOW rows never carved anything (`the retired FLIRT label refresh.is_active`), so this
 changed no denominator; it removed 965 false leads.
 
 ## Worked census: one header, 106 TUs, 954 initializers

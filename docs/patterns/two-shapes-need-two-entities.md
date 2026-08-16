@@ -64,7 +64,7 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 The wrapper inlines its sibling, so the emitted COMDAT is byte-identical to retail's
 standalone body - verified for `CGameLevel::PointInBounds` (0x6b330, 42 B) and
 `CGameLevel::ResetParamBlock` (0x15d170, 115 B, including retail's `edx`/`eax` constant
-CSE). **One textual copy of the logic**, so `gruntz.audit.inline_clones` stays quiet.
+CSE). **One textual copy of the logic**, so no clone signature appears.
 
 Split the sites by evidence, never by guess. Scan `.text` for the two shapes and attribute
 each to its containing function:

@@ -85,7 +85,7 @@ the DIR32 on its `mov eax,ds:_g_engineFrameDelta` — the delinked byte becomes
 reports our base as referencing a global *"retail never does"*, which is backwards.
 Reproduced in both directions, nothing else in the unit changed.
 
-So: **run `python -m gruntz.audit.assert_relocs` after an extent sweep**, and if a unit you
+So: **run `gruntz verify assert-relocs` after an extent sweep**, and if a unit you
 touched grows a WRONG whose base side is provably right, revert that one claim. Reloc
 fidelity outranks match %. It is a delinker bug, not a source one — the points are waiting
 behind a fix.

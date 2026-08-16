@@ -2,7 +2,7 @@
 
 tags: cpp:branch cpp:return cpp:eh cpp:local | asm:jmp asm:call | topic:codegen-idiom topic:tail-merge
 symptoms: a `/GX` scope holding one destructible local has two conditional exits;
-  `--blocks --diff --lite` shows retail with TWO full copies of the destructor tail
+  `gruntz walls diagnose --asm` shows retail with TWO full copies of the destructor tail
   (`5i [jmp Bk]` then `4i [jmp Bk]`, differing only by the leading EH-state store)
   while the base has `1i [fall Bk]` + `4i [jmp Bk]` - i.e. the first exit stores the
   EH state and falls into the second exit's destructor call. `insn_seq --seq` names

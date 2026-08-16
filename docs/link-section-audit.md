@@ -5,16 +5,22 @@
 against retail's 2,511,872 B. This document accounts for the two sections that hold
 code and read-only data. `.data` / `.rsrc` / `.reloc` are audited elsewhere.
 
-Reproduce everything here with
+> **Instrument note.** The per-region census below came from the retired
+> `link_sections` exploratory modes (see [tooling-map](tooling-map.md)); the live
+> tier reproduces the section census and the gate, not the byte-budget breakdown.
+> Read the numbers as a dated measurement.
 
-    python -m gruntz.audit.link_sections [--selftest] [--thunks] [--gaps N]
+The live half:
+
+    gruntz verify link-tier --census      # candidate vs retail section table
+    gruntz verify check --tier link       # the gate (defects + census + image diff)
 
 **This document answers "how big is the delta and what is it made of". It does not
 answer "do the bytes match" — size parity is not a byte match, and two of these
 sections sit at `+0` while only one is actually identical.** For the per-section
 BYTE similarity (regions paired by symbol, address operands masked by resolving
 them to their referent) and the wrong-referent worklist, see
-[`docs/image-diff.md`](image-diff.md) / `python -m gruntz.audit.image_diff`.
+[`docs/image-diff.md`](image-diff.md) / `gruntz verify link-tier`.
 
 ## Method: partition both images the same way
 
@@ -213,7 +219,7 @@ toolchain drift, not a source defect; it accounts for 76% of the `.rdata` excess
 
 The next-largest known contributor is small: **30 named `static const char[]` that we put
 in `.rdata` where retail has the same string once, pooled, in `.data`** — the rows
-`gruntz.build.data_manifest --report` withholds as *"our rdata copy cannot be the data
+`gruntz.delink.data_manifest --report` withholds as *"our rdata copy cannot be the data
 literal `??_C@…` it is pinned onto"* (`GRUNTZ_`, `LightFx`, `SingleAnimation`,
 `BABYWALKERGRUNT`, `GRUNTZ_NORMALGRUNT_IMPACTMM3`, …). Decoded, they are ~409 B of string
 plus 4-byte alignment, so **~450 B — about 8% of the excess, not the cause of it.** They

@@ -39,7 +39,7 @@ The fix is the signature, not the body: `T* f(T* out) { ...; return out; }`.
 
 ## Why this is safe to change
 
-The `RVA()` binding uses OUR mangled name on BOTH sides (`symbol_names.csv` feeds the
+The `RVA()` binding uses OUR mangled name on BOTH sides (the Model feeds the
 synthetic PDB), so `?f@C@@QAEXPAH@Z` -> `?f@C@@QAEPAHPAH@Z` re-binds transparently.
 Check the call sites only for source compatibility — an ignored return value needs no
 edit.

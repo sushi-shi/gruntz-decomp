@@ -7,7 +7,7 @@
 ## Symptom
 
 A family of otherwise byte-perfect dispatch functions sits at the **same** sub-100
-score (`97.86%` for the 12-branch act pump), and `sema disasm <rva> --diff --lite`
+score (`97.86%` for the 12-branch act pump), and `gruntz walls diagnose <rva> --asm`
 shows nothing but signed/unsigned twins:
 
 ```
@@ -16,8 +16,8 @@ shows nothing but signed/unsigned twins:
 +ja <tgt>          <- target (retail)
 ```
 
-`python -m gruntz.audit.jcc_sieve --class SIGNEDNESS` buckets exactly this, one row
-per function, all with the same flip indices:
+`gruntz walls diagnose <rva>` reports exactly this per function - the branch
+counts agree while the bytes do not:
 
 ```
 SIGNEDNESS  97.86%  logicworkerhandlersa 0x0aa1e0  @_CreateFrontCandy
@@ -66,8 +66,9 @@ Measured, restoring the cast at 21 call sites plus the one shared macro in
 | `jcc_sieve` SIGNEDNESS bucket | 71 | **8** |
 
 **Rule:** any campaign that retypes a `switch` selector (enum domains, `i32`→named
-type, an accessor swap) must re-run `python -m gruntz.audit.jcc_sieve --summary`
-before it lands. The sieve sees this in one command; the fuzzy% does not, because a
+type, an accessor swap) must re-check the affected functions with
+`gruntz walls diagnose` before it lands. The pair shows it immediately; the
+fuzzy% does not, because a
 3-instruction flip in a 140-instruction function is a 2-point dip that reads as
 regalloc noise.
 

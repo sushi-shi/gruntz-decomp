@@ -42,7 +42,7 @@ The *only* difference is the mangled name of a signature that changed:
 
 So: retyping a **member** is free (a 4-byte enum field is layout-identical to
 `i32`); retyping a **parameter or return** is free in code bytes but rewrites the
-symbol, which flows into `build/gen/symbol_names.csv` -> synth PDB -> delink.
+symbol, which flows into `build/gen/bindings.tsv` -> synth PDB -> delink.
 Update the `RVA_COMPGEN` pins in the same commit; `verify_unique_names` is the gate.
 
 ## The opaque forward declaration is the butterfly escape hatch
@@ -121,7 +121,7 @@ NumLock-off and on, so the two halves cross-check each other value for value.
 ## Already-typed switches: let the compiler name the labels
 
 Once a switch key IS an enum, each integer label has exactly one correct
-enumerator and nothing needs inferring. `python -m gruntz.audit.enum_case_labels`
+enumerator and nothing needs inferring. `the enum case-label rewriter (retired)
 finds those via libclang and `--apply` rewrites them; it refuses any value with
 alias enumerators rather than pick a reading. It reports 0 today. Treat a green 0
 as a claim, not a result — the tool was verified by injecting a known positive

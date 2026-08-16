@@ -48,7 +48,7 @@ Two details that both mattered:
   block; the initialiser form hoists the `xor eax,eax` above the compare and flips the
   branch polarity.
 
-**Where to look for it:** `gruntz sema disasm <rva> --branches --diff` reporting
+**Where to look for it:** `gruntz walls diagnose <rva>` reporting
 "BRANCH COUNTS DIFFER" with us one HIGHER, plus a `sbb` count mismatch between the two
 sides. A one-line sieve over a unit's functions - compare `grep -c sbb` on `--target` vs
 `--base` - finds them; across the 29 sub-100 functions of the trigger cluster this was the

@@ -4,7 +4,7 @@
 
 ## Symptom
 
-`gruntz audit reloc_multiset` reports "one reference moved to the neighbour", in
+`gruntz verify assert-relocs` reports "one reference moved to the neighbour", in
 every function that walks the same array:
 
 ```
@@ -46,8 +46,8 @@ artifact, and it puts a lie in the source to buy hundredths.
 
 ## Recognizing it
 
-`reloc_multiset` flags the pair automatically — rows print
-`[one-past-end artifact]`. It reads the extents out of `build/gen/symbol_names.csv`
+`gruntz verify assert-relocs` flags the pair automatically — rows print
+`[one-past-end artifact]`. It reads the extents out of `build/gen/bindings.tsv`
 and flags a target-only symbol whose extent ABUTS a base-only symbol's extent on
 either side. 12 of the 146 remaining worklist functions are fully explained this
 way. When checking by hand, compare the two symbols' RVAs and sizes: adjacency IS

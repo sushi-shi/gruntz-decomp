@@ -57,12 +57,10 @@ i32 SaveFrontBufferShotImpl(...) {
 
 `--diff` masks branch displacements, so the two sides print as an ordinary
 `je`/`jne` polarity flip and the byte cost hides in an epilogue nobody reads. The
-only reliable tell is the **`ret` count**: `gruntz sema disasm <rva> --branches
---diff` prints `rets N->M`, and `M > N` on a `void`-declared frameless function is
-this. Whole tree:
-
-    python -m gruntz.audit.void_return_type          # both signatures, worklist
-    python -m gruntz.audit.void_return_type --guard  # only the no-constant subcase
+only reliable tell is the **`ret` count**: `gruntz walls diagnose <rva>` prints
+each side's ret count, and `target rets > base rets` on a `void`-declared frameless
+function is this. There is no tree-wide return-type sieve any more; work the
+`gruntz walls inventory` worklist and read the counts per function.
 
 Corroborate before flipping: the neighbouring functions in the same file (`i32`
 with `return 0;` guards is the file's house style), and the call sites (they must

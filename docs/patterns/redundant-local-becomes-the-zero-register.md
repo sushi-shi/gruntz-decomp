@@ -55,7 +55,7 @@ A **cached global** is the same bug: `CPlay::OnKeyDown` (0x000cbcc0) opened with
 `StateMgrBZ* dev = g_spawnConfig;` and used `dev->` at eight sites. Retail reads
 `_g_spawnConfig` twelve times where we read it eleven - one read short is the
 tell, and per-symbol reloc counts
-(`gruntz.audit.insn_seq` + a `Counter` over `relseq`) find it faster than the
+(the relocation sequence, read off `gruntz sema dump <rva>`) finds it faster than the
 diff. Spelling the eight sites `g_spawnConfig->` took it **87.19 -> 90.31**.
 Do NOT generalise the delete to every local: `host`/`level` (`this->m_mgr` /
 `this->m_guts`, 26 and 14 uses) are REAL source locals and removing either costs
@@ -74,7 +74,7 @@ the later `StreamVoice*` helped restore the exact 19-block/one-return dataflow
 
 ## How to spot it
 
-Run `gruntz sema disasm <rva> --diff` and count the diff rows of the form
+Run `gruntz walls diagnose <rva> --asm` and count the diff rows of the form
 `-cmp <r>,<callee-saved>` / `+test <r>,<r>` and
 `-mov dword ptr [..],<callee-saved>` / `+mov dword ptr [..],0x0`. If they are
 spread across the whole body while the block skeleton matches, do NOT reach for

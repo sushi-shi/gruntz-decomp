@@ -230,7 +230,7 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 
 > **Implemented differently.** The library labels were ultimately produced by a
 > custom **masked-byte COFF-signature matcher** (`scripts/gruntz/audit/fid/`, driven by
-> `python -m gruntz.audit.fid_generate`) — NOT Ghidra FID. Its output is the tracked
+> a retired FLIRT regeneration pipeline) — NOT Ghidra FID. Its output is the tracked
 > `config/retail/functions_static_libs.tsv`. The Ghidra-FID route below is kept for context: it
 > explains why no stock MSVC-5.0 fidb exists and what a signature db must capture.
 
@@ -241,10 +241,10 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 > denominator). LOW rows are retained only as diagnostic leads: they do not color
 > the DNA strip, leave the reconstruction queue, or shrink the denominator. Claiming
 > the same RVA in both is a
-> **double-claim on the same bytes**. `python -m gruntz.match.verify_library_overlap`
+> **double-claim on the same bytes**. `gruntz verify library-overlap`
 > (wired fatally into `gruntz build`, no allowlist) enforces
 > `src-claims ∩ functions_static_libs.tsv = ∅` over the **FULL generated symbol set**
-> (`build/gen/symbol_names.csv`), not just the `RVA()` macros the first cut
+> (`build/gen/bindings.tsv`), not just the `RVA()` macros the first cut
 > parsed. A src claim is ANY of:
 >
 > - **rva-macro** — `RVA(0x.., 0x..)` (a reconstructed body);

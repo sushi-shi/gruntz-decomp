@@ -1,6 +1,6 @@
 # Vtable map — full inventory + exact sizes
 
-`python3 -m gruntz.core.vtable_scan` recovers **every vtable** in
+`gruntz verify vtable-scan` recovers **every vtable** in
 `GRUNTZ.EXE` and its **exact entry count**, from three binary signals:
 
 1. **reloc runs** — every vtable slot is an absolute DIR32 fn address ⇒ a PE
@@ -59,9 +59,10 @@ track.
 
 The live catalogs are `config/retail/data_vtables.tsv` and
 `config/retail/data_static_libs.tsv`. They are manually maintained and cross-checked by
-the class-vtable and coverage gates. Proven-absent `??_7` tables still carry
-`VTBL_ABSENT` in source because absence is class-model state, not an executable label.
-Regenerate the address map with `python -m gruntz.core.vtable_scan`;
+`gruntz verify vtables`. A class whose `??_7` retail never emitted simply has NO
+`data_vtables.tsv` row — the `VTBL_ABSENT` source marker is retired, because
+absence is class-model state and needs no executable label.
+Regenerate the address map with `gruntz verify vtable-scan`;
 `docs/rtti-vtable-catalog.tsv` is the RTTI-side census.
 
 ## Why the manual stamps can't just flip to real virtuals

@@ -2,7 +2,7 @@
 tags: cpp:branch cpp:return cpp:goto | asm:jcc asm:je asm:jne | topic:codegen-idiom
 symptoms: a function is 96-99% with EXACTLY ONE branch inverted (`je`↔`jne`) and it is the LAST
 conditional; the two exit blocks are byte-identical but SWAPPED (whichever is emitted first sets
-eax *before* the pops, the second sets it *between* the pops); `sema disasm --diff` shows only the
+eax *before* the pops, the second sets it *between* the pops); `gruntz walls diagnose --asm` shows only the
 one flip; ret counts are EQUAL on both sides
 confidence: 9/10
 
@@ -102,6 +102,6 @@ jump to *differently-valued* exits is a behaviour difference, not a layout choic
 ## Related
 
 - [masked-diff-hides-branch-target](masked-diff-hides-branch-target.md) — why `--diff` hides this,
-  and `python -m gruntz.audit.jcc_sieve`, which enumerates every instance in the tree.
+  and `gruntz walls diagnose <fn>`, which names the divergence class per function.
 - [positive-gate-enables-shrink-wrap](positive-gate-enables-shrink-wrap.md) — the ret-count lever.
 - [negated-condition-far-block](negated-condition-far-block.md) — the two-if-bodies variant.

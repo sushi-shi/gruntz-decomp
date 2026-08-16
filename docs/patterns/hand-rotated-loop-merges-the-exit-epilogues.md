@@ -6,7 +6,7 @@ confidence: 9/10 for the ASM fingerprint; 1/10 for the SOURCE shape (see "The sc
 
 ## Symptom
 
-`--blocks --diff --lite` shows the latch inverted and the exit block replaced by a jump:
+`gruntz walls diagnose --asm` shows the latch inverted and the exit block replaced by a jump:
 
 ```
   B12    2i [jcc B28 | fall B13]   !!   2i [jcc B10^ | fall B13]     <- retail's back-edge

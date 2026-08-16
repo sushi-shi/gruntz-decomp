@@ -58,7 +58,7 @@ The remaining unconstrained flags (`/Gy`, `/GF`, `/Zp`) are now **pinned** by ma
 the struct-/static-table-heavy zlib TUs (trees, inftrees, deflate, infblock, infcodes,
 inffast, infutil, zutil) against GRUNTZ.EXE. **42 zlib functions are byte-exact** at
 `cl /c /O2 /MT` (the same flags adler32 needs — no extra flags required). Evidence
-below; the per-function table lives in `build/gen/symbol_names.csv`.
+below; the per-function table lives in `build/gen/bindings.tsv`.
 
 Byte-exactness here means: extract the function's code bytes from the delinked target
 obj and the freshly-compiled base obj, zero the 4-byte slots covered by relocations on
@@ -121,4 +121,4 @@ stays PRISTINE — no labels in it at all (NOT the `include/rva.h` `RVA()` macro
 uses): their static/K&R functions are dropped from IR when unused, so labels can't ride
 attributes/IR. `labels.py` emits each zlib unit's rows straight from that static config
 (authority-checked against the base obj — no source parse, no positional join), which
-regenerates `build/gen/symbol_names.csv`.
+regenerates `build/gen/bindings.tsv`.

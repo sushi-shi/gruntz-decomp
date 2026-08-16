@@ -1,6 +1,6 @@
 # Two sibling `x == NULL ? fallback : field` pairs: retail SINKS one and DUPLICATES the other — and the choice is made UPSTREAM
 tags: cpp:branch cpp:if cpp:local | asm:jmp asm:mov | topic:codegen-idiom topic:tail-merge
-symptoms: a `*::ApplyInit`/`*::Setup` that opens with two or three back-to-back `if (desc->m_x == NULL) m_a = m_default; else m_a = desc->m_x;` pairs plateaus in the high 80s / low 90s; `--blocks --diff --lite` shows one pair's arms as `Ni [jcc] / 1i [fall]` (SUNK: one store in the join) and the other as `Ni [jcc] / 3i [jmp] / 1i [fall]` (DUPLICATED: a store in each arm) - and the base has the SAME two shapes as the target but assigned to the WRONG pair
+symptoms: a `*::ApplyInit`/`*::Setup` that opens with two or three back-to-back `if (desc->m_x == NULL) m_a = m_default; else m_a = desc->m_x;` pairs plateaus in the high 80s / low 90s; `gruntz walls diagnose --asm` shows one pair's arms as `Ni [jcc] / 1i [fall]` (SUNK: one store in the join) and the other as `Ni [jcc] / 3i [jmp] / 1i [fall]` (DUPLICATED: a store in each arm) - and the base has the SAME two shapes as the target but assigned to the WRONG pair
 confidence: 9/10
 variants: trailing-statement-blocks-arm-tail-sink.md
 

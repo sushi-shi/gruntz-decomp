@@ -13,7 +13,7 @@ matches the `.data` block order confirms the object identity.
 That makes a stray global's real owner recoverable without any debug info:
 
 1. Enumerate every `.text` base-relocation whose target lands in the window, and map
-   the reloc SITE to its containing function (`symbol_names.csv` + `functions.json`).
+   the reloc SITE to its containing function (the Model + `functions.json`).
    Each singly-referenced string literal names the object that WON it, i.e. the
    object whose run contains that address.
 2. Read the block sequence around the global: `[…prev obj's literals…][ordinary
@@ -32,7 +32,7 @@ below and the CGameLevel area titles + `CGameMgr`/`CGruntzMgr` RTTI + every
 `g_pAreaMgr` fell out the same way: it opens AreaMgr.obj's run, immediately before
 `'IMAGEZ_%s'/'OBJECTZ_'/'SOUNDZ_%s'/'ANIZ_%s'`.
 
-**The trap that hides this.** `gruntz.audit.data_tu_order` bands a `.cpp`'s `DATA()`
+**The trap that hides this.** `gruntz verify data-tu-order` bands a `.cpp`'s `DATA()`
 rows per storage class and exempts a band that swallows ≥4 other files' defs as a
 "pool". A data label naming an **ILT jmp-thunk** is a `.text` rva, not data — if
 the band model counts it, the band starts near `0x1000`, becomes a pool, and the TU

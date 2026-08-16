@@ -39,7 +39,7 @@ The probe's own operand order is irrelevant — only its EXISTENCE matters. So a
 commutative-operand residue is evidence that **the TU is missing a definition that
 retail emitted before this function** (a body still homed elsewhere, a file-scope datum,
 or a COMDAT-emitting inline/static). It is not a property of the victim function, and
-`permute`/`match_variants` cannot reach it: they mutate bodies.
+`permute`/the retired permuter cannot reach it: they mutate bodies.
 
 Confirmed the same way on `CDDrawWorkerHost::Save` @0x00163780 (an `imul` of two adjacent
 members, `[esi+0x2c] * [esi+0x28]`): the probe takes its diff to nothing.

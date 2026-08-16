@@ -28,7 +28,7 @@
 
 A function scores high — often 95-100% — and is still wrong at run time, or a
 function is stuck in the 70s and every structural check comes back clean: the
-block skeleton aligns, `--branches --diff` says the branch sequence AGREES, the
+block skeleton aligns, `gruntz walls diagnose` says the branch sequence AGREES, the
 callee multiset matches, `store_offsets` reports no one-sided member store, and
 the reloc-addend sieve is quiet.
 
@@ -42,9 +42,9 @@ covers *non-relocated literals*:
 
 | sieve | sees |
 |---|---|
-| `gruntz sema disasm --diff` | instructions — it **displays** large immediates as `<addr>`, so a `/9`-vs-`/30` divisor is hard to READ off the diff even though objdiff scores it |
-| `--branches --diff` | conditional-branch mnemonics and targets |
-| `gruntz.audit.store_offsets` | *where* we store, never *what* |
+| `gruntz walls diagnose --asm` | instructions — it **displays** large immediates as `<addr>`, so a `/9`-vs-`/30` divisor is hard to READ off the diff even though objdiff scores it |
+| `gruntz walls diagnose` | conditional-branch mnemonics and targets |
+| a store-offset census | *where* we store, never *what* |
 | [reloc-addend](reloc-addend-is-masked-diff-the-addends.md) | only operands that carry a relocation (`g_tbl + K`) |
 | objdiff fuzzy % | one changed immediate in a 600-byte function is a rounding error |
 
@@ -64,9 +64,7 @@ lexically distinct. Compare the per-function multiset of immediates between the
 base obj and the delinked target obj:
 
 ```
-python -m gruntz.audit.immediates                 # whole tree
-python -m gruntz.audit.immediates --min-pct 95    # only near-matches
-python -m gruntz.audit.immediates --unit ddsurface
+gruntz walls diagnose <rva> --asm    # the pair; diff the immediate multisets by eye
 ```
 
 ## Three noise classes must be subtracted, or the report is unreadable

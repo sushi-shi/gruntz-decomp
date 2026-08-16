@@ -16,7 +16,7 @@ A family of tiny sibling loops (`CImageSet3::ScanUp/ScanRight/ScanDown/…ForVal
 | `while (y > 0) { … }` — no bound local | **100%** |
 | `i32 lim = m_width - 1; while (x < lim) { … }` | 67–82% |
 
-`--blocks --diff --lite` reports `flow SAME` for every one of them. The instruction
+`gruntz walls diagnose --asm` reports `flow SAME` for every one of them. The instruction
 STREAM is the same length and the same shape; only the register assignment is
 permuted, plus one telltale pair:
 

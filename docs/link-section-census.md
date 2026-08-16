@@ -5,7 +5,7 @@ duplicate symbols, no `/FORCE`**), so the candidate EXE's section table is an or
 Every `retail − candidate` byte below is in a named bucket; nothing is left as
 "the sections differ by N".
 
-Reproduce with `python -m gruntz.audit.section_census [--bss] [--reloc]`.
+Reproduce with `gruntz verify link-tier --census [--bss] [--reloc]`.
 Measured 2026-08-09 at `f24f7ca4c` (function scoring 3,498/4,325 exact, 92.20% fuzzy).
 
 ## The table
@@ -174,7 +174,7 @@ uninitialized data — real, unreconstructed globals. That is the honest worklis
 
 ### The 30 wrong-`const` declarations are not part of this
 
-`python -m gruntz.build.data_manifest --report` names 30 literals whose `.rdata` copy
+`gruntz.delink.data_manifest --report` names 30 literals whose `.rdata` copy
 cannot pair with the `.data` literal they are pinned onto (VC5 pools string literals
 without `/GF`, so a `const` static lands in `.rdata` and can never fold onto a `.data`
 literal). Their **total payload is 409 bytes** (2 to 29 bytes each: `"rb"`,
@@ -225,7 +225,7 @@ disproportion is entirely outside our reconstruction:
 * The −1,308 outside is library code: the same `LIBCMT`/`NAFXCW` archives, but not
   the same member set (we pull 235,035 B of library `.text`; retail's differs).
 * `.data` −340 is retail-relocated words we do not emit **at all**, i.e. pointer data
-  not yet reconstructed. `python -m gruntz.audit.data_relocs` reports **0 WRONG** over
+  not yet reconstructed. `gruntz verify data-relocs` reports **0 WRONG** over
   8,809 adjudicated words, so nothing we *do* emit points anywhere retail's does not.
 
 So: the `.reloc` shortfall is proportional-or-better within the reconstruction, and the

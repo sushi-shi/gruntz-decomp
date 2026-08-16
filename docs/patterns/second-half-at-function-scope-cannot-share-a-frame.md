@@ -39,8 +39,8 @@ if (cond) {
 frame 0x58 -> 0x48 and the function 99.93 -> 99.995; the last 0.005 was an unrelated
 argument swap. The whole function went **93.19 -> 100.00 EXACT**.
 
-A frame-size mismatch is never noise - `python -m gruntz.audit.insn_count` and the
-uniform `[esp+N]` shift in `gruntz sema disasm --diff --lite` both point straight at it.
+A frame-size mismatch is never noise - `gruntz walls diagnose <rva> --asm` and the
+uniform `[esp+N]` shift in `gruntz walls diagnose --asm` both point straight at it.
 Count the delta in units of `sizeof(the local you suspect)` before reaching for regalloc
 explanations.
 

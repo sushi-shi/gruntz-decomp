@@ -112,11 +112,11 @@ Five sieves now exist because each is blind to what the others see. In yield ord
 | sieve | catches | blind to |
 | :-- | :-- | :-- |
 | **call-name census** | a call we never make | everything not a call |
-| `gruntz.audit.immediates` | a wrong mask / divisor / tag | relocated operands |
-| `gruntz.audit.store_offsets` | a wrong or missing **member store** | reads; loaded-pointer bases |
-| `gruntz.audit.reloc_addends` | a wrong **addend** into a datum | non-relocated values |
-| `gruntz.audit.eh_band --census` | a wrong member/base **type** | non-destructible members |
-| `sema disasm --branches --diff` | a missing guard, inverted polarity | *poor hit rate* — mostly block layout |
+| the immediate multiset (`gruntz walls diagnose --asm`) | a wrong mask / divisor / tag | relocated operands |
+| the store offsets (`gruntz walls diagnose --asm`) | a wrong or missing **member store** | reads; loaded-pointer bases |
+| `gruntz verify assert-relocs` | a wrong **addend** into a datum | non-relocated values |
+| `gruntz.delink.eh_band --census` | a wrong member/base **type** | non-destructible members |
+| `gruntz walls diagnose` | a missing guard, inverted polarity | *poor hit rate* — mostly block layout |
 
 **Corollary:** percentage measures *similarity of what is present*. It cannot measure
 **absence**. Every "what did retail do that we don't" question needs its own census, and the

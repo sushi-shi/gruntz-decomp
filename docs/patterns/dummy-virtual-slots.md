@@ -5,7 +5,7 @@ confidence: 8/10
 
 To reproduce an indirect vtable-slot call `mov eax,[this]; call [eax+slot]` you only need the
 target method to sit at the right vtable INDEX. Declare `slot/4` placeholder virtuals (empty
-inline stubs, not in symbol_names.csv) ahead of it so the real method lands at the correct
+inline stubs, not in build/gen/bindings.tsv) ahead of it so the real method lands at the correct
 offset; the indirect call then falls out, reloc-masked. The placeholders cost nothing and do not
 shift data members (the vptr is already @+0). Adding virtuals does NOT regress scalar-delete
 sites (they use slot 0 regardless of how many slots follow).

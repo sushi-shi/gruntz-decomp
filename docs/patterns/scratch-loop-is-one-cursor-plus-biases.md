@@ -1,6 +1,6 @@
 # A memcpy-to-scratch pixel loop runs off ONE cursor plus integer BIASES, not N cursors
 tags: cpp:loop cpp:local cpp:pointer | asm:sub asm:add asm:mov | topic:codegen-idiom topic:regalloc
-symptoms: retail's preheader has `mov reg,<scratch> / sub reg,<other>` pairs and the loop body indexes `[cursor+bias]`; base instead carries a SECOND induction variable spilled to a stack slot (`mov edx,[esp+N] / add edx,2 / mov [esp+N],edx` every iteration); `reloc_multiset` shows the scratch global referenced FEWER times in base than in retail
+symptoms: retail's preheader has `mov reg,<scratch> / sub reg,<other>` pairs and the loop body indexes `[cursor+bias]`; base instead carries a SECOND induction variable spilled to a stack slot (`mov edx,[esp+N] / add edx,2 / mov [esp+N],edx` every iteration); `gruntz verify assert-relocs` shows the scratch global referenced FEWER times in base than in retail
 confidence: 9/10
 
 The blit/convert arms copy the destination row into a scratch buffer and then

@@ -88,7 +88,7 @@ and indexed with NO cursor in retail's shape, as in `SetupKeyTable`.
 Trigger: a member array (fixed size, filled then indexed) in a function that is byte-complete
 except for register-op PLACEMENT, after statement-level rewrites have come back inert. The
 fix is a *declaration* change, so it is invisible to every search that mutates the function
-body — the permuter and `match_variants` cannot reach it by construction.
+body — the permuter and the retired permuter cannot reach it by construction.
 
 Related: [`ehvec-member-array-not-adjacent-fields.md`](ehvec-member-array-not-adjacent-fields.md)
 (the other direction — adjacent fields that are really an array member),

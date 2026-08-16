@@ -67,7 +67,7 @@ The emitted symbol is minted from the address alone:
 name = "$T%d" % rva
 ```
 
-so `DATA_COMPGEN(0x001e9a40, …)` lands in `symbol_names.csv` as
+so `DATA_COMPGEN(0x001e9a40, …)` lands in the Model as
 
 ```
 0x1e9a40,$T2005568,grunt,0x8,data               # 0x1e9a40 == 2005568

@@ -2,20 +2,20 @@
 tags: cpp:local cpp:global | asm:mov topic:tooling topic:regalloc
 symptoms: a function plateaus 45-95% with identical block topology; the masked `--diff`
 shows a scatter of `-mov eax,_g_x` / `+mov eax,[esp+N]` that reads like regalloc noise;
-`gruntz.audit.shrink_wrap` may show +/-1 push
+`gruntz walls diagnose <rva>` may show a one-instruction delta
 confidence: 9/10 (calibrated to 0 false positives over 4301 paired functions)
 
 A `CGruntzMgr* reg = g_gameReg;` at the top of a long method reads better than retail's
 source and costs a callee-saved register for the whole body, so every later value spills.
-`sema disasm --diff` MASKS the address operand, so the twelve reads that became three
+`gruntz walls diagnose --asm` MASKS the address operand, so the twelve reads that became three
 appear as a handful of `-`/`+` pairs buried in scheduling noise. The signal that survives
 masking is the **count**: cl 5.0 re-materialises a global at every use unless the source
 hoisted it, so the number of DIR32 relocations naming a symbol inside one function is a
 direct readout of how many times the SOURCE mentioned it.
 
-    python -m gruntz.audit.global_refs              # DIR32 - data references
-    python -m gruntz.audit.global_refs --rel32      # REL32 - call targets
-    python -m gruntz.audit.global_refs --calibrate  # the false-positive rate
+    gruntz walls global-refs              # DIR32 - data references
+    gruntz walls global-refs --rel32      # REL32 - call targets
+    gruntz walls global-refs --calibrate  # the false-positive rate
 
 `base < target` = we over-cached (`CGrunt::LoadGruntCombatAnimations` read `_g_gameReg`
 three times against retail's five: 45.93 -> 50.43, exactly-matching basic blocks 41 ->
@@ -50,7 +50,7 @@ instead of going through the tool, and each one looks exactly like a finding.
    `??_C@_09MHNK@DemoMover?$AA@ + 0xc` on the target side, which by hand looks like we
    passed the wrong sprite-logic name and is nothing but the pool's previous symbol.
 4. **Drop a unit `report.json` does not score.** `build/objdiff/normalized/` is
-   incremental: a unit a later `configure.py` dropped leaves its base/target pair there
+   incremental: a unit a later `gruntz configure` dropped leaves its base/target pair there
    forever. One worktree held **72** of them, the oldest five days stale, and each scored
    0.00% - which sorts it to the very top of the worklist. `gamekeyhandler` (a superseded
    split of `play`) cost a re-derivation of `CPlay::OnKeyDown` before its `.symbols.tsv`

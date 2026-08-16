@@ -47,7 +47,7 @@ CGuardPoint::CGuardPoint @0xae5f0: a local temp for the receiver (`CWwdGameObjec
 an explicit read/modify/write pair, routing the `|=` through an inline member function, adding a
 trailing store, swapping the mem-init list order (`: CWapX(obj), CUserLogic(obj)`), and
 permuting the CWapX base ctor's own store order (putting `m_3c` first only re-blocks the hoist
-against the `m_38` store — it still clears the vptr store). `gruntz permute variants` found
+against the `m_38` store — it still clears the vptr store). the retired permuter found
 **0 applicable AST mutations** (single-statement body) and 384 candidates incl. 48 TU-state
 trials moved nothing.
 

@@ -57,9 +57,9 @@ Companion checks that close the rest of the format surface, all also clean:
 
 ## Tools
 
-    python -m gruntz.audit.serial_io          # the sieve above
-    python -m gruntz.audit.factory_map        # the 69-arm LogicTypeId -> class map
-    python -m gruntz.audit.savegame_dump <game-dir>   # decode the shipped .sav files
+    the archive-slot I/O sieve (retired)          # the sieve above
+    the LogicTypeId factory map (retired)        # the 69-arm LogicTypeId -> class map
+    the savegame decoder (retired) <game-dir>   # decode the shipped .sav files
 
 ## READ THE SHIPPED FILES FIRST — they refute inferences the code cannot
 

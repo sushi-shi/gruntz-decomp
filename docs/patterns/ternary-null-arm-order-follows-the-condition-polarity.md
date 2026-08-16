@@ -43,7 +43,7 @@ else                   { m8 = <compute>; }
 
 cl tail-merges the two zero blocks into one and gives it the fall-through of the SECOND
 test, so the compute arm moves behind it. 98.11 -> 99.21, branch sequences AGREE. Use
-`sema disasm --branches --diff` to tell this apart from a block-order artifact: it reports
+`gruntz walls diagnose` to tell this apart from a block-order artifact: it reports
 it as a lone POLARITY flip with equal branch and ret counts.
 
 related: negated-condition-far-block.md, map-lookup-ternary-ifconverts.md,

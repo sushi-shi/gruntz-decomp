@@ -18,7 +18,7 @@ In a TU compiled with `<MfcNoInline.h>` the 4-int `CRect` ctor is an out-of-line
 `call` (see [[out-of-line-crect-ctor-means-mfcnoinline-tu]]), so **every rect built by a ctor
 is one reloc you can count**:
 
-    gruntz sema disasm <rva> --target --lite | grep -c 'call *0x34a4'   # ILT thunk for ??0CRect@@QAE@HHHH@Z
+    gruntz sema disasm <rva> --lite | grep -c 'call *0x34a4'   # ILT thunk for ??0CRect@@QAE@HHHH@Z
 
 Then read each site's `rb` and pick by the ctor count at that site:
 

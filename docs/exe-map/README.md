@@ -3,7 +3,7 @@
 A small, self-contained website that answers *what lives where* in the retail
 binary and *what might be in the wrong `src/` file*. It is built from the same data
 the matching pipeline produces (`gruntz build`), read through
-`gruntz.core.exe_map`.
+`gruntz.sema.exe_map`.
 
 ## The pages
 
@@ -34,11 +34,22 @@ the matching pipeline produces (`gruntz build`), read through
 
 ## Regenerate
 
+One page is live: `scatter_core.html` regenerates straight from the Model.
+
 ```sh
-nix develop --command python docs/exe-map/build_site.py
+python3 -m gruntz.sema.exe_map     # -> scatter_core.{json,html}
 ```
 
-Each step writes its output (JSON + HTML) into this directory. Intermediate data:
+**The other generators in this directory are NOT currently runnable.** They were
+written against the old `gruntz.core.exe_map` loader and `build/gen/symbol_names.csv`,
+both retired by the 2026-08 rebuild (see [`../tooling-map.md`](../tooling-map.md)).
+The remaining `.html`/`.json` pages here are therefore **dated snapshots**, kept
+because their findings are cited across `docs/`; porting the generators onto
+`gruntz.sema.exe_map` plus `build/gen/bindings.tsv` is an open change request, and
+the scripts below are the source to port. Read them as the record of how each page
+was produced, not as commands to run.
+
+Intermediate data from the last full build of the site:
 `scatter.json`, `scatter_methods.json`, `flags.json`.
 
 ## Files
@@ -52,8 +63,7 @@ Each step writes its output (JSON + HTML) into this directory. Intermediate data
 - `split_plan.py` — actionable split/move worklist → `SPLIT_PLAN.md` (its category
   letters are cited from `docs/patterns/`).
 - `homm2_baseline.py` — **read-only** extract of the HoMM2 ground-truth VAs from
-  `/home/sheep/Projects/homm2/homm2-decomp` (its CodeView-derived `symbol_names.csv`
-  + `units.toml`) into `homm2_va.csv`; skips cleanly if that project is absent.
+  `/home/sheep/Projects/homm2/homm2-decomp` (its CodeView-derived label map + `units.toml`) into `homm2_va.csv`; skips cleanly if that project is absent.
 - `make_homm2.py` — builds `homm2.html` from the snapshot + Gruntz's data.
 - `probe.py` — ad-hoc layout probe (e.g. per-file cluster breakdown); handy when
   investigating a specific unit.

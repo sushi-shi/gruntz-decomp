@@ -31,7 +31,7 @@ permuter's span-scoped mutations do not flip it either.
 ## Verdict
 
 `topic:wall topic:regalloc`. When a serialize/grid loop is otherwise byte-exact and
-the ONLY residue is this imul operand swap (verify with `sema disasm --diff`: real
+the ONLY residue is this imul operand swap (verify with `gruntz walls diagnose --asm`: real
 diff is exactly the `mov`/`imul` operand pair, everything else is `[ebp]`-vs-
 `[ebp+0x0]` / `4*ecx`-vs-`ecx*4` display noise), it is a maximized `@early-stop`.
 Related but distinct from

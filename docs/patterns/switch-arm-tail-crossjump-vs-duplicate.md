@@ -39,7 +39,7 @@ WALL, not steerable - measured on `CGrunt::LoadPickupSprites` 0x65e80 (18 of 60 
 short by 10 B), `CGrunt::LoadGruntTypeTable` 0x4dd50 (12 of 20 `|= 0x10` sites) and
 named by the 2026-08-08 lane as the mechanism behind `CTriggerMgr::ResetGroup` 0x79520,
 which has a CLEAN extent and a CLEAN dispatch shape
-(`python -m gruntz.audit.jump_tables` reports it clean). Do not read a periodic 10-byte
+(`gruntz sema disasm <rva> --switch` reports it clean). Do not read a periodic 10-byte
 arm deficit as a missing statement: check first whether the short arm jumps a few bytes
 short of where its siblings jump.
 

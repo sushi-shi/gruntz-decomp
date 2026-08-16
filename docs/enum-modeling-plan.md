@@ -278,34 +278,35 @@ are annotated with the measurement showing the shape is byte-evidenced.
 
 ## Gates
 
-- **Cleanliness board** (`scripts/gruntz/cleanliness/board.py`) — three ratcheted
+- **Cleanliness board** (`gruntz verify board`) — three ratcheted
   rows: `magic case labels`, `unnamed domain compares`, `.cpp-local enums`. The
   third closes an existing blind spot: `_TYPEDEF_DEF` matches `struct`/`class`
   only, so enums defined in `.cpp`s were invisible to `.cpp-local views`.
-- **`gruntz audit enum-domains`** (`scripts/gruntz/audit/enum_domains.py`,
-  `--gate` at the `normal` tier) — a `_SPLIT` domain's declared storage must match
+- **`gruntz verify enum-domains`** (`scripts/gruntz/verify/enum_domains.py`,
+  the fast tier) — a `_SPLIT` domain's declared storage must match
   every `GZ_ENUM_STORAGE` width used for it (FATAL); no bare `enum X {` outside
   the macros; range tests use domain boundaries; enumerators follow the naming
   convention. Implicit enumerator values are reported for review.
-- **Periodic search** — `readability-magic-numbers` in
-  `config/tidy-audit.yaml`, read via `gruntz audit tidy`, helps find
-  newly introduced candidate domains without maintaining a permanent file ledger.
+- **Periodic search** — a clang-tidy `readability-magic-numbers` pass over the
+  clangd compile database finds newly introduced candidate domains without
+  maintaining a permanent file ledger. (The tracked tidy-audit config it once
+  read is retired.)
 
 ## Verification
 
 - **Probe / neutrality claims:** `llvm-objdump -dr -s -t` on the base obj, before
   vs after. Object identity, not `%` — a value-identical edit renumbers `$L`/`$T`
   labels, which objdiff scoring cannot see.
-- **Per edit:** `gruntz build --fast`, read the touched unit's `%`.
-- **Per commit:** `gruntz build --normal` — cleanliness ratchet, `label_style`,
+- **Per edit:** `gruntz build`, read the touched unit's `%`.
+- **Per commit:** `gruntz build` — cleanliness ratchet, `label_style`,
   `include_order`, `verify_unique_names`, and the per-function MAX report.
-- **After any member retype:** `gruntz build --full` runs the layout/access audits, which are
+- **After any member retype:** `gruntz verify check --tier full` runs the layout/access audits, which are
   what catches an accidental 1→4 byte widening.
 
 ## Traps
 
 - **Retyping a param or return rewrites the mangling** — it flows into
-  `build/gen/symbol_names.csv` → synth PDB → delink, so the `RVA_COMPGEN` pins
+  `build/gen/bindings.tsv` → synth PDB → delink, so the `RVA_COMPGEN` pins
   must be updated in the same commit. `LogicTypeId` already shows the shape:
   `?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ`.
 - **Assignment is the error; comparison is not.** `m_kind = 0x36;` stops

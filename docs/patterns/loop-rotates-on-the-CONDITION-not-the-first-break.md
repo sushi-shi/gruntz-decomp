@@ -1,7 +1,7 @@
 # One extra branch in a loop: cl rotates the loop CONDITION, so pick which test is the condition
 
 tags: cpp:loop cpp:branch | asm:jmp asm:cmp | topic:codegen-idiom
-symptoms: `sema disasm --branches --diff` reports **base has exactly one more conditional branch
+symptoms: `gruntz walls diagnose` reports **base has exactly one more conditional branch
 than target**; the extra one is a DUPLICATE of a test that also appears at the top of the loop, and
 retail's back-edge jumps to that top test while ours jumps past it into the body
 confidence: 9/10
@@ -22,7 +22,7 @@ the back-edge. So the test you choose as the CONDITION is the one that gets dupl
 + back-edge), and the test you leave as a `break` stays single, at the loop head, and is what the
 back-edge lands on.
 
-That is a **one-branch difference**, and it is the entire signal `--branches --diff` reports.
+That is a **one-branch difference**, and it is the entire signal `gruntz walls diagnose` reports.
 
 ## Measured
 
@@ -120,8 +120,8 @@ the loop already makes is the fingerprint; delete it and promote its test to the
 
 ## How to read it off the target
 
-`--diff` and `--blocks --diff` mask address operands and will report the two functions identical.
-Use `--branches --diff`: it reports the count mismatch. Then `--blocks --lite --target` and find the
+`--diff` and `gruntz walls diagnose --asm` mask address operands and will report the two functions identical.
+Use `gruntz walls diagnose`: it reports the count mismatch. Then `--blocks --lite --target` and find the
 back-edge (`LOOP`) block - **whatever block the back-edge jumps to is the loop head, and whatever
 test that block contains is NOT the condition**. The condition is the test in the back-edge block
 itself.

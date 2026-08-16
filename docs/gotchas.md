@@ -12,7 +12,7 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
   hid behind this (`/9`-vs-`/30`, FP `fild` operands).
 - **`objdiff-cli report generate` returns STALE per-fn %** — it does not re-run the
   normalize / content-address step, so it can report a function unchanged when it actually
-  moved (76%→85% shown as 76%). **Only `gruntz build --fast` gives accurate per-function
+  moved (76%→85% shown as 76%). **Only `gruntz build` gives accurate per-function
   fuzzy%.** Never trust a bare `report generate` number.
 - **A normalization refresh can expose fake `_$E<n>` matches.** The suffix is a
   compiler emission ordinal, and retail helpers may lack the relocation records
@@ -32,7 +32,7 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
   objdiff's own `objdiff-cli diff … --format json` carries `"match_percent": 0.0` **with a
   live `target_symbol` link** for every one of them. **Always read the field as
   `float(fn.get("fuzzy_match_percent") or 0.0)`** — or, in-package, via
-  `gruntz.core.report.fn_fuzzy()`. Two readers guessed and both guessed wrong, silently:
+  `gruntz.verify.scores.fn_fuzzy()`. Two readers guessed and both guessed wrong, silently:
   `permute_sweep` defaulted the missing key to **100.0** and so skipped exactly the
   0%-matching functions from its worklist, and `Report.fn_pct` returned `None` so
   `gruntz sema rva` printed *no match line at all* for them. Pinned by
@@ -80,7 +80,7 @@ change, and a search harness must treat it differently.
 
 - **A header edit shifts MSVC's per-compiland symbol counter**, and file-scope statics embed it
   in their mangled name (`_kScrollRate$S41595` → `$S41607`, `_s_join$S29067` → `$S29079` —
-  exactly +12 in every affected TU). Those names flow base obj → `symbol_names.csv` → synth PDB
+  exactly +12 in every affected TU). Those names flow base obj → the Model → synth PDB
   → delink, so they stay self-consistent for ANNOTATED statics; an unannotated `$S` symbol has
   no such guarantee. Same mechanism as the `<new>`/`<new.h>` swap
   (`_s_FreezeRadius$S33024` → `$S32890`) — a general property of header edits, not one header's quirk.
@@ -95,7 +95,7 @@ change, and a search harness must treat it differently.
 - **The DATA side of that blindness is worse, and now has its own gate.** A relocated word's
   bytes are a placeholder the linker overwrites, so both sides hold the SAME placeholder and a
   byte comparison cannot see a wrong referent at all — a vtable slot bound to the wrong method
-  moves no byte. `gruntz.audit.data_relocs` (normal tier) adjudicates every pinned datum
+  moves no byte. `gruntz verify data-relocs` (normal tier) adjudicates every pinned datum
   against the retail image's own `.reloc` table. Two traps it cost to learn: compare resolved
   ADDRESSES, never names (a name comparison must drop one-sided names to survive the pooled-
   literal split, and a wrong vtable slot is exactly a one-sided name — the first draft reported
@@ -103,7 +103,7 @@ change, and a search harness must treat it differently.
   because retail's incremental link puts the ILT `jmp` thunk's address in a vtable slot, not
   the body's (4725 phantom rows without it). Details: `docs/data-attribution.md` §4.
 
-- **Proposed cheap pre-oracle (plausible, not yet verified):** diff `symbol_names.csv`. If a
+- **Proposed cheap pre-oracle (plausible, not yet verified):** diff the Model. If a
   candidate shifts any `$S<n>` it disturbed the cone and needs the whole-tree rescore; if the
   CSV is byte-identical, a single-unit score should be sound. Sub-second gate in front of a ~40 s
   one — worth validating before relying on it.
@@ -145,13 +145,13 @@ change, and a search harness must treat it differently.
 - **`build.ninja` stale after the include graph changed** — FIXED 2026-08-08; the note below
   is why you may still see it in an old tree. The `cl` edges DO carry per-header implicit deps
   (159 headers on `gamemode.obj`) and touching a listed header DOES rebuild — but the lists are
-  baked by `configure.py`'s `local_headers()`, and the `configure` edge used to fire only on
-  `config/units.toml`/`configure.py`. So a deleted/renamed header gave
+  baked by `gruntz configure`'s `local_headers()`, and the `configure` edge used to fire only on
+  `config/units.toml`/`gruntz configure`. So a deleted/renamed header gave
   `ninja: error: <hdr> missing and no known rule to make it`, and — the silent, dangerous half —
   a NEWLY ADDED `#include` was absent from the baked list, so later edits to that header
   rebuilt nothing and you diffed stale code. **That is the failure any "byte-neutral header
   edit" claim rests on not happening.** Now every file the include scan reads is an implicit
-  input of the `build.ninja` edge, and `gruntz build` runs `configure.py` unconditionally
+  input of the `build.ninja` edge, and `gruntz build` runs `gruntz configure` unconditionally
   (~0.3 s, after memoizing a scan that used to cost 13.4 s) so a rename cannot wedge ninja.
   `/showIncludes` would give real depfiles but MSVC 5.0 rejects it (`D4002`).
   Manual escape hatch if a tree is still wedged: `rm -f build.ninja .ninja_deps .ninja_log
@@ -167,7 +167,7 @@ change, and a search harness must treat it differently.
 
 - **`permute.py` (operand-order/reassoc/decl-split) cannot move regalloc.** MSVC5
   canonicalizes `ptr+i == i+ptr`, so operand swaps are no-ops on SIB walls.
-- **`match_variants --state-trials` targets cross-function compiler state, not arbitrary
+- **the retired permuter targets cross-function compiler state, not arbitrary
   source bugs.** It perturbs the *preceding* TU content, so use it when a source-identical
   later function moves after TU composition changes. Do not assume independent COMDATs mean
   independent codegen: adding the real preceding `BlitIntoDesc` changed two `ShadeRect`
@@ -211,8 +211,8 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
   `disp8` where the right ones need `disp32` shrink the body by tens of bytes while `--diff`
   shows two operand mismatches (`CPlay::DrawDebugStats`, 812 bytes vs an annotated 862).
   Two cheap checks before you write an `@early-stop` on a register rename:
-  `python -m gruntz.audit.base_size --min-pct 99` (compiled LENGTH vs the RVA() size - the
-  invariant every instruction-aligned view is blind to), and a source diff against the
+  `gruntz walls diagnose <rva>` (its first two lines are the compiled LENGTH of both
+  sides - the invariant every instruction-aligned view is blind to), and a source diff against the
   function's SIBLINGS (a constant / argument order / offset that differs in exactly one
   member of an obvious family is a bug). See docs/patterns/compensating-error-signatures.md.
 
@@ -241,20 +241,23 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
 
 ## Cleanliness tooling (see `docs/cleanliness-metrics.md`, `docs/cast-metric-policy.md`)
 
-- **`gruntz.cleanliness.board`** computes the fast, comment/string-stripped
-  `cleanliness-text-baseline.tsv` on normal builds and the build/IR-derived
-  `cleanliness-semantic-baseline.tsv` only on full builds. It prints measured rows with a
-  delta; `--update` blesses text floors and `--semantic --update` includes semantic floors.
+- **`gruntz verify board`** computes the fast, comment/string-stripped
+  `cleanliness-text-baseline.tsv` in the fast tier and the build/IR-derived
+  `cleanliness-semantic-baseline.tsv` only under `--semantic` (the full tier). It prints
+  measured rows with a delta; `--update` blesses text floors and `--semantic --update`
+  includes semantic floors. The gate itself never writes a floor.
 - Most metrics are at **0** (casts, placeholder classes/vtables/views, `)this`/`)m_`/`(char*)`
   casts, offset-cast macros — all DONE). Remaining actionable: **m_&lt;hex&gt; fields (~8.5k),
   Method/Stub/FUN/Gap (~245 unreconstructed stubs), `void* m_` members (18),
   `reinterpret_cast<class*>(m_)` (1), cpp extern decls (490)**.
-- The one-shot cast CONVERTERS that drove those to 0 (`cast_ptr_to_named`, `cast_to_static`,
-  `cast_str_to_named`, `cast_drivers`) are ARCHIVED in `scripts/archive/`.
-- Live gates run every `gruntz build` (fail the build): `vtable_slot_binding`,
-  `vtable_coverage`, `vtable_virtuality`, `vtable_bans`, `class_vtables`,
-  `view_debt`, `verify_stubs`, `verify_unique_names`,
-  `verify_library_overlap`, `gate_selftest`, `tu_order_check`. **Caveat:** a cleanliness
+- The one-shot cast CONVERTERS that drove those to 0 are gone; the ledger that keeps
+  them at 0 is `gruntz verify casts`.
+- Live gates run every `gruntz build` (fail the build): the `fast` tier (`board`,
+  `vtable-bans`, `casts`, `enum-domains`, `label-style`, `include-order`) and the
+  `normal` tier (`unique-names`, `library-overlap`, `tu-order`, `data-tu-order`,
+  `undefined-closure`), after the MAX gate. The vtable tier moved to
+  `gruntz verify check --tier full`, and `gruntz verify selftest` is the
+  negative-control harness. **Caveat:** a cleanliness
   regex can silently rot vs actual naming — a green `0` is a claim to re-verify against a fresh
   identifier enumeration, not proof.
 
@@ -263,7 +266,7 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
 `flake.nix` builds `objdiff-cli` from `objdiff-src` (v3.7.3) with
 `nix/patches/objdiff-bss-inferred-extent.patch`; the `objdiff` **GUI** is still the
 upstream prebuilt download. Only the CLI generates `report.json`, so every number in
-`gruntz status` / `README.md` comes from the patched build — but if you open the GUI on
+`gruntz verify status` / `README.md` comes from the patched build — but if you open the GUI on
 a `.bss` section it will still show the old 50%-per-inferred-extent rows. That is the
 GUI, not a regression. Same stale-shell rule as below: a shell entered before the flake
 change still has the unpatched CLI on PATH.
@@ -355,9 +358,9 @@ it** (swept 2026-08-09, all evidence static):
 
 | checked | how | result |
 |---|---|---|
-| object sizes | `gruntz.audit.alloc_size` — retail `push <n>; call ??2` vs Clang-computed `sizeof` | 430 attributed sites. `CImage` 0x34 (0x151f24), `CDDrawWorker` 0x6c (0x154b24), `CDDrawWorkerHost` 0x158 (0x15d8ef), `CPlay` 0x520 |
-| member offsets | `gruntz.audit.subobject_offsets` (831 agree / 0 disagree), `this_offsets` (0 past-sizeof) + hand-check vs retail | `CDDrawWorker`: `CObArray` @+0x10, `m_pData` @+0x14, `m_nSize` @+0x18, `m_name[0x40]` @+0x24, `m_minIndex` @+0x64, `m_maxIndex` @+0x68. The "+0x10 vs +0x14" discrepancy in the first write-up is not one: +0x10 is the sub-object (`lea ecx,[esi+0x10]`), +0x14 is `m_pData` |
-| vtable slots | `vtable_hierarchy --audit` 0 flags, `vtable_owner --audit` 0 MISBOUND / 0 RTTI-MISBOUND, `vtable_slot_binding` all 2887 slots wired | `CImage` 18 slots, `CDDrawWorker` 17 — both match RTTI and our headers in order. `InsertFrame`'s `[edx+0x2c]` is `CImage::Resolve`, `[edx+0x4]` the deleting dtor |
+| object sizes | `gruntz verify alloc-size` — retail `push <n>; call ??2` vs Clang-computed `sizeof` | 430 attributed sites. `CImage` 0x34 (0x151f24), `CDDrawWorker` 0x6c (0x154b24), `CDDrawWorkerHost` 0x158 (0x15d8ef), `CPlay` 0x520 |
+| member offsets | a subobject/`this`-offset census (831 agree / 0 disagree, 0 past-sizeof; instrument retired, `gruntz verify layout` is the live field-offset oracle) + hand-check vs retail | `CDDrawWorker`: `CObArray` @+0x10, `m_pData` @+0x14, `m_nSize` @+0x18, `m_name[0x40]` @+0x24, `m_minIndex` @+0x64, `m_maxIndex` @+0x68. The "+0x10 vs +0x14" discrepancy in the first write-up is not one: +0x10 is the sub-object (`lea ecx,[esi+0x10]`), +0x14 is `m_pData` |
+| vtable slots | the hierarchy/owner audits 0 flags, 0 MISBOUND / 0 RTTI-MISBOUND, all 2887 slots wired (now `gruntz verify vtables` + `gruntz sema class`) | `CImage` 18 slots, `CDDrawWorker` 17 — both match RTTI and our headers in order. `InsertFrame`'s `[edx+0x2c]` is `CImage::Resolve`, `[edx+0x4]` the deleting dtor |
 | ctor init | retail's inlined worker ctor in `InsertFrameByKey` 0x154ae0 | vptr, `m_id`, `m_flags=0`, `m_ownerCtx`, **`call CObArray::CObArray()` on `this+0x10`**, vptr, `m_minIndex=0x1869f`, `m_maxIndex=0` — exactly our header's inline ctor. `Unload` 0x151ee2 resets the same pair |
 | writers | whole `ddrawworkerregistry` unit is 100.00; `AddFrameAt` 0x1521c0 has **no rel32 caller** (inlined everywhere); we define no MFC container method, so `m_pData` is only ever written by `nafxcw:array_o.obj` | every deleter (`RemoveByKey`, `MapTeardown`, `RemoveKeysEqual`) removes the map key *and* deletes — no dangling registry entry |
 
@@ -365,7 +368,7 @@ Vtable "slack" in `link_sections --undersized` is a false lead for this: retail 
 `.rdata` contributions with zeros, so `??_7CPlay@@6B@` reads `claim 0xac -> next pin +0xd8`
 while the real vtable is exactly the 43 slots we emit.
 
-`gruntz.audit.link_defects` reports 0 PHANTOM / 0 UNDEFINED-DATA / 0 MULTIPLY-DEFINED and
+`gruntz verify link-tier` reports 0 PHANTOM / 0 UNDEFINED-DATA / 0 MULTIPLY-DEFINED and
 **11 DIVERGENT COMDATs** — all characterised as toolchain-flag divergence, none semantic:
 `??_7CImage@@6B@` (72 B in `wwdgameobject` vs 76 B in `cimagecomdats`) is the same 18 slots
 in the same order, differing only by the `??_R4CImage@@6B@` COL prefix `/GR` adds, and the

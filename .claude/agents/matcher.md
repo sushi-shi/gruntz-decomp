@@ -92,7 +92,7 @@ So when a function is stuck below 100 on residue you believe is TU-composition n
 
 1. Perturb the TU (an extra declaration, an include, whatever lands the window) until the target
    reads **100.00**.
-2. Build, then run `python -m gruntz.match.status update` **with the perturbation still applied**.
+2. Build, then run `gruntz verify status update` **with the perturbation still applied**.
    This banks `best = 100.00` against the function's *unchanged* per-function fingerprint.
 3. **Remove the perturbation.** Current drops back; `best` stays, because the rva did not move.
 4. **Move to the next function.**
@@ -143,8 +143,8 @@ so; do not fabricate an identity.
 When a fold needs vtables/virtuals/inheritance, **READ THE SLOT MAP. NEVER HAND-DERIVE IT.
 NEVER PAD.**
 
-    python -m gruntz.core.vtable_hierarchy --class <C>   # the slot map
-    python -m gruntz.core.vtable_hierarchy --csv
+    gruntz sema class <C>   # the slot map
+    gruntz sema class --csv
 
 It reads retail RTTI (COL at `vtable-4` → base-class array → the exact class graph), aligns each
 class against its primary base, and tags **every slot** `inherited` / `override` / `new` with
@@ -261,7 +261,7 @@ home or correcting a binding is expected and has no cost while MAX holds.
 Gate on
 BUILD INTEGRITY only; NEVER revert a structurally-correct move/fold/binding for a
 %-drop (mark `@early-stop` + note the mechanism, keep it). **reloc-fidelity**
-(`python -m gruntz.audit.assert_relocs` — every reference bound to the rva retail
+(`gruntz verify assert-relocs` — every reference bound to the rva retail
 actually uses) and **view debt** now outrank match %. The push-to-100 mandate below
 still governs an ordinary from-scratch reconstruction; it does NOT license reverting
 a correct structural change to protect a number. Retargeting a call/global to the RIGHT
@@ -313,7 +313,7 @@ are assigned is game/engine code, so you never identify or handle library yourse
    wall classified with the `wall-identifier` skill and the BYTE-LEVEL reason (which
    instruction/register choice diverges, and why it is not a structure bug) is written
    in the `// @early-stop` comment and, for a genuinely bounded wall, in
-   `wall-break.md`. Never a partial that under-counts.
+   the wall's own report. Never a partial that under-counts.
 4. **Size is not a reason to defer.** Reconstruct large bodies leaf-first, in full.
 5. **You are ONE worker. NEVER spawn subagents.** Do fewer functions if budget is
    tight and report the rest as not-done — do not delegate.
@@ -442,48 +442,38 @@ wrapper, still runnable as `python -m gruntz.<...>`):
   prints the caller ancestry (callers-of-callers), chasing ILT jmp-thunks
   automatically — attribution in ONE command instead of a manual fn→thunk→fn
   chase. Default depth 4; `--depth 0` = unlimited (can be huge).
-- `gruntz sema def|refs|hover|symbol …` — clangd (LSP) over src; true def/ref/type
-  where grep returns collision noise (same-named members, per-TU shadows, overloads).
-  The harness **LSP** tool (def/refs/hover/symbol/incoming+outgoing-calls) is the same.
+- `gruntz lsp refs|hover|rename <Sym|file:line[:col]>` — clangd (LSP) over src;
+  true ref/type where grep returns collision noise (same-named members, per-TU
+  shadows, overloads). Everything is keyed on the symbol's USR, so a same-named
+  member of a different class is never touched.
 - `gruntz sema rva <addr>` / `class <name>` / `match <rva|unit>` — one-shot dossiers
-  (src claim + FID row + Ghidra fn + match %; vtable slot roles; per-fn %).
-- `gruntz sema disasm <rva>` / `strings <rva>|--find <text>` — retail disasm+relocs;
-  a fn's string set / reverse literal lookup. **The disasm flags are your core
-  matching loop:**
-  - `--diff` — BASE-vs-TARGET asm diff, addresses masked, rc=1 if differing: the
-    fastest "am I byte-exact / what still differs" check after every build.
-  - `--base` — YOUR compiled fn out of its unit's base obj (what objdiff compares).
-  - `--rich` — `--base` interleaved with the /Z7 SOURCE LINES: see which statement
-    produced which instructions and what /O2 folded — the go-to view when a body
-    plateaus (reads which of your statements the compiler reshaped). Composes with
-    `--lite`.
-  - `--lite` — bare asm, no addresses/bytes/reloc noise (for reading + hand-diffing).
-  - `--target` — the retail side, explicit (the default).
-  - `--blocks` — IDA-style BASIC-BLOCK view (either side): in-edges per block; with
-    `--lite` a skeleton, with `--diff` a block-aligned diff. `--dot` emits the CFG
-    as graphviz.
-  - **START HERE on any new function:**
-    `gruntz sema disasm <rva> --blocks --diff --lite` — topology + what still
-    differs, condensed. Reading a flat instruction stream and rebuilding the
-    control flow by hand is wasted effort when this exists. Go to `--rich` once
-    the shape is right and you are chasing which STATEMENT produced which
-    instructions.
-  - `--branches` — **the view `--diff` structurally CANNOT give you.** `--diff` and
-    `--blocks --diff` mask address operands, and that masking also hides
-    intra-function branch DISPLACEMENTS. So a pure control-flow divergence prints
-    "identical" in both while the function sits below 100%. `--branches --diff` emits
-    the ordered conditional-branch sequence with each target named by branch INDEX
-    (a uniform displacement shift therefore compares equal) plus the ret counts.
-    **Whenever the block/diff view is clean but the score is not 100, this is where
-    the signal is** — ten of the twelve functions in the 2026-07-28 sieve campaign
-    were invisible to the first look. See
-    `docs/patterns/masked-diff-hides-branch-target.md`. The tool self-hints on that
-    path; believe the hint.
+  (the winning binding + aliases + channel + extent + match %; vtable slot roles;
+  per-fn %).
+- `gruntz sema disasm <rva>` / `dump <rva>` / `strings <rva>|--find <text>` — retail
+  disasm with Model annotations, raw bytes + ordered relocation targets, and a fn's
+  string set / reverse literal lookup. Flags: `--lite` (bare asm), `--blocks`
+  (basic-block view), `--switch` (dereference the table behind an indirect `jmp`),
+  `--size` (decode N bytes instead of the binding's extent). **sema is retail-only
+  and read-only** — it never compares the two sides.
+- **START HERE on any function that is not 100%:** `gruntz walls diagnose <rva>`.
+  It reads the NORMALIZED base/target pair (the exact evidence objdiff scored) and
+  prints, for each side, the byte length, instruction / call / branch / `ret` /
+  relocation counts, then names the FIRST divergence class: referent →
+  inline/call-set → cfg → regalloc. `--asm` dumps both sides unmasked.
+  - This is the view a masked comparison structurally CANNOT give you. Masking
+    address operands also hides intra-function branch DISPLACEMENTS, so a pure
+    control-flow divergence reads as "identical asm" while the function sits below
+    100%. The branch and `ret` counts are where that signal lives — ten of the
+    twelve functions in the 2026-07-28 sieve campaign were invisible to the first
+    look. See `docs/patterns/masked-diff-hides-branch-target.md`.
+  - Reading a flat instruction stream and rebuilding the control flow by hand is
+    wasted effort when this exists.
 - **Testing a hypothesis: name the mechanism first, then ONE targeted A/B.** The
   exhaustive Cartesian variants engine is RETIRED; a hypothesis that cannot name its
   suspect site and expected byte effect is not ready for an edit. Run the smallest
-  disposable A/B that decides it, keep only the winner, and record the outcome (a
-  bounded wall goes to `wall-break.md`).
+  disposable A/B that decides it, keep only the winner, and record the outcome. A
+  genuinely bounded wall is parked with `@early-stop` and its state lives in the
+  DERIVED inventory (`gruntz walls inventory`), never in a hand-kept ledger file.
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.
@@ -522,7 +512,7 @@ reinterprets, delete local decl-only proximity hosts).
     # -> already EXACT in `gruntzapp` -> skip it (STOP-EARLY). The library row is an
     #    AMBIG FID false-positive (it is NOT really CMetaFileDC) — don't trust it.
 
-    $ gruntz sema disasm 0x00080850 --blocks --diff --lite   # FIRST LOOK at any function:
+    $ gruntz walls diagnose 0x00080850 --asm   # FIRST LOOK at any function:
     #    basic-block topology + what still differs, condensed. Do this before the flat
     #    stream below - you get the control-flow shape handed to you instead of
     #    rebuilding it from jump targets by hand.
@@ -574,13 +564,13 @@ convention across `src/`; leave the size arg unpadded. You do NOT
    class. When a target's class/owner is unclear, xref FIRST — don't guess from the name.
 2. **Reconstruct the types** (class layout from offsets/sizes; each extern's *real* signature)
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
-3. **Build + diff — iterate with `gruntz build --fast`.** `--fast` runs the FULL ninja graph
-   (compile → gen_labels → `symbol_names.csv` → delink → objdiff → `report.json`), prints the
+3. **Build + diff — iterate with `gruntz build`.** `--fast` runs the FULL ninja graph
+   (compile → gen_labels → the Model → delink → objdiff → `report.json`), prints the
    objdiff %, and STOPS before the ~20 s structural gate tail (verify_*/vtable_*/status).
    Read the per-function objdiff after each `--fast` build. It is the proper inner-loop tool for
    **every** task, including:
-     - **reloc-fixing:** `--fast` still regenerates `symbol_names.csv` + re-delinks, so a new
-       `DATA()`/`RVA()`/`SYMBOL()` rebinds — run `python -m gruntz.audit.assert_relocs` right
+     - **reloc-fixing:** `--fast` still regenerates the Model + re-delinks, so a new
+       `DATA()`/`RVA()`/`RVA_COMPGEN()` rebinds — run `gruntz verify assert-relocs` right
        after it (that tool was never part of the gate tail; it reads the fresh `report.json`).
      - **view-axing / folds:** a fold's correctness is *compiles + objdiff %*, both in `--fast`;
        run the view-debt tool manually if you need the count.
@@ -589,7 +579,7 @@ convention across `src/`; leave the size arg unpadded. You do NOT
    --audit`) and the baseline is written. Never `gruntz clean` for a metric (it wipes
    the Ghidra DB → cold re-import); the reloc/delink pairing is refreshed by any `--fast` build.
    **Run everything INSIDE one open `nix develop .#build` shell** — `cd` into your assigned worktree
-   FIRST, enter the shell once, and run every `gruntz build --fast`/`status` *inside* it (don't spawn
+   FIRST, enter the shell once, and run every `gruntz build`/`status` *inside* it (don't spawn
    `nix develop` per command — that re-pays the entry hook every time).
    `GRUNTZ_DIR`/`WINEPREFIX`/`REPO` are fixed at shell entry to `$PWD`, so a shell opened in main —
    or a `cd` *after* `nix develop` — builds and scores **main, not your worktree**. Use absolute
@@ -634,7 +624,7 @@ its body stays — a **complete, correct reconstruction** (this is NOT a half-wr
 is the *byte-match* that is parked, not the logic. Record that so the method is not mistaken for a
 finished 100% match: an `// @early-stop` marker line directly above its `RVA()`. Do not attach
 percentages or causal wall narratives: both become stale and have repeatedly discouraged valid
-reconstruction work. Re-derive the current residue from `gruntz sema disasm --diff --lite`; put a
+reconstruction work. Re-derive the current residue from `gruntz walls diagnose <rva> --asm`; put a
 reproducible mechanism in `docs/patterns/` rather than on one function.
 
 Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@early-stop`** — so
@@ -667,8 +657,8 @@ The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`c
 - **VTABLES: READ THE SLOT MAP. NEVER PAD WITH PLACEHOLDER VIRTUALS.**
   **The per-slot ground truth already exists — you do not derive it.** Run:
 
-      python -m gruntz.core.vtable_hierarchy --class <Class>     # one class
-      python -m gruntz.core.vtable_hierarchy --csv slots.csv     # every class
+      gruntz sema class <Class>     # one class
+      gruntz verify vtable-scan     # every class
 
   It reads **RTTI** (each vtable's Complete Object Locator at `vtable-4` → base-class array →
   the exact class graph), aligns the class's vtable slot-by-slot against its primary base, and

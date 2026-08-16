@@ -1,8 +1,7 @@
 # `dec <reg>` where you wrote `cmp <reg>,1` — the source is a ONE-ARM `switch`, not an `if`
 
 tags: cpp:switch cpp:if cpp:branch | asm:dec asm:sub asm:cmp asm:jne | topic:codegen-idiom
-symptoms: a tiny handler is byte-for-byte right except for its single guard; `sema disasm
-  --diff` shows exactly one replaced pair, `-cmp eax,0x1` against `+dec eax`, with the same
+symptoms: a tiny handler is byte-for-byte right except for its single guard; `gruntz walls diagnose --asm` shows exactly one replaced pair, `-cmp eax,0x1` against `+dec eax`, with the same
   `jne`, the same branch count and the same ret count
 confidence: 10/10
 
@@ -89,8 +88,8 @@ objdiff residue, so these functions sit high (90-99%) and read as a register/sch
 wall. They are not — they are a one-line source-form fix. Sieve for them with
 
 ```
-python -m gruntz.audit.jcc_sieve          # branch-shape agreement, then read the pair
-gruntz sema disasm <rva> --diff | grep -B2 -A2 '^[-+]\(cmp\|dec\|sub\)'
+gruntz walls diagnose <rva>          # branch-shape agreement
+gruntz walls diagnose <rva> --asm | grep -A2 -B2 -E '(cmp|dec|sub)'
 ```
 
 and prefer the switch form wherever the subject is a domain (a message id, a timer id,

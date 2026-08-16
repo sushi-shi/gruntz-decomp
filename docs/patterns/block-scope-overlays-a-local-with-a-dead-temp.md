@@ -9,7 +9,7 @@ confidence: 9/10
 
 ## The signal
 
-`python -m gruntz.audit.eh_band --census` splits each unwind funclet into a skeleton, its
+`gruntz.delink.eh_band --census` splits each unwind funclet into a skeleton, its
 `[ebp+disp]` displacements and its relocation targets. A group in the `frame-offset`
 bucket already agrees on WHAT is destroyed and in WHAT ORDER - only the frame slots move -
 and the census prints `retail - ours` over those displacements. **One delta for the whole

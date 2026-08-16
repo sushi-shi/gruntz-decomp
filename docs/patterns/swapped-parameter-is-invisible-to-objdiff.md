@@ -43,7 +43,7 @@ full, valid save; the index row keeps `type = 0`, so the save list shows
 
 There is no cheap mechanical sieve for this (see below). The reliable move is:
 
-1. `gruntz sema disasm <rva> --target --lite` and compute the frame depth from
+1. `gruntz sema disasm <rva> --lite` and compute the frame depth from
    the **epilogue** (the pops plus the final `add esp,N`) — never the prologue,
    because MSVC hoists a callee-saved `push` past a branch and threads the /GX
    `mov fs:0,ecx` between the epilogue pops.

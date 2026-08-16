@@ -56,7 +56,7 @@ The `* 4` is the tell that the author meant bytes. Through `m_rowInts` the write
 byte offset `112*oldTx + 12` - a **different cell** - and clobbered its upper 24 bits.
 60.30% -> 62.12% and the memory corruption is gone.
 
-**Sieve:** `python -m gruntz.audit.mask_immediates` compares the base-vs-target multiset of
+**Sieve:** `the immediate-mask sieve (retired) compares the base-vs-target multiset of
 `and`/`or`/`xor`/`test` immediates per function, width-normalised (a sub-32-bit `and` extends
 with ones, `or`/`xor`/`test` with zeros), so only genuine constant disagreements survive. The
 narrow-complement subset is the `truncated masks` cleanliness metric, ratcheted at **0**.

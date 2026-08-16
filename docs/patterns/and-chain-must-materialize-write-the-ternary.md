@@ -45,7 +45,7 @@ DONE:  test ecx,ecx / jne RETURN_I
 
 That is the redundant-test family (redundant-test-elimination-is-syntactic.md) - but the
 two `je`s go to **different destinations** (the outer one continues the loop, the inner one
-falls into the materialised false arm). `gruntz.audit.dup_compare`'s fingerprint requires
+falls into the materialised false arm). The duplicate-compare fingerprint requires
 "the same mnemonic, the same destination", so it reported **0 hits** on this shape;
 `--any-dest` now covers it.
 

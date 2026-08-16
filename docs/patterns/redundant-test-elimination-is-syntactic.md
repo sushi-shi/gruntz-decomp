@@ -1,6 +1,6 @@
 # cl5 drops a re-test only when it is spelled the SAME way — reverse the operands
 tags: cpp:branch cpp:loop cpp:expr | asm:cmp asm:jcc | topic:codegen-idiom
-symptoms: exactly ONE conditional branch missing on the base side; retail has two consecutive `cmp <same reg>,<same imm>` / `jcc <same target>` pairs a few bytes apart where the base has one; `--blocks --diff` shows one target block split in two (`3i [jcc | fall]` against the base's `1i [fall]`); every other block `==`
+symptoms: exactly ONE conditional branch missing on the base side; retail has two consecutive `cmp <same reg>,<same imm>` / `jcc <same target>` pairs a few bytes apart where the base has one; `gruntz walls diagnose --asm` shows one target block split in two (`3i [jcc | fall]` against the base's `1i [fall]`); every other block `==`
 confidence: 9/10
 variants: redundant-sibling-guard-retest.md, guard-skip-loop-not-early-return.md
 
@@ -50,8 +50,7 @@ operand order is the reliable lever.
 The signature is a target-side adjacent branch pair with the same mnemonic, the same
 destination and an identical preceding compare, that the base does not have:
 
-    python -m gruntz.audit.dup_compare          # the worklist
-    python -m gruntz.audit.dup_compare --near N # only pairs within N bytes (the peephole case)
+    gruntz walls diagnose <rva> --asm   # read the pair; the duplicate compare is textual
 
 Tree-wide 2026-08-08 the sweep found **exactly one** instance (`BuildHelpReveal`) and
 **17 look-alikes** that the tool's clobber screen rejects: two `testl %eax,%eax` a few

@@ -1,7 +1,7 @@
 # Retail cross-jumps an arm TAIL and we duplicate it — sharing the locals is not the inverse lever
 
 tags: cpp:branch cpp:local cpp:switch | asm:jmp asm:call | topic:wall
-symptoms: a CRT-symbol census (`gruntz.audit.crt_symbols`) shows exactly ONE extra
+symptoms: a CRT-symbol census (a CRT-symbol reference census (retired)) shows exactly ONE extra
 call of a routine (`_atoi` 10 vs 11, `__ftol` 189 vs 190) in a function with two
 source-identical `if/else if` or `switch` arms; retail's FIRST arm ends in a bare
 `jmp` into the MIDDLE of the second arm's tail, ours emits the tail twice; block

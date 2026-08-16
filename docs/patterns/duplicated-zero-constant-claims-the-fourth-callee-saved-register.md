@@ -42,7 +42,7 @@ cost more than the frame saves. Do not chase the prologue tells on their own.
 | else arm written field-by-field | **prologue tells all correct**, 85.82 |
 | b initialised after the `if` | 63.60 |
 | `w`/`h` locals, no `dst` local, `dst` hoisted, `src` copied to a local, inverted null test, `b.right/b.bottom` first | all ≤ baseline |
-| `gruntz.permute.permute` 400 iterations | `FINAL 87.683 (no change)` |
+| the retired permuter 400 iterations | `FINAL 87.683 (no change)` |
 | 0–24 throwaway declarations above the first include | **completely flat** — 66 insns, `push ebx`, 2 early `xor`s at every N |
 
 That last row matters twice: it says the

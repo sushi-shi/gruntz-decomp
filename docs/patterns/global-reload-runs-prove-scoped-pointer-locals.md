@@ -28,7 +28,7 @@ relocations, and contradicted retail. Thus the relocation positions prove both
 the pointer entities and their scopes; the frame agreement is corroboration, not
 the sole argument.
 
-Use `gruntz audit reloc_multiset <unit>` for the count and the unmasked base/target
+Use `gruntz verify assert-relocs <unit>` for the count and the unmasked base/target
 disassemblies for the positions. Do not create one function-scope cache merely to
 make the total smaller: it can erase reloads that retail retains and incorrectly
 claim the global is stable across calls.

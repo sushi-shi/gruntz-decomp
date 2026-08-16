@@ -48,7 +48,7 @@ reconstruction.
 
 ## How to spot it
 
-`gruntz sema disasm <rva> --blocks --diff --lite` shows a base block count far
+`gruntz walls diagnose <rva> --asm` shows a base block count far
 BELOW retail's with a `!!` kind mismatch where the loop should be, and the flat
 `--diff` shows one `call` on the base side against 10-20 retail instructions.
 Then grep the TU for `^static ` function definitions and check each against a

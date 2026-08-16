@@ -62,4 +62,4 @@ The sieve names targets by branch INDEX and only reports MNEMONIC flips, so a br
 mnemonic matches but whose **target** differs is not flagged at all. On `PathScan` the reported
 `#46` was the small half - the unreported `#44` (`je` on both sides) went to the far exit in
 retail and to a short local block in ours. Always print both sides' full branch lists
-(`sema disasm <rva> --branches --target` / `--base`) before concluding.
+(`gruntz walls diagnose <rva> --target` / `--base`) before concluding.

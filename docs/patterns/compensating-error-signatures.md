@@ -42,10 +42,10 @@ saves 4 registers where we save 3"*, which is not even true (both push four). 99
 
 ## The invariant that catches the second class — compiled LENGTH
 
-`gruntz.audit.rva_size` compares the ANNOTATION with Ghidra's carve. Nothing compared our
-COMPILED body with it. That check is now `gruntz.audit.base_size`:
-
-    python -m gruntz.audit.base_size --min-pct 99
+The Model compares the ANNOTATION with the census carve (a size crossing is a
+model violation). Nothing compared our COMPILED body with it. That check is now
+`gruntz walls diagnose <rva>`, whose first two lines are the base and target
+byte lengths:
 
 **`fuzzy >= 99` with `|compiled - annotated| >= 4` is the suspect list.** A body that is
 byte-for-byte convincing but the wrong LENGTH cannot be a codegen preference — cl does not
@@ -85,7 +85,7 @@ clusters this campaign keeps finding (`CGrunt::Create*Sprite`, `CDDSurface::Deco
 A register-rename residue is *usually* a real wall — but it is also the exact shape a
 compensating error leaves behind. So before writing the `@early-stop`, spend two checks:
 
-1. `python -m gruntz.audit.base_size --min-pct 99` — is the length right?
+1. `gruntz walls diagnose <rva>` — is the compiled length right?
 2. Does the function have siblings, and does the source agree with them?
 
 Both are cheap; both have now caught a real bug that had been filed as a wall.

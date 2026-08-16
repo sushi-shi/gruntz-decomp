@@ -7,9 +7,10 @@ functions) joined with the Ghidra boundary export. Companion to
 `docs/link-order-investigation.md` (intra-TU source order + cross-TU link order);
 this doc covers what sits *inside* one TU's block and how to exploit it.
 
-Tooling: `python -m gruntz.audit.tu_layout` (the analysis). The stub *generators*
-that once turned attributions into backlog TUs are retired (`scripts/archive/
-stub-generators/`) — that backlog is fully drained and `src/Stub/` is gone.
+Tooling: the TU-layout probe that produced this analysis is retired (see
+[tooling-map](tooling-map.md)), as are the stub *generators* that once turned
+attributions into backlog TUs — that backlog is fully drained and `src/Stub/`
+is gone.
 
 ## The core finding
 
@@ -52,12 +53,12 @@ member may be exiled — though far fewer are than when this was written.
   matching lever). `tu_layout --neighbors 0xRVA` lists them.
 - **Pooled special members are the exception** — for a dtor that *is* in a pool
   region (23 of 141 today), proximity can't tie it to a class; recover those by leaked
-  name / vtable / RTTI (which `gruntz.match.residual_queue` already does). The
+  name / vtable / RTTI (which `gruntz walls inventory` already does). The
   majority of dtors are no longer pool-exiled and behave like ordinary methods.
 
 ## Exceptions & intermingling
 
-Figures below are from `python -m gruntz.audit.tu_layout` — **re-run it rather than
+Figures below are from `the retired TU-layout probe — **re-run it rather than
 trusting these**; re-homing waves move them (an earlier revision of this section
 survived long enough to name three examples that had all since dissolved).
 
@@ -83,7 +84,7 @@ survived long enough to name three examples that had all since dissolved).
 
 The leave-one-out rule misses 55 of 2183 (3%). **Every miss is a method sitting
 inside another class's contiguous run** — which makes the miss list a matching
-worklist, not noise. `python -m gruntz.audit.tu_layout --intermingled` regenerates it,
+worklist, not noise. `the retired TU-layout probe --intermingled` regenerates it,
 grouped by TU and tagged.
 
 Read a row as one of three things:

@@ -122,7 +122,7 @@ vtbl-absent row on `wwdobjmgr` as this wall's readout, not as a hierarchy bug.
 
 ## Same shape for a DESTRUCTOR, and the sieve is what surfaces it (2026-08-08)
 
-`gruntz.audit.global_refs --rel32` reads `??1CFileMemBase@@UAE@XZ` **3 times** in
+`gruntz walls global-refs --rel32` reads `??1CFileMemBase@@UAE@XZ` **3 times** in
 retail's `CDDrawSurfaceMgr::SnapshotChildren` and **11 times** in `RestoreChildren`
 against 1 and 6 in ours - and, in the other direction, `??1CFile@@UAE@XZ` 3 vs our 11.
 That reads like a dtor-chain modelling error and is not one. Both sides agree on the
@@ -181,7 +181,7 @@ Four identical siblings that already agree settle it in one command: the diverge
 site's budget, not the visibility of `Find`. Making `Find` an in-class inline to buy back
 `CLightFx` would expand it in the other four, which currently match. Before spending a
 header change on a single-site row, run
-`gruntz.audit.global_refs`-style whole-tree counting for the symbol and look for the
+`gruntz walls global-refs`-style whole-tree counting for the symbol and look for the
 siblings - if most of them agree, there is nothing to model.
 
 Note also that the sieve can only show HALF of this row. It drops a name only one side

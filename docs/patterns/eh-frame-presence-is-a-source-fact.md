@@ -19,7 +19,7 @@ mov  fs:[0], esp
 mov  DWORD PTR [esp+0x38], 1   ; one unwind state per live destructible object
 ```
 
-`python -m gruntz.audit.eh_frame` classifies every scoring function on both sides and
+`gruntz walls eh-frame` classifies every scoring function on both sides and
 reports the disagreements; `--states` is the wider secondary sieve (both sides framed,
 different NUMBER of state stores — one object's worth of resolution).
 
@@ -31,7 +31,7 @@ is a wall (see the variant). The SAME ctor/dtor called a different NUMBER of tim
 of them when a `||`/`&&` guard sends them to a common destination, and each surviving
 dtor copy carries its own state store — `CGruntSpawnConfig::SpawnVoiceDriver` calls
 `??1CString` twice for us and eight times in retail off one `&&`. That is
-`gruntz.audit.exit_merge_sieve`'s lever, not this one. Only when neither kind of call
+the exit-merge lever, not this one. Only when neither kind of call
 difference exists does one side really own an object the other's source never declared:
 a by-value `CString` where the other wrote `LPCSTR`, a by-value `CRect`/MFC collection,
 a stack helper whose dtor releases something.

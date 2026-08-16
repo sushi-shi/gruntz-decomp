@@ -69,7 +69,7 @@ different constant propagation; not a source difference we have been able to nam
 This file previously claimed the guard was a *compiler* peel that "no honest spelling
 reproduces", and told matchers to accept the gap. That was wrong, and it parked
 `ResetEntranceAnimation` at 61% with three missing `rand()` calls. The tell that broke it was
-`gruntz.audit.crt_symbols`: retail referenced `_rand` 131 times and our base only 126, and the
+a CRT-symbol reference census (retired): retail referenced `_rand` 131 times and our base only 126, and the
 five missing references localized to three functions in one file.
 
 The 16 functions with paired sites (retail RVAs): `ChooseIdleBehavior` 0x2f620 (x4),

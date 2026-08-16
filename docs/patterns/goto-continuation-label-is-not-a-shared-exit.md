@@ -62,7 +62,7 @@ out-lines `{ m_neighborValid = 0; return 1; }` as the `jcc` target and falls thr
 the long arm - i.e. the source nests the long arm inside `if (m_neighborValid == 0)` and
 puts the short one after it, not the other way round.
 
-**Read it off `--blocks --diff --lite`:** when base says `Bn 3i [jcc Bshort | fall Blong]`
+**Read it off `gruntz walls diagnose --asm`:** when base says `Bn 3i [jcc Bshort | fall Blong]`
 and target says `Bn 3i [jcc Blong | fall Bshort]`, the arms are swapped in the source.
 
 ## Companion 2: `&&` short-circuits a load retail issues unconditionally

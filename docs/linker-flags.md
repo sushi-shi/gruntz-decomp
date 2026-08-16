@@ -103,7 +103,7 @@ import table; wired into `link.py` (details + the synthesis story:
   link line for free.
 - **Explicit extras:** `version winmm` (imported by the game, declared by nothing) and
   DX6 `ddraw dsound dinput dplayx dxguid` (the DX SDK ships no `#pragma comment(lib)`).
-- **Synthesised:** `mss32 smackw32` — the RAD SDKs we lack; `gruntz.build.import_lib`
+- **Synthesised:** `mss32 smackw32` — the RAD SDKs we lack; `gruntz.graph.implib`
   rebuilds their import libs from retail's import table.
 - **`/ENTRY` — `WinMainCRTStartup`** (LIBCMT), which calls `_WinMain@16` (NAFXCW).
   The old `_x` placeholder only existed because no library was on the line.
@@ -142,7 +142,7 @@ Residuals, one closed and one bounded (2026-08-13):
 - **Hint values — [FIXED].** All 449 named imports now carry retail's `.idata$6`
   hint. The 26 that differed were exactly mss32(16) + smackw32(10): a hint is the
   export's index in the DLL's sorted export-name table, and the stub DLLs used to
-  export only the imported names. `gruntz.build.import_lib` now pads the stub's
+  export only the imported names. `gruntz.graph.implib` now pads the stub's
   export table with `__cdecl` filler names sorting strictly between the real
   decorated names until each real export sits at its retail index (retail's hints
   are strictly ascending in sorted-name order for both DLLs — the signature of
@@ -207,7 +207,7 @@ the latter mis-assigns units that straddle the line (3242 thunks, worse).
   **The decision was measured, not assumed.** It costs nothing: per-object
   fragmentation is *identical* under `:YES` and `:NO` (median 1 fragment, mean 1.07,
   94.7% of 646 objects perfectly contiguous, **zero** objects more fragmented), and
-  `gruntz.audit.link_order` still reads the map. It buys three retail shapes at once:
+  the candidate `.map` still records it. It buys three retail shapes at once:
 
   | | `:NO` | `:YES` | retail |
   |---|---|---|---|

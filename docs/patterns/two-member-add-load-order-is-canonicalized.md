@@ -24,7 +24,7 @@ WALL. Evidence: `CGameLevel::ProbeHeadSoft` 0x160450 / `ProbeFootSoft` 0x160080 
 `ProbeFootBlocked` 0x160210 / `HoldMove` 0x15ff20 all sit at 99.98-99.99% on exactly this
 4-byte pair. **It is context-, not source-, determined**: a standalone `struct AB : CGameLevel`
 replica compiled from the IDENTICAL source picks retail's order for the foot pair and ours for
-the head pair, so it is TU-cumulative back-end state (`match_variants --state-trials` territory,
+the head pair, so it is TU-cumulative back-end state (the retired permuter territory,
 not a spelling). ~35 expression AND statement forms tried across two harnesses; none moved it.
 Distinct from [[commutative-imul-operand-in-eax]] (an `imul`'s reg-vs-mem operand).
 

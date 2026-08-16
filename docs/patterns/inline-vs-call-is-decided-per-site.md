@@ -22,7 +22,7 @@ Count, per function, both halves of the evidence and compare against the base ob
 
 - **retail calls** — scan `.text` for `e8 <rel32>` resolving to the helper **or to its
   ILT jmp-thunk** (find the thunk by scanning for `e9 <rel32>` -> helper); bucket by
-  the function ranges in `build/gen/symbol_names.csv`.
+  the function ranges in `build/gen/bindings.tsv`.
 - **retail inlined bodies** — the inlined splice cannot use the helper's `this`, so it
   references the global **absolutely**. Search `.text` for the little-endian VA of the
   global and of each member offset it touches (`g_coordPool`, `+0x4`, `+0xc`); one

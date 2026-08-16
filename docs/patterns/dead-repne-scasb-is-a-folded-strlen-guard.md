@@ -34,4 +34,4 @@ EXACT**. The tells that it is a guard and not a copy are that no `rep movs` foll
 it is not an inlined `strcpy`) and that retail carries an extra `push edi` the recompile
 does not — the string cursor needs a callee-saved register. Note `edx` is shared between
 the strlen seed and the `-1` unwind-state store, which is why the sequence also shifts
-the EH state slot by four; `gruntz.audit.eh_frame --states` is what surfaced this row.
+the EH state slot by four; `gruntz walls eh-frame --states` is what surfaced this row.

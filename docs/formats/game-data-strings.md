@@ -25,9 +25,9 @@ REZ=/path/to/Gruntz.REZ
 ./target/release/butez    "$REZ" cheatz                   # the [CheatN] table
 
 # the two sieves this document is built on
-python -m gruntz.audit.wwd_objects ../build/rez-tree --tsv objects.tsv
-python -m gruntz.audit.asset_keys  --names names.txt --src .
-python -m gruntz.audit.asset_keys  --names names.txt \
+the WWD object walker (retired) ../build/rez-tree --tsv objects.tsv
+the asset-key harvester (retired)  --names names.txt --src .
+the asset-key harvester (retired)  --names names.txt \
         --keys <(cut -f22,23 objects.tsv | tail -n +2 | tr '\t' '\n' | sort -u)
 ```
 
@@ -158,7 +158,7 @@ and Goble's `"Brian L. Goble is a programming God..."` is a live string in the E
 
 ## 3. The WWD object corpus
 
-`python -m gruntz.audit.wwd_objects` walks all 54 files: **27 110 object
+`the WWD object walker (retired) walks all 54 files: **27 110 object
 records**, every one landing exactly on the next record boundary. Each record's
 four packed strings are `name` / `logic` / `image_set` / `animation`.
 
@@ -485,7 +485,7 @@ Conversion and Death-Touch forms, already modelled as `GRUNT_HAREKRISHNA` /
 
 ## 8. Keys our source names that the archive does not have
 
-`python -m gruntz.audit.asset_keys --src .` harvests 538 registry-key literals
+`the asset-key harvester (retired) --src .` harvests 538 registry-key literals
 from `src/` + `include/` and resolves them: **494 resolve, 44 do not.** Running
 it against the demo separates the three kinds of failure.
 

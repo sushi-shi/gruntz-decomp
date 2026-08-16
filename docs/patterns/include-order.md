@@ -1,9 +1,9 @@
 # The canonical `#include` block
 
-Gated by `gruntz.audit.include_order` (normal tier). Fixer:
+Gated by `gruntz verify include-order` (normal tier). Fixer:
 
 ```
-python -m gruntz.audit.include_order --fix-dupes --fix
+gruntz verify include-order --fix-dupes --fix
 ```
 
 The tree was reconstructed function-by-function, so includes accreted wherever a

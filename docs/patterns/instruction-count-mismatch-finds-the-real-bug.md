@@ -1,7 +1,7 @@
 # Diff the INSTRUCTION COUNT first: a count mismatch is a source bug, an equal count is regalloc
 
 tags: cpp:expr | asm:mov | topic:method topic:wall
-symptoms: a function in the high 80s/90s whose `sema disasm --diff` shows only register-name swaps and one-instruction transpositions, so it gets filed as a regalloc wall; nothing in the masked view says whether the two sides even have the same NUMBER of instructions
+symptoms: a function in the high 80s/90s whose `gruntz walls diagnose --asm` shows only register-name swaps and one-instruction transpositions, so it gets filed as a regalloc wall; nothing in the masked view says whether the two sides even have the same NUMBER of instructions
 confidence: 10/10
 
 Before reading a single diff line, count the instructions on both sides. The
@@ -15,7 +15,7 @@ worklist in one pass:
   choice or a schedule transposition. That is the documented regalloc/scheduling
   wall; `@early-stop` it and move on.
 
-**Do not hand-roll the count — `python -m gruntz.audit.insn_count` is the whole
+**Do not hand-roll the count — `gruntz walls diagnose <rva>` is the whole
 sweep** (`--summary`, `--unit X`, `--min/--max`, `--tsv`, `--eh`). It reads
 `build/gen/residual_function_queue.tsv` and does the two subtractions that a hand
 `llvm-objdump | wc -l` gets wrong:
@@ -32,7 +32,7 @@ Between them those accounted for 39 of the 304 mismatches a naive count reports,
 including the two largest: `CSpriteRef::Build` (-33, really 275 vs 275) and
 `CTileActionEvent::Process` (-40, really 261 vs 261). Both regalloc walls.
 
-Use `llvm-objdump`, not `sema disasm --diff`: the latter truncates at the first
+Use `llvm-objdump`, not `gruntz walls diagnose --asm`: the latter truncates at the first
 `$L` jump-table label, and the delinker packs a jump table INTO the owning
 function's symbol on the target side while the base keeps it in separate `$L`
 symbols — so a switch-heavy function shows a huge bogus count delta unless you

@@ -26,5 +26,5 @@ x87 access anywhere on the datum**. A genuine two-field object shows differing
 counts, differing widths, or writes. `?g_movingLogicMin@@3NB` / `?g_movingLogicMax@@3NB`
 (0x1f04b0, 0x1f04b8) are the calibration pair: 13 reads at `+0` and 13 at `+4`
 each, from `CProjectile`/`CMotionState`/`CMovingLogic`/`CGrunt` ctors — and the
-`double` is correct. `gruntz audit data_access_map` counts this suppression as
+`double` is correct. `gruntz verify data-access` counts this suppression as
 `width-skip-dword-pair`.

@@ -1,6 +1,6 @@
 ---
 name: wall-identifier
-description: Classify a Gruntz matching WALL before spending effort on it. When a reconstruction plateaus below 100% and no spelling obviously closes it, name WHICH cl 5.0 decision diverged - inline/call-set, control flow, register/schedule, or masked/referent - and route to the lever for that class. Start with `gruntz sema diagnose <rva>`. Use when a function is stuck, when triaging plateaus, when asked "why won't this match" or "what kind of wall is this". Complements `matcher` (reconstructs); this one DIAGNOSES - register/schedule walls are parked with `@early-stop`, not ground (the permute machinery is retired).
+description: Classify a Gruntz matching WALL before spending effort on it. When a reconstruction plateaus below 100% and no spelling obviously closes it, name WHICH cl 5.0 decision diverged - inline/call-set, control flow, register/schedule, or masked/referent - and route to the lever for that class. Start with `gruntz walls diagnose <rva>`. Use when a function is stuck, when triaging plateaus, when asked "why won't this match" or "what kind of wall is this". Complements `matcher` (reconstructs); this one DIAGNOSES - register/schedule walls are parked with `@early-stop`, not ground (the permute machinery is retired).
 ---
 
 # wall-identifier — classify the wall before fighting it
@@ -15,15 +15,15 @@ not codegen-residue problems at all.
 
 ## Start here
 
-`gruntz sema diagnose <rva>` — classifies the residual from the same base/target
+`gruntz walls diagnose <rva>` — classifies the residual from the same base/target
 pair objdiff scores (no recompile) and routes it in the order below. The manual
 equivalents, when you need the evidence itself:
 
 - `gruntz sema match <unit|rva>` — current % vs best-ever (is there proven headroom?)
-- `gruntz sema disasm <rva> --diff` — masked asm diff; rc 0 = byte-shape agrees
-- `gruntz sema disasm <rva> --branches --diff` — branch/ret counts + symbolic sequence
-- `gruntz sema disasm <rva> --blocks --diff` — block-aligned CFG view
-- `python -m gruntz.audit.assert_relocs <rva>` — the actual referent set, unmasked
+- `gruntz walls inventory --unit <u>` — the derived worklist, ascending historical MAX
+- `gruntz walls diagnose <rva> --asm` — both sides unmasked, bytes and addresses
+- `gruntz verify assert-relocs` — the actual referent set, unmasked
+- `gruntz sema dump <rva>` — retail bytes + ordered relocation targets
 
 ## The four classes, in routing order
 
@@ -70,7 +70,7 @@ three source-selected regimes (separate returns / `goto fail` / `||`-collapse):
 
 Reached by elimination only. The permute machinery is RETIRED: park the wall
 with `@early-stop` and the byte-level reason; a genuinely bounded wall is
-recorded in `wall-break.md`. Caution: one misplaced register op can mean the
+recorded in the report. Caution: one misplaced register op can mean the
 TYPE is wrong (a member array modeled as scalars, a lost aggregate) — re-check
 the model before parking. Reading rule: `zero-register-compare-is-against-zero.md`.
 
@@ -78,7 +78,7 @@ the model before parking. Reading rule: `zero-register-compare-is-against-zero.m
 
 Objdiff reloc scoring is strict (target name/address, pointed-to data, DIR32
 addends all participate), and the masked diff by construction cannot show a
-wrong callee. If `--diff` returns rc 0 while the score sits below 100, the
+wrong callee. If the masked bytes agree while the score sits below 100, the
 divergence is referent identity: audit with `assert_relocs`, fix the labeling /
 identity model - this class is labeling work, not codegen.
 
@@ -98,7 +98,8 @@ its mechanics. Do not use here without re-proving on cl 5.0:
 - `/Ob2` semantics and the S=14 save-gate cliff (cl 5.0 is `/Ob1`, no cliff).
 
 A lever proven here goes in `docs/patterns/` + `INDEX.md` with the A/B evidence.
-A bounded wall goes in `wall-break.md`: before/after historical MAX, retail
-evidence, retained lever, negative controls, remaining mismatch class. Walls get
-BROKEN, not documented — the ledger entry comes after the search stalls, not
-instead of it.
+A bounded wall is parked with `@early-stop` and REPORTED: before/after historical
+MAX, retail evidence, retained lever, negative controls, remaining mismatch class.
+There is no hand-kept wall ledger — `gruntz walls inventory` re-derives the
+worklist from the compare report every time. Walls get BROKEN, not documented; the
+park comes after the search stalls, not instead of it.

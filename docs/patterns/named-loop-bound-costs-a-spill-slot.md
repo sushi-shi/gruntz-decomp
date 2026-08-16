@@ -30,4 +30,4 @@ mov  DWORD PTR [esp+0x1c],edx       ; …
 STEERABLE. `CDDrawShadeBlit::EncodeRle16` 0x1495d0: 77.50 -> **91.96%**, frame 0x210 -> 0x20c,
 147/147 instructions, and it dropped off `jcc_sieve`'s SIGNEDNESS list as a side effect (the
 byte-vs-dword test was the signedness twin). Cross-check the frame with
-`python -m gruntz.audit.base_size` — a length mismatch is a structural bug, never noise.
+`gruntz walls diagnose <rva>` — a length mismatch is a structural bug, never noise.

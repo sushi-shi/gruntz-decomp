@@ -36,7 +36,7 @@ if (m_useLut != 0) {
 The tell is one instruction: retail ends the loop-body prologue with
 `mov edx,[esi+<m_useLut>] ; test edx,edx ; je <bpp-chain>`, i.e. the ZERO case jumps away.
 The recompile emits `jne <lut>` instead and the whole arm ordering inverts, which the
-`--blocks --diff` skeleton reports as a wall of `!!` rows even though every arm's body is
+`gruntz walls diagnose --asm` skeleton reports as a wall of `!!` rows even though every arm's body is
 byte-for-byte right.
 
 A second, smaller lever in the same bodies: the run-start index belongs in the `for` that

@@ -53,6 +53,6 @@ set differs.
 
 ## Rule
 
-`gruntz sema disasm <rva> --diff --lite | head -20`. If line 1 of the diff is `sub esp` or a
+`gruntz walls diagnose <rva> --asm | head -20`. If line 1 of the diff is `sub esp` or a
 `push`/`pop` count, **stop reading the body** - reconcile the frame first. Chasing scheduling
 inside a body whose frame is off by 4 is measuring noise.

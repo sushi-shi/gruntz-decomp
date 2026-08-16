@@ -33,7 +33,7 @@ is keyed by the identifier, so:
 The oracle is the compiler; iterate on ONE unit — `ninja
 build/objdiff/base/<unit>.obj` is ~1.6 s.
 
-1. **Read retail's role→slot map** off `gruntz sema disasm <rva> --target --lite`.
+1. **Read retail's role→slot map** off `gruntz sema disasm <rva> --lite`.
    Identify each local by what is stored into it: the `$0x0` inits in order, the
    `mov eax,[ebp+0xc]` parameter copy, the `and ecx,0x3f` run mask, …
 2. **Probe your identity name set** — ONE compile gives the full relative order of

@@ -320,7 +320,7 @@ map. Selected rows (offsets proven by the store sequence at 0x162e9c onward):
 All four are read into a 0x400 stack buffer and handed to a `CString`; the walk
 of all 54 retail files is in
 [`game-data-strings.md`](game-data-strings.md#3-the-wwd-object-corpus)
-(27 110 records) and is produced by `python -m gruntz.audit.wwd_objects`.
+(27 110 records) and is produced by `the WWD object walker (retired).
 
 | # | Field | Consumed as | | |
 |---|---|---|---|---|

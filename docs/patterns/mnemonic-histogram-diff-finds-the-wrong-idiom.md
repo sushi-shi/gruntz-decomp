@@ -6,7 +6,7 @@
 ## Symptom
 
 A 40-60% function whose `--diff` output is a wall of register renames and whose
-`--blocks --diff` says the topology is fine. The instruction *stream* is too long to
+`gruntz walls diagnose --asm` says the topology is fine. The instruction *stream* is too long to
 read and the instruction *count* (docs/patterns/instruction-count-mismatch-finds-the-
 real-bug.md) only says "a bug exists", not which.
 

@@ -49,6 +49,6 @@ sequences agree):
 - `CProjectile::SerializeMove` 0xe0d40 — the 7-frame write loop — **91.62% -> 94.34%**
   (cursor alone: 93.09%; cursor + separate counter: 94.34%)
 
-Found with `python -m gruntz.audit.jcc_sieve` / `gruntz sema disasm <rva> --branches
---diff`: the back-edge is a `jl->jne` "OTHER" flip, which `--diff` alone cannot show
-because it masks the branch displacement.
+Found with `gruntz walls diagnose <rva> --asm`: the back-edge is a `jl` -> `jne`
+mnemonic flip, which an address-masked comparison cannot show because it masks the
+branch displacement.

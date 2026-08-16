@@ -84,7 +84,7 @@ debug stream**, so ours must be derived from our own TU partition. They gate:
 
 ## Measured state: our TU partition != retail's compilands
 
-- `gruntz.audit.tu_order_check`: **GATE FAIL — 49 TUs with intra-order violations,
+- `gruntz verify tu-order`: **GATE FAIL — 49 TUs with intra-order violations,
   10832 interleaving TU-pairs** (was 52 / 12134 when this brief was written; matcher-6
   landed the first drain — and see the correction at the top: ~98% of the remainder is
   COMDAT-pool placement, not a partition defect) (e.g. `Fader [0x17e450-0x182935]` interleaves
@@ -145,9 +145,9 @@ consolidation. Full quotation and the rest of the credits' contents:
 ## Instruments already in place
 
 - `gruntz link` → candidate EXE + `.map` (392 objs, 4886 unresolved externs under
-  `/FORCE`); `gruntz link --analyze` / `gruntz.audit.link_order` for build order.
-- `gruntz.audit.tu_order_check` — the one-contiguous-block invariant gate.
-- `gruntz audit exe-diff` §B — `.text` intra-TU order / block-exact / abs-RVA + a ranked
+  the candidate `.map` (`gruntz link`) for build order.
+- `gruntz verify tu-order` — the one-contiguous-block invariant gate.
+- `gruntz verify link-tier` — `.text` intra-TU order / block-exact / abs-RVA + a ranked
   reorder worklist; §E — data static-storage: 771/925 data symbols defined+placed,
   715/771 in the right storage class, 0/771 at the right section-relative offset, with
   the first section-relative divergence per section.
@@ -741,7 +741,7 @@ new TU emits its own copy, add the [[unit]] entry right after the parent (link
 order = band order), canonicalize that copy's nine sidecar pins to the new
 unit, then build; the function census (`config/retail/gruntz_functions.tsv`)
 keys on RVAs, so the cross-unit move passes on its own and the rows re-home on
-the next `gruntz build --full`.
+the next `gruntz verify check --tier full`.
 
 Traps hit: (1) blocks must be re-emitted DATA-first then ascending-RVA - the
 tu-order gate is per-TU and a plain source-order copy trips it; (2) an
@@ -782,6 +782,6 @@ analysis or another tracer.
 
 New traps beyond the band-cut list: a namespace-scoped TU (LobbyDialogs.cpp)
 has INDENTED labels a column-0 splitter silently misses - check the annotated-
-block count against `symbol_names.csv` before trusting a split; and copying a
+block count against the Model before trusting a split; and copying a
 parent's prelude drags its file-local enums/constants along, which the
 cleanliness ratchet catches (delete what the new TU does not use).

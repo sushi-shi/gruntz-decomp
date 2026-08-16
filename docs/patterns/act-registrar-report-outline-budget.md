@@ -2,7 +2,7 @@
 tags: cpp:inline cpp:template cpp:global | asm:call asm:push | topic:codegen-idiom
 symptoms: a TWO-key activation registrar (`?RegisterActs@C*@@SAXXZ` / `RegisterActs_*` /
 `RegisterIconActions`, retail size **0x2ac**) stuck at exactly **95.2090%** (or **71.98%** when a
-second accessor also outlines); `--blocks --diff` shows three 9-instruction base blocks against
+second accessor also outlines); `gruntz walls diagnose --asm` shows three 9-instruction base blocks against
 6-instruction target blocks; the diff is always the same six lines
 confidence: 10/10
 

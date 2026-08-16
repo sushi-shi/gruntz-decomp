@@ -9,11 +9,9 @@ The current worklist is empty. The 2026-08-01 audit reports zero functions below
 whose complete compiled body contains fewer than 60% of the retail instructions, and
 zero complete bodies below 60% of a reliable retail prefix.
 
-Run the audit after a build to reproduce the classification:
-
-```sh
-python -m gruntz.audit.missing_bodies --top 200
-```
+The instrument that produced it is retired (see [tooling-map](tooling-map.md));
+its criterion is reproducible per function from `gruntz walls diagnose <rva>`,
+which prints both sides' instruction counts and byte lengths.
 
 The thresholds intentionally favor false negatives over false positives. A zero result
 means no function meets this mechanical proof of a missing body; it does not prove that

@@ -1,6 +1,6 @@
 # The data-access map — what retail's code actually touches
 
-`gruntz audit data_access_map` builds a persisted, queryable record of **every
+`gruntz verify data-access` builds a persisted, queryable record of **every
 instruction in retail `GRUNTZ.EXE` that references `.rdata` / `.data` / `.bss` /
 `.idata`**, decoded for the byte range it covers, the access width, the
 direction, and the addressing form.
@@ -127,14 +127,14 @@ next field's offset and **no verdict fires through it**.
 ### Query surface
 
 ```
-gruntz audit data_access_map --build                  # sweep and persist
-gruntz audit data_access_map --at 0x2448d0            # everything touching one address
-gruntz audit data_access_map --range 0x245508:0x245520
-gruntz audit data_access_map --symbol g_sfDeviceId    # claim dossier: field map + every access
-gruntz audit data_access_map --fn StepCompassMove     # every data access one function makes
-gruntz audit data_access_map --findings width         # the derived worklist
-gruntz audit data_access_map --touched                # the coalesced touched-byte ranges
-gruntz audit data_access_map --sql "SELECT ..."       # raw sqlite
+gruntz verify data-access --build                  # sweep and persist
+gruntz verify data-access --at 0x2448d0            # everything touching one address
+gruntz verify data-access --range 0x245508:0x245520
+gruntz verify data-access --symbol g_sfDeviceId    # claim dossier: field map + every access
+gruntz verify data-access --fn StepCompassMove     # every data access one function makes
+gruntz verify data-access --findings width         # the derived worklist
+gruntz verify data-access --touched                # the coalesced touched-byte ranges
+gruntz verify data-access --sql "SELECT ..."       # raw sqlite
 ```
 
 ## The five derived categories
@@ -306,7 +306,7 @@ accessor disassembled — the reason `data_access` keeps a per-function view.
 ## The gate — `--gate` (wired, `--normal` tier)
 
 Detection without enforcement is a report nobody re-runs. `python -m
-gruntz.audit.data_access_map --gate` rebuilds the map from retail + the current
+gruntz verify data-access --gate` rebuilds the map from retail + the current
 claims and FATALs on any finding in a category that implies a real MISMODEL —
 `undercount`, `shortfall`, `width`, `adjacent` — that is not in
 `ACCEPTED_MISMODELS`. Those four change bytes, directly or by shifting `.bss` /

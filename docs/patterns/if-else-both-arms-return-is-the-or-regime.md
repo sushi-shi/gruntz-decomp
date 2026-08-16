@@ -80,14 +80,14 @@ agreeing. The residue is instruction scheduling only.
 
 Flattening exposed a real reconstruction bug in the same function: retail's
 `m_overlay == NULL` path does **not** return 0, it skips the `Serialize` call and
-falls into the success tail (`--blocks --diff` showed base `jcc <fail>` where
+falls into the success tail (`gruntz walls diagnose --asm` showed base `jcc <fail>` where
 retail has `jcc <success>`). The `else { return 0; }` would have failed every
 overlay-less save. Check the guard's semantics against the target blocks before
 assuming the shape is only a codegen issue.
 
 ## Screening
 
-`python -m gruntz.audit.exit_merge_sieve --over` (base rets < target rets), then
+`gruntz walls diagnose <rva>` (base rets < target rets), then
 read the source for this shape — it will not grep as `||`.
 
 related: [goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md),

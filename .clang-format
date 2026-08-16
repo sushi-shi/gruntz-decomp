@@ -1,5 +1,5 @@
 # Rust-like clang-format style for the reconstructed C++. Whitespace-only =>
-# matching-NEUTRAL. Run via `gruntz format`; rationale in docs/build-system.md.
+# matching-NEUTRAL. Applied by .githooks/pre-commit; rationale in docs/build-system.md.
 ---
 Language: Cpp
 BasedOnStyle: LLVM
@@ -72,7 +72,7 @@ StatementMacros:
   - VTBL_ABSENT
   - SIZE # Win32 type name; retained for existing formatter behavior, not an rva.h macro.
 # The mangled-symbol carrier is whitespace-sensitive ONLY (one canonical
-# spelling, gated by gruntz.audit.label_style): clang-format must never re-space
+# spelling, gated by `gruntz verify label-style`): clang-format must never re-space
 # or wrap its args - it splits stdcall decorations (`_WinMain@16` ->
 # `_WinMain @16`), which silently unbinds the label. StatementMacros WINS over
 # WhitespaceSensitiveMacros (measured, clang-format 21), so it must NOT be

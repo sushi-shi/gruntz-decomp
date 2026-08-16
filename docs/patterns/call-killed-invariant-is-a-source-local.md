@@ -1,6 +1,6 @@
 # A loop-invariant member load retail keeps in a slot ACROSS a call was hoisted in SOURCE
 tags: cpp:loop cpp:local cpp:member | asm:mov asm:sub | topic:codegen-idiom topic:regalloc
-symptoms: retail's `sub esp,N` is exactly 4 (or 8) bytes LARGER than ours; `--branches --diff`
+symptoms: retail's `sub esp,N` is exactly 4 (or 8) bytes LARGER than ours; `gruntz walls diagnose`
 reports "base K branch(es) | target K+1"; the masked `--diff` shows a lone extra `mov reg,[this+X]`
 + `mov [esp+M],reg` pair sitting between the loop's pre-header and its first test, and every later
 `[esp+..]` displacement on the target side is shifted by that 4

@@ -1,6 +1,6 @@
 # A switch arm ending `break;` gets its epilogue replicated; one ending `return <const>;` gets merged
 tags: cpp:switch cpp:branch cpp:return | asm:ret asm:jmp asm:jcc | topic:codegen-idiom
-symptoms: a big `switch` whose arms all end `return <same const>;`, base short by N-1 copies of the 5-6 instruction epilogue, `--branches --diff` reports fewer rets on the base with identical branch counts, every arm body byte-identical
+symptoms: a big `switch` whose arms all end `return <same const>;`, base short by N-1 copies of the 5-6 instruction epilogue, `gruntz walls diagnose` reports fewer rets on the base with identical branch counts, every arm body byte-identical
 confidence: 9/10
 variants: retail-duplicates-small-return-epilogues.md, switch-arm-tail-crossjump-vs-duplicate.md, single-predecessor-tail-block-gets-replicated.md
 

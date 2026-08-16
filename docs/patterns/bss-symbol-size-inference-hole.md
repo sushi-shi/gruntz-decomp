@@ -82,9 +82,9 @@ Two tempting moves, both fabrication — reject on sight:
 `.bss` layout is the *delinker's own* sequential append with per-definition alignment —
 it is not retail's. So the inferred span compares two allocators' padding, and there is
 no retail referent in it at all: the delinker even takes each `.bss` size from OUR
-source (`symbol_names.csv` → `data_manifest`, provenance `src-DATA-sizeof`).
+source (the Model → `data_manifest`, provenance `src-DATA-sizeof`).
 
-**Census, whole tree** — `python -m gruntz.audit.bss_extents` (both sides, exact-name
+**Census, whole tree** — `gruntz verify data-coverage` (the claim-side gap census, exact-name
 pairing, which is what objdiff does for these names): **363 paired `.bss` symbols, 50
 extent disagreements, |delta| histogram `{3: 1, 4: 49}`** — the widest disagreement in
 the whole program is FOUR bytes. Every one is sub-alignment padding; not one is a size.
@@ -112,7 +112,7 @@ Three routes were considered; only the third is possible.
    `docs/strict-data-allocations.md`: *"The checker never accepts that span as a
    reviewed extent."*
 
-The extent check that actually bites lives in `gruntz.build.data_manifest.candidates()`:
+The extent check that actually bites lives in `gruntz.delink.data_manifest.candidates()`:
 a reviewed extent must fit the span to its retail neighbour, and an overlap withholds
 BOTH rows and reports them as a reconstruction-defect worklist.
 

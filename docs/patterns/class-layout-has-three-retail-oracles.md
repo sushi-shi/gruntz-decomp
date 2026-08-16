@@ -10,9 +10,9 @@ touches the class.
 
 | oracle | what retail writes | audit |
 |---|---|---|
-| total size | `push <n>; call ??2@YAPAXI@Z` at a `new C` site | `python -m gruntz.audit.alloc_size` |
-| sub-object placement | `lea ecx,[this+N]; call ??0Y` in `??0C`/`??1C`; `mov [this+N],??_7C@@6BY@@@` | `python -m gruntz.audit.subobject_offsets` |
-| field offsets | every `[this+N]` in any `?M@C@@...AE...` body | `python -m gruntz.audit.this_offsets` |
+| total size | `push <n>; call ??2@YAPAXI@Z` at a `new C` site | `gruntz verify alloc-size` |
+| sub-object placement | `lea ecx,[this+N]; call ??0Y` in `??0C`/`??1C`; `mov [this+N],??_7C@@6BY@@@` | `gruntz verify layout --var <name>` |
+| field offsets | every `[this+N]` in any `?M@C@@...AE...` body | `gruntz verify data-access --symbol <name>` |
 
 Measured 2026-08-08 over the whole EXE: **430 allocation sites (253 classes), 818
 sub-object placements and 11 332 field accesses, with ZERO disagreements** against

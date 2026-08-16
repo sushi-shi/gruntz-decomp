@@ -31,7 +31,7 @@ mov    ecx,[ebx + <DIR32 _g_rasterEdgeL>]
 Both are correct and read the same field. The cheap tells that it is this and not a
 wrong-member read: **the reloc COUNT is higher on our side** (the `lea`+`sub` pair
 spends two references where retail's `lea` spends one - 23 vs 21 in `FillPolygon`),
-and `gruntz.audit.reloc_addends` reports an addend row on the array whose bias got
+and `gruntz verify assert-relocs` reports an addend mismatch on the array whose bias got
 folded.
 
 ## Mechanism

@@ -179,7 +179,7 @@ construct instead:
   `labels.py` runs clang on the declaration to get the exact MS-ABI mangled name
   (`?g_buteMgr@@3VCButeMgr@@A` for C++, `_name` for `extern "C"`) — type-aware so
   it matches cl.exe by construction — authority-checks it against the base obj's
-  symbols (including undefined externs), writes a `data` row to `symbol_names.csv`,
+  symbols (including undefined externs), writes a `data` row to the Model,
   and `synth_pdb` names the delinked target DATA symbol to match. `apply.py` also
   applies it as a Ghidra label (Ghidra demangles it for a readable DB). `DATA` is
   bound to the AST VarDecl (an `extern`'s annotation is dropped from IR, so unlike
@@ -342,10 +342,10 @@ causes: the reloc-typing **scoring artifact** above, and **entropy** — § top.
 Use the LSP tool to read the reconstructed tree without an editor:
 
 ```
-python3 -m gruntz.core.clangd_query def   <file> <line> [col]   # go to definition
-python3 -m gruntz.core.clangd_query refs  <file> <line> [col]   # all references
-python3 -m gruntz.core.clangd_query hover <file> <line> [col]   # type at point
-python3 -m gruntz.core.clangd_query symbol <fuzzy-name>         # workspace symbols
+gruntz lsp def   <file> <line> [col]   # go to definition
+gruntz lsp refs  <file> <line> [col]   # all references
+gruntz lsp hover <file> <line> [col]   # type at point
+gruntz lsp symbol <fuzzy-name>         # workspace symbols
 ```
 
 clang is a **reader** of this MSVC5 dialect — navigation is reliable, but the

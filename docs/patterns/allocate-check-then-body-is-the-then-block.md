@@ -2,7 +2,7 @@
 
 tags: cpp:if cpp:new | asm:jcc | topic:codegen-idiom
 symptoms: a `new X; check; init; AddTail; return` factory sits at 70-80% with the block skeleton
-diverging at the first branch after the allocation; `--blocks --diff` reports `jcc B7 | fall B4`
+diverging at the first branch after the allocation; `gruntz walls diagnose --asm` reports `jcc B7 | fall B4`
 against `jcc B5 | fall B4` and the two tails are in the opposite order
 confidence: 6/10
 

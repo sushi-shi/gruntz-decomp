@@ -113,7 +113,7 @@ None of these are separately steerable; fix the merge or accept all three.
 
 ## Screening trap: the sieve over-counts target rets on switch functions
 
-`gruntz.core.branches.table_stop()` cuts the decode at the LAST `ret`, but the
+the decoder cuts at the LAST `ret`, but the
 delinked target packs a switch's jump table as raw addresses that disassemble as
 code — and an address whose third byte is `0xc2` decodes as `ret imm16`. So
 `table_stop` lands PAST the table start and the target reads one ret too many.
