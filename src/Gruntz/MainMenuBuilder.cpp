@@ -3,6 +3,7 @@
 #include <Gruntz/MainMenuBuilder.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <Gruntz/ChatBox.h>
 #include <Gruntz/GameRegistry.h>
@@ -20,8 +21,9 @@
 
 typedef u32 u32;
 
+RVA_DYNINIT(0x000a1190, 0x29, g_menuTextRect)
 DATA(0x00245d88)
-RECT g_menuTextRect = {0};
+CRect g_menuTextRect(5, 453, 635, 478);
 
 DATA(0x00211480)
 static char s_MENU_AREAS_AREA8TITLE[] = "MENU_AREAS_AREA8TITLE";
@@ -175,21 +177,6 @@ DATA(0x00211a98)
 static char s_MAIN[] = "MAIN";
 DATA(0x00211aa0)
 static char s_MENU_MAINMENU_TITLE[] = "MENU_MAINMENU_TITLE";
-
-// A `$E` dynamic initializer, not a called function: the `.CRT$XC` table holds
-// 0x000a1170 (the 5-byte jmp cell 0x20 ahead of this body) and nothing calls
-// either address - link-order.tsv records mainmenubuilder's `xcu:789`. The
-// construct is `CRect g_menuTextRect(5, 453, 635, 478);`; the `RECT g_menuTextRect
-// = {0};` above is the same object spelled without its ctor, which is why the
-// initializer has to be written out by hand.
-// docs/patterns/crt-xc-table-is-the-static-initializer-census.md
-RVA(0x000a1190, 0x29)
-void SetMenuTextRect() {
-    g_menuTextRect.left = 5;
-    g_menuTextRect.top = 453;
-    g_menuTextRect.right = 635;
-    g_menuTextRect.bottom = 478;
-}
 
 // @identity-TODO BuildMainMenuTree - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT. The oracle's other half is

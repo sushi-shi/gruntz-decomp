@@ -90,5 +90,35 @@ It also REFUTES the sibling pattern's "8 GruntSteps helpers + 1 scattered Direct
 singleton" reading of `0x047740..0x0479c0`: those nine slots are contiguous at
 `0x208904..0x208924` with the usual 2-null gap on each side, so they are one TU's nine.
 
+## One slot per constructed OBJECT - so the slot count is an object count
+
+Controlled cl 5.0 `/O2 /MT` A/B (`/GX` changes nothing here):
+
+| source | `.CRT$XCU` | `$E` body |
+|---|---|---|
+| `struct T { T(){m=0;} __int64 m; }; T a; T b;` | **8 B (two slots)** | two x `33 c0` + 2 stores + `c3` (0xd) |
+| `struct P { P(){a=0;b=0;} __int64 a,b; }; P g;` | **4 B (one slot)** | `33 c0` + 4 stores + `c3` (0x17) |
+
+Two objects never share a slot, so a single slot whose body writes N adjacent dwords
+proves ONE object N dwords wide. That is how `g_scrollAccum`/`g_scrollLimit`
+(`0x0024cfb0`/`0x0024cfb8`, one initializer at `0x000ebd00` writing `+0 +4 +8 +c`)
+were folded into the single `ScrollPace` object they always were. The member-init
+list spelling (`P() : a(0), b(0) {}`) emits the same bytes as assignment.
+
+## A bare `ret` body does NOT mean "a single object"
+
+`struct R { R() {} ...; }; R a[32];` compiles to **one slot and a body of exactly
+`c3`** - no `??_L`, no `__vec_ctor`, no loop. cl expands the empty inline element
+constructor and then deletes the empty loop, so an ARRAY and a single object are
+byte-indistinguishable in `.text`. Only the `.bss` extent separates them.
+
+The rule that survives is narrower: a bare-`ret` body means the object's class has a
+*declared* constructor (which is what put it in XC at all) whose body optimises to
+nothing. Worked case - typekeycoll's fifth initializer `0x0016e190` (thunk
+`0x0016e180`, delta `+0x10`) is `TypeKeyRec g_recs23[32]` at `0x002bf498` plus
+`i32 g_recCount23`, `0x184 B`, which is exactly the `.bss` the probe measures; giving
+`TypeKeyRec` its constructor reproduces retail's five-slot `.CRT$XCU` in the base obj
+slot for slot, the fifth being `c3`.
+
 Tooling, not a wall. Decode XC before inventing an owner for an unreferenced `.text` body
 or an unclaimed `.bss` triple.

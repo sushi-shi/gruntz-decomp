@@ -54,9 +54,6 @@
 
 DATA(0x00245574)
 CFixedPtrArray32* g_actorList = 0;
-DATA(0x00245cc8)
-tagRECT g_versionRect;
-
 DATA(0x00251608)
 i32 g_versionMajor = 0;
 DATA(0x0025160c)
@@ -487,7 +484,7 @@ i32 CMenuState::OnPaint() {
 }
 
 RVA(0x000a0d80, 0xd7)
-void CMenuState::BuildVersionString(tagRECT r) {
+void CMenuState::BuildVersionString(CRect r) {
     CString str;
     if (g_versionMid == 0) {
         str.Format("Gruntz v%d.%d", g_versionMajor, g_versionMinor);

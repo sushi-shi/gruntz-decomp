@@ -19,6 +19,7 @@
 DATA(0x0021139c)
 CAreaMgr* g_pAreaMgr = &g_areaMgr;
 
+RVA_DYNINIT(0x00099b60, 0xa, g_areaMgr)
 RVA_DYNINIT(0x00099b80, 0xa, g_areaMgr)
 RVA_DYNINIT(0x00099be0, 0xe, g_areaMgr)
 RVA_DYNINIT(0x00099c00, 0xa, g_areaMgr)

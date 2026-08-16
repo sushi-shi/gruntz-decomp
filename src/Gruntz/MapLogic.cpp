@@ -15,12 +15,12 @@ i32 MapSerializeCurve(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     }
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&g_scrollAccum, sizeof(g_scrollAccum));
-            ar->Write(&g_scrollLimit, sizeof(g_scrollLimit));
+            ar->Write(&g_scrollPace.m_lastTime, sizeof(g_scrollPace.m_lastTime));
+            ar->Write(&g_scrollPace.m_period, sizeof(g_scrollPace.m_period));
             break;
         case SERIAL_LOAD:
-            ar->Read(&g_scrollAccum, sizeof(g_scrollAccum));
-            ar->Read(&g_scrollLimit, sizeof(g_scrollLimit));
+            ar->Read(&g_scrollPace.m_lastTime, sizeof(g_scrollPace.m_lastTime));
+            ar->Read(&g_scrollPace.m_period, sizeof(g_scrollPace.m_period));
             break;
     }
     switch (mode) {

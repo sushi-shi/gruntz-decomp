@@ -29,8 +29,8 @@ RVA(0x000ebd30, 0x21)
 void Cmd_ResetScroll() {
     g_scrollClock = 0;
     g_scrollTimer = 0;
-    g_scrollAccum = 0;
-    g_scrollLimit = 0;
+    g_scrollPace.m_lastTime = 0;
+    g_scrollPace.m_period = 0;
 }
 // @early-stop
 RVA(0x000ebd70, 0x366)
@@ -102,7 +102,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
             nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
             ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
         }
-        if (static_cast<i64>(g_frameTime) - g_scrollAccum >= g_scrollLimit) {
+        if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             CDDrawWorkerHost* g2 = g_backView;
@@ -114,8 +114,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
                 g2->m_scaledY = static_cast<float>(ny);
             }
             g2->RecomputePlaneCoords();
-            g_scrollLimit = g_buteMgr.GetDword("BackPlane", "ScrollTime");
-            g_scrollAccum = g_frameTime;
+            g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
+            g_scrollPace.m_lastTime = g_frameTime;
         }
     }
 
@@ -146,11 +146,9 @@ i32 g_jitterY;
 DATA(0x0024c27c)
 CDDrawWorkerHost* g_backView;
 
+RVA_DYNINIT(0x000ebd00, 0x17, g_scrollPace)
 DATA(0x0024cfb0)
-i64 g_scrollAccum;
-
-DATA(0x0024cfb8)
-i64 g_scrollLimit;
+ScrollPace g_scrollPace;
 
 DATA(0x0024cfc0)
 u32 g_scrollClock;

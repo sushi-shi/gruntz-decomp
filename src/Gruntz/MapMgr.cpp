@@ -733,22 +733,10 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// The thunk oracle does not apply here and the old "no incremental thunk, so it
-// came from the static LIBRARY" note is WITHDRAWN. This is a `$E` dynamic
-// initializer: its address is taken by the `.CRT$XC` table (slot for 0x0009fdf0,
-// the 5-byte jmp cell 0x20 ahead of this body) and nothing ever CALLS it, so it
-// can have no ILT-band entry whatever compiland it came from. link-order.tsv
-// agrees - mapmgr spans 0x0009e700..0x0009fe39 and carries `xcu:777`.
-// The construct is `CRect g_versionRect(5, 453, 635, 478);` at file scope; cl
-// gives an MFC CRect ctor no constant folding, hence the initializer. That means
-// the definition belongs in THIS TU, not the `tagRECT g_versionRect;` in
-// MenuState.cpp (the only reader, CMenuState::Render 0x000a0750, is a plain
-// extern use). Reuniting them needs an RVA_COMPGEN pin for the `??__E`, so it is
-// a separate change. docs/patterns/crt-xc-table-is-the-static-initializer-census.md
-RVA(0x0009fe10, 0x29)
-void SetVersionRect() {
-    g_versionRect.left = 5;
-    g_versionRect.top = 0x1c5;
-    g_versionRect.right = 0x27b;
-    g_versionRect.bottom = 0x1de;
-}
+// cl gives the MFC CRect ctor no constant folding, so this object is built by a
+// `.CRT$XC` initializer rather than a .data image. It is the last of mapmgr's
+// initializers, so it has to stay below the GruntDirStatics include. The only
+// reader, CMenuState::Render 0x000a0750, uses it through GameMode.h's extern.
+RVA_DYNINIT(0x0009fe10, 0x29, g_versionRect)
+DATA(0x00245cc8)
+CRect g_versionRect(5, 453, 635, 478);

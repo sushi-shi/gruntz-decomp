@@ -35,11 +35,6 @@ i32 g_defaultProjActSize = 32;
 DATA(0x0021adf4)
 char s_out_of_memory[] = "out of memory";
 
-DATA(0x002bf498)
-TypeKeyRec g_recs23[32];
-DATA(0x002bf618)
-i32 g_recCount23;
-
 RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
@@ -78,6 +73,16 @@ CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
 RVA_DYNINIT(0x0016dfe0, 0x10, g_symTabErrorSlot)
 DATA(0x002bf480)
 CVariantSlot g_symTabErrorSlot("zSymTab: ");
+
+// TypeKeyRec's declared constructor is what puts this array in `.CRT$XC` at all;
+// the body optimises to a bare `ret`, which is why the pin is 1 byte. It is the
+// fifth and last of this compiland's initializers, so the definition has to stay
+// below the four CVariantSlots.
+RVA_DYNINIT(0x0016e190, 0x1, g_recs23)
+DATA(0x002bf498)
+TypeKeyRec g_recs23[32];
+DATA(0x002bf618)
+i32 g_recCount23;
 
 // @early-stop
 RVA(0x0016cdd0, 0x22f)

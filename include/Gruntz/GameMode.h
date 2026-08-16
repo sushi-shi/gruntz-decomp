@@ -17,7 +17,7 @@
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
 
-extern tagRECT g_versionRect;
+extern CRect g_versionRect;
 
 #include <Rez/FrameClock.h>
 #include <Gruntz/WarpLetter.h>
@@ -65,7 +65,7 @@ public:
     i32 m_activateCueDurationMs;
     LeafCue* m_menuMusicCue;
 
-    void BuildVersionString(tagRECT r);
+    void BuildVersionString(CRect r);
 };
 
 class CCreditsState : public CState {

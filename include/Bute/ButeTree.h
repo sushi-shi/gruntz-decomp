@@ -29,6 +29,7 @@ struct CVariantSlot {
 };
 
 struct TypeKeyRec {
+    TypeKeyRec() {}
     i32 m_key;
     VariantCallback m_callback;
     short m_value;
