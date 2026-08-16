@@ -4,7 +4,6 @@
 
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCacheFindInline.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
