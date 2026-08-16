@@ -274,13 +274,7 @@ i32 CDDrawWorkerB::PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex) {
 
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
-    CImage* frame;
-    if (frameIndex >= src->m_minIndex && frameIndex <= src->m_maxIndex) {
-
-        frame = static_cast<CImage*>(src->m_items[frameIndex]);
-    } else {
-        frame = NULL;
-    }
+    CImage* frame = src->GetAt(frameIndex);
     m_frame = frame;
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);

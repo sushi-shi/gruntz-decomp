@@ -54,8 +54,29 @@ fall-through - the C2 block-placement coin).
 | `CSBI_SideTab::BuildStatzTabStatusBar` (2 sites) | **80.19** | 77.05 |
 | `CSBI_Image::SerializeFields` | **84.97** | 83.87 |
 
-Keep the written-out form there. The two shapes are distinguishable up front: if the guard is
-exactly `idx < min || idx > max` it is `GetAt`; if it also tests `p == NULL` it is not.
+A SECOND refutation, measured 2026-08-16: the guard must produce **only a value**. Where each
+arm carries its own control flow, retail duplicated the tail and folding is wrong -
+`CKitchenSlime::LoadSprites` 94.75 -> **90.35** (reverted) for
+
+```cpp
+if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
+    CImage* img = (CImage*)spr->m_items.GetAt(1);
+    player->m_frameIndex = 1; player->m_layer = img; m_stepMag = 0.0; return 1;
+}
+player->m_frameIndex = 1; player->m_layer = NULL; m_stepMag = 0.0; return 1;
+```
+even though the two arms differ only in the stored value: each has its OWN `return`.
+
+## The rule, in the order to apply it
+
+1. Guard is exactly `idx < min || idx > max` (or its De Morgan twin) -> candidate.
+2. The arms differ ONLY in the value assigned to one variable, and both fall into shared
+   code -> **it is `GetAt`; recover it.**
+3. The guard also tests the RECEIVER (`p != NULL && idx >= ...`) -> **NOT `GetAt`.** Leave it.
+4. Each arm has its own `return` / control flow -> **NOT `GetAt`.** Leave it.
+
+A receiver null-test in a SEPARATE enclosing block (`if (spr) { ...GetAt shape... }`) does not
+disqualify - that is `CWwdGameObjectA::ApplyName`, 89.41 -> **94.12**.
 
 ## Corollary: the argument null-guard order is readable, and cl preserves it
 

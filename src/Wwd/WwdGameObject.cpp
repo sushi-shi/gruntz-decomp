@@ -59,12 +59,7 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(sprOb);
     m_frameSet = spr;
     if (spr) {
-        CImage* f;
-        if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
-            f = static_cast<CImage*>(spr->m_items.GetAt(frame));
-        } else {
-            f = NULL;
-        }
+        CImage* f = spr->GetAt(frame);
         m_frameIndex = frame;
         m_layer = f;
     }
@@ -80,12 +75,7 @@ void CWwdGameObjectA::ApplyName(const char* name) {
     if (spr) {
         i32 n = spr->m_minIndex;
         m_frameIndex = n;
-        if (n >= spr->m_minIndex && n <= spr->m_maxIndex) {
-            m_layer = static_cast<CImage*>(spr->m_items.GetAt(n));
-        } else {
-            CImage* none = 0;
-            m_layer = none;
-        }
+        m_layer = spr->GetAt(n);
     }
 }
 
