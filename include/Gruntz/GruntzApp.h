@@ -35,13 +35,6 @@ public:
     void ShowMessage(const char* msg, HWND hParent);
     virtual CGameMgr* InitializeGameManager() OVERRIDE;
     static BOOL CALLBACK ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-    i32 LoadSwitchDownSprite();
-
-    RVA(0x00112820, 0xc)
-    i32 TryLoadSwitchDownSprite() {
-        return LoadSwitchDownSprite() != 0;
-    }
 };
 
 i32 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, i32);
