@@ -159,6 +159,15 @@ def _materialized(claims: list[Claim], violations: list[str]) -> list[Claim]:
 
     A claim no object defines survives unfiltered - the label is real evidence
     about retail either way - and is reported once as the modelling gap it is.
+
+    WHY HERE and not in delink/pdb_synth (asked and settled): `unit` is read
+    by sema, walls, verify and the exe-map as well as the delinker, and all of
+    them take a Model - deciding the owner downstream would leave every other
+    consumer looking at the alphabetical tie-break. Ownership of a multiply
+    emitted inline is inherently a materialization fact, so SOME object read
+    is unavoidable; this is the module whose docstring already says policy
+    lives here. Unlike the per-claim authority check it replaced, it only
+    breaks a TIE - a missing object degrades attribution, never a label.
     """
     defines = _emitted()
     drop: set[int] = set()
