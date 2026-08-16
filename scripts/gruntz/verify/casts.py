@@ -275,7 +275,13 @@ def gate_findings() -> list[str]:
     _forced, openv = scan_ledger()
     n_open = sum(len(v) for v in openv.values())
     floor = load_baseline().get("unexplained casts")
-    if floor is not None and n_open > floor:
+    if floor is None:
+        # FAIL-CLOSED: no floor means the ratchet cannot fail, so an absent
+        # baseline file would silently retire this gate.
+        out.append("cast ledger: no committed floor for 'unexplained casts' - "
+                   "restore config/cleanliness/cleanliness-text-baseline.tsv or "
+                   "bless with `gruntz verify board --update`")
+    elif n_open > floor:
         files = ", ".join(sorted(openv)[:4])
         out.append(f"cast ledger: OPEN {n_open} exceeds the committed floor "
                    f"{floor} (new unexplained cast(s); first files: {files})")

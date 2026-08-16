@@ -7,6 +7,8 @@ is the only reader/writer of that shape.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 
 
@@ -38,7 +40,14 @@ def read(path: Path | str) -> tuple[list[str], list[str], list[dict[str, str]]]:
 def write(path: Path | str, banner: list[str], header: list[str],
           rows: list[dict[str, str]] | list[list[str]]) -> bool:
     """Write the table; returns True when the file content actually changed
-    (write-if-different, so ninja's restat can prune downstream edges)."""
+    (write-if-different, so ninja's restat can prune downstream edges).
+
+    The replacement is ATOMIC. These tables are read by gates and by other
+    graph edges while a build runs, and an in-place rewrite is visible to a
+    concurrent reader as a truncated file - observed live as
+    `ValueError: build/gen/claims/grunt.tsv: no header row` crashing a gate
+    mid-tier. A reader now sees either the old table or the new one.
+    """
     out = list(banner) + ["\t".join(header)]
     for row in rows:
         fields = [row.get(h, "") for h in header] if isinstance(row, dict) else row
@@ -48,7 +57,15 @@ def write(path: Path | str, banner: list[str], header: list[str],
     if path.is_file() and path.read_text() == text:
         return False
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
+    # same directory: os.replace is only atomic within one filesystem
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
     return True
 
 

@@ -469,10 +469,23 @@ def save_baseline(rows: list[tuple[str, int]], *,
 
 
 def gate(rows: list[tuple[str, int]] | None = None) -> list[str]:
-    """Ratchet findings: every RATCHETED metric above its committed floor."""
+    """Ratchet findings: every RATCHETED metric above its committed floor.
+
+    FAIL-CLOSED: a ratcheted metric with no committed floor is a FINDING,
+    not a pass. The floors are the whole gate - deleting the two baseline
+    files used to make this tier permanently green, which is the one
+    failure mode a ratchet must not have (`caller-callee` and
+    `undefined-closure` already refuse to pass vacuously; this matches).
+    """
     rows = rows if rows is not None else count()
     base = load_baseline()
     bad = []
+    missing = sorted(lbl for lbl, _n in rows if lbl in _RATCHET and lbl not in base)
+    if missing:
+        bad.append(f"no committed floor for {len(missing)} ratcheted metric(s): "
+                   f"{', '.join(missing[:6])} - a ratchet with no floor cannot "
+                   f"fail; restore config/cleanliness/cleanliness-*-baseline.tsv "
+                   f"or bless with `gruntz verify board --update`")
     for label, n in rows:
         if label in _RATCHET and label in base and n > base[label]:
             bad.append(f"{label}: {base[label]} -> {n} "

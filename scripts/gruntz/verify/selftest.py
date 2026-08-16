@@ -2123,6 +2123,93 @@ class PipelineErrorControls(unittest.TestCase):
         self.assertIn("rsrc check", out.getvalue())
 
 
+class FloorAbsenceControls(unittest.TestCase):
+    """A ratchet with no floor must FAIL, never pass.
+
+    board and casts used to fail OPEN: deleting the two files in
+    config/cleanliness/ made the whole fast tier permanently green, while
+    caller-callee and undefined-closure already refused to pass vacuously.
+    """
+
+    def test_board_reports_a_ratcheted_metric_with_no_floor(self):
+        from gruntz.verify import board
+        with mock.patch.object(board, "load_baseline", return_value={}):
+            found = board.gate([("reinterpret_casts", 9999)])
+        self.assertTrue(found, "a ratcheted metric with no floor passed")
+        self.assertIn("no committed floor", found[0])
+
+    def test_board_still_ratchets_when_the_floor_exists(self):
+        from gruntz.verify import board
+        with mock.patch.object(board, "load_baseline",
+                               return_value={"reinterpret_casts": 10}):
+            self.assertTrue(board.gate([("reinterpret_casts", 11)]))
+            self.assertEqual(board.gate([("reinterpret_casts", 10)]), [])
+
+    def test_casts_reports_a_missing_floor(self):
+        from gruntz.verify import board, casts
+        with mock.patch.object(board, "load_baseline", return_value={}), \
+             mock.patch.object(casts, "self_recursion", return_value=[]), \
+             mock.patch.object(casts, "scan_ledger", return_value=({}, {"a.cpp": [1]})):
+            found = casts.gate_findings()
+        self.assertTrue(found, "an absent cast floor passed the gate")
+        self.assertIn("no committed floor", found[0])
+
+
+class LinkClosureScanSetControls(unittest.TestCase):
+    """The closure check must scan the link line we actually use.
+
+    graph.link substitutes our synthesized import libs into LINK_LIBS, so
+    mss32/smackw32 imports resolve at link time; scanning only the
+    toolchain reported 26 of them as guaranteed-unresolved.
+    """
+
+    def test_synthesized_import_libs_are_in_the_scan_set(self):
+        from gruntz.graph import implib
+        from gruntz.verify import undefined_closure as uc
+        made = [p for p in implib.on_disk() if p.is_file()]
+        if not made:
+            self.skipTest("no synthesized import libs on disk")
+        scanned = set(uc._toolchain_libs())
+        for p in made:
+            self.assertIn(p, scanned, f"{p.name} is on the link line but unscanned")
+
+
+class TsvAtomicWriteControls(unittest.TestCase):
+    """A concurrent reader never sees a half-written table.
+
+    Observed live: a gate crashed with `no header row` while a build edge
+    rewrote build/gen/claims/grunt.tsv in place.
+    """
+
+    def test_write_replaces_atomically(self):
+        import os
+        from gruntz.core import tsv
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "t.tsv"
+            tsv.write(path, ["# b"], ["a", "b"], [["1", "2"]])
+            before = path.read_text()
+            seen = []
+            real_replace = os.replace
+
+            def spy(src, dst):
+                # the destination must still hold the OLD table right up to
+                # the instant of replacement - never a truncated one
+                seen.append(Path(dst).read_text())
+                return real_replace(src, dst)
+
+            with mock.patch("os.replace", spy):
+                tsv.write(path, ["# b"], ["a", "b"], [["3", "4"]])
+            self.assertEqual(seen, [before])
+            self.assertIn("3\t4", path.read_text())
+
+    def test_no_temp_file_survives(self):
+        from gruntz.core import tsv
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "t.tsv"
+            tsv.write(path, ["# b"], ["a"], [["1"]])
+            self.assertEqual([p.name for p in Path(d).iterdir()], ["t.tsv"])
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(

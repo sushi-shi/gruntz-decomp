@@ -88,6 +88,16 @@ _CACHE_STAMP = "# libs "
 
 
 def _toolchain_libs() -> list[Path]:
+    """Every archive the REAL link line searches.
+
+    The toolchain/SDK dirs, PLUS the import libs we synthesize into
+    build/lib and pass to link.exe by substitution (gruntz.graph.link
+    LINK_LIBS/implib): mss32 and smackw32 ship no .LIB, so their
+    `__imp__AIL_*` / `__imp__Smack*` imports resolve from ours. Scanning
+    only the toolchain made the closure check answer for a link line we do
+    not use, and report 26 symbols as guaranteed-unresolved that the real
+    link resolves.
+    """
     import os
     libs: list[Path] = []
     for env in ("MSVC_DIR", "DXSDK_DIR"):
@@ -98,6 +108,8 @@ def _toolchain_libs() -> list[Path]:
                 if p.is_dir():
                     libs += [q for q in p.iterdir()
                              if q.suffix.lower() == ".lib"]
+    from gruntz.graph import implib
+    libs += [p for p in implib.on_disk() if p.is_file()]
     return sorted(libs)
 
 
