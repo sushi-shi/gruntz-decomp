@@ -18,12 +18,11 @@ rva	name	lib	confidence	source
 0x021280	?out_waiting@streambuf@@QBEHXZ	LIBCIMT	HIGH	manual-crt-reclass
 0x0213a0	?rdbuf@ostrstream@@QBEPAVstrstreambuf@@XZ	LIBCIMT	HIGH	manual-crt-reclass
 0x029ac0	??0CRect@@QAE@HHHH@Z	NAFXCW	HIGH	mfc-4.2-header-inline
-0x02d7e0	__fpclear	LIBCMT	LOW	anchored
 0x0853d0	??3CObject@@SGXPAX@Z	NAFXCW	MED	manual-unmatched-library-audit
 0x08c380	?SetRect@CRect@@QAEXHHHH@Z	NAFXCW	HIGH	mfc-4.2-header-inline
 0x08c3b0	??0CRgn@@QAE@XZ	NAFXCW	MED	manual-stub-reclass
-0x11ce5a	??_9@$BNA@AE	NAFXCW	LOW	anchored
-0x11ce62	??_9@$BMM@AE	NAFXCW	LOW	anchored
+0x11ce5a	??_9@$BNA@AE	NAFXCW	HIGH	vtable-slot-oracle: CDialog::_messageEntries[2] (WM_COMMAND id=2 IDCANCEL) pfn; vcall thunk to ??_7CDialog@@6B@+0xd0 = CDialog::OnCancel
+0x11ce62	??_9@$BMM@AE	NAFXCW	HIGH	vtable-slot-oracle: CDialog::_messageEntries[1] (WM_COMMAND id=1 IDOK) pfn; vcall thunk to ??_7CDialog@@6B@+0xcc = CDialog::OnOK
 0x11ce6a	?AfxGetMainWnd@@YGPAVCWnd@@XZ	NAFXCW	HIGH	anchored
 0x11ce86	?GetOwner@CWnd@@QBEPAV1@XZ	NAFXCW	HIGH	anchored
 0x11ce9d	??0CMemoryException@@QAE@HI@Z	NAFXCW	AMBIG	anchored
@@ -186,14 +185,14 @@ rva	name	lib	confidence	source
 0x11ec6a	?Seek@CArchiveStream@@UAGJT_LARGE_INTEGER@@KPAT_ULARGE_INTEGER@@@Z	NAFXCW	MED	manual-unmatched-library-audit
 0x11ecc8	Unmatched_11ecc8	MSVC-EH	HIGH	asm-carveout
 0x11ecdb	Funclet_11ecdb	MSVC-EH	HIGH	asm-carveout
-0x11ecec	?SetSize@CArchiveStream@@UAGJT_ULARGE_INTEGER@@@Z	NAFXCW	LOW	anchored
-0x11ecf4	?CopyTo@CArchiveStream@@UAGJPAUIStream@@T_ULARGE_INTEGER@@PAT3@2@Z	NAFXCW	LOW	anchored
-0x11ecfc	?Commit@CArchiveStream@@UAGJK@Z	NAFXCW	LOW	anchored
-0x11ed04	?Revert@CArchiveStream@@UAGJXZ	NAFXCW	LOW	anchored
-0x11ed0c	?CopyTo@CArchiveStream@@UAGJPAUIStream@@T_ULARGE_INTEGER@@PAT3@2@Z	NAFXCW	LOW	anchored
-0x11ed14	?CopyTo@CArchiveStream@@UAGJPAUIStream@@T_ULARGE_INTEGER@@PAT3@2@Z	NAFXCW	LOW	anchored
-0x11ed1c	?SetSize@CArchiveStream@@UAGJT_ULARGE_INTEGER@@@Z	NAFXCW	LOW	anchored
-0x11ed24	?Commit@CArchiveStream@@UAGJK@Z	NAFXCW	LOW	anchored
+0x11ecec	?SetSize@CArchiveStream@@UAGJT_ULARGE_INTEGER@@@Z	NAFXCW	HIGH	vtable-slot-oracle: ??_7CArchiveStream@@6B@ slot 6 (IStream::SetSize); ret 0xc = this+ULARGE_INTEGER
+0x11ecf4	?CopyTo@CArchiveStream@@UAGJPAUIStream@@T_ULARGE_INTEGER@@PAT3@2@Z	NAFXCW	HIGH	vtable-slot-oracle: slot 7 (IStream::CopyTo); ret 0x18 = this+IStream*+ULARGE_INTEGER+2 ptrs
+0x11ecfc	?Commit@CArchiveStream@@UAGJK@Z	NAFXCW	HIGH	vtable-slot-oracle: slot 8 (IStream::Commit); ret 0x8 = this+DWORD
+0x11ed04	?Revert@CArchiveStream@@UAGJXZ	NAFXCW	HIGH	vtable-slot-oracle: slot 9 (IStream::Revert); ret 0x4 = this only
+0x11ed0c	?LockRegion@CArchiveStream@@UAGJT_ULARGE_INTEGER@@0K@Z	NAFXCW	HIGH	vtable-slot-oracle: slot 10 (IStream::LockRegion); ret 0x18 = this+2 ULARGE_INTEGER+DWORD
+0x11ed14	?UnlockRegion@CArchiveStream@@UAGJT_ULARGE_INTEGER@@0K@Z	NAFXCW	HIGH	vtable-slot-oracle: slot 11 (IStream::UnlockRegion); ret 0x18 = this+2 ULARGE_INTEGER+DWORD
+0x11ed1c	?Stat@CArchiveStream@@UAGJPAUtagSTATSTG@@K@Z	NAFXCW	HIGH	vtable-slot-oracle: slot 12 (IStream::Stat); ret 0xc = this+STATSTG*+DWORD
+0x11ed24	?Clone@CArchiveStream@@UAGJPAPAUIStream@@@Z	NAFXCW	HIGH	vtable-slot-oracle: slot 13 (IStream::Clone); ret 0x8 = this+IStream**
 0x11ed2c	??_GCWinApp@@UAEPAXI@Z	NAFXCW	AMBIG	anchored
 0x11ed48	??1CArchiveException@@UAE@XZ	NAFXCW	AMBIG	anchored
 0x11ed7c	??_9@$BOI@AE	NAFXCW	MEDIUM	anchored
@@ -406,7 +405,7 @@ rva	name	lib	confidence	source
 0x126f70	__setlocale_set_cat	LIBCMT	HIGH	offstart-ghidra-missed
 0x1270d0	__setlocale_get_all	LIBCMT	HIGH	offstart-ghidra-missed
 0x1271f0	__expandlocale	LIBCMT	HIGH	offstart-ghidra-missed
-0x1273f0	___init_collate	LIBCMT	LOW	anchored
+0x1273f0	___init_dummy	LIBCMT	MED	lc-category-table-slot: __lc_category[LC_ALL].init @0x216558; body `return 0`; setlocal.obj, next COMDAT after __expandlocale. Spelling from the CRT LC_ALL filler
 0x127400	__strcats	LIBCMT	HIGH	offstart-ghidra-missed
 0x127450	___lc_strtolc	LIBCMT	HIGH	offstart-ghidra-missed
 0x127560	___lc_lctostr	LIBCMT	HIGH	offstart-ghidra-missed
@@ -553,7 +552,7 @@ rva	name	lib	confidence	source
 0x12e760	_fix_grouping	LIBCMT	AMBIG	anchored
 0x12e7a0	__free_lc_lconv	LIBCMT	HIGH	anchored
 0x12e810	___init_ctype	LIBCMT	HIGH	anchored
-0x12ead0	___init_collate	LIBCMT	LOW	anchored
+0x12ead0	___init_collate	LIBCMT	HIGH	lc-category-table-slot: __lc_category[LC_COLLATE].init @0x216564; body `return 0`; siblings ___init_ctype/_monetary/_numeric/_time are the other five slots
 0x12eae0	___get_qualified_locale	LIBCMT	HIGH	offstart-ghidra-missed
 0x12ec80	_TranslateName	LIBCMT	HIGH	offstart-ghidra-missed
 0x12ece0	_GetLcidFromLangCountry	LIBCMT	HIGH	offstart-ghidra-missed
@@ -778,7 +777,6 @@ rva	name	lib	confidence	source
 0x16cd00	?sbumpc@streambuf@@QAEHXZ	LIBCIMT	HIGH	manual-crt-reclass
 0x16cd50	?stossc@streambuf@@QAEHXZ	LIBCIMT	HIGH	manual-crt-reclass
 0x16cda0	?sgetc@streambuf@@QAEHXZ	LIBCIMT	HIGH	manual-crt-reclass
-0x16e190	__fpclear	LIBCMT	LOW	anchored
 0x174330	__fpclear	LIBCMT	LOW	anchored
 0x174890	__fpclear	LIBCMT	LOW	anchored
 0x177660	_DirectPlayLobbyCreateA@20	DPLAYX	HIGH	reloc-R24
