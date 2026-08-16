@@ -59,6 +59,42 @@ Negative control that pins the mechanism rather than the TU state: `CLevelTime` 
 99.673 through the build in which `CWayPoint` and `CGuardPoint` (same TU state, same
 header) reached EXACT, and only moved when its own first statement was converted.
 
+## Second pass, 2026-08-16: nine more sites
+
+Sites found by scanning every `CWapX`-derived ctor for a first body statement still
+written out through `m_wwdObject`, converting only that statement:
+
+`CBoomerang` 97.23 -> **100.000 EXACT**, `CExplosion` 92.30 -> 95.77 (`ApplyName`),
+`CTeleporter` 92.02 -> 96.03, `CGruntVoice` 94.75 -> 97.58 (`ApplyName`),
+`CActionArea` 96.55 -> 99.54 (`ApplyName`), `CTimeBomb` 88.21 -> 91.02,
+`CPathHazard` -> 98.95, `CWormhole` 94.24 -> 94.54, `CGruntPuddle` 55.87 -> 56.17.
+Sibling `CGameObject` destructors take the same lever from the other side —
+[dtor-cleanup-writes-are-inline-members-that-pin-the-member-dtor-lea.md](dtor-cleanup-writes-are-inline-members-that-pin-the-member-dtor-lea.md).
+
+## CHECK THE RESIDUE SIGNATURE FIRST - blanket conversion is inert
+
+The lever fixes exactly one residue: a receiver load transposed with an adjacent
+successor-less store (the leaf vptr stamp, or the leading run of member-init stores).
+Read the first divergence before converting - dump both sides and look for
+`base: mov r,[esi+N] | mov [esi],<vtbl>` against `target: mov [esi],<vtbl> | mov r,[esi+N]`
+(or the same load hoisted over a run of `mov [esi+K],r` stores). Where the residue is
+something else, the conversion changes NOTHING and only costs header ripple. Three
+measured negative controls, one build each:
+
+* `CUserLogic::SwapActKey(const char*)` for the 98-site pair
+  `m_prevAnimSetNode = m_objAux->m_actKey; m_objAux->m_actKey = ActFindId("A");` -
+  the strongest repeated-one-line-member signature in the tree - converted at 12
+  first-statement sites (CSpotLight, CDroppedObject(+Shadow), CSingleFrameMessage,
+  CTileTrigger, CBrickz, CCheckpointTrigger, CEyeCandyAni, CFrontCandyAni,
+  CBehindCandyAni, CParticlez, CSimpleAnimation): **every one scored identically**,
+  plus 7 fresh sub-bank rows from the `UserLogic.h` decl-count window.
+* `CUserLogic::SnapToTileCenter()` for the 14-site `m_object->m_screenX/Y =
+  (… & ~TILE_MASK_PX) + TILE_HALF_PX` pair: inert at CVoiceTrigger / CExitTrigger /
+  CGruntCreationPoint (98.32 / 97.76 / 81.97 unchanged), 8 fresh sub-bank rows.
+* `CWapX::SaveAnimation()` for the 121-site `m_value = m_wwdObject->m_animCursor.
+  m_animation;`: at `CAniCycle`'s site - which is inside an `if`, not the ctor's first
+  statement - it made things WORSE, 94.62 -> 93.23.
+
 ## When the WRITTEN-OUT form is retail's
 
 Per-site, decided by cl's /Ob1 budget, exactly as in
@@ -69,6 +105,13 @@ cause directly — the call-target multiset changed, `?InitOwner@CMovingLogic@@A
 flipped from expanded to called and the body shrank 0x255 -> 0x147 bytes. Read a big drop
 after this conversion as a budget flip, confirm it with `walls diagnose`, and write that
 site out again.
+
+**The FIRST statement is not exempt from that.** Re-measured 2026-08-16: converting
+`CProjectile`'s FIRST statement (`m_wwdObject->m_flags |= 0x2000002` ->
+`SetObjectFlags(0x2000002)`) craters it 96.91 -> 41.64 with the identical diagnosis
+(`InitOwner` expanded -> called, 0x255 -> 0x147). Position decides which residue the
+lever can fix; it does not decide whether the budget can afford the expansion. Measure
+every site.
 
 `CTileTriggerSwitch` 0x10dc40 is the control in the other direction: it is 100.000 EXACT,
 its `m_flags |= 2` / `Hide()` statements are NOT first, and converting them left it at

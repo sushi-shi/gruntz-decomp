@@ -2397,10 +2397,18 @@ class ReadmeFreshnessControls(unittest.TestCase):
         if not rm.README.is_file():
             self.skipTest("no README")
         before = rm.README.read_text()
+        # Anchor on a token the block ALWAYS carries. The original anchor was
+        # the `(unmatched)` row, which stopped existing the day the last
+        # unclaimed reconstruction target got modelled - a freshness control
+        # must not assert a row that only appears while work is outstanding.
+        anchor = "Overall (vs full engine)"
+        self.assertIn(anchor, before, "the block lost its headline line")
         try:
-            rm.README.write_text(before.replace("(unmatched)", "(unmatched-STALE)", 1))
+            rm.README.write_text(before.replace(anchor, anchor + "-STALE", 1))
             verbs.refresh_readme_block()
-            self.assertIn("(unmatched)", rm.README.read_text())
+            fresh = rm.README.read_text()
+            self.assertIn(anchor, fresh)
+            self.assertNotIn(anchor + "-STALE", fresh)   # the stale text is GONE
         finally:
             rm.README.write_text(before)
 

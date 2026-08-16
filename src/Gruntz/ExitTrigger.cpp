@@ -51,8 +51,10 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         m_resolved = 0;
         return;
     }
-    slot->m_focusX = m_object->m_screenX;
-    slot->m_focusY = m_object->m_screenY;
+    i32 focusX = m_object->m_screenX;
+    i32 focusY = m_object->m_screenY;
+    slot->m_focusX = focusX;
+    slot->m_focusY = focusY;
     CGameObject* e =
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);

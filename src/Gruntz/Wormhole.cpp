@@ -70,7 +70,7 @@ RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 // @early-stop
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
     m_wwdObject->ApplyName("GAME_WORMHOLE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_WORMHOLE", 0);
@@ -187,7 +187,7 @@ i32 CWormhole::SpawnPartners() {
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_PUDDLE) {
         o->m_sortKey = SORTKEY_GRUNT_PUDDLE;
@@ -346,7 +346,7 @@ RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_armClock = 0;
     m_interval = 0;
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_TELEPORT) {
         o->m_sortKey = SORTKEY_TELEPORT;

@@ -156,7 +156,7 @@ RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;
-    m_wwdObject->ApplyName("GAME_EXCLAMATION");
+    ApplyName("GAME_EXCLAMATION");
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_VOICE) {
         o->m_sortKey = SORTKEY_GRUNT_VOICE;

@@ -41,20 +41,17 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
-    i32 key = m_object->m_smarts;
-    i32 idx;
+    i32 idx = m_object->m_smarts;
     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-        if (g_gameReg->m_options[key].m_liveGate != 0) {
-            idx = IDX(g_gameReg->m_options[key].m_colorIndex);
+        if (g_gameReg->m_options[idx].m_liveGate != 0) {
+            idx = IDX(g_gameReg->m_options[idx].m_colorIndex);
         } else {
             m_wwdObject->m_flags |= 0x10000;
 
-            AddrWord<CGameObject> sel;
-            sel.m_addr = obj;
-            idx = sel.m_word;
+            AddrWord<CGameObject> handle;
+            handle.m_addr = obj;
+            idx = handle.m_word;
         }
-    } else {
-        idx = key;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 

@@ -538,11 +538,10 @@ i32 CProjectile::DetachRenderObj() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
 }
 
 // @early-stop
@@ -956,7 +955,7 @@ void CTimeBomb::RegisterActs() {
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_PROJECTILE) {
         o->m_sortKey = SORTKEY_PROJECTILE;

@@ -292,7 +292,7 @@ i32 CParticlez::Update() {
 // @early-stop
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->ApplyName("GAME_EXPLOSION");
+    ApplyName("GAME_EXPLOSION");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;

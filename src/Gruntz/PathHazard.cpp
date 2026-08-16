@@ -54,7 +54,7 @@ RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
 
     i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;

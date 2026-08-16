@@ -45,7 +45,7 @@ RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_timestamp = 0;
     m_duration = 0;
-    m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
+    ApplyName("GAME_ACTIONAREA_RED");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;

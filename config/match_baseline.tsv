@@ -241,7 +241,7 @@ palettebmp	2	2
 pathhazard	26	22
 play	104	75
 playassetload	17	16
-projectile	28	19
+projectile	28	20
 registryhelper	11	11
 rezbufferobject	4	2
 rezcoll	13	9
@@ -319,7 +319,7 @@ winmain	1	1
 worldsoundset	36	33
 wormhole	26	19
 wormholeacts	2	2
-wwdfactoryobject	54	46
+wwdfactoryobject	54	50
 wwdgameobject	45	33
 wwdgameobjectrender	15	11
 wwdgrid	16	12
@@ -328,7 +328,7 @@ wwdspatialmgr	14	12
 zdarrayderived	3	2
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva	hist_pct	state
-actionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	96.5472	96.5472	2	b06fe92dcfc5	0x7da0	96.5472	
+actionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	99.5377	99.5377	3	1453282f4b17	0x7da0	99.5377	
 actionarea	??1CActionArea@@UAE@XZ	100.0000	100.0000	1	cpp:98d7bd2f3fc0	0x7fd0	100.0000	
 actionarea	??1CUserBase@@UAE@XZ	100.0000	100.0000	1	cpp:98d7bd2f3fc0	0x87b0	100.0000	
 actionarea	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:98d7bd2f3fc0	0x8860	100.0000	
@@ -1636,7 +1636,7 @@ droppedobject	?SerializeMove@CObjectDropper@@UAEHPAVCFileMemBase@@W4SerialMode@@
 droppedobject	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	1	c822a08728c2	0xc62e0	100.0000	
 engstrrendertext	??0CRect@@QAE@ABUtagRECT@@@Z	100.0000	100.0000	1	cpp:ed232bbc27f4	0x115b30	100.0000	
 engstrrendertext	?EngStr_RenderText@@YAHPAXPAVCString@@PAUtagRECT@@PAVCDDSurface@@HHHHHH@Z	100.0000	100.0000	13	1e46608f52ff	0x115930	100.0000	
-exittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	93.7912	93.7912	2	0d5dd0aa36d1	0x3ecf0	93.7912	
+exittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	97.7637	97.7637	3	aa22e79fba04	0x3ecf0	97.7637	
 exittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:7da0823f5878	0x108c0	100.0000	
 exittrigger	??_GCExitTrigger@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7da0823f5878	0x10890	100.0000	
 exittrigger	?GetTypeTag@CExitTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x10870	100.0000	
@@ -1792,7 +1792,7 @@ fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	94.2241	94.2241	8	3d428ad82260	0x21e2
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	1	1164e8ea8f1a	0x1158f0	100.0000	
 fonts	?InitializeFonts@@YAHXZ	100.0000	100.0000	10	a2bf1cd90122	0x115810	100.0000	
 fortconquered	?AdvanceAnim@CExitTrigger@@QAEHXZ	78.2168	78.2168	8	4eef6ce263b1	0x3f5f0	78.2168	
-fortressflag	??0CExplosion@@QAE@PAUCGameObject@@@Z	92.2959	92.2959	1	fbf34b302086	0x470e0	92.2959	
+fortressflag	??0CExplosion@@QAE@PAUCGameObject@@@Z	95.7653	95.7653	2	d6eeb25000ce	0x470e0	95.7653	
 fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	92.7714	92.7714	1	e14d865b4cc9	0x45d30	92.7714	
 fortressflag	??0CParticlez@@QAE@PAUCGameObject@@@Z	95.6316	95.6316	1	3794c9df68d6	0x46ad0	95.6316	
 fortressflag	??1CExplosion@@UAE@XZ	100.0000	100.0000	1	cpp:ddcf8584f24f	0x12ec0	100.0000	
@@ -2089,7 +2089,7 @@ gruntcombat	?StopStruckSlotSound@CGrunt@@QAEXXZ	100.0000	100.0000	1	548879ed1823
 gruntcombat	?StopStruckVoiceSound@CGrunt@@QAEXXZ	100.0000	100.0000	1	6183b34eeacb	0x57ce0	100.0000	
 gruntcombat	?TryPowerupAtTile@CGrunt@@QAEHXZ	93.3115	93.3115	1	2992726534f1	0x57aa0	93.3115	
 gruntcombat	?XferName@CGrunt@@UAEXPAD@Z	86.8309	86.8297	13	4de5ef9cd2d6	0x5d210	86.8309	
-gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	80.8561	80.8561	2	a30ed1f97b2e	0x3e520	80.8561	
+gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	81.9712	81.9712	3	62469eb93746	0x3e520	81.9712	
 gruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	cpp:3fb5fe31d052	0x10730	100.0000	
 gruntcreationpoint	??_GCGruntCreationPoint@@UAEPAXI@Z	100.0000	100.0000	1	cpp:3fb5fe31d052	0x10700	100.0000	
 gruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	49a6dc21ddeb	0x3ecc0	100.0000	
@@ -2254,7 +2254,7 @@ grunttoytimesprite	??_GCGruntToyTimeSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:84
 grunttoytimesprite	?GetDisplayedValue@CGruntToyTimeSprite@@UAEHPAVCGrunt@@@Z	100.0000	100.0000	1	4c56ab901d4f	0x7fca0	100.0000	
 grunttoytimesprite	?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x120e0	100.0000	
 grunttubeanim	?SetupTubeAnim@CGrunt@@QAEHH@Z	97.3961	97.3961	14	f1790f7dadee	0x50a50	97.3961	
-gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	94.7500	94.7500	2	f3cce023f0a4	0x1198a0	94.7500	
+gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	97.5804	97.5804	3	95781101c437	0x1198a0	97.5804	
 gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	98.3167	98.3167	2	66f88675a262	0x119b50	98.3167	
 gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	2	66f88675a262	0x13470	100.0000	
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x119ae0	100.0000	
@@ -3325,7 +3325,7 @@ netsessionmgr	?Verify@CNetSession@@QAEHH@Z	100.0000	100.0000	1	b2b21951de05	0xc0
 netsessionmgr	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	6	b2b21951de05	0xc04f0	100.0000	
 palettebmp	?Apply@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	1	a9bd58be1c62	0x1775f0	100.0000	
 palettebmp	?LoadBmpFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	a05f787bb8a9	0x177480	100.0000	
-pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	98.9474	98.9474	1	34c425835b1d	0xb35a0	98.9474	
+pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	98.9474	98.9474	2	5dd38200fe2a	0xb35a0	98.9474	
 pathhazard	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	fbda879ee100	0xb49b0	100.0000	
 pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	84.8409	84.8409	1	e9bbbfdbc7ea	0xb4a90	84.8409	
 pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13280	100.0000	
@@ -3472,9 +3472,9 @@ playassetload	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	1	5bd2554f561b	0x
 playassetload	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	1	ec6c2f7bb630	0xdb7e0	100.0000	
 playassetload	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	80c2370efbdb	0xdb6c0	100.0000	
 playassetload	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	10	165a7192fc92	0xdc060	67.0648	
-projectile	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.2308	97.2308	1	e0c848bdc92c	0xe0650	97.2308	
+projectile	??0CBoomerang@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	bee4764f531d	0xe0650	100.0000	
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	96.9051	1	a7b738cb2e3f	0xdec60	99.7721	
-projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	88.2129	88.2129	1	1d0e6a7e4d14	0xe1b90	88.2129	
+projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	91.0194	91.0194	2	d362dad51010	0xe1b90	91.0194	
 projectile	??1CBoomerang@@UAE@XZ	100.0000	100.0000	1	cpp:90cf51d207de	0x12a00	100.0000	
 projectile	??1CMotionState@@QAE@XZ	100.0000	100.0000	1	cpp:90cf51d207de	0x58ba0	100.0000	
 projectile	??1CProjectile@@UAE@XZ	100.0000	100.0000	1	c353f04dd430	0xdef60	100.0000	
@@ -4466,9 +4466,9 @@ worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	c76e62278705	
 worldsoundset	?Update@CAmbientPosSound@@UAEXHHH@Z	100.0000	100.0000	1	18709a798ed0	0xc5b0	100.0000	
 worldsoundset	?Update@CAmbientSound@@UAEXHHH@Z	100.0000	100.0000	1	e1d735ea419d	0xc090	100.0000	
 worldsoundset	?Update@CRandomAmbientSound@@UAEXHHH@Z	95.0362	95.0362	1	f649d3cfd618	0xcb30	95.0362	
-wormhole	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	55.8678	55.8678	1	78631038939c	0x40490	55.8678	
-wormhole	??0CTeleporter@@QAE@PAUCGameObject@@@Z	92.0194	92.0194	1	27159f459ada	0x41020	92.0194	
-wormhole	??0CWormhole@@QAE@PAUCGameObject@@@Z	94.2417	94.2417	1	5bbe972463a7	0x3fc70	94.2417	
+wormhole	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	56.1653	56.1653	2	6eb58c58a0b8	0x40490	56.1653	
+wormhole	??0CTeleporter@@QAE@PAUCGameObject@@@Z	96.0291	96.0291	2	9d9a294e2236	0x41020	96.0291	
+wormhole	??0CWormhole@@QAE@PAUCGameObject@@@Z	94.5417	94.5417	2	a871437b7500	0x3fc70	94.5417	
 wormhole	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10d10	100.0000	
 wormhole	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10dd0	100.0000	
 wormhole	??1CWormhole@@UAE@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10980	100.0000	
@@ -4497,11 +4497,11 @@ wormholeacts	?RegisterActs@CExitTrigger@@SAXXZ	100.0000	100.0000	6	b3391ffa14ff	
 wwdfactoryobject	??0CAniAdvanceCursor@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	98d698bfdc02	0x15b730	100.0000	
 wwdfactoryobject	??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	2	26613c7237a2	0x15b390	100.0000	
 wwdfactoryobject	??1CAniAdvanceCursor@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x15b6d0	100.0000	
-wwdfactoryobject	??1CGameObject@@UAE@XZ	90.2647	90.2647	1	cpp:e7b04c8f265f	0x15b4f0	90.2647	
-wwdfactoryobject	??1CWwdGameObject@@UAE@XZ	69.8258	69.8258	1	3eb0185a5c11	0x15bd10	69.8258	
-wwdfactoryobject	??1CWwdGameObjectA@@UAE@XZ	92.9160	92.9160	1	cpp:e7b04c8f265f	0x15b790	92.9160	
-wwdfactoryobject	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	1	b2b8a3a15010	0x15c070	93.6346	
-wwdfactoryobject	??1CWwdGameObjectF@@UAE@XZ	93.5728	93.5728	1	2aef8ade3359	0x15bad0	93.5728	
+wwdfactoryobject	??1CGameObject@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x15b4f0	100.0000	
+wwdfactoryobject	??1CWwdGameObject@@UAE@XZ	71.5379	71.5379	1	3eb0185a5c11	0x15bd10	71.5379	
+wwdfactoryobject	??1CWwdGameObjectA@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x15b790	100.0000	
+wwdfactoryobject	??1CWwdGameObjectC@@UAE@XZ	100.0000	100.0000	1	b2b8a3a15010	0x15c070	100.0000	
+wwdfactoryobject	??1CWwdGameObjectF@@UAE@XZ	100.0000	100.0000	1	2aef8ade3359	0x15bad0	100.0000	
 wwdfactoryobject	??1WwdRegion@@QAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x15b4e0	100.0000	
 wwdfactoryobject	??_GCAniAdvanceCursor@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e7b04c8f265f	0x15b6b0	100.0000	
 wwdfactoryobject	??_GCGameObject@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e7b04c8f265f	0x15b4c0	100.0000	

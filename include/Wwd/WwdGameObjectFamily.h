@@ -70,11 +70,9 @@ public:
         WORKER_FREE(m_hitWorker);
         WORKER_FREE(m_attackWorker);
         WORKER_FREE(m_collideWorker);
-        m_shadow.m_rect.left = COORD_UNSET;
-        m_shadow.m_armed = -1;
+        m_shadow.Reset();
         m_screenX = COORD_UNSET;
-        m_dirty.m_rect.left = COORD_UNSET;
-        m_dirty.m_armed = -1;
+        m_dirty.Reset();
     }
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl);
