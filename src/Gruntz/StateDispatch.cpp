@@ -60,8 +60,7 @@ i32 CreateLevelTime(CGameObject* obj) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0009b8b0, 0x18f)
 CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
 }

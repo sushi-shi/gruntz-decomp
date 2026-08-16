@@ -109,7 +109,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     SetupSprite(0);
 
     m_glitterSprite = NULL;
@@ -940,7 +940,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_wwdObject->ApplyName("GAME_HELPBOX");
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
 
     InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
     if (vis == INGAME_TEXT_EASY_ONLY) {
@@ -1045,7 +1045,7 @@ i32 CInGameText::Update() {
 
         m_cachedAreaId = areaId;
         m_cachedSubId = subId;
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        Hide();
         return 0;
     }
     m_cachedSubId = -1;

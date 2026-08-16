@@ -26,10 +26,7 @@ struct CObjList : public CObjListBase {
 };
 
 struct CRezList : public CObjList {
-    CRezList() {
-        m_head = NULL;
-        m_tail = NULL;
-    }
+    CRezList() {}
     virtual void UnusedListHook() OVERRIDE;
 
     RVA(0x0013ca30, 0x7)

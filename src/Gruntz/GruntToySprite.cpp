@@ -31,16 +31,13 @@ CActReg CActRegPool<CGruntToySprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012280, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 
-// @early-stop
-// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
-// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x0007f350, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", 0);
+    ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
         o->m_sortKey = SORTKEY_GRUNT_HUD;

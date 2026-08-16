@@ -27,7 +27,7 @@ RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 // docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     if (m_wwdObject->m_animCursor.m_animation == NULL) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);

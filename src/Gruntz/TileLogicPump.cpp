@@ -212,14 +212,13 @@ i32 CreateBrickz(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
 RVA(0x0010d510, 0xf1)
 i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
-// @early-stop
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        Hide();
         m_wwdObject->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -253,9 +252,9 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
 
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
 }
 
 RVA(0x0010dea0, 0x102)
@@ -280,16 +279,14 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
 }
 
 // @early-stop
-// The three m_object reloads now match retail; the residual is a callee-saved
-// register rotation (edi/ebp/ecx) around the flag read-modify-writes.
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
@@ -319,9 +316,9 @@ RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
@@ -362,7 +359,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
 
     CWwdGameObjectA* o = m_object;
@@ -576,11 +573,10 @@ CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
-// @early-stop
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 0x1000000;
+    SetObjectFlags(0x1000000);
 
     CGameObject* o = m_object;
     if (o->m_sortKey != 0) {

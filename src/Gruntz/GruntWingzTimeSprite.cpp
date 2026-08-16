@@ -9,10 +9,9 @@
 RVA_COMPGEN(0x000121c0, 0x1e, ??_GCGruntWingzTimeSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x000121f0, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)
 
-// @early-stop
 RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
-    m_wwdObject->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
+    ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;

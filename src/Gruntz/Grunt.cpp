@@ -856,13 +856,11 @@ i32 CGrunt::CommitArrival() {
     if (m_tileClaimed != 0 && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         m_tileMgr->GridAction7(m_tileOwnerHi, m_tileOwnerLo);
     } else if (m_tileClaimed != 0) {
-        m_arrivalRerollLo = 0;
-        m_arrivalRerollWindowLo = 0;
-        m_arrivalRerollHi = 0;
-        m_arrivalRerollWindowHi = 0;
-        m_arrivalFlags &= 0xe7fbfbfd;
+        m_arrivalReroll64 = 0;
+        m_arrivalRerollWindow64 = 0;
         m_tileClaimed = 0;
         m_arrivalState = AI_NONE;
+        m_arrivalFlags &= 0xe7fbfbfd;
         SetEntrancePos(1, 1);
     }
     CreateSelectedSprite();

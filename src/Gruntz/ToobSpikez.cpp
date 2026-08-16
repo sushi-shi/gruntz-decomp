@@ -75,7 +75,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 2);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
     m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
     CWwdGameObjectA* o = m_object;

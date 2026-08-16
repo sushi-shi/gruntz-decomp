@@ -30,7 +30,7 @@ RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_CREATION) {
         o->m_sortKey = SORTKEY_GRUNT_CREATION;

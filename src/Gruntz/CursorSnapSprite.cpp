@@ -68,17 +68,16 @@ i32 CreateCursorSnapSprite(CGameObject* owner) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->ApplyName("GAME_CURSORSNAPSPRITE");
+    ApplyName("GAME_CURSORSNAPSPRITE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    SetObjectFlags(2);
+    Hide();
 }
 
 RVA(0x0003a5b0, 0x102)

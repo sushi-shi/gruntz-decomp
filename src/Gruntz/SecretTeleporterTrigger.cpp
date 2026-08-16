@@ -93,8 +93,8 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
             o->m_sortKey = 0;
             o->m_flags |= 0x20000;
         }
-        m_wwdObject->m_flags |= 2;
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        SetObjectFlags(2);
+        Hide();
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
         g_gameReg->m_scoreHud->m_secretsAvailable++;
@@ -129,8 +129,8 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
             o->m_sortKey = 0;
             o->m_flags |= 0x20000;
         }
-        m_wwdObject->m_flags |= 2;
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        SetObjectFlags(2);
+        Hide();
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
     } else {

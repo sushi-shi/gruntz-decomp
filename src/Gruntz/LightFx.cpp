@@ -120,7 +120,7 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
         o->m_frameIndex = key;
     }
     CAniElement* node = NULL;
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_anchorA = anchorA;
     m_anchorB = anchorB;
 

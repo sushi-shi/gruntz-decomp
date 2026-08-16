@@ -55,7 +55,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
     m_phase = 1;
     m_duration = 0;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
 }
 
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)

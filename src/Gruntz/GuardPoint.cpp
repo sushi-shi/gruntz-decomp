@@ -18,11 +18,7 @@ i32 CGuardPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGa
 RVA_COMPGEN(0x000103e0, 0x1e, ??_GCGuardPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010410, 0x44, ??1CGuardPoint@@UAE@XZ)
 
-// @early-stop
-// The vptr stamp and the body's first member re-read are transposed. Every body
-// spelling is byte-identical (named local for the receiver, explicit read-modify-
-// write, this->, a local for the flag word), as is the TU-state probe.
 RVA(0x000ae5f0, 0x18f)
 CGuardPoint::CGuardPoint(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
 }

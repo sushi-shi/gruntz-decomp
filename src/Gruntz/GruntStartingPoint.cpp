@@ -27,16 +27,15 @@ CActReg CActRegPool<CGruntStartingPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00010640, 0x1e, ??_GCGruntStartingPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010670, 0x44, ??1CGruntStartingPoint@@UAE@XZ)
 
-// @early-stop
 RVA(0x0003df30, 0x161)
 CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->ApplyName("GAME_EXIT");
+    ApplyName("GAME_EXIT");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    SetObjectFlags(2);
+    Hide();
 }
 
 static inline CActHandler* R4Lookup(i32 coord) {

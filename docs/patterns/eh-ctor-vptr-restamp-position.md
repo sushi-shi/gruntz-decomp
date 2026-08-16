@@ -42,27 +42,31 @@ and cl emits `mov [esi],<vtbl>` FIRST, then the store. The vptr store sits at th
 end-of-initialization position in both compiles; only a load moves. (cl also emits leaf
 MEMBER-inits *before* that store, not after — see the CPathHazard listing below.)
 
-The hoist is one slot and no source spelling reaches it. Tried and all identical on
-CGuardPoint::CGuardPoint @0xae5f0: a local temp for the receiver (`CWwdGameObjectA* o = m_38;`),
-an explicit read/modify/write pair, routing the `|=` through an inline member function, adding a
-trailing store, swapping the mem-init list order (`: CWapX(obj), CUserLogic(obj)`), and
-permuting the CWapX base ctor's own store order (putting `m_3c` first only re-blocks the hoist
-against the `m_38` store — it still clears the vptr store). the retired permuter found
-**0 applicable AST mutations** (single-statement body) and 384 candidates incl. 48 TU-state
-trials moved nothing.
+**BROKEN 2026-08-16 — see
+[ctor-body-first-statement-is-an-inline-member.md](ctor-body-first-statement-is-an-inline-member.md).**
+The hoist is one slot and no spelling of the statement IN THE BODY reaches it (all the
+CGuardPoint attempts below are correct as far as they go: a local temp for the receiver,
+an explicit read/modify/write pair, a trailing store, mem-init order, permuting CWapX's own
+store order, and 384 permuter candidates incl. 48 TU-state trials). "Routing the `|=`
+through an inline member function" was also listed here as inert, and that is true ONLY for
+a member of the OBJECT class (`m_wwdObject->Hide()`), where the receiver load stays in the
+caller. A member of the class that OWNS the pointer (`CWapX::Hide()`, called bare) puts the
+load inside the expansion and takes CGuardPoint, CWayPoint, CLevelTime, CWarpStonePad and
+CSingleAnimation to **100.000 EXACT**. The two spellings were measured back to back in the
+same tree.
 
-**What DOES suppress it: the leaf having data members of its own.** `CPathHazard::CPathHazard`
+**Also suppressed by the leaf having data members of its own.** `CPathHazard::CPathHazard`
 @0xb35a0 has the identical first statement (`m_38->m_flags |= 0x2000002;`) and matches, because
 its eight CHazardTimer member-init stores sit between the last base store and the vptr store:
 
     mov [esi+0x3c],eax / mov [ebp],0x108(esi) ...x8 / mov [esi],<vtbl> / mov eax,[esi+0x38]
 
 There the load could legally hoist ~9 slots and does not move at all — i.e. cl only performs
-the *adjacent* swap, and only in the low-pressure straight-line case. A leaf whose SIZE is
-exactly `base + base` (0x54 == CUserLogic 0x34 + CWapX 0x20, `new` size-proven) has nowhere to
-put a member, so this is unreachable for that family and the transposition is a hard wall.
+the *adjacent* swap, and only in the low-pressure straight-line case. The inference drawn
+here — that a leaf sized exactly `base + base` therefore cannot reach it — was WRONG: an
+inline member on the receiver's owning class suppresses the swap without any leaf member.
 
-WALL (99.58-99.68%): ??0CWayPoint@@ 0xae3f0, ??0CGuardPoint@@ 0xae5f0, ??0CLevelTime@@ 0x9b8b0,
-??0CWarpStonePad@@ 0x10d650, ??0CSingleAnimation@@ 0xae7f0 — all five differ from retail by
-exactly this one transposition and nothing else. Retail's RTTI base-class arrays were re-checked
-(`.?AVCWapX@@` at mdisp 52 in each COL) so the two-base model is not the cause.
+CLOSED: ??0CWayPoint@@ 0xae3f0, ??0CGuardPoint@@ 0xae5f0, ??0CLevelTime@@ 0x9b8b0,
+??0CWarpStonePad@@ 0x10d650, ??0CSingleAnimation@@ 0xae7f0 are all 100.000 EXACT.
+Retail's RTTI base-class arrays were re-checked (`.?AVCWapX@@` at mdisp 52 in each COL) so
+the two-base model was never the cause either.

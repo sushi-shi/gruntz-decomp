@@ -1,6 +1,6 @@
-# The vptr stamp transposed with the ctor body's FIRST member load — a scheduler wall, not a mem-init-list bug
+# The vptr stamp transposed with the ctor body's FIRST member load — BROKEN 2026-08-16
 
-tags: cpp:ctor cpp:vtable cpp:member | asm:mov | topic:wall topic:regalloc
+tags: cpp:ctor cpp:vtable cpp:member | asm:mov | topic:codegen-idiom topic:scheduling
 symptoms: a `CUserLogic`/`CWapX`-derived ctor at 95-99.6% whose ONLY code difference is that retail has `mov [esi],??_7Class@@6B@` immediately after the last base-ctor store and ours has it one instruction later, after the body's first `mov r,[esi+0x38]`; instruction counts agree exactly
 confidence: 9/10
 
@@ -19,7 +19,7 @@ mov  ecx,[esi+0x14]        ; body's first load, HOISTED past the stamp
 mov  DWORD PTR [esi],??_7CTileTriggerSwitch@@6B@
 ```
 
-so cl5 hoisting past the stamp is normal and retail agrees with it. The split is
+so cl5 hoisting past the stamp is normal and retail agrees with it. The correlate is
 **which member the body reads first**: the ctors that match read `[esi+0x14]`
 (`m_objAux`, CUserLogic's own member); every ctor that misses reads `[esi+0x38]`
 (`m_wwdObject`, the SECOND base CWapX's member, which the inlined base ctor
@@ -35,10 +35,16 @@ Exhausted without a lever:
   independent_statement_order=0, declaration_split=0, ...), so only TU state was
   actually searched and TU state does not move it.
 
-⇒ `@early-stop`. Affects at least CSingleAnimation 0xae7f0, CTileTriggerTransition
-0x10faf0, CBoomerang 0xe0650, CGruntToySprite 0x7f350, CGruntHealthSprite 0x7eb00,
-CCursorSnapSprite 0x3a340, CGruntStartingPoint 0x3df30, CKitchenSlime 0xb23a0,
-CPathHazard 0xb35a0, CDoNothing 0x1d5d0.
+**BROKEN — the lever is in
+[ctor-body-first-statement-is-an-inline-member.md](ctor-body-first-statement-is-an-inline-member.md).**
+Every spelling listed above keeps the statement in the ctor body, where its receiver load is
+a hoist candidate. Move the statement into an inline member of the class that OWNS the
+receiver (`CWapX::Hide()` / `SetObjectFlags()` / `ApplyName()` / `ApplyLookupSprite()`, NOT
+`m_wwdObject->Hide()` on the object class) and the load is inside the expansion. Of the list
+below, CSingleAnimation 0xae7f0, CTileTriggerTransition 0x10faf0, CGruntToySprite 0x7f350,
+CGruntHealthSprite 0x7eb00, CCursorSnapSprite 0x3a340 and CGruntStartingPoint 0x3df30 are
+now **100.000 EXACT**; CKitchenSlime 0xb23a0 and CDoNothing 0x1d5d0 improved but have other
+residue; CBoomerang 0xe0650 is untouched (its receiver is `m_154`, not a CWapX member).
 
 **Do not confuse it with a real bug**: check the instruction counts first
 ([instruction-count-mismatch-finds-the-real-bug.md](instruction-count-mismatch-finds-the-real-bug.md)).

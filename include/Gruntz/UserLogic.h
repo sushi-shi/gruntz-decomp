@@ -198,6 +198,26 @@ public:
 
     class CAniElement* m_value;
     char m_blob[0x10];
+
+    // These four MUST stay inline members OF THIS class, not calls through
+    // m_wwdObject: the receiver load has to sit inside the expansion or cl 5.0
+    // hoists it over the leaf ctor's vptr stamp
+    // (docs/patterns/ctor-body-first-statement-is-an-inline-member.md).
+    void Hide() {
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    }
+
+    void SetObjectFlags(i32 bits) {
+        m_wwdObject->m_flags |= bits;
+    }
+
+    void ApplyLookupSprite(const char* name, i32 flag) {
+        m_wwdObject->ApplyLookupSprite(name, flag);
+    }
+
+    void ApplyName(const char* name) {
+        m_wwdObject->ApplyName(name);
+    }
 };
 
 class CTileTrigger : public CUserLogic, public CWapX {

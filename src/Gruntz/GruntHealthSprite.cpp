@@ -29,13 +29,10 @@ CActReg CActRegPool<CGruntHealthSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00011f80, 0x1e, ??_GCGruntHealthSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 
-// @early-stop
-// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
-// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
+    ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_health = HEALTH_FULL;

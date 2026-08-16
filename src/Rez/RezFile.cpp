@@ -205,13 +205,12 @@ i32 CRezItm::Check() {
     return Open(m_readBuf, m_readonly, 0) != 0;
 }
 
-// @early-stop
 RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;
     m_write = 0;
-    m_readonly = 1;
     m_maxOpen = maxOpen;
+    m_readonly = 1;
 }
 
 RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)

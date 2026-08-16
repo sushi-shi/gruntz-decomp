@@ -35,11 +35,10 @@ i32 CSingleAnimation::SerializeMove(
 RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 
-// @early-stop
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
 }

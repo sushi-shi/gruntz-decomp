@@ -58,7 +58,7 @@ RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_flags |= 2;
+    SetObjectFlags(2);
 
     i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 cx = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;

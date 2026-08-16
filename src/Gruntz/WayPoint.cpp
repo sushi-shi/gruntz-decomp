@@ -18,11 +18,7 @@ i32 CWayPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGame
 RVA_COMPGEN(0x000102b0, 0x1e, ??_GCWayPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x000102e0, 0x44, ??1CWayPoint@@UAE@XZ)
 
-// @early-stop
-// The vptr stamp and the body's first member re-read are transposed. Every body
-// spelling is byte-identical (named local for the receiver, explicit read-modify-
-// write, this->, a local for the flag word), as is the TU-state probe.
 RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
 }
