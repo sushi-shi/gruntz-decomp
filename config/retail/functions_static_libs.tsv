@@ -2097,3 +2097,17 @@ rva	name	lib	confidence	source
 0x1d6c17	??1_AFX_WIN_STATE@@UAE@XZ	NAFXCW	HIGH	anchored
 0x1d6c4e	?AfxPostQuitMessage@@YGXH@Z	NAFXCW	HIGH	anchored
 0x1d6c71	??1CWinThread@@UAE@XZ	NAFXCW	HIGH	anchored
+0x1694e0	?sync@strstreambuf@@UAEHXZ	LIBCI	HIGH	archive-byte-match-1.00-plus-member-adjacency
+0x1696d0	??_Gistrstream@@UAEPAXI@Z	LIBCI	MED	archive-byte-match-0.88-plus-member-adjacency
+0x169c90	??0ios@@QAE@PAVstreambuf@@@Z	LIBCIMT	MED	archive-byte-match-0.97-plus-member-adjacency
+0x169e50	?xalloc@ios@@SAHXZ	LIBCIMT	MED	archive-byte-match-0.93-plus-member-adjacency
+0x169ea0	?bitalloc@ios@@SAJXZ	LIBCIMT	MED	archive-byte-match-0.92-plus-member-adjacency
+0x169f80	??_Gifstream@@UAEPAXI@Z	LIBCI	MED	archive-byte-match-0.81-plus-member-adjacency
+0x16a640	??_Gofstream@@UAEPAXI@Z	LIBCI	MED	archive-byte-match-0.81-plus-member-adjacency
+0x16b0e0	??0streambuf@@IAE@PADH@Z	LIBCIMT	MED	archive-byte-match-0.98-plus-member-adjacency
+0x16b660	??4istream@@IAEAAV0@PAVstreambuf@@@Z	LIBCIMT	MED	archive-byte-match-0.92-plus-member-adjacency
+0x16c0d0	??4ostream@@IAEAAV0@PAVstreambuf@@@Z	LIBCIMT	MED	archive-byte-match-0.91-plus-member-adjacency
+0x1c8f2c	?PostNcDestroy@CView@@MAEXXZ	NAFXCW	HIGH	archive-byte-match-1.00-plus-member-adjacency
+0x1c97f6	?DoSave@CDocument@@UAEHPBDH@Z	NAFXCW	MED	archive-byte-match-0.82-plus-member-adjacency
+0x1c9f53	?OnOpenDocument@CDocument@@UAEHPBD@Z	NAFXCW	MED	archive-byte-match-0.86-plus-member-adjacency
+0x1cf423	?PostNcDestroy@CFrameWnd@@MAEXXZ	NAFXCW	HIGH	archive-byte-match-1.00-plus-member-adjacency
