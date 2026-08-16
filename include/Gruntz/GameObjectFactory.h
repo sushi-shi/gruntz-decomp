@@ -61,7 +61,6 @@ extern "C" i32 CreateSecretTeleporterTrigger(CGameObject* obj);
 extern "C" i32 CreateSecretLevelTrigger(CGameObject* obj);
 extern "C" i32 CreateProjectile(CGameObject* obj);
 extern "C" i32 CreateBoomerang(CGameObject* obj);
-extern "C" i32 CreateStaticHazard(CGameObject* obj);
 extern "C" i32 CreateToobSpikez(CGameObject* obj);
 extern "C" i32 CreateTimeBomb(CGameObject* obj);
 extern "C" i32 CreateSpotLight(CGameObject* obj);

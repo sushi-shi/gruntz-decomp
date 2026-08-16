@@ -31,4 +31,6 @@ public:
     i32 m_tileRow;
 };
 
+i32 CreateStaticHazard(CGameObject* obj);
+
 #endif // GRUNTZ_CSTATICHAZARD_H

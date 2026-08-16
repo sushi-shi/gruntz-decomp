@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/ObjTypeRegistrars.h>
+#include <Gruntz/StaticHazard.h>
 
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {

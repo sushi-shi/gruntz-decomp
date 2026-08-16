@@ -12,10 +12,6 @@ extern char g_sfMusic[];
 extern char g_sfLocal[];
 extern char g_sfDir[];
 
-extern "C" char g_id0_613dff;
-extern "C" char g_id1_613e00;
-extern "C" char g_id2_613e01;
-extern "C" char g_id3_613e02;
 extern CSFMIDILocation g_sfMidiLocation;
 extern CSFBufferObject g_sfBufferObject;
 
