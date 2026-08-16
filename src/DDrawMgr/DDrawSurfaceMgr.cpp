@@ -274,8 +274,8 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00156020, 0x505)
-
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
     if (path == NULL) {
         return 0;
@@ -344,10 +344,6 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 }
 
 // @early-stop
-// Residue is the first three cleanup sites only: retail calls ??1CFileMemBase there
-// too, our cl still expands it and cross-jumps those three onto a shared tail. Every
-// later exit, the trailing ??1CFileMem calls and the epilogue are byte-identical.
-// Same caller-IL-size cut as SnapshotChildren.
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == NULL) {

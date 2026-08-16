@@ -569,11 +569,9 @@ i32 CTeleporter::Update() {
     if ((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetCount() != 1) {
         current = NULL;
     } else {
-        i32* pair =
-            static_cast<i32*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetHead());
-        i32 row = pair[0];
-        i32 col = pair[1];
-        current = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_grid[row * 15 + col];
+        Coord* rec = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->HeadRec();
+        current =
+            (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_grid[rec->m_x * TM_GRID_COLS + rec->m_y];
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_object;

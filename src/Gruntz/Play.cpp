@@ -215,6 +215,7 @@ DATA(0x002c3e0c)
 i32 g_val_2c3e0c;
 
 // @early-stop
+// @early-stop
 // Retail calls the vector iterator for both CSbiHlRow arrays and calls
 // ~CTileTriggerContainer on the failed load arm; this caller expands the first
 // array and that destructor under /Ob1. Keep the proven member identities intact.
@@ -266,6 +267,9 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         m_guts = new CStatusBarMgr;
         if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
+            if (m_guts == NULL) {
+                return 0;
+            }
             delete m_guts;
             m_guts = NULL;
             return 0;
@@ -274,6 +278,9 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         CTileTriggerContainer* r78 = new CTileTriggerContainer;
         m_beginMarker = r78;
         if (m_beginMarker->GetFlag74() == 0) {
+            if (m_beginMarker == NULL) {
+                return 0;
+            }
             delete m_beginMarker;
             m_beginMarker = NULL;
             return 0;

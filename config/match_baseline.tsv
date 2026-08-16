@@ -2051,7 +2051,7 @@ grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	1	961b076c5f38	0x4b320	66
 gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d884fe0af738	0xf26f0	86.5443	
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	17	0f6239e9d6d1	0xec670	95.2908	
 gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	89.9578	89.9578	28	bc3e810646b3	0xf0130	89.9578	
-gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	86.2827	86.2827	12	0eb23b9c66c5	0x60150	90.6963	
+gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	90.6963	90.6963	13	ae11369e0c1e	0x60150	90.6963	
 gruntbehaviorleaf	?LoadGruntDecayConfig2@CGrunt@@QAEHXZ	81.3049	81.3049	2	757131978f9d	0x61570	81.3049	
 gruntbehaviorleaf	?LoadGruntDecayConfig@CGrunt@@QAEHXZ	90.8344	90.8344	5	3e0e258b98e3	0x612a0	90.8344	
 gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	83.8470	83.6955	12	7b544b670ef4	0xecc90	83.8470	
@@ -2235,7 +2235,7 @@ gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	a9490b62916
 gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	91822eacedeb	0x53b80	100.0000	
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	1	49bf4fc7f565	0x52ed0	100.0000	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	1	bf3f90a0203c	0x517b0	100.0000	
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	60.6386	60.6386	3	c293d01876a0	0x51c00	62.0405	
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	61.7404	61.7404	4	10ae291452f3	0x51c00	62.0405	
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	92.9641	92.9641	8	7e961894b944	0x52fb0	92.9888	
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.5742	81.5742	8	82302a150093	0x32ce0	83.2773	
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	cc41dea30853	0x7f350	100.0000	
@@ -3368,7 +3368,7 @@ play	?ClearPlacedObjects@CPlay@@QAEHXZ	96.8333	96.8333	1	7bb27f5b3d01	0xda030	96
 play	?CompleteLevel@CPlay@@UAEHXZ	100.0000	100.0000	1	3db82f9133d1	0xcfbd0	100.0000	
 play	?CountObjectsByCategory@CPlay@@UAEHH@Z	100.0000	100.0000	1	3b158ed23ee8	0xd0050	100.0000	
 play	?DeactivateDistantObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	1	7f935445c424	0xcee10	100.0000	
-play	?DrawCursorSaveUnder@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	99.9632	99.9632	1	5825fb7ec91d	0xd0b30	99.9632	
+play	?DrawCursorSaveUnder@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	99.9877	99.9877	1	5825fb7ec91d	0xd0b30	99.9877	
 play	?DrawCustomLevelBanner@CPlay@@QAEXXZ	100.0000	100.0000	1	12e57d0274aa	0xcfc90	100.0000	
 play	?DrawDebugStats@CPlay@@QAEXXZ	100.0000	100.0000	1	eeac46722c86	0xcf770	100.0000	
 play	?DrawDebugStatsFull@CPlay@@QAEXXZ	99.9979	99.9979	1	34d9da6a8bb5	0xcf0a0	99.9979	
@@ -3399,7 +3399,7 @@ play	?IsReady@CWapObj@@UAEHXZ	100.0000	100.0000	1	56d7de4182c2	0xd5da0	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	3048f73bbac8	0xc8b80	100.0000	
 play	?LoadByMode@CPlay@@UAEHHH@Z	94.5728	94.5728	2	0ada2a615d34	0xca200	94.5728	
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	1	01c678e648ee	0xd0120	99.0221	
-play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	83.3109	83.3109	3	73c7f2d20f2e	0xc7ec0	85.5285	
+play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4611	84.4611	4	ad2c87618f61	0xc7ec0	85.5285	
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	1	047049be0181	0xcffe0	100.0000	
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	1ca731c56637	0xd7440	95.8064	
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	1	3cda78ee5461	0xd8060	97.1069	
@@ -4490,7 +4490,7 @@ wormhole	?SerializeMove@CGruntPuddle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4Logic
 wormhole	?SerializeMove@CTeleporter@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	17c2267a50b3	0x41350	100.0000	
 wormhole	?SerializeMove@CWormhole@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ec658ccb5822	0x3fed0	100.0000	
 wormhole	?SpawnPartners@CWormhole@@QAEHXZ	100.0000	100.0000	1	0323be4816e2	0x403b0	100.0000	
-wormhole	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	19	d8791919f0a5	0x41aa0	100.0000	
+wormhole	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	20	d07bce02e00a	0x41aa0	100.0000	
 wormholeacts	?FireActivation@CExitTrigger@@UAEXH@Z	100.0000	100.0000	1	dd9513c84d27	0x3f290	100.0000	
 wormholeacts	?RegisterActs@CExitTrigger@@SAXXZ	100.0000	100.0000	6	b3391ffa14ff	0x3f3f0	100.0000	
 wwdfactoryobject	??0CAniAdvanceCursor@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	98d698bfdc02	0x15b730	100.0000	
