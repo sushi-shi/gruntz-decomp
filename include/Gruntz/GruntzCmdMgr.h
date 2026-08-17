@@ -62,6 +62,8 @@ public:
 
     i32 IsActive(CFileMemBase* enable);
 
+    i32 IsActive2(void* enable);
+
     void BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType);
 
     RVA(0x00085bd0, 0x56)
@@ -78,7 +80,5 @@ inline CGruntzCmdMgr::CGruntzCmdMgr() {
     m_manager = NULL;
     m_pendingCommands.RemoveAll();
 }
-
-i32 __stdcall IsActive2(void* enable);
 
 #endif // GRUNTZ_GRUNTZCMDMGR_H

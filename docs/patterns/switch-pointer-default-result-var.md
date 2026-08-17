@@ -28,3 +28,20 @@ jmp [edx*4+tbl]        ; index in edx, not eax
 STEERABLE (closes the CODE; the inline jump-table data still reloc-masks, see
 [[jumptable-data-overlap]]). Evidence: CBattlezDlg::GetCtrlA/B/C/D 51→70% (code byte-exact, the
 residual is the jump-table-data artifact, not the dispatch).
+
+## Measured (i32 member-call form, 2026-08-17)
+
+CAreaMgr::InitializeLevel 0x99d40 (40-arm QuestLevel switch, every arm a
+member call) 97.59 -> 100.00 EXACT with `i32 result = 0;` before the switch,
+`result = InitX(); break;` per arm and one trailing `return result;`:
+
+- cl replicates the trailing return into EVERY arm (41 rets - each arm ends
+  `call; pop; pop; ret`, the call result already in eax);
+- the initializer's zero materializes ABOVE the dispatch
+  (`lea ecx,[idx-1]; xor eax,eax; cmp ecx,0x27; ja`), which is what frees the
+  index into ecx;
+- the `ja` default jumps PAST the range-guard exits' own `xor eax,eax`
+  straight onto `pop/pop/ret` - the guard `return 0`s and the switch-default
+  zero are separate statements. A `default: return 0;` or a plain `return 0;`
+  after the switch merges them onto one xor and keeps the index in eax.
+

@@ -8,8 +8,8 @@ extern const u8 g_hitTable[23][23];
 extern const float g_quarterScale;
 extern const float g_slopeTwo;
 extern const float g_slopeNegTwo;
-extern const double g_slopeHalf;
-extern const double g_slopeNegHalf;
+extern const double g_combatSlopeHalf;
+extern const double g_combatSlopeNegHalf;
 
 static inline void GruntScratchTeardown();
 

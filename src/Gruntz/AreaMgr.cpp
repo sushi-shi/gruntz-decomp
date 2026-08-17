@@ -48,10 +48,6 @@ i32 InitializeLevelArea(i32 arg) {
     return g_areaMgr.InitializeLevel(arg) != 0;
 }
 
-// @early-stop
-// Residue is the jump-table index register: retail forms it in ecx, which leaves eax
-// free to be pre-zeroed above the range check so the default arm reaches the shared
-// epilogue with no `xor` of its own; cl indexes through eax and pays the xor.
 RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::InitializeLevel(i32 index) {
     QuestLevel level = static_cast<QuestLevel>(index);
@@ -60,90 +56,130 @@ i32 CAreaMgr::InitializeLevel(i32 index) {
     }
     Reset();
     m_currentLevelIndex = index;
+    i32 result = 0;
     switch (level) {
         case QUESTLEVEL_AREA1_STAGE1:
-            return InitializeArea1Stage1();
+            result = InitializeArea1Stage1();
+            break;
         case QUESTLEVEL_AREA1_STAGE2:
-            return InitializeArea1Stage2();
+            result = InitializeArea1Stage2();
+            break;
         case QUESTLEVEL_AREA1_STAGE3:
-            return InitializeArea1Stage3();
+            result = InitializeArea1Stage3();
+            break;
         case QUESTLEVEL_AREA1_STAGE4:
-            return InitializeArea1Stage4();
+            result = InitializeArea1Stage4();
+            break;
         case QUESTLEVEL_AREA2_STAGE1:
-            return InitializeArea2Stage1();
+            result = InitializeArea2Stage1();
+            break;
         case QUESTLEVEL_AREA2_STAGE2:
-            return InitializeArea2Stage2();
+            result = InitializeArea2Stage2();
+            break;
         case QUESTLEVEL_AREA2_STAGE3:
-            return InitializeArea2Stage3();
+            result = InitializeArea2Stage3();
+            break;
         case QUESTLEVEL_AREA2_STAGE4:
-            return InitializeArea2Stage4();
+            result = InitializeArea2Stage4();
+            break;
         case QUESTLEVEL_AREA3_STAGE1:
-            return InitializeArea3Stage1();
+            result = InitializeArea3Stage1();
+            break;
         case QUESTLEVEL_AREA3_STAGE2:
-            return InitializeArea3Stage2();
+            result = InitializeArea3Stage2();
+            break;
         case QUESTLEVEL_AREA3_STAGE3:
-            return InitializeArea3Stage3();
+            result = InitializeArea3Stage3();
+            break;
         case QUESTLEVEL_AREA3_STAGE4:
-            return InitializeArea3Stage4();
+            result = InitializeArea3Stage4();
+            break;
         case QUESTLEVEL_AREA4_STAGE1:
-            return InitializeArea4Stage1();
+            result = InitializeArea4Stage1();
+            break;
         case QUESTLEVEL_AREA4_STAGE2:
-            return InitializeArea4Stage2();
+            result = InitializeArea4Stage2();
+            break;
         case QUESTLEVEL_AREA4_STAGE3:
-            return InitializeArea4Stage3();
+            result = InitializeArea4Stage3();
+            break;
         case QUESTLEVEL_AREA4_STAGE4:
-            return InitializeArea4Stage4();
+            result = InitializeArea4Stage4();
+            break;
         case QUESTLEVEL_AREA5_STAGE1:
-            return InitializeArea5Stage1();
+            result = InitializeArea5Stage1();
+            break;
         case QUESTLEVEL_AREA5_STAGE2:
-            return InitializeArea5Stage2();
+            result = InitializeArea5Stage2();
+            break;
         case QUESTLEVEL_AREA5_STAGE3:
-            return InitializeArea5Stage3();
+            result = InitializeArea5Stage3();
+            break;
         case QUESTLEVEL_AREA5_STAGE4:
-            return InitializeArea5Stage4();
+            result = InitializeArea5Stage4();
+            break;
         case QUESTLEVEL_AREA6_STAGE1:
-            return InitializeArea6Stage1();
+            result = InitializeArea6Stage1();
+            break;
         case QUESTLEVEL_AREA6_STAGE2:
-            return InitializeArea6Stage2();
+            result = InitializeArea6Stage2();
+            break;
         case QUESTLEVEL_AREA6_STAGE3:
-            return InitializeArea6Stage3();
+            result = InitializeArea6Stage3();
+            break;
         case QUESTLEVEL_AREA6_STAGE4:
-            return InitializeArea6Stage4();
+            result = InitializeArea6Stage4();
+            break;
         case QUESTLEVEL_AREA7_STAGE1:
-            return InitializeArea7Stage1();
+            result = InitializeArea7Stage1();
+            break;
         case QUESTLEVEL_AREA7_STAGE2:
-            return InitializeArea7Stage2();
+            result = InitializeArea7Stage2();
+            break;
         case QUESTLEVEL_AREA7_STAGE3:
-            return InitializeArea7Stage3();
+            result = InitializeArea7Stage3();
+            break;
         case QUESTLEVEL_AREA7_STAGE4:
-            return InitializeArea7Stage4();
+            result = InitializeArea7Stage4();
+            break;
         case QUESTLEVEL_AREA8_STAGE1:
-            return InitializeArea8Stage1();
+            result = InitializeArea8Stage1();
+            break;
         case QUESTLEVEL_AREA8_STAGE2:
-            return InitializeArea8Stage2();
+            result = InitializeArea8Stage2();
+            break;
         case QUESTLEVEL_AREA8_STAGE3:
-            return InitializeArea8Stage3();
+            result = InitializeArea8Stage3();
+            break;
         case QUESTLEVEL_AREA8_STAGE4:
-            return InitializeArea8Stage4();
+            result = InitializeArea8Stage4();
+            break;
         case QUESTLEVEL_RESERVED_33:
-            return InitializeReservedLevel33();
+            result = InitializeReservedLevel33();
+            break;
         case QUESTLEVEL_RESERVED_34:
-            return InitializeReservedLevel34();
+            result = InitializeReservedLevel34();
+            break;
         case QUESTLEVEL_RESERVED_35:
-            return InitializeReservedLevel35();
+            result = InitializeReservedLevel35();
+            break;
         case QUESTLEVEL_RESERVED_36:
-            return InitializeReservedLevel36();
+            result = InitializeReservedLevel36();
+            break;
         case QUESTLEVEL_TRAINING_STAGE1:
-            return InitializeTrainingStage1();
+            result = InitializeTrainingStage1();
+            break;
         case QUESTLEVEL_TRAINING_STAGE2:
-            return InitializeTrainingStage2();
+            result = InitializeTrainingStage2();
+            break;
         case QUESTLEVEL_TRAINING_STAGE3:
-            return InitializeTrainingStage3();
+            result = InitializeTrainingStage3();
+            break;
         case QUESTLEVEL_TRAINING_STAGE4:
-            return InitializeTrainingStage4();
-        default:
-            return 0;
+            result = InitializeTrainingStage4();
+            break;
     }
+    return result;
 }
 
 RVA(0x0009a0b0, 0x7)
@@ -652,8 +688,6 @@ i32 CAreaMgr::InitializeTrainingStage4() {
 }
 
 // @early-stop
-// The unchanged CFG reaches exact retail bytes under a disposable mixed TU-state probe.
-// Ordinary compilation retains the equivalent alternate register assignment.
 RVA(0x0009b430, 0x49)
 b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {

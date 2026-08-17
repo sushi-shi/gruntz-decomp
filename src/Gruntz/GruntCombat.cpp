@@ -1615,8 +1615,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
             } else {
                 SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
             }
-        } else if (slope > g_slopeHalf || slope < g_slopeNegHalf) {
-            if (slope > g_slopeHalf) {
+        } else if (slope > g_combatSlopeHalf || slope < g_combatSlopeNegHalf) {
+            if (slope > g_combatSlopeHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(
                         s_gruntDirSouthEast,
@@ -1630,7 +1630,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                         this->m_lastTilePx.m_y + 0x20
                     );
                 }
-            } else if (slope < g_slopeNegHalf) {
+            } else if (slope < g_combatSlopeNegHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(
                         s_gruntDirNorthEast,
@@ -2124,9 +2124,9 @@ const float g_slopeTwo = 2.0f;
 DATA(0x001e99a4)
 const float g_slopeNegTwo = -2.0f;
 DATA(0x001e99a8)
-const double g_slopeHalf = 0.5;
+const double g_combatSlopeHalf = 0.5;
 DATA(0x001e99b0)
-const double g_slopeNegHalf = -0.5;
+const double g_combatSlopeNegHalf = -0.5;
 DATA(0x001e9a48)
 const double g_wingzScale = 100.0;
 DATA(0x001e9a50)

@@ -344,7 +344,7 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
         }
         return;
     }
-    if (ratio <= 0.5 && ratio >= -0.5) {
+    if (ratio <= g_slopePosHalf && ratio >= g_slopeNegHalf) {
         if (x > cx) {
             PlaySound(1000, g_gruntMoveDirEast);
         } else {
@@ -352,7 +352,7 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
         }
         return;
     }
-    if (ratio > 0.5) {
+    if (ratio > g_slopePosHalf) {
         if (x > cx) {
             PlaySound(1000, g_gruntMoveDirSouthEast);
         } else {
@@ -360,7 +360,7 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
         }
         return;
     }
-    if (ratio < -0.5) {
+    if (ratio < g_slopeNegHalf) {
         if (x > cx) {
             PlaySound(1000, g_gruntMoveDirNorthEast);
         } else {
@@ -439,14 +439,14 @@ i32 CGrunt::IsDropReady(i32 a) {
     i32 newY = m_commitPx.m_y >> TILE_SHIFT_PX;
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        board->m_rows[oldY][oldX].m_flagBytes[3] &= 0xdf;
+        board->m_rows[oldY][oldX].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
         board->m_rows[oldY][oldX].m_occupantId = -1;
     }
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
         i32 ownerLo = m_tileOwnerLo;
         i32 ownerHi = m_tileOwnerHi;
-        board->m_rows[newY][newX].m_flagBytes[3] |= 0x20;
+        board->m_rows[newY][newX].m_flags |= BRICKZ_CELL_OCCUPIED;
         board->m_rows[newY][newX].m_occupantId = (ownerHi << 8) | ownerLo;
     }
 
@@ -573,6 +573,7 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 // The toy and fallback searches use distinct diagonal flag spellings: retail
 // narrows the toy probes to byte tests but retains aligned dword tests in the
 // fallback loop. Both expansions recompute the row stride in every quadrant.
+// @early-stop
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -937,12 +938,12 @@ i32 CGrunt::ClaimSwitchTile() {
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
     i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    gb->m_rows[oldTy][oldTx].m_flagBytes[3] &= 0xdf;
+    gb->m_rows[oldTy][oldTx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
     gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
     CGruntzMapMgr* nb = g_gameReg->m_tileGrid;
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-    nb->m_rows[ty][tx].m_flagBytes[3] |= 0x20;
+    nb->m_rows[ty][tx].m_flags |= BRICKZ_CELL_OCCUPIED;
     nb->m_rows[ty][tx].m_occupantId = owner;
 
     m_lastTilePx.m_x = x;

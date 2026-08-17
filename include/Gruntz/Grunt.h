@@ -59,6 +59,8 @@ CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 extern i32 g_movingSeed;
+extern const double g_slopeNegHalf;
+extern const double g_slopePosHalf;
 
 class CGrunt;
 

@@ -58,12 +58,10 @@ void CGruntzCmdMgr::ClearAndReset() {
     Clear();
 }
 
-// @early-stop
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ScanTargets(i32 param) {
+    i32 isPlay = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
     CState* sp = m_manager->m_curState;
-
-    i32 isPlay = (sp->Update() == GAMESTATE_MULTI);
     CGruntzCommand* table[4];
     table[0] = NULL;
     table[1] = NULL;
@@ -260,12 +258,12 @@ i32 CGruntzCommand::SetMaskFromList(
 // @early-stop
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32) {
-    char* buf = static_cast<char*>(data);
-    char* start = buf;
-    m_targetIndex = *++buf;
-    m_commandKind = static_cast<PlayerCommandKind>(*++buf);
-    m_targetType = *++buf;
-    m_posX = PeekI16(++buf);
+    char* buf = static_cast<char*>(data) + 1;
+    char* start = buf - 1;
+    m_targetIndex = *buf++;
+    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
+    m_targetType = *buf++;
+    m_posX = PeekI16(buf);
     buf += 2;
     m_posY = PeekI16(buf);
     buf += 2;
@@ -280,12 +278,12 @@ i32 CGruntzSingleCommand::Parse(void* data, i32) {
 // @early-stop
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32) {
-    char* buf = static_cast<char*>(data);
-    char* start = buf;
-    m_targetIndex = *++buf;
-    m_commandKind = static_cast<PlayerCommandKind>(*++buf);
-    m_targetType = *++buf;
-    m_posX = PeekI16(++buf);
+    char* buf = static_cast<char*>(data) + 1;
+    char* start = buf - 1;
+    m_targetIndex = *buf++;
+    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
+    m_targetType = *buf++;
+    m_posX = PeekI16(buf);
     buf += 2;
     m_posY = PeekI16(buf);
     buf += 2;
@@ -572,7 +570,6 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00024890, 0x18d)
 i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (!stream) {
@@ -642,7 +639,7 @@ i32 CGruntzCmdMgr::IsActive(CFileMemBase* enable) {
 }
 
 RVA(0x00024ac0, 0x20)
-i32 __stdcall IsActive2(void* enable) {
+i32 CGruntzCmdMgr::IsActive2(void* enable) {
     if (enable == NULL) {
         return 0;
     }
