@@ -210,14 +210,6 @@ static inline LONG RunRightEdge(const CRect& rc, i32 x) {
 }
 
 // @early-stop
-// Branch sequences AGREE (32/32, one ret) since the non-blend row loop was written
-// `row < rc.bottom` like its blend twin. Residue is address-math hoisting in the
-// innermost blit loop: retail recomputes `glyphBuf + row * gm.width` from the two
-// stack slots on EVERY iteration (0x17a3bd..0x17a3c8) where cl hoists it into ebp
-// before the loop.  The three colour-channel extractions were re-measured as a
-// matrix (`(u8)` cast / `& 0xff` / all-cast) and this spelling is the best of the
-// three, so the two `and reg,0xff` retail has and we do not are downstream of the
-// same hoisting, not of a missing mask.
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
@@ -319,7 +311,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         if (ci == endChar - 1) {
             clippedW = gm.width - rightPartial;
         } else {
-            clippedW = gm.width;
+            clippedW = g.width;
         }
         u8* glyphBuf = static_cast<u8*>(m_font->GetSurface(text[ci])[0]);
         i32 startCol = firstCol;

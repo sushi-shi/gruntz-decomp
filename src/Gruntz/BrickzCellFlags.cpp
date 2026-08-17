@@ -42,14 +42,16 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
                        ->GetCollisionAt(0, 0);
     }
     i32 oldFlags = cell->m_flags;
-    i32 keep = oldFlags & 0x1bf40000;
     i32 edgeBit = oldFlags & 0x20000000;
+    i32 keep = oldFlags & 0x1bf40000;
 
     // The switch key is a TileCollisionKind - CTileImageSet::GetCollisionAt(0, 0)
     // for the cell's tile - so each arm is one tile kind's cell-flag word. Retail
     // wrote it biased (`switch (typeCode - 1)`), which cl 5.0 normalises: the
     // unbiased form below compiles to byte-identical .text (verified with
-    // llvm-objdump -s --section=.text on this very obj).
+    // llvm-objdump -s --section=.text on this very obj). The case-group ORDER is
+    // the retail arm-block emission order (cl places each merged body at its
+    // group's source position).
     // 0x20, 0x24 and 0x9a stay literals: nothing in the tree names them. 0x9a
     // sits right after GAUNTLET_BRICK_A/B/C in this very switch, but it sets
     // m_flags = 0x2001 where all three of those set 0x6021, so it is NOT a fourth
@@ -61,38 +63,35 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case TILEKIND_SOLID:
             cell->m_flags = 0x1;
             break;
-        case TILEKIND_DEATH:
-            cell->m_flags = 0x2;
-            break;
         case TILEKIND_WATER:
             cell->m_flags = 0x100;
             break;
-        case TILEKIND_ARROW_UP_A:
-            cell->m_flags = 0x80;
+        case TILEKIND_TOGGLEWATERBRIDGE_UP:
+            cell->m_flags = 0x300;
             break;
-        case TILEKIND_ARROW_DOWN_A:
-            cell->m_flags = 0x80;
+        case TILEKIND_SINK_HAZARD:
+            cell->m_flags = 0x800;
             break;
-        case TILEKIND_ARROW_LEFT_A:
-            cell->m_flags = 0x80;
+        case TILEKIND_CHECKPOINTPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
-        case TILEKIND_ARROW_RIGHT_A:
-            cell->m_flags = 0x80;
+        case TILEKIND_WHITEPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
-        case TILEKIND_ARROW_UP_B:
-            cell->m_flags = 0x80;
+        case TILEKIND_ORANGEPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
-        case TILEKIND_ARROW_DOWN_B:
-            cell->m_flags = 0x80;
+        case TILEKIND_BLACKPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
-        case TILEKIND_ARROW_LEFT_B:
-            cell->m_flags = 0x80;
+        case TILEKIND_GREENPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
-        case TILEKIND_ARROW_RIGHT_B:
-            cell->m_flags = 0x80;
+        case TILEKIND_REDPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
-        case TILEKIND_ARROW_CURRENT:
-            cell->m_flags = 0x80;
+        case TILEKIND_PURPLEPYRAMID_DOWN:
+            cell->m_flags = 0x4002008;
             break;
         case TILEKIND_GAUNTLET_ROCK_A:
             cell->m_flags = 0x2021;
@@ -100,20 +99,41 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case TILEKIND_GAUNTLET_ROCK_B:
             cell->m_flags = 0x2021;
             break;
-        case TILEKIND_SPIKES:
-            cell->m_flags = 0x400;
-            break;
         case TILEKIND_GIANT_ROCK:
             cell->m_flags = 0x2021;
             break;
-        case TILEKIND_COVERED_POWERUP:
-            cell->m_flags = 0x10000;
+        case TILEKIND_GAUNTLET_BRICK_A:
+            cell->m_flags = 0x6021;
+            break;
+        case TILEKIND_GAUNTLET_BRICK_B:
+            cell->m_flags = 0x6021;
+            break;
+        case TILEKIND_GAUNTLET_BRICK_C:
+            cell->m_flags = 0x6021;
+            break;
+        case TILEKIND_HIDDEN_POWERUP:
+            cell->m_flags = 0x8000;
+            break;
+        case TILEKIND_AI_PATH_BLOCKER:
+            cell->m_flags = 0x2001;
+            break;
+        case TILEKIND_WATERBRIDGE_UP:
+            cell->m_flags = 0x108;
+            break;
+        case TILEKIND_DEATHBRIDGE_UP:
+            cell->m_flags = 0xa;
+            break;
+        case TILEKIND_DEATH:
+            cell->m_flags = 0x2;
             break;
         case TILEKIND_REVEALED_POWERUP:
             cell->m_flags = IDX(CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_SPECIAL);
             break;
-        case TILEKIND_SINK_HAZARD:
-            cell->m_flags = 0x800;
+        case TILEKIND_COVERED_POWERUP:
+            cell->m_flags = 0x10000;
+            break;
+        case TILEKIND_TOGGLEDEATHBRIDGE_UP:
+            cell->m_flags = 0x202;
             break;
         case TILEKIND_SWITCH_A:
             cell->m_flags = 0x4;
@@ -163,53 +183,35 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case TILEKIND_CHECKPOINT_UP:
             cell->m_flags = 0x4;
             break;
-        case TILEKIND_CHECKPOINTPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_UP_A:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_WHITEPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_DOWN_A:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_ORANGEPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_LEFT_A:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_BLACKPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_RIGHT_A:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_GREENPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_UP_B:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_REDPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_DOWN_B:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_PURPLEPYRAMID_DOWN:
-            cell->m_flags = 0x4002008;
+        case TILEKIND_ARROW_LEFT_B:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_WATERBRIDGE_UP:
-            cell->m_flags = 0x108;
+        case TILEKIND_ARROW_RIGHT_B:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_DEATHBRIDGE_UP:
-            cell->m_flags = 0xa;
+        case TILEKIND_ARROW_CURRENT:
+            cell->m_flags = 0x80;
             break;
-        case TILEKIND_TOGGLEWATERBRIDGE_UP:
-            cell->m_flags = 0x300;
-            break;
-        case TILEKIND_TOGGLEDEATHBRIDGE_UP:
-            cell->m_flags = 0x202;
-            break;
-        case TILEKIND_HIDDEN_POWERUP:
-            cell->m_flags = 0x8000;
-            break;
-        case TILEKIND_GAUNTLET_BRICK_A:
-            cell->m_flags = 0x6021;
-            break;
-        case TILEKIND_GAUNTLET_BRICK_B:
-            cell->m_flags = 0x6021;
-            break;
-        case TILEKIND_GAUNTLET_BRICK_C:
-            cell->m_flags = 0x6021;
-            break;
-        case TILEKIND_AI_PATH_BLOCKER:
-            cell->m_flags = 0x2001;
+        case TILEKIND_SPIKES:
+            cell->m_flags = 0x400;
             break;
         default:
             cell->m_flags = (id3 == -1) ? 2 : 0;
@@ -222,30 +224,53 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     cell->m_tileId = id3;
     cell->m_typeCode = typeCode;
 
-    i32 colCount = static_cast<i32>(m_width);
-    for (i32 r = y - 1; r <= y + 1; r++) {
-        if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_height)) {
-            continue;
-        }
-        for (i32 c = x - 1; c <= x + 1; c++) {
-            if (c < 0 || static_cast<u32>(c) >= static_cast<u32>(m_width)) {
+    for (i32 c = x - 1; c <= x + 1; c++) {
+        for (i32 r = y - 1; r <= y + 1; r++) {
+            if (r < 0 || static_cast<u32>(r) >= m_height) {
+                continue;
+            }
+            // retail: jle on the c*28 induction variable - column 0 is skipped
+            if (c <= 0 || static_cast<u32>(c) >= m_width) {
                 continue;
             }
             BrickzCell* nc = &m_rows[r][c];
-            i32 nf = nc->m_flags;
+            i32 nf = nc->m_flags & ~0x1000;
+            nc->m_flags = nf;
             if ((nf & 0x100) == 0) {
                 continue;
             }
-            BrickzCell* up = (r != 0) ? nc - colCount : 0;
-            BrickzCell* down = (r < static_cast<i32>(m_height) - 1) ? nc + colCount : 0;
-            BrickzCell* right = (c < colCount - 1) ? nc + 1 : 0;
-            BrickzCell* left = (c != 0) ? nc - 1 : 0;
-            BrickzCell* ur = (up && right) ? up + 1 : 0;
-            BrickzCell* dl = (down && left) ? down - 1 : 0;
-            BrickzCell* ul = (up && left) ? up - 1 : 0;
-            BrickzCell* dr = (down && right) ? down + 1 : 0;
-            nf &= ~0x1000;
-            nc->m_flags = nf;
+            BrickzCell* up = 0;
+            BrickzCell* down = 0;
+            BrickzCell* right = 0;
+            BrickzCell* left = 0;
+            BrickzCell* ur = 0;
+            BrickzCell* ul = 0;
+            BrickzCell* dr = 0;
+            BrickzCell* dl = 0;
+            if (r > 0) {
+                up = nc - m_width;
+            }
+            if (static_cast<u32>(r) < m_height - 1) {
+                down = nc + m_width;
+            }
+            if (static_cast<u32>(c) < m_width - 1) {
+                right = nc + 1;
+            }
+            if (c > 0) {
+                left = nc - 1;
+            }
+            if (up && right) {
+                ur = up + 1;
+            }
+            if (up && left) {
+                ul = up - 1;
+            }
+            if (down && right) {
+                dr = down + 1;
+            }
+            if (down && left) {
+                dl = down - 1;
+            }
             if (up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
                 && !(down->m_flags & BRICKZ_BLOCKED_MASK)) {
                 goto setbit;

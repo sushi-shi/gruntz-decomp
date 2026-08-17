@@ -100,12 +100,16 @@ i32 CTileTriggerSwitchLogic::Setup(
 // @early-stop
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
+    i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* g = reg->m_world->m_level->m_mainPlane;
-    i32 v = g->m_tileGrid[g->m_colOffsets[m_tileY] + m_tileX] + 1;
-    CDDrawWorkerHost* g2 = reg->m_world->m_level->m_mainPlane;
-    g2->m_tileGrid[g2->m_colOffsets[m_tileY] + m_tileX] = v;
-    reg->m_tileGrid->ComputeCellFlags(m_tileX, m_tileY, v);
+    CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
+    i32 tileX = m_tileX;
+    i32 v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] + 1;
+    // write through the un-cached global: defeats the address-CSE so the store
+    // re-walks m_world->m_level->m_mainPlane exactly as retail does
+    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -116,10 +120,16 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
             h->m_cues.Lookup("GAME_SWITCHDOWN", spr_ob);
             LeafCue* spr = static_cast<LeafCue*>(spr_ob);
             if (spr) {
-                if (g_sndEnabled != 0
-                    && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
-                    spr->m_lastPlayTime = g_killCueClock;
-                    spr->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                i32 sndEnabled = g_sndEnabled;
+                i32 cueTag = g_sndCueTag;
+                if (sndEnabled != 0) {
+                    u32 now = g_killCueClock;
+                    u32 elapsed = now - static_cast<u32>(spr->m_lastPlayTime);
+                    u32 replayDelay = static_cast<u32>(spr->m_replayDelay);
+                    if (elapsed >= replayDelay) {
+                        spr->m_lastPlayTime = now;
+                        spr->m_sound->ConfigureItem(cueTag, 0, 0, 0);
+                    }
                 }
             }
         }
@@ -131,12 +141,16 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 // @early-stop
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
+    i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
-    CDDrawWorkerHost* g = reg->m_world->m_level->m_mainPlane;
-    i32 v = g->m_tileGrid[g->m_colOffsets[m_tileY] + m_tileX] - 1;
-    CDDrawWorkerHost* g2 = reg->m_world->m_level->m_mainPlane;
-    g2->m_tileGrid[g2->m_colOffsets[m_tileY] + m_tileX] = v;
-    reg->m_tileGrid->ComputeCellFlags(m_tileX, m_tileY, v);
+    CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
+    i32 tileX = m_tileX;
+    i32 v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] - 1;
+    // write through the un-cached global: defeats the address-CSE so the store
+    // re-walks m_world->m_level->m_mainPlane exactly as retail does
+    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -768,7 +782,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
-        if (node->m_cellKey != m_cellKey && node->m_linkGate != 0) {
+        if (m_cellKey != node->m_cellKey && node->m_linkGate != 0) {
             node->SwitchUp();
             i32 any = 0;
             POSITION pos = m_owner->m_list1.GetHeadPosition();
@@ -897,13 +911,15 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     } else {
         switch (verb) {
             case TILEKIND_COVERED_POWERUP: {
-                CGruntzMgr* reg = g_gameReg;
-                i32 tx = m_tileX;
                 i32 ty = m_tileY;
+                CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                i32 v = L->m_tileGrid[L->m_colOffsets[ty] + tx] + 1;
+                i32 tx = m_tileX;
+                i32 v = L->m_tileGrid[tx + L->m_colOffsets[ty]] + 1;
+                // write through the un-cached global: defeats the address-CSE so the
+                // store re-walks m_world->m_level->m_mainPlane exactly as retail does
                 CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
-                L2->m_tileGrid[L2->m_colOffsets[ty] + tx] = v;
+                L2->m_tileGrid[tx + L2->m_colOffsets[ty]] = v;
                 (reg->m_tileGrid)->ComputeCellFlags(tx, ty, v);
                 break;
             }
@@ -930,8 +946,8 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         }
     }
     CGruntzMgr* reg = g_gameReg;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     reg->m_cmdGrid->LoadPowerupIconSprites(
         static_cast<PickupType>(m_dutyOnSpan),
         px,
@@ -992,13 +1008,15 @@ i32 CTileSecretTriggerLogic::Tick() {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x451);
         return 0;
     }
-    CGruntzMgr* mgr = g_gameReg;
-    i32 grp = m_tileX;
     i32 idx = m_tileY;
-    i32 newTok = mgr->m_world->m_level->m_mainPlane
-                     ->m_tileGrid[mgr->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp];
-    g_gameReg->m_world->m_level->m_mainPlane
-        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[idx] + grp] = oldTok;
+    CGruntzMgr* mgr = g_gameReg;
+    CDDrawWorkerHost* layer = mgr->m_world->m_level->m_mainPlane;
+    i32 grp = m_tileX;
+    i32 newTok = layer->m_tileGrid[grp + layer->m_colOffsets[idx]];
+    // write through the un-cached global: defeats the address-CSE so the store
+    // re-walks m_world->m_level->m_mainPlane exactly as retail does
+    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    layer2->m_tileGrid[grp + layer2->m_colOffsets[idx]] = oldTok;
     mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
     m_tileToken = newTok;
     return 1;
@@ -1067,14 +1085,12 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 damageParam,
     i32 checkpointType
 ) {
-    if (m_initGate != 0) {
-        return 0;
+    i32 ok = 0;
+    if (m_initGate == 0 && !(typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0)) {
+        memcpy(m_block, rect, sizeof(m_block));
+        ok = Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
     }
-    if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
-        return 0;
-    }
-    memcpy(m_block, rect, sizeof(m_block));
-    if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType)) {
+    if (ok == 0) {
         return 0;
     }
     i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -1095,20 +1111,17 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
 }
 
 // @early-stop
-// second walk is byte-correct now; cl still colours colOffsets/tileGrid into
-// ebx/ebp the other way round and buys a 4-byte spill slot for layer2.
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
-    CGruntzMgr* reg = g_gameReg;
-    i32 tileX = m_tileX;
     i32 tileY = m_tileY;
+    CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
+    i32 tileX = m_tileX;
     i32 v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] + 1;
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    i32 idx2 = tileX + layer2->m_colOffsets[tileY];
-    layer2->m_tileGrid[idx2] = v;
+    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 1;
     return 1;
@@ -1117,16 +1130,15 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 // @early-stop
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
-    CGruntzMgr* reg = g_gameReg;
-    i32 tileX = m_tileX;
     i32 tileY = m_tileY;
+    CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
+    i32 tileX = m_tileX;
     i32 v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] - 1;
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    i32 idx2 = tileX + layer2->m_colOffsets[tileY];
-    layer2->m_tileGrid[idx2] = v;
+    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 0;
     return 1;
@@ -1222,20 +1234,16 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     }
 
     CGruntzMgr* reg = g_gameReg;
-    i32 ty = m_tileY;
+    CDDrawWorkerHost* layer = g_gameReg->m_world->m_level->m_mainPlane;
     i32 tx = m_tileX;
-    if (reg->m_world->m_level->m_mainPlane
-            ->m_tileGrid[reg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx]
-        == IDX(code)) {
+    i32 ty = m_tileY;
+    if (layer->m_tileGrid[tx + layer->m_colOffsets[ty]] == IDX(code)) {
         return 0;
     }
-    // The write goes through the UN-CACHED global to defeat the read/write address
-    // CSE, so cl re-walks the chain as retail does. It is a DEVICE, not the source:
-    // retail reads _g_gameReg once (global_refs: base 2, target 1) and still
-    // re-walks. Caching it here matches the count and costs 11 points (95.06 ->
-    // 83.78 with `reg->`, 87.01 with a `plane` local, 81.73 fully un-cached).
-    g_gameReg->m_world->m_level->m_mainPlane
-        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx] = IDX(code);
+    // walk2 through the cached local: the layer-init chain hangs off the raw
+    // global-load tree, so the two walks stay distinct while the global load CSEs
+    CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
+    layer2->m_tileGrid[tx + layer2->m_colOffsets[ty]] = IDX(code);
     reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }
