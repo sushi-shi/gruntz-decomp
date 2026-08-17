@@ -143,4 +143,14 @@ structure.
 * **Routing the callers through the inline `Tree()`/`Tree48()` accessors** (the `Get<T>`
   functions already do) moves the count the **wrong way**: 3/4 -> 2/4 on all nine. So the
   budget *grows* with the caller's front-end size — a bigger caller buys more expansions.
-  That direction is worth remembering; shrinking the caller is the untried half.
+  Shrinking the caller — the half untried here — is since PROVEN and quantified on
+  `CStatusBarMgr::AddTabItem` (dc842389b): N statements written out in a caller CREDIT
+  its budget ~2N while the same N behind an inline call SPEND ~N, and an inline member's
+  COMDAT is emitted iff some site declines. Re-confirmed by reverse-A/B 2026-08-17
+  (reverting the 71 sites: 5 regressions, all confined to the TU, ctor COMDAT vanished).
+
+**The general principle (all of the above are instances):** cl 5.0 decides inlining on
+the C1 PRE-OPTIMIZATION form — of both callee (cost) and caller (budget) — never on
+optimized size. A function inlining where retail declined (or vice versa) with matching
+bytes everywhere else means a FRONT-END mass difference: statements /O2 deletes still
+count. Byte-neutral C2 is not byte-neutral C1.
