@@ -57,6 +57,39 @@ placement ripples 40+ TUs).
 consecutive sites, ours pins eax/edx, so every third site matches) — regalloc class,
 not reachable from this lever.
 
+### The helper may RETURN the value instead of taking an out-ref (2026-08-17)
+
+The same mechanism fires when the wrapper's out-param is purely internal and the
+wrapper returns the typed pointer. `CMapStringToOb::Lookup(LPCTSTR, CObject*&)` has
+exactly this shape, because the caller wants a derived pointer, not a `CObject*`:
+
+```cpp
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* ob = 0;
+    map.Lookup(name, ob);
+    return static_cast<CDDrawWorker*>(ob);
+}
+```
+
+The `CObject* ob = 0` is still the first statement of the inline body, so it is still
+emitted after the argument computations. Three `CPlay` sites went **EXACT** on this
+change alone, each having been a one-instruction-position diff before it:
+
+| function | rva | before | after |
+|---|---|---|---|
+| `CPlay::DrawStateMessage` | 0x000cfef0 | 95.1807 | **100.0000** |
+| `CPlay::DrawMessageFrame` | 0x000d1650 | 95.6452 | **100.0000** |
+| `CPlay::LoadLoadingBarSprite` | 0x000d7440 | 95.8064 | **100.0000** |
+
+### It is per-site, not per-idiom — measure before converting a whole family
+
+A fourth site with the identical source idiom, `CPlay::BeginGridWalk` 0x000d0920,
+**regressed 97.6191 -> 92.6786** on the same helper and was left inline. Its key is a
+`const char*` PARAMETER rather than a pooled literal, so there is no `push <literal>`
+to schedule the store behind; retail instead emits `lea ecx,[esp+8] / push ecx / mov
+ecx,[eax+0x10]` and the helper form reorders that lea/push pair. Convert sites one at a
+time and read the per-function score, not the family.
+
 ## How to spot it
 
 Grep the base/target pair for the zero store's position relative to the receiver-chain

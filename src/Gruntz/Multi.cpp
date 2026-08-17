@@ -161,11 +161,16 @@ i32 g_val_2c448c;
 // @early-stop
 // Residue is one register-allocation tie-break that cascades: retail homes `this`
 // in ebx and the constant 0 in ebp, cl does the reverse, so almost every line of
-// the diff is that swap. The remaining CONTENT gap is the m_beginMarker cleanup -
-// retail inlines ~CTileTriggerContainer (DtorBase + four CPtrList member dtors)
-// where cl calls it, which needs the dtor inline in TileTriggerContainer.h; that
-// costs tiletriggercontainer its only definition of the symbol (a labelled-function
-// drop) and takes CPlay::LoadGameAssetNamespaces 78.26 -> 73.41, so it is parked.
+// the diff is that swap.
+//
+// The m_beginMarker cleanup here is NOT a content gap and NOT an inline-vs-not
+// question about the header. ~CTileTriggerContainer is one inline definition that
+// retail EXPANDS at this site and DECLINES at CPlay::LoadGameAssetNamespaces
+// (0xc7ec0 holds a rel32 call to 0xc8640), so forcing it out of line satisfies
+// CPlay by breaking this caller - measured and rejected. It is not the /Ob1
+// budget either: cb(callee) titrated 22 -> ~134 and cb(caller) +336 leave the site
+// expanded in BOTH callers, so what splits the two decisions in retail is still
+// unidentified. Do not re-derive the budget reading; it is closed.
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 

@@ -239,7 +239,7 @@ netsession	1	1
 netsessionmgr	31	24
 palettebmp	2	2
 pathhazard	26	22
-play	104	74
+play	104	77
 playassetload	17	16
 projectile	28	20
 registryhelper	11	11
@@ -3374,9 +3374,9 @@ play	?DrawCustomLevelBanner@CPlay@@QAEXXZ	100.0000	100.0000	1	12e57d0274aa	0xcfc
 play	?DrawDebugStats@CPlay@@QAEXXZ	100.0000	100.0000	1	eeac46722c86	0xcf770	100.0000	
 play	?DrawDebugStatsFull@CPlay@@QAEXXZ	99.9979	99.9979	1	34d9da6a8bb5	0xcf0a0	99.9979	
 play	?DrawLevelInfoText@CPlay@@QAEHXZ	100.0000	100.0000	1	b410455115c9	0xd95f0	100.0000	
-play	?DrawMessageFrame@CPlay@@QAEXHH@Z	95.6452	95.6452	1	736b0b0b2190	0xd1650	95.6452	
+play	?DrawMessageFrame@CPlay@@QAEXHH@Z	100.0000	100.0000	2	3a0da892cbd1	0xd1650	100.0000	
 play	?DrawScreenTextImage@CState@@QAEHPBD@Z	100.0000	100.0000	1	aca2b8e78b83	0xd5c10	100.0000	
-play	?DrawStateMessage@CPlay@@UAEHXZ	95.1807	95.1807	1	18bfbd7cf37b	0xcfef0	95.1807	
+play	?DrawStateMessage@CPlay@@UAEHXZ	100.0000	100.0000	2	3cb993ebbc6e	0xcfef0	100.0000	
 play	?DrawWorldFrame@CPlay@@UAEXXZ	100.0000	100.0000	1	c873327b2162	0xc9c20	100.0000	
 play	?DrawWorldFrames@CPlay@@UAEHXZ	99.3137	99.3137	1	4644fd658897	0xc9cc0	99.3137	
 play	?DrawWorldPresent@CPlay@@QAEHXZ	100.0000	100.0000	1	42c3c89d6436	0xcefc0	100.0000	
@@ -3402,7 +3402,7 @@ play	?LoadByMode@CPlay@@UAEHHH@Z	94.5728	94.5728	2	0ada2a615d34	0xca200	94.5728
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	1	01c678e648ee	0xd0120	99.0221	
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4611	84.4611	4	ad2c87618f61	0xc7ec0	85.5285	
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	1	047049be0181	0xcffe0	100.0000	
-play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	1ca731c56637	0xd7440	95.8064	
+play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	100.0000	100.0000	2	fbd473e85f2f	0xd7440	100.0000	
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	1	3cda78ee5461	0xd8060	97.1069	
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	1	842142fa3f32	0xd1710	100.0000	
 play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	1	32cff3d95291	0xd12b0	98.7500	
@@ -3414,7 +3414,7 @@ play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	1	29b62be18a03	0xcb400	94.7917
 play	?OnKeyDown@CPlay@@UAEHHH@Z	90.2807	90.2807	1	11cedbbb875a	0xcbcc0	90.2807	
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000	
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.6481	98.6481	1	28246244404e	0xce660	98.6481	
-play	?OnLButtonDown@CPlay@@UAEHHHH@Z	90.1826	88.7776	1	7a430f95ae6e	0xcdb10	90.1826	
+play	?OnLButtonDown@CPlay@@UAEHHHH@Z	90.1826	90.0206	1	7a430f95ae6e	0xcdb10	90.1826	
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	3c757657d494	0xce530	100.0000	
 play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	8b4b0527c2b5	0xceab0	100.0000	
 play	?OnRButtonDown@CPlay@@UAEHHHH@Z	89.9850	89.9850	1	5180a5df30c3	0xceae0	89.9850	

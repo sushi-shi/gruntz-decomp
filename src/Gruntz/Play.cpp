@@ -173,6 +173,12 @@ GZ_ENUM_END(ToolCursorId)
         }                                                                                          \
     } while (0)
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* ob = 0;
+    map.Lookup(name, ob);
+    return static_cast<CDDrawWorker*>(ob);
+}
+
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;
 DATA(0x002bf3c0)
@@ -215,10 +221,24 @@ DATA(0x002c3e0c)
 i32 g_val_2c3e0c;
 
 // @early-stop
-// @early-stop
-// Retail calls the vector iterator for both CSbiHlRow arrays and calls
-// ~CTileTriggerContainer on the failed load arm; this caller expands the first
-// array and that destructor under /Ob1. Keep the proven member identities intact.
+// INLINE/CALL-SET with two independent halves; NOT a wall, and the second half is
+// a demonstrated live lever.
+//
+// (a) ~CTileTriggerContainer: retail CALLS it here (rel32 to 0xc8640) and EXPANDS
+// it in CMulti::LoadGameAssetNamespaces (0xb5460) from the same one inline
+// definition, so its linkage is not the variable - out-of-lining it satisfies this
+// caller only by breaking that one, measured.  It is NOT budget either: cb(callee)
+// titrated 22 -> ~134 and cb(caller) +336 both leave the site expanded in both
+// callers, so the /Ob1 arithmetic does not reach this decision.  Unexplained.
+//
+// (b) the CSbiHlRow arrays inside the expanded inline CStatusBarMgr ctor: retail
+// hands the element ctor's ADDRESS to ??_H twice (m_groupSlots[3], m_hlGrid[12])
+// and expands the two scalars; we emit ctor loops and no ??_H.  This one IS
+// budget-bound - cb(CSbiHlRow::CSbiHlRow) = 13 + 4 stores sits right at the <= 40
+// exemption edge, and padding it makes ??_H appear (K=1 and K=8 emit one).  The
+// response is non-monotone, as sequential consumption predicts, so the open
+// question is which side carries the wrong front-end mass, not whether it moves.
+// See docs/relevations/cl5-inline-budget-is-arithmetic-you-can-compute.md.
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -865,9 +885,11 @@ void CPlay::DrawWorldFrame() {
 
 // @early-stop
 // Residue is one register-naming swap (retail colours the two saved clocks ebx/ebp
-// where cl picks ebp/ebx) and where the second `sub` lands.  The substep counter is
-// declared ABOVE the `if (steps > 0)` because that is where retail zeroes it
-// (0xc9d0a `xor edi,edi`, before the `test edx,edx`): 93.43 -> 99.31.
+// where cl picks ebp/ebx) and where the second `sub` lands.  Both clocks are live
+// across SetGameClock, so this is the rotating-cursor class - see
+// docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md.  The substep
+// counter is declared ABOVE the `if (steps > 0)` because that is where retail zeroes
+// it (0xc9d0a `xor edi,edi`, before the `test edx,edx`).
 RVA(0x000c9cc0, 0x12e)
 i32 CPlay::DrawWorldFrames() {
     i32 delta = static_cast<i32>(g_frameDelta);
@@ -1855,6 +1877,13 @@ i32 CPlay::InputVirtual() {
 }
 
 // @early-stop
+// The four mode-size scalars hold each other's registers: retail hands them out in
+// pure rotation order after `this`/`m_mgr` take esi/ecx (eax, edx, edi, ebx), ours
+// enters the same rotation one slot later (eax, ebx, edx, edi), so the cursor phase
+// differs rather than the request order.  Both declaration orders were measured and
+// emit byte-identical code, which also bounds P1 of
+// docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md: feeding a call's
+// argument pushes freezes the pick even though the values die at the call.
 RVA(0x000cba10, 0xb0)
 i32 CPlay::RestoreDisplay() {
     if (IsActive() == 0) {
@@ -2788,19 +2817,21 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 
 // @early-stop
 // Block topology is exact (101/101 blocks, every jcc target aligned, 66 branches,
-// 22 rets); the frame now matches retail's 0x20.  Residue is register allocation
-// around `y`: retail keeps y memory-resident and re-reads [esp+0x3c] at every use
-// (B54/B62/B64/B99 are 1-2 instructions LONGER there), while cl here enregisters it.
-// MEASURED AND REJECTED: retail materialises `&m_viewRect` for the first scroll
-// conversion (0xcdc0f `add eax,0x40`) where the `cam->m_viewRect.left` form below uses
-// a displacement. Spelling it as a `LevelCoordRect*` local DOES emit that instruction
-// and costs more than it buys (90.02 -> 89.50 with the frame already correct; the
-// earlier measurement on the 0x24 frame read 89.53 -> 87.33).  See
-// docs/patterns/whole-struct-copy-vs-scalars.md for the same lesson on OnKeyDown.
+// 22 rets) and the frame matches retail's 0x20.  Residue is the x/y parameter pair:
+// both are live across BeginMinimapPan/PointInRect/EnqueueSingle and hold each
+// other's callee-saved register, the rotating-cursor class - see
+// docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md.  Retail also
+// re-reads y from [esp+0x3c] at every use where cl enregisters it.
+// MEASURED AND REJECTED (twice, independently): retail materialises `&m_viewRect`
+// for the first scroll conversion (0xcdc0f `add eax,0x40`) where the
+// `cam->m_viewRect.left` form below uses a displacement, but spelling it as a
+// pointer local emits that instruction and re-colours the rest of the body away
+// from retail.  See docs/patterns/whole-struct-copy-vs-scalars.md for the same
+// lesson on OnKeyDown.
 // MEASURED AND REJECTED: naming the `(char)g_curPlayer` argument as a `char` local -
 // retail stages that byte through the dead first-parameter home (`mov byte
 // [esp+0x40],cl` / `mov ecx,[esp+0x40]`), but a named local gets its own dword and
-// puts the frame back to 0x24 (90.02 -> 89.32).
+// puts the frame back to 0x24.
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
     i32 xr;
@@ -3210,12 +3241,17 @@ i32 CPlay::OnRButtonDblClk(i32 a, i32 b, i32 c) {
 }
 
 // @early-stop
-// Retail emits its own `mov eax,1` epilogue after the minimap-command arm and
-// rematerialises y from the parameter slot at each use; cl shares one return-1
-// tail and pins both coordinates in callee-saved registers.
-// MEASURED AND REJECTED, as in OnLButtonDown: retail forms `&m_viewRect` here too
-// (0xcec8d `add ecx,0x40`), and a `RECT*` local that reproduces it re-colours `this`
-// out of esi - 89.98 -> 89.48, in-order agreement 82% -> 66%.
+// Two residues, both screened as unreachable from source:
+//  - retail keeps its own `mov eax,1` + epilogue after the minimap-command arm
+//    (six such copies survive) where cl folds that one into the shared return-1
+//    tail. Cross-jumping merges common suffixes, so this is the partial-merge
+//    THRESHOLD, the open residue of
+//    docs/relevations/cl5-crossjump-merges-suffixes-not-blocks.md, not a blocker.
+//  - the x/y parameter pair sits in ebx/edi with the roles swapped, and both are
+//    live across IssueMinimapCommand/HitTest: the rotating-cursor class, see
+//    docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md.
+// Retail forms `&m_viewRect` here (0xcec8d `add ecx,0x40`), but a `RECT*` local is
+// NOT its source: re-measured against the build, it moves this function away.
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
@@ -3661,14 +3697,11 @@ void CPlay::DrawCustomLevelBanner() {
     host->m_ddSurface->ReleaseDC(hdc);
 }
 
-// @early-stop
 RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CObject* lookup_ob = 0;
-    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MESSAGEZ", lookup_ob);
-    CDDrawWorker* set = static_cast<CDDrawWorker*>(lookup_ob);
+    CDDrawWorker* set = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -4396,14 +4429,9 @@ i32 CPlay::LoadScrollSpeedOptions() {
     return 1;
 }
 
-// @early-stop
-// One-instruction schedule: retail sinks the `set_ob = 0` store past the
-// Lookup argument pushes, cl emits it before the lea that takes its address.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
-    CObject* set_ob = 0;
-    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MESSAGEZ", set_ob);
-    CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
+    CDDrawWorker* set = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -5859,8 +5887,13 @@ i32 CPlay::ScanBuildTiles() {
 }
 
 // @early-stop
-// Register allocation: retail homes `this` in a pushed slot and gives ebp to the
-// CObList POSITION cursor; cl does the reverse and spills the cursor.
+// Every instruction agrees; the two call-crossing values (`this` and the CObList
+// POSITION cursor) hold each other's home.  Retail spills `this` to the single
+// 4-byte local slot and gives ebp to the cursor, cl does the reverse, and the
+// extra `jmp` into the loop plus the doubled [esp+0x10] reload are consequences of
+// a memory-resident cursor.  Rotating-cursor class, see
+// docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md; declaration
+// order, the for/while form and a hoisted m_mgr were measured and none rotate it.
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
     CObList* chain = &m_world->m_childGroup->m_list;
@@ -5910,6 +5943,11 @@ i32 CPlay::AddLevelGruntz() {
     return 1;
 }
 
+// @early-stop
+// Both m_mgr reloads agree in shape; only the scratch register rotates (retail
+// ecx then edx, ours eax then ecx - the same sequence entered one slot earlier).
+// Rotating-cursor class, see
+// docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md.
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
@@ -6626,12 +6664,9 @@ i32 CPlay::BuildHelpReveal(i32 final) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CObject* spr_ob = 0;
-    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_LOADINGBAR", spr_ob);
-    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
+    CDDrawWorker* spr = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }
@@ -7243,8 +7278,15 @@ i32 CPlay::ClampViewport(i32 inset) {
 }
 
 // @early-stop
-// Register renaming: retail keeps the CStatusBarMgr pointer in ebp and compares
-// m_position straight from memory; cl keeps the loaded m_position value instead.
+// One scheduling position, then a full register renaming cascade: retail
+// materialises all three head pointers in declaration order and compares
+// m_position straight from memory (`cmp [ebp+0],2`), while cl sinks the m_guts
+// load to its use and loads the field VALUE first.
+// MEASURED AND REJECTED: an `i32 lim` if/else in place of the ternary does buy the
+// memory compare, but not the hoist, and costs more than it buys.  Dropping the
+// `guts` local entirely is byte-identical (the local is codegen-neutral).  Using
+// v/w/guts in the tail instead of re-reading the members is far worse - retail
+// re-reads them, so the current spelling is confirmed, not merely untested.
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;

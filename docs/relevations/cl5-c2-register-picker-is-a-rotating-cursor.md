@@ -240,6 +240,35 @@ helper, temp splitting, TU state, or processor flag — moves it.
 * **P3 (falsified):** "the pair is C1 handle state, reach it with the mixed-kind
   probe." 60 mixed states, zero movement. The mixed-kind family does not reach
   this class; a flat mixed sweep here is evidence about C2, not about the probe.
+* **P1's DOMAIN IS NARROWER THAN "dies before the call" (2026-08-17).**
+  `CPlay::RestoreDisplay` 0x000cba10 reads four scalars off `m_mgr`
+  (`savedW/liveW/savedH/liveH`), compares them pairwise, and passes two of them to
+  `CGruntzMgr::SetVideoMode` — so all four are dead by the call and P1 should apply.
+  It does not: **both declaration orders emit byte-identical code.** Feeding a
+  call's argument pushes is enough to freeze the pick, even though the values do
+  not survive the call. Read P1 as "dies before the call *and does not feed it*".
+
+## Reading an assignment as a CURSOR PHASE (a diagnostic the table above enables)
+
+Because the hand-out order is a rotation over one global cursor, a register
+assignment can be read directly as a phase, which separates "unreachable" from
+"maybe reachable" without any experiment. `RestoreDisplay` again, with `this` in
+ESI and `m_mgr` in ECX already taken:
+
+| load | retail | ours |
+|---|---|---|
+| `[ecx+0x94]` | EAX | EAX |
+| `[ecx+0x8c]` | **EDX** | EBX |
+| `[ecx+0x98]` | **EDI** | EDX |
+| `[ecx+0x90]` | **EBX** | EDI |
+
+Retail is `EAX, EDX, EDI, EBX` — the rotation `EAX ECX EDX ESI EDI EBX EBP` with the
+taken ECX and ESI skipped, i.e. the cursor entered at EAX. Ours is `EAX, EBX, EDX,
+EDI` — the SAME rotation entered at EBX. Same sequence, different phase: the request
+order is identical and only the cursor's starting position differs, which is the
+C2-internal half. When instead the two sides interleave two values in a way that is
+*not* a rotation of one another, the request order differs and the declaration-order
+lever is worth one A/B.
 
 ## Where the RE continues
 
