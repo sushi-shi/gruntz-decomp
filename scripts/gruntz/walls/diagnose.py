@@ -197,12 +197,124 @@ def diagnose(token: str, show_asm: bool = False) -> int:
         print("  class: NONE - the normalized pair is identical; the score "
               "gap is outside this function (pairing, data, or unit-level)")
 
+    if wall in ("cfg", "regalloc", "inline"):
+        _duplicate_tail_probe(basm, tasm)
+
     if show_asm and wall != "none":
         print("  --- base ---")
         print("\n".join("  " + ln for ln in basm.splitlines()[:60]))
         print("  --- target ---")
         print("\n".join("  " + ln for ln in tasm.splitlines()[:60]))
     return 0
+
+
+def _insn_text(asm: str) -> list[str]:
+    """One normalized mnemonic+operand string per instruction, in order.
+
+    Intra-function branch displacements survive here on purpose: two arms that
+    jump to DIFFERENT continuations must not read as identical runs."""
+    out = []
+    for line in asm.splitlines():
+        if ":\t" not in line:
+            continue
+        out.append(" ".join(line.split("\t", 2)[-1].split()))
+    return out
+
+
+def _repeat_runs(insns: list[str], minlen: int = 4):
+    """Maximal repeated instruction runs, each classified SUFFIX vs PREFIX.
+
+    cl cross-jumps common SUFFIXES (cl5-crossjump-merges-suffixes-not-blocks),
+    so the distinction decides whether a duplicated run is even foldable:
+      suffix - every copy leaves via the same terminator (ret, or a jmp to one
+               target); the copies converge, so the pass COULD merge them.
+      prefix - the copies diverge after the run; no merge pass would fold them,
+               and the duplication is a CFG reconstruction difference.
+    Returns [(length, n_copies, kind, last_insn)] sorted longest-first."""
+    index: dict[str, list[int]] = {}
+    for i, t in enumerate(insns):
+        index.setdefault(t, []).append(i)
+    # text of a maximal run -> the distinct start positions it occurs at
+    found: dict[tuple[str, ...], set[int]] = {}
+    for positions in index.values():
+        if len(positions) < 2:
+            continue
+        for a in range(len(positions)):
+            for b in range(a + 1, len(positions)):
+                i, j = positions[a], positions[b]
+                # extend backwards to the run's true start, then forwards
+                s = 0
+                while (i - s - 1 >= 0 and j - s - 1 > i - s - 1
+                       and insns[i - s - 1] == insns[j - s - 1]):
+                    s += 1
+                i0, j0 = i - s, j - s
+                n = 0
+                while (j0 + n < len(insns)
+                       and insns[i0 + n] == insns[j0 + n]):
+                    n += 1
+                if n < minlen:
+                    continue
+                found.setdefault(tuple(insns[i0:i0 + n]),
+                                 set()).update((i0, j0))
+    out = []
+    for text, starts in found.items():
+        n = len(text)
+        last = text[-1]
+        terminal = bool(_RET.search(last)) or last.startswith("jmp")
+        # a run is a foldable SUFFIX when every copy leaves the same way:
+        # a terminator, or an identical following instruction
+        after = {insns[s + n] if s + n < len(insns) else None for s in starts}
+        kind = "suffix" if (terminal or len(after) == 1) else "prefix"
+        out.append((n, len(starts), kind, last))
+    out.sort(key=lambda r: (-r[0], -r[1]))
+    return out
+
+
+MIN_RUN = 10
+
+
+def _duplicate_tail_probe(basm: str, tasm: str) -> None:
+    """List the LONG repeated runs on each side, classified suffix vs prefix.
+
+    Short runs repeat by chance in any large body (a 4-insn window recurs
+    hundreds of times), so only runs of MIN_RUN+ instructions are evidence.
+    The routing question is per-RUN, not per-count: a long SUFFIX duplicated
+    on one side only is a blocked cross-jump; long PREFIXES that diverge are
+    never foldable and mean the CFG differs. This prints the evidence and
+    names the rule; it does not pretend to adjudicate the function."""
+    b = _repeat_runs(_insn_text(basm), MIN_RUN)
+    t = _repeat_runs(_insn_text(tasm), MIN_RUN)
+    if not b and not t:
+        return
+
+    def show(tag, runs):
+        if not runs:
+            print(f"  {tag}: no repeated run >= {MIN_RUN} insns")
+            return
+        for n, c, kind, last in runs[:4]:
+            print(f"  {tag}: {c}x {n}-insn {kind} run, ends `{last}`")
+
+    show("base  ", b)
+    show("target", t)
+    bs = [r for r in b if r[2] == "suffix"]
+    ts = [r for r in t if r[2] == "suffix"]
+    if [(n, c, k) for n, c, k, _l in b] == [(n, c, k) for n, c, k, _l in t]:
+        print("    -> SYMMETRIC: both sides duplicate the same runs, so the "
+              "duplication is retail's own shape (a no-IL tail or a per-arm "
+              "scope it really had), not a defect - do not chase it.")
+    elif bs and not ts:
+        print("    -> only BASE duplicates a long mergeable SUFFIX: cl folds "
+              "every common suffix of >=2 statements, so OUR source holds a "
+              "blocker - a join at the suffix head, a destructible local "
+              "scoped per-arm, or an empty (no-IL) tail. See "
+              "docs/relevations/cl5-crossjump-merges-suffixes-not-blocks.md")
+    elif ts and not bs:
+        print("    -> only TARGET duplicates a long suffix: retail's source "
+              "carried a blocker ours lacks (per-arm scope is the usual one).")
+    elif (b or t) and not bs and not ts:
+        print("    -> the long repeats are PREFIXES that diverge; no merge "
+              "pass folds those, so a duplication difference here is a CFG "
+              "reconstruction question, not a placement coin.")
 
 
 def _call_targets(rel: dict, asm: str) -> list[tuple[str, int]]:
