@@ -227,7 +227,7 @@ menupage	47	44
 menusparkle	8	7
 menustate	18	16
 movinglogic	5	1
-multi	104	85
+multi	104	86
 multihelpdlg	5	5
 multistartdlg	63	55
 namerecord	4	4
@@ -3051,7 +3051,7 @@ multi	?DropChannelPlayer@CMulti@@QAEHH@Z	97.8814	97.8814	1	3e47e71775f4	0xbb510	
 multi	?DropTimeout@CMulti@@QAEXXZ	100.0000	100.0000	1	2fcd991647d9	0xbc2d0	100.0000	
 multi	?EnterState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	4411d5048bec	0xb6330	100.0000	
 multi	?FillPlayerList@@YAXPAUHWND__@@PAVCNetMgr@@@Z	95.4225	95.4225	1	4b0273f775f7	0xb89e0	95.4225	
-multi	?FrameSyncWait@CMulti@@QAEIXZ	98.5000	98.5000	1	3f7dde11034b	0xbc070	98.5000	
+multi	?FrameSyncWait@CMulti@@QAEIXZ	100.0000	100.0000	2	3314287c6e4c	0xbc070	100.0000	
 multi	?GetConfigNameA@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:08064dd2c3eb	0xb6090	100.0000	
 multi	?GetConfigNameB@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:08064dd2c3eb	0xb60d0	100.0000	
 multi	?GetMaxAckLatency@CMulti@@QAEIXZ	100.0000	100.0000	1	b891a9afe37b	0xbd030	100.0000	
