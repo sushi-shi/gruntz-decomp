@@ -28,14 +28,6 @@ class CImage;
 struct LeafCue;
 class CAniElement;
 
-#define WORKER_FREE(p)                                                                             \
-    do {                                                                                           \
-        if (p) {                                                                                   \
-            delete (p);                                                                            \
-            (p) = 0;                                                                               \
-        }                                                                                          \
-    } while (0)
-
 struct CGameObject : public CResolveNode {
 public:
     // Tag type: picks the inline sibling of the out-of-line 0x15b390 ctor.
@@ -66,10 +58,22 @@ public:
 
     RVA(0x0015b5d0, 0x7c)
     virtual void Unload() OVERRIDE {
-        WORKER_FREE(m_animWorker);
-        WORKER_FREE(m_hitWorker);
-        WORKER_FREE(m_attackWorker);
-        WORKER_FREE(m_collideWorker);
+        if (m_animWorker) {
+            delete m_animWorker;
+            m_animWorker = 0;
+        }
+        if (m_hitWorker) {
+            delete m_hitWorker;
+            m_hitWorker = 0;
+        }
+        if (m_attackWorker) {
+            delete m_attackWorker;
+            m_attackWorker = 0;
+        }
+        if (m_collideWorker) {
+            delete m_collideWorker;
+            m_collideWorker = 0;
+        }
         m_shadow.Reset();
         m_screenX = COORD_UNSET;
         m_dirty.Reset();

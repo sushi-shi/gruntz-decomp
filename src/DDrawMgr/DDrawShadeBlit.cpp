@@ -109,7 +109,7 @@ i32 CDDrawShadeBlit::BuildRle(
     m_height = height;
 
     CByteArray ba;
-    ba.SetSize(0x3e8, 0);
+    ba.SetSize(0, 0x3e8);
 
     i32 row = 0;
     if (m_height > 0) {
@@ -150,8 +150,7 @@ i32 CDDrawShadeBlit::BuildRle(
     }
     m_rleLen = ba.GetSize();
     m_rleData = new u8[ba.GetSize()];
-    i32 n = m_rleLen;
-    for (i32 k = 0; k < n; k++) {
+    for (i32 k = 0; k < static_cast<i32>(m_rleLen); k++) {
         m_rleData[k] = ba.GetData()[k];
     }
 
@@ -308,19 +307,13 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     return 1;
 }
 
-// @early-stop
-// Two coupled coloring choices: retail keeps `flags` in the callee-saved esi and
-// m_palette in eax (so the ORs are 32-bit `or esi,0x100` / `or esi,0x80` and the
-// desc.f1 store lands before the argument copy), cl swaps them, uses the byte
-// halves of eax (`or ah,0x1` / `or al,0x80`) and sinks `desc.f1 = flags` INTO the
-// copied argument block. Five spellings (a m_palette local, u32 flags, a returned
-// temp, the two palette tests merged, an early desc.f1) are all byte-identical.
-// Retail never stores desc.f1 at all: the eight desc slots it writes are
-// [esp+0xc,0x14,0x18,0x1c,0x20,0x24,0x28] and esi (flags) is clobbered by the
-// argument copy's `lea esi,[esp+0x2c]` - i.e. shipped code passes an uninitialised
-// f1. Deleting our assignment does not reproduce that: cl then proves the whole
-// `flags` chain dead and removes the 0x3d/0xbd/0x100/0x80 arithmetic too. The
-// assignment stays.
+// desc.f1 is written directly as the MEMBER, never through a `flags` local: cl 5.0
+// registerises the field in esi, keeps the 0x3d/0xbd/0x100/0x80 chain live, and
+// never spills it back before the by-value argument copy (`lea esi,[esp+0x2c]`
+// clobbers it) - so retail ships an UNINITIALISED f1 and the arithmetic survives
+// as its ghost. A `flags` local cannot reproduce that: stored, it emits a real f1
+// write; deleted, the whole chain folds away. See docs/patterns/
+// registerized-member-miscompile-ships-uninitialized-field.md.
 RVA(0x001493b0, 0xfd)
 
 i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
@@ -328,25 +321,24 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
         return 0;
     }
     CImageFrameRebuildDesc desc;
-    i32 flags = 0x3d;
-    if (m_palette != NULL) {
-        flags = 0xbd;
-    }
     desc.f0 = 0;
+    desc.f1 = 0x3d;
+    if (m_palette != NULL) {
+        desc.f1 = 0xbd;
+    }
     desc.f2 = m_width;
-    desc.f4 = offsetX;
     desc.f3 = m_height;
+    desc.f4 = offsetX;
     desc.f5 = offsetY;
     desc.f6 = 0;
     desc.f7 = 0;
     if (m_colorKey != -1) {
-        flags |= 0x100;
         desc.f6 = static_cast<u8>(m_colorKey);
+        desc.f1 |= 0x100;
     }
     if (m_palette != NULL) {
-        flags |= 0x80;
+        desc.f1 |= 0x80;
     }
-    desc.f1 = flags;
     return DecodeFrame(name, desc);
 }
 

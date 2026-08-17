@@ -189,16 +189,16 @@ LoadableClassId CWwdGameObject::GetClassId() {
 
 RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 // @early-stop
-// /Ob1 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// retail expands CGameObject::Unload() in the ~CGameObject sub-object slot
-// (0x15be49) and CALLS ??1CLoadable (0xd5d70); cl inverts both decisions.
-// Spelling the dtor body out makes cl outline ~CGameObject entirely (58.8%),
-// and routing it through a non-virtual helper is byte-identical.
-// Re-audited 2026-08-09 with the one-level-up xref rule that cracked ??0CLoadable:
-// `sema xref 0x000d5d70` gives ??1CLoadable exactly two real callers - ??_GCLoadable
-// and this dtor - and every other derived dtor expands it, so there is no per-class
-// majority to model.  A base DESTRUCTOR is also invoked implicitly and cannot carry a
-// tag, so the two-shapes-need-two-entities recipe has no spelling here.  Survives.
+// BROKEN 2026-08-17 from 71.54 by deleting WORKER_FREE's do{...}while(0)
+// wrapper: the wrapper's C1-only statement mass priced CGameObject::Unload out
+// of the ~CGameObject sub-object site's /Ob1 budget, cascading the whole tail
+// (docs/patterns/dowhile-macro-c1-mass-prices-out-the-inline-site.md).
+// Residue: one nested step short - retail also expands ~CResolveNode's body and
+// CALLS ??1CWapObj; our budget still declines ~CResolveNode (calls it) after
+// paying for the Unload expansion. Writing m_dirty.Reset()'s stores directly in
+// ~CResolveNode does not flip it and dents ~CWwdGameObjectF (99.71), so the
+// member-call spelling stands; ~WwdDirtyRect's user-declared empty dtor is
+// retail-real (0x15b290) and cannot be shaved.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();
@@ -263,9 +263,8 @@ void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
     m_finished = 1;
     m_animation = NULL;
     m_scale = 1.0f;
-    m_useElapsedTime = 1;
-
     m_consumeDraw = src->OwnerMgr()->m_flags & 0x40;
+    m_useElapsedTime = 1;
 }
 
 RVA(0x0015c2c0, 0xc)
@@ -327,7 +326,12 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
 }
 
 // @early-stop
-// cl cross-jumps the WWDLOOP_AT_PARAM fallback into loop_restart's; retail emits both.
+// The AT_FIRST/AT_LAST/AFTER_FIRST arms carry their own COPIES of the advance
+// body (retail emits all four; a shared `goto loop_restart` under-counted by
+// ~150 insns - the copies survive cl's cross-jumper because each arm's entry
+// register state differs), and the m_useElapsedTime mask is computed at u8
+// width (`mov cl,[edi+4]; not cl`). Residue: per-copy register rotations, the
+// WWDPOS arm seat swaps, and jump-table churn behind them.
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_animation == NULL) {
@@ -521,7 +525,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         CAniRecordView* rd = m_element;
         i32 reload = rd->m_frameTime;
         m_frameTicksLeft = reload;
-        m_useElapsedTime = (~rd->m_flags) & 1;
+        m_useElapsedTime = static_cast<u8>(~rd->m_flags) & 1;
 
         if (m_scaleBits != ANI_SCALE_ONE_BITS) {
             m_frameTicksLeft =
@@ -582,7 +586,25 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_minIndex) {
-                    goto loop_restart;
+                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                        CAniElement* anim = m_animation;
+                        m_index = m_index + 1;
+                        CAniRecordView* rec;
+                        if (m_index >= 0 && m_index < anim->m_records.GetSize()) {
+                            rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(m_index));
+                        } else {
+                            rec = NULL;
+                        }
+                        m_element = rec;
+                        if (rec == NULL) {
+                            m_index = 0;
+                            m_element = static_cast<CAniRecordView*>(anim->AtChecked(0));
+                        }
+                        if (m_element != NULL) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_element->m_drawValue;
+                        }
+                    }
                 }
                 break;
             }
@@ -590,7 +612,25 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_maxIndex) {
-                    goto loop_restart;
+                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                        CAniElement* anim = m_animation;
+                        m_index = m_index + 1;
+                        CAniRecordView* rec;
+                        if (m_index >= 0 && m_index < anim->m_records.GetSize()) {
+                            rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(m_index));
+                        } else {
+                            rec = NULL;
+                        }
+                        m_element = rec;
+                        if (rec == NULL) {
+                            m_index = 0;
+                            m_element = static_cast<CAniRecordView*>(anim->AtChecked(0));
+                        }
+                        if (m_element != NULL) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_element->m_drawValue;
+                        }
+                    }
                 }
                 break;
             }
@@ -598,12 +638,29 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_minIndex + 1) {
-                    goto loop_restart;
+                    if (rd->m_loopMode != WWDLOOP_FINISH) {
+                        CAniElement* anim = m_animation;
+                        m_index = m_index + 1;
+                        CAniRecordView* rec;
+                        if (m_index >= 0 && m_index < anim->m_records.GetSize()) {
+                            rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(m_index));
+                        } else {
+                            rec = NULL;
+                        }
+                        m_element = rec;
+                        if (rec == NULL) {
+                            m_index = 0;
+                            m_element = static_cast<CAniRecordView*>(anim->AtChecked(0));
+                        }
+                        if (m_element != NULL) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_element->m_drawValue;
+                        }
+                    }
                 }
                 break;
             }
             case WWDLOOP_NEXT:
-            loop_restart:
                 if (rd->m_loopMode != WWDLOOP_FINISH) {
                     arr = m_animation;
                     m_index = m_index + 1;

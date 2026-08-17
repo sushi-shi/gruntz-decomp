@@ -47,6 +47,12 @@ void CFader::Wait(i32 delay) {
     }
 }
 
+// @early-stop
+// Code bytes are exact; the residue is the kMsToSeconds reloc NAME. cl pools the
+// static const float with the TU's $T FP literals (1.0f, 0.0) in ONE .rdata
+// section, the delinked retail fragment holds the datum alone, and the
+// normalizer's $S rename hashes the whole section - so the referent names can
+// never agree from source. Same artifact on RunFade.
 RVA(0x0017e540, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 count = GetFrameCount();
@@ -78,6 +84,8 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     EndFade();
 }
 
+// @early-stop
+// Same kMsToSeconds section-hash reloc-name artifact as RunFadeStepped above.
 RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 frame = 0;
@@ -164,7 +172,9 @@ CFxModeT1::CFxModeT1() {
 // inline member taking (cx, cy) - cl constant-propagates literal args into the
 // stores; a meminit-list for the centres - still immediate stores; /G3-/G6 CPU
 // profiles (/G3-5 byte-identical to the default, /G6 re-sorts but never
-// materialises and regresses the exact FP siblings); 54 more islands.
+// materialises and regresses the exact FP siblings); 54 more islands; a
+// mixed-kind TU-state probe panel (fader is flat under all 8 probe kinds -
+// C2-anchored, 2026-08-17).
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
     m_centerX = SCREEN_HALF_W_PX;
@@ -304,7 +314,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                     w = 1.0f;
                 }
                 OffsetRect(&pt48, x, y);
-                OffsetRect(&pt48, static_cast<i32>((cellR * u)), static_cast<i32>((cellR * w)));
+                OffsetRect(&pt48, static_cast<i32>((u * cellR)), static_cast<i32>((w * cellR)));
 
                 RECT pt64;
                 pt64.left = 0;
