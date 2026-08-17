@@ -88,3 +88,18 @@ on reachable TUs. Full recipe, normalization rules (the `ex` stream carries u8/u
 source-line records that must be masked), and the probe scripts: regenerate with the
 capture commands in `build/il-probe/REPORT.md` (evidence run 2026-08-13; scripts
 `ilcap.py` / `sweep.py` / `causation.py` beside it).
+
+## Boundary (2026-08-17): a mixed-kind sweep can still be flat, and then it is evidence about C2
+
+The rule above ("a flat sweep is a valid wall report only when it varied the
+declaration KIND") stands, but its converse does not: a flat MIXED sweep is not
+proof the probe was wrong. `CCheckpointTriggerSwitchLogic::SwitchDown` 0x00112b70
+is flat across 60 mixed-kind states AND across 12 declaration permutations, 10
+tail spellings, accessor/aggregate/inline-helper/address-tree forms, and 16 flag
+sets — and the IL tap shows why: C1 hands C2 a different tuple stream for two
+declaration orders and C2 emits byte-identical code. The residue is the C2
+register-picker's request order.
+[`../relevations/cl5-c2-register-picker-is-a-rotating-cursor.md`](../relevations/cl5-c2-register-picker-is-a-rotating-cursor.md)
+names the machinery (`FUN_0042b2c4`, the rotating cursor `DAT_004911a8`) and the
+one source lever that is real. Detection: if the pair is a scalar/scalar swap on
+values that live to the end of the body, the mixed sweep will be flat — skip it.

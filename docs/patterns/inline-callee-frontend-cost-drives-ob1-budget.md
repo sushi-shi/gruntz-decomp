@@ -154,3 +154,17 @@ the C1 PRE-OPTIMIZATION form — of both callee (cost) and caller (budget) — n
 optimized size. A function inlining where retail declined (or vice versa) with matching
 bytes everywhere else means a FRONT-END mass difference: statements /O2 deletes still
 count. Byte-neutral C2 is not byte-neutral C1.
+
+## Quantified (2026-08-17): the coefficients are one `add eax,eax`, and cb is computable
+
+The "~2N credit / ~N spend" pair is not two empirical coefficients: it is
+`budget = 2 * cb(caller)` at `0x00424938` in `c2.exe`. `cb` is a signed 16-bit
+field read at `0x0042492f` (`movsx eax,WORD PTR [eax+0x64]`) and equals
+`13 + SUM(per-statement cost)`, with an exact measured cost table (a store 7, a
+call 9, a member store 10, a load+add+store 12, a `for` 32-33 — and a DEAD local
+init 7, the same as a live one). Full spec, the c2.exe addresses for every
+constant, cb of the real `CStatusBarItem`/`CSBI_RectOnly` ctors (55 / 61), a 7/7
+predict-then-measure, and the per-builder mass deficits:
+[`../relevations/cl5-inline-budget-is-arithmetic-you-can-compute.md`](../relevations/cl5-inline-budget-is-arithmetic-you-can-compute.md).
+Direction correction for the sbi_rectonly builders: they need caller mass
+REMOVED (~100-300 cb units), not added.
