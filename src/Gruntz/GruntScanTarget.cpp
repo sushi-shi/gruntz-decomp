@@ -36,6 +36,10 @@
 #include <string.h>
 
 // @early-stop
+// All four switch dispatches and arm sets align; the residue is a whole-body
+// +4 frame-slot shift ([esp+0x34] vs retail 0x30), an ebx/edi role rotation,
+// and ~31 instructions of arm tails retail duplicates where ours shares
+// (365 vs 369 branches) - the Scan* family allocator-rotation wall.
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;

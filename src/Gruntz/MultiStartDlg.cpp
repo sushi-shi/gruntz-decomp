@@ -288,14 +288,12 @@ i32 CMultiStartDlg::UpdateSlot() {
         return 0;
     }
     CMulti* reg = g_multiState;
-    i32 enable;
     if (reg->m_isHost) {
         i32 idx = GetSlotIndex();
-        enable = (m_host->m_options[idx].m_readyFlag == 0);
+        w->EnableWindow(m_host->m_options[idx].m_readyFlag == 0);
     } else {
-        enable = 0;
+        w->EnableWindow(0);
     }
-    w->EnableWindow(enable);
     HWND v = GetSafe1c();
     CMulti* reg2 = g_multiState;
     if (reg2->m_autoCommandDelay) {
@@ -605,11 +603,8 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
             if (s->m_liveGate != 0) {
                 g_multiState->DropChannelPlayer(s->m_playerIndex);
             }
-        }
-        if (s->m_humanControlled == 0) {
-            if (s->m_liveGate != 0) {
-                ChannelSlots_Set(IDX(s->m_colorIndex), 1);
-            }
+        } else if (s->m_humanControlled == 0 && s->m_liveGate != 0) {
+            ChannelSlots_Set(IDX(s->m_colorIndex), 1);
         }
         s->m_liveGate = 0;
         s->m_readyFlag = 0;
