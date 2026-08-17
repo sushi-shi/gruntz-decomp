@@ -67,7 +67,6 @@ RVA_COMPGEN(0x00010d10, 0x44, ??1CGruntPuddle@@UAE@XZ)
 RVA_COMPGEN(0x00010da0, 0x1e, ??_GCTeleporter@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 
-// @early-stop
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(0x2000002);
@@ -83,8 +82,8 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     i32 kind = m_object->m_smarts;
     CShadeTable* color;
     if (kind == -1) {
-        color =
-            g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
+        CLightFxMgr* pump = g_gameReg->m_logicPump;
+        color = pump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
     } else {
         color = g_gameReg->m_logicPump->m_tables[kind];
     }
@@ -176,13 +175,13 @@ i32 CWormhole::SpawnPartners() {
 }
 
 // @early-stop
-// Every member store, offset and call matches; the residue is which literal gets a
-// callee-saved register - retail parks 1 in ebx and 0 in ebp, we do the reverse, so
-// retail's `and al,0xe0` (value in eax) becomes our `and ecx,0xffffffe0` and the
-// `mov reg,1` inside the RegisterLogicTypesOnce guard has to be duplicated across
-// both arms. Local shape probes can flip the registers only by emitting extra stores
-// absent from retail; 512 mixed TU states were byte-identical at 55.801650%. The
-// shared CUserLogic::AttachToObject inline is fine (67 sibling ctors, median 96.5).
+// Every member store, offset and call matches. Residue: which literal owns a
+// callee-saved register. Retail holds 1 in ebx (so the byte EH-state stores are
+// `mov [esp+N],bl` and `mov [g_logicTypesRegistered],ebx` needs no per-arm
+// definition); we hold 0 in ebx and 1 in ebp, and ebp has no byte form, so the
+// state stores fall back to immediates and `mov ebp,1` is duplicated into both
+// arms of the RegisterLogicTypesOnce guard - the extra branch this side carries.
+// Same mechanism as docs/patterns/switch-arm-tail-crossjump-vs-duplicate.md.
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -228,7 +227,6 @@ i32 CGruntPuddle::Idle() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     CWwdGameObjectA* o = m_object;
@@ -253,7 +251,6 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_placed != 0) {
@@ -285,8 +282,7 @@ i32 CGruntPuddle::Remove() {
     CWwdGameObjectA* o = m_wwdObject;
     if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
         if (m_placed == 0) {
-            m_value = o->m_animCursor.m_animation;
-            o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
+            SwitchGeometry(g_puddleSpriteKey, 0);
             m_placed = 1;
             m_pending = 0;
         } else {
@@ -339,6 +335,10 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
 }
 
 // @early-stop
+// Sole residue: the two tile-snap statements. Retail colours the m_object
+// pointer ecx and the loaded coordinate eax, which lets cl pick the 2-byte
+// `and al,0xe0`; we get the pair the other way round and spend `and ecx,-0x20`.
+// docs/patterns/inplace-tile-snap-register-pair-is-canonical.md.
 RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_armClock = 0;
@@ -451,27 +451,33 @@ void CTeleporter_RegisterActs() {
         static_cast<CActHandler>(&CTeleporter::Update);
 }
 
-// @early-stop
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
-    if (m_wwdObject->m_animCursor.m_finished == 0) {
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    if (cur->m_finished == 0) {
         return 0;
     }
-    if (m_wwdObject->m_animCursor.m_frameTicksLeft != 0) {
+    if (cur->m_frameTicksLeft != 0) {
         return 0;
     }
 
     m_interval = static_cast<u32>(m_object->m_animWorker->m_speed);
     m_armClock = static_cast<u32>(g_frameTime);
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
+    SwitchGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("B");
     return 0;
 }
 
+// @early-stop
+// Two scratch-register picks in the tail: retail takes the head record's second
+// coordinate in ebx (whose constant-1 range has just ended) and accumulates into
+// the row product's register, we reuse the dying record pointer's ecx and
+// accumulate the other way; the g_curPlayer compare inherits the same shift.
+// The TU is C2-anchored - prototype and inline-member declaration probes are
+// byte-identical here (docs/patterns/tu-state-probe-family-decides-reachability.md).
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

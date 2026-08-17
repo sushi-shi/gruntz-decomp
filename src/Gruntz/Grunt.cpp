@@ -843,6 +843,10 @@ store:
 }
 
 // @early-stop
+// Sole residue: where the m_arrivalFlags load is scheduled. Retail sinks it
+// below the two i64 zero-stores and above `m_tileClaimed = 0`; cl hoists it to
+// the top of the store group. Splitting the read-modify-write into a named
+// temp is byte-identical (cl folds it back).
 RVA(0x0004b130, 0xc8)
 i32 CGrunt::CommitArrival() {
     if (m_arrived != 0) {
@@ -901,9 +905,12 @@ void CGrunt::ClearAllSprites() {
 }
 
 // @early-stop
-// regalloc wall: retail shuttles the four pass-through args through esi
-// (push esi/pop esi) so col+row stay live from the first load; cl keeps only
-// two scratch regs and materialises px/py last. 49 permuter variants exhausted.
+// Same six args in the same order. Retail reads col/row at instruction 0 and
+// shuttles the four pass-through args through a saved esi, so the two scaled
+// values stay live from the top; cl sinks their computation to the last two
+// pushes and needs only eax/edx. Refuted with the real compiler in an isolated
+// harness: declaration order, inline-in-the-call, `<<` vs `*`, and reassigning
+// the parameters all emit the base form - the sink is not source-reachable.
 RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
     i32 px = col * 0x20 + 0x10;
@@ -912,6 +919,16 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 }
 
 // @early-stop
+// Whole-body register permutation from one pick: retail binds `this` to ebx,
+// we bind it to ebp. Consequence chain - with ebx taken, retail's inlined
+// strcmp has no byte-addressable scratch and compares against memory
+// (`cmpb (%esi),%dl`), while ours spends `movb (%esi),%bl` + `cmpb %bl,%dl`
+// per byte pair; retail also keeps the pxX parameter in esi and compares
+// `m_entrancePx.m_x` as a memory operand. objdiff's score for this row is
+// BISTABLE under TU composition (the cross-jump grouping floor,
+// docs/patterns/cross-jump-grouping-floors-objdiff.md): a two-prototype
+// declaration probe drops it to 0.00 with no source change, so the percentage
+// is not a quality signal here - read the instruction/branch counts instead.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -1288,6 +1305,13 @@ reProbe:
 }
 
 // @early-stop
+// Two separable residues. (1) Retail's frame is 8 bytes larger and it homes
+// the `blockMove` flag in a stack slot where we keep it in a register, so
+// every arm of the direction ladder carries retail's extra `mov [esp+N],ebp`.
+// (2) Retail leaves the `CoordCount() == 0 -> SetEntrancePos(1,1); return 0`
+// block at its source position near the tail and reaches it with a forward
+// `je`; cl places it as the fall-through of the guard, which is the one branch
+// and the ~25 instructions this side is short.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1840,9 +1864,14 @@ i32 CGrunt::CreateHealthSprite() {
 }
 
 // @early-stop
-// 2-arg sibling of the SetHealthGlyph family: retail defers the m_tileOwnerHi
-// load past the reg=inner->m_logic step and reuses eax, cl hoists it into edx.
-// 600 AST + TU-state variants moved none of it.
+// 2-arg sibling of the SetHealthGlyph family: retail pushes m_tileOwnerLo,
+// THEN computes reg=inner->m_logic, THEN loads m_tileOwnerHi into the register
+// inner has just vacated; cl loads m_tileOwnerHi into edx up front and pushes
+// both arguments together. Refuted in an isolated harness that reproduces this
+// body byte-for-byte: ten tail spellings (inner/reg folded, either argument as
+// a local, the call result as a local, a positive gate, the failure arm's
+// stores swapped). The one probe that DID produce retail's interleave needed a
+// third use of reg before the call, which retail does not have.
 RVA(0x0004d220, 0x9c)
 i32 CGrunt::CreateToySprite() {
     if (m_toySprite) {
@@ -1993,8 +2022,8 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
 }
 
 // @early-stop
-// same wall as CreateToySprite: retail defers the m_tileOwnerHi load past the
-// reg=inner->m_logic step and reuses eax, cl hoists it into edx.
+// Same wall as CreateToySprite and its sole residue: retail loads
+// m_tileOwnerHi into eax after reg=inner->m_logic has freed it, we take edx.
 RVA(0x0004d730, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {
@@ -2022,6 +2051,10 @@ i32 CGrunt::CreateSelectedSprite() {
 }
 
 // @early-stop
+// Same class as StepGruntMovement: retail's frame is 8 bytes larger (0x18 vs
+// 0x10) and it spends two stack slots where we hold the -1 fill constant in
+// ebp and pre-load a parameter before the frame is set up, which rotates every
+// register from the first instruction on.
 RVA(0x0004d800, 0x440)
 i32 CGrunt::Place(
     class CTriggerMgr* board,
@@ -2167,6 +2200,12 @@ i32 CGrunt::Place(
 }
 
 // @early-stop
+// Residue is cross-jump DEPTH, not a missing statement: the three identical
+// PICKUP_HEALTH{1,2,3} arms end in the same GetIntDef/clamp tail, and retail
+// merges only arms 2 and 3 while cl merges all three (one `Powerupz` /
+// `GetIntDef` reference short, one branch and one return short). The `flags |=`
+// arm-tail selection this feeds is
+// docs/patterns/switch-arm-tail-crossjump-vs-duplicate.md.
 RVA(0x0004dd50, 0x2400)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;

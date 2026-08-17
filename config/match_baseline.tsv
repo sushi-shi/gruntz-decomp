@@ -317,7 +317,7 @@ winapicdrom	5	4
 winapimodule	1	0
 winmain	1	1
 worldsoundset	36	33
-wormhole	26	20
+wormhole	26	23
 wormholeacts	2	2
 wwdfactoryobject	54	50
 wwdgameobject	45	32
@@ -4468,14 +4468,14 @@ worldsoundset	?Update@CAmbientSound@@UAEXHHH@Z	100.0000	100.0000	1	e1d735ea419d	
 worldsoundset	?Update@CRandomAmbientSound@@UAEXHHH@Z	95.0362	95.0362	1	f649d3cfd618	0xcb30	95.0362	
 wormhole	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	56.1653	56.1653	3	1b9ca6a6e2e0	0x40490	56.1653	
 wormhole	??0CTeleporter@@QAE@PAUCGameObject@@@Z	96.0291	96.0291	2	9d9a294e2236	0x41020	96.0291	
-wormhole	??0CWormhole@@QAE@PAUCGameObject@@@Z	94.5417	94.5417	3	64166e5cbed5	0x3fc70	94.5417	
+wormhole	??0CWormhole@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	4	9da2bc88c147	0x3fc70	100.0000	
 wormhole	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10d10	100.0000	
 wormhole	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10dd0	100.0000	
 wormhole	??1CWormhole@@UAE@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10980	100.0000	
 wormhole	??_GCGruntPuddle@@UAEPAXI@Z	100.0000	100.0000	1	cpp:369ccf71c95f	0x10ce0	100.0000	
 wormhole	??_GCTeleporter@@UAEPAXI@Z	100.0000	100.0000	1	cpp:369ccf71c95f	0x10da0	100.0000	
 wormhole	??_GCWormhole@@UAEPAXI@Z	100.0000	100.0000	1	cpp:369ccf71c95f	0x10950	100.0000	
-wormhole	?Begin@CTeleporter@@QAEHXZ	87.8461	87.8461	1	d089febff67d	0x419e0	87.8461	
+wormhole	?Begin@CTeleporter@@QAEHXZ	100.0000	100.0000	2	179cf1ed92e9	0x419e0	100.0000	
 wormhole	?CTeleporter_RegisterActs@@YAXXZ	100.0000	100.0000	1	39d2e6b66c6e	0x41680	100.0000	
 wormhole	?FireActivation@CGruntPuddle@@UAEXH@Z	100.0000	100.0000	1	25ec4c1167d3	0x40750	100.0000	
 wormhole	?FireActivation@CTeleporter@@UAEXH@Z	100.0000	100.0000	1	5b9962cde195	0x41520	100.0000	
@@ -4486,7 +4486,7 @@ wormhole	?Place@CGruntPuddle@@QAEHHHHH@Z	100.0000	100.0000	2	39d65a3050a0	0x40c3
 wormhole	?ReapplyConfig@CTeleporter@@QAEHXZ	100.0000	100.0000	2	1d7fc9fda6bc	0x412c0	100.0000	
 wormhole	?RegisterLogic@@YAXXZ	100.0000	100.0000	1	604926e230e8	0x408b0	100.0000	
 wormhole	?RegisterWormholeLogic@@YAXXZ	100.0000	100.0000	1	dfa3bd130a93	0x401b0	100.0000	
-wormhole	?Remove@CGruntPuddle@@QAEHXZ	93.7375	93.7375	1	19df2363febc	0x40d20	93.7375	
+wormhole	?Remove@CGruntPuddle@@QAEHXZ	100.0000	100.0000	2	e08d4b22d5f4	0x40d20	100.0000	
 wormhole	?SerializeMove@CGruntPuddle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	706ddb37fb82	0x40e50	100.0000	
 wormhole	?SerializeMove@CTeleporter@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	17c2267a50b3	0x41350	100.0000	
 wormhole	?SerializeMove@CWormhole@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ec658ccb5822	0x3fed0	100.0000	
