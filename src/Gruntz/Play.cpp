@@ -4573,18 +4573,17 @@ i32 CPlay::ExecCommand(
             if (g != NULL && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_cmdGrid
-                      ->ClearCell(player, gi, static_cast<u16>(posX), static_cast<u16>(posY), 0);
-            u32 currentPlayer = static_cast<u32>(g_curPlayer);
-
-            if (!res) {
-                if (player != currentPlayer || g == NULL || g->m_entranceCommitted == 0) {
+            if (!m_mgr->m_cmdGrid
+                     ->ClearCell(player, gi, static_cast<u16>(posX), static_cast<u16>(posY), 0)) {
+                if (player != static_cast<u32>(g_curPlayer) || g == NULL
+                    || g->m_entranceCommitted == 0) {
                     return 0;
                 }
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != currentPlayer || g == NULL || g->m_entranceCommitted == 0) {
+            if (player != static_cast<u32>(g_curPlayer) || g == NULL
+                || g->m_entranceCommitted == 0) {
                 return 1;
             }
             g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
@@ -4703,15 +4702,14 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (res != -1) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
-                    return 1;
+            if (res == -1) {
+                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 2)) {
+                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                        return 0;
+                    }
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
-                return 1;
-            }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 2);
-            if (res) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
@@ -4719,10 +4717,10 @@ i32 CPlay::ExecCommand(
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
-                return 0;
+                return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
-            return 0;
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+            return 1;
         }
 
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
@@ -4760,7 +4758,14 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (res != -1) {
+            if (res == -1) {
+                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 2)) {
+                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                        return 0;
+                    }
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    return 0;
+                }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
                     || g->m_entranceCommitted == 0) {
@@ -4769,21 +4774,13 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 2);
-            if (res) {
-                if (player != static_cast<u32>(g_curPlayer)
-                    || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
-                    || g->m_entranceCommitted == 0) {
-                    return 1;
-                }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+            if (player != static_cast<u32>(g_curPlayer)
+                || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
+                || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
-                return 0;
-            }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
-            return 0;
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+            return 1;
         }
 
         case PLAYERCMD_USE_TOY_AT_POINT: {
@@ -4824,15 +4821,14 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (res != -1) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
-                    return 1;
+            if (res == -1) {
+                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 3)) {
+                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                        return 0;
+                    }
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
-                return 1;
-            }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 3);
-            if (res) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
@@ -4840,10 +4836,10 @@ i32 CPlay::ExecCommand(
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
-                return 0;
+                return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
-            return 0;
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+            return 1;
         }
 
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
@@ -4881,7 +4877,14 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (res != -1) {
+            if (res == -1) {
+                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 3)) {
+                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                        return 0;
+                    }
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    return 0;
+                }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
                     || g->m_entranceCommitted == 0) {
@@ -4890,21 +4893,13 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 3);
-            if (res) {
-                if (player != static_cast<u32>(g_curPlayer)
-                    || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
-                    || g->m_entranceCommitted == 0) {
-                    return 1;
-                }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+            if (player != static_cast<u32>(g_curPlayer)
+                || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
+                || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
-                return 0;
-            }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
-            return 0;
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+            return 1;
         }
 
         case PLAYERCMD_GIVE_TOOL: {
