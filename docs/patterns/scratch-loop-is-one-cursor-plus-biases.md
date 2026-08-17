@@ -10,6 +10,20 @@ the preheader; spelling two or three parallel cursors makes cl strength-reduce
 each into its own induction variable, and the extras get spilled. Which pointer
 is the surviving cursor is per-arm - read the preheader's `sub` operands.
 
+**REFINED 2026-08-18.** The bias is COMPILER OUTPUT, and the two halves of this
+pattern are separable. cl emits the bias by itself whenever every cursor is a
+LOCAL COPY of a loop-invariant base with the same constant byte stride - probes
+of the "hand bias" and the "plain copies" spellings have byte-identical loop
+bodies. What blocks the reduction in the "NO" example is not the extra cursor,
+it is that `d` is the incoming PARAMETER being stepped: no invariant base
+survives for cl to express the others against. What the hand-written bias does
+that plain copies do not is PIN which pointer stays the cursor - and that is
+otherwise controlled by DECLARATION ORDER (the first-declared coalescable cursor
+survives; measured in probe and at `CDDrawShadeBlit::ConvertRow` 0x0014c9f0).
+Full matrix and the alias/IV model behind it:
+[docs/relevations/wall-reasons-globalopt.md](../relevations/wall-reasons-globalopt.md)
+§7-§9.
+
 ```cpp
 // NO - two cursors: cl carries `sc` as a second spilled IV
 u8* sc = g_scratch;

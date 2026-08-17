@@ -37,10 +37,8 @@ those get spilled too and the frame grows (`sub esp,8` where retail has none).
 
 The reconstruction typed the scratch/source cursors as `u16*` (`u16* sc = Scratch16();`,
 `u16* ss = Pix16(src);`) while the destination stayed the `u8*` the signature forces
-(`void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta)`). Both step by two
-*bytes*, but cl 5.0's induction-variable elimination only relates IVs of the same pointer
-type, so a mixed `u16*`/`u8*` set is never coalesced. Written as **byte cursors with an
-explicit 16-bit load**, cl relates all three and eliminates two:
+(`void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta)`). Written as **byte
+cursors with an explicit 16-bit load**, cl relates all three and eliminates two:
 
 ```cpp
 // blocks the reduction
@@ -56,6 +54,20 @@ while (count-- > 0) { u32 d = Load16(sc); u32 a = Load16(ss); ...; dst += 2; sc 
 
 `Load16`/`Store16` are the existing `Pix16Ptr`-union inlines in `DDrawShadeBlit.cpp`; a
 reverse cursor becomes `u8* sc = &g_scratch[count * 2 - 2];` with `sc -= 2;`.
+
+**CORRECTED 2026-08-18 — the cause is NOT pointer-type identity.** The earlier reading
+("cl relates IVs only of the same pointer type, so a mixed `u16*`/`u8*` set is never
+coalesced") is falsified: three cursors written all-`u8*`, all-`u16*`, and **mixed
+`u8*`/`u16*` with identical byte strides compile to byte-identical objects**, while two
+same-type `u8*` cursors at strides 1 and 2 are NOT coalesced. The real conditions are
+**equal constant BYTE stride** and **a loop-invariant base** — walking the *parameter*
+(`dst += 2` on the incoming pointer) is what blocks the reduction, not the pointee type.
+Which cursor survives as the IV is set by declaration order. Full evidence, the
+stride/type matrix and the declaration-order lever:
+[docs/relevations/wall-reasons-globalopt.md](../relevations/wall-reasons-globalopt.md)
+§7-§9. The measured score movements below stand; only the explanation changes, and the
+`u8*` + `Load16` rewrite remains the right spelling because it also drops the typed
+`Scratch16()`/`Pix16()` indirection.
 
 ## Measured
 

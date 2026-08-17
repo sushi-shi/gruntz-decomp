@@ -54,7 +54,13 @@ CONSTANT member offset where the address itself folds away:
    element pointer. LoadGooCookingSprite 0x1055b0 89.13 -> 100.00 EXACT.
 2. ALIAS OPACITY: cl 5.0 cannot prove an `i64*` store does not alias a later
    MEMBER load, so pointer stores pin the source statement order against the
-   scheduler's shadow-fill sink. This broke the whole single-store-sink
+   scheduler's shadow-fill sink. (2026-08-18: this half is not special to
+   `i64*` - ANY store pins the order of ANY following named-datum or
+   distinct-base load, because cl's disambiguator only separates accesses that
+   share a base and have disjoint CONSTANT offsets. So order-pinning is
+   available from plain member statements placed in the right position; the
+   `i64*` device earns its keep through mechanisms 1 and 3.
+   docs/relevations/wall-reasons-globalopt.md §1, §4.) This broke the whole single-store-sink
    family that had been misclassified as C1 handle-state (probe-inert,
    /G3-/G6-invariant): SetHudRectA/B 0x1066f0/0x106740 71.83 -> 100.00
    EXACT, UpdateDestructButtonStatusBar 0x10b320 94.67 -> 100.00 EXACT,

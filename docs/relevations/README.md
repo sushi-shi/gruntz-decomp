@@ -25,6 +25,7 @@ Entry requirements — a revelation is not a tip:
 | [cl5-inline-budget-is-arithmetic-you-can-compute.md](cl5-inline-budget-is-arithmetic-you-can-compute.md) | the inline budget is **computable arithmetic** — every constant is a literal in `c2.exe`, and a decline deficit measures MISSING CALLER STRUCTURE in cb units | a per-function inlining mood to grind against |
 | [cl5-crossjump-merges-suffixes-not-blocks.md](cl5-crossjump-merges-suffixes-not-blocks.md) | a duplicated tail is a **CFG fact** — cl cross-jumps every common SUFFIX unless a join, per-arm EH state, or an IL-empty epilogue blocks it; and `c2.exe` names its own passes | an unexplained block-placement coin |
 | [cl5-c2-register-picker-is-a-rotating-cursor.md](cl5-c2-register-picker-is-a-rotating-cursor.md) | `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is a **rotation order with a persistent cursor**, and a two-pass "already-used first" filter | a preference ranking, and a scalar pair whose ECX/EDX order a source spelling should reach |
+| [wall-reasons-globalopt.md](wall-reasons-globalopt.md) | the alias model is **one byte in the C1→C2 IL**, set to the most pessimistic value — every reload, pinned store order and un-hoisted loop invariant follows from it; and IVs coalesce on equal **byte stride**, never on pointer type | a pile of one-off source tricks, and "ours hoists where retail re-derives" as a compiler mood |
 
 Plus one index, not a revelation:
 [**data-matching-checklist.md**](data-matching-checklist.md) — the terse whole-checklist for
