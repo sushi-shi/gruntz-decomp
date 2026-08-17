@@ -1757,13 +1757,13 @@ label_4cb4b:
         i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
 
-        bdl->m_rows[lastTileY][lastTileX].m_flagBytes[3] &= 0xdf;
+        bdl->m_rows[lastTileY][lastTileX].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
         bdl->m_rows[lastTileY][lastTileX].m_occupantId = -1;
 
         tgtTileX = tgtPxX >> TILE_SHIFT_PX;
         tgtTileY = tgtPxY >> TILE_SHIFT_PX;
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
-        bd2->m_rows[tgtTileY][tgtTileX].m_flags |= 0x20000000;
+        bd2->m_rows[tgtTileY][tgtTileX].m_flags |= BRICKZ_CELL_OCCUPIED;
         bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
         // Retail 0x4cc52: `mov eax,[esp+0x3c]` / `mov ecx,[esp+0x40]` with esp 8 below

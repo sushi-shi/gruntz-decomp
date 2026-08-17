@@ -400,14 +400,14 @@ i32 CGrunt::LoadEntranceConfig() {
             CMapMgr* og = g_gameReg->m_tileGrid;
 
             BrickzCell* oc = &og->m_rows[oldTileY][oldTileX];
-            oc->m_flagBytes[3] &= ~0x20;
+            oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
             og->m_rowInts[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
             CMapMgr* ng = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
 
             BrickzCell* nc = &ng->m_rows[newTileY][newTileX];
-            nc->m_flagBytes[3] |= 0x20;
+            nc->m_flags |= BRICKZ_CELL_OCCUPIED;
             ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }
         m_lastTilePx.m_x = newPxX;
@@ -1352,12 +1352,12 @@ i32 CGrunt::FinishActiveAction() {
         if (oldTx != -1 && oldTy != -1) {
             CMapMgr* oldGrid = g_gameReg->m_tileGrid;
             BrickzCell* oc = &oldGrid->m_rows[oldTy][oldTx];
-            oc->m_flagBytes[3] &= ~0x20;
+            oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
             oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;
         }
         CMapMgr* newGrid = g_gameReg->m_tileGrid;
         BrickzCell* nc = &newGrid->m_rows[newTy][newTx];
-        nc->m_flagBytes[3] |= 0x20;
+        nc->m_flags |= BRICKZ_CELL_OCCUPIED;
         newGrid->m_rowInts[newTy][newTx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         m_lastTilePx.m_x = newX;
         m_lastTilePx.m_y = newY;

@@ -198,12 +198,6 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
     return 0;
 }
 
-// @early-stop
-// One instruction: retail accumulates the grid index into the payload->m_y register
-// (`add ecx,eax`) where cl accumulates into the row*15 product (`add eax,ecx`).
-// Source operand order does not steer it - flipping the index expression was
-// measured byte-neutral at six sites across this unit - and neither does the TU
-// declaration count (16-cell sweep, flat).
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
     POSITION pos = m_recList.GetHeadPosition();
@@ -366,11 +360,6 @@ void CTriggerMgr::ClearRecords() {
     m_recList.RemoveAll();
 }
 
-// @early-stop
-// The same one-instruction grid-index accumulation direction as ResetAll, and the
-// register it lands in. Exhausted: 325 AST variants (`permute variants
-// --max-depth 3 --limit 400`) are all identical at 99.1379, the index-expression
-// flip is byte-neutral, and the TU declaration-count sweep is flat.
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = m_grid[m_recordPosition.m_x * TM_GRID_COLS + m_recordPosition.m_y]->m_object;
@@ -1078,7 +1067,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.m_y >> TILE_SHIFT_PX;
     i32 cellCol = pt.m_x >> TILE_SHIFT_PX;
-    tg->m_rows[rowIdx][cellCol].m_flagBytes[3] &= 0xdf;
+    tg->m_rows[rowIdx][cellCol].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
     tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
     m_grid[idx] = NULL;
     m_rowCount[row] -= 1;
@@ -2726,9 +2715,6 @@ i32 CTriggerMgr::ToggleRegionA() {
     return 1;
 }
 
-// @early-stop
-// 99.73: retail accumulates the grid index into the rec->m_x*15 register (edi
-// holds rec->m_y); operand order is inert, so this is a register-assignment residue.
 RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {

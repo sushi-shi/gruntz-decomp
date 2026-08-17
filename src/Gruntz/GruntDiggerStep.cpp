@@ -37,10 +37,12 @@
 #include <string.h>
 
 // @early-stop
-// Reloc identities are identical to retail's (29/29, in order), and the CFG now
-// has retail's 85 blocks and five returns. The residue is two redundant guards
-// that retail retains, plus cl keeping `this` in ebx with a 0x94 frame where
-// retail uses ebp and 0x8c; 164 mixed TU states did not move either decision.
+// Reloc identities are identical to retail's (29/29, in order); 5 rets match.
+// Residue: retail parks the `isect = box` copy arm far from its join (je far +
+// no skip-jmp) where our inline copy arm lets cl skip the join's [esp+0x2c]
+// reload via an extra jmp (value already in eax) - block placement; plus
+// `this` in ebx/0x94 frame vs retail ebp/0x8c - regalloc. 194 mixed TU states
+// (164 prior + 30 this pass) moved neither decision.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
     // Retail holds the strcmp result in a `bool` (`sete cl / test cl,cl`).

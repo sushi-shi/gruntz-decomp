@@ -45,6 +45,7 @@ void zPTree::Walk(
 // our cl loads `key` straight into edi, loses it to the scas, and keeps `sbit` in a
 // register, folding the preheader into the head block.  That one coloring decision
 // is the whole 4-block / 1-branch skeleton delta (48 vs 52 blocks, 25 vs 26 jcc).
+// 30 mixed declaration-kind TU states (tu-state-probe family) are also dead flat.
 RVA(0x001933b0, 0x28f)
 void* zPTree::FindOrInsert(const char* key, void* value) {
     i32 path[32];

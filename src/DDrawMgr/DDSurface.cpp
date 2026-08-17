@@ -179,11 +179,6 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     return 1;
 }
 
-// @early-stop
-// REFERENT DEBT, not a codegen wall - the CODE bytes are byte-exact; the only rows
-// `sema disasm --diff` shows are the two jump-table base displacements (reloc-masked
-// on the base side) and the IID_IDirectDrawSurface3 referent at 0x001ef888 that the
-// delinker decomposes off ??_7CDDSurface@@6B@ (docs/referent-debt-ddrawmgr.tsv).
 RVA(0x0013e2e0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(void* a) {
     CDDrawPtrCollections* mgr = static_cast<CDDrawPtrCollections*>(a);
@@ -459,13 +454,6 @@ void CDDSurface::ReloadImageCache() {
     g_imageCache.SetSize(0, -1);
 }
 
-// @early-stop
-// REFERENT DEBT, not a codegen wall - the CODE bytes are byte-exact
-// (`sema disasm --diff` shows only `fs:0x0` vs the __except_list reloc). Two known
-// delinker-side classes in docs/referent-debt-ddrawmgr.tsv apply: the absolute
-// __except_list fixup leaves no .reloc entry to re-synthesize, and IID_IDirectDraw-
-// Surface3 at 0x001ef888 is an unenrolled dxguid datum the delinker decomposes off
-// ??_7CDDSurface@@6B@. Nothing in this TU can move it.
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
@@ -829,16 +817,15 @@ i32 CDDSurface::ShadeBlt(
                         u32 tp = *t;
                         u32 sp = *srcPtr;
 
-                        Pix16Ptr c;
-                        c.m_bytes =
-                            ((g_clut + 0x10000) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
-                        u16 v = *c.m_words;
-                        c.m_bytes =
-                            ((g_clut + 0x20000) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2);
-                        v |= *c.m_words;
-                        c.m_bytes =
-                            (g_clut + bank + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2);
-                        v |= *c.m_words;
+                        u16 v = *Pix16(
+                            g_clut + 0x10000 + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2
+                        );
+                        v |= *Pix16(
+                            g_clut + 0x20000 + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2
+                        );
+                        v |= *Pix16(
+                            g_clut + bank + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2
+                        );
                         *dstPtr = v;
                         dstPtr++;
                         srcPtr++;
@@ -864,16 +851,15 @@ i32 CDDSurface::ShadeBlt(
                         u32 tp = *t;
                         u32 sp = *srcPtr;
 
-                        Pix16Ptr c;
-                        c.m_bytes =
-                            ((g_clut + 0x10000) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
-                        u16 v = *c.m_words;
-                        c.m_bytes =
-                            ((g_clut + 0x20000) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2);
-                        v |= *c.m_words;
-                        c.m_bytes =
-                            (g_clut + bank + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2);
-                        v |= *c.m_words;
+                        u16 v = *Pix16(
+                            g_clut + 0x10000 + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2
+                        );
+                        v |= *Pix16(
+                            g_clut + 0x20000 + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2
+                        );
+                        v |= *Pix16(
+                            g_clut + bank + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2
+                        );
                         *dstPtr = v;
                         dstPtr++;
                         srcPtr++;

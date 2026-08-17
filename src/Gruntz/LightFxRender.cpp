@@ -232,7 +232,10 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     return 1;
 }
 
-// @early-stop
+// @early-stop one scheduling braid: retail keeps surf in ecx and pipelines
+// w/h -> cx/cy -> qx/qy in source order with lea/inc forms; cl batches the
+// four rect loads first, homes surf in edi, and rotates the spill slots.
+// Same 156-instruction multiset, flat across 110 mixed TU states.
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
@@ -241,8 +244,8 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     }
     m_srcRect = *src;
     i32 sl = src->left;
-    i32 st = src->top;
     i32 w = src->right - sl + 1;
+    i32 st = src->top;
     i32 h = src->bottom - st + 1;
 
     i32 cx = sl + w / 2;
@@ -250,9 +253,9 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     i32 qx = w / surf->m_width;
     i32 qy = h / surf->m_height;
 
-    i32 scale = qx;
-    if (qy < qx) {
-        scale = qy;
+    i32 scale = qy;
+    if (qx < qy) {
+        scale = qx;
     }
 
     i32 s = 3;
@@ -294,9 +297,9 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     return 1;
 }
 
-// @early-stop the side-edge loop only: cl sees that `rp - lp` is loop-invariant and
-// collapses the two cursors into one induction variable plus a displacement, where
-// retail carries both. Five loop spellings compile to the identical 228 B.
+// @early-stop commutative pitch/bpp term order inside the PixOffset expansions
+// (canonical operand order, TU-state class); the side-edge loop itself matches -
+// stepping each cursor directly after its store keeps both IVs live.
 RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
@@ -322,8 +325,8 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
         i32 v = h;
         while (v != 0) {
             *Pix16(lp) = static_cast<u16>(color);
-            *Pix16(rp) = static_cast<u16>(color);
             lp += step;
+            *Pix16(rp) = static_cast<u16>(color);
             rp += step;
             v--;
         }
