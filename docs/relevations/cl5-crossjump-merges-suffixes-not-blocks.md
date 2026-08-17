@@ -1,5 +1,19 @@
 # cl 5.0 cross-jumps common SUFFIXES aggressively — a duplicate tail is your CFG's fault, not a compiler mood
 
+> **2026-08-18 CORRECTION — two claims below need qualifying; see
+> [`wall-reasons-layout.md`](wall-reasons-layout.md).**
+> (1) The unconditional "merge every common suffix" pass is **`/Os`-gated**. Under
+> `/Os` all eight arms of the probe merge regardless of tail content; under `/Ot`
+> (which `/O2` implies, i.e. our build) they do not, and what still merges is the
+> global optimizer's *value-based* factoring. The `T >= 2` rows of the table below are
+> right; the `T = 1` "partial merge" residue is that content sensitivity, and it is
+> NOT machine identity — eight byte-identical `g0 = ext();` suffixes merge zero times
+> while a shorter `++g0;` suffix merges all seven.
+> (2) The pass-name oracle recipe (`push <string VA>`) finds only 3 of the 44 files;
+> the form c2.exe actually uses is `mov edx,<LINE>; mov ecx,<file VA>; call 0x486b3c`,
+> which also yields line numbers. `factor.c`'s `FUN_00444e1e` is an operand-equality
+> predicate for expression factoring across predecessors, not the block cross-jumper.
+
 The standing "block-placement coin" hypothesis reads the merge/duplicate split in
 retail (`CPlay::ExecCommand` merges the whole `TOOL_AT` `res == -1` subtree into
 `TOY_AT`'s with per-predecessor `push 2/3` + `jmp`, yet leaves byte-identical ON-pair

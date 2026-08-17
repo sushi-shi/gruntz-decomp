@@ -27,3 +27,18 @@ bodies, two-level xlat byte-map + 19-entry table):
 
 Screen: dump both sides' arm stores in address order
 (`movl $imm,(%esi)` regex over llvm-objdump) and diff the two value sequences.
+
+## The dispatch rule is exact (2026-08-18)
+
+Fact 2 above is now a formula rather than a surprise. With `range = max-min+1` and
+`t` = number of distinct jump targets, cl compares the direct table (`4·range` bytes)
+against the byte map form (`range + 4·t + 12`) and takes the smaller:
+
+> **byte map + small table iff `3·range > 4·t + 12`.**
+
+Verified exactly at the first-XLAT boundary for `t` = 2, 3, 4, 6, 8, 12, 16, and it
+predicts `ComputeCellFlags`'s own dispatch (`cmp edx,0x99`, range 154 -> map at
+`0x477be0` + table at `0x477b10`) without a build. `t <= 3` distinct case values is
+always a compare chain; the chain-vs-table boundary above that is a cost comparison
+roughly `range <~ 85·(t-1)` and is NOT a clean closed form — measured series and the
+derivation: [`../relevations/wall-reasons-layout.md`](../relevations/wall-reasons-layout.md) §3.

@@ -1,4 +1,16 @@
 # A backward `goto` sinks its whole target region to the end of the function
+
+> **2026-08-18 — the mechanism is named and this doc's EH half is refuted for the
+> minimal shape.** cl 5.0 lays blocks out in TOPOLOGICAL order: a block is emitted
+> immediately after its LAST predecessor, and only a real CYCLE exempts it. Measured
+> matrix, minimal probe, and the `StepArrivalDrop` prediction that follows (retail's
+> `pathGate` region must be able to REACH the late regions, i.e. it is a loop, not a
+> returning region):
+> [`../relevations/wall-reasons-layout.md`](../relevations/wall-reasons-layout.md) §2.
+> In that probe `goto A` from B only gives **B A C**, not B C A — the region lands
+> after its last predecessor, not at the end — and adding a destructible local (in
+> region A or at function scope) does **not** move the order. Read that entry before
+> re-deriving anything below.
 tags: cpp:goto cpp:branch | asm:jmp asm:jcc | topic:wall
 symptoms: two macro-regions of a big function appear in the OPPOSITE order to retail; retail's
 early `jcc` reaches far forward past a `ret` while ours reaches a few bytes; the jump table's

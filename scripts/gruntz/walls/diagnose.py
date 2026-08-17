@@ -224,8 +224,10 @@ def _insn_text(asm: str) -> list[str]:
 def _repeat_runs(insns: list[str], minlen: int = 4):
     """Maximal repeated instruction runs, each classified SUFFIX vs PREFIX.
 
-    cl cross-jumps common SUFFIXES (cl5-crossjump-merges-suffixes-not-blocks),
-    so the distinction decides whether a duplicated run is even foldable:
+    Only a converging SUFFIX is foldable at all (the unconditional suffix
+    cross-jump is /Os-gated and off in our /O2 build; what merges under /O2 is
+    value-based factoring - wall-reasons-layout.md), so the distinction
+    decides whether a duplicated run could ever have been merged:
       suffix - every copy leaves via the same terminator (ret, or a jmp to one
                target); the copies converge, so the pass COULD merge them.
       prefix - the copies diverge after the run; no merge pass would fold them,
@@ -303,14 +305,16 @@ def _duplicate_tail_probe(basm: str, tasm: str) -> None:
               "duplication is retail's own shape (a no-IL tail or a per-arm "
               "scope it really had), not a defect - do not chase it.")
     elif bs and not ts:
-        print("    -> only BASE duplicates a long mergeable SUFFIX: cl folds "
-              "every common suffix of >=2 statements, so OUR source holds a "
-              "blocker - a join at the suffix head, a destructible local "
-              "scoped per-arm, or an empty (no-IL) tail. See "
-              "docs/relevations/cl5-crossjump-merges-suffixes-not-blocks.md")
+        print("    -> only BASE duplicates a long converging SUFFIX. The "
+              "unconditional suffix cross-jump is /Os-gated and OFF in our "
+              "/O2 build, so what merges here is value-based factoring: look "
+              "for a join at the suffix head, a per-arm destructible local, "
+              "or arm VALUES that differ where retail's agree. "
+              "docs/relevations/wall-reasons-layout.md")
     elif ts and not bs:
-        print("    -> only TARGET duplicates a long suffix: retail's source "
-              "carried a blocker ours lacks (per-arm scope is the usual one).")
+        print("    -> only TARGET duplicates a long suffix: retail's arms "
+              "carried something ours factored away (a per-arm scope is the "
+              "usual one).")
     elif (b or t) and not bs and not ts:
         print("    -> the long repeats are PREFIXES that diverge; no merge "
               "pass folds those, so a duplication difference here is a CFG "
