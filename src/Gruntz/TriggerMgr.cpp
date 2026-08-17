@@ -430,27 +430,27 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 // WrapCoord for `source` but has it expanded for `destination`, which never
 // leaves edi/ebx - so that expansion must come from an inline WrapCoord in the
 // Wwd header, not from a hand-written copy here.  Transcribing the body into
-// this arm reproduces the clamp blocks and un-merges the two path-preview
-// return tails, but it also makes cl re-order the switch arms (BOOMERANG moves
-// from ninth to third), measured 71.89 -> 38.61; an inline clone is also what
-// gruntz.audit.inline_clones exists to prevent.  Making
-// CDDrawWorkerHost::WrapCoord an in-class inline - the fix this note used to
-// propose - was MEASURED and is refuted: cl 5.0 /Ob1 then expands it at EVERY
-// call site, not at one of two, taking this function 72.33 -> 29.71 and
-// `cimage` (8 call sites) down with it.  There is no /Ob1 budget split to buy;
-// whatever produced retail's one-call/one-expansion pair is not an `inline`
-// keyword on this body.  (2) cl merges identical
-// `LoadCursorSprites(...); return 1;` blocks that retail keeps duplicated.
+// this arm makes cl re-order the switch arms; making
+// CDDrawWorkerHost::WrapCoord an in-class inline expands it at EVERY call site,
+// not at one of two (and drags `cimage` down with it).  There is no /Ob1 budget
+// split to buy; whatever produced retail's one-call/one-expansion pair is not
+// an `inline` keyword on this body - the destination wrap is now transcribed
+// below as the dev's open-coded scalar copy (dx/dy never leave registers in
+// retail, the plane chain is re-derived, the final adjust is the re-associated
+// bounds50-viewRect difference).  (2) THE wall: cl cross-jumps the identical
+// `LoadCursorSprites(...); return 1;` tails that retail keeps duplicated
+// (14 retail call sites vs 4 ours, 16 rets vs 6).  Measured 2026-08-17: plain
+// per-arm returns, goto-label sharing (lightUp/lightUp2/zero/done - which IS
+// retail's cross-arm sharing structure), tree-differentiated argument
+// spellings, and an added-mass regime all still merge; retail's copies differ
+// only in per-site scheduling of the world reload (before vs after the pushes)
+// and in the gk temp register, i.e. allocator state this pass sees before
+// merging.  identical-return-epilogue-tailmerge at scale; no source reach found.
 //
-// The 2026-08-10 skeleton census puts numbers on both: `--blocks --diff` is base
-// 115 vs target 131 blocks, `--branches --diff` base 69/13 vs target 81/16.  The
-// 16 missing blocks are one whole second path-preview tail (retail B117-B129) -
-// our two path-preview sites are textually identical so cl merges them into one,
-// and retail's are not identical only because of the WrapCoord call/expand split
-// above.  Three of the missing rets are `LoadCursorSprites(); return 1;` exits
-// that retail duplicates; normalising their pushes shows all four read the SAME
-// two locals ([esp+0x10] = world, [esp+0x14] = gruntKind), so this is the
-// documented over-merge wall and not a missing source variable.
+// The retail bytes DO prove the receiver chains are re-derived, not held in a
+// spanning local: the clamp region's level dies in ecx before CTileImageSet
+// dispatch, and both path-preview sites re-chase m_world->m_level->m_mainPlane
+// from a reloaded `this` - hence no function-lifetime `view` local below.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -484,25 +484,29 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         hitFlag = 1;
     }
 
-    CGameLevel* view = m_world->m_level;
+    // No function-lifetime `view` local: retail re-derives m_world->m_level per
+    // region (the level dies in ecx here) and the full chain at each preview
+    // site - a spanning local claims a callee-saved register and cascades ty,
+    // pfk and `alt` into memory homes across the whole switch.
+    CGameLevel* level = m_world->m_level;
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
     i32 cx = tx;
     if (tx < 0) {
         cx = 0;
-    } else if (tx >= view->m_mainPlane->m_gridW) {
-        cx = view->m_mainPlane->m_gridW - 1;
+    } else if (tx >= level->m_mainPlane->m_gridW) {
+        cx = level->m_mainPlane->m_gridW - 1;
     }
     i32 cy = ty;
     if (ty < 0) {
         cy = 0;
-    } else if (ty >= view->m_mainPlane->m_gridH) {
-        cy = view->m_mainPlane->m_gridH - 1;
+    } else if (ty >= level->m_mainPlane->m_gridH) {
+        cy = level->m_mainPlane->m_gridH - 1;
     }
     TileCollisionKind collision;
-    i32 cval = view->m_mainPlane->m_tileGrid[view->m_mainPlane->m_colOffsets[cy] + cx];
+    i32 cval = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
-        CTileImageSet* tc = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(cval & 0xffff));
+        CTileImageSet* tc = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(cval & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
         collision = tc->GetCollisionAt(0, 0);
     } else {
@@ -538,7 +542,11 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     if (hitFlag != 0) {
-        if (pfk != 0) {
+        if (pfk == 0) {
+            world->LoadCursorSprites(0, 0);
+            return 1;
+        }
+        {
             // Retail's compare order is rock, welder, boomerang, gunhat,
             // nerfgun, wingz; the positive spelling is byte-identical here.
             if (gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_BOOMERANG
@@ -549,9 +557,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             }
 
             POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-            view->m_mainPlane->WrapCoord(&source.x, &source.y);
+            m_world->m_level->m_mainPlane->WrapCoord(&source.x, &source.y);
             POINT destination = {x, y};
-            view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+            m_world->m_level->m_mainPlane->WrapCoord(&destination.x, &destination.y);
             u16 color;
             if (cell->RectContains(x, y)) {
                 color = PackRgb16(0xff, 0, 0);
@@ -675,9 +683,42 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_WINGZ:
                 if (pfk != 0) {
                     POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-                    view->m_mainPlane->WrapCoord(&source.x, &source.y);
-                    POINT destination = {x, y};
-                    view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+                    m_world->m_level->m_mainPlane->WrapCoord(&source.x, &source.y);
+                    // The destination wrap is OPEN-CODED on the scalars (retail
+                    // 0x79126-0x791b0: dx/dy never leave edi/ebx, the plane chain
+                    // is re-derived, and the final adjust is the re-associated
+                    // bounds50-viewRect difference) - the same wrap the source
+                    // POINT goes through by call above.
+                    CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
+                    i32 dx = x;
+                    i32 dy = y;
+                    i32 wflags = plane->m_flags;
+                    if (wflags & 0x4) {
+                        i32 w = plane->m_wrapW;
+                        if (dx < 0) {
+                            dx = dx + w;
+                        } else if (dx >= w) {
+                            dx = dx - w;
+                        }
+                        if (plane->m_viewRect.right >= w && dx < plane->m_viewRect.left
+                            && dx <= plane->m_viewRect.right - w) {
+                            dx = dx + w;
+                        }
+                    }
+                    if (wflags & 0x8) {
+                        i32 h = plane->m_wrapH;
+                        if (dy < 0) {
+                            dy = dy + h;
+                        } else if (dy >= h) {
+                            dy = dy - h;
+                        }
+                        if (plane->m_viewRect.bottom >= h && dy < plane->m_viewRect.top
+                            && dy <= plane->m_viewRect.bottom - h) {
+                            dy = dy + h;
+                        }
+                    }
+                    dx += plane->m_bounds50.left - plane->m_viewRect.left;
+                    dy += plane->m_bounds50.top - plane->m_viewRect.top;
                     u16 color;
                     if (cell->RectContains(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
@@ -687,7 +728,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         world->LoadCursorSprites(pfk, 0);
                     }
                     world->m_pathPreviewSource = source;
-                    world->m_pathPreviewDestination = destination;
+                    world->m_pathPreviewDestination.x = dx;
+                    world->m_pathPreviewDestination.y = dy;
                     world->m_pathPreviewColor = color;
                     world->m_drewThisFrame = 1;
                     return 1;
@@ -695,6 +737,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 break;
 
             case PICKUP_TIMEBOMB: {
+                if (pfk == 0) {
+                    break;
+                }
                 CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
                 i32 attr;
                 if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
@@ -703,7 +748,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 } else {
                     attr = plane->m_rowInts[ty][tx * 7];
                 }
-                if (pfk != 0 && (attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
+                if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     return 1;
                 }
@@ -867,6 +912,7 @@ reportError:
     return 0;
 }
 
+// @early-stop
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
     if (m_overlay == NULL) {
@@ -1373,6 +1419,7 @@ fail:
 }
 
 // @early-stop
+// @early-stop
 RVA(0x0007abc0, 0x4b6)
 i32 CTriggerMgr::Load(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -1650,13 +1697,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             i32 row = ty;
             if (pxX < 0x10) {
                 col = 0;
-            } else {
-                if (tx >= board->m_mainPlane->m_gridW) {
-                    col = board->m_mainPlane->m_gridW - 1;
-                }
-                if (ty >= board->m_mainPlane->m_gridH) {
-                    row = board->m_mainPlane->m_gridH - 1;
-                }
+            } else if (tx >= board->m_mainPlane->m_gridW) {
+                col = board->m_mainPlane->m_gridW - 1;
+            }
+            if (ty >= board->m_mainPlane->m_gridH) {
+                row = board->m_mainPlane->m_gridH - 1;
             }
             i32 cell = board->m_mainPlane->m_tileGrid[board->m_mainPlane->m_colOffsets[row] + col];
             TileCollisionKind type;
