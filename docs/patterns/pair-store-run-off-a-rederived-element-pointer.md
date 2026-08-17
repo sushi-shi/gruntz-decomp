@@ -70,6 +70,18 @@ The i64-pair pointer is the established in-tree modeling of these
 walks `pair` and `pair + 1` in `CStatusBarMgr::Sync`); prefer a real
 aggregate member where the layout allows one.
 
+THE POINTEE TYPE IS NOT PART OF THE MECHANISM (measured 2026-08-17): where
+the pair IS a real aggregate (`SbiClockPair m_destructWarnClock`), spelling
+the device as `SbiClockPair* clock = &m_destructWarnClock;` with
+`clock->m_last` / `clock->m_interval` accesses is BYTE-IDENTICAL at all
+three sites (UpdateDestructButtonStatusBar held 100.00 EXACT, full-tree
+score line unchanged, 0 fresh). All three powers - index-fold, alias
+opacity, IV anchor - come from materializing the pair's address and storing
+through a pointer cl cannot disambiguate; `i64*` indexing past a member is a
+raw-offset access and is kept ONLY where the pair exists as loose fields
+(the CSbiSlot/CSbiHlRow tails, whose SbiClockPair embedding is blocked by
+MSVC5's ctor-in-union rule on the two-readings device).
+
 Negative controls, same session: binding SIMPLE copies or single negations to
 locals (`u32 t = z;`, `i32 negX = -topX;`, an `i32*` to a member that the
 condition already loads once) does NOT survive C1 - plain copy webs are

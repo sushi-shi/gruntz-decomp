@@ -504,13 +504,13 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         if (m_destructWarnActive == DESTRUCT_WARNING_INACTIVE) {
                             m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
                             m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
-                            i64* clock = &m_destructWarnClock.m_last;
-                            clock[1] = g_buteMgr.GetDwordDef(
+                            SbiClockPair* clock = &m_destructWarnClock;
+                            clock->m_interval = g_buteMgr.GetDwordDef(
                                 "StatusBar",
                                 "DestructButtonWarningDelay",
                                 0x32
                             );
-                            clock[0] = static_cast<u32>(g_frameTime);
+                            clock->m_last = static_cast<u32>(g_frameTime);
                             sm->ArmSnapshot(1, 0xbb7);
                         } else {
                             CSBI_ImageSet* n = m_modeNotify;
@@ -5010,18 +5010,18 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
 
     switch (m_destructWarnActive) {
         case DESTRUCT_WARNING_FORWARD: {
-            i64* clock = &m_destructWarnClock.m_last;
-            i64 d = static_cast<i64>(g_frameTime) - clock[0];
-            if (d >= clock[1]) {
+            SbiClockPair* clock = &m_destructWarnClock;
+            i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
+            if (d >= clock->m_interval) {
                 m_modeState = static_cast<DestructButtonFrame>(m_modeState + 1);
                 if (m_modeState >= DESTRUCT_FRAME_WARNING_LAST) {
                     m_modeState = DESTRUCT_FRAME_WARNING_LAST;
                     m_destructWarnActive = DESTRUCT_WARNING_REVERSE;
                 }
-                clock[1] = static_cast<u32>(
+                clock->m_interval = static_cast<u32>(
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
-                clock[0] = static_cast<u32>(g_frameTime);
+                clock->m_last = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(IDX(m_modeState));
@@ -5030,18 +5030,18 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
             break;
         }
         case DESTRUCT_WARNING_REVERSE: {
-            i64* clock = &m_destructWarnClock.m_last;
-            i64 d = static_cast<i64>(g_frameTime) - clock[0];
-            if (d >= clock[1]) {
+            SbiClockPair* clock = &m_destructWarnClock;
+            i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
+            if (d >= clock->m_interval) {
                 m_modeState = static_cast<DestructButtonFrame>(m_modeState - 1);
                 if (m_modeState <= DESTRUCT_FRAME_WARNING_FIRST) {
                     m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
                     m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
                 }
-                clock[1] = static_cast<u32>(
+                clock->m_interval = static_cast<u32>(
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
-                clock[0] = static_cast<u32>(g_frameTime);
+                clock->m_last = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(IDX(m_modeState));
