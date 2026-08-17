@@ -1,5 +1,18 @@
 # cl 5.0 gives the first-USED call-crossing value EBX, not ESI — a use-order register lever
 
+> **CORRECTED 2026-08-18 — the use-order lever below is falsified.** The probe
+> pair that established it (`a*7 + b*11 + c*13` vs `c*7 + b*11 + a*13`) changed
+> each value's COEFFICIENT along with the term order. Controlled cells that swap
+> only the order (`c*13 + b*11 + a*7`) do NOT move the pick, and every
+> non-product tail — separate statements, argument lists, plain sums,
+> subtractions, bit-or/shift combos — binds the values in DEFINITION order to
+> ESI, EDI, EBX, EBP regardless of use order. Use the measured rule and its real
+> lever in [wall-reasons-allocation.md](wall-reasons-allocation.md) R2/R2a/R3.
+> What survives from this entry: the preference table's presence, the FOUR
+> callee-saved GPRs in play before a spill, the byte-value exclusion, and the
+> two canonicalization negative controls (SumWeighted 0x15aaf0,
+> ProbeHeadSoft 0x160450).
+
 The modal register wall (retail binds a value to one callee-saved register, we
 bind it to another — the whole-body ESI/EDI/EBX role swap) has a partial but
 EMPIRICALLY-PROVEN steering lever on cl 5.0, distinct from the sibling VC6 model.

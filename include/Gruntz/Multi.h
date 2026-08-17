@@ -269,7 +269,7 @@ public:
     i32 m_drainTimer;
     i32 m_frameDelta;
     i32 m_lastTime;
-    i32 m_accumTime;
+    u32 m_accumTime;
     i32 m_lastFrameSyncTime;
     i32 m_reserved5e8;
     i32 m_reserved5ec;

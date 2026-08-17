@@ -2892,20 +2892,17 @@ void CNetSession::ResetAll() {
     }
 }
 
-// @early-stop
-// Register renaming only (esi/edi swapped for `this` and the sampled tick).
 RVA(0x000bc070, 0x73)
 u32 CMulti::FrameSyncWait() {
     u32 now = timeGetTime();
-    u32 delta = now - m_lastFrameSyncTime;
     u32 ret = 0;
-    m_accumTime = delta;
+    m_accumTime = now - m_lastFrameSyncTime;
     m_lastFrameSyncTime = now;
 
-    if (delta <= 0x1e) {
-        ActiveWait(0x1f - delta);
+    if (m_accumTime <= 0x1e) {
+        ActiveWait(0x1f - m_accumTime);
         m_lastFrameSyncTime = (now - m_accumTime) + 0x1f;
-    } else if (delta > 0x28 && m_syncGate) {
+    } else if (m_accumTime > 0x28 && m_syncGate) {
         ret = g_syncToggle ^ 1;
         g_syncToggle = ret;
     }

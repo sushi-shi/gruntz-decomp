@@ -240,39 +240,23 @@ helper, temp splitting, TU state, or processor flag — moves it.
 * **P3 (falsified):** "the pair is C1 handle state, reach it with the mixed-kind
   probe." 60 mixed states, zero movement. The mixed-kind family does not reach
   this class; a flat mixed sweep here is evidence about C2, not about the probe.
-* **P1's DOMAIN IS NARROWER THAN "dies before the call" (2026-08-17).**
-  `CPlay::RestoreDisplay` 0x000cba10 reads four scalars off `m_mgr`
-  (`savedW/liveW/savedH/liveH`), compares them pairwise, and passes two of them to
-  `CGruntzMgr::SetVideoMode` — so all four are dead by the call and P1 should apply.
-  It does not: **both declaration orders emit byte-identical code.** Feeding a
-  call's argument pushes is enough to freeze the pick, even though the values do
-  not survive the call. Read P1 as "dies before the call *and does not feed it*".
 
-## Reading an assignment as a CURSOR PHASE (a diagnostic the table above enables)
+## Where the RE continues — ANSWERED 2026-08-18
 
-Because the hand-out order is a rotation over one global cursor, a register
-assignment can be read directly as a phase, which separates "unreachable" from
-"maybe reachable" without any experiment. `RestoreDisplay` again, with `this` in
-ESI and `m_mgr` in ECX already taken:
+`FUN_0042b3e2` is read in
+[wall-reasons-allocation.md](wall-reasons-allocation.md). There is no single
+"value list": the driver walks the flow graph's BLOCKS (resetting the cursor at
+each one, `0x0042b701`), and inside a block it walks TUPLES, picking ONE
+register per tuple whose opcode carries bit `0x400` in the attribute table at
+`0x00494400` and binding it to the first eligible operand of the tuple's def
+chain (`[T+0x1c]`) and then of its use chain (`[T+0x18]`). **The tuple order IS
+the coin**, so the request order is the IL statement order — reachable from
+source exactly where the source decides which computation is written first
+(R3's worked example flips `CMulti::FrameSyncWait` 0x000bc070 to EXACT), and
+unreachable when the competing value is a compiler-materialized constant (R4).
+The original paragraph, kept for its field offsets:
 
-| load | retail | ours |
-|---|---|---|
-| `[ecx+0x94]` | EAX | EAX |
-| `[ecx+0x8c]` | **EDX** | EBX |
-| `[ecx+0x98]` | **EDI** | EDX |
-| `[ecx+0x90]` | **EBX** | EDI |
-
-Retail is `EAX, EDX, EDI, EBX` — the rotation `EAX ECX EDX ESI EDI EBX EBP` with the
-taken ECX and ESI skipped, i.e. the cursor entered at EAX. Ours is `EAX, EBX, EDX,
-EDI` — the SAME rotation entered at EBX. Same sequence, different phase: the request
-order is identical and only the cursor's starting position differs, which is the
-C2-internal half. When instead the two sides interleave two values in a way that is
-*not* a rotation of one another, the request order differs and the declaration-order
-lever is worth one A/B.
-
-## Where the RE continues
-
-The unknown is one function: **`FUN_0042b3e2`**, specifically the ordering of the
+The unknown was one function: **`FUN_0042b3e2`**, specifically the ordering of the
 value list it scans after each hand-out (list head `[ebp+0x1c]`, walked via
 `[edi]`; node kinds `[edi+8] == 2` or `6`; type field `[edi+0xa] & 0xf000` where
 `0x4000` is skipped; skip flag `[edi+0x10] & 0x20`; binder call `0x00435f77` at

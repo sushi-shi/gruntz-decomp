@@ -56,11 +56,14 @@
     section) - an inert-source A/B whose IL differs is C1 handle state, and
     the probe-kind stride table (typedef +1 ... class +11) is the steering
     lever.
-  * regalloc: one piece is proven on cl 5.0's `c2.exe` - the preference
-    table `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is present, and the first
-    call-crossing value USED after the call takes EBX; reorder that value's
-    first post-call use to steer the pick
-    (docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md).
+  * regalloc: `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is a ROTATION order read from
+    a persistent cursor, reset per basic block; one register is picked per
+    IL tuple. Call-crossing values bind ESI, EDI, EBX, EBP in DEFINITION
+    order and post-call USE order is inert (the older use-order lever is
+    falsified - its probe pair confounded term order with coefficients).
+    The catalogue of allocation, spill, selection and schedule reasons, each
+    with a LEVER/PARTIAL/PARK verdict and a detection signature, is
+    docs/relevations/wall-reasons-allocation.md.
 - Levers are applied as disposable A/B tests. Never retain unused includes,
   declarations, fake locals, manual `STATE` probes, volatile carriers, or
   source distortions to steer codegen. Blind permutation search stays
