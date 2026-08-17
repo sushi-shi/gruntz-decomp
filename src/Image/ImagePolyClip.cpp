@@ -189,6 +189,9 @@ void ImageRotateBlit(
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
 
+// @early-stop
+// One scheduling slot in the third clip pass; the whole edge/intersect skeleton
+// is exact. Mixed-kind TU-state sweep flat (12 states): C2-anchored.
 RVA(0x001461b0, 0x399)
 i32 ImagePolyClipRect(
     ClipVtx* poly,
