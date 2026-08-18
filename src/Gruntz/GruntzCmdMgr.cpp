@@ -257,8 +257,8 @@ i32 CGruntzCommand::SetMaskFromList(
 
 // @early-stop
 RVA(0x00023f90, 0x48)
-i32 CGruntzSingleCommand::Parse(void* data, i32) {
-    char* buf = static_cast<char*>(data) + 1;
+i32 CGruntzSingleCommand::Parse(char* data, i32) {
+    char* buf = data + 1;
     char* start = buf - 1;
     m_targetIndex = *buf++;
     m_commandKind = static_cast<PlayerCommandKind>(*buf++);
@@ -277,8 +277,8 @@ i32 CGruntzSingleCommand::Parse(void* data, i32) {
 
 // @early-stop
 RVA(0x00024000, 0x3e)
-i32 CGruntzMultiCommand::Parse(void* data, i32) {
-    char* buf = static_cast<char*>(data) + 1;
+i32 CGruntzMultiCommand::Parse(char* data, i32) {
+    char* buf = data + 1;
     char* start = buf - 1;
     m_targetIndex = *buf++;
     m_commandKind = static_cast<PlayerCommandKind>(*buf++);

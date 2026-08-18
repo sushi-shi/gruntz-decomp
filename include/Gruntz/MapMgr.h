@@ -57,13 +57,15 @@ public:
     virtual i32 Save(CFileMemBase*);
     virtual i32 Load(CFileMemBase*);
 
-    virtual i32 Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC);
+    virtual i32
+    Search(i32 x1, i32 y1, i32 x2, i32 y2, CPtrList* list, i32 maskA, i32 maskB, i32 maskC);
     virtual i32 IsCellClear(i32 x, i32 y);
 
     void Clip(const tagRECT* r);
     void ComputeCellFlags(i32 x, i32 y, i32 id3);
     i32 AllocGrid(i32 width, i32 height, void (*callback)());
-    i32 SearchEdge(i32 xA, i32 yA, i32 xB, i32 yB, void* list, i32 clearFlag, i32 maskA, i32 maskC);
+    i32
+    SearchEdge(i32 xA, i32 yA, i32 xB, i32 yB, CPtrList* list, i32 clearFlag, i32 maskA, i32 maskC);
     i32 UpdateDiagonals(CGruntzMgr* unused);
     i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1);
 

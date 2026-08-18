@@ -207,7 +207,16 @@ void CMapMgr::Reset() {
 
 // @early-stop
 RVA(0x0009eca0, 0x2bd)
-i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC) {
+i32 CMapMgr::Search(
+    i32 x1,
+    i32 y1,
+    i32 x2,
+    i32 y2,
+    CPtrList* list,
+    i32 maskA,
+    i32 maskB,
+    i32 maskC
+) {
     i32 ox = m_bounds.left;
     if (static_cast<u32>((x1 - ox)) >= static_cast<u32>(m_gridW)) {
         return 0;
@@ -320,7 +329,7 @@ reached:
             g_coordPool.m_freeHead = rec->m_next;
         }
 
-        static_cast<CPtrList*>(list)->AddHead(slot);
+        list->AddHead(slot);
         p = p->m_parent;
     }
     if (m_stepCb != NULL) {

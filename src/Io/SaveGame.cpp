@@ -161,15 +161,14 @@ i32 CSaveGame::Verify() {
 }
 
 RVA(0x000e5130, 0x78)
-i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr) {
+i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* reg) {
     if (dst == NULL) {
         return 0;
     }
-    if (mgr == NULL) {
+    if (reg == NULL) {
         return 0;
     }
     dst->m_type = SAVESLOT_PRESENT;
-    CGruntzMgr* reg = static_cast<CGruntzMgr*>(mgr);
     dst->m_levelId = (static_cast<CPlay*>(reg->m_curState))->m_levelIndex;
     dst->m_count = 0;
     dst->m_active = 1;
@@ -199,7 +198,7 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
 }
 
 RVA(0x000e5240, 0x54)
-i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr) {
+i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, CGruntzMgr* mgr) {
     if (dst == NULL) {
         return 0;
     }
@@ -209,7 +208,7 @@ i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr) {
     dst->m_type = SAVESLOT_PRESENT;
     dst->m_levelId = levelId;
     dst->m_count = 0;
-    if ((static_cast<CGruntzMgr*>(mgr))->m_cheatMgr->m_cheatsUsed != 0) {
+    if (mgr->m_cheatMgr->m_cheatsUsed != 0) {
         dst->m_type = SAVESLOT_PRESENT | SAVESLOT_CHEATS_USED;
     }
     dst->m_checksum = Register(dst);
@@ -291,7 +290,7 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
 }
 
 RVA(0x000e54e0, 0x25)
-i32 CSaveGame::InitializeNamedSlotAt(i32 index, const char* name, void* mgr) {
+i32 CSaveGame::InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mgr) {
 
     return InitializeNamedSlot(GetSlot(index), name, mgr);
 }

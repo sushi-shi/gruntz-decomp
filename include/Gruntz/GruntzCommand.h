@@ -54,7 +54,7 @@ public:
 
     virtual char GetTag() = 0;
 
-    virtual i32 Parse(void* data, i32 len) = 0;
+    virtual i32 Parse(char* data, i32 len) = 0;
 
     virtual i32 Pack(char* buf, i32 unused) = 0;
 
@@ -91,7 +91,7 @@ public:
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
     virtual char GetTag() OVERRIDE;
-    virtual i32 Parse(void*, i32) OVERRIDE;
+    virtual i32 Parse(char*, i32) OVERRIDE;
 
     virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
     virtual i32 Select(CState* state) OVERRIDE;
@@ -108,7 +108,7 @@ public:
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
     virtual char GetTag() OVERRIDE;
-    virtual i32 Parse(void*, i32) OVERRIDE;
+    virtual i32 Parse(char*, i32) OVERRIDE;
 
     virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
     virtual i32 Select(CState* state) OVERRIDE;

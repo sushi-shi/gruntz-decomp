@@ -28,11 +28,11 @@ public:
 
     i32 MorphByTool(PickupType toolId, PlayerSlot playerSlot);
 
-    i32 Serialize(void* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
-    i32 DeserializeFields(void* ar);
+    i32 DeserializeFields(CFileMemBase* a);
 
-    i32 SerializeFields(void* ar);
+    i32 SerializeFields(CFileMemBase* a);
 
     BrickTileId m_actionCode;
     i32 m_tileX;

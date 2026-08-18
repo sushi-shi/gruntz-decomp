@@ -67,15 +67,15 @@ public:
     i32 Save(char* path, i32 b);
     i32 ComputeAll();
     i32 Verify();
-    i32 InitializeNamedSlot(SaveSlot* dst, const char* name, void* mgr);
+    i32 InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* mgr);
     i32 CopySlot(SaveSlot* dst, const SaveSlot* src);
-    i32 InitializeLevelSlot(SaveSlot* dst, i32 levelId, void* mgr);
+    i32 InitializeLevelSlot(SaveSlot* dst, i32 levelId, CGruntzMgr* mgr);
     i32 VerifySlot(SaveSlot* slot);
     i32 Register(SaveSlot* slot);
     i32 Encode(u8* buf);
     i32 Decode(u8* buf);
     SaveSlot* GetSlot(i32 i);
-    i32 InitializeNamedSlotAt(i32 index, const char* name, void* mgr);
+    i32 InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mgr);
     i32 StoreSlot(i32 idx, const SaveSlot* src);
 
     i32 CloseTempFile(SaveSlot* r);
@@ -126,7 +126,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame);
 
 int TempFileExists(SaveSlot* p);
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
-void SetSaveSlotDialogName(HWND hWnd, void* gate, SaveSlot* item);
+void SetSaveSlotDialogName(HWND hWnd, CSaveGame* gate, SaveSlot* item);
 
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);
 

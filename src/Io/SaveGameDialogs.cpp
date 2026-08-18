@@ -622,7 +622,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
 }
 
 RVA(0x000e4850, 0x29)
-void SetSaveSlotDialogName(HWND hWnd, void* gate, SaveSlot* item) {
+void SetSaveSlotDialogName(HWND hWnd, CSaveGame* gate, SaveSlot* item) {
     if (hWnd && gate && item) {
         SetDlgItemTextA(hWnd, CTRL_SAVESLOT_NAME, item->m_name);
     }

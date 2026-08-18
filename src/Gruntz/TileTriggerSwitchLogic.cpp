@@ -1829,7 +1829,7 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
 }
 
 RVA(0x00113f10, 0x3b)
-i32 CTileActionEvent::Serialize(void* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CTileActionEvent::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (ar == NULL) {
         return 0;
     }
@@ -1849,8 +1849,7 @@ i32 CTileActionEvent::Serialize(void* ar, SerialMode mode, LogicTypeId typeId, i
 }
 
 RVA(0x00113f60, 0xa2)
-i32 CTileActionEvent::SerializeFields(void* ar) {
-    CFileMemBase* a = static_cast<CFileMemBase*>(ar);
+i32 CTileActionEvent::SerializeFields(CFileMemBase* a) {
     if (a == NULL) {
         return 0;
     }
@@ -1870,8 +1869,7 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
 }
 
 RVA(0x00114040, 0xa2)
-i32 CTileActionEvent::DeserializeFields(void* ar) {
-    CFileMemBase* a = static_cast<CFileMemBase*>(ar);
+i32 CTileActionEvent::DeserializeFields(CFileMemBase* a) {
     if (a == NULL) {
         return 0;
     }

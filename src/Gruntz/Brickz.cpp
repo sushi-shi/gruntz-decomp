@@ -14,7 +14,7 @@ i32 CMapMgr::SearchEdge(
     i32 yA,
     i32 xB,
     i32 yB,
-    void* list,
+    CPtrList* list,
     i32 clearFlag,
     i32 maskA,
     i32 maskC
