@@ -1,4 +1,4 @@
-# A per-arm src load below the loop guard means the void* PARAM is the cursor
+# A per-arm src load below the loop guard means the PARAM is the cursor
 
 tags: cpp:param cpp:cast cpp:loop | asm:mov asm:cmp | topic:codegen-idiom
 symptoms: cmp dword ptr [esp+N],0x2 in-place, mov reg,[esp+param] inside each
@@ -6,25 +6,25 @@ arm after the js/jle guard, mov [esp+param],reg cursor write-back, param slot
 recycled for a byte staging local
 confidence: 9/10
 
-In the CDDSurface Blit-family (`Blit(void* srcv, .., RasterRowOrder)`) retail
+In the CDDSurface Blit-family (`Blit(u8* srcv, .., RasterRowOrder)`) retail
 compares `rowOrder` straight from its stack slot and loads the source pointer
 from ITS param slot inside each row-order arm, after the arm's loop guard —
 and in the big bodies (Blit824) it stores the advanced cursor BACK to the
 param slot each pixel. A local `u8* src = (u8*)srcv;` cannot produce this: the
 two arms' identical loads get PRE-hoisted above the `cmp`, the param slot dies
 and is recycled, and every downstream slot/register assignment rotates. The
-devs advanced the PARAMETER itself; use the param at every site (a plain
-static_cast from void*, no pun - the reinterpret_cast<u8*&> reference alias is
-byte-identical but trips the cast ratchet):
+devs advanced the PARAMETER itself; use the byte-pointer parameter directly:
 
 ```cpp
-u8 idx = *static_cast<u8*>(srcv);          // the param IS the cursor
-srcv = static_cast<u8*>(srcv) + 1;
+u8 idx = *srcv++;                          // the param IS the cursor
 ```
 
-Caveat: the extra statements are a TU-content perturbation of their own - in
-Blit168 the use-site spelling flips the LUT pack's first-channel coin that the
-reference spelling left byte-exact.
+The old `void*` plus use-site `static_cast<u8*>` spelling was not load-bearing.
+A full A/B rebuild after changing the entire family to `u8*` retained the same
+per-function scores: Blit, BlitDirect, Blit248, Blit2416, DecodeRun8 and
+DecodeRun24 remain exact; the four partial functions retain their prior
+percentages. The codegen mechanism is advancing the parameter slot, not erasing
+the pointee type.
 
 ```asm
 cmp    DWORD PTR [esp+0x20],0x2      ; rowOrder tested in place, no reg load

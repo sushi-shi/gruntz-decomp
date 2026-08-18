@@ -607,33 +607,33 @@ void CDDSurface::FlipVertical() {
 }
 
 RVA(0x0013ece0, 0xc7)
-i32 CDDSurface::BlitDirect(void* src, RasterRowOrder rowOrder) {
+i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
-    // The void* parameter itself is the walking cursor (retail re-reads and
+    // The parameter itself is the walking cursor (retail re-reads and
     // advances its stack slot per arm; a local hoists and rotates the frame) -
     // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
-            u8* sp = static_cast<u8*>(src);
+            u8* sp = src;
             i32 i = this->m_bytesPerRow;
             while (i-- > 0) {
                 *dst++ = *sp++;
             }
-            src = static_cast<u8*>(src) + this->m_bytesPerRow;
+            src += this->m_bytesPerRow;
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
-            u8* sp = static_cast<u8*>(src);
+            u8* sp = src;
             i32 i = this->m_bytesPerRow;
             while (i-- > 0) {
                 *dst++ = *sp++;
             }
-            src = static_cast<u8*>(src) + this->m_bytesPerRow;
+            src += this->m_bytesPerRow;
         }
     }
     this->m_ddSurface->Unlock(0);
@@ -1097,12 +1097,7 @@ i32 CDDSurface::GetColorKey() {
 }
 
 RVA(0x0013faa0, 0x108)
-i32 CDDSurface::Blit(
-    void* src,
-    ColorDepth bitcount,
-    PALETTEENTRY* palette,
-    RasterRowOrder rowOrder
-) {
+i32 CDDSurface::Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, RasterRowOrder rowOrder) {
     ColorDepth dest = this->m_bitDepth;
     if (static_cast<ColorDepth>(dest == BPP_UNSET) == bitcount) {
         return BlitDirect(src, rowOrder);
@@ -1142,7 +1137,7 @@ i32 CDDSurface::Blit(
 // byte-exact, the ratchet-mandated static_cast use-site spelling leaves the
 // two LUT loads swapped. All pack spellings tie under the current content.
 RVA(0x0013fbb0, 0x126)
-i32 CDDSurface::Blit168(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
@@ -1154,23 +1149,23 @@ i32 CDDSurface::Blit168(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
     if (locked == NULL) {
         return 0;
     }
-    // The void* parameter itself is the walking cursor (retail re-reads and
+    // The parameter itself is the walking cursor (retail re-reads and
     // advances its stack slot per arm; a local hoists and rotates the frame) -
     // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                *dst++ = g_lut16[*static_cast<u8*>(srcv)];
-                srcv = static_cast<u8*>(srcv) + 1;
+                *dst++ = g_lut16[*srcv];
+                srcv++;
             }
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                *dst++ = g_lut16[*static_cast<u8*>(srcv)];
-                srcv = static_cast<u8*>(srcv) + 1;
+                *dst++ = g_lut16[*srcv];
+                srcv++;
             }
         }
     }
@@ -1183,24 +1178,21 @@ i32 CDDSurface::Blit168(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
 // swap cascades (dst esi<->edi, acc bp<->si, arm2's col register vs memory).
 // Renames and depth-1 trees are inert on cl5's coloring here.
 RVA(0x0013fce0, 0x17f)
-i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
-    // The void* parameter itself is the walking cursor (retail re-reads and
+    // The parameter itself is the walking cursor (retail re-reads and
     // advances its stack slot per arm; a local hoists and rotates the frame) -
     // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 b = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 g = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 r = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
+                u8 b = *srcv++;
+                u8 g = *srcv++;
+                u8 r = *srcv++;
                 u16 v =
                     static_cast<u16>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp));
                 v = static_cast<u16>(
@@ -1213,12 +1205,9 @@ i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
         for (i32 row = 0; row < this->m_height; row++) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 r = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 g = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 b = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
+                u8 r = *srcv++;
+                u8 g = *srcv++;
+                u8 b = *srcv++;
                 u16 v =
                     static_cast<u16>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp));
                 v = static_cast<u16>(
@@ -1233,7 +1222,7 @@ i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
 }
 
 RVA(0x0013fe60, 0x11e)
-i32 CDDSurface::Blit248(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
@@ -1241,15 +1230,14 @@ i32 CDDSurface::Blit248(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
     if (locked == NULL) {
         return 0;
     }
-    // The void* parameter itself is the walking cursor (retail re-reads and
+    // The parameter itself is the walking cursor (retail re-reads and
     // advances its stack slot per arm; a local hoists and rotates the frame) -
     // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 idx = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
+                u8 idx = *srcv++;
                 *dst++ = pal[idx].peBlue;
                 *dst++ = pal[idx].peGreen;
                 *dst++ = pal[idx].peRed;
@@ -1259,8 +1247,7 @@ i32 CDDSurface::Blit248(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 idx = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
+                u8 idx = *srcv++;
                 *dst++ = pal[idx].peBlue;
                 *dst++ = pal[idx].peGreen;
                 *dst++ = pal[idx].peRed;
@@ -1272,12 +1259,14 @@ i32 CDDSurface::Blit248(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
 }
 
 RVA(0x0013ff80, 0x184)
-i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
-    u16* src = static_cast<u16*>(srcv);
+    Pix16Ptr source;
+    source.m_bytes = srcv;
+    u16* src = source.m_words;
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
@@ -1315,7 +1304,7 @@ i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
 // k-loop widens each pal byte through a serially-reused eax where cl batches
 // two byte registers.
 RVA(0x00140110, 0x30b)
-i32 CDDSurface::Blit824(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
@@ -1323,19 +1312,16 @@ i32 CDDSurface::Blit824(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
     if (locked == NULL) {
         return 0;
     }
-    // The void* parameter itself is the walking cursor (retail writes the
+    // The parameter itself is the walking cursor (retail writes the
     // advanced cursor back to the parameter slot each pixel) -
     // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 s0 = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 s1 = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 s2 = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
+                u8 s0 = *srcv++;
+                u8 s1 = *srcv++;
+                u8 s2 = *srcv++;
                 i32 best = 0;
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
@@ -1364,12 +1350,9 @@ i32 CDDSurface::Blit824(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 s0 = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 s1 = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
-                u8 s2 = *static_cast<u8*>(srcv);
-                srcv = static_cast<u8*>(srcv) + 1;
+                u8 s0 = *srcv++;
+                u8 s1 = *srcv++;
+                u8 s2 = *srcv++;
                 i32 best = 0;
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
@@ -1404,7 +1387,7 @@ i32 CDDSurface::Blit824(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
 // dead palv slot as the cursor home and saves each widened channel to its own
 // slot right after its shift where cl defers the saves.
 RVA(0x00140420, 0x34f)
-i32 CDDSurface::Blit816(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
@@ -1412,7 +1395,9 @@ i32 CDDSurface::Blit816(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) 
     if (locked == NULL) {
         return 0;
     }
-    u16* src = static_cast<u16*>(srcv);
+    Pix16Ptr source;
+    source.m_bytes = srcv;
+    u16* src = source.m_words;
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
@@ -1640,7 +1625,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
 #pragma optimize("", off)
 
 RVA(0x00140aa0, 0x1a3)
-i32 CDDSurface::DecodeRun8(void* src) {
+i32 CDDSurface::DecodeRun8(u8* src) {
     u8* sp;
     i32 hold;
     u8* pbits;
@@ -1658,7 +1643,7 @@ i32 CDDSurface::DecodeRun8(void* src) {
     w = this->GetWidth();
     height = this->GetHeight();
     hold = 0;
-    sp = static_cast<u8*>(src);
+    sp = src;
     pbits = static_cast<u8*>(this->Lock(0));
     if (pbits == NULL) {
         return 0;
@@ -1702,7 +1687,7 @@ i32 CDDSurface::DecodeRun8(void* src) {
 }
 
 RVA(0x00140c50, 0x3e2)
-i32 CDDSurface::DecodeRun24(void* src) {
+i32 CDDSurface::DecodeRun24(u8* src) {
     u8* inp;
     i32 rest;
     u8* dst;
@@ -1720,7 +1705,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
         return 0;
     }
     rest = 0;
-    inp = static_cast<u8*>(src);
+    inp = src;
     dst = NULL;
     for (nrow = 0; nrow < this->GetHeight(); nrow++) {
         dst = (ln + this->Scale(nrow) + 2);
