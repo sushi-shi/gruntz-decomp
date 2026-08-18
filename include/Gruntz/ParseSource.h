@@ -62,10 +62,7 @@ struct CParseSource {
     CSymRec* m_entry;
     i32 m_typeTag;
 
-    union {
-        u32 m_length;
-        const char* m_keyHandle;
-    };
+    u32 m_length;
     CSymTab* m_owner;
 
     i32 m_base;
