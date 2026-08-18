@@ -1510,9 +1510,9 @@ tail:
         if (ne) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("H");
-            void* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
+            CGrunt* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
             if (cellObj != NULL) {
-                CGameObject* oh = (static_cast<CGrunt*>(cellObj))->m_object;
+                CGameObject* oh = cellObj->m_object;
                 i32 cx = oh->m_screenX;
                 i32 cy = oh->m_screenY;
                 if (m_neighborScanEnabled != 0 && m_entranceCommitted != 0
@@ -1847,7 +1847,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         g = g_gameReg;
     }
     grid = g->m_tileGrid;
-    void* cellObj;
+    char* cellObj;
     if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         cellObj = NULL;
@@ -1860,8 +1860,8 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (cellObj == NULL) {
         return 0;
     }
-    CGameObject* found = 0;
-    if (MapLookup(g->m_world->m_childGroup->m_map48, cellObj, found) == 0) {
+    CGameObject* found = NULL;
+    if (MapLookup(g->m_world->m_childGroup->m_map48, static_cast<void*>(cellObj), found) == 0) {
         found = NULL;
     }
     if (found == NULL) {

@@ -2404,14 +2404,14 @@ RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     POSITION pos = m_selLists[idx].GetHeadPosition();
     if (pos != NULL) {
-        void* head = g_coordPool.m_freeHead;
+        CoordPoolNode* head = g_coordPool.m_freeHead;
         do {
             Coord* payload = static_cast<Coord*>(m_selLists[idx].GetNext(pos));
             if (payload != NULL) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                slot->m_next = static_cast<CoordPoolNode*>(head);
+                slot->m_next = head;
                 head = slot;
-                g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
+                g_coordPool.m_freeHead = head;
             }
         } while (pos != NULL);
     }
