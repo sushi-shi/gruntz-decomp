@@ -28,8 +28,8 @@ i32 CImageSet3::GetStride() {
 }
 
 RVA(0x00166d70, 0x8d)
-i32 CImageSet3::Parse(void* record) {
-    i32* p = &static_cast<WwdTileImageRecord*>(record)->m_width;
+i32 CImageSet3::Parse(WwdTileImageRecord* record) {
+    i32* p = &record->m_width;
     m_width = *p++;
     m_height = *p++;
     i32 h = m_height;

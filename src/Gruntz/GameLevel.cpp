@@ -375,8 +375,9 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
     if (record == NULL) {
         return 0;
     }
+    WwdTileImageRecord* rec = static_cast<WwdTileImageRecord*>(record);
     CTileImageSet* set;
-    switch (*static_cast<i32*>(record)) {
+    switch (rec->m_kind) {
         case TILE_IMAGESET_UNIFORM:
             set = new CImageSet1;
             break;
@@ -390,7 +391,7 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
             return 0;
     }
 
-    if (set->Parse(record) == 0) {
+    if (set->Parse(rec) == 0) {
         if (set != NULL) {
             delete set;
         }

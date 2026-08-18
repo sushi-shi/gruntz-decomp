@@ -24,7 +24,9 @@ GZ_ENUM_CONST_END(TileImageSetKind)
 // follows it. Each GetStride returns its own record's serialized size, so the
 // sizes below come out of this layout rather than out of literals.
 struct WwdTileImageRecord {
-    char m_header[8];
+    // CGameLevel::ReadImageSet dispatches on the first dword.
+    i32 m_kind;
+    i32 m_reserved4;
     i32 m_width;
     i32 m_height;
     i32 m_fields[1];
@@ -32,7 +34,7 @@ struct WwdTileImageRecord {
 
 class CTileImageSet : public CObject {
 public:
-    virtual i32 Parse(void* record);
+    virtual i32 Parse(WwdTileImageRecord* record);
     virtual void FreePixels();
     virtual i32 GetKind();
 
@@ -45,7 +47,7 @@ public:
 struct CImageSet1 : public CTileImageSet {
     virtual ~CImageSet1() OVERRIDE {}
 
-    virtual i32 Parse(void* record) OVERRIDE;
+    virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     RVA(0x00161330, 0x1)
     virtual void FreePixels() OVERRIDE {}
 
@@ -111,7 +113,7 @@ struct CImageSet1 : public CTileImageSet {
 struct CImageSet2 : public CTileImageSet {
     virtual ~CImageSet2() OVERRIDE {}
 
-    virtual i32 Parse(void* record) OVERRIDE;
+    virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     RVA(0x00161420, 0x1)
     virtual void FreePixels() OVERRIDE {}
     RVA(0x00161430, 0x6)
@@ -164,7 +166,7 @@ struct CImageSet3 : public CTileImageSet {
         m_pixels = NULL;
     }
 
-    virtual i32 Parse(void* record) OVERRIDE;
+    virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     virtual void FreePixels() OVERRIDE;
     virtual i32 GetKind() OVERRIDE;
     virtual TileCollisionKind GetCollisionAt(i32 x, i32 y) OVERRIDE;
