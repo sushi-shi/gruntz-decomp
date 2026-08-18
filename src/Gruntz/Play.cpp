@@ -5156,7 +5156,7 @@ i32 CPlay::ValidateLevelTiles() {
                 LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
-                void* hit = 0;
+                CTileTriggerLogic* hit = NULL;
                 i32 col = obj->m_speedX - 1;
                 i32 colOff = col << 8;
                 i32 row = obj->m_speedY - 1;
@@ -5166,7 +5166,8 @@ i32 CPlay::ValidateLevelTiles() {
                         break;
                     }
                     while (row < obj->m_speedY + 2) {
-                        void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        CTileTriggerLogic* r =
+                            m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (r != NULL) {
                             hit = r;
                         }
@@ -5471,7 +5472,7 @@ i32 CPlay::ValidateLevelTiles() {
                 LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
-                void* hit = 0;
+                CTileTriggerLogic* hit = NULL;
                 i32 col = obj->m_speedX - 1;
                 i32 colOff = col << 8;
                 i32 row = obj->m_speedY - 1;
@@ -5481,7 +5482,8 @@ i32 CPlay::ValidateLevelTiles() {
                         break;
                     }
                     while (row < obj->m_speedY + 2) {
-                        void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        CTileTriggerLogic* r =
+                            m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (r != NULL) {
                             hit = r;
                         }
