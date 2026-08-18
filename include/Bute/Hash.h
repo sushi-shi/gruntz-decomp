@@ -111,7 +111,7 @@ public:
     }
 
     u32 HashStr(const char* s);
-    void* Walk(const char* name, i32 ci);
+    CSymTab* Walk(const char* name, i32 ci);
 };
 
 // CSymRec::m_valTable and CSymParser::m_hash - CParseSource elements chained
@@ -125,7 +125,7 @@ public:
     }
 
     u32 HashStr(const char* s);
-    void* Walk(const char* name, i32 ci);
+    CParseSource* Walk(const char* name, i32 ci);
 };
 
 // CSymTab::m_symbols - CSymRec elements chained through CSymRecNode, keyed by the
@@ -141,7 +141,7 @@ public:
     u32 HashInt(u32 key);
     // Generic integer-keyed lookup: one caller passes a REZ fourcc, another an
     // arbitrary symbol key, so the parameter is NOT a single domain.
-    void* FindInt(u32 key);
+    CSymRec* FindInt(u32 key);
 };
 
 #endif // SRC_BUTE_HASH_H

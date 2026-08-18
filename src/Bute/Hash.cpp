@@ -27,7 +27,7 @@ u32 CHashC::HashStr(const char* s) {
 }
 
 RVA(0x0013c270, 0xca)
-void* CHashC::Walk(const char* name, i32 ci) {
+CParseSource* CHashC::Walk(const char* name, i32 ci) {
     if (!name) {
         return 0;
     }
@@ -63,7 +63,7 @@ u32 CHashD::HashInt(u32 key) {
 }
 
 RVA(0x0013c360, 0x47)
-void* CHashD::FindInt(u32 key) {
+CSymRec* CHashD::FindInt(u32 key) {
     CHashElement* e = Lookup(HashInt(key));
     while (e) {
         if (static_cast<u32>(e->m_symRec->m_key) == key) {
@@ -93,7 +93,7 @@ u32 CHashB::HashStr(const char* s) {
 }
 
 RVA(0x0013c3f0, 0xca)
-void* CHashB::Walk(const char* name, i32 ci) {
+CSymTab* CHashB::Walk(const char* name, i32 ci) {
     if (!name) {
         return 0;
     }

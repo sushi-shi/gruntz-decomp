@@ -406,11 +406,11 @@ CSymTab::~CSymTab() {
 
 RVA(0x0013a000, 0x37)
 CParseSource* CSymTab::Insert(const char* key, RezTypeTag fourcc) {
-    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(IDX(fourcc)));
+    CSymRec* rec = m_symbols.FindInt(IDX(fourcc));
     if (!rec) {
         return 0;
     }
-    return static_cast<CParseSource*>(rec->m_valTable.Walk(key, m_owner->m_caseSensitive == 0));
+    return rec->m_valTable.Walk(key, m_owner->m_caseSensitive == 0);
 }
 
 RVA(0x0013a040, 0xa2)
@@ -491,7 +491,7 @@ CSymTab* CSymTab::FindSub(const char* name) {
     if (!name) {
         return 0;
     }
-    return static_cast<CSymTab*>(m_subTabs.Walk(name, m_owner->m_caseSensitive == 0));
+    return m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
 }
 
 RVA(0x0013a260, 0x11)
@@ -514,7 +514,7 @@ CSymTab* CSymTab::NextSub(CSymTab* rec) {
 
 RVA(0x0013a2a0, 0x10)
 CSymRec* CSymTab::FindSymKey(u32 key) {
-    return static_cast<CSymRec*>(m_symbols.FindInt(key));
+    return m_symbols.FindInt(key);
 }
 
 RVA(0x0013a2b0, 0x11)
@@ -713,7 +713,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             char* name = p;
             p += strlen(name) + 1;
             CHashB* tabs = &m_subTabs;
-            void* existing = tabs->Walk(name, m_owner->m_caseSensitive == 0);
+            CSymTab* existing = tabs->Walk(name, m_owner->m_caseSensitive == 0);
             if (existing == NULL) {
                 CSymTab* node = new CSymTab(
                     m_owner,
@@ -727,9 +727,9 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
                 );
                 tabs->Insert(&node->m_node20);
             } else {
-                (static_cast<CSymTab*>(existing))->m_dataOff = fA;
-                (static_cast<CSymTab*>(existing))->m_dataSize = fB;
-                (static_cast<CSymTab*>(existing))->m_dirTime = fC;
+                existing->m_dataOff = fA;
+                existing->m_dataSize = fB;
+                existing->m_dirTime = fC;
             }
         } else {
 
@@ -750,7 +750,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             p += strlen(name1) + 1;
             CSymRec* rec = FindOrAddSym(f5);
             i32 skip = 0;
-            CParseSource* found = static_cast<CParseSource*>(rec->m_valTable.Walk(name1, 1));
+            CParseSource* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
                 if (mergeDuplicates != 0) {
                     AddNodeSubEntry(rec, found);
@@ -799,7 +799,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
 RVA(0x0013a940, 0xc2)
 CSymRec* CSymTab::FindOrAddSym(i32 key) {
 
-    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(static_cast<u32>(key)));
+    CSymRec* rec = m_symbols.FindInt(static_cast<u32>(key));
     if (!rec) {
         if (m_owner->m_useKeyIndex != 0) {
             rec = new CSymRec(key, this, m_owner->m_keyBucketCount, m_owner->m_valueBucketCount);
