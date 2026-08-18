@@ -132,9 +132,9 @@ stamp is transitional reconstruction debt, not original source.
 
 ## Use walls and permutation correctly
 
-Use the project `permute` skill only when the body is complete and the call set,
-CFG, types, constants, and referents are credible. Classify the wall first with
-the project `wall-identifier` skill (`gruntz sema diagnose <rva>`); every lever
+Use `gruntz permute state|variants` only when the body is complete and the call
+set, CFG, types, constants, and referents are credible. Classify the wall first
+with the project `wall-identifier` skill (`gruntz walls diagnose <rva>`); every lever
 it does not list as cl 5.0-proven must be re-proved here before use.
 
 - Use source permutations and TU-state changes as disposable A/B experiments.

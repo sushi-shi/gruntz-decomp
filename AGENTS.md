@@ -63,8 +63,11 @@
     (docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md).
 - Levers are applied as disposable A/B tests. Never retain unused includes,
   declarations, fake locals, manual `STATE` probes, volatile carriers, or
-  source distortions to steer codegen. Blind permutation search stays
-  removed: walls are broken by understood levers, not ground.
+  source distortions to steer codegen. Blind random hill-climbing stays
+  removed. `gruntz permute state|variants` is a bounded evidence generator:
+  the public command first requires a regalloc/scheduling diagnosis and a
+  historical MAX below 100; variants are deterministic, source-hash scoped,
+  syntax-aware or exact-span reviewed, and stop at audited exact closure.
 - Historical MAX is banked only by a real build against the same per-function
   source fingerprint. If an unchanged function reaches exact under a
   disposable TU-state experiment, bank while exact, remove the experiment,

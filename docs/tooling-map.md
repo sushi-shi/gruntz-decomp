@@ -70,8 +70,24 @@ blessing a baseline is always a separate manual verb (`board --update`,
 | `gruntz walls stale-markers` | `gruntz.walls.stale_markers` | `@early-stop` markers sitting on 100% bodies |
 
 There is **no hand-kept wall ledger**. The worklist is re-derived from the
-compare report on every invocation, and blind permutation search is removed by
-ruling.
+compare report on every invocation. Blind random hill-climbing remains removed;
+classified bounded permutation is the evidence generator below.
+
+## The permutation slice — classified, bounded experiments
+
+| verb | module | what it does |
+| :-- | :-- | :-- |
+| `gruntz permute state` | `gruntz.permute.tu_state_noise` | disposable deterministic declaration forests; parallel trials, state census/replay, topology clues, strict exact closure, optional MAX banking |
+| `gruntz permute variants` | `gruntz.permute.match_variants` | reviewed exact-span axes × conservative libclang shapes × every requested TU state |
+
+Both public verbs first run `gruntz walls diagnose` and accept only a
+regalloc/scheduling wall whose historical MAX is below 100. Source is restored
+after every compile and checked again byte-for-byte; `state` additionally checks
+the per-function fingerprint.
+Exact means unrounded 100%, retail size, and identical ordered relocation
+offsets/types/identities/addends. A state-bearing exact candidate is retained as
+`exact-disposable.cpp`, never as an apply-ready source file. See
+[`permuter.md`](permuter.md).
 
 ## The read-only query surfaces
 
@@ -151,7 +167,7 @@ the mechanism is gone, not moved.
 | `gruntz.build.{harvest_locals,ghidra_metadata_generate,carve_tu,coff_oracle}` | *removed* — the `/Z7` locals harvest and the JSON metadata sidecars are gone; the Ghidra payload is the Model |
 | `gruntz.init.clangd`, `gruntz clangd` | `python3 -m gruntz.graph.compdb` |
 | `gruntz.init.toolchain` | `gruntz init` (`gruntz.tool.wine.init_prefix`) + `scripts/create-toolchain-release.py` |
-| `gruntz permute *` | *removed by ruling* — walls are broken by understood levers, not ground |
+| old `gruntz permute fn|sweep` | *removed* — the random hill-climber and whole-unit grinder remain retired; use classified `state|variants` |
 | `gruntz ghidra-refresh` | `gruntz ghidra build` / `gruntz ghidra update` |
 | `gruntz format` | `clang-format` directly; `.githooks/pre-commit` applies it to staged files |
 | `gruntz data-audit` | `gruntz verify data-access` + `gruntz verify data-coverage` |

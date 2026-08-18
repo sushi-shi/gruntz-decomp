@@ -163,11 +163,11 @@ change, and a search harness must treat it differently.
 - **`clang-format not on PATH — skipping format`** on commit is HARMLESS (formatting is
   whitespace-only / matching-neutral; it runs inside `nix develop`).
 
-## Permuter / walls (see `docs/patterns/` + the `permute` skill)
+## Permuter / walls (see `docs/permuter.md` + `docs/patterns/`)
 
 - **`permute.py` (operand-order/reassoc/decl-split) cannot move regalloc.** MSVC5
   canonicalizes `ptr+i == i+ptr`, so operand swaps are no-ops on SIB walls.
-- **the retired permuter targets cross-function compiler state, not arbitrary
+- **`gruntz permute state` targets cross-function compiler state, not arbitrary
   source bugs.** It perturbs the *preceding* TU content, so use it when a source-identical
   later function moves after TU composition changes. Do not assume independent COMDATs mean
   independent codegen: adding the real preceding `BlitIntoDesc` changed two `ShadeRect`
