@@ -125,3 +125,33 @@ declaration-kind probe (see
 [`tu-state-probe-family-decides-reachability.md`](tu-state-probe-family-decides-reachability.md)),
 which is why the "five palette builders were codegen-neutral" row above is about the
 single-`static`-definition probe only, not about the mechanism.
+
+## A shared header growing MEMBERS is a TU-state perturbation too - and it pays
+
+`CImageSet3::GetStride` 0x00161590 (`m_height * m_width + K`, offsets 0x8 and 0x4)
+carried the exact residue this document describes, and reproduced its refutations:
+both operand orders, an inline `GetArea()` accessor, moving the definition into the
+header `inline` beside its two siblings, and a named local for the first operand are
+all byte-identical.
+
+It went **99.50 -> 100.00 EXACT** when `WwdTileImageRecord` - a struct in the shared
+`ImageSets.h`, not in the .cpp at all - gained the two dimension members every record
+kind opens with. The A/B that pins the cause: keeping the grown struct and putting the
+`0x10` literal BACK leaves it at 100.00, so the constant's spelling
+(`offsetof(WwdTileImageRecord, m_fields)`) is NOT the lever and the struct is. Same
+parity mechanism as the file-scope datum above, reached from a header.
+
+Two consequences for the sieve:
+
+- A residue in a .cpp can be flipped by a DECLARATION change in a header that TU
+  includes, so the missing-definition search is not confined to the .cpp.
+- The flip is a side effect of a correctness fix here, which is the honest way to take
+  it: the three `GetStride` overrides return their record's SERIALIZED SIZE (`0x14` =
+  `sizeof(WwdTileImageRecord)`, `0x28` = `offsetof(m_fields) + 6*sizeof(i32)`, `0x10` =
+  `offsetof(m_fields)`), each proven by its own `Parse`'s field count. Model the record,
+  and the parity comes along.
+
+Caveat measured on the way: keep retail's pointer WALK in the readers. Reading
+`rec->m_width` / `rec->m_height` as named members cost `CImageSet3::Parse` 100.00 ->
+77.47 and both siblings with it; anchoring the same walk at `&rec->m_width` is
+byte-neutral.
