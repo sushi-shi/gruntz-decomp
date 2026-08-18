@@ -189,7 +189,7 @@ hash	10	10
 heapdiag	8	7
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	54	42
+imagepool	54	43
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -1730,16 +1730,16 @@ feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	1	06702c305199	0x17b840	100
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	1	2c46d365562e	0x17b5a0	100.0000	
 feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60	100.0000	
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	85.2000	85.2000	12	6018c45e58cd	0x17b5f0	85.2000	
-fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	87.0701	86.9579	3	d11f32674397	0x144b30	87.0701	
-fileimage	?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUBmpFileImage@@I@Z	99.7018	99.7018	3	2b3c2ef6ace8	0x143fc0	99.7018	
+fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	87.0701	87.0701	3	d11f32674397	0x144b30	87.0701	
+fileimage	?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUBmpFileImage@@I@Z	99.7018	99.7018	4	7e8b1fd4a1b4	0x143fc0	99.7018	
 fileimage	?DecodePcx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@I@Z	99.9745	99.9745	2	255359c0b877	0x144ee0	99.9745	
 fileimage	?DecodePcxData@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPidHeader@@HHI@Z	89.9810	89.9810	2	854166ac0198	0x1457a0	89.9810	
 fileimage	?DecodePcxEx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADHI@Z	100.0000	100.0000	1	fb707cdecdd0	0x1459d0	100.0000	
 fileimage	?DecodePid@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPidHeader@@II@Z	92.4076	92.4076	2	96ea1c4a14c8	0x145b10	92.4076	
 fileimage	?DecodeRun@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUBmpFileImage@@HH@Z	99.8786	99.8786	3	7bbdc3516f5d	0x143cf0	99.8786	
 fileimage	?Load@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADH@Z	100.0000	100.0000	1	17b788718b96	0x144270	100.0000	
-fileimage	?LoadBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAD@Z	100.0000	100.0000	2	05413bb12233	0x144110	100.0000	
-fileimage	?LoadFile2@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PBDH@Z	100.0000	100.0000	2	b539d7deba79	0x143e60	100.0000	
+fileimage	?LoadBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAD@Z	100.0000	100.0000	3	c455a7a2eb5f	0x144110	100.0000	
+fileimage	?LoadFile2@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PBDH@Z	100.0000	100.0000	3	af1dc62f5303	0x143e60	100.0000	
 fileimage	?LoadFile@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PBDH@Z	100.0000	100.0000	1	a963ef80a55e	0x144d80	100.0000	
 fileimage	?LoadPcx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAD@Z	100.0000	100.0000	1	d340bfb6bb07	0x145110	100.0000	
 fileimage	?LoadPid@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADI@Z	100.0000	100.0000	1	c7f7c06b2b12	0x145cd0	100.0000	
@@ -2627,14 +2627,14 @@ imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	76.6978	75.
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	95.4978	95.4978	1	0c19f276ebb7	0x146550	95.4978	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
 imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	71.7824	71.7824	5	bb39b0078945	0x146a20	71.7824	
-imagepool	?AddImageDispatch@CImagePool@@QAEPAUCImagePaletteNode@@PAXIW4RezDecodeKind@@H@Z	100.0000	100.0000	1	5adb796df256	0x175680	100.0000	
+imagepool	?AddImageDispatch@CImagePool@@QAEPAUCImagePaletteNode@@PAEIW4RezDecodeKind@@H@Z	100.0000	100.0000	2	736545018ddb	0x175680	100.0000	
 imagepool	?AddImageFile@CImagePool@@QAEPAUCImagePaletteNode@@PADH@Z	100.0000	100.0000	1	b9c918d30476	0x1755f0	100.0000	
 imagepool	?AddPaletteEntries@CImagePool@@QAEPAUCImagePaletteNode@@PAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	1	17bae85da524	0x1754f0	100.0000	
 imagepool	?AddPaletteRGB@CImagePool@@QAEPAUCImagePaletteNode@@PAEH@Z	100.0000	100.0000	2	3b1fdbcf84b0	0x175570	100.0000	
 imagepool	?AddSurfaceBlit@CImagePool@@QAEPAVCRezImage@@PAEHHW4ColorDepth@@H@Z	100.0000	100.0000	2	3c590a5f4fe4	0x1750e0	100.0000	
 imagepool	?AddSurfaceBmp@CImagePool@@QAEPAVCRezImage@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	07e26e764bf3	0x174fe0	100.0000	
 imagepool	?AddSurfaceConvert@CImagePool@@QAEPAVCRezImage@@PAV2@PAUCImagePaletteNode@@@Z	100.0000	100.0000	2	a7158b7f2bd2	0x1753f0	100.0000	
-imagepool	?AddSurfaceOp@CImagePool@@QAEPAVCRezImage@@PAXW4RezDecodeKind@@H@Z	100.0000	100.0000	1	52aff0f69203	0x1751f0	100.0000	
+imagepool	?AddSurfaceOp@CImagePool@@QAEPAVCRezImage@@PAEW4RezDecodeKind@@H@Z	100.0000	100.0000	2	a20923df4fe5	0x1751f0	100.0000	
 imagepool	?AddSurfaceRez@CImagePool@@QAEPAVCRezImage@@PADH@Z	100.0000	100.0000	1	0c2ab0b0afcc	0x1752f0	100.0000	
 imagepool	?B@CImagePool@@QAEXPAVCRezImage@@PAUCImagePaletteNode@@H@Z	100.0000	100.0000	2	c4c7331d2fb5	0x175780	100.0000	
 imagepool	?Build@CImagePaletteNode@@QAEHPAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	1	edacab159f9c	0x176df0	100.0000	
@@ -2643,18 +2643,18 @@ imagepool	?ClearPalettes@CImagePool@@QAEXXZ	100.0000	100.0000	1	130dd9b859fb	0x1
 imagepool	?ClearSurfaces@CImagePool@@QAEXXZ	100.0000	100.0000	1	9cc9e65693e4	0x174f60	100.0000	
 imagepool	?Convert8To16@CRezImage@@QAEHPAUHDC__@@PAV1@PAUCImagePaletteNode@@@Z	100.0000	99.7312	2	f25aa53baf54	0x175b80	100.0000	
 imagepool	?DecodeBlit@CRezImage@@QAEHPAEPAUHDC__@@HHW4ColorDepth@@H@Z	95.3194	95.3194	3	917ae477a751	0x175930	95.3194	
-imagepool	?DecodeBmpData@CRezImage@@QAEHPAUtagBITMAPINFOHEADER@@PAUHDC__@@H@Z	99.6154	99.6154	2	0648a84094a5	0x175e00	100.0000	
+imagepool	?DecodeBmpData@CRezImage@@QAEHPAUtagBITMAPINFOHEADER@@PAUHDC__@@H@Z	99.6154	99.6154	3	bcc39caa70d3	0x175e00	100.0000	
 imagepool	?DecodeBmpHeader@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	8ae8e2fb4d46	0x1757c0	100.0000	
-imagepool	?DecodePcxData@CRezImage@@QAEHPAUPcxHeader@@PAUHDC__@@H@Z	93.8608	93.8165	2	8493975678e1	0x176000	93.8608	
+imagepool	?DecodePcxData@CRezImage@@QAEHPAUPcxHeader@@PAUHDC__@@H@Z	93.8608	93.8608	2	8493975678e1	0x176000	93.8608	
 imagepool	?DecodePidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	76.1827	76.1827	2	0c673fe2f5fe	0x176440	81.4772	
 imagepool	?DecodeRidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	74.2963	74.2963	3	c0c34735b77c	0x1762c0	100.0000	
-imagepool	?DispatchDecode@CRezImage@@QAEHPAXW4RezDecodeKind@@PAUHDC__@@H@Z	100.0000	100.0000	2	9d894810ba41	0x175a00	100.0000	
+imagepool	?DispatchDecode@CRezImage@@QAEHPAEW4RezDecodeKind@@PAUHDC__@@H@Z	100.0000	100.0000	3	e0bc7042a868	0x175a00	100.0000	
 imagepool	?DisplayUsesPalette@@YAHXZ	100.0000	100.0000	1	ae302fdbc24b	0x1770a0	100.0000	
 imagepool	?EnsureSize@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	3354fc240078	0x175ce0	100.0000	
 imagepool	?EnsureSurface@CImagePool@@QAEHPAVCRezImage@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	bca4e8b0514d	0x175710	100.0000	
 imagepool	?Fill@CRezImage@@QAEXH@Z	100.0000	100.0000	1	4ac702b36206	0x175d50	100.0000	
 imagepool	?FillRect@CRezImage@@QAEXPAUCRezFillRect@@H@Z	100.0000	100.0000	1	8a12f27ec459	0x176d20	100.0000	
-imagepool	?FillRectAt@CRezImage@@QAEXHHPAUCRezFillRect@@H@Z	100.0000	66.4444	1	c28ac783e527	0x176da0	100.0000	
+imagepool	?FillRectAt@CRezImage@@QAEXHHPAUCRezFillRect@@H@Z	100.0000	100.0000	1	c28ac783e527	0x176da0	100.0000	
 imagepool	?FlipVertical@CRezImage@@QAEXXZ	52.1616	52.1616	2	7c1dc18aec7a	0x176840	71.0707	
 imagepool	?Free@CImagePool@@QAEXPAVCRezImage@@@Z	100.0000	100.0000	1	7f5737f879f0	0x174ed0	100.0000	
 imagepool	?Free@CRezImage@@QAEXXZ	100.0000	100.0000	1	871a9f6334ab	0x175c90	100.0000	
@@ -2663,11 +2663,11 @@ imagepool	?LoadByExtension@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	1	5c0
 imagepool	?LoadDefault@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b788e9500b67	0x1767d0	100.0000	
 imagepool	?LoadFromRez@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	1	e6044d0efa00	0x175a90	100.0000	
 imagepool	?LoadPalFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	79a2af78221b	0x1771f0	100.0000	
-imagepool	?LoadPcx@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	6edf6b741ee1	0x176190	100.0000	
+imagepool	?LoadPcx@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	0edf461740dd	0x176190	100.0000	
 imagepool	?LoadPcxFile@CImagePaletteNode@@QAEHPADH@Z	93.9091	93.9091	1	59b78ebfbfda	0x1772e0	93.9091	
-imagepool	?LoadPid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	87fa8c7c30af	0x1766a0	100.0000	
-imagepool	?LoadRid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	81c477770360	0x176310	100.0000	
-imagepool	?ParseDispatch@CImagePaletteNode@@QAEHPAXIW4RezDecodeKind@@H@Z	100.0000	100.0000	2	271f0279e0d9	0x177040	100.0000	
+imagepool	?LoadPid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	0eb2e1983421	0x1766a0	100.0000	
+imagepool	?LoadRid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	760d8845277c	0x176310	100.0000	
+imagepool	?ParseDispatch@CImagePaletteNode@@QAEHPAEIW4RezDecodeKind@@H@Z	100.0000	100.0000	3	5a59f92bb5a9	0x177040	100.0000	
 imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAEIH@Z	88.5610	88.5610	2	ee9889b24729	0x177400	88.5610	
 imagepool	?PasteFrom@CRezImage@@QAEHPAV1@HH@Z	84.6911	84.6911	1	39fb6983ed83	0x176960	84.6911	
 imagepool	?ProcessPal@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	35252db3382f	0x176e70	100.0000	
@@ -3606,7 +3606,7 @@ savegame	?StoreSlot@CSaveGame@@QAEHHPBUSaveSlot@@@Z	100.0000	100.0000	1	2df87719
 savegame	?TempFileExists@@YAHPAUSaveSlot@@@Z	100.0000	100.0000	1	8bf9a339fbd3	0xe5700	100.0000	
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	1	897a38cdd821	0xe50f0	100.0000	
 savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	100.0000	100.0000	10	20332dd0bdb2	0xe52c0	100.0000	
-savegamedialogs	?BuildLevelTitleString@@YAXPAUHWND__@@PAVCSaveGame@@PAUSaveSlot@@@Z	95.7850	95.7850	1	84cf959c8357	0xe44e0	95.7850	
+savegamedialogs	?BuildLevelTitleString@@YAXPAUHWND__@@PAVCSaveGame@@PAUSaveSlot@@@Z	95.7850	95.7850	2	7fcd1f09e992	0xe44e0	95.7850	
 savegamedialogs	?DeleteSaveDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	b10e36340eb3	0xe3a40	100.0000	
 savegamedialogs	?DrawSaveGameMenu@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	100.0000	100.0000	2	3643da48541f	0xe3f40	100.0000	
 savegamedialogs	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	a1bfb58c79ce	0xe3c60	100.0000	

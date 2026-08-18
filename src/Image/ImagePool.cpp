@@ -153,7 +153,7 @@ CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, 
 }
 
 RVA(0x001751f0, 0xf9)
-CRezImage* CImagePool::AddSurfaceOp(void* buf, RezDecodeKind kind, i32 ctrl) {
+CRezImage* CImagePool::AddSurfaceOp(u8* buf, RezDecodeKind kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
     if (node->DispatchDecode(buf, kind, hdc, ctrl) == 0) {
@@ -278,7 +278,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
 }
 
 RVA(0x00175680, 0x85)
-CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl) {
+CImagePaletteNode* CImagePool::AddImageDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl) {
     CImagePaletteNode* node = new CImagePaletteNode();
     if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
         if (node) {
@@ -380,16 +380,28 @@ i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bit
 }
 
 RVA(0x00175a00, 0x90)
-i32 CRezImage::DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
+i32 CRezImage::DispatchDecode(u8* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
     switch (kind) {
-        case DECODE_PCX:
-            return DecodePcxData(static_cast<PcxHeader*>(buf), dc, ctrl);
-        case DECODE_BMP:
-            return DecodeBmpData(static_cast<BITMAPINFOHEADER*>(buf), dc, ctrl);
-        case DECODE_RID:
-            return DecodeRidData(static_cast<PidHeader*>(buf), dc, ctrl);
-        case DECODE_PID:
-            return DecodePidData(static_cast<PidHeader*>(buf), dc, ctrl);
+        case DECODE_PCX: {
+            RecordBytes<PcxHeader> data;
+            data.m_bytes = buf;
+            return DecodePcxData(data.m_rec, dc, ctrl);
+        }
+        case DECODE_BMP: {
+            RecordBytes<BITMAPINFOHEADER> data;
+            data.m_bytes = buf;
+            return DecodeBmpData(data.m_rec, dc, ctrl);
+        }
+        case DECODE_RID: {
+            RecordBytes<PidHeader> data;
+            data.m_bytes = buf;
+            return DecodeRidData(data.m_rec, dc, ctrl);
+        }
+        case DECODE_PID: {
+            RecordBytes<PidHeader> data;
+            data.m_bytes = buf;
+            return DecodePidData(data.m_rec, dc, ctrl);
+        }
     }
     return 0;
 }
@@ -494,10 +506,11 @@ i32 CRezImage::DecodeBmpData(BITMAPINFOHEADER* ih, HDC dc, i32 ctrl) {
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
-    u8* src = static_cast<u8*>(static_cast<void*>(ih)) + sizeof(BITMAPINFOHEADER) + 4;
+    RecordBytes<BITMAPINFOHEADER> data;
+    data.m_rec = ih;
+    u8* src = data.m_bytes + sizeof(BITMAPINFOHEADER) + 4;
     if (bitcount == BPP_PALETTED_8) {
-        src = static_cast<u8*>(static_cast<void*>(ih)) + ih->biSize
-              + sizeof(RGBQUAD) * PALETTE_ENTRY_COUNT;
+        src = data.m_bytes + ih->biSize + sizeof(RGBQUAD) * PALETTE_ENTRY_COUNT;
     }
     i32 r = DecodeBlit(src, dc, width, height, bitcount, ctrl);
     return r;
@@ -612,7 +625,9 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    i32 result = DecodePcxData(static_cast<PcxHeader*>(static_cast<void*>(buf)), dc, ctrl);
+    RecordBytes<PcxHeader> data;
+    data.m_bytes = buf;
+    i32 result = DecodePcxData(data.m_rec, dc, ctrl);
     delete[] buf;
     return result;
 }
@@ -645,7 +660,9 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    i32 result = DecodeRidData(static_cast<PidHeader*>(static_cast<void*>(buf)), dc, ctrl);
+    RecordBytes<PidHeader> data;
+    data.m_bytes = buf;
+    i32 result = DecodeRidData(data.m_rec, dc, ctrl);
     delete[] buf;
     return result;
 }
@@ -740,7 +757,9 @@ i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    i32 result = DecodePidData(static_cast<PidHeader*>(static_cast<void*>(buf)), dc, ctrl);
+    RecordBytes<PidHeader> data;
+    data.m_bytes = buf;
+    i32 result = DecodePidData(data.m_rec, dc, ctrl);
     delete[] buf;
     return result;
 }
@@ -1002,9 +1021,9 @@ i32 CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
 }
 
 RVA(0x00177040, 0x23)
-i32 CImagePaletteNode::ParseDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl) {
+i32 CImagePaletteNode::ParseDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl) {
     if (type == DECODE_PCX) {
-        return ParsePaletteTail(static_cast<u8*>(buf), size, ctrl);
+        return ParsePaletteTail(buf, size, ctrl);
     }
     return 0;
 }

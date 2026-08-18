@@ -103,7 +103,9 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
         delete[] buf;
         return 0;
     }
-    i32 result = DecodeRun(info, static_cast<BmpFileImage*>(static_cast<void*>(buf)), len, mode);
+    RecordBytes<BmpFileImage> data;
+    data.m_bytes = buf;
+    i32 result = DecodeRun(info, data.m_rec, len, mode);
     delete[] buf;
     return result;
 }
@@ -140,7 +142,9 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, BmpFileImage* bmp, u32 size
                 }
             }
 
-            u8* pixels = static_cast<u8*>(static_cast<void*>(bmp)) + bmp->fh.bfOffBits;
+            RecordBytes<BmpFileImage> data;
+            data.m_rec = bmp;
+            u8* pixels = data.m_bytes + bmp->fh.bfOffBits;
             if (remap) {
                 if (Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP) == 0) {
                     return 0;
@@ -177,7 +181,9 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
         return 0;
     }
 
-    i32 result = DecodeBmp(pal, static_cast<BmpFileImage*>(static_cast<void*>(buf)), len);
+    RecordBytes<BmpFileImage> data;
+    data.m_bytes = buf;
+    i32 result = DecodeBmp(pal, data.m_rec, len);
     delete[] buf;
     return result;
 }

@@ -553,7 +553,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
-    char readBuf[SAVE_PREVIEW_BYTES];
+    u8 readBuf[SAVE_PREVIEW_BYTES];
 
     if (!hDlg) {
         return;

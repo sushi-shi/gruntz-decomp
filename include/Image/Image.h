@@ -53,7 +53,7 @@ public:
 
     i32 DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
 
-    i32 DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl);
+    i32 DispatchDecode(u8* buf, RezDecodeKind kind, HDC dc, i32 ctrl);
     i32 Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal);
     i32 EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag);
     void Fill(i32 value);
