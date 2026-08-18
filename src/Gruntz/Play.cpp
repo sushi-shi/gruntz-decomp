@@ -1175,7 +1175,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     CGruntzMgr* host = self->m_mgr;
     if (host->m_strWorldFile.GetLength() != 0) {
         CParseSource* ins;
-        void* desc;
+        char* desc;
         char* p;
         char c;
         if (host->m_isBattlezLevel != 0) {
@@ -1196,7 +1196,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (desc == NULL) {
                 goto fail0;
             }
-            p = static_cast<char*>(desc) + 0x10;
+            p = desc + 0x10;
             c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
@@ -1226,7 +1226,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (desc == NULL) {
                 goto fail0;
             }
-            p = static_cast<char*>(desc) + 0x10;
+            p = desc + 0x10;
             c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {

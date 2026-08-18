@@ -55,7 +55,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             if (sub == NULL) {
                 return 0;
             }
-            void* parsed = sub->BeginParse();
+            char* parsed = sub->BeginParse();
             if (parsed == NULL) {
                 return 0;
             }
@@ -72,7 +72,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             if (sub == NULL) {
                 return 0;
             }
-            void* parsed = sub->BeginParse();
+            char* parsed = sub->BeginParse();
             if (parsed == NULL) {
                 return 0;
             }
@@ -99,7 +99,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         if (sub == NULL) {
             return 0;
         }
-        void* parsed = sub->BeginParse();
+        char* parsed = sub->BeginParse();
         if (parsed == NULL) {
             return 0;
         }
