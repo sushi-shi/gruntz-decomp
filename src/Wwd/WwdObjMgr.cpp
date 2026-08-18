@@ -1124,7 +1124,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         WwdSnapshot desc;
         reader->Read(&desc, sizeof(desc));
 
-        void* found = NULL;
+        CWwdGameObject* found = NULL;
         if (MapLookupById(m_map48, desc.m_objectId, found) && found != NULL) {
             return 0;
         }
@@ -1183,7 +1183,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
             }
             case CLASSID_CALLBACKOBJ: {
 
-                void* out = 0;
+                CWwdGameObject* rec = NULL;
                 // m_serialTypeId is NOT a LogicTypeId: this phase keys off the
                 // record's own serial type id, so the callback's type-id parameter
                 // carries two domains depending on the phase. Recorded, not merged.
@@ -1191,12 +1191,11 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                         reader,
                         SERIAL_CREATE_BY_SERIAL_ID,
                         static_cast<LogicTypeId>(desc.m_serialTypeId),
-                        &out
+                        static_cast<void*>(&rec)
                     )
                     == 0) {
                     return 0;
                 }
-                CWwdGameObject* rec = static_cast<CWwdGameObject*>(out);
                 if (rec == NULL) {
                     return 0;
                 }
@@ -1230,12 +1229,16 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         }
         if (desc.m_logicTypeId != LOGIC_UNSET) {
 
-            void* childOut = 0;
-            if (OwnerMgr()->InvokeCallback(reader, SERIAL_CREATE, desc.m_logicTypeId, &childOut)
+            CUserLogic* child = NULL;
+            if (OwnerMgr()->InvokeCallback(
+                    reader,
+                    SERIAL_CREATE,
+                    desc.m_logicTypeId,
+                    static_cast<void*>(&child)
+                )
                 == 0) {
                 return 0;
             }
-            CUserLogic* child = static_cast<CUserLogic*>(childOut);
             if (child == NULL) {
                 return 0;
             }
@@ -1313,8 +1316,8 @@ i32 CDDrawChildGroup::PruneOrphans() {
         MapGetNext(m_map48, pos, key, val);
         if (val != NULL) {
 
-            void* found = 0;
-            if (m_map2c.Lookup(WwdKey(val), found) == 0 || found == NULL) {
+            CWwdGameObject* found = NULL;
+            if (MapLookup(m_map2c, WwdKey(val), found) == 0 || found == NULL) {
                 m_map48.RemoveKey(WwdKey(val));
                 if (val != NULL) {
                     delete val;

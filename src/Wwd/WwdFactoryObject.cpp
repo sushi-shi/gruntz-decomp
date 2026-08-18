@@ -26,6 +26,7 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/AnimWorkerAct.h>
@@ -816,9 +817,9 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
         m_animation = NULL;
     } else {
 
-        void* out = 0;
-        OwnerMgr()->m_animRegistry->m_animations.Lookup(buf, out);
-        m_animation = static_cast<CAniElement*>(out);
+        CAniElement* out = NULL;
+        MapLookup(OwnerMgr()->m_animRegistry->m_animations, buf, out);
+        m_animation = out;
     }
     CAniElement* w = m_animation;
     if (w != NULL) {

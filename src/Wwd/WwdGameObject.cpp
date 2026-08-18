@@ -333,10 +333,10 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        void* found = 0;
+        LeafCue* found = NULL;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        mgr->m_soundRegistry->m_cues.Lookup(name, found);
-        m_soundCue = static_cast<LeafCue*>(found);
+        MapLookup(mgr->m_soundRegistry->m_cues, name, found);
+        m_soundCue = found;
     }
     return 1;
 }
@@ -541,12 +541,12 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
             if (node != 0) {
                 AddrWord<char> key;
                 key.m_word = node;
-                void* found = 0;
-                if (OwnerMgr()->m_childGroup->m_map48.Lookup(key.m_addr, found) == 0) {
+                CWwdGameObject* found = NULL;
+                if (MapLookup(OwnerMgr()->m_childGroup->m_map48, key.m_addr, found) == 0) {
                     m_carrier = NULL;
                     goto carrierResolved;
                 }
-                m_carrier = static_cast<CWwdGameObject*>(found);
+                m_carrier = found;
                 goto carrierResolved;
             }
             m_carrier = NULL;
@@ -746,13 +746,13 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {
         return 0;
     }
-    void* found = 0;
+    CWwdGameObject* found = NULL;
     if (m_carrierId != 0) {
         if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, m_carrierId, found) == 0) {
             m_carrier = NULL;
             return 1;
         }
-        m_carrier = static_cast<CWwdGameObject*>(found);
+        m_carrier = found;
         return 1;
     }
     m_carrier = NULL;
