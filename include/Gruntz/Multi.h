@@ -234,7 +234,6 @@ public:
 
     void ApplyDynSetting(CString s);
     void SetServiceName(CString s);
-    void PopulateGroupList(void* hList, i32 flag);
 
     CNetSession* m_session;
     CNetMgr* m_netGate;
