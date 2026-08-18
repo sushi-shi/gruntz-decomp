@@ -882,7 +882,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     BmpFileHeaderStamp fileHdr;
     Bmp256Info info;
     memset(&info, 0, sizeof(info));
-    info.bmiHeader.biSize = 0x28;
+    info.bmiHeader.biSize = sizeof(info.bmiHeader);
     info.bmiHeader.biWidth = m_width;
     info.bmiHeader.biHeight = m_height;
     info.bmiHeader.biPlanes = 1;

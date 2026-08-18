@@ -603,9 +603,9 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_health, sizeof(m_health));
     ar->Write(&m_direction, sizeof(m_direction));
     ar->Write(&m_faceDirection, sizeof(m_faceDirection));
-    ar->Write(&m_extent.left, 0x10);
-    ar->Write(&m_area.left, 0x10);
-    ar->Write(&m_switchRect.left, 0x10);
+    ar->Write(&m_extent.left, sizeof(m_extent));
+    ar->Write(&m_area.left, sizeof(m_area));
+    ar->Write(&m_switchRect.left, sizeof(m_switchRect));
     ar->Write(&m_speedX, sizeof(m_speedX));
     ar->Write(&m_speedY, sizeof(m_speedY));
     ar->Write(&m_reserved16c, sizeof(m_reserved16c));
@@ -623,7 +623,7 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_drawFillCmd, sizeof(m_drawFillCmd));
     ar->Write(&m_fillFraction, sizeof(m_fillFraction));
     ar->Write(&m_drawActive, sizeof(m_drawActive));
-    ar->Write(&m_clip.left, 0x10);
+    ar->Write(&m_clip.left, sizeof(m_clip));
     ar->Write(&m_id, sizeof(m_id));
     ar->Write(&m_flags, sizeof(m_flags));
     ar->Write(&m_carrierId, sizeof(m_carrierId));
@@ -681,9 +681,9 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_health, sizeof(m_health));
     ar->Read(&m_direction, sizeof(m_direction));
     ar->Read(&m_faceDirection, sizeof(m_faceDirection));
-    ar->Read(&m_extent.left, 0x10);
-    ar->Read(&m_area.left, 0x10);
-    ar->Read(&m_switchRect.left, 0x10);
+    ar->Read(&m_extent.left, sizeof(m_extent));
+    ar->Read(&m_area.left, sizeof(m_area));
+    ar->Read(&m_switchRect.left, sizeof(m_switchRect));
     ar->Read(&m_speedX, sizeof(m_speedX));
     ar->Read(&m_speedY, sizeof(m_speedY));
     ar->Read(&m_reserved16c, sizeof(m_reserved16c));
@@ -701,7 +701,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_drawFillCmd, sizeof(m_drawFillCmd));
     ar->Read(&m_fillFraction, sizeof(m_fillFraction));
     ar->Read(&m_drawActive, sizeof(m_drawActive));
-    ar->Read(&m_clip.left, 0x10);
+    ar->Read(&m_clip.left, sizeof(m_clip));
     ar->Read(&m_id, sizeof(m_id));
     ar->Read(&m_flags, sizeof(m_flags));
     ar->Read(&m_carrierId, sizeof(m_carrierId));

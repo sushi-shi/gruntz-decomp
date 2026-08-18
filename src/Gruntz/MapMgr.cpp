@@ -696,7 +696,7 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_maskC, sizeof(m_maskC));
     ar->Write(&m_maskB, sizeof(m_maskB));
     ar->Write(&m_dirty, sizeof(m_dirty));
-    ar->Write(&m_bounds.left, 0x10);
+    ar->Write(&m_bounds.left, sizeof(m_bounds));
     ar->Write(&m_gridW, sizeof(m_gridW));
     ar->Write(&m_gridH, sizeof(m_gridH));
     for (u32 i = 0; i < m_width; i++) {
@@ -721,7 +721,7 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_maskC, sizeof(m_maskC));
     ar->Read(&m_maskB, sizeof(m_maskB));
     ar->Read(&m_dirty, sizeof(m_dirty));
-    ar->Read(&m_bounds.left, 0x10);
+    ar->Read(&m_bounds.left, sizeof(m_bounds));
     ar->Read(&m_gridW, sizeof(m_gridW));
     ar->Read(&m_gridH, sizeof(m_gridH));
     for (u32 i = 0; i < m_width; i++) {

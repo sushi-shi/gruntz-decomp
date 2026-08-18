@@ -4213,7 +4213,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     }
     s->Write(&tmp, sizeof(tmp));
 
-    s->Write(&m_rect10.left, 0x10);
+    s->Write(&m_rect10.left, sizeof(m_rect10));
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
     s->Write(&m_barX, sizeof(m_barX));
     s->Write(&m_barY, sizeof(m_barY));
@@ -4318,7 +4318,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         return 0;
     }
 
-    s->Read(&m_rect10.left, 0x10);
+    s->Read(&m_rect10.left, sizeof(m_rect10));
     s->Read(&m_redrawFrames, sizeof(m_redrawFrames));
     s->Read(&m_barX, sizeof(m_barX));
     s->Read(&m_barY, sizeof(m_barY));

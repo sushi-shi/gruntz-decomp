@@ -262,7 +262,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     Bmp256Info info;
     memset(&info.bmiHeader, 0, sizeof(info.bmiHeader));
     i32 height = m_height;
-    info.bmiHeader.biSize = 0x28;
+    info.bmiHeader.biSize = sizeof(info.bmiHeader);
     info.bmiHeader.biWidth = m_width;
     info.bmiHeader.biHeight = height;
     info.bmiHeader.biPlanes = 1;
@@ -347,7 +347,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     i32 width = this->m_width;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
-    bi.bmiHeader.biSize = 0x28;
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
     bi.bmiHeader.biWidth = width;
     bfh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;
@@ -438,7 +438,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     i32 width = m_width;
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
-    bi.bmiHeader.biSize = 0x28;
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
     bi.bmiHeader.biWidth = width;
     fh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;

@@ -1090,7 +1090,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_scaledY, sizeof(m_scaledY));
     s->Write(&m_scaleX, sizeof(m_scaleX));
     s->Write(&m_scaleY, sizeof(m_scaleY));
-    s->Write(&m_viewRect.left, 0x10);
+    s->Write(&m_viewRect.left, sizeof(m_viewRect));
     s->Write(&m_zBound, sizeof(m_zBound));
     s->Write(&m_snappedX, sizeof(m_snappedX));
     s->Write(&m_snappedY, sizeof(m_snappedY));
@@ -1118,7 +1118,7 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     s->Read(&m_scaledY, sizeof(m_scaledY));
     s->Read(&m_scaleX, sizeof(m_scaleX));
     s->Read(&m_scaleY, sizeof(m_scaleY));
-    s->Read(&m_viewRect.left, 0x10);
+    s->Read(&m_viewRect.left, sizeof(m_viewRect));
     s->Read(&m_zBound, sizeof(m_zBound));
     s->Read(&m_snappedX, sizeof(m_snappedX));
     s->Read(&m_snappedY, sizeof(m_snappedY));

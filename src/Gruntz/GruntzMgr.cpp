@@ -3360,7 +3360,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&m_isCustomLevel, sizeof(m_isCustomLevel));
     ar->Write(&m_gameMode, sizeof(m_gameMode));
     ar->Write(&m_optionsCount, sizeof(m_optionsCount));
-    ar->Write(&m_viewBounds.left, 0x10);
+    ar->Write(&m_viewBounds.left, sizeof(m_viewBounds));
     ar->Write(&g_lastNow, sizeof(g_lastNow));
     ar->Write(&g_frameDelta, sizeof(g_frameDelta));
     ar->Write(&g_frameTime, sizeof(g_frameTime));
@@ -3407,7 +3407,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&m_isCustomLevel, sizeof(m_isCustomLevel));
     ar->Read(&m_gameMode, sizeof(m_gameMode));
     ar->Read(&m_optionsCount, sizeof(m_optionsCount));
-    ar->Read(&m_viewBounds.left, 0x10);
+    ar->Read(&m_viewBounds.left, sizeof(m_viewBounds));
     ar->Read(&g_lastNow, sizeof(g_lastNow));
     ar->Read(&g_frameDelta, sizeof(g_frameDelta));
     ar->Read(&g_frameTime, sizeof(g_frameTime));
