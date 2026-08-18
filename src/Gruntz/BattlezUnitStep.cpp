@@ -427,7 +427,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
 
                     if (bundle->m_attackWaypoints.GetSize() != 0) {
                         Coord out;
-                        Coord* r = static_cast<Coord*>(PickSpawnCoord(&out, unit, band));
+                        Coord* r = PickSpawnCoord(&out, unit, band);
                         x = r->m_x;
                         y = r->m_y;
                     } else {

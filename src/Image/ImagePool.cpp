@@ -206,7 +206,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
 }
 
 RVA(0x001753f0, 0xf4)
-CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
+CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
     if (node->Convert8To16(hdc, src, pal) == 0) {
@@ -247,7 +247,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
 }
 
 RVA(0x00175570, 0x7b)
-CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
+CImagePaletteNode* CImagePool::AddPaletteRGB(u8* rgb, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
     if (node->ProcessPal(rgb, flags) == 0) {
         if (node) {
@@ -308,7 +308,7 @@ i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount,
 }
 
 RVA(0x00175780, 0x3f)
-void CImagePool::B(CRezImage* node, void* paletteNode, i32 b) {
+void CImagePool::B(CRezImage* node, CImagePaletteNode* paletteNode, i32 b) {
     if (node->m_paletteNode && node->m_paletteScalar) {
         RemovePalette(node->m_paletteNode);
         node->SetPalette(0, 0);
@@ -412,11 +412,11 @@ i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
 }
 
 RVA(0x00175b80, 0x105)
-i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
+i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal) {
     if (pal == NULL) {
         return 0;
     }
-    PALETTEENTRY* palette = (static_cast<ScanlinePalette*>(pal))->m_colors;
+    PALETTEENTRY* palette = pal->m_pal.palPalEntry;
     if (palette == NULL) {
         return 0;
     }
@@ -850,14 +850,14 @@ i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
 }
 
 RVA(0x00176ad0, 0x17)
-void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
+void CRezImage::SetPalette(CImagePaletteNode* paletteNode, i32 scalar) {
 
-    m_paletteNode = static_cast<CImagePaletteNode*>(paletteNode);
+    m_paletteNode = paletteNode;
     m_paletteScalar = scalar;
 }
 
 RVA(0x00176b00, 0x2c)
-i32 CRezImage::Save(const char* filename, void* paletteObj) {
+i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
     switch (m_bitCount) {
         case BPP_PALETTED_8:
             return SaveBmp(filename, paletteObj);
@@ -870,8 +870,8 @@ i32 CRezImage::Save(const char* filename, void* paletteObj) {
 }
 
 RVA(0x00176b30, 0x1e5)
-i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
-    void* obj = paletteObj;
+i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
+    CImagePaletteNode* obj = paletteObj;
     if (obj == NULL) {
         obj = m_paletteNode;
         if (obj == NULL) {
@@ -890,7 +890,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     info.bmiHeader.biCompression = 0;
     info.bmiHeader.biSizeImage = 0;
 
-    PALETTEENTRY* pal = static_cast<CImagePaletteNode*>(obj)->m_pal.palPalEntry;
+    PALETTEENTRY* pal = obj->m_pal.palPalEntry;
     if (pal == NULL) {
         return 0;
     }
@@ -959,9 +959,9 @@ i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
 }
 
 RVA(0x00176e70, 0x4e)
-i32 CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
+i32 CImagePaletteNode::ProcessPal(u8* rgb, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
-    u8* s = static_cast<u8*>(rgb);
+    u8* s = rgb;
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         pal[i].peRed = *s++;
@@ -972,10 +972,10 @@ i32 CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
 }
 
 RVA(0x00176ec0, 0x64)
-i32 CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
+i32 CImagePaletteNode::ProcessPalQuad(u8* bgr, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        u8* s = static_cast<u8*>(bgr) + i * 4;
+        u8* s = bgr + i * 4;
         pal[i].peRed = s[2];
         pal[i].peGreen = s[1];
         pal[i].peBlue = s[0];
@@ -984,10 +984,10 @@ i32 CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
 }
 
 RVA(0x00176f30, 0x51)
-i32 CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
+i32 CImagePaletteNode::ProcessPalBGR(u8* bgr, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        u8* s = static_cast<u8*>(bgr) + i * 3;
+        u8* s = bgr + i * 3;
         pal[i].peRed = s[2];
         pal[i].peGreen = s[1];
         pal[i].peBlue = s[0];
@@ -1083,7 +1083,7 @@ void ResetSystemPalette() {
 RVA(0x001771f0, 0xe2)
 i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
     CFile file;
-    char rgb[PALETTE_RGB_BYTE_COUNT];
+    u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
     if (!file.Open(path, 0, 0)) {
         return 0;

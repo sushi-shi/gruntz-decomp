@@ -23,9 +23,9 @@ struct CImagePaletteNode {
     }
     i32 Build(PALETTEENTRY* entries, i32 flags);
     void Tune();
-    i32 ProcessPal(void* rgb, i32 flags);
-    i32 ProcessPalQuad(void* bgr, i32 flags);
-    i32 ProcessPalBGR(void* bgr, i32 flags);
+    i32 ProcessPal(u8* rgb, i32 flags);
+    i32 ProcessPalQuad(u8* bgr, i32 flags);
+    i32 ProcessPalBGR(u8* bgr, i32 flags);
     i32 ParseDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl);
     i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);
     void Run();

@@ -34,17 +34,17 @@ public:
     void ClearSurfaces();
     void ClearPalettes();
     CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);
-    CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);
+    CImagePaletteNode* AddPaletteRGB(u8* rgb, i32 flags);
     CImagePaletteNode* AddImageFile(char* path, i32 arg);
     CImagePaletteNode* AddImageDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl);
     i32 EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount, i32 flag);
-    void B(CRezImage* node, void* paletteNode, i32 b);
+    void B(CRezImage* node, CImagePaletteNode* paletteNode, i32 b);
 
     CRezImage* AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag);
     CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, ColorDepth bitCount, i32 flag);
     CRezImage* AddSurfaceOp(void* buf, RezDecodeKind kind, i32 ctrl);
     CRezImage* AddSurfaceRez(char* name, i32 ctrl);
-    CRezImage* AddSurfaceConvert(CRezImage* src, void* pal);
+    CRezImage* AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal);
 
     HINSTANCE m_resourceModuleHandle;
     HWND m_sourceHwnd;

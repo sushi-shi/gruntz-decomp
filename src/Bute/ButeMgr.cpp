@@ -1360,12 +1360,12 @@ RVA_COMPGEN(0x00171a40, 0x14, ??_Dstrstream@@QAEXXZ)
 
 RVA(0x00171a60, 0x34)
 bool CButeMgr::Exists(const char* tag, const char* key) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
         if (key == NULL) {
             return true;
         }
-        if ((static_cast<CButeNode*>(grp))->Find(key)) {
+        if ((grp)->Find(key)) {
             return true;
         }
     }
@@ -1374,9 +1374,9 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 
 RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_INT) {
                 return *static_cast<i32*>(rec->pValue);
@@ -1389,9 +1389,9 @@ i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
 
 RVA(0x00171af0, 0x86)
 i32 CButeMgr::GetInt(const char* tag, const char* key) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_INT) {
                 return *static_cast<i32*>(rec->pValue);
@@ -1450,9 +1450,9 @@ RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
 
 RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_DWORD:
@@ -1466,9 +1466,9 @@ DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
 
 RVA(0x00172240, 0x7d)
 DWORD CButeMgr::GetDword(const char* tag, const char* key) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_DWORD:
@@ -1526,9 +1526,9 @@ RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
 
 RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1544,9 +1544,9 @@ float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
 
 RVA(0x00172730, 0x9a)
 float CButeMgr::GetFloat(const char* tag, const char* key) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1606,9 +1606,9 @@ RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
 
 RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1624,9 +1624,9 @@ double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
 
 RVA(0x00172c40, 0x9b)
 double CButeMgr::GetDouble(const char* tag, const char* key) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1686,9 +1686,9 @@ RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
 
 RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
                 return static_cast<CString*>(rec->pValue);
@@ -1708,9 +1708,9 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     DATA(0x002bf698)
     static CString s_empty("");
 
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
                 return static_cast<CString*>(rec->pValue);
@@ -1771,9 +1771,9 @@ RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
 
 RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RECT) {
                 return static_cast<ButeIntRect*>(rec->pValue);
@@ -1791,9 +1791,9 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     RVA_DYNINIT(0x00173840, 0x1, s_default)
     static ButeIntRect s_default;
 
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RECT) {
                 return static_cast<ButeIntRect*>(rec->pValue);
@@ -1850,9 +1850,9 @@ RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 
 RVA(0x00173cb0, 0x4e)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_POINT) {
                 return static_cast<ButeIntPoint*>(rec->pValue);
@@ -1870,9 +1870,9 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     RVA_DYNINIT(0x00173dc0, 0x1, s_default)
     static ButeIntPoint s_default;
 
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_POINT) {
                 return static_cast<ButeIntPoint*>(rec->pValue);
@@ -1928,9 +1928,9 @@ RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z
 
 RVA(0x001741f0, 0x4e)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
                 return static_cast<ButeDoubleVector*>(rec->pValue);
@@ -1948,9 +1948,9 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
     RVA_DYNINIT(0x00174330, 0x1, s_default)
     static ButeDoubleVector s_default;
 
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
                 return static_cast<ButeDoubleVector*>(rec->pValue);
@@ -2006,9 +2006,9 @@ RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector
 
 RVA(0x00174770, 0x4e)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
                 return static_cast<ButeDoubleRange*>(rec->pValue);
@@ -2026,9 +2026,9 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     RVA_DYNINIT(0x00174890, 0x1, s_default)
     static ButeDoubleRange s_default;
 
-    void* grp = Tree()->Find(tag);
+    CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
                 return static_cast<ButeDoubleRange*>(rec->pValue);

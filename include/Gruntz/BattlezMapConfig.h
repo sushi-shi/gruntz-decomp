@@ -43,14 +43,14 @@ public:
     i32 IsCoordOccupied(CGrunt*, i32, i32);
     i32 SerializeState(CFileMemBase*, SerialMode, LogicTypeId, i32);
     i32 PathToNearbyUnit(CGrunt*);
-    i32 Serialize(void*);
-    i32 Deserialize(void*);
+    i32 Serialize(CFileMemBase*);
+    i32 Deserialize(CFileMemBase*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
     i32 TrySeedSpawnAt(i32, i32);
     i32 RepathToFreeCell(CGrunt*);
     i32 ProbeUnoccupiedAt(i32, i32);
     i32 ForcePlaceFromReserve(CGrunt*);
-    void* PickSpawnCoord(void*, CGrunt*, i32);
+    Coord* PickSpawnCoord(Coord*, CGrunt*, i32);
 
     i32 RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC, i32 clearFlag);
 
@@ -64,7 +64,7 @@ public:
     void ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
     i32 PathToNearestCandidate(CGrunt*, i32, i32, i32);
     i32 PathToNearestGoal(CGrunt*, i32, i32);
-    void* PickRandomIdleUnit(i32);
+    CGrunt* PickRandomIdleUnit(i32);
     i32 AcceptAlways(CGrunt*);
     i32 CheckQueuedSpawnTile(CGrunt*);
     i32 RetargetIdleUnit(CGrunt*);

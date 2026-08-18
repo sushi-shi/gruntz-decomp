@@ -52,7 +52,7 @@ i32 CImagePaletteNode::Apply(char* path, i32 arg) {
     if (!hRes) {
         return 0;
     }
-    void* data = LockResource(hRes);
+    u8* data = static_cast<u8*>(LockResource(hRes));
     if (!data) {
         return 0;
     }

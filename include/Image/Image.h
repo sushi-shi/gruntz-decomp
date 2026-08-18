@@ -21,11 +21,6 @@ struct CRezFillRect {
     i32 bottom;
 };
 
-struct ScanlinePalette {
-    char m_pad0[8];
-    PALETTEENTRY m_colors[256];
-};
-
 class CRezImage {
 public:
     CRezImage() {
@@ -59,13 +54,13 @@ public:
     i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
 
     i32 DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl);
-    i32 Convert8To16(HDC dc, CRezImage* src, void* pal);
+    i32 Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal);
     i32 EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag);
     void Fill(i32 value);
     void Free();
-    void SetPalette(void* paletteNode, i32 scalar);
-    i32 Save(const char* filename, void* paletteObj);
-    i32 SaveBmp(const char* filename, void* paletteObj);
+    void SetPalette(CImagePaletteNode* paletteNode, i32 scalar);
+    i32 Save(const char* filename, CImagePaletteNode* paletteObj);
+    i32 SaveBmp(const char* filename, CImagePaletteNode* paletteObj);
     void FillRect(CRezFillRect* r, i32 color);
     void FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color);
     void FlipVertical();

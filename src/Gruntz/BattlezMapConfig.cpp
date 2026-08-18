@@ -2637,7 +2637,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
 }
 
 RVA(0x0002ad40, 0x71)
-void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
+CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
     if (band == m_ownerId) {
         band++;
@@ -2809,8 +2809,7 @@ void CMapMgr::Clip(const RECT* src) {
     m_gridH = dst->bottom - dst->top;
 }
 RVA(0x0002b420, 0x419)
-i32 CBattlezMapConfig::Serialize(void* arArg) {
-    CFileMemBase* ar = static_cast<CFileMemBase*>(arArg);
+i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -2900,8 +2899,7 @@ i32 CBattlezMapConfig::Serialize(void* arArg) {
 
 // @early-stop
 RVA(0x0002b950, 0x513)
-i32 CBattlezMapConfig::Deserialize(void* arArg) {
-    CFileMemBase* ar = static_cast<CFileMemBase*>(arArg);
+i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
@@ -5324,8 +5322,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
 // @early-stop
 RVA(0x00030f20, 0x16d)
-void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
-    Coord* o = static_cast<Coord*>(out);
+Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (kind < 0 || kind >= 4) {
         CGameObject* lvl = unit->m_object;
         i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
