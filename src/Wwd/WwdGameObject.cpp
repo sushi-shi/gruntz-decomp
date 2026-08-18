@@ -239,7 +239,12 @@ i32 CWwdGameObjectA::Test() {
 }
 
 RVA(0x00150a70, 0x89)
-i32 CWwdGameObjectA::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
+i32 CWwdGameObjectA::Play(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* self
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -469,7 +474,7 @@ void CGameObject::AddLogicBump(char* key) {
 
 // @early-stop
 RVA(0x00151150, 0x190)
-i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
+i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self) {
     if (ar == NULL) {
         return 0;
     }

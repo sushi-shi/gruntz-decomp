@@ -12,7 +12,7 @@ extern char s_wPlusB[];
 
 class CRezFile : public CRezItmBase {
 public:
-    CRezFile(void* parent, char* nameSrc, CRezDir* dir);
+    CRezFile(CSymParser* parent, char* nameSrc, CRezDir* dir);
 
     virtual ~CRezFile() OVERRIDE;
 

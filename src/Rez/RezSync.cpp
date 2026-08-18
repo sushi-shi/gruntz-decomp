@@ -392,7 +392,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     i32 devCount = g_inputMgr->m_devices.GetSize();
-    g_actorList = static_cast<CFixedPtrArray32*>(g_inputMgr->AddControllerArr(
+    g_actorList = g_inputMgr->AddControllerArr(
         devCount > 0 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[0]) : NULL,
         devCount > 1 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[1]) : NULL,
         devCount > 2 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[2]) : NULL,
@@ -400,7 +400,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         NULL,
         NULL,
         0
-    ));
+    );
     if (!g_actorList) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40f);
         return 0;

@@ -896,14 +896,14 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
 }
 
 RVA(0x0015a860, 0x57)
-CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
 
             AnimWorkerObj* worker = obj->m_animWorker;
-            if (worker->m_notify == (static_cast<AnimWorkerObj*>(key))->m_notify) {
+            if (worker->m_notify == key->m_notify) {
                 return obj;
             }
         }
@@ -915,7 +915,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
 // Zero-ref: retail has no caller or address-taking reference.
 // @early-stop
 RVA(0x0015a8c0, 0x7d)
-void* CDDrawChildGroup::Find(i32 id, const char* key) {
+CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
     OwnerMgr()->m_workerCache->m_workers.Lookup(key, found);
     AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);

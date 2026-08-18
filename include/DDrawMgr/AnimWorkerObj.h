@@ -54,7 +54,7 @@ struct AnimWorkerObj : public CWapObj {
 
     i32 Consume(i32 amount);
 
-    i32 Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, void* d);
+    i32 Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, CGameObject* d);
     i32 CacheTargetId(void* a);
     i32 Save(CFileMemBase* ar);
     i32 Load(CFileMemBase* ar);

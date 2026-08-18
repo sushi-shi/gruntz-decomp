@@ -87,7 +87,7 @@ public:
     virtual void
     BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) = 0;
 
-    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self);
+    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self);
 
     void Notify(void* p);
 
@@ -250,7 +250,8 @@ public:
         OVERRIDE;
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE;
-    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) OVERRIDE;
+    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self)
+        OVERRIDE;
 
     void ApplyLookupSprite(const char* key, i32 frame);
     void ApplyName(const char* name);

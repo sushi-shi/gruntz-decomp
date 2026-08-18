@@ -32,7 +32,7 @@ i32 CFileImageSurface::LoadKeyed(
 
 RVA(0x00148890, 0xad)
 i32 CFileImageSurface::ResolveEx(
-    void* surf,
+    CDDrawPtrCollections* surf,
     void* buf,
     FileImageFormat type,
     u32 size,

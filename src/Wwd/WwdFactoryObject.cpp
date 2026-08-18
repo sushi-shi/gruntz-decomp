@@ -735,7 +735,12 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 }
 
 RVA(0x0015c900, 0x5c)
-i32 CAniAdvanceCursor::Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, void* self) {
+i32 CAniAdvanceCursor::Find(
+    CFileMemBase* ar,
+    SerialMode type,
+    LogicTypeId typeId,
+    CGameObject* self
+) {
     if (ar == NULL) {
         return 0;
     }

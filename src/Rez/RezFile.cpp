@@ -21,9 +21,9 @@ RVA(0x0013c4d0, 0x1)
 void CRezList::UnusedListHook() {}
 
 RVA(0x0013c4e0, 0x12)
-CRezItmBase::CRezItmBase(void* parent) {
+CRezItmBase::CRezItmBase(CSymParser* parent) {
 
-    m_parent = static_cast<CSymParser*>(parent);
+    m_parent = parent;
 }
 
 RVA_COMPGEN(0x0013c500, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
@@ -37,7 +37,7 @@ RVA(0x0013c530, 0x1)
 void CRezItmBase::Noop() {}
 
 RVA(0x0013c540, 0x28)
-CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
+CRezItm::CRezItm(CSymParser* parent) : CRezItmBase(parent) {
     m_fp = NULL;
     m_readBuf = NULL;
     m_pos = -1;
@@ -206,7 +206,7 @@ i32 CRezItm::Check() {
 }
 
 RVA(0x0013c940, 0x46)
-CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
+CRezDir::CRezDir(CSymParser* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;
     m_write = 0;
     m_maxOpen = maxOpen;
@@ -261,7 +261,7 @@ i32 CRezDir::Check() {
 }
 
 RVA(0x0013cac0, 0x9b)
-CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
+CRezFile::CRezFile(CSymParser* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
     m_dir = dir;
     m_handle = NULL;
 

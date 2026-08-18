@@ -107,10 +107,10 @@ public:
     i32 CheckSortOrder();
     CWwdGameObject* FindByType04(i32 type);
     CWwdGameObject* FindByTypeProbe(i32 type);
-    CWwdGameObject* FindByWorker(i32 type, void* key);
+    CWwdGameObject* FindByWorker(i32 type, AnimWorkerObj* key);
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
-    void* Find(i32 id, const char* key);
+    CGameObject* Find(i32 id, const char* key);
     CWwdGameObject* FindByKey(void* key);
     CWwdGameObject* FindByStatusKey(void* key);
     i32 IsKindUnique(i32 kind);

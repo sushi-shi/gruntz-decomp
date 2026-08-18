@@ -16,7 +16,7 @@ class CSymParser;
 
 class CRezItmBase {
 public:
-    CRezItmBase(void* parent);
+    CRezItmBase(CSymParser* parent);
 
     virtual void Noop();
     virtual ~CRezItmBase();
@@ -34,7 +34,7 @@ public:
 
 class CRezItm : public CRezItmBase {
 public:
-    CRezItm(void* parent);
+    CRezItm(CSymParser* parent);
     virtual ~CRezItm() OVERRIDE;
 
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) OVERRIDE;
@@ -58,7 +58,7 @@ public:
 
 class CRezDir : public CRezItmBase {
 public:
-    CRezDir(void* parent, i32 maxOpen);
+    CRezDir(CSymParser* parent, i32 maxOpen);
     virtual ~CRezDir() OVERRIDE;
 
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) OVERRIDE;

@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/FixedPtrArray32.h>
 #include <Ints.h>
 
 #include <stddef.h>
@@ -12,18 +13,6 @@ GZ_ENUM_FORWARD(InputDeviceSel);
 
 class DirectInputMgr2;
 class CInputDevice;
-
-struct SbzControllerArray {
-    char _vft0[4];
-    CInputDevice** m_data;
-    i32 m_count;
-};
-
-struct SbzDeviceList {
-    char _vft0[4];
-    i32 m_count;
-    CInputDevice* m_elems[1];
-};
 
 class StateMgrBZ {
 public:
@@ -48,7 +37,7 @@ public:
     CInputDevice* m_keyboard;
     CInputDevice* m_joystick;
     CInputDevice* m_mouse;
-    SbzDeviceList* m_deviceList;
+    CFixedPtrArray32* m_deviceList;
     InputDeviceSel m_mode;
     u32 m_edgeKeys;
     u32 m_currentKeys;

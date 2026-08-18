@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 class CWwdGameObjectA;
+struct CGameObject;
 class CAniRecordView;
 class CAniElement;
 class CFileMemBase;
@@ -64,7 +65,7 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 
-    i32 Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, void* self);
+    i32 Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, CGameObject* self);
     i32 Advance(u32 elapsed);
 
     CWwdGameObjectA* m_boundObject;

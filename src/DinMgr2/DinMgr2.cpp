@@ -245,7 +245,7 @@ void DirectInputMgr2::FreeDeviceList() {
 }
 
 RVA(0x001331e0, 0x7c)
-void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused) {
+CDeviceListNode* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused) {
     if (devices == NULL) {
         return 0;
     }
@@ -262,7 +262,7 @@ void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused)
 }
 
 RVA(0x00133260, 0x4a)
-void* DirectInputMgr2::AddControllerArr(
+CDeviceListNode* DirectInputMgr2::AddControllerArr(
     CInputDevBase* dev0,
     CInputDevBase* dev1,
     CInputDevBase* dev2,

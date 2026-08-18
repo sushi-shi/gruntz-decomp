@@ -50,8 +50,8 @@ public:
 
     void FreeDeviceList();
 
-    void* AddController(CInputDevBase** devices, i32 n, i32 unused);
-    void* AddControllerArr(
+    CDeviceListNode* AddController(CInputDevBase** devices, i32 n, i32 unused);
+    CDeviceListNode* AddControllerArr(
         CInputDevBase* dev0,
         CInputDevBase* dev1,
         CInputDevBase* dev2,
