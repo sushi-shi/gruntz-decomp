@@ -1563,7 +1563,7 @@ directsoundmgr	?IsInHardware@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	34e9f8ea
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	1cd921a4e435	0x135440	100.0000	
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	2dac8abb6ae9	0x1353f0	100.0000	
 directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	97.7333	97.7333	2	96bd1c359ab8	0x135e10	100.0000	
-directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAEPAK01I@Z	100.0000	100.0000	2	fff8687dd7b1	0x136370	100.0000	
+directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAEPAK01I@Z	100.0000	100.0000	3	54cd9e6c664b	0x136370	100.0000	
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	90.0884	90.0884	3	0c1ddbe530f1	0x135f40	100.0000	
 directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	67.0526	67.0526	10	1b268e925cc8	0x137110	100.0000	
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	3638b7ae6e0f	0x136270	100.0000	
@@ -3358,7 +3358,7 @@ play	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	1	cpp:b62c0d908eff	0xc86
 play	??1CWapObj@@UAE@XZ	100.0000	100.0000	1	cpp:02f89280bcb9	0xd5d70	100.0000	
 play	??_GCImage@@UAEPAXI@Z	100.0000	100.0000	1	cpp:02f89280bcb9	0xd5e50	100.0000	
 play	?ActivateVisibleObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	1	29b29c315f9c	0xcedf0	100.0000	
-play	?AddLevelGruntz@CPlay@@QAEHXZ	87.3929	87.3929	2	a239c26c61e6	0xd5960	87.3929	
+play	?AddLevelGruntz@CPlay@@QAEHXZ	87.3929	87.3929	3	309a3833faa7	0xd5960	87.3929	
 play	?ArmSnapshot@CPlay@@QAEHHH@Z	100.0000	100.0000	1	3ede171f3ef9	0xd9240	100.0000	
 play	?BeginGridWalk@CPlay@@QAEHPBDHHHH@Z	97.6191	97.6191	1	5e5e4f5d3bbe	0xd0920	97.6191	
 play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	1	3b726a3aafe1	0xd72c0	100.0000	
@@ -3398,7 +3398,7 @@ play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	2	e6cc7991c392	0xcb800	100.00
 play	?IsLoaded@CImage@@UAEHXZ	100.0000	100.0000	1	5b02a6fa2d76	0xd5dc0	100.0000	
 play	?IsReady@CWapObj@@UAEHXZ	100.0000	100.0000	1	56d7de4182c2	0xd5da0	100.0000	
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	3048f73bbac8	0xc8b80	100.0000	
-play	?LoadByMode@CPlay@@UAEHHH@Z	94.5728	94.5728	3	b23c270b4538	0xca200	94.5728	
+play	?LoadByMode@CPlay@@UAEHHH@Z	94.5728	94.5728	4	fe38a1d1e361	0xca200	94.5728	
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	1	01c678e648ee	0xd0120	99.0221	
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4611	84.4611	4	ad2c87618f61	0xc7ec0	85.5285	
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	2	6483b2489f6b	0xcffe0	100.0000	
@@ -3406,7 +3406,7 @@ play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	100.0000	100.0000	2	fbd473e85f2f	0xd744
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	2	a412eb8de57f	0xd8060	97.1069	
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	1	842142fa3f32	0xd1710	100.0000	
 play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	1	32cff3d95291	0xd12b0	98.7500	
-play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	1	409f991bb413	0xd65d0	99.4069	
+play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	2	e7f37f12cdd2	0xd65d0	99.4069	
 play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	1	05f7283351bb	0xcb740	100.0000	
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	1	0254a5e3ef9e	0xd9050	100.0000	
 play	?OnChar@CPlay@@UAEHHH@Z	100.0000	100.0000	1	7d01b9ff8290	0xcbaf0	100.0000	

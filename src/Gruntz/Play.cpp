@@ -1073,7 +1073,7 @@ RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
-    void* set;
+    CSymTab* bank;
     CSymTab* prevTiles;
     i32 reload = 0;
     i32 diff = 0;
@@ -1180,15 +1180,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         char c;
         if (host->m_isBattlezLevel != 0) {
 
-            set = host->m_symParser->ResolvePath("GAME_BATTLEZ");
-            if (set == NULL) {
+            bank = host->m_symParser->ResolvePath("GAME_BATTLEZ");
+            if (bank == NULL) {
                 goto fail0;
             }
-            ins = (static_cast<CSymTab*>(set))
-                      ->Insert(
-                          static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                          REZ_TAG_WWD
-                      );
+            ins = bank->Insert(
+                static_cast<const char*>(self->m_mgr->GetWorldFileName()),
+                REZ_TAG_WWD
+            );
             if (ins == NULL) {
                 return 0;
             }
@@ -1210,15 +1209,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             ins->EndParse();
         } else if (host->m_isMultiLevel != 0) {
 
-            set = host->m_symParser->ResolvePath("GAME_MULTI");
-            if (set == NULL) {
+            bank = host->m_symParser->ResolvePath("GAME_MULTI");
+            if (bank == NULL) {
                 goto fail0;
             }
-            ins = (static_cast<CSymTab*>(set))
-                      ->Insert(
-                          static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                          REZ_TAG_WWD
-                      );
+            ins = bank->Insert(
+                static_cast<const char*>(self->m_mgr->GetWorldFileName()),
+                REZ_TAG_WWD
+            );
             if (ins == NULL) {
                 return 0;
             }
@@ -1254,9 +1252,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
-    set = self->m_symParser->ResolvePath(nameBuf);
-    self->m_levelBank = static_cast<CSymTab*>(set);
-    if (set == NULL) {
+    bank = self->m_symParser->ResolvePath(nameBuf);
+    self->m_levelBank = bank;
+    if (bank == NULL) {
         goto fail0;
     }
 
@@ -1554,10 +1552,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
         self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
-        set = self->m_world->m_childGroup
-                  ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
-        self->m_scrollSink = static_cast<CWwdGameObjectA*>(set);
-        if (set != NULL) {
+        CWwdGameObjectA* scrollSink =
+            self->m_world->m_childGroup
+                ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
+        self->m_scrollSink = scrollSink;
+        if (scrollSink != NULL) {
             self->m_world->m_childGroup->TickKillCues(0);
             if (savedThis == NULL) {
 
@@ -5908,8 +5907,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g == NULL) {
             continue;
         }
-        if (static_cast<void*>(g->m_animWorker->m_notify)
-            != static_cast<void*>(CreateGruntStartingPoint)) {
+        if (g->m_animWorker->m_notify != CreateGruntStartingPoint) {
             continue;
         }
         if (g->m_smarts == g_curPlayer) {
@@ -6292,8 +6290,8 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(head->GetNext(pos));
         if (obj) {
-            void* marker = static_cast<void*>(obj->m_animWorker->m_notify);
-            if (marker == static_cast<void*>(CreateGruntStartingPoint)) {
+            GameObjNotifyFn marker = obj->m_animWorker->m_notify;
+            if (marker == CreateGruntStartingPoint) {
                 i32 v = obj->m_powerup;
                 if (v) {
                     if (!BuildGruntTypeNameTable(static_cast<PickupType>(v), 1, 0, ctx)) {
@@ -6389,7 +6387,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                 }
-            } else if (marker == static_cast<void*>(CreateInGameIcon)) {
+            } else if (marker == CreateInGameIcon) {
                 PickupType smarts = static_cast<PickupType>(obj->m_smarts);
                 PickupType cv =
                     smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
@@ -6456,8 +6454,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->m_points] = 1;
                     }
                 }
-            } else if (marker == static_cast<void*>(CreateCoveredPowerup)
-                       || marker == static_cast<void*>(CreateGiantRock)) {
+            } else if (marker == CreateCoveredPowerup || marker == CreateGiantRock) {
                 PickupType powerup = static_cast<PickupType>(obj->m_powerup);
                 PickupType cv =
                     powerup == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : powerup;
