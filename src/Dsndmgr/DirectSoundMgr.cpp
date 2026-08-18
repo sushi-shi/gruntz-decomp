@@ -465,9 +465,7 @@ i32 DirectSoundMgr::GetFormat(WaveFormatX* fmt, u32 size, DWORD* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr =
-        m_buffer->GetFormat(static_cast<LPWAVEFORMATEX>(static_cast<void*>(fmt)), size, written)
-        != 0;
+    i32 hr = m_buffer->GetFormat(WaveFormatSdk(fmt), size, written) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -971,7 +969,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     desc.dwSize = DSBUFFERDESC_SIZE;
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
-    desc.lpwfxFormat = static_cast<LPWAVEFORMATEX>(static_cast<void*>(&wf));
+    desc.lpwfxFormat = WaveFormatSdk(&wf);
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
@@ -1397,7 +1395,7 @@ i32 SoundDevice::SetPrimaryFormat(WaveFormatX* fmt) {
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->SetFormat(static_cast<LPWAVEFORMATEX>(static_cast<void*>(fmt))) != 0;
+    i32 hr = m_primaryBuffer->SetFormat(WaveFormatSdk(fmt)) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;

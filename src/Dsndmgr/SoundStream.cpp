@@ -197,7 +197,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     DSBUFFERDESC desc;
     memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwFlags = dsFlags;
-    desc.lpwfxFormat = static_cast<LPWAVEFORMATEX>(static_cast<void*>(&wf));
+    desc.lpwfxFormat = WaveFormatSdk(&wf);
 
     wf.cbSize = 0;
     desc.dwSize = 0x14;
