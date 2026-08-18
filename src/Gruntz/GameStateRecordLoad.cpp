@@ -23,15 +23,15 @@
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(&id, 4);                                                                          \
-        obj = 0;                                                                                   \
-        void* r;                                                                                   \
-        if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0 && obj != 0) {                 \
-            r = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj : 0;   \
+        obj = NULL;                                                                                \
+        CGameObject* r;                                                                            \
+        if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0 && obj != NULL) {              \
+            r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
         } else {                                                                                   \
-            r = 0;                                                                                 \
+            r = NULL;                                                                              \
         }                                                                                          \
         (field) = static_cast<CWwdGameObjectA*>(r);                                                \
-        if (r == 0 && id != 0) {                                                                   \
+        if (r == NULL && id != 0) {                                                                \
             return 0;                                                                              \
         }                                                                                          \
     } while (0)
@@ -46,11 +46,11 @@
         ++g_serialCounter;                                                                         \
         ar->Read(buf, SERIAL_NAME_LEN);                                                            \
         if (strlen(buf) != 0) {                                                                    \
-            obj = 0;                                                                               \
-            dir->m_animRegistry->m_animations.Lookup(buf, obj);                                    \
-            (field) = static_cast<CAniElement*>(obj);                                              \
+            CAniElement* value = NULL;                                                             \
+            MapLookup(dir->m_animRegistry->m_animations, buf, value);                              \
+            (field) = value;                                                                       \
         } else {                                                                                   \
-            (field) = 0;                                                                           \
+            (field) = NULL;                                                                        \
         }                                                                                          \
     } while (0)
 
@@ -66,7 +66,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     i32 id;
-    void* obj;
+    CGameObject* obj;
     char buf[SERIAL_NAME_LEN];
 
     m_struckSlotSound = NULL;

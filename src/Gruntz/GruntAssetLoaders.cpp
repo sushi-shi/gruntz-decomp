@@ -20,6 +20,7 @@
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 
 #include <new>
@@ -271,12 +272,13 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
             } else {
-                void* out_ob = 0;
-                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+                CAniElement* out = NULL;
+                MapLookup(
+                    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                     s_DEATHZ_FALL2,
-                    out_ob
+                    out
                 );
-                m_poseDeath = static_cast<CAniElement*>(out_ob);
+                m_poseDeath = out;
             }
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
@@ -287,12 +289,13 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         }
 
         case DEATH_ELECTROCUTE: {
-            void* out_ob = 0;
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+            CAniElement* out = NULL;
+            MapLookup(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_DEATHZ_ELECTROCUTE,
-                out_ob
+                out
             );
-            m_poseDeath = static_cast<CAniElement*>(out_ob);
+            m_poseDeath = out;
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
@@ -301,12 +304,13 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
         case DEATH_MELT: {
             SnapToLastTile(1);
-            void* out_ob = 0;
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+            CAniElement* out = NULL;
+            MapLookup(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 "GRUNTZ_DEATHZ_MELT",
-                out_ob
+                out
             );
-            m_poseDeath = static_cast<CAniElement*>(out_ob);
+            m_poseDeath = out;
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
             DEATH_CUE(0x359);
@@ -314,9 +318,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         }
 
         case DEATH_KAROKE: {
-            void* out_ob = 0;
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_KAROKE, out_ob);
-            m_poseDeath = static_cast<CAniElement*>(out_ob);
+            CAniElement* out = NULL;
+            MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_KAROKE, out);
+            m_poseDeath = out;
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
@@ -328,9 +332,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 SwitchAnimation(m_poseDeath);
                 goto pathA;
             }
-            void* out_ob = 0;
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_EXPLODE, out_ob);
-            m_poseDeath = static_cast<CAniElement*>(out_ob);
+            CAniElement* out = NULL;
+            MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_EXPLODE, out);
+            m_poseDeath = out;
             SwitchAnimation(m_poseDeath);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -338,9 +342,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         }
 
         case DEATH_DRAIN: {
-            void* out_ob = 0;
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_EXITZ_DRAIN, out_ob);
-            m_poseDeath = static_cast<CAniElement*>(out_ob);
+            CAniElement* out = NULL;
+            MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_EXITZ_DRAIN, out);
+            m_poseDeath = out;
             SwitchAnimation(m_poseDeath);
             m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_actKey;

@@ -207,33 +207,33 @@ i32 CProjectile::LoadProjectileSprites(
     }
 
     {
-        void* out;
-        out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+        CAniElement* out = NULL;
+        MapLookup(
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             key + DATA_COMPGEN(0x00213658, "1"), out
             );
-        m_frames[0] = static_cast<CAniElement*>(out);
+        m_frames[0] = out;
         if (m_frames[0] == NULL) {
             return 0;
         }
         out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "2", out);
-        m_frames[1] = static_cast<CAniElement*>(out);
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2", out);
+        m_frames[1] = out;
         out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "3", out);
-        m_frames[2] = static_cast<CAniElement*>(out);
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3", out);
+        m_frames[2] = out;
         out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "4", out);
-        m_frames[3] = static_cast<CAniElement*>(out);
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4", out);
+        m_frames[3] = out;
         out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "5", out);
-        m_frames[4] = static_cast<CAniElement*>(out);
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5", out);
+        m_frames[4] = out;
         out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "IMPACT", out);
-        m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT", out);
+        m_frames[PF_IMPACT] = out;
         out = NULL;
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "FALL", out);
-        m_frames[PF_FALL] = static_cast<CAniElement*>(out);
+        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL", out);
+        m_frames[PF_FALL] = out;
     }
 
     SwitchAnimation(m_frames[0]);
@@ -751,14 +751,13 @@ i32 CProjectile::SerializeMove(
             s->Read(&m_targetId, sizeof(m_targetId));
             s->Read(&m_ownerId, sizeof(m_ownerId));
 
-            void* out;
             for (i32 ni = 0; ni < 7; ni++) {
                 g_serialCounter++;
                 s->Read(buf, SERIAL_NAME_LEN);
                 if (strlen(buf) != 0) {
-                    out = NULL;
-                    reg->m_animRegistry->m_animations.Lookup(buf, out);
-                    m_frames[ni] = static_cast<CAniElement*>(out);
+                    CAniElement* out = NULL;
+                    MapLookup(reg->m_animRegistry->m_animations, buf, out);
+                    m_frames[ni] = out;
                 } else {
                     m_frames[ni] = NULL;
                 }
@@ -767,7 +766,7 @@ i32 CProjectile::SerializeMove(
             g_serialCounter++;
             i32 count;
             s->Read(&count, sizeof(count));
-            out = NULL;
+            CGameObject* out = NULL;
             CGameObject* r;
             if (MapLookupById(reg->m_childGroup->m_map48, count, out) == 0) {
                 r = NULL;
@@ -775,9 +774,7 @@ i32 CProjectile::SerializeMove(
                 r = NULL;
             } else {
 
-                r = (static_cast<CGameObject*>(out)->GetClassId() == CLASSID_SERIALREF)
-                        ? static_cast<CGameObject*>(out)
-                        : 0;
+                r = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
             }
             m_shadow = static_cast<CWwdGameObjectA*>(r);
             if (m_shadow == NULL && count != 0) {
@@ -868,9 +865,9 @@ i32 CProjectile::SerializeMove(
                 m_value = NULL;
                 return 1;
             }
-            void* out = 0;
-            m_animWorker->m_ownerCtx->m_animRegistry->m_animations.Lookup(buf, out);
-            m_value = static_cast<CAniElement*>(out);
+            CAniElement* out = NULL;
+            MapLookup(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, buf, out);
+            m_value = out;
             return 1;
         }
         case SERIAL_SAVE: {

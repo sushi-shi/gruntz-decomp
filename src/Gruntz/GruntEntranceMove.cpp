@@ -1463,9 +1463,9 @@ CObject* CAniElement::AtChecked(i32 i) const {
 
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
-    void* val = 0;
-    m_animations.Lookup(key, val);
-    return static_cast<CObject*>(val);
+    CObject* value = NULL;
+    MapLookup(m_animations, key, value);
+    return value;
 }
 
 RVA(0x0006b2e0, 0x39)

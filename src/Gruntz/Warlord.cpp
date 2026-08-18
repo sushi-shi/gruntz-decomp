@@ -30,6 +30,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -103,14 +104,13 @@ typedef enum WarlordBattleTag {
 
 #define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
     {                                                                                              \
-        void* h = 0;                                                                               \
-        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(                              \
+        CAniElement* h = NULL;                                                                     \
+        MapLookup(                                                                                 \
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
             "GRUNTZ_" + m_warlordName + (suffix),                                                  \
             h                                                                                      \
         );                                                                                         \
-        /* Lookup exposes void*& at this API boundary; */                                          \
-        /* reapply the element type after the call. */                                             \
-        dst = static_cast<CAniElement*>(h);                                                        \
+        dst = h;                                                                                   \
     }
 
 // @early-stop
@@ -362,99 +362,99 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_idleAnims[0] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_idleAnims[0] = value;
             } else {
                 m_idleAnims[0] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_idleAnims[1] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_idleAnims[1] = value;
             } else {
                 m_idleAnims[1] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_idleAnims[2] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_idleAnims[2] = value;
             } else {
                 m_idleAnims[2] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_idleAnims[3] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_idleAnims[3] = value;
             } else {
                 m_idleAnims[3] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_battlecryAnims[0] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_battlecryAnims[0] = value;
             } else {
                 m_battlecryAnims[0] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_battlecryAnims[1] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_battlecryAnims[1] = value;
             } else {
                 m_battlecryAnims[1] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_battlecryAnims[2] = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_battlecryAnims[2] = value;
             } else {
                 m_battlecryAnims[2] = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_animJoy = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_animJoy = value;
             } else {
                 m_animJoy = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_animDeath = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_animDeath = value;
             } else {
                 m_animDeath = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_animMoving = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_animMoving = value;
             } else {
                 m_animMoving = NULL;
             }
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                void* v = 0;
-                world->m_animRegistry->m_animations.Lookup(buf, v);
-                m_animPanic = static_cast<CAniElement*>(v);
+                CAniElement* value = NULL;
+                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                m_animPanic = value;
             } else {
                 m_animPanic = NULL;
             }

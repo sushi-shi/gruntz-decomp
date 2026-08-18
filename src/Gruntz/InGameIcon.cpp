@@ -817,9 +817,9 @@ i32 CInGameIcon::SerializeMove(
             if (strlen(chainName) == 0) {
                 m_value = NULL;
             } else {
-                void* val = 0;
-                m_animWorker->m_ownerCtx->m_animRegistry->m_animations.Lookup(chainName, val);
-                m_value = static_cast<CAniElement*>(val);
+                CAniElement* value = NULL;
+                MapLookup(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, chainName, value);
+                m_value = value;
             }
             break;
         }

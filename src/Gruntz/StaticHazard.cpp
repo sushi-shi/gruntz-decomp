@@ -29,6 +29,7 @@
 #include <Gruntz/XferArchive.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
@@ -139,9 +140,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
-    void* entry_ob = 0;
-    g_gameReg->m_world->m_animRegistry->m_animations.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
-    CAniElement* entry = static_cast<CAniElement*>(entry_ob);
+    CAniElement* entry = NULL;
+    MapLookup(g_gameReg->m_world->m_animRegistry->m_animations, "LEVEL_STATICHAZARDGO", entry);
     if (entry != NULL) {
 
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
