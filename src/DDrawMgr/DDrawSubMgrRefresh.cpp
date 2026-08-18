@@ -52,8 +52,8 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     if (m_emitGate != 0) {
         return 0;
     }
-    void* val = 0;
-    m_cues.Lookup(key, val);
+    LeafCue* val = NULL;
+    MapLookup(m_cues, key, val);
     if (val == NULL) {
         return 0;
     }
@@ -62,7 +62,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     if (gate == 0) {
         return 0;
     }
-    LeafCue* p = static_cast<LeafCue*>(val);
+    LeafCue* p = val;
 
     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
         >= static_cast<u32>(p->m_replayDelay)) {

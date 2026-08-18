@@ -56,12 +56,12 @@ RVA(0x00152720, 0xa2)
 void CDDrawSubMgrLeaf::FreeAll() {
     POSITION pos = m_animations.GetStartPosition();
     CString key;
-    void* val = 0;
+    CAniElement* val = NULL;
     if (pos != NULL) {
         do {
-            m_animations.GetNextAssoc(pos, key, val);
+            MapGetNext(m_animations, pos, key, val);
             if (val != NULL) {
-                delete (static_cast<CAniElement*>(val));
+                delete val;
             }
         } while (pos != NULL);
     }
@@ -74,15 +74,15 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     match += str;
     i32 len = match.GetLength();
     CString key;
-    void* val = 0;
+    CAniElement* val = NULL;
     POSITION pos = m_animations.GetStartPosition();
     i32 n = 0;
     while (pos != NULL) {
-        m_animations.GetNextAssoc(pos, key, val);
+        MapGetNext(m_animations, pos, key, val);
         if (strncmp(key, match, len) == 0) {
             m_animations.RemoveKey(key);
             if (val != NULL) {
-                delete (static_cast<CAniElement*>(val));
+                delete val;
             }
             ++n;
         }
@@ -167,10 +167,10 @@ RVA(0x00152c50, 0xdc)
 i32 CDDrawSubMgrLeaf::HasKeyPrefix(const char* str) {
     i32 len = strlen(str);
     CString key;
-    void* val = 0;
+    CAniElement* val = NULL;
     POSITION pos = m_animations.GetStartPosition();
     while (pos != NULL) {
-        m_animations.GetNextAssoc(pos, key, val);
+        MapGetNext(m_animations, pos, key, val);
         if (strncmp(key, str, len) == 0) {
             return 1;
         }
@@ -184,10 +184,10 @@ CString CDDrawSubMgrLeaf::KeyOfValue(CObject* target) {
     if (target == NULL) {
         return key;
     }
-    void* val = 0;
+    CAniElement* val = NULL;
     POSITION pos = m_animations.GetStartPosition();
     while (pos != NULL) {
-        m_animations.GetNextAssoc(pos, key, val);
+        MapGetNext(m_animations, pos, key, val);
         if (val == target) {
             return key;
         }

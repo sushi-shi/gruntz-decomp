@@ -485,9 +485,9 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     }
     POSITION pos = m_cues.GetStartPosition();
     CString key;
-    void* value = 0;
+    LeafCue* value = NULL;
     while (pos != static_cast<POSITION>(0)) {
-        m_cues.GetNextAssoc(pos, key, value);
+        MapGetNext(m_cues, pos, key, value);
         if (p == value) {
             m_cues.RemoveKey(key);
             delete p;
@@ -500,12 +500,12 @@ RVA(0x00157bc0, 0xa2)
 void CDDrawSubMgrLeafScan::ClearMap() {
     POSITION pos = m_cues.GetStartPosition();
     CString key;
-    void* val = 0;
+    LeafCue* val = NULL;
     if (pos != NULL) {
         do {
-            m_cues.GetNextAssoc(pos, key, val);
+            MapGetNext(m_cues, pos, key, val);
             if (val != NULL) {
-                delete (static_cast<LeafCue*>(val));
+                delete val;
             }
         } while (pos != NULL);
     }
@@ -518,15 +518,15 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     match += str;
     i32 len = match.GetLength();
     CString key;
-    void* val = 0;
+    LeafCue* val = NULL;
     POSITION pos = m_cues.GetStartPosition();
     i32 n = 0;
     while (pos != NULL) {
-        m_cues.GetNextAssoc(pos, key, val);
+        MapGetNext(m_cues, pos, key, val);
         if (strncmp(key, match, len) == 0) {
             m_cues.RemoveKey(key);
             if (val != NULL) {
-                delete (static_cast<LeafCue*>(val));
+                delete val;
             }
             ++n;
         }
@@ -620,8 +620,8 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
                     } else {
                         strcpy(buf, fn->m_name);
                     }
-                    void* val = 0;
-                    m_cues.Lookup(buf, val);
+                    LeafCue* val = NULL;
+                    MapLookup(m_cues, buf, val);
                     if (val == NULL) {
                         if (CreateEntry(buf, fn) != NULL) {
                             ++count;
@@ -644,16 +644,16 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     }
     POSITION pos = m_cues.GetStartPosition();
     i32 sum = 0;
-    void* val = 0;
+    LeafCue* val = NULL;
     CString key;
     while (pos != NULL) {
         val = NULL;
-        m_cues.GetNextAssoc(pos, key, val);
+        MapGetNext(m_cues, pos, key, val);
         if (val != NULL) {
             if (str == NULL || *str == 0) {
-                sum += (static_cast<LeafCue*>(val))->m_sound->m_sampleCount;
+                sum += val->m_sound->m_sampleCount;
             } else if (strncmp(key, str, strlen(str)) == 0) {
-                sum += (static_cast<LeafCue*>(val))->m_sound->m_sampleCount;
+                sum += val->m_sound->m_sampleCount;
             }
         }
     }
@@ -663,10 +663,10 @@ RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2) {
     CGameLevel* lvl = OwnerMgr()->m_level;
     if (lvl != NULL && lvl->m_mainPlane != NULL && m_emitGate == 0) {
-        void* val = 0;
-        m_cues.Lookup(key, val);
+        LeafCue* val = NULL;
+        MapLookup(m_cues, key, val);
         if (val != NULL) {
-            return (static_cast<LeafCue*>(val))->TriggerBlit(pos, -1, range1, range2);
+            return val->TriggerBlit(pos, -1, range1, range2);
         }
     }
     return 0;
@@ -719,10 +719,10 @@ RVA(0x001583c0, 0xdc)
 i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
     i32 len = strlen(str);
     CString key;
-    void* val = 0;
+    LeafCue* val = NULL;
     POSITION pos = m_cues.GetStartPosition();
     while (pos != NULL) {
-        m_cues.GetNextAssoc(pos, key, val);
+        MapGetNext(m_cues, pos, key, val);
         if (strncmp(key, str, len) == 0) {
             return 1;
         }

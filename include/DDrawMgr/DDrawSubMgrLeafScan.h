@@ -8,6 +8,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SoundState.h>
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/WapObj.h>
 
 struct SoundStream;
@@ -40,10 +41,10 @@ public:
     // lookup inline and PlayIfElapsed as a call.
     void PlayCue(const char* key) {
         if (m_emitGate == 0) {
-            void* found = NULL;
-            m_cues.Lookup(key, found);
+            LeafCue* found = NULL;
+            MapLookup(m_cues, key, found);
             if (found != NULL) {
-                static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                found->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
         }
     }
