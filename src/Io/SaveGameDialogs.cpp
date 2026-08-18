@@ -87,7 +87,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             PAINTSTRUCT ps;
             BeginPaint(hDlg, &ps);
             SetStretchBltMode(ps.hdc, COLORONCOLOR);
-            CRezImage* img = static_cast<CRezImage*>(g_previewImage);
+            CRezImage* img = g_previewImage;
             if (img->m_bitCount == BPP_PALETTED_8) {
                 StretchDIBits(
                     ps.hdc,
@@ -143,7 +143,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             if (g_previewMgr != NULL) {
                 if (g_previewImage != NULL) {
-                    g_previewMgr->Free(static_cast<CRezImage*>(g_previewImage));
+                    g_previewMgr->Free(g_previewImage);
                 }
                 delete g_previewMgr;
                 g_previewMgr = NULL;

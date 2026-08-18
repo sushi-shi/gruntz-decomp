@@ -36,7 +36,7 @@ CImagePool* g_previewMgr;
 DATA(0x0024c864)
 SaveSlot* g_slotState;
 DATA(0x0024c868)
-void* g_previewImage;
+CRezImage* g_previewImage;
 DATA(0x0024c86c)
 CSaveGame* g_saveDlgSink = 0;
 
