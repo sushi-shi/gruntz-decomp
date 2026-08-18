@@ -22,8 +22,8 @@ i32 SaveScreenshot(
     i32 saveFlag
 ) {
     char nameBuf[0x80];
-    i32 descB[6];
-    i32 descA[4];
+    RECT dstRect;
+    RECT srcRect;
 
     if (src == NULL) {
         return 0;
@@ -54,21 +54,19 @@ i32 SaveScreenshot(
     }
 
     CGruntzMgr* mgr = g_gameReg;
-    descA[0] = 0;
-    descA[1] = 0;
-    descA[2] = 0;
-    descA[3] = 0;
-    descB[0] = 0;
-    descB[1] = 0;
-    descB[2] = 0;
-    descB[3] = 0;
-    descA[2] = mgr->m_modeSize.cx;
-    descB[5] = mgr->m_modeSize.cy;
-    descA[3] = mgr->m_modeSize.cy;
-    descB[4] = mgr->m_modeSize.cx;
-    descB[2] = width;
-    descB[3] = height;
-    if (img->BltEx(descB, src, descA, 0x1000000, 0)) {
+    srcRect.left = 0;
+    srcRect.top = 0;
+    srcRect.right = 0;
+    srcRect.bottom = 0;
+    dstRect.left = 0;
+    dstRect.top = 0;
+    dstRect.right = 0;
+    dstRect.bottom = 0;
+    srcRect.right = mgr->GetModeSize().cx;
+    srcRect.bottom = mgr->GetModeSize().cy;
+    dstRect.right = width;
+    dstRect.bottom = height;
+    if (img->BltEx(&dstRect, src, &srcRect, 0x1000000, 0)) {
         surf->RemoveItemA(img);
         return 0;
     }

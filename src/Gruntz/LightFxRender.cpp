@@ -269,7 +269,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     m_dstRect.top = dt;
     m_dstRect.right = surf->m_width * s + dl;
     m_dstRect.bottom = surf->m_height * s + dt;
-    if (ctx->m_surface->BltEx(&m_dstRect.left, surf, 0, 0x1000000, 0) != 0) {
+    if (ctx->m_surface->BltEx(&m_dstRect, surf, 0, 0x1000000, 0) != 0) {
         return 0;
     }
 

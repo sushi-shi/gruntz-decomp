@@ -61,4 +61,15 @@ NOT universal - it is a no-op where cl already CSEs (`CStatusBarMgr::LoadBattlez
 `CPlay::PositionBridgeToggle` all unchanged) and it REGRESSES
 `CPlay::ClampViewport2` (91.27 -> 89.72), so measure per function.
 
+SECOND DETECTION SIGNATURE (2026-08-18): the temp can hide inside an OVERSIZED
+untyped local. `SaveScreenshot` 0x114ff0 declared `i32 descB[6]` and passed it as
+`BltEx`'s dest rect; the trailing two dwords were the accessor temp, not part of
+the rect. Typing the parameter `RECT*` is what exposes it - a `RECT` local plus a
+hand-written `SIZE` loses 8 bytes of frame (cl DCEs the SIZE), which PROVES the
+pair belongs to a compiler-materialized object. Two calls to the accessor in one
+statement pair (`rc.right = m->GetModeSize().cx; rc.bottom = m->GetModeSize().cy;`)
+share ONE slot and write both halves twice, which is retail's double load here -
+so the CSE clause above applies to a temp BOUND to a local, not to the call-in-
+expression form. 96.76 -> 100.00 EXACT.
+
 related: struct-copy-dead-member-store-frame.md, frame-size-counts-the-locals.md

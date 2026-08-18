@@ -254,7 +254,7 @@ rollingball	8	6
 savefrontbuffershot	2	2
 savegame	23	23
 savegamedialogs	10	8
-savescreenshot	1	0
+savescreenshot	1	1
 sbi_image	5	3
 sbi_imageset	6	4
 sbi_imagesetani	5	3
@@ -958,7 +958,7 @@ ddrawptrcollections	?CreateFromDesc@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@P
 ddrawptrcollections	?CreateFromDesc@CPoolItemAE8@@UAEHPAVCDDrawPtrCollections@@PBU_DDSURFACEDESC@@@Z	100.0000	100.0000	1	d436483ea275	0x148cc0	100.0000	
 ddrawptrcollections	?InstallColorFormat@CPoolItemAB8@@UAEHXZ	100.0000	100.0000	1	811712a72ab3	0x148b80	100.0000	
 ddrawptrcollections	?LoadByExt@CFileImageSurface@@UAEHPAVCDDrawPtrCollections@@PADHH@Z	100.0000	100.0000	1	b2f0a7abefb0	0x148940	100.0000	
-ddrawptrcollections	?LoadKeyed@CFileImageSurface@@UAEHPAXHHW4ColorDepth@@HH@Z	100.0000	100.0000	1	7515bef50acf	0x148840	100.0000	
+ddrawptrcollections	?LoadKeyed@CFileImageSurface@@UAEHPAVCDDrawPtrCollections@@HHW4ColorDepth@@HH@Z	100.0000	100.0000	2	20c5ed3a6744	0x148840	100.0000	
 ddrawptrcollections	?ResolveEx@CFileImageSurface@@UAEHPAX0W4FileImageFormat@@IHH@Z	100.0000	100.0000	1	beea55de0cff	0x148890	100.0000	
 ddrawptrcollections	?Setup@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@HHH@Z	100.0000	100.0000	1	4e47bbe33d6f	0x148af0	100.0000	
 ddrawptrcollections	?UpdateOverlay@CPoolItemA88@@UAEHPAXPAVCDDSurface@@0I0@Z	100.0000	100.0000	3	07b3a5f4a315	0x148ac0	100.0000	
@@ -1235,11 +1235,11 @@ ddsurface	?Blit816@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	72.9074	72.9074	1	b8
 ddsurface	?Blit824@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	69.8301	69.8301	1	1a96f228796c	0x140110	69.8301	
 ddsurface	?Blit@CDDSurface@@QAEHPAXW4ColorDepth@@0W4RasterRowOrder@@@Z	100.0000	100.0000	1	412824fdbdee	0x13faa0	100.0000	
 ddsurface	?BlitDirect@CDDSurface@@QAEHPAXW4RasterRowOrder@@@Z	100.0000	100.0000	1	849c981b510c	0x13ece0	100.0000	
-ddsurface	?BlitIntoDesc@CDDSurface@@UAEHPAX@Z	100.0000	100.0000	1	8b15ef4d67be	0x13e2e0	100.0000	
-ddsurface	?BlitSurf@CDDSurface@@UAEHPAXHHW4ColorDepth@@H@Z	100.0000	100.0000	1	cf80dfcc4f43	0x13e0d0	100.0000	
+ddsurface	?BlitIntoDesc@CDDSurface@@UAEHPAVCDDrawPtrCollections@@@Z	100.0000	100.0000	2	c625448b8302	0x13e2e0	100.0000	
+ddsurface	?BlitSurf@CDDSurface@@UAEHPAVCDDrawPtrCollections@@HHW4ColorDepth@@H@Z	100.0000	100.0000	2	b39a4ce83cb6	0x13e0d0	100.0000	
 ddsurface	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	1	9ab9172f188d	0x13ee60	100.0000	
-ddsurface	?BltEx@CDDSurface@@QAEHPAXPAV1@0I0@Z	100.0000	100.0000	1	0cb97f87bdb6	0x13eef0	100.0000	
-ddsurface	?BltFast@CDDSurface@@QAEHIIPAV1@PAXI@Z	100.0000	100.0000	1	862a29d027d5	0x13ef90	100.0000	
+ddsurface	?BltEx@CDDSurface@@QAEHPAUtagRECT@@PAV1@0IPAU_DDBLTFX@@@Z	100.0000	100.0000	2	9c88bf637a2d	0x13eef0	100.0000	
+ddsurface	?BltFast@CDDSurface@@QAEHIIPAV1@PAUtagRECT@@I@Z	100.0000	100.0000	2	ea82018433fe	0x13ef90	100.0000	
 ddsurface	?BuildColorChannelTables@@YAXXZ	100.0000	100.0000	1	9599aa571d4f	0x13f740	100.0000	
 ddsurface	?Clear@CDDSurface@@QAEXH@Z	100.0000	100.0000	1	38d51311ca1c	0x13edb0	100.0000	
 ddsurface	?CreateFromDesc@CDDSurface@@UAEHPAVCDDrawPtrCollections@@PBU_DDSURFACEDESC@@@Z	100.0000	100.0000	1	f27718f36ee1	0x13e0a0	100.0000	
@@ -1248,8 +1248,8 @@ ddsurface	?DecodeRun8@CDDSurface@@QAEHPAX@Z	100.0000	100.0000	1	072c05d41654	0x1
 ddsurface	?DecodeThunk@CDDSurface@@QAEXHHHHHFUtagRECT@@@Z	100.0000	100.0000	1	e7a697e83680	0x141280	100.0000	
 ddsurface	?DumpSurfaceInfo@CDDSurface@@QAEXH@Z	100.0000	100.0000	1	24e2fb47adcd	0x140770	100.0000	
 ddsurface	?EnumSurfacesCallback@@YGJPAUIDirectDrawSurface@@PAU_DDSURFACEDESC@@PAX@Z	100.0000	100.0000	1	0732af95a270	0x13e9a0	100.0000	
-ddsurface	?Fill@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	57c5f5b459f9	0x13e760	100.0000	
-ddsurface	?FillPalette@CDDSurface@@QAEXI@Z	100.0000	100.0000	1	b26b741f16fe	0x13eb40	100.0000	
+ddsurface	?Fill@CDDSurface@@QAEHI@Z	100.0000	100.0000	2	6570d5745a75	0x13e760	100.0000	
+ddsurface	?FillPalette@CDDSurface@@QAEXI@Z	100.0000	100.0000	2	cac24505c282	0x13eb40	100.0000	
 ddsurface	?Flip@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	1	66977e351536	0x13e850	100.0000	
 ddsurface	?FlipVertical@CDDSurface@@QAEXXZ	70.5526	70.5526	1	565e0186d838	0x13ebb0	70.5526	
 ddsurface	?FreeSurfaces@CDDSurface@@UAEXXZ	100.0000	100.0000	1	30fe32c4682c	0x13e4d0	100.0000	
@@ -1259,25 +1259,25 @@ ddsurface	?GetHeight@CDDSurface@@QAEHXZ	100.0000	100.0000	1	d68d9604e7a1	0x14132
 ddsurface	?GetPoolKind@CDDSurface@@UAE?AW4DDSurfacePoolKind@@XZ	100.0000	100.0000	1	8c63bcd052aa	0x141300	100.0000	
 ddsurface	?GetWidth@CDDSurface@@QAEHXZ	100.0000	100.0000	1	febdf8db0e26	0x141310	100.0000	
 ddsurface	?IsValid@CDDSurface@@UAEHXZ	100.0000	100.0000	1	2814249e8b64	0x1412d0	100.0000	
-ddsurface	?Lock@CDDSurface@@QAEPAXPAX@Z	100.0000	100.0000	1	0d77c612c4c6	0x13e6d0	100.0000	
+ddsurface	?Lock@CDDSurface@@QAEPAXPAUtagRECT@@@Z	100.0000	100.0000	2	db63f91afd42	0x13e6d0	100.0000	
 ddsurface	?MakeImageKey@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADI@Z	100.0000	100.0000	1	3f9386f57417	0x13e5d0	100.0000	
 ddsurface	?Refresh@CDDSurface@@UAEHPAUIDirectDrawSurface@@@Z	100.0000	100.0000	1	d9d914aa0460	0x13e140	100.0000	
 ddsurface	?ReloadImageCache@CDDSurface@@QAEXXZ	100.0000	100.0000	1	5c3eb44ce9d6	0x13e8f0	100.0000	
 ddsurface	?Resolve@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAXW4FileImageFormat@@II@Z	100.0000	100.0000	1	b973b53eb169	0x13e550	100.0000	
-ddsurface	?Restore@CDDSurface@@QAEHPAXH@Z	100.0000	100.0000	1	72cbc769e6f3	0x13e7d0	100.0000	
+ddsurface	?Restore@CDDSurface@@QAEHPAUtagRECT@@H@Z	100.0000	100.0000	2	556a2cad4054	0x13e7d0	100.0000	
 ddsurface	?RestoreLost@CDDSurface@@UAEHXZ	100.0000	100.0000	1	589fe28c236c	0x13f960	100.0000	
 ddsurface	?RotateBlit@CDDSurface@@QAEHPAV1@PAHHHMHH@Z	100.0000	100.0000	1	26fe25ca06bc	0x141040	100.0000	
 ddsurface	?RotateScaleBlit@CDDSurface@@QAEHPAV1@PAHHHMMHH@Z	100.0000	100.0000	1	5a18b9313f08	0x141240	100.0000	
 ddsurface	?SaveFile@CDDSurface@@QAEHPADW4FileImageFormat@@PAXH@Z	100.0000	100.0000	1	40f37db81c84	0x13f910	100.0000	
 ddsurface	?Scale@CDDSurface@@QAEHH@Z	100.0000	100.0000	1	2b76af60c76d	0x1413c0	100.0000	
 ddsurface	?ScaleBlit@CDDSurface@@QAEHPAV1@PAHHHMHH@Z	100.0000	100.0000	1	2a889dd67b32	0x141200	100.0000	
-ddsurface	?SetColorKey@CDDSurface@@QAEHIPAX@Z	100.0000	100.0000	1	ae3fa05fceec	0x13eaa0	100.0000	
+ddsurface	?SetColorKey@CDDSurface@@QAEHIPAU_DDCOLORKEY@@@Z	100.0000	100.0000	2	34466d549d2d	0x13eaa0	100.0000	
 ddsurface	?SetColorKeyRange@CDDSurface@@QAEHIII@Z	100.0000	100.0000	1	b7668948ad55	0x13eb10	100.0000	
 ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	0x13eae0	100.0000	
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80	100.0000	
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	1	482a2140b13f	0x13e690	100.0000	
-ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	66.7461	66.6803	2	1acfdaf28265	0x13f020	66.7461	
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	76.9636	74.6000	1	389ee0da761e	0x13f460	76.9636	
+ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	66.7461	66.2727	2	1acfdaf28265	0x13f020	66.7461	
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	80.3591	80.3591	1	389ee0da761e	0x13f460	80.3591	
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	1	e6919eb7da93	0x141080	100.0000	
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	1	2199bcaca9d3	0x13f990	100.0000	
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	1	1cba59666bcf	0x1413b0	100.0000	
@@ -2855,7 +2855,7 @@ lightfxrender	?BuildShape@CLightFxRender@@QAEHW4LevelArea@@@Z	100.0000	100.0000	
 lightfxrender	?BuildSpacePalette@CLightFxRender@@QAEHXZ	99.0831	98.5616	1	11ed3a6c6e15	0xa8900	99.0831	
 lightfxrender	?BuildTropiczPalette@CLightFxRender@@QAEHXZ	99.4984	97.5862	1	6b90209fe9dd	0xa5310	99.4984	
 lightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	100.0000	100.0000	1	0d204db221f6	0xa9660	100.0000	
-lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	68.8654	68.8654	2	21ea897ce263	0xa3820	71.8590	
+lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	68.8654	68.8654	3	a877544a1810	0xa3820	71.8590	
 lightfxrender	?ContinueMinimapPan@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	9f2e251594dc	0xa95d0	100.0000	
 lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	100.0000	1	4ad103e0e1e6	0xa3b50	100.0000	
 lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAUtagRECT@@PAXH@Z	96.7931	96.7931	2	456e5cd6d13d	0xa3a20	96.7931	
@@ -3218,24 +3218,24 @@ netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	100.0000	100.0000	1	fdb652fffb7d	
 netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	4	e40a7bea4e39	0xc1390	100.0000	
 netlobbydialogs	?DropInDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	9471cb28e4af	0xbe550	100.0000	
 netlobbydialogs	?HostWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	b6e762c3f997	0xbd850	100.0000	
-netlobbydialogs	?InitializeDropInDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	fd206d0f82a1	0xbe760	100.0000	
-netlobbydialogs	?InitializeDropWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	187952c874af	0xbe2f0	100.0000	
-netlobbydialogs	?InitializeHostWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	21fbe5c84068	0xbda00	100.0000	
-netlobbydialogs	?InitializeJoinWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	c1f0225a035e	0xbdb90	100.0000	
-netlobbydialogs	?InitializeLobbyDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	5ae79e30e170	0xbdd60	100.0000	
-netlobbydialogs	?InitializeSessionWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	d95b8724fe1f	0xbdfe0	100.0000	
+netlobbydialogs	?InitializeDropInDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	b13a6afb5694	0xbe760	100.0000	
+netlobbydialogs	?InitializeDropWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	ce2bb2b1aa1c	0xbe2f0	100.0000	
+netlobbydialogs	?InitializeHostWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	3441fcc53a08	0xbda00	100.0000	
+netlobbydialogs	?InitializeJoinWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	7a73c49b01a1	0xbdb90	100.0000	
+netlobbydialogs	?InitializeLobbyDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	7ccaa3f87f86	0xbdd60	100.0000	
+netlobbydialogs	?InitializeSessionWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	330569293a6e	0xbdfe0	100.0000	
 netlobbydialogs	?JoinWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	d3a8b3cb1e8c	0xbda70	100.0000	
 netlobbydialogs	?LobbyDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	d98c7a35e4ea	0xbdc00	100.0000	
-netlobbydialogs	?NetChatSubmit@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	02cd609746c2	0xbe400	100.0000	
+netlobbydialogs	?NetChatSubmit@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	a0deee59f1ca	0xbe400	100.0000	
 netlobbydialogs	?NetDlgSessionStop@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	1	78a2d6b59c3e	0xbe490	100.0000	
 netlobbydialogs	?NetGameDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	b91b965d3d4e	0xbe0a0	100.0000	
 netlobbydialogs	?SessionWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	7e3298f4b260	0xbddd0	100.0000	
-netlobbydialogs	?UpdateDropInDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	9c54cb0c9bb1	0xbe820	100.0000	
-netlobbydialogs	?UpdateDropWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	5387a7da55ed	0xbe3e0	100.0000	
-netlobbydialogs	?UpdateHostWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	df0d67c0e680	0xbda50	100.0000	
-netlobbydialogs	?UpdateJoinWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	8b4a4bcc86ea	0xbdbe0	100.0000	
-netlobbydialogs	?UpdateLobbyDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	03ed9854b5cc	0xbddb0	100.0000	
-netlobbydialogs	?UpdateSessionWaitDialog@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	06aa23ef8906	0xbe030	100.0000	
+netlobbydialogs	?UpdateDropInDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	6352c5483172	0xbe820	100.0000	
+netlobbydialogs	?UpdateDropWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	5291b7b5d97a	0xbe3e0	100.0000	
+netlobbydialogs	?UpdateHostWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	39bf10c8a384	0xbda50	100.0000	
+netlobbydialogs	?UpdateJoinWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	f18c495b1c9a	0xbdbe0	100.0000	
+netlobbydialogs	?UpdateLobbyDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	ac51a9e9259f	0xbddb0	100.0000	
+netlobbydialogs	?UpdateSessionWaitDialog@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	3	25d51e4b5752	0xbe030	100.0000	
 netmgr	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	02a098f8ad05	0x1793b0	100.0000	
 netmgr	??1CNetSessionNode@@UAE@XZ	100.0000	97.5952	1	fb83d73f12fa	0x179420	100.0000	
 netmgr	??1InterfaceObject@@UAE@XZ	100.0000	100.0000	1	62bf31b39003	0x179340	100.0000	
@@ -3616,7 +3616,7 @@ savegamedialogs	?LevelPreviewDlgProc@@YGHPAUHWND__@@IIJ@Z	95.3511	95.3511	2	19c4
 savegamedialogs	?OkCancelDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	034f80ac622c	0xe3be0	100.0000	
 savegamedialogs	?SaveGameDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	38a8e872f6a2	0xe35f0	100.0000	
 savegamedialogs	?SetSaveSlotDialogName@@YAXPAUHWND__@@PAXPAUSaveSlot@@@Z	100.0000	100.0000	2	7fdf7f60b484	0xe4850	100.0000	
-savescreenshot	?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	96.7564	96.7564	3	acf8e65b383e	0x114ff0	96.7564	
+savescreenshot	?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	100.0000	100.0000	4	838638c3d8a7	0x114ff0	100.0000	
 sbi_image	?Refresh@CSBI_Image@@UAEHH@Z	100.0000	100.0000	1	5a3e4e512f95	0xe6db0	100.0000	
 sbi_image	?Render@CSBI_Image@@UAEHXZ	100.0000	74.0714	1	2717dd6d36a6	0xe6dd0	100.0000	
 sbi_image	?Reset@CSBI_Image@@UAEXXZ	100.0000	100.0000	1	a5bb981d51af	0xe6d90	100.0000	

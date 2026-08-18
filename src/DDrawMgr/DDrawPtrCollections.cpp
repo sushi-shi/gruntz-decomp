@@ -13,7 +13,7 @@
 
 RVA(0x00148840, 0x47)
 i32 CFileImageSurface::LoadKeyed(
-    void* surf,
+    CDDrawPtrCollections* surf,
     i32 width,
     i32 height,
     ColorDepth bitDepth,

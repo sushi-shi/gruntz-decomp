@@ -103,8 +103,14 @@ public:
     virtual i32
     ResolveEx(void* surf, void* buf, FileImageFormat type, u32 size, i32 ctrl, i32 trans);
     virtual i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key);
-    virtual i32
-    LoadKeyed(void* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key);
+    virtual i32 LoadKeyed(
+        CDDrawPtrCollections* surf,
+        i32 width,
+        i32 height,
+        ColorDepth bitDepth,
+        i32 caps,
+        i32 key
+    );
 };
 
 class CFileImagePal {

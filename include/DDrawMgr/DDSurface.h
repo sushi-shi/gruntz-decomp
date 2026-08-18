@@ -86,24 +86,25 @@ public:
     virtual i32 Refresh(IDirectDrawSurface* surf);
 
     virtual i32 CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc);
-    virtual i32 BlitSurf(void* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps);
+    virtual i32
+    BlitSurf(CDDrawPtrCollections* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps);
     virtual void FreeSurfaces();
     virtual i32 IsValid();
 
     virtual DDSurfacePoolKind GetPoolKind();
     virtual i32 RestoreLost();
-    virtual i32 BlitIntoDesc(void* a);
+    virtual i32 BlitIntoDesc(CDDrawPtrCollections* mgr);
 
-    void* Lock(void* rect);
+    void* Lock(RECT* rect);
     u8 GetPixel(i32 x, i32 y);
     void PutPixel(i32 x, i32 y, u8 color);
     i32 SetPalette(CDDPalette* pal, i32 unused);
-    i32 Restore(void* info, i32 mode);
+    i32 Restore(RECT* dstRect, i32 fillColor);
     i32 Flip(CDDSurface* target);
 
     void ReloadImageCache();
     void* GetElementAt(i32 i);
-    i32 SetColorKey(u32 flags, void* key);
+    i32 SetColorKey(u32 flags, DDCOLORKEY* key);
 
     i32 SetColorKeyVal(u32 flags, u32 key);
     i32 SetColorKeyRange(u32 flags, u32 lo, u32 hi);
@@ -111,8 +112,8 @@ public:
 
     void WaitFlip();
     i32 Blt(CDDSurface* src);
-    i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx);
-    i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);
+    i32 BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, DDBLTFX* fx);
+    i32 BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans);
     void Tile(CDDSurface* src, i32 useColorKey);
     void DumpSurfaceInfo(i32 detailed);
     i32 ShadeBlt(struct tagRECT* dstRect, CDDSurface* src, struct tagRECT* srcRect, i32 shade);
