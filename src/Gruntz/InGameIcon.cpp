@@ -758,10 +758,10 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
 
-            void* found = 0;
+            CGameObject* found = NULL;
             if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found)
                 && found != NULL) {
-                (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
+                found->m_flags |= 0x10000;
             }
         }
         reg = g_gameReg;
@@ -900,13 +900,12 @@ i32 CInGameIcon::SerializeMove(
             g_serialCounter++;
             i32 id = 0;
             ar->Read(&id, sizeof(id));
-            void* found = 0;
-            CWwdGameObjectA* sprite = 0;
+            CGameObject* found = NULL;
+            CWwdGameObjectA* sprite = NULL;
             if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0) {
-                sprite = (found != NULL
-                          && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF)
+                sprite = (found != NULL && found->GetClassId() == CLASSID_SERIALREF)
                              ? static_cast<CWwdGameObjectA*>(found)
-                             : 0;
+                             : NULL;
             }
             m_glitterSprite = sprite;
             if (sprite != NULL) {

@@ -2749,8 +2749,8 @@ ingameicon	?RefreshCell@CInGameIcon@@QAEHXZ	100.0000	100.0000	1	c4b394141e7d	0x9
 ingameicon	?RegisterIconActions@@YAXXZ	100.0000	100.0000	1	48bcade44a85	0x979e0	100.0000	
 ingameicon	?RegisterIconState@@YAXXZ	100.0000	100.0000	1	0a011fe80102	0x97f40	100.0000	
 ingameicon	?RegisterTextLogic@@YAXXZ	100.0000	100.0000	1	ae1a88d85c0c	0x995c0	100.0000	
-ingameicon	?Reposition@CInGameIcon@@QAEHXZ	97.4286	97.4286	1	35d8fdd649b3	0x98a90	97.4286	
-ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	86.8858	86.8858	3	d4d6bf1494d9	0x98c90	90.7994	
+ingameicon	?Reposition@CInGameIcon@@QAEHXZ	97.4286	97.4286	2	2b1f1c34a863	0x98a90	97.4286	
+ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	86.8858	86.8858	4	e69a703e8935	0x98c90	90.7994	
 ingameicon	?SerializeMove@CInGameText@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	f88d43eb5ae4	0x99a30	100.0000	
 ingameicon	?SerializeMove@CToyPeek@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	aff4d5def44e	0x983e0	100.0000	
 ingameicon	?SetupSprite@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	2	6ffee4a54d9b	0x99b10	100.0000	
@@ -3365,7 +3365,7 @@ play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	1	3b726a3aafe1	0xd72c0	10
 play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	1	bf1877601d3d	0xda3b0	100.0000	
 play	?ClampViewport2@CPlay@@QAEHH@Z	91.2653	91.2653	1	3da228a05b00	0xd8ed0	91.2653	
 play	?ClampViewport@CPlay@@QAEHH@Z	100.0000	100.0000	1	c386e9d809e4	0xd8dc0	100.0000	
-play	?ClearPlacedObjects@CPlay@@QAEHXZ	96.8333	96.8333	1	7bb27f5b3d01	0xda030	96.8333	
+play	?ClearPlacedObjects@CPlay@@QAEHXZ	96.8333	96.8333	2	dc6660a7a061	0xda030	96.8333	
 play	?CompleteLevel@CPlay@@UAEHXZ	100.0000	100.0000	1	3db82f9133d1	0xcfbd0	100.0000	
 play	?CountObjectsByCategory@CPlay@@UAEHH@Z	100.0000	100.0000	1	3b158ed23ee8	0xd0050	100.0000	
 play	?DeactivateDistantObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	1	7f935445c424	0xcee10	100.0000	
@@ -3434,7 +3434,7 @@ play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	1	e59427dc97a3	0xd8960	100.000
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	1	993b54aa05a0	0xd9160	100.0000	
 play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	1	e61042ec7712	0xd6560	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	1	634f0a2f3808	0xc8700	100.0000	
-play	?Render@CPlay@@UAEHXZ	96.4002	96.3980	1	b0b2f92045b3	0xc8cf0	96.4002	
+play	?Render@CPlay@@UAEHXZ	96.3980	96.3980	2	4090092d5b38	0xc8cf0	96.4002	
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	1	c9815d61e053	0xd5f00	100.0000	
 play	?ResetPlayState@CPlay@@QAEHXZ	96.6250	96.6250	1	ad8f00da114e	0xd60b0	96.6250	
 play	?ResetViewport@CPlay@@QAEHXZ	100.0000	100.0000	1	6bf1cca8b714	0xd8c60	100.0000	
@@ -4278,7 +4278,7 @@ triggermgr	?DestroyGroup@CTriggerMgr@@QAEHHHHH@Z	96.7910	96.7910	1	4b9de6173c5f	
 triggermgr	?EnqueueGroupCells@CTriggerMgr@@QAEHXZ	100.0000	100.0000	1	f4601f04cb5d	0x7d6e0	100.0000	
 triggermgr	?FindNearestInRow@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	89.5263	89.5263	1	5d5951626b97	0x77f80	89.5263	
 triggermgr	?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	1	8f07229cfe45	0x78060	90.2439	
-triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	95.2749	95.2749	1	3ab81ae6f629	0x7abc0	95.2749	
+triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	95.2749	95.2749	2	34e0d61a7e9e	0x7abc0	95.2749	
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	100.0000	100.0000	1	30a510c97236	0x78960	100.0000	
 triggermgr	?LoadExplosionSprites@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	1	ac1a40273130	0x7b330	100.0000	
 triggermgr	?LoadFinishLevelSprite@CTriggerMgr@@QAEXW4FinishLevelReason@@@Z	86.0642	86.0642	1	6bbb7a7b0232	0x7c3d0	86.0642	
@@ -4289,7 +4289,7 @@ triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	1	0d57524b9
 triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	86.4804	86.4804	2	4db56243036a	0x79fb0	86.4804	
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	1	aa17ca3713d7	0x79b00	100.0000	
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	12c00630f681	0x78a30	100.0000	
-triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	72.2218	72.2218	2	f90747793ff9	0x78a50	72.5862	
+triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	72.5466	72.5466	3	7e3d5ea00d53	0x78a50	72.5862	
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	1	32bcbd4b4335	0x7a240	100.0000	
 triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	89.2241	89.2241	1	2353c0961e27	0x7cc60	89.2241	
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	1	2bb1369f1abf	0x784d0	100.0000	
@@ -4300,7 +4300,7 @@ triggermgr	?ReportRecordsB@CTriggerMgr@@QAEXHHHH@Z	100.0000	100.0000	1	a8a632d14
 triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	58be7ed48139	0x78430	100.0000	
 triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	99.8538	90.7510	1	6294efb85465	0x79520	99.8538	
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	41a92a09073b	0x79d90	100.0000	
-triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	1	1d0c8aba7327	0x7a760	99.1927	
+triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	2	542bd4576a1c	0x7a760	99.1927	
 triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	100.0000	1	7814ca8db28b	0x788d0	100.0000	
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	1	f9e6393ec7c9	0x7d2a0	100.0000	
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	bb198cd45dc6	0x7a5e0	100.0000	

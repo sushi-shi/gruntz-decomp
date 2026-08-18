@@ -658,12 +658,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     occupantId = plane->m_rowInts[ty][tx * 7 + 2];
                 }
                 if (occupantId != 0) {
-                    void* out = 0;
                     CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
                     CGameObject* occupant = NULL;
-                    if (MapLookupById(*map, occupantId, out) != 0) {
-                        occupant = static_cast<CGameObject*>(out);
-                    }
+                    MapLookupById(*map, occupantId, occupant);
                     if (occupant != NULL) {
                         CUserLogic* logic = occupant->m_animWorker->m_logic;
                         if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
@@ -1331,7 +1328,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             i32 id = 0;
             if (g != NULL) {
                 id = g->m_object->m_objectId;
-                void* found = 0;
+                CGameObject* found = NULL;
                 MapLookupById(lvl->m_childGroup->m_map48, id, found);
             }
             ar->Write(&id, sizeof(id));
@@ -1391,7 +1388,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             goto fail;
         }
         objId = obj->m_object->m_objectId;
-        void* found = 0;
+        CGameObject* found = NULL;
         MapLookupById(lvl->m_childGroup->m_map48, objId, found);
         ar->Write(&objId, sizeof(objId));
     }
@@ -1438,21 +1435,21 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         for (i32 i = 0; i < TM_GRID_COLS; i++) {
             i32 key;
             ar->Read(&key, sizeof(key));
-            void* cell = 0;
+            CGrunt* cell = NULL;
             if (key != 0) {
-                void* found = 0;
+                CGameObject* found = NULL;
                 if (MapLookupById(world->m_childGroup->m_map48, key, found) == 0) {
                     return 0;
                 }
                 if (found == NULL) {
                     return 0;
                 }
-                cell = (static_cast<CGameObject*>(found))->m_animWorker->m_logic;
+                cell = static_cast<CGrunt*>(found->m_animWorker->m_logic);
                 if (cell == NULL) {
                     return 0;
                 }
             }
-            m_grid[owner * TM_GRID_COLS + i] = static_cast<CGrunt*>(cell);
+            m_grid[owner * TM_GRID_COLS + i] = cell;
         }
     }
 
@@ -1507,20 +1504,20 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         i32 key;
         ar->Read(&key, sizeof(key));
         if (key != 0) {
-            void* found = 0;
-            void* looked = 0;
+            CGameObject* found = NULL;
+            CGameObject* looked = NULL;
             if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
                 looked = found;
             }
-            void* obj;
+            CWwdGameObjectA* obj;
             if (looked == NULL) {
                 obj = NULL;
             } else {
-                obj = (static_cast<CGameObject*>(looked)->GetClassId() == CLASSID_SERIALREF)
-                          ? looked
+                obj = (looked->GetClassId() == CLASSID_SERIALREF)
+                          ? static_cast<CWwdGameObjectA*>(looked)
                           : NULL;
             }
-            m_goal = static_cast<CWwdGameObjectA*>(obj);
+            m_goal = obj;
             if (obj == NULL) {
                 return 0;
             }
@@ -1531,16 +1528,15 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         i32 key;
         ar->Read(&key, sizeof(key));
         if (key != 0) {
-            void* found = 0;
-            void* looked = 0;
+            CGameObject* found = NULL;
+            CGameObject* looked = NULL;
             if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
                 looked = found;
             }
             if (looked == NULL) {
                 return 0;
             }
-            CWarlord* obj =
-                static_cast<CWarlord*>((static_cast<CGameObject*>(looked))->m_animWorker->m_logic);
+            CWarlord* obj = static_cast<CWarlord*>(looked->m_animWorker->m_logic);
             m_pendingFx = obj;
             if (obj == NULL) {
                 return 0;
@@ -1559,15 +1555,15 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key == 0) {
             return 0;
         }
-        void* found = 0;
-        void* looked = 0;
+        CGameObject* found = NULL;
+        CGameObject* looked = NULL;
         if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
             looked = found;
         }
         if (looked == NULL) {
             return 0;
         }
-        void* obj = (static_cast<CGameObject*>(looked))->m_animWorker->m_logic;
+        CGruntPuddle* obj = static_cast<CGruntPuddle*>(looked->m_animWorker->m_logic);
         if (obj == NULL) {
             return 0;
         }

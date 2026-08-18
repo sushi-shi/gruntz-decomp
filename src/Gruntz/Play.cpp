@@ -708,14 +708,14 @@ i32 CPlay::Render() {
                     // nested inside it: retail's 0xc9396 `je` skips only the
                     // `mov eax,[esp+0x10]` and both paths share the one `cmp eax,edi`
                     // (a failed lookup leaves eax 0 from its own `test`).
-                    void* out = 0;
-                    CGameObject* object = 0;
+                    CGameObject* out = NULL;
+                    CGameObject* object = NULL;
                     if (MapLookupById(
                             g_gameReg->m_world->m_childGroup->m_map48,
                             g_gameReg->m_options[0].m_warlordObjectId,
                             out
                         )) {
-                        object = static_cast<CGameObject*>(out);
+                        object = out;
                     }
                     if (object != NULL && object->m_animWorker->m_logic != NULL) {
                         static_cast<CWarlord*>(object->m_animWorker->m_logic)
@@ -7738,12 +7738,12 @@ i32 CPlay::ClearPlacedObjects() {
                     occupantId = 0;
                 }
                 if (occupantId != 0) {
-                    void* out = 0;
+                    CGameObject* out = NULL;
                     BOOL found =
                         MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, occupantId, out);
-                    CGameObject* result = 0;
+                    CGameObject* result = NULL;
                     if (found) {
-                        result = static_cast<CGameObject*>(out);
+                        result = out;
                     }
                     if (result == NULL) {
 
