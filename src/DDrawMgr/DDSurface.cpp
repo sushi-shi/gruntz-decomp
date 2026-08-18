@@ -309,7 +309,7 @@ i32 CDDSurface::Resolve(
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmp(pal, buf, size)) {
+            if (!DecodeBmp(pal, static_cast<BmpFileImage*>(buf), size)) {
                 return 0;
             }
             break;

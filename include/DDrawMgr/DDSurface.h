@@ -17,6 +17,7 @@ struct CDDPalette;
 class CDDrawPtrCollections;
 class CFileImagePal;
 struct PcxHeader;
+struct BmpFileImage;
 
 union BltFxWords {
     DDBLTFX m_fx;
@@ -142,7 +143,7 @@ public:
         u32 colorKey
     );
 
-    i32 DecodeBmp(class CDDrawPtrCollections* pal, void* buf, u32 size);
+    i32 DecodeBmp(class CDDrawPtrCollections* pal, BmpFileImage* buf, u32 size);
     i32 DecodePcx(class CDDrawPtrCollections* pal, struct PcxHeader* hdr, u32 size);
     i32 DecodePid(class CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u32 colorKey);
     i32 DecodePcxData(class CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 caps, u32 key);
@@ -154,7 +155,7 @@ public:
     i32 MakeImageKey(class CDDrawPtrCollections* pal, char* name, u32 colorKey);
     i32 DecodePcxEx(class CDDrawPtrCollections* pal, char* path, i32 caps, u32 key);
 
-    i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b);
+    i32 DecodeRun(CDDrawPtrCollections* info, BmpFileImage* src, i32 a, i32 b);
     i32 Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode);
 
     void FlipVertical();
@@ -199,8 +200,8 @@ public:
     i32 BlitDirect(void* src, RasterRowOrder rowOrder);
     i32 DecodeRun8(void* dst);
     i32 DecodeRun24(void* dst);
-    i32 RunDecode1(void* dst, void* src, i32 width, i32 height);
-    i32 RunDecode3(void* dst, void* src, i32 width, i32 height);
+    i32 RunDecode1(u8* dst, u8* src, i32 width, i32 height);
+    i32 RunDecode3(u8* dst, u8* src, i32 width, i32 height);
     void FillPalette(u32 key);
     i32 ShadeRect(i32 pct, RECT* clip);
 

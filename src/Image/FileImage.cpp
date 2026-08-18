@@ -31,9 +31,7 @@ DATA(0x002852f0)
 static PALETTEENTRY s_palPcxData[0x100];
 
 RVA(0x00143cf0, 0x16b)
-i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
-
-    BmpFileImage* img = static_cast<BmpFileImage*>(srcv);
+i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, BmpFileImage* img, i32, i32 b) {
     ColorDepth srcFmt = static_cast<ColorDepth>(img->info.bmiHeader.biBitCount);
     i32 width = img->info.bmiHeader.biWidth;
     i32 height = img->info.bmiHeader.biHeight;
@@ -74,7 +72,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 
     RecordBytes<BmpFileImage> base;
     base.m_rec = img;
-    void* run = base.m_bytes + img->fh.bfOffBits;
+    u8* run = base.m_bytes + img->fh.bfOffBits;
     if (convert) {
         if (Blit(run, srcFmt, pal, RASTER_ROWS_BOTTOM_UP) == 0) {
             return 0;
@@ -105,15 +103,13 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
         delete[] buf;
         return 0;
     }
-    i32 result = DecodeRun(info, buf, len, mode);
+    i32 result = DecodeRun(info, static_cast<BmpFileImage*>(static_cast<void*>(buf)), len, mode);
     delete[] buf;
     return result;
 }
 
 RVA(0x00143fc0, 0x142)
-i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
-
-    BmpFileImage* bmp = static_cast<BmpFileImage*>(buf);
+i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, BmpFileImage* bmp, u32 size) {
     BITMAPINFOHEADER* ih = &bmp->info.bmiHeader;
     i32 width = ih->biWidth;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
@@ -144,8 +140,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
                 }
             }
 
-            void* pixels =
-                static_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
+            u8* pixels = static_cast<u8*>(static_cast<void*>(bmp)) + bmp->fh.bfOffBits;
             if (remap) {
                 if (Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP) == 0) {
                     return 0;
@@ -182,7 +177,7 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
         return 0;
     }
 
-    i32 result = DecodeBmp(pal, buf, len);
+    i32 result = DecodeBmp(pal, static_cast<BmpFileImage*>(static_cast<void*>(buf)), len);
     delete[] buf;
     return result;
 }
@@ -542,8 +537,8 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
         return 0;
     }
 
-    void* run = src->m_pixels;
-    u8* buf = 0;
+    u8* run = src->m_pixels;
+    u8* buf = NULL;
     i32 result;
     if (convert == 0) {
         if (srcFmt == BPP_PALETTED_8) {
@@ -734,7 +729,7 @@ i32 CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
 #pragma optimize("", off)
 
 RVA(0x00145270, 0x17a)
-i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
+i32 CDDSurface::RunDecode1(u8* dstBuf, u8* src, i32 width, i32 height) {
     u8* sp;
     i32 y;
     u8 tok;
@@ -750,10 +745,10 @@ i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
         return 0;
     }
     hold = 0;
-    sp = static_cast<u8*>(src);
+    sp = src;
     dstp = NULL;
     for (y = 0; y < height; y++) {
-        dstp = static_cast<u8*>(dstBuf) + width * y;
+        dstp = dstBuf + width * y;
         cols = width;
         if (hold > 0) {
             for (k = 0; k < hold; k++) {
@@ -790,7 +785,7 @@ i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
 }
 
 RVA(0x001453f0, 0x3ac)
-i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
+i32 CDDSurface::RunDecode3(u8* dstBuf, u8* src, i32 width, i32 height) {
     u8* sp;
     i32 y;
     u8 tok;
@@ -807,11 +802,11 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
         return 0;
     }
     hold = 0;
-    sp = static_cast<u8*>(src);
+    sp = src;
     dstp = NULL;
     for (y = 0; y < height; y++) {
         base = y * width * 3;
-        dstp = static_cast<u8*>(dstBuf) + base;
+        dstp = dstBuf + base;
         cols = width;
         if (hold > 0) {
             for (k = 0; k < hold; k++) {
@@ -843,7 +838,7 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
                 cols--;
             }
         }
-        dstp = static_cast<u8*>(dstBuf) + base + 1;
+        dstp = dstBuf + base + 1;
         cols = width;
         if (hold > 0) {
             for (k = 0; k < hold; k++) {
@@ -875,7 +870,7 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
                 cols--;
             }
         }
-        dstp = static_cast<u8*>(dstBuf) + base + 2;
+        dstp = dstBuf + base + 2;
         cols = width;
         if (hold > 0) {
             for (k = 0; k < hold; k++) {

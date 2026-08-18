@@ -68,7 +68,7 @@ i32 CFileImageSurface::ResolveEx(
         case FMT_BMP:
             if (!DecodeRun(
                     static_cast<CDDrawPtrCollections*>(surf),
-                    buf,
+                    static_cast<BmpFileImage*>(buf),
                     static_cast<i32>(size),
                     c
                 )) {
