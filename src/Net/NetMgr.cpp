@@ -97,8 +97,8 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
 
 RVA(0x00178170, 0xba)
-i32 CNetMgr::Init(void* a, NetGuid appGuid) {
-    IDirectPlay4Z* lobby = static_cast<IDirectPlay4Z*>(a);
+i32 CNetMgr::Init(void* lobbyIface, NetGuid appGuid) {
+    IDirectPlay4Z* lobby = static_cast<IDirectPlay4Z*>(lobbyIface);
 
 
 
@@ -191,7 +191,7 @@ EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* l
 
 
 RVA(0x00178360, 0xc8)
-InterfaceObject* CNetMgr::AddGroupNode(void* guid, void* name) {
+InterfaceObject* CNetMgr::AddGroupNode(GUID* guid, const char* name) {
     InterfaceObject* node = new InterfaceObject();
 
     if (guid == NULL || name == NULL) {
@@ -199,8 +199,8 @@ InterfaceObject* CNetMgr::AddGroupNode(void* guid, void* name) {
         return 0;
     }
 
-    node->m_guid = static_cast<GUID*>(guid);
-    node->m_name = static_cast<const char*>(name);
+    node->m_guid = guid;
+    node->m_name = name;
     node->m_listPosition = m_groups.AddTail(static_cast<CObject*>(node));
     return node;
 }
@@ -277,11 +277,11 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
 }
 
 RVA(0x00178590, 0x78)
-i32 CNetMgr::ReadGroupSel(void* hList) {
+i32 CNetMgr::ReadGroupSel(HWND hList) {
     if (hList == NULL) {
         return 0;
     }
-    i32 sel = static_cast<i32>(SendMessageA(static_cast<HWND>(hList), LB_GETCURSEL, 0, 0));
+    i32 sel = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
     if (sel == -1) {
         return 0;
     }
@@ -291,7 +291,7 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (sel >= static_cast<i32>(m_groups.GetCount())) {
         return 0;
     }
-    i32 data = static_cast<i32>(SendMessageA(static_cast<HWND>(hList), LB_GETITEMDATA, sel, 0));
+    i32 data = static_cast<i32>(SendMessageA(hList, LB_GETITEMDATA, sel, 0));
     if (data == -1) {
         return 0;
     }
@@ -316,7 +316,7 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
 
 
 RVA(0x00178610, 0x8c)
-i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
+i32 CNetMgr::EnumPlayersInto(u32 dwTimeout, u32 dwFlags) {
     ClearPlayerList();
 
     CNetSessionDesc desc;
@@ -325,7 +325,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     desc.m_guidApplication = m_appGuid.m_guid;
 
     IDirectPlay4Z* com = m_directPlay;
-    i32 hr = com->EnumPlayers(&desc, a, &NetEnumPlayerCb, this, b);
+    i32 hr = com->EnumPlayers(&desc, dwTimeout, &NetEnumPlayerCb, this, dwFlags);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
         return hr;
@@ -334,7 +334,8 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
 }
 
 RVA(0x001786a0, 0x2a)
-BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx) {
+BOOL __stdcall
+NetEnumPlayerCb(CNetSessionDesc* lpThisSD, u32* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx) {
     if (ctx != NULL && (dwFlags & 1) == 0 && lpThisSD != NULL) {
         ctx->AddPlayerNode(lpThisSD);
         return TRUE;
@@ -351,14 +352,14 @@ BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags,
 
 // @early-stop
 RVA(0x001786d0, 0x77)
-CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
+CNetPlayerListNode* CNetMgr::AddPlayerNode(CNetSessionDesc* playerDesc) {
     if (playerDesc == NULL) {
         return 0;
     }
 
     CNetPlayerListNode* node = new CNetPlayerListNode();
 
-    if (node->Init(static_cast<CNetSessionDesc*>(playerDesc)) == 0) {
+    if (node->Init(playerDesc) == 0) {
         delete node;
         return 0;
     }
@@ -387,12 +388,12 @@ void CNetMgr::ClearPlayerList() {
 
 
 RVA(0x00178790, 0x89)
-void CNetMgr::PopulatePlayerList(void* hList) {
+void CNetMgr::PopulatePlayerList(HWND hList) {
     if (hList == NULL) {
         return;
     }
 
-    SendMessageA(static_cast<HWND>(hList), LB_RESETCONTENT, 0, 0);
+    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
     m_playerSelId = m_players.GetHeadPosition();
     CNetPlayerListNode* payload =
@@ -401,7 +402,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     while (payload != NULL) {
         MsgParam name;
         i32 r = static_cast<i32>(SendMessageA(
-            static_cast<HWND>(hList),
+            hList,
             LB_ADDSTRING,
             0,
             (name.m_str = payload->m_desc.m_lpszName, name.m_lparam)
@@ -409,7 +410,7 @@ void CNetMgr::PopulatePlayerList(void* hList) {
         if (r != -1) {
             MsgParam cookie;
             cookie.m_player = payload;
-            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
+            SendMessageA(hList, LB_SETITEMDATA, r, cookie.m_lparam);
         }
 
 
@@ -426,11 +427,11 @@ void CNetMgr::PopulatePlayerList(void* hList) {
 }
 
 RVA(0x00178820, 0x78)
-i32 CNetMgr::ReadPlayerSel(void* hList) {
+i32 CNetMgr::ReadPlayerSel(HWND hList) {
     if (hList == NULL) {
         return 0;
     }
-    i32 sel = static_cast<i32>(SendMessageA(static_cast<HWND>(hList), LB_GETCURSEL, 0, 0));
+    i32 sel = static_cast<i32>(SendMessageA(hList, LB_GETCURSEL, 0, 0));
     if (sel == -1) {
         return 0;
     }
@@ -440,7 +441,7 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
     if (sel >= static_cast<i32>(m_players.GetCount())) {
         return 0;
     }
-    i32 data = static_cast<i32>(SendMessageA(static_cast<HWND>(hList), LB_GETITEMDATA, sel, 0));
+    i32 data = static_cast<i32>(SendMessageA(hList, LB_GETITEMDATA, sel, 0));
     if (data == -1) {
         return 0;
     }
@@ -505,7 +506,9 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, 0);
         return 0;
     }
-    CNetPlayerListNode* r = AddPlayerNode(blob);
+    // byte-forced: the session description is variable length - the record and
+    // then the strings it points into - so bytes are the allocation unit.
+    CNetPlayerListNode* r = AddPlayerNode(reinterpret_cast<CNetSessionDesc*>(blob));
     delete[] blob;
     return r;
 }
@@ -545,12 +548,12 @@ i32 CNetMgr::EnumGroupsAll() {
 
 
 RVA(0x00178a80, 0x73)
-i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
+i32 CNetMgr::EnumGroupsRange(CNetPlayerListNode* rec, i32 flags) {
     ClearSessionList();
 
 
 
-    GUID desc = (static_cast<CNetPlayerListNode*>(rec))->m_desc.m_guidInstance;
+    GUID desc = rec->m_desc.m_guidInstance;
 
     IDirectPlay4Z* iface = m_directPlay;
     i32 hr = iface->EnumGroupsCb(&desc, &NetEnumCb, this, flags);
@@ -669,12 +672,12 @@ CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
 
 
 RVA(0x00178d40, 0xdf)
-void CNetMgr::PopulateSessionList(void* hList) {
+void CNetMgr::PopulateSessionList(HWND hList) {
     if (hList == NULL) {
         return;
     }
 
-    SendMessageA(static_cast<HWND>(hList), LB_RESETCONTENT, 0, 0);
+    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
     m_sessionSelId = m_sessions.GetHeadPosition();
     CNetSessionNode* payload =
@@ -683,7 +686,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
     while (payload != NULL) {
         MsgParam name;
         i32 r = static_cast<i32>(SendMessageA(
-            static_cast<HWND>(hList),
+            hList,
             LB_ADDSTRING,
             0,
             (name.m_str = static_cast<const char*>(payload->GetName()), name.m_lparam)
@@ -691,7 +694,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
         if (r != -1) {
             MsgParam cookie;
             cookie.m_session = payload;
-            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
+            SendMessageA(hList, LB_SETITEMDATA, r, cookie.m_lparam);
         }
 
 
@@ -722,7 +725,7 @@ i32 CNetMgr::RemovePlayerObj(CNetSessionNode* obj) {
 
 RVA(0x00178e60, 0x23)
 i32 CNetMgr::RemovePlayerById(i32 id) {
-    CNetSessionNode* obj = static_cast<CNetSessionNode*>(GetPlayerData(id));
+    CNetSessionNode* obj = GetPlayerData(id);
     if (obj != NULL) {
         return RemovePlayerObj(obj);
     }
@@ -742,9 +745,9 @@ CNetSessionNode* CNetMgr::FindPlayerById(i32 id) {
 }
 
 RVA(0x00178eb0, 0x3f)
-void* CNetMgr::GetPlayerData(i32 id) {
+CNetSessionNode* CNetMgr::GetPlayerData(i32 id) {
     u32 size;
-    void* data;
+    CNetSessionNode* data;
     data = NULL;
     size = 4;
     i32 hr = m_directPlay->GetData2(id, &data, &size, 1);
@@ -835,14 +838,14 @@ i32 CNetMgr::RemovePlayerNode(CNetPlayerListNode* node) {
 }
 
 RVA(0x00179130, 0x5d)
-i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
-    if (desc == NULL) {
+i32 CNetMgr::EnumSessions(CNetCaps* caps, void* ctx) {
+    if (caps == NULL) {
         return 0;
     }
 
-    memset(desc, 0, 0x28);
-    *static_cast<i32*>(desc) = 0x28;
-    i32 hr = m_directPlay->Enum2(desc, ctx);
+    memset(caps, 0, sizeof(*caps));
+    caps->m_dwSize = sizeof(*caps);
+    i32 hr = m_directPlay->Enum2(caps, ctx);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, 0);
         return 0;
@@ -851,21 +854,21 @@ i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
 }
 
 RVA(0x00179190, 0x84)
-i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags) {
+i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags) {
     if (!a) {
         return 0;
     }
     if (!a->m_id) {
         return 0;
     }
-    if (!desc) {
+    if (!caps) {
         return 0;
     }
-    memset(desc, 0, 0x28);
-    *static_cast<i32*>(desc) = 0x28;
+    memset(caps, 0, sizeof(*caps));
+    caps->m_dwSize = sizeof(*caps);
     IDirectPlay4Z* dp = m_directPlay;
     i32 id = a->m_id;
-    i32 hr = dp->GetGroupData(id, desc, flags);
+    i32 hr = dp->GetGroupData(id, caps, flags);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x553, hr, 0);
         return 0;

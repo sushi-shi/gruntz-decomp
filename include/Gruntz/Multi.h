@@ -25,7 +25,7 @@ struct CNetVersionMsg;
 class GruntzPlayer;
 struct CNetSession;
 
-class CNetSessionDesc;
+struct CNetSessionDesc;
 
 struct CNetLobbyName {
     u32 m_dwSize;
@@ -157,7 +157,7 @@ public:
     i32 Poll(i32 token);
     i32 ResolveLocalPlayer();
     void ReportAckLatency();
-    i32 VerifyCustomLevel(void* h, CNetSessionNode* token);
+    i32 VerifyCustomLevel(CNetPlayerListNode* h, CNetSessionNode* token);
     i32 PollSession();
     i32 AutoTuneCmdDelay();
 

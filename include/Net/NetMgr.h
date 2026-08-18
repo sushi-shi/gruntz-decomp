@@ -287,9 +287,12 @@ struct NetDPName {
     char* lpszLongNameA;
 };
 
+struct CNetSessionDesc;
+struct CNetCaps;
+
 typedef BOOL(__stdcall* NetEnumSessionsCallback)(
-    void* lpThisSD,
-    void* lpdwTimeout,
+    CNetSessionDesc* lpThisSD,
+    u32* lpdwTimeout,
     DWORD dwFlags,
     CNetMgr* lpContext
 );
@@ -322,25 +325,26 @@ struct IDirectPlay4Z {
     STDMETHOD(v09)() PURE;
     STDMETHOD(v0a)() PURE;
     STDMETHOD(v0b)() PURE;
-    STDMETHOD(EnumGroupsCb)(void* desc, NetEnumPlayersCallback callback, void* ctx, i32 flags) PURE;
+    STDMETHOD(EnumGroupsCb)
+    (GUID* lpguidInstance, NetEnumPlayersCallback callback, void* ctx, i32 flags) PURE;
     STDMETHOD(EnumPlayers)(
-        void* desc,
-        void* a,
+        CNetSessionDesc* lpsd,
+        u32 dwTimeout,
         NetEnumSessionsCallback callback,
         void* ctx,
-        void* flags
+        u32 dwFlags
     ) PURE;
-    STDMETHOD(Enum2)(void* desc, void* ctx) PURE;
+    STDMETHOD(Enum2)(CNetCaps* lpCaps, void* ctx) PURE;
     STDMETHOD(v0f)() PURE;
     STDMETHOD(v10)() PURE;
     STDMETHOD(GetMessageCount)(i32 idPlayer, i32* lpCount) PURE;
     STDMETHOD(v12)() PURE;
-    STDMETHOD(GetGroupData)(i32 id, void* lpData, i32 flags) PURE;
+    STDMETHOD(GetGroupData)(i32 id, CNetCaps* lpCaps, i32 flags) PURE;
     STDMETHOD(GetData2)(i32 id, void* lpData, u32* lpSize, u32 fl) PURE;
     STDMETHOD(v15)() PURE;
-    STDMETHOD(GetPlayerData2)(void* in, void* out) PURE;
+    STDMETHOD(GetPlayerData2)(void* lpData, i32* lpdwDataSize) PURE;
     STDMETHOD(v17)() PURE;
-    STDMETHOD(EnumGroups)(void* desc, i32 flags) PURE;
+    STDMETHOD(EnumGroups)(CNetSessionDesc* desc, i32 flags) PURE;
     STDMETHOD(Receive)(i32* lpidFrom, i32* lpidTo, i32 flags, void* lpData, i32* lpSize) PURE;
     STDMETHOD(SetData5)(i32 a, i32 b, i32 c, void* data, i32 size) PURE;
     STDMETHOD(v1b)() PURE;
@@ -453,7 +457,7 @@ public:
 };
 
 extern BOOL __stdcall
-NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
+NetEnumPlayerCb(CNetSessionDesc* lpThisSD, u32* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
 
 extern BOOL __stdcall
 NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
@@ -524,7 +528,7 @@ public:
     i32 RemovePlayerById(i32 id);
     i32 RemovePlayerNode(CNetPlayerListNode* node);
     i32 EnumSessions2(void* ctx);
-    void* GetPlayerData(i32 id);
+    CNetSessionNode* GetPlayerData(i32 id);
     i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size);
 
     i32 SendEx(
@@ -541,31 +545,34 @@ public:
     i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);
     i32 Receive(CNetSessionNode* from, CNetSessionNode* to, i32 flags, void* lpData, i32* lpSize);
     i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size);
-    i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);
-    i32 EnumSessions(void* desc, void* ctx);
+    i32 GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags);
+    i32 EnumSessions(CNetCaps* caps, void* ctx);
 
     void Destroy();
     void ClearGroupList();
     void ClearPlayerList();
     void ClearSessionList();
 
-    i32 ReadGroupSel(void* hList);
-    i32 ReadPlayerSel(void* hList);
+    i32 ReadGroupSel(HWND hList);
+    i32 ReadPlayerSel(HWND hList);
 
-    i32 EnumPlayersInto(void* a, void* b);
+    i32 EnumPlayersInto(u32 dwTimeout, u32 dwFlags);
 
-    i32 Init(void* a, NetGuid appGuid);
+    // @identity-TODO the lobby argument is an IDirectPlayLobby COM pointer
+    // (the body dispatches slot 3 == Connect); modeling that interface is what
+    // retires this void*.
+    i32 Init(void* lobby, NetGuid appGuid);
 
-    CNetPlayerListNode* AddPlayerNode(void* playerDesc);
-    void PopulatePlayerList(void* hList);
+    CNetPlayerListNode* AddPlayerNode(CNetSessionDesc* playerDesc);
+    void PopulatePlayerList(HWND hList);
     CNetSessionNode*
     EnumPlayersCb(CNetPlayerListNode* a, const char* name, const char* longName, i32 d);
     i32 EnumGroupsAll();
-    i32 EnumGroupsRange(void* rec, i32 flags);
+    i32 EnumGroupsRange(CNetPlayerListNode* rec, i32 flags);
     CNetSessionNode* AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 flags);
 
     CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c);
-    void PopulateSessionList(void* hList);
+    void PopulateSessionList(HWND hList);
 
     i32 DropChannelPlayer(i32 idx);
     i32 LoadConfig(void* cfg);
@@ -575,7 +582,7 @@ public:
 
     i32 InitFromProvider(InterfaceObject* a, GUID appGuid);
     i32 EnumServiceProviders(i32 validated);
-    InterfaceObject* AddGroupNode(void* guid, void* name);
+    InterfaceObject* AddGroupNode(GUID* guid, const char* name);
     CNetPlayerListNode*
     EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password);
 
@@ -588,7 +595,7 @@ public:
 
     i32 CreateSession();
 
-    i32 VerifyCustomLevel(void* h, CNetSessionNode* playerTok);
+    i32 VerifyCustomLevel(CNetPlayerListNode* h, CNetSessionNode* playerTok);
 
     i32 Poll(i32 token);
 

@@ -1427,7 +1427,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 }
 
 RVA(0x000b8fc0, 0x151)
-i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
+i32 CMulti::VerifyCustomLevel(CNetPlayerListNode* h, CNetSessionNode* playerTok) {
     if (h == NULL) {
         goto notVerified;
     }
@@ -1658,7 +1658,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         return HandleControlMsg(wire.m_ctrl, size);
     }
 
-    CNetSessionNode* pd = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(sender));
+    CNetSessionNode* pd = Peer()->GetPlayerData(sender);
     if (m_connected != 0 || m_pumpGuard != 0) {
         if (pd != NULL) {
             CNetCmdSlot* slot = Session()->FindCmdSlot(pd->m_id);
@@ -2025,7 +2025,7 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
 
 RVA(0x000ba3b0, 0x17f)
 i32 CMulti::OnPlayerLeft(i32 playerId) {
-    CNetSessionNode* blob = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(playerId));
+    CNetSessionNode* blob = Peer()->GetPlayerData(playerId);
     if (blob == LocalPlayer()) {
         return 0;
     }
@@ -2089,7 +2089,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     if (ev->m_armed != 1) {
         return 0;
     }
-    CNetSessionNode* node = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(ev->m_id));
+    CNetSessionNode* node = Peer()->GetPlayerData(ev->m_id);
     if (node == NULL) {
 
         node = Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, 0);
@@ -2536,7 +2536,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
         return 0;
     }
 
-    void* data = Peer()->GetPlayerData(ch->m_slotKey);
+    CNetSessionNode* data = Peer()->GetPlayerData(ch->m_slotKey);
 
     i32 active = ch->m_humanControlled;
     if (data == NULL) {
@@ -2544,7 +2544,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
             return 0;
         }
     } else if (active != 0) {
-        SendStatTo(static_cast<CNetSessionNode*>(data), STAT_CHANNEL_LEFT, 1);
+        SendStatTo(data, STAT_CHANNEL_LEFT, 1);
     }
 
     if (RemoveChannel(idx) == 0) {

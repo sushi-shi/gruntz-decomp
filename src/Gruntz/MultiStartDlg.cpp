@@ -1250,7 +1250,7 @@ void CMultiStartDlg::Watchdog() {
         return;
     }
     g_watchBusy = 1;
-    void* h = g_multiState->m_netGate->m_playerSel;
+    CNetPlayerListNode* h = g_multiState->m_netGate->m_playerSel;
     if (h == NULL) {
         return;
     }
