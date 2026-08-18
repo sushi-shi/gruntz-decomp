@@ -850,12 +850,12 @@ SoundDevice::~SoundDevice() {
 }
 
 RVA(0x00136550, 0x8c)
-i32 SoundDevice::Create(void* hwnd, u32 level, u32 flags) {
+i32 SoundDevice::Create(HWND hwnd, u32 level, u32 flags) {
     i32 created = DirectSoundCreate(0, &m_device, 0) != 0;
     if (created) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), level) != 0;
+    i32 hr = m_device->SetCooperativeLevel(hwnd, level) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3b0, hr);
         m_device->Release();
@@ -877,11 +877,11 @@ i32 SoundDevice::ReacquireViaCallback() {
 }
 
 RVA(0x001365f0, 0x57)
-i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
+i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 level) {
     if (m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), level) != 0;
+    i32 hr = m_device->SetCooperativeLevel(hwnd, level) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3cf, hr);
         return 0;

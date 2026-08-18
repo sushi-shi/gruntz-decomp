@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/WaveFormatX.h>
@@ -37,10 +39,10 @@ public:
     i32 ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts);
     i32 ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts);
 
-    i32 Create(void* hwnd, u32 level, u32 flags);
+    i32 Create(HWND hwnd, u32 level, u32 flags);
     i32 Compact();
     i32 ReacquireViaCallback();
-    i32 SetCooperativeLevel(void* hwnd, u32 level);
+    i32 SetCooperativeLevel(HWND hwnd, u32 level);
 
     i32 PurgeVoiceList(i32 time);
 

@@ -39,7 +39,7 @@ public:
 
     void Stop();
 
-    i32 PlaySoundDefaulted(void* hWnd, i32 flag);
+    i32 PlaySoundDefaulted(HWND hWnd, i32 flag);
 
     i32 TickSubManagers(i32 time);
     i32 ParseWave(CParseSource* src, WaveFormatX* fmtBuf, u32* outDataOff, u32* outDataLen);

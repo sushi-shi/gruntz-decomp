@@ -105,7 +105,7 @@ extern CDDrawPtrCollections* g_DirectDrawMgr;
 
 void BuildColorChannelTables();
 i32 __stdcall CreateDirectDrawVia(
-    void* ctx,
+    GUID* lpGuid,
     i32 driverDesc,
     i32 driverName,
     IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
@@ -113,7 +113,7 @@ i32 __stdcall CreateDirectDrawVia(
 
 union DdDriverEnumFn {
     LPDDENUMCALLBACKA m_sdk;
-    i32(__stdcall* m_body)(void*, i32, i32, IDirectDraw2*(__cdecl*)(void*, i32, i32));
+    i32(__stdcall* m_body)(GUID*, i32, i32, IDirectDraw2*(__cdecl*)(void*, i32, i32));
 };
 union DdModeEnumFn {
     LPDDENUMMODESCALLBACK m_sdk;

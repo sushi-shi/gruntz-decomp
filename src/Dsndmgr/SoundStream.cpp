@@ -159,7 +159,7 @@ RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
 RVA(0x00137720, 0x14)
-i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
+i32 SoundStream::PlaySoundDefaulted(HWND hWnd, i32 flag) {
     return Create(hWnd, flag, 0);
 }
 

@@ -47,14 +47,8 @@ struct CDdModePair;
 
 class CDDrawPtrCollections {
 public:
-    i32 CreateDevice(
-        void* hwnd,
-        void* driverGuid,
-        i32 width,
-        i32 height,
-        ColorDepth bpp,
-        u32 coopFlags
-    );
+    i32
+    CreateDevice(HWND hwnd, GUID* driverGuid, i32 width, i32 height, ColorDepth bpp, u32 coopFlags);
 
     i32 GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp);
 
@@ -77,7 +71,7 @@ public:
 
     CDdModePair FindMatch(u32 k0, u32 k1, i32 k2);
 
-    i32 Init(void* factory, void* hwnd, i32 width, i32 height, ColorDepth bpp, u32 coop);
+    i32 Init(void* factory, HWND hwnd, i32 width, i32 height, ColorDepth bpp, u32 coop);
 
     i32 GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free);
 

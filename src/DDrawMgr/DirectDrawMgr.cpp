@@ -46,7 +46,7 @@ RVA_DYNINIT(0x00141ca0, 0xa, g_modeArray)
 DATA(0x00283ec8)
 CPtrArray g_modeArray;
 DATA(0x00283ee4)
-void* g_ddCreateCtx = 0;
+GUID* g_ddCreateCtx = 0;
 
 RVA(0x001413d0, 0x27)
 void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
@@ -322,8 +322,8 @@ CDDrawPtrCollections::~CDDrawPtrCollections() {
 
 RVA(0x00141dc0, 0x224)
 i32 CDDrawPtrCollections::CreateDevice(
-    void* hwnd,
-    void* driverGuid,
+    HWND hwnd,
+    GUID* driverGuid,
     i32 width,
     i32 height,
     ColorDepth bpp,
@@ -335,7 +335,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     if (dd != NULL) {
         m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate(static_cast<GUID*>(driverGuid), &m_directDraw1, 0);
+        i32 chr = DirectDrawCreate(driverGuid, &m_directDraw1, 0);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == DDRAWERR_NONE) {
@@ -355,7 +355,7 @@ i32 CDDrawPtrCollections::CreateDevice(
         }
     }
 
-    i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), coopFlags);
+    i32 hr = m_device->SetCooperativeLevel(hwnd, coopFlags);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
@@ -406,7 +406,7 @@ i32 CDDrawPtrCollections::CreateDevice(
 RVA(0x00141ff0, 0x6c)
 i32 CDDrawPtrCollections::Init(
     void* factory,
-    void* hwnd,
+    HWND hwnd,
     i32 width,
     i32 height,
     ColorDepth bpp,
@@ -990,16 +990,16 @@ RVA(0x00143880, 0x3b)
 i32 __stdcall
 
 CreateDirectDrawVia(
-    void* ctx,
+    GUID* lpGuid,
     i32 driverDesc,
     i32 driverName,
     IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
 ) {
     if (factory != NULL) {
-        IDirectDraw2* dd = factory(ctx, driverDesc, driverName);
+        IDirectDraw2* dd = factory(lpGuid, driverDesc, driverName);
         if (dd != NULL) {
             g_DirectDraw = dd;
-            g_ddCreateCtx = ctx;
+            g_ddCreateCtx = lpGuid;
             return 0;
         }
     }

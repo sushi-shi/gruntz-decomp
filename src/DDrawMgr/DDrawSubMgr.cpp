@@ -765,11 +765,11 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
         return 0;
     }
 
-    char fmt[0x12];
-    if (cue->m_sound->GetFormat(fmt, 0x12, 0) == 0) {
+    WaveFormatX fmt;
+    if (cue->m_sound->GetFormat(&fmt, sizeof(fmt), 0) == 0) {
         return 0;
     }
-    if (m_soundStream->SetPrimaryFormat(fmt) == 0) {
+    if (m_soundStream->SetPrimaryFormat(&fmt) == 0) {
         return 0;
     }
     if (startPrimary != 0) {
