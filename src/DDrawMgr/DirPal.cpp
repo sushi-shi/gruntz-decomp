@@ -45,10 +45,10 @@ i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
 }
 
 RVA(0x001474d0, 0x60)
-i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
+i32 CDDPalette::CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags) {
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
 
-    u8* src = static_cast<u8*>(rgb);
+    u8* src = rgb;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         entries[i].peRed = *src++;
         entries[i].peGreen = *src++;

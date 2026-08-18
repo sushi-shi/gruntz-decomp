@@ -388,7 +388,7 @@ aniplayer	?Serialize@CAniPlayer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeI
 aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	100.0000	100.0000	2	84061d4a0fb7	0xe5ad0	100.0000	
 aniplayer	?TickToggle@CAniPlayer@@QAEHH@Z	92.0000	92.0000	7	bfedccb66220	0xe5b90	92.0000	
 anirecord	?CreatePaletteFromEntries@CAniRecordBase2@@UAEHPAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	2	8ff4b8be71ba	0x168f20	100.0000	
-anirecord	?CreatePaletteFromRgb@CAniRecordBase2@@UAEHPAXH@Z	100.0000	100.0000	1	bce321bcae2c	0x168ee0	100.0000	
+anirecord	?CreatePaletteFromRgb@CAniRecordBase2@@UAEHPAEH@Z	100.0000	100.0000	2	0c46d6928d4e	0x168ee0	100.0000	
 anirecord	?CreatePaletteFromTrailingData@CAniRecordBase2@@UAEHPAXHH@Z	100.0000	100.0000	1	114dddaaa208	0x168f60	100.0000	
 anirecord	?GetAt@CStringArray@@QBE?AVCString@@H@Z	100.0000	100.0000	1	cpp:fd7268026b8c	0x168e70	100.0000	
 anirecord	?GetSize@CAniRecordView@@QAEHXZ	100.0000	100.0000	1	64183eb5ddda	0x168e50	100.0000	
@@ -934,7 +934,7 @@ ddpalette	?BlendRange@CDDPalette@@QAEXHHHEEE@Z	100.0000	100.0000	1	ed3137eb8669	
 ddpalette	?CaptureSystemPalette@CDDPalette@@QAEHXZ	100.0000	100.0000	1	16dc776f3fbb	0x1485b0	100.0000	
 ddpalette	?Create@CDDPalette@@QAEHPAUIDirectDraw2@@PAUtagPALETTEENTRY@@I@Z	100.0000	100.0000	1	a76308c1f08f	0x147390	100.0000	
 ddpalette	?CreateFromTrailing@CDDPalette@@QAEHPAUIDirectDraw2@@PAXII@Z	100.0000	100.0000	1	428306268834	0x147840	100.0000	
-ddpalette	?CreateRGB@CDDPalette@@QAEHPAUIDirectDraw2@@PAXI@Z	100.0000	100.0000	1	a48b12a4cf79	0x1474d0	100.0000	
+ddpalette	?CreateRGB@CDDPalette@@QAEHPAUIDirectDraw2@@PAEI@Z	100.0000	100.0000	2	2d87feb7434b	0x1474d0	100.0000	
 ddpalette	?Destroy@CDDPalette@@QAEXXZ	100.0000	100.0000	1	b1c39ba2c58f	0x147530	100.0000	
 ddpalette	?DumpEntries@CDDPalette@@QAEXXZ	100.0000	100.0000	1	cd436b67e3fc	0x1487c0	100.0000	
 ddpalette	?FadeRange@CDDPalette@@QAEXHHHHHH@Z	100.0000	100.0000	1	8bbb9805f2d3	0x147d50	100.0000	
@@ -1150,7 +1150,7 @@ ddrawsurfacepair	?ClearWorkers@CDDrawWorkerList@@QAEXXZ	100.0000	100.0000	1	4305
 ddrawsurfacepair	?Configure@CAniElement@@QAEHPAVCDDrawSubMgrLeafScan@@PAUCParseSource@@H@Z	100.0000	100.0000	2	a817b1ae77f9	0x1655c0	100.0000	
 ddrawsurfacepair	?Create@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@H@Z	97.2277	97.2277	2	2605eb09096b	0x163c90	97.2277	
 ddrawsurfacepair	?CreateWorker@CDDrawWorkerCache@@UAEPAUAnimWorkerObj@@P6AHPAUCGameObject@@@ZPBDH@Z	100.0000	100.0000	2	23ce7dfd8df1	0x1652c0	100.0000	
-ddrawsurfacepair	?CreateWorkerFromData@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAXPBDH@Z	100.0000	100.0000	2	88d03622184c	0x165990	100.0000	
+ddrawsurfacepair	?CreateWorkerFromData@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAEPBDH@Z	100.0000	100.0000	3	7080aa8362c1	0x165990	100.0000	
 ddrawsurfacepair	?CreateWorkerFromFile@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PADPBDH@Z	100.0000	100.0000	2	f153068c96cd	0x165a10	100.0000	
 ddrawsurfacepair	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	1	033708bea9d7	0x165730	100.0000	
 ddrawsurfacepair	?Dispatch@AnimWorkerObj@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	99.3605	99.3605	3	e071453bb327	0x164830	99.3605	
@@ -1167,7 +1167,7 @@ ddrawsurfacepair	?IsLoaded@CAniRecordBase2@@UAEHXZ	100.0000	100.0000	1	a83169df8
 ddrawsurfacepair	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	c9ff892dbdc5	0x164d80	100.0000	
 ddrawsurfacepair	?LoadFile@CAniElement@@QAEHPAVCDDrawSubMgrLeafScan@@PBDH@Z	100.0000	100.0000	2	df87383dbb7f	0x165620	100.0000	
 ddrawsurfacepair	?LoadImageA@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z	100.0000	100.0000	1	7563ba5d24a0	0x163e50	100.0000	
-ddrawsurfacepair	?LoadPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAUCParseSource@@PBDH@Z	100.0000	100.0000	2	cfa36d2da0c2	0x1658c0	100.0000	
+ddrawsurfacepair	?LoadPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAUCParseSource@@PBDH@Z	100.0000	100.0000	3	df121d73ef5d	0x1658c0	100.0000	
 ddrawsurfacepair	?LoadSizedPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAUCParseSource@@HH@Z	100.0000	100.0000	2	33a3d1b6a2d3	0x165a90	100.0000	
 ddrawsurfacepair	?Open@CFileMem@@UAEHXZ	100.0000	100.0000	1	51f6fa0f4f43	0x165e60	100.0000	
 ddrawsurfacepair	?Probe@CDrawSubWorker@@QAEHXZ	100.0000	100.0000	1	2a18dc4b1854	0x164660	100.0000	
@@ -1436,7 +1436,7 @@ directdrawmgr	?CreatePaletteSurface@CDDrawPtrCollections@@QAEPAVCDDSurface@@HHH@
 directdrawmgr	?CreatePaletteSurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	100.0000	100.0000	1	a360db69db37	0x142aa0	100.0000	
 directdrawmgr	?CreatePoolItem@CDDrawPtrCollections@@QAEPAVCDDSurface@@PAV2@H@Z	100.0000	100.0000	2	af302bdbb1a2	0x143630	100.0000	
 directdrawmgr	?CreateRange@CDDrawPtrCollections@@QAEHPAPAVCDDSurface@@HHPAD1HH@Z	100.0000	100.0000	1	0a221d05b9b2	0x142630	100.0000	
-directdrawmgr	?CreateRgbPalette@CDDrawPtrCollections@@QAEPAUCDDPalette@@PAXH@Z	100.0000	100.0000	1	edfef53e0108	0x142fc0	100.0000	
+directdrawmgr	?CreateRgbPalette@CDDrawPtrCollections@@QAEPAUCDDPalette@@PAEH@Z	100.0000	100.0000	2	efeb9f0f1e4b	0x142fc0	100.0000	
 directdrawmgr	?CreateSurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	100.0000	100.0000	1	043765119625	0x1421a0	100.0000	
 directdrawmgr	?DDrawLogLine@@YAXPADZZ	100.0000	100.0000	1	848b4018ce87	0x141cb0	100.0000	
 directdrawmgr	?DdEnumModesCallback@@YGHPAU_DDSURFACEDESC@@H@Z	100.0000	100.0000	3	80709f37cd1c	0x143390	100.0000	
@@ -1457,11 +1457,11 @@ directdrawmgr	?GetPoolKind@CPoolItemA88@@UAE?AW4DDSurfacePoolKind@@XZ	100.0000	1
 directdrawmgr	?GetPoolKind@CPoolItemAB8@@UAE?AW4DDSurfacePoolKind@@XZ	100.0000	100.0000	1	7e921a958f1e	0x143cd0	100.0000	
 directdrawmgr	?GetPoolKind@CPoolItemAE8@@UAE?AW4DDSurfacePoolKind@@XZ	100.0000	100.0000	1	5173427907bb	0x143ce0	100.0000	
 directdrawmgr	?Init@CDDrawPtrCollections@@QAEHPAXPAUHWND__@@HHW4ColorDepth@@I@Z	100.0000	100.0000	2	344be9fc047e	0x141ff0	100.0000	
-directdrawmgr	?LoadDisplayPaletteFromFile@CDDrawPtrCollections@@QAEHPBDH@Z	100.0000	100.0000	2	68b521250f11	0x143a30	100.0000	
+directdrawmgr	?LoadDisplayPaletteFromFile@CDDrawPtrCollections@@QAEHPBDH@Z	100.0000	100.0000	3	4dc35e07b9d7	0x143a30	100.0000	
 directdrawmgr	?LoadFileSurface@CDDrawPtrCollections@@QAEPAVCDDSurface@@PADHH@Z	100.0000	100.0000	1	3f37b0be7ca3	0x142560	100.0000	
 directdrawmgr	?LoadPaletteFromFile@CDDrawPtrCollections@@QAEPAUCDDPalette@@PADH@Z	100.0000	100.0000	1	114aeac36714	0x142f40	100.0000	
 directdrawmgr	?LoadSurfaceFromPid@CDDrawPtrCollections@@QAEPAVCDDSurface@@PAUPidHeader@@W4FileImageFormat@@IHH@Z	100.0000	100.0000	1	59de2d15ccd4	0x142260	100.0000	
-directdrawmgr	?LoadTrailingRgbPalette@CDDrawPtrCollections@@QAEPAUCDDPalette@@PBDH@Z	100.0000	100.0000	1	8bf25c94352a	0x143150	100.0000	
+directdrawmgr	?LoadTrailingRgbPalette@CDDrawPtrCollections@@QAEPAUCDDPalette@@PBDH@Z	100.0000	100.0000	2	b324f6e55b60	0x143150	100.0000	
 directdrawmgr	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCDDSurface@@HHW4ColorDepth@@HH@Z	100.0000	100.0000	1	daa9ec5be53a	0x142e60	100.0000	
 directdrawmgr	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCDDSurface@@@Z	100.0000	100.0000	1	29dfbe97e9d5	0x142160	100.0000	
 directdrawmgr	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCDDPalette@@@Z	100.0000	100.0000	1	8f2b92d5e349	0x142f10	100.0000	
@@ -1469,7 +1469,7 @@ directdrawmgr	?RestoreLostSurfaces@@YAHXZ	100.0000	100.0000	1	b2e315dd24a4	0x143
 directdrawmgr	?SetDDrawReportModes@@YAXHHHH@Z	100.0000	100.0000	1	ad2b0f55c6b9	0x1413d0	100.0000	
 directdrawmgr	?SetDisplayPaletteDirect@CDDrawPtrCollections@@QAEHPAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	1	9b1ec632e560	0x1439b0	100.0000	
 directdrawmgr	?SetDisplayPaletteFrom@CDDrawPtrCollections@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	1	49f900f483a8	0x143900	100.0000	
-directdrawmgr	?SetDisplayPaletteFromRgb@CDDrawPtrCollections@@QAEHPAXH@Z	100.0000	100.0000	2	c1fc2225fa45	0x143950	100.0000	
+directdrawmgr	?SetDisplayPaletteFromRgb@CDDrawPtrCollections@@QAEHPAEH@Z	100.0000	100.0000	3	07c539cf79f8	0x143950	100.0000	
 directdrawmgr	?SetDisplayPaletteFromTrailingRgb@CDDrawPtrCollections@@QAEHPAEHH@Z	100.0000	100.0000	2	c0f4cc76e327	0x1439f0	100.0000	
 directdrawmgr	?SetSurfaceRestoreHandler@@YAXP6AHXZ@Z	100.0000	100.0000	1	32033e194295	0x1437e0	100.0000	
 directdrawmgr	?SetupCaps@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	2	d828832d6aa7	0x143240	100.0000	

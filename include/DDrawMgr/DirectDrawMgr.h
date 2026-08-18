@@ -39,7 +39,7 @@ public:
     i32 Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags);
     i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);
     i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);
-    i32 CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags);
+    i32 CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags);
     i32 CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 flags);
     i32 LoadPal(IDirectDraw2* dd, char* filename, u32 flags);
     i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags);

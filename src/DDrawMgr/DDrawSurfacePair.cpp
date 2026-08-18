@@ -1074,7 +1074,7 @@ void CDDrawWorkerMapSmall::Unload() {
 RVA(0x001658c0, 0xcc)
 CAniRecordBase2*
 CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags) {
-    char* data = src->BeginParse();
+    u8* data = static_cast<u8*>(static_cast<void*>(src->BeginParse()));
     if (data == NULL) {
         return 0;
     }
@@ -1098,8 +1098,7 @@ CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, 
 }
 
 RVA(0x00165990, 0x77)
-CAniRecordBase2*
-CDDrawWorkerMapSmall::CreateWorkerFromData(void* data, const char* key, i32 flags) {
+CAniRecordBase2* CDDrawWorkerMapSmall::CreateWorkerFromData(u8* data, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {

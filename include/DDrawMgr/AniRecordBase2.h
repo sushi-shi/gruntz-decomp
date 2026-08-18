@@ -40,7 +40,7 @@ struct CAniRecordBase2 : public CWapObj {
     }
 
     virtual i32 CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag);
-    virtual i32 CreatePaletteFromRgb(void* data, i32 flag);
+    virtual i32 CreatePaletteFromRgb(u8* data, i32 flag);
     virtual i32 LoadPaletteFromFile(char* path, i32 flag);
     virtual i32 CreatePaletteFromTrailingData(void* data, i32 size, i32 flag);
     virtual i32 PushPalette();

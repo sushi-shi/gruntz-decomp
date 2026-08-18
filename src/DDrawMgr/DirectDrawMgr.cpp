@@ -713,7 +713,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteFromFile(char* path, i32 flags) {
 }
 
 RVA(0x00142fc0, 0x7c)
-CDDPalette* CDDrawPtrCollections::CreateRgbPalette(void* rgb, i32 flags) {
+CDDPalette* CDDrawPtrCollections::CreateRgbPalette(u8* rgb, i32 flags) {
     CDDPalette* item = new CDDPalette;
     if (!item->CreateRGB(m_device, rgb, flags)) {
         if (item) {
@@ -762,7 +762,7 @@ CDDPalette* CDDrawPtrCollections::LoadTrailingRgbPalette(const char* path, i32 z
         return 0;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
-    char buf[PALETTE_RGB_BYTE_COUNT];
+    u8 buf[PALETTE_RGB_BYTE_COUNT];
     if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
@@ -1037,11 +1037,11 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 }
 
 RVA(0x00143950, 0x56)
-i32 CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
+i32 CDDrawPtrCollections::SetDisplayPaletteFromRgb(u8* buf, i32 z) {
     if (buf == NULL) {
         return 0;
     }
-    const u8* src = static_cast<const u8*>(buf);
+    const u8* src = buf;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_palette[i].peRed = *src++;
         m_palette[i].peGreen = *src++;
@@ -1085,7 +1085,7 @@ i32 CDDrawPtrCollections::LoadDisplayPaletteFromFile(const char* path, i32 z) {
         return 0;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
-    char buf[PALETTE_RGB_BYTE_COUNT];
+    u8 buf[PALETTE_RGB_BYTE_COUNT];
     if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
