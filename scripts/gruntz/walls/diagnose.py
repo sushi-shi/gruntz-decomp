@@ -187,11 +187,11 @@ def diagnose(token: str, show_asm: bool = False) -> int:
         for i, (x, y) in enumerate(zip(bref, tref)):
             if x != y:
                 print(f"    reloc[{i}]: base {x}  !=  target {y}")
-    elif sorted(n for n, _a in _call_targets(brel, basm)) != \
-            sorted(n for n, _a in _call_targets(trel, tasm)):
+    elif sorted(n for n, _a in _call_targets(brel, basm, b.name)) != \
+            sorted(n for n, _a in _call_targets(trel, tasm, b.name)):
         wall = "inline"
-        bs = sorted(n for n, _a in _call_targets(brel, basm))
-        ts = sorted(n for n, _a in _call_targets(trel, tasm))
+        bs = sorted(n for n, _a in _call_targets(brel, basm, b.name))
+        ts = sorted(n for n, _a in _call_targets(trel, tasm, b.name))
         print("  class: INLINE/CALL-SET - the call-target multisets differ:")
         for n in ts:
             if n not in bs:
@@ -343,16 +343,28 @@ def _duplicate_tail_probe(basm: str, tasm: str) -> None:
               "reconstruction question, not a placement coin.")
 
 
-def _call_targets(rel: dict, asm: str) -> list[tuple[str, int]]:
-    """Reloc referents that sit inside a call instruction's operand."""
+def _call_targets(rel: dict, asm: str, own: str | None = None) -> list[tuple[str, int]]:
+    """Call referents, including a delinked relocation-free self call.
+
+    A relative call whose destination is the start of the sliced function is
+    unambiguously recursive even when the target delinker did not attach a
+    relocation.  Without this control ParseRecords was falsely classified as
+    INLINE/CALL-SET although both sides contain the same 21 calls and the linked
+    image resolves the site back to ParseRecords.
+    """
     call_offs = set()
+    unrelocated_self = []
     for line in asm.splitlines():
         if ":\t" not in line:
             continue
         addr, rest = line.split(":\t", 1)
-        if _CALL.search(rest.split("\t")[-1]):
+        body = rest.split("\t")[-1]
+        if _CALL.search(body):
             try:
-                call_offs.add(int(addr.strip(), 16))
+                call_off = int(addr.strip(), 16)
+                call_offs.add(call_off)
+                if own is not None and re.search(r"\bcall\s+0x0\b", body):
+                    unrelocated_self.append(call_off)
             except ValueError:
                 pass
     out = []
@@ -360,6 +372,8 @@ def _call_targets(rel: dict, asm: str) -> list[tuple[str, int]]:
         # a REL32 call operand starts 1 byte after the opcode
         if (off - 1) in call_offs or (off - 2) in call_offs:
             out.append(rel[off])
+    relocated_calls = {off - 1 for off in rel} | {off - 2 for off in rel}
+    out.extend((own, 0) for off in unrelocated_self if off not in relocated_calls)
     return out
 
 

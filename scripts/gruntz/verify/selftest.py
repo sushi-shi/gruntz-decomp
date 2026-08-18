@@ -1304,6 +1304,17 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
             self.assertIsNone(b)
             self.assertIn("sema rva", why)
 
+    def test_a_relocation_free_call_to_function_start_is_self_recursion(self):
+        from gruntz.walls import diagnose as D
+        asm = "   2ba:\te8 00 00 00 00\tcall 0x0\n"
+        self.assertEqual(D._call_targets({}, asm, "?f@@YAXXZ"), [("?f@@YAXXZ", 0)])
+
+    def test_a_relocated_call_is_not_counted_twice_as_self_recursion(self):
+        from gruntz.walls import diagnose as D
+        asm = "   2ba:\te8 00 00 00 00\tcall 0x0\n"
+        rel = {0x2bb: ("?f@@YAXXZ", 0)}
+        self.assertEqual(D._call_targets(rel, asm, "?f@@YAXXZ"), [("?f@@YAXXZ", 0)])
+
 
 class InlineModelFlagControls(unittest.TestCase):
     """--spec was documented, parsed, and then fell through to
