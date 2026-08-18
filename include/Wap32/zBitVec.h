@@ -33,7 +33,7 @@ public:
     zErrHandling(CVariantSlot* errSink);
     virtual ~zErrHandling();
 
-    void Report(void* sentinel, i32 code);
+    void Report(char* message, i32 code);
 
     CVariantSlot* m_errSink;
 };

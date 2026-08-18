@@ -406,7 +406,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
 
 RVA(0x0016d850, 0x11e)
 
-void CVariantSlot::Set(void* key, void* name, i32 value) {
+void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
     if (m_typeTag == VARIANT_SLOT_DIRECT_VALUE) {
         m_valueWord = static_cast<u16>(value);
         return;
@@ -414,8 +414,8 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
     i32 idx;
     if (g_recCount23 != 0) {
 
-        AddrWord<char> k;
-        k.m_addr = static_cast<char*>(key);
+        AddrWord<zErrHandling> k;
+        k.m_addr = key;
         idx = this->Find(k.m_word);
     } else {
         idx = -1;
@@ -426,17 +426,14 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
             char buf[0xa0];
             strcpy(buf, m_label);
 
-            strncat(buf, static_cast<const char*>(name), 0x4f);
+            strncat(buf, name, 0x4f);
             m_callback(buf, value);
         } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
             m_valueWord = static_cast<u16>(value);
         }
     } else {
         if (m_typeTag == VARIANT_SLOT_CALLBACK) {
-
-            AddrWord<char> rec;
-            rec.m_addr = static_cast<char*>(name);
-            g_recs23[idx].m_callback(rec.m_word, value);
+            g_recs23[idx].m_callback(name, value);
         } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
             g_recs23[idx].m_value = static_cast<short>(value);
         }
@@ -831,11 +828,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 
 // @early-stop
 RVA(0x0016e360, 0x11a)
-void* CVariantSlot::Add(void* key, void* val) {
-    union CallbackWord {
-        void* generic;
-        VariantCallback callback;
-    } callbackWord;
+VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
     int count = g_recCount23;
     if (val != NULL && count >= 0x20) {
         return 0;
@@ -843,8 +836,8 @@ void* CVariantSlot::Add(void* key, void* val) {
     int idx;
     if (count != 0) {
 
-        AddrWord<char> k;
-        k.m_addr = static_cast<char*>(key);
+        AddrWord<zErrHandling> k;
+        k.m_addr = key;
         idx = Find(k.m_word);
     } else {
         idx = -1;
@@ -860,20 +853,17 @@ void* CVariantSlot::Add(void* key, void* val) {
                 (g_recCount23 - m_searchIndex) * sizeof(TypeKeyRec)
             );
         }
-        callbackWord.generic = val;
-        g_recs23[m_searchIndex].m_callback = callbackWord.callback;
-        AddrWord<char> nk;
-        nk.m_addr = static_cast<char*>(key);
+        g_recs23[m_searchIndex].m_callback = val;
+        AddrWord<zErrHandling> nk;
+        nk.m_addr = key;
         g_recs23[m_searchIndex].m_key = nk.m_word;
         g_recCount23 = g_recCount23 + 1;
         g_recs23[m_searchIndex].m_value = 0;
         return 0;
     }
-    callbackWord.callback = g_recs23[idx].m_callback;
-    void* old = callbackWord.generic;
+    VariantCallback old = g_recs23[idx].m_callback;
     if (val != NULL) {
-        callbackWord.generic = val;
-        g_recs23[idx].m_callback = callbackWord.callback;
+        g_recs23[idx].m_callback = val;
         return old;
     }
     memcpy(

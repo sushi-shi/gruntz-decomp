@@ -186,7 +186,7 @@ fail:
 }
 
 RVA(0x00034960, 0x24)
-void zErrHandling::Report(void* sentinel, i32 code) {
+void zErrHandling::Report(char* message, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, sentinel, code);
+    m_errSink->Set(this, message, code);
 }

@@ -7,7 +7,7 @@
 #include <Bute/PTreeNode.h>
 #include <Enums.h>
 
-typedef void(__cdecl* VariantCallback)(i32 key, i32 value);
+typedef void(__cdecl* VariantCallback)(char* message, i32 value);
 
 GZ_ENUM_BEGIN(VariantSlotKind)
     VARIANT_SLOT_RECORD_VALUE = 1,
@@ -17,10 +17,10 @@ GZ_ENUM_END(VariantSlotKind)
 
 struct CVariantSlot {
     CVariantSlot(char* label);
-    void Set(void* obj, void* item, i32 b);
+    void Set(zErrHandling* obj, char* item, i32 b);
     i32 Find(i32 key);
-    void* Add(void* key, void* callback);
-    void(__cdecl* m_callback)(char* buf, i32 v);
+    VariantCallback Add(zErrHandling* key, VariantCallback callback);
+    VariantCallback m_callback;
     i32 m_searchIndex;
     u16 m_valueWord;
     VariantSlotKind m_typeTag;
