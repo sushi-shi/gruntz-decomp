@@ -10,6 +10,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h>
+#include <Utils/MfcTyped.h>
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic;
@@ -18,16 +19,6 @@ class CTileTriggerContainer;
 class CGrunt;
 class CGruntzMgr;
 class CPlay;
-
-// CPtrArray stores Coord* as void*; this is the typed view of its backing store.
-static inline Coord** CoordArrayData(CPtrArray& a) {
-    union {
-        void** m_untyped;
-        Coord** m_typed;
-    } band;
-    band.m_untyped = a.GetData();
-    return band.m_typed;
-}
 
 class CBattlezMapConfig {
 public:

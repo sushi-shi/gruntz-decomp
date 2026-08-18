@@ -574,7 +574,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     if (n <= 0) {
         return 1;
     }
-    Coord** cands = CoordArrayData(m_candArray);
+    Coord** cands = MfcPtrArrayData<Coord>(m_candArray);
     Coord* cand = 0;
     i32 i = 0;
     BrickzCell tileRec;
@@ -5345,7 +5345,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (count != 0) {
         i32 r = rand() % count;
         for (i32 k = 0; k < count; k++) {
-            Coord** arr = CoordArrayData(*coords);
+            Coord** arr = MfcPtrArrayData<Coord>(*coords);
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_ownerId;
             Coord cand = *arr[r];
@@ -5366,7 +5366,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
             r = (r + 1) % count;
         }
         r = rand() % count;
-        Coord* cand = CoordArrayData(*coords)[r];
+        Coord* cand = MfcPtrArrayData<Coord>(*coords)[r];
         rx = cand->m_x;
         ry = cand->m_y;
     }

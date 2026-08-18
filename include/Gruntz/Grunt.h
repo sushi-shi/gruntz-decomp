@@ -27,6 +27,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>
+#include <Utils/MfcTyped.h>
 
 GZ_ENUM_FORWARD(BattlezTask);
 GZ_ENUM_FORWARD(EnemyAiType);
@@ -154,26 +155,6 @@ extern GruntDirectionCell g_gruntMoveDirCenter;
 extern u32 g_gruntSpawnClock;
 
 class CProjectile;
-
-// CPtrList's POSITION is an opaque pointer to its internal three-pointer node.
-// CoordNode models that node for the m_coordList payload, and this generic
-// adapter keeps the opaque MFC boundary in one place.
-template<class NodeT> union MfcListPosition {
-    POSITION m_position;
-    NodeT* m_node;
-};
-
-template<class NodeT> inline NodeT* MfcNodeFromPosition(POSITION position) {
-    MfcListPosition<NodeT> value;
-    value.m_position = position;
-    return value.m_node;
-}
-
-template<class NodeT> inline POSITION MfcPositionFromNode(NodeT* node) {
-    MfcListPosition<NodeT> value;
-    value.m_node = node;
-    return value.m_position;
-}
 
 GZ_ENUM_BEGIN(GruntAttackPose)
     GRUNT_ATTACK1 = 0,
