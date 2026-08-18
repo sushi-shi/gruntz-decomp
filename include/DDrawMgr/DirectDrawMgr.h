@@ -93,7 +93,7 @@ class CMoviePlayer;
 
 extern i32 RestoreLostSurfaces();
 
-i32 __stdcall DdEnumModesCallback(void* mode, i32 unused);
+i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused);
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -117,7 +117,7 @@ union DdDriverEnumFn {
 };
 union DdModeEnumFn {
     LPDDENUMMODESCALLBACK m_sdk;
-    i32(__stdcall* m_body)(void*, i32);
+    i32(__stdcall* m_body)(DDSURFACEDESC*, i32);
 };
 
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

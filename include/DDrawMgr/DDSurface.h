@@ -15,6 +15,7 @@
 
 struct CDDPalette;
 class CDDrawPtrCollections;
+class CFileImagePal;
 struct PcxHeader;
 
 union BltFxWords {
@@ -125,13 +126,13 @@ public:
     i32 Scale(i32 n);
     void UnlockThunk();
 
-    i32 SaveFile(char* buf, FileImageFormat type, void* pal, i32 flag);
-    i32 SaveDispatch(char* path, void* pal, i32 flag);
+    i32 SaveFile(char* buf, FileImageFormat type, CFileImagePal* pal, i32 flag);
+    i32 SaveDispatch(char* path, CFileImagePal* pal, i32 flag);
     void Clear(i32 white);
 
-    i32 SaveBmp(const char* path, void* pal, i32 mode);
-    i32 SaveRle16(void* file, void* pal, i32 flag);
-    i32 SaveTga(const char* path, void* pal, i32 mode);
+    i32 SaveBmp(const char* path, CFileImagePal* pal, i32 mode);
+    i32 SaveRle16(char* path, CFileImagePal* pal, i32 flag);
+    i32 SaveTga(const char* path, CFileImagePal* pal, i32 mode);
 
     i32 Resolve(
         class CDDrawPtrCollections* pal,
@@ -194,7 +195,7 @@ public:
     i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);
     i32 Load(CDDrawPtrCollections* a, char* name, i32 c);
 
-    i32 Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrder rowOrder);
+    i32 Blit(void* src, ColorDepth bitcount, PALETTEENTRY* palette, RasterRowOrder rowOrder);
     i32 BlitDirect(void* src, RasterRowOrder rowOrder);
     i32 DecodeRun8(void* dst);
     i32 DecodeRun24(void* dst);
@@ -203,12 +204,12 @@ public:
     void FillPalette(u32 key);
     i32 ShadeRect(i32 pct, RECT* clip);
 
-    i32 Blit248(void* src, void* palette, RasterRowOrder rowOrder);
+    i32 Blit248(void* src, PALETTEENTRY* palette, RasterRowOrder rowOrder);
     i32 Blit2416(void* src, RasterRowOrder rowOrder);
     i32 Blit1624(void* src, RasterRowOrder rowOrder);
-    i32 Blit168(void* src, void* palette, RasterRowOrder rowOrder);
-    i32 Blit824(void* src, void* palette, RasterRowOrder rowOrder);
-    i32 Blit816(void* src, void* palette, RasterRowOrder rowOrder);
+    i32 Blit168(void* src, PALETTEENTRY* palette, RasterRowOrder rowOrder);
+    i32 Blit824(void* src, PALETTEENTRY* palette, RasterRowOrder rowOrder);
+    i32 Blit816(void* src, PALETTEENTRY* palette, RasterRowOrder rowOrder);
 
     POSITION m_pos;
     IDirectDrawSurface* m_ddSurface;

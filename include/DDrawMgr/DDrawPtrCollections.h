@@ -21,7 +21,8 @@ public:
     virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
     virtual i32 Blit7(CDDrawPtrCollections*, i32, i32, i32);
 
-    virtual i32 UpdateOverlay(void* srcRect, CDDSurface* dest, void* destRect, u32 flags, void* fx);
+    virtual i32
+    UpdateOverlay(RECT* srcRect, CDDSurface* dest, RECT* destRect, u32 flags, DDOVERLAYFX* fx);
 };
 
 class CPoolItemAB8 : public CDDSurface {
@@ -65,7 +66,7 @@ public:
 
     void SetupCaps();
 
-    void* CreatePoolItem(void* srcSurface, i32 caps);
+    CDDSurface* CreatePoolItem(CDDSurface* srcSurface, i32 caps);
 
     i32 Compare(void* a, void* b);
 

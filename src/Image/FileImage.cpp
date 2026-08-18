@@ -24,9 +24,9 @@ static PALETTEENTRY s_palBmp[0x100];
 DATA(0x002846f0)
 static PALETTEENTRY s_palPcx[0x100];
 DATA(0x00284af0)
-u8 g_grayRamp[0x400];
+PALETTEENTRY g_grayRamp[0x100];
 DATA(0x00284ef0)
-static u8 s_palPidData[0x400];
+static PALETTEENTRY s_palPidData[0x100];
 DATA(0x002852f0)
 static PALETTEENTRY s_palPcxData[0x100];
 
@@ -50,7 +50,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         return 0;
     }
 
-    void* pal = 0;
+    PALETTEENTRY* pal = 0;
     if (convert && srcFmt == BPP_PALETTED_8) {
         RGBQUAD* p = img->info.bmiColors;
         for (i32 i = 0; i < 0x100; i++) {
@@ -126,7 +126,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
             remap = 1;
         }
         if (!remap || palBpp != BPP_PALETTED_8 || pal->m_hasPalette != 0) {
-            void* palette = 0;
+            PALETTEENTRY* palette = 0;
             if (remap && bitcount == BPP_PALETTED_8) {
                 RGBQUAD* src = bmp->info.bmiColors;
                 for (i32 i = 0; i < 0x100; i++) {
@@ -224,7 +224,7 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
 }
 
 RVA(0x00144350, 0x5f)
-i32 CDDSurface::SaveDispatch(char* path, void* pal, i32 flag) {
+i32 CDDSurface::SaveDispatch(char* path, CFileImagePal* pal, i32 flag) {
     switch (m_bitDepth) {
         case BPP_RGB_24:
             return SaveTga(path, pal, flag);
@@ -238,7 +238,7 @@ i32 CDDSurface::SaveDispatch(char* path, void* pal, i32 flag) {
 }
 
 RVA(0x001443b0, 0x284)
-i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
+i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     if (this->IsValid() == 0) {
         return 0;
     }
@@ -251,7 +251,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (m_bitDepth != BPP_PALETTED_8) {
         return 0;
     }
-    CFileImagePal* src = static_cast<CFileImagePal*>(pal);
+    CFileImagePal* src = pal;
     if (src == NULL) {
         return 0;
     }
@@ -323,14 +323,14 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 // counter in `flag`'s and the packed-byte temp in `path`'s; cl picks the other way
 // round, and the register names rotate with it.
 RVA(0x00144640, 0x2be)
-i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
+i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
         return 0;
     }
     if (path == NULL) {
         return 0;
     }
-    if (*static_cast<char*>(path) == 0) {
+    if (*path == 0) {
         return 0;
     }
     if (this->m_bitDepth != BPP_RGB_16) {
@@ -373,7 +373,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
         // NULL guard above already read).  The one caller that reaches this arm is
         // SaveScreenshot, which passes pal = 0, so opening `pal` could never write a
         // save-game preview and CSaveGame::Save failed after a COMPLETE snapshot.
-        if (file.Open(static_cast<char*>(path), 0x2001, 0) == 0) {
+        if (file.Open(path, 0x2001, 0) == 0) {
             this->m_ddSurface->Unlock(0);
             delete[] line;
             return 0;
@@ -381,7 +381,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
         // modeNoTruncate: only the append open repositions to the end.
         file.Seek(0, 2);
     } else {
-        if (file.Open(static_cast<char*>(path), 0x1001, 0) == 0) {
+        if (file.Open(path, 0x1001, 0) == 0) {
             this->m_ddSurface->Unlock(0);
             delete[] line;
             return 0;
@@ -415,7 +415,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
 
 // @early-stop
 RVA(0x00144900, 0x227)
-i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
+i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     static_cast<void>(pal);
     if (this->IsValid() == 0) {
         return 0;
@@ -511,21 +511,21 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
         return 0;
     }
 
-    void* palette = 0;
+    PALETTEENTRY* palette = 0;
     if (convert) {
         if (srcFmt == BPP_PALETTED_8) {
 
             RecordBytes<PcxHeader> sb;
             sb.m_rec = src;
             u8* p = sb.m_bytes + len - 0x300;
-            u8* d = g_grayRamp;
+            PALETTEENTRY* d = g_grayRamp;
             do {
-                d[0] = *p++;
-                d[1] = *p++;
-                d[2] = *p++;
-                d[3] = 0;
-                d += 4;
-            } while (d < &g_grayRamp[0x400]);
+                d->peRed = *p++;
+                d->peGreen = *p++;
+                d->peBlue = *p++;
+                d->peFlags = 0;
+                d++;
+            } while (d < &g_grayRamp[0x100]);
             palette = g_grayRamp;
         } else if (curFmt == BPP_PALETTED_8) {
             if (info->m_hasPalette != 0) {
@@ -633,7 +633,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                 remap = 1;
             }
             if (!remap || palBpp != BPP_PALETTED_8 || pal->m_hasPalette != 0) {
-                void* palette = 0;
+                PALETTEENTRY* palette = 0;
                 if (remap && bitcount == BPP_PALETTED_8) {
                     u8* src = hdr->m_pixels + size - 0x380;
                     i32 i = 0;
@@ -939,7 +939,7 @@ i32 CDDSurface::DecodePcxData(
     }
 
     i32 remap = 0;
-    void* palette;
+    PALETTEENTRY* palette;
     if (dst->m_hasPalette) {
         palette = dst->m_palette;
     } else {
@@ -1050,7 +1050,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
     p.m_dwords += 4;
 
     if (!(width & 3) && m_width == width && m_height == height) {
-        void* palette = 0;
+        PALETTEENTRY* palette = 0;
         i32 remap = 0;
         i32 hasPal = pal->m_hasPalette;
         if (hasPal != 0) {
@@ -1071,12 +1071,12 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             u8* src = hb.m_bytes + size - 0x300;
             i32 i = 0;
             do {
-                s_palPidData[i] = *src++;
-                s_palPidData[i + 1] = *src++;
-                s_palPidData[i + 2] = *src++;
-                s_palPidData[i + 3] = 0;
-                i += 4;
-            } while (i < 0x400);
+                s_palPidData[i].peRed = *src++;
+                s_palPidData[i].peGreen = *src++;
+                s_palPidData[i].peBlue = *src++;
+                s_palPidData[i].peFlags = 0;
+                i++;
+            } while (i < 0x100);
             palette = s_palPidData;
         } else if (remap) {
             if (palette == NULL) {

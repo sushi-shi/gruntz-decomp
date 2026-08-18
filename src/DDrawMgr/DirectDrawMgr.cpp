@@ -805,9 +805,9 @@ void CDDrawPtrCollections::SetupCaps() {
 }
 
 RVA(0x00143390, 0x35)
-i32 __stdcall DdEnumModesCallback(void* mode, i32 unused) {
+i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     DDSURFACEDESC* rec = new DDSURFACEDESC;
-    memcpy(rec, mode, 0x6c);
+    memcpy(rec, mode, sizeof(DDSURFACEDESC));
     g_modeArray.SetAtGrow(g_modeArray.GetSize(), rec);
     return 1;
 }
@@ -916,8 +916,7 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, ColorDepth colorDepth
 }
 
 RVA(0x00143630, 0x10d)
-void* CDDrawPtrCollections::CreatePoolItem(void* srcSurfacev, i32 caps) {
-    CDDSurface* srcSurface = static_cast<CDDSurface*>(srcSurfacev);
+CDDSurface* CDDrawPtrCollections::CreatePoolItem(CDDSurface* srcSurface, i32 caps) {
     IDirectDrawSurface* attached = 0;
     DDSCAPS want;
     want.dwCaps = caps;

@@ -6,5 +6,5 @@
 #include <Mfc.h>
 
 extern PALETTEENTRY g_paletteRampBuf[];
-extern u8 g_grayRamp[];
+extern PALETTEENTRY g_grayRamp[];
 #endif // GRUNTZ_IMAGE_FILEIMAGE_H

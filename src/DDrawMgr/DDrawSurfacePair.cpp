@@ -117,10 +117,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     rect->bottom = h;
     if (kind == 1) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
-            static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
-            4
-        ));
+        m_surface = mgr->m_ptrColl->CreatePoolItem(mgr->m_drawTarget->m_frontPair->m_surface, 4);
         if (m_surface == NULL) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
                 OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE_COPY;
@@ -390,10 +387,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     m_surface = NULL;
     if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
-            static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
-            4
-        ));
+        m_surface = mgr->m_ptrColl->CreatePoolItem(mgr->m_drawTarget->m_frontPair->m_surface, 4);
         if (m_surface == NULL) {
             return 0;
         }

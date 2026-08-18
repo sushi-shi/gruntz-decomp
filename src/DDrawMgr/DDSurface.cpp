@@ -1027,7 +1027,7 @@ void BuildColorChannelTables() {
 // caller, SaveScreenshot, writes "Gruntz%04i.BMP"), and SaveDispatch then picks
 // the container by bit depth - .BMP at 8bpp, RLE16 at 16, .TGA at 24.
 RVA(0x0013f910, 0x4a)
-i32 CDDSurface::SaveFile(char* buf, FileImageFormat type, void* pal, i32 flag) {
+i32 CDDSurface::SaveFile(char* buf, FileImageFormat type, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
         return 0;
     }
@@ -1097,7 +1097,12 @@ i32 CDDSurface::GetColorKey() {
 }
 
 RVA(0x0013faa0, 0x108)
-i32 CDDSurface::Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrder rowOrder) {
+i32 CDDSurface::Blit(
+    void* src,
+    ColorDepth bitcount,
+    PALETTEENTRY* palette,
+    RasterRowOrder rowOrder
+) {
     ColorDepth dest = this->m_bitDepth;
     if (static_cast<ColorDepth>(dest == BPP_UNSET) == bitcount) {
         return BlitDirect(src, rowOrder);
@@ -1137,14 +1142,13 @@ i32 CDDSurface::Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrd
 // byte-exact, the ratchet-mandated static_cast use-site spelling leaves the
 // two LUT loads swapped. All pack spellings tie under the current content.
 RVA(0x0013fbb0, 0x126)
-i32 CDDSurface::Blit168(void* srcv, void* palv, RasterRowOrder rowOrder) {
-    u8* pal = static_cast<u8*>(palv);
+i32 CDDSurface::Blit168(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        g_lut16[i] = PackPalEntry16(pal[i * 4], pal[i * 4 + 1], pal[i * 4 + 2]);
+        g_lut16[i] = PackPalEntry16(pal[i].peRed, pal[i].peGreen, pal[i].peBlue);
     }
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
@@ -1229,8 +1233,7 @@ i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
 }
 
 RVA(0x0013fe60, 0x11e)
-i32 CDDSurface::Blit248(void* srcv, void* palv, RasterRowOrder rowOrder) {
-    PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
+i32 CDDSurface::Blit248(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
@@ -1312,8 +1315,7 @@ i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
 // k-loop widens each pal byte through a serially-reused eax where cl batches
 // two byte registers.
 RVA(0x00140110, 0x30b)
-i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
-    PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
+i32 CDDSurface::Blit824(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
@@ -1402,8 +1404,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
 // dead palv slot as the cursor home and saves each widened channel to its own
 // slot right after its shift where cl defers the saves.
 RVA(0x00140420, 0x34f)
-i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
-    PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
+i32 CDDSurface::Blit816(void* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }

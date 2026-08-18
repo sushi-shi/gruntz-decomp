@@ -127,19 +127,13 @@ i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 c
 
 RVA(0x00148ac0, 0x2b)
 i32 CPoolItemA88::UpdateOverlay(
-    void* srcRect,
+    RECT* srcRect,
     CDDSurface* dest,
-    void* destRect,
+    RECT* destRect,
     u32 flags,
-    void* fx
+    DDOVERLAYFX* fx
 ) {
-    return m_ddSurface->UpdateOverlay(
-        static_cast<LPRECT>(srcRect),
-        dest->m_ddSurface,
-        static_cast<LPRECT>(destRect),
-        flags,
-        static_cast<LPDDOVERLAYFX>(fx)
-    );
+    return m_ddSurface->UpdateOverlay(srcRect, dest->m_ddSurface, destRect, flags, fx);
 }
 
 RVA(0x00148af0, 0x58)
