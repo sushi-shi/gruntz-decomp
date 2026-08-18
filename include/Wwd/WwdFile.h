@@ -88,20 +88,6 @@ struct WwdPlaneHeader {
     u8 pad_94[WWD_PLANE_HEADER_SIZE - 0x94];
 };
 
-class WwdInputStream {
-public:
-    WwdInputStream();
-    ~WwdInputStream();
-    i32 Open(const char* name, i32 mode, void* errSink);
-    i32 Read(void* buf, i32 len);
-
-private:
-    char _vft0[4];
-    HANDLE m_handle;
-    i32 m_open;
-    char* m_name;
-};
-
 class CDDSurface;
 
 struct PlaneObjectRecord {
