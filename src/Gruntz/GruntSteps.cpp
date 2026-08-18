@@ -215,15 +215,15 @@ static __inline i32 s_CanCommitBagMove(CGrunt* g, i32 moveX, i32 moveY) {
     return 1;
 }
 
-static __inline void SerRecord(CFileMemBase* ar, SerialMode mode, void* p) {
+static __inline void SerializeClockPair(CFileMemBase* ar, SerialMode mode, i64* pair) {
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(p, 8);
-            ar->Write(static_cast<char*>(p) + 8, 8);
+            ar->Write(pair, sizeof(*pair));
+            ar->Write(pair + 1, sizeof(*pair));
             break;
         case SERIAL_LOAD:
-            ar->Read(p, 8);
-            ar->Read(static_cast<char*>(p) + 8, 8);
+            ar->Read(pair, sizeof(*pair));
+            ar->Read(pair + 1, sizeof(*pair));
             break;
     }
 }
@@ -1241,14 +1241,14 @@ i32 CGrunt::SerializeMove(
             break;
     }
     m_entranceCell.Serialize(ar, mode, typeId, pObj);
-    SerRecord(ar, mode, &m_toyClock);
-    SerRecord(ar, mode, &m_idleAnchor);
-    SerRecord(ar, mode, &m_idleTimer);
-    SerRecord(ar, mode, &m_entranceClockLo);
-    SerRecord(ar, mode, &m_flashClockLo);
-    SerRecord(ar, mode, &m_attackClockLo);
-    SerRecord(ar, mode, &m_combatClockLo);
-    SerRecord(ar, mode, &m_hudRetireClockLo);
+    SerializeClockPair(ar, mode, &m_toyClock);
+    SerializeClockPair(ar, mode, &m_idleAnchor);
+    SerializeClockPair(ar, mode, &m_idleTimer);
+    SerializeClockPair(ar, mode, &m_entranceClock64);
+    SerializeClockPair(ar, mode, &m_flashClock64);
+    SerializeClockPair(ar, mode, &m_attackClock64);
+    SerializeClockPair(ar, mode, &m_combatClock64);
+    SerializeClockPair(ar, mode, &m_hudRetireClock64);
     m_wingzTiming.Serialize(ar, mode, typeId, pObj);
     m_conversionTiming.Serialize(ar, mode, typeId, pObj);
     m_shimmerTiming.Serialize(ar, mode, typeId, pObj);

@@ -2233,7 +2233,7 @@ gruntsteps	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	f60fee3e75a
 gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	83.0242	83.0242	1	e22922284f0d	0x51850	83.0242	
 gruntsteps	?RectContainsGated@CGrunt@@QAEHHH@Z	82.5276	82.5276	1	64bbe7e530ca	0x51a20	82.5276	
 gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	a9490b629161	0x53f90	100.0000	
-gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	91822eacedeb	0x53b80	100.0000	
+gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	6f8321e434a5	0x53b80	100.0000	
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	1	49bf4fc7f565	0x52ed0	100.0000	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	1	bf3f90a0203c	0x517b0	100.0000	
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	61.7404	61.7393	4	10ae291452f3	0x51c00	62.0405	
