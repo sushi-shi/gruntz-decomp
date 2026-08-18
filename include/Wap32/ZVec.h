@@ -9,7 +9,7 @@
 
 struct CVariantSlot;
 
-inline void* ZVecNoScratch() {
+inline char* ZVecNoScratch() {
 
     AddrWord<char> sentinel;
     sentinel.m_word = 1;
