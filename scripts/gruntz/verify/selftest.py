@@ -1315,6 +1315,40 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
         rel = {0x2bb: ("?f@@YAXXZ", 0)}
         self.assertEqual(D._call_targets(rel, asm, "?f@@YAXXZ"), [("?f@@YAXXZ", 0)])
 
+    def test_diagnose_does_not_route_relocation_free_self_recursion_to_inline(self):
+        import contextlib
+        import io
+        from types import SimpleNamespace
+
+        from gruntz.walls import diagnose as D
+        name = "?ParseRecords@CSymParser@@QAEHXZ"
+        binding = SimpleNamespace(unit="u", name=name, rva=0x13B300)
+        asm = "   0:\te8 fb ff ff ff\tcall 0x0\n"
+        with tempfile.TemporaryDirectory() as td:
+            norm = Path(td)
+            (norm / "base").mkdir()
+            (norm / "target").mkdir()
+            (norm / "base/u.obj").touch()
+            (norm / "target/u.c.obj").touch()
+            found = [
+                (b"base", {1: (name, 0)}, 4),
+                (b"target", {}, 4),
+            ]
+            skeletons = [
+                (b"base", 1, 0, 0, 1, asm),
+                (b"target", 1, 0, 0, 1, asm),
+            ]
+            with mock.patch.object(D, "NORM", norm), \
+                 mock.patch.object(D, "_locate", return_value=(binding, "")), \
+                 mock.patch.object(D, "Obj", side_effect=lambda path: path), \
+                 mock.patch.object(D, "_find_function", side_effect=found), \
+                 mock.patch.object(D, "_jump_table_bytes", return_value=set()), \
+                 mock.patch.object(D, "_skeleton", side_effect=skeletons), \
+                 contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(D.diagnose("0x13b300"), 0)
+        self.assertIn("REGALLOC/SCHEDULING", out.getvalue())
+        self.assertNotIn("INLINE/CALL-SET", out.getvalue())
+
 
 class InlineModelFlagControls(unittest.TestCase):
     """--spec was documented, parsed, and then fell through to
