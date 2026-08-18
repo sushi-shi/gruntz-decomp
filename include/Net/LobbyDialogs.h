@@ -9,6 +9,9 @@
 
 class CMulti;
 
+// HWND is void* here on purpose: TimeSplit.cpp is a <Win32.h> TU, where
+// windows.h leaves STRICT off and HWND *is* void*, so the definition mangles
+// PAX.  Spelling HWND in this MFC (STRICT) header would resolve to nothing.
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 namespace NetLobby {
 
@@ -16,20 +19,20 @@ namespace NetLobby {
     BOOL CALLBACK JoinWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
     BOOL CALLBACK SessionWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
     BOOL CALLBACK NetGameDlgProc(HWND, UINT, WPARAM, LPARAM);
-    void UpdateHostWaitDialog(HWND hWnd, void* ctx);
-    void UpdateJoinWaitDialog(HWND hWnd, void* ctx);
-    void UpdateLobbyDialog(HWND hWnd, void* ctx);
-    void UpdateDropWaitDialog(HWND hWnd, void* ctx);
-    void UpdateSessionWaitDialog(HWND hWnd, void* ctx);
-    void UpdateDropInDialog(HWND hWnd, void* ctx);
-    void InitializeLobbyDialog(HWND, void*);
-    void InitializeDropWaitDialog(HWND, void*);
+    void UpdateHostWaitDialog(HWND hWnd, CMulti* ctx);
+    void UpdateJoinWaitDialog(HWND hWnd, CMulti* ctx);
+    void UpdateLobbyDialog(HWND hWnd, CMulti* ctx);
+    void UpdateDropWaitDialog(HWND hWnd, CMulti* ctx);
+    void UpdateSessionWaitDialog(HWND hWnd, CMulti* ctx);
+    void UpdateDropInDialog(HWND hWnd, CMulti* ctx);
+    void InitializeLobbyDialog(HWND, CMulti*);
+    void InitializeDropWaitDialog(HWND, CMulti*);
     void NetDlgSessionStop(HWND, CMulti*);
-    void NetChatSubmit(HWND, void*);
-    void InitializeHostWaitDialog(HWND hWnd, void* ctx);
-    void InitializeJoinWaitDialog(HWND hWnd, void* ctx);
-    void InitializeSessionWaitDialog(HWND hWnd, void* ctx);
-    void InitializeDropInDialog(HWND hWnd, void* ctx);
+    void NetChatSubmit(HWND, CMulti*);
+    void InitializeHostWaitDialog(HWND hWnd, CMulti* ctx);
+    void InitializeJoinWaitDialog(HWND hWnd, CMulti* ctx);
+    void InitializeSessionWaitDialog(HWND hWnd, CMulti* ctx);
+    void InitializeDropInDialog(HWND hWnd, CMulti* ctx);
 } // namespace NetLobby
 
 #endif // NET_LOBBYDIALOGS_H

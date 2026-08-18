@@ -74,7 +74,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bda00, 0x3e)
-    void InitializeHostWaitDialog(HWND hWnd, void* ctx) {
+    void InitializeHostWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateHostWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
@@ -83,7 +83,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bda50, 0x1)
-    void UpdateHostWaitDialog(HWND, void*) {}
+    void UpdateHostWaitDialog(HWND, CMulti*) {}
 
     RVA(0x000bda70, 0xda)
     BOOL CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -117,7 +117,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bdb90, 0x3e)
-    void InitializeJoinWaitDialog(HWND hWnd, void* ctx) {
+    void InitializeJoinWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateJoinWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
@@ -126,7 +126,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bdbe0, 0x1)
-    void UpdateJoinWaitDialog(HWND, void*) {}
+    void UpdateJoinWaitDialog(HWND, CMulti*) {}
 
     RVA(0x000bdc00, 0x10c)
     BOOL CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -165,7 +165,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bdd60, 0x3e)
-    void InitializeLobbyDialog(HWND hWnd, void* ctx) {
+    void InitializeLobbyDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateLobbyDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
@@ -174,7 +174,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bddb0, 0x1)
-    void UpdateLobbyDialog(HWND, void*) {}
+    void UpdateLobbyDialog(HWND, CMulti*) {}
 
     RVA(0x000bddd0, 0x193)
     BOOL CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -227,7 +227,7 @@ namespace NetLobby {
     }
 
     RVA(0x000bdfe0, 0x3e)
-    void InitializeSessionWaitDialog(HWND hWnd, void* ctx) {
+    void InitializeSessionWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateSessionWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
@@ -236,16 +236,10 @@ namespace NetLobby {
     }
 
     RVA(0x000be030, 0x49)
-    void UpdateSessionWaitDialog(HWND hWnd, void* ctx) {
+    void UpdateSessionWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
-            EnableWindow(
-                GetDlgItem(hWnd, IDX(IDC_NET_RESTART)),
-                (static_cast<CMulti*>(ctx))->m_isHost
-            );
-            EnableWindow(
-                GetDlgItem(hWnd, IDX(IDC_NET_CONTINUE)),
-                (static_cast<CMulti*>(ctx))->m_isHost
-            );
+            EnableWindow(GetDlgItem(hWnd, IDX(IDC_NET_RESTART)), ctx->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, IDX(IDC_NET_CONTINUE)), ctx->m_isHost);
         }
     }
 
@@ -302,7 +296,7 @@ namespace NetLobby {
     }
 
     RVA(0x000be2f0, 0xb9)
-    void InitializeDropWaitDialog(HWND hWnd, void* ctx) {
+    void InitializeDropWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             CString banner;
             if (g_sessionName.GetLength() != 0) {
@@ -319,10 +313,10 @@ namespace NetLobby {
     }
 
     RVA(0x000be3e0, 0x1)
-    void UpdateDropWaitDialog(HWND, void*) {}
+    void UpdateDropWaitDialog(HWND, CMulti*) {}
 
     RVA(0x000be400, 0x6c)
-    void NetChatSubmit(HWND hWnd, void* gate) {
+    void NetChatSubmit(HWND hWnd, CMulti* gate) {
         char buf[0x68];
         if (hWnd && gate) {
             HWND edit = GetDlgItem(hWnd, 0x4b7);
@@ -404,7 +398,7 @@ namespace NetLobby {
     }
 
     RVA(0x000be760, 0x82)
-    void InitializeDropInDialog(HWND hWnd, void* ctx) {
+    void InitializeDropInDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
 
@@ -420,16 +414,10 @@ namespace NetLobby {
     }
 
     RVA(0x000be820, 0x49)
-    void UpdateDropInDialog(HWND hWnd, void* ctx) {
+    void UpdateDropInDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
-            EnableWindow(
-                GetDlgItem(hWnd, IDX(IDC_NET_DROPIN_ACCEPT)),
-                (static_cast<CMulti*>(ctx))->m_isHost
-            );
-            EnableWindow(
-                GetDlgItem(hWnd, IDX(IDC_NET_DROPIN_REJECT)),
-                (static_cast<CMulti*>(ctx))->m_isHost
-            );
+            EnableWindow(GetDlgItem(hWnd, IDX(IDC_NET_DROPIN_ACCEPT)), ctx->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, IDX(IDC_NET_DROPIN_REJECT)), ctx->m_isHost);
         }
     }
 } // namespace NetLobby
