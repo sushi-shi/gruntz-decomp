@@ -43,8 +43,8 @@ CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 DATA(0x001ea3e8)
 static const double kRollingBallSpeedNum = 16.0;
 
-static __inline i32 VtblResolve(void* ent) {
-    return IDX(static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0));
+static __inline i32 VtblResolve(CTileImageSet* imageSet) {
+    return IDX(imageSet->GetCollisionAt(0, 0));
 }
 
 RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
@@ -235,7 +235,7 @@ i32 CRollingBall::Update() {
             // A TileCollisionKind: the devirtualised CTileImageSet::GetCollisionAt(0, 0).
             i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
-                act = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
+                act = VtblResolve(static_cast<CTileImageSet*>(lvl->m_imageSets[raw & 0xffff]));
             } else {
                 act = 0;
             }
@@ -444,7 +444,7 @@ i32 CRollingBall::Update() {
             i32 raw2 = pl2->m_tileGrid[pl2->m_colOffsets[col2] + row2];
             i32 act2;
             if (raw2 != UNINIT_FILL && raw2 != -1) {
-                act2 = VtblResolve(lvl2->m_imageSets[raw2 & 0xffff]);
+                act2 = VtblResolve(static_cast<CTileImageSet*>(lvl2->m_imageSets[raw2 & 0xffff]));
             } else {
                 act2 = 0;
             }
