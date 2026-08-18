@@ -51,7 +51,7 @@ unchanged source hash `a7b2facaa76c`, then the declarations were discarded. Thus
 almost-exact, relocation-free two-load rotation can still be a C1 handle-state wall, and
 a small local spelling matrix does not refute that classification.
 
-## Quantified (2026-08-13): the mechanism is C1XX symbol-handle renumbering, and each probe kind has a measured stride
+## Quantified (2026-08-13): the input mechanism is C1XX symbol-handle renumbering, and each probe kind has a measured stride
 
 The hypothesis above — "each kind advances cl 5.0's parse state differently" — is now a
 measured number, proven at the IL boundary. MSVC 5.0's front end can be tapped
@@ -59,8 +59,11 @@ measured number, proven at the IL boundary. MSVC 5.0's front end can be tapped
 feeds them back), and an appended unused declaration renumbers every later symbol handle
 while the symbol NAME sequence stays identical — HoMM3's C1 signature, reproduced on our
 compiler. The codegen delta reproduces from the IL bytes alone through one unchanged C2
-(`fed(IL_B) == plain B`), so the verdict for declaration-count and include-set
-perturbations is FRONT-END, not a C2 codegen theory.
+(`fed(IL_B) == plain B`), proving that the perturbation enters through the C1XX streams.
+That does **not** by itself prove the target decision occurs in C1: `ProbeHeadSoft` now
+shows byte-identical target IL whose code changes in C2's `/Og` pass as later symbol
+records move through an exact 511-handle phase. See
+[`../relevations/cl5-globalopt-has-a-511-handle-phase.md`](../relevations/cl5-globalopt-has-a-511-handle-phase.md).
 
 Measured handle strides per appended probe kind (SpriteRef.cpp, cpp-rtti; the C front
 end differs — a C struct costs +1):
@@ -103,3 +106,9 @@ register-picker's request order.
 names the machinery (`FUN_0042b2c4`, the rotating cursor `DAT_004911a8`) and the
 one source lever that is real. Detection: if the pair is a scalar/scalar swap on
 values that live to the end of the body, the mixed sweep will be flat — skip it.
+
+The stronger 2026-08-18 control is a 129-state `CFaderShape::RenderTile` campaign:
+all states keep the same six-byte frame-home swap, while `ProbeHeadSoft` crosses
+repeatable boundaries exactly 511 handles apart. A one-island campaign is therefore a
+positive routing result: stop state permutation and search structure. The compiler RE
+and pass-disable evidence are in the 511-handle relevation linked above.

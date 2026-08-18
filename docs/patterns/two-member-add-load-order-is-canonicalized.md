@@ -45,8 +45,11 @@ from baseline only in the two instructions starting at +0x8: retail/island load
 `m_screenY` then `m_extent.top`, while baseline loads those two members in the reverse
 order; 206 of the 214 bytes agree.
 
-This corrects the older “back-end state” wording above. The result is consistent with
-the C1XX symbol-handle mechanism proven by
+This corrects the older vague “back-end state” wording above. C1XX supplies the changing
+global symbol handles, but the target's own IL stays byte-identical and C2's `/Og` pass
+selects the alternate order on an exact 511-handle phase, as proven in
+[`../relevations/cl5-globalopt-has-a-511-handle-phase.md`](../relevations/cl5-globalopt-has-a-511-handle-phase.md).
+The declaration-kind strides remain those proven by
 [`tu-state-probe-family-decides-reachability.md`](tu-state-probe-family-decides-reachability.md):
 the body has no honest source spelling that reaches the alternate order, but mixed
 declaration kinds move the unchanged body to it. Treat the frontier as evidence of
