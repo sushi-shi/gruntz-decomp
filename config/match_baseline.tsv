@@ -315,7 +315,7 @@ warlord	18	15
 waypoint	4	4
 winapicdrom	5	4
 winapimodule	1	0
-winmain	1	1
+winmain	1	0
 worldsoundset	36	33
 wormhole	26	23
 wormholeacts	2	2
@@ -4429,7 +4429,7 @@ winapicdrom	?FileExistsCopy@@YAHPAD@Z	100.0000	100.0000	1	d930fdc86484	0x1fd70	1
 winapicdrom	?GetGruntzDriveLetter@@YADXZ	98.4234	98.4234	1	96594f2d3312	0x1ffe0	98.4234	
 winapicdrom	?IsGruntzCDInAnyDrive@@YAHXZ	100.0000	100.0000	1	cd3aa3f5108b	0x1fd50	100.0000	
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	30	f6af41e9a9c2	0x118f60	99.9000	
-winmain	_WinMain@16	100.0000	100.0000	21	6aa23f843741	0x11c860	100.0000	
+winmain	_WinMain@16	99.5885	99.5885	22	d16477accb43	0x11c860	100.0000	
 worldsoundset	??1CAmbientPosSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xb940	100.0000	
 worldsoundset	??1CAmbientSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xb790	100.0000	
 worldsoundset	??1CRandomAmbientSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xbb40	100.0000	

@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <ComOutRef.h>
 #include <Enums.h>
 #include <Gruntz/AdvancedOptions.h>
 #include <Gruntz/GameAssetNamespaces.h>
@@ -46,16 +47,16 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DWORD dwSize = GetFileVersionInfoSizeA(szModulePath, 0);
         u8* pInfo = new u8[dwSize];
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
-        void* pValue;
+        char* pValue = NULL;
         UINT uLen;
         VerQueryValueA(
             pInfo,
             const_cast<LPSTR>("\\StringFileInfo\\040904B0\\FileVersion"),
-            &pValue,
+            PtrOut(&pValue),
             &uLen
         );
         sscanf(
-            static_cast<const char*>(pValue),
+            pValue,
             "%d, %d, %d, %d",
             &g_versionMajor,
             &g_versionMid,
