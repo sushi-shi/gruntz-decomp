@@ -7011,7 +7011,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         // Positive gate: retail's `je` at 0xd82be reaches PAST the lookup to a sunk
         // `m_gridCurFrame = NULL`, i.e. the non-empty name is the FALL-THROUGH.
         if (strlen(nameBuf) != 0) {
-            CObject* found = 0;
+            CObject* found = NULL;
             res->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(nameBuf), found);
             CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
             if (set == NULL || idx < set->m_minIndex || idx > set->m_maxIndex) {
@@ -7027,10 +7027,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     g_serialCounter++;
     ar->Read(nameBuf, SERIAL_NAME_LEN);
     {
-        CObject* gridObj = 0;
+        CObject* found = NULL;
         if (strlen(nameBuf) != 0) {
-            res->m_imageRegistry->m_workersByName.Lookup(nameBuf, gridObj);
-            m_grid = static_cast<CDDrawWorker*>(gridObj);
+            res->m_imageRegistry->m_workersByName.Lookup(nameBuf, found);
+            m_grid = static_cast<CDDrawWorker*>(found);
         } else {
             m_grid = NULL;
         }
@@ -7039,25 +7039,26 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         ar->Read(&m_gridDelayCount, sizeof(m_gridDelayCount));
         ar->Read(&m_gridRow, sizeof(m_gridRow));
         g_serialCounter++;
-        {
-            i32 v;
-            ar->Read(&v, sizeof(v));
-        }
+        ar->Read(&found, sizeof(found));
 
-        CGameObject* oe = 0;
+        CGameObject* oe = NULL;
         CWwdGameObjectA* sink;
-        if (MapLookup(res->m_childGroup->m_registeredGameObjectsById, gridObj, oe)) {
+        if (MapLookup(
+                res->m_childGroup->m_registeredGameObjectsById,
+                static_cast<void*>(found),
+                oe
+            )) {
             if (oe == NULL) {
                 sink = NULL;
             } else {
-                sink =
-                    oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe) : 0;
+                sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe)
+                                                             : NULL;
             }
         } else {
             sink = NULL;
         }
         m_scrollSink = sink;
-        if (sink == NULL && gridObj != NULL) {
+        if (sink == NULL && found != NULL) {
             return 0;
         }
     }
