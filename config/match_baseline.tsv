@@ -618,7 +618,7 @@ behindcandyani	?FireActivation@CBehindCandyAni@@UAEXH@Z	100.0000	100.0000	1	4d71
 behindcandyani	?GetTypeTag@CBehindCandyAni@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x10030	100.0000	
 behindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	100.0000	100.0000	11	83b61294a9d3	0xad9b0	100.0000	
 behindcandyani	?SerializeMove@CBehindCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:281810d27b94	0x10050	100.0000	
-bitarray	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	1	c5a8596ef6dd	0x1936e0	90.8000	
+bitarray	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	2	3cc59f36eb87	0x1936e0	90.8000	
 bitarray	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	1	1ea7b32d0bbf	0x193680	100.0000	
 bitarray	?SetBit@zBitVec@@QAEPAV1@I@Z	100.0000	100.0000	6	d5076fac6cb1	0x193640	100.0000	
 bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	1	1e09c4bae4b0	0x193140	100.0000	
@@ -1182,7 +1182,7 @@ ddrawsurfacepair	?ResetSlots@CDDrawWorkerMapSmall@@QAEXXZ	100.0000	100.0000	1	02
 ddrawsurfacepair	?ResolveImageName@CDDrawSurfacePair@@UAEHPAD@Z	100.0000	100.0000	1	c343b49df361	0x163ee0	100.0000	
 ddrawsurfacepair	?ResolveTarget@AnimWorkerObj@@QAEHPAX@Z	99.3333	99.3333	2	57993d294b71	0x1651b0	99.3333	
 ddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	100.0000	100.0000	1	9bfa84569ff6	0x163f00	100.0000	
-ddrawsurfacepair	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	9f57af74fde1	0x164960	100.0000	
+ddrawsurfacepair	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	a98e4bba5913	0x164960	100.0000	
 ddrawsurfacepair	?SetGeom@CDDrawSurfaceChildA@@UAEHHHW4ColorDepth@@@Z	100.0000	100.0000	1	033b974ba273	0x1646b0	100.0000	
 ddrawsurfacepair	?SetGeom@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@@Z	78.5294	78.5294	2	032e3497e4a0	0x164250	78.5294	
 ddrawsurfacepair	?SetGeometry@CDDrawSurfaceChildA@@UAEHHHW4ColorDepth@@@Z	91.3694	91.3694	3	9b7f744b9539	0x1644a0	91.3694	
@@ -1418,7 +1418,7 @@ directdrawmgr	??_GCPoolItemAE8@@UAEPAXI@Z	100.0000	100.0000	1	cpp:f48119786748	0
 directdrawmgr	?AddItemA@CDDrawPtrCollections@@QAEXPAVCDDSurface@@@Z	100.0000	100.0000	1	063e773f1091	0x142100	100.0000	
 directdrawmgr	?AddItemB@CDDrawPtrCollections@@QAEXPAUCDDPalette@@@Z	100.0000	100.0000	1	91ef022570de	0x142eb0	100.0000	
 directdrawmgr	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	1	bcdc6f46bd74	0x142060	100.0000	
-directdrawmgr	?Compare@CDDrawPtrCollections@@QAEHPAX0@Z	100.0000	100.0000	1	1567610ce2f3	0x1433d0	100.0000	
+directdrawmgr	?Compare@CDDrawPtrCollections@@QAEHPAU_DDSURFACEDESC@@0@Z	100.0000	100.0000	2	703051e614cf	0x1433d0	100.0000	
 directdrawmgr	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	1	2ca7f220a4b9	0x143b20	100.0000	
 directdrawmgr	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHW4ColorDepth@@HH@Z	100.0000	100.0000	1	326100840811	0x143c20	100.0000	
 directdrawmgr	?Create24BitPaletteSurface@CDDrawPtrCollections@@QAEPAVCDDSurface@@H@Z	100.0000	100.0000	1	d58717340173	0x142b70	100.0000	
@@ -1472,7 +1472,7 @@ directdrawmgr	?SetDisplayPaletteFrom@CDDrawPtrCollections@@QAEHPAUCDDPalette@@H@
 directdrawmgr	?SetDisplayPaletteFromRgb@CDDrawPtrCollections@@QAEHPAXH@Z	100.0000	100.0000	2	c1fc2225fa45	0x143950	100.0000	
 directdrawmgr	?SetDisplayPaletteFromTrailingRgb@CDDrawPtrCollections@@QAEHPAEHH@Z	100.0000	100.0000	2	c0f4cc76e327	0x1439f0	100.0000	
 directdrawmgr	?SetSurfaceRestoreHandler@@YAXP6AHXZ@Z	100.0000	100.0000	1	32033e194295	0x1437e0	100.0000	
-directdrawmgr	?SetupCaps@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	bbf7820b2324	0x143240	100.0000	
+directdrawmgr	?SetupCaps@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	2	d828832d6aa7	0x143240	100.0000	
 directinputmgr2	??1CDeviceConfigB@@UAE@XZ	100.0000	100.0000	1	7c9591ebbb80	0x1334f0	100.0000	
 directinputmgr2	??1CDeviceConfigC@@UAE@XZ	100.0000	100.0000	1	66a78e348631	0x133460	100.0000	
 directinputmgr2	??1CInputDevBase@@UAE@XZ	100.0000	100.0000	1	cpp:686c0ed6a102	0x1333b0	100.0000	
@@ -3299,7 +3299,7 @@ netsessionmgr	?AllocateGruntRecord@@YAPAUGruntRec@@H@Z	100.0000	100.0000	2	6d3ed
 netsessionmgr	?ArmSlot@CNetSession@@QAEXPAVCGruntzCommand@@E@Z	100.0000	100.0000	2	88047da0814b	0xc03f0	100.0000	
 netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	88.0963	88.0963	2	31b025eb52c9	0xbf1d0	88.0963	
 netsessionmgr	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	55da87b22acd	0xc04a0	100.0000	
-netsessionmgr	?Checksum@CNetSession@@QAEHXZ	89.7635	89.7500	1	80d4ecabbbbf	0xc0590	89.7635	
+netsessionmgr	?Checksum@CNetSession@@QAEHXZ	89.7635	89.7635	1	80d4ecabbbbf	0xc0590	89.7635	
 netsessionmgr	?ClearAckFlags@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	e5e7ebd7d632	0xbf120	100.0000	
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	1	ab3bf773b8c8	0xbfff0	100.0000	
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetCtrlMsg@@H@Z	100.0000	100.0000	2	9ae018b12627	0xbf700	100.0000	
@@ -3315,7 +3315,7 @@ netsessionmgr	?Reconcile@CNetSession@@QAEXXZ	100.0000	100.0000	1	eefb408c7a63	0x
 netsessionmgr	?RecycleCmd@@YAXPAUGruntRec@@@Z	100.0000	100.0000	2	3b16f0feaef5	0xbf580	100.0000	
 netsessionmgr	?Reset@CNetSession@@QAEXXZ	100.0000	100.0000	1	cf56ec0eb070	0xbf150	100.0000	
 netsessionmgr	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	1	450f7ab8303a	0xc0070	100.0000	
-netsessionmgr	?ResetSync@CNetSession@@QAEXXZ	84.7260	84.7260	1	3898b45fddeb	0xbf000	84.7260	
+netsessionmgr	?ResetSync@CNetSession@@QAEXXZ	84.7260	84.7260	2	94eb40808066	0xbf000	84.7260	
 netsessionmgr	?SendAll@CNetSession@@QAEHXZ	100.0000	100.0000	1	428336c87d1a	0xbfb40	100.0000	
 netsessionmgr	?SendBatch@CNetSession@@QAEHXZ	100.0000	100.0000	1	d5cf8c62362e	0xbfd40	100.0000	
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	1	c908e81ff168	0xbfc70	97.6316	

@@ -780,7 +780,7 @@ i32 AnimWorkerObj::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved164, sizeof(m_reserved164));
     ar->Write(&m_targetId, sizeof(m_targetId));
     ar->Write(&m_payloadSize, sizeof(m_payloadSize));
-    void* payload = m_payload;
+    u8* payload = m_payload;
     if (payload && m_payloadSize > 0) {
         ar->Write(payload, m_payloadSize);
     }

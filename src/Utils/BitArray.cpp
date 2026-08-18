@@ -42,23 +42,23 @@ RVA(0x001936e0, 0xd3)
 i32 zBitVec::EnsureSize(i32 nbits) {
     u32 ndwords = ((nbits & BITARRAY_BIT_MASK) != 0 ? 1 : 0)
                   + (static_cast<u32>(nbits) >> BITARRAY_WORD_SHIFT);
-    void* nbuf;
+    u32* nbuf = NULL;
     if (static_cast<u32>(m_capacity) > 0x20) {
-        nbuf = realloc(m_words, ndwords * 4);
+        nbuf = static_cast<u32*>(realloc(m_words, ndwords * 4));
         if (!nbuf) {
             goto fail;
         }
         u32 oldn = static_cast<u32>(m_capacity) >> BITARRAY_WORD_SHIFT;
-        memset(static_cast<u32*>(nbuf) + oldn, 0, (ndwords - oldn) * 4);
+        memset(nbuf + oldn, 0, (ndwords - oldn) * 4);
     } else {
-        nbuf = malloc(ndwords * 4);
+        nbuf = static_cast<u32*>(malloc(ndwords * 4));
         if (!nbuf) {
             goto fail;
         }
         memset(nbuf, 0, ndwords * 4);
         memcpy(nbuf, &m_words, sizeof(m_words));
     }
-    m_words = static_cast<u32*>(nbuf);
+    m_words = nbuf;
     m_capacity = ndwords * BITARRAY_WORD_BITS;
     return 1;
 fail:

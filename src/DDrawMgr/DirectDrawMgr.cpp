@@ -793,11 +793,11 @@ void CDDrawPtrCollections::SetupCaps() {
         for (i32 a = 0; a < n - 1; a++) {
             for (i32 b = a + 1; b < n; b++) {
 
-                void* pa = m_poolItems.GetData()[a];
-                void* pb = m_poolItems.GetData()[b];
+                DDSURFACEDESC* pa = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[a]);
+                DDSURFACEDESC* pb = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[b]);
                 if (Compare(pa, pb)) {
-                    m_poolItems.GetData()[a] = pb;
-                    m_poolItems.GetData()[b] = pa;
+                    m_poolItems.GetData()[a] = static_cast<void*>(pb);
+                    m_poolItems.GetData()[b] = static_cast<void*>(pa);
                 }
             }
         }
@@ -813,9 +813,7 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
 }
 
 RVA(0x001433d0, 0x4f)
-i32 CDDrawPtrCollections::Compare(void* pa, void* pb) {
-    DDSURFACEDESC* a = static_cast<DDSURFACEDESC*>(pa);
-    DDSURFACEDESC* b = static_cast<DDSURFACEDESC*>(pb);
+i32 CDDrawPtrCollections::Compare(DDSURFACEDESC* a, DDSURFACEDESC* b) {
     if (a->dwWidth > b->dwWidth) {
         return 1;
     }

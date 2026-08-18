@@ -82,7 +82,7 @@ void CNetSession::ResetSync() {
     } while (--k);
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     while (freeList.GetCount() != 0) {
-        void* p = freeList.RemoveTail();
+        GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
         if (p) {
             ::operator delete(p);
         }
