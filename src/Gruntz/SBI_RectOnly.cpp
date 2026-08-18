@@ -4307,7 +4307,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
 
     CGameObject* obj = NULL;
     CWwdGameObjectA* m8;
-    if (MapLookupById(gm->m_childGroup->m_gameObjectsById, seq, obj) == 0) {
+    if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == 0) {
         m8 = NULL;
     } else if (obj == NULL) {
         m8 = NULL;

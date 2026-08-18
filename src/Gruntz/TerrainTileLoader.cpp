@@ -287,7 +287,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookup(
-                                g_gameReg->m_world->m_childGroup->m_gameObjectsById,
+                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -360,7 +360,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookup(
-                                g_gameReg->m_world->m_childGroup->m_gameObjectsById,
+                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -438,7 +438,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookup(
-                                g_gameReg->m_world->m_childGroup->m_gameObjectsById,
+                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -511,7 +511,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
                             MapLookup(
-                                g_gameReg->m_world->m_childGroup->m_gameObjectsById,
+                                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                                 objectKey.m_addr,
                                 mapped
                             );

@@ -121,8 +121,8 @@ public:
 
     CGameObject* NextChild(POSITION& pos);
     CGameObject* HeadChild() const;
-    CMapPtrToPtr m_attachedGameObjectsById;
-    CMapPtrToPtr m_gameObjectsById;
+    CMapPtrToPtr m_activeGameObjectsById;
+    CMapPtrToPtr m_registeredGameObjectsById;
 
     POSITION m_walkCursor;
 

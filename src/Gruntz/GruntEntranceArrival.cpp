@@ -1798,7 +1798,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 }
 
 // @early-stop
-// One branch differs (#10, the m_gameObjectsById lookup at base +0x160). Retail leaves the
+// One branch differs (#10, the m_registeredGameObjectsById lookup at base +0x160). Retail leaves the
 // failure value in the BOOL return - `test eax,eax / je 0x65d86 / mov eax,[esp+0xc]`
 // - so `found` never touches memory on that path; passing `found` itself as the
 // out-reference forces the extra `mov [esp+0xc],eax` store cl emits.  Splitting it
@@ -1861,7 +1861,11 @@ i32 CGrunt::StepEntranceRelatchB() {
         return 0;
     }
     CGameObject* found = NULL;
-    if (MapLookup(g->m_world->m_childGroup->m_gameObjectsById, static_cast<void*>(cellObj), found)
+    if (MapLookup(
+            g->m_world->m_childGroup->m_registeredGameObjectsById,
+            static_cast<void*>(cellObj),
+            found
+        )
         == 0) {
         found = NULL;
     }

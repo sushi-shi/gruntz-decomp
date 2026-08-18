@@ -542,7 +542,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
                 AddrWord<char> key;
                 key.m_word = node;
                 CWwdGameObject* found = NULL;
-                if (MapLookup(OwnerMgr()->m_childGroup->m_gameObjectsById, key.m_addr, found)
+                if (MapLookup(
+                        OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                        key.m_addr,
+                        found
+                    )
                     == 0) {
                     m_carrier = NULL;
                     goto carrierResolved;
@@ -749,7 +753,8 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     }
     CWwdGameObject* found = NULL;
     if (m_carrierId != 0) {
-        if (MapLookupById(OwnerMgr()->m_childGroup->m_gameObjectsById, m_carrierId, found) == 0) {
+        if (MapLookupById(OwnerMgr()->m_childGroup->m_registeredGameObjectsById, m_carrierId, found)
+            == 0) {
             m_carrier = NULL;
             return 1;
         }

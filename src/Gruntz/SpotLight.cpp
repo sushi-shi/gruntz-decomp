@@ -278,7 +278,8 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
                 s->Read(&id, sizeof(id));
                 CGameObject* out = 0;
                 CGameObject* resolved;
-                if (MapLookupById(reg->m_world->m_childGroup->m_gameObjectsById, id, out) == 0) {
+                if (MapLookupById(reg->m_world->m_childGroup->m_registeredGameObjectsById, id, out)
+                    == 0) {
                     resolved = NULL;
                 } else if (out == NULL) {
                     resolved = NULL;
