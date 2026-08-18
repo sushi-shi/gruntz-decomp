@@ -28,7 +28,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     char szModulePath[0xFE];
 
     if (GetModuleFileNameA(0, szModulePath, 0xFE) > 0
-        && FindProcessByName(szModulePath, 2, 0) != 0) {
+        && FindProcessByName(szModulePath, 2, NULL) != 0) {
 
         HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
         if (hPrev != NULL) {

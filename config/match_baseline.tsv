@@ -2431,7 +2431,7 @@ gruntzmgr	?JumpLevelDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	26067bfc
 gruntzmgr	?LaunchPortal@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	1	9d5b16c053e8	0x907c0	100.0000	
 gruntzmgr	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	1	e1a0cfb9f196	0x90550	100.0000	
 gruntzmgr	?LaunchProcessInDir@CGruntzMgr@@QAEHPAD0@Z	100.0000	100.0000	1	2b5d6003a7da	0x90860	100.0000	
-gruntzmgr	?LaunchWebBrowser@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	1	135437293617	0x8f120	100.0000	
+gruntzmgr	?LaunchWebBrowser@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	2	e6777d3b6401	0x8f120	100.0000	
 gruntzmgr	?LeaveState@CState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	fa9c930e6b93	0x8c530	100.0000	
 gruntzmgr	?LoadMonologoSprite@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	bb71555bb202	0x90d10	100.0000	
 gruntzmgr	?LoadOptionsSlotName@CGruntzMgr@@QAEHHHHHHABVCString@@H@Z	100.0000	100.0000	1	888bc01d5ef4	0x92d50	100.0000	
@@ -4429,7 +4429,7 @@ winapicdrom	?FileExistsCopy@@YAHPAD@Z	100.0000	100.0000	1	d930fdc86484	0x1fd70	1
 winapicdrom	?GetGruntzDriveLetter@@YADXZ	98.4234	98.4234	1	96594f2d3312	0x1ffe0	98.4234	
 winapicdrom	?IsGruntzCDInAnyDrive@@YAHXZ	100.0000	100.0000	1	cd3aa3f5108b	0x1fd50	100.0000	
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	30	f6af41e9a9c2	0x118f60	99.9000	
-winmain	_WinMain@16	100.0000	100.0000	20	760bb9efe507	0x11c860	100.0000	
+winmain	_WinMain@16	100.0000	100.0000	21	6aa23f843741	0x11c860	100.0000	
 worldsoundset	??1CAmbientPosSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xb940	100.0000	
 worldsoundset	??1CAmbientSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xb790	100.0000	
 worldsoundset	??1CRandomAmbientSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xbb40	100.0000	

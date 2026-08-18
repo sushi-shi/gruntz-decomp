@@ -1505,7 +1505,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
     if (strlen(cmd) < 3) {
         return 0;
     }
-    HANDLE quoted = 0;
+    HANDLE quoted = NULL;
 
     _strupr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
