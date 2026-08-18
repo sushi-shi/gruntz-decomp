@@ -19,8 +19,14 @@ GZ_ENUM_CONST_BEGIN(TileImageSetKind)
     TILE_IMAGESET_PIXELS = 3
 GZ_ENUM_CONST_END(TileImageSetKind)
 
+// Every kind's record opens with the same header and dimensions; `m_fields` is
+// the kind-specific tail, and for TILE_IMAGESET_PIXELS the w*h pixel payload
+// follows it. Each GetStride returns its own record's serialized size, so the
+// sizes below come out of this layout rather than out of literals.
 struct WwdTileImageRecord {
     char m_header[8];
+    i32 m_width;
+    i32 m_height;
     i32 m_fields[1];
 };
 
@@ -54,7 +60,7 @@ struct CImageSet1 : public CTileImageSet {
     }
     RVA(0x00161410, 0x6)
     virtual i32 GetStride() OVERRIDE {
-        return 0x14;
+        return sizeof(WwdTileImageRecord);
     }
 
     RVA(0x00161390, 0x5)
@@ -121,7 +127,7 @@ struct CImageSet2 : public CTileImageSet {
     }
     RVA(0x001614a0, 0x6)
     virtual i32 GetStride() OVERRIDE {
-        return 0x28;
+        return offsetof(WwdTileImageRecord, m_fields) + 6 * sizeof(i32);
     }
 
     virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);

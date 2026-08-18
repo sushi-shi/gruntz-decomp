@@ -29,12 +29,12 @@ TileCollisionKind CImageSet3::GetCollisionAt(i32 x, i32 y) {
 // (also -11 elsewhere via the shared header), and a named local for m_height.
 RVA(0x00161590, 0xb)
 i32 CImageSet3::GetStride() {
-    return m_height * m_width + 0x10;
+    return m_height * m_width + offsetof(WwdTileImageRecord, m_fields);
 }
 
 RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
-    i32* p = static_cast<WwdTileImageRecord*>(record)->m_fields;
+    i32* p = &static_cast<WwdTileImageRecord*>(record)->m_width;
     m_width = *p++;
     m_height = *p++;
     i32 h = m_height;
