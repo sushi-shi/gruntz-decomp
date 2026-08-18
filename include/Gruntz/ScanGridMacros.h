@@ -24,10 +24,10 @@
 #define RECYCLE_COORDS(head)                                                                       \
     {                                                                                              \
         CoordNode* n = (head);                                                                     \
-        while (n != 0) {                                                                           \
+        while (n != NULL) {                                                                        \
             CoordNode* next = n->m_next;                                                           \
-            void* pay = n->m_coord;                                                                \
-            if (pay != 0) {                                                                        \
+            Coord* pay = n->m_coord;                                                               \
+            if (pay != NULL) {                                                                     \
                 CoordPoolNode* slot = g_coordPool.NodeOf(pay);                                     \
                 slot->m_next = g_coordPool.m_freeHead;                                             \
                 g_coordPool.m_freeHead = slot;                                                     \

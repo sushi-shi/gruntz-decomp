@@ -4948,9 +4948,9 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
                 // `test ecx,ecx` on a member address is also unfolded.  Both are
                 // retail's, transcribed as-is.
                 do {
-                    void* pay = &unit->m_coordList;
-                    if (pay != NULL) {
-                        node = g_coordPool.NodeOf(pay);
+                    CGruntCoordList* listPayload = &unit->m_coordList;
+                    if (listPayload != NULL) {
+                        node = g_coordPool.NodeOf(listPayload);
                         node->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = node;
                     }
