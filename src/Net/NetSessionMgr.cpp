@@ -241,10 +241,10 @@ void CNetSession::BuildGruntzCrcInfo() {
 }
 
 RVA(0x000bf530, 0x3b)
-void* AllocateGruntRecord(int bClear) {
+GruntRec* AllocateGruntRecord(int bClear) {
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     if (freeList.GetCount()) {
-        void* p = freeList.RemoveTail();
+        GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
         if (bClear) {
             memset(p, 0, sizeof(GruntRec));
         }
@@ -254,7 +254,7 @@ void* AllocateGruntRecord(int bClear) {
 }
 
 RVA(0x000bf580, 0x10)
-void RecycleCmd(void* cmd) {
+void RecycleCmd(GruntRec* cmd) {
     CPtrListPool<GruntRec>::s_freeList.AddTail(cmd);
 }
 
@@ -325,7 +325,9 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
             return 0;
         }
     }
-    return obj->ProcessCmd(a, b, c);
+    CNetWireMsg wire;
+    wire.m_ctrl = b;
+    return obj->ProcessCmd(a, wire.m_bytes, c);
 }
 
 RVA(0x000bf7c0, 0x1b0)
@@ -334,9 +336,12 @@ i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg) {
         return 0;
     }
     switch (m->m_code) {
-        case DPSYS_CREATEPLAYERORGROUP:
-            m_session->LoadMenuSelectSprite(static_cast<void*>(m));
+        case DPSYS_CREATEPLAYERORGROUP: {
+            CNetWireMsg wire;
+            wire.m_ctrl = m;
+            m_session->LoadMenuSelectSprite(wire.m_menuSelect);
             return 1;
+        }
         case DPSYS_DESTROYPLAYERORGROUP:
             if (m->m_subCode == 1) {
                 i32 playerId = m->m_playerId;
@@ -701,8 +706,8 @@ void CNetSession::RaiseAllSlotsMax(i32 v) {
 }
 
 RVA(0x000c03f0, 0x29)
-void CNetSession::ArmSlot(void* node, u8 parity) {
-    m_idMap[(m_tick + parity) % 128] = static_cast<CGruntzCommand*>(node);
+void CNetSession::ArmSlot(CGruntzCommand* node, u8 parity) {
+    m_idMap[(m_tick + parity) % 128] = node;
 }
 
 RVA(0x000c0430, 0x1f)

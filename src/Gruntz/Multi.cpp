@@ -1373,12 +1373,12 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
 
 // @early-stop
 RVA(0x000b8cf0, 0x23b)
-i32 CMulti::OnJoinConfirm(void* hDlg) {
+i32 CMulti::OnJoinConfirm(HWND hDlg) {
     if (hDlg == NULL) {
         return 0;
     }
 
-    g_groupEnumMgr->ReadPlayerSel(GetDlgItem(static_cast<HWND>(hDlg), 0x3fc));
+    g_groupEnumMgr->ReadPlayerSel(GetDlgItem(hDlg, 0x3fc));
     CNetPlayerListNode* sel = Peer()->m_playerSel;
     if (sel == NULL) {
         return 0;
@@ -1778,7 +1778,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_isHost != 0) {
                 break;
             }
-            ParseChannelTable(msg);
+            ParseChannelTable(wire.m_chanTable);
             g_playerLeftFlag = 1;
             break;
 
@@ -1949,7 +1949,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case NETMSG_LOAD_CONFIG:
-            if (LoadConfig(msg) == 0) {
+            if (LoadConfig(wire.m_config) == 0) {
                 break;
             }
             m_connectAccepted = 1;
@@ -2009,9 +2009,12 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
             OnPlayerLeft(msg->m_playerId);
             g_playerLeftFlag = 1;
             return 1;
-        case DPSYS_CREATEPLAYERORGROUP:
-            LoadMenuSelectSprite(msg);
+        case DPSYS_CREATEPLAYERORGROUP: {
+            CNetWireMsg wire;
+            wire.m_ctrl = msg;
+            LoadMenuSelectSprite(wire.m_menuSelect);
             return 1;
+        }
         case DPSYS_HOST:
             m_isHost = 1;
             return 1;
@@ -2081,8 +2084,7 @@ void CMulti::AckDropPlayer(i32 id) {
 }
 
 RVA(0x000ba620, 0x14a)
-i32 CMulti::LoadMenuSelectSprite(void* evp) {
-    MenuSelectEvent* ev = static_cast<MenuSelectEvent*>(evp);
+i32 CMulti::LoadMenuSelectSprite(MenuSelectEvent* ev) {
     if (ev == NULL) {
         return 0;
     }
@@ -2179,15 +2181,14 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
 }
 
 RVA(0x000ba980, 0xca)
-i32 CMulti::ParseChannelTable(void* packet) {
-    if (packet == NULL) {
+i32 CMulti::ParseChannelTable(CNetChannelTablePacket* p) {
+    if (p == NULL) {
         return 0;
     }
     if (m_isHost == 0) {
         ChannelSlots_InitAll();
     }
 
-    CNetChannelTablePacket* p = static_cast<CNetChannelTablePacket*>(packet);
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != NULL) {
@@ -2260,8 +2261,7 @@ i32 CMulti::RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32
 }
 
 RVA(0x000bac40, 0x38)
-i32 CMulti::RegisterChannelRec(void* rec) {
-    CNetChannelPacket* r = static_cast<CNetChannelPacket*>(rec);
+i32 CMulti::RegisterChannelRec(CNetChannelPacket* r) {
     if (r->m_present != 0) {
         RegisterChannel(
             r->m_name,
@@ -2387,11 +2387,10 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
 }
 
 RVA(0x000baff0, 0x88)
-i32 CMulti::ParseOneChannel(void* rec) {
-    if (rec == NULL) {
+i32 CMulti::ParseOneChannel(CNetOneChannelPacket* r) {
+    if (r == NULL) {
         return 0;
     }
-    CNetOneChannelPacket* r = static_cast<CNetOneChannelPacket*>(rec);
     i32 idx = r->m_playerIndex;
     if (idx < 0 || idx >= 4) {
         return 0;
@@ -2435,7 +2434,7 @@ i32 CMulti::SendChannelStat423() {
 }
 
 RVA(0x000bb190, 0x1c5)
-i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
+i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd) {
     if (text == NULL) {
         return 0;
     }
@@ -2473,7 +2472,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     }
 
     if (showWnd != 0 && hWnd != NULL) {
-        AppendEditLine(static_cast<HWND>(hWnd), line);
+        AppendEditLine(hWnd, line);
     } else if (showWnd != 0) {
 
         GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
@@ -3200,12 +3199,11 @@ i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
 }
 
 RVA(0x000bce80, 0x77)
-i32 CMulti::LoadConfig(void* cfg) {
-    if (cfg == NULL) {
+i32 CMulti::LoadConfig(CNetConfigBlob* c) {
+    if (c == NULL) {
         return 0;
     }
 
-    CNetConfigBlob* c = static_cast<CNetConfigBlob*>(cfg);
     m_customLevel = c->m_customLevel;
     m_builtInLevelName = c->m_nameA;
     m_customLevelName = c->m_nameB;

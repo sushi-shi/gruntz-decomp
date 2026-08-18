@@ -176,7 +176,7 @@ struct CNetCmdSlot {
     void ClearAckFlags();
     CString BuildHostName();
     i32 Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state);
-    i32 ProcessCmd(i32 playerId, void* rec, i32 size);
+    i32 ProcessCmd(i32 playerId, char* rec, i32 size);
 
     i32 Ready();
 };
@@ -203,6 +203,8 @@ struct GruntRec {
 class CGruntzCommand;
 struct CNetCtrlMsg;
 struct CNetMsg;
+struct CNetConfigBlob;
+struct MenuSelectEvent;
 
 union CNetWireMsg {
     char* m_bytes;
@@ -210,12 +212,15 @@ union CNetWireMsg {
     CNetCtrlMsg* m_ctrl;
     CNetChannelPacket* m_chan;
     CNetOneChannelPacket* m_oneChannel;
+    CNetChannelTablePacket* m_chanTable;
     CNetVersionMsg* m_version;
     CNetCmdHdr* m_cmdHdr;
+    CNetConfigBlob* m_config;
+    MenuSelectEvent* m_menuSelect;
 };
 
-void* AllocateGruntRecord(i32 clear);
-void RecycleCmd(void* cmd);
+GruntRec* AllocateGruntRecord(i32 clear);
+void RecycleCmd(GruntRec* cmd);
 
 struct CNetSession {
 
@@ -264,7 +269,7 @@ struct CNetSession {
     i32 Advance();
     CGruntzCommand* GetSlotPtr(i32 v);
 
-    void ArmSlot(void* node, u8 parity);
+    void ArmSlot(CGruntzCommand* node, u8 parity);
 
     i32 Checksum();
 
@@ -520,7 +525,7 @@ public:
     void ReportAckLatency();
     CNetSessionNode* FindPlayerById(i32 id);
 
-    i32 LoadMenuSelectSprite(void* ev);
+    i32 LoadMenuSelectSprite(MenuSelectEvent* ev);
 
     struct InterfaceObject* Find(i32 kind);
 
@@ -575,7 +580,7 @@ public:
     void PopulateSessionList(HWND hList);
 
     i32 DropChannelPlayer(i32 idx);
-    i32 LoadConfig(void* cfg);
+    i32 LoadConfig(CNetConfigBlob* cfg);
     i32 AutoTuneCmdDelay();
 
     i32 WriteCmdDelay(i32 flag);
@@ -631,17 +636,17 @@ public:
 
     i32 ResolveLocalPlayer();
     i32 BroadcastChannelTable(CNetSessionNode* recipient);
-    i32 ParseChannelTable(void* packet);
+    i32 ParseChannelTable(CNetChannelTablePacket* packet);
     i32 RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f);
     i32 RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e);
-    i32 RegisterChannelRec(void* rec);
+    i32 RegisterChannelRec(CNetChannelPacket* rec);
     i32 RemoveChannel(i32 idx);
     i32 OnPauseChannel();
     i32 BroadcastOneChannel(GruntzPlayer* ch);
-    i32 ParseOneChannel(void* rec);
+    i32 ParseOneChannel(CNetOneChannelPacket* rec);
     i32 SendChannelStat422();
     i32 SendChannelStat423();
-    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd);
+    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd);
 
     u32 FrameSyncWait();
     void OnDropPlayer();
@@ -679,7 +684,7 @@ public:
 
     i32 DetectConnectionConfig();
     i32 SetupTcpIpConfig();
-    i32 OnJoinConfirm(void* hDlg);
+    i32 OnJoinConfirm(HWND hDlg);
 
     void ApplyDynSetting(CString s);
 

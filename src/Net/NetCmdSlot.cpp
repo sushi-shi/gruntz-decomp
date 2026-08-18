@@ -106,18 +106,18 @@ void CNetCmdSlot::FullReset() {
 
 // @early-stop
 RVA(0x000c0c70, 0x20f)
-i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
+i32 CNetCmdSlot::ProcessCmd(i32 playerId, char* rec, i32 size) {
     if (rec == NULL) {
         return 0;
     }
-    u8 opcode = *static_cast<u8*>(rec);
+    u8 opcode = static_cast<u8>(*rec);
     i32 odd = opcode & 1;
-    char* p = static_cast<char*>(rec) + 1;
+    char* p = rec + 1;
     if (m_state != NETSLOT_ACTIVE) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_desc->m_slotKey, static_cast<char*>(rec), size);
+        return m_owner->DispatchRecvMsg(m_desc->m_slotKey, rec, size);
     }
     if (odd == 0) {
         if (m_isRemote != 0) {
@@ -176,7 +176,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     AdvanceSeq(seq);
 
-    GruntRec* pkt = static_cast<GruntRec*>(AllocateGruntRecord(0));
+    GruntRec* pkt = AllocateGruntRecord(0);
     pkt->m_count = count;
     pkt->m_checksum = checksum;
     pkt->m_seq = seq;

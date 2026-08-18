@@ -22,6 +22,11 @@ class CNetSessionNode;
 struct CNetStatPacket;
 struct CNetCtrlMsg;
 struct CNetVersionMsg;
+struct CNetChannelPacket;
+struct CNetOneChannelPacket;
+struct CNetChannelTablePacket;
+struct CNetConfigBlob;
+struct MenuSelectEvent;
 class GruntzPlayer;
 struct CNetSession;
 
@@ -42,7 +47,11 @@ struct CNetLobbyConnection {
     CNetLobbyName* m_playerName;
 };
 
-void SetActiveAndFocus(void* hwnd);
+// HWND is void* here on purpose: HeapDiag.cpp is a <Win32.h> TU, where
+// windows.h leaves STRICT off and HWND *is* void*, so its definition mangles
+// PAX.  Spelling HWND in this MFC (STRICT) header would emit PAUHWND__ and
+// resolve to nothing.
+void SetActiveAndFocus(void* hWnd);
 void FillPlayerList(HWND hList, CNetMgr* session);
 BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -168,7 +177,7 @@ public:
 
     i32 RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f);
 
-    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd);
+    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd);
     i32 ReadGroupSel();
     i32 PumpA();
     void PumpB();
@@ -181,7 +190,7 @@ public:
 
     i32 ShowMultiStartDlg();
     CNetPlayerListNode* JoinAndRegisterChannel();
-    i32 OnJoinConfirm(void* hDlg);
+    i32 OnJoinConfirm(HWND hDlg);
 
     i32 PollSessionGated(i32 a1, i32 a2);
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
@@ -200,15 +209,15 @@ public:
 
     void RecordDropPlayer2(CNetSessionNode* a, i32 id);
     i32 WaitForOtherPlayers();
-    i32 LoadMenuSelectSprite(void* evp);
-    i32 ParseChannelTable(void* packet);
+    i32 LoadMenuSelectSprite(MenuSelectEvent* evp);
+    i32 ParseChannelTable(CNetChannelTablePacket* packet);
     i32 RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e);
-    i32 RegisterChannelRec(void* rec);
+    i32 RegisterChannelRec(CNetChannelPacket* rec);
     i32 RemoveChannel(i32 idx);
     i32 OnPauseChannel();
     void OnMultiPause();
     void OnMultiOptions();
-    i32 ParseOneChannel(void* rec);
+    i32 ParseOneChannel(CNetOneChannelPacket* rec);
     i32 SendChannelStat422();
     i32 SendChannelStat423();
     i32 CreateSession();
@@ -217,7 +226,7 @@ public:
     i32 CreateLocalPlayer();
     i32 WaitForConnect();
     i32 SaveConfig(CNetSessionNode* recipient);
-    i32 LoadConfig(void* cfg);
+    i32 LoadConfig(CNetConfigBlob* cfg);
     i32 ResetPlayerCommands(i32 id);
     u32 GetMaxAckLatency();
     void HandleVersionCheck(CNetVersionMsg* msg);
