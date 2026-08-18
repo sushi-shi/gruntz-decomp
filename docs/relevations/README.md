@@ -30,6 +30,10 @@ Entry requirements — a revelation is not a tip:
 | [wall-reasons-layout.md](wall-reasons-layout.md) | block order is **topological** (after the last predecessor), the unconditional tail cross-jump is **`/Os`-gated and off in our build**, switch xlat obeys `3·range > 4·targets + 12`, frame slots are declaration+first-use order, and an EH state index is a lexical **count** | one "block-placement coin" covering four unrelated decisions |
 | [wall-reasons-allocation.md](wall-reasons-allocation.md) | the allocation/selection wall catalogue: a value's register is **the rotation cursor at the tuple that requests it**, call-crossing values bind ESI/EDI/EBX/EBP in **definition** order, and `test r,r` vs `cmp r,<reg>` counts the function's **zero stores** | one undifferentiated "regalloc/scheduling" verdict to park |
 
-Plus one index, not a revelation:
-[**data-matching-checklist.md**](data-matching-checklist.md) — the terse whole-checklist for
-starting data matching in a new project, with pointers into the long form.
+Reference indexes, not revelations:
+
+* [**data-matching-checklist.md**](data-matching-checklist.md) — the terse whole-checklist
+  for starting data matching in a new project, with pointers into the long form.
+* [**cl5-c2-function-map.md**](cl5-c2-function-map.md) — Ghidra addresses, working semantic
+  names, confidence, and causal controls for the external VC5 SP3 back-end routines
+  already reverse-engineered by this project.

@@ -137,8 +137,40 @@ baseline plus 128 deterministic mixed declaration forests:
 
 Its own `ex` and `sy` target records are also identical between baseline and a forest
 island. Unlike `ProbeHeadSoft`, no tested global phase reaches the residue. The frame-home
-choice belongs to later stack-slot coloring and must be searched structurally. This is
-why a campaign that finds one island must say so and route the next search to structure.
+choice belongs to later stack-slot coloring and must be searched structurally.
+
+Ghidra RE of `c2.exe` makes the reason precise:
+
+| function | role |
+|---|---|
+| `FUN_0042b909` | starts frame allocation by zeroing `DAT_004910ac`, every slot count/array/link, and the per-function local set |
+| `FUN_0042ba3f` | walks only the current function's operand lists and admits stack-resident descriptors |
+| `FUN_004367f0` | keeps those descriptors ordered by size at +0x20, then descending occurrence count at +0x34; exact ties retain discovery order |
+| `FUN_0042bbb9` | assigns dense local IDs in that list order |
+| `FUN_004401cd` | builds live/interference sets from the current function's CFG and operands |
+| `FUN_00440cbd` | reuses a compatible slot or appends a new one |
+| `FUN_0043f93b` | colors the slots and writes the final frame offsets |
+
+The complete external-compiler address and meaning index is
+[cl5-c2-function-map.md](cl5-c2-function-map.md).
+
+No TU symbol handle, 511-bucket state, or `/Og` epoch feeds this chain. Its complete
+ordering input is the optimized current function: local size, occurrence/discovery order,
+and live-range interference. Consequently, declarations elsewhere in the TU cannot swap
+`rowBytes` and `rowSrcA` unless they first change `RenderTile`'s optimized graph; the 129
+campaign states do not.
+
+A patched-back-end control confirms ownership. At VA 0x00436875, changing the equal-size
+descriptor frequency stop from `jge` to `jle` reverses that local ordering policy. Through
+`/B2`, unchanged `RenderTile` changes from 747 bytes / hash `e7b93ee4b9f7c019` to 752
+bytes / hash `83ae40bf73433abb`, with its frame homes broadly recolored. This is deliberately
+not a source fix; it proves that the reset, function-local frame-coloring chain owns the
+residue.
+
+That is why a campaign that finds one island must say so and route the next search to
+structure. The broad `REGALLOC/SCHEDULING` label hides two different causes here:
+`ProbeHeadSoft` is an earlier `/Og` expression-order choice with TU-global phase input;
+`RenderTile` is a later, reset-per-function frame-coloring choice with no such input.
 
 ## Reverse-use rule
 
@@ -151,4 +183,3 @@ why a campaign that finds one island must say so and route the next search to st
    search. Report **single island; next search should be structural**.
 5. Never retain declarations, includes, fake locals, or patched compiler artifacts. They
    are measurement instruments, not source fixes.
-

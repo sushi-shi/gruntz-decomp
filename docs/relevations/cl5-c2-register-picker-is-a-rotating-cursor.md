@@ -119,12 +119,12 @@ prologue, so Ghidra's function boundary agrees):
 
 | entry (VA) | file offset | what it is | how you recognize it |
 |---|---|---|---|
-| **`0x0042b2c4`** | 0x02a6c4 | **the register picker** | prologue `push ecx/ebx/ebp/esi`, then `mov ecx,[DAT_004911a8]` + `mov edi,[DAT_004911a4]` at 0x42b2cc/0x42b2d3 |
-| **`0x0042b3e2`** | 0x02a7e2 | **the allocation driver** (calls the picker at 0x42b61b and 0x42b6dd) | prologue `sub esp,0x14; mov eax,[DAT_00491080]; neg eax; sbb eax,eax; and eax,6` — that is the **EBP-in-pool** decision (register number 6 = EBP), i.e. frame-pointer omission feeding the allocator |
-| **`0x0042b204`** | 0x02a604 | per-function register-descriptor init | walks DAT_00491100 until it hits value 7 (ESI), writing cost `0x1000000` into each descriptor, then writes 0 into the rest — i.e. **caller-saved get one cost, callee-saved another** |
-| `0x0042ac33` | 0x02a033 | the caller of that init | `sub esp,0x1c; push ebx; push esi; mov esi,ecx; push edi` |
-| `0x00435f77` | 0x035377 | the binder: writes the picked register into the value | `push ebx/ebp/esi; mov esi,edx; push edi; mov edi,ecx` |
-| `0x0040181e` | 0x00121e | the per-value eligibility predicate the picker calls | `mov eax,[ecx]; push esi; mov esi,edx; push edi; and esi,0xffffffe0` |
+| **`0x0042b2c4`** | 0x02a8c4 | **the register picker** | prologue `push ecx/ebx/ebp/esi`, then `mov ecx,[DAT_004911a8]` + `mov edi,[DAT_004911a4]` at 0x42b2cc/0x42b2d3 |
+| **`0x0042b3e2`** | 0x02a9e2 | **the allocation driver** (calls the picker at 0x42b61b and 0x42b6dd) | prologue `sub esp,0x14; mov eax,[DAT_00491080]; neg eax; sbb eax,eax; and eax,6` — that is the **EBP-in-pool** decision (register number 6 = EBP), i.e. frame-pointer omission feeding the allocator |
+| **`0x0042b204`** | 0x02a804 | per-function register-descriptor init | walks DAT_00491100 until it hits value 7 (ESI), writing cost `0x1000000` into each descriptor, then writes 0 into the rest — i.e. **caller-saved get one cost, callee-saved another** |
+| `0x0042ac33` | 0x02a233 | the caller of that init | `sub esp,0x1c; push ebx; push esi; mov esi,ecx; push edi` |
+| `0x00435f77` | 0x035577 | the binder: writes the picked register into the value | `push ebx/ebp/esi; mov esi,edx; push edi; mov edi,ecx` |
+| `0x0040181e` | 0x000e1e | the generic sparse-set membership test used as the picker's per-value eligibility query | `mov eax,[ecx]; push esi; mov esi,edx; push edi; and esi,0xffffffe0` |
 
 DATA (all statically visible in Ghidra — no debugging needed):
 
