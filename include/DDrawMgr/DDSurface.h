@@ -105,7 +105,7 @@ public:
     i32 Flip(CDDSurface* target);
 
     void ReloadImageCache();
-    void* GetElementAt(i32 i);
+    CDDSurface* GetElementAt(i32 i);
     i32 SetColorKey(u32 flags, DDCOLORKEY* key);
 
     i32 SetColorKeyVal(u32 flags, u32 key);

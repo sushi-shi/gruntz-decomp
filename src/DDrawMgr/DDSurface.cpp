@@ -461,14 +461,14 @@ void CDDSurface::ReloadImageCache() {
 
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
-    void* payload = 0;
+    IDirectDrawSurface* payload = NULL;
     // The HRESULT must land in a named local: testing the call result inline gives
     // `test eax,eax` where retail compares against the live zero (`cmp eax,edi`).
-    HRESULT hr = surf->QueryInterface(IID_IDirectDrawSurface3, &payload);
+    HRESULT hr = surf->QueryInterface(IID_IDirectDrawSurface3, PtrOut(&payload));
     if (hr == 0) {
         CDDSurface* item = new CDDSurface;
 
-        if (item->Refresh(static_cast<IDirectDrawSurface*>(payload)) == 0) {
+        if (item->Refresh(payload) == 0) {
             delete item;
         } else {
             g_imageCache.SetAtGrow(g_imageCache.GetSize(), item);
@@ -478,11 +478,11 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
 }
 
 RVA(0x0013ea70, 0x21)
-void* CDDSurface::GetElementAt(i32 i) {
+CDDSurface* CDDSurface::GetElementAt(i32 i) {
     if (i >= 0 && i < m_elements.GetSize()) {
-        return m_elements.GetAt(i);
+        return static_cast<CDDSurface*>(m_elements.GetAt(i));
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0013eaa0, 0x39)
