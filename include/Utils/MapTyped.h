@@ -41,24 +41,6 @@ template<class T> inline void MapGetNextValue(CMapPtrToPtr& map, POSITION& pos, 
     map.GetNextAssoc(pos, ignoredKey.m_addr, *dst.m_asVoid);
 }
 
-inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, void*& out) {
-    return map.Lookup(key, out);
-}
-inline BOOL MapLookup(CMapPtrToPtr& map, void* key, void*& out) {
-    return map.Lookup(key, out);
-}
-template<class K> inline void MapGetNext(CMapStringToPtr& map, POSITION& pos, K& key, void*& out) {
-    map.GetNextAssoc(pos, key, out);
-}
-template<class K> inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, void*& out) {
-    map.GetNextAssoc(pos, key, out);
-}
-
-inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, void*& out) {
-    AddrWord<char> k;
-    k.m_word = id;
-    return map.Lookup(k.m_addr, out);
-}
 inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
     AddrWord<char> k;
     k.m_word = id;
