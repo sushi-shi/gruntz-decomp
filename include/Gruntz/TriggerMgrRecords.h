@@ -20,8 +20,6 @@ class CGruntPuddle;
 class CGrunt;
 struct Coord;
 
-void Str_Free(void* node);
-
 // Test whether a cell's flags admit the caller's route masks. TmDeflectStep is
 // the only retail caller and the reason the out-of-line COMDAT exists.
 RVA(0x00075a90, 0x27)
