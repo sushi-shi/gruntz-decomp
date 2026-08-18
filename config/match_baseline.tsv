@@ -120,7 +120,7 @@ fortconquered	1	0
 fortressflag	26	23
 frontcandyani	24	18
 fxmodedesc	1	1
-gameapp	24	22
+gameapp	24	23
 gameappcomdats	3	3
 gameassetnamespaces	1	0
 gameiconflasheffect	1	1
@@ -618,7 +618,7 @@ behindcandyani	?FireActivation@CBehindCandyAni@@UAEXH@Z	100.0000	100.0000	1	4d71
 behindcandyani	?GetTypeTag@CBehindCandyAni@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x10030	100.0000	
 behindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	100.0000	100.0000	11	83b61294a9d3	0xad9b0	100.0000	
 behindcandyani	?SerializeMove@CBehindCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:281810d27b94	0x10050	100.0000	
-bitarray	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	2	3cc59f36eb87	0x1936e0	90.8000	
+bitarray	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	90.8000	2	3cc59f36eb87	0x1936e0	100.0000	
 bitarray	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	1	1ea7b32d0bbf	0x193680	100.0000	
 bitarray	?SetBit@zBitVec@@QAEPAV1@I@Z	100.0000	100.0000	6	d5076fac6cb1	0x193640	100.0000	
 bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	1	1e09c4bae4b0	0x193140	100.0000	
@@ -1849,7 +1849,7 @@ gameapp	?Close@CGameMgr@@UAEXXZ	100.0000	100.0000	1	6a2daeae078b	0x13ddb0	100.00
 gameapp	?CloseResources@CGameApp@@UAEXXZ	100.0000	100.0000	1	effdb6f328bd	0x13d8c0	100.0000	
 gameapp	?FreeGameManager@CGameApp@@UAEXXZ	100.0000	100.0000	1	987d2a82f5fe	0x13dc90	100.0000	
 gameapp	?Init@CGameApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	1	ac044dffb8c9	0x13d7b0	100.0000	
-gameapp	?InitInstance@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z	97.3765	97.3765	1	37510ec85e4b	0x13d5d0	97.3765	
+gameapp	?InitInstance@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z	100.0000	100.0000	2	a4db1909885e	0x13d5d0	100.0000	
 gameapp	?InitTimeFields@CGameMgr@@QAEXH@Z	100.0000	100.0000	1	1bf7c5ee9867	0x13de70	100.0000	
 gameapp	?InitializeAccelerators@CGameApp@@UAEHPBD@Z	100.0000	100.0000	1	2f17e6d81e28	0x13dc20	100.0000	
 gameapp	?InitializeDefaultCreateStruct@CGameApp@@UAEXXZ	99.1467	99.1467	1	ee8f57420974	0x13da50	99.1467	

@@ -43,7 +43,6 @@ CGameApp::CGameApp() {
     g_gameAppInstanceCount++;
 }
 
-// @early-stop
 RVA(0x0013d5d0, 0x1d3)
 i32 CGameApp::InitInstance(
     GameInfo* pGameInfo,
@@ -68,9 +67,13 @@ i32 CGameApp::InitInstance(
     m_errorDetail = 0;
     m_gameInfo = *pGameInfo;
 
-    hInst = m_gameInfo.hInstance;
-    if (!hInst && (!pWndClass || !(hInst = pWndClass->hInstance))
-        && (!pCreateStruct || !(hInst = pCreateStruct->hInstance))) {
+    if (m_gameInfo.hInstance) {
+        hInst = m_gameInfo.hInstance;
+    } else if (pWndClass && pWndClass->hInstance) {
+        hInst = pWndClass->hInstance;
+    } else if (pCreateStruct && pCreateStruct->hInstance) {
+        hInst = pCreateStruct->hInstance;
+    } else {
         goto Fail;
     }
     m_hInstance = hInst;
