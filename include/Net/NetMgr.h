@@ -311,10 +311,10 @@ typedef BOOL(__stdcall* NetEnumPlayersCallback)(
 
 struct IDirectPlay4Z {
 
-    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE;
+    STDMETHOD(QueryInterface)(const GUID* riid, void** out) PURE;
     STDMETHOD(AddRef)() PURE;
     STDMETHOD(Release)() PURE;
-    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;
+    STDMETHOD(v03)() PURE;
     STDMETHOD(v04)() PURE;
     STDMETHOD(v05)() PURE;
 
@@ -563,9 +563,8 @@ public:
 
     i32 EnumPlayersInto(u32 dwTimeout, u32 dwFlags);
 
-    // @identity-TODO the lobby argument is an IDirectPlayLobby COM pointer
-    // (the body dispatches slot 3 == Connect); modeling that interface is what
-    // retires this void*.
+    // Retail mangles the lobby argument as PAX; the body recovers the
+    // IDirectPlayLobby identity before dispatching Connect.
     i32 Init(void* lobby, NetGuid appGuid);
 
     CNetPlayerListNode* AddPlayerNode(CNetSessionDesc* playerDesc);

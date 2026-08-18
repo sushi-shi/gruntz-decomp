@@ -3,6 +3,7 @@
 #include <Net/NetMgr.h>
 
 #include <AddrWord.h>
+#include <ComOutRef.h>
 #include <Enums.h>
 #include <Font/Font.h>
 #include <MsgParam.h>
@@ -12,6 +13,7 @@
 #include <Net/NetProviderFindKind.h>
 
 #include <dplay.h>
+#include <dplobby.h>
 #include <new>
 #include <string.h>
 
@@ -60,8 +62,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
 
 
-    // API-forced: COM QueryInterface out-param.
-    hr = m_releaseIface->QueryInterface(IID_IDirectPlay4A, reinterpret_cast<void**>(&m_directPlay));
+    hr = m_releaseIface->QueryInterface(IID_IDirectPlay4A, PtrOut(&m_directPlay));
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
         Destroy();
@@ -98,18 +99,18 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
 RVA(0x00178170, 0xba)
 i32 CNetMgr::Init(void* lobbyIface, NetGuid appGuid) {
-    IDirectPlay4Z* lobby = static_cast<IDirectPlay4Z*>(lobbyIface);
+    IDirectPlayLobby* lobby = static_cast<IDirectPlayLobby*>(lobbyIface);
 
 
 
-    IDirectPlay4Z* opened = 0;
-    i32 hr = lobby->Open(0, &opened, 0);
+    IDirectPlay2* opened = NULL;
+    i32 hr = lobby->Connect(0, &opened, NULL);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x78, hr, 0);
         Destroy();
         return 0;
     }
-    hr = opened->QueryInterface(&IID_IDirectPlay4A, &m_directPlay);
+    hr = opened->QueryInterface(IID_IDirectPlay4A, PtrOut(&m_directPlay));
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x81, hr, 0);
         Destroy();
