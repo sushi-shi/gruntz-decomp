@@ -69,10 +69,22 @@ parameter at `[ebp+8]`, exactly matching retail. The primary function bytes and
 88.47% score do not change, while the destructor funclet does. Always check EH
 metadata after a scope-only edit even when objdiff reports no body movement.
 
+The rule can also identify several sequential scalar phases, even when the total frame
+size already agrees. `CStatusBarMgr::Serialize` at `0x1090a0` differed only in the home
+of its 3-row grid counter: candidate `[esp+0x18]`, retail `[esp+0x10]`; the final
+address-taken pointer count used `[esp+0x18]` on both sides. Retail therefore did not
+reuse one source variable for both counts. Giving the sprite-id scratch, grid pointer
+and counter, and final pointer count their three natural lexical identities lets VC5
+reuse `[esp+0x10]` for the first two phases and reserve `[esp+0x18]` only for the last.
+That closed `99.991570 -> 100.000000` with all 358 instructions otherwise unchanged.
+Negative controls are useful here: merely declaring the grid counter before its pointer
+scored 99.43, while distinct counters left at function scope grew the frame by two
+dwords and scored 98.85. The lever is the phase boundary, not variable order or names.
+
 This is not permission to add arbitrary braces around register-only locals. The
-retail signature is specific: the candidate has one extra frame dword, a
-repeated address-taking call uses that dword, retail instead takes the address
-of an incoming parameter home after that parameter's last semantic use, and the
-whole phase has a natural lexical end.
+retail signature is specific: either the candidate has an extra frame dword, or one
+address-taken phase occupies the home retail gives another non-overlapping phase; the
+whole phase has a natural lexical end. Confirm the predicted slot reuse before keeping
+the braces.
 
 related: [shrink-wrapped-prologue-needs-one-tail-return.md](shrink-wrapped-prologue-needs-one-tail-return.md)

@@ -259,7 +259,7 @@ sbi_image	5	3
 sbi_imageset	6	4
 sbi_imagesetani	5	4
 sbi_menuitem	11	8
-sbi_rectonly	116	94
+sbi_rectonly	116	95
 sbi_rectonlybase	3	3
 sbi_sidetab	8	6
 sbi_statztabarrow	3	2
@@ -3728,7 +3728,7 @@ sbi_rectonly	?Reset@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	ad04e20df6c5	0x105
 sbi_rectonly	?ResetGroupA@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	08998bd2ab25	0x106610	100.0000	
 sbi_rectonly	?ResetSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	1189c97e0e5b	0x105520	100.0000	
 sbi_rectonly	?ResetWidgets@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	896983563682	0x100930	100.0000	
-sbi_rectonly	?Serialize@CStatusBarMgr@@QAEHPAVCFileMemBase@@@Z	99.9916	99.9916	2	c1ba9c1e780c	0x1090a0	99.9916	
+sbi_rectonly	?Serialize@CStatusBarMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	de53e137944b	0x1090a0	100.0000	
 sbi_rectonly	?SetFallRect@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	1	7d53ceec7133	0x107920	100.0000	
 sbi_rectonly	?SetGauge@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	9deb63be4849	0x1057d0	100.0000	
 sbi_rectonly	?SetGaugeTarget@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	e1c89012b942	0x1057b0	100.0000	

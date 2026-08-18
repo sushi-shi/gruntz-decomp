@@ -4192,7 +4192,6 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     return 1;
 }
 
-// @early-stop
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == NULL) {
@@ -4207,12 +4206,13 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 
     g_serialCounter++;
 
-    i32 tmp = 0;
-
-    if (m_barSprite) {
-        tmp = m_barSprite->m_objectId;
+    {
+        i32 tmp = 0;
+        if (m_barSprite) {
+            tmp = m_barSprite->m_objectId;
+        }
+        s->Write(&tmp, sizeof(tmp));
     }
-    s->Write(&tmp, sizeof(tmp));
 
     s->Write(&m_rect10.left, sizeof(m_rect10));
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
@@ -4265,20 +4265,21 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_groupSlots[k].m_state, sizeof(m_groupSlots[k].m_state));
         s->Write(&m_groupSlots[k].m_value, sizeof(m_groupSlots[k].m_value));
     }
-    CSbiHlRow* nb = m_hlGrid;
+    {
+        CSbiHlRow* nb = m_hlGrid;
+        i32 cnt = 3;
+        do {
+            for (i32 m = 0; m < 4; m++) {
+                s->Write(&nb[m].m_state, sizeof(nb[m].m_state));
+                s->Write(&nb[m].m_value, sizeof(nb[m].m_value));
+            }
+            nb += 4;
+        } while (--cnt);
+    }
 
-    i32 cnt = 3;
-    do {
-        for (i32 m = 0; m < 4; m++) {
-            s->Write(&nb[m].m_state, sizeof(nb[m].m_state));
-            s->Write(&nb[m].m_value, sizeof(nb[m].m_value));
-        }
-        nb += 4;
-    } while (--cnt);
-
-    cnt = m_ptrPool.GetSize();
-    s->Write(&cnt, sizeof(cnt));
-    for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
+    i32 ptrCount = m_ptrPool.GetSize();
+    s->Write(&ptrCount, sizeof(ptrCount));
+    for (u32 n = 0; n < static_cast<u32>(ptrCount); n++) {
         s->Write(m_ptrPool.GetData()[n], 8);
     }
     return 1;
