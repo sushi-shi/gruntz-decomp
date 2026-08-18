@@ -46,6 +46,33 @@ hand-written clone of it (same four members, same `/8` clamp-to-`[4,1024]` growt
 heuristic, same `ConstructElements` body), so read the whole family off MFC's source
 rather than re-deriving each branch.
 
+## The placement-construction null check survives in the inlined loop
+
+An inlined element-construction helper may retain the placement construction's null
+check even when the element initializer itself is an identity function. The signature
+is a loop body shaped as `test element,element; je next; mov ecx,element; call init`,
+where the candidate lacks only the four-byte `test`/`je` pair and its calls, returns,
+relocations, and remaining CFG already agree.
+
+Model that check at the semantic seam, around the per-element initializer, rather than
+adding a function-wide probe or changing the allocation arm:
+
+```cpp
+for (; n--; p++) {
+    if (p != NULL) {
+        InitRezElem(p);
+    }
+}
+```
+
+This is the exact source lever for `CRezBufferObject::Serialize` at `0x17f130`:
+`98.841805%`, 0x1ca bytes / 175 instructions / 19 branches became byte-identical
+`100%`, 0x1ce / 177 / 20, with the same 10 calls, two returns, and 10 relocations.
+The negative control is an outer guard around the whole loop: it changes the loop's
+zero-trip CFG instead of guarding each placement result. A prior claim that every
+guard placement compiled two bytes long was stale; the direct per-call `p != NULL`
+form is exact under the pinned VC5 build.
+
 ## The `delete` spelling is regalloc-load-bearing (the steerable half)
 
 `::operator delete(p)` and `delete[] p` / `delete p` are byte-identical **in isolation** —

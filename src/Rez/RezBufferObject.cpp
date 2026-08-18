@@ -18,15 +18,12 @@
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
-        InitRezElem(p);
+        if (p != NULL) {
+            InitRezElem(p);
+        }
     }
 }
 
-// @early-stop
-// retail guards the per-element InitRezElem loop with a hoisted `test esi,esi`
-// (placement-new's null check, 4 B); every source guard placement tried lands 2 B
-// long and reshuffles the join. Remaining rows are that check plus the duplicated
-// Write/Read epilogue retail keeps per IsStoring arm.
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
     // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
