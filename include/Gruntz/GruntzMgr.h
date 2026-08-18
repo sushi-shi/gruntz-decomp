@@ -399,7 +399,6 @@ i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();
 i32 FileExists(const char* szPath);
-void operator delete(void*);
 void ChannelSlots_InitAll();
 
 BOOL CALLBACK SetSkillLevelDialogProc(HWND, UINT, WPARAM, LPARAM);

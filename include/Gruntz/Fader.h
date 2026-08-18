@@ -52,7 +52,6 @@ extern const float g_sineOne;
 extern const float g_fxBias;
 extern const float g_fxEps;
 
-void __cdecl operator delete(void* p);
 void ScatterSamples(i32* arr, i32, i32, i32);
 i32 IsPrime(i32 n);
 

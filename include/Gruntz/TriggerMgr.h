@@ -19,8 +19,6 @@
 #include <Gruntz/WarpStoneFragment.h>
 #include <Wwd/WwdAniDrawValue.h>
 
-void operator delete(void*);
-
 // Grid extents, used only as array dimensions and in index arithmetic.
 GZ_ENUM_CONST_BEGIN(TmGridDim)
     TM_GRID_COLS = 15,
