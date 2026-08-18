@@ -95,6 +95,7 @@ static const i32 TILE_CLEAR = -1;
 #include <Wap32/CoordUnset.h>
 
 struct CParseSource;
+struct WwdTileImageRecord;
 
 struct CGameObject;
 class CDDrawChildGroup;
@@ -113,9 +114,9 @@ GZ_ENUM_CONST_END(LevelPlaneLayout)
 
 class CGameLevel : public CWapObj {
 public:
-    i32 IsValidWwd(const char* name, void* headerBuf);
+    i32 IsValidWwd(const char* name, WwdHeader* headerBuf);
 
-    i32 ReadWwdHeaderName(const char* name, void* nameOut);
+    i32 ReadWwdHeaderName(const char* name, char* nameOut);
 
     virtual ~CGameLevel() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
@@ -239,9 +240,9 @@ public:
 
 private:
     CDDrawWorkerHost*
-    ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, void* unused);
+    ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT* bounds);
 
-    CTileImageSet* ReadImageSet(void* record);
+    CTileImageSet* ReadImageSet(WwdTileImageRecord* record);
 
     i32 StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);
     i32 StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);

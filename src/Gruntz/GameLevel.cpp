@@ -26,6 +26,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+union WwdTileImageRecordView {
+    char* m_bytes;
+    WwdTileImageRecord* m_record;
+};
+
+static inline WwdTileImageRecord* WwdTileImageRecordAt(char* bytes) {
+    WwdTileImageRecordView view;
+    view.m_bytes = bytes;
+    return view.m_record;
+}
+
 // @early-stop
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
@@ -201,7 +212,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             i32 n = 0;
             i32 j = 0;
             while (static_cast<u32>(j) < rec->m_count) {
-                CTileImageSet* set = ReadImageSet(elem);
+                CTileImageSet* set = ReadImageSet(WwdTileImageRecordAt(elem));
                 if (set == NULL) {
                     result = -1;
                     goto check_result;
@@ -359,7 +370,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     }
     i32 n = 0;
     for (i32 i = 0; static_cast<u32>(i) < dir[2]; i++) {
-        CTileImageSet* set = ReadImageSet(cursor);
+        CTileImageSet* set = ReadImageSet(WwdTileImageRecordAt(cursor));
         if (set == NULL) {
             return -1;
         }
@@ -371,11 +382,11 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 }
 
 RVA(0x0015d820, 0xa3)
-CTileImageSet* CGameLevel::ReadImageSet(void* record) {
+CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
     if (record == NULL) {
         return 0;
     }
-    WwdTileImageRecord* rec = static_cast<WwdTileImageRecord*>(record);
+    WwdTileImageRecord* rec = record;
     CTileImageSet* set;
     switch (rec->m_kind) {
         case TILE_IMAGESET_UNIFORM:
@@ -402,7 +413,7 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 
 RVA(0x0015d8d0, 0xc3)
 CDDrawWorkerHost*
-CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, void*) {
+CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
@@ -1550,7 +1561,7 @@ i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
 }
 
 RVA(0x00160530, 0x125)
-i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
+i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
     if (name == NULL) {
         return 0;
     }
@@ -1568,7 +1579,7 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
         return 0;
     }
 
-    if (static_cast<WwdHeader*>(headerBuf)->headerSize > sizeof(WwdHeader)) {
+    if (headerBuf->headerSize > sizeof(WwdHeader)) {
         return 0;
     }
 
@@ -1576,7 +1587,7 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
 }
 
 RVA(0x00160660, 0x12b)
-i32 CGameLevel::ReadWwdHeaderName(const char* name, void* nameOut) {
+i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
     WwdHeader header;
 
     if (name == NULL) {
@@ -1600,7 +1611,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, void* nameOut) {
         return 0;
     }
 
-    strcpy(static_cast<char*>(nameOut), header.levelName);
+    strcpy(nameOut, header.levelName);
     return 1;
 }
 
