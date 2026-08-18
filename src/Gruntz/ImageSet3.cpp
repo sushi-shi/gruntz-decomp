@@ -22,6 +22,11 @@ TileCollisionKind CImageSet3::GetCollisionAt(i32 x, i32 y) {
     return static_cast<TileCollisionKind>(m_pixels[(y << m_heightLog2) + x]);
 }
 
+// @early-stop
+// Retail loads m_height then imuls m_width; cl evaluates a two-member
+// commutative product in ascending offset order whatever the source says.
+// Refuted, one build each: both operand orders, an inline GetArea() member
+// (also -11 elsewhere via the shared header), and a named local for m_height.
 RVA(0x00161590, 0xb)
 i32 CImageSet3::GetStride() {
     return m_height * m_width + 0x10;

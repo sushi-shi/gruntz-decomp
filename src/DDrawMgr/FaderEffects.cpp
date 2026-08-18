@@ -480,6 +480,10 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
 }
 
+// @early-stop
+// Retail loads m_frameCount then m_scaledMag; cl evaluates a two-member
+// commutative sum in ascending offset order whatever the source says - the
+// same canonicalization as CImageSet3::GetStride 0x00161590.
 RVA(0x00180400, 0xa)
 i32 CFaderSine::GetFrameCount() {
     return m_scaledMag + m_frameCount;
