@@ -45,12 +45,16 @@ union Pix16CPtr {
 
 // A 16-bit-pixel view of a raw pixel cursor. Retail expands these at every use;
 // they were transcribed per site in LightFxRender, DDrawShadeBlit, ShadeTableCache.
-static inline u16* Pix16(void* p) {
-    return static_cast<u16*>(p);
+static inline u16* Pix16(u8* p) {
+    Pix16Ptr view;
+    view.m_bytes = p;
+    return view.m_words;
 }
 
-static inline const u16* Pix16(const void* p) {
-    return static_cast<const u16*>(p);
+static inline u16* Pix16(char* p) {
+    Pix16Ptr view;
+    view.m_chars = p;
+    return view.m_words;
 }
 
 #endif // GRUNTZ_PIX16_H
