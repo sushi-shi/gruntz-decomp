@@ -8,7 +8,7 @@
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 RVA(0x00134cb0, 0x94)
-i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) {
+i32 CInputDevRoot::Create(IDirectInputA* di, const GUID* deviceGuid, HWND hwnd) {
     if (di == NULL) {
         return 0;
     }
@@ -16,7 +16,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
         return 0;
     }
     m_hwnd = hwnd;
-    i32 hr = di->CreateDevice(*static_cast<const GUID*>(deviceGuid), &m_device, 0);
+    i32 hr = di->CreateDevice(*deviceGuid, &m_device, 0);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -107,11 +107,11 @@ DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
 }
 
 RVA(0x00134eb0, 0x3b)
-i32 CInputDevRoot::SetDataFormat(const void* fmt) {
+i32 CInputDevRoot::SetDataFormat(LPCDIDATAFORMAT fmt) {
     if (fmt == NULL) {
         return 0;
     }
-    i32 hr = m_device2->SetDataFormat(static_cast<LPCDIDATAFORMAT>(fmt));
+    i32 hr = m_device2->SetDataFormat(fmt);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x108, hr);
         return 0;
@@ -130,11 +130,11 @@ i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
 }
 
 RVA(0x00134f30, 0x40)
-i32 CInputDevRoot::SetProperty(REFGUID rguid, void* prop) {
+i32 CInputDevRoot::SetProperty(REFGUID rguid, LPCDIPROPHEADER prop) {
     if (prop == NULL) {
         return 0;
     }
-    i32 hr = m_device2->SetProperty(rguid, static_cast<LPCDIPROPHEADER>(prop));
+    i32 hr = m_device2->SetProperty(rguid, prop);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x148, hr);
         return 0;
@@ -150,7 +150,7 @@ i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwD
     prop.dwData = dwData;
     prop.diph.dwSize = sizeof(prop);
     prop.diph.dwHeaderSize = 0x10;
-    return SetProperty(rguid, &prop);
+    return SetProperty(rguid, &prop.diph);
 }
 
 RVA(0x00134fb0, 0x29)
@@ -170,11 +170,11 @@ i32 CInputDevRoot::Unacquire() {
 }
 
 RVA(0x00135000, 0x3b)
-i32 CInputDevRoot::Escape(void* data) {
+i32 CInputDevRoot::Escape(LPDIEFFESCAPE data) {
     if (data == NULL) {
         return 0;
     }
-    i32 hr = m_device2->Escape(static_cast<LPDIEFFESCAPE>(data));
+    i32 hr = m_device2->Escape(data);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1b8, hr);
         return 0;

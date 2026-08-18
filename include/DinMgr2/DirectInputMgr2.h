@@ -107,7 +107,7 @@ public:
         CInputDevRoot::ReleaseDevices();
     }
 
-    virtual i32 Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd);
+    virtual i32 Create(IDirectInputA* di, const GUID* deviceGuid, HWND hwnd);
     virtual void ReleaseDevices();
     RVA(0x001332b0, 0xb)
     virtual i32 IsValid() {
@@ -118,15 +118,15 @@ public:
     i32 PollDevice();
     DeviceState* ReadState();
     i32 Unacquire();
-    i32 Escape(void* data);
+    i32 Escape(LPDIEFFESCAPE data);
 
     DIDEVICEINSTANCEA* GetDeviceInfo();
     DIDEVCAPS* GetCapabilities();
     DIPROPHEADER* GetProperty(REFGUID rguid);
 
-    i32 SetDataFormat(const void* fmt);
+    i32 SetDataFormat(LPCDIDATAFORMAT fmt);
     i32 SetCooperativeLevel(u32 flags);
-    i32 SetProperty(REFGUID rguid, void* prop);
+    i32 SetProperty(REFGUID rguid, LPCDIPROPHEADER prop);
     i32 SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData);
 
     IDirectInputDeviceA* m_device;
@@ -151,7 +151,7 @@ public:
         CInputDevBase::ReleaseDevices();
     }
 
-    virtual i32 Create(IDirectInputA* di, const void* guid, HWND hwnd) OVERRIDE;
+    virtual i32 Create(IDirectInputA* di, const GUID* guid, HWND hwnd) OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
 
     RVA(0x00133410, 0x3)
@@ -187,7 +187,7 @@ public:
     virtual ~CInputDevice() OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
 
-    i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags);
+    i32 CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
     void SetupKeyTable();
     virtual i32 Poll() OVERRIDE;
 
@@ -202,7 +202,7 @@ public:
     virtual void ReleaseDevices() OVERRIDE;
     virtual i32 Poll() OVERRIDE;
 
-    i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags);
+    i32 CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
     i32 IsReady();
 
     i32 m_flags;
@@ -215,17 +215,17 @@ public:
     virtual ~CDeviceConfigC() OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
     virtual i32 Poll() OVERRIDE;
-    i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND owner, u32 flags);
+    i32 CreateDevJoystick(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
     i32 SetupAxes();
 
     i32 m_flags;
 };
 
-i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref);
+i32 __stdcall DinEnumDevicesCallback(LPCDIDEVICEINSTANCEA instance, void* ref);
 
 union DinDeviceEnumFn {
     LPDIENUMDEVICESCALLBACKA m_sdk;
-    i32(__stdcall* m_body)(const void*, void*);
+    i32(__stdcall* m_body)(LPCDIDEVICEINSTANCEA, void*);
 };
 
 inline CInputDevRoot::CInputDevRoot() {

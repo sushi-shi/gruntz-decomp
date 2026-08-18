@@ -148,7 +148,7 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
 }
 
 RVA(0x00132fc0, 0xb8)
-i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
+i32 __stdcall DinEnumDevicesCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
     if (instance == NULL) {
         return 1;
     }
@@ -159,7 +159,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
     CDeviceConfigC* dev = new CDeviceConfigC;
     if (dev->CreateDevJoystick(
             mgr->m_directInput,
-            static_cast<const char*>(instance) + 4,
+            &instance->guidInstance,
             mgr->m_owner,
             mgr->m_flags
         )
@@ -439,14 +439,14 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 RVA(0x00133b50, 0x97)
-i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
+i32 CInputDevice::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
     }
     if (owner == NULL) {
         return 0;
     }
-    if (CInputDevBase::Create(di, cfg, owner) == 0) {
+    if (CInputDevBase::Create(di, guid, owner) == 0) {
         return 0;
     }
     m_modeFlags = flags;
@@ -721,7 +721,7 @@ i32 CInputDevice::Poll() {
 }
 
 RVA(0x00134260, 0x43)
-i32 CInputDevBase::Create(IDirectInputA* di, const void* guid, HWND hwnd) {
+i32 CInputDevBase::Create(IDirectInputA* di, const GUID* guid, HWND hwnd) {
     if (di == NULL) {
         return 0;
     }
@@ -741,14 +741,14 @@ void CInputDevBase::ReleaseDevices() {
 }
 
 RVA(0x001342c0, 0x95)
-i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
+i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
     }
     if (owner == NULL) {
         return 0;
     }
-    if (CInputDevBase::Create(di, cfg, owner) == 0) {
+    if (CInputDevBase::Create(di, guid, owner) == 0) {
         return 0;
     }
     m_flags = flags;
@@ -856,14 +856,14 @@ i32 CDeviceConfigB::Poll() {
 }
 
 RVA(0x00134630, 0x98)
-i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND owner, u32 flags) {
+i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
     }
     if (owner == NULL) {
         return 0;
     }
-    if (CInputDevBase::Create(di, cfg, owner) == 0) {
+    if (CInputDevBase::Create(di, guid, owner) == 0) {
         return 0;
     }
     m_flags = flags;
@@ -906,11 +906,11 @@ i32 CDeviceConfigC::SetupAxes() {
     range.diph.dwHow = 1;
     range.lMin = -1000;
     range.lMax = 1000;
-    if (SetProperty(DIPROP_RANGE, &range) == 0) {
+    if (SetProperty(DIPROP_RANGE, &range.diph) == 0) {
         return 0;
     }
     range.diph.dwObj = 4;
-    if (SetProperty(DIPROP_RANGE, &range) == 0) {
+    if (SetProperty(DIPROP_RANGE, &range.diph) == 0) {
         return 0;
     }
     if (SetPropertyDword(DIPROP_DEADZONE, 0, 1, 0x1388) == 0) {
