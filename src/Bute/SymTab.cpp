@@ -414,7 +414,7 @@ CParseSource* CSymTab::Insert(const char* key, RezTypeTag fourcc) {
 }
 
 RVA(0x0013a040, 0xa2)
-void* CSymTab::Find(const char* path) {
+CParseSource* CSymTab::Find(const char* path) {
     char dir[260];
     char fname[260];
     char ext[260];
@@ -466,11 +466,11 @@ i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
         ::operator delete(m_mappedBuf);
         m_mappedBuf = NULL;
     } else {
-        void* rec = FirstSym();
+        CSymRec* rec = FirstSym();
         while (rec) {
-            void* sub = NextSym2(rec);
+            CParseSource* sub = NextSym2(rec);
             while (sub) {
-                (static_cast<CParseSource*>(sub))->EndParse();
+                sub->EndParse();
                 sub = NextSym3(sub);
             }
             rec = NextSym(rec);
@@ -487,68 +487,68 @@ i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
 }
 
 RVA(0x0013a230, 0x29)
-void* CSymTab::FindSub(const char* name) {
+CSymTab* CSymTab::FindSub(const char* name) {
     if (!name) {
-        return const_cast<char*>(name);
+        return 0;
     }
-    return m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
+    return static_cast<CSymTab*>(m_subTabs.Walk(name, m_owner->m_caseSensitive == 0));
 }
 
 RVA(0x0013a260, 0x11)
-void* CSymTab::FirstSub() {
+CSymTab* CSymTab::FirstSub() {
     CHashElement* n = m_subTabs.First();
     if (!n) {
-        return n;
+        return 0;
     }
     return n->m_symTab;
 }
 
 RVA(0x0013a280, 0x19)
-void* CSymTab::NextSub(void* rec) {
-    CHashElement* n = (static_cast<CSymTab*>(rec))->m_node20.Next();
+CSymTab* CSymTab::NextSub(CSymTab* rec) {
+    CHashElement* n = rec->m_node20.Next();
     if (!n) {
-        return n;
+        return 0;
     }
     return n->m_symTab;
 }
 
 RVA(0x0013a2a0, 0x10)
-void* CSymTab::FindSymKey(u32 key) {
-    return m_symbols.FindInt(key);
+CSymRec* CSymTab::FindSymKey(u32 key) {
+    return static_cast<CSymRec*>(m_symbols.FindInt(key));
 }
 
 RVA(0x0013a2b0, 0x11)
-void* CSymTab::FirstSym() {
+CSymRec* CSymTab::FirstSym() {
     CHashElement* n = m_symbols.First();
     if (!n) {
-        return n;
+        return 0;
     }
     return n->m_symRec;
 }
 
 RVA(0x0013a2d0, 0x19)
-void* CSymTab::NextSym(void* rec) {
-    CHashElement* n = (static_cast<CSymRec*>(rec))->m_symNode.Next();
+CSymRec* CSymTab::NextSym(CSymRec* rec) {
+    CHashElement* n = rec->m_symNode.Next();
     if (!n) {
-        return n;
+        return 0;
     }
     return n->m_symRec;
 }
 
 RVA(0x0013a2f0, 0x19)
-void* CSymTab::NextSym2(void* rec) {
-    CHashElement* n = (static_cast<CSymRec*>(rec))->m_valTable.First();
+CParseSource* CSymTab::NextSym2(CSymRec* rec) {
+    CHashElement* n = rec->m_valTable.First();
     if (!n) {
-        return n;
+        return 0;
     }
     return n->m_parseSource;
 }
 
 RVA(0x0013a310, 0x19)
-void* CSymTab::NextSym3(void* rec) {
-    CHashElement* n = (static_cast<CParseSource*>(rec))->m_node1c.Next();
+CParseSource* CSymTab::NextSym3(CParseSource* rec) {
+    CHashElement* n = rec->m_node1c.Next();
     if (!n) {
-        return n;
+        return 0;
     }
     return n->m_parseSource;
 }
@@ -1131,7 +1131,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             strcpy(childpath, pattern);
             strcat(childpath, subName);
             strcat(childpath, "\\");
-            void* child = node->FindSub(subName);
+            CSymTab* child = node->FindSub(subName);
             if (child == NULL) {
                 child = node->CreateSub(subName);
                 if (child == NULL) {
@@ -1334,7 +1334,7 @@ void CSymParser::SetDelims(char* s) {
 }
 
 RVA(0x0013bae0, 0x1b9)
-void* CSymTab::ResolvePath(const char* path) {
+CSymTab* CSymTab::ResolvePath(const char* path) {
     char buf[0x40];
     if (static_cast<i32>(strlen(path)) > 1) {
         if (!IsTokenChar(m_owner->m_delims, *path)) {
@@ -1349,7 +1349,7 @@ void* CSymTab::ResolvePath(const char* path) {
         ++p;
     }
     buf[n] = 0;
-    void* sub = FindSub(buf);
+    CSymTab* sub = FindSub(buf);
     if (!sub) {
         return sub;
     }
@@ -1364,11 +1364,11 @@ void* CSymTab::ResolvePath(const char* path) {
             return sub;
         }
     }
-    return (static_cast<CSymTab*>(sub))->ResolvePath(path + n);
+    return sub->ResolvePath(path + n);
 }
 
 RVA(0x0013bca0, 0x19c)
-void* CSymTab::FindQualified(const char* name) {
+CParseSource* CSymTab::FindQualified(const char* name) {
     char path[0x100];
     char leaf[0x20];
     i32 len = static_cast<i32>(strlen(name));
@@ -1395,7 +1395,7 @@ void* CSymTab::FindQualified(const char* name) {
     }
     strncpy(path, name, static_cast<u32>(i));
     path[i] = 0;
-    CSymTab* scope = static_cast<CSymTab*>(ResolvePath(path));
+    CSymTab* scope = ResolvePath(path);
     if (!scope) {
         return 0;
     }
@@ -1430,7 +1430,7 @@ CParseSource* CSymTab::ResolveQualified(const char* name, RezTypeTag fourcc) {
     }
     strncpy(path, name, static_cast<u32>(i));
     path[i] = 0;
-    CSymTab* scope = static_cast<CSymTab*>(ResolvePath(path));
+    CSymTab* scope = ResolvePath(path);
     if (!scope) {
         return 0;
     }
@@ -1443,12 +1443,12 @@ CParseSource* CSymParser::ResolveQualified(const char* name, RezTypeTag fourcc) 
 }
 
 RVA(0x0013c010, 0x14)
-void* CSymParser::FindQualified(const char* name) {
+CParseSource* CSymParser::FindQualified(const char* name) {
     return GetRoot()->FindQualified(name);
 }
 
 RVA(0x0013c030, 0x14)
-void* CSymParser::ResolvePath(const char* path) {
+CSymTab* CSymParser::ResolvePath(const char* path) {
     return GetRoot()->ResolvePath(path);
 }
 

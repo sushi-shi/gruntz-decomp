@@ -115,7 +115,7 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 
 RVA(0x00156e80, 0x38)
 i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
-    void* result = parser->GetRoot()->FindSub(key);
+    CSymTab* result = parser->GetRoot()->FindSub(key);
 
     if (result != NULL) {
         return InstallTree(result, "", "_");
@@ -619,10 +619,10 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
 
-    void* file = tree->FirstSym();
+    CSymRec* file = tree->FirstSym();
     if (file != NULL) {
         do {
-            CParseSource* fn = static_cast<CParseSource*>(tree->NextSym2(file));
+            CParseSource* fn = tree->NextSym2(file);
             while (fn != NULL) {
                 if (fn->GetEntryTag() == PARSETAG_VAW) {
                     if (prefix != NULL && *prefix != 0) {
@@ -638,7 +638,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
                         }
                     }
                 }
-                fn = static_cast<CParseSource*>(tree->NextSym3(fn));
+                fn = tree->NextSym3(fn);
             }
             file = tree->NextSym(file);
         } while (file != NULL);

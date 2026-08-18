@@ -43,12 +43,12 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_PREVIEW"));
+    m_stateBank = m_symParser->ResolvePath("STATEZ_PREVIEW");
     if (m_stateBank == NULL) {
         return 0;
     }
     if (g_disableAudio == 0 && g_disableSound == 0) {
-        void* set = SymTab2c()->FindSub("SOUNDZ");
+        CSymTab* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != NULL) {
             m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
         }

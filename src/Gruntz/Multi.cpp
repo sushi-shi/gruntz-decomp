@@ -265,7 +265,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     PostLoadImageBanks();
-    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MULTI"));
+    m_stateBank = m_symParser->ResolvePath("STATEZ_MULTI");
     if (m_stateBank == NULL) {
         return 0;
     }
@@ -819,7 +819,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     CSymTab* saved = m_stateBank;
-    CSymTab* st = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
+    CSymTab* st = m_symParser->ResolvePath("STATEZ_ATTRACT");
     m_stateBank = st;
     if (!st) {
         return 0;

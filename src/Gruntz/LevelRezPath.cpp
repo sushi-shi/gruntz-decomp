@@ -47,7 +47,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
     if (isEmpty == 0) {
         if (hi != 0) {
             WwdHeader buf;
-            CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
+            CSymTab* node = m_symParser->ResolvePath("GAME_BATTLEZ");
             if (node == NULL) {
                 return 0;
             }
@@ -64,7 +64,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             return buf.checksum;
         } else {
             WwdHeader buf;
-            CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
+            CSymTab* node = m_symParser->ResolvePath("GAME_MULTI");
             if (node == NULL) {
                 return 0;
             }
@@ -86,7 +86,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         WwdHeader buf;
         char scratch[32];
         sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
-        CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));
+        CSymTab* node = m_symParser->ResolvePath(scratch);
         if (node == NULL) {
             return 0;
         }

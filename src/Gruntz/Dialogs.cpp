@@ -141,7 +141,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         comboChild->SetWindowTextA("");
 
         CWnd* combo = GetDlgItem(0x4ff);
-        CSymTab* worlds = static_cast<CSymTab*>(m_slots->m_symParser->ResolvePath("GAME_BATTLEZ"));
+        CSymTab* worlds = m_slots->m_symParser->ResolvePath("GAME_BATTLEZ");
         if (worlds == NULL) {
             return;
         }

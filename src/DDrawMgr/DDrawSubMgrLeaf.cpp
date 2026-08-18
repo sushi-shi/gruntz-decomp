@@ -138,11 +138,11 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
         count += ScanTree(node, buf, suffix);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
-    void* grp = tree->FirstSym();
+    CSymRec* grp = tree->FirstSym();
     if (grp != NULL) {
         do {
 
-            CParseSource* fn = static_cast<CParseSource*>(tree->NextSym2(grp));
+            CParseSource* fn = tree->NextSym2(grp);
             while (fn != NULL) {
                 if (fn->GetEntryTag() == REZ_TAG_ANI) {
                     if (prefix != NULL && *prefix != 0) {
@@ -154,7 +154,7 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
                         ++count;
                     }
                 }
-                fn = static_cast<CParseSource*>(tree->NextSym3(fn));
+                fn = tree->NextSym3(fn);
             }
             grp = tree->NextSym(grp);
         } while (grp != NULL);

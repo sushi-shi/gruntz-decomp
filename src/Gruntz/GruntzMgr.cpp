@@ -1815,7 +1815,7 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
     IDirectDraw2* dd2 = m_world->m_ptrColl->m_device;
 
     if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
-        void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
+        CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }

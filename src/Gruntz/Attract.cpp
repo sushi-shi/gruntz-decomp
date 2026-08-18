@@ -405,7 +405,7 @@ i32 CState::InputVirtual() {
     while (ShowCursor(0) >= 0)
         ;
     g_playActive = 0;
-    char* path = static_cast<char*>(m_symParser->ResolvePath("GAME_IMAGEZ"));
+    CSymTab* path = m_symParser->ResolvePath("GAME_IMAGEZ");
     if (path == NULL) {
         return 0;
     }

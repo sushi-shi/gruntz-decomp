@@ -57,9 +57,9 @@ public:
 
     virtual i32 ProbeWorkerKey(class CSymParser* parser, const char* key);
 
-    virtual i32 InstallTree(void* tree, const char* szName, const char* szKey);
+    virtual i32 InstallTree(CSymTab* tree, const char* szName, const char* szKey);
 
-    virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
+    virtual i32 LoadNamespace(CSymTab* tree, const char* szName, const char* szKey);
 
     virtual void RemoveWorker(CDDrawWorker* worker);
     virtual void RemoveByKey(const char* key);

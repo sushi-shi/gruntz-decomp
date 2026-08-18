@@ -103,9 +103,9 @@ public:
 
     void SetBucketCounts(i32 valueBuckets, i32 keyBuckets, i32 subTabBuckets, i32 symbolBuckets);
 
-    void* FindQualified(const char* name);
+    CParseSource* FindQualified(const char* name);
     struct CParseSource* ResolveQualified(const char* name, RezTypeTag arg);
-    void* ResolvePath(const char* path);
+    CSymTab* ResolvePath(const char* path);
     void AddNode(void* rec);
 
     char* m_delims;

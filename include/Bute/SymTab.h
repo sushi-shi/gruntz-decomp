@@ -83,27 +83,27 @@ public:
 
     i32 AddNodeSubEntry(void* rec, void* found);
 
-    void* FindSub(const char* name);
+    CSymTab* FindSub(const char* name);
 
-    void* ResolvePath(const char* path);
+    CSymTab* ResolvePath(const char* path);
 
     struct CParseSource* ResolveQualified(const char* name, RezTypeTag fourcc);
 
     struct CParseSource* Insert(const char* key, RezTypeTag fourcc);
 
-    void* Find(const char* key);
+    CParseSource* Find(const char* key);
 
-    void* FindQualified(const char* name);
+    CParseSource* FindQualified(const char* name);
 
     i32 ReleaseParseBuffers(i32 recurse);
 
-    void* FirstSub();
-    void* NextSub(void* rec);
-    void* FindSymKey(u32 key);
-    void* FirstSym();
-    void* NextSym(void* rec);
-    void* NextSym2(void* rec);
-    void* NextSym3(void* rec);
+    CSymTab* FirstSub();
+    CSymTab* NextSub(CSymTab* rec);
+    CSymRec* FindSymKey(u32 key);
+    CSymRec* FirstSym();
+    CSymRec* NextSym(CSymRec* rec);
+    CParseSource* NextSym2(CSymRec* rec);
+    CParseSource* NextSym3(CParseSource* rec);
 
     char* m_name;
 

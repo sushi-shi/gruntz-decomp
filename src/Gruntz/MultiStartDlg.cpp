@@ -63,7 +63,6 @@ i32 g_val_2c44f0;
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/MpSymItem.h>
 #include <Gruntz/Multi.h>
 #include <MsgParam.h>
 #include <Net/InterfaceObject.h>
@@ -137,11 +136,11 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == NULL) {
         return 0;
     }
-    CSymTab* st = static_cast<CSymTab*>(m_host->m_symParser->ResolvePath("GAME_MULTI"));
+    CSymTab* st = m_host->m_symParser->ResolvePath("GAME_MULTI");
     if (st == NULL) {
         return 0;
     }
-    MpSymItem* item = static_cast<MpSymItem*>(st->NextSym2(st->FirstSym()));
+    CParseSource* item = st->NextSym2(st->FirstSym());
     while (item != NULL) {
         CString name(item->m_name);
         name.MakeUpper();
@@ -152,7 +151,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
             0,
             (text.m_str = static_cast<LPCTSTR>(name), text.m_lparam)
         );
-        item = static_cast<MpSymItem*>(st->NextSym3(item));
+        item = st->NextSym3(item);
     }
     CWnd* combo2 = GetDlgItem(IDX(IDC_MULTI_WORLD));
     CWnd* child = CWnd::FromHandle(::GetWindow(combo2->m_hWnd, GW_CHILD));

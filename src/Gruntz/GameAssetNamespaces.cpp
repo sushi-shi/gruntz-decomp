@@ -39,13 +39,13 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", IDX(m_levelType));
-    CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(area));
+    CSymTab* node = m_symParser->ResolvePath(area);
     m_levelBank = node;
     if (node == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->HasKeyEqual("GAME") == 0) {
-        void* img = m_symParser->ResolvePath("GAME_IMAGEZ");
+        CSymTab* img = m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == NULL) {
             return 0;
         }
@@ -54,14 +54,14 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         g_resourceInstallActive = 0;
     }
     if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
-        void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
+        CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (m_world->m_animRegistry->HasKeyPrefix("GAME") == 0) {
-        void* aniz = m_symParser->ResolvePath("GAME_ANIZ");
+        CSymTab* aniz = m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == NULL) {
             return 0;
         }

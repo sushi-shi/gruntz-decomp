@@ -62,7 +62,7 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
     while (ShowCursor(0) >= 0)
         ;
-    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_HELP"));
+    m_stateBank = m_symParser->ResolvePath("STATEZ_HELP");
     if (!m_stateBank) {
         return 0;
     }

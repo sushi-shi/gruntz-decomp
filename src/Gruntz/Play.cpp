@@ -1827,7 +1827,7 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    void* h = m_levelBank->ResolvePath("TILEZ");
+    CSymTab* h = m_levelBank->ResolvePath("TILEZ");
     if (!h) {
         return 0;
     }
@@ -3730,11 +3730,11 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_symParser) {
         return 0;
     }
-    self->m_gruntzBank = static_cast<CSymTab*>(self->m_symParser->ResolvePath("GRUNTZ"));
+    self->m_gruntzBank = self->m_symParser->ResolvePath("GRUNTZ");
     if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_gameBank = static_cast<CSymTab*>(self->m_symParser->ResolvePath("GAME"));
+    self->m_gameBank = self->m_symParser->ResolvePath("GAME");
     return self->m_gameBank != NULL;
 }
 

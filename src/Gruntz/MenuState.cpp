@@ -76,13 +76,13 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
     m_mgr->RestoreVideoMode(0);
-    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_MENU"));
+    m_stateBank = m_symParser->ResolvePath("STATEZ_MENU");
     if (m_stateBank == NULL) {
         return 0;
     }
 
     if (!m_world->m_imageRegistry->HasKeyEqual("MENU")) {
-        void* set = SymTab2c()->ResolvePath("IMAGEZ");
+        CSymTab* set = SymTab2c()->ResolvePath("IMAGEZ");
         if (set == NULL) {
             return 0;
         }
@@ -92,7 +92,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     if (!m_world->m_soundRegistry->HasKeyEqual("MENU")) {
-        void* set = SymTab2c()->ResolvePath("SOUNDZ");
+        CSymTab* set = SymTab2c()->ResolvePath("SOUNDZ");
         if (set == NULL) {
             return 0;
         }
@@ -200,7 +200,7 @@ i32 CMenuState::EnterState(GameStateId mode) {
         sprintf(titleName, "TITLE%d", idx);
 
         CSymTab* saved = attractState();
-        CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
+        CSymTab* state = stateMgr()->ResolvePath(stateName);
         m_stateBank = (state);
         if (state == NULL) {
             return 0;
@@ -364,7 +364,7 @@ i32 CMenuState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-    void* tree = SymTab2c()->ResolvePath("IMAGEZ");
+    CSymTab* tree = SymTab2c()->ResolvePath("IMAGEZ");
     if (tree == NULL) {
         return 0;
     }
@@ -399,7 +399,7 @@ i32 CMenuState::RestoreDisplay() {
     sprintf(titleName, "TITLE%d", idx);
 
     CSymTab* saved = attractState();
-    CSymTab* state = static_cast<CSymTab*>(stateMgr()->ResolvePath(stateName));
+    CSymTab* state = stateMgr()->ResolvePath(stateName);
     m_stateBank = (state);
     if (state == NULL) {
         return 0;

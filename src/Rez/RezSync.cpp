@@ -575,7 +575,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isHighDetail = vHigh1;
     m_isEffectsEnabled = vHigh2;
     if (!m_world->m_soundRegistry->HasKeyEqual("GAME")) {
-        void* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
+        CSymTab* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
@@ -602,7 +602,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     {
 
-        CSymTab* attract = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
+        CSymTab* attract = m_symParser->ResolvePath("STATEZ_ATTRACT");
         g_attractStateCount = 0;
         CString title;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);

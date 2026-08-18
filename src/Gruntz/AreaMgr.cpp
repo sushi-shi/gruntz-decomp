@@ -318,7 +318,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             char buf[0x80];
             g_resourceInstallActive = 1;
             sprintf(buf, "IMAGEZ_%s", static_cast<LPCTSTR>(e->GetTail()));
-            void* handle = src->ResolvePath(buf);
+            CSymTab* handle = src->ResolvePath(buf);
             if (handle == NULL) {
                 return 0;
             }
@@ -398,7 +398,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         if (e->m_flag == 0) {
             char buf[0x80];
             sprintf(buf, "SOUNDZ_%s", static_cast<LPCTSTR>(e->GetTail()));
-            void* handle = src->ResolvePath(buf);
+            CSymTab* handle = src->ResolvePath(buf);
             if (handle == NULL) {
                 return 0;
             }
@@ -466,7 +466,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         if (e->m_flag == 0) {
             char buf[0x80];
             sprintf(buf, "ANIZ_%s", static_cast<LPCTSTR>(e->GetTail()));
-            void* handle = src->ResolvePath(buf);
+            CSymTab* handle = src->ResolvePath(buf);
             if (handle == NULL) {
                 return 0;
             }

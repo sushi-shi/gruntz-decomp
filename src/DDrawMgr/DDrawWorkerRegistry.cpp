@@ -152,15 +152,14 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
 }
 
 RVA(0x00154f80, 0x1d5)
-i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* prefix) {
-    CSymTab* dir = static_cast<CSymTab*>(tree);
+i32 CDDrawWorkerRegistry::InstallTree(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
     if (buf == NULL) {
         return count;
     }
     buf[0] = 0;
-    CSymTab* e = static_cast<CSymTab*>(dir->FirstSub());
+    CSymTab* e = dir->FirstSub();
     while (e != NULL) {
         if (sub != NULL && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -168,7 +167,7 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
             strcpy(buf, e->m_name);
         }
         count += InstallTree(e, buf, prefix);
-        e = static_cast<CSymTab*>(dir->NextSub(e));
+        e = dir->NextSub(e);
     }
     if (sub != NULL && *sub != 0) {
         CObject* w = 0;
@@ -195,11 +194,10 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
 }
 
 RVA(0x00155160, 0x11e)
-i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char* prefix) {
-    CSymTab* dir = static_cast<CSymTab*>(tree);
+i32 CDDrawWorkerRegistry::LoadNamespace(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
-    CSymTab* e = static_cast<CSymTab*>(dir->FirstSub());
+    CSymTab* e = dir->FirstSub();
     while (e != NULL) {
         if (sub != NULL && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -212,7 +210,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
             return -1;
         }
         count += r;
-        e = static_cast<CSymTab*>(dir->NextSub(e));
+        e = dir->NextSub(e);
     }
     if (sub != NULL && *sub != 0) {
         CObject* out = 0;

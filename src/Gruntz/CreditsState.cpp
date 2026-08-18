@@ -73,18 +73,18 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     m_flashTimer = 0;
     m_fadeCountdown = 0;
     m_fxEnabled = 0;
-    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_CREDITZ"));
+    m_stateBank = m_symParser->ResolvePath("STATEZ_CREDITZ");
     if (!m_stateBank) {
         return 0;
     }
 
-    void* sounds = SymTab2c()->FindSub("SOUNDZ");
+    CSymTab* sounds = SymTab2c()->FindSub("SOUNDZ");
     if (!sounds) {
         return 0;
     }
     m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
 
-    CSymTab* midiz = static_cast<CSymTab*>(SymTab2c()->ResolvePath("MIDIZ"));
+    CSymTab* midiz = SymTab2c()->ResolvePath("MIDIZ");
     if (midiz) {
         CParseSource* e = midiz->Insert("PLAY", REZ_TAG_XMI);
         if (e) {
@@ -158,7 +158,7 @@ RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId unused) {
     owner()->m_sound->IsPlaying();
     owner()->m_sound->StopAndFlush();
-    m_stateBank = static_cast<CSymTab*>(stateMgr()->ResolvePath("STATEZ_ATTRACT"));
+    m_stateBank = stateMgr()->ResolvePath("STATEZ_ATTRACT");
     RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
 }
@@ -292,7 +292,7 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     CSymTab* saved = m_stateBank;
-    CSymTab* state = static_cast<CSymTab*>(m_symParser->ResolvePath(stateName));
+    CSymTab* state = m_symParser->ResolvePath(stateName);
     m_stateBank = state;
     if (state == NULL) {
         return 0;

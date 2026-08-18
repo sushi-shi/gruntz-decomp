@@ -1005,11 +1005,11 @@ void CDDrawWorker::AddFrameAt(void* elem, i32 index) {
 RVA(0x001521f0, 0xbc)
 i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
     i32 count = 0;
-    void* sym = tab->FirstSym();
+    CSymRec* sym = tab->FirstSym();
     while (sym != NULL) {
-        void* val = tab->NextSym2(sym);
+        CParseSource* val = tab->NextSym2(sym);
         while (val != NULL) {
-            char* p = (static_cast<CParseSource*>(val))->m_name;
+            char* p = val->m_name;
             while (*p != 0) {
                 if (*p >= '0' && *p <= '9') {
                     break;
@@ -1050,13 +1050,13 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
             liveFrames++;
         }
     }
-    void* sym = tab->FirstSym();
+    CSymRec* sym = tab->FirstSym();
     while (sym != NULL) {
-        void* val = tab->NextSym2(sym);
+        CParseSource* val = tab->NextSym2(sym);
         while (val != NULL) {
             GZ_ENUM_RETURN(RezTypeTag, u32) tag = (static_cast<CParseSource*>(val))->GetEntryTag();
             if (tag == IMGTAG_XCP || tag == IMGTAG_PMB || tag == IMGTAG_DIR || tag == IMGTAG_DIP) {
-                char* p = (static_cast<CParseSource*>(val))->m_name;
+                char* p = val->m_name;
                 while (*p != 0) {
                     if (*p >= '0' && *p <= '9') {
                         break;

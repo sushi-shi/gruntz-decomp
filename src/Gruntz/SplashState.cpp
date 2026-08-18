@@ -42,12 +42,12 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
     SetCursor(0);
     m_mgr->RestoreVideoMode(0);
 
-    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_SPLASH"));
+    m_stateBank = m_symParser->ResolvePath("STATEZ_SPLASH");
     if (!m_stateBank) {
         return 0;
     }
 
-    void* soundz = SymTab2c()->FindSub("SOUNDZ");
+    CSymTab* soundz = SymTab2c()->FindSub("SOUNDZ");
     if (soundz) {
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "", "_");
     }
