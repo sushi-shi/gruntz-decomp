@@ -383,13 +383,13 @@ RVA(0x00175a00, 0x90)
 i32 CRezImage::DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
     switch (kind) {
         case DECODE_PCX:
-            return DecodePcxData(buf, dc, ctrl);
+            return DecodePcxData(static_cast<PcxHeader*>(buf), dc, ctrl);
         case DECODE_BMP:
-            return DecodeBmpData(buf, dc, ctrl);
+            return DecodeBmpData(static_cast<BITMAPINFOHEADER*>(buf), dc, ctrl);
         case DECODE_RID:
-            return DecodeRidData(buf, dc, ctrl);
+            return DecodeRidData(static_cast<PidHeader*>(buf), dc, ctrl);
         case DECODE_PID:
-            return DecodePidData(buf, dc, ctrl);
+            return DecodePidData(static_cast<PidHeader*>(buf), dc, ctrl);
     }
     return 0;
 }
@@ -490,14 +490,14 @@ void CRezImage::Fill(i32 value) {
 }
 
 RVA(0x00175e00, 0x3d)
-i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
-    BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
+i32 CRezImage::DecodeBmpData(BITMAPINFOHEADER* ih, HDC dc, i32 ctrl) {
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
-    void* src = static_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4;
+    u8* src = static_cast<u8*>(static_cast<void*>(ih)) + sizeof(BITMAPINFOHEADER) + 4;
     if (bitcount == BPP_PALETTED_8) {
-        src = static_cast<u8*>(buf) + ih->biSize + sizeof(RGBQUAD) * PALETTE_ENTRY_COUNT;
+        src = static_cast<u8*>(static_cast<void*>(ih)) + ih->biSize
+              + sizeof(RGBQUAD) * PALETTE_ENTRY_COUNT;
     }
     i32 r = DecodeBlit(src, dc, width, height, bitcount, ctrl);
     return r;
@@ -535,8 +535,7 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 }
 
 RVA(0x00176000, 0x18f)
-i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
-    PcxHeader* hdr = static_cast<PcxHeader*>(buf);
+i32 CRezImage::DecodePcxData(PcxHeader* hdr, HDC dc, i32 ctrl) {
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
@@ -613,15 +612,15 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    i32 result = DecodePcxData(buf, dc, ctrl);
+    i32 result = DecodePcxData(static_cast<PcxHeader*>(static_cast<void*>(buf)), dc, ctrl);
     delete[] buf;
     return result;
 }
 
 RVA(0x001762c0, 0x42)
-i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
+i32 CRezImage::DecodeRidData(PidHeader* buf, HDC dc, i32 ctrl) {
 
-    i32* p = &static_cast<PidHeader*>(buf)->width;
+    i32* p = &buf->width;
     i32 width = *p++;
     i32 height = *p;
     p += 5;
@@ -649,24 +648,19 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    i32 result = DecodeRidData(buf, dc, ctrl);
+    i32 result = DecodeRidData(static_cast<PidHeader*>(static_cast<void*>(buf)), dc, ctrl);
     delete[] buf;
     return result;
 }
 
 // @early-stop
 RVA(0x00176440, 0x25d)
-i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
-    Pix16Ptr src;
-    src.m_bytes = static_cast<u8*>(buf);
-    src.m_dwords++;
-
-    PidFlags flags = static_cast<PidFlags>(*src.m_dwords++);
-    i32 width = *src.m_dwords++;
-    i32 height = *src.m_dwords++;
-    src.m_dwords += 2;
-    i32 fill = *src.m_dwords++;
-    src.m_dwords++;
+i32 CRezImage::DecodePidData(PidHeader* buf, HDC dc, i32 ctrl) {
+    PidFlags flags = buf->flags;
+    i32 width = buf->width;
+    i32 height = buf->height;
+    i32 fill = buf->fill;
+    u8* src = buf->pixels;
 
     if (!DecodeBmpHeader(dc, width, height, BPP_PALETTED_8, ctrl)) {
         return 0;
@@ -688,17 +682,17 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
         i32 y = 0;
         i32 i = 0;
         while (y < m_height) {
-            i32 c = src.m_bytes[i];
+            i32 c = src[i];
             if (c & 0x80) {
                 i32 count = c - 0x80;
                 memset(dstRow + x, static_cast<u8>(fill), count);
-                x += (src.m_bytes[i] & 0xff) - 0x80;
+                x += (src[i] & 0xff) - 0x80;
                 i++;
             } else {
                 i32 count = c;
-                memcpy(dstRow + x, &src.m_bytes[i + 1], count);
-                x += src.m_bytes[i];
-                i += src.m_bytes[i] + 1;
+                memcpy(dstRow + x, &src[i + 1], count);
+                x += src[i];
+                i += src[i] + 1;
             }
             if (x >= m_width) {
                 y++;
@@ -714,10 +708,10 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
             u8* dst = m_pixels + m_rowOffsets[y];
             i32 n = width;
             while (n > 0) {
-                u8 c = *src.m_bytes++;
+                u8 c = *src++;
                 if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
                     i32 count = c & BYTE_RUN_LENGTH_MASK;
-                    u8 v = *src.m_bytes++;
+                    u8 v = *src++;
                     if (count > 0) {
                         memset(dst, v, count);
                         dst += count;
@@ -749,7 +743,7 @@ i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    i32 result = DecodePidData(buf, dc, ctrl);
+    i32 result = DecodePidData(static_cast<PidHeader*>(static_cast<void*>(buf)), dc, ctrl);
     delete[] buf;
     return result;
 }
@@ -768,7 +762,7 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
     if (!hGlobal) {
         return 0;
     }
-    void* data = LockResource(hGlobal);
+    BITMAPINFOHEADER* data = static_cast<BITMAPINFOHEADER*>(LockResource(hGlobal));
     if (!data) {
         return 0;
     }

@@ -46,10 +46,10 @@ public:
     i32 LoadDefault(char* name, HDC dc, i32 ctrl);
 
     i32 DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
-    i32 DecodePcxData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodeRidData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodePidData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodeBmpData(void* buf, HDC dc, i32 ctrl);
+    i32 DecodePcxData(PcxHeader* buf, HDC dc, i32 ctrl);
+    i32 DecodeRidData(PidHeader* buf, HDC dc, i32 ctrl);
+    i32 DecodePidData(PidHeader* buf, HDC dc, i32 ctrl);
+    i32 DecodeBmpData(BITMAPINFOHEADER* buf, HDC dc, i32 ctrl);
 
     i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
 
