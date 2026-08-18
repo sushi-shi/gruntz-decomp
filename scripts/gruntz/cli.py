@@ -16,6 +16,7 @@
                                      xref, rva, vtable, classof, strings, ...)
     gruntz walls <sub>               the wall campaign: inventory, diagnose,
                                      inline-model
+    gruntz permute state             controlled disposable TU-state search
     gruntz ghidra <sub>              one-way viewer export: the retail image
                                      as a labelled Ghidra project (build,
                                      update, verify, status, export)
@@ -59,6 +60,49 @@ def main(argv: list[str] | None = None) -> int:
     if cmd in ("sema", "walls", "ghidra", "verify", "rsrc", "lsp"):
         import importlib
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
+    if cmd == "permute":
+        if not rest or rest[0] in ("-h", "--help"):
+            print("gruntz permute state --source <tu.cpp> --rva <rva> [options]\n"
+                  "  state: classified, disposable compiler-state search")
+            return 0 if rest else 2
+        if rest[0] != "state":
+            print("gruntz permute: unknown verb " + repr(rest[0])
+                  + " (have: state)", file=sys.stderr)
+            return 2
+        state_args = rest[1:]
+        rva_arg = next((
+            state_args[index + 1]
+            for index, value in enumerate(state_args[:-1])
+            if value == "--rva"
+        ), None)
+        if rva_arg is None:
+            print("gruntz permute state: --rva is required", file=sys.stderr)
+            return 2
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from gruntz.walls.diagnose import diagnose
+        diagnosis = StringIO()
+        with redirect_stdout(diagnosis):
+            result = diagnose(rva_arg)
+        report = diagnosis.getvalue()
+        print(report, end="")
+        if result or "class: REGALLOC/SCHEDULING" not in report:
+            print("gruntz permute state: refused - state search requires a "
+                  "REGALLOC/SCHEDULING diagnosis", file=sys.stderr)
+            return 2
+        from gruntz.model import resolve
+        from gruntz.verify.baseline import load as load_baseline
+        rva = int(rva_arg, 0)
+        if rva >= 0x400000:
+            rva -= 0x400000
+        binding = next((row for row in resolve().functions if row.rva == rva), None)
+        bank = load_baseline().get((binding.unit, binding.name)) if binding else None
+        if bank and bank["hist"] >= 100.0:
+            print("gruntz permute state: refused - historical MAX is already "
+                  "100%", file=sys.stderr)
+            return 2
+        from gruntz.permute.tu_state_noise import main as state_main
+        return state_main(state_args)
     if cmd in ("build", "link", "match"):
         from gruntz.graph.verbs import VERBS
         return VERBS[cmd](rest)
