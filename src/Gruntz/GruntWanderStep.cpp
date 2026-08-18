@@ -39,8 +39,7 @@
 // block placement inside the reroll arm.
 RVA(0x000ed9f0, 0x900)
 i32 CGrunt::WanderStep() {
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
 
     i32 flag = 0;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
@@ -100,16 +99,12 @@ i32 CGrunt::WanderStep() {
                     CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
                     m_neighborScanEnabled = 0;
                     if (CoordCount() != 0) {
-                        void* node = m_coordList.GetHeadPosition();
-                        if (node != NULL) {
-                            do {
-                                CoordNode* cur = static_cast<CoordNode*>(node);
-                                node = *static_cast<void**>(node);
-                                Coord* data = cur->m_coord;
-                                if (data != NULL) {
-                                    g_coordPool.Push(data);
-                                }
-                            } while (node != NULL);
+                        POSITION pos = m_coordList.GetHeadPosition();
+                        while (pos != NULL) {
+                            void* data = m_coordList.GetNext(pos);
+                            if (data != NULL) {
+                                g_coordPool.Push(data);
+                            }
                         }
                         m_coordList.RemoveAll();
                     }
@@ -120,15 +115,9 @@ i32 CGrunt::WanderStep() {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
                         g->GetScreenPos(c);
-                        if (TileSwitch(
-                                c[0].m_x >> TILE_SHIFT_PX,
-                                c[0].m_y >> TILE_SHIFT_PX,
-                                0,
-                                m_arrivalFlags,
-                                1,
-                                0
-                            )
-                            != 0) {
+                        c[0].m_x = c[0].m_x >> TILE_SHIFT_PX;
+                        c[0].m_y = c[0].m_y >> TILE_SHIFT_PX;
+                        if (TileSwitch(c[0].m_x, c[0].m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                             SetEntrancePos(1, 1);
                             m_arrivalCell.m_x = g->m_tileOwnerHi;
                             m_arrivalCell.m_y = g->m_tileOwnerLo;
@@ -244,7 +233,6 @@ i32 CGrunt::WanderStep() {
                 while (pos != NULL) {
                     void* data = m_coordList.GetNext(pos);
                     if (data != NULL) {
-
                         CoordPoolNode* fslot = g_coordPool.NodeOf(data);
                         fslot->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = fslot;
@@ -274,19 +262,22 @@ i32 CGrunt::WanderStep() {
             }
             CWwdGameObjectA* base = m_object;
             i32 clip = 1;
-            i32 py = rand() % 4 + (base->m_screenY >> TILE_SHIFT_PX) - 2;
-            i32 px = rand() % 4 + (base->m_screenX >> TILE_SHIFT_PX) - 2;
+            i32 baseTileY = base->m_screenY >> TILE_SHIFT_PX;
+            i32 baseTileX = base->m_screenX >> TILE_SHIFT_PX;
+            i32 py = rand() % 4 + baseTileY - 2;
+            i32 px = rand() % 4 + baseTileX - 2;
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry = g_gameReg->m_cmdGrid
                                     ->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                 if (entry != NULL) {
                     CGameObject* e10 = entry->m_object;
-                    RECT rc;
-                    rc.left = (e10->m_screenX >> TILE_SHIFT_PX) - 2;
-                    rc.top = (e10->m_screenY >> TILE_SHIFT_PX) - 2;
-                    rc.right = (e10->m_screenX >> TILE_SHIFT_PX) + 3;
-                    rc.bottom = (e10->m_screenY >> TILE_SHIFT_PX) + 3;
+                    CRect rc(
+                        (e10->m_screenX >> TILE_SHIFT_PX) - 2,
+                        (e10->m_screenY >> TILE_SHIFT_PX) - 2,
+                        (e10->m_screenX >> TILE_SHIFT_PX) + 3,
+                        (e10->m_screenY >> TILE_SHIFT_PX) + 3
+                    );
                     POINT pt;
                     pt.x = px;
                     pt.y = py;

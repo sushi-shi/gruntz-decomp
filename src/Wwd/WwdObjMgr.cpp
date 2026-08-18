@@ -43,6 +43,15 @@ i32 g_sndEnabled = 1;
 DATA(0x0021ab24)
 i32 g_sndCueTag = 100;
 
+// CMapStringToOb::Lookup leaves `out` untouched on a miss, so the clear belongs
+// with the lookup: as the inline body's first statement cl schedules it after the
+// caller's argument setup, which is retail's order.
+inline AnimWorkerObj* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* ob = 0;
+    map.Lookup(name, ob);
+    return static_cast<AnimWorkerObj*>(ob);
+}
+
 inline void* WwdKey(CGameObject* o) {
     AddrWord<char> k;
     k.m_word = o->m_objectId;
@@ -1130,32 +1139,24 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
             // (0x15adf0 calls 0x159440 with four pushes and no `val != NULL` guard),
             // with the two six-argument arms behind it.
             case CLASSID_WWDOBJF: {
-                CObject* val = NULL;
-                OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_workerName),
-                    val
-                );
                 createdObj = CreateDeferredObject(
                     desc.m_id,
                     desc.m_sortKey,
-                    static_cast<AnimWorkerObj*>(val),
+                    LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName),
                     0
                 );
                 break;
             }
             case CLASSID_WWDOBJA: {
-                CObject* val = NULL;
-                OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_workerName),
-                    val
-                );
-                if (val != NULL) {
+                AnimWorkerObj* tmpl =
+                    LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName);
+                if (tmpl != NULL) {
                     createdObj = CreateSpriteObject(
                         desc.m_id,
                         desc.m_screenX,
                         desc.m_screenY,
                         desc.m_sortKey,
-                        static_cast<AnimWorkerObj*>(val),
+                        tmpl,
                         0
                     );
                 } else {
@@ -1164,18 +1165,15 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 break;
             }
             case CLASSID_WWDOBJB: {
-                CObject* val = NULL;
-                OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_workerName),
-                    val
-                );
-                if (val != NULL) {
+                AnimWorkerObj* tmpl =
+                    LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName);
+                if (tmpl != NULL) {
                     createdObj = CreateContainerObject(
                         desc.m_id,
                         desc.m_screenX,
                         desc.m_screenY,
                         desc.m_sortKey,
-                        static_cast<AnimWorkerObj*>(val),
+                        tmpl,
                         0
                     );
                 } else {
