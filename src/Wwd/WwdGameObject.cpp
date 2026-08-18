@@ -898,13 +898,13 @@ void CDDrawWorker::Unload() {
 }
 
 RVA(0x00151f00, 0xa4)
-CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
+CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
         return 0;
     }
 
     CImage* worker = new CImage(n, Owner());
-    if (!worker->Resolve(static_cast<CParseSource*>(src), mode)) {
+    if (!worker->Resolve(src, mode)) {
         if (worker) {
             delete worker;
         }
@@ -997,8 +997,8 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
 }
 
 RVA(0x001521c0, 0x2b)
-void CDDrawWorker::AddFrameAt(void* elem, i32 index) {
-    m_items.SetAtGrow(index, static_cast<CObject*>(elem));
+void CDDrawWorker::AddFrameAt(CObject* elem, i32 index) {
+    m_items.SetAtGrow(index, elem);
     if (index < m_minIndex) {
         m_minIndex = index;
     }

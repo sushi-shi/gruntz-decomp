@@ -85,7 +85,7 @@ public:
 
     i32 LoadEntry(char* name, i32 flag);
 
-    i32 ParseRecords(void* reader, CSymTab* node, char* path, i32 flag);
+    i32 ParseRecords(CRezItmBase* reader, CSymTab* node, char* path, i32 flag);
 
     i32 Classify(char* buf);
 
@@ -106,7 +106,7 @@ public:
     CParseSource* FindQualified(const char* name);
     struct CParseSource* ResolveQualified(const char* name, RezTypeTag arg);
     CSymTab* ResolvePath(const char* path);
-    void AddNode(void* rec);
+    void AddNode(CParseSource* rec);
 
     char* m_delims;
     i32 m_sorted;

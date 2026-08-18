@@ -3756,11 +3756,11 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 }
 
 RVA(0x000d00a0, 0x5a)
-void CPlay::PostSetup(void* dc) {
+void CPlay::PostSetup(HDC dc) {
     RECT src = *(&m_world->m_level->m_planeCtx);
     RECT dst;
     CopyRect(&dst, &src);
-    m_mgr->m_chatLog->DrawTextLines(8, static_cast<HDC>(dc), &dst, 0x10);
+    m_mgr->m_chatLog->DrawTextLines(8, dc, &dst, 0x10);
 }
 
 #define SYNC_PAIR(ar, mode, p)                                                                     \

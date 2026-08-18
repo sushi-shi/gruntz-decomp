@@ -95,7 +95,7 @@ i32 CDDrawShadeBlit::BuildRle(
     i32 height,
     i32 stride,
     i32 keyVal,
-    void* palette
+    PALETTEENTRY* palette
 ) {
     u8* src = static_cast<u8*>(pixels);
     if (src == NULL) {
@@ -159,13 +159,13 @@ i32 CDDrawShadeBlit::BuildRle(
             delete[] m_palette;
         }
         m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
-        memcpy(m_palette, palette, 0x400);
+        memcpy(m_palette, palette, PALETTE_ENTRY_COUNT * sizeof(PALETTEENTRY));
     }
     return 1;
 }
 
 RVA(0x00148f50, 0x61)
-i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette) {
+i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette) {
     if (surf == NULL) {
         return 0;
     }
@@ -272,9 +272,9 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
     memcpy(m_rleData, src->pixels, m_rleLen);
 
     if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
-        void* remapped = EncodeRle16(m_rleData);
+        u8* remapped = EncodeRle16(m_rleData);
         delete[] m_rleData;
-        m_rleData = static_cast<u8*>(remapped);
+        m_rleData = remapped;
         delete[] m_palette;
         m_palette = NULL;
     }
@@ -343,7 +343,7 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
 }
 
 RVA(0x001494b0, 0x11a)
-i32 CDDrawShadeBlit::Decompress(void* dest) {
+i32 CDDrawShadeBlit::Decompress(u8* dest) {
     if (m_srcBpp != 1) {
         return 0;
     }
@@ -358,15 +358,11 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     i32 cursor = 0;
     for (i32 y = 0; y < m_height;) {
         if (m_rleData[cursor] & 0x80) {
-            memset(static_cast<u8*>(dest) + y * m_width + x, fill, m_rleData[cursor] - 0x80);
+            memset(dest + y * m_width + x, fill, m_rleData[cursor] - 0x80);
             x += m_rleData[cursor] - 0x80;
             cursor += 1;
         } else {
-            memcpy(
-                static_cast<u8*>(dest) + y * m_width + x,
-                m_rleData + cursor + 1,
-                m_rleData[cursor]
-            );
+            memcpy(dest + y * m_width + x, m_rleData + cursor + 1, m_rleData[cursor]);
             x += m_rleData[cursor];
             cursor += m_rleData[cursor] + 1;
         }
@@ -384,7 +380,7 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
 // way round - plus `add ecx,2` for the two `outidx++` retail splits into two `inc`s
 // (spelling them apart costs more than it saves).
 RVA(0x001495d0, 0x1a6)
-void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
+u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     u16 table[256];
     {
         const PALETTEENTRY* pal = m_palette;

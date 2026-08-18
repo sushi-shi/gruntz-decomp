@@ -37,7 +37,7 @@ public:
     CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size);
     virtual CImage* LoadFrame(char* path, i32 index, i32 keyed);
 
-    virtual CImage* InsertFrame(void* rec, i32 n, i32 flag);
+    virtual CImage* InsertFrame(struct CParseSource* rec, i32 n, i32 flag);
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);
 
     virtual i32 ReloadFrame(CParseSource* rec, i32 n, i32 flag);
@@ -63,7 +63,7 @@ public:
         return OwnerMgr();
     }
 
-    void AddFrameAt(void* elem, i32 index);
+    void AddFrameAt(CObject* elem, i32 index);
 
     CObArray m_items;
     char m_name[0x40];

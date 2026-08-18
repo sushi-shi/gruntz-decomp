@@ -37,7 +37,8 @@ void CDDrawWorkerRegistry::Unload() {
 }
 
 RVA(0x00154ae0, 0xfc)
-CImage* CDDrawWorkerRegistry::InsertFrameByKey(void* rec, const char* key, i32 index, i32 mode) {
+CImage*
+CDDrawWorkerRegistry::InsertFrameByKey(CParseSource* rec, const char* key, i32 index, i32 mode) {
     CObject* worker = 0;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
@@ -124,8 +125,12 @@ CDDrawWorkerRegistry::LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 i
 }
 
 RVA(0x00154f20, 0x1b)
-CImage*
-CDDrawWorkerRegistry::InsertFrameForWorker(void* rec, CDDrawWorker* worker, i32 index, i32 mode) {
+CImage* CDDrawWorkerRegistry::InsertFrameForWorker(
+    CParseSource* rec,
+    CDDrawWorker* worker,
+    i32 index,
+    i32 mode
+) {
     return worker->InsertFrame(rec, index, mode);
 }
 

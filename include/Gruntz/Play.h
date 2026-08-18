@@ -120,7 +120,7 @@ public:
     RVA(0x000d0030, 0x1)
     virtual void PostLoadImageBanks() {}
 
-    virtual void PostSetup(void* dc);
+    virtual void PostSetup(HDC dc);
 
     virtual void TickStateMgrs();
 

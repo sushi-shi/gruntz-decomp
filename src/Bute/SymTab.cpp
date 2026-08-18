@@ -583,16 +583,15 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 
 // @early-stop
 RVA(0x0013a400, 0xa9)
-CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
+CParseSource* CSymTab::AddNamedValue(void* unused, const char* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
-    if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_caseSensitive == 0)
-        != NULL) {
+    if (rec->m_valTable.Walk(name, m_owner->m_caseSensitive == 0) != NULL) {
         return 0;
     }
     CParseSource* slot = m_owner->PopParseSlot();
     slot->Build(
         this,
-        static_cast<const char*>(name),
+        name,
         &rec->m_valTable,
         rec,
         0,
@@ -607,7 +606,7 @@ CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
         return 0;
     }
     rec->m_valTable.Insert(&slot->m_node1c);
-    u32 len = strlen(static_cast<char*>(name));
+    u32 len = strlen(name);
     if (m_owner->m_longestLeafNameLen <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
@@ -644,12 +643,11 @@ CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRe
 }
 
 RVA(0x0013a530, 0x47)
-i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
-    CParseSource* src = static_cast<CParseSource*>(found);
+i32 CSymTab::AddNodeSubEntry(CSymRec* rec, CParseSource* src) {
     m_totalSourceLength -= static_cast<i32>(src->m_length);
-    (static_cast<CSymRec*>(rec))->m_valTable.Remove(&src->m_node1c);
+    rec->m_valTable.Remove(&src->m_node1c);
     src->Teardown();
-    m_owner->AddNode(found);
+    m_owner->AddNode(src);
     m_owner->m_sorted = 0;
     return 1;
 }
@@ -752,7 +750,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             p += strlen(name1) + 1;
             CSymRec* rec = FindOrAddSym(f5);
             i32 skip = 0;
-            void* found = rec->m_valTable.Walk(name1, 1);
+            CParseSource* found = static_cast<CParseSource*>(rec->m_valTable.Walk(name1, 1));
             if (found) {
                 if (mergeDuplicates != 0) {
                     AddNodeSubEntry(rec, found);
@@ -1102,7 +1100,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 // callee-saved colour swap (extKey in esi / rec in edi, ours reversed) around the
 // PackTag/AddNodeEntry block.
 RVA(0x0013b300, 0x545)
-i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) {
+i32 CSymParser::ParseRecords(CRezItmBase* reader, CSymTab* node, char* path, i32 flag) {
     char pattern[REZ_SCAN_PATH_MAX];
     strcpy(pattern, path);
     if (pattern[strlen(pattern) - 1] != '\\') {
@@ -1473,7 +1471,7 @@ i32 CSymParser::Classify(char* name) {
 // @early-stop
 RVA(0x0013c0c0, 0x14b)
 CParseSource* CSymParser::PopParseSlot() {
-    void* rec = 0;
+    CParseSource* rec = 0;
     CHashElement* e = m_hash.First();
     if (e != NULL) {
         rec = e->m_parseSource;
@@ -1498,14 +1496,14 @@ CParseSource* CSymParser::PopParseSlot() {
         rec = e->m_parseSource;
     }
     if (rec) {
-        m_hash.Remove(&(static_cast<CParseSource*>(rec))->m_node1c);
+        m_hash.Remove(&rec->m_node1c);
     }
-    return static_cast<CParseSource*>(rec);
+    return rec;
 }
 
 RVA(0x0013c210, 0x1a)
-void CSymParser::AddNode(void* rec) {
+void CSymParser::AddNode(CParseSource* rec) {
     if (rec) {
-        m_hash.Insert(&(static_cast<CParseSource*>(rec))->m_node1c);
+        m_hash.Insert(&rec->m_node1c);
     }
 }

@@ -29,18 +29,19 @@ struct CImageFrameRebuildDesc {
 class CDDrawShadeBlit {
 public:
     CDDrawShadeBlit();
-    i32 BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal, void* palette);
+    i32
+    BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal, PALETTEENTRY* palette);
     i32 LoadFromFile(CString name, ColorDepth fmt);
 
-    i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette);
+    i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette);
     i32 Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt);
 
-    void* EncodeRle16(const u8* src);
+    u8* EncodeRle16(const u8* src);
     void Teardown();
     i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc);
 
     i32 Rebuild(CString name, i32 offsetX, i32 offsetY);
-    i32 Decompress(void* dest);
+    i32 Decompress(u8* dest);
 
     i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);
     i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip);

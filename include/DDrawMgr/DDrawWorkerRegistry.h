@@ -48,9 +48,11 @@ public:
         u32 size
     );
 
-    virtual CImage* InsertFrameForWorker(void* rec, CDDrawWorker* worker, i32 index, i32 mode);
+    virtual CImage*
+    InsertFrameForWorker(struct CParseSource* rec, CDDrawWorker* worker, i32 index, i32 mode);
 
-    virtual CImage* InsertFrameByKey(void* rec, const char* key, i32 index, i32 mode);
+    virtual CImage*
+    InsertFrameByKey(struct CParseSource* rec, const char* key, i32 index, i32 mode);
 
     virtual CImage* LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed);
     virtual CImage* LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed);

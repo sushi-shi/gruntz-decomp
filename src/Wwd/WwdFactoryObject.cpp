@@ -83,16 +83,16 @@ RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
 RVA(0x0015b650, 0x4d)
-void CGameObject::Notify(void* p) {
+void CGameObject::Notify(CGameObject* p) {
     if (m_flags & 0x8) {
-        m_health -= static_cast<CGameObject*>(p)->m_damage;
+        m_health -= p->m_damage;
         if (m_health <= 0) {
             m_animWorker->SetWorkerAct(ACT_HEALTH_DEPLETED);
         }
     } else {
         AnimWorkerObj* h = m_hitWorker;
         if (h != NULL) {
-            m_hitSource = static_cast<CGameObject*>(p);
+            m_hitSource = p;
             h->m_notify(this);
         }
     }
