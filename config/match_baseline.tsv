@@ -101,7 +101,7 @@ dialogs	62	61
 dircellmethods	19	18
 directdrawmgr	68	68
 directinputmgr2	45	45
-directsoundmgr	79	75
+directsoundmgr	79	73
 donothing	8	8
 droppedobject	29	26
 engstrrendertext	2	2
@@ -277,7 +277,7 @@ singleanimation	7	7
 singleframemessage	7	6
 slotcombofill	4	3
 soundfontpath	4	3
-soundstream	36	33
+soundstream	36	32
 soundvoicelist	5	5
 splashstate	9	9
 spotlight	8	4
@@ -1233,7 +1233,7 @@ ddsurface	?Blit2416@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	100.0000	100.0000	2	
 ddsurface	?Blit248@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	100.0000	100.0000	3	ca29d68a854d	0x13fe60	100.0000	
 ddsurface	?Blit816@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	72.9074	72.9074	3	909fc6420d67	0x140420	72.9074	
 ddsurface	?Blit824@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	69.8301	69.8301	3	7312ad2deb28	0x140110	69.8301	
-ddsurface	?Blit@CDDSurface@@QAEHPAEW4ColorDepth@@PAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	100.0000	100.0000	3	68a4022b0117	0x13faa0	100.0000	
+ddsurface	?Blit@CDDSurface@@QAEHPAEW4ColorDepth@@PAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	100.0000	100.0000	4	cf13b65f307d	0x13faa0	100.0000	
 ddsurface	?BlitDirect@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	100.0000	100.0000	2	e1de397f2289	0x13ece0	100.0000	
 ddsurface	?BlitIntoDesc@CDDSurface@@UAEHPAVCDDrawPtrCollections@@@Z	100.0000	100.0000	2	c625448b8302	0x13e2e0	100.0000	
 ddsurface	?BlitSurf@CDDSurface@@UAEHPAVCDDrawPtrCollections@@HHW4ColorDepth@@H@Z	100.0000	100.0000	2	b39a4ce83cb6	0x13e0d0	100.0000	
@@ -1562,9 +1562,9 @@ directsoundmgr	?GetVolumePercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	323d
 directsoundmgr	?IsInHardware@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	34e9f8eabd11	0x135490	100.0000	
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	1cd921a4e435	0x135440	100.0000	
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	2dac8abb6ae9	0x1353f0	100.0000	
-directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	100.0000	100.0000	1	f512b657f51a	0x135e10	100.0000	
-directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAK01I@Z	100.0000	100.0000	1	f6397e0dde5d	0x136370	100.0000	
-directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	100.0000	100.0000	2	07e7fe0abaad	0x135f40	100.0000	
+directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	97.7333	97.7333	2	96bd1c359ab8	0x135e10	100.0000	
+directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAEPAK01I@Z	100.0000	100.0000	2	fff8687dd7b1	0x136370	100.0000	
+directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	90.0884	90.0884	3	0c1ddbe530f1	0x135f40	100.0000	
 directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	67.0526	67.0526	10	1b268e925cc8	0x137110	100.0000	
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	3638b7ae6e0f	0x136270	100.0000	
 directsoundmgr	?PurgeVoiceList@SoundDevice@@QAEHH@Z	100.0000	100.0000	1	1c5f66489eb6	0x136e20	100.0000	
@@ -1594,7 +1594,7 @@ directsoundmgr	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	1	e1d6352b4701	0x1
 directsoundmgr	?StopAllClones@DSoundCloneInst@@QAEXXZ	100.0000	100.0000	1	cd2b96e4c827	0x136150	100.0000	
 directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	c06ec40163e2	0x135380	100.0000	
 directsoundmgr	?Tick@DSoundVoice@@UAEHH@Z	95.6977	95.6977	1	9d1348d42674	0x137060	95.6977	
-directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	1	1d0bdc75a2f5	0x1359c0	100.0000	
+directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAEI0I@Z	100.0000	100.0000	2	9799c26b54c2	0x1359c0	100.0000	
 directsoundmgr	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	1	dfb10f2e7713	0x136ab0	100.0000	
 directsoundmgr	?VolumeToAttenuation@SoundDevice@@SAHH@Z	100.0000	100.0000	1	84cea98e8208	0x1350b0	100.0000	
 donothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	cpp:ac2e9822263a	0xf770	100.0000	
@@ -3922,12 +3922,12 @@ soundstream	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	0b279428c3b6	0
 soundstream	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	1	20a71901d812	0x137520	100.0000	
 soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@IHHH@Z	100.0000	100.0000	2	feb5fef55384	0x137780	100.0000	
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	1	d7c521b444f2	0x1379d0	100.0000	
-soundstream	?Feed@StreamVoiceFeeder@@UAEHPAXIPAI0I1@Z	100.0000	100.0000	1	b7fc8d76c1f4	0x137380	100.0000	
+soundstream	?Feed@StreamVoiceFeeder@@UAEHPAEIPAI0I1@Z	100.0000	100.0000	2	43ee53308758	0x137380	100.0000	
 soundstream	?FeedData@StreamFeeder@@UAEHXZ	100.0000	100.0000	1	59028c341f5e	0x137e10	100.0000	
 soundstream	?FeedData@StreamVoiceFeeder@@UAEHXZ	100.0000	100.0000	1	39cd9b726b30	0x137490	100.0000	
 soundstream	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	1	6c08aec973f1	0x137dc0	100.0000	
 soundstream	?FeederStart@StreamFeeder@@QAEHPAVSoundDevice@@PAUWaveFormatX@@IIPAVDirectSoundMgr@@H@Z	96.1587	96.1587	1	bf9a85929725	0x137d10	96.1587	
-soundstream	?FillBuffer@StreamFeeder@@QAEHII@Z	100.0000	100.0000	1	295915a3e8b4	0x137f30	100.0000	
+soundstream	?FillBuffer@StreamFeeder@@QAEHII@Z	86.6605	86.6605	2	8aa301f89169	0x137f30	100.0000	
 soundstream	?Free@SoundStream@@QAEXXZ	100.0000	100.0000	1	b950abcf9c8b	0x137740	100.0000	
 soundstream	?GetErrorString@DirectSoundMgr@@SAXPADHH@Z	100.0000	100.0000	1	205f64385c7f	0x138150	100.0000	
 soundstream	?OnDrain@StreamFeeder@@UAEXXZ	100.0000	100.0000	1	0885175e98bd	0x137e20	100.0000	

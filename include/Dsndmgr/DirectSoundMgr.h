@@ -42,7 +42,7 @@ public:
     i32 SetFrequency(u32 freq);
     i32 SetFrequencyOffsetPercent(i32 percentOffset);
     void ComputeDuration();
-    i32 Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2);
+    i32 Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audioBytes2);
 
     i32 GetCurrentPosition(unsigned long* play, unsigned long* write);
     i32 SetCurrentPosition(u32 pos);
@@ -54,9 +54,9 @@ public:
     i32 Lock(
         u32 off,
         u32 bytes,
-        void** audioPtr1,
+        u8** audioPtr1,
         unsigned long* audioBytes1,
-        void** audioPtr2,
+        u8** audioPtr2,
         unsigned long* audioBytes2,
         u32 flags
     );

@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <ComOutRef.h>
 #include <Dsndmgr/DSoundVoice.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVoiceList.h>
@@ -421,7 +422,7 @@ void DirectSoundMgr::ComputeDuration() {
 }
 
 RVA(0x001359c0, 0x54)
-i32 DirectSoundMgr::Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2) {
+i32 DirectSoundMgr::Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audioBytes2) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
@@ -576,16 +577,16 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
         }
     }
 
-    void* audioPtr1;
+    u8* audioPtr1 = NULL;
     DWORD audioBytes1;
-    void* audioPtr2;
+    u8* audioPtr2 = NULL;
     DWORD audioBytes2;
     i32 hr = m_buffer->Lock(
         0,
         bytes,
-        &audioPtr1,
+        PtrOut(&audioPtr1),
         &audioBytes1,
-        &audioPtr2,
+        PtrOut(&audioPtr2),
         &audioBytes2,
         DSBLOCK_FROMWRITECURSOR
     );
@@ -619,16 +620,16 @@ i32 DirectSoundMgr::LockConvert(u8* src, u32 lockBytes, u32 convert) {
         return 0;
     }
 
-    void* audioPtr1;
-    void* audioPtr2;
+    u8* audioPtr1 = NULL;
+    u8* audioPtr2 = NULL;
     DWORD audioBytes1;
     DWORD audioBytes2;
     i32 hr = m_buffer->Lock(
                  0,
                  lockBytes,
-                 &audioPtr1,
+                 PtrOut(&audioPtr1),
                  &audioBytes1,
-                 &audioPtr2,
+                 PtrOut(&audioPtr2),
                  &audioBytes2,
                  DSBLOCK_ENTIREBUFFER
              )
@@ -649,26 +650,26 @@ i32 DirectSoundMgr::LockConvert(u8* src, u32 lockBytes, u32 convert) {
     } else {
 
         if (audioBytes1 > 0) {
-            char* d = static_cast<char*>(audioPtr1);
+            u8* d = audioPtr1;
             Pix16Ptr samples;
             samples.m_bytes = src;
             i16* s = samples.m_swords;
-            char* end = static_cast<char*>(audioPtr1) + audioBytes1;
+            u8* end = audioPtr1 + audioBytes1;
             while (d < end) {
-                *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
+                *d = static_cast<u8>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
                 ++d;
             }
         }
         if (audioBytes2 > 0) {
-            char* d = static_cast<char*>(audioPtr2);
+            u8* d = audioPtr2;
 
             Pix16Ptr samples;
             samples.m_bytes = src + audioBytes1;
             i16* s = samples.m_swords;
-            char* end = static_cast<char*>(audioPtr2) + audioBytes2;
+            u8* end = audioPtr2 + audioBytes2;
             while (d < end) {
-                *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
+                *d = static_cast<u8>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
                 ++d;
             }
@@ -798,22 +799,38 @@ RVA(0x00136370, 0xcc)
 i32 DirectSoundMgr::Lock(
     u32 off,
     u32 bytes,
-    void** audioPtr1,
+    u8** audioPtr1,
     DWORD* audioBytes1,
-    void** audioPtr2,
+    u8** audioPtr2,
     DWORD* audioBytes2,
     u32 flags
 ) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags) != 0;
+    i32 hr = m_buffer->Lock(
+                 off,
+                 bytes,
+                 PtrOut(audioPtr1),
+                 audioBytes1,
+                 PtrOut(audioPtr2),
+                 audioBytes2,
+                 flags
+             )
+             != 0;
     if (hr != 0) {
 
         if (hr == DSERR_BUFFERLOST) {
             if (m_reacquireOwner->ReacquireBuffer() != 0) {
-                hr = m_buffer
-                         ->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags)
+                hr = m_buffer->Lock(
+                         off,
+                         bytes,
+                         PtrOut(audioPtr1),
+                         audioBytes1,
+                         PtrOut(audioPtr2),
+                         audioBytes2,
+                         flags
+                     )
                      != 0;
                 if (hr != 0) {
                     GetErrorString(DSNDMGR_FILE, 0x37c, hr);

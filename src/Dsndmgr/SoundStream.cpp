@@ -39,7 +39,7 @@ i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
 }
 
 RVA(0x00137380, 0x10e)
-i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
+i32 StreamVoiceFeeder::Feed(u8* dst1, u32 n1, u32* got1, u8* dst2, u32 n2, u32* got2) {
     if (dst1 != NULL && n1 > 0) {
         u32 want = n1;
         if (m_sourceOffset + n1 > m_windowEnd) {
@@ -525,9 +525,9 @@ i32 StreamFeeder::Pause() {
 
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
-    void* lock1;
+    u8* lock1 = NULL;
     DWORD n1;
-    void* lock2;
+    u8* lock2 = NULL;
     DWORD n2;
     if (m_buffer->Lock(writePos, bytes, &lock1, &n1, &lock2, &n2, 0) == 0) {
         return 0;
@@ -546,11 +546,11 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     if (got1 < n1) {
         m_pendingBytes += n1 - got1;
 
-        memset(static_cast<char*>(lock1) + got1, m_silenceByte, n1 - got1);
+        memset(lock1 + got1, m_silenceByte, n1 - got1);
     }
     if (got2 < n2) {
         m_pendingBytes += n2 - got2;
-        memset(static_cast<char*>(lock2) + got2, m_silenceByte, n2 - got2);
+        memset(lock2 + got2, m_silenceByte, n2 - got2);
     }
     if (m_pendingBytes >= m_bufferLength) {
         Pause();

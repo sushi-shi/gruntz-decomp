@@ -11,7 +11,7 @@ class SoundDevice;
 class DirectSoundMgr;
 
 struct StreamFeeder {
-    virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) = 0;
+    virtual i32 Feed(u8* dst1, u32 n1, u32* got1, u8* dst2, u32 n2, u32* got2) = 0;
 
     virtual i32 FeedData();
     virtual void OnDrain();
@@ -57,7 +57,7 @@ struct StreamFeeder {
 
 struct StreamVoiceFeeder : StreamFeeder {
     StreamVoiceFeeder() {}
-    virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) OVERRIDE;
+    virtual i32 Feed(u8* dst1, u32 n1, u32* got1, u8* dst2, u32 n2, u32* got2) OVERRIDE;
     virtual i32 FeedData() OVERRIDE;
     virtual void OnDrain() OVERRIDE;
 };
