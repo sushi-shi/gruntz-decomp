@@ -28,7 +28,7 @@
         POSITION pos = (g)->m_coordList.GetHeadPosition();                                         \
         if (pos != 0) {                                                                            \
             do {                                                                                   \
-                void* d = (g)->CoordListOps()->NextData(pos);                                      \
+                Coord* d = static_cast<Coord*>((g)->CoordListOps()->NextData(pos));                \
                 if (d != 0) {                                                                      \
                     g_coordPool.Push(d);                                                           \
                 }                                                                                  \

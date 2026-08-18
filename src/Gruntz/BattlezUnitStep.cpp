@@ -120,7 +120,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
                 POSITION pos = g->m_coordList.GetHeadPosition();
                 if (pos != NULL) {
                     do {
-                        void* d = g->CoordListOps()->NextData(pos);
+                        Coord* d = static_cast<Coord*>(g->CoordListOps()->NextData(pos));
                         if (d != NULL) {
                             g_coordPool.Push(d);
                         }
@@ -278,7 +278,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                 if (unit->CoordCount() != 0) {
                     POSITION pos = unit->m_coordList.GetHeadPosition();
                     while (pos != NULL) {
-                        void* coord = unit->CoordListOps()->NextData(pos);
+                        Coord* coord = static_cast<Coord*>(unit->CoordListOps()->NextData(pos));
                         if (coord != NULL) {
                             g_coordPool.Push(coord);
                         }
@@ -330,7 +330,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                 do {
                     CoordNode* cur = n;
                     n = n->m_next;
-                    void* coord = cur->m_coord;
+                    Coord* coord = cur->m_coord;
                     if (coord != NULL) {
                         CoordPoolNode* slot = g_coordPool.NodeOf(coord);
                         slot->m_next = g_coordPool.m_freeHead;
@@ -352,7 +352,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     if (unit->CoordCount() != 0) {
         POSITION pos = unit->m_coordList.GetHeadPosition();
         while (pos != NULL) {
-            void* coord = unit->CoordListOps()->NextData(pos);
+            Coord* coord = static_cast<Coord*>(unit->CoordListOps()->NextData(pos));
             if (coord != NULL) {
                 g_coordPool.Push(coord);
             }
@@ -393,7 +393,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 POSITION pos = unit->m_coordList.GetHeadPosition();
                 if (pos != NULL) {
                     do {
-                        void* coord = unit->CoordListOps()->NextData(pos);
+                        Coord* coord = static_cast<Coord*>(unit->CoordListOps()->NextData(pos));
                         if (coord != NULL) {
                             g_coordPool.Push(coord);
                         }

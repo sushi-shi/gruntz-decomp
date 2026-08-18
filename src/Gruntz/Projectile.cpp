@@ -123,7 +123,7 @@ CProjectile::~CProjectile() {
         m_sound = NULL;
     }
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-        void* data = m_hitList.GetNext(pos);
+        Coord* data = static_cast<Coord*>(m_hitList.GetNext(pos));
         if (data != NULL) {
 
             CoordPoolNode* node = g_coordPool.NodeOf(data);
@@ -576,7 +576,7 @@ i32 CBoomerang::LoadProjectileSprites(
         if (g->CoordCount() != 0) {
             POSITION pos = g->m_coordList.GetHeadPosition();
             while (pos != NULL) {
-                void* data = g->m_coordList.GetNext(pos);
+                Coord* data = static_cast<Coord*>(g->m_coordList.GetNext(pos));
                 if (data != NULL) {
                     CoordPoolNode* p = g_coordPool.NodeOf(data);
                     p->m_next = g_coordPool.m_freeHead;
@@ -784,7 +784,7 @@ i32 CProjectile::SerializeMove(
             s->Read(&count, sizeof(count));
             for (i32 ci = 0; ci < count; ci++) {
                 CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-                void* payload = 0;
+                Coord* payload = NULL;
                 if (node->m_next != NULL) {
                     g_coordPool.m_freeHead = node->m_next;
                     payload = &node->m_coord;

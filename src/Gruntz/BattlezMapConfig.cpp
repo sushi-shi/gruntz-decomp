@@ -345,7 +345,7 @@ RVA(0x00025ca0, 0xbf)
 void CBattlezMapConfig::FreeArrays() {
     i32 i;
     for (i = 0; i < m_candArray.GetSize(); i++) {
-        void* p = m_candArray[i];
+        Coord* p = static_cast<Coord*>(m_candArray[i]);
         if (p != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
@@ -753,7 +753,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
                                         do {
-                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            Coord* d = static_cast<Coord*>(
+                                                unit->CoordListOps()->NextData(pos)
+                                            );
                                             if (d != NULL) {
                                                 g_coordPool.Push(d);
                                             }
@@ -870,7 +872,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
                                         do {
-                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            Coord* d = static_cast<Coord*>(
+                                                unit->CoordListOps()->NextData(pos)
+                                            );
                                             if (d != NULL) {
                                                 g_coordPool.Push(d);
                                             }
@@ -895,7 +899,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
                                         do {
-                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            Coord* d = static_cast<Coord*>(
+                                                unit->CoordListOps()->NextData(pos)
+                                            );
                                             if (d != NULL) {
                                                 g_coordPool.Push(d);
                                             }
@@ -919,7 +925,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         POSITION pos = unit->m_coordList.GetHeadPosition();
                                         if (pos != NULL) {
                                             do {
-                                                void* d = unit->CoordListOps()->NextData(pos);
+                                                Coord* d = static_cast<Coord*>(
+                                                    unit->CoordListOps()->NextData(pos)
+                                                );
                                                 if (d != NULL) {
                                                     g_coordPool.Push(d);
                                                 }
@@ -946,7 +954,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
                                         do {
-                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            Coord* d = static_cast<Coord*>(
+                                                unit->CoordListOps()->NextData(pos)
+                                            );
                                             if (d != NULL) {
                                                 g_coordPool.Push(d);
                                             }
@@ -1753,7 +1763,7 @@ arriveHead:
         POSITION pos = unit->m_coordList.GetHeadPosition();
         if (pos != NULL) {
             do {
-                void* d = unit->CoordListOps()->NextData(pos);
+                Coord* d = static_cast<Coord*>(unit->CoordListOps()->NextData(pos));
                 if (d != NULL) {
                     g_coordPool.Push(d);
                 }
@@ -2499,7 +2509,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 flags
             ) != 0
             && list.GetCount() != 0) {
-            void* head = list.RemoveHead();
+            Coord* head = static_cast<Coord*>(list.RemoveHead());
             if (head != NULL) {
                 CoordPoolNode* n = g_coordPool.NodeOf(head);
                 n->m_next = g_coordPool.m_freeHead;
@@ -2980,7 +2990,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     }
 
     for (j = 0; j < m_attackWaypoints.GetSize(); j++) {
-        void* q = m_attackWaypoints[j];
+        Coord* q = static_cast<Coord*>(m_attackWaypoints[j]);
         if (q != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(q);
             node->m_next = g_coordPool.m_freeHead;
@@ -2992,7 +3002,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     m_attackWaypoints.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
-        void* payload = 0;
+        Coord* payload = NULL;
         if (node->m_next != NULL) {
             payload = &node->m_coord;
             g_coordPool.m_freeHead = node->m_next;
@@ -3002,7 +3012,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     }
 
     for (j = 0; j < m_candArray.GetSize(); j++) {
-        void* q = m_candArray[j];
+        Coord* q = static_cast<Coord*>(m_candArray[j]);
         if (q != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(q);
             node->m_next = g_coordPool.m_freeHead;
@@ -3014,7 +3024,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     m_candArray.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
-        void* payload = 0;
+        Coord* payload = NULL;
         if (node->m_next != NULL) {
             payload = &node->m_coord;
             g_coordPool.m_freeHead = node->m_next;
@@ -3437,7 +3447,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     0
                                 ) != 0
                                 && path.GetCount() != 0) {
-                                void* head = path.RemoveHead();
+                                Coord* head = static_cast<Coord*>(path.RemoveHead());
                                 if (head != NULL) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(head);
                                     node->m_next = g_coordPool.m_freeHead;
@@ -4432,7 +4442,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                             )
                             != 0) {
                             if (list.GetHeadPosition() != NULL) {
-                                void* head = list.RemoveHead();
+                                Coord* head = static_cast<Coord*>(list.RemoveHead());
                                 if (head != NULL) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(head);
                                     node->m_next = g_coordPool.m_freeHead;
@@ -4838,7 +4848,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
             )
             != 0) {
             if (list.GetCount() != 0) {
-                void* head = list.RemoveHead();
+                Coord* head = static_cast<Coord*>(list.RemoveHead());
                 if (head != NULL) {
                     CoordPoolNode* node = g_coordPool.NodeOf(head);
                     node->m_next = g_coordPool.m_freeHead;
@@ -4885,7 +4895,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
     Coord cur;
     CoordNode* n;
     CoordNode* p;
-    void* head;
+    Coord* head;
     CoordPoolNode* node;
     POSITION qp;
 
@@ -4925,7 +4935,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
     if (list.GetCount() == 0) {
         goto fail;
     }
-    head = list.RemoveHead();
+    head = static_cast<Coord*>(list.RemoveHead());
     if (head != NULL) {
         node = g_coordPool.NodeOf(head);
         node->m_next = g_coordPool.m_freeHead;
@@ -5281,7 +5291,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         )
         != 0) {
         if (list.GetCount() != 0) {
-            void* head = list.RemoveHead();
+            Coord* head = static_cast<Coord*>(list.RemoveHead());
             if (head != NULL) {
                 CoordPoolNode* node = g_coordPool.NodeOf(head);
                 node->m_next = g_coordPool.m_freeHead;

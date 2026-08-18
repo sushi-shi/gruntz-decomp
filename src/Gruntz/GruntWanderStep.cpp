@@ -101,7 +101,7 @@ i32 CGrunt::WanderStep() {
                     if (CoordCount() != 0) {
                         POSITION pos = m_coordList.GetHeadPosition();
                         while (pos != NULL) {
-                            void* data = m_coordList.GetNext(pos);
+                            Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
                             if (data != NULL) {
                                 g_coordPool.Push(data);
                             }
@@ -186,7 +186,7 @@ i32 CGrunt::WanderStep() {
 
                 POSITION pos = m_coordList.GetHeadPosition();
                 while (pos != NULL) {
-                    void* data = m_coordList.GetNext(pos);
+                    Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
                     if (data != NULL) {
                         g_coordPool.Push(data);
                     }
@@ -231,7 +231,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 POSITION pos = m_coordList.GetHeadPosition();
                 while (pos != NULL) {
-                    void* data = m_coordList.GetNext(pos);
+                    Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
                     if (data != NULL) {
                         CoordPoolNode* fslot = g_coordPool.NodeOf(data);
                         fslot->m_next = g_coordPool.m_freeHead;

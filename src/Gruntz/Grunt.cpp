@@ -466,7 +466,7 @@ void CGrunt::OnObjectRemoved() {
 
         POSITION pos = m_coordList.GetHeadPosition();
         while (pos != NULL) {
-            void* buf = m_coordList.GetNext(pos);
+            Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
             if (buf) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(buf);
                 slot->m_next = g_coordPool.m_freeHead;
@@ -1469,14 +1469,14 @@ i32 CGrunt::StepGruntMovement() {
                 goto label_4c6e4;
             }
             {
-                void* node = 0;
+                Coord* node = NULL;
                 CoordPoolNode* head = g_coordPool.m_freeHead;
                 if (head->m_next != NULL) {
                     node = &head->m_coord;
                     g_coordPool.m_freeHead = head->m_next;
                 }
-                (static_cast<i32*>(node))[0] = tgtTileX;
-                (static_cast<i32*>(node))[1] = tgtTileY;
+                node->m_x = tgtTileX;
+                node->m_y = tgtTileY;
                 m_coordList.AddHead(node);
             }
             if (PathScan() == 0) {
@@ -1825,7 +1825,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
 
         POSITION pos = m_coordList.GetHeadPosition();
         while (pos != NULL) {
-            void* buf = m_coordList.GetNext(pos);
+            Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
             if (buf) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(buf);
                 slot->m_next = g_coordPool.m_freeHead;

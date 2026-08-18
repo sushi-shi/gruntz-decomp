@@ -430,7 +430,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
             POSITION pos = m_coordList.GetHeadPosition();
             while (pos != NULL) {
-                void* buf = m_coordList.GetNext(pos);
+                Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
                 if (buf != NULL) {
                     g_coordPool.Push(buf);
                 }

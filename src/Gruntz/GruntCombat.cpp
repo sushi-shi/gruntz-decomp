@@ -818,7 +818,7 @@ i32 CGrunt::PathScan() {
                             POSITION pos = m_coordList.GetHeadPosition();
                             if (pos != NULL) {
                                 do {
-                                    void* d = m_coordList.GetNext(pos);
+                                    Coord* d = static_cast<Coord*>(m_coordList.GetNext(pos));
                                     if (d != NULL) {
                                         g_coordPool.Push(d);
                                     }
@@ -838,7 +838,7 @@ i32 CGrunt::PathScan() {
                                 }
                             } while (p != NULL);
                         }
-                        void* elem = s.RemoveHead();
+                        Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
                             FREELIST_PUSH(elem);
                         }
@@ -923,7 +923,7 @@ i32 CGrunt::PathScan() {
                     // success `mov eax,1` at 0x5867c, and both count gates (0x584a5, 0x584d3)
                     // `je` forward into it.  Nested positive gates put it there.
                     if (s.GetCount() != 0) {
-                        void* elem = s.RemoveHead();
+                        Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
                             FREELIST_PUSH(elem);
                         }
@@ -933,8 +933,9 @@ i32 CGrunt::PathScan() {
                                 POSITION pos = m_coordList.GetHeadPosition();
                                 if (pos != NULL) {
                                     do {
-                                        void* d =
-                                            static_cast<CGruntCoordList*>(coordz)->NextData(pos);
+                                        Coord* d = static_cast<Coord*>(
+                                            static_cast<CGruntCoordList*>(coordz)->NextData(pos)
+                                        );
                                         if (d != NULL) {
                                             g_coordPool.Push(d);
                                         }
@@ -963,7 +964,7 @@ i32 CGrunt::PathScan() {
                                 )
                                 != 0) {
                                 if (s.GetCount() != 0) {
-                                    void* e2 = s.RemoveHead();
+                                    Coord* e2 = static_cast<Coord*>(s.RemoveHead());
                                     if (e2 != NULL) {
                                         FREELIST_PUSH(e2);
                                     }

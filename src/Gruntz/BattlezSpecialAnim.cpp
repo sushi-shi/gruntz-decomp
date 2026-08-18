@@ -60,7 +60,7 @@ void CGrunt::RecycleCoords() {
         do {
             CoordNode* cur = n;
             n = n->m_next;
-            void* coord = cur->m_coord;
+            Coord* coord = cur->m_coord;
             if (coord != NULL) {
 
                 CoordPoolNode* slot = g_coordPool.NodeOf(coord);
