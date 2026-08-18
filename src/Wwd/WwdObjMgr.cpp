@@ -946,12 +946,12 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
 }
 
 RVA(0x0015a9a0, 0x23)
-CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (WwdKey(obj) == key) {
+        if (obj->m_objectId == objectId) {
             return obj;
         }
     }
@@ -959,12 +959,12 @@ CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
 }
 
 RVA(0x0015a9d0, 0x45)
-CWwdGameObject* CDDrawChildGroup::FindByStatusKey(void* key) {
+CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && WwdKey(obj) == key) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_objectId == objectId) {
             return obj;
         }
     }

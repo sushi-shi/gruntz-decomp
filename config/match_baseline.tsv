@@ -2750,7 +2750,7 @@ ingameicon	?RegisterIconActions@@YAXXZ	100.0000	100.0000	1	48bcade44a85	0x979e0	
 ingameicon	?RegisterIconState@@YAXXZ	100.0000	100.0000	1	0a011fe80102	0x97f40	100.0000	
 ingameicon	?RegisterTextLogic@@YAXXZ	100.0000	100.0000	1	ae1a88d85c0c	0x995c0	100.0000	
 ingameicon	?Reposition@CInGameIcon@@QAEHXZ	97.4286	97.4286	3	26aad1541db2	0x98a90	97.4286	
-ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	86.8858	86.8858	6	e3738caaf514	0x98c90	90.7994	
+ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	86.8858	86.8858	7	8ebb79849b23	0x98c90	90.7994	
 ingameicon	?SerializeMove@CInGameText@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	f88d43eb5ae4	0x99a30	100.0000	
 ingameicon	?SerializeMove@CToyPeek@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	aff4d5def44e	0x983e0	100.0000	
 ingameicon	?SetupSprite@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	2	6ffee4a54d9b	0x99b10	100.0000	
@@ -3365,7 +3365,7 @@ play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	1	3b726a3aafe1	0xd72c0	10
 play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	1	bf1877601d3d	0xda3b0	100.0000	
 play	?ClampViewport2@CPlay@@QAEHH@Z	91.2653	91.2653	1	3da228a05b00	0xd8ed0	91.2653	
 play	?ClampViewport@CPlay@@QAEHH@Z	100.0000	100.0000	1	c386e9d809e4	0xd8dc0	100.0000	
-play	?ClearPlacedObjects@CPlay@@QAEHXZ	96.8333	96.8333	3	94a495c85610	0xda030	96.8333	
+play	?ClearPlacedObjects@CPlay@@QAEHXZ	96.8333	96.8333	4	ee6a5cd4d25a	0xda030	96.8333	
 play	?CompleteLevel@CPlay@@UAEHXZ	100.0000	100.0000	1	3db82f9133d1	0xcfbd0	100.0000	
 play	?CountObjectsByCategory@CPlay@@UAEHH@Z	100.0000	100.0000	1	3b158ed23ee8	0xd0050	100.0000	
 play	?DeactivateDistantObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	1	7f935445c424	0xcee10	100.0000	
@@ -4576,7 +4576,7 @@ wwdgameobject	?IsLoaded@AnimWorkerObj@@UAEHXZ	100.0000	100.0000	1	8cbd8c821cc7	0
 wwdgameobject	?LoadFrame@CDDrawWorker@@UAEPAVCImage@@PADHH@Z	100.0000	100.0000	1	3c4069a06bff	0x151fb0	100.0000	
 wwdgameobject	?LookupAnimSprite@CWwdGameObjectA@@QAEHPBD@Z	91.3043	91.3043	1	b6b07dd130df	0x150610	91.3043	
 wwdgameobject	?NotifyHooked@CGameObject@@QAEHH@Z	100.0000	100.0000	1	1c14fc02e422	0x151d20	100.0000	
-wwdgameobject	?Play@CGameObject@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAU1@@Z	92.9655	92.9655	4	58a1f5e1aaec	0x151150	92.9655	
+wwdgameobject	?Play@CGameObject@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAU1@@Z	92.9655	92.9655	5	fa82fddddc0a	0x151150	92.9655	
 wwdgameobject	?Play@CWwdGameObjectA@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	c31b5e9366ef	0x150a70	100.0000	
 wwdgameobject	?ReadState@CWwdGameObjectA@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	388c8baf4b7c	0x150b00	100.0000	
 wwdgameobject	?ReloadFrame@CDDrawWorker@@UAEHPAUCParseSource@@HH@Z	100.0000	100.0000	1	9111c3cd8f1b	0x1523b0	100.0000	
@@ -4654,11 +4654,11 @@ wwdobjmgr	?DrawObjectCounts@CDDrawChildGroup@@QAEXXZ	89.2920	89.2920	1	38e371a42
 wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	93.7333	93.7333	1	3e911172d060	0x15a210	93.7333	
 wwdobjmgr	?Find@CDDrawChildGroup@@QAEPAUCGameObject@@HPBD@Z	91.8793	91.8793	2	cfab9f1fb5ae	0x15a8c0	91.8793	
 wwdobjmgr	?FindByIdAndCollisionCategory@CDDrawChildGroup@@QAEPAVCWwdGameObject@@HI@Z	100.0000	100.0000	1	64b1242d059b	0x15a940	100.0000	
-wwdobjmgr	?FindByKey@CDDrawChildGroup@@QAEPAVCWwdGameObject@@PAX@Z	100.0000	100.0000	1	3717c235a6f9	0x15a9a0	100.0000	
-wwdobjmgr	?FindByStatusKey@CDDrawChildGroup@@QAEPAVCWwdGameObject@@PAX@Z	100.0000	100.0000	1	7c31898363c8	0x15a9d0	100.0000	
+wwdobjmgr	?FindByObjectId@CDDrawChildGroup@@QAEPAVCWwdGameObject@@H@Z	100.0000	100.0000	2	9e8240b9e242	0x15a9a0	100.0000	
 wwdobjmgr	?FindByType04@CDDrawChildGroup@@QAEPAVCWwdGameObject@@H@Z	100.0000	100.0000	1	f6097fc74b5f	0x15a7f0	100.0000	
 wwdobjmgr	?FindByTypeProbe@CDDrawChildGroup@@QAEPAVCWwdGameObject@@H@Z	100.0000	100.0000	1	e840780b14c0	0x15a810	100.0000	
 wwdobjmgr	?FindByWorker@CDDrawChildGroup@@QAEPAVCWwdGameObject@@HPAUAnimWorkerObj@@@Z	100.0000	100.0000	2	c8a0eaa3d6cb	0x15a860	100.0000	
+wwdobjmgr	?FindSerialRefByObjectId@CDDrawChildGroup@@QAEPAVCWwdGameObject@@H@Z	100.0000	100.0000	2	40b750ad8718	0x15a9d0	100.0000	
 wwdobjmgr	?ForEachDispatch@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@@Z	86.8182	86.8182	2	9fdaf24067c9	0x15ac20	100.0000	
 wwdobjmgr	?ForEachProbe@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId@@@Z	92.9388	92.9388	2	19fd249cdf65	0x15acb0	100.0000	
 wwdobjmgr	?ForEachSerialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId@@@Z	97.9240	97.9240	2	d4e109562625	0x15b020	100.0000	

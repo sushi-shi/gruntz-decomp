@@ -111,8 +111,8 @@ public:
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
     CGameObject* Find(i32 id, const char* key);
-    CWwdGameObject* FindByKey(void* key);
-    CWwdGameObject* FindByStatusKey(void* key);
+    CWwdGameObject* FindByObjectId(i32 objectId);
+    CWwdGameObject* FindSerialRefByObjectId(i32 objectId);
     i32 IsKindUnique(i32 kind);
     i32 CountByKind(i32 kind);
     i32 SumWeighted();
