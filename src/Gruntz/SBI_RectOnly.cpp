@@ -70,6 +70,7 @@
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
+#include <Utils/MfcTyped.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/ScreenGeometry.h>
 
@@ -3963,7 +3964,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
-    Coord* node = 0;
+    Coord* node = NULL;
     if (head->m_next != NULL) {
         node = &head->m_coord;
         node->m_x = a;
@@ -3973,9 +3974,9 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
     if (i < n) {
-        void** t = m_ptrPool.GetData();
+        Coord** t = MfcPtrArrayData<Coord>(m_ptrPool);
         while (i < n) {
-            Coord* e = static_cast<Coord*>(*t);
+            Coord* e = *t;
             if (e != NULL && b < e->m_y) {
                 goto insert;
             }
