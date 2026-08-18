@@ -12,6 +12,7 @@
 #include <Enums.h>
 #include <Gruntz/QuestLevel.h>
 #include <Image/CImage.h>
+#include <Utils/MapTyped.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -367,22 +368,22 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        void* val = NULL;
-        srcMap->GetNextAssoc(pos, key, val);
+        LeafCue* value = NULL;
+        MapGetNext(*srcMap, pos, key, value);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
             if (found != NULL) {
                 found->m_flag = 1;
             } else {
-                toAdd.AddTail(val);
+                toAdd.AddTail(value);
             }
         }
     }
 
     pos = toAdd.GetHeadPosition();
     while (pos != NULL) {
-        void* obj = toAdd.GetNext(pos);
-        entry->m_soundRegistry->RemoveByValue(static_cast<LeafCue*>(obj));
+        LeafCue* obj = static_cast<LeafCue*>(toAdd.GetNext(pos));
+        entry->m_soundRegistry->RemoveByValue(obj);
     }
     toAdd.RemoveAll();
 
@@ -435,22 +436,22 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        void* val = NULL;
-        srcMap->GetNextAssoc(pos, key, val);
+        CAniElement* value = NULL;
+        MapGetNext(*srcMap, pos, key, value);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
             if (found != NULL) {
                 found->m_flag = 1;
             } else {
-                toAdd.AddTail(val);
+                toAdd.AddTail(value);
             }
         }
     }
 
     pos = toAdd.GetHeadPosition();
     while (pos != NULL) {
-        void* obj = toAdd.GetNext(pos);
-        entry->m_animRegistry->RemoveValue(static_cast<CAniElement*>(obj));
+        CAniElement* obj = static_cast<CAniElement*>(toAdd.GetNext(pos));
+        entry->m_animRegistry->RemoveValue(obj);
     }
     toAdd.RemoveAll();
 

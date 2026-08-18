@@ -13,6 +13,7 @@
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/RezMgr.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
@@ -277,9 +278,8 @@ i32 CAmbientSound::InitFromKey(
     RECT* box,
     i32 scaleB
 ) {
-    void* out_ob = 0;
-    world->m_cues.Lookup(key, out_ob);
-    AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
+    AmbSoundRecord* out = NULL;
+    MapLookup(world->m_cues, key, out);
     if (out == NULL) {
         return 0;
     }
@@ -552,9 +552,8 @@ i32 CAmbientPosSound::InitFromKey(
     AmbientPoint* pos,
     i32 scaleB
 ) {
-    void* out_ob = 0;
-    world->m_cues.Lookup(key, out_ob);
-    AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
+    AmbSoundRecord* out = NULL;
+    MapLookup(world->m_cues, key, out);
     if (out == NULL) {
         return 0;
     }

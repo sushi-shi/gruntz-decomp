@@ -15,6 +15,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -73,9 +74,9 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
                 m_value = NULL;
             } else {
                 CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
-                void* val = 0;
-                map->Lookup(name, val);
-                m_value = static_cast<CAniElement*>(val);
+                CAniElement* value = NULL;
+                MapLookup(*map, name, value);
+                m_value = value;
             }
             break;
         }

@@ -4,6 +4,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GruntzCommandId.h>
+#include <Utils/MapTyped.h>
 
 #include <stddef.h>
 
@@ -66,10 +67,10 @@ void CCheatMgr::Empty() {
     CString key;
     if (pos != static_cast<POSITION>(0)) {
         do {
-            void* value = 0;
-            m_map.GetNextAssoc(pos, key, value);
+            CheatEntry* value = NULL;
+            MapGetNext(m_map, pos, key, value);
             if (value != NULL) {
-                delete static_cast<CheatEntry*>(value);
+                delete value;
             }
         } while (pos != static_cast<POSITION>(0));
     }
@@ -94,9 +95,9 @@ void CCheatMgr::Empty() {
 // @early-stop
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
-    void* existing = 0;
-
-    void* hit = m_map.Lookup(code, existing) ? existing : NULL;
+    CheatEntry* existing = NULL;
+    MapLookup(m_map, code, existing);
+    CheatEntry* hit = existing;
     if (hit != NULL) {
         return FALSE;
     }
@@ -191,10 +192,8 @@ BOOL CCheatMgr::CheckCode(CString code) {
 
 
 
-    void* value = 0;
-    CheatEntry* found = m_map.Lookup(static_cast<const char*>(code), value)
-                            ? static_cast<CheatEntry*>(value)
-                            : 0;
+    CheatEntry* value = NULL;
+    CheatEntry* found = MapLookup(m_map, static_cast<const char*>(code), value) ? value : NULL;
     if (found == NULL) {
         return FALSE;
     }
