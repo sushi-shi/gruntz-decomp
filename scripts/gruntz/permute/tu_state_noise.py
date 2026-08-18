@@ -866,7 +866,7 @@ def target_state_identity(metrics: dict) -> str:
     """Stable identity for target bytes, extent, and relocation topology."""
     relocations = [
         _COMPILER_PRIVATE_COUNTER.sub(r"\1#", row)
-        for row in metrics.get("reloc_stream", [])
+        for row in comparable_reloc_stream(metrics)
     ]
     payload = {
         "size": metrics.get("objdiff_size", metrics.get("size")),

@@ -115,6 +115,30 @@ def topology_result_rank(row: dict):
     return (*topology_rank(row["topology"], row["score"]), row["trial"])
 
 
+def retain_frontier_candidate(
+    frontier: dict, frontier_limit: int, state_id: str, rank: tuple,
+    row: dict, source: bytes, candidate_obj: Path, scratch: Path,
+) -> None:
+    """Keep the best representative of the top distinct target states."""
+    prior = frontier.get(state_id)
+    if prior is not None and rank >= prior["rank"]:
+        return
+    frontier_obj = scratch / f"frontier-{state_id}.obj"
+    shutil.copyfile(candidate_obj, frontier_obj)
+    frontier[state_id] = {
+        "rank": rank,
+        "row": row,
+        "source": source,
+        "object": frontier_obj,
+    }
+    if len(frontier) > frontier_limit:
+        evicted_state, evicted = max(
+            frontier.items(), key=lambda item: item[1]["rank"]
+        )
+        evicted["object"].unlink(missing_ok=True)
+        del frontier[evicted_state]
+
+
 def parse_axis_extra_edit(
     raw_edit: dict, original: bytes, axis_name: str, option_name: str,
 ) -> Edit:
@@ -392,6 +416,14 @@ def main(argv=None) -> int:
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--limit", type=int, default=4096)
     parser.add_argument("--top", type=int, default=12)
+    parser.add_argument(
+        "--frontier", type=int, default=4,
+        help="retain this many highest-scoring distinct target states for agent inspection",
+    )
+    parser.add_argument(
+        "--continue-after-exact", action="store_true",
+        help="finish the bounded matrix after exact so its distinct frontier is retained",
+    )
     parser.add_argument("--compile-timeout", type=float, default=120.0)
     parser.add_argument(
         "--wall-time-seconds", type=float, default=1200.0,
@@ -403,9 +435,9 @@ def main(argv=None) -> int:
         help="print the best candidate object disassembly before deleting disposable artifacts",
     )
     args = parser.parse_args(argv)
-    if (args.limit < 1 or args.top < 1 or args.compile_timeout <= 0
+    if (args.limit < 1 or args.top < 1 or args.frontier < 1 or args.compile_timeout <= 0
             or args.wall_time_seconds <= 0):
-        parser.error("--limit, --top, --compile-timeout, and wall time must be positive")
+        parser.error("--limit, --top, --frontier, timeouts, and wall time must be positive")
 
     root = project_root()
     try:
@@ -457,6 +489,7 @@ def main(argv=None) -> int:
     best_topology_object_rank = None
     best_disasm = None
     best_topology_disasm = None
+    frontier_by_state = {}
     original_handler = signal.getsignal(signal.SIGTERM)
     restoration_conflict = False
     stopped_by_wall_time = False
@@ -618,6 +651,10 @@ def main(argv=None) -> int:
                 if score not in state["scores"]:
                     state["scores"].append(score)
                 rank = result_rank(row, target.retail_size, retail_target["relocs"])
+                retain_frontier_candidate(
+                    frontier_by_state, args.frontier, state_id, rank, row,
+                    candidate, candidate_obj, scratch,
+                )
                 if args.show_best_disasm and (
                     best_object_rank is None or rank < best_object_rank
                 ):
@@ -643,7 +680,7 @@ def main(argv=None) -> int:
                     exact_choices = dict(labels)
                 candidate_obj.unlink(missing_ok=True)
                 Path(str(candidate_obj) + ".d").unlink(missing_ok=True)
-                if exact_source is not None:
+                if exact_source is not None and not args.continue_after_exact:
                     break
             if args.show_best_disasm and best_object_rank is not None:
                 command = [
@@ -660,6 +697,55 @@ def main(argv=None) -> int:
                     best_topology_disasm = (
                         topology_disassembly.stdout + topology_disassembly.stderr
                     )
+            retained_frontier = sorted(
+                frontier_by_state.values(), key=lambda item: item["rank"]
+            )
+            frontier_dir = output / "frontier"
+            frontier_dir.mkdir()
+            retail_command = [
+                "llvm-objdump", "-dr", f"--disassemble-symbols={target.symbol}",
+                str(target_obj),
+            ]
+            retail_disassembly = subprocess.run(
+                retail_command, capture_output=True, text=True
+            )
+            (frontier_dir / "retail.asm").write_text(
+                retail_disassembly.stdout + retail_disassembly.stderr
+            )
+            frontier_summary = []
+            for frontier_index, record in enumerate(retained_frontier, 1):
+                row = record["row"]
+                stem = f"{frontier_index:02d}-trial-{row['trial']:04d}"
+                state_bearing = any(
+                    "tu_state_" in value for value in row["choices"].values()
+                )
+                source_suffix = "-disposable.cpp" if state_bearing else ".cpp"
+                (frontier_dir / f"{stem}{source_suffix}").write_bytes(record["source"])
+                shutil.copyfile(record["object"], frontier_dir / f"{stem}.obj")
+                command = [
+                    "llvm-objdump", "-dr", f"--disassemble-symbols={target.symbol}",
+                    str(record["object"]),
+                ]
+                disassembly = subprocess.run(command, capture_output=True, text=True)
+                (frontier_dir / f"{stem}.asm").write_text(
+                    disassembly.stdout + disassembly.stderr
+                )
+                frontier_summary.append({
+                    "rank": frontier_index,
+                    "trial": row["trial"],
+                    "state_id": row["state_id"],
+                    "score": row["score"],
+                    "score_delta": row["score_delta"],
+                    "choices": row["choices"],
+                    "topology": row["topology"],
+                    "disposable_tu_state": state_bearing,
+                    "source": f"{stem}{source_suffix}",
+                    "object": f"{stem}.obj",
+                    "assembly": f"{stem}.asm",
+                })
+            (frontier_dir / "frontier.json").write_text(
+                json.dumps(frontier_summary, indent=2) + "\n"
+            )
     except KeyboardInterrupt:
         print("interrupted; source restored", file=sys.stderr)
         source_lock.close()
@@ -698,12 +784,24 @@ def main(argv=None) -> int:
         "unique_source_count": len(seen),
         "elapsed_seconds": time.perf_counter() - started,
         "wall_time_seconds": args.wall_time_seconds,
+        "continue_after_exact": args.continue_after_exact,
         "stopped_by_wall_time": stopped_by_wall_time,
         "source_restored": source.read_bytes() == original,
         "baseline": baseline_summary,
         "best": ranked[0] if ranked else None,
         "best_topology": topology_ranked[0] if topology_ranked else None,
         "state_count": len(states),
+        "frontier_count": len(frontier_by_state),
+        "frontier_limit": args.frontier,
+        "frontier": [
+            {
+                "trial": record["row"]["trial"],
+                "state_id": record["row"]["state_id"],
+                "score": record["row"]["score"],
+                "choices": record["row"]["choices"],
+            }
+            for record in sorted(frontier_by_state.values(), key=lambda item: item["rank"])
+        ],
         "states": sorted(
             states.values(),
             key=lambda state: (-state["score"], state["size"], state["state_id"]),

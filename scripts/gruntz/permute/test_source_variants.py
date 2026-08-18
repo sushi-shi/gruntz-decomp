@@ -88,6 +88,21 @@ class BatchSourceVariantTests(unittest.TestCase):
         lower = {"score": 98.0, "candidate_size": 10, "candidate_relocs": 2, "trial": 1}
         self.assertLess(batch.result_rank(best, 10, 2), batch.result_rank(lower, 10, 2))
 
+    def test_frontier_keeps_highest_distinct_states(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scratch = Path(directory)
+            candidate = scratch / "candidate.obj"
+            frontier = {}
+            for state, score in (("a", 90), ("b", 95), ("a", 92), ("c", 91)):
+                candidate.write_bytes(state.encode())
+                row = {"score": score}
+                batch.retain_frontier_candidate(
+                    frontier, 2, state, (-score,), row, state.encode(),
+                    candidate, scratch,
+                )
+            self.assertEqual(set(frontier), {"a", "b"})
+            self.assertEqual(frontier["a"]["row"]["score"], 92)
+
 
 class AstVariantTests(unittest.TestCase):
     def test_marker_span_uses_real_rva_markers(self):

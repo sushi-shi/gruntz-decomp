@@ -47,7 +47,7 @@ class TuStateNoiseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exceeds --trials"):
             noise.select_variants(left, (13,), 12)
 
-    def test_state_identity_masks_only_compiler_private_ordinals(self):
+    def test_state_identity_folds_nonsemantic_compiler_scaffolding(self):
         base = {
             "objdiff_size": 4,
             "text_sha": "same",
@@ -58,6 +58,14 @@ class TuStateNoiseTests(unittest.TestCase):
         self.assertEqual(
             noise.target_state_identity(base),
             noise.target_state_identity(renumbered),
+        )
+        local_label = dict(base)
+        local_label["reloc_stream"] = ["00000000:0006:$L456:00000000"]
+        other_local_label = dict(base)
+        other_local_label["reloc_stream"] = ["00000000:0006:$L999:00000000"]
+        self.assertEqual(
+            noise.target_state_identity(local_label),
+            noise.target_state_identity(other_local_label),
         )
         changed = dict(base, text_sha="different")
         self.assertNotEqual(

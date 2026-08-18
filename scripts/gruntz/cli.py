@@ -16,7 +16,7 @@
                                      xref, rva, vtable, classof, strings, ...)
     gruntz walls <sub>               the wall campaign: inventory, diagnose,
                                      inline-model
-    gruntz permute state|variants    controlled TU-state or reviewed source search
+    gruntz permute <verb>            classified state/variant search or island campaign
     gruntz ghidra <sub>              one-way viewer export: the retail image
                                      as a labelled Ghidra project (build,
                                      update, verify, status, export)
@@ -62,14 +62,21 @@ def main(argv: list[str] | None = None) -> int:
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
     if cmd == "permute":
         if not rest or rest[0] in ("-h", "--help"):
-            print("gruntz permute state --source <tu.cpp> --rva <rva> [options]\n"
+            print("gruntz permute candidates [options]\n"
+                  "gruntz permute campaign [--rva <rva>] [options]\n"
+                  "gruntz permute state --source <tu.cpp> --rva <rva> [options]\n"
                   "gruntz permute variants <tu.cpp> <rva> [options]\n"
+                  "  candidates: classify every live source-owned residual\n"
+                  "  campaign: run N islands and retain M distinct best solutions\n"
                   "  state: classified, disposable compiler-state search\n"
                   "  variants: reviewed exact axes x AST shapes x TU state")
             return 0 if rest else 2
+        if rest[0] in ("candidates", "campaign"):
+            from gruntz.permute.campaign import main as campaign_main
+            return campaign_main(rest)
         if rest[0] not in ("state", "variants"):
             print("gruntz permute: unknown verb " + repr(rest[0])
-                  + " (have: state, variants)", file=sys.stderr)
+                  + " (have: candidates, campaign, state, variants)", file=sys.stderr)
             return 2
         verb, permute_args = rest[0], rest[1:]
         if any(value in ("-h", "--help") for value in permute_args):
