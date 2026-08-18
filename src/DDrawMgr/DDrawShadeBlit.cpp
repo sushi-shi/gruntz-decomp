@@ -90,14 +90,14 @@ void CDDrawShadeBlit::Teardown() {
 // @early-stop
 RVA(0x00148d40, 0x202)
 i32 CDDrawShadeBlit::BuildRle(
-    void* pixels,
+    u8* pixels,
     i32 width,
     i32 height,
     i32 stride,
     i32 keyVal,
     PALETTEENTRY* palette
 ) {
-    u8* src = static_cast<u8*>(pixels);
+    u8* src = pixels;
     if (src == NULL) {
         return 0;
     }
@@ -170,7 +170,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
         return 0;
     }
     m_colorKey = keyVal;
-    void* bits = surf->Lock(0);
+    u8* bits = static_cast<u8*>(surf->Lock(0));
     if (bits == NULL) {
         return 0;
     }

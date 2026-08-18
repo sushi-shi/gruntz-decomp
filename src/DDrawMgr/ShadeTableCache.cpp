@@ -692,7 +692,7 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
 }
 
 RVA(0x0014f8b0, 0x1b0)
-CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
+CShadeTable* CShadeTableCache::AddFromBuffer(u8* data, i32 size) {
     CShadeTable* t = new CShadeTable;
     i32 oldSize = m_arr.m_nSize;
     i32 newSize = oldSize + 1;
@@ -738,7 +738,7 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         m_arr.m_nMaxSize = newMax;
     }
     m_arr.m_pData[oldSize] = t;
-    if (!t->LoadFromMem(const_cast<char*>(name), size, 0)) {
+    if (!t->LoadFromMem(data, size, 0)) {
         FindRemove(t);
         return 0;
     }

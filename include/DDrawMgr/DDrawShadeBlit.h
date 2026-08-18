@@ -29,8 +29,7 @@ struct CImageFrameRebuildDesc {
 class CDDrawShadeBlit {
 public:
     CDDrawShadeBlit();
-    i32
-    BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal, PALETTEENTRY* palette);
+    i32 BuildRle(u8* pixels, i32 width, i32 height, i32 stride, i32 keyVal, PALETTEENTRY* palette);
     i32 LoadFromFile(CString name, ColorDepth fmt);
 
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette);

@@ -41,7 +41,7 @@ public:
     void B(CRezImage* node, CImagePaletteNode* paletteNode, i32 b);
 
     CRezImage* AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag);
-    CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, ColorDepth bitCount, i32 flag);
+    CRezImage* AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, i32 flag);
     CRezImage* AddSurfaceOp(void* buf, RezDecodeKind kind, i32 ctrl);
     CRezImage* AddSurfaceRez(char* name, i32 ctrl);
     CRezImage* AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal);

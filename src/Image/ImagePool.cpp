@@ -127,7 +127,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount,
 
 RVA(0x001750e0, 0x103)
 CRezImage*
-CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, ColorDepth bitCount, i32 flag) {
+CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
     if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == 0) {
@@ -363,14 +363,14 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcoun
 
 // @early-stop
 RVA(0x00175930, 0xc6)
-i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
+i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
     if (m_rowPad == 0) {
         memcpy(m_pixels, src, static_cast<u32>((m_stride * m_height * IDX(bitcount))) >> 3);
     } else {
-        char* s = static_cast<char*>(src);
+        u8* s = src;
         for (i32 row = 0; row < m_height; row++) {
             memcpy(m_pixels + m_rowOffsets[row], s, m_width);
             s += m_width;
@@ -620,12 +620,9 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(PidHeader* buf, HDC dc, i32 ctrl) {
 
-    i32* p = &buf->width;
-    i32 width = *p++;
-    i32 height = *p;
-    p += 5;
-
-    i32 ok = DecodeBlit(p, dc, width, height, BPP_PALETTED_8, ctrl);
+    i32 width = buf->width;
+    i32 height = buf->height;
+    i32 ok = DecodeBlit(buf->pixels, dc, width, height, BPP_PALETTED_8, ctrl);
     if (!(ctrl & 1)) {
         m_transparent = false;
     }
@@ -1007,7 +1004,7 @@ i32 CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
 RVA(0x00177040, 0x23)
 i32 CImagePaletteNode::ParseDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl) {
     if (type == DECODE_PCX) {
-        return ParsePaletteTail(buf, size, ctrl);
+        return ParsePaletteTail(static_cast<u8*>(buf), size, ctrl);
     }
     return 0;
 }
@@ -1119,12 +1116,12 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 
 // @early-stop
 RVA(0x00177400, 0x76)
-i32 CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
+i32 CImagePaletteNode::ParsePaletteTail(u8* buf, u32 size, i32 ctrl) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     if (size < PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
-    u8* s = static_cast<u8*>(buf) + size - PALETTE_RGB_BYTE_COUNT;
+    u8* s = buf + size - PALETTE_RGB_BYTE_COUNT;
     PALETTEENTRY* d = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         d->peRed = *s++;

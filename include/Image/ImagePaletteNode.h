@@ -27,7 +27,7 @@ struct CImagePaletteNode {
     i32 ProcessPalQuad(u8* bgr, i32 flags);
     i32 ProcessPalBGR(u8* bgr, i32 flags);
     i32 ParseDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl);
-    i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);
+    i32 ParsePaletteTail(u8* buf, u32 size, i32 ctrl);
     void Run();
     i32 LoadByExtension(char* path, i32 arg);
     i32 LoadPalFile(char* path, i32 arg);

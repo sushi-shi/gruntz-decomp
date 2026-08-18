@@ -189,7 +189,7 @@ hash	10	10
 heapdiag	8	7
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	54	43
+imagepool	54	42
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -900,7 +900,7 @@ customworlddialog	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	100.0000	100.0000	
 databuffer	??0CShadeTable@@QAE@XZ	100.0000	100.0000	1	ed7e81342350	0x150180	100.0000	
 databuffer	?Free@CShadeTable@@QAEXXZ	100.0000	100.0000	1	9faa81b42d51	0x1503c0	100.0000	
 databuffer	?LoadFromFile@CShadeTable@@QAEHVCString@@H@Z	100.0000	100.0000	1	41a404fa61b6	0x150250	100.0000	
-databuffer	?LoadFromMem@CShadeTable@@QAEHPAXIH@Z	100.0000	100.0000	1	f31780c6edf9	0x150330	100.0000	
+databuffer	?LoadFromMem@CShadeTable@@QAEHPAEIH@Z	100.0000	100.0000	2	7a63e541ca9a	0x150330	100.0000	
 databuffer	?ReadFrom@CShadeTable@@QAEHPAVCFile@@H@Z	100.0000	100.0000	1	c02ae7bd6393	0x1501f0	100.0000	
 databuffer	?Reset@CShadeTable@@QAEXXZ	100.0000	100.0000	1	2d0eebe6db6d	0x150190	100.0000	
 databuffer	?SaveToFile@CShadeTable@@QAEHVCString@@@Z	100.0000	100.0000	1	dc535760bb06	0x1503f0	100.0000	
@@ -970,8 +970,8 @@ ddrawshadeblit	?BlitCopyMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@
 ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	73.9902	73.5407	1	d6363a52e445	0x14a200	73.9902	
 ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	76.7547	76.7547	2	fd7d87b2806c	0x14b770	76.7547	
 ddrawshadeblit	?Build@CDDrawShadeBlit@@QAEHPAUPidHeader@@HE@Z	80.6119	80.6119	2	126e2e619b26	0x1490d0	80.6119	
-ddrawshadeblit	?BuildFromSurface@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HPAUtagPALETTEENTRY@@@Z	100.0000	100.0000	2	9e129c915971	0x148f50	100.0000	
-ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAXHHHHPAUtagPALETTEENTRY@@@Z	98.5786	98.5786	3	d9d54a1c7e57	0x148d40	98.5786	
+ddrawshadeblit	?BuildFromSurface@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HPAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	b1061992f0ff	0x148f50	100.0000	
+ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAEHHHHPAUtagPALETTEENTRY@@@Z	98.5786	98.5786	4	0f7a51e67085	0x148d40	98.5786	
 ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	79.9981	78.7589	1	d6d660b8d28a	0x14c9f0	79.9981	
 ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	73.5610	69.5031	1	da0ae7b4a586	0x14d950	73.5610	
 ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	74.5449	74.5449	1	81361b5ed044	0x14d5e0	74.5449	
@@ -1552,7 +1552,7 @@ directsoundmgr	?CreateBuffer@SoundDevice@@QAEPAVDSoundCloneInst@@PAUWaveFormatX@
 directsoundmgr	?CreatePrimaryBuffer@SoundDevice@@QAEHXZ	100.0000	100.0000	1	5a1487729420	0x137260	100.0000	
 directsoundmgr	?FreeSamples@SoundDevice@@QAEHXZ	100.0000	100.0000	2	0f6dd8dc0dad	0x136ed0	100.0000	
 directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAK0@Z	100.0000	100.0000	1	b6af491b6363	0x135a20	100.0000	
-directsoundmgr	?GetFormat@DirectSoundMgr@@QAEHPAUWaveFormatX@@IPAK@Z	100.0000	100.0000	2	32b4e1ed2b17	0x135ac0	100.0000	
+directsoundmgr	?GetFormat@DirectSoundMgr@@QAEHPAUWaveFormatX@@IPAK@Z	100.0000	100.0000	3	87326b7ca208	0x135ac0	100.0000	
 directsoundmgr	?GetItem@DSoundCloneInst@@QAEPAVDirectSoundMgr@@XZ	100.0000	100.0000	1	692545410b7c	0x135d70	100.0000	
 directsoundmgr	?GetPan@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	f616fcd51a25	0x1357f0	100.0000	
 directsoundmgr	?GetPanPercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	3e9d39b48950	0x135840	100.0000	
@@ -1565,7 +1565,7 @@ directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	2dac8abb6ae
 directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	100.0000	100.0000	1	f512b657f51a	0x135e10	100.0000	
 directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAK01I@Z	100.0000	100.0000	1	f6397e0dde5d	0x136370	100.0000	
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	100.0000	100.0000	2	07e7fe0abaad	0x135f40	100.0000	
-directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	67.0526	67.0526	9	80ea5871fb53	0x137110	100.0000	
+directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	67.0526	67.0526	10	1b268e925cc8	0x137110	100.0000	
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	3638b7ae6e0f	0x136270	100.0000	
 directsoundmgr	?PurgeVoiceList@SoundDevice@@QAEHH@Z	100.0000	100.0000	1	1c5f66489eb6	0x136e20	100.0000	
 directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	ca6179edcdcc	0x135340	100.0000	
@@ -1584,7 +1584,7 @@ directsoundmgr	?SetFrequencyOffsetPercent@DirectSoundMgr@@QAEHH@Z	100.0000	100.0
 directsoundmgr	?SetLooping@DirectSoundMgr@@QAEXH@Z	100.0000	100.0000	1	701781471e4f	0x135510	100.0000	
 directsoundmgr	?SetPan@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	b5a372ac692b	0x135740	100.0000	
 directsoundmgr	?SetPanByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	77d0233df07e	0x1357a0	100.0000	
-directsoundmgr	?SetPrimaryFormat@SoundDevice@@QAEHPAUWaveFormatX@@@Z	100.0000	100.0000	2	c94bd1c94b06	0x1371a0	100.0000	
+directsoundmgr	?SetPrimaryFormat@SoundDevice@@QAEHPAUWaveFormatX@@@Z	100.0000	100.0000	3	3a6fa8a6de1d	0x1371a0	100.0000	
 directsoundmgr	?SetVolume@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	54ded33d85f0	0x135560	100.0000	
 directsoundmgr	?SetVolumeByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	e0142e7b96db	0x1355c0	100.0000	
 directsoundmgr	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	1	9cbaf1fd10e7	0x136690	100.0000	
@@ -2631,7 +2631,7 @@ imagepool	?AddImageDispatch@CImagePool@@QAEPAUCImagePaletteNode@@PAXIW4RezDecode
 imagepool	?AddImageFile@CImagePool@@QAEPAUCImagePaletteNode@@PADH@Z	100.0000	100.0000	1	b9c918d30476	0x1755f0	100.0000	
 imagepool	?AddPaletteEntries@CImagePool@@QAEPAUCImagePaletteNode@@PAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	1	17bae85da524	0x1754f0	100.0000	
 imagepool	?AddPaletteRGB@CImagePool@@QAEPAUCImagePaletteNode@@PAEH@Z	100.0000	100.0000	2	3b1fdbcf84b0	0x175570	100.0000	
-imagepool	?AddSurfaceBlit@CImagePool@@QAEPAVCRezImage@@PAXHHW4ColorDepth@@H@Z	100.0000	100.0000	1	1dc56139b9f6	0x1750e0	100.0000	
+imagepool	?AddSurfaceBlit@CImagePool@@QAEPAVCRezImage@@PAEHHW4ColorDepth@@H@Z	100.0000	100.0000	2	3c590a5f4fe4	0x1750e0	100.0000	
 imagepool	?AddSurfaceBmp@CImagePool@@QAEPAVCRezImage@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	07e26e764bf3	0x174fe0	100.0000	
 imagepool	?AddSurfaceConvert@CImagePool@@QAEPAVCRezImage@@PAV2@PAUCImagePaletteNode@@@Z	100.0000	100.0000	2	a7158b7f2bd2	0x1753f0	100.0000	
 imagepool	?AddSurfaceOp@CImagePool@@QAEPAVCRezImage@@PAXW4RezDecodeKind@@H@Z	100.0000	100.0000	1	52aff0f69203	0x1751f0	100.0000	
@@ -2642,12 +2642,12 @@ imagepool	?Clear@CImagePool@@QAEXXZ	100.0000	100.0000	1	21b1c095059c	0x174eb0	10
 imagepool	?ClearPalettes@CImagePool@@QAEXXZ	100.0000	100.0000	1	130dd9b859fb	0x174fa0	100.0000	
 imagepool	?ClearSurfaces@CImagePool@@QAEXXZ	100.0000	100.0000	1	9cc9e65693e4	0x174f60	100.0000	
 imagepool	?Convert8To16@CRezImage@@QAEHPAUHDC__@@PAV1@PAUCImagePaletteNode@@@Z	100.0000	99.7312	2	f25aa53baf54	0x175b80	100.0000	
-imagepool	?DecodeBlit@CRezImage@@QAEHPAXPAUHDC__@@HHW4ColorDepth@@H@Z	95.3194	95.3194	2	fea55fc83191	0x175930	95.3194	
+imagepool	?DecodeBlit@CRezImage@@QAEHPAEPAUHDC__@@HHW4ColorDepth@@H@Z	95.3194	95.3194	3	917ae477a751	0x175930	95.3194	
 imagepool	?DecodeBmpData@CRezImage@@QAEHPAUtagBITMAPINFOHEADER@@PAUHDC__@@H@Z	99.6154	99.6154	2	0648a84094a5	0x175e00	100.0000	
 imagepool	?DecodeBmpHeader@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	8ae8e2fb4d46	0x1757c0	100.0000	
 imagepool	?DecodePcxData@CRezImage@@QAEHPAUPcxHeader@@PAUHDC__@@H@Z	93.8608	93.8165	2	8493975678e1	0x176000	93.8608	
 imagepool	?DecodePidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	76.1827	76.1827	2	0c673fe2f5fe	0x176440	81.4772	
-imagepool	?DecodeRidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	100.0000	100.0000	2	f00242cdd2e3	0x1762c0	100.0000	
+imagepool	?DecodeRidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	74.2963	74.2963	3	c0c34735b77c	0x1762c0	100.0000	
 imagepool	?DispatchDecode@CRezImage@@QAEHPAXW4RezDecodeKind@@PAUHDC__@@H@Z	100.0000	100.0000	2	9d894810ba41	0x175a00	100.0000	
 imagepool	?DisplayUsesPalette@@YAHXZ	100.0000	100.0000	1	ae302fdbc24b	0x1770a0	100.0000	
 imagepool	?EnsureSize@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	3354fc240078	0x175ce0	100.0000	
@@ -2667,8 +2667,8 @@ imagepool	?LoadPcx@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	6edf6b741
 imagepool	?LoadPcxFile@CImagePaletteNode@@QAEHPADH@Z	93.9091	93.9091	1	59b78ebfbfda	0x1772e0	93.9091	
 imagepool	?LoadPid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	87fa8c7c30af	0x1766a0	100.0000	
 imagepool	?LoadRid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	81c477770360	0x176310	100.0000	
-imagepool	?ParseDispatch@CImagePaletteNode@@QAEHPAXIW4RezDecodeKind@@H@Z	100.0000	100.0000	1	f82860c7ee66	0x177040	100.0000	
-imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAXIH@Z	88.5610	88.5610	1	a8508f8c27cf	0x177400	88.5610	
+imagepool	?ParseDispatch@CImagePaletteNode@@QAEHPAXIW4RezDecodeKind@@H@Z	100.0000	100.0000	2	271f0279e0d9	0x177040	100.0000	
+imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAEIH@Z	88.5610	88.5610	2	ee9889b24729	0x177400	88.5610	
 imagepool	?PasteFrom@CRezImage@@QAEHPAV1@HH@Z	84.6911	84.6911	1	39fb6983ed83	0x176960	84.6911	
 imagepool	?ProcessPal@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	35252db3382f	0x176e70	100.0000	
 imagepool	?ProcessPalBGR@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	acd2296f70fc	0x176f30	100.0000	
@@ -3859,7 +3859,7 @@ shadetablecache	??1CShadeTableArray@@UAE@XZ	100.0000	100.0000	1	73f683cefd76	0x1
 shadetablecache	??1CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	f6966bb46107	0x14de50	100.0000	
 shadetablecache	??_GCShadeTableArray@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0fe03d1684e4	0x150020	100.0000	
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@VCString@@@Z	100.0000	100.0000	1	cb6cf16dd4d6	0x14f6c0	100.0000	
-shadetablecache	?AddFromFile@CShadeTableCache@@QAEPAUCShadeTable@@PBDH@Z	100.0000	100.0000	1	b3b68a5ebcd8	0x14f8b0	100.0000	
+shadetablecache	?AddFromBuffer@CShadeTableCache@@QAEPAUCShadeTable@@PAEH@Z	100.0000	100.0000	2	3e04d747aeab	0x14f8b0	100.0000	
 shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	92.2088	87.1209	1	d54ec0fb9dbf	0x14f080	92.2088	
 shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	99.7471	99.7471	1	3b8138ce5d05	0x14f5b0	99.7471	
 shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	1	9f72f177963a	0x14fa60	100.0000	

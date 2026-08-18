@@ -51,7 +51,7 @@ public:
     i32 DecodePidData(PidHeader* buf, HDC dc, i32 ctrl);
     i32 DecodeBmpData(BITMAPINFOHEADER* buf, HDC dc, i32 ctrl);
 
-    i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
+    i32 DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
 
     i32 DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl);
     i32 Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal);

@@ -59,9 +59,9 @@ i32 CShadeTable::LoadFromFile(CString path, i32 id) {
 }
 
 RVA(0x00150330, 0x87)
-i32 CShadeTable::LoadFromMem(void* buf, u32 len, i32 id) {
+i32 CShadeTable::LoadFromMem(u8* buf, u32 len, i32 id) {
     CMemFile file(0x400);
-    file.Attach(static_cast<BYTE*>(buf), len);
+    file.Attach(buf, len);
     i32 ok = ReadFrom(&file, id);
     m_alloc = ok;
     m_key = id;
