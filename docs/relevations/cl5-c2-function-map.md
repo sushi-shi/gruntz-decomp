@@ -59,6 +59,40 @@ is its carrier. Do not rename either one as the phase source. See
 The full rotating-cursor proof and source-domain controls are in
 [cl5-c2-register-picker-is-a-rotating-cursor.md](cl5-c2-register-picker-is-a-rotating-cursor.md).
 
+## Pentium instruction scheduling
+
+This is the late, deterministic ready-list scheduler. Ghidra's string-xref oracle
+puts its machine-dependent half in `x86\schedmd.c`: the embedded path at
+`0x0049d3a0` is referenced from `0x00473be4`, the cold part of `0x004500d8`.
+
+| VA | working name | confidence | established behavior |
+|---:|---|:---:|---|
+| `0x004315f1` | `ScheduleBasicBlock` | H | Clears the scheduling globals for one block, seeds the ready list from the block-entry dependencies, advances cycle `DAT_004930ac`, and emits each selected instruction. Called from `0x0040d9be`. |
+| `0x0043170c` | `InsertReadyInstructionOrdered` | P | Inserts one ready instruction into the doubly-linked list at `DAT_00493134`/`DAT_004930c4`. Primary key is priority/time at `+0x2c`; exact ties use the stable ordinal at `+0x36`. This is the scheduling tie-break. |
+| `0x0043179a` | `SelectReadyInstructionsForCycle` | H | Walks the ready list through `+0x10`, takes the first entry that passes resource, dependency and earliest-cycle checks, unlinks it, marks it scheduled, and releases its dependants. |
+| `0x00431985` | `InitializeReadyPriorities` | H | Initializes or adjusts the `+0x2c` priority/time field from dependency conflicts before selection starts. |
+| `0x004319f6` | `RebuildReadyList` | H | When more than one instruction is ready, clears the list and reinserts every entry through `InsertReadyInstructionOrdered`. |
+| `0x00431b0c` | `HasBlockingPredecessor` | H | Rejects a candidate whose predecessor chain has not reached the current cycle/dependency state. |
+| `0x00431b6a` | `HasMachinePairingHazard` | T | Applies an additional optimizing-build constraint involving operand classes and the current/previous candidates; its exact Pentium pairing domain is not yet named. |
+| `0x00431be3` | `RemoveReadyInstruction` | H | Unlinks a chosen entry from the ready list and decrements the ready count. |
+| `0x00431c31` | `ReleaseDependentInstruction` | H | Decrements a dependant's unscheduled-predecessor counts and inserts it when both counts agree. |
+| `0x004500d8` | `UpdateMachineScheduleMetadata` | H | `x86\schedmd.c` switch over machine instruction kinds; updates latency/resource metadata and dependency records consumed by the generic scheduler. |
+
+Established descriptor fields in this chain are `+0x10/+0x14` ready-list
+next/previous, `+0x20/+0x24` predecessor counts, `+0x2c` priority/time,
+`+0x30` earliest issue cycle, `+0x36` stable ordinal, and flag byte `+0x39`
+(`0x80` = scheduled; low three bits record the selected machine slot).
+
+The source consequence is bounded and useful: there is no persistent
+cross-function scheduler cursor. Each block rebuilds its own ready list, and an
+equal-ready choice is deterministic from the current block's priority plus
+ordinal. A declaration-order edit can therefore close a load-order wall only by
+changing the current block's instruction/descriptor order; unrelated TU-state
+noise cannot rotate it. `LevelPreviewDlgProc` is the measured control: after a
+missing `HDC` lifetime restored exact instruction parity, moving `dx`/`dy` before
+`w`/`h` changed only the tied rectangle/point load schedule and closed the
+function from 98.07% to 100%.
+
 ## Optimized frame allocation
 
 This is the chain that explains why `CFaderShape::RenderTile` is stable under TU-state

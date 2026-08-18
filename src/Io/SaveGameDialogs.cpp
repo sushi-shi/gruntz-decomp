@@ -55,9 +55,6 @@ BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
 }
 
-// @early-stop
-// residue: retail saves esi/edi before the null guards; candidate shrink-wraps
-// them afterward, moving the CFile/CString homes without changing the frame size.
 RVA(0x000e3690, 0x2ec)
 BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -72,10 +69,10 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             pt.x = wr.left;
             pt.y = wr.top;
             ScreenToClient(hDlg, &pt);
-            i32 w = wr.right - wr.left - 1;
-            i32 h = wr.bottom - wr.top - 1;
             i32 dx = pt.x;
             i32 dy = pt.y;
+            i32 w = wr.right - wr.left - 1;
+            i32 h = wr.bottom - wr.top - 1;
             if (w >= SCREEN_HALF_W_PX) {
                 dx += (w - SCREEN_HALF_W_PX) / 2;
                 w = SCREEN_HALF_W_PX;
@@ -86,11 +83,12 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             PAINTSTRUCT ps;
             BeginPaint(hDlg, &ps);
-            SetStretchBltMode(ps.hdc, COLORONCOLOR);
+            HDC hdc = ps.hdc;
+            SetStretchBltMode(hdc, COLORONCOLOR);
             CRezImage* img = g_previewImage;
             if (img->m_bitCount == BPP_PALETTED_8) {
                 StretchDIBits(
-                    ps.hdc,
+                    hdc,
                     dx,
                     dy,
                     w,
@@ -106,7 +104,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 );
             } else {
                 StretchDIBits(
-                    ps.hdc,
+                    hdc,
                     dx,
                     dy,
                     w,

@@ -253,7 +253,7 @@ rockbreakeffectupdate	1	0
 rollingball	8	6
 savefrontbuffershot	2	2
 savegame	23	21
-savegamedialogs	10	8
+savegamedialogs	10	9
 savescreenshot	1	1
 sbi_image	5	3
 sbi_imageset	6	4
@@ -3612,7 +3612,7 @@ savegamedialogs	?DrawSaveGameMenu@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	100.0000	100.
 savegamedialogs	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	a1bfb58c79ce	0xe3c60	100.0000	
 savegamedialogs	?InfoLineDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	e233db7b2d40	0xe3b20	100.0000	
 savegamedialogs	?LabelSaveSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	1	4a45bbfc0bce	0xe3e80	100.0000	
-savegamedialogs	?LevelPreviewDlgProc@@YGHPAUHWND__@@IIJ@Z	95.3511	95.3511	3	9711744e2a80	0xe3690	95.3511	
+savegamedialogs	?LevelPreviewDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	0f84c52a6bc1	0xe3690	100.0000	
 savegamedialogs	?OkCancelDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	034f80ac622c	0xe3be0	100.0000	
 savegamedialogs	?SaveGameDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	38a8e872f6a2	0xe35f0	100.0000	
 savegamedialogs	?SetSaveSlotDialogName@@YAXPAUHWND__@@PAVCSaveGame@@PAUSaveSlot@@@Z	100.0000	100.0000	3	abe8be1542f8	0xe4850	100.0000	
