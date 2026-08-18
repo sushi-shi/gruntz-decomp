@@ -91,7 +91,7 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
 }
 
 RVA(0x001528d0, 0xdd)
-CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
+CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, CParseSource* entry) {
     CAniElement* el = new CAniElement;
     if (el == NULL) {
         return 0;
@@ -106,7 +106,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
 }
 
 RVA(0x001529b0, 0xdd)
-CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, void* entry) {
+CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, const char* entry) {
     CAniElement* el = new CAniElement;
     if (el == NULL) {
         return 0;

@@ -48,8 +48,8 @@ public:
         }
     }
 
-    LeafCue* CreateEntry(const char* key, void* src);
-    LeafCue* CreateEntry2(const char* key, void* src);
+    LeafCue* CreateEntry(const char* key, CParseSource* src);
+    LeafCue* CreateEntry2(const char* key, char* src);
     LeafCue* AddFromSource(CParseSource* src);
     void AddEntry(LeafCue* elem, const char* key);
 

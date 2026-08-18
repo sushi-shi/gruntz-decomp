@@ -25,7 +25,7 @@ struct LeafCue : public CWapObj {
     LeafCue(i32 count, class CDDrawSurfaceMgr* handle);
 
     i32 LoadSoundA(void* riff);
-    i32 LoadSoundB(void* src);
+    i32 LoadSoundB(char* src);
     i32 Configure(CParseSource* src);
 
     i32 PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop);

@@ -170,7 +170,7 @@ i32 CDDrawWorkerList::IsReady() {
 }
 
 RVA(0x00156fd0, 0x8b)
-void* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
+CDDrawWorkerA* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
     CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
     if (w->PlaceFrameValue(x, y, frame) == 0) {
         if (w != NULL) {
@@ -226,13 +226,8 @@ void CDDrawWorkerA::Unload() {
 }
 
 RVA(0x00157150, 0xa5)
-void* CDDrawWorkerList::CreateWorkerB30(
-    i32 x,
-    i32 y,
-    const char* key,
-    i32 frameIndex,
-    i32 addHead
-) {
+CDDrawWorkerB*
+CDDrawWorkerList::CreateWorkerB30(i32 x, i32 y, const char* key, i32 frameIndex, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceBound(x, y, key, frameIndex) == 0) {
         if (w != NULL) {
@@ -298,13 +293,8 @@ void CDDrawWorkerBase::Unload() {
 }
 
 RVA(0x00157330, 0xa5)
-void* CDDrawWorkerList::CreateWorkerB2C(
-    i32 x,
-    i32 y,
-    CDDrawWorker* src,
-    i32 frameIndex,
-    i32 addHead
-) {
+CDDrawWorkerB*
+CDDrawWorkerList::CreateWorkerB2C(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceFrame(x, y, src, frameIndex) == 0) {
         if (w != NULL) {
@@ -321,7 +311,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(
 }
 
 RVA(0x001573e0, 0xa0)
-void* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
+CDDrawWorkerB* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
     if (w->PlaceFrameValue(x, y, frame) == 0) {
         if (w != NULL) {
@@ -545,7 +535,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
 }
 
 RVA(0x00157d70, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
+LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -553,7 +543,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
     if (e == NULL) {
         return 0;
     }
-    if (e->Configure(static_cast<CParseSource*>(src)) == 0) {
+    if (e->Configure(src) == 0) {
         delete e;
         return 0;
     }
@@ -563,7 +553,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
 }
 
 RVA(0x00157e00, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* src) {
+LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -815,12 +805,12 @@ i32 LeafCue::LoadSoundA(void* riff) {
 }
 
 RVA(0x00158720, 0x34)
-i32 LeafCue::LoadSoundB(void* src) {
+i32 LeafCue::LoadSoundB(char* src) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
         return 0;
     }
-    m_sound = dev->AcquireFile(static_cast<char*>(src), 0x100ea, 0);
+    m_sound = dev->AcquireFile(src, 0x100ea, 0);
     return m_sound != NULL;
 }
 

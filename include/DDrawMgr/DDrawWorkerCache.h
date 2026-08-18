@@ -41,7 +41,7 @@ public:
         return CLASSID_WORKERCACHE;
     }
 
-    virtual void* CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags);
+    virtual AnimWorkerObj* CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags);
 
     // Out of line at 0x9cab0 in StreamRecordLoaders.cpp;
     // <DDrawMgr/DDrawWorkerCacheFindInline.h> is the opt-in inline view

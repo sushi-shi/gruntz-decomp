@@ -26,7 +26,7 @@ DATA(0x002bf3c4)
 i32 g_aniParsedNameLen = 0;
 
 RVA(0x00168c60, 0xa0)
-i32 CAniRecordView::Parse(void* ctx, const i16* src) {
+i32 CAniRecordView::Parse(CDDrawSubMgrLeafScan* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
     m_stepMode = static_cast<WwdAnimStepMode>(*p++);
@@ -47,7 +47,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
         np.m_swords = p;
         const char* name = np.m_chars;
         g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
-        ResolveIndices(static_cast<CDDrawSubMgrLeafScan*>(ctx), name);
+        ResolveIndices(ctx, name);
     }
     return 1;
 }

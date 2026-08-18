@@ -24,10 +24,12 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual void* CreateWorkerA(i32 x, i32 y, i32 frame);
-    virtual void* CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead);
-    virtual void* CreateWorkerB2C(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex, i32 addHead);
-    virtual void* CreateWorkerB30(i32 x, i32 y, const char* key, i32 frameIndex, i32 addHead);
+    virtual CDDrawWorkerA* CreateWorkerA(i32 x, i32 y, i32 frame);
+    virtual CDDrawWorkerB* CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead);
+    virtual CDDrawWorkerB*
+    CreateWorkerB2C(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex, i32 addHead);
+    virtual CDDrawWorkerB*
+    CreateWorkerB30(i32 x, i32 y, const char* key, i32 frameIndex, i32 addHead);
 
     virtual void PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
 

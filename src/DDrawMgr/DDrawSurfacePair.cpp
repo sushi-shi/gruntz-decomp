@@ -908,7 +908,8 @@ void CDDrawWorkerCache::Unload() {
 }
 
 RVA(0x001652c0, 0x92)
-void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags) {
+AnimWorkerObj*
+CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags) {
 
     AnimWorkerObj* w = new AnimWorkerObj(OwnerMgr(), m_workers.GetCount());
 
@@ -947,7 +948,7 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
 // Downstream ecx/edx/eax rotation follows. Cursor-init reorder and 250
 // generated variants are flat.
 RVA(0x00165460, 0x156)
-i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
+i32 CAniElement::Build(CDDrawSubMgrLeafScan* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
     m_total = 0;
@@ -1000,24 +1001,25 @@ fail:
 }
 
 RVA(0x001655c0, 0x53)
-i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
-    if ((static_cast<CParseSource*>(entry))->GetEntryTag() != REZ_TAG_ANI) {
+i32 CAniElement::Configure(CDDrawSubMgrLeafScan* ctx, CParseSource* entry, i32 flags) {
+    if (entry->GetEntryTag() != REZ_TAG_ANI) {
         return 0;
     }
     m_flags = flags;
-    void* src = (static_cast<CParseSource*>(entry))->BeginParse();
-    if (src == NULL) {
+    RecordBytes<CAniSource> src;
+    src.m_chars = entry->BeginParse();
+    if (src.m_chars == NULL) {
         return 0;
     }
-    i32 r = Build(ctx, static_cast<CAniSource*>(src), 0);
-    (static_cast<CParseSource*>(entry))->EndParse();
+    i32 r = Build(ctx, src.m_rec, 0);
+    entry->EndParse();
     return r;
 }
 
 RVA(0x00165620, 0x101)
-i32 CAniElement::LoadFile(void* ctx, void* filename, i32 unused) {
+i32 CAniElement::LoadFile(CDDrawSubMgrLeafScan* ctx, const char* filename, i32 unused) {
     CFile fr;
-    if (fr.Open(static_cast<const char*>(filename), 0, 0) == 0) {
+    if (fr.Open(filename, 0, 0) == 0) {
         return 0;
     }
     u32 size = fr.GetLength();
@@ -1070,7 +1072,8 @@ void CDDrawWorkerMapSmall::Unload() {
 }
 
 RVA(0x001658c0, 0xcc)
-void* CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags) {
+CAniRecordBase2*
+CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags) {
     char* data = src->BeginParse();
     if (data == NULL) {
         return 0;
@@ -1095,7 +1098,8 @@ void* CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char*
 }
 
 RVA(0x00165990, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorkerFromData(void* data, const char* key, i32 flags) {
+CAniRecordBase2*
+CDDrawWorkerMapSmall::CreateWorkerFromData(void* data, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {
@@ -1108,7 +1112,8 @@ void* CDDrawWorkerMapSmall::CreateWorkerFromData(void* data, const char* key, i3
 }
 
 RVA(0x00165a10, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i32 flags) {
+CAniRecordBase2*
+CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != NULL) {
@@ -1121,7 +1126,8 @@ void* CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i3
 }
 
 RVA(0x00165a90, 0xf4)
-void* CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags) {
+CAniRecordBase2*
+CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags) {
     if (src->GetEntryTag() != IMGTAG_XCP) {
         return 0;
     }

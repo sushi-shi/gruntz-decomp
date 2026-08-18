@@ -26,8 +26,8 @@ public:
     CString KeyOfValue(CObject* target);
     virtual ~CDDrawSubMgrLeaf() OVERRIDE;
 
-    class CAniElement* CreateAniEntry(const char* key, void* entry);
-    class CAniElement* CreateAniEntry2(const char* key, void* entry);
+    class CAniElement* CreateAniEntry(const char* key, struct CParseSource* entry);
+    class CAniElement* CreateAniEntry2(const char* key, const char* entry);
     i32 ScanTree(class CSymTab* tree, const char* prefix, const char* suffix);
 
     CMapStringToPtr m_animations;

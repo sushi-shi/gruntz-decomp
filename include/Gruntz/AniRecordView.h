@@ -28,7 +28,7 @@ struct CAniRecordView : public CObject {
         r->m_cues = NULL;
     }
 
-    i32 Parse(void* ctx, const i16* src);
+    i32 Parse(CDDrawSubMgrLeafScan* ctx, const i16* src);
     i32 GetSize();
     void ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str);
 

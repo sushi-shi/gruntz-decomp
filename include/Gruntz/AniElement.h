@@ -9,6 +9,8 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
+struct CParseSource;
+
 struct CAniSource {
     char m_pad00[0x8];
     i32 m_flags;
@@ -27,9 +29,9 @@ public:
     }
     virtual ~CAniElement() OVERRIDE;
     CObject* AtChecked(i32 i) const;
-    i32 Build(void* ctx, CAniSource* src, i32 flags);
-    i32 Configure(void* ctx, void* entry, i32 flags);
-    i32 LoadFile(void* ctx, void* filename, i32 unused);
+    i32 Build(CDDrawSubMgrLeafScan* ctx, CAniSource* src, i32 flags);
+    i32 Configure(CDDrawSubMgrLeafScan* ctx, CParseSource* entry, i32 flags);
+    i32 LoadFile(CDDrawSubMgrLeafScan* ctx, const char* filename, i32 unused);
 
     void DeleteAll();
 

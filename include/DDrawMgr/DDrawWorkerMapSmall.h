@@ -21,12 +21,12 @@ public:
     virtual void Unload() OVERRIDE;
 
     virtual LoadableClassId GetClassId() OVERRIDE;
-    virtual void* LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags);
+    virtual CAniRecordBase2* LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags);
 
-    virtual void* CreateWorkerFromData(void* data, const char* key, i32 flags);
-    virtual void* CreateWorkerFromFile(char* path, const char* key, i32 flags);
+    virtual CAniRecordBase2* CreateWorkerFromData(void* data, const char* key, i32 flags);
+    virtual CAniRecordBase2* CreateWorkerFromFile(char* path, const char* key, i32 flags);
 
-    virtual void* LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags);
+    virtual CAniRecordBase2* LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags);
     virtual ~CDDrawWorkerMapSmall() OVERRIDE;
 
     CMapStringToOb m_map1;
