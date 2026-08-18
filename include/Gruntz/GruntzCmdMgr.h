@@ -56,13 +56,13 @@ public:
         char targetType
     );
 
-    void EnqueueCommand(i32 flag, void* cmd);
+    void EnqueueCommand(i32 flag, CGruntzCommand* cmd);
 
     i32 Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 pObj);
 
     i32 IsActive(CFileMemBase* enable);
 
-    i32 IsActive2(void* enable);
+    i32 IsActive2(CFileMemBase* enable);
 
     void BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType);
 

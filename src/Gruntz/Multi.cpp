@@ -560,7 +560,7 @@ i32 CMulti::Render() {
             node = static_cast<CGruntzCommand*>(mgr->m_pendingCommands.RemoveHead());
         }
         if (node) {
-            node->m_submitted = 1;
+            node->m_submitted = COMMAND_SUBMIT_SCHEDULED;
 
             i32 v = m_curSlotId + static_cast<i32>(m_commandDelay) * 2;
             node->m_targetType = static_cast<u8>(v % 128);

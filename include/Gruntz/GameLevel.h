@@ -95,7 +95,6 @@ static const i32 TILE_CLEAR = -1;
 #include <Wap32/CoordUnset.h>
 
 struct CParseSource;
-struct WwdTileImageRecord;
 
 struct CGameObject;
 class CDDrawChildGroup;
@@ -242,7 +241,7 @@ private:
     CDDrawWorkerHost*
     ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT* bounds);
 
-    CTileImageSet* ReadImageSet(WwdTileImageRecord* record);
+    CTileImageSet* ReadImageSet(void* record);
 
     i32 StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);
     i32 StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);

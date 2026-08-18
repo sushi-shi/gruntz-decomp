@@ -18,6 +18,8 @@
 #include <Rez/RezSync.h>
 #include <Wap32/TileGeometry.h>
 
+#include <string.h>
+
 DATA(0x001e9608)
 const u16 g_cmdBitTable[16] = {
     1,
@@ -38,12 +40,13 @@ const u16 g_cmdBitTable[16] = {
     0x8000
 };
 
-static inline i16 PeekI16(const void* p) {
-
-    return *static_cast<const i16*>(p);
+static inline i16 PeekI16(const char* p) {
+    i16 value;
+    memcpy(&value, p, sizeof(value));
+    return value;
 }
-static inline void PokeI16(void* p, i16 v) {
-    *static_cast<i16*>(p) = v;
+static inline void PokeI16(char* p, i16 v) {
+    memcpy(p, &v, sizeof(v));
 }
 
 RVA(0x000239d0, 0xf)
@@ -71,9 +74,9 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
-        i32 flags = obj->m_submitted;
-        if (!(flags & 2)) {
-            if (!(flags & 1)) {
+        GruntzCommandSubmitFlags flags = obj->m_submitted;
+        if (!(flags & COMMAND_SUBMIT_IMMEDIATE)) {
+            if (!(flags & COMMAND_SUBMIT_SCHEDULED)) {
                 continue;
             }
             if (static_cast<u8>(obj->m_targetType) != static_cast<u32>(param)) {
@@ -166,15 +169,15 @@ void CGruntzCmdMgr::EnqueueMulti(
 }
 
 RVA(0x00023d10, 0x5a)
-void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
+void CGruntzCmdMgr::EnqueueCommand(i32 flag, CGruntzCommand* cmd) {
     if (!cmd) {
         return;
     }
     if (flag) {
         if (m_manager->m_curState->Update() == GAMESTATE_PLAY) {
-            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 2;
+            cmd->m_submitted = COMMAND_SUBMIT_IMMEDIATE;
         } else if (m_manager->m_curState->Update() == GAMESTATE_MULTI) {
-            (static_cast<CGruntzCommand*>(cmd))->m_submitted = 4;
+            cmd->m_submitted = COMMAND_SUBMIT_PENDING_SLOT;
         }
         m_pendingCommands.AddTail(cmd);
     }
@@ -639,7 +642,7 @@ i32 CGruntzCmdMgr::IsActive(CFileMemBase* enable) {
 }
 
 RVA(0x00024ac0, 0x20)
-i32 CGruntzCmdMgr::IsActive2(void* enable) {
+i32 CGruntzCmdMgr::IsActive2(CFileMemBase* enable) {
     if (enable == NULL) {
         return 0;
     }

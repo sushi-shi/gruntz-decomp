@@ -26,17 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-union WwdTileImageRecordView {
-    char* m_bytes;
-    WwdTileImageRecord* m_record;
-};
-
-static inline WwdTileImageRecord* WwdTileImageRecordAt(char* bytes) {
-    WwdTileImageRecordView view;
-    view.m_bytes = bytes;
-    return view.m_record;
-}
-
 // @early-stop
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
@@ -212,7 +201,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             i32 n = 0;
             i32 j = 0;
             while (static_cast<u32>(j) < rec->m_count) {
-                CTileImageSet* set = ReadImageSet(WwdTileImageRecordAt(elem));
+                CTileImageSet* set = ReadImageSet(elem);
                 if (set == NULL) {
                     result = -1;
                     goto check_result;
@@ -370,7 +359,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     }
     i32 n = 0;
     for (i32 i = 0; static_cast<u32>(i) < dir[2]; i++) {
-        CTileImageSet* set = ReadImageSet(WwdTileImageRecordAt(cursor));
+        CTileImageSet* set = ReadImageSet(cursor);
         if (set == NULL) {
             return -1;
         }
@@ -382,11 +371,11 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 }
 
 RVA(0x0015d820, 0xa3)
-CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
+CTileImageSet* CGameLevel::ReadImageSet(void* record) {
     if (record == NULL) {
         return 0;
     }
-    WwdTileImageRecord* rec = record;
+    WwdTileImageRecord* rec = static_cast<WwdTileImageRecord*>(record);
     CTileImageSet* set;
     switch (rec->m_kind) {
         case TILE_IMAGESET_UNIFORM:

@@ -17,6 +17,13 @@ GZ_ENUM_BEGIN(GruntzCommandRecordKind)
     COMMAND_RECORD_MULTI = 2
 GZ_ENUM_END(GruntzCommandRecordKind)
 
+GZ_ENUM_FLAGS_BEGIN(GruntzCommandSubmitFlags, i32)
+    COMMAND_SUBMIT_SCHEDULED = 0x1,
+    COMMAND_SUBMIT_IMMEDIATE = 0x2,
+    COMMAND_SUBMIT_PENDING_SLOT = 0x4
+GZ_ENUM_FLAGS_END(GruntzCommandSubmitFlags, i32)
+GZ_ENUM_FLAGS_OPS(GruntzCommandSubmitFlags)
+
 class CPlay;
 
 class CFileMemBase;
@@ -31,7 +38,7 @@ public:
     char m_pad07;
     i16 m_posX;
     i16 m_posY;
-    i32 m_submitted;
+    GruntzCommandSubmitFlags m_submitted;
 
     union {
         struct {
