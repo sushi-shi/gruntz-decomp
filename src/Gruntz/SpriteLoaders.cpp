@@ -137,7 +137,7 @@ i32 CTimer::Tick(i32 dt) {
             i32 found = 0;
 
             CGameObject* obj = 0;
-            found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
+            found = MapLookupById(g_gameReg->m_world->m_childGroup->m_gameObjectsById, key, obj);
 
             AddrWord<CGameObject> raw;
             raw.m_word = key;
@@ -155,7 +155,7 @@ i32 CTimer::Tick(i32 dt) {
             i32 found = 0;
 
             CGameObject* obj = 0;
-            found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
+            found = MapLookupById(g_gameReg->m_world->m_childGroup->m_gameObjectsById, key, obj);
 
             AddrWord<CGameObject> raw;
             raw.m_word = key;

@@ -759,7 +759,7 @@ i32 CInGameIcon::Reposition() {
         if (cellVal != 0) {
 
             CGameObject* found = NULL;
-            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found)
+            if (MapLookupById(reg->m_world->m_childGroup->m_gameObjectsById, cellVal, found)
                 && found != NULL) {
                 found->m_flags |= 0x10000;
             }
@@ -902,7 +902,8 @@ i32 CInGameIcon::SerializeMove(
             ar->Read(&id, sizeof(id));
             CGameObject* found = NULL;
             CWwdGameObjectA* sprite = NULL;
-            if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0) {
+            if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_gameObjectsById, id, found)
+                != 0) {
                 sprite = (found != NULL && found->GetClassId() == CLASSID_SERIALREF)
                              ? static_cast<CWwdGameObjectA*>(found)
                              : NULL;

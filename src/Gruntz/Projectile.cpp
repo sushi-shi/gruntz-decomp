@@ -768,7 +768,7 @@ i32 CProjectile::SerializeMove(
             s->Read(&count, sizeof(count));
             CGameObject* out = NULL;
             CGameObject* r;
-            if (MapLookupById(reg->m_childGroup->m_map48, count, out) == 0) {
+            if (MapLookupById(reg->m_childGroup->m_gameObjectsById, count, out) == 0) {
                 r = NULL;
             } else if (out == NULL) {
                 r = NULL;

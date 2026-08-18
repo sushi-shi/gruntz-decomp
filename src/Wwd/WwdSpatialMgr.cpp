@@ -251,13 +251,13 @@ void CWwdSpatialMgr::RemoveObject(CWwdGameObject* obj) {
     i32 flags = obj->m_flags;
     if (flags & 0x800000) {
         m_grid1->Add(&obj->m_region);
-        m_mgr->AddToMap48(obj);
+        m_mgr->RegisterObjectId(obj);
     } else if (flags & 0x1000000) {
         m_grid2->Add(&obj->m_region);
-        m_mgr->AddToMap48(obj);
+        m_mgr->RegisterObjectId(obj);
     } else {
         m_grid0->Add(&obj->m_region);
-        m_mgr->AddToMap48(obj);
+        m_mgr->RegisterObjectId(obj);
     }
 }
 

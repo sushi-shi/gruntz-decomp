@@ -107,7 +107,7 @@ i32 CExitTrigger::SerializeMove(
             if (key != 0) {
                 found = NULL;
                 CGameObject* obj = NULL;
-                if (MapLookupById(holder->m_childGroup->m_map48, key, found)) {
+                if (MapLookupById(holder->m_childGroup->m_gameObjectsById, key, found)) {
                     obj = found;
                 }
                 m_warlordLogic = static_cast<CWarlord*>(obj->m_animWorker->m_logic);

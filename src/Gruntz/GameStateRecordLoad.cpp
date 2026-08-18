@@ -25,7 +25,7 @@
         ar->Read(&id, 4);                                                                          \
         obj = NULL;                                                                                \
         CGameObject* r;                                                                            \
-        if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0 && obj != NULL) {              \
+        if (MapLookupById(dir->m_childGroup->m_gameObjectsById, id, obj) != 0 && obj != NULL) {    \
             r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
         } else {                                                                                   \
             r = NULL;                                                                              \

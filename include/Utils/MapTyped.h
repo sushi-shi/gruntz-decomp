@@ -34,6 +34,13 @@ inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
     map.GetNextAssoc(pos, key, *dst.m_asVoid);
 }
 
+template<class T> inline void MapGetNextValue(CMapPtrToPtr& map, POSITION& pos, T*& out) {
+    AddrWord<void> ignoredKey;
+    MapOutRef<T> dst;
+    dst.m_asTyped = &out;
+    map.GetNextAssoc(pos, ignoredKey.m_addr, *dst.m_asVoid);
+}
+
 inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, void*& out) {
     return map.Lookup(key, out);
 }

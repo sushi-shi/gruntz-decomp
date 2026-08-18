@@ -73,7 +73,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 CGameObject* found = 0;
                 CGameObject* warlordObj = 0;
                 if (MapLookupById(
-                        g_gameReg->m_world->m_childGroup->m_map48,
+                        g_gameReg->m_world->m_childGroup->m_gameObjectsById,
                         claimed->m_warlordObjectId,
                         found
                     )) {

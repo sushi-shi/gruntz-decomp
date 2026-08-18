@@ -711,7 +711,7 @@ i32 CPlay::Render() {
                     CGameObject* out = NULL;
                     CGameObject* object = NULL;
                     if (MapLookupById(
-                            g_gameReg->m_world->m_childGroup->m_map48,
+                            g_gameReg->m_world->m_childGroup->m_gameObjectsById,
                             g_gameReg->m_options[0].m_warlordObjectId,
                             out
                         )) {
@@ -7046,7 +7046,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
         CGameObject* oe = 0;
         CWwdGameObjectA* sink;
-        if (MapLookup(res->m_childGroup->m_map48, gridObj, oe)) {
+        if (MapLookup(res->m_childGroup->m_gameObjectsById, gridObj, oe)) {
             if (oe == NULL) {
                 sink = NULL;
             } else {
@@ -7738,8 +7738,11 @@ i32 CPlay::ClearPlacedObjects() {
                 }
                 if (occupantId != 0) {
                     CGameObject* out = NULL;
-                    BOOL found =
-                        MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, occupantId, out);
+                    BOOL found = MapLookupById(
+                        g_gameReg->m_world->m_childGroup->m_gameObjectsById,
+                        occupantId,
+                        out
+                    );
                     CGameObject* result = NULL;
                     if (found) {
                         result = out;

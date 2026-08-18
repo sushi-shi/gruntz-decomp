@@ -377,7 +377,11 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
                         if (_key) {
                             _dr = NULL;
-                            if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, _key, _dr)
+                            if (MapLookupById(
+                                    g_gameReg->m_world->m_childGroup->m_gameObjectsById,
+                                    _key,
+                                    _dr
+                                )
                                 && _dr) {
                                 CWarlord* _d = static_cast<CWarlord*>(_dr->m_animWorker->m_logic);
                                 if (_d) {

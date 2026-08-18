@@ -303,7 +303,7 @@ i32 CGruntVoice::Update() {
         CGameObject* out = 0;
         i32 src = m_source;
         CGameObject* resolved;
-        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, src, out) == 0) {
+        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_gameObjectsById, src, out) == 0) {
             resolved = NULL;
         } else if (out == NULL) {
             resolved = NULL;
@@ -324,7 +324,7 @@ i32 CGruntVoice::Update() {
         CGameObject* out = 0;
         i32 src = m_source;
         CGameObject* resolved;
-        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, src, out) == 0) {
+        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_gameObjectsById, src, out) == 0) {
             resolved = NULL;
         } else if (out == NULL) {
             resolved = NULL;

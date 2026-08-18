@@ -82,8 +82,8 @@ void CDDrawChildGroup::DestroyChildren() {
         }
     }
     m_list.RemoveAll();
-    m_map2c.RemoveAll();
-    m_map48.RemoveAll();
+    m_attachedGameObjectsById.RemoveAll();
+    m_gameObjectsById.RemoveAll();
 }
 
 RVA(0x00159250, 0x185)
@@ -338,8 +338,8 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
             }
         } else {
             m_list.RemoveAt(obj->m_posCache);
-            m_map48.RemoveKey(WwdKey(obj));
-            m_map2c.RemoveKey(WwdKey(obj));
+            m_gameObjectsById.RemoveKey(WwdKey(obj));
+            m_attachedGameObjectsById.RemoveKey(WwdKey(obj));
             if (obj != NULL) {
                 delete obj;
             }
@@ -426,8 +426,8 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
         return;
     }
     m_list.RemoveAt(obj->m_posCache);
-    m_map48.RemoveKey(WwdKey(obj));
-    m_map2c.RemoveKey(WwdKey(obj));
+    m_gameObjectsById.RemoveKey(WwdKey(obj));
+    m_attachedGameObjectsById.RemoveKey(WwdKey(obj));
     delete obj;
 }
 
@@ -445,8 +445,8 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
         return;
     }
     if (addToMaps != 0) {
-        m_map2c[WwdKey(obj)] = obj;
-        m_map48[WwdKey(obj)] = obj;
+        m_attachedGameObjectsById[WwdKey(obj)] = obj;
+        m_gameObjectsById[WwdKey(obj)] = obj;
     }
     POSITION pos = m_list.GetHeadPosition();
     i32 key = obj->m_sortKey;
@@ -1010,8 +1010,8 @@ void CDDrawChildGroup::PruneList() {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj != NULL && !(obj->m_flags & 0x200)) {
             m_list.RemoveAt(cur);
-            m_map2c.RemoveKey(WwdKey(obj));
-            m_map48.RemoveKey(WwdKey(obj));
+            m_attachedGameObjectsById.RemoveKey(WwdKey(obj));
+            m_gameObjectsById.RemoveKey(WwdKey(obj));
             delete obj;
         }
     }
@@ -1039,31 +1039,30 @@ i32 CDDrawChildGroup::SumWeighted() {
 RVA(0x0015ab30, 0x38)
 void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
     m_list.RemoveAt(pos);
-    m_map2c.RemoveKey(WwdKey(obj));
-    m_map48.RemoveKey(WwdKey(obj));
+    m_attachedGameObjectsById.RemoveKey(WwdKey(obj));
+    m_gameObjectsById.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
 void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
     m_list.RemoveAt(pos);
-    m_map2c.RemoveKey(WwdKey(obj));
+    m_attachedGameObjectsById.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015aba0, 0x1a)
-void CDDrawChildGroup::AddToMap48(CWwdGameObject* obj) {
-    m_map48[WwdKey(obj)] = obj;
+void CDDrawChildGroup::RegisterObjectId(CWwdGameObject* obj) {
+    m_gameObjectsById[WwdKey(obj)] = obj;
 }
 
 RVA(0x0015abc0, 0x5e)
 i32 CDDrawChildGroup::CountActive() {
     i32 n = 0;
-    POSITION pos = m_map48.GetStartPosition();
+    POSITION pos = m_gameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
-            void* key = 0;
-            CWwdGameObject* val = 0;
-            MapGetNext(m_map48, pos, key, val);
-            if (val != NULL && !(val->m_flags & 0x4000000)) {
+            CWwdGameObject* val = NULL;
+            MapGetNextValue(m_gameObjectsById, pos, val);
+            if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
                 ++n;
             }
         } while (pos != NULL);
@@ -1076,13 +1075,12 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTy
     if (ar == NULL) {
         return 0;
     }
-    POSITION pos = m_map48.GetStartPosition();
+    POSITION pos = m_gameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
-            void* key = 0;
-            CWwdGameObject* val = 0;
-            MapGetNext(m_map48, pos, key, val);
-            if (val != NULL && !(val->m_flags & 0x4000000)) {
+            CWwdGameObject* val = NULL;
+            MapGetNextValue(m_gameObjectsById, pos, val);
+            if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
                 val->Play(ar, mode, typeId, val);
             }
         } while (pos != NULL);
@@ -1095,13 +1093,12 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
     }
-    POSITION pos = m_map48.GetStartPosition();
+    POSITION pos = m_gameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
-            void* key = 0;
-            CWwdGameObject* val = 0;
-            MapGetNext(m_map48, pos, key, val);
-            if (val != NULL && !(val->m_flags & 0x4000000)) {
+            CWwdGameObject* val = NULL;
+            MapGetNextValue(m_gameObjectsById, pos, val);
+            if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
 
                 val->WriteSnapshot(ar, typeId);
             }
@@ -1125,7 +1122,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         reader->Read(&desc, sizeof(desc));
 
         CWwdGameObject* found = NULL;
-        if (MapLookupById(m_map48, desc.m_objectId, found) && found != NULL) {
+        if (MapLookupById(m_gameObjectsById, desc.m_objectId, found) && found != NULL) {
             return 0;
         }
 
@@ -1254,14 +1251,13 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
     }
-    POSITION pos = m_map48.GetStartPosition();
+    POSITION pos = m_gameObjectsById.GetStartPosition();
     while (pos != NULL) {
-        void* key = 0;
-        CWwdGameObject* val = 0;
-        MapGetNext(m_map48, pos, key, val);
-        if (val != NULL && !(val->m_flags & 0x4000000)) {
-            void* k = WwdKey(val);
-            ar->Write(&k, sizeof(k));
+        CWwdGameObject* val = NULL;
+        MapGetNextValue(m_gameObjectsById, pos, val);
+        if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
+            i32 objectId = val->m_objectId;
+            ar->Write(&objectId, sizeof(objectId));
             if (val->Play(ar, SERIAL_SAVE, typeId, val) == 0) {
                 return 0;
             }
@@ -1277,14 +1273,14 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
         return 0;
     }
     for (u32 i = 0; i < count; i++) {
-        void* key = 0;
-        ar->Read(&key, sizeof(key));
-        if (key == NULL) {
+        i32 objectId = 0;
+        ar->Read(&objectId, sizeof(objectId));
+        if (objectId == 0) {
             return 0;
         }
         CWwdGameObject* found = NULL;
         CWwdGameObject* obj = NULL;
-        if (MapLookup(m_map48, key, found)) {
+        if (MapLookupById(m_gameObjectsById, objectId, found)) {
             obj = found;
         }
         if (obj == NULL) {
@@ -1309,16 +1305,15 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
 RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
-    POSITION pos = m_map48.GetStartPosition();
+    POSITION pos = m_gameObjectsById.GetStartPosition();
     while (pos != NULL) {
-        void* key = 0;
-        CWwdGameObject* val = 0;
-        MapGetNext(m_map48, pos, key, val);
+        CWwdGameObject* val = NULL;
+        MapGetNextValue(m_gameObjectsById, pos, val);
         if (val != NULL) {
 
             CWwdGameObject* found = NULL;
-            if (MapLookup(m_map2c, WwdKey(val), found) == 0 || found == NULL) {
-                m_map48.RemoveKey(WwdKey(val));
+            if (MapLookup(m_attachedGameObjectsById, WwdKey(val), found) == 0 || found == NULL) {
+                m_gameObjectsById.RemoveKey(WwdKey(val));
                 if (val != NULL) {
                     delete val;
                 }

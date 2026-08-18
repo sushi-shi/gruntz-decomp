@@ -2223,7 +2223,7 @@ void CGrunt::XferName(char*) {
         if (cellObj != 0) {
             CGameObject* found = 0;
             CGameObject* result = 0;
-            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellObj, found)) {
+            if (MapLookupById(reg->m_world->m_childGroup->m_gameObjectsById, cellObj, found)) {
                 result = found;
             }
             if (result == NULL) {

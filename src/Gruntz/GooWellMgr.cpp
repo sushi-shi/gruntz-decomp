@@ -129,7 +129,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             slot->m_clearedRound = 1;
                             CGameObject* out = 0;
                             if (MapLookupById(
-                                    g_gameReg->m_world->m_childGroup->m_map48,
+                                    g_gameReg->m_world->m_childGroup->m_gameObjectsById,
                                     slot->m_warlordObjectId,
                                     out
                                 )
@@ -151,7 +151,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             && !lastSlot->m_clearedRound) {
                             CGameObject* out = 0;
                             if (MapLookupById(
-                                    g_gameReg->m_world->m_childGroup->m_map48,
+                                    g_gameReg->m_world->m_childGroup->m_gameObjectsById,
                                     lastSlot->m_warlordObjectId,
                                     out
                                 )

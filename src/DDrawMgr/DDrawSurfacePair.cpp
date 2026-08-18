@@ -678,7 +678,7 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, CGa
             break;
         case SERIAL_POSTLOAD:
             if (m_targetId) {
-                CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
+                CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_gameObjectsById;
                 CWwdGameObject* out = NULL;
                 if (MapLookupById(*res, m_targetId, out)) {
                     m_target = out;
@@ -880,7 +880,7 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
         return 0;
     }
     if (m_targetId) {
-        CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
+        CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_gameObjectsById;
         CWwdGameObject* out = NULL;
         if (!MapLookupById(*res, m_targetId, out)) {
             m_target = NULL;

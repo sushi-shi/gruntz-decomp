@@ -92,7 +92,7 @@ public:
 
     void RemoveAll(POSITION pos, CGameObject* obj);
     void RemoveByPosition(POSITION pos, CGameObject* obj);
-    void AddToMap48(CWwdGameObject* obj);
+    void RegisterObjectId(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();
 
@@ -121,8 +121,8 @@ public:
 
     CGameObject* NextChild(POSITION& pos);
     CGameObject* HeadChild() const;
-    CMapPtrToPtr m_map2c;
-    CMapPtrToPtr m_map48;
+    CMapPtrToPtr m_attachedGameObjectsById;
+    CMapPtrToPtr m_gameObjectsById;
 
     POSITION m_walkCursor;
 

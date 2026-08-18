@@ -658,7 +658,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     occupantId = plane->m_rowInts[ty][tx * 7 + 2];
                 }
                 if (occupantId != 0) {
-                    CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
+                    CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_gameObjectsById;
                     CGameObject* occupant = NULL;
                     MapLookupById(*map, occupantId, occupant);
                     if (occupant != NULL) {
@@ -1329,7 +1329,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             if (g != NULL) {
                 id = g->m_object->m_objectId;
                 CGameObject* found = NULL;
-                MapLookupById(lvl->m_childGroup->m_map48, id, found);
+                MapLookupById(lvl->m_childGroup->m_gameObjectsById, id, found);
             }
             ar->Write(&id, sizeof(id));
             cell++;
@@ -1389,7 +1389,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         }
         objId = obj->m_object->m_objectId;
         CGameObject* found = NULL;
-        MapLookupById(lvl->m_childGroup->m_map48, objId, found);
+        MapLookupById(lvl->m_childGroup->m_gameObjectsById, objId, found);
         ar->Write(&objId, sizeof(objId));
     }
     hasOv = (m_overlay != NULL) ? 1 : 0;
@@ -1438,7 +1438,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             CGrunt* cell = NULL;
             if (key != 0) {
                 CGameObject* found = NULL;
-                if (MapLookupById(world->m_childGroup->m_map48, key, found) == 0) {
+                if (MapLookupById(world->m_childGroup->m_gameObjectsById, key, found) == 0) {
                     return 0;
                 }
                 if (found == NULL) {
@@ -1506,7 +1506,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             CGameObject* found = NULL;
             CGameObject* looked = NULL;
-            if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
+            if (MapLookupById(world->m_childGroup->m_gameObjectsById, key, found) != 0) {
                 looked = found;
             }
             CWwdGameObjectA* obj;
@@ -1530,7 +1530,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             CGameObject* found = NULL;
             CGameObject* looked = NULL;
-            if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
+            if (MapLookupById(world->m_childGroup->m_gameObjectsById, key, found) != 0) {
                 looked = found;
             }
             if (looked == NULL) {
@@ -1557,7 +1557,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
         CGameObject* found = NULL;
         CGameObject* looked = NULL;
-        if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
+        if (MapLookupById(world->m_childGroup->m_gameObjectsById, key, found) != 0) {
             looked = found;
         }
         if (looked == NULL) {
