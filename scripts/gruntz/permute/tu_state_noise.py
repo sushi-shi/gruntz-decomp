@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Parser-visible TU-state variant engine (LIVE, match_variants --state-trials).
+"""Controlled parser-visible TU-state experiment engine.
 
-This remains the standalone diagnostic/record-max compatibility engine. New combined
-searches should use ``python -m gruntz.permute.match_variants``, which imports these
-state families and crosses them with libclang mutations and hand-authored axes. It does
-not rewrite the target. Each
-trial temporarily inserts deterministic parser-visible declarations, definitions, or
-curated includes before the target's ``RVA`` metadata block, compiles the real translation
-unit with MSVC 5.0 SP3, scores the requested symbol with objdiff, and restores the source
-immediately.  Probe-emitted symbols/storage exist only in the disposable candidate object.
+The standalone mode does not rewrite the target. Each trial temporarily inserts
+deterministic parser-visible declarations, definitions, or curated includes before the
+target's ``RVA`` metadata block, compiles the translation unit with MSVC 5.0 SP3, scores
+the requested symbol with objdiff, and restores the source immediately. Probe-emitted
+symbols or storage exist only in the disposable candidate object. The unified
+``gruntz permute variants`` mode crosses the same state families with reviewed source
+shapes and hand-authored axes.
 
 The source is unchanged on normal exit, compiler failure, timeout, or Ctrl-C. Each
 baseline/trial compile has a bounded timeout; on expiry the complete compiler process
@@ -22,13 +21,14 @@ Run inside ``nix develop .#build`` after entering the worktree first::
       --source src/Gruntz/Play.cpp --rva 0xcf0a0 --trials 40
 
 This is appropriate only after semantics, frame/slots, CFG, and external relocations
-have already been audited.  It is not a substitute for reconstruction, od_slots.py,
-or scripts/match_variants.py.
+have already been audited. It is not a substitute for reconstruction or a bounded,
+reviewed source-shape experiment.
 """
 
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import csv
 import fcntl
 import hashlib
@@ -50,6 +50,9 @@ from pathlib import Path
 from typing import Iterable
 
 from gruntz.permute.tu_state_metrics import read_coff
+from gruntz.permute.topology import (
+    compare_topology, function_topology, topology_rank,
+)
 
 
 IMAGE_BASE = 0x400000
@@ -71,6 +74,7 @@ ALL_FAMILIES = (
 )
 SAFE_ENUM_VALUES = (-32768, -1, 0, 1, 2, 7, 31, 255, 256, 1024, 32767, 65535)
 SAFE_SCALAR_TYPES = ("char", "unsigned char", "short", "unsigned short", "int", "unsigned long")
+SAFE_CALLING_CONVENTIONS = ("__cdecl", "__fastcall", "__stdcall")
 CURATED_INCLUDES = (
     "<stddef.h>", "<limits.h>", "<string.h>", "<stdlib.h>",
     "<time.h>", "<math.h>", "<ctype.h>", "<assert.h>",
@@ -348,24 +352,122 @@ def binding_rows(root: Path) -> list[dict[str, str]]:
 def make_declaration_forest(
     rng: random.Random, ident: str, width: int,
 ) -> tuple[str, tuple[str, ...]]:
-    """A broad mixed-kind surface with independently shuffled declarations."""
+    """Build a broad, independently shuffled parser-visible declaration surface."""
     atoms: list[tuple[str, str]] = []
+
+    typedef_shapes = (
+        lambda name, scalar, index: f"typedef {scalar} {name};\n",
+        lambda name, scalar, index: f"typedef {scalar} *{name};\n",
+        lambda name, scalar, index: f"typedef {scalar} {name}[{2 + index % 7}];\n",
+        lambda name, scalar, index: (
+            f"typedef {scalar} (__cdecl *{name})(int, unsigned long);\n"
+        ),
+        lambda name, scalar, index: f"typedef const {scalar} *{name};\n",
+    )
     for index in range(width):
         scalar = rng.choice(SAFE_SCALAR_TYPES)
+        shape = rng.randrange(len(typedef_shapes))
+        name = f"{ident}_FOREST_TYPEDEF_{index}"
+        atoms.append((
+            f"typedef:{shape}:{index}", typedef_shapes[shape](name, scalar, index)
+        ))
+
+    for index in range(width):
+        name = f"{ident}_FOREST_CLASS_{index}"
+        scalar = rng.choice(SAFE_SCALAR_TYPES)
+        constant = rng.choice((1, 2, 3, 7, 15, 31))
+        shape = rng.randrange(8)
+        if shape == 0:
+            body = f"class {name} {{ public: {scalar} m_value; int ProbeRead(int); }};\n"
+        elif shape == 1:
+            body = (
+                f"class {name} {{ private: {scalar} m_value; public: "
+                f"int ProbeIdentity(int value) {{ return value; }} protected: "
+                f"unsigned long m_state; }};\n"
+            )
+        elif shape == 2:
+            body = (
+                f"class {name} {{ public: typedef {scalar} ProbeValue; "
+                f"enum ProbeKind {{ PROBE_ZERO = 0, PROBE_LIMIT = {constant} }}; "
+                f"ProbeValue m_values[{2 + index % 4}]; }};\n"
+            )
+        elif shape == 3:
+            body = (
+                f"class {name} {{ public: static {scalar} s_value; "
+                f"static int ProbeStatic(int); int ProbeMember(unsigned long) const; }};\n"
+            )
+        elif shape == 4:
+            body = (
+                f"class {name} {{ public: virtual int ProbeVirtual(int); "
+                f"virtual unsigned long ProbeWide(unsigned long); }};\n"
+            )
+        elif shape == 5:
+            body = (
+                f"class {name} {{ public: int ProbeOverload(int); "
+                f"int ProbeOverload(unsigned long); int ProbeOverload(const char *); }};\n"
+            )
+        elif shape == 6:
+            body = (
+                f"class {name} {{ private: unsigned int m_low : {1 + index % 7}; "
+                f"unsigned int m_high : {1 + (index + 3) % 7}; "
+                f"public: int ProbeBits() const; }};\n"
+            )
+        else:
+            pack = (1, 2, 4, 8)[index % 4]
+            body = (
+                f"#pragma pack(push, {pack})\nclass {name} {{ public: char m_tag; "
+                f"{scalar} m_value; int ProbePacked(int value) "
+                f"{{ return value ^ {constant}; }} }};\n#pragma pack(pop)\n"
+            )
+        atoms.append((f"class:{shape}:{index}", body))
+
+    prototype_shapes = (
+        lambda name, convention, scalar: f"{scalar} {convention} {name}({scalar});\n",
+        lambda name, convention, scalar: (
+            f"int {convention} {name}(int, unsigned long);\n"
+        ),
+        lambda name, convention, scalar: (
+            f"{scalar} *{convention} {name}({scalar} *, unsigned int);\n"
+        ),
+        lambda name, convention, scalar: (
+            f"void {convention} {name}(const {scalar} *, const {scalar} *);\n"
+        ),
+    )
+    for index in range(width):
+        name = f"{ident}_FOREST_PROTOTYPE_{index}"
+        convention = rng.choice(SAFE_CALLING_CONVENTIONS)
+        scalar = rng.choice(SAFE_SCALAR_TYPES)
+        shape = rng.randrange(len(prototype_shapes))
+        atoms.append((
+            f"prototype:{shape}:{index}",
+            prototype_shapes[shape](name, convention, scalar),
+        ))
+
+    function_shapes = (
+        lambda name, convention, constant: (
+            f"static int {convention} {name}(int value) {{ return value; }}\n"
+        ),
+        lambda name, convention, constant: (
+            f"static int {convention} {name}(int value) "
+            f"{{ return value ^ {constant}; }}\n"
+        ),
+        lambda name, convention, constant: (
+            f"static unsigned long {convention} {name}(unsigned long left, "
+            f"unsigned long right) {{ return (left + right) ^ {constant}UL; }}\n"
+        ),
+        lambda name, convention, constant: (
+            f"static int {convention} {name}(int left, int right) "
+            f"{{ return left < right ? left + {constant} : right - {constant}; }}\n"
+        ),
+    )
+    for index in range(width):
+        name = f"{ident}_FOREST_FUNCTION_{index}"
+        convention = rng.choice(SAFE_CALLING_CONVENTIONS)
         constant = rng.choice((1, 2, 3, 7, 15, 31, 63, 127))
-        atoms.extend((
-            (f"typedef:{index}", f"typedef {scalar} {ident}_TYPE_{index};\n"),
-            (f"class:{index}", (
-                f"class {ident}_CLASS_{index} {{ public: {scalar} m_value; "
-                f"int Probe(int value) {{ return value ^ {constant}; }} }};\n"
-            )),
-            (f"prototype:{index}", (
-                f"int __fastcall {ident}_PROTOTYPE_{index}(int left, int right);\n"
-            )),
-            (f"function:{index}", (
-                f"static int {ident}_FUNCTION_{index}(int value) "
-                f"{{ return value ^ {constant}; }}\n"
-            )),
+        shape = rng.randrange(len(function_shapes))
+        atoms.append((
+            f"function:{shape}:{index}",
+            function_shapes[shape](name, convention, constant),
         ))
     rng.shuffle(atoms)
     return "".join(body for _label, body in atoms), tuple(
@@ -955,6 +1057,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rva", required=True, type=parse_int, help="exact CodeView RVA or image VA")
     parser.add_argument("--trials", type=int, default=30, help="number of deterministic trials")
     parser.add_argument(
+        "--jobs", type=int, default=1,
+        help="compile this many trials concurrently from disposable sibling sources",
+    )
+    parser.add_argument(
         "--only-trial", type=int, action="append",
         help="replay only this deterministic trial index; may be repeated",
     )
@@ -997,6 +1103,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.trials < 1:
         parser.error("--trials must be positive")
+    if args.jobs < 1:
+        parser.error("--jobs must be positive")
     if args.max_declarations < DEFAULT_MIN_FOREST_WIDTH:
         parser.error(
             f"--max-declarations must be at least {DEFAULT_MIN_FOREST_WIDTH}"
@@ -1083,6 +1191,7 @@ def main(argv: list[str] | None = None) -> int:
         "insertion": args.insertion,
         "generation_horizon": args.trials,
         "selected_trials": [variant.trial for variant in variants],
+        "jobs": args.jobs,
         "policy": {
             "parser_visible_temporary_probes": True,
             "probe_symbols_or_storage_may_exist_only_in_candidate_object": True,
@@ -1163,10 +1272,15 @@ def main(argv: list[str] | None = None) -> int:
     retail_target = retail_metrics.get(target.symbol, {})
     retail_target["codeview_size"] = target.retail_size
     baseline_score = baseline_scores[target.symbol]
+    retail_topology = function_topology(target_obj, target.symbol)
+    baseline_topology = compare_topology(
+        function_topology(baseline_obj, target.symbol), retail_topology
+    )
     manifest["baseline"] = {
         "score": baseline_score,
         "candidate": baseline_target,
         "retail": retail_target,
+        "topology": baseline_topology,
     }
     print(
         f"target {target.unit} {target.symbol} RVA 0x{target.rva:x}: "
@@ -1176,6 +1290,8 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     best_observed = None
+    best_topology = None
+    best_topology_key = topology_rank(baseline_topology, baseline_score)
     exact_closure = None
     rows = []
     interrupted = False
@@ -1185,30 +1301,69 @@ def main(argv: list[str] | None = None) -> int:
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, stop_for_signal)
+
+    def candidate_admissible(candidate: str, variant: Variant):
+        candidate_hash = (
+            canonical_target_hash
+            if target_suffix_digest(candidate, target.rva)
+            == canonical_target_suffix_digest
+            else None
+        )
+        guard = include_macro_guard(
+            root, variant.body, canonical_target_tokens
+        )
+        return candidate_hash, guard
+
     try:
+        precompiled: dict[int, tuple[bool, str, bool]] = {}
+        if args.jobs > 1 and variants:
+            def parallel_compile(variant: Variant):
+                candidate = insert_variant(original, target, variant, args.insertion)
+                candidate_hash, guard = candidate_admissible(candidate, variant)
+                if candidate_hash != canonical_target_hash or not guard.get("passed", True):
+                    return variant.trial, None
+                probe_source = target.source.with_name(
+                    f".{target.source.stem}.trial{variant.trial:04d}{target.source.suffix}"
+                )
+                trial_obj = output / f"trial-{variant.trial:04d}.obj"
+                probe_source.write_bytes(candidate.encode("utf-8"))
+                try:
+                    return variant.trial, compile_object(
+                        root, probe_source, trial_obj, flags,
+                        args.compile_timeout_seconds,
+                    )
+                finally:
+                    probe_source.unlink(missing_ok=True)
+
+            with measure_stage(timings, "trial_compile"):
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=args.jobs
+                ) as pool:
+                    for trial_index, result in pool.map(parallel_compile, variants):
+                        if result is not None:
+                            precompiled[trial_index] = result
         for variant in variants:
             candidate = insert_variant(original, target, variant, args.insertion)
             candidate_bytes = candidate.encode("utf-8")
             trial_obj = output / f"trial-{variant.trial:04d}.obj"
-            include_guard = include_macro_guard(root, variant.body, canonical_target_tokens)
             compile_timed_out = False
-            with temporary_source(target.source, original_bytes, candidate_bytes):
-                with measure_stage(timings, "target_hash_check"):
-                    candidate_target_hash = (
-                        canonical_target_hash
-                        if target_suffix_digest(candidate, target.rva) == canonical_target_suffix_digest
-                        else None
-                    )
-                if candidate_target_hash != canonical_target_hash:
-                    ok = False
-                    compile_log = (
-                        "canonical target normalized source hash changed: "
-                        f"{canonical_target_hash} -> {candidate_target_hash}\n"
-                    )
-                elif not include_guard.get("passed", True):
-                    ok = False
-                    compile_log = "include macro guard rejected candidate: " + json.dumps(include_guard) + "\n"
-                else:
+            with measure_stage(timings, "target_hash_check"):
+                candidate_target_hash, include_guard = candidate_admissible(
+                    candidate, variant
+                )
+            if candidate_target_hash != canonical_target_hash:
+                ok = False
+                compile_log = (
+                    "canonical target normalized source hash changed: "
+                    f"{canonical_target_hash} -> {candidate_target_hash}\n"
+                )
+            elif not include_guard.get("passed", True):
+                ok = False
+                compile_log = "include macro guard rejected candidate: " + json.dumps(include_guard) + "\n"
+            elif variant.trial in precompiled:
+                ok, compile_log, compile_timed_out = precompiled.pop(variant.trial)
+            else:
+                with temporary_source(target.source, original_bytes, candidate_bytes):
                     with measure_stage(timings, "trial_compile"):
                         ok, compile_log, compile_timed_out = compile_object(
                             root,
@@ -1259,9 +1414,13 @@ def main(argv: list[str] | None = None) -> int:
                     trial["rejections"].append("target absent from candidate object/diff")
                 else:
                     target_metrics["objdiff_size"] = sizes.get(target.symbol)
+                    topology = compare_topology(
+                        function_topology(trial_obj, target.symbol), retail_topology
+                    )
                     trial["score"] = score
                     trial["score_delta"] = score - baseline_score
                     trial["candidate"] = target_metrics
+                    trial["topology"] = topology
                     with measure_stage(timings, "regression_gates"):
                         candidate_size = target_metrics.get("objdiff_size")
                         baseline_size = baseline_target.get("objdiff_size")
@@ -1299,6 +1458,15 @@ def main(argv: list[str] | None = None) -> int:
                                 (output / "best.snippet").write_text(
                                     variant.block(target.logical_line)
                                 )
+                    candidate_topology_key = topology_rank(topology, score)
+                    if trial["eligible"] and candidate_topology_key < best_topology_key:
+                        best_topology_key = candidate_topology_key
+                        best_topology = trial
+                        if args.retain_best:
+                            shutil.copyfile(trial_obj, output / "best-topology.obj")
+                            (output / "best-topology.snippet").write_text(
+                                variant.block(target.logical_line)
+                            )
                 trial_obj.unlink(missing_ok=True)
                 Path(str(trial_obj) + ".d").unlink(missing_ok=True)
             manifest["trials"].append(trial)
@@ -1322,6 +1490,9 @@ def main(argv: list[str] | None = None) -> int:
         # observed outside its guarded candidate interval.
         signal.signal(signal.SIGTERM, old_term)
 
+    for trial_index in precompiled:
+        (output / f"trial-{trial_index:04d}.obj").unlink(missing_ok=True)
+
     (output / "trials.tsv").write_text(
         "trial\tfamily\tscore\tdelta\teligible\trejections\n" + "".join(rows)
     )
@@ -1333,6 +1504,14 @@ def main(argv: list[str] | None = None) -> int:
             "score_delta": best_observed["score_delta"],
             "candidate": best_observed["candidate"],
             "source_hash_unchanged": True,
+            "generated_noise_retained": False,
+        }
+    if best_topology is not None:
+        manifest["best_topology_disposable"] = {
+            "trial": best_topology["trial"],
+            "family": best_topology["family"],
+            "score": best_topology["score"],
+            "topology": best_topology["topology"],
             "generated_noise_retained": False,
         }
     if exact_closure is not None:
@@ -1377,6 +1556,7 @@ def main(argv: list[str] | None = None) -> int:
                     "tag": trial["tag"],
                     "body": trial["body"],
                 },
+                "topology": trial.get("topology"),
             })
             state["scores"].append(trial["score"])
         summary_path = args.state_summary if args.state_summary.is_absolute() \
@@ -1428,7 +1608,9 @@ def main(argv: list[str] | None = None) -> int:
         return 130
 
     if exact_closure is None:
-        retained = args.retain_best and best_observed is not None
+        retained = args.retain_best and (
+            best_observed is not None or best_topology is not None
+        )
         retained_output = finalize_compiled_artifacts(
             scratch, output, final_output, retained
         )

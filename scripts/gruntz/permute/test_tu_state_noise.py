@@ -141,6 +141,28 @@ class PermuteCliGateTests(unittest.TestCase):
         self.assertEqual(result, 2)
         run.assert_not_called()
 
+    def test_public_variants_command_uses_the_same_gate(self):
+        binding = SimpleNamespace(rva=0x123456, unit="unit", name="?Target@@YAHXZ")
+
+        def diagnose(_token):
+            print("class: REGALLOC/SCHEDULING")
+            return 0
+
+        with mock.patch("gruntz.walls.diagnose.diagnose", side_effect=diagnose), \
+             mock.patch("gruntz.model.resolve", return_value=SimpleNamespace(
+                 functions=[binding]
+             )), \
+             mock.patch("gruntz.verify.baseline.load", return_value={
+                 (binding.unit, binding.name): {"hist": 99.0}
+             }), \
+             mock.patch("gruntz.permute.match_variants.main", return_value=19) as run:
+            result = cli.main([
+                "permute", "variants", "src/unit.cpp", "0x123456",
+                "--max-depth", "1", "-o", "/tmp/manifest.json",
+            ])
+        self.assertEqual(result, 19)
+        run.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

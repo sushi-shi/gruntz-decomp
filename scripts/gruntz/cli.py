@@ -16,7 +16,7 @@
                                      xref, rva, vtable, classof, strings, ...)
     gruntz walls <sub>               the wall campaign: inventory, diagnose,
                                      inline-model
-    gruntz permute state             controlled disposable TU-state search
+    gruntz permute state|variants    controlled TU-state or reviewed source search
     gruntz ghidra <sub>              one-way viewer export: the retail image
                                      as a labelled Ghidra project (build,
                                      update, verify, status, export)
@@ -63,20 +63,32 @@ def main(argv: list[str] | None = None) -> int:
     if cmd == "permute":
         if not rest or rest[0] in ("-h", "--help"):
             print("gruntz permute state --source <tu.cpp> --rva <rva> [options]\n"
-                  "  state: classified, disposable compiler-state search")
+                  "gruntz permute variants <tu.cpp> <rva> [options]\n"
+                  "  state: classified, disposable compiler-state search\n"
+                  "  variants: reviewed exact axes x AST shapes x TU state")
             return 0 if rest else 2
-        if rest[0] != "state":
+        if rest[0] not in ("state", "variants"):
             print("gruntz permute: unknown verb " + repr(rest[0])
-                  + " (have: state)", file=sys.stderr)
+                  + " (have: state, variants)", file=sys.stderr)
             return 2
-        state_args = rest[1:]
-        rva_arg = next((
-            state_args[index + 1]
-            for index, value in enumerate(state_args[:-1])
-            if value == "--rva"
-        ), None)
+        verb, permute_args = rest[0], rest[1:]
+        if any(value in ("-h", "--help") for value in permute_args):
+            if verb == "state":
+                from gruntz.permute.tu_state_noise import main as permute_main
+            else:
+                from gruntz.permute.match_variants import main as permute_main
+            return permute_main(permute_args)
+        rva_arg = (
+            next((
+                permute_args[index + 1]
+                for index, value in enumerate(permute_args[:-1])
+                if value == "--rva"
+            ), None)
+            if verb == "state"
+            else (permute_args[1] if len(permute_args) >= 2 else None)
+        )
         if rva_arg is None:
-            print("gruntz permute state: --rva is required", file=sys.stderr)
+            print(f"gruntz permute {verb}: an RVA is required", file=sys.stderr)
             return 2
         from contextlib import redirect_stdout
         from io import StringIO
@@ -87,7 +99,7 @@ def main(argv: list[str] | None = None) -> int:
         report = diagnosis.getvalue()
         print(report, end="")
         if result or "class: REGALLOC/SCHEDULING" not in report:
-            print("gruntz permute state: refused - state search requires a "
+            print(f"gruntz permute {verb}: refused - permutation requires a "
                   "REGALLOC/SCHEDULING diagnosis", file=sys.stderr)
             return 2
         from gruntz.model import resolve
@@ -98,11 +110,14 @@ def main(argv: list[str] | None = None) -> int:
         binding = next((row for row in resolve().functions if row.rva == rva), None)
         bank = load_baseline().get((binding.unit, binding.name)) if binding else None
         if bank and bank["hist"] >= 100.0:
-            print("gruntz permute state: refused - historical MAX is already "
+            print(f"gruntz permute {verb}: refused - historical MAX is already "
                   "100%", file=sys.stderr)
             return 2
-        from gruntz.permute.tu_state_noise import main as state_main
-        return state_main(state_args)
+        if verb == "state":
+            from gruntz.permute.tu_state_noise import main as permute_main
+        else:
+            from gruntz.permute.match_variants import main as permute_main
+        return permute_main(permute_args)
     if cmd in ("build", "link", "match"):
         from gruntz.graph.verbs import VERBS
         return VERBS[cmd](rest)
