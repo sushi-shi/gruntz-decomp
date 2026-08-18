@@ -1798,6 +1798,24 @@ class LinkTierRunnabilityControls(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
+# function source fingerprint name bridge                                     #
+# --------------------------------------------------------------------------- #
+class FingerprintNameControls(unittest.TestCase):
+    def test_function_pointer_return_keeps_the_declared_method_name(self):
+        from gruntz.verify.fingerprints import _qualified_of
+        demangled = ("public: void (__cdecl * __thiscall "
+                     "CVariantSlot::Add(class zErrHandling *, "
+                     "void (__cdecl *)(char *, int)))(char *, int)")
+        self.assertEqual(_qualified_of(demangled), "CVariantSlot::Add")
+
+    def test_ordinary_method_name_is_unchanged(self):
+        from gruntz.verify.fingerprints import _qualified_of
+        self.assertEqual(
+            _qualified_of("public: int __thiscall CFileIO::Open(char const *)"),
+            "CFileIO::Open")
+
+
+# --------------------------------------------------------------------------- #
 # the MAX ledger: the bank rules themselves (the file is project state)       #
 # --------------------------------------------------------------------------- #
 class BankRatchetControls(unittest.TestCase):

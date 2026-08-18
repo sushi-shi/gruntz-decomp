@@ -25,6 +25,7 @@ src_hash provenance carries over without a full re-parse.
 from __future__ import annotations
 
 import hashlib
+import re
 import subprocess
 from pathlib import Path
 
@@ -175,6 +176,15 @@ def demangle_map(names: set) -> dict[str, str]:
 
 def _qualified_of(demangled: str) -> str | None:
     """'public: int __thiscall CFileIO::Open(char const *,...)' -> 'CFileIO::Open'."""
+    # A function-pointer return type wraps the declared name in parentheses:
+    #   void (__cdecl * __thiscall C::Get(...))(char *, int)
+    # The first `(` therefore belongs to the return type, not the parameter
+    # list.  Prefer the qualified identifier which is itself followed by `(`.
+    wrapped = re.search(
+        r"(?<![\w:])((?:~?[A-Za-z_]\w*::)+~?[A-Za-z_]\w*)\s*\(",
+        demangled)
+    if wrapped:
+        return wrapped.group(1)
     head = demangled.split("(", 1)[0].strip()    # drop the parameter list
     if not head:
         return None
