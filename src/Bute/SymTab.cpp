@@ -846,7 +846,7 @@ CSymParser::CSymParser() : m_hash(1) {
 }
 
 RVA(0x0013ab00, 0xac)
-CSymParser::CSymParser(void* buf, i32 a2, i32 a3) : m_hash(1) {
+CSymParser::CSymParser(char* buf, i32 a2, i32 a3) : m_hash(1) {
     {
         CSymParser tmp;
     }
@@ -913,7 +913,7 @@ CSymParser::~CSymParser() {
 // the residue is 18 register NAMES in arm 1 (cl reuses the freed edi as the m_count
 // scratch where retail keeps eax/ecx/edx). 472 variants found nothing.
 RVA(0x0013ad00, 0x3b8)
-i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
+i32 CSymParser::ParseBuffer(char* buf, i32 a, i32 b) {
     m_readOnly = a;
     if (a == 0) {
         return 0;
@@ -921,10 +921,10 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (m_cachedSourceBuffer) {
         delete[] m_cachedSourceBuffer;
     }
-    char* src = new char[strlen(static_cast<char*>(buf)) + 1];
+    char* src = new char[strlen(buf) + 1];
     m_cachedSourceBuffer = src;
-    strcpy(src, static_cast<char*>(buf));
-    if (Classify(static_cast<char*>(buf)) != 0) {
+    strcpy(src, buf);
+    if (Classify(buf) != 0) {
 
         if (m_readOnly == 0) {
             return 0;
@@ -938,7 +938,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         m_activeNode = reader;
         m_list.AddHead(reader);
         m_list.m_count++;
-        if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
+        if (reader->Open(buf, a, b) == 0) {
             return 0;
         }
         m_parseArmed = 1;
@@ -966,7 +966,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_activeNode = reader;
     m_list.AddHead(reader);
     m_list.m_count++;
-    if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
+    if (reader->Open(buf, a, b) == 0) {
         return 0;
     }
     m_parseArmed = 1;

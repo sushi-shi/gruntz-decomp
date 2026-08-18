@@ -30,7 +30,7 @@ struct CSlotNode : public DSoundLink {
 
 // CSymParser::m_nodes (this+0x88). Its own empty destructor COMDAT - the lone
 // `c3` at 0x13abb0, fenced by nop fill on both sides and reached from the unwind
-// funclets of ??0CSymParser(void*,i32,i32) and ~CSymParser - so it is a distinct
+// funclets of ??0CSymParser(char*,i32,i32) and ~CSymParser - so it is a distinct
 // class from DSoundList, whose own `~DSoundList()` lives elsewhere.
 struct CSlotNodeList : public DSoundList {
     RVA(0x0013abb0, 0x1)
@@ -73,7 +73,7 @@ public:
     virtual i32 Retry();
 
     CSymParser();
-    CSymParser(void* buf, i32 a2, i32 a3);
+    CSymParser(char* buf, i32 a2, i32 a3);
 
     ~CSymParser();
 
@@ -81,7 +81,7 @@ public:
 
     CSymTab* GetRoot();
 
-    i32 ParseBuffer(void* buf, i32 a, i32 b);
+    i32 ParseBuffer(char* buf, i32 a, i32 b);
 
     i32 LoadEntry(char* name, i32 flag);
 

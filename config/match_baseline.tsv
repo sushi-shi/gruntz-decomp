@@ -1910,7 +1910,7 @@ gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	1	aa989a985074	0
 gamelevel	?LoadFromSource@CGameLevel@@UAEHPAUCParseSource@@@Z	100.0000	100.0000	1	51774f72971b	0x15d630	100.0000	
 gamelevel	?LoadName@CGameLevel@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	7c8af13578f3	0x161110	100.0000	
 gamelevel	?LoadSourceWithCoords@CGameLevel@@UAEHPAUCParseSource@@PAUtagRECT@@@Z	100.0000	100.0000	1	9194ad66e60b	0x15ceb0	100.0000	
-gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	91.2247	91.2247	3	f70095759cde	0x15d280	91.2247	
+gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	91.2247	91.2247	4	9b80205b313d	0x15d280	91.2247	
 gamelevel	?LoadWwdWithCoords@CGameLevel@@UAEHPAUWwdHeader@@PAUtagRECT@@@Z	100.0000	100.0000	1	fd6bf702ab2a	0x15cf70	100.0000	
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	1	985fbc7515cc	0x160ee0	100.0000	
 gamelevel	?MoveClimbing@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	96.1157	96.1157	1	a5d8b0b1b18a	0x15e5b0	96.1157	
@@ -1927,8 +1927,8 @@ gamelevel	?ProbeFootSoft@CGameLevel@@AAEHPAUCGameObject@@H@Z	100.0000	99.9863	1	
 gamelevel	?ProbeHeadSoft@CGameLevel@@QAEHPAUCGameObject@@H@Z	99.9770	99.9770	1	613cedf2f37f	0x160450	99.9770	
 gamelevel	?ProbeSpanHard@CGameLevel@@QAEHPAUCGameObject@@HH@Z	100.0000	100.0000	1	27896903d2cc	0x15f470	100.0000	
 gamelevel	?ProbeStepEdge@CGameLevel@@AAEHHH@Z	100.0000	100.0000	1	56c4656f3b4c	0x15fc30	100.0000	
-gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCTileImageSet@@PAX@Z	100.0000	100.0000	4	58a7a376273a	0x15d820	100.0000	
-gamelevel	?ReadImageSets@CGameLevel@@AAEHPBIPAD@Z	100.0000	100.0000	3	bb10a7264823	0x15d790	100.0000	
+gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCTileImageSet@@PAUWwdTileImageRecord@@@Z	100.0000	100.0000	5	3ebbe78a7722	0x15d820	100.0000	
+gamelevel	?ReadImageSets@CGameLevel@@AAEHPBIPAD@Z	100.0000	100.0000	4	aca26a96c7fd	0x15d790	100.0000	
 gamelevel	?ReadObjectPlane@CGameLevel@@QAEPAVCDDrawWorkerHost@@HHHHHHPBD@Z	100.0000	100.0000	1	d526b23382b9	0x15d9a0	100.0000	
 gamelevel	?ReadPlane@CGameLevel@@AAEPAVCDDrawWorkerHost@@PBUWwdPlaneHeader@@PBDPAUtagRECT@@@Z	100.0000	100.0000	2	a311b8b4a9e3	0x15d8d0	100.0000	
 gamelevel	?ReadWwdHeaderName@CGameLevel@@QAEHPBDPAD@Z	100.0000	100.0000	2	4a69ad1bd8d3	0x160660	100.0000	
@@ -2858,7 +2858,7 @@ lightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	100.0000	100.0000	1	0d204d
 lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	68.8654	68.8654	3	a877544a1810	0xa3820	71.8590	
 lightfxrender	?ContinueMinimapPan@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	9f2e251594dc	0xa95d0	100.0000	
 lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	88.0968	1	4ad103e0e1e6	0xa3b50	100.0000	
-lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAUtagRECT@@PAXH@Z	98.3103	98.3103	2	456e5cd6d13d	0xa3a20	98.3103	
+lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAUtagRECT@@PADH@Z	96.7931	96.7931	3	03c3fbd059a8	0xa3a20	98.3103	
 lightfxrender	?EndMinimapPan@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	02833a6cf2bb	0xa9500	100.0000	
 lightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	1	dab55b822081	0xa4840	100.0000	
 lightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	d45170de347d	0xa33a0	100.0000	
@@ -4026,8 +4026,8 @@ statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	3	
 streamrecordloaders	?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z	93.9657	93.9657	1	0cd1f2e69d70	0x9c650	93.9657	
 streamrecordloaders	?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	b5a0f36ad3c5	0x9cab0	100.0000	
 symtab	??0CParseSource@@QAE@XZ	100.0000	100.0000	1	0d8b75123f92	0x1396f0	100.0000	
-symtab	??0CSymParser@@QAE@PAXHH@Z	100.0000	100.0000	1	3ee64c399570	0x13ab00	100.0000	
-symtab	??0CSymParser@@QAE@XZ	100.0000	100.0000	1	3ee64c399570	0x13aa10	100.0000	
+symtab	??0CSymParser@@QAE@PADHH@Z	100.0000	100.0000	2	52303b3baf25	0x13ab00	100.0000	
+symtab	??0CSymParser@@QAE@XZ	100.0000	100.0000	2	52303b3baf25	0x13aa10	100.0000	
 symtab	??0CSymRec@@QAE@HPAVCSymTab@@H@Z	100.0000	100.0000	1	8addc69dc6b9	0x139c80	100.0000	
 symtab	??0CSymRec@@QAE@HPAVCSymTab@@HH@Z	99.3548	99.3548	1	8addc69dc6b9	0x139bf0	99.3548	
 symtab	??0CSymTab@@QAE@PAVCSymParser@@PAV0@PBDHHHHH@Z	100.0000	100.0000	2	307f51585acb	0x139de0	100.0000	
@@ -4076,7 +4076,7 @@ symtab	?NextSym2@CSymTab@@QAEPAUCParseSource@@PAVCSymRec@@@Z	100.0000	100.0000	2
 symtab	?NextSym3@CSymTab@@QAEPAUCParseSource@@PAU2@@Z	100.0000	100.0000	2	7bbd858f23ec	0x13a310	100.0000	
 symtab	?NextSym@CSymTab@@QAEPAVCSymRec@@PAV2@@Z	100.0000	100.0000	2	a12f347f76bc	0x13a2d0	100.0000	
 symtab	?PackTag@CSymParser@@QAE?AW4RezTypeTag@@PBD@Z	100.0000	100.0000	1	59a82eb4ec6f	0x13b910	100.0000	
-symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	98.4567	98.4567	1	bf4f711e19b7	0x13ad00	98.4567	
+symtab	?ParseBuffer@CSymParser@@QAEHPADHH@Z	98.4567	98.4567	2	ea4ac01a80c7	0x13ad00	98.4567	
 symtab	?ParseRecords@CSymParser@@QAEHPAVCRezItmBase@@PAVCSymTab@@PADH@Z	99.6710	99.6710	3	808a92559a6b	0x13b300	99.6710	
 symtab	?PopParseSlot@CSymParser@@QAEPAUCParseSource@@XZ	98.2174	98.2174	2	b9f571bba9a8	0x13c0c0	98.2174	
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050	100.0000	

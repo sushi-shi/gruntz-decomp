@@ -39,7 +39,7 @@ public:
 
     i32 ComputeRect(CDDrawSurfacePair* ctx, RECT* src);
 
-    void DrawBorderRaw(RECT* r, void* base, i32 color);
+    void DrawBorderRaw(RECT* r, char* base, i32 color);
 
     void DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color);
 

@@ -301,15 +301,15 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 // (canonical operand order, TU-state class); the side-edge loop itself matches -
 // stepping each cursor directly after its store keeps both IVs live.
 RVA(0x000a3a20, 0xe2)
-void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
+void CLightFxRender::DrawBorderRaw(RECT* r, char* base, i32 color) {
     i32 w = r->right - r->left + 1;
 
-    u16* tp = Pix16(static_cast<char*>(base) + PixOffset(m_surface, r->left, r->top));
+    u16* tp = Pix16(base + PixOffset(m_surface, r->left, r->top));
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
 
-    u16* bp = Pix16(static_cast<char*>(base) + PixOffset(m_surface, r->left, r->bottom));
+    u16* bp = Pix16(base + PixOffset(m_surface, r->left, r->bottom));
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
@@ -320,8 +320,8 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 step = m_surface->m_pitch;
 
     if (h > 0) {
-        char* lp = static_cast<char*>(base) + lo;
-        char* rp = static_cast<char*>(base) + ro;
+        char* lp = base + lo;
+        char* rp = base + ro;
         i32 v = h;
         while (v != 0) {
             *Pix16(lp) = static_cast<u16>(color);

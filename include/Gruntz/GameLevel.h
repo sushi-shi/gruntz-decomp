@@ -15,6 +15,7 @@
 
 class CFileMemBase;
 class CDDrawSurfacePair;
+struct WwdTileImageRecord;
 
 static const i32 TILE_CLEAR = -1;
 
@@ -241,7 +242,7 @@ private:
     CDDrawWorkerHost*
     ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT* bounds);
 
-    CTileImageSet* ReadImageSet(void* record);
+    CTileImageSet* ReadImageSet(WwdTileImageRecord* record);
 
     i32 StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);
     i32 StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags);

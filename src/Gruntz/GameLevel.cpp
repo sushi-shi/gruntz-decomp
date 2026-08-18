@@ -201,7 +201,9 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             i32 n = 0;
             i32 j = 0;
             while (static_cast<u32>(j) < rec->m_count) {
-                CTileImageSet* set = ReadImageSet(elem);
+                RecordBytes<WwdTileImageRecord> record;
+                record.m_chars = elem;
+                CTileImageSet* set = ReadImageSet(record.m_rec);
                 if (set == NULL) {
                     result = -1;
                     goto check_result;
@@ -359,7 +361,9 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     }
     i32 n = 0;
     for (i32 i = 0; static_cast<u32>(i) < dir[2]; i++) {
-        CTileImageSet* set = ReadImageSet(cursor);
+        RecordBytes<WwdTileImageRecord> record;
+        record.m_chars = cursor;
+        CTileImageSet* set = ReadImageSet(record.m_rec);
         if (set == NULL) {
             return -1;
         }
@@ -371,13 +375,12 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 }
 
 RVA(0x0015d820, 0xa3)
-CTileImageSet* CGameLevel::ReadImageSet(void* record) {
+CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
     if (record == NULL) {
         return 0;
     }
-    WwdTileImageRecord* rec = static_cast<WwdTileImageRecord*>(record);
     CTileImageSet* set;
-    switch (rec->m_kind) {
+    switch (record->m_kind) {
         case TILE_IMAGESET_UNIFORM:
             set = new CImageSet1;
             break;
@@ -391,7 +394,7 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
             return 0;
     }
 
-    if (set->Parse(rec) == 0) {
+    if (set->Parse(record) == 0) {
         if (set != NULL) {
             delete set;
         }
