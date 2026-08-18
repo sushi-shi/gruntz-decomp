@@ -19,6 +19,7 @@
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Rez/RezSync.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <afxcmn.h>
@@ -497,9 +498,8 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (host->m_emitGate) {
             return;
         }
-        void* cue_ob = 0;
-        host->m_cues.Lookup("GAME_VOICE", cue_ob);
-        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+        LeafCue* cue = NULL;
+        MapLookup(host->m_cues, "GAME_VOICE", cue);
         if (!cue) {
             return;
         }
@@ -523,9 +523,8 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (host->m_emitGate) {
             return;
         }
-        void* cue_ob = 0;
-        host->m_cues.Lookup("GAME_CHIPFALLOUT", cue_ob);
-        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+        LeafCue* cue = NULL;
+        MapLookup(host->m_cues, "GAME_CHIPFALLOUT", cue);
         if (!cue) {
             return;
         }

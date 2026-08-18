@@ -38,6 +38,7 @@
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
@@ -553,10 +554,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 {
                     CDDrawSubMgrLeafScan* set = m_world->m_soundRegistry;
                     if (set->m_emitGate == 0) {
-                        void* found = 0;
-                        set->m_cues.Lookup("GAME_SECRETSWITCH", found);
+                        LeafCue* found = NULL;
+                        MapLookup(set->m_cues, "GAME_SECRETSWITCH", found);
                         if (found != NULL) {
-                            static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                            found->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                         }
                     }
                 }

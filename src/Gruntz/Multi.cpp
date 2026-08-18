@@ -62,6 +62,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
 #include <Utils/DebugTiming.h>
+#include <Utils/MapTyped.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/EngStr.h>
 #include <Wwd/WwdFile.h>
@@ -1272,9 +1273,8 @@ i32 CMulti::ShowMultiStartDlg() {
     } else {
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_emitGate == 0) {
-            void* rec_ob = 0;
-            reg->m_cues.Lookup(s_GameKey, rec_ob);
-            LeafCue* rec = static_cast<LeafCue*>(rec_ob);
+            LeafCue* rec = NULL;
+            MapLookup(reg->m_cues, s_GameKey, rec);
             if (rec != NULL) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
@@ -1739,9 +1739,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (host->m_emitGate != 0) {
                 break;
             }
-            void* e_ob = 0;
-            host->m_cues.Lookup("GAME_CHAT", e_ob);
-            LeafCue* e = static_cast<LeafCue*>(e_ob);
+            LeafCue* e = NULL;
+            MapLookup(host->m_cues, "GAME_CHAT", e);
             if (e == NULL) {
                 break;
             }
@@ -2111,9 +2110,8 @@ i32 CMulti::LoadMenuSelectSprite(MenuSelectEvent* ev) {
         }
         CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
-            void* out = 0;
-            host->m_cues.Lookup("GAME_MENUS_SELECT", out);
-            LeafCue* e = static_cast<LeafCue*>(out);
+            LeafCue* e = NULL;
+            MapLookup(host->m_cues, "GAME_MENUS_SELECT", e);
             if (e != NULL) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;

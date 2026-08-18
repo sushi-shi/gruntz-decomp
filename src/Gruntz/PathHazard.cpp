@@ -30,6 +30,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -326,9 +327,8 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
     if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
-            void* out_ob = 0;
-            host->m_cues.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
-            LeafCue* out = static_cast<LeafCue*>(out_ob);
+            LeafCue* out = NULL;
+            MapLookup(host->m_cues, "LEVEL_CLOUDHAZARDKILL", out);
             if (out != NULL) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;

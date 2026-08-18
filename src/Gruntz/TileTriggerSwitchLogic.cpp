@@ -33,6 +33,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
@@ -116,9 +117,8 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
-            void* spr_ob = 0;
-            h->m_cues.Lookup("GAME_SWITCHDOWN", spr_ob);
-            LeafCue* spr = static_cast<LeafCue*>(spr_ob);
+            LeafCue* spr = NULL;
+            MapLookup(h->m_cues, "GAME_SWITCHDOWN", spr);
             if (spr) {
                 i32 sndEnabled = g_sndEnabled;
                 i32 cueTag = g_sndCueTag;
@@ -157,9 +157,8 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
-            void* spr_ob = 0;
-            h->m_cues.Lookup("GAME_SWITCHUP", spr_ob);
-            LeafCue* spr = static_cast<LeafCue*>(spr_ob);
+            LeafCue* spr = NULL;
+            MapLookup(h->m_cues, "GAME_SWITCHUP", spr);
             if (spr) {
                 i32 sndEnabled = g_sndEnabled;
                 i32 cueTag = g_sndCueTag;
@@ -878,9 +877,8 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     if (sreg->m_emitGate != 0) {
         return 0;
     }
-    void* out_ob = 0;
-    sreg->m_cues.Lookup("LEVEL_ROCKBREAK", out_ob);
-    LeafCue* out = static_cast<LeafCue*>(out_ob);
+    LeafCue* out = NULL;
+    MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", out);
     if (out == NULL) {
         return 0;
     }

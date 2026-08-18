@@ -25,6 +25,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Utils/MapTyped.h>
 
 // @early-stop
 RVA(0x000e80e0, 0x8c)
@@ -126,11 +127,8 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
 
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_emitGate == 0) {
-            LeafCue* found = 0;
-            void* foundP = 0;
-
-            mh->m_cues.Lookup("GAME_TABHIGHLIGHT2", foundP);
-            found = static_cast<LeafCue*>(foundP);
+            LeafCue* found = NULL;
+            MapLookup(mh->m_cues, "GAME_TABHIGHLIGHT2", found);
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;

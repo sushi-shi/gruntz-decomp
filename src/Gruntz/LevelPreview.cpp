@@ -25,6 +25,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
 #include <Rez/RezTypeTag.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Wap32.h>
 
@@ -150,9 +151,8 @@ void CPreviewState::LoadLevelPreviewScreen() {
     } else {
         CDDrawSubMgrLeafScan* h = m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
-            void* p_ob = 0;
-            h->m_cues.Lookup("GAME_TELEPORTEROPEN", p_ob);
-            LeafCue* p = static_cast<LeafCue*>(p_ob);
+            LeafCue* p = NULL;
+            MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", p);
             if (p != NULL) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0

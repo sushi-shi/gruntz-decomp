@@ -22,6 +22,7 @@
 #include <Gruntz/String.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezSync.h>
+#include <Utils/MapTyped.h>
 
 #include <ddraw.h>
 #include <stddef.h>
@@ -100,9 +101,9 @@ i32 CAttract::EnterState(GameStateId arg) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    void* found = 0;
-    menuRoot()->m_soundRegistry->m_cues.Lookup(buf, found);
-    m_host = static_cast<LeafCue*>(found);
+    LeafCue* found = NULL;
+    MapLookup(menuRoot()->m_soundRegistry->m_cues, buf, found);
+    m_host = found;
     if (found != NULL && m_activeFlag != 0) {
         if (g_sndEnabled) {
             m_host->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
