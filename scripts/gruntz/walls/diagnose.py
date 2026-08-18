@@ -63,7 +63,22 @@ def _find_function(obj: Obj, name: str):
     return None, None, 0
 
 
-def _skeleton(payload: bytes, rel: dict, vma: int = 0):
+def _jump_table_bytes(rel: dict, own: str) -> set[int]:
+    """Offsets covered by this function's own switch jump table.
+
+    A DIR32 reloc whose referent is the function ITSELF is a table entry, not
+    a call: the table is DATA embedded in .text, and objdump decodes it as
+    instructions - some entry bytes decode as `call`, which used to inflate
+    the call count and read as a false INLINE/CALL-SET wall on switch-heavy
+    functions (CGrunt::StepCompassMove reported 24 vs 22 calls; both are 22)."""
+    covered: set[int] = set()
+    for off, (tgt, _addend) in rel.items():
+        if tgt == own:
+            covered.update(range(off, off + 4))
+    return covered
+
+
+def _skeleton(payload: bytes, rel: dict, vma: int = 0, data: set[int] = ()):
     """(masked bytes, calls-in-order, n_branches, n_returns, n_insns)."""
     from gruntz.tool import objdump
     masked = bytearray(payload)
@@ -74,6 +89,11 @@ def _skeleton(payload: bytes, rel: dict, vma: int = 0):
     for line in text.splitlines():
         if ":\t" not in line:
             continue
+        try:
+            if int(line.split(":\t", 1)[0].strip(), 16) in data:
+                continue
+        except ValueError:
+            pass
         insns += 1
         body = line.split("\t", 2)[-1]
         if _CALL.search(body):
@@ -143,7 +163,9 @@ def diagnose(token: str, show_asm: bool = False) -> int:
             print(f"[diagnose] {tag} obj does not define {b.name}")
             return 2
         try:
-            sides[tag] = (payload, rel, size, *_skeleton(payload, rel))
+            table = _jump_table_bytes(rel, b.name)
+            sides[tag] = (payload, rel, size,
+                          *_skeleton(payload, rel, data=table))
         except ToolError as e:
             print(f"[diagnose] {e}")
             return 2
