@@ -4227,7 +4227,7 @@ tiletriggercontainer	?MoveList1ToList2@CTileTriggerContainer@@QAEHPAVCTileTrigge
 tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	1	035a3e6c90f9	0x116fa0	100.0000	
 tiletriggercontainer	?RemoveByKeys@CTileTriggerContainer@@QAEHHW4TrigLogicId@@@Z	100.0000	100.0000	1	e80e6c61a58b	0x116320	100.0000	
 tiletriggercontainer	?ScanNeighborhood@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HH@Z	100.0000	100.0000	1	b95eea0907dd	0x117ec0	100.0000	
-tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	5214ba075599	0x117280	100.0000	
+tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	fc31fac527b1	0x117280	100.0000	
 tiletriggercontainer	?SerializeApplyA@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerSwitchLogic@@@Z	100.0000	100.0000	1	d2c6854ed031	0x117630	100.0000	
 tiletriggercontainer	?SerializeApplyB@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerLogic@@@Z	100.0000	100.0000	1	7cd6adf23e33	0x117710	100.0000	
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	76.6912	76.6912	1	2fbeacb0e8bf	0x117f60	76.6912	

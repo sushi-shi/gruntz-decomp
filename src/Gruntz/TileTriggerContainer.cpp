@@ -685,30 +685,33 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             RemoveAll();
             u32 n;
             u32 i;
-            void* e;
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
-                e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+                CTileTriggerSwitchLogic* e = static_cast<CTileTriggerSwitchLogic*>(
+                    LoadElement(s, SERIAL_LOAD, typeId, pObj)
+                );
                 if (e == NULL) {
                     return 0;
                 }
-                m_base.AddTail(e);
+                m_base.AddTail(static_cast<void*>(e));
             }
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
-                e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+                CTileTriggerLogic* e =
+                    static_cast<CTileTriggerLogic*>(LoadElement(s, SERIAL_LOAD, typeId, pObj));
                 if (e == NULL) {
                     return 0;
                 }
-                m_list1.AddTail(e);
+                m_list1.AddTail(static_cast<void*>(e));
             }
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
-                e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+                CTileTriggerLogic* e =
+                    static_cast<CTileTriggerLogic*>(LoadElement(s, SERIAL_LOAD, typeId, pObj));
                 if (e == NULL) {
                     return 0;
                 }
-                m_list2.AddTail(e);
+                m_list2.AddTail(static_cast<void*>(e));
             }
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
