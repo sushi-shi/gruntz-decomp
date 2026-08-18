@@ -9,7 +9,15 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
-i32 __cdecl
-SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload);
+class CDDrawSurfaceMgr;
+class CFileMemBase;
+
+i32 __cdecl SerialObjectFactory(
+    CDDrawSurfaceMgr* ctx,
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId typeId,
+    void* payload
+);
 
 #endif // GRUNTZ_SERIALOBJECTFACTORY_H
