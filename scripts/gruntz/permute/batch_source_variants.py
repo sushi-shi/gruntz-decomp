@@ -139,6 +139,15 @@ def retain_frontier_candidate(
         del frontier[evicted_state]
 
 
+def search_route(island_count: int, executed_variant_count: int) -> str:
+    """Name the next useful search after observing the target-state census."""
+    if executed_variant_count > 1 and island_count == 1:
+        return "structural"
+    if island_count > 1:
+        return "inspect-frontier"
+    return "expand-campaign"
+
+
 def parse_axis_extra_edit(
     raw_edit: dict, original: bytes, axis_name: str, option_name: str,
 ) -> Edit:
@@ -772,6 +781,7 @@ def main(argv=None) -> int:
         (row for row in results if row.get("score") is not None),
         key=topology_result_rank,
     )
+    route = search_route(len(states), len(results))
     summary = {
         "schema": 1,
         "source": str(source.relative_to(root)),
@@ -791,6 +801,8 @@ def main(argv=None) -> int:
         "best": ranked[0] if ranked else None,
         "best_topology": topology_ranked[0] if topology_ranked else None,
         "state_count": len(states),
+        "island_count": len(states),
+        "search_route": route,
         "frontier_count": len(frontier_by_state),
         "frontier_limit": args.frontier,
         "frontier": [
@@ -837,6 +849,17 @@ def main(argv=None) -> int:
         f"searched {len(results)}/{combinations} variants in "
         f"{summary['elapsed_seconds']:.2f}s; source restored"
     )
+    if route == "structural":
+        print(
+            f"only a single compiler island was found across {len(results)} "
+            "executed variants; compiler-state search is flat and the next "
+            "search should be structural"
+        )
+    elif route == "inspect-frontier":
+        print(
+            f"found {len(states)} distinct compiler islands; inspect the "
+            f"retained M-frontier ({len(frontier_by_state)}/{args.frontier})"
+        )
     for row in ranked[: args.top]:
         labels = " ".join(f"{name}={value}" for name, value in row["choices"].items())
         print(

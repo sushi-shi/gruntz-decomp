@@ -103,6 +103,15 @@ class BatchSourceVariantTests(unittest.TestCase):
             self.assertEqual(set(frontier), {"a", "b"})
             self.assertEqual(frontier["a"]["row"]["score"], 92)
 
+    def test_a_flat_multi_variant_census_routes_to_structural_search(self):
+        self.assertEqual(batch.search_route(1, 129), "structural")
+
+    def test_multiple_islands_route_to_frontier_inspection(self):
+        self.assertEqual(batch.search_route(4, 129), "inspect-frontier")
+
+    def test_one_executed_variant_does_not_claim_a_flat_island(self):
+        self.assertEqual(batch.search_route(1, 1), "expand-campaign")
+
 
 class AstVariantTests(unittest.TestCase):
     def test_marker_span_uses_real_rva_markers(self):

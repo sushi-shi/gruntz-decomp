@@ -303,6 +303,30 @@ def default_depth(classification: str, proven: bool) -> int:
     return 0 if proven or classification in {"regalloc", "referent", "none"} else 2
 
 
+def completion_message(results: list[dict], output_root: Path) -> str:
+    exact = sum(result["exact"] for result in results)
+    improved = sum(
+        result["best_score"] is not None and result["baseline_score"] is not None
+        and result["best_score"] > result["baseline_score"] + 1e-6
+        for result in results
+    )
+    structural = [
+        result["candidate"]["rva"] for result in results
+        if result.get("search_route") == "structural"
+    ]
+    message = (
+        f"campaign complete: targets={len(results)} exact={exact} improved={improved}"
+    )
+    if structural:
+        return (
+            message
+            + f"; only a single compiler island was found for {len(structural)} "
+            + "target(s), so their next search should be structural: "
+            + ", ".join(structural)
+        )
+    return message + f"; inspect M-frontiers under {output_root}"
+
+
 def run_campaign(args: argparse.Namespace) -> int:
     root = project_root()
     wanted = {value - 0x400000 if value >= 0x400000 else value for value in args.rva}
@@ -381,22 +405,15 @@ def run_campaign(args: argparse.Namespace) -> int:
             "baseline_score": summary.get("baseline", {}).get("score"),
             "best_score": (summary.get("best") or {}).get("score"),
             "exact": bool(summary.get("exact_source")),
+            "island_count": summary.get("island_count", summary.get("state_count", 0)),
+            "search_route": summary.get("search_route"),
             "frontier": summary.get("frontier", []),
         }
         results.append(result)
         (output_root / "campaign.json").write_text(
             json.dumps(campaign_document, indent=2) + "\n"
         )
-    exact = sum(result["exact"] for result in results)
-    improved = sum(
-        result["best_score"] is not None and result["baseline_score"] is not None
-        and result["best_score"] > result["baseline_score"] + 1e-6
-        for result in results
-    )
-    print(
-        f"campaign complete: targets={len(results)} exact={exact} improved={improved}; "
-        f"inspect M-frontiers under {output_root}"
-    )
+    print(completion_message(results, output_root))
     return 1 if any(result["exit_code"] for result in results) else 0
 
 

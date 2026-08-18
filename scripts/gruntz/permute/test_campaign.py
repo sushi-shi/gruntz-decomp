@@ -82,6 +82,30 @@ class CampaignRankingTests(unittest.TestCase):
         self.assertEqual((calls, branches, returns, instructions), (1, 1, 1, 3))
         self.assertIn("0:\tcall 0x15", _text)
 
+    def test_completion_routes_single_island_targets_to_structural_search(self):
+        results = [{
+            "candidate": {"rva": "0x182610"},
+            "exact": False,
+            "baseline_score": 99.98,
+            "best_score": 99.98,
+            "search_route": "structural",
+        }]
+        message = campaign.completion_message(results, Path("/tmp/frontier"))
+        self.assertIn("only a single compiler island was found", message)
+        self.assertIn("next search should be structural: 0x182610", message)
+
+    def test_completion_keeps_frontier_route_for_multiple_islands(self):
+        results = [{
+            "candidate": {"rva": "0x160450"},
+            "exact": True,
+            "baseline_score": 99.98,
+            "best_score": 100.0,
+            "search_route": "inspect-frontier",
+        }]
+        message = campaign.completion_message(results, Path("/tmp/frontier"))
+        self.assertIn("inspect M-frontiers under /tmp/frontier", message)
+        self.assertNotIn("structural", message)
+
 
 class CampaignCliTests(unittest.TestCase):
     def test_public_candidates_verb_bypasses_exact_wall_gate(self):
