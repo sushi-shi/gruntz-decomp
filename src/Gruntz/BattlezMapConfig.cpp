@@ -2091,9 +2091,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         BrickzCell scratchA;
         const BrickzCell* srcA;
-        CoordPos headPos;
-        headPos.m_pos = coordList->GetHeadPosition();
-        Coord* firstCoord = headPos.m_node->m_coord;
+        CoordNode* head = MfcNodeFromPosition<CoordNode>(coordList->GetHeadPosition());
+        Coord* firstCoord = head->m_coord;
         if (static_cast<u32>(firstCoord->m_x) < static_cast<u32>(m_board->m_width)
             && static_cast<u32>(firstCoord->m_y) < static_cast<u32>(m_board->m_height)) {
             srcA = &(static_cast<BrickzCell*>(m_board->m_rows[firstCoord->m_y]))[firstCoord->m_x];
@@ -2250,9 +2249,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                             CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
                             fn->m_next = g_coordPool.m_freeHead;
                             g_coordPool.m_freeHead = fn;
-                            CoordPos cp;
-                            cp.m_node = cur;
-                            coordList->RemoveAt(cp.m_pos);
+                            coordList->RemoveAt(MfcPositionFromNode(cur));
                         }
                     }
                     return 1;
@@ -2423,7 +2420,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     if (coordList->GetCount() == 0) {
         return 1;
     }
-    void* pos = coordList->GetHeadPosition();
+    CoordNode* node = MfcNodeFromPosition<CoordNode>(coordList->GetHeadPosition());
     Coord center;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&center));
     CMapMgr* board = m_board;
@@ -2458,7 +2455,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
     u32 iter = 0;
-    CoordNode* node = *static_cast<CoordNode**>(pos);
     while (node != NULL && iter < 3) {
         CoordNode* cur = node;
         node = node->m_next;
@@ -3333,9 +3329,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 0;
     }
 
-    CoordPos head;
-    head.m_pos = coordList->GetHeadPosition();
-    Coord* fc = head.m_node->m_coord;
+    CoordNode* head = MfcNodeFromPosition<CoordNode>(coordList->GetHeadPosition());
+    Coord* fc = head->m_coord;
     i32 fcx = fc->m_x;
     i32 fcy = fc->m_y;
 
@@ -3750,12 +3745,12 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     0
                 )
                 != 0) {
-                void* head = list.GetHeadPosition();
+                CoordNode* head = MfcNodeFromPosition<CoordNode>(list.GetHeadPosition());
                 g_stepRun = 0;
                 g_stepCol = col;
                 g_stepRow = row;
                 if (head != NULL) {
-                    CoordNode* n = static_cast<CoordNode*>(head);
+                    CoordNode* n = head;
                     while (n != NULL) {
                         CoordNode* cur = n;
                         n = n->m_next;
@@ -3784,12 +3779,12 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                             0
                         )
                         != 0) {
-                        void* head = list2.GetHeadPosition();
+                        CoordNode* head = MfcNodeFromPosition<CoordNode>(list2.GetHeadPosition());
                         g_stepRun = 0;
                         g_stepCol = col;
                         g_stepRow = row;
                         if (head != NULL) {
-                            CoordNode* n = static_cast<CoordNode*>(head);
+                            CoordNode* n = head;
                             while (n != NULL) {
                                 CoordNode* cur = n;
                                 n = n->m_next;
@@ -3838,12 +3833,13 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         // list3+0xc (m_nCount) and skips the whole store/recycle
                         // when it is 0, before it touches m_pNodeHead at +4.
                         if (list3.GetCount() != 0) {
-                            void* head = list3.GetHeadPosition();
+                            CoordNode* head =
+                                MfcNodeFromPosition<CoordNode>(list3.GetHeadPosition());
                             g_stepRun = 0;
                             g_stepCol = col;
                             g_stepRow = row;
                             if (head != NULL) {
-                                CoordNode* n = static_cast<CoordNode*>(head);
+                                CoordNode* n = head;
                                 while (n != NULL) {
                                     CoordNode* cur = n;
                                     n = n->m_next;

@@ -18,7 +18,7 @@ struct Coord {
 
 struct CoordNode {
     CoordNode* m_next;
-    char m_pad04[0x04];
+    CoordNode* m_prev;
     Coord* m_coord;
 };
 

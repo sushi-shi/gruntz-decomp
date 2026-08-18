@@ -155,10 +155,25 @@ extern u32 g_gruntSpawnClock;
 
 class CProjectile;
 
-union CoordPos {
-    POSITION m_pos;
-    CoordNode* m_node;
+// CPtrList's POSITION is an opaque pointer to its internal three-pointer node.
+// CoordNode models that node for the m_coordList payload, and this generic
+// adapter keeps the opaque MFC boundary in one place.
+template<class NodeT> union MfcListPosition {
+    POSITION m_position;
+    NodeT* m_node;
 };
+
+template<class NodeT> inline NodeT* MfcNodeFromPosition(POSITION position) {
+    MfcListPosition<NodeT> value;
+    value.m_position = position;
+    return value.m_node;
+}
+
+template<class NodeT> inline POSITION MfcPositionFromNode(NodeT* node) {
+    MfcListPosition<NodeT> value;
+    value.m_node = node;
+    return value.m_position;
+}
 
 GZ_ENUM_BEGIN(GruntAttackPose)
     GRUNT_ATTACK1 = 0,
@@ -445,17 +460,13 @@ public:
     CPtrList m_payloads;
 
     CoordNode* CoordHead() const {
-        CoordPos p;
-        p.m_pos = m_coordList.GetHeadPosition();
-        return p.m_node;
+        return MfcNodeFromPosition<CoordNode>(m_coordList.GetHeadPosition());
     }
     CGruntCoordList* CoordListOps() {
         return static_cast<CGruntCoordList*>(&m_coordList);
     }
     CoordNode* CoordTail() const {
-        CoordPos p;
-        p.m_pos = m_coordList.GetTailPosition();
-        return p.m_node;
+        return MfcNodeFromPosition<CoordNode>(m_coordList.GetTailPosition());
     }
     i32 CoordCount() const {
         return m_coordList.GetCount();
