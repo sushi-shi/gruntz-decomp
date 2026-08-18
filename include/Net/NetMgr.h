@@ -517,16 +517,7 @@ class CNetMgr : public CObject {
 public:
     virtual ~CNetMgr() OVERRIDE;
 
-    void OnMultiOptions();
-    void OnMultiPause();
-    void OnOutOfSync();
-    void ApplyCmdDelayDefaults();
-    u32 GetMaxAckLatency();
-    void ReportAckLatency();
     CNetSessionNode* FindPlayerById(i32 id);
-
-    i32 LoadMenuSelectSprite(MenuSelectEvent* ev);
-
     struct InterfaceObject* Find(i32 kind);
 
     i32 RemovePlayerObj(CNetSessionNode* obj);
@@ -578,12 +569,6 @@ public:
     CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c);
     void PopulateSessionList(HWND hList);
 
-    i32 DropChannelPlayer(i32 idx);
-    i32 LoadConfig(CNetConfigBlob* cfg);
-    i32 AutoTuneCmdDelay();
-
-    i32 WriteCmdDelay(i32 flag);
-
     i32 InitFromProvider(InterfaceObject* a, GUID appGuid);
     i32 EnumServiceProviders(i32 validated);
     InterfaceObject* AddGroupNode(GUID* guid, const char* name);
@@ -593,71 +578,7 @@ public:
     static void ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd);
 
     static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption);
-
-    void HandleVersionCheck(CNetVersionMsg* msg);
-    void AnnounceVersion(i32 param);
-
-    i32 CreateSession();
-
-    i32 VerifyCustomLevel(CNetPlayerListNode* h, CNetSessionNode* playerTok);
-
-    i32 Poll(i32 token);
-
-    void AckJoinFailure();
-    void DropTimeout();
-
-    i32 CreateLocalPlayer();
-    CString GetString5a0();
-
-    i32 SaveConfig(CNetSessionNode* recipient);
-
-    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
-    void SendStatFlag(NetMsgId id, i32 flag);
-    void SendNetStat(NetMsgId id, u32 value, i32 flag);
-    i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);
-    i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);
-
-    i32 SendStatTo(CNetSessionNode* recipient, NetMsgId id, i32 c);
-
-    i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
-    i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
-    i32 SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag);
-
-    i32 PollSessionGated(i32 a1, i32 a2);
-
-    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused);
-    i32 OnPlayerLeft(i32 playerId);
-
-    void HandleSpriteMsg(CNetCtrlMsg* msg);
-
-    void ReportVersionMsg(const char* msg, i32 zero);
-    void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag);
-
-    i32 ResolveLocalPlayer();
-    i32 BroadcastChannelTable(CNetSessionNode* recipient);
-    i32 ParseChannelTable(CNetChannelTablePacket* packet);
-    i32 RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f);
-    i32 RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e);
-    i32 RegisterChannelRec(CNetChannelPacket* rec);
-    i32 RemoveChannel(i32 idx);
-    i32 OnPauseChannel();
-    i32 BroadcastOneChannel(GruntzPlayer* ch);
-    i32 ParseOneChannel(CNetOneChannelPacket* rec);
-    i32 SendChannelStat422();
-    i32 SendChannelStat423();
-    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd);
-
-    u32 FrameSyncWait();
-    void OnDropPlayer();
-    i32 WaitForConnect();
-    i32 ResetPlayerCommands(i32 id);
-
-    void ReportStatusId(UINT strId, i32 level);
-    void AckDropPlayer(i32 id);
-
-    i32 SendStat3(i32 id, NetMsgId statId, i32 flag);
-    i32 PollSession();
-    i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);
+    void PopulateGroupList(HWND hList, i32 flag);
 
     NetGuid m_appGuid;
     IDirectPlay* m_releaseIface;
@@ -680,15 +601,6 @@ public:
         m_releaseIface = NULL;
         m_directPlay = NULL;
     }
-
-    i32 DetectConnectionConfig();
-    i32 SetupTcpIpConfig();
-    i32 OnJoinConfirm(HWND hDlg);
-
-    void ApplyDynSetting(CString s);
-
-    void PopulateGroupList(HWND hList, i32 flag);
-    void SetServiceName(CString s);
 };
 
 extern i32 g_spEnumValidated;

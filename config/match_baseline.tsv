@@ -2475,7 +2475,7 @@ gruntzmgr	?RunModalDialog@CGruntzMgr@@QAEHPBDP6GHPAUHWND__@@IIJ@ZH@Z	100.0000	10
 gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	a578c4e2608f	0x92f00	100.0000	
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	2e5339459f9d	0x93620	100.0000	
 gruntzmgr	?ScanObjectsInRadius@CGruntzMgr@@QAEHHHHHP6AHPAUCGameObject@@H@ZH@Z	100.0000	100.0000	1	bc06ad584a68	0x92180	100.0000	
-gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHPAUtagRECT@@HP6AHPAUCGameObject@@H@ZH@Z	92.5455	88.7662	1	c79518387593	0x92250	92.5455	
+gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHPAUtagRECT@@HP6AHPAUCGameObject@@H@ZH@Z	92.5455	92.5455	1	c79518387593	0x92250	92.5455	
 gruntzmgr	?SetAssetRoot@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	1	9d4e8269f71c	0x92060	100.0000	
 gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	1	8bab5f986b4a	0x91170	100.0000	
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	1	b8594f768fc8	0x8f7b0	100.0000	
@@ -3299,7 +3299,7 @@ netsessionmgr	?AllocateGruntRecord@@YAPAUGruntRec@@H@Z	100.0000	100.0000	2	6d3ed
 netsessionmgr	?ArmSlot@CNetSession@@QAEXPAVCGruntzCommand@@E@Z	100.0000	100.0000	2	88047da0814b	0xc03f0	100.0000	
 netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	88.0963	88.0963	2	31b025eb52c9	0xbf1d0	88.0963	
 netsessionmgr	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	55da87b22acd	0xc04a0	100.0000	
-netsessionmgr	?Checksum@CNetSession@@QAEHXZ	89.7973	89.7635	1	80d4ecabbbbf	0xc0590	89.7973	
+netsessionmgr	?Checksum@CNetSession@@QAEHXZ	89.7973	85.6149	1	80d4ecabbbbf	0xc0590	89.7973	
 netsessionmgr	?ClearAckFlags@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	e5e7ebd7d632	0xbf120	100.0000	
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	1	ab3bf773b8c8	0xbfff0	100.0000	
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetCtrlMsg@@H@Z	100.0000	100.0000	2	9ae018b12627	0xbf700	100.0000	
