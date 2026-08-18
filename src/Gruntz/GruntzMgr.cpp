@@ -3000,7 +3000,7 @@ i32 CGruntzMgr::Quickload() {
 }
 
 RVA(0x000927b0, 0xc4)
-i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
+i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
     if (dst == NULL) {
         return 0;
     }
@@ -3016,7 +3016,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     m_saveSink->CopySlot(dst, &src->m_saveSlot);
     m_saveInfoRec = dst;
     if (snapshot) {
-        strncpy(static_cast<char*>(dst->m_snapshot), static_cast<char*>(snapshot), 0x20);
+        strncpy(static_cast<char*>(dst->m_snapshot), snapshot, 0x20);
     }
     return 1;
 }

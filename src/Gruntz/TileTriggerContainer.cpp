@@ -585,7 +585,7 @@ i32 CTileTriggerContainer::FilterList2(i32 arg) {
 }
 
 RVA(0x00117150, 0x53)
-i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
+i32 CTileTriggerContainer::MoveList1ToList2(CTileTriggerLogic* data) {
     POSITION pos = m_list1.GetHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;

@@ -23,11 +23,11 @@ DATA(0x0022990c)
 i32 g_posSoundReq;
 
 RVA(0x0000b5e0, 0x29)
-i32 CWorldSoundSet::Init(void* world, i32 volume) {
+i32 CWorldSoundSet::Init(CDDrawSubMgrLeafScan* world, i32 volume) {
     if (world == NULL) {
         return 0;
     }
-    m_world = static_cast<CRandomAmbientWorld*>(world);
+    m_world = world;
     m_volume = volume;
     m_active = 1;
     m_listenerX = 0;
@@ -37,8 +37,8 @@ i32 CWorldSoundSet::Init(void* world, i32 volume) {
 
 RVA(0x0000b620, 0x26)
 void CWorldSoundSet::Deactivate() {
-    if (m_world != NULL && m_world->m_soundDev != NULL) {
-        m_world->m_soundDev->FreeSamples();
+    if (m_world != NULL && m_world->m_soundStream != NULL) {
+        m_world->m_soundStream->FreeSamples();
     }
     Teardown();
     m_world = NULL;
@@ -206,8 +206,8 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandom(
 RVA(0x0000bc30, 0x3a)
 void CWorldSoundSet::Restart(i32 volume) {
     m_volume = volume;
-    if (m_world->m_soundDev != NULL) {
-        m_world->m_soundDev->FreeSamples();
+    if (m_world->m_soundStream != NULL) {
+        m_world->m_soundStream->FreeSamples();
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -220,8 +220,8 @@ void CWorldSoundSet::Restart(i32 volume) {
 
 RVA(0x0000bc80, 0x44)
 void CWorldSoundSet::Stop() {
-    if (m_world != NULL && m_world->m_soundDev != NULL) {
-        m_world->m_soundDev->FreeSamples();
+    if (m_world != NULL && m_world->m_soundStream != NULL) {
+        m_world->m_soundStream->FreeSamples();
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -244,9 +244,9 @@ void CWorldSoundSet::Resume() {
         }
     }
 
-    CRandomAmbientWorld* w = m_world;
-    if (w->m_soundDev != NULL) {
-        w->m_soundDev->PurgeVoiceList(-1);
+    CDDrawSubMgrLeafScan* w = m_world;
+    if (w->m_soundStream != NULL) {
+        w->m_soundStream->PurgeVoiceList(-1);
     }
 }
 
@@ -262,15 +262,15 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
         }
     }
 
-    CRandomAmbientWorld* world = m_world;
-    if (world->m_soundDev != NULL) {
-        world->m_soundDev->PurgeVoiceList(-1);
+    CDDrawSubMgrLeafScan* world = m_world;
+    if (world->m_soundStream != NULL) {
+        world->m_soundStream->PurgeVoiceList(-1);
     }
 }
 
 RVA(0x0000bdd0, 0x53)
 i32 CAmbientSound::InitFromKey(
-    CRandomAmbientWorld* world,
+    CDDrawSubMgrLeafScan* world,
     const char* key,
     i32 level,
     i32 master,
@@ -278,7 +278,7 @@ i32 CAmbientSound::InitFromKey(
     i32 scaleB
 ) {
     void* out_ob = 0;
-    world->m_map.Lookup(key, out_ob);
+    world->m_cues.Lookup(key, out_ob);
     AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
     if (out == NULL) {
         return 0;
@@ -545,7 +545,7 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
 
 RVA(0x0000c4b0, 0x53)
 i32 CAmbientPosSound::InitFromKey(
-    CRandomAmbientWorld* world,
+    CDDrawSubMgrLeafScan* world,
     const char* key,
     i32 level,
     i32 master,
@@ -553,7 +553,7 @@ i32 CAmbientPosSound::InitFromKey(
     i32 scaleB
 ) {
     void* out_ob = 0;
-    world->m_map.Lookup(key, out_ob);
+    world->m_cues.Lookup(key, out_ob);
     AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
     if (out == NULL) {
         return 0;

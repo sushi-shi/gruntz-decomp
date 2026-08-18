@@ -17,7 +17,7 @@ class CWarpStoneFly {
 public:
     CWarpStoneFly();
 
-    i32 Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment);
+    i32 Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment);
     i32 Tick(u32 dt);
     i32 Draw();
 

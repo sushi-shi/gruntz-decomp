@@ -197,7 +197,7 @@ public:
 
     i32 ExitModalUI(class CDialog* dlg, i32 notify);
     i32 FinishLevel(i32 full, i32 stopBank);
-    i32 FillSaveInfo(SaveSlot* dst, void* snapshot);
+    i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
     i32 SaveState(CFileMemBase* ar);
     i32 LoadState(CFileMemBase* ar);
 

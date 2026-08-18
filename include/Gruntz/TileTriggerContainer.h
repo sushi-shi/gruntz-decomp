@@ -44,7 +44,7 @@ public:
 
     CTileTriggerLogic* FindInLists12(i32 a, TrigLogicId b);
     i32 FilterList2(i32 arg);
-    i32 MoveList1ToList2(void* data);
+    i32 MoveList1ToList2(CTileTriggerLogic* data);
 
     i32 DelFromList3(CTileActionEvent* evt);
 
@@ -143,6 +143,9 @@ public:
 
     i32 Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
+    // @identity-TODO the switch arms return CTileTriggerSwitchLogic and its
+    // siblings, which our model does not derive from CTileTriggerLogic even
+    // though the lists this feeds are walked as CTileTriggerLogic.
     void* LoadElement(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 LoadFlag74(CFileMemBase* s);

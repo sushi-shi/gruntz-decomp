@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/SoundDevice.h>
 
 class CAmbientSound;
@@ -13,19 +14,13 @@ class CAmbientPosSound;
 class CRandomAmbientSound;
 struct AmbientPoint;
 
-struct CRandomAmbientWorld {
-    char m_pad00[0x10];
-    CMapStringToPtr m_map;
-    SoundDevice* m_soundDev;
-};
-
 enum {
     kSoundVolumeMax = 100
 };
 
 class CWorldSoundSet {
 public:
-    i32 Init(void* world, i32 volume);
+    i32 Init(CDDrawSubMgrLeafScan* world, i32 volume);
     void Teardown();
     void Restart(i32 volume);
     void Stop();
@@ -73,7 +68,7 @@ public:
         i32 unused
     );
 
-    CRandomAmbientWorld* m_world;
+    CDDrawSubMgrLeafScan* m_world;
     i32 m_volume;
     CPtrList m_list;
     i32 m_active;

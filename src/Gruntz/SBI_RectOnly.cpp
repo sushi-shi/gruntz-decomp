@@ -4441,8 +4441,8 @@ CWarpStoneFly::CWarpStoneFly() {
 // Lookup out-param there) and gives both deltas real slots. No cl 5.0 flag moves it -
 // /Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave `sub esp,0x18`.
 RVA(0x00109bd0, 0x1b5)
-i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
-    m_owner = static_cast<CStatusBarMgr*>(owner);
+i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
+    m_owner = owner;
 
     CObject* spr_ob = 0;
     i32 n = IDX(fragment) + 1;
