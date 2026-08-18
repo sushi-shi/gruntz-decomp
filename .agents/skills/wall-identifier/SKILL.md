@@ -1,6 +1,6 @@
 ---
 name: wall-identifier
-description: Classify a Gruntz matching WALL before spending effort on it. When a reconstruction plateaus below 100% and no spelling obviously closes it, name WHICH cl 5.0 decision diverged - inline/call-set, control flow, register/schedule, or masked/referent - and route to the lever for that class. Start with `gruntz sema diagnose <rva>`. Use when a function is stuck, when triaging plateaus, when asked "why won't this match" or "what kind of wall is this". Complements `matcher` (reconstructs) and `permute` (breaks proven codegen residue); this one DIAGNOSES.
+description: Classify a Gruntz matching WALL before spending effort on it. When a reconstruction plateaus below 100% and no spelling obviously closes it, name WHICH cl 5.0 decision diverged - inline/call-set, control flow, register/schedule, or masked/referent - and route to the lever for that class. Start with `gruntz walls diagnose <rva>`. Use when a function is stuck, when triaging plateaus, when asked "why won't this match" or "what kind of wall is this". Complements `matcher` (reconstructs) and `permute` (breaks proven codegen residue); this one DIAGNOSES.
 ---
 
 # wall-identifier — classify the wall before fighting it
@@ -15,7 +15,7 @@ not permute problems at all.
 
 ## Start here
 
-`gruntz sema diagnose <rva>` — classifies the residual from the same base/target
+`gruntz walls diagnose <rva>` — classifies the residual from the same base/target
 pair objdiff scores (no recompile) and routes it in the order below. The manual
 equivalents, when you need the evidence itself:
 
@@ -51,7 +51,7 @@ sibling HoMM3 formula (`budget = clamp(2*cb(caller), 1000, 35000)`, free below
 cb 0x28, nested expansions split the remainder) on our compiler, including where
 the two compilers diverge (cl 5.0 has no VC6 S=14 cliff). Consequences:
 
-- `gruntz sema diagnose` reads i386 `calll` instructions first, then the COFF
+- `gruntz walls diagnose` reads i386 `calll` instructions first, then the COFF
   REL32 callee multiset when instruction counts agree. This stage was inert
   before 2026-08-14 because it accepted only mnemonic `call`; the integration
   control in `gruntz.match.gate_selftest` prevents that regression.

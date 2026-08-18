@@ -51,7 +51,7 @@ candidate with `diagnose` FIRST; only pursue structural-CFG verdicts by hand.
 
 ## Diagnose-screen of the heavy worklist (top-45 weighted sub-95%)
 
-Screening the 45 heaviest sub-95% functions with `gruntz sema diagnose`:
+Screening the 45 heaviest sub-95% functions with `gruntz walls diagnose`:
 
 | verdict | count | reachable? |
 |---|---|---|
