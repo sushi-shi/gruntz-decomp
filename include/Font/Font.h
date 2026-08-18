@@ -20,13 +20,13 @@ public:
     i32 LoadFont(CString szFileName);
     i32 SaveFont(CString szFileName);
 
-    void** GetSurface(u8 c);
+    u8** GetSurface(u8 c);
     Glyph& GetGlyph(Glyph& out, u8 c);
     i32 GetMaxHeight();
 
     i32 m_ready;
     i32 m_count;
-    void** m_surfaces;
+    u8** m_surfaces;
     Glyph* m_glyphs;
     i32 m_maxHeight;
 };

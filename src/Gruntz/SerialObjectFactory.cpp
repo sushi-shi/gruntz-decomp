@@ -102,16 +102,20 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
 
 // @early-stop
 RVA(0x0000d2a0, 0x1984)
-i32 __cdecl
-SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
+i32 __cdecl SerialObjectFactory(
+    CDDrawSurfaceMgr* ctx,
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId typeId,
+    void* payload
+) {
     if (ctx == NULL) {
         return 0;
     }
-    if (ar == NULL) {
+    if (archive == NULL) {
         return 0;
     }
 
-    CFileMemBase* archive = static_cast<CFileMemBase*>(ar);
     CUserLogic** result = static_cast<CUserLogic**>(payload);
 
     switch (mode) {

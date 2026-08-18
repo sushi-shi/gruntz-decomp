@@ -39,7 +39,7 @@ i32 Font::AllocateMemory(i32 count) {
         return 0;
     }
 
-    m_surfaces = new void*[m_count];
+    m_surfaces = new u8*[m_count];
     m_glyphs = new Glyph[m_count];
 
     for (i32 i = 0; i < m_count; i++) {
@@ -61,7 +61,7 @@ void Font::FreeMemory() {
     if (m_ready) {
         for (i32 i = 0; i < m_count; i++) {
             if (m_surfaces[i]) {
-                delete[] static_cast<u8*>(m_surfaces[i]);
+                delete[] m_surfaces[i];
                 m_surfaces[i] = NULL;
             }
         }
@@ -134,7 +134,7 @@ i32 Font::SaveFont(CString szFileName) {
 }
 
 RVA(0x00179b60, 0x12)
-void** Font::GetSurface(u8 c) {
+u8** Font::GetSurface(u8 c) {
     return &m_surfaces[c];
 }
 
@@ -313,7 +313,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         } else {
             clippedW = g.width;
         }
-        u8* glyphBuf = static_cast<u8*>(m_font->GetSurface(text[ci])[0]);
+        u8* glyphBuf = m_font->GetSurface(text[ci])[0];
         i32 startCol = firstCol;
         if (blend) {
             for (i32 row = rc.top; row < rc.bottom; row++) {

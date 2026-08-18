@@ -41,8 +41,11 @@ class CDDrawSubMgrLeaf;
 class CDDrawPtrCollections;
 class SoundStream;
 
+class CDDrawSurfaceMgr;
+class CFileMemBase;
+
 // The archive's per-object callback: (ctx, stream, phase, type id, payload).
-typedef i32(__cdecl* HP_Callback)(void*, void*, SerialMode, LogicTypeId, void*);
+typedef i32(__cdecl* HP_Callback)(CDDrawSurfaceMgr*, CFileMemBase*, SerialMode, LogicTypeId, void*);
 
 typedef i32(__cdecl* SurfaceRestoreFn)();
 
@@ -66,10 +69,10 @@ public:
 
     void SetRestoreHandler(SurfaceRestoreFn handler);
 
-    i32 InvokeCallbackInline(void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
+    i32 InvokeCallbackInline(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
         return ar != NULL && m_callback != NULL && m_callback(this, ar, mode, typeId, payload) != 0;
     }
-    i32 InvokeCallback(void* ar, SerialMode mode, LogicTypeId typeId, void* payload);
+    i32 InvokeCallback(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload);
 
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
     i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);

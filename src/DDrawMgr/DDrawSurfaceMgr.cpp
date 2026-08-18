@@ -405,7 +405,12 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
 }
 
 RVA(0x00156a90, 0x3a)
-i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
+i32 CDDrawSurfaceMgr::InvokeCallback(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    void* payload
+) {
     if (!ar) {
         return 0;
     }
