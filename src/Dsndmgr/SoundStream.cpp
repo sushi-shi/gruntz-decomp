@@ -6,11 +6,10 @@
 
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>
-#include <Dsndmgr/WaveFormatPtr.h>
+#include <Dsndmgr/WaveFormatSdk.h>
 #include <Rez/RezMgr.h>
 
 #include <dsound.h>
-#include <mmsystem.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -198,9 +197,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     DSBUFFERDESC desc;
     memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwFlags = dsFlags;
-    WaveFormatPtr fmtPtr;
-    fmtPtr.m_rec = &wf;
-    desc.lpwfxFormat = fmtPtr.m_sdk;
+    desc.lpwfxFormat = static_cast<LPWAVEFORMATEX>(static_cast<void*>(&wf));
 
     wf.cbSize = 0;
     desc.dwSize = 0x14;

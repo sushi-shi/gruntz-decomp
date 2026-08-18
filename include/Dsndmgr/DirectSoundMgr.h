@@ -11,6 +11,7 @@ struct IDirectSound;
 struct IDirectSoundBuffer;
 class SoundDevice;
 class DirectSoundMgr;
+struct RiffWaveHeader;
 struct WaveFormatX;
 
 struct CloneNode : public DSoundLink {
@@ -45,9 +46,9 @@ public:
 
     i32 GetCurrentPosition(unsigned long* play, unsigned long* write);
     i32 SetCurrentPosition(u32 pos);
-    i32 GetFormat(void* fmt, u32 size, unsigned long* written);
+    i32 GetFormat(WaveFormatX* fmt, u32 size, unsigned long* written);
     i32 LoadFromFile(FILE* fp, u32 bytes, i32 offset);
-    i32 LockConvert(void* src, u32 lockBytes, u32 convert);
+    i32 LockConvert(u8* src, u32 lockBytes, u32 convert);
     i32 Play();
     i32 ApplyAndPlay(i32 vol, i32 pan, i32 freqPct, i32 loop);
     i32 Lock(
@@ -107,7 +108,7 @@ public:
     DSoundCloneList m_cloneList;
 };
 
-i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
+i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** fmtOut, u8** dataOut, u32* sizeOut);
 
 i32 ConvertVolumeToPercent(i32 v);
 

@@ -10,6 +10,7 @@
 
 class DSoundCloneInst;
 struct CParseSource;
+struct RiffWaveHeader;
 
 struct LeafCue : public CWapObj {
 
@@ -24,7 +25,7 @@ struct LeafCue : public CWapObj {
 
     LeafCue(i32 count, class CDDrawSurfaceMgr* handle);
 
-    i32 LoadSoundA(void* riff);
+    i32 LoadSoundA(RiffWaveHeader* riff);
     i32 LoadSoundB(char* src);
     i32 Configure(CParseSource* src);
 

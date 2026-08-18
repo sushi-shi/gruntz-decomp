@@ -19,12 +19,19 @@ struct WaveFormatX {
     u16 wBitsPerSample;
     u16 cbSize;
 };
-#pragma pack(pop)
 
-union RiffCursor {
-    u32* m_words;
-    char* m_bytes;
-    WaveFormatX* m_format;
+struct RiffWaveHeader {
+    u32 m_riffTag;
+    u32 m_riffSize;
+    u32 m_waveTag;
+    u8 m_chunks[1];
 };
+
+struct RiffChunkHeader {
+    u32 m_id;
+    u32 m_size;
+    u8 m_data[1];
+};
+#pragma pack(pop)
 
 #endif // DSNDMGR_WAVEFORMATX_H

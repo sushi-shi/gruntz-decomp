@@ -8,7 +8,7 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/VolumeScale.h>
-#include <Dsndmgr/WaveFormatPtr.h>
+#include <Dsndmgr/WaveFormatSdk.h>
 #include <Enums.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
@@ -17,7 +17,6 @@
 #include <dsound.h>
 #include <io.h>
 #include <math.h>
-#include <mmsystem.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -461,11 +460,13 @@ i32 DirectSoundMgr::SetCurrentPosition(u32 pos) {
 }
 
 RVA(0x00135ac0, 0x4f)
-i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, DWORD* written) {
+i32 DirectSoundMgr::GetFormat(WaveFormatX* fmt, u32 size, DWORD* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetFormat(static_cast<LPWAVEFORMATEX>(fmt), size, written) != 0;
+    i32 hr =
+        m_buffer->GetFormat(static_cast<LPWAVEFORMATEX>(static_cast<void*>(fmt)), size, written)
+        != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -613,7 +614,7 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
 }
 
 RVA(0x00135f40, 0x169)
-i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
+i32 DirectSoundMgr::LockConvert(u8* src, u32 lockBytes, u32 convert) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
@@ -643,13 +644,15 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
             memcpy(audioPtr1, src, audioBytes1);
         }
         if (audioBytes2 > 0) {
-            memcpy(audioPtr2, static_cast<char*>(src) + audioBytes1, audioBytes2);
+            memcpy(audioPtr2, src + audioBytes1, audioBytes2);
         }
     } else {
 
         if (audioBytes1 > 0) {
             char* d = static_cast<char*>(audioPtr1);
-            i16* s = static_cast<i16*>(src);
+            Pix16Ptr samples;
+            samples.m_bytes = src;
+            i16* s = samples.m_swords;
             char* end = static_cast<char*>(audioPtr1) + audioBytes1;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
@@ -660,9 +663,9 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         if (audioBytes2 > 0) {
             char* d = static_cast<char*>(audioPtr2);
 
-            Pix16Ptr half2;
-            half2.m_chars = (static_cast<char*>(src) + audioBytes1);
-            i16* s = half2.m_swords;
+            Pix16Ptr samples;
+            samples.m_bytes = src + audioBytes1;
+            i16* s = samples.m_swords;
             char* end = static_cast<char*>(audioPtr2) + audioBytes2;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
@@ -951,9 +954,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     desc.dwSize = DSBUFFERDESC_SIZE;
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
-    WaveFormatPtr fmtPtr;
-    fmtPtr.m_rec = &wf;
-    desc.lpwfxFormat = fmtPtr.m_sdk;
+    desc.lpwfxFormat = static_cast<LPWAVEFORMATEX>(static_cast<void*>(&wf));
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
@@ -1001,13 +1002,15 @@ DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
         return 0;
     }
     fclose(fp);
-    DSoundCloneInst* wrapper = Acquire(buf, flags, loadOpts);
+    RecordBytes<RiffWaveHeader> riff;
+    riff.m_bytes = buf;
+    DSoundCloneInst* wrapper = Acquire(riff.m_rec, flags, loadOpts);
     delete[] buf;
     return wrapper;
 }
 
 RVA(0x00136910, 0x119)
-DSoundCloneInst* SoundDevice::Acquire(void* riff, u32 flags, u32 loadOpts) {
+DSoundCloneInst* SoundDevice::Acquire(RiffWaveHeader* riff, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1015,7 +1018,7 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32 flags, u32 loadOpts) {
         return 0;
     }
 
-    void* data;
+    u8* data;
     u32 size;
     WaveFormatX* fmt;
     fmt = NULL;
@@ -1066,7 +1069,7 @@ DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 l
     if (!hRes) {
         return 0;
     }
-    void* data = LockResource(hRes);
+    RiffWaveHeader* data = static_cast<RiffWaveHeader*>(LockResource(hRes));
     if (!data) {
         return 0;
     }
@@ -1110,13 +1113,15 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts) {
         return 0;
     }
     fclose(fp);
-    i32 r = ReloadRiff(buf, data, loadOpts);
+    RecordBytes<RiffWaveHeader> riff;
+    riff.m_bytes = data;
+    i32 r = ReloadRiff(buf, riff.m_rec, loadOpts);
     delete[] data;
     return r;
 }
 
 RVA(0x00136bd0, 0x110)
-i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts) {
+i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, RiffWaveHeader* riff, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1127,7 +1132,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts) {
         return 1;
     }
 
-    void* data;
+    u8* data;
     u32 size;
     WaveFormatX* fmt;
     fmt = NULL;
@@ -1176,7 +1181,7 @@ i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 loa
     if (!hRes) {
         return 0;
     }
-    void* data = LockResource(hRes);
+    RiffWaveHeader* data = static_cast<RiffWaveHeader*>(LockResource(hRes));
     if (!data) {
         return 0;
     }
@@ -1336,16 +1341,12 @@ i32 DSoundVoice::Stop() {
 }
 
 RVA(0x00137110, 0x8d)
-i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut) {
-
-    RiffCursor p;
-    p.m_bytes = static_cast<char*>(riff) + 4;
-    u32 riffSize = *p.m_words;
-    p.m_words++;
-    u32 waveTag = *p.m_words;
-    p.m_words++;
-    char* end = p.m_bytes + riffSize - 4;
-    if (*static_cast<u32*>(riff) != mmioFOURCC('R', 'I', 'F', 'F')) {
+i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** fmtOut, u8** dataOut, u32* sizeOut) {
+    u32 riffSize = riff->m_riffSize;
+    u32 waveTag = riff->m_waveTag;
+    u8* cursor = riff->m_chunks;
+    u8* end = cursor + riffSize - 4;
+    if (riff->m_riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
     if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
@@ -1353,31 +1354,33 @@ i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeO
     }
     *fmtOut = NULL;
     *dataOut = NULL;
-    while (p.m_bytes < end) {
-        u32 id = *p.m_words++;
-        u32 size = *p.m_words++;
-        if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            *fmtOut = p.m_format;
-        } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
-            *dataOut = p.m_words;
-            *sizeOut = size;
+    while (cursor < end) {
+        RecordBytes<RiffChunkHeader> chunkView;
+        chunkView.m_bytes = cursor;
+        RiffChunkHeader* chunk = chunkView.m_rec;
+        if (chunk->m_id == mmioFOURCC('f', 'm', 't', ' ')) {
+            RecordBytes<WaveFormatX> formatView;
+            formatView.m_bytes = chunk->m_data;
+            *fmtOut = formatView.m_rec;
+        } else if (chunk->m_id == mmioFOURCC('d', 'a', 't', 'a')) {
+            *dataOut = chunk->m_data;
+            *sizeOut = chunk->m_size;
             return *fmtOut != NULL;
         }
-
-        p.m_bytes += ((size + 1) & ~1);
+        cursor = chunk->m_data + ((chunk->m_size + 1) & ~1);
     }
     return 0;
 }
 
 RVA(0x001371a0, 0x5a)
-i32 SoundDevice::SetPrimaryFormat(void* fmt) {
+i32 SoundDevice::SetPrimaryFormat(WaveFormatX* fmt) {
     if (m_initialized == 0) {
         return 0;
     }
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->SetFormat(static_cast<LPWAVEFORMATEX>(fmt)) != 0;
+    i32 hr = m_primaryBuffer->SetFormat(static_cast<LPWAVEFORMATEX>(static_cast<void*>(fmt))) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;

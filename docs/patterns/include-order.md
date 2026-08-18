@@ -110,7 +110,7 @@ gates at 0. The sweep's real defects, all fixed by one verified prelude each:
 `Image/FileImage.h` + `Gruntz/LightFxRender.h` (`<Win32.h>` -> `<Mfc.h>`; as
 own headers of MFC TUs they landed windows.h before afx -> C1189),
 `DDrawMgr/DirPal.h` (`LOGPALETTE`/`PALETTEENTRY` with no supply at all),
-`Dsndmgr/WaveFormatPtr.h` (raw `<mmsystem.h>` with no Win32 types),
+`Dsndmgr/WaveFormatSdk.h` (the SDK requires `<mmsystem.h>` before `<dsound.h>`),
 `Gruntz/CustomWorldInfoDlg.h` (`INT_PTR`/`CALLBACK` typedefs - not
 fwd-declarable). Earlier hand-fixes: `Wwd/WwdObjMgr.h`, `Gruntz/SBI_MenuItem.h`,
 `Net/NetCmdSlot.h`, `Gruntz/MapMgr.h`.

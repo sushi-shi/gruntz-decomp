@@ -25,18 +25,18 @@ public:
     void RemoveBuffer(DirectSoundMgr* node);
     void StopAll();
     i32 FreeSamples();
-    i32 SetPrimaryFormat(void* fmt);
+    i32 SetPrimaryFormat(WaveFormatX* fmt);
 
     i32 StartPrimary();
     i32 CreatePrimaryBuffer();
     IDirectSoundBuffer* GetPrimary();
     DSoundCloneInst* CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags);
     DSoundCloneInst* AcquireFile(char* path, u32 flags, u32 loadOpts);
-    DSoundCloneInst* Acquire(void* riff, u32 flags, u32 loadOpts);
+    DSoundCloneInst* Acquire(RiffWaveHeader* riff, u32 flags, u32 loadOpts);
     DSoundCloneInst* AcquireResource(const char* name, u32 flags, u32 loadOpts);
     i32 ReloadResource(DirectSoundMgr* probe, const char* name, u32 loadOpts);
     i32 ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size);
-    i32 ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts);
+    i32 ReloadRiff(DirectSoundMgr* buf, RiffWaveHeader* riff, u32 loadOpts);
     i32 ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts);
 
     i32 Create(HWND hwnd, u32 level, u32 flags);

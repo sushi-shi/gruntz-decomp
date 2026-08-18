@@ -38,6 +38,7 @@
 #include <Gruntz/StateId.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -795,7 +796,7 @@ LeafCue::~LeafCue() {
 }
 
 RVA(0x001586e0, 0x34)
-i32 LeafCue::LoadSoundA(void* riff) {
+i32 LeafCue::LoadSoundA(RiffWaveHeader* riff) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
         return 0;
@@ -825,7 +826,9 @@ i32 LeafCue::Configure(CParseSource* src) {
     if (dev == NULL) {
         ok = 0;
     } else {
-        m_sound = dev->Acquire(blob, 0x100ea, 0);
+        RecordBytes<RiffWaveHeader> riff;
+        riff.m_chars = blob;
+        m_sound = dev->Acquire(riff.m_rec, 0x100ea, 0);
         ok = m_sound != NULL;
     }
     src->EndParse();
