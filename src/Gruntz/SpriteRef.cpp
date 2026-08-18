@@ -12,9 +12,9 @@
 #include <Io/GameSave.h>
 
 RVA(0x000e2df0, 0x3f0)
-i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, ColorTint kind) {
+i32 CSpriteRef::Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind) {
     m_cache = cache;
-    m_alphaKey = static_cast<CShadeTable*>(shade);
+    m_alphaKey = shade;
     u8 r1, g1, b1;
     u8 r2, g2, b2;
     u8 r3, g3, b3;

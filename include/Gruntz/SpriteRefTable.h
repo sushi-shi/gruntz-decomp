@@ -14,7 +14,7 @@ class CSpriteRef {
 public:
     CSpriteRef();
 
-    i32 Build(CShadeTableCache* cache, void* shade, ColorTint kind);
+    i32 Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind);
     void Free();
     CShadeTableCache* m_cache;
     CShadeTable* m_alphaKey;

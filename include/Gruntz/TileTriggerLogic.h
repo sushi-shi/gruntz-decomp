@@ -117,7 +117,7 @@ public:
         i32 dutyOffSpan
     );
 
-    i32 ValidateByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 ValidateByType(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
@@ -145,7 +145,7 @@ public:
 
     i32 BuildRockBreakInGameText();
 
-    i32 ApplyByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 ApplyByType(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 SerializeMatrix(CFileMemBase* s);
     i32 DeserializeMatrix(CFileMemBase* s);
 

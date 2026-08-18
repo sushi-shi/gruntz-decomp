@@ -116,8 +116,8 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     CChatBox* ui = m_menuTree;
-    if (ui->ConfigureLeftCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
-        ui->ConfigureRightCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
+    if (ui->ConfigureLeftCursorAnimation("MENU_CURSOR", 0x64, 0x20)) {
+        ui->ConfigureRightCursorAnimation("MENU_CURSOR", 0x64, 0x20);
     }
     ui = m_menuTree;
     ui->m_row0Key = "MENU_SELECT";

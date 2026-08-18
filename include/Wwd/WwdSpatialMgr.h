@@ -32,7 +32,7 @@ struct CWwdSpatialMgr {
     ~CWwdSpatialMgr();
 
     i32 Init(
-        void* owner,
+        CDDrawChildGroup* owner,
         RECT* rc,
         i32* cellA,
         i32* cellB,

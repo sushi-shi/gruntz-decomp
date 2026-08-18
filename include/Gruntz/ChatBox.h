@@ -35,8 +35,8 @@ public:
     i32 AddNode(CMenuPage* node);
     i32 AttachNode(CMenuPage* n);
     i32 ReplaceNode(const char* key);
-    i32 ConfigureLeftCursorAnimation(void* key, i32 x, i32 y);
-    i32 ConfigureRightCursorAnimation(void* key, i32 x, i32 y);
+    i32 ConfigureLeftCursorAnimation(const char* key, i32 x, i32 y);
+    i32 ConfigureRightCursorAnimation(const char* key, i32 x, i32 y);
     i32 Step(i32 dt);
     i32 Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x, i32 y);
     i32 PlayFocusSound();

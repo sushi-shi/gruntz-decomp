@@ -286,7 +286,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     if (!entries) {
         return 0;
     }
-    void* alpha = m_factory->AlphaTable(entries);
+    CShadeTable* alpha = m_factory->AlphaTable(entries);
     if (!alpha) {
         return 0;
     }

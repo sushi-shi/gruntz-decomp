@@ -257,9 +257,9 @@ CGruntCellRec::~CGruntCellRec() {}
 // Residual is register assignment: retail parks `owner` in ebp and CSEs the constant 7
 // into ebx; ours holds owner in ebx and re-materialises 7 as an immediate.
 RVA(0x00047a10, 0x770)
-CGrunt::CGrunt(void* owner)
-    : CMovingLogic(static_cast<CGameObject*>(owner), CMovingLogic::GRUNT_SCALE),
-      CWapX(static_cast<CGameObject*>(owner)),
+CGrunt::CGrunt(CGameObject* owner)
+    : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE),
+      CWapX(owner),
       m_struckClockLo(0),
       m_struckTimerLo(0),
       m_struckClockHi(0),

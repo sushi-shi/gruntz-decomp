@@ -1688,7 +1688,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
 
 RVA(0x00113a90, 0x3b)
 i32 CTileTriggerLogic::ValidateByType(
-    void* archive,
+    CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,
     i32 pObj
@@ -1698,12 +1698,12 @@ i32 CTileTriggerLogic::ValidateByType(
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (Serialize(static_cast<CFileMemBase*>(archive)) == 0) {
+            if (Serialize(archive) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (Deserialize(static_cast<CFileMemBase*>(archive)) == 0) {
+            if (Deserialize(archive) == 0) {
                 return 0;
             }
             break;
@@ -1768,7 +1768,12 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
 }
 
 RVA(0x00113d40, 0x6f)
-i32 CGiantRockLogic::ApplyByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CGiantRockLogic::ApplyByType(
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 pObj
+) {
     if (archive == NULL) {
         return 0;
     }
@@ -1777,12 +1782,12 @@ i32 CGiantRockLogic::ApplyByType(void* archive, SerialMode mode, LogicTypeId typ
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (SerializeMatrix(static_cast<CFileMemBase*>(archive)) == 0) {
+            if (SerializeMatrix(archive) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (DeserializeMatrix(static_cast<CFileMemBase*>(archive)) == 0) {
+            if (DeserializeMatrix(archive) == 0) {
                 return 0;
             }
             break;

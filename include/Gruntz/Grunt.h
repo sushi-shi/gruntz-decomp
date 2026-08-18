@@ -754,7 +754,7 @@ public:
         m_arrivalVoiceClock.m_v = 0;
         m_arrivalVoiceWindow.m_v = 0;
     }
-    CGrunt(void* owner);
+    CGrunt(CGameObject* owner);
 
     void LoadCellAnimNames(i32 a, i32 b);
     void ResetEntranceAnimation(i32 a, i32 b, i32 c);

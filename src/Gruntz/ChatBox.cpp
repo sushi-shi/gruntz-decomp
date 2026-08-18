@@ -172,12 +172,12 @@ i32 CChatBox::ReplaceNode(const char* key) {
 
 // @early-stop
 RVA(0x00182df0, 0x69)
-i32 CChatBox::ConfigureLeftCursorAnimation(void* key, i32 x, i32 y) {
+i32 CChatBox::ConfigureLeftCursorAnimation(const char* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(key), a_ob);
+    m_page->m_imageRegistry->m_workersByName.Lookup(key, a_ob);
     CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
     m_row0Anim = a;
     if (!a) {
@@ -193,12 +193,12 @@ i32 CChatBox::ConfigureLeftCursorAnimation(void* key, i32 x, i32 y) {
 
 // @early-stop
 RVA(0x00182e60, 0x69)
-i32 CChatBox::ConfigureRightCursorAnimation(void* key, i32 x, i32 y) {
+i32 CChatBox::ConfigureRightCursorAnimation(const char* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(key), a_ob);
+    m_page->m_imageRegistry->m_workersByName.Lookup(key, a_ob);
     CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
     m_row1Anim = a;
     if (!a) {

@@ -512,7 +512,7 @@ RVA(0x00168080, 0x1f6)
 RVA_COMPGEN(0x00168280, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
 
 i32 CWwdSpatialMgr::Init(
-    void* owner,
+    CDDrawChildGroup* owner,
     RECT* rc,
     i32* cellA,
     i32* cellB,
@@ -545,7 +545,7 @@ i32 CWwdSpatialMgr::Init(
             m_rect2.bottom = sizeC[1] - 1;
             m_org2x = sizeC[0] / 2;
             m_org2y = sizeC[1] / 2;
-            m_mgr = static_cast<CDDrawChildGroup*>(owner);
+            m_mgr = owner;
             SetRect(&m_bounds, rc->left, rc->top, rc->right, rc->bottom);
             m_scrollX = static_cast<i32>(0xffffa932);
             m_scrollY = static_cast<i32>(0xffffa932);
