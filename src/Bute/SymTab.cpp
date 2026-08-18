@@ -1253,7 +1253,9 @@ void __stdcall UnpackTag(RezTypeTag tag, char* dst) {
     // The tag's four characters, most significant byte first. Byte-evidenced: retail
     // addresses the PARAMETER's own slot (`mov cx,[esp+6]`, `mov cl,[esp+eax+3]`), so
     // this is a view of `tag`, never the copy a union local would make.
-    const u8* tb = static_cast<const u8*>(static_cast<const void*>(&tag));
+    RecordBytes<RezTypeTag> tagBytes;
+    tagBytes.m_rec = &tag;
+    const u8* tb = tagBytes.m_bytes;
     i32 len = 0;
     if (tb[3]) {
         len = 4;

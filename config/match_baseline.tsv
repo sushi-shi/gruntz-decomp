@@ -4094,7 +4094,7 @@ symtab	?SetBucketCounts@CSymParser@@QAEXHHHH@Z	100.0000	100.0000	1	9f91bd403778	
 symtab	?SetDelims@CSymParser@@QAEXPAD@Z	100.0000	100.0000	1	2ac69c5b125a	0x13ba80	100.0000	
 symtab	?SetPos@CParseSource@@QAEHH@Z	100.0000	100.0000	1	f99ec430fef5	0x139ae0	100.0000	
 symtab	?Teardown@CParseSource@@QAEXXZ	100.0000	100.0000	1	23c31b4db020	0x1397a0	100.0000	
-symtab	?UnpackTag@@YGXW4RezTypeTag@@PAD@Z	100.0000	100.0000	1	cc4a1e1a83da	0x13b970	100.0000	
+symtab	?UnpackTag@@YGXW4RezTypeTag@@PAD@Z	100.0000	100.0000	2	48e7538d99f4	0x13b970	100.0000	
 symtab	?UnusedParserAction@CSymParser@@UAEXH@Z	100.0000	100.0000	1	4cc6c1ab6873	0x13ba00	100.0000	
 symtab	?UnusedParserQuery@CSymParser@@UAEHH@Z	100.0000	100.0000	1	a8efec85b32f	0x13b9f0	100.0000	
 terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	79.3903	79.3903	11	5514a2305431	0x75e90	79.4802	
@@ -4339,7 +4339,7 @@ triggermgrhittest	?TmDeflectStep@@YG?AUGruntDirectionCell@@PAVCGrunt@@HHHHW4Grun
 triggermgrhittest	?TmFlagsAllow@@YAHHHH@Z	100.0000	100.0000	1	fb693b19a48a	0x75a90	100.0000	
 typekeycoll	??0CVariantSlot@@QAE@PAD@Z	100.0000	100.0000	1	091a86e4b217	0x16e1a0	100.0000	
 typekeycoll	??0_zdvec@@QAE@HHHPAX@Z	100.0000	100.0000	1	ae9c1c510b3c	0x16dda0	100.0000	
-typekeycoll	??0_zvec@@QAE@HHHPAX@Z	100.0000	100.0000	1	288e364a1698	0x16de30	100.0000	
+typekeycoll	??0_zvec@@QAE@HHHPAX@Z	100.0000	100.0000	2	cbc71c6974f4	0x16de30	100.0000	
 typekeycoll	??0zBitVec@@QAE@HH@Z	100.0000	100.0000	2	b0b304a1d8a4	0x16d790	100.0000	
 typekeycoll	??0zBitVec@@QAE@PBDH@Z	95.6678	95.6678	2	b0b304a1d8a4	0x16d3a0	95.6678	
 typekeycoll	??0zBitVec@@QAE@XZ	100.0000	100.0000	2	b0b304a1d8a4	0x16d710	100.0000	
@@ -4364,7 +4364,7 @@ typekeycoll	?Find@zPTree@@QAEPAXPBD@Z	90.6038	90.6038	1	07b324f6e866	0x16d190	90
 typekeycoll	?FirstDiffBit@@YAHPBD0@Z	100.0000	100.0000	1	4a157b5880de	0x16e480	100.0000	
 typekeycoll	?GetCallerRetAddr@@YAPAXXZ	100.0000	100.0000	1	9f81347cf374	0x16e0f0	100.0000	
 typekeycoll	?GetRetAddr@@YAPAXXZ	100.0000	100.0000	1	535250c8cddd	0x16d990	100.0000	
-typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	82.6372	82.6372	1	0b54da222989	0x16da80	82.6372	
+typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	82.6372	82.6372	2	695d64539c2b	0x16da80	82.6372	
 typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	89.9948	89.9948	1	7121e3cd4271	0x16db90	89.9948	
 typekeycoll	?LogicAttackFactory@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	971328b83139	0x16e4d0	100.0000	
 typekeycoll	?LogicBumpFactory@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	868cea7a478c	0x16e4e0	100.0000	

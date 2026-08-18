@@ -476,10 +476,10 @@ zErrHandling::~zErrHandling() {
 // @early-stop
 RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
-    void* p;
+    char* p;
     if (idx < m_lo) {
         i32 lonew = idx - at;
-        p = realloc(m_base, (m_hi - lonew + 1) * m_stride);
+        p = static_cast<char*>(realloc(m_base, (m_hi - lonew + 1) * m_stride));
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
             m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
@@ -488,27 +488,27 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
         i32 shift = m_lo - lonew;
         m_grown = shift;
-        m_alloc = static_cast<char*>(p);
+        m_alloc = p;
         memcpy(m_alloc + shift * m_stride, p, oldbytes);
         memset(m_alloc, 0, m_grown * m_stride);
         m_lo = lonew;
-        m_base = static_cast<char*>(p);
+        m_base = p;
         return p;
     }
     i32 hinew = idx + at;
-    p = realloc(m_base, (hinew - m_lo + 1) * m_stride);
+    p = static_cast<char*>(realloc(m_base, (hinew - m_lo + 1) * m_stride));
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-    char* fill = static_cast<char*>(p) + oldbytes;
+    char* fill = p + oldbytes;
     m_grown = hinew - m_hi;
     m_alloc = fill;
     memset(fill, 0, m_grown * m_stride);
     m_hi = hinew;
-    m_base = static_cast<char*>(p);
+    m_base = p;
     return p;
 }
 
@@ -637,8 +637,8 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
         return;
     }
     i32 total = (hi - lo + 1) * stride;
-    void* buf = malloc(total);
-    m_base = static_cast<char*>(buf);
+    char* buf = static_cast<char*>(malloc(total));
+    m_base = buf;
     if (buf != NULL) {
         memset(buf, 0, total);
         if (m_spare != NULL) {
