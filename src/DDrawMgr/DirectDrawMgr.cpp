@@ -21,7 +21,7 @@
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
 DATA(0x002bed00)
-CDDrawPtrCollections* g_DirectDrawMgr = 0;
+CDDrawPtrCollections* g_DirectDrawMgr = NULL;
 
 DATA(0x00283eb8)
 i32 g_ddLogEnabled = 0;
@@ -38,7 +38,7 @@ DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
 DATA(0x00283ee8)
-IDirectDraw2* g_DirectDraw = 0;
+IDirectDraw2* g_DirectDraw = NULL;
 RVA_DYNINIT(0x00141c70, 0xa, g_modeArray)
 RVA_DYNINIT(0x00141c80, 0xa, g_modeArray)
 RVA_DYNINIT(0x00141c90, 0xe, g_modeArray)
@@ -46,7 +46,7 @@ RVA_DYNINIT(0x00141ca0, 0xa, g_modeArray)
 DATA(0x00283ec8)
 CPtrArray g_modeArray;
 DATA(0x00283ee4)
-GUID* g_ddCreateCtx = 0;
+GUID* g_ddCreateCtx = NULL;
 
 RVA(0x001413d0, 0x27)
 void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
@@ -915,7 +915,7 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, ColorDepth colorDepth
 
 RVA(0x00143630, 0x10d)
 CDDSurface* CDDrawPtrCollections::CreatePoolItem(CDDSurface* srcSurface, i32 caps) {
-    IDirectDrawSurface* attached = 0;
+    IDirectDrawSurface* attached = NULL;
     DDSCAPS want;
     want.dwCaps = caps;
     i32 hr = srcSurface->m_ddSurface->GetAttachedSurface(&want, &attached);
@@ -1006,7 +1006,7 @@ CreateDirectDrawVia(
 
 RVA(0x001438c0, 0x31)
 IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
-    IDirectDrawSurface* surf = 0;
+    IDirectDrawSurface* surf = NULL;
     i32 hr = m_device->GetGDISurface(&surf);
     if (hr != 0) {
         DDrawLogLine(

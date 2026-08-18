@@ -893,7 +893,7 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
 
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerCache::Unload() {
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_workers.GetStartPosition();
     CString key;
     if (pos != NULL) {
@@ -925,7 +925,7 @@ CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 fl
 
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_workers.GetStartPosition();
     CString key;
     while (pos != NULL) {
@@ -966,7 +966,7 @@ i32 CAniElement::Build(CDDrawSubMgrLeafScan* ctx, CAniSource* src, i32 flags) {
         m_name = NULL;
     }
 
-    CAniRecordView* rec = 0;
+    CAniRecordView* rec = NULL;
     i32 i;
     for (i = 0; i < src->m_count; i++) {
         rec = new CAniRecordView;
@@ -1056,7 +1056,7 @@ RVA_COMPGEN(0x001657a0, 0x66, ??1CAniRecordView@@UAE@XZ)
 
 RVA(0x00165810, 0xa9)
 void CDDrawWorkerMapSmall::Unload() {
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_map1.GetStartPosition();
     CString key;
     if (pos != NULL) {
@@ -1074,7 +1074,9 @@ void CDDrawWorkerMapSmall::Unload() {
 RVA(0x001658c0, 0xcc)
 CAniRecordBase2*
 CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags) {
-    u8* data = static_cast<u8*>(static_cast<void*>(src->BeginParse()));
+    RecordBytes<char> source;
+    source.m_chars = src->BeginParse();
+    u8* data = source.m_bytes;
     if (data == NULL) {
         return 0;
     }
@@ -1157,7 +1159,7 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32
 
 RVA(0x00165b90, 0xa9)
 void CDDrawWorkerMapSmall::ResetSlots() {
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_map1.GetStartPosition();
     CString key;
     if (pos != NULL) {
@@ -1178,7 +1180,7 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
     if (m_cachedWorker == w) {
         m_cachedWorker = NULL;
     }
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_map1.GetStartPosition();
     CString key;
     while (pos != NULL) {
@@ -1201,7 +1203,7 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
 // elides because the tested value sits in eax. One coin, three symptoms.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
-    CObject* val = 0;
+    CObject* val = NULL;
     m_map1.Lookup(key, val);
     CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
     if (val == NULL) {
@@ -1323,7 +1325,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // late-zero, p-decl-first, the fast permuter (250 iters) and the AST tree.
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
-    CObject* obj = 0;
+    CObject* obj = NULL;
     OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(key, obj);
 
     CDDrawWorker* p = static_cast<CDDrawWorker*>(obj);
