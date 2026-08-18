@@ -4,28 +4,10 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/BattlezRecord.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
-
-struct BattlezRecord {
-    i32 m_populated;
-    i32 m_isEasyMode;
-    i32 m_elapsedTimeMs;
-    i32 m_toyzCollected;
-    i32 m_toolzCollected;
-    i32 m_gruntzExited;
-    i32 m_gruntzLost;
-    i32 m_powerupzCollected;
-    i32 m_secretsFound;
-    i32 m_coinsCollected;
-    i32 m_scoreValue;
-    i32 m_toyzAvailable;
-    i32 m_toolzAvailable;
-    i32 m_powerupzAvailable;
-    i32 m_secretsAvailable;
-    i32 m_coinsAvailable;
-};
 
 // The four Battlez players. It is the dimension of every per-player table on
 // CBattlezData - m_counts, and the m_wins / m_flags matrices - and the stride
@@ -50,7 +32,7 @@ public:
     // null guard around a bare `call ?Init@CBattlezData@@QAEXXZ` (0x83450 @ 0xeb1).
     CBattlezData();
 
-    i32 InitWithRecords(void* records);
+    i32 InitWithRecords(BattlezRecord* records);
     ~CBattlezData();
     void Init();
     void SetCount(i32 count);

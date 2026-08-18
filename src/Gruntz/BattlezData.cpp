@@ -16,9 +16,9 @@ DATA(0x001eab40)
 const float g_zeroF = 0.0f;
 
 RVA(0x000fc9c0, 0x17)
-i32 CBattlezData::InitWithRecords(void* records) {
+i32 CBattlezData::InitWithRecords(BattlezRecord* records) {
     Init();
-    m_records = static_cast<BattlezRecord*>(records);
+    m_records = records;
     return 1;
 }
 

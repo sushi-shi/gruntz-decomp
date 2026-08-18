@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/BattlezRecord.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/QuestLevel.h>
 #include <Io/FileStream.h>
@@ -23,7 +24,8 @@ GZ_ENUM_CONST_BEGIN(SaveGameStringId)
 GZ_ENUM_CONST_END(SaveGameStringId)
 
 enum {
-    SAVE_SLOT_COUNT = 10
+    SAVE_SLOT_COUNT = 10,
+    SAVE_BATTLEZ_RECORD_COUNT = 40
 };
 
 struct SaveSlot {
@@ -94,11 +96,7 @@ public:
     GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;
     GZ_ENUM_STORAGE(QuestLevel, u32) m_curLevel;
     u32 m_magic;
-    char m_pad24[0x51];
-    char m_pad75[0x83];
-    i32 m_tailF8;
-    i32 m_tailFC;
-    char m_pad100[0x924];
+    BattlezRecord m_battlezRecords[SAVE_BATTLEZ_RECORD_COUNT];
     SaveSlot m_slots[SAVE_SLOT_COUNT];
 };
 
