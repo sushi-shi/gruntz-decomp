@@ -218,7 +218,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 CGameObject* _dr;
                 LeafCue* _cueMiniature;
                 LeafCue* _cueSpace;
-                void* _c_ob;
+                LeafCue* _c;
                 switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
                     case CHEAT_PROGRAMMING_GOD: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
@@ -598,9 +598,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         g_explosionz ^= 1;
                         CDDrawSubMgrLeafScan* _reg = m_world->m_soundRegistry;
                         if (_reg->m_emitGate == 0) {
-                            _c_ob = NULL;
-                            _reg->m_cues.Lookup("GAME_MAJORCHEAT", _c_ob);
-                            LeafCue* _c = static_cast<LeafCue*>(_c_ob);
+                            _c = NULL;
+                            MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
                             if (_c) {
                                 i32 _tag = g_sndCueTag;
                                 if (g_sndEnabled) {

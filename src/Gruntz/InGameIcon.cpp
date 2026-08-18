@@ -893,9 +893,9 @@ i32 CInGameIcon::SerializeMove(
             if (strlen(tailName) == 0) {
                 m_cue = NULL;
             } else {
-                void* val = 0;
-                m_animWorker->m_ownerCtx->m_soundRegistry->m_cues.Lookup(tailName, val);
-                m_cue = static_cast<LeafCue*>(val);
+                LeafCue* value = NULL;
+                MapLookup(m_animWorker->m_ownerCtx->m_soundRegistry->m_cues, tailName, value);
+                m_cue = value;
             }
             g_serialCounter++;
             i32 id = 0;
@@ -1023,9 +1023,8 @@ i32 CInGameText::Update() {
         if (CGameLevel::PointInRect(&reg->m_viewBounds, x, y)) {
             CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
-                void* res_ob = 0;
-                set->m_cues.Lookup("GAME_HELPBOOK", res_ob);
-                LeafCue* res = static_cast<LeafCue*>(res_ob);
+                LeafCue* res = NULL;
+                MapLookup(set->m_cues, "GAME_HELPBOOK", res);
                 if (res != NULL) {
                     i32 enable = g_sndEnabled;
                     i32 token = g_sndCueTag;
@@ -1077,12 +1076,12 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
 
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
-    void* found = NULL;
+    LeafCue* found = NULL;
     if (category != NULL) {
         found = NULL;
-        g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
+        MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, category, found);
     }
-    m_cue = static_cast<LeafCue*>(found);
+    m_cue = found;
 }
 
 // @early-stop

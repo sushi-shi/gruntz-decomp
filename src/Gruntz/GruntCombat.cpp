@@ -655,9 +655,8 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    void* entry_ob = 0;
-    g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
-    LeafCue* entry = static_cast<LeafCue*>(entry_ob);
+    LeafCue* entry = NULL;
+    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, entry);
     if (entry == NULL) {
         return;
     }
@@ -686,9 +685,8 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (sample != NULL) {
         return;
     }
-    void* entry_ob = 0;
-    g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
-    LeafCue* entry = static_cast<LeafCue*>(entry_ob);
+    LeafCue* entry = NULL;
+    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, entry);
     if (entry == NULL) {
         return;
     }
@@ -1956,9 +1954,9 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
-    void* val = 0;
-    m_cues.Lookup(key, val);
-    return static_cast<CObject*>(val);
+    CObject* value = NULL;
+    MapLookup(m_cues, key, value);
+    return value;
 }
 
 RVA(0x0005baf0, 0xf4)

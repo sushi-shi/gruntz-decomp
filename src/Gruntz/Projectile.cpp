@@ -1059,7 +1059,6 @@ RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
     CGruntzMgr* reg;
     CDDrawSurfaceMgr* world;
-    void* entry_ob;
     LeafCue* entry;
     if (m_sound != NULL) {
         goto fail;
@@ -1069,9 +1068,8 @@ i32 CProjectile::LaunchSound(const char* key) {
         goto fail;
     }
     world = reg->m_world;
-    entry_ob = NULL;
-    world->m_soundRegistry->m_cues.Lookup(key, entry_ob);
-    entry = static_cast<LeafCue*>(entry_ob);
+    entry = NULL;
+    MapLookup(world->m_soundRegistry->m_cues, key, entry);
     if (entry == NULL) {
         goto fail;
     }

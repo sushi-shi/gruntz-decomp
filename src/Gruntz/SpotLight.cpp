@@ -164,9 +164,8 @@ i32 CSpotLight::Tick() {
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 CDDrawSubMgrLeafScan* obj = g_gameReg->m_world->m_soundRegistry;
                 if (obj->m_emitGate == 0) {
-                    void* found = NULL;
-                    obj->m_cues.Lookup(name, found);
-                    LeafCue* cue = static_cast<LeafCue*>(found);
+                    LeafCue* cue = NULL;
+                    MapLookup(obj->m_cues, name, cue);
                     if (cue != NULL && g_sndEnabled != 0) {
                         u32 clk = g_killCueClock;
                         if (clk - cue->m_lastPlayTime >= static_cast<u32>(cue->m_replayDelay)) {

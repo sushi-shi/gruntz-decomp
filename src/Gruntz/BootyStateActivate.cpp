@@ -371,9 +371,8 @@ i32 CBootyState::EnterState(GameStateId) {
 // and casting the out-param at every site is worse (79.30 -> 77.27).
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId) {
-    void* obj = 0;
-    m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
-    LeafCue* found = static_cast<LeafCue*>(obj);
+    LeafCue* found = NULL;
+    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", found);
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
@@ -1023,9 +1022,8 @@ i32 CBootyState::LevelMsgHudDriver() {
 
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
-                        void* cue_ob = 0;
-                        host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
-                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+                        LeafCue* cue = NULL;
+                        MapLookup(host->m_cues, "GAME_EXPLOSION1", cue);
                         if (cue != NULL) {
                             cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                         }
@@ -1093,9 +1091,8 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_slot++;
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
-                void* cue_ob = 0;
-                host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
-                LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+                LeafCue* cue = NULL;
+                MapLookup(host->m_cues, "GAME_EXPLOSION1", cue);
                 if (cue != NULL && g_sndEnabled != 0
                     && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                            >= static_cast<u32>(cue->m_replayDelay)) {
@@ -1438,10 +1435,10 @@ i32 CBootyState::CheckPerfectBonus() {
         i32 item = g_gameReg->m_soundVolume;
         CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
         if (m28->m_emitGate == 0) {
-            void* found = 0;
-            m28->m_cues.Lookup("BOOTY_PERFECT", found);
+            LeafCue* found = NULL;
+            MapLookup(m28->m_cues, "BOOTY_PERFECT", found);
             if (found && g_sndEnabled != 0) {
-                LeafCue* p = static_cast<LeafCue*>(found);
+                LeafCue* p = found;
                 if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                     >= static_cast<u32>(p->m_replayDelay)) {
                     p->m_lastPlayTime = g_killCueClock;
@@ -2263,10 +2260,10 @@ i32 CMultiBootyState::EnterState(GameStateId) {
     i32 item = g_gameReg->m_soundVolume;
     CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
     if (m28->m_emitGate == 0) {
-        void* found = 0;
-        m28->m_cues.Lookup("BOOTY_LOOP", found);
+        LeafCue* found = NULL;
+        MapLookup(m28->m_cues, "BOOTY_LOOP", found);
         if (found && g_sndEnabled != 0) {
-            LeafCue* p = static_cast<LeafCue*>(found);
+            LeafCue* p = found;
             if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                 >= static_cast<u32>(p->m_replayDelay)) {
                 p->m_lastPlayTime = g_killCueClock;
@@ -2281,9 +2278,8 @@ i32 CMultiBootyState::EnterState(GameStateId) {
 // Same shape as CBootyState::LeaveState: cl CSEs `&found->m_sound`, retail reloads.
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId) {
-    void* obj = 0;
-    m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
-    LeafCue* found = static_cast<LeafCue*>(obj);
+    LeafCue* found = NULL;
+    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", found);
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {

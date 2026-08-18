@@ -2407,9 +2407,8 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
 
-                        void* cue_ob = 0;
-                        host->m_cues.Lookup("GAME_MINORCHEAT", cue_ob);
-                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+                        LeafCue* cue = NULL;
+                        MapLookup(host->m_cues, "GAME_MINORCHEAT", cue);
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {
@@ -2455,9 +2454,8 @@ void CGruntzMgr::CheatEclipseToggle() {
                     CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
 
-                        void* cue_ob = 0;
-                        host->m_cues.Lookup("GAME_MINORCHEAT", cue_ob);
-                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+                        LeafCue* cue = NULL;
+                        MapLookup(host->m_cues, "GAME_MINORCHEAT", cue);
                         if (cue) {
                             i32 tag = g_sndCueTag;
                             if (g_sndEnabled) {

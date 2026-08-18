@@ -1778,9 +1778,8 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             CDDrawSubMgrLeafScan* set = m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
 
-                void* e_ob = 0;
-                set->m_cues.Lookup("LEVEL_ROCKBREAK", e_ob);
-                LeafCue* e = static_cast<LeafCue*>(e_ob);
+                LeafCue* e = NULL;
+                MapLookup(set->m_cues, "LEVEL_ROCKBREAK", e);
                 if (e != NULL && g_sndEnabled != 0) {
                     i32 tag = g_sndCueTag;
                     u32 now = g_killCueClock;

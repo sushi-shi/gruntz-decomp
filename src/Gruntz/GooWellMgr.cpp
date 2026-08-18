@@ -30,9 +30,8 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
-                void* out_v = 0;
-                g_gameReg->m_world->m_soundRegistry->m_cues.Lookup("LEVEL_ROLLINGBALL", out_v);
-                LeafCue* out = static_cast<LeafCue*>(out_v);
+                LeafCue* out = NULL;
+                MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, "LEVEL_ROLLINGBALL", out);
                 if (out && out->m_sound) {
                     m_rollingballLoop = static_cast<DirectSoundMgr*>(out->m_sound->GetItem());
                     if (m_rollingballLoop) {
@@ -47,9 +46,8 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
-                void* out_v = 0;
-                g_gameReg->m_world->m_soundRegistry->m_cues.Lookup("GAME_TELEPORTLOOP", out_v);
-                LeafCue* out = static_cast<LeafCue*>(out_v);
+                LeafCue* out = NULL;
+                MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, "GAME_TELEPORTLOOP", out);
                 if (out && out->m_sound) {
                     m_teleportLoop = static_cast<DirectSoundMgr*>(out->m_sound->GetItem());
                     if (m_teleportLoop) {
