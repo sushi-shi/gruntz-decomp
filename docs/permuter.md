@@ -17,6 +17,23 @@ gruntz permute variants src/Gruntz/GameLevel.cpp 0x160450 \
   --wall-time-seconds 900 -o /tmp/probe-head-manifest.json --run
 ```
 
+The campaign front end derives and classifies the source-owned population, then
+runs the approximation loop directly:
+
+```sh
+gruntz permute candidates --output /tmp/permute-candidates.json
+gruntz permute campaign --targets 3 --islands 32 --frontier 4 \
+  --output /tmp/permute-campaign
+```
+
+This is a bounded N-island/M-frontier search, not a claim that fuzzy score proves
+source correctness. Each island is a deterministic compiler-state sample crossed
+with class-appropriate source shapes. The batch retains the best representative
+of the M highest-scoring distinct normalized target states. An agent compares
+those states with retail, identifies a repeated source-level mechanism, makes one
+defensible source A/B, rebuilds, and starts another round. The live inventory is
+re-derived for every round; there is no hand-kept queue.
+
 `state` leaves the target body unchanged and inserts deterministic parser-visible
 declaration forests either beside it or after the leading directive block.
 `--only-trial N` replays an indexed state. `--state-summary` records unique
@@ -50,7 +67,8 @@ sweep because VC5 front-end state is sensitive to declaration kind and order.
 Every compile has a timeout; a batch may also have a total wall-time bound.
 Source restoration is guarded by a process lock and exact source bytes; `state`
 also rechecks the per-function fingerprint. The first audited exact candidate
-stops the search.
+normally stops a direct search. Campaigns continue after exact so the M-solution
+frontier remains available for pattern extraction.
 Exact closure requires all of:
 
 1. unrounded objdiff score exactly 100%;
