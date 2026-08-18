@@ -141,8 +141,11 @@ public:
     i32 PlacedObjectCellCount(i32 group) {
         return m_placedObjectCells[group].GetSize();
     }
-    void** CameraBookmarkData() {
-        return m_cameraBookmarks.GetData();
+    Coord* CameraBookmarkAt(i32 index) {
+        return static_cast<Coord*>(m_cameraBookmarks.GetAt(index));
+    }
+    void SetCameraBookmarkAt(i32 index, Coord* bookmark) {
+        m_cameraBookmarks.SetAt(index, bookmark);
     }
     i32 CameraBookmarkCount() {
         return m_cameraBookmarks.GetSize();

@@ -162,7 +162,7 @@ void CStatusBarMgr::Teardown() {
         ->SetValueDword("StatusBar Position", IDX(m_position));
     ResetWidgets(0);
     for (i32 i = 0; i < m_ptrPool.GetSize(); i++) {
-        void* p = m_ptrPool.GetData()[i];
+        Coord* p = static_cast<Coord*>(m_ptrPool.GetData()[i]);
         if (p) {
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
@@ -3808,7 +3808,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     }
 
     for (i32 j = 0; j < m_ptrPool.GetSize(); j++) {
-        void* p = m_ptrPool.GetData()[j];
+        Coord* p = static_cast<Coord*>(m_ptrPool.GetData()[j]);
         if (p) {
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
@@ -3840,8 +3840,8 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         if (m_ptrPool.GetSize() > 0) {
-            void* p = m_ptrPool.GetData()[0];
-            result = static_cast<PickupType>(*static_cast<i32*>(p));
+            Coord* p = static_cast<Coord*>(m_ptrPool.GetData()[0]);
+            result = static_cast<PickupType>(p->m_x);
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
@@ -4380,7 +4380,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     } while (--seq);
 
     for (i32 t = 0; t < m_ptrPool.GetSize(); t++) {
-        void* pp = m_ptrPool.GetData()[t];
+        Coord* pp = static_cast<Coord*>(m_ptrPool.GetData()[t]);
         if (pp) {
             CoordPoolNode* node = g_coordPool.NodeOf(pp);
             node->m_next = g_coordPool.m_freeHead;
@@ -4394,7 +4394,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     m_ptrPool.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         CoordPoolNode* head = g_coordPool.m_freeHead;
-        void* node = 0;
+        Coord* node = NULL;
         if (head->m_next != NULL) {
             node = &head->m_coord;
             g_coordPool.m_freeHead = head->m_next;

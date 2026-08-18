@@ -1474,7 +1474,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         CoordPoolNode* fl = g_coordPool.m_freeHead;
-        void* node = 0;
+        Coord* node = NULL;
         if (fl->m_next != NULL) {
             node = &fl->m_coord;
             g_coordPool.m_freeHead = fl->m_next;
@@ -1489,7 +1489,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&count, sizeof(count));
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
-            void* node = 0;
+            Coord* node = NULL;
             if (fl->m_next != NULL) {
                 node = &fl->m_coord;
                 g_coordPool.m_freeHead = fl->m_next;

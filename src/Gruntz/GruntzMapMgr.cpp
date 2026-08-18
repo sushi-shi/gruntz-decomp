@@ -25,7 +25,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
             i32 count;
             ar->Read(&count, sizeof(count));
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
-                void* elem = m_arr.GetData()[fi];
+                Coord* elem = static_cast<Coord*>(m_arr.GetData()[fi]);
                 if (elem != NULL) {
                     CoordPoolNode* node = g_coordPool.NodeOf(elem);
                     node->m_next = g_coordPool.m_freeHead;
@@ -36,7 +36,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
             m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
                 CoordPoolNode* node = g_coordPool.m_freeHead;
-                void* elem = 0;
+                Coord* elem = NULL;
                 if (node->m_next != NULL) {
                     elem = &node->m_coord;
                     g_coordPool.m_freeHead = node->m_next;
@@ -52,7 +52,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
             i32 wn = m_arr.GetSize();
             ar->Write(&wn, sizeof(wn));
             for (u32 wi = 0; wi < static_cast<u32>(wn); wi++) {
-                void* elem = m_arr.GetData()[wi];
+                Coord* elem = static_cast<Coord*>(m_arr.GetData()[wi]);
                 if (elem == NULL) {
                     return 0;
                 }
@@ -99,7 +99,7 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
 RVA(0x00085480, 0x52)
 void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        void* elem = m_arr.GetData()[i];
+        Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
         if (elem != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(elem);
             node->m_next = g_coordPool.m_freeHead;
@@ -113,7 +113,7 @@ void CGruntzMapMgr::Reset() {
 RVA(0x00085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
-        void* elem = m_arr.GetAt(i);
+        Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));
         if (elem != NULL) {
             CoordPoolNode* node = g_coordPool.NodeOf(elem);
             node->m_next = g_coordPool.m_freeHead;

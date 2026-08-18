@@ -408,7 +408,7 @@ void CPlay::ReleaseResources() {
         m_placedObjectCells[k].SetSize(0, -1);
     }
     for (i = 0; i < CameraBookmarkCount(); i++) {
-        void* node = CameraBookmarkData()[i];
+        Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
             CoordPoolNode* p = g_coordPool.NodeOf(node);
             p->m_next = g_coordPool.m_freeHead;
@@ -1770,7 +1770,7 @@ void CPlay::FreeListTeardown() {
         m_placedObjectCells[k].SetSize(0, -1);
     }
     for (i = 0; i < CameraBookmarkCount(); i++) {
-        void* node = CameraBookmarkData()[i];
+        Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
             CoordPoolNode* p = g_coordPool.NodeOf(node);
             p->m_next = g_coordPool.m_freeHead;
@@ -2269,8 +2269,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 this->m_cameraBookmarkIndex = 0;
             }
         }
-        i32* e = static_cast<i32*>(this->m_cameraBookmarks.GetAt(this->m_cameraBookmarkIndex));
-        this->ResetGoals(e[0], e[1]);
+        Coord* e = this->CameraBookmarkAt(this->m_cameraBookmarkIndex);
+        this->ResetGoals(e->m_x, e->m_y);
         return 1;
     }
 
@@ -2282,7 +2282,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (cur < 0) {
             return 1;
         }
-        CoordPoolNode* node = g_coordPool.NodeOf(this->m_cameraBookmarks.GetAt(cur));
+        CoordPoolNode* node = g_coordPool.NodeOf(this->CameraBookmarkAt(cur));
         this->m_cameraBookmarks.RemoveAt(cur, 1);
         node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;
@@ -6881,7 +6881,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     count = CameraBookmarkCount();
     s->Write(&count, sizeof(count));
     for (i32 fi = 0; fi < CameraBookmarkCount(); fi++) {
-        void* el = CameraBookmarkData()[fi];
+        Coord* el = CameraBookmarkAt(fi);
         if (el != NULL) {
             s->Write(el, 8);
         }
@@ -7096,7 +7096,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 n488;
         ar->Read(&n488, sizeof(n488));
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
-            void* node = CameraBookmarkData()[i];
+            Coord* node = CameraBookmarkAt(i);
             if (node) {
                 CoordPoolNode* q = g_coordPool.NodeOf(node);
                 q->m_next = g_coordPool.m_freeHead;
@@ -7106,7 +7106,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         m_cameraBookmarks.SetSize(0, -1);
         m_cameraBookmarks.SetSize(n488, -1);
         for (u32 j = 0; j < static_cast<u32>(n488); j++) {
-            void* node = 0;
+            Coord* node = NULL;
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
@@ -7114,7 +7114,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
-            CameraBookmarkData()[j] = node;
+            SetCameraBookmarkAt(j, node);
         }
     }
     return 1;
