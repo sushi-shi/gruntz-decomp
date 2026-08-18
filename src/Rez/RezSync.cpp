@@ -52,6 +52,7 @@
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
+#include <Utils/MapTyped.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/ScreenGeometry.h>
@@ -582,9 +583,9 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sz), "GAME", "_");
     }
     {
-        void* mv = 0;
-        m_world->m_soundRegistry->m_cues.Lookup("GAME_MOVIE", mv);
-        m_world->m_soundRegistry->MatchSub(static_cast<LeafCue*>(mv), 0);
+        LeafCue* mv = NULL;
+        MapLookup(m_world->m_soundRegistry->m_cues, "GAME_MOVIE", mv);
+        m_world->m_soundRegistry->MatchSub(mv, 0);
     }
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {

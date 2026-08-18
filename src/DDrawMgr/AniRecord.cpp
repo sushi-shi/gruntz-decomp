@@ -17,6 +17,7 @@
 #include <Gruntz/AniRecordView.h>
 #include <Ints.h>
 #include <Pix16.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 
@@ -85,8 +86,8 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
     if (m_cueCount > 0) {
         m_cues = new LeafCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-            void* v = NULL;
-            m_cues[i] = (owner->m_cues.Lookup(tokens.GetAt(i), v), static_cast<LeafCue*>(v));
+            LeafCue* v = NULL;
+            m_cues[i] = (MapLookup(owner->m_cues, tokens.GetAt(i), v), v);
         }
     }
 }

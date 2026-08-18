@@ -218,9 +218,9 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
                 m_value = NULL;
             } else {
                 CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
-                void* v = 0;
-                map->Lookup(hdr, v);
-                m_value = static_cast<CAniElement*>(v);
+                CAniElement* v = NULL;
+                MapLookup(*map, hdr, v);
+                m_value = v;
             }
             break;
         }

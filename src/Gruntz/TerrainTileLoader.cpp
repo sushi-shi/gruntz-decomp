@@ -26,6 +26,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
 
@@ -284,8 +285,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 g_gameReg->m_tileGrid->m_rows[topY][scanX].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
-                            void* mapped = 0;
-                            g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                            CWwdGameObject* mapped = NULL;
+                            MapLookup(
+                                g_gameReg->m_world->m_childGroup->m_map48,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -296,9 +298,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                                 }
                             } else {
-                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
@@ -357,8 +358,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 g_gameReg->m_tileGrid->m_rows[bottomY][scanX].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
-                            void* mapped = 0;
-                            g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                            CWwdGameObject* mapped = NULL;
+                            MapLookup(
+                                g_gameReg->m_world->m_childGroup->m_map48,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -369,9 +371,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                                 }
                             } else {
-                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
@@ -435,8 +436,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 g_gameReg->m_tileGrid->m_rows[scanY][leftX].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
-                            void* mapped = 0;
-                            g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                            CWwdGameObject* mapped = NULL;
+                            MapLookup(
+                                g_gameReg->m_world->m_childGroup->m_map48,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -447,9 +449,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                                 }
                             } else {
-                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
@@ -508,8 +509,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 g_gameReg->m_tileGrid->m_rows[scanY][rightX].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
-                            void* mapped = 0;
-                            g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                            CWwdGameObject* mapped = NULL;
+                            MapLookup(
+                                g_gameReg->m_world->m_childGroup->m_map48,
                                 objectKey.m_addr,
                                 mapped
                             );
@@ -520,9 +522,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     g_gameReg->m_tileGrid->m_rows[tileY][tileX].m_flags &= ~0x40000;
                                 }
                             } else {
-                                CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
