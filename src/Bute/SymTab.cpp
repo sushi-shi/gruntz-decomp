@@ -1096,9 +1096,10 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 }
 
 // @early-stop
-// Instruction stream and frame layout are identical to retail; the residue is one
-// callee-saved colour swap (extKey in esi / rec in edi, ours reversed) around the
-// PackTag/AddNodeEntry block.
+// Calls and CFG match retail, including the relocation-free recursive call. Retail
+// keeps extKey in esi and rec in edi and retains one dead reload of this; this build
+// swaps the two colours and deletes that reload. Declaration/lifetime shapes and the
+// complete parser-state forest leave this block unchanged.
 RVA(0x0013b300, 0x545)
 i32 CSymParser::ParseRecords(CRezItmBase* reader, CSymTab* node, char* path, i32 flag) {
     char pattern[REZ_SCAN_PATH_MAX];

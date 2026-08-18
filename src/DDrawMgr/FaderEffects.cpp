@@ -1582,7 +1582,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
 // @early-stop
 // two frame slots swapped: rowBytes and the spilled rowSrcA get esp+0x34/0x30
 // where retail assigns 0x30/0x34; six operand bytes total. Decl order/position,
-// renames, hoists, sum-inlining and every island family are inert - an
+// source-entity splits, sum-inlining and the complete parser-state forest are inert - an
 // intra-function slot-coloring choice.
 RVA(0x00182610, 0x2eb)
 

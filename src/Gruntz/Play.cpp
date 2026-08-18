@@ -3432,6 +3432,10 @@ i32 CPlay::DrawWorldPresent() {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
+// The only body residue is the dead source-RECT top word: retail spills it to
+// [esp+0x30], while this build uses the soon-overwritten dr.top at [esp+0x20].
+// Copy-initialized RECT forms change the live copy and are not equivalent; the
+// complete parser-state forest leaves this dead-slot choice unchanged.
 RVA(0x000cf0a0, 0x567)
 void CPlay::DrawDebugStatsFull() {
     if (g_debugDisplayFlags & 0x20) {
@@ -4089,7 +4093,7 @@ i32 CPlay::StepGridWalk(i32 dt) {
 // @early-stop
 // sole residue: retail homes the 4-byte DDSCAPS in the dead `pair` parameter's slot
 // ([esp+0x38]) where cl overlays it onto `half`'s local ([esp+0x10]); hoisting the
-// declaration to function scope does not move it.
+// declaration and the complete parser-state forest do not move it.
 RVA(0x000d0b30, 0x200)
 i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     i32 x = m_cursorX + m_cursorOffset.m_x;
