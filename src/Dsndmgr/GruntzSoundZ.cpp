@@ -14,12 +14,12 @@ DATA(0x001ee8ec)
 const char g_dot[] = ".";
 
 DATA(0x00253c5c)
-HMDIDRIVER g_ailMidiDriver = 0;
+HMDIDRIVER g_ailMidiDriver = NULL;
 DATA(0x00253c60)
 i32 g_midiSeqCounter = 0;
 DATA(0x00253c64)
 
-HINSTANCE g_midiResModule = 0;
+HINSTANCE g_midiResModule = NULL;
 
 // @identity-TODO ?1CGruntzSoundZ - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
@@ -357,7 +357,7 @@ i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
     if (hRes == NULL) {
         return 0;
     }
-    void* p = LockResource(hRes);
+    const u8* p = static_cast<const u8*>(LockResource(hRes));
     if (p == NULL) {
         return 0;
     }

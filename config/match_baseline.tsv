@@ -2542,7 +2542,7 @@ gruntzsoundz	?IsMidi@CGruntzSoundInnerZ@@UAEHXZ	100.0000	100.0000	1	ac96c61cf99b
 gruntzsoundz	?IsPlaying@CGruntzSoundZ@@QAEHXZ	100.0000	100.0000	1	8d1e8457c026	0x138920	100.0000	
 gruntzsoundz	?IsStarted@CGruntzSoundInnerZ@@UAEHXZ	100.0000	100.0000	1	829c07f3830a	0x138a10	100.0000	
 gruntzsoundz	?Load@CGruntzSoundInnerZ@@UAEHPBD0@Z	100.0000	100.0000	1	ced0b7d3cec7	0x138aa0	100.0000	
-gruntzsoundz	?LoadSpecial@CGruntzSoundInnerZ@@UAEHPBD0@Z	100.0000	100.0000	1	b5908f0c1ef0	0x138d50	100.0000	
+gruntzsoundz	?LoadSpecial@CGruntzSoundInnerZ@@UAEHPBD0@Z	100.0000	100.0000	2	958fcae68a09	0x138d50	100.0000	
 gruntzsoundz	?Play@CGruntzSoundInnerZ@@UAEHPAUHWND__@@H@Z	100.0000	100.0000	1	d43ab8818e1b	0x138e10	100.0000	
 gruntzsoundz	?PlayByName@CGruntzSoundZ@@QAEHPBDH@Z	100.0000	100.0000	1	cb72fa77e24e	0x138840	100.0000	
 gruntzsoundz	?PlayCreate2@CGruntzSoundZ@@QAEHPBDH0@Z	100.0000	100.0000	1	2f70eee8129c	0x138780	100.0000	
