@@ -25,6 +25,25 @@
 
 #include <new>
 
+RVA_DYNINIT(0x00115c30, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00115c50, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x00115c80, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00115ca0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00115cd0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00115cf0, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00115d20, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00115d40, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00115d70, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x00115d90, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00115dc0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00115de0, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00115e10, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00115e30, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00115e60, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00115e80, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00115eb0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00115ed0, 0x1a, s_gruntDirCenter)
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115b60, 0x97)
