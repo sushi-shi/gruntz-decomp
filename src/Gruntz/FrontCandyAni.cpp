@@ -61,6 +61,9 @@ i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
 RVA_COMPGEN(0x0000ff90, 0x1e, ??_GCEyeCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 
+// @early-stop
+// Exact size, calls, CFG, constants, and referents; only the two repeated
+// m_animWorker receiver reloads use {ECX,EDX} here instead of retail's {EAX,ECX}.
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
@@ -85,7 +88,8 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 }
 
 // @early-stop
-// @early-stop
+// Exact size, calls, CFG, constants, and referents; only the two repeated
+// m_animWorker receiver reloads use {ECX,EDX} here instead of retail's {EAX,ECX}.
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(1);
@@ -105,6 +109,9 @@ CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     }
 }
 
+// @early-stop
+// Exact size, calls, CFG, constants, and referents; only the two repeated
+// m_animWorker receiver reloads use {ECX,EDX} here instead of retail's {EAX,ECX}.
 RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -128,6 +135,7 @@ CBehindCandy::CBehindCandy(CGameObject* obj)
     }
 }
 
+// @early-stop
 // cl5 propagates the branch equality into the guarded re-read of the member it
 // just tested, so the load retail keeps is missing.
 // docs/patterns/branch-equality-propagated-into-the-guarded-store.md
@@ -157,6 +165,9 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     }
 }
 
+// @early-stop
+// Same bounded equality-propagation residue as CEyeCandy above.
+// docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
