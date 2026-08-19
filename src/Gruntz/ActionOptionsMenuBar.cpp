@@ -141,6 +141,9 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
     return 1;
 }
 
+// @early-stop
+// Exact 111-instruction skeleton and both referents; only global-load
+// scheduling and the two pickup-value scratch-register assignments differ.
 RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
     CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];
