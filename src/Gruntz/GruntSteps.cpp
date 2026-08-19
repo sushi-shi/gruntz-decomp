@@ -578,9 +578,9 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 }
 
 // @early-stop
-// The arrow command selects one direction before the shared movement switch;
-// retail keeps four cardinal-selection branches and one set of direction-data
-// loads. The toy probes narrow flags to bytes while the fallback keeps dwords.
+// The fixed-arrow and current-direction switches repeat the cardinal cases;
+// cl folds their identical bodies so both jump tables target one set of loads.
+// The toy probes narrow flags to bytes while the fallback keeps dwords.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -589,92 +589,107 @@ i32 CGrunt::StepCompassMove() {
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
     i32 result = 0;
-    i32 moveX = x;
-    i32 moveY = y;
+    i32 moveX;
+    i32 moveY;
     GruntDirectionCell voice;
 
     if (board->CellFlagsAt(tx, ty) & 0x80) {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
-        GruntDirection direction;
         switch (static_cast<TileCollisionKind>(cmd)) {
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
-                direction = DIR_NORTH;
+                y -= 0x20;
+                moveY = y;
+                moveX = x;
+                voice = g_gruntMoveDirNorth;
                 break;
             case TILEKIND_ARROW_RIGHT_A:
             case TILEKIND_ARROW_RIGHT_B:
-                direction = DIR_EAST;
-                break;
-            case TILEKIND_ARROW_DOWN_A:
-            case TILEKIND_ARROW_DOWN_B:
-                direction = DIR_SOUTH;
-                break;
-            case TILEKIND_ARROW_LEFT_A:
-            case TILEKIND_ARROW_LEFT_B:
-                direction = DIR_WEST;
-                break;
-            case TILEKIND_ARROW_CURRENT:
-                direction = m_entranceCell.direction;
-                break;
-            default:
-                goto arrow_done;
-        }
-        switch (direction) {
-            case DIR_NORTH:
-                y -= 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirNorth;
-                break;
-            case DIR_EAST:
                 x += 0x20;
                 moveX = x;
                 moveY = y;
                 voice = g_gruntMoveDirEast;
                 break;
-            case DIR_SOUTH:
+            case TILEKIND_ARROW_DOWN_A:
+            case TILEKIND_ARROW_DOWN_B:
                 y += 0x20;
                 moveX = x;
                 moveY = y;
                 voice = g_gruntMoveDirSouth;
                 break;
-            case DIR_WEST:
+            case TILEKIND_ARROW_LEFT_A:
+            case TILEKIND_ARROW_LEFT_B:
                 x -= 0x20;
                 moveX = x;
                 moveY = y;
                 voice = g_gruntMoveDirWest;
                 break;
-            case DIR_NORTHEAST:
-                x += 0x20;
-                y -= 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirNorthEast;
+            case TILEKIND_ARROW_CURRENT:
+                switch (m_entranceCell.direction) {
+                    case DIR_NORTH:
+                        y -= 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirNorth;
+                        break;
+                    case DIR_EAST:
+                        x += 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirEast;
+                        break;
+                    case DIR_SOUTH:
+                        y += 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirSouth;
+                        break;
+                    case DIR_WEST:
+                        x -= 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirWest;
+                        break;
+                    case DIR_NORTHEAST:
+                        x += 0x20;
+                        y -= 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirNorthEast;
+                        break;
+                    case DIR_SOUTHEAST:
+                        x += 0x20;
+                        y += 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirSouthEast;
+                        break;
+                    case DIR_SOUTHWEST:
+                        x -= 0x20;
+                        y += 0x20;
+                        moveX = x;
+                        moveY = y;
+                        voice = g_gruntMoveDirSouthWest;
+                        break;
+                    case DIR_NORTHWEST:
+                        x -= 0x20;
+                        y -= 0x20;
+                        moveX = x;
+                        voice = g_gruntMoveDirNorthWest;
+                        moveY = y;
+                        break;
+                    default:
+                        moveX = x;
+                        moveY = y;
+                        break;
+                }
                 break;
-            case DIR_SOUTHEAST:
-                x += 0x20;
-                y += 0x20;
+            default:
                 moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirSouthEast;
-                break;
-            case DIR_SOUTHWEST:
-                x -= 0x20;
-                y += 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirSouthWest;
-                break;
-            case DIR_NORTHWEST:
-                x -= 0x20;
-                y -= 0x20;
-                moveX = x;
-                voice = g_gruntMoveDirNorthWest;
                 moveY = y;
                 break;
         }
-    arrow_done:
         i32 mtx = moveX >> TILE_SHIFT_PX;
         i32 mty = moveY >> TILE_SHIFT_PX;
         i32 tflags = board->CellFlagsAt(mtx, mty);
@@ -754,6 +769,10 @@ i32 CGrunt::StepCompassMove() {
                     moveX = x - 0x20;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorthWest;
+                    break;
+                default:
+                    moveX = x;
+                    moveY = y;
                     break;
             }
             result = s_CanCommitToyMove(this, moveX, moveY, x, y);

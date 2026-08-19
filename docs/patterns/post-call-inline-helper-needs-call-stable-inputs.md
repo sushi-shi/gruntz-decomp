@@ -26,12 +26,15 @@ static __inline i32 CanCommit(
 }
 ```
 
-The ordinary early-return form reaches retail's 129-branch skeleton and lands within
-three decoded instructions (887 candidate versus 884 retail). It remains a bounded
-allocation/layout wall: 32 deterministic TU states yielded one meaningful instruction
-island, and 128 syntax-aware declaration/statement-order variants did not recover the
-retail cardinal-arm folding. The retained source therefore follows the value-flow
-evidence, not the transient fuzzy score.
+With the earlier intermediate-direction arrow model, the ordinary early-return form
+reached retail's 129-branch skeleton and landed within three decoded instructions (887
+candidate versus 884 retail). A later jump-table audit recovered the stronger source
+model: nested fixed-arrow/current-direction switches with deferred output lifetimes make
+cl fold their duplicated cardinal bodies exactly as retail does. The source-order state
+selected by the full structural frontier restores the complete 129-branch skeleton; the
+candidate is 860 instructions against retail's 884. That correction is independent of
+this helper's call-stable inputs; see
+[deferred-switch-output-enables-arm-folding.md](deferred-switch-output-enables-arm-folding.md).
 
 Negative controls matter here. Passing `tx`/`ty` directly produced 897 instructions
 and 131 branches. Converting the toy helper to explicit single success/failure labels

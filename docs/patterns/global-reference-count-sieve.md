@@ -74,12 +74,13 @@ A row is a lead about the SOURCE, and four shapes account for nearly all of them
   same count, while the call and branch skeletons still agree. `CGrunt::StepCompassMove`
   named each cardinal `g_gruntMoveDir*` four times against retail's three: the fixed-arrow
   command switch duplicated the four cardinal movement arms also present in the current-
-  direction switch. Making the first switch select a typed `GruntDirection` and keeping
-  one movement switch changed 163 relocations to retail's 151 while preserving all 129
-  branches. Two controls distinguish this from a code-placement accident: keeping the
-  duplicated arms retains 163 relocations, while direct gotos into shared case labels
-  retain 151 relocations but collapse four real selection branches (125 against 129).
-  The relocation count plus CFG therefore identifies the intermediate direction value.
+  direction switch. The first correction used a typed `GruntDirection` selector and
+  changed 163 relocations to retail's 151, but retail's two jump tables actually target
+  the same cardinal body offsets rather than four selector stubs. Restoring both nested
+  switches and deferring the output pair until their cases lets cl fold those identical
+  bodies and also emits 151 relocations. Direct gotos are the negative control: they reach
+  151 but collapse the graph to 125 branches. See
+  [deferred-switch-output-enables-arm-folding.md](deferred-switch-output-enables-arm-folding.md).
 * **cl TAIL-MERGED two arms that retail kept apart, or vice versa.** The tell is that the
   callee AND its argument string move together:
   `CCheatMgr::LoadCheatConfig` reads `?GetIntDef@CButeMgr@@` 6 vs 7 *and* `"Value"` 1 vs 2,
