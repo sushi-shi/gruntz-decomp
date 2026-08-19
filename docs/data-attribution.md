@@ -1205,7 +1205,8 @@ base-side symbol to pair.
 (13 KB) are RTTI and MFC message-map records, and every remaining `.data` run
 under `0x229400` sits between two `??_C@` literals - the unpinnable pooled-string
 class. **Exactly one game-owned initialized run survived that filter**, and it is
-now claimed: `?g_table_20fa78@@3PAHA` (`GruntzMgr.cpp`, 64 B, +64 B compared and
+now claimed: `?g_unreferencedGruntzMgrValues@@3PAHA` (`GruntzMgr.cpp`, 64 B,
++64 B compared and
 matching). The reloc table holds no entry anywhere inside it, so its "no reader"
 is proven, not merely unfound; the sieve's `unaccessed` category now reports it
 back, which is the intended behaviour and not a defect.

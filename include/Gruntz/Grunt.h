@@ -884,9 +884,9 @@ public:
         PickupType typeKind,
         i32 vehicleKind,
         EnemyAiType kind,
-        i32 a8,
-        i32 a9,
-        i32 a10,
+        i32 defenderRadiusMinusOne,
+        i32 defenderQueuePosition,
+        i32 defenderPickupType,
         RECT* span,
         GruntEntranceMode entranceMode
     );

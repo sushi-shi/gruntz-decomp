@@ -29,7 +29,7 @@ public:
     CGruntPuddle(CGameObject* obj);
 
     i32 Idle();
-    i32 Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3);
+    i32 Place(i32 gruntType, i32 placeIndex, i32 color, i32 placeConfig);
     i32 Remove();
     void SetBute(char* key);
 
@@ -40,7 +40,7 @@ public:
     i32 m_pending;
 
     i32 m_placed;
-    i32 m_placeArg3;
+    i32 m_placeConfig;
     i32 m_gruntType;
 
     i32 m_placeIndex;

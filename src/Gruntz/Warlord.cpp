@@ -194,12 +194,17 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
 // @early-stop
 RVA(0x00043670, 0xc20)
-i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, CGameObject* obj) {
+i32 CWarlord::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* obj
+) {
 
     char buf[SERIAL_NAME_LEN];
     char hdr[SERIAL_NAME_LEN];
 
-    if (CUserLogic::SerializeMove(ar, mode, a3, obj) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, obj) == 0) {
         return 0;
     }
     if (ar == NULL) {

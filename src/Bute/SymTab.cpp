@@ -868,11 +868,11 @@ CSymParser::CSymParser() : m_hash(1) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ab00, 0xac)
-CSymParser::CSymParser(char* buf, i32 a2, i32 a3) : m_hash(1) {
+CSymParser::CSymParser(char* buf, i32 readOnly, i32 createNew) : m_hash(1) {
     {
         CSymParser tmp;
     }
-    ParseBuffer(buf, a2, a3);
+    ParseBuffer(buf, readOnly, createNew);
 }
 
 // CSymParser::m_nodes (this+0x88) - an empty inline destructor, so a lone `c3`.

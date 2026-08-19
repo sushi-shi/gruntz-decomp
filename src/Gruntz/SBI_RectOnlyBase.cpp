@@ -13,7 +13,7 @@ i32 CSBI_RectOnly::Setup(
     StatusBarTab tab,
     RECT rc,
     const char* key,
-    i32 a10
+    i32 unusedFrame
 ) {
     if (host == NULL || owner == NULL) {
         return 0;

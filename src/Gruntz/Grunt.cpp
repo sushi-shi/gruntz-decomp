@@ -2066,9 +2066,9 @@ i32 CGrunt::Place(
     PickupType typeKind,
     i32 vehicleKind,
     EnemyAiType kind,
-    i32 a8,
-    i32 a9,
-    i32 a10,
+    i32 defenderRadiusMinusOne,
+    i32 defenderQueuePosition,
+    i32 defenderPickupType,
     RECT* span,
     GruntEntranceMode entranceMode
 ) {
@@ -2101,12 +2101,12 @@ i32 CGrunt::Place(
     m_arrivalState = kind;
     m_brickPickupType = PICKUP_BROWNBRICK;
     m_tileOwnerHi = col;
-    m_defenderQueuePosition = a9;
+    m_defenderQueuePosition = defenderQueuePosition;
     m_tileOwnerLo = row;
     m_arrivalCell.m_x = -1;
     m_arrivalCell.m_y = -1;
-    m_defenderPickupType = static_cast<PickupType>(a10);
-    m_defenderRadius = a8 + 1;
+    m_defenderPickupType = static_cast<PickupType>(defenderPickupType);
+    m_defenderRadius = defenderRadiusMinusOne + 1;
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
@@ -2175,19 +2175,20 @@ i32 CGrunt::Place(
     ResetEntranceAnimation(1, 0, 0);
     // `kind` is the EnemyAiType. These four are the types that own a post: the
     // guards keep theirs where they spawned, and the Object Guard reads its
-    // guarded address out of the WWD X Min / Y Min pair (a9, a10), degenerating
+    // guarded address out of the WWD X Min / Y Min pair (defenderQueuePosition,
+    // defenderPickupType), degenerating
     // to a Post Guard when the level gives it none.
     switch (kind) {
         case AI_POSTGUARD:
             m_defenderPx = m_lastTilePx;
             break;
         case AI_OBJECTGUARD:
-            if (a9 == 0 && a10 == 0) {
+            if (defenderQueuePosition == 0 && defenderPickupType == 0) {
                 m_defenderPx = m_lastTilePx;
                 m_arrivalState = AI_POSTGUARD;
             } else {
-                i32 px = (a9 << TILE_SHIFT_PX) + TILE_HALF_PX;
-                i32 py = (a10 << TILE_SHIFT_PX) + TILE_HALF_PX;
+                i32 px = (defenderQueuePosition << TILE_SHIFT_PX) + TILE_HALF_PX;
+                i32 py = (defenderPickupType << TILE_SHIFT_PX) + TILE_HALF_PX;
                 m_defenderPx.m_x = px;
                 m_defenderPx.m_y = py;
                 StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);

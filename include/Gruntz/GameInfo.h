@@ -7,7 +7,7 @@
 #include <Ints.h>
 
 struct CGameInfoTime {
-    i32 m_0;
+    i32 m_reserved00;
     u32 m_score;
     u32 m_timeMs;
 

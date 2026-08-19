@@ -1477,11 +1477,11 @@ notVerified:
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000b9180, 0x4a)
-i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
-    if (a1 == 0) {
+i32 CMulti::PollSessionGated(i32 sessionGate, i32 pollGate) {
+    if (sessionGate == 0) {
         return 0;
     }
-    if (a2 == 0) {
+    if (pollGate == 0) {
         return 0;
     }
     if (m_allPlayersReady != 0) {
@@ -3081,7 +3081,7 @@ i32 CMulti::CreateLocalPlayer() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000bc910, 0xf6)
 i32 CMulti::OpenHostChannel(
-    void* a0,
+    void* hostToken,
     const char* name,
     i32 channelId,
     i32 cmdDelay,
@@ -3090,7 +3090,7 @@ i32 CMulti::OpenHostChannel(
     i32 unused7,
     i32 unused8
 ) {
-    if (a0 == NULL) {
+    if (hostToken == NULL) {
         return 0;
     }
     m_commandDelay = cmdDelay;

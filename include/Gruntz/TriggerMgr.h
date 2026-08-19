@@ -113,9 +113,9 @@ public:
         i32 typeKind,
         i32 vehicleKind,
         i32 aiType,
-        i32 aiRadius,
-        i32 placeArg9,
-        i32 placeArg10,
+        i32 defenderRadiusMinusOne,
+        i32 defenderQueuePosition,
+        i32 defenderPickupType,
         RECT* span
     );
 
@@ -168,7 +168,7 @@ public:
 
     i32 TriggerCell(i32 x, i32 y);
 
-    i32 SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c);
+    i32 SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon);
 
     void ResetSpawnState();
 

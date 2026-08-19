@@ -27,7 +27,7 @@ public:
         StatusBarTab tab,
         RECT rc,
         const char* key,
-        i32 a10
+        i32 unusedFrame
     ) OVERRIDE;
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;

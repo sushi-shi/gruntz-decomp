@@ -578,7 +578,7 @@ public:
 
     static void ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd);
 
-    static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption);
+    static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput);
     void PopulateGroupList(HWND hList, i32 flag);
 
     NetGuid m_appGuid;

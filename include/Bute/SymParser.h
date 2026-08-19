@@ -73,7 +73,7 @@ public:
     virtual i32 Retry();
 
     CSymParser();
-    CSymParser(char* buf, i32 a2, i32 a3);
+    CSymParser(char* buf, i32 readOnly, i32 createNew);
 
     ~CSymParser();
 

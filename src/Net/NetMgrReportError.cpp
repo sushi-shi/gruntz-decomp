@@ -16,7 +16,7 @@ b32 g_msgBoxEnabled = FALSE;
 DATA(0x002bf6f0)
 b32 g_beepEnabled = FALSE;
 DATA(0x002bf6f4)
-b32 g_unknownOptionEnabled = FALSE;
+b32 g_debugOutputEnabled = FALSE;
 DATA(0x002bf6f8)
 HRESULT g_hr = 0;
 DATA(0x002bf6fc)
@@ -29,11 +29,11 @@ char g_szMsg[0x100];
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00177670, 0x27)
-void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption) {
+void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput) {
     g_logEnabled = log;
     g_msgBoxEnabled = msgBox;
     g_beepEnabled = beep;
-    g_unknownOptionEnabled = unknownOption;
+    g_debugOutputEnabled = debugOutput;
 }
 
 inline static void SetError(const char* szCode, const char* szDesc) {
@@ -215,7 +215,7 @@ void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
             break;
     }
 
-    if (!g_logEnabled && !g_msgBoxEnabled && !g_unknownOptionEnabled) {
+    if (!g_logEnabled && !g_msgBoxEnabled && !g_debugOutputEnabled) {
         return;
     }
 
@@ -237,5 +237,6 @@ void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
         MessageBoxA(hWnd, szLine, "Net Manager", MB_ICONEXCLAMATION);
     }
 
-    // The unknown third option (g_unknownOptionEnabled) was probably only present in the debug build.
+    // The release build retains this option in the common gate, but its debug-output action emits no
+    // code.
 }

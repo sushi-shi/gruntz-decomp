@@ -39,9 +39,9 @@ i32 g_previewCancelQuits = 0;
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de030, 0xc2)
 
-i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
+i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
-    if (CState::LoadGameAssetNamespaces(mgr, areaArg, a2) == 0) {
+    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

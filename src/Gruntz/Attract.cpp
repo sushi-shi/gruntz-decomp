@@ -453,7 +453,7 @@ i32 CState::ShadeScreen(i32 pct) {
 }
 
 RVA(0x000fafa0, 0x3b)
-i32 CPlay::HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId a2, i32 a3) {
+i32 CPlay::HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (ar == NULL) {
         return 0;
     }

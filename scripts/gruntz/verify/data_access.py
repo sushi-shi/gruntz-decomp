@@ -85,7 +85,7 @@ REPORT_ONLY = {
                  "LOWER BOUND, not the byte touched, so a run is a triage "
                  "worklist, not a build breaker",
     "unaccessed": "phantom CANDIDATES only - a dead-but-correct datum "
-                  "(g_table_20fa78's bytes ARE retail's) and a library global "
+                  "(g_unreferencedGruntzMgrValues' bytes ARE retail's) and a library global "
                   "the game never calls look identical from here",
 }
 

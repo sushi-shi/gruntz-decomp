@@ -10,7 +10,7 @@
 
 class CPreviewState : public CState {
 public:
-    i32 Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2);
+    i32 Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId);
 
     i32 Tick();
 

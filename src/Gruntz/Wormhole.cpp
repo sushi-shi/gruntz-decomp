@@ -228,11 +228,11 @@ i32 CGruntPuddle::Idle() {
 }
 
 RVA(0x00040c30, 0xb3)
-i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
+i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 placeConfig) {
     CWwdGameObjectA* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
     m_tileY = o->m_screenY >> TILE_SHIFT_PX;
-    m_placeArg3 = a3;
+    m_placeConfig = placeConfig;
     m_gruntType = gruntType;
     m_placeIndex = placeIndex;
     CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(placeIndex, 0);
@@ -306,7 +306,7 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
             ar->Write(&m_tileY, sizeof(m_tileY));
             ar->Write(&m_pending, sizeof(m_pending));
             ar->Write(&m_placed, sizeof(m_placed));
-            ar->Write(&m_placeArg3, sizeof(m_placeArg3));
+            ar->Write(&m_placeConfig, sizeof(m_placeConfig));
             ar->Write(&m_gruntType, sizeof(m_gruntType));
             ar->Write(&m_placeIndex, sizeof(m_placeIndex));
             break;
@@ -315,7 +315,7 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
             ar->Read(&m_tileY, sizeof(m_tileY));
             ar->Read(&m_pending, sizeof(m_pending));
             ar->Read(&m_placed, sizeof(m_placed));
-            ar->Read(&m_placeArg3, sizeof(m_placeArg3));
+            ar->Read(&m_placeConfig, sizeof(m_placeConfig));
             ar->Read(&m_gruntType, sizeof(m_gruntType));
             ar->Read(&m_placeIndex, sizeof(m_placeIndex));
             break;

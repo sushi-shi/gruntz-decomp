@@ -148,7 +148,7 @@ public:
     void DropTimeout();
 
     i32 OpenHostChannel(
-        void* a0,
+        void* hostToken,
         const char* name,
         i32 channelId,
         i32 cmdDelay,
@@ -193,7 +193,7 @@ public:
     CNetPlayerListNode* JoinAndRegisterChannel();
     i32 OnJoinConfirm(HWND hDlg);
 
-    i32 PollSessionGated(i32 a1, i32 a2);
+    i32 PollSessionGated(i32 sessionGate, i32 pollGate);
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
     i32 SendStatFrom(void* pkt, i32 b, i32 c);
     i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);

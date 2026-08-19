@@ -81,9 +81,9 @@ i32 CTriggerMgr::PlaceObject(
     i32 typeKind,
     i32 vehicleKind,
     i32 aiType,
-    i32 aiRadius,
-    i32 placeArg9,
-    i32 placeArg10,
+    i32 defenderRadiusMinusOne,
+    i32 defenderQueuePosition,
+    i32 defenderPickupType,
     RECT* span
 ) {
 
@@ -234,9 +234,9 @@ i32 CTriggerMgr::PlaceObject(
                     static_cast<PickupType>(typeKind),
                     vehicleKind,
                     static_cast<EnemyAiType>(aiType),
-                    aiRadius,
-                    placeArg9,
-                    placeArg10,
+                    defenderRadiusMinusOne,
+                    defenderQueuePosition,
+                    defenderPickupType,
                     span,
                     mode
                 )

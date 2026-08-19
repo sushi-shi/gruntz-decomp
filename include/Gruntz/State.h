@@ -30,7 +30,7 @@ public:
         CState::ReleaseResources();
     }
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 a3);
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId);
 
     virtual void ReleaseResources();
     RVA(0x0008c490, 0x4)

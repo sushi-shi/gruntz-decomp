@@ -411,12 +411,12 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // schedules the `g_gameReg->m_gameWnd` load AFTER the two argument pushes and cl
 // hoists it above them, so cl's shareable suffix starts one instruction later.
 RVA(0x000fe910, 0xc30)
-i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
-    CStatusBarItem* w = HitTestRects(a2, a3);
+i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
+    CStatusBarItem* w = HitTestRects(x, y);
     if (w == NULL) {
         return 1;
     }
-    w->OnPointerMove(a1, a2, a3);
+    w->OnPointerMove(mouseFlags, x, y);
     SbiCommandId cmd = w->m_cmd;
     switch (w->m_tab) {
         case TAB_CONTROLS:
@@ -1098,7 +1098,7 @@ i32 CStatusBarItem::Setup(
     StatusBarTab tab,
     RECT rc,
     const char* key,
-    i32 a10
+    i32 unusedFrame
 ) {
     if (host == NULL || owner == NULL) {
         return 0;
@@ -3614,17 +3614,17 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 // ...), which is the shape retail's `mov [esp+0x10],ecx` spill looks like: 76.42, and
 // 67.15 / 71.07 for the field-by-field and x-then-y orderings of the same idea.
 RVA(0x00107590, 0xc4)
-i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
-    m_extraNotifyArg1 = a1;
+i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
+    m_extraNotifyArg1 = item;
     m_fallActive = FALLING_ITEM_DESCENDING;
     i64* clock = &m_fallClock.m_last;
     clock[1] = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
     clock[0] = static_cast<u32>(g_frameTime);
     CSBI_ImageSet* n = m_extraNotify1;
-    i32 l = a2 - 0xc;
-    i32 t = a3 - 0xc;
-    i32 rr = a2 + 0xc;
-    i32 b = a3 + 0xc;
+    i32 l = x - 0xc;
+    i32 t = y - 0xc;
+    i32 rr = x + 0xc;
+    i32 b = y + 0xc;
     m_fallRect.left = l;
     m_fallRect.top = t;
     m_fallRect.right = rr;
@@ -4010,12 +4010,12 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
 // @early-stop
 // Nothing is missing: `--branches --diff` reports the same branch and ret counts, and
 // the only reloc delta is the __except_list/fs:0 typing artifact. Retail spills `this`
-// to [esp+0x10] and re-reads p4/p5 from their parameter homes at every SerializeFields
-// site, which leaves ebp for the loop counters; cl instead enregisters p5 in ebp and
+// to [esp+0x10] and re-reads typeId/pObj from their parameter homes at every SerializeFields
+// site, which leaves ebp for the loop counters; cl instead enregisters pObj in ebp and
 // spills the counters. Reusing one counter variable across the loops is byte-neutral
 // (measured), so the allocation choice is not decl-scope-driven.
 RVA(0x001084d0, 0x96c)
-i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) {
+i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
     if (s == NULL) {
         return 0;
     }
@@ -4059,7 +4059,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     }
 
     if (m_retabNotify != NULL) {
-        if (m_retabNotify->Sync(s, op, p4, p5) == 0) {
+        if (m_retabNotify->Sync(s, op, typeId, pObj) == 0) {
             return 0;
         }
     }
@@ -4106,7 +4106,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
 
 #define SER(field)                                                                                 \
     if (field) {                                                                                   \
-        if ((field)->SerializeFields(s, op, p4, p5) == 0)                                          \
+        if ((field)->SerializeFields(s, op, typeId, pObj) == 0)                                    \
             return 0;                                                                              \
     }
 

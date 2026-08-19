@@ -172,7 +172,7 @@ public:
     i32 StartChipMachineCycle();
     i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world);
     i32 LoadMainStatusBarSprite();
-    i32 UpdateStatusBarTabHighlight(i32, i32, i32);
+    i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
     i32 LoadDestructButtonSprite(i32);
     void BuildGameTabResumeButton(i32);
     void BuildGameTabPauseButton();
@@ -182,7 +182,7 @@ public:
     void LoadRezMachineConfig();
     void UpdateRezMachineSnoozeStatusBar();
     void LoadChipMachineConfig();
-    i32 UpdateFallingItemStatusBar(i32, i32, i32);
+    i32 UpdateFallingItemStatusBar(i32 item, i32 x, i32 y);
     i32 UpdateRezMachineWakeStatusBar();
     void LoadMultiplayerBattlezConfig(i32);
 
