@@ -662,6 +662,33 @@ class PairscanControls(unittest.TestCase):
             self.skipTest(f"objdump unavailable: {exc}")
         self.assertIn("rep movs", text)
 
+    def test_aggregate_copy_sieve_excludes_proven_current_dips(self):
+        from gruntz.walls import aggregate_copies
+        row = {"unit": "u", "symbol": "?f@@YAXXZ", "cur": 75.0,
+               "proven": True}
+        with mock.patch("gruntz.walls.pairscan.require_pairs"), \
+             mock.patch("gruntz.walls.inventory.build", return_value=[row]), \
+             mock.patch("gruntz.walls.pairscan.pairs") as pairs:
+            self.assertEqual(aggregate_copies.scan(), [])
+        pairs.assert_not_called()
+
+    def test_aggregate_copy_cli_reports_a_source_cfg_lead(self):
+        import contextlib
+        import io
+
+        from gruntz.walls import aggregate_copies
+        hit = (-1, "butemgr", 77.03, 2, 1,
+               "?SetString@CButeMgr@@QAEXPBD0ABVCString@@@Z")
+        out = io.StringIO()
+        with mock.patch.object(aggregate_copies, "scan", return_value=[hit]), \
+             mock.patch("gruntz.walls.check_unit"), \
+             contextlib.redirect_stdout(out):
+            self.assertEqual(aggregate_copies.main([]), 0)
+        text = out.getvalue()
+        self.assertIn("base has more surviving copy blocks", text)
+        self.assertIn("source/CFG leads: 1", text)
+        self.assertNotIn("we copy an object retail does not", text)
+
     def test_local_labels_are_not_function_boundaries(self):
         from gruntz.walls.pairscan import is_local_label
         self.assertTrue(is_local_label("$L27"))

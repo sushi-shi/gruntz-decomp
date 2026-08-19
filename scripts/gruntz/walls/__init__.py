@@ -7,8 +7,8 @@
     gruntz walls inline-model     the cl 5.0 inline-budget model (--gap
                                   quantifies the finish-the-caller lever;
                                   --measure-cb titrates with the real compiler)
-    gruntz walls aggregate-copies rep-movs count sieve (object copied vs
-                                  spelled as fields) over sub-100% functions
+    gruntz walls aggregate-copies rep-movs count sieve; a source/CFG lead,
+                                  never proof until block merging is excluded
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
                                   cause-tagged (INLINE_CUT/EXIT_MERGE/objects)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global

@@ -1,12 +1,13 @@
 """gruntz.walls.aggregate_copies - the rep-movs aggregate-copy sieve.
 
-A `rep movs[bwd]` is cl's whole-aggregate copy; at /O2 it only survives when
-the SOURCE declared an object and assigned it by value. A count mismatch on
-a sub-100% function is a MODELLING statement:
+A `rep movs[bwd]` is often cl's whole-aggregate copy. A count mismatch on a
+sub-100% function is a SOURCE/CFG LEAD, not by itself a modelling statement:
+cl can tail-merge two identical copy arms on one side while leaving both on
+the other. Proven-at-100 current dips are excluded from this structural sieve.
 
-  target > base   retail copied a struct we transcribed as loose scalars -
-                  declare the object and assign it (`RezElem40 rec = ...;`).
-  base > target   WE invented a by-value copy retail does not make.
+After `gruntz walls diagnose` rules out duplicated/merged blocks, direction is
+useful: target > base suggests an aggregate we transcribed as fields; base >
+target suggests an invented copy. Until then, inspect both copy neighborhoods.
 
 Match the MNEMONIC exactly (movsx/movzx sign-extends and inline switch-table
 bytes decoding as bare `movs` are the two proven traps): `rep movs*` only.
@@ -28,11 +29,11 @@ REP_MOVS = re.compile(r"^rep\s+movs")
 
 def scan(unit_filter=None):
     pairscan.require_pairs({unit_filter} if unit_filter else None)
-    sc, _live = pairscan.scores()
+    from gruntz.walls import inventory
     below: dict[str, list[tuple[str, float]]] = {}
-    for (u, sym), pct in sc.items():
-        if pct < 100.0:
-            below.setdefault(u, []).append((sym, pct))
+    for row in inventory.build(unit_filter, 100.0):
+        if not row["proven"]:
+            below.setdefault(row["unit"], []).append((row["symbol"], row["cur"]))
     hits = []
     for unit, fns in sorted(below.items()):
         if unit_filter and unit != unit_filter:
@@ -76,11 +77,11 @@ def main(argv=None) -> int:
         print(f"[walls aggregate-copies] {e}", file=sys.stderr)
         return 2
     for d, unit, pct, nb, nt, name in hits:
-        role = "retail copies an object we spell as fields" if d > 0 else \
-               "we copy an object retail does not"
+        role = "retail has more surviving copy blocks" if d > 0 else \
+               "base has more surviving copy blocks"
         print(f"{d:+d}  {unit:<18} {pct:6.2f}  base {nb} / target {nt}  "
-              f"{role:<46}  {name[:64]}")
-    print(f"aggregate-copy mismatches: {len(hits)}")
+              f"{role:<40}  {name[:64]}")
+    print(f"aggregate-copy source/CFG leads: {len(hits)}")
     if a.max is not None and len(hits) > a.max:
         print(f"aggregate-copies: {len(hits)} exceeds the {a.max} ratchet")
         return 1

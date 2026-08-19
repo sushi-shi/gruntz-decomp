@@ -64,7 +64,7 @@ blessing a baseline is always a separate manual verb (`board --update`,
 | `gruntz walls inventory` | `gruntz.walls.inventory` | the DERIVED worklist (report × Model × baseline), ascending historical MAX |
 | `gruntz walls diagnose <fn>` | `gruntz.walls.diagnose` | classify one wall: referent → inline/call-set → cfg → regalloc |
 | `gruntz walls inline-model` | `gruntz.walls.inline_model` | the cl 5.0 inline-budget model (`--gap`, `--measure-cb`) |
-| `gruntz walls aggregate-copies` | `gruntz.walls.aggregate_copies` | `rep movs` count sieve — object copied vs spelled as fields |
+| `gruntz walls aggregate-copies` | `gruntz.walls.aggregate_copies` | `rep movs` count sieve — source/CFG lead; rule out merged duplicate blocks before inferring an object |
 | `gruntz walls eh-frame` | `gruntz.walls.eh_frame` | `/GX` frame-presence + unwind-state sieve, cause-tagged |
 | `gruntz walls global-refs` | `gruntz.walls.global_refs` | global read-COUNT sieve (the cached-global bug class) |
 | `gruntz walls stale-markers` | `gruntz.walls.stale_markers` | `@early-stop` markers sitting on 100% bodies |
