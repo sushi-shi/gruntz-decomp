@@ -83,6 +83,7 @@ public:
     i32 StopAll();
     i32 StopBank(i32 bank);
     i32 IsPlaying();
+    i32 Retrigger();
 
     CMapStringToOb m_map;
     CGruntzSoundInnerZ* m_pCurrent;

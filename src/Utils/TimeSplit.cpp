@@ -15,6 +15,16 @@ void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
     *ss = n / MILLIS_PER_SECOND;
 }
 
+RVA(0x001192a0, 0x1d)
+void TerminateString(char* text, i32 limit) {
+    i32 i = 0;
+    while (i < limit && *text != 0) {
+        text++;
+        i++;
+    }
+    *text = 0;
+}
+
 RVA(0x001192d0, 0x39)
 i32 BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SYSCOMMAND) {

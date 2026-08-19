@@ -81,6 +81,11 @@ bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction == b->direction;
 }
 
+RVA(0x0003c820, 0x18)
+bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
+    return a->direction != b->direction;
+}
+
 RVA(0x0003c850, 0x38)
 void GruntDirectionCell::RotateClockwise(i32 steps) {
     if (steps > 0) {

@@ -11,5 +11,6 @@ struct CGameInfoTime;
 
 i32 ValidateGameTime(CGameInfoTime* t);
 void SplitMillisToHMS(u32 n, u32* hh, u32* mm, u32* ss);
+void TerminateString(char* text, i32 limit);
 
 #endif // GRUNTZ_GAMEINFOSTRING_H

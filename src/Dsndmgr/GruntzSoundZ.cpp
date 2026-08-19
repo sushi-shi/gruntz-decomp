@@ -233,6 +233,14 @@ i32 CGruntzSoundZ::IsPlaying() {
     return m_pCurrent->Stop();
 }
 
+RVA(0x00138930, 0xf)
+i32 CGruntzSoundZ::Retrigger() {
+    if (m_pCurrent == NULL) {
+        return 0;
+    }
+    return m_pCurrent->Retrigger();
+}
+
 RVA(0x00138940, 0x3)
 void __stdcall EmptyMsgHook(WPARAM, LPARAM) {}
 

@@ -911,6 +911,7 @@ union GruntActPmf {
 typedef i32 (CGrunt::*GruntActHandler)();
 
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
+bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
 void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused);
 
