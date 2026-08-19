@@ -37,7 +37,3 @@ RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
     m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, 0x10);
 }
-
-// @identity-TODO AtChecked@CAniElement - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (43 fns) came from the static library. It belongs to another compiland.

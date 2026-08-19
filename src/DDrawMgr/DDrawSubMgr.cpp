@@ -50,10 +50,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @identity-TODO RefreshAsset@CDDrawSubMgrLeafScan - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (118 fns) came from the static library. It belongs to another compiland.
-
 DATA(0x001eff2c)
 const float g_sndPanScale = 0.009999999776482582f;
 

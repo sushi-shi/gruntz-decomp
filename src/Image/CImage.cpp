@@ -32,9 +32,6 @@ i32 g_resourceInstallActive = 0;
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 
-// @identity-TODO DrawScreenTextImage@CState - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (20 fns) came from the static library. It belongs to another compiland.
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;

@@ -15,9 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// @identity-TODO LookupValue@CDDrawSubMgrLeaf - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (12 fns) came from the static library. It belongs to another compiland.
 RVA(0x00152640, 0x6)
 i32 CDDrawSubMgrLeaf::IsReady() {
     return 1;

@@ -19,9 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// @identity-TODO ?1CLoadable - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (26 fns) came from the static library. It belongs to another compiland.
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
     memset(&g_bltFx, 0, sizeof(g_bltFx));

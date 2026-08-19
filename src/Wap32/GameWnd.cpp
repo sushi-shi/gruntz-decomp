@@ -8,9 +8,6 @@
 DATA(0x00253c68)
 CGameWnd* g_activeGameWnd;
 
-// @identity-TODO ?1CGameWnd - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (10 fns) came from the static library. It belongs to another compiland.
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
     m_hwnd = NULL;

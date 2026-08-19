@@ -41,9 +41,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// @identity-TODO BltSelf@CDDrawSurfacePair - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (43 fns) came from the static library. It belongs to another compiland.
 RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::Unload() {
     POSITION pos = m_workers.GetHeadPosition();
