@@ -37,24 +37,4 @@ public:
     i32 m_cheatsUsed;
 };
 
-extern char s_cheat_20c920[];
-extern char s_cheat_20c918[];
-extern char s_cheat_20c90c[];
-extern char s_cheat_20c900[];
-extern char s_cheat_20c8f0[];
-extern char s_cheat_20c8e0[];
-extern char s_cheat_20c8d4[];
-extern char s_cheat_20c8c4[];
-extern char s_cheat_20c8b8[];
-extern char s_cheat_20c8ac[];
-extern char s_cheat_20c8a4[];
-extern char s_cheat_20c89c[];
-extern char s_cheat_20c894[];
-extern char s_cheat_20c884[];
-extern char s_cheat_20c878[];
-extern char s_cheat_20c868[];
-extern char s_cheat_20c85c[];
-extern char s_cheat_20c84c[];
-extern char s_cheat_20c838[];
-
 #endif // GRUNTZ_GRUNTZ_CHEATMGR_H

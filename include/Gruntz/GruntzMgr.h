@@ -388,7 +388,6 @@ extern u32 g_explosionz;
 extern u32 g_resolutionChanged;
 
 extern i32 g_debugDisplayFlags;
-extern CString g_brickText2;
 
 extern i32 g_warpX;
 extern i32 g_warpY;

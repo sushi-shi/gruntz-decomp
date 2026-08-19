@@ -3526,23 +3526,23 @@ void CPlay::DrawDebugStatsFull() {
         if (g_brickText2.GetLength() != 0) {
             TextOutA(hdc, 0, 0x10, g_brickText2, g_brickText2.GetLength());
         }
-        if (g_str64552c.GetLength() != 0) {
-            TextOutA(hdc, 0, 0x20, g_str64552c, g_str64552c.GetLength());
+        if (g_brickText3.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x20, g_brickText3, g_brickText3.GetLength());
         }
-        if (g_str645530.GetLength() != 0) {
-            TextOutA(hdc, 0, 0x30, g_str645530, g_str645530.GetLength());
+        if (g_brickText4.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x30, g_brickText4, g_brickText4.GetLength());
         }
-        if (g_str645514.GetLength() != 0) {
-            TextOutA(hdc, 0, 0x40, g_str645514, g_str645514.GetLength());
+        if (g_brickText5.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x40, g_brickText5, g_brickText5.GetLength());
         }
-        if (g_str645518.GetLength() != 0) {
-            TextOutA(hdc, 0, 0x50, g_str645518, g_str645518.GetLength());
+        if (g_brickText6.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x50, g_brickText6, g_brickText6.GetLength());
         }
-        if (g_str64551c.GetLength() != 0) {
-            TextOutA(hdc, 0, 0x60, g_str64551c, g_str64551c.GetLength());
+        if (g_brickText7.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x60, g_brickText7, g_brickText7.GetLength());
         }
-        if (g_str645520.GetLength() != 0) {
-            TextOutA(hdc, 0, 0x70, g_str645520, g_str645520.GetLength());
+        if (g_brickText8.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x70, g_brickText8, g_brickText8.GetLength());
         }
     }
     host->m_ddSurface->ReleaseDC(hdc);

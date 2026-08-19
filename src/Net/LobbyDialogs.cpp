@@ -29,12 +29,12 @@ namespace NetLobby {
     DATA(0x002496ac)
     CMulti* g_curMulti;
 
-    RVA_DYNINIT(0x000bd7d0, 0xa, g_str649618)
-    RVA_DYNINIT(0x000bd7f0, 0xa, g_str649618)
-    RVA_DYNINIT(0x000bd810, 0xe, g_str649618)
-    RVA_DYNINIT(0x000bd830, 0xa, g_str649618)
+    RVA_DYNINIT(0x000bd7d0, 0xa, g_dropInPlayerName)
+    RVA_DYNINIT(0x000bd7f0, 0xa, g_dropInPlayerName)
+    RVA_DYNINIT(0x000bd810, 0xe, g_dropInPlayerName)
+    RVA_DYNINIT(0x000bd830, 0xa, g_dropInPlayerName)
     DATA(0x00249618)
-    CString g_str649618;
+    CString g_dropInPlayerName;
 
     RVA(0x000bd850, 0x141)
     BOOL CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -402,8 +402,8 @@ namespace NetLobby {
         if (hWnd && ctx) {
             char buf[0x80];
 
-            const char* pn = g_str649618;
-            if (g_str649618.GetLength()) {
+            const char* pn = g_dropInPlayerName;
+            if (g_dropInPlayerName.GetLength()) {
                 sprintf(buf, "New Player Drop-In Request: %s", pn);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }

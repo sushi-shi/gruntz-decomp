@@ -37,7 +37,7 @@ public:
     i32 m_measuredFps;
 };
 
-extern const float g_faderScale_5f085c;
+extern const float g_faderPercentToUnit;
 extern const double g_faderPowK;
 extern const float g_faderHalf;
 extern const double g_faderScale;

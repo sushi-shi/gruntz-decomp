@@ -39,7 +39,7 @@ const float g_faderBiasFade = -1.0f;
 DATA(0x001f0844)
 const float g_faderOne = 1.0f;
 DATA(0x001f085c)
-const float g_faderScale_5f085c = 0.01f;
+const float g_faderPercentToUnit = 0.01f;
 
 DATA(0x001f0860)
 const float g_sineHalfPi = 1.570795f;
@@ -333,7 +333,7 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
     m_intensity = p;
-    m_scaledMag = static_cast<i32>(w * (static_cast<float>(p) * g_faderScale_5f085c));
+    m_scaledMag = static_cast<i32>(w * (static_cast<float>(p) * g_faderPercentToUnit));
     for (i = 0; i < 2000; i++) {
         m_arr0[i] = 0;
         m_arr2[i] = 0;
