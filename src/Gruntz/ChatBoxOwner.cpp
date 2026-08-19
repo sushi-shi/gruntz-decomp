@@ -271,6 +271,14 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     return 0;
 }
 
+// @identity-TODO ChatBoxOwnerReturnTrue - the surviving incremental-link thunk
+// proves external linkage, and `ret 4` proves one callee-popped dword. No caller,
+// address-taker, or operand survives to recover the original semantic identity.
+RVA(0x00021260, 0x8)
+i32 __stdcall ChatBoxOwnerReturnTrue(i32) {
+    return 1;
+}
+
 // 0x212a0 IS `zPTree::Reset()` emitted out of line: its body is exactly the
 // inline (ClearRecursive(0) + the three zero stores at +0x18/+0x28/+0x14), and
 // its only caller is this TU's ProcessCheatInput, which calls it for
