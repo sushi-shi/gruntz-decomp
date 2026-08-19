@@ -262,9 +262,9 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
 
     Bmp256Info info;
     memset(&info.bmiHeader, 0, sizeof(info.bmiHeader));
-    i32 height = m_height;
     info.bmiHeader.biSize = sizeof(info.bmiHeader);
     info.bmiHeader.biWidth = m_width;
+    i32 height = m_height;
     info.bmiHeader.biHeight = height;
     info.bmiHeader.biPlanes = 1;
     info.bmiHeader.biBitCount = 8;
