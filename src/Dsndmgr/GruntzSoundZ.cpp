@@ -21,14 +21,6 @@ DATA(0x00253c64)
 
 HINSTANCE g_midiResModule = NULL;
 
-// @identity-TODO ?1CGruntzSoundZ - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (34 fns) came from the static library. It belongs to another compiland.
-RVA(0x00086040, 0x49)
-CGruntzSoundZ::~CGruntzSoundZ() {
-    Shutdown();
-}
-
 RVA(0x00138490, 0x5e)
 i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_hInstance = hInst;

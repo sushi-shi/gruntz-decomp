@@ -63,7 +63,9 @@ public:
 
 class CGruntzSoundZ {
 public:
-    ~CGruntzSoundZ();
+    ~CGruntzSoundZ() {
+        Shutdown();
+    }
 
     i32 Init(HINSTANCE hInst, HWND hwnd, i32 noMidi);
     void Shutdown();

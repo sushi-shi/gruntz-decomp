@@ -459,6 +459,8 @@ RVA_COMPGEN(0x00085ed0, 0x4a, ??1CWorldSoundSet@@QAE@XZ)
 
 RVA_COMPGEN(0x00085fc0, 0x57, ??1DirectInputMgr2@@QAE@XZ)
 
+RVA_COMPGEN(0x00086040, 0x49, ??1CGruntzSoundZ@@QAE@XZ)
+
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::UpdateScoreHud() {
     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
