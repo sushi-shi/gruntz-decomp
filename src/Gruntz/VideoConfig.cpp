@@ -70,9 +70,6 @@ HWND g_optHwndCk7 = 0;
 DATA(0x0022bdf4)
 HWND g_optHwndCk8 = 0;
 
-DATA(0x002c44b0)
-i32 g_val_2c44b0;
-
 RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeSize.cx;

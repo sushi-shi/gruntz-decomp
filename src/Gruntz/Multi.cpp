@@ -156,9 +156,6 @@ CFile g_obj646778;
 DATA(0x002467d8)
 char g_recvBuffer[0x800];
 
-DATA(0x002c448c)
-i32 g_val_2c448c;
-
 // @early-stop
 // Residue is one register-allocation tie-break that cascades: retail homes `this`
 // in ebx and the constant 0 in ebp, cl does the reverse, so almost every line of

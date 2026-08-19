@@ -13,11 +13,6 @@
 #include <string.h>
 #include <tlhelp32.h>
 
-DATA(0x002c3fe8)
-i32 g_val_2c3fe8;
-DATA(0x002c3ff0)
-i32 g_val_2c3ff0;
-
 RVA(0x00118930, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
     SetActiveWindow(hWnd);

@@ -25,13 +25,6 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/PaletteSize.h>
 
-DATA(0x002c4774)
-i32 g_val_2c4774;
-DATA(0x002c4778)
-i32 g_val_2c4778;
-DATA(0x002c4780)
-i32 g_val_2c4780;
-
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {

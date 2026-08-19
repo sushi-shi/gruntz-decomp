@@ -1391,6 +1391,33 @@ unnamed. The scope ordinal is now MASKED on both sides
 (`core.msvc_names.LOCAL_STATIC_SCOPE`, canonical `?1`), so its spelling can
 no longer decide whether a claim binds.
 
-**Not a defect:** the 20 dead `g_val_<hex>` placeholders elsewhere in src are
-all real retail-referenced data (5-15 access sites each, mostly Win32 handles
-around IAT calls) - naming debt for the rename-last phase, not mis-models.
+**Correction — address-derived globals inside `.idata` are not source data.** An older
+audit treated the `g_val_<hex>` claims below as retail-referenced globals because each
+address had several call-site references. The retail-side access map added the missing
+operation classification: every reference is an indirect call through an IAT slot. The
+PE import directory resolves the slots without guessing, and `synth_pdb.py` already emits
+all 456 linker-owned `__imp__` identities. Source definitions at these addresses therefore
+duplicate linker storage and are modeling defects, not naming debt:
+
+| IAT RVA | DLL | import |
+|---|---|---|
+| `0x2c3e0c` | GDI32 | `TextOutA` |
+| `0x2c3ebc` | GDI32 | `CreateFontA` |
+| `0x2c3ec0` | GDI32 | `DeleteObject` |
+| `0x2c3fcc` | KERNEL32 | `GetDriveTypeA` |
+| `0x2c3fe8` | KERNEL32 | `OutputDebugStringA` |
+| `0x2c3ff0` | KERNEL32 | `OpenProcess` |
+| `0x2c43c0` | USER32 | `DispatchMessageA` |
+| `0x2c4428` | USER32 | `TranslateMessage` |
+| `0x2c448c` | USER32 | `GetDlgItemTextA` |
+| `0x2c44a0` | USER32 | `IsIconic` |
+| `0x2c44b0` | USER32 | `IsDlgButtonChecked` |
+| `0x2c44f0` | USER32 | `InvalidateRect` |
+| `0x2c4774` | SMACKW32 | `_SmackGoto@8` |
+| `0x2c4778` | SMACKW32 | `_SmackSoundOnOff@8` |
+| `0x2c4780` | SMACKW32 | `_SmackToBufferRect@8` |
+
+Detection signature: a source `DATA()` claim whose RVA lies in `.idata`, whose stored
+word points into the import-name table, and whose retail references are `FF15`/`FF25`
+calls. Remove the source datum; do not replace it with an `extern` unless handwritten
+naked assembly genuinely needs a typed IAT operand.

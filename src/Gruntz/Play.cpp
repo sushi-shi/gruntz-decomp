@@ -217,9 +217,6 @@ char g_customLevelText[0x200];
 
 DATA(0x0024c434)
 i32 g_val_24c434;
-DATA(0x002c3e0c)
-i32 g_val_2c3e0c;
-
 // @early-stop
 // INLINE/CALL-SET with two independent halves; NOT a wall, and the second half is
 // a demonstrated live lever.

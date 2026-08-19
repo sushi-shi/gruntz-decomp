@@ -21,11 +21,6 @@ i32 g_caretBlinkMs = 0;
 DATA(0x0022b43c)
 i32 g_caretBlinkOn = 0;
 
-DATA(0x002c3ebc)
-i32 g_val_2c3ebc;
-DATA(0x002c3ec0)
-i32 g_val_2c3ec0;
-
 RVA(0x000218e0, 0x1ff)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
     m_lowScrollThreshold = lowScrollThreshold;

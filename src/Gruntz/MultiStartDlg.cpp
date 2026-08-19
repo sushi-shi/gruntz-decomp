@@ -47,9 +47,6 @@ i32 g_watchBlinkB;
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
-DATA(0x002c44f0)
-i32 g_val_2c44f0;
-
 #include <rva.h>
 
 #include <Gruntz/MultiStartDlg.h>
