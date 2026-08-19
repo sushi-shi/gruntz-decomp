@@ -95,6 +95,11 @@ i32 CreateStaticHazard(CGameObject* owner) {
     return 1;
 }
 
+// @early-stop
+// Calls, branches, instruction count, constants, and referents agree. Retail
+// reuses the dead constructor-argument home for Lookup's output while the typed
+// MapLookup boundary retains a separate slot; the rest is equivalent byte-vs-
+// dword masking, add-vs-sub encoding, and register scheduling.
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -142,8 +147,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     CAniElement* entry = NULL;
     MapLookup(g_gameReg->m_world->m_animRegistry->m_animations, "LEVEL_STATICHAZARDGO", entry);
     if (entry != NULL) {
-
-        m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
+        i32 total = entry->m_total;
+        m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + total;
     } else {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x461);
     }

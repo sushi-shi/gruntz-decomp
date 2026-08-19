@@ -4003,7 +4003,7 @@ statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	2	e1d405080121	0x386b0	10
 statemgrbz	?SetDirBits@StateMgrBZ@@QAEHH@Z	100.0000	100.0000	1	7e0222bb7b41	0x38770	100.0000	
 statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	4	d822be3a6a52	0x38340	100.0000	
 statereleaseresources	?ReleaseResources@CState@@UAEXXZ	94.5238	94.5238	3	9646c1950171	0xfa150	94.5238	
-statichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	88.5567	88.5567	3	8f04e35a2bcb	0xfb7a0	89.7832	
+statichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	91.6847	91.6847	4	546f2585574d	0xfb7a0	91.6847
 statichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	cpp:b5bf25203869	0x12b30	100.0000	
 statichazard	??_GCStaticHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5bf25203869	0x12b00	100.0000	
 statichazard	?CreateStaticHazard@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	33a2ac77a03d	0xfb660	100.0000	

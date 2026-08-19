@@ -65,3 +65,11 @@ slot[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;      // 86.23 -> 91.42
 `CBootyState::BuildWarpStoneGlitterAnimation` @0x19540 and
 `CBootyState::BuildGruntSprintAnimation` @0x19920. Read WHICH SIDE reloads before
 deciding; the two spellings differ by one `mov` per statement and by nothing else.
+
+The scalar form also appears in `CStaticHazard::CStaticHazard` @0xfb7a0. Retail loads
+`CAniElement::m_total` into `edi` before `CButeMgr::GetIntDef` and adds that saved value
+after the call; the reconstruction formerly spelled `entry->m_total` in the addition
+and therefore reloaded it afterward. Introducing `i32 total = entry->m_total` restored
+retail's pre-call lifetime, made both sides 199 instructions, and raised the function
+from 88.56% to 91.68%. The remaining four-byte frame difference belongs to the typed
+map-output boundary, not this member lifetime.
