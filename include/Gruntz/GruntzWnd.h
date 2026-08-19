@@ -11,6 +11,9 @@ class CGruntzWnd : public CGameWnd {
 public:
     CGruntzWnd();
     virtual ~CGruntzWnd() OVERRIDE;
+
+    void Destroy();
+
     virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) OVERRIDE;
     virtual i32 HandleWindowCommand(i32, i32, i32) OVERRIDE;
     virtual i32 OnClose() OVERRIDE;

@@ -21,6 +21,11 @@ CGruntzWnd::~CGruntzWnd() {
     Destroy();
 }
 
+RVA(0x00094750, 0x5)
+void CGruntzWnd::Destroy() {
+    CGameWnd::Destroy();
+}
+
 RVA(0x00094770, 0x5)
 i32 CGruntzWnd::HandleWindowCommand(i32, i32, i32) {
     return 0;
