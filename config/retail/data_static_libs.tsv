@@ -115,6 +115,12 @@ rva	size	name	unit	note
 0x1f0964	0x70	??_7CMemFile@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1f09ec	0x14	??_7CStringArray@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1f0ad4	0x4	??_7fstream@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x2156f8	0x18	?classCMapStringToOb@CMapStringToOb@@2UCRuntimeClass@@A	library_data	NAFXCW map_so.obj CRuntimeClass record; exact archive relocation witnesses
+0x215ac0	0x18	?classCDWordArray@CDWordArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_d.obj CRuntimeClass record; exact archive relocation witnesses
+0x215d30	0x18	?classCByteArray@CByteArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_b.obj CRuntimeClass record; exact archive relocation witnesses
+0x215de0	0x18	?classCObArray@CObArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_o.obj CRuntimeClass record; exact archive relocation witnesses
+0x215e10	0x18	?classCObList@CObList@@2UCRuntimeClass@@A	library_data	NAFXCW list_o.obj CRuntimeClass record; exact archive relocation witnesses
+0x215e40	0x18	?classCStringList@CStringList@@2UCRuntimeClass@@A	library_data	NAFXCW list_s.obj CRuntimeClass record; exact archive relocation witnesses
 0x216100	0x4	??_7CrtDataPtr_216100@@6B@		CRT/zlib .data fn-ptr slot (first=__fpmath)
 0x216104	0x4	??_7CrtDataPtr_216104@@6B@		CRT thread .data table (stamped by GetCurrentThreadId/TlsSetValue; slot=ret-stub 0x51f510)
 0x216108	0x4	??_7CrtDataPtr_216108@@6B@		CRT thread .data table (stamped by __endthreadex; slot=ret-stub 0x51f510)
@@ -130,6 +136,7 @@ rva	size	name	unit	note
 0x216558	0x4	??_7CrtDataPtr_216558@@6B@		CRT locale table (stamped by __setlocale_set_cat; slot in __expandlocale 0x5273f0)
 0x21ac88	0x4	?x_maxbit@ios@@0JA	library_data	iostream ios::bitalloc bit pool head (LIBCIMT _ios.obj .data +0; retail init 0x8000)
 0x21ac8c	0x4	?x_curindex@ios@@0HA	library_data	iostream ios::xalloc index (LIBCIMT _ios.obj .data +4; retail init -1)
+0x2256a0	0x18	?classCStringArray@CStringArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_s.obj CRuntimeClass record; exact archive relocation witnesses
 0x2257fe	0x100	??_7CrtDataPtr_2257fe@@6B@		CRT/zlib .data fn-ptr slot (first=sub_18e514)
 0x2bf3c8	0x18	?x_lockc@ios@@0U_CRT_CRITICAL_SECTION@@A	library_data	iostream class lock (LIBCIMT _ios.obj .bss +0; pushed to mtlock/mtunlock by ios::xalloc/bitalloc/ctor/dtor)
 0x2bf3e0	0x20	?x_statebuf@ios@@0PAJA	library_data	iostream ios::x_statebuf[8] (LIBCIMT _ios.obj .bss +0x18)

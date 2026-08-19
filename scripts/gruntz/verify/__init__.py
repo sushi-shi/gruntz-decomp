@@ -76,6 +76,7 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "caller-callee": "gruntz.verify.caller_callee",
           "data-access": "gruntz.verify.data_access",
           "data-coverage": "gruntz.verify.data_coverage",
+          "library-data-refs": "gruntz.verify.library_data_refs",
           "layout": "gruntz.verify.layout",
           "link-tier": "gruntz.verify.link_tier"}
 
@@ -83,7 +84,7 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
 #: gates. `vtable-scan` enumerates the image's vtables (verify.vtables is the
 #: gate over it); `layout` is the field-offset oracle verify.data_access
 #: consumes. Neither returns findings, so neither can fail a build.
-_QUERY_ONLY = ("layout", "vtable-scan")
+_QUERY_ONLY = ("layout", "library-data-refs", "vtable-scan")
 
 #: tier label -> verb, where the two spellings differ. gruntz.verify.tiers
 #: labels the bans row `vtable-bans` (so do docs/tooling-map.md and every

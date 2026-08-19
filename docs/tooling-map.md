@@ -129,6 +129,7 @@ the mechanism is gone, not moved.
 | `gruntz.audit.{label_style,compgen_order}` | `gruntz verify label-style` |
 | `gruntz.audit.data_access_map` | `gruntz verify data-access` (`--suppressed` re-proves every suppression) |
 | `gruntz.audit.data_coverage` | `gruntz verify data-coverage` |
+| pinned static-library data relocation audit | `gruntz verify library-data-refs` |
 | `gruntz.audit.data_relocs` | `gruntz verify data-relocs` |
 | `gruntz.audit.data_tu_order` | `gruntz verify data-tu-order` |
 | `gruntz.audit.tu_order_check` | `gruntz verify tu-order` |
