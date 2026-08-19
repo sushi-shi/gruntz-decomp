@@ -110,6 +110,9 @@ CHashElement* CHashBase::First() {
     return n;
 }
 
+// @early-stop
+// The only differing byte is the commuted scale-1 SIB encoding of the tail
+// address: [eax+ecx+0xc] here and [ecx+eax+0xc] in retail.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184b10, 0x29)
