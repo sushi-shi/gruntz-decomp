@@ -553,15 +553,17 @@ i32 CToyPeek::SerializeMove(
     return 1;
 }
 
+// @early-stop
+// Calls, branches, returns, and relocations agree. Retail re-reads grid width
+// for the second bounds test; cl keeps it in ebp across both tests here.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* obj = m_object;
     PickupType cmd = static_cast<PickupType>(obj->m_smarts);
     if (cmd == PICKUP_TOYBOX) {
-        CGruntzMgr* reg = g_gameReg;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-        CMapMgr* grid = reg->m_tileGrid;
+        CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & 2) != 0) {

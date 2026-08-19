@@ -344,6 +344,9 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     return 1;
 }
 
+// @early-stop
+// The call, size, 28-instruction skeleton, and all loads agree. Retail only
+// schedules the view-rectangle left load across the completed y expression.
 RVA(0x0006be30, 0x47)
 CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CGameLevel* view = m_world->m_level;
