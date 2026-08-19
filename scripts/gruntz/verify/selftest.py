@@ -1214,6 +1214,80 @@ class SemaMapControls(unittest.TestCase):
         self.assertIn("outside every section", "\n".join(lines))
 
 
+class SemaXrefControls(unittest.TestCase):
+    """A relocated vtable/callback reference to a linker-thunk entry must
+    keep the final body live.  The old tree followed only rel32 edges after
+    entering the thunk and confidently printed ``no caller``."""
+
+    def test_a_reference_to_a_thunk_entry_reaches_the_forwarded_body(self):
+        from gruntz.sema import xref
+
+        idx = mock.Mock()
+        thunk = mock.Mock(rva=0x2000, size=0x10, kind="thunk")
+        idx.owner.side_effect = lambda site: thunk if site == 0x2005 else None
+
+        img = mock.Mock()
+        img.call_index = {0x1000: [(0x2005, 0xE9)]}
+        img.jmp_target.side_effect = lambda site: 0x1000 if site == 0x2005 else None
+        img.refs_to_range.side_effect = lambda lo, hi: (
+            [(0x3000, 0x2005)] if (lo, hi) == (0x2005, 0x2006) else [])
+
+        with mock.patch.object(xref, "index", return_value=idx), \
+             mock.patch.object(xref, "retail", return_value=img), \
+             mock.patch.object(xref, "site_where", return_value="in vtable"):
+            lines = xref.caller_tree(0x1000)
+            self.assertTrue(xref.is_effectively_reached(0x1000, 0x20))
+
+        text = "\n".join(lines)
+        self.assertIn("<- ref", text)
+        self.assertIn("via 1 thunk", text)
+
+    def test_an_unreferenced_thunk_does_not_make_the_body_live(self):
+        from gruntz.sema import xref
+
+        idx = mock.Mock()
+        thunk = mock.Mock(rva=0x2000, size=0x10, kind="thunk")
+        idx.owner.return_value = thunk
+        img = mock.Mock()
+        img.call_index = {0x1000: [(0x2005, 0xE9)]}
+        img.jmp_target.return_value = 0x1000
+        img.refs_to_range.return_value = []
+
+        with mock.patch.object(xref, "index", return_value=idx), \
+             mock.patch.object(xref, "retail", return_value=img):
+            self.assertFalse(xref.is_effectively_reached(0x1000, 0x20))
+
+
+class DeadCodeControls(unittest.TestCase):
+    def test_missing_and_stale_markers_both_fail(self):
+        from gruntz.verify import dead_code
+
+        sites = {0x1000: ("a.cpp", 4), 0x2000: ("b.cpp", 8)}
+        marked = {0x2000: [("b.cpp", 6)]}
+        findings = dead_code.compare(marked, sites, {0x1000, 0x2000}, {0x1000})
+        self.assertTrue(any("missing" in f for f in findings))
+        self.assertTrue(any("stale" in f for f in findings))
+
+    def test_a_proven_marker_is_clean_and_requires_its_proof_line(self):
+        from gruntz.verify import dead_code
+
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "probe.cpp"
+            path.write_text("// @dead-code\n"
+                            "// Zero-ref: no retail reachability.\n"
+                            "RVA(0x00001000, 0x1)\n"
+                            "void Probe() {}\n")
+            marked, sites, problems = dead_code.source_markers([path])
+            self.assertEqual(problems, [])
+            self.assertEqual(dead_code.compare(marked, sites, {0x1000},
+                                               {0x1000}), [])
+            path.write_text("// @dead-code\n"
+                            "RVA(0x00001000, 0x1)\n"
+                            "void Probe() {}\n")
+            _marked, _sites, problems = dead_code.source_markers([path])
+            self.assertTrue(any("proof" in f for f in problems))
+
+
 class SemaGapControls(unittest.TestCase):
     """The same-file gap view must trim only edge padding and keep executable
     categories separate; otherwise the derived reconstruction queue can lose a

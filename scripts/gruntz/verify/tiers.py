@@ -90,6 +90,11 @@ def _undefined_closure():
     return undefined_closure.gate_findings()
 
 
+def _dead_code():
+    from gruntz.verify import dead_code
+    return dead_code.gate_findings()
+
+
 def _vtables():
     from gruntz.verify import vtables
     return vtables.gate_findings()
@@ -144,6 +149,7 @@ TIERS: dict[str, list[tuple[str, object]]] = {
         ("library-overlap", _library_overlap),
         ("tu-order", _tu_order),
         ("data-tu-order", _data_tu_order),
+        ("dead-code", _dead_code),
         ("undefined-closure", _undefined_closure),
     ],
     "full": [

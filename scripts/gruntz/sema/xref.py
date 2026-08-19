@@ -101,19 +101,27 @@ def references(target: int, size: int) -> list[str]:
     return out
 
 
-def caller_tree(target: int, depth_cap: int = 4) -> list[str]:
-    """Caller ancestry: THROUGH thunk forwarders, expanding through
-    reconstructed callers, stopping at the unreconstructed frontier."""
+def effective_incoming(target: int):
+    """Reachability edges after transparent linker-thunk forwarding.
+
+    A retail reference commonly names the five-byte jump INSIDE an admitted
+    incremental-link thunk rather than the final body.  Walking only rel32
+    edges through that jump loses vtable slots and stored callback pointers,
+    making a live function look dead.  ``op is None`` denotes such a
+    relocated reference; ``via`` records the thunk-entry addresses traversed.
+    """
     idx, img = index(), retail()
-    out, seen = [], set()
 
     def effective(rva: int, via: tuple, guard: set):
         if rva in guard:
             return
         guard.add(rva)
+        if via:
+            for site, _tgt in sorted(img.refs_to_range(rva, rva + 1)):
+                yield (idx.owner(site), None, site, via)
         for site, op in sorted(img.call_index.get(rva, ())):
             owner = idx.owner(site)
-            if owner is not None and owner.rva == rva:
+            if owner is not None and owner.rva == target:
                 continue                                   # intra-function
             if img.jmp_target(site) == rva and (owner is None
                                                 or owner.kind == "thunk"):
@@ -123,12 +131,29 @@ def caller_tree(target: int, depth_cap: int = 4) -> list[str]:
             else:
                 yield (owner, op, site, via)
 
+    yield from effective(target, (), set())
+
+
+def is_effectively_reached(target: int, size: int = 1) -> bool:
+    """Whether anything outside the body reaches it, including through a
+    linker thunk by rel32 or relocation."""
+    img = retail()
+    return bool(img.refs_to_range(target, target + max(size, 1))
+                or next(effective_incoming(target), None) is not None)
+
+
+def caller_tree(target: int, depth_cap: int = 4) -> list[str]:
+    """Caller ancestry: THROUGH thunk forwarders, expanding through
+    reconstructed callers, stopping at the unreconstructed frontier."""
+    idx = index()
+    out, seen = [], set()
+
     def walk(rva: int, depth: int):
         if depth_cap and depth > depth_cap:
             out.append("  " * (depth + 1) + "... (--depth cap)")
             return
         rows, uniq = [], set()
-        for owner, op, site, via in effective(rva, (), set()):
+        for owner, op, site, via in effective_incoming(rva):
             key = (owner.rva if owner else ("gap", site), op)
             if key in uniq:
                 continue
@@ -137,9 +162,12 @@ def caller_tree(target: int, depth_cap: int = 4) -> list[str]:
         if not rows and depth == 0:
             out.append("  (no direct call/jmp rel32 caller in .text)")
         for owner, op, site, via in rows:
-            kind = "call" if op == 0xE8 else "jmp "
+            kind = "ref " if op is None else "call" if op == 0xE8 else "jmp "
             pad = "  " * (depth + 1)
             via_s = f"  (via {len(via)} thunk(s))" if via else ""
+            if op is None:
+                out.append(pad + f"<- {kind} {site_where(site)}{via_s}")
+                continue
             if owner is None:
                 out.append(pad + f"<- {kind} {site_where(site)}{via_s}")
                 continue
@@ -217,8 +245,10 @@ def query(targets: list[str], *, mode: str = "default", raw: bool = False,
                     lines = callers(rva, raw=raw)
                 if not flat:
                     lines += references(rva, size)
-            found = bool(retail().call_index.get(rva)
-                         or retail().refs_to_range(rva, rva + max(size, 1))
+            found = bool((is_effectively_reached(rva, size)
+                          if mode == "tree"
+                          else retail().call_index.get(rva)
+                          or retail().refs_to_range(rva, rva + max(size, 1)))
                          or mode == "callees")
             print("\n".join(lines) if lines else "  (nothing reaches this address)")
             hit += bool(found)
