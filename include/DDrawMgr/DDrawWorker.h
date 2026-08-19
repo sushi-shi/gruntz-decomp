@@ -46,6 +46,7 @@ public:
     i32 SetAllFormats(CShadeTable* shade);
     i32 SetAllLightLevels(i32 value);
     ShadeMode GetFirstFrameState();
+    i32 GetFirstFrameLightLevel();
     i32 GetMemoryUsage(i32 raw);
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex);
 

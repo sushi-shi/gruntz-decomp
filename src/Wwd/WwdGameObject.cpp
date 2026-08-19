@@ -1195,6 +1195,21 @@ ShadeMode CDDrawWorker::GetFirstFrameState() {
     return fmt->m_drawType;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x001525a0, 0x1f)
+i32 CDDrawWorker::GetFirstFrameLightLevel() {
+    CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
+    if (frame == NULL) {
+        return 1;
+    }
+    CDDrawShadeBlit* fmt = frame->m_owned;
+    if (fmt == NULL) {
+        return 0;
+    }
+    return fmt->m_light;
+}
+
 RVA(0x001525c0, 0x76)
 i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
