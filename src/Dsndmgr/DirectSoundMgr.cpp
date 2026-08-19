@@ -38,23 +38,7 @@ typedef enum DSoundDx5Magic {
 } DSoundDx5Magic;
 
 DATA(0x00253ab8)
-i32 g_volumeTable[VOLUME_PCT_MAX];
-// NOT a one-element table - a BACKWARD CURSOR into g_volumeTable's tail.
-// g_volumeTable[100] ends exactly here (0x253ab8 + 400 = 0x253c48), and
-// SetPanByIndex reads g_panTable[-idx] for idx in 0..100, i.e.
-// g_volumeTable[100 - idx] - the pan attenuation reuses the volume curve read
-// from the top down. The `[1]` is the anchor slot only (it aliases the
-// documented g_volumeTable[100] overrun, see VolumeScale.h); the storage read
-// is g_volumeTable's. `[1]` is the CORRECT reserved size, PROVEN not assumed:
-// the next retail symbol is _g_ssLogEnabled at 0x253c4c, exactly 4 bytes on, so
-// retail's own cl emitted a 4-byte .bss slot here too. Widening it would
-// double-reserve g_volumeTable's aliased slots AND overlap _g_ssLogEnabled.
-// This is the ONE undercount case that is genuinely byte-neutral (a too-small
-// .bss array with its OWN forward storage is NOT neutral - it shifts every
-// symbol after it). Flagged as the `undercount` class by
-// gruntz.audit.data_access_map, kept as-is with this alias documented.
-DATA(0x00253c48)
-i32 g_panTable[1];
+i32 g_volumeTable[VOLUME_PCT_MAX + 1];
 
 #pragma optimize("", off)
 
@@ -362,9 +346,9 @@ i32 DirectSoundMgr::SetPanByIndex(i32 idx) {
         return 0;
     }
     if (idx >= 0) {
-        return SetPan(-g_panTable[-idx]);
+        return SetPan(-g_volumeTable[VOLUME_PCT_MAX - idx]);
     }
-    return SetPan(g_panTable[idx]);
+    return SetPan(g_volumeTable[VOLUME_PCT_MAX + idx]);
 }
 
 RVA(0x001357f0, 0x42)

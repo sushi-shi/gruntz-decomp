@@ -38,6 +38,16 @@ next buffer's base and all six `Decode*` functions report it.
 `?BuildSoundFontPath@@YAHD@Z` is the other direction: `g_sfDir[len - 1]` against
 `g_sfDir` at 0x24dfa0 resolves to 0x24df9f, inside `g_sfRouterId` (0x24df9c, 4 B).
 
+`SoundDevice::BuildVolumeTable` supplied the stronger negative control. Its
+`i <= 100` loop relocates the terminal compare as `g_volumeTable + 0x190`.
+An unsupported census fence at that address caused the delinker to invent a
+neighbouring `g_panTable` identity and capped the otherwise-identical function
+at 99.6667%. `SetPanByIndex` then appeared to index backward from that supposed
+object. Reconstructing the full data use showed one `g_volumeTable[101]` instead:
+the pan code reads `g_volumeTable[100 - abs(idx)]`, the next real datum begins at
+`0x253c4c`, and both functions are exact without a site oracle. A folded address
+at a claimed boundary is not independent evidence that the boundary is real.
+
 ## Do not "fix" it
 
 Spelling the loop bound as the NEIGHBOUR symbol would make our reloc match the

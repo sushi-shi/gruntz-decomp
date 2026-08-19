@@ -62,7 +62,10 @@ already matching. clang (the label pass) ignores the pragma; only cl acts on it.
 EXACT** once its `double t = ...` local was inlined into the one expression (under
 /Od every named local really does get a stack slot, so an extra local you invented
 for readability now costs an `fstp`/`fld` pair and shifts every `[ebp-N]`).
-`BuildVolumeTable` (0x1351a0), the first function past the `on`, stayed 100%.
+`BuildVolumeTable` (0x1351a0), the first function past the `on`, kept the same
+optimized instruction bytes. Its `g_volumeTable + 0x190` bound was later proved
+to be element 100 of the 101-entry table, not a neighbouring global; see
+`folded-base-address-names-the-neighbour.md`.
 
 ## Corollary
 

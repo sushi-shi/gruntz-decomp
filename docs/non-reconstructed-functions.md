@@ -121,10 +121,9 @@ false positive and is excluded from the 90-gap total.
 
 The live retail-side access sweep has 27,272 references over 2,278 claims. Its gate is
 green: no accessed datum is currently proved to have a wrong width, stride, count,
-extent, adjacency, or source-vs-IAT identity. The only accepted high-confidence finding
-is `g_panTable`: retail deliberately indexes backward from its one-element symbol into
-the adjacent 100-element volume table, so enlarging it would model two retail objects as
-one.
+extent, adjacency, or source-vs-IAT identity, and it has no accepted exceptions. The
+former `g_panTable` exception was a false split: the three operands at `0x253c48` are
+`g_volumeTable + 100`, inside the proven 101-entry volume curve.
 
 This does not mean all retail data has been named. The claim-side coverage sweep finds
 3,490 uncovered interior ranges totalling 145,834 bytes. They include linker/compiler

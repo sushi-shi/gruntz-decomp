@@ -245,40 +245,37 @@ every width branch (`scale == elem`) and was invisible. `undercount` closes that
 index is under-declared**, because you do not index a single-element array with a
 variable — the index itself proves a length ≥ 2 the extent does not carry.
 
-The instance that motivated it is `?g_panTable@@3PAHA`, declared `i32[1]` at
-`0x253c48`. `DirectSoundMgr::SetPanByIndex` reads `g_panTable[-idx]` for idx
-0..100, i.e. it is a **backward cursor into `g_volumeTable`'s tail**
-(`g_volumeTable[100]` ends exactly at `0x253c48`, so `g_panTable[-k]` is
-`g_volumeTable[100-k]`). This one is genuinely byte-correct: the next retail
-symbol is `_g_ssLogEnabled` at `0x253c4c`, **4 bytes on**, so retail's own cl
-reserved a 4-byte `.bss` slot here — declared size *equals* the retail
-inter-symbol gap. It is the exceptional case, not the rule.
+The detector was motivated by a false `g_panTable[1]` claim at `0x253c48`, but
+that finding was initially accepted for the wrong reason. The address is not an
+independent retail symbol: it is `g_volumeTable + 100`. `BuildVolumeTable` writes
+indices 0..100, `SetPanByIndex` reads `g_volumeTable[100 - abs(idx)]`, and the
+next independently used datum begins at `0x253c4c`. The correct model is one
+`g_volumeTable[101]`; removing the interior census fence and the fake claim keeps
+both functions byte-exact. This is the integration control for the response to
+an `undercount`: first test whether the small object is a false split of its
+predecessor, rather than documenting the contradiction as an exception.
 
-**A too-small `.bss` array is NOT generally byte-neutral.** When the array has
-its own forward storage, under-declaring its COUNT makes cl emit a smaller `.bss`
-COMDAT/COMMON and places every subsequent symbol earlier — the emitted COFF and
-the linked `.bss` both differ. It only *reads* neutral through two specific
-masks, and the fix in each case is different:
+**A too-small `.bss` array is not byte-neutral.** Under-declaring its COUNT
+makes cl emit a smaller `.bss` symbol and can place every subsequent symbol
+earlier. Two mechanisms can hide that defect from a local score:
 
 1. **objdiff infers `.bss` size from the next symbol.** `obj/read.rs` sets a bss
    symbol's size to the next symbol's offset, and the size-inference patch
    compares sizes only when a side states one. So as long as the symbol SET and
    ORDER agree, a wrong declared size is invisible *to objdiff* — but the linked
-   image is not. The oracle that does bite is **declared extent vs the retail
-   inter-symbol gap**: `g_panTable`'s is 4 == 4 (neutral); a genuine truncation
-   has gap ≫ declared, and `build_claims` already records that direction as
-   `declared-overlap`. The reverse (declared < gap with the tail ACCESSED) is a
-   real under-reservation.
+   image is not. A census fence does not prove the next symbol: compare the
+   claimed extent with all readers/writers and remove an interior fence when
+   the predecessor owns the address. A genuine truncation has gap ≫ declared;
+   the reverse (declared < gap with the tail accessed) is under-reservation.
 2. **An indexed access folds to offset 0.** `[reg*scale + base]` is recorded at
    `target_rva = base`, `sym_off = 0`, `in_extent = 1`, so the per-symbol overrun
    check sees the one access that PROVES array-ness as a legal read of element
    [0]. Count evidence can therefore only come from the *form* (indexed at all),
    which is why `undercount` keys off `form='indexed'`, not a past-the-end target.
-3. **The note on the neighbour was mistaken for a review of the datum.**
-   `VolumeScale.h` (an earlier *agent* pass, not a human review) documented the
-   adjacent `g_volumeTable` overrun in detail and treated `0x253c48` only as that
-   loop's *terminating address* — it never asked what `g_panTable`'s own `[1]`
-   meant. A reviewed note on one datum is not a review of the next.
+3. **A relocation target at a boundary was mistaken for a datum identity.**
+   The operands at `0x253c48` are all explained as `g_volumeTable + 100`.
+   Address equality and a generated census fence are not independent storage
+   evidence; an owning definition or an incompatible access pattern is needed.
 
 ## The `shortfall` class — the same defect with COUNT ≥ 2
 
@@ -294,9 +291,9 @@ dropping the last two turns two correct arrays (`g_levelMsgStrings[8]`,
 `g_ratings[344]`, whose neighbours are a separate byte flag and a `<gap>`-only
 global) into phantom shortfalls.
 
-**Unlike `undercount`, a `shortfall` is never byte-neutral.** cl emits the array
+Like `undercount`, a `shortfall` is a source-model defect. cl emits the array
 symbol one or more elements short, so the linked `.bss`/`.data`/`.rdata` and the
-emitted COFF both shift from that symbol onward. The tree is clean of them today
+emitted COFF can shift from that symbol onward. The tree is clean of them today
 (0 findings), which the `--selftest` `shrink` injection proves is a *clean* zero
 and not a blind one: it cuts an array a single function walks down to one element
 and requires the finding back.
@@ -313,19 +310,17 @@ gruntz verify data-access --gate` rebuilds the map from retail + the current
 claims and FATALs on any finding in a category that implies a real MISMODEL —
 `undercount`, `shortfall`, `width`, `stride`, `adjacent`, `import-slot` — that
 is not in `ACCEPTED_MISMODELS`. The storage-shape categories change bytes,
-directly or by shifting `.bss` /
-`.data` once the compiler emits the wrong symbol size (which objdiff's
-next-symbol size inference can mask — so this is the *only* reporter for the
-`g_panTable` class); `import-slot` prevents source from reclaiming storage the
-linker owns. The evidence-thin categories (`unclaimed`, `unaccessed`) are triage
-campaigns, not build-breakers, and are NOT gated.
+directly or by shifting `.bss` / `.data` once the compiler emits the wrong
+symbol size, which objdiff's next-symbol size inference can mask; `import-slot`
+prevents source from reclaiming storage the linker owns. The evidence-thin
+categories (`unclaimed`, `unaccessed`) are triage campaigns, not build-breakers,
+and are NOT gated.
 
-One row is accepted today, with its proof in the set: `g_panTable` `undercount`,
-byte-neutral because declared size equals the retail inter-symbol gap. A new
-mismodel fails the build until it is either fixed at the declaration or accepted
-with the same standard of evidence. The gate proves itself non-vacuously (drop
-the accept-set and it FATALs on `g_panTable`) and `--selftest` plants nine
-defects — one per detector — so a green run is a clean tree, not a blind sieve.
+There are no accepted rows today. The former `g_panTable` acceptance is the
+negative control: a superficially byte-neutral exception can still be a false
+object boundary. A new finding fails until the declaration/ownership is fixed or
+independent retail evidence proves a real exception. `--selftest` plants a known
+defect for every detector, so a green run is a clean tree, not a blind sieve.
 
 ## Evidence rules
 

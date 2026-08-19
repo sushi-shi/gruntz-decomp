@@ -20,7 +20,7 @@ CATEGORIES
   width       access width/kind disagrees with the declared field -> wrong type
   stride      an index scale inside a claim disagrees with its element size
   undercount  a claim declared with ONE element is INDEXED -> under-declared
-              COUNT (aliasing case; byte-neutral only when the storage aliases)
+              COUNT or a false split of a larger object
   shortfall   an array whose own walker over-runs the declared end -> too-small
               forward storage; SHIFTS its section (never byte-neutral)
   adjacent    two claims reached through ONE base register -> one object
@@ -68,7 +68,9 @@ REFER = ("lea", "imm", "indcall", "iat")
 #:              copying the 2-byte literal g_dot with one WORD move;
 #:              negative-addend = `[ecx + &next - 1]`; unresolved = a union
 #:              (g_dplayAppGuid), never adjudicated.
-#:   undercount 1 firing row, the documented byte-neutral g_panTable.
+#:   undercount 0 firing rows after merging the false g_panTable split back
+#:              into the 101-entry g_volumeTable; the injected one-element
+#:              array control proves it fires.
 #:   shortfall  0 firing rows; the injected `shrink` control proves it fires.
 #:   stride     0 firing rows after the three aggregate/LUT corrections; the
 #:              injected pair-array control proves it fires.
@@ -89,16 +91,9 @@ REPORT_ONLY = {
                   "the game never calls look identical from here",
 }
 
-#: (category, sym_rva) accepted despite firing - each a MEASURED, documented
-#: non-defect. A row leaves the set only when its evidence is disproven.
-ACCEPTED_MISMODELS: frozenset = frozenset({
-    # 0x253c48 ?g_panTable@@3PAHA - declared i32[1], indexed [-100..0] as a
-    # BACKWARD cursor into g_volumeTable's tail. PROVEN byte-neutral: the next
-    # retail symbol is 4 bytes on, so retail reserved a 4-byte slot too
-    # (declared == inter-symbol gap). A semantic under-declaration with no byte
-    # consequence - documented in DirectSoundMgr.cpp and docs/data-access-map.md.
-    ("undercount", 0x253C48),
-})
+#: (category, sym_rva) accepted despite firing - each a measured, documented
+#: non-defect. Keep this empty unless retail evidence proves an exception.
+ACCEPTED_MISMODELS: frozenset = frozenset()
 
 
 # --------------------------------------------------------------------------- #
@@ -272,10 +267,9 @@ def derive_findings(spine, accesses, cells, owners, trace=None):
         # in `.data` does. The run continues an ARRAY claim - same element
         # width, starting exactly at its end - which is a too-small array COUNT
         # with its own forward storage (the `float[2]`-for-`float[10]` class, in
-        # the direction the `undercount` index test cannot reach). Unlike
-        # `undercount` (byte-neutral only when the storage aliases, as
-        # g_panTable does) this WILL shift every symbol after it: cl emits a
-        # smaller symbol and the linked image / emitted COFF both diverge. A
+        # the direction the `undercount` index test cannot reach). This shifts
+        # every symbol after it: cl emits a smaller symbol and the linked image
+        # / emitted COFF both diverge. A
         # separate neighbour global is excluded by the element-width +
         # array-type + exact-adjacency + accessor-overlap quad.
         if prev is not None and r["start"] == prev.end and prev.node \
@@ -523,14 +517,11 @@ def derive_findings(spine, accesses, cells, owners, trace=None):
         is_array = c.node.get("k") == "arr"
         spell = layout.spelling(c.node)
         for sc, n in sorted(scales.items()):
-            # An index into a claim declared with ONE element is under-COUNTED,
-            # independently of whether the element WIDTH matches: you do not
-            # index a single-element array with a variable, so the index proves
-            # a length >= 2 the extent does not carry. This is the g_panTable
-            # class - `i32[1]` indexed [-100..0] as an alias into
-            # g_volumeTable's tail - which every width/stride branch below
-            # misses precisely because sc == elem, and which no byte tool can
-            # see when the storage is .bss zero-fill.
+            # An index into a claim declared with ONE element is under-COUNTED
+            # or falsely split from a larger object, independently of whether
+            # the element WIDTH matches. The variable index proves a length >=
+            # 2 that the claimed extent does not carry. Width/stride checks miss
+            # this precisely because sc == elem.
             if is_array and count <= 1:
                 rows.append(("undercount", "high", c.rva, c.name, c.rva,
                              f"indexed by *{sc} but declared with ONE element "
@@ -737,9 +728,8 @@ def do_gate(_args):
         for b in bad:
             print(f"  {b}")
         print("  A wrong COUNT/width/aggregation changes bytes (or .bss/.data "
-              "placement). Fix the declaration, or - if proven byte-neutral "
-              "like g_panTable - add it to ACCEPTED_MISMODELS with the "
-              "evidence.")
+              "placement). Fix the declaration; accept an exception only when "
+              "retail evidence proves the finding is not a source mismodel.")
         return 1
     print(f"[data-access] gate OK - 0 new data mismodels "
           f"({len(ACCEPTED_MISMODELS)} documented exception(s), gated: "
@@ -917,7 +907,7 @@ def injection_plans(spine, accesses):
                   extent=c.extent - 4, node=prim("int", 4))]))
     # shrink: an ARRAY a SINGLE function walks, cut to its first element, so the
     # same function's own tail accesses become a shortfall (a too-small COUNT
-    # with forward storage - NOT byte-neutral, unlike the aliasing g_panTable).
+    # with forward storage).
     arr_fn = defaultdict(lambda: defaultdict(set))
     for a in accesses:
         if a.form not in TOUCH or not a.width:

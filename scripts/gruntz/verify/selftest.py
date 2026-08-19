@@ -972,18 +972,21 @@ class DataAccessCategoryControls(unittest.TestCase):
         (a STALE accept is itself reported)."""
         from gruntz.verify import data_access as da
         fired = [("shortfall", "high", 0x1000, "?g_x@@3HA", 0x1004, "d", "e"),
-                 ("undercount", "high", 0x253C48, "?g_panTable@@3PAHA",
-                  0x253C48, "d", "e"),
-                 ("stride", "high", 0x2000, "?g_y@@3HA", 0x2000, "d", "e")]
-        with mock.patch.object(da, "analysis",
-                               return_value=(None, None, None, None, fired,
-                                             None, None)):
+                 ("undercount", "high", 0x3000, "?g_z@@3PAHA",
+                  0x3000, "d", "e")]
+        with mock.patch.object(da, "ACCEPTED_MISMODELS",
+                               frozenset({("undercount", 0x3000)})), \
+                mock.patch.object(da, "analysis",
+                                  return_value=(None, None, None, None, fired,
+                                                None, None)):
             out = da.gate_findings()
             self.assertEqual(len(out), 1)
             self.assertIn("shortfall", out[0])
-        with mock.patch.object(da, "analysis",
-                               return_value=(None, None, None, None, [],
-                                             None, None)):
+        with mock.patch.object(da, "ACCEPTED_MISMODELS",
+                               frozenset({("undercount", 0x3000)})), \
+                mock.patch.object(da, "analysis",
+                                  return_value=(None, None, None, None, [],
+                                                None, None)):
             stale = da.gate_findings()
         self.assertTrue(any("STALE accept" in s for s in stale))
 
