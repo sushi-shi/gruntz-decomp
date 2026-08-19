@@ -91,6 +91,7 @@ public:
 
     void Notify(CGameObject* p);
 
+    i32 PrepareSave(CFileMemBase* ar);
     i32 Serialize(CFileMemBase* ar);
     i32 WriteSnapshot(CFileMemBase* dst, LogicTypeId unused);
     i32 SerializeObjectState(CFileMemBase* ar);

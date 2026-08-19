@@ -579,6 +579,20 @@ fail:
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x001512e0, 0x35)
+i32 CGameObject::PrepareSave(CFileMemBase* ar) {
+    if (ar == NULL) {
+        return 0;
+    }
+    m_carrierId = 0;
+    if (m_carrier != NULL) {
+        m_carrierId = m_carrier->m_objectId;
+    }
+    return 1;
+}
+
 RVA(0x00151320, 0x454)
 i32 CGameObject::Serialize(CFileMemBase* arParam) {
     CFileMemBase* ar = arParam;
