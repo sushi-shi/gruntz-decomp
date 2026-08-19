@@ -5154,38 +5154,32 @@ i32 CPlay::ValidateLevelTiles() {
         GameObjNotifyFn who = obj->m_animWorker->m_notify;
 
         if (who == CreateTileTriggerSwitch) {
-            CGameLevel* grid = LevelOf(m_world);
             TileCollisionKind type =
                 LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
-                CTileTriggerLogic* hit = NULL;
+                CTileTriggerLogic* hit;
                 i32 col = obj->m_speedX - 1;
-                i32 colOff = col << 8;
                 i32 row = obj->m_speedY - 1;
-                while (col < obj->m_speedX + 2) {
+                b32 found = 0;
+                i32 colOff = col << 8;
+                while (found == 0 && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
-                    if (hit != NULL) {
-                        break;
-                    }
-                    while (row < obj->m_speedY + 2) {
-                        CTileTriggerLogic* r =
-                            m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
-                        if (r != NULL) {
-                            hit = r;
-                        }
+                    while (found == 0 && row < obj->m_speedY + 2) {
+                        hit = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
-                            break;
+                            found = 1;
                         }
-                        row++;
+                        if (found == 0) {
+                            row++;
+                        }
                     }
-                    if (hit != NULL) {
-                        break;
+                    if (found == 0) {
+                        col++;
+                        colOff += 0x100;
                     }
-                    col++;
-                    colOff += 0x100;
                 }
-                if (hit == NULL) {
+                if (found == 0) {
                     CString s;
                     s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
@@ -5200,7 +5194,7 @@ i32 CPlay::ValidateLevelTiles() {
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
-                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                type = (static_cast<CImageSet1*>(LevelOf(m_world)->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             }
             if (type == TILEKIND_GAUNTLET_ROCK_A || type == TILEKIND_GAUNTLET_ROCK_B
@@ -5221,7 +5215,7 @@ i32 CPlay::ValidateLevelTiles() {
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
-                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                type = (static_cast<CImageSet1*>(LevelOf(m_world)->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             }
             switch (type) {
@@ -5470,38 +5464,32 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         } else if (who == CreateTileTrigger) {
-            CGameLevel* grid = LevelOf(m_world);
             TileCollisionKind type =
                 LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
-                CTileTriggerLogic* hit = NULL;
+                CTileTriggerLogic* hit;
                 i32 col = obj->m_speedX - 1;
-                i32 colOff = col << 8;
                 i32 row = obj->m_speedY - 1;
-                while (col < obj->m_speedX + 2) {
+                b32 found = 0;
+                i32 colOff = col << 8;
+                while (found == 0 && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
-                    if (hit != NULL) {
-                        break;
-                    }
-                    while (row < obj->m_speedY + 2) {
-                        CTileTriggerLogic* r =
-                            m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
-                        if (r != NULL) {
-                            hit = r;
-                        }
+                    while (found == 0 && row < obj->m_speedY + 2) {
+                        hit = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
-                            break;
+                            found = 1;
                         }
-                        row++;
+                        if (found == 0) {
+                            row++;
+                        }
                     }
-                    if (hit != NULL) {
-                        break;
+                    if (found == 0) {
+                        col++;
+                        colOff += 0x100;
                     }
-                    col++;
-                    colOff += 0x100;
                 }
-                if (hit == NULL) {
+                if (found == 0) {
                     CString s;
                     s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
@@ -5516,7 +5504,7 @@ i32 CPlay::ValidateLevelTiles() {
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
-                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                type = (static_cast<CImageSet1*>(LevelOf(m_world)->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             } else if (type == TILEKIND_GAUNTLET_ROCK_A || type == TILEKIND_GAUNTLET_ROCK_B
                        || type == TILEKIND_COVERED_POWERUP) {
@@ -5536,7 +5524,7 @@ i32 CPlay::ValidateLevelTiles() {
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
-                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                type = (static_cast<CImageSet1*>(LevelOf(m_world)->m_imageSets.GetAt(tcidx)))
                            ->GetCollisionAt(0, 0);
             }
             if (type >= TILEKIND_TOGGLE_BRIDGE_FIRST && type <= TILEKIND_TOGGLE_BRIDGE_LAST) {
@@ -5730,7 +5718,7 @@ i32 CPlay::ValidateLevelTiles() {
                         || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    i32* cellRow = gg->m_rowInts[0] + ofs;
+                    i32* cellRow = gg->m_rowInts[ofs];
                     cellRow[ebp] |= bit;
                 }
             }
