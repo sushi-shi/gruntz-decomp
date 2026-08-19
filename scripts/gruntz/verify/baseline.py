@@ -144,10 +144,7 @@ def render(funcs: dict[tuple[str, str], dict]) -> str:
         line = (f"{unit}\t{fn}\t{f['best']:.4f}\t{f['cur']:.4f}\t{f['tries']}"
                 f"\t{f['fp']}")
         line += f"\t0x{addr:x}" if addr is not None else "\t"
-        line += f"\t{f.get('hist', f['best']):.4f}"
-        state = f.get("state", "")
-        if state:
-            line += f"\t{state}"
+        line += f"\t{f.get('hist', f['best']):.4f}\t{f.get('state', '')}"
         lines.append(line + "\n")
     return "".join(lines)
 

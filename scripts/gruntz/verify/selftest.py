@@ -2180,7 +2180,7 @@ class BankRatchetControls(unittest.TestCase):
                                       state="absent")}
         self.assertEqual(bl.load(bl.render(rows)), rows)
 
-    def test_render_omits_an_empty_trailing_state_field(self):
+    def test_render_keeps_the_explicit_state_field(self):
         from gruntz.verify import baseline as bl
         rows = {("u", "scored"): self._row(),
                 ("u", "gone"): self._row(state="absent")}
@@ -2188,7 +2188,7 @@ class BankRatchetControls(unittest.TestCase):
                           if line.startswith("u\t") and line.count("\t") > 2]
         scored = next(line for line in function_lines if "\tscored\t" in line)
         absent = next(line for line in function_lines if "\tgone\t" in line)
-        self.assertFalse(scored.endswith("\t"))
+        self.assertTrue(scored.endswith("\t"))
         self.assertTrue(absent.endswith("\tabsent"))
 
 
