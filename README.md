@@ -38,7 +38,7 @@ _Excluded from the % above — generated/library code, not independent reconstru
 | Category                            | Functions | Code (B) | Why excluded                                                 |
 | :---------------------------------- | --------: | -------: | :----------------------------------------------------------- |
 | `EH unwind funclets`                |     2,619 |   48,943 | compiler /GX EH; match with their parent function            |
-| `private lifecycle/cleanup helpers` |       421 |    7,498 | volatile `$E<n>` dyninit families and kind=helper forwarders |
+| `private lifecycle/cleanup helpers` |       439 |    7,794 | volatile `$E<n>` dyninit families and kind=helper forwarders |
 | `CRT/MFC library`                   |     2,040 |  408,556 | static-lib labels (functions_static_libs, non-LOW)           |
 | `jump thunks`                       |     1,603 |   33,994 | linker ILT jmp-table + thunk-kind census rows                |
 | `linker pad`                        |         1 |    9,788 | kind=pad census rows (alignment fill, no body)               |

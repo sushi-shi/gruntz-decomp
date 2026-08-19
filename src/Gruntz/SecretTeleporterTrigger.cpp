@@ -26,6 +26,25 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x0003cfe0, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x0003d000, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x0003d030, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0003d050, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0003d080, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x0003d0a0, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x0003d0d0, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0003d0f0, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0003d120, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x0003d140, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x0003d170, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0003d190, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0003d1c0, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x0003d1e0, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x0003d210, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0003d230, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0003d260, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x0003d280, 0x1a, s_gruntDirCenter)
+
 RVA_DYNINIT(0x000420b0, 0xa, CActRegPool<CSecretTeleporterTrigger>::s_table)
 RVA_DYNINIT(0x000420d0, 0x15, CActRegPool<CSecretTeleporterTrigger>::s_table)
 RVA_DYNINIT(0x00042100, 0xe, CActRegPool<CSecretTeleporterTrigger>::s_table)
