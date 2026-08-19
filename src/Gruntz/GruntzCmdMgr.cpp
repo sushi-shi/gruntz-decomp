@@ -20,6 +20,25 @@
 
 #include <string.h>
 
+RVA_DYNINIT(0x000235e0, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00023600, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x00023630, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00023650, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00023680, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x000236a0, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x000236d0, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x000236f0, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00023720, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x00023740, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00023770, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00023790, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x000237c0, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x000237e0, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00023810, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00023830, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00023860, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00023880, 0x1a, s_gruntDirCenter)
+
 DATA(0x001e9608)
 const u16 g_cmdBitTable[16] = {
     1,
