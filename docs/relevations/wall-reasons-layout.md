@@ -215,10 +215,16 @@ Zero violations is the normal case even at 500 blocks. A nonzero count is not no
 the three heaviest are exactly the campaign's known layout walls, all violations funnel
 into ONE or TWO target blocks, and `PlaceObjectFull` is a member of the family that
 nothing had named. The count IS the worklist, and the named target block is where the
-missing structure is.
+layout/factoring difference is concentrated.
 
-**SOURCE-REACHABLE?** **LEVER**, with two spellings that work and a clear set that does
-not:
+**2026-08-19 scope correction:** the topological rule applies to the CFG **entering
+layout**, not necessarily the final emitted CFG. Value factoring can create a backward
+edge after the survivor block has already been placed. Therefore a violation in retail
+localizes the residue but does not, by itself, prove that retail source contained a
+cycle or even a `goto`. That reverse inference must be tested with the full function.
+
+**SOURCE-REACHABLE IN THE MINIMAL PROBE?** **LEVER**, with two spellings that work and
+a clear set that does not:
 
 1. **Write the region out at each exit instead of `goto`-ing into it**, keeping the
    copies distinguishable so they do not merge before layout. Measured A B C at every
@@ -232,11 +238,10 @@ moving the label, `for(;;)`+`continue` that targets a *different* head, an `else
 heap-vs-stack for a destructible local, and a dtor local anywhere in the function.
 
 **DETECTION SIGNATURE.** Extract each side's block order and each block's predecessor
-addresses. If retail places a region **before** blocks that jump back into it, and
-retail does **not** carry a second copy of that region, then retail's CFG contains an
-edge ours lacks that closes a cycle through the region — i.e. our `return` inside that
-region is really a conditional `continue`. That is a source question with a definite
-answer, not a coin.
+addresses. If retail places a region **before** blocks that jump back into it, while the
+candidate sinks it after those predecessors, the region is a layout/factoring wall.
+Do not infer the pre-layout source CFG from the final backward edge: test duplication
+and cycle spellings against the full call, relocation, branch and instruction census.
 
 **WORKED EXAMPLE.** `CGrunt::StepArrivalDrop` `0x0004b370`. Retail's `pathGate` region
 head is `0x0004b4ff`; it is entered forward from the gate (`0x0004b4e1 je 0x4b4ff`) and
@@ -252,14 +257,26 @@ backward from the late regions above `0x0004b7a1` —
 04b50b: 8b 83 28 03 00 00      mov eax,DWORD PTR [ebx+0x328]   ; the same field, reloaded
 ```
 
-— and it is emitted **before** them, which the rule forbids for an acyclic CFG. Our
-reconstruction, whose region A ends in `return`, is emitted at the end
-(`prologue/B/C/D/A`, 33.37 %). Two spellings satisfy retail's shape and both are now
-measured levers: write the region out at each of the two late exits with the copies
-distinguishable (the `A B C` row above), or make the region and the late regions
-mutually reachable so the whole thing is one loop. The wrong move is a `goto`, and the
-wrong diagnosis is "cl chose a different layout" — cl's layout is a function of the CFG
-and ours is the CFG it was given. Probe (compiles in 0.2 s, reproduces all three orders):
+— and it is emitted **before** them. In the final retail CFG, however, `0x4b4ff` cannot
+reach any of its late predecessors: an SCC walk finds no cycle through the path region.
+Those backward edges are compatible with post-layout factoring and are not a source
+cycle oracle.
+
+The full-function controls reject both naive applications of the minimal-probe levers:
+
+* a `pathFound` loop with the two late successes expressed as `continue` restores the
+  exact 26-call/68-relocation census, but cl still emits the path region last and
+  rotates/duplicates the line-scan prefixes: `0xdd0`-`0xde8`, 1001-1007 instructions,
+  130 branches, versus retail `0xb28`, 853, 129;
+* writing the entire path region at all three success sites emits three independent
+  `CPtrList` EH regions rather than merging them: `0x1088`, 44 calls, 106 relocations,
+  189 branches.
+
+The current clean reconstruction remains `0xb88`, 877 instructions, 25 calls, 64
+relocations and 131 branches. Its missing fourth `RemoveHead` is a factored initial /
+re-probe tail, not evidence of a missing call in source. The residual is bounded as a
+full-function layout/factoring wall; neither a source cycle nor triplication is proved.
+The minimal probe below still establishes the generic rule and its two levers:
 
 ```cpp
 extern int Probe(int,int); extern int Count(); extern void Pop();
@@ -472,12 +489,12 @@ int g(int k){ L a(1); switch(k){         // one state 0 : arms merge normally
 `c2-block-placement-coin` collects splits into four distinct, separately diagnosable
 mechanisms:
 
-1. **Block ORDER (entry 2)** — fully determined by the CFG: after the last predecessor,
-   cycles exempt. **19 of 25 sampled retail wall functions obey it with ZERO
+1. **Block ORDER (entry 2)** — determined by the pre-layout CFG: after the last
+   predecessor, cycles exempt. **19 of 25 sampled retail wall functions obey it with ZERO
    violations**, including two above 200 blocks; the three heaviest violators are the
    three known layout walls and every violating edge funnels into one or two named
-   blocks. Deterministic, predictable, and a measured source-level LEVER (write the
-   region out, or close the cycle). Not a coin.
+   blocks. Deterministic and a measured source-level lever in the minimal probe, but a
+   final retail edge may have been introduced by factoring after placement.
 2. **Tail MERGE (entry 1)** — content-sensitive under `/O2` because the `/Os`
    cross-jumper is off and only value-based factoring runs. A coin only in the
    one-statement regime; two-statement tails are deterministic.
@@ -496,8 +513,8 @@ Every table above is a fresh compile of an embedded probe with the pinned cl 5.0
 the c2.exe addresses are statically checkable in Ghidra at the default `0x400000` base.
 The chain-vs-table series in entry 3(a) uses evenly spread case values and is a bracket,
 not a formula; the xlat rule in 3(b) and the frame rule in entry 4 are exact over their
-measured grids. The `StepArrivalDrop` prediction in entry 2 is derived from the rule and
-retail's block order and has NOT yet been confirmed by a reconstruction.
+measured grids. The old `StepArrivalDrop` prediction ("retail must contain a real
+cycle") is falsified by its emitted SCCs and the full-function loop controls above.
 
 ## Reproduce it
 

@@ -1,11 +1,17 @@
 # A backward `goto` sinks its whole target region to the end of the function
 
+> **2026-08-19 — scope correction.** The topological rule below describes the CFG
+> entering layout. A backward edge in final retail code can instead be introduced by
+> later value factoring, so it is not proof that retail source contained a cycle or
+> `goto`. `StepArrivalDrop`'s emitted `pathGate` is acyclic; full-function loop and
+> triplication controls fail the retail size/instruction census. See the corrected
+> worked example in
+> [`../relevations/wall-reasons-layout.md`](../relevations/wall-reasons-layout.md) §2.
+>
 > **2026-08-18 — the mechanism is named and this doc's EH half is refuted for the
 > minimal shape.** cl 5.0 lays blocks out in TOPOLOGICAL order: a block is emitted
 > immediately after its LAST predecessor, and only a real CYCLE exempts it. Measured
-> matrix, minimal probe, and the `StepArrivalDrop` prediction that follows (retail's
-> `pathGate` region must be able to REACH the late regions, i.e. it is a loop, not a
-> returning region):
+> matrix and minimal probe:
 > [`../relevations/wall-reasons-layout.md`](../relevations/wall-reasons-layout.md) §2.
 > In that probe `goto A` from B only gives **B A C**, not B C A — the region lands
 > after its last predecessor, not at the end — and adding a destructible local (in
@@ -87,9 +93,10 @@ than evidence against those locals.
   `0x4b4ff` (pathGate head) from a bare `jne` at nudgeDone plus a threaded
   `je`/`jmp` pair in reProbe; `0x4b605` (`xor eax,eax` return-0 tail) and
   `0x4b787`/`0x4b78c` (`mov eax,1`/epilogue) are ordinary cross-jump tail
-  merges. So retail's source had the SAME two-goto structure ours has — the
-  extra edge targets are back-end artifacts, not extra gotos — and cl compiled
-  it WITHOUT the sink. The deciding input difference remains unfound; the
+  merges. These edges are compatible with the same two-goto structure, but do
+  not prove it: an SCC walk shows that final retail `pathGate` cannot reach any
+  late predecessor, so the edges may have been introduced by factoring after
+  placement. The deciding input difference remains unfound; the
   declaration-probe panel (wall-break 2026-08-13) proves it is not reachable
   by parser-state handles. Untested residue hypothesis: TU body-set parity
   (a sibling body present/absent changes C2 layout state).
@@ -100,3 +107,11 @@ than evidence against those locals.
   local spelling of this to a shared `setne` block, so the branch shape itself
   is layout-state residue, but the SEMANTICS (`return arrivalPhase != 0`) are
   retail ground truth and are kept.
+
+2026-08-19 full-function controls close the two generic-lever guesses. A
+`pathFound` loop (including variants with retail's `reinit` and `CoordCount` prefix
+at its head) restores the 26-call/68-relocation census but remains path-last and
+grows to `0xdd0`-`0xde8` through rotated scan-prefix copies. Three written-out path
+regions grow to `0x1088` with three ctor/dtor pairs, 44 calls and 106 relocations;
+the per-copy `CPtrList` EH states block the desired merge. Neither spelling models
+retail. Keep the single real EH scope and do not retry those broad transformations.

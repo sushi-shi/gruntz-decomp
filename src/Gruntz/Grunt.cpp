@@ -920,17 +920,6 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
     return StepArrivalDrop(px, py, arrivalPhase, maskA, clearFlag, maskCIn);
 }
 
-// @early-stop
-// Whole-body register permutation from one pick: retail binds `this` to ebx,
-// we bind it to ebp. Consequence chain - with ebx taken, retail's inlined
-// strcmp has no byte-addressable scratch and compares against memory
-// (`cmpb (%esi),%dl`), while ours spends `movb (%esi),%bl` + `cmpb %bl,%dl`
-// per byte pair; retail also keeps the pxX parameter in esi and compares
-// `m_entrancePx.m_x` as a memory operand. objdiff's score for this row is
-// BISTABLE under TU composition (the cross-jump grouping floor,
-// docs/patterns/cross-jump-grouping-floors-objdiff.md): a two-prototype
-// declaration probe drops it to 0.00 with no source change, so the percentage
-// is not a quality signal here - read the instruction/branch counts instead.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
