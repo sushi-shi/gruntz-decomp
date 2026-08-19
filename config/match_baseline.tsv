@@ -314,7 +314,7 @@ worldsoundset	36	33
 wormhole	26	23
 wormholeacts	2	2
 wwdfactoryobject	56	52
-wwdgameobject	47	34
+wwdgameobject	47	36
 wwdgameobjectrender	15	11
 wwdgrid	16	12
 wwdobjmgr	54	36
@@ -4607,7 +4607,7 @@ wwdgameobject	?AddFrameAt@CDDrawWorker@@QAEXPAVCObject@@H@Z	100.0000	100.0000	2	
 wwdgameobject	?AddLogicAttack@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	9aa71c5deabb	0x151030	89.4737	
 wwdgameobject	?AddLogicBump@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	4c737145b735	0x151110	89.4737	
 wwdgameobject	?AddLogicHit@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	21a8a3b0109d	0x150f50	89.4737	
-wwdgameobject	?ApplyLookupGeometry@CWwdGameObjectA@@QAEHPBDH@Z	93.9394	93.9394	1	3ebb1cb3512e	0x1505b0	93.9394	
+wwdgameobject	?ApplyLookupGeometry@CWwdGameObjectA@@QAEHPBDH@Z	100.0000	100.0000	2	4e5def1b0369	0x1505b0	100.0000
 wwdgameobject	?ApplyLookupSprite@CWwdGameObjectA@@QAEXPBDH@Z	94.2857	94.2857	2	f944370c13ad	0x1504d0	94.2857	
 wwdgameobject	?ApplyName@CWwdGameObjectA@@QAEXPBD@Z	94.1176	94.1176	2	e2572dfb52ca	0x150540	94.1176	
 wwdgameobject	?BltDirty@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	7b16635103b8	0x150660	100.0000	
@@ -4623,7 +4623,7 @@ wwdgameobject	?FindFrame@CDDrawWorker@@QAEHPAVCImage@@PADPAH@Z	100.0000	100.0000
 wwdgameobject	?GetClassId@AnimWorkerObj@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	af6316d08ab0	0x151d70	100.0000	
 wwdgameobject	?GetFirstFrameLightLevel@CDDrawWorker@@QAEHXZ	100.0000	100.0000	1	5972d9d114bc	0x1525a0	100.0000	
 wwdgameobject	?GetFirstFrameState@CDDrawWorker@@QAE?AW4ShadeMode@@XZ	100.0000	100.0000	1	745733ab1059	0x152570	100.0000	
-wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623	1	e44283363edf	0x1523f0	100.0000	
+wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	100.0000	1	e44283363edf	0x1523f0	100.0000
 wwdgameobject	?Init@AnimWorkerObj@@UAEHP6AHPAUCGameObject@@@ZH@Z	100.0000	100.0000	1	d1f4f62257f6	0x151e20	100.0000	
 wwdgameobject	?InsertFrame@CDDrawWorker@@UAEPAVCImage@@PAUCParseSource@@HH@Z	100.0000	100.0000	2	749954f465d9	0x151f00	100.0000	
 wwdgameobject	?IsLoaded@AnimWorkerObj@@UAEHXZ	100.0000	100.0000	1	8cbd8c821cc7	0x151d60	100.0000	

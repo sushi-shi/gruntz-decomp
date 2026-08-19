@@ -76,11 +76,15 @@ void CWwdGameObjectA::ApplyName(const char* name) {
     }
 }
 
+static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* result = NULL;
+    MapLookup(map, name, result);
+    return result;
+}
+
 RVA(0x001505b0, 0x5e)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
-
-    CAniElement* spr = 0;
-    MapLookup(OwnerMgr()->m_animRegistry->m_animations, name, spr);
+    CAniElement* spr = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
     if (!spr) {
         return 0;
     }

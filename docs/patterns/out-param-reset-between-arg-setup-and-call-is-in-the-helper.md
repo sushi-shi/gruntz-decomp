@@ -80,6 +80,12 @@ change alone, each having been a one-instruction-position diff before it:
 | `CPlay::DrawStateMessage` | 0x000cfef0 | 95.1807 | **100.0000** |
 | `CPlay::DrawMessageFrame` | 0x000d1650 | 95.6452 | **100.0000** |
 | `CPlay::LoadLoadingBarSprite` | 0x000d7440 | 95.8064 | **100.0000** |
+| `CWwdGameObjectA::ApplyLookupGeometry` | 0x001505b0 | 93.9394 | **100.0000** |
+
+`ApplyLookupGeometry` is the `CMapStringToPtr` counterpart: its wrapper owns a
+typed `CAniElement* result = NULL`, calls `MapLookup`, and returns the pointer.
+Its size, call set, CFG, and four referents already agreed before the change;
+moving the reset across the inline boundary closed the sole scheduling residue.
 
 ### It is per-site, not per-idiom — measure before converting a whole family
 
