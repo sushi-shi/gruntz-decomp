@@ -463,7 +463,7 @@ attract	?HeaderRead@CState@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	5a9c616f
 attract	?HeaderSerialize@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	9b199b290fc0	0xfafa0	100.0000	
 attract	?HeaderWrite@CState@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	f030504ac2e4	0xfaff0	100.0000	
 attract	?InputVirtual@CState@@UAEHXZ	99.5403	99.5403	2	f3a1c046073e	0xface0	99.5403	
-attract	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	1	d9da7b30d845	0xfab90	96.3906	
+attract	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	99.6875	99.6875	2	397ea35fedf8	0xfab90	99.6875
 attract	?OnPaint@CState@@UAEHXZ	100.0000	100.0000	1	43cbcf75387b	0xfac70	100.0000	
 attract	?Present@CState@@QAEXH@Z	100.0000	100.0000	2	ccdaeedb342a	0xfaec0	100.0000	
 attract	?RetireScene@CState@@QAEHHHHH@Z	98.3913	98.3913	1	29dc61034e3d	0xfa8f0	98.3913	

@@ -349,6 +349,8 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
+// @early-stop: complete; menuRoot() fixes call setup, leaving the known frontPair
+// scratch register.
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == NULL) {
@@ -366,11 +368,11 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (sym == NULL) {
         return 0;
     }
-    if (m_world->m_drawTarget->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
+    if (menuRoot()->m_drawTarget->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
         return 0;
     }
     if (doFlip != 0) {
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
     return 1;
 }

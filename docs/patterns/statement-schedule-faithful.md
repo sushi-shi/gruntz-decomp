@@ -4,7 +4,7 @@ symptoms: a single byte/instruction shifts when a store moves relative to a call
 confidence: 9/10
 
 At /O2 the visible instruction order tracks the SOURCE statement order more tightly than expected.
-Six corollaries, all steerable by re-ordering/positioning source:
+Seven corollaries, all steerable by re-ordering/positioning source:
 
 - **A store emitted BETWEEN an arg push and its `call`** must be written *before* the call
   statement in source (moving it after the call shifts a byte). E.g. CNetMgr's shared-flag store
@@ -34,6 +34,13 @@ Six corollaries, all steerable by re-ordering/positioning source:
   global into the current-value local. VC5 eliminates the reread while preserving the
   saved/current split. Initializing both locals before the guard leaves the same dataflow
   but schedules `test current` before `copy saved`.
+- **A trivial inline accessor is also a scheduling boundary.** For a member chain used as
+  a `this` argument, spelling `m_world->m_drawTarget->Call(a, b)` lets cl sink both member
+  loads below the argument pushes. Spelling the real shared accessor
+  `menuRoot()->m_drawTarget->Call(a, b)` emits the accessor's `m_world` load before the
+  pushes and the `m_drawTarget` load after them. Do not retain a one-site local when an
+  established accessor produces the same lifetime; neighbouring callers corroborate the
+  source boundary.
 
 STEERABLE. Evidence: CNetMgr::OnOutOfSync flag interleave; CState ctor (decl-order, byte-exact)
 vs CGameApp ctor (schedule-order); GetGruntzDriveLetter `"Software"` local; CGruntzApp::ShowError
@@ -57,3 +64,10 @@ falls to 88.09%, while declaring `w` before `h` reaches only 90.77%. A 32-island
 TU-state forest found three states (best 93.47%), but changed only commutative address
 arithmetic and spill-slot choices; none changed the remaining height/width/span
 coloring or removed its two extra instructions.
+
+`CPreviewState::LoadScreen` @0x0fab90 supplies the inline-accessor form. Replacing both
+repeated `m_world` chains with the existing `menuRoot()` expansion moved the first world
+load across the two `LoadPageImage` argument pushes exactly as retail does and raised the
+function from 96.39% to 99.69%. Both sides remain 64 instructions, 4 calls, 6 branches,
+6 returns, and 5 ordered referents. The sole residue is the already-bounded scratch
+register choice on `frontPair->m_surface`, shared with adjacent `CState::RunTitle`.
