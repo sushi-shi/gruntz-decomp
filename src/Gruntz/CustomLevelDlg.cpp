@@ -35,6 +35,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
         glob += "\\custom\\*.wwd";
         _finddata_t fd;
         i32 h = _findfirst(glob, &fd);
+        RVA_DYNINIT(0x000183b0, 0xa, s_custom)
         DATA(0x00229e44)
         static CString s_custom("custom\\");
         if (h != -1) {
