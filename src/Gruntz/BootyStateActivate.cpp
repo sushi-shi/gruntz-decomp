@@ -1216,6 +1216,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         if (m_visSprites[i] == NULL) {
             return 0;
         }
+        RVA_DYNINIT(0x0001b670, 0xa, buf)
         DATA(0x0022af0c)
         static CString buf;
         const char* prefix =
