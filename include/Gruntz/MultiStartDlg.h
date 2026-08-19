@@ -14,5 +14,4 @@ GZ_ENUM_BEGIN(MultiplayerPlayerKind)
 GZ_ENUM_END(MultiplayerPlayerKind)
 
 extern char g_typeDesc2[];
-extern i32 g_savedMultiWndProc;
 #endif // GRUNTZ_GRUNTZ_MULTISTARTDLG_H

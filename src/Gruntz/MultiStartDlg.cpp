@@ -26,7 +26,7 @@ DATA(0x0024bdb0)
 CString g_gruntNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
 
 DATA(0x0024bdc0)
-i32 g_savedMultiWndProc = 0;
+WNDPROC g_savedMultiWndProc = NULL;
 
 DATA(0x0024bd5c)
 CMulti* g_multiState;
@@ -158,29 +158,20 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     ::SendMessageA(child->m_hWnd, EM_SETREADONLY, 1, 0);
     ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
-    g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
-
-    MsgParam proc;
-    proc.m_intProc = MultiMapComboEditProc;
-    SetWindowLongA(h, GWL_WNDPROC, proc.m_long);
+    g_savedMultiWndProc = reinterpret_cast<WNDPROC>(GetWindowLongA(h, GWL_WNDPROC));
+    SetWindowLongA(h, GWL_WNDPROC, reinterpret_cast<LONG>(MultiMapComboEditProc));
     CommitWorldHost();
     return 1;
 }
 
 RVA(0x000c1a10, 0x70)
-i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
-
-        MsgParam text;
-        text.m_lparam = lParam;
-        if (strcmp("", text.m_str) == 0) {
+        if (strcmp("", reinterpret_cast<LPCTSTR>(lParam)) == 0) {
             return 0;
         }
     }
-
-    MsgParam prev;
-    prev.m_long = g_savedMultiWndProc;
-    return CallWindowProcA(prev.m_wndproc, hWnd, msg, wParam, lParam);
+    return CallWindowProcA(g_savedMultiWndProc, hWnd, msg, wParam, lParam);
 }
 
 // @early-stop

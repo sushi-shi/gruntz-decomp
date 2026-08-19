@@ -326,7 +326,7 @@ extern i32 g_watchBusy;
 extern i32 g_watchBlinkA;
 extern i32 g_watchBlinkB;
 
-i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 i32 CALLBACK BattlezMapComboEditProc(HWND, UINT, WPARAM, LPARAM);
 
