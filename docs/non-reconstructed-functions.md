@@ -61,13 +61,13 @@ can be called empty.
 
 `@early-stop` and `@identity-TODO` are state markers, not completeness evidence. The
 early-stop cleanup removed stale exact markers, duplicate markers, and markers attached
-to bodies that were still missing logic. The current audit has 677 live markers, no
+to bodies that were still missing logic. The current audit has 678 live markers, no
 marker on an exact function, and one understood unmapped marker: the inline `CPlay`
 constructor is defined in `Play.h` but its retail copy is emitted and pinned in
 `gruntzmgr`. A future exact match must have its stale marker removed.
 
-Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 666
-complete bodies and leaves 50 unparked candidates. Marker occurrences cannot be
+Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 667
+complete bodies and leaves 49 unparked candidates. Marker occurrences cannot be
 subtracted directly from the target count because a few bodies carry duplicate markers
 and some live markers sit on current dips that have already reached 100% historically.
 The unparked set is derived from the same inventory/Model join, ordered by historical

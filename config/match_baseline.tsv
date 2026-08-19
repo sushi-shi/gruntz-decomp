@@ -2974,7 +2974,7 @@ menupage	?GetRightName@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:093f
 menupage	?GetUpName@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	7b4fa0acb450	0x184610	100.0000	
 menupage	?HitTest@CMenuPage@@QAEPAVCMenuItem@@HH@Z	100.0000	100.0000	1	bb000dc9d7b7	0x184100	100.0000	
 menupage	?InitDefaults@CMenuPage@@QAEXXZ	100.0000	100.0000	1	53c05d33627f	0x1833a0	100.0000	
-menupage	?Layout@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	91.4563	91.4563	1	e3791b48b8e3	0x183b60	91.4563	
+menupage	?Layout@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	99.9806	99.9806	2	ae723d7fcd98	0x183b60	99.9806
 menupage	?LayoutOne@CMenuPage@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	1	a7de7d81fc06	0x183e50	100.0000	
 menupage	?MoveFocusDown@CMenuPage@@QAEHXZ	100.0000	100.0000	1	fe33b7548db6	0x1844d0	100.0000	
 menupage	?MoveFocusLeft@CMenuPage@@QAEHXZ	100.0000	100.0000	1	83331269f567	0x184230	100.0000	

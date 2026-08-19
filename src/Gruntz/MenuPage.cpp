@@ -253,6 +253,9 @@ i32 CMenuPage::NotifyAll(u32 dt) {
     return 1;
 }
 
+// @early-stop
+// LayoutOne proves the coordinate source shape; the leading dispatch leaves only a
+// commutative m_rect.top/m_offsetY load swap with identical calls, CFG and referents.
 RVA(0x00183b60, 0xe8)
 i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
     if (m_flags & 4) {
@@ -260,8 +263,8 @@ i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
     }
     i32 x0 = m_rect.left;
     i32 x1 = m_rect.right;
-    i32 y = m_offsetY + m_rect.top;
     i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
+    i32 y = m_offsetY + m_rect.top;
     CDDrawWorker* sub = m_subPage;
     if (sub) {
         CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
