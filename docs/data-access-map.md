@@ -137,7 +137,7 @@ gruntz verify data-access --touched                # the coalesced touched-byte 
 gruntz verify data-access --sql "SELECT ..."       # raw sqlite
 ```
 
-## The five derived categories
+## The derived categories
 
 | category | question | signal |
 |---|---|---|
@@ -145,7 +145,10 @@ gruntz verify data-access --sql "SELECT ..."       # raw sqlite
 | `unaccessed` | claimed but nothing in the image reads, writes, addresses or points at it | phantom candidate |
 | `width` | access width disagrees with the declared field | wrong type |
 | `stride` | an index scale inside a claim disagrees with its element size | wrong element size or a missing dimension |
+| `undercount` | a one-element claim is indexed | under-declared count |
+| `shortfall` | an array's own walker reaches past its declared end | too-small forward storage |
 | `adjacent` | one access spans two claims, or both are reached from one base register | one object, not two |
+| `import-slot` | a source claim lies on an indirectly called IAT slot | linker storage modeled as a game global |
 
 `unclaimed` runs are triaged before they reach the worklist, each class counted
 separately in the build summary so nothing is silently dropped: `string-pool`
@@ -308,13 +311,14 @@ accessor disassembled — the reason `data_access` keeps a per-function view.
 Detection without enforcement is a report nobody re-runs. `python -m
 gruntz verify data-access --gate` rebuilds the map from retail + the current
 claims and FATALs on any finding in a category that implies a real MISMODEL —
-`undercount`, `shortfall`, `width`, `adjacent` — that is not in
-`ACCEPTED_MISMODELS`. Those four change bytes, directly or by shifting `.bss` /
+`undercount`, `shortfall`, `width`, `stride`, `adjacent`, `import-slot` — that
+is not in `ACCEPTED_MISMODELS`. The storage-shape categories change bytes,
+directly or by shifting `.bss` /
 `.data` once the compiler emits the wrong symbol size (which objdiff's
 next-symbol size inference can mask — so this is the *only* reporter for the
-`g_panTable` class). The evidence-thin categories (`unclaimed`, `unaccessed`, the
-type-unresolved `stride` rows) are triage campaigns, not build-breakers, and are
-NOT gated.
+`g_panTable` class); `import-slot` prevents source from reclaiming storage the
+linker owns. The evidence-thin categories (`unclaimed`, `unaccessed`) are triage
+campaigns, not build-breakers, and are NOT gated.
 
 One row is accepted today, with its proof in the set: `g_panTable` `undercount`,
 byte-neutral because declared size equals the retail inter-symbol gap. A new

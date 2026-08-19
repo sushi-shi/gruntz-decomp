@@ -70,8 +70,13 @@ REFER = ("lea", "imm", "indcall", "iat")
 #:              (g_dplayAppGuid), never adjudicated.
 #:   undercount 1 firing row, the documented byte-neutral g_panTable.
 #:   shortfall  0 firing rows; the injected `shrink` control proves it fires.
+#:   stride     0 firing rows after the three aggregate/LUT corrections; the
+#:              injected pair-array control proves it fires.
 #:   adjacent   0 firing rows; the injected `split` control proves it fires.
-GATED_CATEGORIES = ("width", "undercount", "shortfall", "adjacent")
+#:   import-slot 0 firing rows after removing all 15 source-owned IAT claims;
+#:               the injected source-IAT control proves it fires.
+GATED_CATEGORIES = ("width", "undercount", "shortfall", "stride",
+                    "adjacent", "import-slot")
 
 #: Categories that REPORT ONLY, with the reason. A category nobody can
 #: calibrate ships DISABLED here, never silently permissive.
@@ -82,12 +87,6 @@ REPORT_ONLY = {
     "unaccessed": "phantom CANDIDATES only - a dead-but-correct datum "
                   "(g_table_20fa78's bytes ARE retail's) and a library global "
                   "the game never calls look identical from here",
-    "stride": "3 open findings on this tree, each a real modelling question "
-              "(a pair array declared int[], a u16 CLUT declared u8[]); "
-              "gating it would report known debt as a regression",
-    "import-slot": "15 open findings on this tree (the `g_val_<addr>` pins on "
-                   "IAT slots); gating it would report known debt as a "
-                   "regression",
 }
 
 #: (category, sym_rva) accepted despite firing - each a MEASURED, documented
