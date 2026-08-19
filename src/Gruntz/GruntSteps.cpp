@@ -93,10 +93,10 @@ static inline i32 TileFlags(const char* rec) {
     return *r.m_dwords;
 }
 
-static __inline i32 s_CanCommitToyMove(CGrunt* g, i32 moveX, i32 moveY) {
+static __inline i32 s_CanCommitToyMove(CGrunt* g, i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-    i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 tx = sourceX >> TILE_SHIFT_PX;
+    i32 ty = sourceY >> TILE_SHIFT_PX;
     i32 mtx = moveX >> TILE_SHIFT_PX;
     i32 mty = moveY >> TILE_SHIFT_PX;
     i32 arr = g->m_arrivalFlags | 0x20000000;
@@ -156,10 +156,10 @@ static __inline i32 s_CanCommitToyMove(CGrunt* g, i32 moveX, i32 moveY) {
     return 1;
 }
 
-static __inline i32 s_CanCommitBagMove(CGrunt* g, i32 moveX, i32 moveY) {
+static __inline i32 s_CanCommitBagMove(CGrunt* g, i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-    i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 tx = sourceX >> TILE_SHIFT_PX;
+    i32 ty = sourceY >> TILE_SHIFT_PX;
     i32 mtx = moveX >> TILE_SHIFT_PX;
     i32 mty = moveY >> TILE_SHIFT_PX;
     i32 arr = g->m_arrivalFlags | 0x20000000;
@@ -580,8 +580,8 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 // @early-stop
 // The toy and fallback searches use distinct diagonal flag spellings: retail
 // narrows the toy probes to byte tests but retains aligned dword tests in the
-// fallback loop. Both expansions recompute the row stride in every quadrant.
-// @early-stop
+// fallback loop. Both expansions consume the call-stable source position and
+// recompute the row stride in every quadrant.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -766,7 +766,7 @@ i32 CGrunt::StepCompassMove() {
                     voice = g_gruntMoveDirNorthWest;
                     break;
             }
-            result = s_CanCommitToyMove(this, moveX, moveY);
+            result = s_CanCommitToyMove(this, moveX, moveY, x, y);
             if (result == 0) {
                 m_toyTileIndex = 0;
             }
@@ -844,7 +844,7 @@ i32 CGrunt::StepCompassMove() {
                     moveY = y - 0x20;
                     break;
             }
-            result = s_CanCommitBagMove(this, moveX, moveY);
+            result = s_CanCommitBagMove(this, moveX, moveY, x, y);
             if (result != 0) {
                 break;
             }
