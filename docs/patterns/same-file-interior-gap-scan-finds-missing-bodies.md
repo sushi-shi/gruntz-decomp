@@ -29,11 +29,16 @@ Its classes are navigation aids, not exclusions. A `thunk`, `trivial`, or repeat
 compiler/runtime `band` is still emitted code and remains in the reconstruction queue
 until a source or compiler-generated claim covers it.
 
-For ordinary `.text`, the same-file restriction is what makes the interval trustworthy:
-both neighbours are proven source claims. It does **not** prove the owner of a body reached
-from `.CRT$XC`; the linker may place an initializer thunk/body between ordinary claims from
-another TU. `gruntz sema gaps` therefore recognizes XC entries from the retail table and
-attributes them from the relocated datum the body initializes, never from the neighbours.
+The same-file restriction makes the **interval** trustworthy, not its ownership. Before a
+fragment enters the queue, subtract every existing Model claim, including static-library
+and zlib providers. The linker can interleave COMDAT/library contributions between two
+ordinary source claims: 0x21280 lies between `ChatBoxOwner.cpp` claims but is the already
+claimed HIGH-confidence LIBCIMT body `streambuf::out_waiting`.
+
+The same caution is mandatory for a body reached from `.CRT$XC`; the linker may place an
+initializer thunk/body between ordinary claims from another TU. `gruntz sema gaps`
+therefore recognizes XC entries from the retail table and attributes them from the relocated
+datum the body initializes, never from the neighbours.
 The 0x17d60 run is the negative control: it sits between `BattlezDlgColors.cpp` claims but
 writes the `customleveldlg` copies at 0x229e08..0x229e88.
 
@@ -64,11 +69,13 @@ pinned, so the delinker never carved them. `RVA_COMPGEN` binds them with no sour
 On the 2026-08-19 tree the first edge-only scan reported 90 gaps and 6,958 bytes, but that
 was not a function-level queue: eight apparent compiler/runtime bands and several small
 rows each contained multiple padding-separated bodies. Splitting those boundaries gives
-237 executable fragments and 3,535 meaningful bytes. After the first three claims, the
-remaining 234 split structurally into 96 XC entry thunks, 72 XC bodies, 22 trivial source
-bodies, and 44 substantive source bodies. The generated rows already have source in the
-owning constructed data; they need compiler-generated attribution, while the 66 source
-rows need declarations and bodies. That source tail contains small accessors, forwarders,
+237 executable fragments and 3,535 meaningful bytes. After subtracting existing non-source
+Model claims and attributing four new helpers/bodies, the remaining 229 split structurally
+into 96 XC entry thunks, 72 XC bodies, 22 trivial source candidates, and 39 substantive
+source candidates. The generated rows already have source in the owning constructed data;
+they need compiler-generated attribution, while the 61 source candidates still need
+identity review and, where not another provider, declarations and bodies. That source tail
+contains small accessors, forwarders,
 `??_G` scalar deleting destructors, and static-object destructor thunks
 (`mov ecx,<static>; jmp ~CString`, emitted for a function-local `static CString` and
 referenced by the magic-static block that registers it with `atexit`).

@@ -144,10 +144,17 @@ def _dyninit_owner(rva: int, size: int, img, idx) -> str:
     return next(iter(units)) if len(units) == 1 else "xc-owner-unresolved"
 
 
+def _covered(rva: int, size: int, bindings) -> bool:
+    """Whether an existing Model claim already owns the whole fragment."""
+    end = rva + size
+    return any(b.channel and b.rva <= rva and end <= b.rva + b.size for b in bindings)
+
+
 def census() -> list[dict]:
     files = _site_files()
+    model = resolve()
     claims = []
-    for binding in resolve().functions:
+    for binding in model.functions:
         macro = CHANNEL_MACRO.get(binding.channel)
         where = files.get((macro, binding.rva), set()) if macro else set()
         if where and binding.size:
@@ -169,6 +176,8 @@ def census() -> list[dict]:
         if payload is None:
             continue
         for rva, body in _split(start, payload):
+            if _covered(rva, len(body), model.functions):
+                continue
             kind = dyninit_roles.get(rva, _kind(body, prev))
             rows.append({
                 "rva": rva,

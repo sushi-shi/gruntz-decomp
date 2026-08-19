@@ -1273,6 +1273,12 @@ class SemaGapControls(unittest.TestCase):
             "customleveldlg",
         )
 
+    def test_existing_non_source_claim_is_not_reported_as_a_gap(self):
+        from gruntz.sema import gaps
+        binding = mock.Mock(rva=0x21280, size=0x10, channel="functions_static_libs")
+        self.assertTrue(gaps._covered(0x21280, 0x10, [binding]))
+        self.assertFalse(gaps._covered(0x21260, 0x8, [binding]))
+
 
 class WallsUnitFilterControls(unittest.TestCase):
     """A misspelt --unit answered '0 mismatches' / '0 function(s) below 100%'
