@@ -393,9 +393,6 @@ i32 CNetSession::Tick() {
     return r;
 }
 
-// @identity-TODO NoopSync - thunk oracle: retail gave this NO incremental
-// thunk, so it came from the static LIBRARY, while the rest of this TU
-// (45 fns) was a link-line object. It belongs to another compiland.
 RVA(0x000bfb20, 0x1)
 void NoopSync(CGruntzCommand*) {}
 

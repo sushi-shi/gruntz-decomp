@@ -377,9 +377,6 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     FlashCtrlD();
 }
 
-// @identity-TODO _BattlezMapComboEditProc@16 - thunk oracle: retail gave this NO incremental
-// thunk, so it came from the static LIBRARY, while the rest of this TU
-// (63 fns) was a link-line object. It belongs to another compiland.
 RVA(0x00015a10, 0x70)
 i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
