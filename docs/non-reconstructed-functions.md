@@ -62,8 +62,9 @@ can be called empty.
 `@early-stop` and `@identity-TODO` are state markers, not completeness evidence. The
 early-stop cleanup removed stale exact markers, duplicate markers, and markers attached
 to bodies that were still missing logic. The current audit has 670 live markers, no
-marker on an exact function, and five unmapped markers that require manual ownership
-review. A future exact match must have its stale marker removed.
+marker on an exact function, and one understood unmapped marker: the inline `CPlay`
+constructor is defined in `Play.h` but its retail copy is emitted and pinned in
+`gruntzmgr`. A future exact match must have its stale marker removed.
 
 There are 35 `@identity-TODO` occurrences, split into three different evidence queues:
 20 incremental-thunk-oracle annotations, five functions whose original TU owner is not
