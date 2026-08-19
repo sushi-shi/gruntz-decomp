@@ -143,9 +143,10 @@ public:
 
     i32 Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
-    // @identity-TODO the switch arms return CTileTriggerSwitchLogic and its
-    // siblings, which our model does not derive from CTileTriggerLogic even
-    // though the lists this feeds are walked as CTileTriggerLogic.
+    // Heterogeneous factory: switch arms return CTileTriggerSwitchLogic-family
+    // objects for m_base; trigger arms return the incompatible CTileTriggerLogic
+    // family for m_list1/m_list2. Their vtable slot zero signatures differ, so
+    // there is no common polymorphic base to substitute for this void* seam.
     void* LoadElement(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 LoadFlag74(CFileMemBase* s);
