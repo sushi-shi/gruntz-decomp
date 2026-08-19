@@ -60,6 +60,8 @@ Three `cl /O2 /MT` probes, same globals, different declaration order / object se
 **MSVC5's `.bss` layout is declaration-order invariant** (A vs B are byte-identical) —
 it depends only on the *set* of objects and their alignments. Reordering, retyping the
 neighbours, and fixing the adjacent size contradiction all leave the offset-0 hole.
+`g_imageCacheIndex` was the then-current false interior claim; retaining its name in
+the probe table records the measured input, not the current source model.
 
 ## Do NOT "fix" this
 

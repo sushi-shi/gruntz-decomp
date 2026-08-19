@@ -191,15 +191,17 @@ gaps.
   `--recover-data-relocs-from-pdb` as a safety net for anything left uncovered.
 
 - **Bonus: the sizeof extents are a contradiction check.** A reviewed extent must fit
-  the span to its neighbour. Six overlaps originally fell out. Three are now
-  resolved: `g_singleCmdList`, `g_multiCmdList`, and `g_pool` were fake names for
+  the span to its neighbour. All six overlaps originally found by this check are
+  resolved. `g_singleCmdList`, `g_multiCmdList`, and `g_pool` were fake names for
   real `CPtrList` template-static specializations, while each adjacent `…Count`
-  was the list's inherited `m_nCount` member at `+0xc`, not independent storage;
+  was the list's inherited `m_nCount` member at `+0xc`, not independent storage.
   `g_panTable` was likewise a false interior name for `g_volumeTable[100]`, and
-  the real volume table has 101 entries. The remaining overlap worklist is
-  `g_smallFont` (`Font` 0x18 swallows `g_loadedFlag`) and `g_imageCache`
-  (`CPtrArray` 0x14 swallows `g_imageCacheIndex`). Audit it with
-  `gruntz.delink.data_manifest --report`.
+  the real volume table has 101 entries. `g_smallFont` exposed a wrong `Font`
+  extent: the class is 0x14 bytes and `g_loadedFlag` correctly starts at `+0x14`.
+  `g_imageCacheIndex` was another false interior claim; retail uses
+  `g_imageCache.GetSize()`, and the 0x14-byte `CPtrArray` is followed by alignment
+  before `g_clut`. `gruntz.delink.data_manifest --report` now emits an empty
+  overlap-contradiction worklist.
 
 ### 3b. `--data-section-manifest` is IN — the container artifact is dead (DONE)
 
