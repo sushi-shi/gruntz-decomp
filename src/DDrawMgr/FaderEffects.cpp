@@ -163,6 +163,18 @@ i32 CFaderFlat::GetFrameCount() {
     return n + (m_percent * n) / 100;
 }
 
+// @identity-TODO: owner and no-op behavior are proven; the method identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0017f980, 0x1)
+void CFaderFlat::PrepareFrame() {}
+
+// @identity-TODO: owner and no-op behavior are proven; the method identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0017f990, 0x1)
+void CFaderFlat::FinishFrame() {}
+
 RVA(0x0017f9a0, 0x24)
 CFaderRadial::CFaderRadial() {
     m_maxRadius = 0;

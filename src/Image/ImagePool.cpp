@@ -890,6 +890,19 @@ void CRezImage::SetPalette(CImagePaletteNode* paletteNode, i32 scalar) {
     m_paletteScalar = scalar;
 }
 
+// @identity-TODO: owner, four-argument ABI, and failure result are proven; the operation is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00176af0, 0x5)
+i32 CRezImage::SaveByType(
+    const char* filename,
+    FileImageFormat type,
+    CImagePaletteNode* paletteObj,
+    i32 flags
+) {
+    return 0;
+}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176b00, 0x2c)

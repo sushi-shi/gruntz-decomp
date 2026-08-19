@@ -60,6 +60,8 @@ public:
 
     i32 EndMinimapPan(i32 unusedFlags, i32 unusedX, i32 unusedY);
 
+    i32 IgnoreMinimapEvent(i32 unusedFlags, i32 unusedX, i32 unusedY);
+
     i32 IssueMinimapCommand(i32 unusedFlags, i32 x, i32 y);
 
     i32 ContinueMinimapPan(i32 unusedFlags, i32 x, i32 y);

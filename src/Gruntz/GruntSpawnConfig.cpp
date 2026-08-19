@@ -483,6 +483,14 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     }
 }
 
+// @identity-TODO: the one-argument overload shape is inferred from the adjacent picker.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0011bec0, 0x5)
+CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId) {
+    return NULL;
+}
+
 RVA(0x0011bee0, 0x230)
 CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (voiceId < 0) {

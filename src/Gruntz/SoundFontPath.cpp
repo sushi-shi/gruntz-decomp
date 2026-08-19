@@ -20,6 +20,13 @@ void CloseSoundFontDevice() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x000f8ea0, 0x6)
+i32 SoundFontDeviceReady() {
+    return g_sfReady;
+}
+
 RVA(0x000f8ec0, 0x50)
 i32 SfDeviceInitKeys() {
     if (g_sfReady == 0) {

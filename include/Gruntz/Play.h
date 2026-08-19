@@ -212,6 +212,7 @@ public:
     i32 LoadLoadingBarSprite();
 
     i32 ForwardReady();
+    void ResetRightClickState();
 
     i32 QuitToMenu();
 

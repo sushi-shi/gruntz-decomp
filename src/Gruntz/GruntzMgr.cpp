@@ -1570,6 +1570,14 @@ i32 CGruntzMgr::PollUnlessIdle() {
     return 0;
 }
 
+// @identity-TODO: owner, ABI, and false result are proven; the command identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0008f320, 0x3)
+i32 CGruntzMgr::RejectWorldFileCommand() {
+    return 0;
+}
+
 RVA(0x0008f340, 0xf6)
 i32 CGruntzMgr::CaptureWorldFile() {
     GameStateId st = m_curState->Update();
@@ -2528,6 +2536,24 @@ i32 CGruntzMgr::IsLobbyHostReady() {
     return m_curState->OnPaint() != 0;
 }
 
+// @identity-TODO: placement by the music controls is the only evidence for the hook's name.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00091570, 0x1)
+void CGruntzMgr::OnMusicMuteBegin() {}
+
+// @identity-TODO: placement by the music controls is the only evidence for the hook's name.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00091590, 0x1)
+void CGruntzMgr::OnMusicMuteEnd() {}
+
+// @identity-TODO: placement by the music controls is the only evidence for the hook's name.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x000915b0, 0x3)
+void CGruntzMgr::OnMusicFadeStep(i32 value) {}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000915d0, 0x3f)
@@ -2760,6 +2786,12 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     SetSoundVolume(m_soundVolume);
     return 1;
 }
+
+// @identity-TODO: placement after LoadWorldMode is the only evidence for the hook's name.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00091e00, 0x3)
+void CGruntzMgr::OnWorldModeLoaded(ColorDepth mode) {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.

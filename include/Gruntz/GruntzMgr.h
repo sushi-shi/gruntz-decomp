@@ -144,6 +144,7 @@ public:
     i32 ToggleHeightLayer();
     i32 ToggleBaseLayer();
     i32 PollUnlessIdle();
+    i32 RejectWorldFileCommand();
     i32 AppendChatMessage(char* msg);
     i32 ShowToggleMessage(char* itemName, i32 on);
 
@@ -163,6 +164,7 @@ public:
     i32 ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user);
     i32 SetColorDepth(ColorDepth depth);
     i32 LoadWorldMode(ColorDepth mode);
+    void OnWorldModeLoaded(ColorDepth mode);
     i32 ResetWorldState();
     void StopBankIfActive();
     void StopBank0IfActive();
@@ -221,6 +223,9 @@ public:
     void SetRunState(i32 v);
     i32 CheckSavedMode();
     i32 IsLobbyHostReady();
+    void OnMusicMuteBegin();
+    void OnMusicMuteEnd();
+    void OnMusicFadeStep(i32 value);
     i32 RunFromState();
 
     CPlay* PickPlayOrPausedState();

@@ -96,6 +96,8 @@ public:
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);
+    void PrepareFrame();
+    void FinishFrame();
 
     CDDSurface* m_desc04;
     CDDSurface* m_src;

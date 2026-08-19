@@ -10,6 +10,7 @@ public:
     void ReopenSharedFile(char* path);
 
     void OpenGruntzLog();
+    i32 IsLoggingEnabled();
 };
 
 extern CFile g_gruntzLogFile;

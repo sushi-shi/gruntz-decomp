@@ -5,6 +5,7 @@
 
 i32 SFManager_SelectBestDevice();
 void CloseSoundFontDevice();
+i32 SoundFontDeviceReady();
 i32 BuildSoundFontPath(char drive);
 
 #endif // GRUNTZ_GRUNTZ_SOUNDFONT_H

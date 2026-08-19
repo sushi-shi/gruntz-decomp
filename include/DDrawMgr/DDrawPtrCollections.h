@@ -85,6 +85,7 @@ public:
     void AddItemA(CDDSurface* item);
     void AddItemB(CDDPalette* item);
     void RemoveItemA(CDDSurface* item);
+    void FlushPoolA();
     void RemoveItemB(CDDPalette* item);
     CDDSurface* CreateSurfaceFromDesc(const DDSURFACEDESC* desc);
 

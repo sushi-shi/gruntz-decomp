@@ -474,6 +474,12 @@ void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
     delete item;
 }
 
+// @identity-TODO: owner and no-op behavior are proven; the method identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00142190, 0x1)
+void CDDrawPtrCollections::FlushPoolA() {}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001421a0, 0xbe)

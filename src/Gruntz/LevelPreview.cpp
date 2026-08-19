@@ -85,6 +85,14 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
     return 1;
 }
 
+// @identity-TODO: owner, ABI, and true result are proven; the command identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x000de1e0, 0x8)
+i32 CPreviewState::AcceptPreviewCommand(i32 param) {
+    return 1;
+}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de200, 0x85)

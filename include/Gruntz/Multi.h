@@ -184,6 +184,7 @@ public:
     void OnOutOfSync();
 
     i32 Open();
+    void Close();
     InterfaceObject* SetupServices();
     i32 DetectConnectionConfig();
     void ApplyCmdDelayDefaults();

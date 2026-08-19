@@ -3344,6 +3344,12 @@ i32 CPlay::OnRButtonUp(i32, i32, i32) {
     return 1;
 }
 
+// @identity-TODO: owner and no-op behavior are proven; the method identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x000cee50, 0x1)
+void CPlay::ResetRightClickState() {}
+
 RVA(0x000cee70, 0x5)
 i32 CPlay::ForwardReady() {
     return IsActive();

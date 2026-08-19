@@ -1388,6 +1388,14 @@ i32 CLightFxRender::EndMinimapPan(i32, i32, i32) {
     return 1;
 }
 
+// @identity-TODO: the minimap-handler ABI and false result are proven; the event identity is not.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x000a9530, 0x5)
+i32 CLightFxRender::IgnoreMinimapEvent(i32, i32, i32) {
+    return 0;
+}
+
 RVA(0x000a9550, 0x5b)
 i32 CLightFxRender::IssueMinimapCommand(i32, i32 x, i32 y) {
     i32 cell[2];

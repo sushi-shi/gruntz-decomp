@@ -915,6 +915,12 @@ i32 CMulti::Open() {
     return 1;
 }
 
+// @identity-TODO: adjacency to Open is the only evidence for the method's name.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x000b7890, 0x1)
+void CMulti::Close() {}
+
 RVA(0x000b78b0, 0x17f)
 InterfaceObject* CMulti::SetupServices() {
     if (Peer()->EnumServiceProviders(0) != 0) {

@@ -39,6 +39,7 @@ public:
     i32 GetButeSlot(CGrunt* who, i32 cue);
 
     struct CParseSource* PickWeighted(i32 voiceId, i32 which);
+    struct CParseSource* PickWeighted(i32 voiceId);
     BOOL BuildVoiceList();
 
     BOOL LoadGruntSpawnConfig(class CGrunt* who, i32 cue, i32 which, i32 priority, i32 percent);

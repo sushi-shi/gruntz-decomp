@@ -59,6 +59,12 @@ public:
     void Fill(i32 value);
     void Free();
     void SetPalette(CImagePaletteNode* paletteNode, i32 scalar);
+    i32 SaveByType(
+        const char* filename,
+        FileImageFormat type,
+        CImagePaletteNode* paletteObj,
+        i32 flags
+    );
     i32 Save(const char* filename, CImagePaletteNode* paletteObj);
     i32 SaveBmp(const char* filename, CImagePaletteNode* paletteObj);
     void FillRect(CRezFillRect* r, i32 color);

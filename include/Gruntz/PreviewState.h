@@ -19,6 +19,7 @@ public:
     i32 LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4);
     void ResetPreview();
     i32 NextScreenCmd(i32 param);
+    i32 AcceptPreviewCommand(i32 param);
     i32 Refade();
     i32 RefadeVirtual();
     i32 OnKey(i32 key, i32 param);
