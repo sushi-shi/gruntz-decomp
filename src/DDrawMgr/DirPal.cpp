@@ -500,6 +500,40 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
     }
 }
 
+RVA(0x001483e0, 0x1c9)
+void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x41f, hr);
+    }
+    PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        snapshot[i] = m_cacheA[i];
+    }
+    i32 t0 = timeGetTime();
+    i32 prev = 9;
+
+    for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
+        if (t != prev) {
+            for (i32 i = start; i < start + count; i++) {
+                m_cacheA[i].peRed = static_cast<u8>(
+                    (target[i].peRed - snapshot[i].peRed) * t / durationMs + snapshot[i].peRed
+                );
+                m_cacheA[i].peGreen = static_cast<u8>(
+                    (target[i].peGreen - snapshot[i].peGreen) * t / durationMs + snapshot[i].peGreen
+                );
+                m_cacheA[i].peBlue = static_cast<u8>(
+                    (target[i].peBlue - snapshot[i].peBlue) * t / durationMs + snapshot[i].peBlue
+                );
+            }
+            m_palette->SetEntries(0, start, count, m_cacheA + start);
+        }
+        prev = t;
+    }
+    SetAndNotify(start, count, target, 0);
+    delete[] snapshot;
+}
+
 RVA(0x001485b0, 0x162)
 i32 CDDPalette::CaptureSystemPalette() {
     HDC hdc = CreateDCA("DISPLAY", 0, 0, 0);

@@ -80,7 +80,7 @@ customleveldlg	4	3
 customworlddialog	10	8
 databuffer	8	8
 ddpagemgr	23	22
-ddpalette	24	24
+ddpalette	25	25
 ddrawptrcollections	10	10
 ddrawshadeblit	22	10
 ddrawsubmgr	120	116
@@ -108,7 +108,7 @@ engstrrendertext	2	2
 exittrigger	5	3
 eyecandy	4	4
 fader	25	20
-fadereffects	37	24
+fadereffects	37	25
 fadermgr	12	12
 feccrypt	11	8
 fileimage	19	10
@@ -208,7 +208,7 @@ keyedlist	3	3
 kitchenslime	9	6
 latencylist	5	5
 leafcueplay	1	1
-levelplane	24	13
+levelplane	24	12
 levelpreview	9	8
 levelrezpath	3	2
 leveltime	1	1
@@ -938,6 +938,7 @@ ddpalette	?CreateRGB@CDDPalette@@QAEHPAUIDirectDraw2@@PAEI@Z	100.0000	100.0000	2
 ddpalette	?Destroy@CDDPalette@@QAEXXZ	100.0000	100.0000	1	b1c39ba2c58f	0x147530	100.0000	
 ddpalette	?DumpEntries@CDDPalette@@QAEXXZ	100.0000	100.0000	1	cd436b67e3fc	0x1487c0	100.0000	
 ddpalette	?FadeRange@CDDPalette@@QAEXHHHHHH@Z	100.0000	100.0000	1	8bbb9805f2d3	0x147d50	100.0000	
+ddpalette	?FadeToPalette@CDDPalette@@QAEXHHPAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	1	6a7d71b3beb5	0x1483e0	100.0000	
 ddpalette	?Flush@CDDPalette@@QAEXXZ	100.0000	100.0000	1	0901eec53e95	0x148250	100.0000	
 ddpalette	?GetEntries@CDDPalette@@QAEXXZ	100.0000	100.0000	1	6428b21b6e67	0x147c30	100.0000	
 ddpalette	?LoadBmp@CDDPalette@@QAEHPAUIDirectDraw2@@PADI@Z	100.0000	100.0000	1	a2c6d746f6d0	0x147590	100.0000	
@@ -1277,7 +1278,7 @@ ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80	100.0000	
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	1	482a2140b13f	0x13e690	100.0000	
 ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	62.7743	62.7743	3	1fdfc807be96	0x13f020	66.7461	
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	74.6000	74.6000	2	9390b81035ee	0x13f460	80.3591	
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	74.8818	74.8818	2	9390b81035ee	0x13f460	80.3591	
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	1	e6919eb7da93	0x141080	100.0000	
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	1	2199bcaca9d3	0x13f990	100.0000	
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	1	1cba59666bcf	0x1413b0	100.0000	
@@ -1697,15 +1698,15 @@ fadereffects	?GetFrameCount@CFaderFlat@@UAEHXZ	100.0000	100.0000	1	6339f7edae6e	
 fadereffects	?GetFrameCount@CFaderLight@@UAEHXZ	100.0000	100.0000	1	1a8ec269bb48	0x1814f0	100.0000	
 fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e243	0x17fda0	100.0000	
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	1	11cf80538388	0x182900	100.0000	
-fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	99.5000	99.5000	1	96216f38b8bc	0x180400	99.5000	
+fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	1	96216f38b8bc	0x180400	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	97.9257	97.9257	1	b8429a8e25ea	0x180fb0	97.9257	
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.0654	90.0654	1	f39c044ffd10	0x17f660	90.0654	
-fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	89.5019	89.5019	1	cf9266033270	0x180640	89.5019	
+fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	89.5019	89.4956	1	cf9266033270	0x180640	89.5019	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	1	1bf4ecf4e429	0x17fc60	88.5833	
-fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.6626	1	a06314f5b222	0x181b00	99.9080	
+fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	1	a06314f5b222	0x181b00	99.9080	
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	88.8875	88.8875	1	7ba962f6c4eb	0x17ff30	88.8875	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	1	0aa0f545213f	0x182610	99.9831	
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	79.7423	78.7115	1	eb830c100645	0x181e50	79.7423	
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	79.7423	79.7423	1	eb830c100645	0x181e50	79.7423	
 fadereffects	?SubFree@CFaderLight@@QAEXXZ	100.0000	100.0000	2	9a9115717ac4	0x180630	100.0000	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	1	98e20e0705d5	0x17d8f0	100.0000	
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e240	100.0000	
@@ -2621,9 +2622,9 @@ helpstate	?Update@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c
 helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000	
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	76.5212	76.5212	1	9a0bd3e057a4	0x146fe0	76.5212	
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.2814	99.2814	1	3e9cc4a7c9c5	0x1461b0	99.2814	
-imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	1	378c6ebd3241	0x145f60	79.4671	
-imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	81.6036	1	b90f4052f6b4	0x145e30	85.7027	
-imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	76.6978	76.6978	1	832b81dd3e6d	0x1471d0	76.6978	
+imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4611	1	378c6ebd3241	0x145f60	79.4671	
+imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	85.7027	1	b90f4052f6b4	0x145e30	85.7027	
+imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	76.6978	75.8705	1	832b81dd3e6d	0x1471d0	76.6978	
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	95.4978	95.4978	1	0c19f276ebb7	0x146550	95.4978	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
 imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	71.7824	71.7824	5	bb39b0078945	0x146a20	71.7824	
@@ -2802,7 +2803,7 @@ levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	85.6551	80.6147	
 levelplane	?GetSize@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	1	0250e4a3f01c	0x1633e0	100.0000	
 levelplane	?InitGeometry@CDDrawWorkerHost@@UAEHHHHHHHPAUtagRECT@@PAD@Z	97.7143	97.7143	1	a78484a53747	0x1619f0	97.7143	
 levelplane	?InitScrollRects@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	1	ada4398b9be3	0x163420	100.0000	
-levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	deb1f8fce1e6	0x1638c0	100.0000	
+levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	99.9841	2	deb1f8fce1e6	0x1638c0	100.0000	
 levelplane	?Prune@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	1	433149a38dee	0x1628d0	100.0000	
 levelplane	?Read@CDDrawWorkerHost@@UAEHPBUWwdPlaneHeader@@PBDPAUtagRECT@@@Z	96.7206	96.7206	1	dd34b1632adb	0x161640	96.7206	
 levelplane	?ReadPlaneObjects@CDDrawWorkerHost@@QAEHPBUPlaneObjectRecord@@@Z	95.0877	95.0877	1	68bb390acb67	0x162af0	95.0877	
@@ -3454,7 +3455,7 @@ play	?StepScroll@CPlay@@QAEXXZ	100.0000	88.0345	1	38c040def23b	0xd1ac0	100.0000
 play	?StepViewportResize@CPlay@@QAEHXZ	100.0000	100.0000	1	99127790ae22	0xd8d90	100.0000	
 play	?SyncState@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	a208227e6361	0xd7520	100.0000	
 play	?TickStateMgrs@CPlay@@UAEXXZ	100.0000	100.0000	2	383793d19014	0xcfbb0	100.0000	
-play	?ValidateLevelTiles@CPlay@@QAEHXZ	90.3583	90.3583	24	21ca12cb5c0b	0xd2dd0	90.3583	
+play	?ValidateLevelTiles@CPlay@@QAEHXZ	90.3583	90.3230	24	21ca12cb5c0b	0xd2dd0	90.3583	
 playassetload	?BuildAnizKeyTable@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	2	25d747368f90	0xddaa0	100.0000	
 playassetload	?BuildAssetNamespacePrefixes@CState@@QAEHABVCString@@HHPAVCMulti@@@Z	100.0000	100.0000	2	819304b2869a	0xdca70	100.0000	
 playassetload	?BuildGruntNamespaceList@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	1	917c0fdcf8c1	0xdd050	100.0000	
