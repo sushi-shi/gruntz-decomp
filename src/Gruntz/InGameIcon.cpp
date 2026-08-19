@@ -77,6 +77,12 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
+static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    LeafCue* found = NULL;
+    MapLookup(cues, name, found);
+    return found;
+}
+
 // @early-stop
 // Frame, saved-register set and every call/string referent now agree with retail.
 // Residue is which register carries the re-materialised m_object in each ladder arm
@@ -990,6 +996,7 @@ void RegisterTextLogic() {
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 
+// @early-stop
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -1033,8 +1040,7 @@ i32 CInGameText::Update() {
         if (CGameLevel::PointInRect(&reg->m_viewBounds, x, y)) {
             CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
-                LeafCue* res = NULL;
-                MapLookup(set->m_cues, "GAME_HELPBOOK", res);
+                LeafCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
                     i32 enable = g_sndEnabled;
                     i32 token = g_sndCueTag;

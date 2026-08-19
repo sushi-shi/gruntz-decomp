@@ -85,6 +85,7 @@ change alone, each having been a one-instruction-position diff before it:
 | `CDDrawChildGroup::CreateSprite` | 0x001597b0 | 94.1176 | **100.0000** |
 | `CMenuState::LoadGameAssetNamespaces` | 0x0009fe50 | 95.2863 | **100.0000** |
 | `CTimer::LoadTimerSprite` | 0x0009bb00 | 96.5217 | **100.0000** |
+| `CInGameText::Update` | 0x000997c0 | 93.4731 | **96.7066** |
 
 `ApplyLookupGeometry` is the `CMapStringToPtr` counterpart: its wrapper owns a
 typed `CAniElement* result = NULL`, calls `MapLookup`, and returns the pointer.
@@ -107,6 +108,14 @@ and using `CObject* found = NULL` placed the reset after receiver/argument setup
 the 0x119-byte body exact: 116 instructions, 1 call, 21 branches, 7 returns, and 3 ordered
 referents. The base pointer is not a generic-erasure workaround here; `CMapStringToOb`
 stores `CObject*` and its retail signature requires `CObject*&`.
+
+`CInGameText::Update` is the bounded `CMapStringToPtr` control. Moving its `LeafCue*`
+temporary inside a typed-return helper removes the adapter union's extra lifetime and
+restores equal size and instruction count: 168 instructions, 7 calls, 23 branches,
+2 returns, and 19 ordered referents on both sides. It does not close the function:
+the remaining differences are scratch-register choices plus an independent load/store
+schedule at the null tail. Thus a typed-return helper can recover the authentic lifetime
+without implying that every surrounding scheduling residue belongs to the lookup.
 
 ### It is per-site, not per-idiom — measure before converting a whole family
 

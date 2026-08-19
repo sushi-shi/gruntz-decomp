@@ -2789,7 +2789,7 @@ ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4Logi
 ingameicon	?SerializeMove@CInGameText@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	f88d43eb5ae4	0x99a30	100.0000	
 ingameicon	?SerializeMove@CToyPeek@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	aff4d5def44e	0x983e0	100.0000	
 ingameicon	?SetupSprite@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	2	6ffee4a54d9b	0x99b10	100.0000	
-ingameicon	?Update@CInGameText@@QAEHXZ	93.4731	93.4731	6	3b05233b5de3	0x997c0	96.7066	
+ingameicon	?Update@CInGameText@@QAEHXZ	96.7066	96.7066	7	79fa9db6ed4d	0x997c0	96.7066
 ingameworkerhandlers	?CreateInGameIcon@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	3285b1e53b29	0x95750	100.0000	
 ingameworkerhandlers	?CreateInGameText@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	300fc4e07ce2	0x95890	100.0000	
 ingameworkerhandlers	?CreateToyPeek@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	70ca4c2e3679	0x959d0	100.0000	
