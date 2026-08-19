@@ -16,6 +16,18 @@ The reliable census is purely address arithmetic over our own claims:
 3. strip leading/trailing `0x90`/`0xcc`;
 4. anything left is a body retail emitted inside that TU's contribution and we never claimed.
 
+The checked-in read-only view performs that derivation directly:
+
+```sh
+gruntz sema gaps
+gruntz sema gaps --class substantive
+gruntz sema gaps --unit directsoundmgr
+```
+
+Its classes are navigation aids, not exclusions. A `thunk`, `trivial`, or repeated
+compiler/runtime `band` is still emitted code and remains in the reconstruction queue
+until a source or compiler-generated claim covers it.
+
 The same-file restriction is what makes it trustworthy: both neighbours are proven to
 belong to the unit, so the gap cannot be another TU's contribution.
 

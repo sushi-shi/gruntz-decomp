@@ -8,6 +8,7 @@
     gruntz sema strings [<rva>|--find s]  string literals a function reaches
     gruntz sema vtable  <rva>             a vtable's slots / who holds a fn
     gruntz sema class   <Class|fn>        a class's vtables, slot by slot
+    gruntz sema gaps    [options]         unclaimed same-file .text gaps
     gruntz sema map     [sub ...]         retail address-space map
     gruntz sema match   <unit|rva|name>   objdiff scores for a unit / function
 
@@ -45,6 +46,7 @@ SUBCOMMANDS = {
     "vtable": "gruntz.sema.vtable",
     "class": "gruntz.sema.classof",
     "classof": "gruntz.sema.classof",
+    "gaps": "gruntz.sema.gaps",
     "map": "gruntz.sema.map",
     "match": "gruntz.sema.match",
 }

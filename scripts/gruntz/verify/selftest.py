@@ -1213,6 +1213,25 @@ class SemaMapControls(unittest.TestCase):
         self.assertIn("outside every section", "\n".join(lines))
 
 
+class SemaGapControls(unittest.TestCase):
+    """The same-file gap view must trim only edge padding and keep executable
+    categories separate; otherwise the derived reconstruction queue can lose a
+    tiny body or bury one under the repeated compiler/runtime bands."""
+
+    def test_edge_padding_is_trimmed_without_eating_body_bytes(self):
+        from gruntz.sema import gaps
+        rva, body = gaps._trim(0x1000, b"\x90\xcc\xc3\x90")
+        self.assertEqual((rva, body), (0x1002, b"\xc3"))
+
+    def test_gap_kinds_preserve_tiny_and_substantive_bodies(self):
+        from gruntz.sema import gaps
+        with mock.patch.object(gaps, "_switch_table", return_value=False):
+            self.assertEqual(gaps._kind(b"\xe9\x00\x00\x00\x00", None), "thunk")
+            self.assertEqual(gaps._kind(b"\x33\xc0\xc3", None), "trivial")
+            self.assertEqual(gaps._kind(b"\x55" * 9, None), "substantive")
+            self.assertEqual(gaps._kind(b"\x55" * 0x100, None), "band")
+
+
 class WallsUnitFilterControls(unittest.TestCase):
     """A misspelt --unit answered '0 mismatches' / '0 function(s) below 100%'
     - a typo that reads as a clean sieve."""
