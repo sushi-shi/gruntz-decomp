@@ -10,7 +10,7 @@
     gruntz walls aggregate-copies rep-movs count sieve; a source/CFG lead,
                                   never proof until block merging is excluded
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
-                                  cause-tagged (INLINE_CUT/EXIT_MERGE/objects)
+                                  cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
                                   bug class; --calibrate = detector-bug rate)
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies

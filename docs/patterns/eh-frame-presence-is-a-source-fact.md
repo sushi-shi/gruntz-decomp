@@ -21,7 +21,8 @@ mov  DWORD PTR [esp+0x38], 1   ; one unwind state per live destructible object
 
 `gruntz walls eh-frame` classifies every scoring function on both sides and
 reports the disagreements; `--states` is the wider secondary sieve (both sides framed,
-different NUMBER of state stores — one object's worth of resolution).
+different NUMBER of state stores). State count is a placement/flow lead, not an
+object census by itself.
 
 **Three causes, different work, and the tool separates them — only the last is what
 the frame naively suggests.** A ctor/dtor COMDAT one side calls and the other never
@@ -31,10 +32,19 @@ is a wall (see the variant). The SAME ctor/dtor called a different NUMBER of tim
 of them when a `||`/`&&` guard sends them to a common destination, and each surviving
 dtor copy carries its own state store — `CGruntSpawnConfig::SpawnVoiceDriver` calls
 `??1CString` twice for us and eight times in retail off one `&&`. That is
-the exit-merge lever, not this one. Only when neither kind of call
-difference exists does one side really own an object the other's source never declared:
-a by-value `CString` where the other wrote `LPCSTR`, a by-value `CRect`/MFC collection,
-a stack helper whose dtor releases something.
+the exit-merge lever, not this one. With frames on both sides and no ctor/dtor
+call delta, the tool now reports **STATE_FLOW**: ordinary calls, duplicated blocks,
+or lifetime placement can repeat the same state without adding an object. Only a
+frame-presence mismatch with neither call difference proves one side owns a
+destructible object the other never declared: a by-value `CString` where the other
+wrote `LPCSTR`, a by-value `CRect`/MFC collection, or a stack helper whose dtor
+releases something.
+
+`CGrunt::StepArrivalDrop` at 0x4b370 is the negative control. Both sides have the
+same state values `{-1,0,1}` and the same ctor/dtor call set, but retail stores one
+state an extra time (8 versus 7) alongside its fourth `CPtrList::RemoveHead` flow
+site. The single `CPtrList probe` scope is correct; a second object would contradict
+the ctor/dtor, call, relocation, and branch census.
 
 **Calibrate, then believe it.** Run `--calibrate`: the functions objdiff already scores
 at 100.00% are byte-identical and must agree. Measured 2026-08-08, presence 0 of 3455
@@ -46,7 +56,7 @@ this way and both manufactured `±1` rows: reading only immediate state stores m
 `# imm = 0xFFFFFFFF` annotation defeats a naive slot match on exactly the leave-region
 stores.
 
-Tree-wide 2026-08-08: 750 EH-framed target functions, 3 presence mismatches (all
-INLINE_CUT, all `CStatusBarMgr`) and 44 state-count rows — 23 INLINE_CUT, 9 EXIT_MERGE,
-9 MISSING_OBJECT, 6 EXTRA_OBJECT. Presence is closed; without the cause split a lane
-would have gone after 32 phantom objects.
+Tree-wide 2026-08-19: presence mismatches are closed. State-count rows are divided
+into INLINE_CUT, EXIT_MERGE, and STATE_FLOW; none alone is called a missing or extra
+object. Without that distinction, StepArrivalDrop is falsely reported as a missing
+object despite identical object construction/destruction evidence.

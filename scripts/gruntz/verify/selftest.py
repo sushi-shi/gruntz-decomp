@@ -758,6 +758,28 @@ class EhFrameControls(unittest.TestCase):
         self.assertEqual(cause("TARGET_ONLY", 1, [], [], []),
                          "MISSING_OBJECT")
         self.assertEqual(cause("BASE_ONLY", -1, [], [], []), "EXTRA_OBJECT")
+        self.assertEqual(cause("BOTH", 1, [], [], []), "STATE_FLOW")
+
+    def test_states_cli_does_not_call_state_flow_a_missing_object(self):
+        import contextlib
+        import io
+
+        from gruntz.walls import eh_frame
+        row = dict(unit="grunt", name="?StepArrivalDrop@CGrunt@@QAEHXZ",
+                   rva="0x04b370", fuzzy=0.0, size=2960, verdict="BOTH",
+                   cause="STATE_FLOW", extra_ctors=[], our_ctors=[], resited=[],
+                   base_insn=877, tgt_insn=853, slot="[esp+0x68]",
+                   states=[-1, 0, 1], base_states=7, tgt_states=8,
+                   first=0x2e1, last=0xa39, unwind=True)
+        out = io.StringIO()
+        with mock.patch.object(eh_frame.pairscan, "require_pairs"), \
+             mock.patch.object(eh_frame, "scan", return_value=[row]), \
+             mock.patch("gruntz.walls.check_unit"), \
+             contextlib.redirect_stdout(out):
+            self.assertEqual(eh_frame.main(["--states"]), 0)
+        text = out.getvalue()
+        self.assertIn("STATE_FLOW", text)
+        self.assertNotIn("MISSING_OBJECT", text)
 
 
 class GlobalRefsControls(unittest.TestCase):

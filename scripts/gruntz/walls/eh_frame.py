@@ -10,8 +10,11 @@ is a hard SOURCE fact, and every row is tagged with its CAUSE:
                   entry, not a worklist item).
   EXIT_MERGE      the SAME ctor/dtor, a different NUMBER of call sites (exit
                   blocks merged under a ||/&& guard).
+  STATE_FLOW      both sides have an EH frame and the same ctor/dtor call set,
+                  but state stores were duplicated or placed differently;
+                  inspect CFG/lifetimes, do not infer another object.
   MISSING_OBJECT  retail owns a destructible object our source never
-                  declared (a by-value CString where we wrote LPCSTR, ...).
+                  declared, proven by a retail-only EH frame.
   EXTRA_OBJECT    the mirror - we invented one.
 
 The secondary sieve (--states) compares the unwind-STATE store counts where
@@ -213,6 +216,8 @@ def cause(verdict, delta, only_t, only_b, resited):
         return "INLINE_CUT"
     if resited:
         return "EXIT_MERGE"
+    if verdict == "BOTH":
+        return "STATE_FLOW"
     return "MISSING_OBJECT" if retail_side else "EXTRA_OBJECT"
 
 

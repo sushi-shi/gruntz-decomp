@@ -925,6 +925,8 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 // Keep the single real CPtrList EH scope: expressing the late successes as a
 // loop duplicates their scan prefixes, while copying the region duplicates its
 // ctor/dtor states and contradicts the retail call, relocation, and branch census.
+// Both sides use EH states {-1,0,1}; retail's eighth versus our seventh store is
+// the extra flow site's repeated live-object state, not a second CPtrList.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,

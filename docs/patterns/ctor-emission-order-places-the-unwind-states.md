@@ -1,7 +1,7 @@
 # MSVC 5.0 emits a ctor as bases -> members -> vptr -> body, and the unwind states index that order
 
 tags: cpp:ctor cpp:eh cpp:member | asm:mov | topic:codegen-idiom topic:eh
-symptoms: `eh_frame --states` reports MISSING_OBJECT or EXTRA_OBJECT on a constructor; the two
+symptoms: `eh_frame --states` reports STATE_FLOW on a constructor; the two
 sides store a different NUMBER of unwind states, or the same count at different points; a group
 of member stores sits on the wrong side of the `mov [this],<vtable>` stamp
 confidence: 9/10
@@ -50,7 +50,7 @@ state 3 disappears (`CMenuState::LoadGameAssetNamespaces` 89.39 -> 95.14).
 3. Count the calls between state stores. A state store with no call before the next one is a
    member whose ctor inlined to nothing but which still has a destructor.
 
-## Two false-positive shapes the sieve also reports
+## State-flow shapes that are not another object
 
 Not every ±1 row is an object.
 
@@ -59,8 +59,12 @@ Not every ±1 row is an object.
   the *incoming argument's* home slot, which the slot heuristic scores as a state store. The real
   divergence there is an inline cut, not an object.
 * **A duplicated epilogue.** Each copy of a destructor call carries its own state store, so a
-  function whose early `return` cl duplicated instead of tail-merging reads as +1
-  (`CFontConfig::RenderInputText`). That is `exit_merge_sieve`'s lever.
+function whose early `return` cl duplicated instead of tail-merging reads as +1
+(`CFontConfig::RenderInputText`). That is `exit_merge_sieve`'s lever.
+* **A duplicated ordinary-call region while one object remains live.** The same
+  state value is stored again without another ctor/dtor. `CGrunt::StepArrivalDrop`
+  has retail 8 versus base 7 stores but both sides use only `{-1,0,1}` and own the
+  same single `CPtrList`; retail also has one extra `RemoveHead` flow site.
 
 related: [eh-frame-presence-is-a-source-fact.md](eh-frame-presence-is-a-source-fact.md),
 [goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md),
