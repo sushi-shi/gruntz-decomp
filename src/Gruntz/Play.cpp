@@ -5769,6 +5769,12 @@ i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
     return m_tileGrid[m_colOffsets[col] + row];
 }
 
+// @early-stop
+// The 332 instructions, 13 calls, CFG and 19 relocations match. The only body
+// residue is nine stack stores: retail alternates each field load/store, while
+// cl batches three loads before draining stores. Scalar, cursor, LONG, memcpy,
+// flat-array, 3x3 aggregate and pointer/reference helper forms all batch alike;
+// by-value helpers instead swap the function-wide EBX/EDI allocation.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CObList* pl = &m_world->m_childGroup->m_list;
