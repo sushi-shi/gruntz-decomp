@@ -85,16 +85,6 @@ RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
 static GruntDirectionCell s_gruntDirSpare[3];
 
-// @identity-TODO one more file-scope constructed object. This compiland's
-// `.CRT$XC` contribution is ten slots (0x2085c8..0x2085ec): the nine
-// GruntDirStatics copies plus 0x0002d7e0, a bare `ret`, so the tenth object's
-// class has a constructor whose body optimises away. Nothing in the image
-// references the only unaccounted storage next to the globals above
-// (0x0022b73c..0x0022b760), and gaps of that size sit between every
-// neighbouring compiland's `.bss` block, so neither its type nor its extent is
-// proven. Do not invent one.
-//
-
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     list->m_walkCursor = list->m_list.GetHeadPosition();
     if (list->m_walkCursor == NULL) {
@@ -2414,6 +2404,9 @@ returnZero:
 }
 
 // @early-stop
+// Retail homes `coordList` at entry; its two reload paths around RemoveAll need
+// the extra merge jump. The source already declares that pointer: the 38/37
+// branch delta is downstream of allocation, not a missing guard or list arm.
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     CPtrList* coordList = &unit->m_coordList;

@@ -546,13 +546,20 @@ point, and the fix is the CFG, not a knob.
 ## 13. PARK: `RepathAroundBlockedTiles` / `RouteToNearbyEnemy` and the battlezmapconfig loop family
 
 `gruntz walls diagnose 0x0002a570` classifies as **CFG** (base 37 branches / 1
-ret, target 38 / 1), not regalloc and not IV: base is one branch and 12
-instructions SHORT with the same 18 calls. The brief's framing ("ours hoists and
-strength-reduces where retail re-derives") does not survive the diagnose for this
-member of the family — the divergence is a missing guard or arm, upstream of any
-loop decision. §6 still applies once the CFG matches: any store in those loop
-bodies forbids the hoist, so a hoist we emit is a hoist our source wrote.
-`RouteToNearbyEnemy 0x0002e3a0` (69.35) was not opened.
+ret, target 38 / 1), but the first classification is misleading here: base is
+one branch and 13 instructions short with the same 18 calls because retail homes
+the already-declared `coordList` pointer at entry. Around `RemoveAll`, retail
+reloads that home on both paths; the taken path calls and jumps over the other
+path's reload before the paths merge at the following list walk. Base derives
+`&unit->m_coordList` at each use, so it needs neither the two-path reload nor the
+merge jump. The extra branch is therefore downstream of allocation, not a
+missing guard or arm. §6 still applies to the loop-family hoists themselves:
+any store in those loop bodies forbids the hoist, so a hoist we emit is a hoist
+our source wrote.
+`RouteToNearbyEnemy 0x0002e3a0` has the same closure signature: 25/25 calls and
+37/37 relocations are exact, while retail is one branch and 13 instructions
+longer because its late Clip/voice region is placed differently. Its repeated
+arm spellings are already symmetric; no missing call or referent remains.
 
 ---
 
