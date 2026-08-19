@@ -2679,7 +2679,7 @@ imagepool	?Convert8To16@CRezImage@@QAEHPAUHDC__@@PAV1@PAUCImagePaletteNode@@@Z	1
 imagepool	?DecodeBlit@CRezImage@@QAEHPAEPAUHDC__@@HHW4ColorDepth@@H@Z	95.3194	95.3194	3	917ae477a751	0x175930	95.3194	
 imagepool	?DecodeBmpData@CRezImage@@QAEHPAUtagBITMAPINFOHEADER@@PAUHDC__@@H@Z	99.6154	99.6154	3	bcc39caa70d3	0x175e00	100.0000	
 imagepool	?DecodeBmpHeader@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	8ae8e2fb4d46	0x1757c0	100.0000	
-imagepool	?DecodePcxData@CRezImage@@QAEHPAUPcxHeader@@PAUHDC__@@H@Z	93.8608	93.8608	2	8493975678e1	0x176000	93.8608	
+imagepool	?DecodePcxData@CRezImage@@QAEHPAUPcxHeader@@PAUHDC__@@H@Z	97.7215	97.7215	3	6eb85bbca31d	0x176000	97.7215
 imagepool	?DecodePidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	76.1827	76.1827	2	0c673fe2f5fe	0x176440	81.4772	
 imagepool	?DecodeRidData@CRezImage@@QAEHPAUPidHeader@@PAUHDC__@@H@Z	74.2963	74.2963	3	c0c34735b77c	0x1762c0	100.0000	
 imagepool	?DispatchDecode@CRezImage@@QAEHPAEW4RezDecodeKind@@PAUHDC__@@H@Z	100.0000	100.0000	3	e0bc7042a868	0x175a00	100.0000	

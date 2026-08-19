@@ -567,6 +567,9 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
     return 1;
 }
 
+// @early-stop
+// Exact 158-instruction skeleton and all three referents; only the long-lived
+// width and scan-buffer EDI/EBP assignments differ.
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(PcxHeader* hdr, HDC dc, i32 ctrl) {
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
@@ -613,8 +616,8 @@ i32 CRezImage::DecodePcxData(PcxHeader* hdr, HDC dc, i32 ctrl) {
                 *dst++ = scan[x - 1];
             }
         } else if (hdr->m_planes == PCX_PLANES_RGB) {
+            u8* b = scan + width * 3;
             u8* g = scan + width * 2;
-            u8* b = g + width;
             for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
                 *dst++ = g[-1];
