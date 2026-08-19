@@ -18,6 +18,7 @@ GZ_ENUM_END(VariantSlotKind)
 struct CVariantSlot {
     CVariantSlot(char* label);
     void Set(zErrHandling* obj, char* item, i32 b);
+    CVariantSlot* EnsureTmErrorCallback();
     i32 Find(i32 key);
     VariantCallback Add(zErrHandling* key, VariantCallback callback);
     VariantCallback m_callback;

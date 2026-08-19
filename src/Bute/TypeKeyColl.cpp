@@ -41,10 +41,7 @@ DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
 
 DATA(0x002bf420)
-void(__cdecl* g_tmErrorCallback)(
-    char* buf,
-    i32 v
-); // lazily defaulted to TmErrorHandler by an uncarved accessor @0x16d970
+void(__cdecl* g_tmErrorCallback)(char* buf, i32 v);
 
 RVA_DYNINIT(0x0016d9a0, 0x5, g_globalErrorSlot)
 RVA_DYNINIT(0x0016d9b0, 0x10, g_globalErrorSlot)
@@ -445,6 +442,16 @@ void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
             g_recs23[idx].m_value = static_cast<short>(value);
         }
     }
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0016d970, 0x17)
+CVariantSlot* CVariantSlot::EnsureTmErrorCallback() {
+    if (g_tmErrorCallback == NULL) {
+        g_tmErrorCallback = TmErrorHandler;
+    }
+    return this;
 }
 
 RVA(0x0016d990, 0x3)
