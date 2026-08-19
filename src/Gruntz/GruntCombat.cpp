@@ -74,6 +74,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+RVA_DYNINIT(0x00058f60, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00058f80, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x00058fb0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00058fd0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00059000, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00059020, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00059050, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00059070, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x000590a0, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x000590c0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x000590f0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00059110, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00059140, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00059160, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00059190, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000591b0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000591e0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00059200, 0x1a, s_gruntDirCenter)
+
 DATA(0x0020dc64)
 static char s_RollingBallzTime[] = "RollingBallzTime";
 DATA(0x0020dc78)
