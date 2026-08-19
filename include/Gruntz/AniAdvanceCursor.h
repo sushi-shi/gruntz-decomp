@@ -62,8 +62,10 @@ public:
     void Setup(CAniElement* src);
     void Recompute(i32 resetGate);
 
+    i32 CanSerialize(CFileMemBase* ar);
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
+    i32 CanDeserialize(CFileMemBase* ar);
 
     i32 Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, CGameObject* self);
     i32 Advance(u32 elapsed);

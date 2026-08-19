@@ -768,6 +768,13 @@ i32 CAniAdvanceCursor::Find(
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0015c960, 0xe)
+i32 CAniAdvanceCursor::CanSerialize(CFileMemBase* ar) {
+    return ar != NULL;
+}
+
 RVA(0x0015c970, 0xfe)
 i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -847,6 +854,13 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
         }
     }
     return 1;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0015cbd0, 0xe)
+i32 CAniAdvanceCursor::CanDeserialize(CFileMemBase* ar) {
+    return ar != NULL;
 }
 
 RVA(0x0015cbe0, 0x46)
