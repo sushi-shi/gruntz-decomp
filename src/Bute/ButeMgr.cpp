@@ -1704,6 +1704,9 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
     return def;
 }
 
+// @early-stop
+// Byte-exact body; only the generated atexit thunk's canonical name differs
+// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x001731d0, 0xb6)
 
 CString* CButeMgr::GetString(const char* tag, const char* key) {
@@ -1795,6 +1798,9 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
     return def;
 }
 
+// @early-stop
+// Byte-exact body; only the generated atexit thunk's canonical name differs
+// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x00173770, 0xc6)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     // Guard byte 0x2bf688.
@@ -1876,6 +1882,9 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
     return def;
 }
 
+// @early-stop
+// Byte-exact body; only the generated atexit thunk's canonical name differs
+// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x00173d00, 0xbb)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     // Guard byte 0x2bf67c.
@@ -1956,6 +1965,9 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoub
     return def;
 }
 
+// @early-stop
+// Byte-exact body; only the generated atexit thunk's canonical name differs
+// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x00174240, 0xe3)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
     // Guard byte 0x2bf684.
@@ -2036,6 +2048,9 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDouble
     return def;
 }
 
+// @early-stop
+// Byte-exact body; only the generated atexit thunk's canonical name differs
+// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x001747c0, 0xcf)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     // Guard byte 0x2bf680.
