@@ -87,6 +87,7 @@ i32 CMenuSparkle::SerializeMove(
     return 1;
 }
 
+// @early-stop
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;
@@ -99,8 +100,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
-    i32 active = m_wwdObject->m_animCursor.m_finished;
-    if (active != 0 && anim->m_frameTicksLeft == 0) {
+    if (anim->m_finished != 0 && anim->m_frameTicksLeft == 0) {
         if (anim != NULL) {
             anim->Recompute(1);
         }

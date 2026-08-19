@@ -3035,7 +3035,7 @@ menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	9	4ad07ff2f2b9	0x183df0	10
 menusparkle	??0CMenuSparkle@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	a4d978cb51ea	0xadbe0	100.0000	
 menusparkle	??1CMenuSparkle@@UAE@XZ	100.0000	100.0000	1	cpp:2b5d85a50a2e	0x101b0	100.0000	
 menusparkle	??_GCMenuSparkle@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2b5d85a50a2e	0x10180	100.0000	
-menusparkle	?AdvanceAnim@CMenuSparkle@@QAEHXZ	95.0000	95.0000	1	7febde843aeb	0xae2a0	95.0000	
+menusparkle	?AdvanceAnim@CMenuSparkle@@QAEHXZ	98.3095	98.3095	2	1354cbcdbb1e	0xae2a0	98.3095
 menusparkle	?FireActivation@CMenuSparkle@@UAEXH@Z	100.0000	100.0000	1	ac6169424d27	0xade60	100.0000	
 menusparkle	?GetTypeTag@CMenuSparkle@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x10160	100.0000	
 menusparkle	?RegisterMenuSparkleActions@@YAXXZ	100.0000	100.0000	1	dd8848f47910	0xadfc0	100.0000	
