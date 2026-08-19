@@ -833,7 +833,6 @@ void CButeMgr::ScanState(i16 state, char c) {
     m_lexState = g_transTable[state][CharClass(c)][LEXSLOT_STATE];
 }
 
-// @early-stop
 RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
     // `kind` is 16-bit: retail copies PeekState2's result with a plain `mov edi,eax`
@@ -2100,11 +2099,6 @@ void ButeStoreFreeAdapter(void* p) {
     (static_cast<CButeNode*>(p))->CButeNode::~CButeNode();
 }
 
-// @early-stop
-// The three non-CString arms compile to identical code except the scratch
-// register: retail holds the deleted pointer in edx/eax/ecx for the double/i32/u32
-// arm, cl in eax/ecx/edx. Arm layout and the 9-slot jump table already match
-// retail, so reordering the arms cannot reach it - it moves the table too.
 RVA(0x00174df0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {
     CButeValue* v = static_cast<CButeValue*>(pValue);

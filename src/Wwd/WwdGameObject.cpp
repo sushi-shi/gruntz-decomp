@@ -1101,10 +1101,6 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
     return el->Reload(rec, flag) != 0;
 }
 
-// @early-stop
-// The imul operand order is canonical and TU-state parity: no spelling of the
-// multiply moves it, but ANY definition added before this function in the TU
-// flips it to retail's. docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x001523f0, 0x82)
 i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;

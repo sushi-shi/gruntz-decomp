@@ -633,7 +633,6 @@ void CMapMgr::Unlink(BrickzNode* node) {
     node->m_openNext = NULL;
 }
 
-// @early-stop
 RVA(0x0009f710, 0xa7)
 void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;

@@ -84,7 +84,6 @@ TypeKeyRec g_recs23[32];
 DATA(0x002bf618)
 i32 g_recCount23;
 
-// @early-stop
 RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     accum << c.m_time;
@@ -875,12 +874,6 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
     return old;
 }
 
-// @early-stop
-// The two parameters land in the opposite registers: retail's xor accumulates into
-// the register holding `*a` (eax), ours into `*b`.  `^` is commutative so cl picks
-// freely and the whole body is otherwise byte-identical - only which of the two
-// `movsx` results reaches eax first differs, and it decides the entry loads and the
-// `inc` order with it.
 RVA(0x0016e480, 0x3e)
 i32 FirstDiffBit(const char* a, const char* b) {
     i32 n = 0;

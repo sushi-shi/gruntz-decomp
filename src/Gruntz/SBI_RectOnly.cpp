@@ -2889,10 +2889,6 @@ void CStatusBarMgr::Reset() {
     m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
 }
 
-// @early-stop
-// The loop cursor now matches (indexed form, docs/patterns/loop-cursor-bias-names-the-
-// index-form.md).  Residue is the RAMP_UP_LOW arm's store schedule: retail sinks the
-// counter store one slot into the GetDwordDef argument pushes.
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     for (i32 i = 0; i < 3; i++) {
@@ -3780,7 +3776,6 @@ void CStatusBarMgr::ToggleStat(i32 idx) {
     }
 }
 
-// @early-stop
 RVA(0x00107ae0, 0x1aa)
 void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     BuildGameTabPauseButton();
@@ -5002,10 +4997,6 @@ void CStatusBarMgr::ExitMode() {
     Deactivate();
 }
 
-// @early-stop
-// One store slot, twice (both switch arms): retail writes the i64 m_destructWarnClock.m_last
-// HIGH dword straight after the low one, cl sinks it past the m_modeNotify load and
-// its null compare. 5 spellings measured, including the i64-union assignment form.
 RVA(0x0010b320, 0x167)
 void CStatusBarMgr::UpdateDestructButtonStatusBar() {
 

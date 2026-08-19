@@ -580,7 +580,6 @@ i32 CBattlezDlg::OnInitDialog() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000160f0, 0x245)
 void CBattlezDlg::FlashCtrlD() {
     CPaintDC dc(this);

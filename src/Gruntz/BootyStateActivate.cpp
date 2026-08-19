@@ -2296,7 +2296,6 @@ i32 CMultiBootyState::LeaveState(GameStateId) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0001e720, 0x400)
 void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ_";

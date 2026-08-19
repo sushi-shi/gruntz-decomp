@@ -5744,7 +5744,6 @@ i32 CPlay::ValidateLevelTiles() {
     return ok;
 }
 
-// @early-stop
 RVA(0x000d53a0, 0x19)
 i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
     return m_tileGrid[m_colOffsets[col] + row];

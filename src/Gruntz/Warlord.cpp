@@ -664,7 +664,6 @@ i32 CWarlord::BuildFortSplashParticles() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00045100, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
     if (m_deathStarted != 0) {
@@ -728,7 +727,6 @@ i32 CWarlord::NotifyFortUnderAttack() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
     if (m_deathStarted != 0) {

@@ -940,7 +940,6 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
     }
 }
 
-// @early-stop
 RVA(0x00176da0, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;

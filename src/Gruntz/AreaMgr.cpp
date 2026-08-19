@@ -688,7 +688,6 @@ i32 CAreaMgr::InitializeTrainingStage4() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0009b430, 0x49)
 b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {

@@ -18,10 +18,6 @@ HINSTANCE g_appResHandle;
 DATA(0x002455ec)
 i32 g_cdPromptResult = 0;
 
-// @early-stop
-// The two in-scope returns retain distinct CWaitCursorScope teardown tails.
-// Primary code is exact; the fieldless guard's synthetic unwind receiver is the
-// bounded C1 frame-colouring case documented for this class.
 RVA(0x0001f9b0, 0x2d2)
 int StartUpPrompt(HWND hWnd) {
     if (IsGruntzCDInAnyDrive()) {

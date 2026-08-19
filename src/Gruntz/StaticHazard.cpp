@@ -52,7 +52,6 @@ static inline CActHandler* HaznLookup(i32 coord) {
     return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
 }
 
-// @early-stop
 inline void DispatchLogicAction(CUserLogic* sub) {
     ProjTypeXfer(sub);
 }

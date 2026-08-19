@@ -10,7 +10,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Utils/RegistryHelper.h>
 
-// @early-stop
 RVA(0x00114ff0, 0x1b3)
 i32 SaveScreenshot(
     CDDSurface* src,

@@ -627,10 +627,6 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
     return 0;
 }
 
-// @early-stop
-// Residue: cl folds the two terminal `return 0`/`return 1` pairs into
-// neg/sbb/neg where retail branches, and lays the switch's implicit default out
-// as its own `mov eax,1` block instead of jumping to the shared return.
 RVA(0x00117280, 0x2ec)
 i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
     if (s == NULL) {
