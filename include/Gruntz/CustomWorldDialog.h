@@ -13,7 +13,7 @@ GZ_ENUM_CONST_BEGIN(CustomWorldCtrlId)
 GZ_ENUM_CONST_END(CustomWorldCtrlId)
 
 class CDDrawSurfaceMgr;
-extern class CDDrawSurfaceMgr* g_dat62c268;
+extern class CDDrawSurfaceMgr* g_customWorldSurfaceMgr;
 extern char g_mapNameBuf[0x200];
 
 i32 LoadCustomWorldInfo(HWND hDlg);

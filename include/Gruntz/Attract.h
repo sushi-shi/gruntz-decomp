@@ -39,5 +39,5 @@ public:
     i32 m_activeFlag;
 };
 
-extern i32 g_suppress_64e360;
+extern i32 g_skipNextScreenEffect;
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

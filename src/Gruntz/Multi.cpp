@@ -147,12 +147,12 @@ CMulti::~CMulti() {
     CMulti::ReleaseResources();
 }
 
-RVA_DYNINIT(0x000b53e0, 0xa, g_obj646778)
-RVA_DYNINIT(0x000b5400, 0xa, g_obj646778)
-RVA_DYNINIT(0x000b5420, 0xe, g_obj646778)
-RVA_DYNINIT(0x000b5440, 0xa, g_obj646778)
+RVA_DYNINIT(0x000b53e0, 0xa, g_gruntzLogFile)
+RVA_DYNINIT(0x000b5400, 0xa, g_gruntzLogFile)
+RVA_DYNINIT(0x000b5420, 0xe, g_gruntzLogFile)
+RVA_DYNINIT(0x000b5440, 0xa, g_gruntzLogFile)
 DATA(0x00246778)
-CFile g_obj646778;
+CFile g_gruntzLogFile;
 DATA(0x002467d8)
 char g_recvBuffer[0x800];
 

@@ -33,7 +33,7 @@
 #include <string.h>
 
 DATA(0x0024e360)
-i32 g_suppress_64e360 = 0;
+i32 g_skipNextScreenEffect = 0;
 
 DATA(0x0024e35c)
 i32 g_playActive;
@@ -420,8 +420,8 @@ i32 CState::InputVirtual() {
 
 RVA(0x000faec0, 0x67)
 void CState::Present(i32 pct) {
-    if (g_suppress_64e360 != 0) {
-        g_suppress_64e360 = 0;
+    if (g_skipNextScreenEffect != 0) {
+        g_skipNextScreenEffect = 0;
         return;
     }
     m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
@@ -432,9 +432,9 @@ void CState::Present(i32 pct) {
 
 RVA(0x000faf50, 0x31)
 i32 CState::ShadeScreen(i32 pct) {
-    i32 v = g_suppress_64e360;
+    i32 v = g_skipNextScreenEffect;
     if (v != 0) {
-        g_suppress_64e360 = 0;
+        g_skipNextScreenEffect = 0;
         return v;
     }
     return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);

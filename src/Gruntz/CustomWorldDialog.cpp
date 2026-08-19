@@ -40,14 +40,14 @@ RVA_DYNINIT(0x0003ad50, 0xe, g_levelStr)
 RVA_DYNINIT(0x0003ad70, 0xa, g_levelStr)
 DATA(0x0022c260)
 CString g_levelStr;
-RVA_DYNINIT(0x0003ac90, 0xa, g_str62c264)
-RVA_DYNINIT(0x0003acb0, 0xa, g_str62c264)
-RVA_DYNINIT(0x0003acd0, 0xe, g_str62c264)
-RVA_DYNINIT(0x0003acf0, 0xa, g_str62c264)
+RVA_DYNINIT(0x0003ac90, 0xa, g_selectedCustomWorldName)
+RVA_DYNINIT(0x0003acb0, 0xa, g_selectedCustomWorldName)
+RVA_DYNINIT(0x0003acd0, 0xe, g_selectedCustomWorldName)
+RVA_DYNINIT(0x0003acf0, 0xa, g_selectedCustomWorldName)
 DATA(0x0022c264)
-CString g_str62c264;
+CString g_selectedCustomWorldName;
 DATA(0x0022c268)
-CDDrawSurfaceMgr* g_dat62c268 = 0;
+CDDrawSurfaceMgr* g_customWorldSurfaceMgr = NULL;
 DATA(0x0022c26c)
 HWND g_customWorldParent = 0;
 DATA(0x0022c270)
@@ -69,17 +69,17 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
         v = g_gameReg->m_gameWnd->m_hwnd;
     }
     g_customWorldParent = v;
-    g_dat62c268 = g_gameReg->m_world;
+    g_customWorldSurfaceMgr = g_gameReg->m_world;
 
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;
     if (g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, 0) == 0) {
         g_pathStr.Empty();
     }
-    g_dat62c268 = NULL;
+    g_customWorldSurfaceMgr = NULL;
     g_customWorldParent = NULL;
     g_customWorldInst = NULL;
     if (outSource != NULL) {
-        *outSource = g_str62c264;
+        *outSource = g_selectedCustomWorldName;
     }
     return g_pathStr;
 }
@@ -178,7 +178,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
             p++;
         }
         sprintf(num, "%i", atoi(p));
-        setText(hDlg, 0x408, static_cast<const char*>(g_str62c264));
+        setText(hDlg, 0x408, static_cast<const char*>(g_selectedCustomWorldName));
         setText(hDlg, 0x428, info.author);
         setText(hDlg, 0x40c, num);
         setText(hDlg, 0x429, info.created);
@@ -219,7 +219,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
         g_pathStr.Empty();
         return 0;
     }
-    g_str62c264 = itemText;
+    g_selectedCustomWorldName = itemText;
     return 1;
 }
 
@@ -255,8 +255,9 @@ BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != NULL && FileExists(g_pathStr)
-                && g_dat62c268->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
+            if (g_customWorldSurfaceMgr != NULL && FileExists(g_pathStr)
+                && g_customWorldSurfaceMgr->m_level
+                       ->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
                 SetDlgItemTextA(hDlg, 0x428, info.author);
                 char* p = info.levelName;

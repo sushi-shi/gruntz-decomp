@@ -12,6 +12,6 @@ public:
     void OpenGruntzLog();
 };
 
-extern CFile g_obj646778;
+extern CFile g_gruntzLogFile;
 
 #endif // SRC_IO_FILESTREAM_H

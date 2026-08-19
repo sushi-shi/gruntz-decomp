@@ -33,7 +33,7 @@
 #include <stdio.h>
 
 DATA(0x0024c69c)
-i32 g_flag64c69c = 0;
+i32 g_previewCancelQuits = 0;
 
 RVA(0x000de030, 0xc2)
 
@@ -173,7 +173,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
 
 RVA(0x000de590, 0x2e)
 void CPreviewState::Cancel() {
-    if (g_flag64c69c) {
+    if (g_previewCancelQuits) {
         m_mgr->DelayedQuit();
         return;
     }
