@@ -162,7 +162,7 @@ RVA(0x0015ba80, 0x3)
 void CWwdGameObjectF::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 RVA(0x0015ba90, 0x3)
-void CWwdGameObjectF::BltDirtyEx(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+void CWwdGameObjectF::BltDirtyEx(CDrawSubWorker*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 RVA(0x0015baa0, 0x3)
 void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}

@@ -20,6 +20,7 @@ class CWwdGameObjectA;
 class CWwdGameObject;
 class CWwdGameObjectC;
 class CWwdGameObjectF;
+class CDrawSubWorker;
 
 class CDDrawChildGroup : public CWapObj {
 public:
@@ -39,11 +40,8 @@ public:
 
     virtual void BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src);
 
-    virtual void BltDirtyChildrenEx(
-        CDDrawSurfacePair* dst,
-        CDDrawSurfacePair* src,
-        CDDrawSurfacePair* restoreSrc
-    );
+    virtual void
+    BltDirtyChildrenEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc);
     virtual void BltDirtyChildRegions(
         CDDrawSurfacePair* dst,
         CDDrawSurfacePair* src,

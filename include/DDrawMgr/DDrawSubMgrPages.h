@@ -40,10 +40,12 @@ public:
 
     i32 ResolvePageImage(char* name, DDrawPageKind pageIndex);
     i32 LoadPageImage(struct CParseSource* src, DDrawPageKind pageIndex);
+    void BltDirtyChildrenEx();
     void FlipAndNotify();
     i32 PagesReady();
     i32 ResizePages(i32 w, i32 h, ColorDepth bpp);
     i32 CreateOverlay(i32 copyFromBack, i32 createFlag);
+    void UnloadOverlay();
     void ClearAllPages(u32 color);
     i32 BlitPage(CDDrawSurfacePair* dst);
     i32 HasOverlay();

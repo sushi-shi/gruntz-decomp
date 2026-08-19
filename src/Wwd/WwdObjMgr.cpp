@@ -378,7 +378,7 @@ void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePai
 
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::BltDirtyChildrenEx(
-    CDDrawSurfacePair* dst,
+    CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
 ) {

@@ -970,6 +970,13 @@ i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, DDrawPageKind pageIndex)
     return p->LoadImage(src);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00158b70, 0x1c)
+void CDDrawSubMgrPages::BltDirtyChildrenEx() {
+    OwnerMgr()->m_childGroup->BltDirtyChildrenEx(m_frontPair, m_backPair, m_overlayPair);
+}
+
 RVA(0x00158b90, 0x28)
 void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontPair->m_surface->Flip(0);
@@ -1048,6 +1055,15 @@ i32 CDDrawSubMgrPages::HasOverlay() {
         return 0;
     }
     return m_overlayPair->IsLoaded() != 0;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00158d40, 0xd)
+void CDDrawSubMgrPages::UnloadOverlay() {
+    if (m_overlayPair != NULL) {
+        m_overlayPair->Unload();
+    }
 }
 
 RVA(0x00158d50, 0x61)
