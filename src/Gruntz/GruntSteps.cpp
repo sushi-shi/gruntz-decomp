@@ -873,6 +873,9 @@ commit:
 }
 
 // @early-stop
+// Calls, returns and relocation identities are exact. Retail coalesces the
+// seed pair with x/y in ebx/edi, keeping every case register-only; this build
+// homes x/y and cross-jumps the northeast arm into the north suffix.
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     // retail's arm layout (jump table at 0x452e24) proves the SW/S and NW/N pairs
