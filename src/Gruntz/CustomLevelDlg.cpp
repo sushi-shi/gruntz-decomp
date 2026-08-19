@@ -12,6 +12,25 @@
 #include <direct.h>
 #include <io.h>
 
+RVA_DYNINIT(0x00017d60, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00017d80, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x00017db0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00017dd0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00017e00, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00017e20, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00017e50, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00017e70, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00017ea0, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x00017ec0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00017ef0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00017f10, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00017f40, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00017f60, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00017f90, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00017fb0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00017fe0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00018000, 0x1a, s_gruntDirCenter)
+
 DATA(0x001e8e98)
 const AFX_MSGMAP CBattlezDlgCustom::messageMap = {
     &CDialog::messageMap,
