@@ -26,6 +26,8 @@ char g_szCode[0x40];
 DATA(0x002bf740)
 char g_szMsg[0x100];
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00177670, 0x27)
 void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption) {
     g_logEnabled = log;

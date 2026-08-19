@@ -396,6 +396,8 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     return state;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     i32 sx = t->m_screenX;
@@ -410,6 +412,8 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     return t->m_screenX;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX;
@@ -424,6 +428,8 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     return t->m_screenX;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     i32 sy = t->m_screenY;
@@ -438,6 +444,8 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     return t->m_screenY;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     i32 sy = t->m_screenY;

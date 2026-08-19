@@ -141,6 +141,8 @@ CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
     return m_map.Lookup(key, result) ? static_cast<CGruntzSoundInnerZ*>(result) : 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138780, 0x5b)
 i32 CGruntzSoundZ::PlayCreate2(const char* path, i32 playMode, const char* name) {
     if (m_enabled == 0) {
@@ -158,6 +160,8 @@ i32 CGruntzSoundZ::PlayCreate2(const char* path, i32 playMode, const char* name)
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001387e0, 0x60)
 i32 CGruntzSoundZ::PlayCreate3(const void* buf, u32 len, i32 playMode, const char* name) {
     if (m_enabled == 0) {
@@ -233,6 +237,8 @@ i32 CGruntzSoundZ::IsPlaying() {
     return m_pCurrent->Stop();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138930, 0xf)
 i32 CGruntzSoundZ::Retrigger() {
     if (m_pCurrent == NULL) {
@@ -471,6 +477,8 @@ i32 CGruntzSoundInnerZ::IsBusy() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138f90, 0x32)
 i32 CGruntzSoundInnerZ::SetTempo(i32 tempo, i32 ms) {
     if (IsStarted() == 0) {

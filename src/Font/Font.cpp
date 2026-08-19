@@ -110,6 +110,8 @@ i32 Font::LoadFont(CString szFileName) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
@@ -642,6 +644,8 @@ TextExtent FontRenderer::MeasureWrapped(CString text, CRect rc) {
     return TextExtent(maxWidth - rc.left + 1, m_font->GetMaxHeight() + (y - rc.top) + 1);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b120, 0x3c6)
 TextExtent FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
     i32 y = rc.top;

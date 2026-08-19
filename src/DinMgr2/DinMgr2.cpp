@@ -314,6 +314,8 @@ CDeviceConfigB::~CDeviceConfigB() {
     ReleaseDevices();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00133560, 0x27)
 void SetDInputReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_dinputLogEnabled = log;

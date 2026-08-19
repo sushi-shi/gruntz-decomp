@@ -1468,6 +1468,8 @@ notVerified:
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000b9180, 0x4a)
 i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
     if (a1 == 0) {
@@ -1549,6 +1551,8 @@ i32 CMulti::SendStat3(i32 id, NetMsgId statId, i32 flag) {
     return hr == 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000b9490, 0x42)
 i32 CMulti::SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c) {
     if (recipient == NULL) {
@@ -3067,6 +3071,8 @@ i32 CMulti::CreateLocalPlayer() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000bc910, 0xf6)
 i32 CMulti::OpenHostChannel(
     void* a0,

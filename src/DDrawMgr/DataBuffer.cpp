@@ -80,6 +80,8 @@ void CShadeTable::Free() {
     m_alloc = 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001503f0, 0xdc)
 i32 CShadeTable::SaveToFile(CString path) {
     CFile file;

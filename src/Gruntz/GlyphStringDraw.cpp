@@ -17,6 +17,8 @@
 
 #include <string.h>
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115220, 0xa4)
 i32 DrawGlyphString(
     CDDrawSurfaceMgr* ctx,

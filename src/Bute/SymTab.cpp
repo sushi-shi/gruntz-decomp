@@ -153,6 +153,8 @@ GZ_ENUM_RETURN(RezTypeTag, u32) CParseSource::GetEntryTag() {
     return static_cast<RezTypeTag>(m_entry->m_key);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139810, 0x140)
 char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     if (m_owner->m_parent == NULL) {
@@ -177,6 +179,8 @@ char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     return dst;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139950, 0x6)
 char* CParseSource::CurrentScopeName() {
     return m_owner->m_name;
@@ -213,6 +217,8 @@ i32 CParseSource::EndParse() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139a00, 0x1b)
 i32 CParseSource::IsResident() {
     if (m_owner->m_mappedBuf != NULL) {
@@ -221,6 +227,8 @@ i32 CParseSource::IsResident() {
     return m_buffer != NULL;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139a20, 0x13)
 i32 CParseSource::ReadAll(void* dst) {
     return ReadAt(dst, 0, m_length);
@@ -283,11 +291,15 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139bc0, 0xc)
 i32 CParseSource::AtEnd() {
     return static_cast<u32>(m_cursor) >= m_length;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139bd0, 0x15)
 char CParseSource::ReadChar() {
     char c;
@@ -432,6 +444,8 @@ CParseSource* CSymTab::Find(const char* path) {
     return Insert(fname, fourcc);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a0f0, 0x99)
 i32 CRezDirNode::Load(i32 childFlag) {
     if (m_buf != NULL) {
@@ -460,6 +474,8 @@ i32 CRezDirNode::Load(i32 childFlag) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a190, 0x94)
 i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
     if (m_mappedBuf != NULL) {
@@ -512,6 +528,8 @@ CSymTab* CSymTab::NextSub(CSymTab* rec) {
     return n->m_symTab;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a2a0, 0x10)
 CSymRec* CSymTab::FindSymKey(u32 key) {
     return m_symbols.FindInt(key);
@@ -582,6 +600,8 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* unused, const char* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
@@ -845,6 +865,8 @@ CSymParser::CSymParser() : m_hash(1) {
     m_parseSlotBlockCount = 0x64;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(char* buf, i32 a2, i32 a3) : m_hash(1) {
     {
@@ -1295,6 +1317,8 @@ i32 CSymParser::Retry() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ba20, 0x27)
 i32 CSymParser::CheckNodes() {
     i32 ok = 1;
@@ -1306,6 +1330,8 @@ i32 CSymParser::CheckNodes() {
     return ok;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ba50, 0x1f)
 void CSymParser::SetBucketCounts(
     i32 valueBuckets,
@@ -1325,6 +1351,8 @@ i32 CSymParser::MakeTimestamp() {
     return static_cast<i32>(time(&t));
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ba80, 0x57)
 void CSymParser::SetDelims(char* s) {
     if (m_delims != NULL) {
@@ -1443,6 +1471,8 @@ CParseSource* CSymParser::ResolveQualified(const char* name, RezTypeTag fourcc) 
     return GetRoot()->ResolveQualified(name, fourcc);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013c010, 0x14)
 CParseSource* CSymParser::FindQualified(const char* name) {
     return GetRoot()->FindQualified(name);
@@ -1453,6 +1483,8 @@ CSymTab* CSymParser::ResolvePath(const char* path) {
     return GetRoot()->ResolvePath(path);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013c050, 0x28)
 i32 CSymParser::ReParse() {
     if (m_parseArmed == 0) {

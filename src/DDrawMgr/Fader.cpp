@@ -53,6 +53,8 @@ void CFader::Wait(i32 delay) {
 // section, the delinked retail fragment holds the datum alone, and the
 // normalizer's $S rename hashes the whole section - so the referent names can
 // never agree from source. Same artifact on RunFade.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017e540, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 count = GetFrameCount();

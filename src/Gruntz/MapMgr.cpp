@@ -579,6 +579,8 @@ BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009f540, 0x40)
 BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
     BrickzCellNode* n = m_rows[row][col].m_head;

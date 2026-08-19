@@ -719,6 +719,8 @@ done:
     return result;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000dd050, 0x24b)
 i32 CPlay::BuildGruntNamespaceList(CMulti* arg) {
     CString s;

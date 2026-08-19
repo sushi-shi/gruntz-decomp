@@ -526,6 +526,8 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     return result;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c28c0, 0x27)
 void CMultiStartDlg::SetComboSelE(i32 index, i32 sel) {
     CWnd* c = GetCtrlE(index);
@@ -534,6 +536,8 @@ void CMultiStartDlg::SetComboSelE(i32 index, i32 sel) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c2900, 0x2a)
 i32 CMultiStartDlg::GetComboSelE(i32 index) {
     CWnd* c = GetCtrlE(index);
@@ -543,6 +547,8 @@ i32 CMultiStartDlg::GetComboSelE(i32 index) {
     return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c2940, 0x2b)
 i32 CMultiStartDlg::GetComboSelC(i32 id) {
     CWnd* c = GetCtrlC(id);
@@ -560,6 +566,8 @@ void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c29c0, 0x1d)
 void CMultiStartDlg::SetPlayerName(i32 index, const char* name) {
     CWnd* item = GetCtrlB(index);

@@ -245,6 +245,8 @@ i32 CImage::CopyFrom(CImage* other) {
     return ok != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00153330, 0x36)
 i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
     if (mode == FMT_PID || mode == FMT_RID) {

@@ -92,6 +92,8 @@ namespace Utils {
                == 0;
     }
 
+    // @dead-code
+    // Zero-ref: retail has no caller or address-taking reference.
     RVA(0x00139410, 0x45)
     i32 RegistryHelper::SetValueBinary(char* szValueName, void* pData, u32 dataSize) {
         if (!m_open) {
@@ -161,6 +163,8 @@ namespace Utils {
         return 0;
     }
 
+    // @dead-code
+    // Zero-ref: retail has no caller or address-taking reference.
     RVA(0x00139540, 0x8a)
     void* RegistryHelper::GetValueBinary(
         char* szValueName,
@@ -220,6 +224,8 @@ namespace Utils {
         return valueDefault;
     }
 
+    // @dead-code
+    // Zero-ref: retail has no caller or address-taking reference.
     RVA(0x00139620, 0x28)
     i32 RegistryHelper::DeleteValue(char* szValueName) {
         if (!m_open) {

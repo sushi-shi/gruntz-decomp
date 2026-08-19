@@ -163,6 +163,8 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     return obj;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00116320, 0x66)
 i32 CTileTriggerContainer::RemoveByKeys(i32 k1, TrigLogicId k2) {
     POSITION pos = m_base.GetHeadPosition();
@@ -211,6 +213,8 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     );
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001164a0, 0x116)
 void CTileTriggerContainer::AddLogicFromRecord(
     TileCollisionKind tileType,

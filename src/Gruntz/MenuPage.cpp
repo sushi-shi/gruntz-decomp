@@ -71,6 +71,8 @@ void CMenuPage::Clear() {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
@@ -129,6 +131,8 @@ CMenuItem* CMenuPage::AddSubItem(
     return Append(item) ? item : 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001836f0, 0x160)
 CMenuItem2* CMenuPage::AddItem2(
     const char* name,
@@ -149,6 +153,8 @@ CMenuItem2* CMenuPage::AddItem2(
     return Append(item) ? item : 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(
     const char* name,

@@ -29,6 +29,8 @@ const AFX_MSGMAP_ENTRY CMultiHelpDlg::_messageEntries[] = {
     {0, 0, 0, 0, AfxSig_end, 0},
 };
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000beb60, 0x1e)
 CMultiHelpDlg::CMultiHelpDlg(CWnd* pParent) : CDialog(0xcb, pParent) {}
 

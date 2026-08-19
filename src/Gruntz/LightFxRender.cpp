@@ -300,6 +300,8 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 // @early-stop commutative pitch/bpp term order inside the PixOffset expansions
 // (canonical operand order, TU-state class); the side-edge loop itself matches -
 // stepping each cursor directly after its store keeps both IVs live.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, char* base, i32 color) {
     i32 w = r->right - r->left + 1;

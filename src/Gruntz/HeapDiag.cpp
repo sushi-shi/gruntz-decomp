@@ -19,6 +19,8 @@ void SetActiveAndFocus(HWND hWnd) {
     SetFocus(hWnd);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118960, 0x20)
 void SetTopmostStyle(HWND hWnd) {
     LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
@@ -27,6 +29,8 @@ void SetTopmostStyle(HWND hWnd) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118990, 0x20)
 void ClearTopmostStyle(HWND hWnd) {
     LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
@@ -48,6 +52,8 @@ i32 FileExists(const char* szPath) {
     return OpenFile(szPath, &of, 0x4000) != -1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118a30, 0xda)
 int HeapCheckDump(int walkOnBad) {
     _HEAPINFO hinfo;
@@ -102,6 +108,8 @@ void ReportHeapStatus(i32 status) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118bf0, 0xb4)
 int HeapStats() {
     _HEAPINFO hinfo;

@@ -115,6 +115,8 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
 // docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
 // store past BOTH Lookup arg pushes; eight source spellings re-measured here,
 // all byte-identical.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001593e0, 0x53)
 CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     int id,
@@ -160,6 +162,8 @@ CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl,
 // docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
 // store past BOTH Lookup arg pushes; eight source spellings re-measured here,
 // all byte-identical.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags) {
@@ -282,6 +286,8 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
 // docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
 // store past BOTH Lookup arg pushes; eight source spellings re-measured here,
 // all byte-identical.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159a10, 0x57)
 CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int id,
@@ -432,6 +438,8 @@ void CDDrawChildGroup::InvalidateChildShadows() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159db0, 0x5e)
 void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
     if (obj->m_flags & 0x800) {
@@ -444,6 +452,8 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
     delete obj;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159e10, 0x2e)
 void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     obj->m_flags &= 0xfffdffff;
@@ -623,6 +633,8 @@ DATA(0x0021ab28)
 static char s_dbgSys[] = "SYS";
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a210, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & 0x10000) {
@@ -798,6 +810,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
     if (!(m_flags & 0x200000)) {
@@ -853,6 +867,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
     } while (pos != NULL);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder() {
     POSITION node = m_list.GetHeadPosition();
@@ -882,6 +898,8 @@ i32 CDDrawChildGroup::CheckSortOrder() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a7f0, 0x20)
 CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
     POSITION node = m_list.GetHeadPosition();
@@ -895,6 +913,8 @@ CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a810, 0x42)
 CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
     POSITION node = m_list.GetHeadPosition();
@@ -908,6 +928,8 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
     POSITION pos = m_list.GetHeadPosition();
@@ -944,6 +966,8 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 collisionCategory) {
     POSITION pos = m_list.GetHeadPosition();
@@ -958,6 +982,8 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a9a0, 0x23)
 CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
@@ -971,6 +997,8 @@ CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a9d0, 0x45)
 CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
@@ -984,6 +1012,8 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015aa20, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     CWwdGameObject* found = 0;
@@ -1001,6 +1031,8 @@ i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015aa60, 0x23)
 i32 CDDrawChildGroup::CountByKind(i32 kind) {
     i32 count = 0;
@@ -1035,6 +1067,8 @@ void CDDrawChildGroup::PruneList() {
 // order, every parenthesization, per-term statement splits and the distributed
 // i*a+i*b+... all emit the identical order. The TU-state probe does NOT flip it.
 // docs/patterns/commutative-operand-order-is-canonical.md
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;

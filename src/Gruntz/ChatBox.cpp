@@ -330,6 +330,8 @@ i32 CChatBox::MoveFocusRight() {
     return m_activeNode->MoveFocusRightColumn() != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00183170, 0x24)
 i32 CChatBox::FocusSelect(i32 x, i32 y) {
     if (!m_activeNode) {

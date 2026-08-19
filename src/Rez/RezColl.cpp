@@ -35,6 +35,8 @@ CHashElement* CHashElement::Next() {
 // @early-stop
 // One SIB byte, pointer-from-a-member sub-family.
 // docs/patterns/sib-base-index-follows-local-decl-order.md
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
     CHashElement* e = CHashBase::FromLink(m_link.m_prev);
@@ -108,6 +110,8 @@ CHashElement* CHashBase::First() {
     return n;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
     u32 i = m_count - 1;

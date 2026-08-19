@@ -15,6 +15,8 @@ void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
     *ss = n / MILLIS_PER_SECOND;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001192a0, 0x1d)
 void TerminateString(char* text, i32 limit) {
     i32 i = 0;

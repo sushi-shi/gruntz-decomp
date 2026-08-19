@@ -5,6 +5,8 @@
 
 #include <string.h>
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118040, 0xb6)
 i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name == NULL) {
@@ -37,6 +39,8 @@ fail:
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00118130, 0x44)
 i32 CGameInfo::CopyBody(char* body) {
     if (body != NULL) {
@@ -50,11 +54,15 @@ i32 CGameInfo::CopyBody(char* body) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001181a0, 0x14)
 void CGameInfo::ClearTime() {
     memset(&m_body.m_time, 0, sizeof(m_body.m_time));
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001181d0, 0x70)
 i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     if (s == 0) {

@@ -62,6 +62,8 @@ DATA(0x00244ca4)
 i32 g_groupSentinel;
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
     i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;

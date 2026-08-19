@@ -227,6 +227,8 @@ i32 DirectSoundMgr::IsLooping() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135490, 0x73)
 i32 DirectSoundMgr::IsInHardware() {
     if (m_owner->m_initialized == 0) {
@@ -258,6 +260,8 @@ void DirectSoundMgr::SetLooping(i32 enabled) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135540, 0x1a)
 i32 DirectSoundMgr::IsLoopingEnabled() {
     if (m_owner->m_initialized == 0) {
@@ -377,6 +381,8 @@ i32 DirectSoundMgr::GetPan() {
     return pan;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135840, 0x3b)
 i32 DirectSoundMgr::GetPanPercent() {
     if (m_owner->m_initialized == 0) {
@@ -409,6 +415,8 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001358e0, 0x11)
 u32 DirectSoundMgr::GetFrequency() {
     if (m_owner->m_initialized == 0) {
@@ -417,6 +425,8 @@ u32 DirectSoundMgr::GetFrequency() {
     return m_setFreq;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135900, 0x11)
 u32 DirectSoundMgr::GetBaseFrequency() {
     if (m_owner->m_initialized == 0) {
@@ -591,6 +601,8 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
     return found;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135e10, 0x124)
 i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
     if (m_owner->m_initialized == 0) {
@@ -709,6 +721,8 @@ i32 DirectSoundMgr::LockConvert(u8* src, u32 lockBytes, u32 convert) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001360b0, 0x1e)
 i32 DSoundCloneInst::Play() {
     if (m_owner->m_initialized == 0) {
@@ -933,6 +947,8 @@ i32 SoundDevice::ReacquireViaCallback() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001365f0, 0x57)
 i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 level) {
     if (m_initialized == 0) {
@@ -947,6 +963,8 @@ i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 level) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136650, 0x37)
 i32 SoundDevice::Compact() {
     if (m_initialized == 0) {
@@ -1107,6 +1125,8 @@ DSoundCloneInst* SoundDevice::Acquire(RiffWaveHeader* riff, u32 flags, u32 loadO
     return wrapper;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136a30, 0x76)
 DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
@@ -1147,6 +1167,8 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
     return buf->Restore() != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136b00, 0xc2)
 i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts) {
     if (m_initialized == 0) {
@@ -1216,6 +1238,8 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, RiffWaveHeader* riff, u32 loadO
     return buf->LockConvert(data, size, cvt) != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136ce0, 0x92)
 i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 loadOpts) {
     if (m_initialized == 0) {
@@ -1328,6 +1352,8 @@ i32 SoundDevice::FreeSamples() {
 
 // @identity-TODO No surviving call, address-taking site, or receiver access
 // distinguishes the original owner/signature of this false-return leaf.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136f50, 0x3)
 i32 SoundDeviceReturnFalse() {
     return 0;
@@ -1488,6 +1514,8 @@ i32 SoundDevice::CreatePrimaryBuffer() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00137300, 0x23)
 IDirectSoundBuffer* SoundDevice::GetPrimary() {
     if (m_initialized == 0) {

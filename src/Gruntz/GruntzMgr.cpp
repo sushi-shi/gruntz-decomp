@@ -881,6 +881,8 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 a, i32 b, i32 c) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc20, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     CObList* list = &m_world->m_childGroup->m_list;
@@ -904,6 +906,8 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008dc90, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
     CDDrawSurfaceMgr* w = m_world;
@@ -1102,6 +1106,8 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
     return out;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
@@ -1169,6 +1175,8 @@ void CGruntzMgr::OnCheckpointReached() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
     i32 level = RunModalDialog("DEBUG_JUMPLEVEL", JumpLevelDialogProc, 1);
@@ -1198,6 +1206,8 @@ BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -1284,6 +1294,8 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008eaf0, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
@@ -1382,6 +1394,8 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     return m_lobbyResult;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
@@ -1438,6 +1452,8 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 // arm it guards, so `idx -= 2` (95.77, and WRONG - it left idx == count for every
 // other plane count, which the bounds check then rejected), `idx = count - 2` (89.62)
 // and `idx--` (84.49 comparing idx, 89.74 comparing count) all become `mov eax,<k>`.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
@@ -1463,6 +1479,8 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
@@ -1478,6 +1496,8 @@ i32 CGruntzMgr::ToggleHeightLayer() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
@@ -1540,6 +1560,8 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
     return CreateProcessA(0, cmdline, 0, 0, FALSE, 0, 0, 0, &si, &pi);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f2f0, 0x1b)
 i32 CGruntzMgr::PollUnlessIdle() {
     if (m_curState->Update() != GAMESTATE_MENU) {
@@ -1566,6 +1588,8 @@ i32 CGruntzMgr::CaptureWorldFile() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f480, 0x49)
 i32 CGruntzMgr::ClearWorldFile() {
     GameStateId mode = m_curState->Update();
@@ -1731,6 +1755,8 @@ void CGruntzMgr::RecomputeViewScale() {
     m_viewBounds.bottom = (m_world->m_level->m_mainPlane)->m_viewRect.bottom + 0x60;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
     if (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX) {
@@ -1920,6 +1946,8 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
     return path;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
     return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath))) != 0;
@@ -2077,6 +2105,8 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000907c0, 0x77)
 i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
     char path[256];
@@ -2290,6 +2320,8 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00090f10, 0x151)
 i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_curState == NULL) {
@@ -2379,6 +2411,8 @@ i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
 // arm order and the `mov eax,[eax+0x14]` load both match, and every if/else spelling
 // scores worse - `if (== )` reverses the arms (97.22) and folds the load into
 // `cmp dword ptr [eax+0x14],2`, `if (!=)` over a named local likewise (98.00).
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
@@ -2427,6 +2461,8 @@ void CGruntzMgr::CheatSkeletonToggle() {
     // Deliberately leave the return register unchanged.
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
@@ -2492,6 +2528,8 @@ i32 CGruntzMgr::IsLobbyHostReady() {
     return m_curState->OnPaint() != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000915d0, 0x3f)
 void CGruntzMgr::MuteMusicIfActive(i32 ms) {
     if (m_sound == NULL) {
@@ -2516,6 +2554,8 @@ void CGruntzMgr::MuteMusicIfActive(i32 ms) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091620, 0x3f)
 void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
     if (m_sound == NULL) {
@@ -2721,6 +2761,8 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091e20, 0x17d)
 i32 CGruntzMgr::ResetWorldState() {
     CState* st = m_curState;
@@ -2780,6 +2822,8 @@ void CGruntzMgr::StopBank0IfActive() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092060, 0x3c)
 i32 CGruntzMgr::SetAssetRoot(char* path) {
     if (path == NULL) {
@@ -2797,6 +2841,8 @@ i32 CGruntzMgr::TickStateMgrs() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000920e0, 0x32)
 i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
@@ -2806,6 +2852,8 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092130, 0x32)
 i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {
@@ -2815,6 +2863,8 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092180, 0x98)
 i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user) {
     if (cb == NULL) {
@@ -2841,6 +2891,8 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092250, 0xba)
 i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user) {
     if (cb == NULL) {
@@ -3048,6 +3100,8 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
     return FindStateById(GAMESTATE_PLAY);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
@@ -3119,6 +3173,8 @@ BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092d50, 0x3c)
 i32 CGruntzMgr::LoadOptionsSlotName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
     if (CheckPlayState()) {
@@ -3129,6 +3185,8 @@ i32 CGruntzMgr::LoadOptionsSlotName(i32 slot, i32, i32, i32, i32, const CString&
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092da0, 0x3a)
 i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     if (static_cast<u32>(idx) >= 4) {
@@ -3145,6 +3203,8 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     return s->Reset();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092df0, 0x24)
 void CGruntzMgr::ResetAllOptionsSlots() {
     GruntzPlayer* s = &m_options[0];

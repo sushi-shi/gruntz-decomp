@@ -528,6 +528,8 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00022770, 0x7d)
 i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
     if (hdc == NULL) {

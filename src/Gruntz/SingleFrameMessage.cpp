@@ -64,6 +64,8 @@ void CSingleFrameMessage::FireActivation(i32 id) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000ab710, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     ACT_NAME_ID(id, "A")

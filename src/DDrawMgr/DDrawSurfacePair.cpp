@@ -696,6 +696,8 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, CGa
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00164920, 0x35)
 i32 AnimWorkerObj::CacheTargetId(void* a) {
     if (a == NULL) {
@@ -874,6 +876,8 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
 // (retail edx/ecx); evaluating the chain in-call flips the registers to retail's
 // but lifts the store above the pushes. No spelling decouples them; islands and
 // depth-1 trees inert.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001651b0, 0x5d)
 i32 AnimWorkerObj::ResolveTarget(void* a) {
     if (a == NULL) {
@@ -1157,6 +1161,8 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32
     return w;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165b90, 0xa9)
 void CDDrawWorkerMapSmall::ResetSlots() {
     CObject* val = NULL;
@@ -1174,6 +1180,8 @@ void CDDrawWorkerMapSmall::ResetSlots() {
     m_cachedWorker = NULL;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165c40, 0xe7)
 i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
     CAniRecordBase2* w = static_cast<CAniRecordBase2*>(obj);
@@ -1201,6 +1209,8 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
 // retail `mov edi,[out-slot]; test edi` vs our eax-staged load+copy; downstream
 // the w/map register roles rotate (ebx<->edi) and the guard's `xor eax,eax`
 // elides because the tested value sits in eax. One coin, three symptoms.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     CObject* val = NULL;

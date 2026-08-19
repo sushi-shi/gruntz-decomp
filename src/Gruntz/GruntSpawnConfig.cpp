@@ -640,6 +640,8 @@ CSpawnEntry::CSpawnEntry(CString name, i32 data) {
     m_data = data;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0011c6c0, 0x27)
 i32 CGruntSpawnConfig::AnyVoicePlaying() {
     i32 i = 0;
@@ -652,6 +654,8 @@ i32 CGruntSpawnConfig::AnyVoicePlaying() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0011c700, 0x20)
 i32 CGruntSpawnConfig::VoicePlaying(i32 i) {
     CGruntVoice* v = m_voices[i];
@@ -695,6 +699,8 @@ void CGruntSpawnConfig::PauseAllVoices() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0011c7f0, 0x2b)
 void CGruntSpawnConfig::ResetPicks() {
     PauseAllVoices();

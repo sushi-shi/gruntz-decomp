@@ -300,6 +300,8 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013d530, 0x55)
 void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
     MSG msg;

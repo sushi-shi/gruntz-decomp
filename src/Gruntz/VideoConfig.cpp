@@ -338,6 +338,8 @@ void OnToggleEasyModeOption(HWND hWnd) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00036e50, 0x43)
 void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
     HWND h = GetDlgItem(hDlg, id);

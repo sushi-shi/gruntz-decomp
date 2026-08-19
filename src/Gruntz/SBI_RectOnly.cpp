@@ -2823,11 +2823,15 @@ void CStatusBarMgr::AdvanceGauge(i32 delta) {
     m_gaugeTarget = v;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00105780, 0x1f)
 void CStatusBarMgr::DrainGauge(i32 delta) {
     m_gaugeTarget = m_gauge - delta > SBI_GAUGE_EMPTY ? m_gauge - delta : SBI_GAUGE_EMPTY;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001057b0, 0xd)
 void CStatusBarMgr::SetGaugeTarget(i32 value) {
     m_gaugeTarget = value;
@@ -3365,6 +3369,8 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00106af0, 0x37)
 i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
     PickupType item = static_cast<PickupType>(handle);

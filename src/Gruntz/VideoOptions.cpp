@@ -13,6 +13,8 @@
 // copy at 0x22be40, and one TU can only ever emit one. Split out of
 // VideoConfig.cpp 2026-08-09; the retail filename is unrecovered.
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000377e0, 0x6a)
 BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

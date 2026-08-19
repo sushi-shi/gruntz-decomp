@@ -388,6 +388,8 @@ zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0016d790, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     u32 n = static_cast<u32>(sizehint);

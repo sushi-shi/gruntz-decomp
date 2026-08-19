@@ -21,6 +21,8 @@ zBitVec* zBitVec::SetBit(u32 idx) {
     return this;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00193680, 0x5e)
 zBitVec* zBitVec::Or(zBitVec* o) {
     if (static_cast<u32>(o->m_capacity) > static_cast<u32>(m_capacity)) {

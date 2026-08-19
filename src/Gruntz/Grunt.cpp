@@ -626,6 +626,8 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 // (fld/fld/fxch/fsubp) where cl folds one into a single fsubr. Follows from the
 // ebx/edi coalescing choice - retail puts the first ftol result in `other`'s
 // register, we pick ebx.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a780, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
@@ -702,6 +704,8 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     return &g_gruntMoveDirSouth;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::IntersectsTileObjectAxes() {
     CGrunt* tgt = m_tileMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);

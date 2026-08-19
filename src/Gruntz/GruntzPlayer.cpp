@@ -201,6 +201,8 @@ i32 GruntzPlayer::Reset() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000daa60, 0x24)
 i32 GruntzPlayer::ClearRoundState() {
     m_liveGate = 1;
@@ -211,6 +213,8 @@ i32 GruntzPlayer::ClearRoundState() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000daaa0, 0xd3)
 i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == NULL) {
@@ -236,6 +240,8 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000dabc0, 0xd3)
 i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == NULL) {
@@ -378,6 +384,8 @@ i32 ChannelSlots_Get(i32 i) {
     return g_soundChannelInUse[i];
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000db2f0, 0x2b)
 i32 GruntzPlayer::Deactivate() {
     if (m_liveGate == 0) {

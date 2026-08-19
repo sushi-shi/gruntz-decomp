@@ -273,6 +273,8 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00137a30, 0x4b)
 StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags) {
     StreamVoice* voice = OpenStream(src, bytes, format, dsFlags, 0, 1);
@@ -580,6 +582,8 @@ i32 StreamFeeder::TickPump(i32 now) {
     return FillBuffer(m_bufferCursor, m_bufferLength) != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138120, 0x27)
 void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ssLogEnabled = log;

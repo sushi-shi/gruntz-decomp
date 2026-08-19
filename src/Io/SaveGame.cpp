@@ -295,6 +295,8 @@ i32 CSaveGame::InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mg
     return InitializeNamedSlot(GetSlot(index), name, mgr);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5520, 0x20)
 i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
     return CopySlot(GetSlot(idx), src);
@@ -350,6 +352,8 @@ void CSaveGame::SetMagic() {
     m_magic = SAVE_PROGRESS_MAGIC;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e56d0, 0x16)
 i32 CSaveGame::TempFileExistsAt(i32 index) {
     return TempFileExists(GetSlot(index));

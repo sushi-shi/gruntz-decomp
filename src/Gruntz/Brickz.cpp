@@ -115,6 +115,8 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00082250, 0x17c)
 i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     if (x0 == x1 && y0 == y1) {

@@ -22,6 +22,8 @@
 RVA(0x000a9a40, 0xf1)
 i32 CreateAniCycle(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a9b80, 0xf1)
 i32 CreateSingleFrameMessage(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 

@@ -16,6 +16,8 @@ void CloseFileIOGlobal() {
     g_gruntzLogFile.Close();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000bd450, 0x16)
 void CFileLog::OpenGruntzLog() {
     CloseFileIOGlobal();

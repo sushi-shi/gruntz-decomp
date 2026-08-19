@@ -57,6 +57,8 @@ void CWorldSoundSet::Teardown() {
     m_list.RemoveAll();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0000b6a0, 0x83)
 CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
     const char* key,
@@ -101,6 +103,8 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
     return obj;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0000b850, 0x83)
 CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
     const char* key,
@@ -145,6 +149,8 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
     return obj;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0000ba00, 0xc6)
 CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
     const char* key,
@@ -339,6 +345,8 @@ void CAmbientSound::Recompute(i32 master) {
     m_voice->SetVolumeByIndex(v);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0000bfb0, 0xa9)
 void CAmbientSound::Restart() {
     DirectSoundMgr* voice = m_voice;

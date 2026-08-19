@@ -205,6 +205,8 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
     return m_palette->SetEntries(0, start, count, data);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
     PALETTEENTRY* buf = new PALETTEENTRY[count];
@@ -223,6 +225,8 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused)
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147ba0, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
     PALETTEENTRY* buf = new PALETTEENTRY[count];
@@ -241,6 +245,8 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147c30, 0x4d)
 void CDDPalette::GetEntries() {
     if (m_cacheB == NULL) {
@@ -255,6 +261,8 @@ void CDDPalette::GetEntries() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147c80, 0x4d)
 void CDDPalette::Apply(i32 unused) {
     PALETTEENTRY* readback = m_cacheB;
@@ -286,6 +294,8 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147d50, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
@@ -320,6 +330,8 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     delete[] snapshot;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147f30, 0xbe)
 void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, i32 durationMs) {
     if (m_active) {
@@ -348,6 +360,8 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     Tick();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147ff0, 0xa9)
 void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
     if (m_active) {
@@ -479,6 +493,8 @@ void CDDPalette::Flush() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001482c0, 0x11f)
 void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
     i32 end = start + count;
@@ -500,6 +516,8 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001483e0, 0x1c9)
 void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
@@ -575,6 +593,8 @@ i32 CDDPalette::CaptureSystemPalette() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00148720, 0x9f)
 i32 BlackoutSystemPalette() {
     HDC hdc = GetDC(0);
@@ -602,6 +622,8 @@ i32 BlackoutSystemPalette() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001487c0, 0x77)
 void CDDPalette::DumpEntries() {
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];

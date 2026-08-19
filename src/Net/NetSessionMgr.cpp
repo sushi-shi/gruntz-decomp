@@ -664,6 +664,8 @@ i32 CNetSession::Verify(i32 n) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c0320, 0x37)
 i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     for (i32 i = 0; i < 4; i++) {
@@ -676,6 +678,8 @@ i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c0370, 0x28)
 void CNetSession::AdvanceAllSlots(i32 id) {
     CNetCmdSlot* slot = m_slots;
@@ -687,6 +691,8 @@ void CNetSession::AdvanceAllSlots(i32 id) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c03b0, 0x28)
 void CNetSession::RaiseAllSlotsMax(i32 v) {
     CNetCmdSlot* slot = m_slots;

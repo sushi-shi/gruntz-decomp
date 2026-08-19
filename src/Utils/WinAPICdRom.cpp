@@ -30,6 +30,8 @@ i32 FileExistsCopy(char* szPath) {
     return OpenFile(szPath, &of, 0x4000) != -1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0001fde0, 0x189)
 char CheckCdRomRegistry() {
     DWORD valueSize;

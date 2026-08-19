@@ -112,11 +112,15 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
 DATA(0x00245510)
 FILE* g_logFile;
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000942e0, 0x18)
 void OpenDebugLog() {
     g_logFile = fopen("c:\\foo.log", "wb");
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00094310, 0x1d)
 void CloseDebugLog() {
     if (g_logFile != NULL) {

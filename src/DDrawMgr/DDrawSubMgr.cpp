@@ -553,6 +553,8 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
     return e;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e00, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
     if (m_emitGate != 0) {
@@ -571,6 +573,8 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
     return e;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e90, 0x23)
 LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
     if (m_emitGate != 0) {
@@ -582,6 +586,8 @@ LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
     return CreateEntry(src->m_name, src);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157ec0, 0x20)
 void CDDrawSubMgrLeafScan::AddEntry(LeafCue* elem, const char* key) {
     m_cues[key] = elem;
@@ -660,6 +666,8 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     }
     return sum;
 }
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2) {
     CGameLevel* lvl = OwnerMgr()->m_level;
@@ -688,6 +696,8 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
     return val;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001582c0, 0xf6)
 LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
     if (target == NULL) {
@@ -731,6 +741,8 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001584a0, 0x43)
 i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
     if (m_soundStream == NULL) {
@@ -795,6 +807,8 @@ LeafCue::~LeafCue() {
     Unload();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001586e0, 0x34)
 i32 LeafCue::LoadSoundA(RiffWaveHeader* riff) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
@@ -936,6 +950,8 @@ void CDDrawSubMgrPages::Unload() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b10, 0x2c)
 i32 CDDrawSubMgrPages::ResolvePageImage(char* name, DDrawPageKind pageIndex) {
     CDDrawSurfacePair* p;
@@ -977,6 +993,8 @@ void CDDrawSubMgrPages::BltDirtyChildrenEx() {
     OwnerMgr()->m_childGroup->BltDirtyChildrenEx(m_frontPair, m_backPair, m_overlayPair);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b90, 0x28)
 void CDDrawSubMgrPages::FlipAndNotify() {
     m_frontPair->m_surface->Flip(0);

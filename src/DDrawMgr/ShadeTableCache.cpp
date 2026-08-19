@@ -248,6 +248,8 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
 // Whole-function coloring: retail keeps the new table in ebp with edi as the
 // zero scratch; cl swaps them and memory-homes the table pointer. Permuter
 // exhausted at this shape.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e540, 0x2ea)
 CShadeTable*
 CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
@@ -334,6 +336,8 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
 // scores between the extremes (pr only / pc only / neither, measured). The
 // residue is the commutative-sum coin: retail evaluates each channel's row term
 // first, cl the column term, and swap/split/nesting spellings all canonicalize.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
@@ -362,6 +366,8 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     return t;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014ec00, 0x10f)
 CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -416,6 +422,8 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014ede0, 0x10f)
 CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -691,6 +699,8 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
     return t;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromBuffer(u8* data, i32 size) {
     CShadeTable* t = new CShadeTable;
@@ -767,6 +777,8 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 // `mov ecx,edi` in the preheader instead. Seven loop shapes (cursor pointer,
 // cursor+increment-in-the-for, hoisted size, per-element local, while form) are
 // measured inert or worse; the CSE is cl's, not the source's.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014fb40, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {

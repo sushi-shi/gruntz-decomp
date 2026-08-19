@@ -327,6 +327,8 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003b940, 0x19d)
 CString BuildCustomWwdPath(CString name) {
     if (name.GetLength() == 0) {

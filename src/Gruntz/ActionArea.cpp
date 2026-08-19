@@ -103,6 +103,8 @@ i32 CActionArea::Tick() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00008580, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
     switch (static_cast<ActionAreaOwner>(owner)) {

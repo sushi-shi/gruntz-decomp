@@ -21,6 +21,8 @@ GZ_ENUM_CONST_BEGIN(SerialSyncMarker)
     SERIAL_SYNC_MARKER_BASE = 0x1234666
 GZ_ENUM_CONST_END(SerialSyncMarker)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00013610, 0x8c)
 i32 SerializeSyncMarker(CFileMemBase* arc, i32 mode, const char* name, i32 line) {
     SerialMode serialMode = static_cast<SerialMode>(mode);

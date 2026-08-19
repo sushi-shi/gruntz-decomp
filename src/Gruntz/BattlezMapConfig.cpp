@@ -2636,6 +2636,8 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
     return best;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0002ad40, 0x71)
 CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
@@ -3315,6 +3317,8 @@ static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
 // @identity-TODO BattlezMapConfigAcceptAlwaysArg - the surviving external
 // thunk and `ret 4` prove one callee-popped dword, but no use survives to prove
 // the original symbol name or whether this was a member.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0002c670, 0x8)
 i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
     return 1;
@@ -4887,6 +4891,8 @@ i32 CBattlezMapConfig::RouteUnitTo(
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000302c0, 0x1ec)
 i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 maskC) {
     CPtrList list(10);
@@ -5203,6 +5209,8 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
 // @identity-TODO BattlezMapConfigAcceptAlwaysSixArgs - the surviving external
 // thunk and `ret 24` prove six callee-popped dwords, but no use survives to
 // distinguish a static callback from a six-argument member.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00030b00, 0x8)
 i32 __stdcall BattlezMapConfigAcceptAlwaysSixArgs(i32, i32, i32, i32, i32, i32) {
     return 1;

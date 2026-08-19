@@ -173,6 +173,8 @@ i32 StateMgrBZ::Reset() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00038730, 0x2e)
 u8 StateMgrBZ::GetDirBits() {
     u32 k = m_edgeKeys;
@@ -192,6 +194,8 @@ u8 StateMgrBZ::GetDirBits() {
     return r;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00038770, 0x40)
 i32 StateMgrBZ::SetDirBits(i32 flags) {
     m_edgeKeys = 0;

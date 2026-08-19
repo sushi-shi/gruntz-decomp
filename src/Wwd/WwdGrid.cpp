@@ -49,6 +49,8 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
 }
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00191770, 0x8d)
 i32 CWwdGrid::Setup(RECT rect) {
     i32 cellW;

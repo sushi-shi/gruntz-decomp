@@ -193,6 +193,8 @@ void CWwdGameObjectA::BltDirtyRegions(
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001509c0, 0xab)
 i32 CWwdGameObjectA::Test() {
     if (m_layer == NULL) {
@@ -760,6 +762,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151b90, 0x70)
 i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {
@@ -825,6 +829,8 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151d20, 0x3a)
 i32 CGameObject::NotifyHooked(i32 arg) {
     AnimWorkerObj* p = m_animWorker;
@@ -1016,6 +1022,8 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
     return nf;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt(CObject* elem, i32 index) {
     m_items.SetAtGrow(index, elem);
@@ -1182,6 +1190,8 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
     return count;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152570, 0x24)
 ShadeMode CDDrawWorker::GetFirstFrameState() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));

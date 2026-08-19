@@ -272,6 +272,8 @@ void CDDrawWorkerHost::Unload() {
 // one insn: cl schedules the `val = NULL` zero store between the two Lookup arg
 // pushes, retail after both. init-at-decl, mgr-hoist, ref-cast spellings and the
 // permuter are inert on the placement.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val;
@@ -420,6 +422,8 @@ void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
     SetTileSize(image->m_width, image->m_height);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {

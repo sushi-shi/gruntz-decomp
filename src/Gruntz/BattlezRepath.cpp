@@ -85,6 +85,8 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00035210, 0x4f)
 i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
     CPtrList& lst = m_ctx->m_cmdGrid->m_baseList;

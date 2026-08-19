@@ -12,6 +12,8 @@
 
 #include <stddef.h>
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00114f50, 0x3e)
 i32 ChainForward14(
     Utils::RegistryHelper* bute,

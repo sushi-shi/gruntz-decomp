@@ -165,6 +165,8 @@ i32 CDDrawShadeBlit::BuildRle(
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00148f50, 0x61)
 i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette) {
     if (surf == NULL) {
@@ -180,6 +182,8 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
     return r;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00148fc0, 0x104)
 i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     CFile file;
@@ -315,6 +319,8 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
 // as its ghost. A `flags` local cannot reproduce that: stored, it emits a real f1
 // write; deleted, the whole chain folds away. See docs/patterns/
 // registerized-member-miscompile-ships-uninitialized-field.md.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001493b0, 0xfd)
 
 i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
@@ -343,6 +349,8 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
     return DecodeFrame(name, desc);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001494b0, 0x11a)
 i32 CDDrawShadeBlit::Decompress(u8* dest) {
     if (m_srcBpp != 1) {
@@ -460,6 +468,8 @@ u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     return out;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00149780, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip) {
     ShadeRect clip;

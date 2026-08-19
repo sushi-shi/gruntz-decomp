@@ -737,6 +737,8 @@ void CGrunt::StopStruckVoiceSound() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyVoiceParams() {
     if (g_gameReg->m_soundEnabled == 0) {

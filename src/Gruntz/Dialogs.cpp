@@ -1008,14 +1008,20 @@ void CBattlezDlg::RefreshOptionState() {}
 // @identity-TODO BattlezNoOp - Dialogs.cpp ownership follows from the adjacent
 // same-file claims and its incremental-link thunk. No caller, address-taker, or
 // operand survives to prove whether the original external symbol was a member.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00017400, 0x1)
 void BattlezNoOp() {}
 
 // @identity-TODO BattlezNoOpArg - same evidence as BattlezNoOp. `ret 4` proves
 // one callee-popped dword, but not the original semantic name or receiver type.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00017420, 0x3)
 void __stdcall BattlezNoOpArg(i32) {}
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00017440, 0x3)
 i32 CBattlezDlg::UnusedMsgHandler() {
     return 0;

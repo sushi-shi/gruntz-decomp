@@ -427,6 +427,8 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013e8f0, 0xb0)
 void CDDSurface::ReloadImageCache() {
     u32 i = 0;
@@ -474,6 +476,8 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ea70, 0x21)
 CDDSurface* CDDSurface::GetElementAt(i32 i) {
     if (i >= 0 && i < m_elements.GetSize()) {
@@ -492,6 +496,8 @@ i32 CDDSurface::SetColorKey(u32 flags, DDCOLORKEY* key) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013eae0, 0x24)
 i32 CDDSurface::SetColorKeyVal(u32 flags, u32 key) {
     DDCOLORKEY ck;
@@ -499,6 +505,8 @@ i32 CDDSurface::SetColorKeyVal(u32 flags, u32 key) {
     ck.dwColorSpaceHighValue = key;
     return SetColorKey(flags, &ck);
 }
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013eb10, 0x28)
 i32 CDDSurface::SetColorKeyRange(u32 flags, u32 lo, u32 hi) {
     DDCOLORKEY ck;
@@ -520,6 +528,8 @@ void CDDSurface::FillPalette(u32 key) {
     this->SetColorKey(8, &ck);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013eb80, 0x21)
 i32 CDDSurface::SetDestColorKey(u32 key) {
     DDCOLORKEY ck;
@@ -658,6 +668,8 @@ void CDDSurface::Clear(i32 white) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ee30, 0x29)
 void CDDSurface::WaitFlip() {
     while (m_ddSurface->GetFlipStatus(DDGFS_ISFLIPDONE) == DDERR_WASSTILLDRAWING) {
@@ -728,6 +740,8 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans)
 // folds into the preheader, and it keeps `rows` in esi at the guard where cl
 // memory-homes it and emits a redundant load/store pair. The while(n-- > 0)
 // respelling regresses; if+do-while is the closest shape.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f020, 0x43f)
 i32 CDDSurface::ShadeBlt(
     struct tagRECT* dstRect,
@@ -1079,6 +1093,8 @@ i32 CDDSurface::RestoreLost() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f990, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
     i32 dwTrans = 0x10 + (useColorKey != 0);
@@ -1490,6 +1506,8 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00140770, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
@@ -1834,6 +1852,8 @@ i32 CDDSurface::DecodeRun24(u8* src) {
 
 #pragma optimize("", on)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(
     CDDSurface* src,
@@ -1849,6 +1869,8 @@ i32 CDDSurface::RotateBlit(
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00141080, 0x174)
 i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey) {
     RECT sr;
@@ -1884,6 +1906,8 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00141200, 0x39)
 i32 CDDSurface::ScaleBlit(
     CDDSurface* src,
@@ -1899,6 +1923,8 @@ i32 CDDSurface::ScaleBlit(
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00141240, 0x39)
 i32 CDDSurface::RotateScaleBlit(
     CDDSurface* src,

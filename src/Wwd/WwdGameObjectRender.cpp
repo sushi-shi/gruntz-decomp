@@ -187,6 +187,8 @@ CWwdGameObject* CWwdGameObject::CreateObject(
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
@@ -199,6 +201,8 @@ CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name,
     return CreateObject(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001667e0, 0x2f)
 i32 CWwdGameObject::AddChild(CGameObject* child) {
     if (child == NULL) {
@@ -224,6 +228,8 @@ void CWwdGameObject::Clear() {
     m_children.RemoveAll();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00166850, 0x29)
 i32 CWwdGameObject::RemoveChild(CGameObject* child) {
     if (child == NULL) {
@@ -237,6 +243,8 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00166880, 0x29)
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;

@@ -442,6 +442,8 @@ void CGameMgr::SetFrameRate(i32 fps) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013df00, 0x25)
 i32 CGameMgr::TrySetFrameRate(i32 fps) {
     if (m_pacingGate > 0) {
@@ -452,6 +454,8 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {

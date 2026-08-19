@@ -388,6 +388,8 @@ void CNetMgr::ClearPlayerList() {
 
 
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00178790, 0x89)
 void CNetMgr::PopulatePlayerList(HWND hList) {
     if (hList == NULL) {
@@ -530,6 +532,8 @@ CNetMgr::EnumPlayersCb(CNetPlayerListNode* a, const char* b, const char* c, i32 
     return CreatePlayer(const_cast<char*>(b), c, d);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00178a40, 0x3e)
 i32 CNetMgr::EnumGroupsAll() {
     ClearSessionList();
@@ -672,6 +676,8 @@ CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
 
 
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00178d40, 0xdf)
 void CNetMgr::PopulateSessionList(HWND hList) {
     if (hList == NULL) {
@@ -724,6 +730,8 @@ i32 CNetMgr::RemovePlayerObj(CNetSessionNode* obj) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00178e60, 0x23)
 i32 CNetMgr::RemovePlayerById(i32 id) {
     CNetSessionNode* obj = GetPlayerData(id);
@@ -766,6 +774,8 @@ i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* 
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00178f50, 0x63)
 i32 CNetMgr::SendEx(
     i32 idFrom,
@@ -794,6 +804,8 @@ i32 CNetMgr::SetData(i32 a, i32 b, i32 c, void* data, i32 size) {
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179010, 0x78)
 i32 CNetMgr::Receive(
     CNetSessionNode* from,
@@ -821,6 +833,8 @@ i32 CNetMgr::SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size) {
     return hr;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001790e0, 0x4f)
 i32 CNetMgr::RemovePlayerNode(CNetPlayerListNode* node) {
     if (node == NULL) {
@@ -854,6 +868,8 @@ i32 CNetMgr::EnumSessions(CNetCaps* caps, void* ctx) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179190, 0x84)
 i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags) {
     if (!a) {
@@ -877,6 +893,8 @@ i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179240, 0x22)
 i32 CNetMgr::EnumSessions2(void* ctx) {
 
@@ -894,6 +912,8 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
 
 
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
     m_groupSelId = m_groups.GetHeadPosition();

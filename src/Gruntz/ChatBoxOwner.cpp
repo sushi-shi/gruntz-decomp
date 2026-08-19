@@ -274,6 +274,8 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 // @identity-TODO ChatBoxOwnerReturnTrue - the surviving incremental-link thunk
 // proves external linkage, and `ret 4` proves one callee-popped dword. No caller,
 // address-taker, or operand survives to recover the original semantic identity.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00021260, 0x8)
 i32 __stdcall ChatBoxOwnerReturnTrue(i32) {
     return 1;

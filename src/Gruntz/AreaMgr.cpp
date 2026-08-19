@@ -188,6 +188,8 @@ void CAreaMgr::Reset() {
     m_currentLevelIndex = 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
     for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
@@ -260,6 +262,8 @@ void CSpawnList::DeleteAllEntries() {
 // reached through the ILT thunk 0x22b6 that DeleteAllEntries calls.
 RVA_COMPGEN(0x0009a4a0, 0x5, ??1CSpawnEntry@@QAE@XZ)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a4c0, 0x3e)
 i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == NULL) {

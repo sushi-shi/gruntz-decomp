@@ -282,6 +282,8 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     return count;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00168a20, 0x46)
 i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
     if (cb == NULL) {
@@ -304,6 +306,8 @@ i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*))
     return count;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00168af0, 0x6d)
 CGameObject* CWwdSpatialMgr::GetFirstObject() {
     m_curGrid = m_grid0;
@@ -325,6 +329,8 @@ CGameObject* CWwdSpatialMgr::GetFirstObject() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00168b60, 0x85)
 CGameObject* CWwdSpatialMgr::GetNextObject() {
     if (m_curGrid == NULL) {

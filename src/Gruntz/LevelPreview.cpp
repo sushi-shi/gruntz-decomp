@@ -35,6 +35,8 @@
 DATA(0x0024c69c)
 i32 g_previewCancelQuits = 0;
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de030, 0xc2)
 
 i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
@@ -60,6 +62,8 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
@@ -70,6 +74,8 @@ void CPreviewState::ResetPreview() {
     CState::ReleaseResources();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de190, 0x35)
 i32 CPreviewState::NextScreenCmd(i32 param) {
     while (ShowCursor(FALSE) >= 0) {
@@ -79,6 +85,8 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -100,6 +108,8 @@ i32 CPreviewState::Tick() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de2c0, 0x5c)
 i32 CPreviewState::Refade() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
@@ -112,6 +122,8 @@ i32 CPreviewState::Refade() {
     return r;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de340, 0x56)
 i32 CPreviewState::RefadeVirtual() {
     if (IsActive() == 0) {
@@ -124,6 +136,8 @@ i32 CPreviewState::RefadeVirtual() {
     return r;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de3c0, 0x2d)
 i32 CPreviewState::OnKey(i32 key, i32 param) {
     if (key == VK_ESCAPE) {
@@ -135,6 +149,8 @@ i32 CPreviewState::OnKey(i32 key, i32 param) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de400, 0xd)
 i32 CPreviewState::OnLButtonDown(i32, i32, i32) {
     LoadLevelPreviewScreen();

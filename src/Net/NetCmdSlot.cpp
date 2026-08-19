@@ -268,6 +268,8 @@ void CNetCmdSlot::ResetTriple(i32* p) {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c10d0, 0x7c)
 char* __stdcall NetCmdIdToString(i32* arr) {
     g_idListBuf[0] = 0;

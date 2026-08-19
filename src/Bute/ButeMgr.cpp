@@ -1293,6 +1293,8 @@ bool CButeMgr::ParseGroup() {
 // (`mov [esi+0x10d],bl`, `push ebx` for each virtual-base ctor flag,
 // `test [..],bl`, `mov al,bl`) where cl gives us the immediate form and one
 // fewer callee-saved push, shifting every esp displacement by 4.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
     Init();
@@ -1523,6 +1525,8 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
 
 RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
     CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
@@ -1603,6 +1607,8 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
 
 RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
     CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
@@ -1772,6 +1778,8 @@ RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
 // only caller, and it CALLS the helper instead of expanding it.
 RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
@@ -1851,6 +1859,8 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
 
 RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00173cb0, 0x4e)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
@@ -1929,6 +1939,8 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
 }
 RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001741f0, 0x4e)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));
@@ -2007,6 +2019,8 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
 }
 RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174770, 0x4e)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tree()->Find(tag));

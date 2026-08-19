@@ -101,6 +101,8 @@ void CRangeSet::AddFromString(char* str) {
 // @early-stop
 // Same one SIB byte as MonoClear, at all three of its address sites.
 // docs/patterns/sib-base-index-follows-local-decl-order.md
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
@@ -130,6 +132,8 @@ void MonoNewline() {
 // @early-stop
 // One SIB byte; docs/patterns/sib-base-index-follows-local-decl-order.md (the
 // single-local corollary). MonoNewline carries the same inversion at 3 sites.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184db0, 0x28)
 void MonoClear() {
     i32 i = 0;
@@ -160,6 +164,8 @@ void RezAssertFail(char* fmt, ...) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184e60, 0x6d)
 void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     char buf[256];
@@ -173,6 +179,8 @@ void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184ed0, 0x5b)
 void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     char buf[256];
@@ -185,6 +193,8 @@ void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184f30, 0x73)
 void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
     char buf[256];

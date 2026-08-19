@@ -209,8 +209,6 @@ i32 g_soundChannelInUse[TINT_COUNT];
 DATA(0x002455f0)
 i32 g_levelBias100 = 0;
 
-// @dead-code
-// Zero-ref: retail has no caller or address-taking reference.
 DATA(0x0024c020)
 char g_customLevelText[0x200];
 
@@ -938,6 +936,8 @@ i32 CPlay::DrawWorldFrames() {
     return steps;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_inputState->Retune(
@@ -1014,6 +1014,8 @@ i32 CPlay::ProfileInputFrame() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
     DWORD(WINAPI * tg)(void) = timeGetTime;
@@ -3424,12 +3426,12 @@ i32 CPlay::DrawWorldPresent() {
 }
 
 // @early-stop
-// @dead-code
-// Zero-ref: retail has no caller or address-taking reference.
 // The only body residue is the dead source-RECT top word: retail spills it to
 // [esp+0x30], while this build uses the soon-overwritten dr.top at [esp+0x20].
 // Copy-initialized RECT forms change the live copy and are not equivalent; the
 // complete parser-state forest leaves this dead-slot choice unchanged.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000cf0a0, 0x567)
 void CPlay::DrawDebugStatsFull() {
     if (g_debugDisplayFlags & 0x20) {
@@ -3653,6 +3655,8 @@ i32 CPlay::CompleteLevel() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000cfc90, 0x1d1)
 void CPlay::DrawCustomLevelBanner() {
     if (m_mgr->m_strWorldFile.IsEmpty()) {
@@ -4426,6 +4430,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CDDrawWorker* set = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
@@ -5986,6 +5992,8 @@ done:
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d5c10, 0x10d)
 i32 CState::DrawScreenTextImage(const char* name) {
     char buf[0x40];

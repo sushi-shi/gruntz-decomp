@@ -128,6 +128,8 @@ namespace NetLobby {
     RVA(0x000bdbe0, 0x1)
     void UpdateJoinWaitDialog(HWND, CMulti*) {}
 
+    // @dead-code
+    // Zero-ref: retail has no caller or address-taking reference.
     RVA(0x000bdc00, 0x10c)
     BOOL CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
@@ -347,6 +349,8 @@ namespace NetLobby {
         }
     }
 
+    // @dead-code
+    // Zero-ref: retail has no caller or address-taking reference.
     RVA(0x000be550, 0x193)
     BOOL CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;

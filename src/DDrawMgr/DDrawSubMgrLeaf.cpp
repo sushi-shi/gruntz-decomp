@@ -105,6 +105,8 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, CParseSource* ent
     return el;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001529b0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, const char* entry) {
     CAniElement* el = new CAniElement;

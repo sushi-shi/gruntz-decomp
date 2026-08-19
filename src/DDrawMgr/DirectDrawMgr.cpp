@@ -48,6 +48,8 @@ CPtrArray g_modeArray;
 DATA(0x00283ee4)
 GUID* g_ddCreateCtx = NULL;
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001413d0, 0x27)
 void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
     g_ddLogEnabled = log;
@@ -403,6 +405,8 @@ i32 CDDrawPtrCollections::CreateDevice(
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00141ff0, 0x6c)
 i32 CDDrawPtrCollections::Init(
     void* factory,
@@ -470,6 +474,8 @@ void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
     delete item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001421a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::CreateSurfaceFromDesc(const DDSURFACEDESC* desc) {
     CDDSurface* item = new CDDSurface;
@@ -520,6 +526,8 @@ CDDSurface* CDDrawPtrCollections::CreateKeyedSurface(
     return item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001424a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::CreateFileSurfaceFromDesc(const DDSURFACEDESC* desc) {
     CFileImageSurface* item = new CFileImageSurface;
@@ -542,6 +550,8 @@ CDDSurface* CDDrawPtrCollections::LoadFileSurface(char* path, i32 caps, i32 colo
     return item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142630, 0xfe)
 i32 CDDrawPtrCollections::CreateRange(
     CDDSurface** out,
@@ -573,6 +583,8 @@ i32 CDDrawPtrCollections::CreateRange(
     return n;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142730, 0xc8)
 CDDSurface* CDDrawPtrCollections::CreateBlit7Surface(i32 a, i32 b, i32 c) {
     CPoolItemA88* item = new CPoolItemA88;
@@ -588,6 +600,8 @@ RVA_COMPGEN(0x00142800, 0x1e, ??_GCPoolItemA88@@UAEPAXI@Z)
 RVA(0x00142820, 0x53)
 CPoolItemA88::~CPoolItemA88() {}
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142880, 0xbe)
 CDDSurface* CDDrawPtrCollections::CreateBlit7SurfaceFromDesc(const DDSURFACEDESC* desc) {
     CPoolItemA88* item = new CPoolItemA88;
@@ -599,6 +613,8 @@ CDDSurface* CDDrawPtrCollections::CreateBlit7SurfaceFromDesc(const DDSURFACEDESC
     return item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142940, 0xd4)
 CDDSurface* CDDrawPtrCollections::CreatePaletteSurface(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
@@ -615,6 +631,8 @@ RVA_COMPGEN(0x00142a20, 0x1e, ??_GCPoolItemAB8@@UAEPAXI@Z)
 RVA(0x00142a40, 0x53)
 CPoolItemAB8::~CPoolItemAB8() {}
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142aa0, 0xca)
 CDDSurface* CDDrawPtrCollections::CreatePaletteSurfaceFromDesc(const DDSURFACEDESC* desc) {
     CPoolItemAB8* item = new CPoolItemAB8;
@@ -639,6 +657,8 @@ CDDSurface* CDDrawPtrCollections::Create24BitPaletteSurface(i32 a) {
     return item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142c40, 0xd7)
 CDDSurface* CDDrawPtrCollections::CreateBlit47Surface(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     CPoolItemAE8* item = new CPoolItemAE8;
@@ -654,6 +674,8 @@ RVA_COMPGEN(0x00142d20, 0x1e, ??_GCPoolItemAE8@@UAEPAXI@Z)
 RVA(0x00142d40, 0x53)
 CPoolItemAE8::~CPoolItemAE8() {}
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00142da0, 0xbe)
 CDDSurface* CDDrawPtrCollections::CreateBlit47SurfaceFromDesc(const DDSURFACEDESC* desc) {
     CPoolItemAE8* item = new CPoolItemAE8;
@@ -762,6 +784,8 @@ CDDPalette* CDDrawPtrCollections::CreatePaletteFromTrailingData(void* a, u32 b, 
     return item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadTrailingRgbPalette(const char* path, i32 z) {
     CFile file;
@@ -836,6 +860,8 @@ i32 CDDrawPtrCollections::Compare(DDSURFACEDESC* a, DDSURFACEDESC* b) {
     return a->ddpfPixelFormat.dwRGBBitCount > b->ddpfPixelFormat.dwRGBBitCount;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143420, 0x4b)
 CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
     i32 idx = FindLast(k0, k1, k2);
@@ -949,6 +975,8 @@ CDDSurface* CDDrawPtrCollections::CreatePoolItem(CDDSurface* srcSurface, i32 cap
     return item;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143740, 0x93)
 i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
@@ -982,6 +1010,8 @@ i32 RestoreLostSurfaces() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143810, 0x2b)
 i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free) {
     DDSCAPS ddsCaps;
@@ -990,6 +1020,8 @@ i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free
     return hr == 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143840, 0x32)
 i32 CDDrawPtrCollections::GetFreeVidMem() {
     DDSCAPS caps;
@@ -1020,6 +1052,8 @@ CreateDirectDrawVia(
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001438c0, 0x31)
 IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
     IDirectDrawSurface* surf = NULL;
@@ -1033,6 +1067,8 @@ IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
     return surf;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143900, 0x4d)
 i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 
@@ -1069,6 +1105,8 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFromRgb(u8* buf, i32 z) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001439b0, 0x3f)
 i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag) {
     if (entries == NULL) {
@@ -1083,6 +1121,8 @@ i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001439f0, 0x35)
 i32 CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag) {
     if (buf == NULL) {
@@ -1094,6 +1134,8 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i3
     return SetDisplayPaletteFromRgb(buf + size - PALETTE_RGB_BYTE_COUNT, tag);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00143a30, 0xe9)
 i32 CDDrawPtrCollections::LoadDisplayPaletteFromFile(const char* path, i32 z) {
     CFile file;

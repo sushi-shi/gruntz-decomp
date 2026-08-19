@@ -30,6 +30,8 @@ void CRezList::AddTail(CRezItmBase* node) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00185240, 0x48)
 void CRezList::InsertAfter(CRezItmBase* pos, CRezItmBase* node) {
     if (pos == NULL) {
@@ -45,6 +47,8 @@ void CRezList::InsertAfter(CRezItmBase* pos, CRezItmBase* node) {
     pos->m_next = node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00185290, 0x48)
 void CRezList::InsertBefore(CRezItmBase* pos, CRezItmBase* node) {
     if (pos == NULL) {

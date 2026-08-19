@@ -39,6 +39,8 @@ i32 BuildGameDate(CGameInfoTime* out) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001183b0, 0x211)
 i32 CGameInfo::FormatGameInfoString() {
     char* name = m_body.m_name;

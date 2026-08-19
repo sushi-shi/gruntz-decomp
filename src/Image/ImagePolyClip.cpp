@@ -76,6 +76,8 @@ i32 WarpIsPow2(i32 x) {
 // @early-stop
 // Retail spills dx1/dy1 as float temps and keeps v0->x on the x87 stack across
 // the two idivs; cl computes the cross product entirely in x87 registers.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00145e30, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     PolygonWinding sign = POLYGON_WINDING_UNSET;

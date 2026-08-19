@@ -61,6 +61,8 @@ i32 CDemo::CompleteLevel() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c070, 0x47)
 i32 CDemoSetup::SetupDemoActors() {
     m_world->m_childGroup->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);

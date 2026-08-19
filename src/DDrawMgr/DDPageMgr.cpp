@@ -114,6 +114,8 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017c2a0, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     CString cls(AfxRegisterWndClass(3, 0, 0, 0));
@@ -806,6 +808,8 @@ i32 CMoviePlayer::CheckMode16() {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017d3a0, 0x259)
 i32 CMoviePlayer::AddToPlaylist(
     const char* src,
@@ -892,6 +896,8 @@ i32 CMoviePlayer::FreeAll() {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017d720, 0x188)
 MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
     if (!m_initialized || loops < -1 || loops == 0) {

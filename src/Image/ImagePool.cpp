@@ -99,6 +99,8 @@ void CImagePool::ClearPalettes() {
     m_reserved48 = 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174fe0, 0xfe)
 CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -125,6 +127,8 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount,
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001750e0, 0x103)
 CRezImage*
 CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, i32 flag) {
@@ -178,6 +182,8 @@ CRezImage* CImagePool::AddSurfaceOp(u8* buf, RezDecodeKind kind, i32 ctrl) {
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001752f0, 0xfc)
 CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -205,6 +211,8 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001753f0, 0xf4)
 CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -231,6 +239,8 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal)
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001754f0, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -246,6 +256,8 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175570, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteRGB(u8* rgb, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -261,6 +273,8 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(u8* rgb, i32 flags) {
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001755f0, 0x82)
 CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     g_hResModule = m_resourceModuleHandle;
@@ -277,6 +291,8 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175680, 0x85)
 CImagePaletteNode* CImagePool::AddImageDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -292,6 +308,8 @@ CImagePaletteNode* CImagePool::AddImageDispatch(u8* buf, u32 size, RezDecodeKind
     return node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175710, 0x69)
 i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
     if (img == NULL) {
@@ -483,6 +501,8 @@ i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
     return DecodeBmpHeader(dc, w, h, bitCount, flag);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175d50, 0xad)
 void CRezImage::Fill(i32 value) {
     if (m_rowPad == 0) {
@@ -786,6 +806,8 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {
@@ -816,6 +838,8 @@ void CRezImage::FlipVertical() {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176960, 0x168)
 i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
     i32 h = src->m_height;
@@ -866,6 +890,8 @@ void CRezImage::SetPalette(CImagePaletteNode* paletteNode, i32 scalar) {
     m_paletteScalar = scalar;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176b00, 0x2c)
 i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
     switch (m_bitCount) {
@@ -940,6 +966,8 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176da0, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;
@@ -980,6 +1008,8 @@ i32 CImagePaletteNode::ProcessPal(u8* rgb, i32 flags) {
     return Build(pal, flags);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176ec0, 0x64)
 i32 CImagePaletteNode::ProcessPalQuad(u8* bgr, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
@@ -992,6 +1022,8 @@ i32 CImagePaletteNode::ProcessPalQuad(u8* bgr, i32 flags) {
     return Build(pal, flags);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176f30, 0x51)
 i32 CImagePaletteNode::ProcessPalBGR(u8* bgr, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];

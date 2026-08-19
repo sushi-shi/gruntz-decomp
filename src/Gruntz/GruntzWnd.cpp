@@ -21,6 +21,8 @@ CGruntzWnd::~CGruntzWnd() {
     Destroy();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00094720, 0x18)
 i32 CGruntzWnd::CreateAndShow(CREATESTRUCTA* params, CGameApp* owner) {
     return CGameWnd::CreateAndShow(params, owner) != 0;

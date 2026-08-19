@@ -114,6 +114,8 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     return RunTitle(name, a, b, c, d) != 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa410, 0xf5)
 i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
@@ -152,6 +154,8 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa550, 0x10c)
 i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
@@ -218,6 +222,8 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 // Whole-function esi/edi role swap. Declaration order is not the lever: all three
 // orders of the two surface locals (including declare-then-assign, which keeps the
 // load order) emit the identical registers.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa790, 0x104)
 i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
@@ -303,6 +309,8 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000faa60, 0xed)
 i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;
@@ -339,6 +347,8 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == NULL) {
@@ -430,6 +440,8 @@ void CState::Present(i32 pct) {
     m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000faf50, 0x31)
 i32 CState::ShadeScreen(i32 pct) {
     i32 v = g_skipNextScreenEffect;

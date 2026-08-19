@@ -28,6 +28,8 @@ void DSoundList::InsertTail(DSoundLink* node) {
     m_tail = node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139140, 0x41)
 void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
     if (after == NULL) {
@@ -43,6 +45,8 @@ void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
     after->m_next = node;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139190, 0x44)
 void DSoundList::InsertBefore(DSoundLink* before, DSoundLink* node) {
     if (before == NULL) {

@@ -5,6 +5,8 @@
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
     AnimWorkerObj* w = obj->m_animWorker;

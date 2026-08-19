@@ -67,6 +67,8 @@ DeviceState* CInputDevRoot::ReadState() {
     return m_stateBuffer;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00134df0, 0x33)
 DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
     m_deviceInfo.dwSize = sizeof(m_deviceInfo);
@@ -78,6 +80,8 @@ DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
     return &m_deviceInfo;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00134e30, 0x36)
 DIDEVCAPS* CInputDevRoot::GetCapabilities() {
     // RETAIL BUG, preserved: 0x244 is sizeof(DIDEVICEINSTANCEA), copied down
@@ -93,6 +97,8 @@ DIDEVCAPS* CInputDevRoot::GetCapabilities() {
     return &m_caps;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00134e70, 0x3f)
 DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
     // Same copied size, same consequence - DIPROPHEADER is 0x10 bytes. See the
@@ -169,6 +175,8 @@ i32 CInputDevRoot::Unacquire() {
     return hr == 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135000, 0x3b)
 i32 CInputDevRoot::Escape(LPDIEFFESCAPE data) {
     if (data == NULL) {

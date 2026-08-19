@@ -12,6 +12,8 @@ void ActiveWait(u32 milliseconds) {
         ;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013e010, 0x32)
 void DebugTrace(const char* fmt, ...) {
     char buf[256];

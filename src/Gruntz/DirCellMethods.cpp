@@ -81,11 +81,15 @@ bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction == b->direction;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c820, 0x18)
 bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction != b->direction;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c850, 0x38)
 void GruntDirectionCell::RotateClockwise(i32 steps) {
     if (steps > 0) {
@@ -98,6 +102,8 @@ void GruntDirectionCell::RotateClockwise(i32 steps) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c8a0, 0x38)
 void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
     if (steps > 0) {
@@ -127,6 +133,8 @@ i32 CTriRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGame
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c990, 0x1bc)
 BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
@@ -198,6 +206,8 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     return result;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003cdd0, 0x19f)
 BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);

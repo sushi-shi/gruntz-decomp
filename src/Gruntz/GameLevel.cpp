@@ -105,6 +105,8 @@ i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
 
 // Dead in retail: no .text or .data reference reaches 0x15d170. The six sites that
 // set the parameter block expand SetParamBlockDefaults instead.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015d170, 0x73)
 void CGameLevel::ResetParamBlock() {
     SetParamBlockDefaults();
@@ -351,6 +353,8 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015d790, 0x8b)
 i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     if (cursor == NULL) {
@@ -464,6 +468,8 @@ void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015dad0, 0x2c)
 void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor) {
     i32 i = 0;
@@ -475,6 +481,8 @@ void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015db00, 0x2e)
 void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor) {
     i32 i = m_mainIndex + 1;
@@ -486,6 +494,8 @@ void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
     CDDrawWorkerHost* p = (index >= 0 && index < m_planes.GetSize())
@@ -516,6 +526,8 @@ i32 CGameLevel::RemovePlane(i32 index) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015dbe0, 0x70)
 i32 CGameLevel::MovePlane(i32 from, i32 to) {
     if (from >= 0 && to < m_planes.GetSize()) {
@@ -1041,6 +1053,8 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015e9c0, 0x139)
 i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
     i32 hiX = t->m_extent.right + x;
@@ -1162,6 +1176,8 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
     return destY;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f090, 0x127)
 i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
     i32 limit = t->m_screenY + t->m_extent.bottom;
@@ -1213,6 +1229,8 @@ i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i3
     return destY;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f340, 0x124)
 i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
     i32 limit = t->m_screenY + t->m_extent.top - 1;
@@ -1227,6 +1245,8 @@ i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f470, 0x193)
 i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
     i32 py2 = t->m_extent.bottom + off + 1;
@@ -1241,6 +1261,8 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
     return r2 == TILEKIND_CLIMB;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f610, 0x191)
 i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
     y = ResolveCeilingCollision(t, x, y, flags);
@@ -1278,6 +1300,8 @@ done:
     return y;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f7b0, 0x11f)
 i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     y = ResolveFloorCollision(t, x, y, flags);
@@ -1315,6 +1339,8 @@ i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f9f0, 0x11a)
 i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
     // The foot row; both probes take the row BELOW it, and retail's two separate
@@ -1335,6 +1361,8 @@ i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015fb10, 0x119)
 i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
     i32 probeY = t->m_extent.top + y - 1;
@@ -1353,6 +1381,8 @@ i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) 
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015fc30, 0x17f)
 i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
     TileCollisionKind r1;
@@ -1518,6 +1548,8 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160080, 0x187)
 i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;
@@ -1534,6 +1566,8 @@ i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160210, 0x234)
 i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;
@@ -1554,6 +1588,8 @@ i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160450, 0xd6)
 i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     i32 px = t->m_screenX;
@@ -1660,6 +1696,8 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
     return outLen == src->mainBlockLength ? dest : 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160870, 0x43)
 i32 __stdcall WwdFile_CompressMainBlock(
     unsigned char* src,
@@ -1677,6 +1715,8 @@ i32 __stdcall WwdFile_CompressMainBlock(
     return WapUncompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001608c0, 0xc0)
 TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
@@ -1686,6 +1726,8 @@ TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     return result;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160980, 0xc0)
 TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
@@ -1695,6 +1737,8 @@ TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     return result;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     if (t->m_extent.left == COORD_UNSET) {
@@ -1729,6 +1773,8 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
 }
 
 // @early-stop
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160c50, 0x289)
 i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
     if (x1 > x0) {
@@ -1760,6 +1806,8 @@ void CGameLevel::MainPlaneNotify() {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160ef0, 0x42)
 i32 CGameLevel::ValidateAllPlanes(char* errOut) {
     i32 ok = 1;
@@ -1825,6 +1873,8 @@ i32 CGameLevel::CanSaveName(CFileMemBase* s) {
     return s != NULL;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001610a0, 0x70)
 i32 CGameLevel::SaveName(CFileMemBase* s) {
     if (s == NULL) {
@@ -1838,6 +1888,8 @@ i32 CGameLevel::SaveName(CFileMemBase* s) {
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161110, 0x64)
 i32 CGameLevel::LoadName(CFileMemBase* s) {
     if (s == NULL) {
