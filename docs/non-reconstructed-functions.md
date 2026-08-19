@@ -61,17 +61,17 @@ can be called empty.
 
 `@early-stop` and `@identity-TODO` are state markers, not completeness evidence. The
 early-stop cleanup removed stale exact markers, duplicate markers, and markers attached
-to bodies that were still missing logic. The current audit has 676 live markers, no
+to bodies that were still missing logic. The current audit has 677 live markers, no
 marker on an exact function, and one understood unmapped marker: the inline `CPlay`
 constructor is defined in `Play.h` but its retail copy is emitted and pinned in
 `gruntzmgr`. A future exact match must have its stale marker removed.
 
-Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 665
-complete bodies and leaves 51 unparked candidates. Marker occurrences cannot be
+Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 666
+complete bodies and leaves 50 unparked candidates. Marker occurrences cannot be
 subtracted directly from the target count because a few bodies carry duplicate markers
 and some live markers sit on current dips that have already reached 100% historically.
 The unparked set is derived from the same inventory/Model join, ordered by historical
-MAX; its first row is currently `CSBI_StatzTabGruntBar::Update` at 91.00%.
+MAX; its first row is currently `CDDrawWorkerHost::WrapCoord` at 91.49%.
 
 There are 35 `@identity-TODO` occurrences, split into three different evidence queues:
 20 incremental-thunk-oracle annotations, five functions whose original TU owner is not
@@ -110,6 +110,13 @@ that has no claim. It is not evidence for 82 missing source functions: compiler-
 copies may need only `RVA_COMPGEN`, and each of the 44 substantive rows still needs raw
 disassembly, caller, and emitted-object review before reconstruction.
 
+The 44-row address-dossier pass narrows that queue further. Two rows are already known
+static-library bodies despite having no source claim: `CRect::CRect` at `0x00029ac0`
+and `CRect::SetRect` at `0x0008c380`. The other 42 rows have no admitted census identity.
+Some contain multiple padding-separated tiny bodies, so 42 is a discovery-row count,
+not a function count. A 32-byte table at `0x00074518` is an embedded switch-table
+false positive and is excluded from the 90-gap total.
+
 ## Data completeness is a separate audit
 
 The live retail-side access sweep has 27,272 references over 2,278 claims. Its gate is
@@ -127,6 +134,16 @@ touched nonzero/pointer gap lies between two claims of the same live source unit
 why `gruntz verify data-coverage --gate` is green. Cross-unit and library-frontier rows
 remain an attribution worklist, not evidence that an adjacent source object should be
 invented.
+
+The touched surface is small enough to state precisely. Nine `POINTER` and three
+`NONZERO` gaps account for the 634 meaningful touched bytes, and all twelve cross a
+unit or library frontier. Two cross-frontier `ZERO-GAP` ranges account for another 563
+touched bytes: 9,352 bytes between `g_appResHandle` and `g_dinputLogEnabled` at
+`0x0025161c`, and 5,376 bytes between two header-inline random-number statics at
+`0x002c128c`. Five accepted padding ranges account for the final eight touched bytes.
+There is therefore no current evidence-backed source-global declaration to add; the
+remaining job is to attribute those fourteen non-padding frontier ranges before deciding
+whether any contains an original game datum.
 
 The latest [linked-image snapshot](image-diff.md) adds the coverage view that per-object
 matching cannot: 271 retail data regions had no candidate symbol. That dated number must
