@@ -895,6 +895,15 @@ i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00179220, 0x1d)
+i32 CNetMgr::GetMaxPlayers() {
+    CNetCaps caps;
+    i32 ok = EnumSessions(&caps, NULL);
+    return ok ? caps.m_dwMaxPlayers : 0;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179240, 0x22)
 i32 CNetMgr::EnumSessions2(void* ctx) {
 

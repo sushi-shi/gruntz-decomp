@@ -233,7 +233,7 @@ multistartdlg	64	56
 namerecord	5	5
 netcmdslot	18	13
 netlobbydialogs	20	20
-netmgr	53	49
+netmgr	54	50
 netmgrerror	2	2
 netsession	1	1
 netsessionmgr	31	25
@@ -3295,6 +3295,7 @@ netmgr	?Find@CNetMgr@@QAEPAUInterfaceObject@@H@Z	100.0000	100.0000	1	3881a33a3a3
 netmgr	?FindPlayerById@CNetMgr@@QAEPAVCNetSessionNode@@H@Z	100.0000	100.0000	1	11595b87bca9	0x178e90	100.0000	
 netmgr	?FreeStrings@CNetPlayerListNode@@QAEXXZ	100.0000	100.0000	1	c9acb5e33d52	0x179680	100.0000	
 netmgr	?GetGroupInfo@CNetMgr@@QAEHPAVCNetSessionNode@@PAUCNetCaps@@H@Z	100.0000	100.0000	2	9964b0966f26	0x179190	100.0000	
+netmgr	?GetMaxPlayers@CNetMgr@@QAEHXZ	100.0000	100.0000	1	97fef7145ffc	0x179220	100.0000	
 netmgr	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	3	9ff4315d9640	0x179300	100.0000	
 netmgr	?GetPlayerData@CNetMgr@@QAEPAVCNetSessionNode@@H@Z	100.0000	100.0000	2	cbce32fa472f	0x178eb0	100.0000	
 netmgr	?Init@CNetMgr@@QAEHPAXTNetGuid@@@Z	100.0000	100.0000	3	719ae0833710	0x178170	100.0000	

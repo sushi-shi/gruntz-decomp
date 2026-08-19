@@ -523,6 +523,7 @@ public:
     i32 RemovePlayerObj(CNetSessionNode* obj);
     i32 RemovePlayerById(i32 id);
     i32 RemovePlayerNode(CNetPlayerListNode* node);
+    i32 GetMaxPlayers();
     i32 EnumSessions2(void* ctx);
     CNetSessionNode* GetPlayerData(i32 id);
     i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size);
