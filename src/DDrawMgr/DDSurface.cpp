@@ -732,14 +732,8 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans)
 }
 
 // @early-stop
-// The shade bank is now byte-exact: retail masks THEN unsigned-shifts
-// (`and 0xff / shr 3 / shl 0xb`), which only the `(u8)shade / 8 * 0x800` spelling
-// emits - `(shade & 0xff) / 8` is reassociated by cl into `sar 3 / and 0x1f`.
-// CONTROL-FLOW residue: retail enters both row loops through the forward-jmp
-// rotation, peeling one loop-carried reload into a 1-instruction header that base
-// folds into the preheader, and it keeps `rows` in esi at the guard where cl
-// memory-homes it and emits a redundant load/store pair. The while(n-- > 0)
-// respelling regresses; if+do-while is the closest shape.
+// The u8 division/multiplication spelling preserves the retail bank shift.
+// The format discriminator is one load: retail reuses its register in both arms.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f020, 0x43f)
@@ -800,8 +794,9 @@ i32 CDDSurface::ShadeBlt(
     i32 srcRowAdv = srcStride - srcW;
     u16* temp = new u16[dstW * 2];
     i32 bank = static_cast<u8>(shade) / 8 * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
+    i32 redDown = g_rDown;
 
-    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
+    if (redDown == PIXEL16_RED_DOWN && g_gDown == redDown && g_bDown == redDown
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
         i32 rows = dstH;
@@ -837,9 +832,8 @@ i32 CDDSurface::ShadeBlt(
                 srcPtr += srcRowAdv;
             } while (--rows != 0);
         }
-    } else if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN
-               && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB565_RED_UP
-               && g_gUp == PIXEL16_GREEN_UP) {
+    } else if (redDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN && g_bDown == redDown
+               && g_rUp == RGB565_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
         i32 rows = dstH;
         if (rows > 0) {
