@@ -3311,6 +3311,14 @@ static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
     return 1;
 }
 
+// @identity-TODO BattlezMapConfigAcceptAlwaysArg - the surviving external
+// thunk and `ret 4` prove one callee-popped dword, but no use survives to prove
+// the original symbol name or whether this was a member.
+RVA(0x0002c670, 0x8)
+i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
+    return 1;
+}
+
 // @early-stop
 RVA(0x0002c690, 0xdb4)
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
@@ -5188,6 +5196,14 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->m_dwell = 0;
     unit->m_blockedVoicePending = 1;
     unit->m_battleState = BZTASK_ADVANCE;
+    return 1;
+}
+
+// @identity-TODO BattlezMapConfigAcceptAlwaysSixArgs - the surviving external
+// thunk and `ret 24` prove six callee-popped dwords, but no use survives to
+// distinguish a static callback from a six-argument member.
+RVA(0x00030b00, 0x8)
+i32 __stdcall BattlezMapConfigAcceptAlwaysSixArgs(i32, i32, i32, i32, i32, i32) {
     return 1;
 }
 
