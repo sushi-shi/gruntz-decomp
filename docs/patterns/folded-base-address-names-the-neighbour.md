@@ -60,12 +60,16 @@ delinker chose its address. `ChannelSlots_FindFree` walks
 `g_soundChannelInUse + 0x44`. A source claim for an otherwise unreferenced
 `g_val_24c434` at that exact one-past address made the delinked target spell the
 same operand as `g_val_24c434 + 0`, leaving the function at 99.5%. The retail
-bytes, source COFF relocation and declared array extent all say this is only the
-array limit. Removing the unsupported datum and recording that exact spelling in
+layout, source COFF relocation and declared array extent all say this is only the
+array limit followed by four bytes of alignment before the next 16-byte physical
+`GruntDirectionCell` contribution at `0x24c438`. Removing the unsupported datum,
+classifying `0x24c434..0x24c438` as `pad`, and recording cl's exact
+`g_soundChannelInUse + 0x44` spelling in
 `config/retail/reloc_referents.tsv` restores the authentic relocation identity
-through strict delinking and makes the function exact. Retain an adjacent symbol
-only when it has independent storage evidence; the folded address alone proves no
-datum.
+through strict delinking and makes the function exact. The referent row preserves
+the source COFF symbol/addend; it does not assert a datum at the resolved address.
+Retain an adjacent symbol only when it has independent storage evidence; the
+folded address alone proves no datum.
 
 ## Recognizing it
 
