@@ -34,3 +34,13 @@ m_24c/m_250 hoist; `LevelPreviewDlgProc` 0x000e3690, 95.35% -> 98.07% from the
 `HDC` home and then **100.00% exact** from `dx`/`dy` declaration order. The deeper
 EH-state-write scheduling over CString live ranges is a WALL — see
 eh-state-numbering-base.md / makerezpath residue.
+
+`CFaderFlat::RenderFrame` @0x17f660 supplies the dependent-local form. Declaring
+`base = h - frame - 1` before `span = m_percent * h / 100` moves the parameter load
+ahead of the height/width coloring, delays the first divergence from `+0x22` to
+`+0x2c`, and raises the function from 90.07% to 90.79%. The controls distinguish the
+source ordering from a register-name coincidence: putting `base` between `h` and `w`
+falls to 88.09%, while declaring `w` before `h` reaches only 90.77%. A 32-island
+TU-state forest found three states (best 93.47%), but changed only commutative address
+arithmetic and spill-slot choices; none changed the remaining height/width/span
+coloring or removed its two extra instructions.

@@ -87,14 +87,19 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     return 1;
 }
 
+// @early-stop
+// Calls, branches, frame, constants, and referents agree. The retail schedule
+// requires base to be declared before span; the remaining two instructions are
+// the height/width/span register coloring. Natural declaration orders and a
+// bounded TU-state forest leave that coloring unchanged.
 RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_src->Lock(0));
     u16* dstBits = static_cast<u16*>(m_desc04->Lock(0));
     i32 h = m_src->m_height;
     i32 w = m_src->m_width;
-    i32 span = m_percent * h / 100;
     i32 base = h - frame - 1;
+    i32 span = m_percent * h / 100;
     if (span + base > h) {
         span = h - base;
     }

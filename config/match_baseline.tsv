@@ -1700,7 +1700,7 @@ fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e24
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	1	11cf80538388	0x182900	100.0000	
 fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	1	96216f38b8bc	0x180400	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	97.9257	97.9257	1	b8429a8e25ea	0x180fb0	97.9257	
-fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.0654	90.0654	1	f39c044ffd10	0x17f660	90.0654	
+fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.7854	90.7854	2	78f3a8e752d5	0x17f660	90.7854
 fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	89.5019	89.4956	1	cf9266033270	0x180640	89.5019	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	1	1bf4ecf4e429	0x17fc60	88.5833	
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	1	a06314f5b222	0x181b00	99.9080	
