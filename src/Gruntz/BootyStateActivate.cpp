@@ -337,6 +337,9 @@ fail:
     return 0;
 }
 
+// @early-stop
+// Extent, calls, CFG, constants, and ordered referents are exact; only the
+// scratch-register rotation across the member re-reads remains.
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     SoundStream* r = m_world->m_soundRegistry->m_soundStream;
