@@ -519,12 +519,13 @@ i32 CPlay::Render() {
         m_guts->LoadMainStatusBarSprite();
 
         {
-            if (static_cast<i64>(g_frameTime) - m_cueTimer64.m_v >= m_cueInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
+                >= m_cueTiming.m_interval.m_v) {
                 m_cueToggle = (m_cueToggle == 0);
-                m_cueInterval = CUE_INTERVAL_MS;
-                m_cueIntervalHi = 0;
-                m_cueTimerLo = static_cast<i32>(g_frameTime);
-                m_cueTimerHi = 0;
+                m_cueTiming.m_interval.m_lo = CUE_INTERVAL_MS;
+                m_cueTiming.m_interval.m_hi = 0;
+                m_cueTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+                m_cueTiming.m_start.m_hi = 0;
             }
             if (m_cueToggle != 0) {
                 PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, 0);
@@ -553,12 +554,13 @@ i32 CPlay::Render() {
         m_mgr->m_cmdSubMgr->ScanTargets(0);
 
         if (m_levelId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (static_cast<i64>(g_frameTime) - m_bootyTimer64.m_v >= m_bootyInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
+                >= m_bootyTiming.m_interval.m_v) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
-                m_bootyInterval = BOOTY_INTERVAL_MS;
-                m_bootyIntervalHi = 0;
-                m_bootyTimerLo = static_cast<i32>(g_frameTime);
-                m_bootyTimerHi = 0;
+                m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
+                m_bootyTiming.m_interval.m_hi = 0;
+                m_bootyTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+                m_bootyTiming.m_start.m_hi = 0;
             }
         }
 
@@ -566,7 +568,8 @@ i32 CPlay::Render() {
         StepViewportResize();
 
         if (m_ambientInitDone == 0) {
-            if (static_cast<i64>(g_frameTime) - m_ambientTimer64.m_v >= m_ambientInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
+                >= m_ambientTiming.m_interval.m_v) {
                 i32 id = GetAmbientId();
                 char buf[0x40];
                 wsprintfA(buf, "AMBIENT%d", id);
@@ -669,14 +672,15 @@ i32 CPlay::Render() {
             // temp, a compound `-=`, and a separate `now` temp all fold to the same
             // tree, and swapping the two addends only moves which one is the
             // accumulator.
-            i64 deadline = m_snapDur64.m_v + m_snapBase64.m_v;
+            i64 deadline = m_snapshotTiming.m_interval.m_v + m_snapshotTiming.m_start.m_v;
             i64 left = deadline - static_cast<i64>(g_frameTime);
             u32 leftMs = static_cast<u32>(left);
             if (left < 0) {
                 leftMs = 0;
             }
             i32 secsLeft = static_cast<i32>(leftMs / MS_PER_SECOND) + 1;
-            if (static_cast<i64>(g_frameTime) - m_snapBase64.m_v >= m_snapDur64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_snapshotTiming.m_start.m_v
+                >= m_snapshotTiming.m_interval.m_v) {
 
                 if (m_guts->m_modeArmed != 0) {
                     g_gameReg->m_cmdGrid->ClearRowAndRefresh(5);
@@ -732,12 +736,13 @@ i32 CPlay::Render() {
 
         if (m_winLoseBanner != 0 && m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
 
-            if (static_cast<i64>(g_frameTime) - m_cueTimer64.m_v >= m_cueInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
+                >= m_cueTiming.m_interval.m_v) {
                 m_cueToggle = (m_cueToggle == 0);
-                m_cueInterval = CUE_INTERVAL_MS;
-                m_cueIntervalHi = 0;
-                m_cueTimerLo = static_cast<i32>(g_frameTime);
-                m_cueTimerHi = 0;
+                m_cueTiming.m_interval.m_lo = CUE_INTERVAL_MS;
+                m_cueTiming.m_interval.m_hi = 0;
+                m_cueTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
+                m_cueTiming.m_start.m_hi = 0;
             }
             if (m_cueToggle != 0) {
                 PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, 0);
@@ -759,22 +764,26 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != 0) {
-            if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start.m_v
+                >= m_region0Timing.m_interval.m_v) {
                 SetTinyViewportCurse(0);
             }
         }
         if (m_region1Gate != 0) {
-            if (static_cast<i64>(g_frameTime) - m_region1Timer64.m_v >= m_region1Interval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start.m_v
+                >= m_region1Timing.m_interval.m_v) {
                 SetDarknessCurse(0);
             }
         }
         if (m_region2Gate != 0) {
-            if (static_cast<i64>(g_frameTime) - m_region2Timer64.m_v >= m_region2Interval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_region2Timing.m_start.m_v
+                >= m_region2Timing.m_interval.m_v) {
                 SetMonitorCurse(0);
             }
         }
         if (m_region3Gate != 0) {
-            if (static_cast<i64>(g_frameTime) - m_region3Timer64.m_v >= m_region3Interval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_region3Timing.m_start.m_v
+                >= m_region3Timing.m_interval.m_v) {
                 SetRandomMoveIconsCurse(0);
             }
         }
@@ -811,8 +820,8 @@ i32 CPlay::Render() {
                 m_frameMarker->Draw(back, 1);
             }
             if (m_ambientInitDone == 0) {
-                if (static_cast<i64>(g_frameTime) - m_ambientTimer64.m_v
-                    >= m_ambientInterval64.m_v) {
+                if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
+                    >= m_ambientTiming.m_interval.m_v) {
                     i32 id = GetAmbientId();
                     char buf[0x40];
                     wsprintfA(buf, "AMBIENT%d", id);
@@ -1651,10 +1660,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_paused = 0;
         self->m_playerCommandPending = 0;
         self->m_winLoseBanner = 0;
-        self->m_cueInterval = 0x1f4;
-        self->m_cueIntervalHi = 0;
-        self->m_cueTimerLo = g_frameTime;
-        self->m_cueTimerHi = 0;
+        self->m_cueTiming.m_interval.m_lo = 0x1f4;
+        self->m_cueTiming.m_interval.m_hi = 0;
+        self->m_cueTiming.m_start.m_lo = g_frameTime;
+        self->m_cueTiming.m_start.m_hi = 0;
         self->m_cueToggle = 1;
         self->m_cueText = "";
         self->m_lastCueId = 0;
@@ -3834,10 +3843,10 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
         g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
-        this->m_bootyInterval = BOOTY_INTERVAL_MS;
-        this->m_bootyIntervalHi = 0;
-        this->m_bootyTimerLo = g_frameTime;
-        this->m_bootyTimerHi = 0;
+        this->m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
+        this->m_bootyTiming.m_interval.m_hi = 0;
+        this->m_bootyTiming.m_start.m_lo = g_frameTime;
+        this->m_bootyTiming.m_start.m_hi = 0;
         this->m_levelId = frame;
         return 1;
     }
@@ -6085,10 +6094,10 @@ RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];
     if (m_mgr->m_musicEnabled != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        m_ambientInterval = AMBIENT_INTRO_INTERVAL_MS;
-        m_ambientIntervalHi = 0;
-        m_ambientTimerLo = g_frameTime;
-        m_ambientTimerHi = 0;
+        m_ambientTiming.m_interval.m_lo = AMBIENT_INTRO_INTERVAL_MS;
+        m_ambientTiming.m_interval.m_hi = 0;
+        m_ambientTiming.m_start.m_lo = g_frameTime;
+        m_ambientTiming.m_start.m_hi = 0;
         wsprintfA(buf, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != 0) {
             m_mgr->m_sound->PlayByName(buf, 0);
@@ -6108,10 +6117,10 @@ i32 CPlay::ResetPlayState() {
         if (reg->m_musicEnabled != 0 && reg->m_gameMode == GAMEMODE_REPLAY) {
             m_mgr->m_sound->PlayByName(buf, 1);
         }
-        m_ambientTimerLo = 0;
-        m_ambientInterval = 0;
-        m_ambientTimerHi = 0;
-        m_ambientIntervalHi = 0;
+        m_ambientTiming.m_start.m_lo = 0;
+        m_ambientTiming.m_interval.m_lo = 0;
+        m_ambientTiming.m_start.m_hi = 0;
+        m_ambientTiming.m_interval.m_hi = 0;
         m_ambientInitDone = 1;
     }
     if (m_mgr->m_gameMode == GAMEMODE_SINGLE) {
@@ -6724,7 +6733,7 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
     }
 
     i32* p;
-    p = &m_syncTimerLo;
+    p = &m_syncTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
     if (!m_guts->Sync(ar, mode, typeId, pObj)) {
         return 0;
@@ -6732,22 +6741,22 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
     if (!m_frameMarker->HandleEvent(ar, mode, typeId, pObj)) {
         return 0;
     }
-    p = &m_cueTimerLo;
+    p = &m_cueTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
     if (!m_beginMarker->Serialize(ar, mode, typeId, pObj)) {
         return 0;
     }
-    p = &m_region0TimerLo;
+    p = &m_region0Timing.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    p = &m_region1TimerLo;
+    p = &m_region1Timing.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    p = &m_snapBaseLo;
+    p = &m_snapshotTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    p = &m_region2TimerLo;
+    p = &m_region2Timing.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    p = &m_region3TimerLo;
+    p = &m_region3Timing.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    p = &m_bootyTimerLo;
+    p = &m_bootyTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
     return 1;
 }
@@ -7153,9 +7162,9 @@ i32 CPlay::SetTinyViewportCurse(i32 active) {
         RegionLeave();
         m_viewMode = VIEW_MODE_B;
     }
-    m_region0Interval = REGION_INTERVAL_MS;
-    m_region0IntervalHi = 0;
-    m_region0Timer64.m_v = g_frameTime;
+    m_region0Timing.m_interval.m_lo = REGION_INTERVAL_MS;
+    m_region0Timing.m_interval.m_hi = 0;
+    m_region0Timing.m_start.m_v = g_frameTime;
     return 1;
 }
 
@@ -7168,9 +7177,9 @@ i32 CPlay::SetDarknessCurse(i32 active) {
         m_region1Gate = 0;
         RegionLeave();
     }
-    m_region1Interval = REGION_INTERVAL_MS;
-    m_region1IntervalHi = 0;
-    m_region1Timer64.m_v = g_frameTime;
+    m_region1Timing.m_interval.m_lo = REGION_INTERVAL_MS;
+    m_region1Timing.m_interval.m_hi = 0;
+    m_region1Timing.m_start.m_v = g_frameTime;
     return 1;
 }
 
@@ -7184,9 +7193,9 @@ i32 CPlay::SetMonitorCurse(i32 active) {
         m_region2Gate = 0;
         RegionLeave();
     }
-    m_region2Interval = REGION_INTERVAL_MS;
-    m_region2IntervalHi = 0;
-    m_region2Timer64.m_v = g_frameTime;
+    m_region2Timing.m_interval.m_lo = REGION_INTERVAL_MS;
+    m_region2Timing.m_interval.m_hi = 0;
+    m_region2Timing.m_start.m_v = g_frameTime;
     return 1;
 }
 
@@ -7200,9 +7209,9 @@ i32 CPlay::SetRandomMoveIconsCurse(i32 active) {
         RegionLeave();
         g_gameReg->m_cmdGrid->CycleMoveIcons(-1, 0);
     }
-    m_region3Interval = REGION_INTERVAL_MS;
-    m_region3IntervalHi = 0;
-    m_region3Timer64.m_v = g_frameTime;
+    m_region3Timing.m_interval.m_lo = REGION_INTERVAL_MS;
+    m_region3Timing.m_interval.m_hi = 0;
+    m_region3Timing.m_start.m_v = g_frameTime;
     return 1;
 }
 
@@ -7384,9 +7393,9 @@ RVA(0x000d9240, 0x3c)
 i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
     if (active != 0) {
 
-        m_snapDur = dur;
-        m_snapDurHi = 0;
-        m_snapBase64.m_v = static_cast<u32>(g_frameTime);
+        m_snapshotTiming.m_interval.m_lo = dur;
+        m_snapshotTiming.m_interval.m_hi = 0;
+        m_snapshotTiming.m_start.m_v = static_cast<u32>(g_frameTime);
     }
     m_snapshotActive = active;
     return 1;

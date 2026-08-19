@@ -44,26 +44,51 @@ initializers and which were body statements.
 Move exactly the fields that appear before the `??_7` stamp into the
 member-initializer list, and leave the rest in the body.
 
+When a repeated four-store group is `+0,+8,+4,+0xc`, model the group itself as
+one member object. That order is the inline constructor body's source order,
+not declaration-order scalar initialization:
+
 ```cpp
-CPlay::CPlay()
-    : m_bootyTimerLo(0), m_bootyTimerHi(0), /* ... 36 scalars ... */ m_snapDurHi(0) {
-    m_1bc = 0;      // everything retail stores AFTER the vptr stamp
-    ...
+struct ClockInterval {
+    Clock64 m_start;
+    Clock64 m_interval;
+
+    ClockInterval() {
+        m_start.m_lo = 0;
+        m_interval.m_lo = 0;
+        m_start.m_hi = 0;
+        m_interval.m_hi = 0;
+    }
+};
+
+CPlay::CPlay() {
+    m_returnToMenuOnComplete = 0; // stores after the derived vptr stamp
+    // ...
 }
 ```
 
 ## Caveat (measured)
 
 **MSVC5 emits mem-initializers in DECLARATION order, not written order.** Reordering
-the list to match retail's emission order changes nothing. So the within-group store
-order is the scheduler's and is not steerable from the list.
+the list to match retail's emission order changes nothing. A repeated non-layout order
+such as `+0,+8,+4,+0xc` is therefore positive evidence for an inline member constructor.
+
+The following destructible member's setup may still braid with those stores. In
+`CPlay`, retail schedules the next receiver `lea` and EH-state byte between the low
+and high halves at the sync, cue, region-0, and region-3 boundaries; the reconstructed
+TU schedules that setup before all four stores. That residue is scheduling, not grounds
+to split the proven 16-byte object back into four scalars.
 
 ## Evidence
 
 `CPlay::CPlay` (0x8c9d0) **48.4 -> 76.5** (inlining the base `CState` ctor, see below)
-**-> 94.1** on converting the nine 64-bit timer quads to member initializers. The 5.9%
-residue is the intra-quad store pairing (retail lo/interval/hi/intervalHi vs cl's
-strict +0/+4/+8/+0xc), which the caveat above proves is not source-steerable.
+**-> 94.1** on moving the 36 scalar aliases into the member-initializer run. Realizing
+the nine `ClockInterval` objects then changed every four-store group from
+`+0,+4,+8,+0xc` to retail's `+0,+8,+4,+0xc`; a one-object A/B moved 94.1037 ->
+94.1185 and moved the first mismatch forward. The complete model keeps the exact retail
+size (0x2bd), 137 instructions, five calls, no branches, one return, and ten relocations;
+its first divergence moves from +0xdb to +0x103. Its lower current fuzzy is an alignment
+effect from the remaining call-setup braid, while historical MAX preserves 94.1037.
 
 A second lever showed up in the same function: retail also INLINES the base ctor
 (`mov [esi],??_7CState@@6B@` + the whole base field seed emitted in place, no `call`).

@@ -128,10 +128,10 @@ i32 CTimer::Tick(i32 dt) {
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
         ls->m_winLoseBanner = 1;
-        ls->m_cueInterval = 0x1f4;
-        ls->m_cueIntervalHi = 0;
-        ls->m_cueTimerLo = g_frameTime;
-        ls->m_cueTimerHi = 0;
+        ls->m_cueTiming.m_interval.m_lo = 0x1f4;
+        ls->m_cueTiming.m_interval.m_hi = 0;
+        ls->m_cueTiming.m_start.m_lo = g_frameTime;
+        ls->m_cueTiming.m_start.m_hi = 0;
         g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer];
         if (slot != NULL) {

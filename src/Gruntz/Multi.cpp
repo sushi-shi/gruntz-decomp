@@ -632,7 +632,8 @@ i32 CMulti::PumpA() {
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
-        if (static_cast<i64>(g_frameTime) - m_ambientTimer64.m_v >= m_ambientInterval64.m_v) {
+        if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
+            >= m_ambientTiming.m_interval.m_v) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != 0) {
@@ -794,12 +795,14 @@ void CMulti::PumpB() {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
     if (m_region0Gate != 0) {
-        if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
+        if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start.m_v
+            >= m_region0Timing.m_interval.m_v) {
             SetTinyViewportCurse(0);
         }
     }
     if (m_region1Gate != 0) {
-        if (static_cast<i64>(g_frameTime) - m_region1Timer64.m_v >= m_region1Interval64.m_v) {
+        if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start.m_v
+            >= m_region1Timing.m_interval.m_v) {
             SetDarknessCurse(0);
         }
     }

@@ -50,6 +50,18 @@ class CDDrawWorker;
 
 class CPlay : public CState {
 public:
+    struct ClockInterval {
+        Clock64 m_start;
+        Clock64 m_interval;
+
+        ClockInterval() {
+            m_start.m_lo = 0;
+            m_interval.m_lo = 0;
+            m_start.m_hi = 0;
+            m_interval.m_hi = 0;
+        }
+    };
+
     QuestLevel CurrentQuestLevel() const {
         return static_cast<QuestLevel>(m_levelIndex);
     }
@@ -301,34 +313,12 @@ public:
 
     CLightFxRender* m_lightFx;
     char m_pad324[0x328 - 0x324];
-    union {
-        Clock64 m_bootyTimer64;
-        struct {
-            i32 m_bootyTimerLo, m_bootyTimerHi;
-        };
-    };
-    union {
-        Clock64 m_bootyInterval64;
-        struct {
-            i32 m_bootyInterval, m_bootyIntervalHi;
-        };
-    };
+    ClockInterval m_bootyTiming;
 
-    union {
-        Clock64 m_ambientTimer64;
-        struct {
-            i32 m_ambientTimerLo, m_ambientTimerHi;
-        };
-    };
-    union {
-        Clock64 m_ambientInterval64;
-        struct {
-            i32 m_ambientInterval, m_ambientIntervalHi;
-        };
-    };
+    ClockInterval m_ambientTiming;
     i32 m_ambientInitDone;
     char m_pad34c[0x350 - 0x34c];
-    i32 m_syncTimerLo, m_syncTimerHi, m_syncInterval, m_syncIntervalHi;
+    ClockInterval m_syncTiming;
     Coord m_tileClick;
     i32 m_dragInhibit1;
     i32 m_dragInhibit2;
@@ -343,18 +333,7 @@ public:
 
     CPtrArray m_placedObjectCells[4];
     CTimer* m_frameMarker;
-    union {
-        Clock64 m_cueTimer64;
-        struct {
-            i32 m_cueTimerLo, m_cueTimerHi;
-        };
-    };
-    union {
-        Clock64 m_cueInterval64;
-        struct {
-            i32 m_cueInterval, m_cueIntervalHi;
-        };
-    };
+    ClockInterval m_cueTiming;
     i32 m_cueToggle;
     i32 m_lastCueId;
     CString m_cueText;
@@ -365,54 +344,10 @@ public:
     i16 m_pathPreviewColor;
     char m_pad42a[0x430 - 0x42a];
 
-    union {
-        Clock64 m_region0Timer64;
-        struct {
-            i32 m_region0TimerLo, m_region0TimerHi;
-        };
-    };
-    union {
-        Clock64 m_region0Interval64;
-        struct {
-            i32 m_region0Interval, m_region0IntervalHi;
-        };
-    };
-    union {
-        Clock64 m_region1Timer64;
-        struct {
-            i32 m_region1TimerLo, m_region1TimerHi;
-        };
-    };
-    union {
-        Clock64 m_region1Interval64;
-        struct {
-            i32 m_region1Interval, m_region1IntervalHi;
-        };
-    };
-    union {
-        Clock64 m_region2Timer64;
-        struct {
-            i32 m_region2TimerLo, m_region2TimerHi;
-        };
-    };
-    union {
-        Clock64 m_region2Interval64;
-        struct {
-            i32 m_region2Interval, m_region2IntervalHi;
-        };
-    };
-    union {
-        Clock64 m_region3Timer64;
-        struct {
-            i32 m_region3TimerLo, m_region3TimerHi;
-        };
-    };
-    union {
-        Clock64 m_region3Interval64;
-        struct {
-            i32 m_region3Interval, m_region3IntervalHi;
-        };
-    };
+    ClockInterval m_region0Timing;
+    ClockInterval m_region1Timing;
+    ClockInterval m_region2Timing;
+    ClockInterval m_region3Timing;
     i32 m_region0Gate;
     i32 m_region1Gate;
     i32 m_region2Gate;
@@ -422,18 +357,7 @@ public:
 
     CPtrArray m_cameraBookmarks;
     i32 m_cameraBookmarkIndex;
-    union {
-        Clock64 m_snapBase64;
-        struct {
-            i32 m_snapBaseLo, m_snapBaseHi;
-        };
-    };
-    union {
-        Clock64 m_snapDur64;
-        struct {
-            i32 m_snapDur, m_snapDurHi;
-        };
-    };
+    ClockInterval m_snapshotTiming;
     i32 m_snapshotActive;
     i32 m_scrollEdgeActive;
     i32 m_scrollEdgeLock;
@@ -534,55 +458,11 @@ inline CPlay::~CPlay() {
 
 // @early-stop
 // retail copy 0x0008c9d0 (emitted by gruntzmgr; pin there).
-//
-// Residue: each timer/interval pair is zeroed in retail as +0, +8, +4, +0xc
-// (0x328, 0x330, 0x32c, 0x334 and eight more groups just like it), inside the
-// mem-init run - i.e. BETWEEN the subobject ctor calls, with the EH state byte
-// stepping 0..4 around them. A mem-init list cannot produce that: MSVC5 runs
-// mem-inits in DECLARATION order and ignores the list order (measured - the
-// list below is already written lo/interval/hi/intervalHi and cl still emits
-// 0x328, 0x32c, 0x330, 0x334). So each pair is really ONE 16-byte member class
-// whose inline ctor body writes m_timeLo, m_intervalLo, m_timeHi,
-// m_intervalHi - the same source-order effect that makes CState::CState emit
-// its RECTs as left, right, top, bottom. Realizing that class means retyping
-// ~147 references across Play.cpp and friends.
-inline CPlay::CPlay()
-    : m_bootyTimerLo(0),
-      m_bootyInterval(0),
-      m_bootyTimerHi(0),
-      m_bootyIntervalHi(0),
-      m_ambientTimerLo(0),
-      m_ambientInterval(0),
-      m_ambientTimerHi(0),
-      m_ambientIntervalHi(0),
-      m_syncTimerLo(0),
-      m_syncInterval(0),
-      m_syncTimerHi(0),
-      m_syncIntervalHi(0),
-      m_cueTimerLo(0),
-      m_cueInterval(0),
-      m_cueTimerHi(0),
-      m_cueIntervalHi(0),
-      m_region0TimerLo(0),
-      m_region0Interval(0),
-      m_region0TimerHi(0),
-      m_region0IntervalHi(0),
-      m_region1TimerLo(0),
-      m_region1Interval(0),
-      m_region1TimerHi(0),
-      m_region1IntervalHi(0),
-      m_region2TimerLo(0),
-      m_region2Interval(0),
-      m_region2TimerHi(0),
-      m_region2IntervalHi(0),
-      m_region3TimerLo(0),
-      m_region3Interval(0),
-      m_region3TimerHi(0),
-      m_region3IntervalHi(0),
-      m_snapBaseLo(0),
-      m_snapDur(0),
-      m_snapBaseHi(0),
-      m_snapDurHi(0) {
+// The nine ClockInterval members recover retail's +0,+8,+4,+0xc zero-store
+// order. The remaining residue is scheduling around the three following
+// member ctors: retail issues each receiver LEA between the interval's low and
+// high stores, while this TU schedules the LEA before all four stores.
+inline CPlay::CPlay() {
     m_returnToMenuOnComplete = 0;
     m_completedFinalLevel = 0;
     m_reserved1c8 = 0;
