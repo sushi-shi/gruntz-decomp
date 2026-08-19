@@ -66,10 +66,20 @@ instead of going through the tool, and each one looks exactly like a finding.
 
 ## Reading a row
 
-A row is a lead about the SOURCE, and three shapes account for nearly all of them:
+A row is a lead about the SOURCE, and four shapes account for nearly all of them:
 
 * **a cached global / member** - the thing the sieve is for. Delete the local, spell the
   global at each use.
+* **two switches duplicate one semantic arm set.** Several related globals move by the
+  same count, while the call and branch skeletons still agree. `CGrunt::StepCompassMove`
+  named each cardinal `g_gruntMoveDir*` four times against retail's three: the fixed-arrow
+  command switch duplicated the four cardinal movement arms also present in the current-
+  direction switch. Making the first switch select a typed `GruntDirection` and keeping
+  one movement switch changed 163 relocations to retail's 151 while preserving all 129
+  branches. Two controls distinguish this from a code-placement accident: keeping the
+  duplicated arms retains 163 relocations, while direct gotos into shared case labels
+  retain 151 relocations but collapse four real selection branches (125 against 129).
+  The relocation count plus CFG therefore identifies the intermediate direction value.
 * **cl TAIL-MERGED two arms that retail kept apart, or vice versa.** The tell is that the
   callee AND its argument string move together:
   `CCheatMgr::LoadCheatConfig` reads `?GetIntDef@CButeMgr@@` 6 vs 7 *and* `"Value"` 1 vs 2,
