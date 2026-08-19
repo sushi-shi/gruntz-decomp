@@ -219,7 +219,7 @@ mapmgr	27	20
 menuitem	20	19
 menupage	47	45
 menusparkle	8	7
-menustate	18	17
+menustate	18	18
 movinglogic	5	1
 multi	105	85
 multihelpdlg	5	5
@@ -3047,7 +3047,7 @@ menustate	?EnterState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	2	b393
 menustate	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	1	1d5711aaeec1	0xa0280	100.0000	
 menustate	?InputVirtual@CMenuState@@UAEHXZ	100.0000	100.0000	2	663c6328e6a9	0xa09a0	100.0000	
 menustate	?LeaveState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	d7adf3631010	0xa06d0	100.0000	
-menustate	?LoadGameAssetNamespaces@CMenuState@@UAEHPAVCGruntzMgr@@HH@Z	95.2863	95.2863	4	db6ff1235efe	0x9fe50	95.2863	
+menustate	?LoadGameAssetNamespaces@CMenuState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	5	ac888b370df9	0x9fe50	100.0000
 menustate	?OnKeyDown@CMenuState@@UAEHHH@Z	100.0000	100.0000	1	86ff7693307c	0xa0b90	100.0000	
 menustate	?OnLButtonDblClk@CMenuState@@UAEHHHH@Z	100.0000	100.0000	1	df3838bc3ab1	0xa0ce0	100.0000	
 menustate	?OnLButtonDown@CMenuState@@UAEHHHH@Z	100.0000	100.0000	1	ec243a853494	0xa0ca0	100.0000	

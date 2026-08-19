@@ -61,6 +61,12 @@ i32 g_versionMid = 0;
 DATA(0x00251610)
 i32 g_versionMinor = 0;
 
+static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    LeafCue* found = NULL;
+    MapLookup(cues, name, found);
+    return found;
+}
+
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
     ReleaseResources();
@@ -124,11 +130,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     ui->m_row1Key = "MENU_ACTIVATE";
 
     {
-        LeafCue* e = NULL;
-        MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
+        LeafCue* e = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         if (e != NULL) {
-            e = NULL;
-            MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
+            e = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
             m_activateCueDurationMs = e->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;
@@ -139,11 +143,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    LeafCue* fm = NULL;
-    MapLookup(
+    LeafCue* fm = LookupCue(
         (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
-        "MENU_MENU",
-        fm
+        "MENU_MENU"
     );
     m_menuMusicCue = fm;
     return 1;

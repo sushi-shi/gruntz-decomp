@@ -5,7 +5,7 @@ symptoms: a run of repeated `p = NULL; Lookup(map, "KEY", p); if (p) ...` sites 
 retail's `mov [esp+N],<zeroreg>` sits AFTER the receiver-chain load (`mov ecx,[reg+0x28]`)
 and the `lea`/`push` of `&p`, just before the `call` — while ours emits the store first;
 diagnose says REGALLOC with byte-identical size/calls/branches/relocs
-confidence: 8/10
+confidence: 9/10
 
 ## Symptom
 
@@ -65,7 +65,7 @@ exactly this shape, because the caller wants a derived pointer, not a `CObject*`
 
 ```cpp
 static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = 0;
+    CObject* ob = NULL;
     map.Lookup(name, ob);
     return static_cast<CDDrawWorker*>(ob);
 }
@@ -83,6 +83,7 @@ change alone, each having been a one-instruction-position diff before it:
 | `CWwdGameObjectA::ApplyLookupGeometry` | 0x001505b0 | 93.9394 | **100.0000** |
 | `CWwdGameObjectA::ApplyName` | 0x00150540 | 94.1176 | **100.0000** |
 | `CDDrawChildGroup::CreateSprite` | 0x001597b0 | 94.1176 | **100.0000** |
+| `CMenuState::LoadGameAssetNamespaces` | 0x0009fe50 | 95.2863 | **100.0000** |
 
 `ApplyLookupGeometry` is the `CMapStringToPtr` counterpart: its wrapper owns a
 typed `CAniElement* result = NULL`, calls `MapLookup`, and returns the pointer.
@@ -91,6 +92,12 @@ moving the reset across the inline boundary closed the sole scheduling residue.
 `ApplyName` and `CreateSprite` were the `CMapStringToOb` single-site controls:
 both differed only by `push name` versus the zero store, and both became exact
 by returning the typed worker from the wrapper.
+
+`LoadGameAssetNamespaces` is the three-site `LeafCue*` control. Returning a typed
+pointer from one file-local helper moved both `MENU_ACTIVATE` resets and the final
+`MENU_MENU` reset after argument setup. It also recovered retail's distinct final
+temporary slot. The complete 0x343-byte function then matched exactly: 260
+instructions, 25 calls, 16 branches, 9 returns, and 44 ordered referents.
 
 ### It is per-site, not per-idiom — measure before converting a whole family
 
