@@ -212,6 +212,17 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     return CreateSpriteObject(id, x, y, sortKey, tmpl, stateFlags);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00159810, 0x1b)
+i32 CDDrawChildGroup::AddObject(CGameObject* obj) {
+    if (obj == NULL) {
+        return 0;
+    }
+    InsertSorted(obj, 1);
+    return 1;
+}
+
 RVA(0x00159830, 0x92)
 i32 CDDrawChildGroup::AttachSprite(
     CWwdGameObject* obj,
@@ -290,8 +301,10 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
+    RVA_DYNINIT(0x00159c80, 0xa, killQueue)
     DATA(0x002bf3a8)
     static CObArray killQueue;
+    RVA_DYNINIT(0x00159c70, 0xa, sortQueue)
     DATA(0x002bf390)
     static CObArray sortQueue;
     killQueue.SetSize(0, -1);

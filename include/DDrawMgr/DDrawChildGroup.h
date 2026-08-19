@@ -83,6 +83,7 @@ public:
     CWwdGameObjectA*
     CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
 
+    i32 AddObject(CGameObject* obj);
     i32
     AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
 
