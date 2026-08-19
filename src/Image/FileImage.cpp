@@ -643,7 +643,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                 remap = 1;
             }
             if (!remap || palBpp != BPP_PALETTED_8 || pal->m_hasPalette != 0) {
-                PALETTEENTRY* palette = 0;
+                PALETTEENTRY* palette = NULL;
                 if (remap && bitcount == BPP_PALETTED_8) {
                     u8* src = hdr->m_pixels + size - 0x380;
                     i32 i = 0;
@@ -665,7 +665,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
 
                 u8* pixels = hdr->m_pixels;
                 i32 ok;
-                u8* decoded = 0;
+                u8* decoded = NULL;
                 if (!remap) {
                     if (bitcount == BPP_PALETTED_8) {
                         if (!DecodeRun8(pixels)) {
