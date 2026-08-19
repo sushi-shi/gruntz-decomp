@@ -22,7 +22,7 @@ Measured on `ddsurface` (the worst case in the tree — **197144 B, 70% of
 
 | symbol | base off | base size | target off | target size |
 |---|---|---|---|---|
-| `?g_clut@@3PAEA` | 0x8 | 0x30000 | 0x0 | 0x30000 |
+| `?g_clut@@3PAGA` | 0x8 | 0x30000 | 0x0 | 0x30000 |
 | … | | | | |
 | `?g_bDown@@3HA` | **0x0** | **0x8** | 0x30214 | **0x4** |
 

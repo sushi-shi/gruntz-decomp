@@ -873,7 +873,7 @@ motivated it now separate into one independently confirmed correction and two co
 
 | rva | symbol | size | c2 says | image says |
 |---|---|---|---|---|
-| `0x253c9e` | `g_clut` | `0x30002` | 8 | **2** — confirmed independently: `u8 g_clut[0x30000]` starts at `0x253ca0`, ends exactly at `g_lut16`, and every use site carried the same compensating `+2`. Absolute alignment alone would not prove it. |
+| `0x253c9e` | `g_clut` | `0x30002` | 8 | **2** — confirmed independently: `u16 g_clut[0x18000]` starts at `0x253ca0`, ends exactly at `g_lut16`, and retail indexes it with a 2-byte element stride. The row begins two bytes early only because cl advances its byte cursor before each store and compensates with a `-2` DIR32 addend. Absolute alignment alone would not prove it. |
 | `0x2bf28c` | `g_imageClip` | `0x10` | 8 | **4** — false positive. A VC5/MFC A/B instead identifies a plain `RECT`: `RECT = *RECT*` emits retail's direct four-word copy, while both CRect assignment forms call imported `CopyRect`. |
 | `0x2c127d` | `??_B?1??GetRandomNumber@@YAHXZ@51` | 1 | 4 | **1** — expected: an inline function's local-static guard is a COFF COMMON placed by the linker. |
 

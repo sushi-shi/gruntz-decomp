@@ -288,7 +288,6 @@ inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }
 
-extern u8 g_clut[];
 extern u16 g_lut16[256];
 
 extern CPtrArray g_imageCache;

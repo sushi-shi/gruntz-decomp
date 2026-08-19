@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDSurface.h>
 
 #include <ComOutRef.h>
+#include <DDrawMgr/ClutTable.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -42,7 +43,7 @@ RVA_DYNINIT(0x0013e090, 0xa, g_imageCache)
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253ca0)
-u8 g_clut[0x30000];
+u16 g_clut[CLUT_ENTRY_COUNT];
 
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0};
@@ -77,15 +78,11 @@ static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
     );
 }
 
-static inline u16 Clut16(u32 byteOff) {
-    Pix16Ptr p;
-    p.m_bytes = g_clut + byteOff;
-    return *p.m_words;
+static inline u16 Clut16(u32 byteOffset) {
+    return *ClutAtByteOffset(byteOffset);
 }
-static inline void ClutStore16(u32 byteOff, u16 v) {
-    Pix16Ptr p;
-    p.m_bytes = g_clut + byteOff;
-    *p.m_words = v;
+static inline void ClutStore16(u32 byteOffset, u16 v) {
+    *ClutAtByteOffset(byteOffset) = v;
 }
 
 RVA(0x0013e0a0, 0x27)
@@ -788,7 +785,7 @@ i32 CDDSurface::ShadeBlt(
     i32 dstRowAdv = dstStride - dstW;
     i32 srcRowAdv = srcStride - srcW;
     u16* temp = new u16[dstW * 2];
-    i32 bank = static_cast<u8>(shade) / 8 * 0x800;
+    i32 bank = static_cast<u8>(shade) / 8 * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
 
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
@@ -804,14 +801,17 @@ i32 CDDSurface::ShadeBlt(
                         u32 tp = *t;
                         u32 sp = *srcPtr;
 
-                        u16 v = *Pix16(
-                            g_clut + 0x10000 + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2
+                        u16 v = Clut16(
+                            CLUT_BLUE_OFFSET * sizeof(u16) + bank
+                            + (((tp & 0x1f) << 5) + (sp & 0x1f)) * sizeof(u16)
                         );
-                        v |= *Pix16(
-                            g_clut + 0x20000 + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2
+                        v |= Clut16(
+                            CLUT_RED_OFFSET * sizeof(u16) + bank
+                            + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * sizeof(u16)
                         );
-                        v |= *Pix16(
-                            g_clut + bank + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2
+                        v |= Clut16(
+                            CLUT_GREEN_OFFSET * sizeof(u16) + bank
+                            + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * sizeof(u16)
                         );
                         *dstPtr = v;
                         dstPtr++;
@@ -838,14 +838,17 @@ i32 CDDSurface::ShadeBlt(
                         u32 tp = *t;
                         u32 sp = *srcPtr;
 
-                        u16 v = *Pix16(
-                            g_clut + 0x10000 + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2
+                        u16 v = Clut16(
+                            CLUT_BLUE_OFFSET * sizeof(u16) + bank
+                            + (((tp & 0x1f) << 5) + (sp & 0x1f)) * sizeof(u16)
                         );
-                        v |= *Pix16(
-                            g_clut + 0x20000 + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2
+                        v |= Clut16(
+                            CLUT_RED_OFFSET * sizeof(u16) + bank
+                            + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * sizeof(u16)
                         );
-                        v |= *Pix16(
-                            g_clut + bank + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2
+                        v |= Clut16(
+                            CLUT_GREEN_OFFSET * sizeof(u16) + bank
+                            + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * sizeof(u16)
                         );
                         *dstPtr = v;
                         dstPtr++;
@@ -876,7 +879,7 @@ reject:
 // source order before the call; statement-reorder permutation does not move
 // it. Known cross-function-state-sensitive schedule (see the ShadeRect
 // predecessor A/B note in the permute skill).
-// The three g_clut base offsets are 0x10000 / 0 / 0x20000, matching retail's
+// The three g_clut byte displacements are 0x10000 / 0 / 0x20000, matching retail's
 // DIR32 addends. They used to carry a +2 that cancelled the (wrong) +2 in
 // BuildColorChannelTables; both are gone. Each lookup is (pct, channel, 0),
 // i.e. a straight channel * pct / 32 dim.
@@ -925,8 +928,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 u32 green = hi & 0x1f;
                 u32 red = hi & 0xffffffe0;
                 *srcPix++ = static_cast<u16>(
-                    (Clut16(0x10000 + off + (blue << 6)) | Clut16(off + (green << 6))
-                     | Clut16(0x20000 + off + red * 2))
+                    (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
+                     | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
+                     | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
                 );
             }
             srcPix += stride;
@@ -944,8 +948,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 u32 green = hi & 0x1f;
                 u32 red = hi & 0xffffffe0;
                 *srcPix++ = static_cast<u16>(
-                    (Clut16(0x10000 + off + (blue << 6)) | Clut16(off + (green << 6))
-                     | Clut16(0x20000 + off + red * 2))
+                    (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
+                     | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
+                     | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
                 );
             }
             srcPix += stride;
@@ -963,8 +968,8 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 
 // g_clut is the 3 x 32768-entry alpha-blend LUT: index (alpha:5, dst:5, src:5)
 // -> (alpha*dst + (32-alpha)*src) / 32, pre-shifted per channel into region
-// 0x00000 green (<<5), 0x10000 blue (<<g_bUp), 0x20000 red (<<0xa).
-// `base += 2` belongs AFTER the three stores, not before: retail's stores carry
+// entry region 0 green (<<5), region 1 blue (<<g_bUp), region 2 red (<<0xa).
+// The typed table's byte cursor advances AFTER the three stores: retail carries
 // the g_clut DIR32 with addends -2 / 0xfffe / 0x1fffe against an esi cl has
 // already advanced, so the first entry of each region lands at index 0. With the
 // increment first, every entry sat one slot high and the last red store ran two
@@ -987,10 +992,19 @@ void BuildColorChannelTables() {
                 i32 k = 0x20;
                 do {
                     i32 sum = varD / 32 + bDiv;
-                    ClutStore16(0x20000 + base, static_cast<u16>((sum << 0xa)));
-                    ClutStore16(base, static_cast<u16>((sum << 5)));
-                    ClutStore16(0x10000 + base, static_cast<u16>((sum << bShift)));
-                    base += 2;
+                    ClutStore16(
+                        CLUT_RED_OFFSET * sizeof(u16) + base,
+                        static_cast<u16>((sum << 0xa))
+                    );
+                    ClutStore16(
+                        CLUT_GREEN_OFFSET * sizeof(u16) + base,
+                        static_cast<u16>((sum << 5))
+                    );
+                    ClutStore16(
+                        CLUT_BLUE_OFFSET * sizeof(u16) + base,
+                        static_cast<u16>((sum << bShift))
+                    );
+                    base += sizeof(u16);
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1010,10 +1024,19 @@ void BuildColorChannelTables() {
                 i32 k = 0x20;
                 do {
                     i32 sum = varD / 32 + bDiv;
-                    ClutStore16(0x20000 + base, static_cast<u16>((sum << g_rUp)));
-                    ClutStore16(base, static_cast<u16>(((sum << g_gUp) << 1)));
-                    ClutStore16(0x10000 + base, static_cast<u16>((sum << g_bUp)));
-                    base += 2;
+                    ClutStore16(
+                        CLUT_RED_OFFSET * sizeof(u16) + base,
+                        static_cast<u16>((sum << g_rUp))
+                    );
+                    ClutStore16(
+                        CLUT_GREEN_OFFSET * sizeof(u16) + base,
+                        static_cast<u16>(((sum << g_gUp) << 1))
+                    );
+                    ClutStore16(
+                        CLUT_BLUE_OFFSET * sizeof(u16) + base,
+                        static_cast<u16>((sum << g_bUp))
+                    );
+                    base += sizeof(u16);
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;

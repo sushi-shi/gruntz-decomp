@@ -26,8 +26,8 @@ COFF an `IMAGE_REL_I386_DIR32` stores its **addend inline in the displacement
 field**, and that field is inside the masked operand. So
 
 ```
-mov word ptr [esi + 0x20000], dx     ; reloc -> ?g_clut@@3PAEA   (base)
-mov word ptr [esi + 0x1fffe], dx     ; reloc -> ?g_clut@@3PAEA   (retail)
+mov word ptr [esi + 0x20000], dx     ; reloc -> ?g_clut@@3PAGA   (base)
+mov word ptr [esi + 0x1fffe], dx     ; reloc -> ?g_clut@@3PAGA   (retail)
 ```
 
 score identical. `g_tbl + 0x20000` and `g_tbl + 0x1FFFE` are the same symbol, and
