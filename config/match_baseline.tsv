@@ -183,7 +183,7 @@ gruntzmgr	165	151
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	35
-gruntzwnd	20	18
+gruntzwnd	21	20
 guardpoint	5	5
 hash	10	10
 heapdiag	8	7
@@ -471,11 +471,11 @@ attract	?HeaderWrite@CState@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	f030504
 attract	?InputVirtual@CState@@UAEHXZ	99.5403	99.5403	2	f3a1c046073e	0xface0	99.5403	
 attract	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	1	d9da7b30d845	0xfab90	96.3906	
 attract	?OnPaint@CState@@UAEHXZ	100.0000	100.0000	1	43cbcf75387b	0xfac70	100.0000	
-attract	?Present@CState@@QAEXH@Z	100.0000	100.0000	1	71d0b0079bc9	0xfaec0	100.0000	
+attract	?Present@CState@@QAEXH@Z	100.0000	100.0000	2	ccdaeedb342a	0xfaec0	100.0000	
 attract	?RetireScene@CState@@QAEHHHHH@Z	98.3913	98.3913	1	29dc61034e3d	0xfa8f0	98.3913	
 attract	?RunTitle@CState@@QAEHPBDHHHH@Z	99.5238	99.5238	1	8b2f4b2dc7bb	0xfa300	99.5238	
 attract	?RunTitleSeq@CState@@QAEHPBDHHHH@Z	100.0000	100.0000	1	ac30d7cea2e7	0xfa350	100.0000	
-attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	4	42adca35291a	0xfaf50	100.0000	
+attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	5	28eb67a55e5b	0xfaf50	100.0000	
 attractstate	??1CAttract@@UAE@XZ	100.0000	100.0000	1	b2b974d351ac	0x8cd90	100.0000	
 attractstate	??_GCAttract@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8bef3a64de37	0x8cd60	100.0000	
 attractstate	?CompleteLevel@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c690	100.0000	
@@ -889,13 +889,13 @@ customleveldlg	?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ	100.0000	1
 customleveldlg	?PickIfSelected@CBattlezDlgCustom@@QAEXXZ	100.0000	100.0000	3	cd692d8dfbbd	0x183f0	100.0000	
 customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	fec5c196466c	0x3b940	100.0000	
 customworlddialog	?CustomWorldDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	64686dcea279	0x3ae60	100.0000	
-customworlddialog	?CustomWorldInfoDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	25c9733e93e6	0x3b600	100.0000	
+customworlddialog	?CustomWorldInfoDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	0917d0cd5ae8	0x3b600	100.0000	
 customworlddialog	?FillCustomLevelList@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	f6e5cb785d3e	0x3af90	100.0000	
-customworlddialog	?FillLevelInfoDialog@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	c6a7adb7b10d	0x3b1a0	100.0000	
+customworlddialog	?FillLevelInfoDialog@@YAHPAUHWND__@@@Z	100.0000	100.0000	2	6ec26799b1d7	0x3b1a0	100.0000	
 customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	88.2371	88.2371	1	a8e2acdd7cd2	0x3bb50	88.2371	
 customworlddialog	?LoadCustomWorldInfo@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	0d6cf19d8f5b	0x3b7c0	100.0000	
-customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	5964e0d85918	0x3b310	100.0000	
-customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@PAUHWND__@@PAV1@@Z	95.7143	95.7143	1	456fd9a3543b	0x3ad90	95.7143	
+customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	2	335575da83ac	0x3b310	100.0000	
+customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@PAUHWND__@@PAV1@@Z	95.7143	95.7143	2	88967a623e6a	0x3ad90	95.7143	
 customworlddialog	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	100.0000	100.0000	1	4560a33e28b0	0x3b470	100.0000	
 databuffer	??0CShadeTable@@QAE@XZ	100.0000	100.0000	1	ed7e81342350	0x150180	100.0000	
 databuffer	?Free@CShadeTable@@QAEXXZ	100.0000	100.0000	1	9faa81b42d51	0x1503c0	100.0000	
@@ -1750,9 +1750,9 @@ fileimage	?SaveBmp@CDDSurface@@QAEHPBDPAVCFileImagePal@@H@Z	99.3263	99.3263	3	e1
 fileimage	?SaveDispatch@CDDSurface@@QAEHPADPAVCFileImagePal@@H@Z	100.0000	100.0000	2	2a53ce4def63	0x144350	100.0000	
 fileimage	?SaveRle16@CDDSurface@@QAEHPADPAVCFileImagePal@@H@Z	91.8957	91.8578	3	ccc8481efa16	0x144640	91.8957	
 fileimage	?SaveTga@CDDSurface@@QAEHPBDPAVCFileImagePal@@H@Z	86.6546	86.6546	10	aaab3e242b93	0x144900	86.6546	
-filestream	?CloseFileIOGlobal@@YAXXZ	100.0000	100.0000	1	c07846052c87	0xbd430	100.0000	
+filestream	?CloseFileIOGlobal@@YAXXZ	100.0000	100.0000	2	a5519c59bd4b	0xbd430	100.0000	
 filestream	?OpenGruntzLog@CFileLog@@QAEXXZ	100.0000	100.0000	1	5a2e5a9ab3f9	0xbd450	100.0000	
-filestream	?ReopenSharedFile@CFileLog@@QAEXPAD@Z	100.0000	100.0000	1	476bbb42c092	0xbd3e0	100.0000	
+filestream	?ReopenSharedFile@CFileLog@@QAEXPAD@Z	100.0000	100.0000	2	4ec486e925cf	0xbd3e0	100.0000	
 filestream	?WriteTag@CMulti@@QAEXPBD@Z	100.0000	100.0000	1	bb9bb9a1ea46	0xbd4a0	100.0000	
 font	??0Font@@QAE@XZ	100.0000	100.0000	1	3ca4d0e6ccac	0x179700	100.0000	
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	1	e7cf1144096e	0x179be0	100.0000	
@@ -2565,9 +2565,10 @@ gruntzsoundz	?StopBank@CGruntzSoundZ@@QAEHH@Z	100.0000	100.0000	1	e3ea15a4ba23	0
 gruntzsoundz	?StopCurrent@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	3	64270b7f6f20	0x1388a0	100.0000	
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	1	a08f9c17b7e7	0x94640	100.0000	
 gruntzwnd	??1CGameWnd@@UAE@XZ	100.0000	100.0000	1	cpp:4d3d937da1dd	0x94c10	100.0000	
-gruntzwnd	??1CGruntzWnd@@UAE@XZ	100.0000	99.7727	1	3d7f447852a3	0x946a0	100.0000	
+gruntzwnd	??1CGruntzWnd@@UAE@XZ	100.0000	100.0000	1	3d7f447852a3	0x946a0	100.0000	
 gruntzwnd	??_GCGameWnd@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4d3d937da1dd	0x94d80	100.0000	
 gruntzwnd	??_GCGruntzWnd@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4d3d937da1dd	0x94670	100.0000	
+gruntzwnd	?Destroy@CGruntzWnd@@QAEXXZ	100.0000	100.0000	1	f72c2243a7a7	0x94750	100.0000	
 gruntzwnd	?HandleWindowCommand@CGruntzWnd@@UAEHHHH@Z	100.0000	100.0000	1	aa9a1d0d2a49	0x94770	100.0000	
 gruntzwnd	?OnActivateApp@CGruntzWnd@@UAEHIJ@Z	100.0000	100.0000	1	3f6107c9b545	0x94b20	100.0000	
 gruntzwnd	?OnChar@CGruntzWnd@@UAEHIJ@Z	100.0000	100.0000	1	9450ba18f288	0x948a0	100.0000	
@@ -2817,7 +2818,7 @@ levelplane	?SetTileSize@CDDrawWorkerHost@@QAEXHH@Z	88.3846	88.3846	1	080526ee127
 levelplane	?SetTileSizeFromImageSet@CDDrawWorkerHost@@QAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	1	fe0fbecdcb29	0x161fa0	100.0000	
 levelplane	?Unload@CDDrawWorkerHost@@UAEXXZ	100.0000	100.0000	1	6047a4745669	0x161bf0	100.0000	
 levelplane	?ValidateTiles@CDDrawWorkerHost@@QAEHPAD@Z	97.0085	97.0085	7	408d2169ad66	0x163510	97.0085	
-levelpreview	?Cancel@CPreviewState@@QAEXXZ	100.0000	100.0000	1	044b4a6aea5b	0xde590	100.0000	
+levelpreview	?Cancel@CPreviewState@@QAEXXZ	100.0000	100.0000	2	d32efd1a2491	0xde590	100.0000	
 levelpreview	?Enter@CPreviewState@@QAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	2	6f9e41682859	0xde030	100.0000	
 levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	2	46506fbab54d	0xde420	100.0000	
 levelpreview	?NextScreenCmd@CPreviewState@@QAEHH@Z	100.0000	100.0000	1	9035c3e6dc31	0xde190	100.0000	
