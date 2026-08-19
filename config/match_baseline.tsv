@@ -109,7 +109,7 @@ exittrigger	5	3
 eyecandy	4	4
 fader	25	20
 fadereffects	37	25
-fadermgr	12	12
+fadermgr	13	13
 feccrypt	11	8
 fileimage	19	10
 filestream	4	4
@@ -1726,7 +1726,7 @@ fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	88.8875	88.8875	1	7ba962f6c4eb	0x1
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	1	0aa0f545213f	0x182610	99.9831	
 fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	79.7423	79.7423	1	eb830c100645	0x181e50	79.7423	
 fadereffects	?SubFree@CFaderLight@@QAEXXZ	100.0000	100.0000	2	9a9115717ac4	0x180630	100.0000	
-fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	1	98e20e0705d5	0x17d8f0	100.0000	
+fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	2	7819c2212f51	0x17d8f0	100.0000	
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e240	100.0000	
 fadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	b7d521a26e4e	0x17d910	100.0000	
 fadermgr	??1CFxModeT1@@QAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e160	100.0000	
@@ -1737,6 +1737,7 @@ fadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	ab5b3f4c2f1c	0x17d9a0	10
 fadermgr	?Remove@CFaderMgr@@QAEXPAVCFader@@@Z	100.0000	100.0000	1	84a52fdb2671	0x17e170	100.0000	
 fadermgr	?Serialize@CFaderArray@@UAEXAAVCArchive@@@Z	100.0000	100.0000	1	8d4d91bce231	0x17e2a0	100.0000	
 fadermgr	?SetConfig@CFaderMgr@@QAEHPAVCDDSurface@@0PAVCDDrawPtrCollections@@@Z	100.0000	100.0000	1	c8052f36d1b9	0x17d980	100.0000	
+fadermgr	?SetTraceEnabled@CFaderMgr@@QAEXH@Z	100.0000	100.0000	1	36a41e903840	0x17e220	100.0000	
 fadermgr	?Trace@CFaderMgr@@QAEXVCString@@@Z	100.0000	100.0000	1	151c913fa558	0x17e230	100.0000	
 feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	98.8741	98.8741	1	5e0df717c3c4	0x17b950	98.8741	
 feccrypt	?Close@CFecFile@@QAEXXZ	100.0000	100.0000	1	5d33dad7333b	0x17b570	100.0000	

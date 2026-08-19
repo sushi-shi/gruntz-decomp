@@ -13,7 +13,7 @@
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = false;
-    m_reserved0c = 0;
+    m_traceEnabled = 0;
 }
 
 RVA(0x0017d910, 0x65)
@@ -254,6 +254,14 @@ void CFaderMgr::DeleteAll() {
     }
     m_arr.m_nMaxSize = 0;
     m_arr.m_nSize = 0;
+}
+
+// @identity-TODO: placement beside Trace is the only evidence for the setting's name.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0017e220, 0xa)
+void CFaderMgr::SetTraceEnabled(i32 enabled) {
+    m_traceEnabled = enabled;
 }
 
 RVA(0x0017e230, 0xc)

@@ -118,12 +118,13 @@ public:
     void Remove(CFader* pFader);
     void DeleteAll();
 
+    void SetTraceEnabled(i32 enabled);
     void Trace(CString s);
 
     class CDDSurface* m_timerArgA;
     class CDDSurface* m_timerArgB;
     i32 m_active;
-    i32 m_reserved0c;
+    i32 m_traceEnabled;
     CFaderArray m_arr;
 
     class CDDrawPtrCollections* m_sharedPtrColl;
