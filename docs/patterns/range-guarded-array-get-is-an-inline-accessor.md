@@ -155,3 +155,26 @@ that there the member expression was genuinely single-use, whereas here the map 
 `this` that must land in `ecx`, so collapsing its live range costs 13 points instead of gaining.
 Test the knob because it is cheap to try and cheap to revert - do not expect it to close a site,
 and never apply it unmeasured.
+
+## A branch-count exception: value factoring can be coloring fallout
+
+`CSBI_StatzTabGruntBar::Update` 0xea6c0 is the narrow counterexample to treating every
+branch-count delta as authored CFG. Both sides have the same five value-only `GetAt`
+expansions, source guards, one call, four ordered referents and one return. Retail carries
+`statusVal` in EAX, uses ECX for the first four `GetAt` results and writes `dirty = 1` as
+an immediate. The recompile carries `statusVal` in ECX; after its first comparison that
+register becomes the reusable constant 1. C2 then duplicates the first accessor's caller
+tail into its in-range and out-of-range arms so ECX can remain live, producing one extra
+branch and four extra instructions. The branch is downstream of the register plan.
+
+Controls were bounded and source-shaped: a block-scoped result local, deleting the one-use
+receiver local, a function-scoped result, a function-scoped worker, two declaration orders,
+first-assignment order and a named grid index were all byte-identical at 90.9176%. Moving
+the five default initializers above a positive `unit != NULL` gate was structurally wrong:
+71.15%, 202 vs 192 instructions and 43 vs 41 branches. Keep the explicit null/default arm.
+
+Classifier rule: a branch-count mismatch normally remains CFG, but inspect the first real
+instruction divergence. If all extra edges are confined to the two returns of an inlined
+value-only accessor and the earlier divergence is a register rotation that changes whether
+a constant can stay live, classify the residue by that earlier register cause. Do not
+restructure the source guards to remove a machine-level factoring edge.

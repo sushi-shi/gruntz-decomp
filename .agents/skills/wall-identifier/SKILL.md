@@ -38,7 +38,7 @@ separate scored records (`CKeyedList::AddNode`, `CFaderMesh::~CFaderMesh`, and
 | class | deciding signal | lever |
 |---|---|---|
 | **inline / call-set** | out-of-line CALL multiset differs | body completeness / inline budget — see below |
-| **control flow** | block, branch, or ret COUNTS differ | source construct — structural matcher work, never permute |
+| **control flow** | block, branch, or ret COUNTS differ | source construct — structural matcher work, except the proven value-factoring case below |
 | **register / schedule** | counts and branch sequence agree; operand order, spills, coloring differ | classified `gruntz permute state|variants` experiments |
 | **masked / referent** | masked diff rc 0 but score < 100 | referent identity — labeling work, not codegen |
 
@@ -86,6 +86,16 @@ three source-selected regimes (separate returns / `goto fail` / `||`-collapse):
 `do-while-duplicates-the-leading-call.md`, `void-vs-bool-return-epilogue-split.md`,
 `backward-goto-sinks-its-target-region.md` cover the common shapes.
 Screen candidates tree-wide with `python -m gruntz.audit.exit_merge_sieve --dup`.
+
+One narrow exception is proven on `CSBI_StatzTabGruntBar::Update` 0xea6c0. If the
+first real divergence is an earlier register rotation and every extra edge is confined
+to the two returns of an inlined value-only accessor, register availability can decide
+whether global optimization factors the caller tail. That produces a branch-count delta
+downstream of coloring with no authored CFG difference. Require the complete signature:
+same source guards, call set, constants and ordered referents; only the accessor-return
+tail is duplicated; and source-shaped result/receiver/scope controls are byte-flat. See
+`docs/patterns/range-guarded-array-get-is-an-inline-accessor.md`. This is not permission
+to relabel an ordinary branch mismatch from counts alone—follow the first divergence.
 
 ### register / schedule
 

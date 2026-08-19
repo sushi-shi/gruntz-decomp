@@ -118,6 +118,9 @@ i32 CSBI_StatzTabGruntBar::Render() {
     return 1;
 }
 
+// @early-stop
+// The lone branch delta is GetAt value-factoring selected by the status/dirty
+// register plan; source guards, calls, constants and ordered referents agree.
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
