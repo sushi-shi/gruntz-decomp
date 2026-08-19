@@ -120,6 +120,23 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, const char* entr
     return el;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00152a90, 0x17)
+CAniElement* CDDrawSubMgrLeaf::AddFromSource(CParseSource* src) {
+    if (src == NULL) {
+        return NULL;
+    }
+    return CreateAniEntry(src->m_name, src);
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00152ab0, 0x16)
+void CDDrawSubMgrLeaf::AddEntry(CAniElement* elem, const char* key) {
+    m_animations[key] = elem;
+}
+
 RVA(0x00152ad0, 0x17f)
 i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;

@@ -28,6 +28,8 @@ public:
 
     class CAniElement* CreateAniEntry(const char* key, struct CParseSource* entry);
     class CAniElement* CreateAniEntry2(const char* key, const char* entry);
+    CAniElement* AddFromSource(CParseSource* src);
+    void AddEntry(CAniElement* elem, const char* key);
     i32 ScanTree(class CSymTab* tree, const char* prefix, const char* suffix);
 
     CMapStringToPtr m_animations;
