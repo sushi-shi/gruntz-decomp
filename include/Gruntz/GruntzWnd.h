@@ -12,6 +12,7 @@ public:
     CGruntzWnd();
     virtual ~CGruntzWnd() OVERRIDE;
 
+    i32 CreateAndShow(CREATESTRUCTA* params, CGameApp* owner);
     void Destroy();
 
     virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) OVERRIDE;

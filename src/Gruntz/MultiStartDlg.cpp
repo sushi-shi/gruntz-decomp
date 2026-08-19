@@ -560,6 +560,14 @@ void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     }
 }
 
+RVA(0x000c29c0, 0x1d)
+void CMultiStartDlg::SetPlayerName(i32 index, const char* name) {
+    CWnd* item = GetCtrlB(index);
+    if (item != NULL) {
+        item->SetWindowTextA(name);
+    }
+}
+
 RVA(0x000c29f0, 0x13)
 void CMultiStartDlg::ReconcileChannel0() {
     SyncChannelSlot(0);

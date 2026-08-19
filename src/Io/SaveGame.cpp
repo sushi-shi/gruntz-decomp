@@ -350,6 +350,11 @@ void CSaveGame::SetMagic() {
     m_magic = SAVE_PROGRESS_MAGIC;
 }
 
+RVA(0x000e56d0, 0x16)
+i32 CSaveGame::TempFileExistsAt(i32 index) {
+    return TempFileExists(GetSlot(index));
+}
+
 RVA(0x000e5700, 0x9e)
 int TempFileExists(SaveSlot* p) {
     if (p != NULL && (p->m_type & SAVESLOT_PRESENT)) {

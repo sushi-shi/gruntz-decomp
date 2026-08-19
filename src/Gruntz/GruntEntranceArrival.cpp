@@ -869,7 +869,7 @@ latch:
 }
 
 // @early-stop
-RVA(0x000633e0, 0x2f0)
+RVA(0x000633e0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_object->m_screenX == m_lastTilePx.m_x
         && m_object->m_screenY == m_lastTilePx.m_y) {

@@ -77,6 +77,7 @@ public:
     i32 Encode(u8* buf);
     i32 Decode(u8* buf);
     SaveSlot* GetSlot(i32 i);
+    i32 TempFileExistsAt(i32 index);
     i32 InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mgr);
     i32 StoreSlot(i32 idx, const SaveSlot* src);
 

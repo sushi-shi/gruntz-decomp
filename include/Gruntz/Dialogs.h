@@ -217,6 +217,7 @@ public:
     void CommitWorldHost();
 
     void SetListCurSel(i32 id, i32 wParam);
+    void SetPlayerName(i32 index, const char* name);
     void AppendChatLine(char* str);
     i32 UpdatePlayers(i32 force);
     void OnSlotSelect0();

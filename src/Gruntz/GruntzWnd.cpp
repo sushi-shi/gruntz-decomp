@@ -21,6 +21,11 @@ CGruntzWnd::~CGruntzWnd() {
     Destroy();
 }
 
+RVA(0x00094720, 0x18)
+i32 CGruntzWnd::CreateAndShow(CREATESTRUCTA* params, CGameApp* owner) {
+    return CGameWnd::CreateAndShow(params, owner) != 0;
+}
+
 RVA(0x00094750, 0x5)
 void CGruntzWnd::Destroy() {
     CGameWnd::Destroy();
