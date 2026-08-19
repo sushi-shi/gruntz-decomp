@@ -92,7 +92,7 @@ ddrawsurfacepairblt	1	1
 ddrawworkerhost	5	5
 ddrawworkerregistry	26	26
 ddsurface	57	50
-debugprintf	14	12
+debugprintf	17	15
 debugtiming	2	2
 deflate	17	17
 demo	8	7
@@ -1296,6 +1296,9 @@ debugprintf	??1CDebugConfig@@QAE@XZ	100.0000	100.0000	1	b5552c327521	0x1851b0	10
 debugprintf	?AddFromString@CRangeSet@@QAEXPAD@Z	100.0000	100.0000	1	5c41c7bd0e1c	0x184c10	100.0000	
 debugprintf	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	37eb845462f8	0x184be0	100.0000	
 debugprintf	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	657817a9193c	0x184ba0	100.0000	
+debugprintf	?DebugClear@@YAXXZ	100.0000	100.0000	1	3e45b7f203cf	0x184fe0	100.0000	
+debugprintf	?DebugClearChannel@@YAXH@Z	100.0000	100.0000	1	86044f731fa8	0x184ff0	100.0000	
+debugprintf	?DebugOutputString@@YAXPAD@Z	100.0000	100.0000	1	d7433808ee43	0x184de0	100.0000	
 debugprintf	?DebugSetCursor@@YAXHHH@Z	100.0000	100.0000	1	655ebb5044a9	0x184fd0	100.0000	
 debugprintf	?DebugSetCursorXY@@YAXHH@Z	100.0000	100.0000	1	d063bc7512f3	0x184fb0	100.0000	
 debugprintf	?DiscardDebugOutput@@YAXPAD@Z	100.0000	100.0000	1	e90e726b1ab9	0x184df0	100.0000	

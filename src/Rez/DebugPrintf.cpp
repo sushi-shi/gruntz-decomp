@@ -2,6 +2,8 @@
 
 #include <Rez/DebugPrintf.h>
 
+#include <Win32.h>
+
 #include <Gruntz/RangeSet.h>
 #include <Pix16.h>
 #include <Rez/DebugConfig.h>
@@ -148,6 +150,14 @@ void MonoClear() {
     g_monoCol = 0;
 }
 
+// @identity-TODO: the OutputDebugStringA forwarding behavior is proven; the name is inferred.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00184de0, 0xc)
+void DebugOutputString(char* line) {
+    OutputDebugStringA(line);
+}
+
 // retail: a 1-byte ret - debug output literally discarded
 RVA(0x00184df0, 0x1)
 void DiscardDebugOutput(char* line) {}
@@ -215,6 +225,17 @@ void DebugSetCursorXY(i32 a, i32 b) {
 
 RVA(0x00184fd0, 0x1)
 void DebugSetCursor(i32, i32, i32) {}
+
+// @identity-TODO: the default-channel wrapper relationship is proven; the names are inferred.
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00184fe0, 0xb)
+void DebugClear() {
+    DebugClearChannel(0);
+}
+
+RVA(0x00184ff0, 0x1)
+void DebugClearChannel(i32 channel) {}
 
 RVA(0x00185000, 0x1a6)
 CDebugConfig::CDebugConfig() {
