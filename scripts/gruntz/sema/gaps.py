@@ -51,6 +51,37 @@ def _trim(rva: int, payload: bytes) -> tuple[int, bytes]:
     return rva + lo, payload[lo:hi]
 
 
+def _split(rva: int, payload: bytes) -> list[tuple[int, bytes]]:
+    """Split padding-separated, 16-byte-aligned bodies inside one claim gap.
+
+    cl/link padding is a run of 90/cc bytes ending at the next aligned body.
+    Requiring both a run of at least four bytes and an aligned next byte avoids
+    treating an incidental nop in real code as a function boundary.
+    """
+    rva, payload = _trim(rva, payload)
+    if not payload:
+        return []
+    out = []
+    body_start = 0
+    i = 0
+    while i < len(payload):
+        if payload[i] not in (0x90, 0xCC):
+            i += 1
+            continue
+        pad_start = i
+        while i < len(payload) and payload[i] in (0x90, 0xCC):
+            i += 1
+        if i < len(payload) and i - pad_start >= 4 and (rva + i) % 0x10 == 0:
+            body = payload[body_start:pad_start]
+            if body:
+                out.append((rva + body_start, body))
+            body_start = i
+    body = payload[body_start:]
+    if body:
+        out.append((rva + body_start, body))
+    return out
+
+
 def _switch_table(payload: bytes, prev) -> bool:
     if len(payload) < 8 or len(payload) % 4:
         return False
@@ -96,19 +127,17 @@ def census() -> list[dict]:
         payload = pe.read(start, end - start)
         if payload is None:
             continue
-        rva, body = _trim(start, payload)
-        if not body:
-            continue
-        rows.append({
-            "rva": rva,
-            "size": len(body),
-            "kind": _kind(body, prev),
-            "file": shared[0],
-            "unit": prev.unit if prev.unit == nxt.unit else f"{prev.unit}|{nxt.unit}",
-            "prev": prev.name,
-            "next": nxt.name,
-            "bytes": body[:16].hex(),
-        })
+        for rva, body in _split(start, payload):
+            rows.append({
+                "rva": rva,
+                "size": len(body),
+                "kind": _kind(body, prev),
+                "file": shared[0],
+                "unit": prev.unit if prev.unit == nxt.unit else f"{prev.unit}|{nxt.unit}",
+                "prev": prev.name,
+                "next": nxt.name,
+                "bytes": body[:16].hex(),
+            })
     return rows
 
 

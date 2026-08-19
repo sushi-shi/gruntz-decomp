@@ -13,7 +13,8 @@ The reliable census is purely address arithmetic over our own claims:
 
 1. sort every `RVA()`/`RVA_COMPGEN()`/`RVA_DYNINIT()` claim tree-wide by address;
 2. for each adjacent PAIR THAT COMES FROM THE SAME FILE, take `[a+size, b)`;
-3. strip leading/trailing `0x90`/`0xcc`;
+3. strip leading/trailing `0x90`/`0xcc` and split internal padding runs whose
+   following byte is 16-byte aligned;
 4. anything left is a body retail emitted inside that TU's contribution and we never claimed.
 
 The checked-in read-only view performs that derivation directly:
@@ -55,10 +56,12 @@ copies, and it lands next to the function whose member-init list needs it for un
 Our obj already emitted `??1CHash@@QAE@XZ` and `??1CHashB@@QAE@XZ` — they were simply never
 pinned, so the delinker never carved them. `RVA_COMPGEN` binds them with no source change.
 
-On the 2026-08-19 tree the complete three-channel scan reports 90 gaps and 6,958 bytes.
-Eight repeated compiler/runtime bands account for 5,611 bytes. The remaining 82 gaps hold
-1,347 bytes: 23 exact five-byte `E9` thunks, 15 trivial returns no longer than eight bytes,
-and 44 other rows totalling 1,171 bytes. That tail contains small accessors, forwarders,
+On the 2026-08-19 tree the first edge-only scan reported 90 gaps and 6,958 bytes, but that
+was not a function-level queue: eight apparent compiler/runtime bands and several small
+rows each contained multiple padding-separated bodies. Splitting those boundaries gives
+237 executable fragments and 3,535 meaningful bytes: 96 exact five-byte `E9` thunks, 24
+trivial bodies no longer than eight bytes, and 117 other rows totalling 2,974 bytes. That
+tail contains small accessors, forwarders,
 `??_G` scalar deleting destructors, and static-object destructor thunks
 (`mov ecx,<static>; jmp ~CString`, emitted for a function-local `static CString` and
 referenced by the magic-static block that registers it with `atexit`).

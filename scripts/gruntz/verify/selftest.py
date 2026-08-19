@@ -1231,6 +1231,14 @@ class SemaGapControls(unittest.TestCase):
             self.assertEqual(gaps._kind(b"\x55" * 9, None), "substantive")
             self.assertEqual(gaps._kind(b"\x55" * 0x100, None), "band")
 
+    def test_aligned_padding_separates_multiple_missing_functions(self):
+        from gruntz.sema import gaps
+        payload = b"\xc3" + b"\x90" * 15 + b"\xcc" * 16 + b"\xc2\x04\x00\x90"
+        self.assertEqual(
+            gaps._split(0x17400, payload),
+            [(0x17400, b"\xc3"), (0x17420, b"\xc2\x04\x00")],
+        )
+
 
 class WallsUnitFilterControls(unittest.TestCase):
     """A misspelt --unit answered '0 mismatches' / '0 function(s) below 100%'
