@@ -30,6 +30,11 @@ static PALETTEENTRY s_palPidData[0x100];
 DATA(0x002852f0)
 static PALETTEENTRY s_palPcxData[0x100];
 
+// @early-stop
+// Calls, CFG, extent, relocations and the palette-copy loop match retail. The
+// residue is only the order of the independent info/img reloads at the loop
+// join. Thirty-two TU states, 256 syntax-aware shapes and 28 reviewed boundary,
+// view-placement, pointer and call spellings did not reverse that pair.
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, BmpFileImage* img, i32, i32 b) {
     ColorDepth srcFmt = static_cast<ColorDepth>(img->info.bmiHeader.biBitCount);
@@ -48,7 +53,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, BmpFileImage* img, i32, i3
         return 0;
     }
 
-    PALETTEENTRY* pal = 0;
+    PALETTEENTRY* pal = NULL;
     if (convert && srcFmt == BPP_PALETTED_8) {
         RGBQUAD* p = img->info.bmiColors;
         for (i32 i = 0; i < 0x100; i++) {
