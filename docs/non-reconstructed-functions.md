@@ -61,17 +61,17 @@ can be called empty.
 
 `@early-stop` and `@identity-TODO` are state markers, not completeness evidence. The
 early-stop cleanup removed stale exact markers, duplicate markers, and markers attached
-to bodies that were still missing logic. The current audit has 675 live markers, no
+to bodies that were still missing logic. The current audit has 676 live markers, no
 marker on an exact function, and one understood unmapped marker: the inline `CPlay`
 constructor is defined in `Play.h` but its retail copy is emitted and pinned in
 `gruntzmgr`. A future exact match must have its stale marker removed.
 
-Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 664
-complete bodies and leaves 52 unparked candidates. Marker occurrences cannot be
+Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 665
+complete bodies and leaves 51 unparked candidates. Marker occurrences cannot be
 subtracted directly from the target count because a few bodies carry duplicate markers
 and some live markers sit on current dips that have already reached 100% historically.
 The unparked set is derived from the same inventory/Model join, ordered by historical
-MAX; its first row is currently `zPTree::Find` at 90.60%.
+MAX; its first row is currently `CSBI_StatzTabGruntBar::Update` at 91.00%.
 
 There are 35 `@identity-TODO` occurrences, split into three different evidence queues:
 20 incremental-thunk-oracle annotations, five functions whose original TU owner is not
@@ -94,6 +94,21 @@ When the missing-body audit finds a function, reconstruct its full semantics bef
 attempting permutations. An `@early-stop` is appropriate only after the full logic is
 present and the remaining non-exact result meets the proof contract in
 [comment-markers.md](comment-markers.md).
+
+## Never-claimed code is a small, separate queue
+
+The current same-file interior-gap scan finds 90 gaps containing 6,958 bytes after
+trimming leading and trailing `0x90`/`0xcc`. The scan must sort all `RVA`,
+`RVA_COMPGEN`, and `RVA_DYNINIT` claims together; omitting the owner-side dynamic-init
+pins manufactures 42 false gaps in the static-initializer bands.
+
+Eight repeated compiler/runtime bands account for 5,611 bytes. The remaining 82 gaps
+contain only 1,347 bytes: 23 are five-byte `E9` thunks, 15 are trivial returns of at
+most eight bytes, and 44 contain another 1,171 bytes of accessor, forwarder, destructor,
+or still-unclassified code. This is the high-confidence discovery queue for retail code
+that has no claim. It is not evidence for 82 missing source functions: compiler-generated
+copies may need only `RVA_COMPGEN`, and each of the 44 substantive rows still needs raw
+disassembly, caller, and emitted-object review before reconstruction.
 
 ## Data completeness is a separate audit
 
