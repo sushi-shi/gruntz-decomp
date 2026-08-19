@@ -62,12 +62,15 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     }
 }
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* result = NULL;
+    map.Lookup(name, result);
+    return static_cast<CDDrawWorker*>(result);
+}
+
 RVA(0x00150540, 0x65)
 void CWwdGameObjectA::ApplyName(const char* name) {
-    CDDrawWorker* spr = 0;
-    CObject* sprOb = 0;
-    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(name, sprOb);
-    spr = static_cast<CDDrawWorker*>(sprOb);
+    CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
     m_frameSet = spr;
     if (spr) {
         i32 n = spr->m_minIndex;

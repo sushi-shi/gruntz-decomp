@@ -47,7 +47,7 @@ i32 g_sndCueTag = 100;
 // with the lookup: as the inline body's first statement cl schedules it after the
 // caller's argument setup, which is retail's order.
 inline AnimWorkerObj* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = 0;
+    CObject* ob = NULL;
     map.Lookup(name, ob);
     return static_cast<AnimWorkerObj*>(ob);
 }
@@ -205,10 +205,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     const char* name,
     i32 stateFlags
 ) {
-    CObject* tmpl_ob = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(name, tmpl_ob);
-
-    AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
+    AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
     if (!tmpl) {
         return 0;
     }

@@ -317,7 +317,7 @@ wwdfactoryobject	56	52
 wwdgameobject	47	36
 wwdgameobjectrender	15	11
 wwdgrid	16	12
-wwdobjmgr	54	36
+wwdobjmgr	54	37
 wwdspatialmgr	14	12
 zdarrayderived	3	2
 zutil	2	2
@@ -4609,7 +4609,7 @@ wwdgameobject	?AddLogicBump@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	4c737145b73
 wwdgameobject	?AddLogicHit@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	21a8a3b0109d	0x150f50	89.4737	
 wwdgameobject	?ApplyLookupGeometry@CWwdGameObjectA@@QAEHPBDH@Z	100.0000	100.0000	2	4e5def1b0369	0x1505b0	100.0000
 wwdgameobject	?ApplyLookupSprite@CWwdGameObjectA@@QAEXPBDH@Z	94.2857	94.2857	2	f944370c13ad	0x1504d0	94.2857	
-wwdgameobject	?ApplyName@CWwdGameObjectA@@QAEXPBD@Z	94.1176	94.1176	2	e2572dfb52ca	0x150540	94.1176	
+wwdgameobject	?ApplyName@CWwdGameObjectA@@QAEXPBD@Z	100.0000	100.0000	3	524b19c7fc1a	0x150540	100.0000
 wwdgameobject	?BltDirty@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	7b16635103b8	0x150660	100.0000	
 wwdgameobject	?BltDirtyEx@CWwdGameObjectA@@UAEXPAVCDrawSubWorker@@PAVCDDrawSurfacePair@@1@Z	78.8385	78.8385	2	808ebd7f5f17	0x1506b0	78.8385	
 wwdgameobject	?BltDirtyRegions@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@00@Z	100.0000	100.0000	1	df1d72acc7af	0x1508a0	100.0000	
@@ -4623,7 +4623,7 @@ wwdgameobject	?FindFrame@CDDrawWorker@@QAEHPAVCImage@@PADPAH@Z	100.0000	100.0000
 wwdgameobject	?GetClassId@AnimWorkerObj@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	af6316d08ab0	0x151d70	100.0000	
 wwdgameobject	?GetFirstFrameLightLevel@CDDrawWorker@@QAEHXZ	100.0000	100.0000	1	5972d9d114bc	0x1525a0	100.0000	
 wwdgameobject	?GetFirstFrameState@CDDrawWorker@@QAE?AW4ShadeMode@@XZ	100.0000	100.0000	1	745733ab1059	0x152570	100.0000	
-wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	100.0000	1	e44283363edf	0x1523f0	100.0000
+wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623	1	e44283363edf	0x1523f0	100.0000
 wwdgameobject	?Init@AnimWorkerObj@@UAEHP6AHPAUCGameObject@@@ZH@Z	100.0000	100.0000	1	d1f4f62257f6	0x151e20	100.0000	
 wwdgameobject	?InsertFrame@CDDrawWorker@@UAEPAVCImage@@PAUCParseSource@@HH@Z	100.0000	100.0000	2	749954f465d9	0x151f00	100.0000	
 wwdgameobject	?IsLoaded@AnimWorkerObj@@UAEHXZ	100.0000	100.0000	1	8cbd8c821cc7	0x151d60	100.0000	
@@ -4693,7 +4693,7 @@ wwdobjmgr	?BltDirtyChildrenEx@CDDrawChildGroup@@UAEXPAVCDrawSubWorker@@PAVCDDraw
 wwdobjmgr	?BoxesOverlap@CDDrawChildGroup@@QAEHPAUCGameObject@@0@Z	85.1494	85.1494	1	0517e5b24c5b	0x15a130	85.1494	
 wwdobjmgr	?CheckSortOrder@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	1	0a95e905f6d7	0x15a780	100.0000	
 wwdobjmgr	?ClearChildren@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	1	3658e3585089	0x159ef0	100.0000	
-wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	94.6071	94.4643	1	ae6101a8f961	0x159f00	94.6071	
+wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	94.6071	94.3929	1	ae6101a8f961	0x159f00	94.6071
 wwdobjmgr	?CountActive@CDDrawChildGroup@@QAEHXZ	97.4750	97.4750	3	d24427fc88a8	0x15abc0	100.0000	
 wwdobjmgr	?CountByKind@CDDrawChildGroup@@QAEHH@Z	100.0000	100.0000	1	ba2cd9ddeb8d	0x15aa60	100.0000	
 wwdobjmgr	?CreateContainerObject@CDDrawChildGroup@@QAEPAVCWwdGameObject@@HHHHPAUAnimWorkerObj@@H@Z	100.0000	100.0000	1	4bed20a21a88	0x1598d0	100.0000	
@@ -4702,7 +4702,7 @@ wwdobjmgr	?CreateDotObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectC@@HHHHPAUAnimW
 wwdobjmgr	?CreateNamedContainerObject@CDDrawChildGroup@@QAEPAVCWwdGameObject@@HHHHPBDH@Z	94.1176	94.1176	1	ec31de6a8379	0x159a10	94.1176	
 wwdobjmgr	?CreateNamedDeferredObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectF@@HHPBDH@Z	92.0000	92.0000	1	b361c71cf000	0x1595b0	92.0000	
 wwdobjmgr	?CreateNamedDotObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectC@@HHHHPBDHH@Z	93.5484	93.5484	1	bb1e7549aa6e	0x1593e0	93.5484	
-wwdobjmgr	?CreateSprite@CDDrawChildGroup@@QAEPAVCWwdGameObjectA@@HHHHPBDH@Z	94.1176	94.1176	1	9216f8bf63ae	0x1597b0	94.1176	
+wwdobjmgr	?CreateSprite@CDDrawChildGroup@@QAEPAVCWwdGameObjectA@@HHHHPBDH@Z	100.0000	100.0000	2	78e2a2ecf07c	0x1597b0	100.0000
 wwdobjmgr	?CreateSpriteObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectA@@HHHHPAUAnimWorkerObj@@H@Z	100.0000	100.0000	1	63e7be976260	0x159600	100.0000	
 wwdobjmgr	?Deserialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	96.1702	96.1702	3	5d7267dffc41	0x15b0e0	96.1702	
 wwdobjmgr	?DestroyChildren@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	3	67d7c5b24564	0x1591f0	100.0000	
