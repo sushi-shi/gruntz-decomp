@@ -636,12 +636,10 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     u16* out = Pix16(t->m_data);
     PALETTEENTRY* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
-        u16 v =
-            static_cast<u16>((static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp));
-        v = static_cast<u16>(
-            (v
-             | ((static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)
-                | static_cast<u8>((p->peBlue >> static_cast<u8>(g_bDown)))))
+        u16 v = static_cast<u16>(
+            (static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp)
+            | (static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)
+            | static_cast<u8>((p->peBlue >> static_cast<u8>(g_bDown)))
         );
         *out++ = v;
         p++;

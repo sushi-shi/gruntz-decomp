@@ -39,8 +39,13 @@ WALL-CLASSIFICATION rule, not a matching trick: **"the sweep was flat" is only a
 wall report when the sweep varied the declaration KIND.** Eight `CLightFxRender` palette
 builders, `HsvShiftTable`, `SubTable` and `CDDrawWorkerHost::Draw` all read as immovable
 under a uniform prototype run and every one of them moved 2-13 points under the mixed one;
-`CSpriteRef::Build` and `CShadeTableCache::AlphaTable` reached 100.00 and were parked as
-proven correct. The probes are diagnostics: bank the MAX, then delete them.
+`CSpriteRef::Build` and `CShadeTableCache::AlphaTable` reached 100.00 under a
+mixed state and were parked as proven reachable. That historical result did not
+establish that AlphaTable's source expression was final: a later clean
+expression-tree A/B found that its flat `red | green | blue` form is exact
+without a probe (see
+[`sequenced-accumulator-beats-or-tree-canonicalization.md`](sequenced-accumulator-beats-or-tree-canonicalization.md)).
+The probes are diagnostics: bank the MAX, then delete them.
 
 `CGameLevel::ProbeFootSoft` provides a stronger calibration at the last few bytes. Its
 99.9863 residue was only the order of two independent member loads feeding one addition;
