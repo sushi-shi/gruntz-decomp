@@ -5,6 +5,7 @@
 
 struct CButeTail {
     CButeTail();
+    CButeTail(const char* key);
 
     ~CButeTail();
 
