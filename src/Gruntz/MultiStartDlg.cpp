@@ -584,7 +584,9 @@ void CMultiStartDlg::ReconcileChannel3() {
     Drive();
 }
 
-// @early-stop
+// @early-stop The zero-selection arm is a compound guard followed by an
+// else-if: retail re-tests m_humanControlled when the second conjunct fails,
+// but jumps over that re-test after DropChannelPlayer.
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     CWnd* owner = GetCtrlE(ch);
@@ -595,11 +597,9 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     GruntzPlayer* s = &m_host->m_options[ch];
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, CB_GETCURSEL, 0, 0) == 0) {
-        if (s->m_humanControlled != 0) {
-            if (s->m_liveGate != 0) {
-                g_multiState->DropChannelPlayer(s->m_playerIndex);
-            }
-        } else if (s->m_humanControlled == 0 && s->m_liveGate != 0) {
+        if (s->m_humanControlled && s->m_liveGate) {
+            g_multiState->DropChannelPlayer(s->m_playerIndex);
+        } else if (!s->m_humanControlled && s->m_liveGate) {
             ChannelSlots_Set(IDX(s->m_colorIndex), 1);
         }
         s->m_liveGate = 0;
