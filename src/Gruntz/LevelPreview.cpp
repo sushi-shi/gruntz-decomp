@@ -135,6 +135,12 @@ i32 CPreviewState::OnKey(i32 key, i32 param) {
     return 1;
 }
 
+RVA(0x000de400, 0xd)
+i32 CPreviewState::OnLButtonDown(i32, i32, i32) {
+    LoadLevelPreviewScreen();
+    return 1;
+}
+
 RVA(0x000de420, 0x115)
 void CPreviewState::LoadLevelPreviewScreen() {
     char buf[64];

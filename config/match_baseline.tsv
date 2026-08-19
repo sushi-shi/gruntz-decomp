@@ -209,7 +209,7 @@ kitchenslime	9	6
 latencylist	5	5
 leafcueplay	1	1
 levelplane	24	13
-levelpreview	9	8
+levelpreview	10	9
 levelrezpath	3	2
 leveltime	1	1
 lightfx	11	9
@@ -2836,6 +2836,7 @@ levelpreview	?Enter@CPreviewState@@QAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	2	6
 levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	2	46506fbab54d	0xde420	100.0000	
 levelpreview	?NextScreenCmd@CPreviewState@@QAEHH@Z	100.0000	100.0000	1	9035c3e6dc31	0xde190	100.0000	
 levelpreview	?OnKey@CPreviewState@@QAEHHH@Z	100.0000	100.0000	1	1e6eff1cc8c8	0xde3c0	100.0000	
+levelpreview	?OnLButtonDown@CPreviewState@@UAEHHHH@Z	100.0000	100.0000	1	37db4c8274c6	0xde400	100.0000	
 levelpreview	?Refade@CPreviewState@@QAEHXZ	100.0000	100.0000	1	a3b34bb6deac	0xde2c0	100.0000	
 levelpreview	?RefadeVirtual@CPreviewState@@QAEHXZ	100.0000	100.0000	1	a8df01a3fa28	0xde340	100.0000	
 levelpreview	?ResetPreview@CPreviewState@@QAEXXZ	100.0000	100.0000	1	99d400ee36bb	0xde140	100.0000	
