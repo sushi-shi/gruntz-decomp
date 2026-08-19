@@ -491,6 +491,9 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
+// @early-stop
+// Calls/referents are empty and the 14-branch skeleton agrees. Both axis residues are
+// result-store factoring; compound, direct-pointer and dimension-local forms are byte-flat.
 RVA(0x0000a000, 0xac)
 void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
     if (m_flags & 0x4) {
