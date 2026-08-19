@@ -293,6 +293,10 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     return t;
 }
 
+// @early-stop
+// The MFC array growth, loop structure, calls, and referents are complete; only
+// one x87 scheduling choice remains TU-state-sensitive.
+// docs/patterns/mfc-array-setsize-is-constructelements.md
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
