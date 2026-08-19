@@ -1261,6 +1261,10 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
     return r2 == TILEKIND_CLIMB;
 }
 
+// @early-stop
+// The 143 instructions, four calls, CFG and three relocations match. In one
+// block retail schedules `screenY - y` before forming `head2`; cl canonicalizes
+// direct reassociation and split-accumulator spellings to the opposite order.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f610, 0x191)
