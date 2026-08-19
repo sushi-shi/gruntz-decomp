@@ -36,14 +36,15 @@ to `0x84` and moved 88.99% to 89.15%. Modeling the similarly adjacent start tile
 `CPtrList` unwind funclets exact. All 60 conditional branches and the return shape
 remained unchanged.
 
-`CGrunt::StepCompassMove` (`0x51c00`) supplies the negative/partial control. Retail
-keeps the current pixel position and proposed pixel position as two adjacent copied
-pairs. Replacing four scalars with two field-wise-copied `Coord` objects moves the
-CString cleanup four bytes toward retail (`-0xc` to `-0x8`) while preserving the
-already-correct 83-branch/two-return counts. Whole-object assignment is not an
-interchangeable spelling here: it lets VC5 collapse the body to 71 branches. The
-aggregate type is proven, but its remaining frame residue stays open until the arrow
-switch block layout agrees; an aggregate signal does not license padding.
+`CGrunt::StepCompassMove` (`0x51c00`) is the negative control that bounds this
+pattern. An earlier reading treated its adjacent current/proposed pixel homes as two
+`Coord` objects. Complete value-flow review refuted that inference: neither pair
+escapes through a complete-object call or copy, and even the seed is written
+field-by-field. Replacing the four scalars with two field-wise `Coord` locals moved an
+EH cleanup operand but reduced the function from 61.74% to 60.64%; whole-object
+assignment also collapsed the CFG. The scalar model is retained. Adjacent homes plus
+field-wise traffic alone therefore do not prove an aggregate—the complete-object
+evidence in the signal above is required.
 
 This is not the dead-eight-byte-spill pattern. There, stores are never read and the
 same values stay live in registers; inventing an aggregate adds unsupported source.
