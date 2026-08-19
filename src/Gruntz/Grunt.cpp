@@ -920,13 +920,6 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
     return StepArrivalDrop(px, py, arrivalPhase, maskA, clearFlag, maskCIn);
 }
 
-// @early-stop
-// Retail factors a fourth RemoveHead site into the path region after layout.
-// Keep the single real CPtrList EH scope: expressing the late successes as a
-// loop duplicates their scan prefixes, while copying the region duplicates its
-// ctor/dtor states and contradicts the retail call, relocation, and branch census.
-// Both sides use EH states {-1,0,1}; retail's eighth versus our seventh store is
-// the extra flow site's repeated live-object state, not a second CPtrList.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -993,14 +986,8 @@ i32 CGrunt::StepArrivalDrop(
             goto commitEntrance;
         }
         tail = CoordHead()->m_coord;
-        headFlags = (static_cast<u32>(tail->m_x) >= g_gameReg->m_tileGrid->m_width
-                     || static_cast<u32>(tail->m_y) >= g_gameReg->m_tileGrid->m_height)
-                        ? 1
-                        : g_gameReg->m_tileGrid->m_rowInts[tail->m_y][tail->m_x * 7];
-        lastFlags = (static_cast<u32>(lastX) >= g_gameReg->m_tileGrid->m_width
-                     || static_cast<u32>(lastY) >= g_gameReg->m_tileGrid->m_height)
-                        ? 1
-                        : g_gameReg->m_tileGrid->m_rowInts[lastY][lastX * 7];
+        headFlags = g_gameReg->m_tileGrid->CellFlagsAt(tail->m_x, tail->m_y);
+        lastFlags = g_gameReg->m_tileGrid->CellFlagsAt(lastX, lastY);
         if ((lastFlags & 0x80) != 0) {
             goto commitEntrance;
         }
@@ -1197,10 +1184,7 @@ nudgeDone:
         if (tileX - lastX > 0) {
             while (blocked == 0) {
                 sy = acc >> 16;
-                err = (static_cast<u32>(sx) >= lineGrid->m_width
-                       || static_cast<u32>(sy) >= lineGrid->m_height)
-                          ? 1
-                          : lineGrid->m_rowInts[sy][sx * 7];
+                err = lineGrid->CellFlagsAt(sx, sy);
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
@@ -1213,10 +1197,7 @@ nudgeDone:
         } else {
             while (blocked == 0) {
                 sy = acc >> 16;
-                err = (static_cast<u32>(sx) >= lineGrid->m_width
-                       || static_cast<u32>(sy) >= lineGrid->m_height)
-                          ? 1
-                          : lineGrid->m_rowInts[sy][sx * 7];
+                err = lineGrid->CellFlagsAt(sx, sy);
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
@@ -1235,10 +1216,7 @@ nudgeDone:
         if (tileY - lastY > 0) {
             while (blocked == 0) {
                 sx = acc >> 16;
-                err = (static_cast<u32>(sx) >= lineGrid->m_width
-                       || static_cast<u32>(sy) >= lineGrid->m_height)
-                          ? 1
-                          : lineGrid->m_rowInts[sy][sx * 7];
+                err = lineGrid->CellFlagsAt(sx, sy);
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
@@ -1251,10 +1229,7 @@ nudgeDone:
         } else {
             while (blocked == 0) {
                 sx = acc >> 16;
-                err = (static_cast<u32>(sx) >= lineGrid->m_width
-                       || static_cast<u32>(sy) >= lineGrid->m_height)
-                          ? 1
-                          : lineGrid->m_rowInts[sy][sx * 7];
+                err = lineGrid->CellFlagsAt(sx, sy);
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
