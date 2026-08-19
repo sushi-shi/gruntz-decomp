@@ -1039,6 +1039,9 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32
     return result;
 }
 
+// @early-stop
+// Calls, branches, returns, and referents match; only the hdr/hasPal register
+// rotation remains after cursor, guard-shape, and declaration-order controls.
 RVA(0x00145b10, 0x1b5)
 i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u32 colorKey) {
     RecordBytes<PidHeader> p;
@@ -1079,13 +1082,9 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
                 i++;
             } while (i < 0x100);
             palette = s_palPidData;
-        } else if (remap) {
-            if (palette == NULL) {
-                return 0;
-            }
-            if (remap && palBpp == BPP_PALETTED_8 && hasPal == 0) {
-                return 0;
-            }
+        } else if ((remap && palette == NULL)
+                   || (remap && palBpp == BPP_PALETTED_8 && hasPal == 0)) {
+            return 0;
         }
 
         u8* decoded = 0;
