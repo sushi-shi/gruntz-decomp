@@ -33,25 +33,25 @@ DATA(0x0020ccc4)
 Resolution g_videoResolutionMode = RES_640X480;
 
 DATA(0x0022bd64)
-i32 g_opt_22bd64 = 0;
+i32 g_unusedMusicEnabledSnapshot = 0;
 DATA(0x0022bd68)
-i32 g_opt_22bd68 = 0;
+i32 g_savedScrollSpeed = 0;
 DATA(0x0022bd6c)
-i32 g_opt_22bd6c = 0;
+i32 g_savedSoundVolume = 0;
 DATA(0x0022bd70)
-i32 g_opt_22bd70 = 0;
+i32 g_savedEasyMode = 0;
 DATA(0x0022bd84)
-i32 g_opt_22bd84 = 0;
+i32 g_savedSoundEnabled = 0;
 DATA(0x0022bdc4)
-i32 g_opt_22bdc4 = 0;
+i32 g_savedVoiceVolume = 0;
 DATA(0x0022bdc8)
-Resolution g_opt_22bdc8 = RES_UNSET;
+Resolution g_savedResolutionMode = RES_UNSET;
 DATA(0x0022bdcc)
-i32 g_opt_22bdcc = 0;
+i32 g_savedMidiVolume = 0;
 DATA(0x0022bdd0)
-i32 g_opt_22bdd0 = 0;
+i32 g_savedMusicEnabled = 0;
 DATA(0x0022bdd4)
-i32 g_opt_22bdd4 = 0;
+i32 g_savedVoiceEnabled = 0;
 
 DATA(0x0022bdd8)
 HWND g_optHwndMusic = 0;
@@ -64,11 +64,11 @@ HWND g_optHwndEasy = 0;
 DATA(0x0022bde8)
 HWND g_optHwndResSlider = 0;
 DATA(0x0022bdec)
-HWND g_optHwndCk6 = 0;
+HWND g_optHwndMidiVolume = 0;
 DATA(0x0022bdf0)
-HWND g_optHwndCk7 = 0;
+HWND g_optHwndSoundVolume = 0;
 DATA(0x0022bdf4)
-HWND g_optHwndCk8 = 0;
+HWND g_optHwndVoiceVolume = 0;
 
 RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {
@@ -174,9 +174,9 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             g_optHwndSpeech = GetDlgItem(hDlg, 0x471);
             g_optHwndEasy = GetDlgItem(hDlg, 0x455);
             g_optHwndResSlider = GetDlgItem(hDlg, 0x52c);
-            g_optHwndCk6 = GetDlgItem(hDlg, 0x472);
-            g_optHwndCk7 = GetDlgItem(hDlg, 0x470);
-            g_optHwndCk8 = GetDlgItem(hDlg, 0x476);
+            g_optHwndMidiVolume = GetDlgItem(hDlg, 0x472);
+            g_optHwndSoundVolume = GetDlgItem(hDlg, 0x470);
+            g_optHwndVoiceVolume = GetDlgItem(hDlg, 0x476);
 
             if (g_gameReg->m_curState->Update() != GAMESTATE_PLAY) {
                 if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
@@ -187,21 +187,21 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             }
             if (g_disableAudio) {
                 EnableWindow(g_optHwndMusic, 0);
-                EnableWindow(g_optHwndCk7, 0);
+                EnableWindow(g_optHwndSoundVolume, 0);
                 EnableWindow(g_optHwndVoice, 0);
-                EnableWindow(g_optHwndCk8, 0);
+                EnableWindow(g_optHwndVoiceVolume, 0);
                 EnableWindow(g_optHwndSpeech, 0);
-                EnableWindow(g_optHwndCk6, 0);
+                EnableWindow(g_optHwndMidiVolume, 0);
             }
             if (g_disableSound) {
                 EnableWindow(g_optHwndMusic, 0);
-                EnableWindow(g_optHwndCk7, 0);
+                EnableWindow(g_optHwndSoundVolume, 0);
                 EnableWindow(g_optHwndVoice, 0);
-                EnableWindow(g_optHwndCk8, 0);
+                EnableWindow(g_optHwndVoiceVolume, 0);
             }
             if (g_disableMusic != 0 || g_gameReg->m_sound->m_enabled == 0) {
                 EnableWindow(g_optHwndSpeech, 0);
-                EnableWindow(g_optHwndCk6, 0);
+                EnableWindow(g_optHwndMidiVolume, 0);
             }
             return TRUE;
         }
@@ -214,16 +214,16 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;
     }
-    g_opt_22bd70 = g_gameReg->m_isEasyMode;
-    g_opt_22bd6c = g_gameReg->m_soundVolume;
-    g_opt_22bd84 = g_gameReg->m_soundEnabled;
-    g_opt_22bdc4 = g_gameReg->m_voiceVolume;
-    g_opt_22bdd4 = g_gameReg->m_isVoiceEnabled;
-    g_opt_22bdcc = g_gameReg->m_sound->GetXMidiVolume();
-    g_opt_22bdd0 = g_gameReg->m_musicEnabled;
-    g_opt_22bd68 = g_gameReg->m_scrollSpeed;
-    g_opt_22bd64 = g_gameReg->m_musicEnabled;
-    g_opt_22bdc8 = GetResolutionCode();
+    g_savedEasyMode = g_gameReg->m_isEasyMode;
+    g_savedSoundVolume = g_gameReg->m_soundVolume;
+    g_savedSoundEnabled = g_gameReg->m_soundEnabled;
+    g_savedVoiceVolume = g_gameReg->m_voiceVolume;
+    g_savedVoiceEnabled = g_gameReg->m_isVoiceEnabled;
+    g_savedMidiVolume = g_gameReg->m_sound->GetXMidiVolume();
+    g_savedMusicEnabled = g_gameReg->m_musicEnabled;
+    g_savedScrollSpeed = g_gameReg->m_scrollSpeed;
+    g_unusedMusicEnabledSnapshot = g_gameReg->m_musicEnabled;
+    g_savedResolutionMode = GetResolutionCode();
     g_videoResolutionMode = GetResolutionCode();
 
     CheckDlgButton(hDlg, 0x455, g_gameReg->m_isEasyMode);
@@ -284,21 +284,21 @@ void ApplyGameOptions() {
     if (g_gameReg == NULL) {
         return;
     }
-    g_gameReg->m_isEasyMode = g_opt_22bd70;
-    g_videoResolutionMode = g_opt_22bdc8;
+    g_gameReg->m_isEasyMode = g_savedEasyMode;
+    g_videoResolutionMode = g_savedResolutionMode;
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
-            g_gameReg->SetRunState(g_opt_22bd84);
-            g_gameReg->SetSoundVolume(g_opt_22bd6c);
-            g_gameReg->m_isVoiceEnabled = g_opt_22bdd4;
-            g_gameReg->SetVoiceVolume(g_opt_22bdc4);
+            g_gameReg->SetRunState(g_savedSoundEnabled);
+            g_gameReg->SetSoundVolume(g_savedSoundVolume);
+            g_gameReg->m_isVoiceEnabled = g_savedVoiceEnabled;
+            g_gameReg->SetVoiceVolume(g_savedVoiceVolume);
         }
         if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
-            g_gameReg->SetSoundLevelState(g_opt_22bdd0);
-            g_gameReg->m_sound->SetXMidiVolume(g_opt_22bdcc);
+            g_gameReg->SetSoundLevelState(g_savedMusicEnabled);
+            g_gameReg->m_sound->SetXMidiVolume(g_savedMidiVolume);
         }
     }
-    g_gameReg->m_scrollSpeed = g_opt_22bd68;
+    g_gameReg->m_scrollSpeed = g_savedScrollSpeed;
 }
 
 RVA(0x00036d00, 0x40)
