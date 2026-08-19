@@ -265,7 +265,7 @@ secretteleportertrigger	17	15
 serializesyncmarker	1	1
 serialobjectfactory	40	39
 sfselectdevice	1	0
-shadetablecache	26	15
+shadetablecache	26	16
 simpleanimation	7	6
 singleanimation	7	7
 singleframemessage	7	6
@@ -3908,7 +3908,7 @@ shadetablecache	??_GCShadeTableArray@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0fe03d16
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@VCString@@@Z	100.0000	100.0000	1	cb6cf16dd4d6	0x14f6c0	100.0000	
 shadetablecache	?AddFromBuffer@CShadeTableCache@@QAEPAUCShadeTable@@PAEH@Z	100.0000	100.0000	2	3e04d747aeab	0x14f8b0	100.0000	
 shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	92.2088	87.1209	1	d54ec0fb9dbf	0x14f080	92.2088	
-shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	99.7471	99.7471	1	3b8138ce5d05	0x14f5b0	99.7471	
+shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	2	13a855e922ea	0x14f5b0	100.0000	
 shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	1	9f72f177963a	0x14fa60	100.0000	
 shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	100.0000	99.6191	1	558d08e60d43	0x14ed10	100.0000	
 shadetablecache	?FindByKey@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	77.9688	77.9688	1	352314a3deba	0x14fb40	77.9688	
