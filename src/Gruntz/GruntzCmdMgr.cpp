@@ -203,13 +203,12 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, CGruntzCommand* cmd) {
     m_base.AddTail(cmd);
 }
 
-// @early-stop
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
     CGameLevel* p = m_manager->m_world->m_level;
     const RECT* vr = &p->m_mainPlane->m_viewRect;
-    i32 sx = ((vr->left - p->m_planeCtx.left + (x & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 sy = ((vr->top - p->m_planeCtx.top + (y & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 sx = ((vr->left - p->m_planeCtx.left + static_cast<u16>(x)) & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 sy = ((vr->top - p->m_planeCtx.top + static_cast<u16>(y)) & ~TILE_MASK_PX) + TILE_HALF_PX;
     EnqueueSingle(
         enqueueFlag,
         static_cast<char>(targetIndex),

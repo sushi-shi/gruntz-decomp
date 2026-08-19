@@ -172,7 +172,7 @@ gruntvoice	22	19
 gruntwanderstep	1	0
 gruntwingztimesprite	5	5
 gruntzapp	16	16
-gruntzcmdmgr	44	41
+gruntzcmdmgr	44	42
 gruntzmapmgr	4	3
 gruntzmgr	171	157
 gruntzmgrcmd	1	0
@@ -2318,7 +2318,7 @@ gruntzcmdmgr	??_GCGruntzMultiCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:9cc6ca51
 gruntzcmdmgr	??_GCGruntzSingleCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:9cc6ca51d9c5	0x242c0	100.0000	
 gruntzcmdmgr	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	1	f77f5aa7e330	0x24360	100.0000	
 gruntzcmdmgr	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	1	b8f1fb7e11fa	0x24220	100.0000	
-gruntzcmdmgr	?BlitTileMarker@CGruntzCmdMgr@@QAEXHHHHH@Z	65.0790	65.0790	1	c6d62399c75e	0x23d90	65.0790	
+gruntzcmdmgr	?BlitTileMarker@CGruntzCmdMgr@@QAEXHHHHH@Z	100.0000	100.0000	2	19582c7a804f	0x23d90	100.0000
 gruntzcmdmgr	?Clear@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	2dfc1d1a746b	0x23c00	100.0000	
 gruntzcmdmgr	?ClearAndReset@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	d68e178c9bff	0x239f0	100.0000	
 gruntzcmdmgr	?Deselect@CGruntzMultiCommand@@UAEXXZ	100.0000	100.0000	1	1491cca2ed21	0x243e0	100.0000	
