@@ -1890,3 +1890,28 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* a) {
     a->Read(&m_playerFlags[3], sizeof(m_playerFlags[3]));
     return 1;
 }
+
+RVA(0x00114120, 0x70)
+i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
+    if (m_emitGate != 0) {
+        return 0;
+    }
+    LeafCue* found = NULL;
+    MapLookup(m_cues, key, found);
+    if (found == NULL) {
+        return 0;
+    }
+    i32 gate = g_sndEnabled;
+    i32 item = g_sndCueTag;
+    if (gate == 0) {
+        return 0;
+    }
+    LeafCue* cue = found;
+
+    if (g_killCueClock - static_cast<u32>(cue->m_lastPlayTime)
+        >= static_cast<u32>(cue->m_replayDelay)) {
+        cue->m_lastPlayTime = g_killCueClock;
+        return cue->m_sound->ConfigureItem(item, 0, 0, 0);
+    }
+    return 0;
+}

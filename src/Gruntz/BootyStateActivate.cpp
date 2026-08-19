@@ -2850,6 +2850,18 @@ i32 CMultiBootyState::OnKeyDown(i32, i32) {
     return PostCommandIfKey();
 }
 
+RVA(0x0001f940, 0x4c)
+i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
+    if (g_sndEnabled == 0) {
+        return 0;
+    }
+    if (g_killCueClock - static_cast<u32>(m_lastPlayTime) < static_cast<u32>(m_replayDelay)) {
+        return 0;
+    }
+    m_lastPlayTime = g_killCueClock;
+    return m_sound->ConfigureItem(vol, pan, freqPct, loop);
+}
+
 RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)
 RVA(0x0008d440, 0x55)
 CBootyState::~CBootyState() {

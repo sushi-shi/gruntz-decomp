@@ -996,11 +996,6 @@ source = "src/DDrawMgr/DDrawSubMgr.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "leafcueplay"
-source = "src/Gruntz/LeafCuePlay.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "wwdobjmgr"
 source = "src/Wwd/WwdObjMgr.cpp"
 flags = "cpp"
@@ -1461,11 +1456,6 @@ source = "src/Gruntz/DestructButton.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "creditzassets"
-source = "src/Gruntz/CreditzAssets.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "debugprintf"
 source = "src/Rez/DebugPrintf.cpp"
 flags = "cpp"
@@ -1509,14 +1499,3 @@ flags = "cpp-rtti"
 unit = "customleveldlg"
 source = "src/Gruntz/CustomLevelDlg.cpp"
 flags = "cpp-rtti"
-
-
-[[unit]]
-unit = "ddrawsurfacepairblt"
-source = "src/DDrawMgr/DDrawSurfacePairBlt.cpp"
-flags = "cpp"
-
-[[unit]]
-unit = "ddrawsubmgrrefresh"
-source = "src/DDrawMgr/DDrawSubMgrRefresh.cpp"
-flags = "cpp"

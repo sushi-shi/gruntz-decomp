@@ -54,7 +54,7 @@ behindcandyani	8	7
 bitarray	3	2
 bitarraystream	2	2
 blowfish	6	6
-bootystateactivate	51	31
+bootystateactivate	52	32
 bracketvalue	1	1
 brickz	4	2
 brickzcellflags	3	1
@@ -71,8 +71,7 @@ cheatmgr	7	4
 checkpointdlg	6	6
 cimage	20	9
 cmdscrollapply	3	2
-creditsstate	21	19
-creditzassets	1	1
+creditsstate	23	21
 cremusnode	6	6
 cursorsnapactreg	2	2
 cursorsnapsprite	7	7
@@ -85,10 +84,8 @@ ddrawptrcollections	10	10
 ddrawshadeblit	22	10
 ddrawsubmgr	122	118
 ddrawsubmgrleaf	14	13
-ddrawsubmgrrefresh	1	1
 ddrawsurfacemgr	22	20
 ddrawsurfacepair	54	41
-ddrawsurfacepairblt	1	1
 ddrawworkerhost	5	5
 ddrawworkerregistry	26	26
 ddsurface	57	50
@@ -205,7 +202,6 @@ inputdeviceconfig	2	2
 keyedlist	3	3
 kitchenslime	9	6
 latencylist	5	5
-leafcueplay	1	1
 levelplane	28	17
 levelpreview	11	10
 levelrezpath	3	2
@@ -294,7 +290,7 @@ symtab	72	63
 terraintileloader	1	0
 tilelogicpump	57	54
 tilescan	1	0
-tileswitchlogic	49	35
+tileswitchlogic	50	36
 tiletriggercontainer	27	21
 timesplit	3	3
 timestring	1	1
@@ -665,6 +661,7 @@ bootystateactivate	?OnPaint@CBootyState@@UAEHXZ	100.0000	100.0000	1	fcb87c6b7685
 bootystateactivate	?OnPaint@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	1b06891ed81c	0x1f870	100.0000	
 bootystateactivate	?OnRButtonDown@CBootyState@@UAEHHHH@Z	100.0000	100.0000	1	b9baf1574455	0x1d400	100.0000	
 bootystateactivate	?OnRButtonDown@CMultiBootyState@@UAEHHHH@Z	100.0000	100.0000	1	10f0031c43e4	0x1f900	100.0000	
+bootystateactivate	?PlayIfElapsed@LeafCue@@QAEHHHHH@Z	100.0000	100.0000	4	c90ce49ad54e	0x1f940	100.0000	
 bootystateactivate	?PostCommandIfKey@CMultiBootyState@@QAEHXZ	100.0000	100.0000	1	627ab8595227	0x1f8a0	100.0000	
 bootystateactivate	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	100.0000	100.0000	1	3da52e38f6de	0x1ecf0	100.0000	
 bootystateactivate	?RandRange@CGruntzMgr@@QAEHHH@Z	93.9683	93.9683	1	387642045a22	0x19f50	93.9683	
@@ -853,6 +850,7 @@ creditsstate	??1CFecFile@@QAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x390a0	10
 creditsstate	??1CMoviePlayer@@QAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x38fc0	100.0000	
 creditsstate	??1CRgn@@UAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x8c400	100.0000	
 creditsstate	??_GCCreditsState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:752db8b0aca8	0x8d5b0	100.0000	
+creditsstate	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	bd29ddd935dc	0x3a1d0	100.0000	
 creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	86.0773	86.0773	1	aca56c193ae9	0x396f0	86.0773	
 creditsstate	?EnterState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	c1897443820a	0x39120	100.0000	
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	5b6722d9ab3b	0x39c40	100.0000	
@@ -860,6 +858,7 @@ creditsstate	?FlashColor@CCreditsState@@QAEHXZ	100.0000	100.0000	1	1b7c8be0b408	
 creditsstate	?InitAttractTitle@CCreditsState@@QAEHXZ	100.0000	100.0000	2	dd70f6622558	0x39570	100.0000	
 creditsstate	?InputVirtual@CCreditsState@@UAEHXZ	100.0000	100.0000	1	7d2c0e43c882	0x393b0	100.0000	
 creditsstate	?LeaveState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	2	8316469df0e0	0x39160	100.0000	
+creditsstate	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	6	9e9161dc533a	0x39dc0	100.0000	
 creditsstate	?LoadGameAssetNamespaces@CCreditsState@@UAEHPAVCGruntzMgr@@HH@Z	100.0000	100.0000	2	d7955a41a5a5	0x38d20	100.0000	
 creditsstate	?OnKeyDown@CCreditsState@@UAEHHH@Z	100.0000	100.0000	1	378bf7d72c5a	0x39440	100.0000	
 creditsstate	?OnLButtonDown@CCreditsState@@UAEHHHH@Z	100.0000	100.0000	1	9af4fcc1ecde	0x394b0	100.0000	
@@ -869,7 +868,6 @@ creditsstate	?RestoreDisplay@CCreditsState@@UAEHXZ	100.0000	100.0000	1	bdeaa4aa6
 creditsstate	?SetupTitle@CCreditsState@@QAEHXZ	99.8254	99.8254	1	250a0dd93b45	0x39a60	99.8254	
 creditsstate	?StepVideo@CCreditsState@@QAEHXZ	100.0000	100.0000	6	2cc542b63f6a	0x39c60	100.0000	
 creditsstate	?Update@CCreditsState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d590	100.0000	
-creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	6	9e9161dc533a	0x39dc0	100.0000	
 cremusnode	??0CResolveNode@@QAE@XZ	100.0000	100.0000	1	0919a30dbb9e	0x1549d0	100.0000	
 cremusnode	??1CResolveNode@@UAE@XZ	100.0000	100.0000	1	cpp:e7b04c8f265f	0x154a50	100.0000	
 cremusnode	??_GCResolveNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7080d67c2b03	0x154a30	100.0000	
@@ -1123,7 +1121,6 @@ ddrawsubmgrleaf	?RemoveKeysEqual@CDDrawSubMgrLeaf@@QAEHPBD0@Z	100.0000	100.0000	
 ddrawsubmgrleaf	?RemoveValue@CDDrawSubMgrLeaf@@QAEXPAVCAniElement@@@Z	99.8545	99.8545	1	c75c3df1517e	0x152660	99.8545	
 ddrawsubmgrleaf	?ScanTree@CDDrawSubMgrLeaf@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	2	7a01479be7e6	0x152ad0	100.0000	
 ddrawsubmgrleaf	?Unload@CDDrawSubMgrLeaf@@UAEXXZ	100.0000	100.0000	3	69e4504eb161	0x152650	100.0000	
-ddrawsubmgrrefresh	?RefreshAsset@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	2	afa9a7612640	0x114120	100.0000	
 ddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	1	c8c5d0f436ad	0x155840	100.0000	
 ddrawsurfacemgr	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	a46975b77414	0x157850	100.0000	
 ddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	100.0000	100.0000	1	7bf8e9af8c53	0x1558b0	100.0000	
@@ -1200,7 +1197,6 @@ ddrawsurfacepair	?Unload@CDDrawWorkerCache@@UAEXXZ	100.0000	100.0000	2	ad2dd3c4c
 ddrawsurfacepair	?Unload@CDDrawWorkerList@@UAEXXZ	100.0000	100.0000	1	0090f966a65b	0x163bc0	100.0000	
 ddrawsurfacepair	?Unload@CDDrawWorkerMapSmall@@UAEXXZ	100.0000	100.0000	2	a03f265f7255	0x165810	100.0000	
 ddrawsurfacepair	?Write@CFileMem@@UAEHPBXH@Z	100.0000	100.0000	5	50434827d23d	0x165f50	100.0000	
-ddrawsurfacepairblt	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	bd29ddd935dc	0x3a1d0	100.0000	
 ddrawworkerhost	??1CDDrawWorkerHost@@UAE@XZ	100.0000	100.0000	1	f705f9ebc153	0x163af0	100.0000	
 ddrawworkerhost	??_GCDDrawWorkerHost@@UAEPAXI@Z	100.0000	100.0000	1	cpp:bb895af354a8	0x163ad0	100.0000	
 ddrawworkerhost	?GetClassId@CDDrawWorkerHost@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	743072e365b3	0x163ab0	100.0000	
@@ -2830,7 +2826,6 @@ latencylist	?PopulateIpxOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	0961c5b
 latencylist	?PopulateModemOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	85d3b00c1359	0x37d20	100.0000	
 latencylist	?PopulateSerialOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	acc6f6564cec	0x37e10	100.0000	
 latencylist	?PopulateTcpIpOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	6e389e128928	0x37c30	100.0000	
-leafcueplay	?PlayIfElapsed@LeafCue@@QAEHHHHH@Z	100.0000	100.0000	4	c90ce49ad54e	0x1f940	100.0000	
 levelplane	??0CDDrawWorkerHost@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	4329479a809e	0x1615a0	100.0000	
 levelplane	??1CWwdGridIter@@UAE@XZ	100.0000	100.0000	1	cpp:272def40b6ef	0x163a10	100.0000	
 levelplane	??1CWwdSpatialMgr@@QAE@XZ	100.0000	100.0000	1	cpp:272def40b6ef	0x163a40	100.0000	
@@ -4236,6 +4231,7 @@ tileswitchlogic	?LoadState@CTileTriggerSwitchLogic@@QAEHPAVCFileMemBase@@@Z	100.
 tileswitchlogic	?MorphByTool@CTileActionEvent@@QAEHW4PickupType@@W4PlayerSlot@@@Z	98.6645	98.6645	1	ab054e5559ab	0x113420	98.6645	
 tileswitchlogic	?Process@CTileActionEvent@@QAEHPAVCGrunt@@@Z	97.9808	97.9808	1	e1046ddcf5d8	0x112ee0	97.9808	
 tileswitchlogic	?RecordMove@CTileTriggerLogic@@QAEXXZ	100.0000	100.0000	1	ad10bc76ea9a	0x112880	100.0000	
+tileswitchlogic	?RefreshAsset@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	3	d111124a3c77	0x114120	100.0000	
 tileswitchlogic	?SaveState@CTileTriggerSwitchLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	eccb6931e32d	0x1138b0	100.0000	
 tileswitchlogic	?Serialize@CTileActionEvent@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	971d0d45ef4e	0x113f10	100.0000	
 tileswitchlogic	?Serialize@CTileTriggerLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	9bedd3939276	0x113ae0	100.0000	

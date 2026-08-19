@@ -456,6 +456,44 @@ i32 CCreditsState::FlashColor() {
     return color;
 }
 
+RVA(0x00039dc0, 0x10b)
+void CCreditsState::LoadCreditzAssets() {
+    i32 rising = (m_fxEnabled == 0);
+    m_fxEnabled = rising;
+    if (rising) {
+        m_flashTimer = 0;
+        m_fadeCountdown = 3000;
+        CGruntzSoundInnerZ* cred = m_mgr->m_sound->FindBank("CREDITZ");
+        if (cred != NULL && cred->IsBusy() != 0) {
+            cred->StopAll();
+        }
+        CGruntzSoundInnerZ* mono = m_mgr->m_sound->FindBank("MONOLITH");
+        if (mono != NULL) {
+            g_gameReg->m_sound->m_pCurrent = mono;
+            g_gameReg->m_sound->Restart(0);
+        }
+    } else {
+        m_fadeCountdown = 0;
+        CGruntzSoundInnerZ* current = m_mgr->m_sound->m_pCurrent;
+        CGruntzSoundInnerZ* mono = g_gameReg->m_sound->FindBank("MONOLITH");
+        if (current == mono && mono != NULL && mono->IsBusy() != 0) {
+            mono->Stop();
+        }
+        CGruntzSoundInnerZ* cred = m_mgr->m_sound->FindBank("CREDITZ");
+        if (cred != NULL && current != cred) {
+            m_mgr->m_sound->m_pCurrent = cred;
+            if (cred->IsBusy() == 0) {
+                cred->StopBank(0);
+            }
+        }
+    }
+}
+
+RVA(0x0003a1d0, 0x1d)
+void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
+    m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, 0x10);
+}
+
 RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)
 RVA_COMPGEN(0x0008d5b0, 0x1e, ??_GCCreditsState@@UAEPAXI@Z)
 RVA(0x0008d5e0, 0x8b)

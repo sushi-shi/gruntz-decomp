@@ -35,8 +35,7 @@
 15	dialogs	0x00014b10	0x00017648	cmdline	Gruntz	47	thunk(46)
 16	battlezdlgcolors	0x00017930	0x00018086	cmdline	Gruntz	7	thunk(7)
 17	customleveldlg	0x000180e0	0x0001841e	cmdline	Gruntz	3	thunk(3)
-18	bootystateactivate	0x00018830	0x0001f928	cmdline	Gruntz	43	thunk(43),xcu:321
-19	leafcueplay	0x0001f940	0x0001f98c	cmdline	Gruntz	1	thunk(1)
+18	bootystateactivate	0x00018830	0x0001f98c	cmdline	Gruntz	44	thunk(44),xcu:321
 20	startupprompt	0x0001f9b0	0x0001fc82	cmdline	Gruntz	1	thunk(1)
 21	winapicdrom	0x0001fd50	0x00020172	cmdline	Utils	4	thunk(4)
 22	chatboxowner	0x000204e0	0x000212c1	cmdline	Gruntz	8	thunk(8)
@@ -62,9 +61,7 @@
 42	slotcombofill	0x00037ff0	0x000381e1	cmdline	Gruntz	3	thunk(3)
 43	statemgrbz	0x000382c0	0x000387b0	cmdline	Gruntz	7	thunk(7)
 44	inputdeviceconfig	0x000387c0	0x000389f2	cmdline	Gruntz	2	thunk(2)
-45	creditsstate	0x00038d20	0x00039d8c	cmdline	Gruntz	15	thunk(15)
-46	creditzassets	0x00039dc0	0x00039ecb	cmdline	Gruntz	1	thunk(1)
-47	ddrawsurfacepairblt	0x0003a1d0	0x0003a1ed	cmdline	DDrawMgr	1	thunk(1)
+45	creditsstate	0x00038d20	0x0003a1ed	cmdline	Gruntz	17	thunk(17)
 48	cursorsnapsprite	0x0003a200	0x0003a6b2	cmdline	Gruntz	3	thunk(3)
 49	cursorsnapactreg	0x0003a710	0x0003a927	cmdline	Gruntz	2	thunk(2),xcu:503
 50	customworlddialog	0x0003ad90	0x0003bc78	cmdline	Gruntz	10	thunk(10),xcu:513
@@ -210,8 +207,7 @@
 196	destructbutton	0x0010bc30	0x0010bca8	cmdline	Gruntz	1	thunk(1)
 197	statusbarspriteacts	0x0010c0f0	0x0010c827	cmdline	Gruntz	5	thunk(5),xcu:1360
 198	tilelogicpump	0x0010cb10	0x00110149	cmdline	Gruntz	39	thunk(39),xcu:1370
-199	tileswitchlogic	0x00110430	0x001140e2	cmdline	Gruntz	49	thunk(49)
-200	ddrawsubmgrrefresh	0x00114120	0x00114190	cmdline	DDrawMgr	1	thunk(1)
+199	tileswitchlogic	0x00110430	0x00114190	cmdline	Gruntz	50	thunk(50)
 201	toobspikez	0x00114480	0x00114bd7	cmdline	Gruntz	5	thunk(5),xcu:1399
 202	savefrontbuffershot	0x00114ec0	0x00114f3e	cmdline	Gruntz	2	thunk(2)
 203	chainforward	0x00114f50	0x00114fde	cmdline	Gruntz	2	thunk(2)

@@ -35,10 +35,6 @@ public:
 
     i32 RefreshAsset(const char* key);
 
-    // The INLINE twin of RefreshAsset. Both exist in retail: the out-of-line
-    // body at 0x114120 expands LeafCue::PlayIfElapsed into itself, while call
-    // sites like CTriggerMgr::LoadTileArrivalFx expand THIS shape - the map
-    // lookup inline and PlayIfElapsed as a call.
     void PlayCue(const char* key) {
         if (m_emitGate == 0) {
             LeafCue* found = NULL;
