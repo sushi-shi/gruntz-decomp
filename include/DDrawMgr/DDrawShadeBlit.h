@@ -82,12 +82,12 @@ public:
 };
 
 extern u8 g_scratch[];
-extern CShadeTable* g_shadeDescr208;
-extern CShadeTable* g_shadeDescr20c;
-extern CShadeTable* g_shadeDescr210;
-extern CShadeTable* g_shadeDescr214;
-extern CShadeTable* g_blendDescr;
-extern CShadeTable* g_shadeDescr21c;
-extern CShadeTable* g_shadeDescr220;
+extern CShadeTable* g_dstBySrcShadeTable;
+extern CShadeTable* g_dstByLevelShadeTable;
+extern CShadeTable* g_srcByLevelShadeTable;
+extern CShadeTable* g_lerpLevelShadeTable;
+extern CShadeTable* g_greyShadeTable;
+extern CShadeTable* g_dstBySrc16ShadeTable;
+extern CShadeTable* g_palette16ShadeTable;
 
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

@@ -47,7 +47,7 @@ GZ_ENUM_BEGIN(ShadeMode)
     SHADE_ALPHA_16 = 8,
 
     // Not a draw path - no ConvertRow arm and no CDDrawShadeBlit::Select arm.
-    // The only use is SetShadeDescr(table, 9), which stores into g_blendDescr,
+    // The only use is SetShadeDescr(table, 9), which stores into g_greyShadeTable,
     // the grey16 table SHADE_DST_BY_SRC_16 reads. CLightFxMgr::Init passes
     // CShadeTableCache::GreyTable().
     SHADE_GREY_TABLE = 9,
