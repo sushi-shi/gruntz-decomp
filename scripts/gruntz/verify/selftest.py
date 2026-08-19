@@ -16,6 +16,7 @@ tree is unbuilt).
 from __future__ import annotations
 
 import os
+import struct
 import sys
 import tempfile
 import unittest
@@ -1237,6 +1238,39 @@ class SemaGapControls(unittest.TestCase):
         self.assertEqual(
             gaps._split(0x17400, payload),
             [(0x17400, b"\xc3"), (0x17420, b"\xc2\x04\x00")],
+        )
+
+    def test_xc_table_distinguishes_initializer_thunks_from_bodies(self):
+        from gruntz.sema import gaps
+
+        class FakePe:
+            image_base = 0x400000
+
+            def read(self, rva, size):
+                if rva == gaps.XC_START:
+                    slots = [0x410000, 0x420000]
+                    return struct.pack("<2I", *slots) + bytes(size - 8)
+                if rva == 0x10000:
+                    return b"\xe9\xfb\x00\x00\x00"
+                if rva == 0x20000:
+                    return b"\xc3\x90\x90\x90\x90"
+                return None
+
+        self.assertEqual(
+            gaps._dyninit_roles(FakePe()),
+            {0x10000: "dyninit-thunk", 0x10100: "dyninit-body", 0x20000: "dyninit-body"},
+        )
+
+    def test_initializer_owner_follows_relocated_data_not_neighbours(self):
+        from gruntz.sema import gaps
+        img = mock.Mock()
+        img.relocs_in.return_value = [(0x17D86, 0x229E18), (0x17D90, 0x229E1C)]
+        idx = mock.Mock()
+        idx.data_owner.side_effect = [mock.Mock(unit="customleveldlg"),
+                                      mock.Mock(unit="customleveldlg")]
+        self.assertEqual(
+            gaps._dyninit_owner(0x17D80, 0x1A, img, idx),
+            "customleveldlg",
         )
 
 

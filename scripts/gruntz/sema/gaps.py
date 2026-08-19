@@ -5,7 +5,7 @@ docs/patterns/same-file-interior-gap-scan-finds-missing-bodies.md. It deliberate
 does not depend on Ghidra's function carving: tiny accessors, thunks, and compiler-
 generated bodies are exactly what an analyzer tends to omit.
 
-    gruntz sema gaps [--class substantive|thunk|trivial|band|switch-table]
+    gruntz sema gaps [--class substantive|thunk|trivial|dyninit-thunk|dyninit-body]
                       [--unit UNIT] [--limit N]
 
 Rows disappear only when a source claim covers them. Classification is navigation,
@@ -20,6 +20,8 @@ import struct
 from gruntz.core.pe import image
 from gruntz.model import resolve
 from gruntz.retail_labels.source import sweep_sites
+from gruntz.sema.image import retail
+from gruntz.sema.index import index
 
 
 CHANNEL_MACRO = {
@@ -27,6 +29,12 @@ CHANNEL_MACRO = {
     "src_compgen": "RVA_COMPGEN",
     "src_dyninit": "RVA_DYNINIT",
 }
+
+# Bounds read from retail _cinit's push/push/call _initterm sequence. The table
+# is the authoritative census described by
+# docs/patterns/crt-xc-table-is-the-static-initializer-census.md.
+XC_START = 0x00208000
+XC_END = 0x002098A0
 
 
 def _file(site: str) -> str:
@@ -105,6 +113,37 @@ def _kind(payload: bytes, prev) -> str:
     return "substantive"
 
 
+def _dyninit_roles(pe) -> dict[int, str]:
+    """Return the XC entry thunks and their real generated bodies by address."""
+    table = pe.read(XC_START, XC_END - XC_START)
+    if table is None:
+        return {}
+    roles = {}
+    for off in range(0, len(table), 4):
+        va = struct.unpack_from("<I", table, off)[0]
+        if va == 0:
+            continue
+        rva = va - pe.image_base
+        code = pe.read(rva, 5)
+        if code and len(code) == 5 and code[0] == 0xE9:
+            roles[rva] = "dyninit-thunk"
+            target = rva + 5 + struct.unpack_from("<i", code, 1)[0]
+            roles[target] = "dyninit-body"
+        else:
+            roles[rva] = "dyninit-body"
+    return roles
+
+
+def _dyninit_owner(rva: int, size: int, img, idx) -> str:
+    """Owner unit proved by relocated data operands in one generated body."""
+    units = set()
+    for _site, target in img.relocs_in(rva, rva + size):
+        datum = idx.data_owner(target)
+        if datum is not None and datum.unit:
+            units.add(datum.unit)
+    return next(iter(units)) if len(units) == 1 else "xc-owner-unresolved"
+
+
 def census() -> list[dict]:
     files = _site_files()
     claims = []
@@ -116,6 +155,8 @@ def census() -> list[dict]:
     claims.sort(key=lambda row: row[0].rva)
 
     pe = image()
+    dyninit_roles = _dyninit_roles(pe)
+    img, idx = retail(), index()
     rows = []
     for (prev, prev_files), (nxt, next_files) in zip(claims, claims[1:]):
         shared = sorted(prev_files & next_files)
@@ -128,16 +169,34 @@ def census() -> list[dict]:
         if payload is None:
             continue
         for rva, body in _split(start, payload):
+            kind = dyninit_roles.get(rva, _kind(body, prev))
             rows.append({
                 "rva": rva,
                 "size": len(body),
-                "kind": _kind(body, prev),
+                "kind": kind,
                 "file": shared[0],
                 "unit": prev.unit if prev.unit == nxt.unit else f"{prev.unit}|{nxt.unit}",
                 "prev": prev.name,
                 "next": nxt.name,
                 "bytes": body[:16].hex(),
             })
+
+    body_owners = {}
+    for row in rows:
+        if row["kind"] != "dyninit-body":
+            continue
+        owner = _dyninit_owner(row["rva"], row["size"], img, idx)
+        body_owners[row["rva"]] = owner
+        row["unit"] = owner
+        row["file"] = "<CRT$XC owner from relocated datum>"
+    for row in rows:
+        if row["kind"] != "dyninit-thunk":
+            continue
+        code = pe.read(row["rva"], 5)
+        target = row["rva"] + 5 + struct.unpack_from("<i", code, 1)[0]
+        owner = body_owners.get(target, "xc-owner-unresolved")
+        row["unit"] = owner
+        row["file"] = "<CRT$XC owner from relocated datum>"
     return rows
 
 
@@ -145,14 +204,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz sema gaps", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--class", dest="kind",
-                    choices=("substantive", "thunk", "trivial", "band", "switch-table"))
+                    choices=("substantive", "thunk", "trivial", "dyninit-thunk",
+                             "dyninit-body", "band", "switch-table"))
     ap.add_argument("--unit")
     ap.add_argument("--limit", type=int, default=100)
     args = ap.parse_args(argv)
 
     rows = census()
     counts = {kind: sum(row["kind"] == kind for row in rows)
-              for kind in ("band", "thunk", "trivial", "substantive", "switch-table")}
+              for kind in ("dyninit-thunk", "dyninit-body", "band", "thunk",
+                           "trivial", "substantive", "switch-table")}
     sizes = {kind: sum(row["size"] for row in rows if row["kind"] == kind)
              for kind in counts}
     print(f"same-file unclaimed gaps: {len(rows)} row(s), "
