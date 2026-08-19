@@ -1337,6 +1337,10 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
 RVA(0x000b8af0, 0x1)
 void RefreshPlayerRow(HWND hDlg, HWND hList) {}
 
+// @early-stop
+// Calls, CFG, and relocations agree. Retail keeps the enumeration result in EBP
+// and the final failure flag in EBX; cl currently coalesces the flag onto dead
+// ESI and keeps the result in EBX. Declaration splitting is byte-identical.
 RVA(0x000b8b10, 0x175)
 CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];

@@ -70,9 +70,12 @@ It is **not a pure frame-only case**, as an older version of this pattern claime
 After `diagnose` learned llvm's i386 `calll` spelling, candidate has 96 calls to
 retail's 95: all eight source `StepArrivalDrop` sites emit here, while retail
 cross-jumps the fixed RIGHT arm into the nested CURRENT/EAST tail and carries the
-arguments there in its opposite `x`/`y` register coloring. The slot displacement
-and repeated-call delta are two downstream symptoms of the same whole-function
-allocation decision; neither is proof of a missing statement or inline body.
+arguments there in its opposite `x`/`y` register coloring. The same function
+fingerprint has repeatedly alternated between this 96-call state and retail's 95-call
+shape as unrelated included headers changed; the corresponding 90.29/92.43 MAX-ledger
+oscillation is the integration-scale control. The slot displacement and repeated-call
+delta are two downstream symptoms of the same whole-function allocation decision;
+neither is proof of a missing statement or inline body.
 
 **So: before filing a slot difference as pool order, rule out the reachable axes above -
 above all the FRAME SIZE.** In the two other functions opened on this lane the "spill

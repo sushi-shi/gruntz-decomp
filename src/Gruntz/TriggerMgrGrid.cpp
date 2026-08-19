@@ -436,6 +436,10 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     return cell->CommitArrival();
 }
 
+// @early-stop
+// The fixed RIGHT arm and CURRENT/EAST arm are source-distinct. Depending on
+// unrelated header state, cl either emits both calls or cross-jumps RIGHT into
+// CURRENT/EAST as retail does; local source-shape probes do not steer it.
 RVA(0x0006c130, 0xe38)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
