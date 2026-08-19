@@ -230,7 +230,7 @@ movinglogic	5	1
 multi	104	84
 multihelpdlg	5	5
 multistartdlg	64	56
-namerecord	4	4
+namerecord	5	5
 netcmdslot	18	13
 netlobbydialogs	20	20
 netmgr	53	49
@@ -3211,6 +3211,7 @@ multistartdlg	?UpdateColorItems@CMultiStartDlg@@QAEHXZ	98.2205	98.2205	2	0ffa93d
 multistartdlg	?UpdatePlayers@CMultiStartDlg@@QAEHH@Z	87.9662	87.9662	1	0a0705a6dbc0	0xc4230	87.9662	
 multistartdlg	?UpdateSlot@CMultiStartDlg@@QAEHXZ	95.5357	95.5357	3	768f1d0bec11	0xc1fd0	95.5357	
 multistartdlg	?Watchdog@CMultiStartDlg@@QAEXXZ	95.7348	95.7348	16	e691486e2bfc	0xc46b0	95.7348	
+namerecord	?ClearTime@CGameInfo@@QAEXXZ	100.0000	100.0000	1	206055b57234	0x1181a0	100.0000	
 namerecord	?CopyBody@CGameInfo@@QAEHPAD@Z	100.0000	100.0000	1	64e893b8e154	0x118130	100.0000	
 namerecord	?CopyIfLarger@CGameInfo@@QAEHPAUCGameInfoTime@@H@Z	100.0000	100.0000	1	f8c24ada7e2b	0x118260	100.0000	
 namerecord	?SetNames@CGameInfo@@QAEHPAD0H@Z	100.0000	100.0000	1	4f3d51328268	0x118040	100.0000	

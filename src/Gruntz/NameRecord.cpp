@@ -50,6 +50,11 @@ i32 CGameInfo::CopyBody(char* body) {
     return 0;
 }
 
+RVA(0x001181a0, 0x14)
+void CGameInfo::ClearTime() {
+    memset(&m_body.m_time, 0, sizeof(m_body.m_time));
+}
+
 RVA(0x001181d0, 0x70)
 i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
     if (s == 0) {
