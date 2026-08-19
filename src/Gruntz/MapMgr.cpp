@@ -15,6 +15,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+RVA_DYNINIT(0x0009fb20, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x0009fb40, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x0009fb70, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0009fb90, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0009fbc0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x0009fbe0, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x0009fc10, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0009fc30, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0009fc60, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x0009fc80, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x0009fcb0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0009fcd0, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0009fd00, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x0009fd20, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x0009fd50, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0009fd70, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0009fda0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x0009fdc0, 0x1a, s_gruntDirCenter)
+
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
     m_storage = NULL;
