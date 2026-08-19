@@ -8,6 +8,7 @@
 #include <Enums.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Ints.h>
+#include <Wap32/CoordUnset.h>
 #include <Wap32/GameApp.h>
 
 GZ_ENUM_FORWARD(GruntzCommandId);
@@ -26,8 +27,14 @@ public:
         g_activeGameWnd = NULL;
     }
 
-    virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual i32 HandleWindowCommand(i32 notifyCode, i32 cmdId, i32 lParam);
+    RVA(0x00094c40, 0x5)
+    virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) {
+        return 0;
+    }
+    RVA(0x00094c60, 0x5)
+    virtual i32 HandleWindowCommand(i32, i32, i32) {
+        return 0;
+    }
 
     virtual i32 OnCreate(LPARAM lParam);
     virtual i32 OnClose();
@@ -36,18 +43,42 @@ public:
     virtual i32 OnPaint();
     virtual i32 OnChar(WPARAM wParam, LPARAM lParam);
     virtual i32 OnKeyDown(WPARAM wParam, LPARAM lParam);
-    virtual i32 OnKeyUp(WPARAM wParam, LPARAM lParam);
+    RVA(0x00094c80, 0x5)
+    virtual i32 OnKeyUp(WPARAM, LPARAM) {
+        return 0;
+    }
     virtual i32 OnSysKeyDown(WPARAM wParam, LPARAM lParam);
     virtual i32 OnActivateApp(WPARAM wParam, LPARAM lParam);
 
     virtual i32 QuitMessageLoop();
-    virtual i32 OnLButtonDown(WPARAM keys, i32 x, i32 y);
-    virtual i32 OnRButtonDown(WPARAM keys, i32 x, i32 y);
-    virtual i32 OnLButtonUp(WPARAM keys, i32 x, i32 y);
-    virtual i32 OnRButtonUp(WPARAM keys, i32 x, i32 y);
-    virtual i32 OnMouseMove(WPARAM keys, i32 x, i32 y);
-    virtual i32 OnLButtonDblClk(WPARAM keys, i32 x, i32 y);
-    virtual i32 OnRButtonDblClk(WPARAM keys, i32 x, i32 y);
+    RVA(0x00094ca0, 0x5)
+    virtual i32 OnLButtonDown(WPARAM, i32, i32) {
+        return 0;
+    }
+    RVA(0x00094cc0, 0x5)
+    virtual i32 OnRButtonDown(WPARAM, i32, i32) {
+        return 0;
+    }
+    RVA(0x00094ce0, 0x5)
+    virtual i32 OnLButtonUp(WPARAM, i32, i32) {
+        return 0;
+    }
+    RVA(0x00094d00, 0x5)
+    virtual i32 OnRButtonUp(WPARAM, i32, i32) {
+        return 0;
+    }
+    RVA(0x00094d20, 0x5)
+    virtual i32 OnMouseMove(WPARAM, i32, i32) {
+        return 0;
+    }
+    RVA(0x00094d40, 0x5)
+    virtual i32 OnLButtonDblClk(WPARAM, i32, i32) {
+        return 0;
+    }
+    RVA(0x00094d60, 0x5)
+    virtual i32 OnRButtonDblClk(WPARAM, i32, i32) {
+        return 0;
+    }
     virtual i32 OnCommand(WPARAM wParam, LPARAM lParam);
 
     i32 CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner);
@@ -134,16 +165,25 @@ public:
         i32 windowWidth,
         i32 windowHeight
     );
-    virtual i32 InitDefault(HINSTANCE hInstance, char* szName);
+    RVA(0x00080d20, 0x24)
+    virtual i32 InitDefault(HINSTANCE hInstance, char* szName) {
+        return Init(hInstance, szName, szName, "", 0, COORD_UNSET, COORD_UNSET);
+    }
     virtual void CloseResources();
 
-    virtual i32 HasWindowAndManager();
+    RVA(0x00080d60, 0x18)
+    virtual i32 HasWindowAndManager() {
+        return m_gameWnd != NULL && m_gameMgr != NULL;
+    }
     virtual i32 RunMessageLoop();
     virtual void ReportError(WPARAM wParam, LPARAM lParam);
     virtual void OnIdle();
     virtual void FreeGameManager();
 
-    virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId cmdId, i32 lParam);
+    RVA(0x00080d90, 0x5)
+    virtual i32 HandleCommand(i32, GruntzCommandId, i32) {
+        return 0;
+    }
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);
     RVA(0x00080db0, 0x1)
     virtual void ShowError() {}

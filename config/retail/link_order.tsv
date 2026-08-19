@@ -106,8 +106,7 @@
 86	grunttoytimesprite	0x0007fbd0	0x0007fcad	cmdline	Gruntz	2	thunk(2)
 87	gruntwingztimesprite	0x0007fcc0	0x0007fd9d	cmdline	Gruntz	2	thunk(2)
 88	gruntpowerupsprite	0x0007fdb0	0x0007ff16	cmdline	Gruntz	1	thunk(1),xcu:634
-89	gruntzapp	0x00080850	0x00080cc5	cmdline	Gruntz	9	thunk(9)	pool-region
-90	gameappcomdats	0x00080d20	0x00080d95	cmdline	Wap32	3	thunk(3)	pool-region
+89	gruntzapp	0x00080850	0x00080d95	cmdline	Gruntz	12	thunk(12)	pool-region
 91	brickzload	0x000810f0	0x00081b70	cmdline	Gruntz	1	thunk(1)	pool-region
 92	brickz	0x00081e10	0x00085436	cmdline	Gruntz	4	thunk(4)	pool-region;interleaves:gruntzmapmgr+rezsync
 93	gruntzmapmgr	0x00082430	0x00085db7	cmdline	Gruntz	3	thunk(3)	pool-region;interleaves:brickz+rezsync
@@ -116,8 +115,7 @@
 96	rezmgr	0x0008b740	0x0008b86d	cmdline	Rez	1	thunk(1)	pool-region
 97	gruntzmgr	0x000901d0	0x00093ce7	cmdline	Gruntz	62	thunk(62)
 98	levelrezpath	0x00093d40	0x000941b3	cmdline	Gruntz	1	thunk(1)
-99	gruntzwnd	0x00094640	0x00094bf1	cmdline	Gruntz	17	thunk(17)
-100	gamewndcomdats	0x00094c40	0x00094d65	cmdline	Wap32	10	thunk(10)
+99	gruntzwnd	0x00094640	0x00094d65	cmdline	Gruntz	27	thunk(27)
 101	helpstate	0x00095090	0x00095464	cmdline	Gruntz	9	thunk(9)
 102	ingameworkerhandlers	0x00095750	0x00095ac1	cmdline	Gruntz	3	thunk(3)
 103	ingameicon	0x00095b10	0x00099b46	cmdline	Gruntz	19	thunk(19),xcu:716

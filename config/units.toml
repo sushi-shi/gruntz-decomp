@@ -1517,16 +1517,6 @@ source = "src/DDrawMgr/DDrawSurfacePairBlt.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "gamewndcomdats"
-source = "src/Wap32/GameWndComdats.cpp"
-flags = "cpp"
-
-[[unit]]
-unit = "gameappcomdats"
-source = "src/Wap32/GameAppComdats.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "ddrawsubmgrrefresh"
 source = "src/DDrawMgr/DDrawSubMgrRefresh.cpp"
 flags = "cpp"
