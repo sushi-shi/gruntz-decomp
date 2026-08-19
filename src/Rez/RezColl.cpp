@@ -131,6 +131,10 @@ CHashElement* CHashBase::Last() {
     return e;
 }
 
+// @early-stop
+// The only differing byte is the commuted scale-1 SIB encoding of the bucket
+// address: [ecx+eax+8] here and [eax+ecx+8] in retail. A natural bucket-pointer
+// local is byte-flat.
 RVA(0x00184b40, 0x1d)
 CHashElement* CHashBase::Lookup(u32 idx) {
     return FromLink(m_buckets[idx].m_chain.m_head);
