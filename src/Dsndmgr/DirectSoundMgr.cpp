@@ -258,6 +258,17 @@ void DirectSoundMgr::SetLooping(i32 enabled) {
     }
 }
 
+RVA(0x00135540, 0x1a)
+i32 DirectSoundMgr::IsLoopingEnabled() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    if ((m_playFlags & 1) == 1) {
+        return 1;
+    }
+    return 0;
+}
+
 RVA(0x00135560, 0x58)
 i32 DirectSoundMgr::SetVolume(i32 vol) {
     if (m_owner->m_initialized == 0) {
@@ -396,6 +407,22 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
     }
     m_setFreq = freq;
     return 1;
+}
+
+RVA(0x001358e0, 0x11)
+u32 DirectSoundMgr::GetFrequency() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    return m_setFreq;
+}
+
+RVA(0x00135900, 0x11)
+u32 DirectSoundMgr::GetBaseFrequency() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    return m_freq;
 }
 
 RVA(0x00135920, 0x80)
@@ -680,6 +707,18 @@ i32 DirectSoundMgr::LockConvert(u8* src, u32 lockBytes, u32 convert) {
         return 0;
     }
     return 1;
+}
+
+RVA(0x001360b0, 0x1e)
+i32 DSoundCloneInst::Play() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    DirectSoundMgr* item = GetItem();
+    if (item == NULL) {
+        return 0;
+    }
+    return item->Play();
 }
 
 RVA(0x001360d0, 0x7e)
@@ -1285,6 +1324,13 @@ i32 SoundDevice::FreeSamples() {
         node = next;
     } while (node);
     return 1;
+}
+
+// @identity-TODO No surviving call, address-taking site, or receiver access
+// distinguishes the original owner/signature of this false-return leaf.
+RVA(0x00136f50, 0x3)
+i32 SoundDeviceReturnFalse() {
+    return 0;
 }
 
 RVA(0x00136f60, 0x74)

@@ -30,6 +30,7 @@ public:
     i32 IsLooping();
     i32 IsInHardware();
     void SetLooping(i32 enabled);
+    i32 IsLoopingEnabled();
     i32 SetVolume(i32 vol);
     i32 SetVolumeByIndex(i32 idx);
     i32 GetVolume();
@@ -40,6 +41,8 @@ public:
     i32 SetPanByIndex(i32 idx);
     i32 GetPan();
     i32 SetFrequency(u32 freq);
+    u32 GetFrequency();
+    u32 GetBaseFrequency();
     i32 SetFrequencyOffsetPercent(i32 percentOffset);
     void ComputeDuration();
     i32 Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audioBytes2);
@@ -103,6 +106,7 @@ public:
     void StopAllClones();
 
     DirectSoundMgr* GetItem();
+    i32 Play();
     i32 ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop);
 
     DSoundCloneList m_cloneList;
