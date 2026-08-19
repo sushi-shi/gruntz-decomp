@@ -199,9 +199,6 @@ i32 CSecretLevelTrigger::Tick() {
     return 0;
 }
 
-// @identity-TODO SpawnTeleporter (339 B) sits outside this TU's block at 0x42b80, between
-// Tick (secretteleportertrigger) and ?0CWarlord (warlord). No size-family and too
-// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;

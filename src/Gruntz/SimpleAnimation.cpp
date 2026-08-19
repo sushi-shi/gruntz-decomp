@@ -70,9 +70,6 @@ void CSimpleAnimation::FireActivation(i32 idx) {
     }
 }
 
-// @identity-TODO RegisterSimpleAnimLogic (397 B) sits outside this TU's block at 0xabd70, between
-// FireActivation (simpleanimation) and AdvanceAnim (simpleanimation). No size-family and too
-// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
     ACT_NAME_ID(idx, "A")

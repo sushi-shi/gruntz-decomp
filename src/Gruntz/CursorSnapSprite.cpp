@@ -27,9 +27,6 @@ i32 CCursorSnapSprite::SerializeMove(
 RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
-// @identity-TODO _CreateCursorSnapSprite (241 B) sits outside this TU's block at 0x3a200, between
-// BltSelf (ddrawsurfacepair) and ?0CCursorSnapSprite (cursorsnapsprite). No size-family and too
-// large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x0003a200, 0xf1)
 i32 CreateCursorSnapSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;

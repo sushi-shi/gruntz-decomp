@@ -178,13 +178,6 @@ static char s_MAIN[] = "MAIN";
 DATA(0x00211aa0)
 static char s_MENU_MAINMENU_TITLE[] = "MENU_MAINMENU_TITLE";
 
-// @identity-TODO BuildMainMenuTree - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT. The oracle's other half is
-// WITHDRAWN: "the rest of this TU (1 fns) came from the static library" was read
-// off SetMenuTextRect having no thunk, but that is a `$E` initializer, which is
-// never called and so never gets one. The two functions are not in conflict and
-// nothing here says BuildMainMenuTree belongs elsewhere.
-
 RVA(0x000a11d0, 0x180d)
 i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (menu == NULL) {
