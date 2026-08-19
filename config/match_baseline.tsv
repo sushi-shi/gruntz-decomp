@@ -113,7 +113,7 @@ fadermgr	12	12
 feccrypt	11	8
 fileimage	19	10
 filestream	4	4
-font	21	18
+font	22	19
 fontconfig	15	10
 fonts	2	2
 fortconquered	1	0
@@ -1777,7 +1777,7 @@ font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	1	e7cf1144096e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000	
 font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00	100.0000	
 font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	2	4789a8ecaa5b	0x179720	100.0000	
-font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	68.1042	68.1042	3	63e21b75ce62	0x179e70	72.9028	
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	70.8889	70.8889	3	63e21b75ce62	0x179e70	72.9028	
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	1	1c99e425f732	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000	
 font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	75.7026	75.7026	2	8256ee153963	0x17a460	75.7026	
@@ -1793,6 +1793,7 @@ font	?MeasureWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@VCRect@@@Z	99.774
 font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	55ea99946328	0x1799f0	100.0000	
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	1	b2f484280b13	0x179c20	100.0000	
 font	?SetFont@FontRenderer@@QAEXPAVFont@@@Z	100.0000	100.0000	1	2956efb36548	0x179c10	100.0000	
+font	?SetGlyph@Font@@QAEXEUGlyph@@@Z	100.0000	100.0000	1	beb4c738d169	0x179bb0	100.0000	
 fontconfig	??1CFontConfig@@QAE@XZ	100.0000	100.0000	1	5d3b273e09e9	0x85f40	100.0000	
 fontconfig	??1CPen@@UAE@XZ	100.0000	100.0000	1	cpp:f25ad3dca3dc	0x220f0	100.0000	
 fontconfig	??1FontItem@@QAE@XZ	100.0000	100.0000	1	cpp:1c54d09168ac	0x21c40	100.0000	

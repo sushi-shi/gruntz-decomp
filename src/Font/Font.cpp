@@ -146,6 +146,13 @@ Glyph& Font::GetGlyph(Glyph& out, u8 c) {
     return out;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00179bb0, 0x1e)
+void Font::SetGlyph(u8 c, Glyph glyph) {
+    m_glyphs[c] = glyph;
+}
+
 RVA(0x00179bd0, 0x4)
 i32 Font::GetMaxHeight() {
     return m_maxHeight;

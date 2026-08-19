@@ -22,6 +22,7 @@ public:
 
     u8** GetSurface(u8 c);
     Glyph& GetGlyph(Glyph& out, u8 c);
+    void SetGlyph(u8 c, Glyph glyph);
     i32 GetMaxHeight();
 
     i32 m_ready;
