@@ -154,6 +154,9 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
     return accum;
 }
 
+// @early-stop
+// Calls, CFG and referents agree; root/mask/b scopes and a 32-island TU-state
+// sweep all emit the same residual register-coloring rotation.
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
     if (key == NULL) {
