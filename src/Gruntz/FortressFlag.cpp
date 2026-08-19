@@ -31,6 +31,25 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x00046580, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x000465a0, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x000465d0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x000465f0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00046620, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00046640, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00046670, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00046690, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x000466c0, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x000466e0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00046710, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00046730, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00046760, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00046780, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x000467b0, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000467d0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00046800, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00046820, 0x1a, s_gruntDirCenter)
+
 RVA_DYNINIT(0x00045fe0, 0xa, CActRegPool<CFortressFlag>::s_table)
 RVA_DYNINIT(0x00046000, 0x15, CActRegPool<CFortressFlag>::s_table)
 RVA_DYNINIT(0x00046030, 0xe, CActRegPool<CFortressFlag>::s_table)
