@@ -764,6 +764,7 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
 // `.CRT$XC` initializer rather than a .data image. It is the last of mapmgr's
 // initializers, so it has to stay below the GruntDirStatics include. The only
 // reader, CMenuState::Render 0x000a0750, uses it through GameMode.h's extern.
+RVA_DYNINIT(0x0009fdf0, 0x5, g_versionRect)
 RVA_DYNINIT(0x0009fe10, 0x29, g_versionRect)
 DATA(0x00245cc8)
 CRect g_versionRect(5, 453, 635, 478);

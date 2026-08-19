@@ -177,30 +177,39 @@ const u8 g_hitTable[23][23] = {
     {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
 };
 
+RVA_DYNINIT(0x0005b8c0, 0x5, g_gruntDirEast)
 RVA_DYNINIT(0x0005b8e0, 0x1f, g_gruntDirEast)
 DATA(0x00244aa0)
 GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, DIR_EAST);
+RVA_DYNINIT(0x0005b820, 0x5, g_gruntDirNorth)
 RVA_DYNINIT(0x0005b840, 0x1a, g_gruntDirNorth)
 DATA(0x00244ab0)
 GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
+RVA_DYNINIT(0x0005b960, 0x5, g_gruntDirSouth)
 RVA_DYNINIT(0x0005b980, 0x1f, g_gruntDirSouth)
 DATA(0x00244ac0)
 GruntDirectionCell g_gruntDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
+RVA_DYNINIT(0x0005ba00, 0x5, g_gruntDirWest)
 RVA_DYNINIT(0x0005ba20, 0x1f, g_gruntDirWest)
 DATA(0x00244ad0)
 GruntDirectionCell g_gruntDirWest = GruntDirectionCell(1, 0, DIR_WEST);
+RVA_DYNINIT(0x0005b870, 0x5, g_gruntDirNorthEast)
 RVA_DYNINIT(0x0005b890, 0x1a, g_gruntDirNorthEast)
 DATA(0x00244ae0)
 GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
+RVA_DYNINIT(0x0005ba50, 0x5, g_gruntDirNorthWest)
 RVA_DYNINIT(0x0005ba70, 0x17, g_gruntDirNorthWest)
 DATA(0x00244b18)
 GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
+RVA_DYNINIT(0x0005b910, 0x5, g_gruntDirSouthEast)
 RVA_DYNINIT(0x0005b930, 0x1a, g_gruntDirSouthEast)
 DATA(0x00244b28)
 GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
+RVA_DYNINIT(0x0005baa0, 0x5, g_gruntDirCenter)
 RVA_DYNINIT(0x0005bac0, 0x1a, g_gruntDirCenter)
 DATA(0x00244b38)
 GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
+RVA_DYNINIT(0x0005b9b0, 0x5, g_gruntDirSouthWest)
 RVA_DYNINIT(0x0005b9d0, 0x1f, g_gruntDirSouthWest)
 DATA(0x00244b48)
 GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);

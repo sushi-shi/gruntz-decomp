@@ -81,6 +81,7 @@ i32 g_diffTier;
 // extent from the far side. Nothing references it - like the nine singles above
 // it is dead data that only its initializer touches - so the name claims only
 // the family and that it is spare, not a purpose the evidence does not prove.
+RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
 RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
 static GruntDirectionCell s_gruntDirSpare[3];

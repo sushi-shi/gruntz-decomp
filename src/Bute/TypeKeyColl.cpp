@@ -35,6 +35,7 @@ i32 g_defaultProjActSize = 32;
 DATA(0x0021adf4)
 char s_out_of_memory[] = "out of memory";
 
+RVA_DYNINIT(0x0016d6f0, 0x5, g_zBitSetErrorSlot)
 RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
@@ -45,6 +46,7 @@ void(__cdecl* g_tmErrorCallback)(
     i32 v
 ); // lazily defaulted to TmErrorHandler by an uncarved accessor @0x16d970
 
+RVA_DYNINIT(0x0016d9a0, 0x5, g_globalErrorSlot)
 RVA_DYNINIT(0x0016d9b0, 0x10, g_globalErrorSlot)
 DATA(0x002bf430)
 CVariantSlot g_globalErrorSlot("Global Error: ");
@@ -66,10 +68,12 @@ char* g_errNoFile;
 DATA(0x002bf464)
 char* g_errOutOfMem;
 
+RVA_DYNINIT(0x0016de10, 0x5, g_dynamicArrayErrorSlot)
 RVA_DYNINIT(0x0016de20, 0x10, g_dynamicArrayErrorSlot)
 DATA(0x002bf468)
 CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
 
+RVA_DYNINIT(0x0016dfd0, 0x5, g_symTabErrorSlot)
 RVA_DYNINIT(0x0016dfe0, 0x10, g_symTabErrorSlot)
 DATA(0x002bf480)
 CVariantSlot g_symTabErrorSlot("zSymTab: ");
@@ -78,6 +82,7 @@ CVariantSlot g_symTabErrorSlot("zSymTab: ");
 // the body optimises to a bare `ret`, which is why the pin is 1 byte. It is the
 // fifth and last of this compiland's initializers, so the definition has to stay
 // below the four CVariantSlots.
+RVA_DYNINIT(0x0016e180, 0x5, g_recs23)
 RVA_DYNINIT(0x0016e190, 0x1, g_recs23)
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
