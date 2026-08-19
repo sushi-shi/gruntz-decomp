@@ -250,11 +250,10 @@ void CMenuState::StartMusic() {
         return;
     }
     i32 saved = g_sndEnabled;
-    i32 flag = saved;
     if (!saved) {
-        flag = 1;
         g_sndEnabled = 1;
     }
+    i32 flag = g_sndEnabled;
     i32 item = g_gameReg->m_soundVolume;
     LeafCue* mus = m_menuMusicCue;
     if (flag) {

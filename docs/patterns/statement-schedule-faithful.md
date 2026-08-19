@@ -4,7 +4,7 @@ symptoms: a single byte/instruction shifts when a store moves relative to a call
 confidence: 9/10
 
 At /O2 the visible instruction order tracks the SOURCE statement order more tightly than expected.
-Five corollaries, all steerable by re-ordering/positioning source:
+Six corollaries, all steerable by re-ordering/positioning source:
 
 - **A store emitted BETWEEN an arg push and its `call`** must be written *before* the call
   statement in source (moving it after the call shifts a byte). E.g. CNetMgr's shared-flag store
@@ -27,6 +27,13 @@ Five corollaries, all steerable by re-ordering/positioning source:
   retail before their siblings. In `LevelPreviewDlgProc`, declaring `dx`/`dy` before
   `w`/`h` changed only the ready-list order of the rectangle/point loads and closed the
   remaining exact-size residue.
+- **A saved global followed by a conditionally changed current value is a post-write
+  reread, not two locals initialized together.** Retail's `load current; copy saved; test
+  saved`, followed by a possible global store and a later test of `current`, comes from
+  snapshotting the global, performing the conditional store, and only then reading the
+  global into the current-value local. VC5 eliminates the reread while preserving the
+  saved/current split. Initializing both locals before the guard leaves the same dataflow
+  but schedules `test current` before `copy saved`.
 
 STEERABLE. Evidence: CNetMgr::OnOutOfSync flag interleave; CState ctor (decl-order, byte-exact)
 vs CGameApp ctor (schedule-order); GetGruntzDriveLetter `"Software"` local; CGruntzApp::ShowError
@@ -34,6 +41,12 @@ m_24c/m_250 hoist; `LevelPreviewDlgProc` 0x000e3690, 95.35% -> 98.07% from the
 `HDC` home and then **100.00% exact** from `dx`/`dy` declaration order. The deeper
 EH-state-write scheduling over CString live ranges is a WALL — see
 eh-state-numbering-base.md / makerezpath residue.
+
+`CMenuState::StartMusic` @0x0a05a0 is the saved-global control. The eager two-local
+spelling stopped at 94.76%; reversing the local declarations fixed the register roles but
+left `test current; copy saved` at 95.12%. Moving the current-value read below the
+conditional global write emitted retail's `copy saved; test saved` and reached **100.00%
+exact** with the same 0x74-byte CFG and all six relocation referents unchanged.
 
 `CFaderFlat::RenderFrame` @0x17f660 supplies the dependent-local form. Declaring
 `base = h - frame - 1` before `span = m_percent * h / 100` moves the parameter load
