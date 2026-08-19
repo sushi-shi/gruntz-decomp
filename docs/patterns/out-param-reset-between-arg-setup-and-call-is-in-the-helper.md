@@ -84,6 +84,7 @@ change alone, each having been a one-instruction-position diff before it:
 | `CWwdGameObjectA::ApplyName` | 0x00150540 | 94.1176 | **100.0000** |
 | `CDDrawChildGroup::CreateSprite` | 0x001597b0 | 94.1176 | **100.0000** |
 | `CMenuState::LoadGameAssetNamespaces` | 0x0009fe50 | 95.2863 | **100.0000** |
+| `CTimer::LoadTimerSprite` | 0x0009bb00 | 96.5217 | **100.0000** |
 
 `ApplyLookupGeometry` is the `CMapStringToPtr` counterpart: its wrapper owns a
 typed `CAniElement* result = NULL`, calls `MapLookup`, and returns the pointer.
@@ -98,6 +99,14 @@ pointer from one file-local helper moved both `MENU_ACTIVATE` resets and the fin
 `MENU_MENU` reset after argument setup. It also recovered retail's distinct final
 temporary slot. The complete 0x343-byte function then matched exactly: 260
 instructions, 25 calls, 16 branches, 9 returns, and 44 ordered referents.
+
+`LoadTimerSprite` is the `CMapStringToOb` ABI control. Its caller formerly exposed a
+`CObject* spr_ob = 0` solely to satisfy MFC, then cast it to `CDDrawWorker*`. Moving that
+real base-class out parameter inside the established typed-return `LookupWorker` helper
+and using `CObject* found = NULL` placed the reset after receiver/argument setup and made
+the 0x119-byte body exact: 116 instructions, 1 call, 21 branches, 7 returns, and 3 ordered
+referents. The base pointer is not a generic-erasure workaround here; `CMapStringToOb`
+stores `CObject*` and its retail signature requires `CObject*&`.
 
 ### It is per-site, not per-idiom — measure before converting a whole family
 

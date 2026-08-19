@@ -23,6 +23,12 @@
 
 #include <string.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x0009bab0, 0x35)
 CTimer::CTimer() {
     // Halves, not the i64: cl5 batches a RUN of 64-bit stores as all-lo-then-all-hi,
@@ -47,9 +53,8 @@ CTimer::CTimer() {
 
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
-    CObject* spr_ob = 0;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup("GAME_TIMER", spr_ob);
-    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
+    CDDrawWorker* spr =
+        LookupWorker(g_gameReg->m_world->m_imageRegistry->m_workersByName, "GAME_TIMER");
     m_sprite = spr;
     if (!spr) {
         return 0;
@@ -57,31 +62,31 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
 
     m_frameMinTens = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
                          ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : 0;
+                         : NULL;
     if (!m_frameMinTens) {
         return 0;
     }
     m_frameMinOnes = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
                          ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : 0;
+                         : NULL;
     if (!m_frameMinOnes) {
         return 0;
     }
     m_frameColon = (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11)
                        ? static_cast<CImage*>(spr->m_items.GetAt(11))
-                       : 0;
+                       : NULL;
     if (!m_frameColon) {
         return 0;
     }
     m_frameSecTens = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
                          ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : 0;
+                         : NULL;
     if (!m_frameSecTens) {
         return 0;
     }
     m_frameSecOnes = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
                          ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : 0;
+                         : NULL;
     if (!m_frameSecOnes) {
         return 0;
     }
