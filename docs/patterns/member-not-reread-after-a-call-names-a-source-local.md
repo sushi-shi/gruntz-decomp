@@ -73,3 +73,12 @@ and therefore reloaded it afterward. Introducing `i32 total = entry->m_total` re
 retail's pre-call lifetime, made both sides 199 instructions, and raised the function
 from 88.56% to 91.68%. The remaining four-byte frame difference belongs to the typed
 map-output boundary, not this member lifetime.
+
+The same pointer reading recovered `CRezImage::SaveBmp` @0x176b30. Retail loads
+`m_pixels` once before its null guard, keeps the pointer in `edi` across construction,
+open, and two header writes, then adds each saved row offset to that register. Spelling
+`m_pixels` again in the scanline loop forced a member reload inside every iteration.
+Capturing `u8* pixels = m_pixels`, testing `pixels`, and writing through `pixels`
+removed the reload, made both sides 141 instructions with 7 calls, 12 branches, and 9
+ordered relocations, and raised the function from 95.87% to 98.99%. The remaining byte
+is an equivalent whole-function EBX/EBP role swap, not missing source structure.

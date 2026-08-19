@@ -921,16 +921,15 @@ i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
     return 0;
 }
 
+// @early-stop: complete; one equivalent EBX/EBP role swap leaves one disp8-zero byte.
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
-    CImagePaletteNode* obj = paletteObj;
-    if (obj == NULL) {
-        obj = m_paletteNode;
-        if (obj == NULL) {
+    if (paletteObj == NULL) {
+        paletteObj = m_paletteNode;
+        if (paletteObj == NULL) {
             return 0;
         }
     }
-
     BmpFileHeaderStamp fileHdr;
     Bmp256Info info;
     memset(&info, 0, sizeof(info));
@@ -942,7 +941,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     info.bmiHeader.biCompression = 0;
     info.bmiHeader.biSizeImage = 0;
 
-    PALETTEENTRY* pal = obj->m_pal.palPalEntry;
+    PALETTEENTRY* pal = paletteObj->m_pal.palPalEntry;
     if (pal == NULL) {
         return 0;
     }
@@ -957,7 +956,8 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     strcpy(fileHdr.m_bytes, g_bmpHeaderTemplate);
     fileHdr.m_hdr.bfSize = m_width * m_height + 0x436;
     fileHdr.m_hdr.bfOffBits = 0x436;
-    if (m_pixels == NULL) {
+    u8* pixels = m_pixels;
+    if (pixels == NULL) {
         return 0;
     }
 
@@ -968,7 +968,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     file.Write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
     file.Write(&info, sizeof(info));
     for (i32 row = m_height - 1; row >= 0; row--) {
-        file.Write(m_pixels + m_rowOffsets[row], m_width);
+        file.Write(pixels + m_rowOffsets[row], m_width);
     }
     return 1;
 }
