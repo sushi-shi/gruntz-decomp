@@ -1091,5 +1091,3 @@ void CInGameIcon::SetupSprite(const char* category) {
     }
     m_cue = found;
 }
-
-// @early-stop

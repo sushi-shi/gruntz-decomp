@@ -102,8 +102,6 @@ const double g_slopeNegTwo = -2.0;
 // A pointer-taking inline is what produces the `lea <reg>,[esi+off]` base plus
 // one register per value that the retail schedule shows.
 
-// @early-stop
-
 i32 g_movingSeed;
 
 DATA(0x0020d424)

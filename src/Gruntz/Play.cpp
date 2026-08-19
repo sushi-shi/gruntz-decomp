@@ -161,7 +161,6 @@ GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_TOOL_YOYOZ = 0xe8
 GZ_ENUM_END(ToolCursorId)
 
-// @early-stop
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
         CDDrawSubMgrLeafScan* _s = (sndHost);                                                      \
