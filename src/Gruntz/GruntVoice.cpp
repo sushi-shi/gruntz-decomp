@@ -37,6 +37,25 @@
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
 
+RVA_DYNINIT(0x00119350, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00119370, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x001193a0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x001193c0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x001193f0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00119410, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00119440, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00119460, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00119490, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x001194b0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x001194e0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00119500, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00119530, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00119550, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00119580, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x001195a0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x001195d0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x001195f0, 0x1a, s_gruntDirCenter)
+
 RVA_DYNINIT(0x00119da0, 0xa, CActRegPool<CGruntVoice>::s_table)
 RVA_DYNINIT(0x00119dc0, 0x15, CActRegPool<CGruntVoice>::s_table)
 RVA_DYNINIT(0x00119df0, 0xe, CActRegPool<CGruntVoice>::s_table)
