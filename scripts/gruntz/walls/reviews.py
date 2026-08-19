@@ -59,10 +59,16 @@ def render(rows: dict[int, dict[str, str]]) -> str:
 
 
 def current() -> dict[int, dict[str, str]]:
-    """Reviews whose recorded fingerprint still matches the MAX ledger."""
-    from gruntz.walls.inventory import baseline_rows
+    """Reviews whose recorded fingerprint matches the current source body."""
+    from gruntz.model import resolve
+    from gruntz.verify.fingerprints import fingerprinter
 
-    fingerprints = {rva: row[2] for rva, row in baseline_rows().items()}
+    fingerprint, _cpp_of, _stale = fingerprinter()
+    fingerprints = {
+        binding.rva: fingerprint(binding.unit, binding.name)
+        for binding in resolve().functions
+        if binding.name and binding.unit
+    }
     return {
         rva: row for rva, row in load().items()
         if fingerprints.get(rva) == row["src_hash"]
@@ -100,16 +106,20 @@ def main(argv=None) -> int:
         ap.error("recording a review requires target, --status, --class, and --evidence")
 
     from gruntz.walls.diagnose import _locate
-    from gruntz.walls.inventory import baseline_rows
+    from gruntz.verify.fingerprints import fingerprinter, is_fallback
 
     binding, why = _locate(a.target)
     if binding is None:
         ap.error(why)
-    baseline = baseline_rows().get(binding.rva)
-    if baseline is None or not baseline[2]:
-        ap.error(f"0x{binding.rva:06x} has no source fingerprint in the MAX ledger")
+    fingerprint, _cpp_of, _stale = fingerprinter()
+    src_hash = fingerprint(binding.unit, binding.name)
+    if is_fallback(src_hash):
+        ap.error(
+            f"0x{binding.rva:06x} has no fresh per-function source fingerprint; "
+            "run `gruntz build` first"
+        )
     rows[binding.rva] = {
-        "src_hash": baseline[2],
+        "src_hash": src_hash,
         "status": a.status,
         "wall_class": a.wall_class,
         "evidence": a.evidence,
@@ -117,7 +127,7 @@ def main(argv=None) -> int:
     REVIEWS.write_text(render(rows))
     print(
         f"[reviews] 0x{binding.rva:06x} {a.status} {a.wall_class} "
-        f"at {baseline[2]}"
+        f"at {src_hash}"
     )
     return 0
 

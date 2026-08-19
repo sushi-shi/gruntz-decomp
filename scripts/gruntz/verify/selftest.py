@@ -815,6 +815,8 @@ class StaleMarkerControls(unittest.TestCase):
 
 class WallReviewControls(unittest.TestCase):
     def test_source_edit_invalidates_a_personal_review(self):
+        from types import SimpleNamespace
+
         from gruntz.walls import reviews
         saved = {
             0x1000: {
@@ -826,13 +828,20 @@ class WallReviewControls(unittest.TestCase):
                 "wall_class": "inline", "evidence": "inspect site",
             },
         }
-        baseline = {
-            0x1000: (50.0, 50.0, "new"),
-            0x2000: (60.0, 60.0, "same"),
-        }
+        funcs = [
+            SimpleNamespace(rva=0x1000, unit="u", name="changed"),
+            SimpleNamespace(rva=0x2000, unit="u", name="unchanged"),
+        ]
+        hashes = {("u", "changed"): "new", ("u", "unchanged"): "same"}
+
+        def fingerprinter():
+            return lambda unit, name: hashes[(unit, name)], None, set()
+
         with mock.patch.object(reviews, "load", return_value=saved), \
-             mock.patch("gruntz.walls.inventory.baseline_rows",
-                        return_value=baseline):
+             mock.patch("gruntz.model.resolve",
+                        return_value=SimpleNamespace(functions=funcs)), \
+             mock.patch("gruntz.verify.fingerprints.fingerprinter",
+                        side_effect=fingerprinter):
             self.assertEqual(set(reviews.current()), {0x2000})
 
     def test_todo_excludes_only_hash_valid_closed_reviews(self):
