@@ -89,8 +89,8 @@ static __inline BrickTileId PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 }
 
 // @early-stop
-// Retail carries a live zero-register (ebx) through the whole body - it passes 0
-// to AllocGrid and keeps both loop counters in registers; cl spills them.
+// Calls and all 122 relocations agree. The residue is register homes and consequent
+// loop-entry/join layout: retail pins zero in ebx and keeps both counters in registers.
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
@@ -358,11 +358,11 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
 
             if ((cell->m_flags & 0x100) != 0) {
                 i32 colCount = m_width;
-                for (i32 r = row - 1; r <= row + 1; r++) {
-                    if (r < 0 || static_cast<u32>(r) >= static_cast<u32>(m_width)) {
+                for (i32 r = static_cast<i32>(row) - 1; r <= static_cast<i32>(row) + 1; r++) {
+                    if (r <= 0 || static_cast<u32>(r) >= static_cast<u32>(m_width)) {
                         continue;
                     }
-                    for (i32 c = col - 1; c <= col + 1; c++) {
+                    for (i32 c = static_cast<i32>(col) - 1; c <= static_cast<i32>(col) + 1; c++) {
                         if (c < 0 || static_cast<u32>(c) >= static_cast<u32>(m_height)) {
                             continue;
                         }
@@ -372,30 +372,46 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                         if ((nf & 0x100) == 0) {
                             continue;
                         }
-                        BrickzCell* up = (r != 0) ? nc - 1 : 0;
-                        BrickzCell* down = (r < colCount - 1) ? nc + 1 : 0;
-                        BrickzCell* right =
-                            (c < static_cast<i32>(m_height) - 1) ? nc + colCount : 0;
-                        BrickzCell* left = (c != 0) ? nc - colCount : 0;
-                        BrickzCell* ur = (up && right) ? up + colCount : 0;
-                        BrickzCell* dl = (down && left) ? down - colCount : 0;
-                        BrickzCell* ul = (up && left) ? up - colCount : 0;
-                        BrickzCell* dr = (down && right) ? down + colCount : 0;
-                        bool set = false;
-                        if (up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
-                            && !(down->m_flags & BRICKZ_BLOCKED_MASK)) {
-                            set = true;
-                        } else if (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
-                                   && !(left->m_flags & BRICKZ_BLOCKED_MASK)) {
-                            set = true;
-                        } else if (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
-                                   && !(dl->m_flags & BRICKZ_BLOCKED_MASK)) {
-                            set = true;
-                        } else if (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
-                                   && !(dr->m_flags & BRICKZ_BLOCKED_MASK)) {
-                            set = true;
+                        BrickzCell* up = NULL;
+                        BrickzCell* down = NULL;
+                        BrickzCell* right = NULL;
+                        BrickzCell* left = NULL;
+                        BrickzCell* ur = NULL;
+                        BrickzCell* ul = NULL;
+                        BrickzCell* dr = NULL;
+                        BrickzCell* dl = NULL;
+                        if (c > 0) {
+                            up = nc - colCount;
                         }
-                        if (set) {
+                        if (static_cast<u32>(c) < static_cast<u32>(m_height - 1)) {
+                            down = nc + colCount;
+                        }
+                        if (static_cast<u32>(r) < static_cast<u32>(colCount - 1)) {
+                            right = nc + 1;
+                        }
+                        if (r > 0) {
+                            left = nc - 1;
+                        }
+                        if (up != NULL && right != NULL) {
+                            ur = up + 1;
+                        }
+                        if (up != NULL && left != NULL) {
+                            ul = up - 1;
+                        }
+                        if (down != NULL && right != NULL) {
+                            dr = down + 1;
+                        }
+                        if (down != NULL && left != NULL) {
+                            dl = down - 1;
+                        }
+                        if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                             && !(down->m_flags & BRICKZ_BLOCKED_MASK))
+                            || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                                && !(left->m_flags & BRICKZ_BLOCKED_MASK))
+                            || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                                && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
+                            || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                                && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
                             nc->m_flags = nf | 0x1000;
                         }
                     }
@@ -444,8 +460,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
             m_arr.SetSize(0, -1);
         }
-        if (mgr->m_walkCursor != NULL) {
-            obj = static_cast<CGameObject*>(mgr->m_list.GetNext(mgr->m_walkCursor));
+        CDDrawChildGroup* nextMgr = g_gameReg->m_world->m_childGroup;
+        if (nextMgr->m_walkCursor != NULL) {
+            obj = static_cast<CGameObject*>(nextMgr->m_list.GetNext(nextMgr->m_walkCursor));
         } else {
             obj = NULL;
         }
