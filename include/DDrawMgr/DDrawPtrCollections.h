@@ -68,6 +68,7 @@ public:
     i32 FindLast(u32 k0, u32 k1, i32 k2);
     CDdModePair FindFwd(i32 k0, i32 k1, ColorDepth colorDepth);
     CDdModePair FindBack(i32 k0, i32 k1, ColorDepth colorDepth);
+    DDSURFACEDESC* ResetSurfaceDesc();
 
     CDdModePair FindMatch(u32 k0, u32 k1, i32 k2);
 
@@ -93,6 +94,7 @@ public:
     CDDSurface* CreateFileSurfaceFromDesc(const DDSURFACEDESC* desc);
 
     CDDSurface* LoadFileSurface(char* path, i32 caps, i32 colorKey);
+    CDDSurface* LoadSystemMemorySurface(char* path, i32 caps, i32 colorKey);
 
     i32 CreateRange(
         CDDSurface** out,
@@ -142,7 +144,7 @@ public:
     CPtrList m_poolA;
     CPtrList m_poolB;
     CPtrArray m_poolItems;
-    char _pad4C8[0x534 - 0x4c8];
+    DDSURFACEDESC m_surfaceDesc;
     i32 m_bltCaps;
 
     ColorDepth m_palBpp;

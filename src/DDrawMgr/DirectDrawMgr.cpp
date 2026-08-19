@@ -671,6 +671,13 @@ CDDrawPtrCollections::MakeAndAddB(i32 width, i32 height, ColorDepth bitDepth, i3
     return CreateKeyedSurface(width, height, bitDepth, caps | 0x840, key);
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00142e90, 0x1d)
+CDDSurface* CDDrawPtrCollections::LoadSystemMemorySurface(char* path, i32 caps, i32 colorKey) {
+    return LoadFileSurface(path, caps | DDSCAPS_SYSTEMMEMORY | DDSCAPS_OFFSCREENPLAIN, colorKey);
+}
+
 RVA(0x00142eb0, 0x17)
 void CDDrawPtrCollections::AddItemB(CDDPalette* item) {
     item->m_pos = m_poolB.AddTail(item);
@@ -911,6 +918,15 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, ColorDepth colorDepth
     r.a = -1;
     r.b = -1;
     return r;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00143610, 0x1c)
+DDSURFACEDESC* CDDrawPtrCollections::ResetSurfaceDesc() {
+    memset(&m_surfaceDesc, 0, sizeof(m_surfaceDesc));
+    m_surfaceDesc.dwSize = sizeof(m_surfaceDesc);
+    return &m_surfaceDesc;
 }
 
 RVA(0x00143630, 0x10d)
