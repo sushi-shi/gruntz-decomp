@@ -1490,6 +1490,41 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
         self.assertIn("REGALLOC/SCHEDULING", out.getvalue())
         self.assertNotIn("INLINE/CALL-SET", out.getvalue())
 
+    def test_diagnose_names_a_repeated_call_site_delta(self):
+        import contextlib
+        import io
+        from types import SimpleNamespace
+
+        from gruntz.walls import diagnose as D
+        name = "?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z"
+        callee = "?RemoveHead@CPtrList@@QAEPAXXZ"
+        binding = SimpleNamespace(unit="u", name=name, rva=0x4B370)
+        skeletons = [
+            (b"base", 3, 0, 0, 1, ""),
+            (b"target", 4, 0, 0, 1, ""),
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            norm = Path(td)
+            (norm / "base").mkdir()
+            (norm / "target").mkdir()
+            (norm / "base/u.obj").touch()
+            (norm / "target/u.c.obj").touch()
+            with mock.patch.object(D, "NORM", norm), \
+                 mock.patch.object(D, "_locate", return_value=(binding, "")), \
+                 mock.patch.object(D, "Obj", side_effect=lambda path: path), \
+                 mock.patch.object(D, "_find_function", side_effect=[
+                     (b"base", {}, 4), (b"target", {}, 4)]), \
+                 mock.patch.object(D, "_jump_table_bytes", return_value=set()), \
+                 mock.patch.object(D, "_skeleton", side_effect=skeletons), \
+                 mock.patch.object(D, "_call_targets", side_effect=[
+                     [(callee, 0)] * 3, [(callee, 0)] * 4]), \
+                 contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(D.diagnose("0x4b370"), 0)
+        text = out.getvalue()
+        self.assertIn("INLINE/CALL-SET", text)
+        self.assertIn("REPEATED-SITE DELTA: target 4, base 3", text)
+        self.assertIn(callee, text)
+
 
 class InlineModelFlagControls(unittest.TestCase):
     """--spec was documented, parsed, and then fell through to

@@ -29,6 +29,7 @@ objdiff scored.
 
 from __future__ import annotations
 
+from collections import Counter
 import re
 
 from gruntz.core.paths import BUILD
@@ -173,6 +174,8 @@ def diagnose(token: str, show_asm: bool = False) -> int:
     (bp, brel, bsz, bmask, bcall, bbr, bret, bins, basm) = sides["base"]
     (tp, trel, tsz, tmask, tcall, tbr, tret, tins, tasm) = sides["target"]
     bref, tref = _referents(brel), _referents(trel)
+    bcalls = Counter(n for n, _a in _call_targets(brel, basm, b.name))
+    tcalls = Counter(n for n, _a in _call_targets(trel, tasm, b.name))
 
     print(f"[diagnose] {b.name}  [{b.unit}]  rva 0x{b.rva:06x}")
     print(f"  base:   {bsz:#x} B, {bins} insns, {bcall} calls, "
@@ -187,17 +190,18 @@ def diagnose(token: str, show_asm: bool = False) -> int:
         for i, (x, y) in enumerate(zip(bref, tref)):
             if x != y:
                 print(f"    reloc[{i}]: base {x}  !=  target {y}")
-    elif sorted(n for n, _a in _call_targets(brel, basm, b.name)) != \
-            sorted(n for n, _a in _call_targets(trel, tasm, b.name)):
+    elif bcalls != tcalls:
         wall = "inline"
-        bs = sorted(n for n, _a in _call_targets(brel, basm, b.name))
-        ts = sorted(n for n, _a in _call_targets(trel, tasm, b.name))
         print("  class: INLINE/CALL-SET - the call-target multisets differ:")
-        for n in ts:
-            if n not in bs:
+        for n in sorted(bcalls.keys() | tcalls.keys()):
+            bn, tn = bcalls[n], tcalls[n]
+            if bn == tn:
+                continue
+            if bn and tn:
+                print(f"    REPEATED-SITE DELTA: target {tn}, base {bn}: {n}")
+            elif tn:
                 print(f"    target calls, base expanded/lacks: {n}")
-        for n in bs:
-            if n not in ts:
+            else:
                 print(f"    base calls, target expanded/lacks:  {n}")
         print("  lever: gruntz walls inline-model --gap (budget deficit per "
               "starved site)")
