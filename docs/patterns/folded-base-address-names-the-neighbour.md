@@ -44,6 +44,19 @@ Spelling the loop bound as the NEIGHBOUR symbol would make our reloc match the
 delinker's guess rather than what the compiler really emitted. That is a fitted
 artifact, and it puts a lie in the source to buy hundredths.
 
+The converse matters too: do not invent or retain a neighbour merely because the
+delinker chose its address. `ChannelSlots_FindFree` walks
+`g_soundChannelInUse[17]`; cl emits the loop limit as
+`g_soundChannelInUse + 0x44`. A source claim for an otherwise unreferenced
+`g_val_24c434` at that exact one-past address made the delinked target spell the
+same operand as `g_val_24c434 + 0`, leaving the function at 99.5%. The retail
+bytes, source COFF relocation and declared array extent all say this is only the
+array limit. Removing the unsupported datum and recording that exact spelling in
+`config/retail/reloc_referents.tsv` restores the authentic relocation identity
+through strict delinking and makes the function exact. Retain an adjacent symbol
+only when it has independent storage evidence; the folded address alone proves no
+datum.
+
 ## Recognizing it
 
 `gruntz verify assert-relocs` flags the pair automatically — rows print

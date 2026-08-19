@@ -181,7 +181,7 @@ gruntzcmdmgr	44	41
 gruntzmapmgr	4	3
 gruntzmgr	165	151
 gruntzmgrcmd	1	0
-gruntzplayer	17	16
+gruntzplayer	17	17
 gruntzsoundz	36	35
 gruntzwnd	20	18
 guardpoint	5	5
@@ -2510,7 +2510,7 @@ gruntzmgr	?WarpDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	3958fb994673	
 gruntzmgr	?XorLiveObjectFlags@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	7	253129545170	0x8dc20	100.0000	
 gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z	98.5409	98.5409	10	5d16b1e026d9	0x862f0	98.6552	
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	100.0000	100.0000	1	2cd531b229f5	0xda790	100.0000	
-gruntzplayer	?ChannelSlots_FindFree@@YAHXZ	99.5000	99.5000	1	697b7fda646b	0xdb280	99.5000	
+gruntzplayer	?ChannelSlots_FindFree@@YAHXZ	100.0000	100.0000	1	697b7fda646b	0xdb280	100.0000	
 gruntzplayer	?ChannelSlots_Get@@YAHH@Z	100.0000	100.0000	1	27274cbc4f28	0xdb2d0	100.0000	
 gruntzplayer	?ChannelSlots_InitAll@@YAXXZ	100.0000	100.0000	1	77f6566e868b	0xdb1d0	100.0000	
 gruntzplayer	?ChannelSlots_Set@@YAXHH@Z	100.0000	100.0000	1	a60d1554190a	0xdb2b0	100.0000	

@@ -215,8 +215,6 @@ i32 g_levelBias100 = 0;
 DATA(0x0024c020)
 char g_customLevelText[0x200];
 
-DATA(0x0024c434)
-i32 g_val_24c434;
 // @early-stop
 // INLINE/CALL-SET with two independent halves; NOT a wall, and the second half is
 // a demonstrated live lever.
