@@ -147,6 +147,7 @@ void CKitchenSlime::RegisterType() {
     *KSlimeLookup(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
 }
 
+// @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -177,14 +178,13 @@ i32 CKitchenSlime::Tick() {
     }
 
     double step = static_cast<double>(g_frameDelta) * m_speed;
-    double* m88d = &m_stepMag;
 
     i32 newX;
     if (m_dirX > 0.0) {
         double t = (m_posX = m_posX + step);
         newX = static_cast<i32>(floor(t));
         i32 tx = m_tilePosition.m_x;
-        *m88d = fabs(m_posX - static_cast<double>(tx));
+        m_stepMag = fabs(m_posX - static_cast<double>(tx));
 
         if (newX > tx) {
             newX = tx;
@@ -193,7 +193,7 @@ i32 CKitchenSlime::Tick() {
         double t = (m_posX = m_posX - step);
         newX = static_cast<i32>(ceil(t));
         i32 tx = m_tilePosition.m_x;
-        *m88d = fabs(m_posX - static_cast<double>(tx));
+        m_stepMag = fabs(m_posX - static_cast<double>(tx));
         if (newX < tx) {
             newX = tx;
         }
@@ -206,7 +206,7 @@ i32 CKitchenSlime::Tick() {
         double t = (m_posY = m_posY + step);
         newY = static_cast<i32>(floor(t));
         i32 ty = m_tilePosition.m_y;
-        *m88d = fabs(m_posY - static_cast<double>(ty));
+        m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY > ty) {
             Level()->m_screenX = newX;
             Level()->m_screenY = ty;
@@ -216,7 +216,7 @@ i32 CKitchenSlime::Tick() {
         double t = (m_posY = m_posY - step);
         newY = static_cast<i32>(ceil(t));
         i32 ty = m_tilePosition.m_y;
-        *m88d = fabs(m_posY - static_cast<double>(ty));
+        m_stepMag = fabs(m_posY - static_cast<double>(ty));
         if (newY < ty) {
             Level()->m_screenX = newX;
             Level()->m_screenY = ty;
