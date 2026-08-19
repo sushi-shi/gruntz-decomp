@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSubWorkerDirtyRectInline.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorker.h>
@@ -122,48 +123,31 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 }
 
 // @early-stop
+// Inline BlitDirtyRect plus the POD MakeRect builder gives retail's seven calls,
+// five branches, four returns and seven relocations. The remaining four bytes
+// are register/schedule residue; 32 compiler-state variants form one island.
 RVA(0x001506b0, 0x1ec)
 void CWwdGameObjectA::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        RECT rc;
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 x = ir.left;
-            i32 y = ir.top;
-            i32 w = ir.right - x + 1;
-            i32 h = ir.bottom - y + 1;
-            rc.left = x;
-            rc.top = y;
-            rc.right = x + w;
-            rc.bottom = y + h;
-            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+            i32 pos[2];
+            i32 size[2];
+
+            pos[0] = ir.left;
+            pos[1] = ir.top;
+            size[0] = ir.right - ir.left + 1;
+            size[1] = ir.bottom - ir.top + 1;
+            a->BlitDirtyRect(b, pos, size);
         } else {
-            rc.left = m_dirty.m_lastX;
-            rc.top = m_dirty.m_lastY;
-            rc.right = m_dirty.m_lastX + m_dirty.m_w;
-            rc.bottom = m_dirty.m_lastY + m_dirty.m_h;
-            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
-            rc.left = m_shadow.m_lastX;
-            rc.top = m_shadow.m_lastY;
-            rc.right = m_shadow.m_lastX + m_shadow.m_w;
-            rc.bottom = m_shadow.m_lastY + m_shadow.m_h;
-            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
+            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
         }
     } else if (m_dirty.m_armed != -1) {
-        RECT rc;
-        rc.left = m_dirty.m_lastX;
-        rc.top = m_dirty.m_lastY;
-        rc.right = m_dirty.m_lastX + m_dirty.m_w;
-        rc.bottom = m_dirty.m_lastY + m_dirty.m_h;
-        a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
     } else if (m_shadow.m_armed != -1) {
-        RECT rc;
-        rc.left = m_shadow.m_lastX;
-        rc.top = m_shadow.m_lastY;
-        rc.right = m_shadow.m_lastX + m_shadow.m_w;
-        rc.bottom = m_shadow.m_lastY + m_shadow.m_h;
-        a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
     }
 }
 

@@ -82,6 +82,7 @@ public:
     virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp);
 
     i32 Probe();
+    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
 
     virtual ~CDrawSubWorker() OVERRIDE {
         m_width = 0;

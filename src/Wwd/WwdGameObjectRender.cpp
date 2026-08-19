@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawSubWorkerDirtyRectInline.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
@@ -67,44 +68,32 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 }
 
 // @early-stop
+// Inline BlitDirtyRect plus the POD MakeRect builder gives retail's exact size,
+// five calls, eight branches, four returns and five relocations. The remaining
+// operand schedule is flat across 32 compiler-state variants.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    RECT rc;
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
         i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
         i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            rc.left = m_dirty.m_lastX;
-            rc.top = m_dirty.m_lastY;
-            rc.right = m_dirty.m_lastX + m_dirty.m_w;
-            rc.bottom = m_dirty.m_lastY + m_dirty.m_h;
-            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
-            rc.left = m_shadow.m_lastX;
-            rc.top = m_shadow.m_lastY;
-            rc.right = m_shadow.m_lastX + m_shadow.m_w;
-            rc.bottom = m_shadow.m_lastY + m_shadow.m_h;
-            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
+            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
         } else {
             i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
             i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;
-            rc.left = left;
-            rc.top = top;
-            rc.right = left + dx;
-            rc.bottom = top + dy;
-            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+            i32 pos[2];
+            i32 size[2];
+            size[1] = dy;
+            size[0] = dx;
+            pos[1] = top;
+            pos[0] = left;
+            a->BlitDirtyRect(b, pos, size);
         }
     } else if (m_dirty.m_armed != -1) {
-        rc.left = m_dirty.m_lastX;
-        rc.top = m_dirty.m_lastY;
-        rc.right = m_dirty.m_lastX + m_dirty.m_w;
-        rc.bottom = m_dirty.m_lastY + m_dirty.m_h;
-        a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
     } else if (m_shadow.m_armed != -1) {
-        rc.left = m_shadow.m_lastX;
-        rc.top = m_shadow.m_lastY;
-        rc.right = m_shadow.m_lastX + m_shadow.m_w;
-        rc.bottom = m_shadow.m_lastY + m_shadow.m_h;
-        a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
     }
 }
 
