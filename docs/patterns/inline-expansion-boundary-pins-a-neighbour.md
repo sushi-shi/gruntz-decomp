@@ -23,6 +23,7 @@ diagnose` REGALLOC/SCHEDULING with identical multisets:
 | `CSymRec::~CSymRec` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetSymRec(m_symNode, NULL)` | 98.3099 -> **100.000** |
 | `CSymTab::CSymTab` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetSymTab(m_node20, this)` | 97.3333 -> **100.000** |
 | `CreateDoNothingNormal` 0xa9e00 | inlined `new CDoNothingNormal(owner)`: `mov eax,[esi+0x38]` hoisted over the leaf vptr stamp | ctor body `SetObjectFlags(1)` instead of `m_wwdObject->m_flags \|= 1` | 99.6129 -> **100.000** |
+| `CDDSurface::DecodeBmp` 0x143fc0 | two entry values spill and restore through the opposite registers after a palette guard | guard reads `HasPalette(pal)` instead of `pal->m_hasPalette` | 99.79 -> **100.000** |
 
 So the rule is: **the boundary pins whichever neighbour was free to float** - a receiver
 setup, a spilled-register restore, an epilogue pop, a vptr stamp. Wrap the statement that
@@ -58,6 +59,15 @@ containing object by reference works exactly like a member; `SymTab.cpp` already
 `HeadSlotNode(DSoundList&)` and `PeekI32(const char*)` in that style before this work.
 Prefer the narrowest home that still expands: `.cpp`-local first, the owner's header only
 when several TUs genuinely need it (that is the CWapX case, which has 40-75 sites each).
+
+`DecodeBmp` supplied the direct attribution control. A bounded exact-span run gave
+99.614040% for both the direct member read and an identical helper declared but unused;
+only calling the helper reached the retail instruction island at 99.780700% raw strict
+score. Thus the expansion boundary, not inert declaration state, caused the schedule.
+The remaining raw residue was the independently proven `s_palBmp + 0x400` one-past
+referent; its exact-site retail oracle made the normalized function 100.000. The parallel
+`DecodePcx` was flat across all eight eligible member-read expansions, so this remains a
+per-site lever.
 
 ## Negative controls - it is per-site, and it can cost points
 

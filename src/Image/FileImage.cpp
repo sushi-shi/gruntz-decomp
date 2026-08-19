@@ -110,20 +110,24 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
     return result;
 }
 
+static inline i32 HasPalette(CDDrawPtrCollections* pal) {
+    return pal->m_hasPalette;
+}
+
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, BmpFileImage* bmp, u32 size) {
     BITMAPINFOHEADER* ih = &bmp->info.bmiHeader;
     i32 width = ih->biWidth;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
     i32 height = ih->biHeight;
-    if (width == m_width && m_height == height
+    if (m_width == width && m_height == height
         && (bitcount == BPP_PALETTED_8 || bitcount == BPP_RGB_24)) {
         i32 remap = 0;
         ColorDepth palBpp = pal->m_palBpp;
         if (palBpp != bitcount) {
             remap = 1;
         }
-        if (!remap || palBpp != BPP_PALETTED_8 || pal->m_hasPalette != 0) {
+        if (!remap || palBpp != BPP_PALETTED_8 || HasPalette(pal) != 0) {
             PALETTEENTRY* palette = 0;
             if (remap && bitcount == BPP_PALETTED_8) {
                 RGBQUAD* src = bmp->info.bmiColors;

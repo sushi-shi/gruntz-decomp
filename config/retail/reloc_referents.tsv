@@ -3,6 +3,7 @@
 # spelled as the array's end. Retail evidence; consumed by the delinker.
 function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
 0x00024190	0x001e9628	0x000241eb	?g_cmdBitTable@@3PBGB	0x20	1	retail loop bound equals DATA-sized array end
+0x00143fc0	0x002846f0	0x00144082	_s_palBmp$S	0x400	1	one-past s_palBmp loop bound (base obj fileimage.obj: sym=_s_palBmp$S stored=+0x400)
 0x001884c0	0x002bf8e7	0x0018852b	_length_code$S	0xffffffff	1	cl spells the 1-based loop as array-1 (base obj trees.obj: sym=_length_code stored=-1); containment cannot name one-before-start
 0x001884c0	0x002c0158	0x00188696	_static_dtree$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_static_dtree stored=+0x78)
 0x00189b90	0x002252a8	0x00189c6b	_extra_dbits$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_extra_dbits stored=+0x78)
