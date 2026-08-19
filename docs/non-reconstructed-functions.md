@@ -73,13 +73,10 @@ and some live markers sit on current dips that have already reached 100% histori
 The unparked set is derived from the same inventory/Model join, ordered by historical
 MAX; its first row is currently `CActionOptionsMenuBar::Refresh` at 93.24%.
 
-There are 35 `@identity-TODO` occurrences, split into three different evidence queues:
-20 incremental-thunk-oracle annotations, five functions whose original TU owner is not
-yet proved, and ten unresolved semantic identities. The semantic identity audit reduced
-16 markers to those ten. Existing xrefs resolved the filename
-parameter of the page-image resolver, the `CEyeCandyAni` action-table owner, the
-boomerang dispatcher registration, the `CMenuSparkle` action receiver, and the
-RTTI-backed `CSplashState` methods. The remaining markers have no present evidence path:
+There are 34 `@identity-TODO` occurrences. Twenty-four mark zero-reference leaves whose
+body and ABI are bounded but whose original semantic name cannot be recovered; two of
+those also retain an incremental-link thunk proving only external linkage. The remaining
+ten are structural identity questions with no present evidence path:
 
 - three concern original TU ownership without a file anchor or contribution boundary;
 - two concern static template/source names absent from all surviving symbols;
