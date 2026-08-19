@@ -471,13 +471,6 @@ i32 CTeleporter::Begin() {
     return 0;
 }
 
-// @early-stop
-// Two scratch-register picks in the tail: retail takes the head record's second
-// coordinate in ebx (whose constant-1 range has just ended) and accumulates into
-// the row product's register, we reuse the dying record pointer's ecx and
-// accumulate the other way; the g_curPlayer compare inherits the same shift.
-// The TU is C2-anchored - prototype and inline-member declaration probes are
-// byte-identical here (docs/patterns/tu-state-probe-family-decides-reachability.md).
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

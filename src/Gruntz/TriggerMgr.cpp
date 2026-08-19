@@ -912,7 +912,6 @@ reportError:
     return 0;
 }
 
-// @early-stop
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
     if (m_overlay == NULL) {

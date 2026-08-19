@@ -59,19 +59,19 @@ can be called empty.
 
 ## Marker state
 
-`@early-stop` and `@identity-TODO` are state markers, not completeness evidence. The
-early-stop cleanup removed stale exact markers, duplicate markers, and markers attached
-to bodies that were still missing logic. The current audit has 682 live markers, no
-marker on an exact function, and one understood unmapped marker: the inline `CPlay`
-constructor is defined in `Play.h` but its retail copy is emitted and pinned in
-`gruntzmgr`. A future exact match must have its stale marker removed.
+`@early-stop` and `@identity-TODO` are inherited state markers, not independent
+completeness evidence. The current mechanical audit has 708 live early-stop markers,
+no stale exact marker, and no unmapped marker; the header-inline `CPlay` constructor is
+joined by its qualified source name. This proves marker ownership and currency only. It
+does not prove that an inherited early-stop decision was correct.
 
-Joining unique marker RVAs to the 716 never-exact reconstruction targets parks 671
-complete bodies and leaves 45 unparked candidates. Marker occurrences cannot be
-subtracted directly from the target count because a few bodies carry duplicate markers
-and some live markers sit on current dips that have already reached 100% historically.
-The unparked set is derived from the same inventory/Model join, ordered by historical
-MAX; its first row is currently `CActionOptionsMenuBar::Refresh` at 93.24%.
+Codex therefore uses `gruntz walls inventory --todo` for its explicit campaign queue.
+The queue starts from all 700 never-exact, non-EH reconstruction targets and subtracts
+only reviews Codex personally recorded as `closed` in
+`config/codex_wall_reviews.tsv`. Each review is keyed by RVA and the MAX ledger's exact
+function source hash, so editing the function makes the review stale automatically.
+An `open` review stays in the queue with its class and next evidence-bearing action.
+Inherited early-stop markers do not remove anything from this queue.
 
 There are 34 `@identity-TODO` occurrences. Twenty-four mark zero-reference leaves whose
 body and ABI are bounded but whose original semantic name cannot be recovered; two of

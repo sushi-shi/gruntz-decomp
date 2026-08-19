@@ -1,6 +1,7 @@
 """gruntz.walls.inventory - the wall worklist, derived, never hand-kept.
 
-    gruntz walls inventory [--unit U] [--below PCT] [--json] [--limit N]
+    gruntz walls inventory [--unit U] [--below PCT] [--todo]
+                           [--json] [--limit N]
 
 A wall is a function scoring below 100% fuzzy in the CURRENT compare report.
 The worklist is a JOIN of three read-only inputs and nothing else:
@@ -20,6 +21,12 @@ which gruntz.verify.scores excludes from the gate because those funclets are
 not reconstruction targets. They are KEPT here (they are real sub-100 rows)
 but counted separately in the header, so the worklist total is never read as
 a body count.
+
+``--todo`` is Codex's explicit campaign queue.  It removes EH-band funclets,
+functions already proven exact historically, and only those functions Codex
+personally recorded as ``closed`` at the current source hash.  Inherited
+``@early-stop`` markers do not affect it.  Hash-valid ``open`` reviews remain
+in the queue with their recorded class and next evidence-bearing action.
 """
 
 from __future__ import annotations
@@ -75,10 +82,16 @@ def baseline_rows() -> dict[int, tuple[float, float, str]]:
     return out
 
 
-def build(unit: str | None = None, below: float = 100.0) -> list[dict]:
+def build(
+    unit: str | None = None,
+    below: float = 100.0,
+    todo: bool = False,
+) -> list[dict]:
     from gruntz.model import resolve
+    from gruntz.walls.reviews import current as current_reviews
     _path, scores = report_scores()
     best = baseline_rows()
+    reviews = current_reviews() if todo else {}
     by_name: dict[tuple[str, str], object] = {}
     for b in resolve().functions:
         if b.name:
@@ -90,12 +103,22 @@ def build(unit: str | None = None, below: float = 100.0) -> list[dict]:
         b = by_name.get((u, sym))
         rva = b.rva if b else None
         bank, hist, src_hash = best.get(rva, (None, None, ""))
+        review = reviews.get(rva)
+        if todo and (
+            is_eh_band(sym)
+            or hist == 100.0
+            or (review is not None and review["status"] == "closed")
+        ):
+            continue
         rows.append({
             "rva": f"0x{rva:06x}" if rva is not None else "",
             "unit": u, "symbol": sym, "cur": pct,
             "hist_max": hist, "size": f"0x{b.size:x}" if b else "",
             "regressed": bank is not None and pct < bank - EPS,
             "proven": hist == 100.0,
+            "review_status": review["status"] if review else "",
+            "review_class": review["wall_class"] if review else "",
+            "review_evidence": review["evidence"] if review else "",
         })
     # ascending historical MAX, unknowns last, then ascending current
     rows.sort(key=lambda r: (r["hist_max"] is None,
@@ -113,18 +136,24 @@ def main(argv=None) -> int:
     ap.add_argument("--below", type=float, default=100.0,
                     help="score ceiling for a row to count as a wall")
     ap.add_argument("--limit", type=int, default=40, help="rows to print")
+    ap.add_argument(
+        "--todo",
+        action="store_true",
+        help="exclude only proven rows and Codex-closed reviews at this source hash",
+    )
     ap.add_argument("--json", action="store_true", help="the rows as JSON")
     a = ap.parse_args(argv)
     from gruntz.walls import check_unit
     check_unit(a.unit)
-    rows = build(a.unit, a.below)
+    rows = build(a.unit, a.below, a.todo)
     if a.json:
         print(json.dumps(rows, indent=2))
         return 0
     n_reg = sum(r["regressed"] for r in rows)
     n_prov = sum(r["proven"] for r in rows)
     n_eh = sum(1 for r in rows if is_eh_band(r["symbol"]))
-    print(f"[walls] {len(rows)} function(s) below {a.below:g}%  "
+    queue = " todo" if a.todo else ""
+    print(f"[walls] {len(rows)}{queue} function(s) below {a.below:g}%  "
           f"({n_prov} proven-at-100 dips, {n_reg} below their bank"
           + (f", {n_eh} EH-band funclets - scored, NOT reconstruction targets"
              if n_eh else "") + ")")
@@ -132,8 +161,11 @@ def main(argv=None) -> int:
     for r in rows[:a.limit]:
         hist = f"{r['hist_max']:6.2f}" if r["hist_max"] is not None else "     ?"
         flag = " R" if r["regressed"] else ("  " if not r["proven"] else " P")
+        review = ""
+        if a.todo and r["review_status"]:
+            review = f" [{r['review_status']}/{r['review_class']}]"
         print(f"{r['rva']:>10}  {hist}  {r['cur']:6.2f}  {r['size']:>7}"
-              f"{flag} {r['unit']}/{r['symbol'][:70]}")
+              f"{flag} {r['unit']}/{r['symbol'][:70]}{review}")
     if len(rows) > a.limit:
         print(f"  ... {len(rows) - a.limit} more (--limit)")
     return 0

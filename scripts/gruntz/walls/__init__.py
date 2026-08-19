@@ -14,12 +14,15 @@
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
                                   bug class; --calibrate = detector-bug rate)
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
+    gruntz walls review           Codex's source-hash-scoped personal reviews
 
 The easy matches are drained; what remains of the matching objective IS the
 walls. This package holds the instruments a matcher points at a classified
 wall. What does NOT live here: blind permutation search (removed by ruling -
-walls are broken by understood levers, not ground), and any hand-kept wall
-ledger (the worklist is derived from the compare report every time).
+walls are broken by understood levers, not ground).  The worklist is derived
+from the compare report every time.  The optional Codex review ledger records
+only reviewer progress and invalidates each row when its source hash changes;
+it is not evidence that a reconstruction is correct.
 
 Input surface: the Model, the compare out-dir (report.json + normalized
 objs), config/match_baseline.tsv, tool.objdump/tool.cl, delink.coffx (the
@@ -35,7 +38,8 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "global-refs": "gruntz.walls.global_refs",
-         "stale-markers": "gruntz.walls.stale_markers"}
+         "stale-markers": "gruntz.walls.stale_markers",
+         "review": "gruntz.walls.reviews"}
 
 
 def check_unit(unit: str | None) -> str | None:

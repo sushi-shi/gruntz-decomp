@@ -806,6 +806,75 @@ class StaleMarkerControls(unittest.TestCase):
         self.assertIsNone(RVA.search("RVA_COMPGEN(0x00012340, 0x10, X)"))
         self.assertTrue(RVA_COMPGEN.search("RVA_COMPGEN(0x00012340, 0x10, X)"))
 
+    def test_header_inline_definition_has_a_qualified_owner(self):
+        from gruntz.walls.stale_markers import QUALIFIED_DEF
+        m = QUALIFIED_DEF.search("inline CPlay::CPlay() {")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(1), "CPlay::CPlay")
+
+
+class WallReviewControls(unittest.TestCase):
+    def test_source_edit_invalidates_a_personal_review(self):
+        from gruntz.walls import reviews
+        saved = {
+            0x1000: {
+                "src_hash": "old", "status": "closed",
+                "wall_class": "cfg", "evidence": "checked",
+            },
+            0x2000: {
+                "src_hash": "same", "status": "open",
+                "wall_class": "inline", "evidence": "inspect site",
+            },
+        }
+        baseline = {
+            0x1000: (50.0, 50.0, "new"),
+            0x2000: (60.0, 60.0, "same"),
+        }
+        with mock.patch.object(reviews, "load", return_value=saved), \
+             mock.patch("gruntz.walls.inventory.baseline_rows",
+                        return_value=baseline):
+            self.assertEqual(set(reviews.current()), {0x2000})
+
+    def test_todo_excludes_only_hash_valid_closed_reviews(self):
+        from types import SimpleNamespace
+        from gruntz.walls import inventory
+
+        names = {
+            0x1000: "?Closed@CThing@@QAEHXZ",
+            0x2000: "?Open@CThing@@QAEHXZ",
+            0x3000: "?New@CThing@@QAEHXZ",
+            0x4000: "?Proven@CThing@@QAEHXZ",
+        }
+        funcs = [
+            SimpleNamespace(unit="u", name=name, rva=rva, size=0x10)
+            for rva, name in names.items()
+        ]
+        scores = {("u", name): 75.0 for name in names.values()}
+        scores[("u", "__ehunwind$?Open@CThing@@QAEHXZ$0")] = 50.0
+        baseline = {
+            rva: (75.0, 100.0 if rva == 0x4000 else 75.0, f"h{rva:x}")
+            for rva in names
+        }
+        reviewed = {
+            0x1000: {
+                "status": "closed", "wall_class": "cfg", "evidence": "done",
+            },
+            0x2000: {
+                "status": "open", "wall_class": "inline",
+                "evidence": "inspect site",
+            },
+        }
+        with mock.patch.object(inventory, "report_scores",
+                               return_value=("report", scores)), \
+             mock.patch.object(inventory, "baseline_rows", return_value=baseline), \
+             mock.patch("gruntz.model.resolve",
+                        return_value=SimpleNamespace(functions=funcs)), \
+             mock.patch("gruntz.walls.reviews.current", return_value=reviewed):
+            rows = inventory.build(todo=True)
+        self.assertEqual([row["rva"] for row in rows], ["0x002000", "0x003000"])
+        self.assertEqual(rows[0]["review_status"], "open")
+        self.assertEqual(rows[1]["review_status"], "")
+
 
 class TierRunnerControls(unittest.TestCase):
     def test_a_crashing_gate_is_a_failure_not_a_skip(self):

@@ -23,6 +23,60 @@ ROOTS = ("src", "include")
 MARKER = re.compile(r"^\s*//\s*@early-stop\b")
 RVA = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)")
 RVA_COMPGEN = re.compile(r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)")
+QUALIFIED_DEF = re.compile(
+    r"\b((?:[A-Za-z_]\w*::)+~?[A-Za-z_]\w*)\s*\("
+)
+
+
+def marker_sites():
+    """Yield ``(relative_path, line, rva, qualified_name)`` for each marker.
+
+    ``rva`` is ``None`` when the source marker cannot be joined to a following
+    function annotation.  ``qualified_name`` is the next source definition's
+    ``Class::Member`` spelling and covers header-inline bodies which correctly
+    have no RVA annotation at their definition.  Keeping this scan in one place
+    lets the stale-marker audit and actionable inventory share one ownership rule.
+    """
+    for root in ROOTS:
+        for path in sorted((REPO / root).rglob("*")):
+            if path.suffix not in (".cpp", ".h"):
+                continue
+            lines = path.read_text(errors="replace").split("\n")
+            for i, line in enumerate(lines):
+                if not MARKER.match(line):
+                    continue
+                addr = None
+                qualified = None
+                for j in range(i + 1, min(i + 40, len(lines))):
+                    if qualified is None and (q := QUALIFIED_DEF.search(lines[j])):
+                        qualified = q.group(1)
+                    m = RVA.search(lines[j])
+                    if m:
+                        addr = int(m.group(1), 16)
+                        break
+                if addr is None:
+                    for j in range(i + 1, min(i + 4, len(lines))):
+                        m = RVA_COMPGEN.search(lines[j])
+                        if m:
+                            addr = int(m.group(1), 16)
+                            break
+                yield str(path.relative_to(REPO)), i + 1, addr, qualified
+
+
+def marker_rvas() -> set[int]:
+    """The mapped function RVAs currently parked by ``@early-stop``."""
+    return {
+        addr for _rel, _line, addr, _qualified in marker_sites()
+        if addr is not None
+    }
+
+
+def marker_names() -> set[str]:
+    """Source-qualified names for parked functions, including header inlines."""
+    return {
+        qualified for _rel, _line, _addr, qualified in marker_sites()
+        if qualified is not None
+    }
 
 
 def scan():
@@ -34,34 +88,18 @@ def scan():
     for (_u, name), p in sc.items():
         pct.setdefault(name, p)
     stale, live, unknown = [], 0, []
-    for root in ROOTS:
-        for path in sorted((REPO / root).rglob("*")):
-            if path.suffix not in (".cpp", ".h"):
-                continue
-            lines = path.read_text(errors="replace").split("\n")
-            for i, line in enumerate(lines):
-                if not MARKER.match(line):
-                    continue
-                rel = str(path.relative_to(REPO))
-                addr = None
-                for j in range(i + 1, min(i + 40, len(lines))):
-                    m = RVA.search(lines[j])
-                    if m:
-                        addr = int(m.group(1), 16)
-                        break
-                if addr is None:
-                    for j in range(i + 1, min(i + 4, len(lines))):
-                        m = RVA_COMPGEN.search(lines[j])
-                        if m:
-                            addr = int(m.group(1), 16)
-                            break
-                name = syms.get(addr) if addr is not None else None
-                if name is None or name not in pct:
-                    unknown.append((rel, i + 1, addr))
-                elif pct[name] >= 100.0:
-                    stale.append((rel, i + 1, name))
-                else:
-                    live += 1
+    from gruntz.sema.index import short_name
+    by_short = {short_name(name): name for name in pct}
+    for rel, line, addr, qualified in marker_sites():
+        name = syms.get(addr) if addr is not None else None
+        if name is None and qualified is not None:
+            name = by_short.get(qualified)
+        if name is None or name not in pct:
+            unknown.append((rel, line, addr))
+        elif pct[name] >= 100.0:
+            stale.append((rel, line, name))
+        else:
+            live += 1
     return stale, live, unknown
 
 
