@@ -536,6 +536,17 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
     return 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x0015dc50, 0x33)
+void CGameLevel::ResetMainPlane() {
+    m_mainIndex = -1;
+    m_mainPlane = NULL;
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])->m_flags &= ~1;
+    }
+}
+
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
 
@@ -1807,6 +1818,13 @@ tail:
     return m_mainPlane->SerializeDispatch(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00161090, 0xe)
+i32 CGameLevel::CanSaveName(CFileMemBase* s) {
+    return s != NULL;
+}
+
 RVA(0x001610a0, 0x70)
 i32 CGameLevel::SaveName(CFileMemBase* s) {
     if (s == NULL) {
@@ -1830,6 +1848,13 @@ i32 CGameLevel::LoadName(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     strcpy(m_levelName, buf);
     return 1;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00161180, 0xe)
+i32 CGameLevel::CanLoadName(CFileMemBase* s) {
+    return s != NULL;
 }
 
 RVA(0x00161190, 0x1f)

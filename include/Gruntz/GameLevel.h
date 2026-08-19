@@ -194,6 +194,8 @@ public:
 
     void SyncAfterMainIndex(CDDrawSurfacePair* visitor);
 
+    void ResetMainPlane();
+
     i32 DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
     i32 MoveGrounded(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
@@ -216,6 +218,9 @@ public:
     i32 ProbeSpanHard(CGameObject* target, i32 x, i32 off);
 
     void NotifyAllPlanes();
+
+    i32 CanSaveName(CFileMemBase* s);
+    i32 CanLoadName(CFileMemBase* s);
 
     void VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx);
 
