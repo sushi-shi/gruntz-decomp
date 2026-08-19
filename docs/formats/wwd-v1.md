@@ -79,11 +79,11 @@ Read by `CGameLevel::LoadWwd` @0x15d280, `CGameLevel::ReadWwdHeaderName`
 | Offset | Size | Field | | Evidence |
 |---|---|---|---|---|
 | 0x000 | 4 | **`headerSize`** | **C** | Spec calls it `signature = 0x5f4`. It is a **size**: `mov eax,[ebx]; cmp eax,0x5f4; jbe` @0x15d29b rejects only values **greater** than `sizeof(WwdHeader)`, and the value is then used in arithmetic — `lea edi,[mainBlockLength+headerSize+0x20]` @0x15d2db sizes the inflate buffer, and 0x160790 uses it as both the `memcpy` length and the offset of the compressed bytes. 0x5f4 in all 63 |
-| 0x004 | 4 | — | **U** | Never loaded by any of the four readers; 0 in all 63 |
+| 0x004 | 4 | **`reserved04`** | **U** | Never loaded by any of the four readers; 0 in all 63 |
 | 0x008 | 4 | **`flags`** | **P** | `lea eax,[ebx+8]; mov cl,[eax]; test cl,0x2` @0x15d2ca selects the inflate path; the whole dword is stored to `CGameLevel+0x8`. **3 in all 63** |
 | | | bit 0 — *use z coords* | **P** | `CGameLevel::VisitVisible` @0x15dc90 gates the **z-interleaved** draw on it: planes are drawn in order and, before each, every `CGameObject` whose `m_sortKey <` that plane's `m_zBound` (the plane header's `zCoord`) is rendered. Matches the spec |
 | | | bit 1 — *compressed* | **P** | as above. Matches the spec |
-| 0x00c | 4 | — | **U** | never loaded; 0 in all 63 |
+| 0x00c | 4 | **`reserved0c`** | **U** | never loaded; 0 in all 63 |
 | 0x010 | 0x40 | **`levelName`** | **P** | `lea edi,[edx+0x10]` + `repnz scas`/`rep movs` @0x15d328 copies it to `CGameLevel::m_levelName`; also the sole output of `ReadWwdHeaderName` @0x160660. `WwdFile::ValidateMainBlock` @0x3b470 runs `atoi` over its first digit run to get the **level number**. Sixteen distinct values, e.g. `"Gruntz - Level Set 13"` |
 | 0x050 | 0x40 | **`author`** | **P** | `FillLevelInfoDialog` @0x3b1a0 and `CustomWorldInfoDlgProc` @0x3b600 both `SetDlgItemTextA(hDlg, 0x428, header + 0x50)`. `"Monolith Productions Inc."` in all 63 |
 | 0x090 | 0x40 | **`created`** | **P** | same two functions, control 0x429, `header + 0x90`. Fourteen distinct values, all of the form `"December 7, 1998"` |
@@ -92,13 +92,13 @@ Read by `CGameLevel::LoadWwd` @0x15d280, `CGameLevel::ReadWwdHeaderName`
 | 0x250 | 0x80 | **`palette`** | **U** | never read; **empty string in all 63** |
 | 0x2d0 | 4 | **`startX`** | **P** | `mov edx,[edx+0x2d0]; fild` @0x15d43b — the initial scroll origin, multiplied by the main plane's parallax scale unless that plane has flag bit 0 |
 | 0x2d4 | 4 | **`startY`** | **P** | same instruction pair. Also the only field of `CGameLevel::m_header` any other code reads (`CPlay::ResetGoals`, `Play.cpp:4617`) |
-| 0x2d8 | 4 | — | **U** | never loaded; 0 in all 63 |
+| 0x2d8 | 4 | **`reserved2d8`** | **U** | never loaded; 0 in all 63 |
 | 0x2dc | 4 | **`numPlanes`** | **P** | `cmp edi,[ecx+0x2dc]` @0x15d39a bounds the plane loop. **1 (45 files) or 2 (18 files)** |
 | 0x2e0 | 4 | **`planesOffset`** | **P** | `mov esi,[edx+0x2e0]; add esi,ebx` @0x15d368. **0x5f4 in all 63** — the plane headers immediately follow |
 | 0x2e4 | 4 | **`tileDescriptionsOffset`** | **P** | `mov eax,[edx+0x2e4]` @0x15d3a4; zero means "no attribute table" and skips the block |
 | 0x2e8 | 4 | **`mainBlockLength`** | **P** | `mov ecx,[ebx+0x2e8]` @0x15d2d3 sizes the inflate buffer; 0x160790 uses it as the zlib source bound and asserts the inflated size equals it |
 | 0x2ec | 4 | **`checksum`** | **P** *(stored)* | `mov eax,[edx+0x2ec]; mov [ebp+0xac],eax` @0x15d362. **Retail never verifies it** — it is stored, then returned by `CGruntzMgr::BuildLevelRezPath` @0x93d40 as the level's multiplayer identity token. Algorithm: [below](#checksum) |
-| 0x2f0 | 4 | — | **U** | never loaded; 0 in all 63 |
+| 0x2f0 | 4 | **`reserved2f0`** | **U** | never loaded; 0 in all 63 |
 | 0x2f4 | 0x80 | **`launchApp`** | **U** | never read. Three distinct, incl. `"C:\PROJ\GRUNTZ\DEBUG\GRUNTZ.EXE"` |
 | 0x374 | 0x80 | **`imageDirectory[0]`** | **U** | never read. `"AREA<n>\IMAGEZ"`, 8 distinct |
 | 0x3f4 | 0x80 | **`imageDirectory[1]`** | **U** | never read. `"GAME\IMAGEZ"` in all 63 |
@@ -129,14 +129,14 @@ back out of that copy.
 | Offset | Size | Field | | Evidence |
 |---|---|---|---|---|
 | 0x00 | 4 | **`headerSize`** | **P** | `mov eax,[edx]; cmp eax,0xa0; je` @0x16164f — exact match required, unlike the file header's `<=`. 0xa0 in all 81 planes |
-| 0x04 | 4 | — | **U** | never loaded; 0 in all 81 |
+| 0x04 | 4 | **`reserved04`** | **U** | never loaded; 0 in all 81 |
 | 0x08 | 4 | **`flags`** | **P** | `mov eax,[edx+0x8]` @0x161721, re-read at 0x161864. Observed: **1** (63 planes) and **0xc** (18) |
 | | | bit 0 — *main plane* | **P** | `CGameLevel::ReadPlane` @0x15d8d0 sets `m_mainPlane`/`m_mainIndex` on it; and `test al,0x1` @0x161989 suppresses the parallax multiply for the scroll origin. Every file has exactly one |
 | | | bit 1 — *no draw* | **P** | `CDDrawWorkerHost::Draw` @0x162010 returns immediately. Never set in shipped data |
 | | | bit 2 — *wrap X* | **P** | `CDDrawWorkerHost::WrapCoord` @0xa000 `m_flags & 0x4`; also `ActivateVisibleObjects` @0x163300 |
 | | | bit 3 — *wrap Y* | **P** | same, `& 0x8` |
 | | | bit 4 — *auto tile size* | **P** | `test al,0x10` @0x1617ad — take the tile size from the first frame of image set 0 instead of 0x58/0x5c. Never set in shipped data |
-| 0x0c | 4 | — | **U** | never loaded; 0 in all 81 |
+| 0x0c | 4 | **`reserved0c`** | **U** | never loaded; 0 in all 81 |
 | 0x10 | 0x40 | **`name`** | **P** | `lea edi,[edx+0x10]` + `rep movs` @0x16183a → `m_name`. Two distinct: `"Action"`, `"Back"` |
 | 0x50 | 4 | **`pixelWidth`** | **U** | **never loaded.** Redundant: equals `tilesWide * tilePixelWidth` in all 81 planes |
 | 0x54 | 4 | **`pixelHeight`** | **U** | **never loaded.** Equals `tilesHigh * tilePixelHeight` in all 81 planes |
@@ -155,7 +155,7 @@ back out of that copy.
 | 0x88 | 4 | **`imageSetsOffset`** | **P** | `mov edi,[edx+0x88]` @0x161668 — start of this plane's slice of the shared name table |
 | 0x8c | 4 | **`objectsOffset`** | **P** | `mov eax,[esi+0x8c]; test eax,eax; je` @0x1619a4 — zero means "no objects" |
 | 0x90 | 4 | **`zCoord`** | **P** | `mov ecx,[edx+0x90]` @0x16176a → `m_zBound`, the render-order threshold `VisitVisible` compares `CGameObject::m_sortKey` against. **0 in all 81** |
-| 0x94..0x9f | 12 | — | **U** | never loaded; 0 in all 81 |
+| 0x94..0x9f | 12 | **`reserved94[3]`** | **U** | never loaded; 0 in all 81 |
 
 Naming note: the third-party spec calls 0x58/0x5C `tiles_width`/`tiles_height`
 and 0x60/0x64 `tiles_wide`/`tiles_high`, which is easy to read backwards.

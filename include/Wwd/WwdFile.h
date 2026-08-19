@@ -31,9 +31,9 @@ struct WwdHeader {
     // sizeof(WwdHeader) (`cmp eax,0x5f4; jbe`), then WwdFile_InflateMainBlock
     // uses it as both the memcpy length and the offset of the compressed bytes.
     u32 headerSize;
-    u32 field_4;
+    u32 reserved04;
     u32 flags;
-    u8 pad_c[0x10 - 0x0c];
+    u32 reserved0c;
     char levelName[0x40];
     char author[0x40];
     char created[0x40];
@@ -46,7 +46,7 @@ struct WwdHeader {
     char palette[0x80];
     i32 startX;
     i32 startY;
-    u32 pad_2d8;
+    u32 reserved2d8;
     u32 numPlanes;
     u32 planesOffset;
     u32 tileDescriptionsOffset;
@@ -54,7 +54,7 @@ struct WwdHeader {
     // Stored and never verified: retail returns it from
     // CGruntzMgr::BuildLevelRezPath as the level's multiplayer identity token.
     u32 checksum;
-    u32 pad_2f0;
+    u32 reserved2f0;
     // The remaining four slots are all proven unread, like tileDirectory.
     char launchApp[0x80];
     char imageDirectory[4][0x80];
@@ -63,10 +63,10 @@ struct WwdHeader {
 
 struct WwdPlaneHeader {
     u32 headerSize;
-    u32 field_04;
+    u32 reserved04;
     u32 flags;
 
-    u32 field_0c;
+    u32 reserved0c;
     char name[0x50 - 0x10];
     i32 pixelWidth;
     i32 pixelHeight;
@@ -85,7 +85,7 @@ struct WwdPlaneHeader {
     u32 imageSetsOffset;
     u32 objectsOffset;
     i32 zCoord;
-    u8 pad_94[WWD_PLANE_HEADER_SIZE - 0x94];
+    u32 reserved94[3];
 };
 
 class CDDSurface;
