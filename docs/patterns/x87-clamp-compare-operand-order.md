@@ -31,3 +31,14 @@ testb  $0x41, %ah
 ```
 Steerable. Evidence: CMotionState::ArrivalVelX/ArrivalVelY (0x16f3c0/0x16f430)
 88%→100% by swapping `disc < 0.0` to `0.0 > disc`.
+
+## Historical-MAX revalidation
+
+A later cleanup replaced the literal `0.0` operands with `g_motionZero` and
+parenthesized the final multiplication.  That changed the function source
+fingerprints and reset both ledger rows to 93.75%, even though the exact result
+had already been proved.  Restoring the source shape above recreates the exact
+fingerprints `cbf2b5c34a3d` and `5e8de14cafaf`; both are independently recorded
+at 100% in `build/gen/max_peaks.json`.  The current integrated TU compiles those
+same bodies at 95.625%, demonstrating front-end/TU-state churn rather than a
+source regression.  Preserve the 100% MAX for those fingerprints.
