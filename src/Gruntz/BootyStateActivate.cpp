@@ -81,9 +81,23 @@
 #include <string.h>
 
 DATA(0x001e8fe8)
-const i32 g_bootyLetterCoords[32] = {
-    472, 101, 525, 98,  474, 146, 525, 144, 127, 170, 215, 262, 301, 345, 386, 427,
-    127, 170, 215, 262, 301, 345, 386, 427, 127, 170, 215, 262, 301, 345, 386, 427,
+const Coord g_bootyLetterCoords[16] = {
+    {472, 101},
+    {525, 98},
+    {474, 146},
+    {525, 144},
+    {127, 170},
+    {215, 262},
+    {301, 345},
+    {386, 427},
+    {127, 170},
+    {215, 262},
+    {301, 345},
+    {386, 427},
+    {127, 170},
+    {215, 262},
+    {301, 345},
+    {386, 427},
 };
 
 DATA(0x001e9068)
@@ -513,17 +527,17 @@ i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
         for (i32 i = 0; i <= m_letterIdx; i++) {
             CWwdGameObjectA* e = m_trailSprites[i];
-            e->m_screenX = g_bootyLetterCoords[i * 2];
+            e->m_screenX = g_bootyLetterCoords[i].m_x;
             e = m_trailSprites[i];
-            e->m_screenY = g_bootyLetterCoords[i * 2 + 1];
+            e->m_screenY = g_bootyLetterCoords[i].m_y;
             e = m_trailSprites[i];
             if (e->m_sortKey != 1) {
                 e->m_sortKey = 1;
                 e->m_flags |= 0x20000;
             }
         }
-        m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx * 2];
-        m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx * 2 + 1];
+        m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx].m_x;
+        m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx].m_y;
         return 1;
     }
 
@@ -532,9 +546,9 @@ i32 CBootyState::StepGlitterAnim() {
     double r = static_cast<float>(m_radius);
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
     m_scratchX =
-        static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2])));
+        static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx].m_x)));
     m_scratchY =
-        static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
+        static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx].m_y)));
     m_angleStep = step + 5;
     m_radius = static_cast<i32>(
         (kGlitterStartRadius - (step + 5) * kGlitterShrinkRate * kGlitterStartRadius)
@@ -542,16 +556,16 @@ i32 CBootyState::StepGlitterAnim() {
 
     i32 i = 0;
     if (idx > 0) {
-        const i32* tbl = g_bootyLetterCoords + 1;
+        const Coord* tbl = g_bootyLetterCoords;
         CWwdGameObjectA** ap = m_trailSprites;
         do {
             CWwdGameObjectA* e = *ap;
             i++;
             ap++;
-            e->m_screenX = tbl[-1];
+            e->m_screenX = tbl->m_x;
             e = ap[-1];
-            e->m_screenY = tbl[0];
-            tbl += 2;
+            e->m_screenY = tbl->m_y;
+            tbl++;
         } while (i < m_letterIdx);
     }
 
@@ -700,23 +714,15 @@ void CBootyState::MoveLettersByDir() {
                                                                 : g_gameReg->m_scoreHud->field)
 
 DATA(0x0020b8b8)
-i32 g_levelMsgIconPos[16] = {
-    0xea,
-    0x80,
-    0xec,
-    0xae,
-    0xeb,
-    0xe3,
-    0xe9,
-    0x10b,
-    0xe9,
-    0x12f,
-    0xe7,
-    0x159,
-    0xe8,
-    0x17c,
-    0xe9,
-    0x1a8
+Coord g_levelMsgIconPos[8] = {
+    {0xea, 0x80},
+    {0xec, 0xae},
+    {0xeb, 0xe3},
+    {0xe9, 0x10b},
+    {0xe9, 0x12f},
+    {0xe7, 0x159},
+    {0xe8, 0x17c},
+    {0xe9, 0x1a8},
 };
 
 // @early-stop
@@ -1002,8 +1008,8 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_icons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-            m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
-            m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
+            m_icons[i]->m_screenX = g_levelMsgIconPos[i].m_x;
+            m_icons[i]->m_screenY = g_levelMsgIconPos[i].m_y;
             CopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
@@ -1058,11 +1064,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         s = m_slot;
-        if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s * 2]) {
+        if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s].m_x) {
             m_readyFlags[s] = 1;
             m_icons[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-            m_icons[m_slot]->m_screenX = g_levelMsgIconPos[m_slot * 2];
-            m_icons[m_slot]->m_screenY = g_levelMsgIconPos[m_slot * 2 + 1];
+            m_icons[m_slot]->m_screenX = g_levelMsgIconPos[m_slot].m_x;
+            m_icons[m_slot]->m_screenY = g_levelMsgIconPos[m_slot].m_y;
         }
     }
 
@@ -1766,12 +1772,11 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     }
                 }
                 // The bound is a SIGNED int compare (`jl`), so the loop counts the table
-                // index, not the pointer: cl strength-reduces `&g_bootyLetterCoords[k]`
-                // into retail's cursor at +1 and its end at +9, keeping the signedness.
+                // index rather than comparing pointers.
                 CWwdGameObjectA** ap = m_trailSprites;
-                for (i32 k = 1; k < 9; k += 2) {
-                    (*ap)->m_screenX = g_bootyLetterCoords[k - 1];
-                    (*ap)->m_screenY = g_bootyLetterCoords[k];
+                for (i32 k = 0; k < 4; k++) {
+                    (*ap)->m_screenX = g_bootyLetterCoords[k].m_x;
+                    (*ap)->m_screenY = g_bootyLetterCoords[k].m_y;
                     (*ap)->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     ap++;
                 }

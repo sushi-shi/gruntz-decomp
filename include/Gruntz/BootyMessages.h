@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GlyphStringDraw.h>
 
 struct SecretMsgRow {
@@ -16,7 +17,7 @@ extern CString g_levelMsgStrings[8];
 
 class CString;
 
-extern const i32 g_bootyLetterCoords[32];
+extern const Coord g_bootyLetterCoords[16];
 
 extern const float g_secretRatioScale;
 extern char g_secretMsgA[0x20];

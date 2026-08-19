@@ -634,7 +634,7 @@ bootystateactivate	??1CButeMgr@@QAE@XZ	100.0000	100.0000	1	cpp:e2ca049ea8bf	0x21
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000	
 bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c338efc04c88	0x8d410	100.0000	
 bootystateactivate	??_GCMultiBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c338efc04c88	0x8d4e0	100.0000	
-bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	98.4743	98.4743	1	1e8afaee9d27	0x1ce60	98.4743	
+bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	98.4743	98.4743	2	5f409a47011b	0x1ce60	98.4743	
 bootystateactivate	?BuildBootyPerfectAnimation@CBootyState@@QAEHXZ	100.0000	100.0000	1	282e958d99db	0x1c070	100.0000	
 bootystateactivate	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7500	92.7500	1	3515c259b2f9	0x1b450	92.7500	
 bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	98.4014	98.4014	1	dd75246be14e	0x19920	98.4014	
@@ -652,7 +652,7 @@ bootystateactivate	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	2	51b0783
 bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	2	f0d655888900	0x1f6f0	100.0000	
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	77.2727	77.2727	2	ba6e28648a14	0x18e40	79.2955	
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	77.2727	77.2727	2	8d0dead8e194	0x1e660	79.2955	
-bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	88.6853	88.6853	4	9dd412b1645a	0x1a700	89.1325	
+bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	88.6853	88.6853	5	08360e2c03b6	0x1a700	89.1325	
 bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	92.5189	92.5189	2	1d54baced619	0x18830	92.5189	
 bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	82.6115	82.6115	3	7a2fff90049c	0x1d440	82.6115	
 bootystateactivate	?LoadGruntEffectSprites@CBootyState@@QAEHXZ	99.9547	99.9547	2	56d2b01ad531	0x1a040	99.9547	
@@ -676,7 +676,7 @@ bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	86638
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9786	99.9786	1	2d17ef0ad520	0x1c9d0	99.9786	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	1	659ee76e9f5b	0x18f00	100.0000	
-bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	93.6045	93.6045	1	5afbba3ef19d	0x196c0	93.6045	
+bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	93.4552	93.4552	2	2c9be8038c65	0x196c0	93.6045	
 bootystateactivate	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d3f0	100.0000	
 bootystateactivate	?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d4c0	100.0000	
 bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.2388	95.2388	15	d289681b2cfa	0x1b690	95.2481	
