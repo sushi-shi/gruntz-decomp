@@ -1005,6 +1005,17 @@ void CBattlezDlg::ReadPlayerName(i32 index) {
 RVA(0x000173e0, 0x1)
 void CBattlezDlg::RefreshOptionState() {}
 
+// @identity-TODO BattlezNoOp - Dialogs.cpp ownership follows from the adjacent
+// same-file claims and its incremental-link thunk. No caller, address-taker, or
+// operand survives to prove whether the original external symbol was a member.
+RVA(0x00017400, 0x1)
+void BattlezNoOp() {}
+
+// @identity-TODO BattlezNoOpArg - same evidence as BattlezNoOp. `ret 4` proves
+// one callee-popped dword, but not the original semantic name or receiver type.
+RVA(0x00017420, 0x3)
+void __stdcall BattlezNoOpArg(i32) {}
+
 RVA(0x00017440, 0x3)
 i32 CBattlezDlg::UnusedMsgHandler() {
     return 0;
