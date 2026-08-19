@@ -14,9 +14,10 @@ metrics, all drive-to-0:
 - `placeholder classes`
 - `cpp extern decls` and implicit `cpp external prototypes` — external declarations belong in
   their owner headers even when the prototype omits the `extern` keyword
-- `caller-callee FAKE-VIEW` (the one mechanical slice of the call-graph reconcile — retype the
-  receiver to the real class so the call binds; NOT the MISSING/SPECIAL total, which is the deep
-  per-function matching residual, not a cleanliness crater)
+- `caller-callee FAKE-VIEW` (the one mechanical slice of the call-graph reconcile — after
+  source-defined inline forwarding bodies are followed, retype any remaining receiver to the real
+  class so the call binds; NOT the MISSING/SPECIAL total, which is the deep per-function matching
+  residual, not a cleanliness crater)
 - `m_<hex> fields` — **last** (pure naming; do it after the structural metrics are 0)
 
 ## The cast policy

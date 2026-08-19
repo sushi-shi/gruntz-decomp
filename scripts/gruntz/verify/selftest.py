@@ -1700,6 +1700,42 @@ class VacuityControls(unittest.TestCase):
         with mock.patch.object(cc, "_summary", return_value=(rc, [], {})):
             self.assertTrue(any("vacuous" in f for f in cc.gate_findings()))
 
+    def test_caller_callee_follows_inline_forwarding_members(self):
+        from gruntz.verify.caller_callee import _resolve_source_calls
+        wrapper = "?ApplyName@CWapX@@QAEXPBD@Z"
+        real = "?ApplyName@CWwdGameObjectA@@QAEXPBD@Z"
+        rvas, leaves = _resolve_source_calls(
+            wrapper, {wrapper: {real}}, {real: 0x150540})
+        self.assertEqual(rvas, {0x150540})
+        self.assertEqual(leaves, set())
+
+    def test_caller_callee_keeps_unresolved_forwarding_leaves(self):
+        from gruntz.verify.caller_callee import _resolve_source_calls
+        wrapper = "?Run@CRealInline@@QAEXXZ"
+        phantom = "?Run@CPhantomView@@QAEXXZ"
+        rvas, leaves = _resolve_source_calls(
+            wrapper, {wrapper: {phantom}}, {})
+        self.assertEqual(rvas, set())
+        self.assertEqual(leaves, {phantom})
+
+    def test_caller_callee_consumer_reconciles_an_inline_forwarder(self):
+        from gruntz.verify import caller_callee as cc
+        caller = "?Ctor@COwner@@QAEXXZ"
+        wrapper = "?ApplyName@CWapX@@QAEXPBD@Z"
+        real = "?ApplyName@CWwdGameObjectA@@QAEXPBD@Z"
+        ir = {caller: {wrapper}, wrapper: {real}, real: set()}
+        rc = cc.Recon.__new__(cc.Recon)
+        rc.m2rva = {caller: 0x1000, real: 0x150540}
+        with mock.patch("gruntz.tool.clang.compdb",
+                        return_value={"/probe/src/Probe.cpp": []}), \
+             mock.patch.object(cc, "_tu_edges",
+                               return_value=("/probe/src/Probe.cpp", ir)):
+            edges, defined, unresolved, failed = rc._base_graph(jobs=1)
+        self.assertEqual(edges, {(0x1000, 0x150540)})
+        self.assertEqual(defined, {0x1000, 0x150540})
+        self.assertEqual(unresolved, {})
+        self.assertEqual(failed, [])
+
     def test_assert_relocs_refuses_zero_audited_functions(self):
         from gruntz.verify import assert_relocs as ar
         with mock.patch.object(ar, "audit", return_value=([], 0)):

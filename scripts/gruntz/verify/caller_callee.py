@@ -8,7 +8,8 @@ retail side). The unreconciled count is the metric; each edge's CAUSE is the
 worklist:
 
   FAKE-VIEW   our source reaches the callee through a view whose method
-              mangles to a name resolving to NO rva - retype the receiver
+              mangles to a name resolving to NO rva, even after following
+              source-defined inline forwarding bodies - retype the receiver
               and the edge reconciles. THE drive-to-0 slice (the board's
               `caller-callee FAKE-VIEW` floor ratchets it; the other causes
               are dominated by static-analysis false positives - inline
@@ -102,6 +103,38 @@ def _tu_edges(tu_flags):
     return tu, out
 
 
+def _resolve_source_calls(sym: str, graph: dict[str, set], m2rva: dict[str, int]):
+    """Resolve one IR callee through source-only helper definitions.
+
+    Header-inline forwarding members have no retail RVA of their own when the
+    optimizer expands them.  Clang's unoptimized IR nevertheless emits a call
+    to the forwarding member plus a linkonce definition for its body.  Follow
+    that body until reaching reconstructed retail functions; otherwise the
+    member's class is falsely reported as a fake receiver view.
+    """
+    resolved: set[int] = set()
+    leaves: set[str] = set()
+    pending = [sym]
+    seen: set[str] = set()
+    while pending:
+        cur = pending.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        rva = m2rva.get(cur)
+        if rva is not None:
+            resolved.add(rva)
+            continue
+        callees = graph.get(cur)
+        if not callees:
+            leaves.add(cur)
+            continue
+        pending.extend(callees)
+    if not resolved and not leaves:
+        leaves.add(sym)
+    return resolved, leaves
+
+
 class Recon:
     def __init__(self, jobs=None):
         from gruntz.model import resolve
@@ -177,7 +210,8 @@ class Recon:
         tus = sorted(k for k in db
                      if "/src/" in k.replace("\\", "/") and k.endswith(".cpp"))
         work = [(tu, db[tu]) for tu in tus]
-        edges, defined, unresolved, failed = set(), set(), {}, []
+        graph: dict[str, set] = {}
+        failed = []
         jobs = jobs or min(24, (os.cpu_count() or 4) * 2)
         with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as ex:
             for tu, res in ex.map(_tu_edges, work):
@@ -185,17 +219,20 @@ class Recon:
                     failed.append(os.path.relpath(tu, REPO))
                     continue
                 for caller, callees in res.items():
-                    cr = self.m2rva.get(caller)
-                    if cr is None:
-                        continue
-                    defined.add(cr)
-                    for callee in callees:
-                        ce = self.m2rva.get(callee)
-                        if ce is not None:
-                            if ce != cr:
-                                edges.add((cr, ce))
-                        else:
-                            unresolved.setdefault(cr, set()).add(callee)
+                    graph.setdefault(caller, set()).update(callees)
+
+        edges, defined, unresolved = set(), set(), {}
+        for caller, callees in graph.items():
+            cr = self.m2rva.get(caller)
+            if cr is None:
+                continue
+            defined.add(cr)
+            for callee in callees:
+                rvas, leaves = _resolve_source_calls(callee, graph,
+                                                     self.m2rva)
+                edges.update((cr, ce) for ce in rvas if ce != cr)
+                if leaves:
+                    unresolved.setdefault(cr, set()).update(leaves)
         return edges, defined, unresolved, failed
 
     # --- reconcile ----------------------------------------------------------
