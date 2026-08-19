@@ -302,6 +302,9 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     return CreateContainerObject(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
+// @early-stop
+// Both static queues emit real atexit thunks as separate anonymous COMDATs;
+// the delinked image names those same bytes as this function's EH span.
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
     RVA_DYNINIT(0x00159c80, 0xa, killQueue)

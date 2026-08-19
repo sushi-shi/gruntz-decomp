@@ -920,6 +920,11 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
     return StepArrivalDrop(px, py, arrivalPhase, maskA, clearFlag, maskCIn);
 }
 
+// @early-stop
+// Retail factors a fourth RemoveHead site into the path region after layout.
+// Keep the single real CPtrList EH scope: expressing the late successes as a
+// loop duplicates their scan prefixes, while copying the region duplicates its
+// ctor/dtor states and contradicts the retail call, relocation, and branch census.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,

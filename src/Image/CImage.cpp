@@ -454,6 +454,10 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirty.m_rect.bottom = dbottom;
 }
 
+// @early-stop
+// The instructions and retail addresses are exact. cl emits the static-dtor
+// thunk as a separate anonymous COMDAT, while the delinked image names the same
+// bytes as this function's EH registration span; source cannot name that thunk.
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, clip)
@@ -464,6 +468,8 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     }
 }
 
+// @early-stop
+// Same compiler-generated static-dtor-thunk identity seam as RenderFrame.
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(
     CDDrawSurfacePair* target,
