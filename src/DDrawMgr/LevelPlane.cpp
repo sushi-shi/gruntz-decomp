@@ -413,6 +413,13 @@ void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
     }
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00161f80, 0x14)
+void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
+    SetTileSize(image->m_width, image->m_height);
+}
+
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
@@ -915,6 +922,16 @@ i32 CDDrawWorkerHost::GetSize() {
     return m_scroll->GetSize();
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00163400, 0x12)
+i32 CDDrawWorkerHost::FlushAllObjects() {
+    if (m_scroll == NULL) {
+        return 0;
+    }
+    return m_scroll->FlushAll();
+}
+
 RVA(0x00163420, 0xf0)
 void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == NULL) {
@@ -1076,6 +1093,13 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
     return 1;
 }
 
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00163770, 0xe)
+i32 CDDrawWorkerHost::CanSave(CFileMemBase* s) {
+    return s != NULL;
+}
+
 // canonical-imul parity note: the gridW*gridH imul pair is TU-state sensitive
 // (docs/patterns/commutative-operand-order-is-canonical.md) and rides the same
 // missing class-type definition as DeactivateDistantObjects (see its dossier);
@@ -1136,6 +1160,13 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     strcpy(m_name, buf);
     return 1;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x00163a00, 0xe)
+i32 CDDrawWorkerHost::CanLoad(CFileMemBase* s) {
+    return s != NULL;
 }
 
 RVA_COMPGEN(0x00163a10, 0x7, ??1CWwdGridIter@@UAE@XZ)

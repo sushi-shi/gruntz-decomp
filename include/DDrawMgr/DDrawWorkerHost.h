@@ -63,19 +63,23 @@ public:
     void Build(LevelCoordRect* coords);
     void SetTileSize(i32 tileW, i32 tileH);
 
+    void SetTileSizeFromImage(CImage* image);
     void SetTileSizeFromImageSet(CDDrawWorker* set);
     void Draw(CDDrawSurfacePair* ctx);
     i32 Prune();
     i32 ActivateVisibleObjects();
     i32 DeactivateDistantObjects();
     i32 GetSize();
+    i32 FlushAllObjects();
     void InitScrollRects();
     i32 ValidateTiles(char* errOut);
     void ResolveColorKey();
 
     i32 SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicTypeId typeId, i32 pObj);
+    i32 CanSave(CFileMemBase* s);
     i32 Save(CFileMemBase* s);
     i32 Load(CFileMemBase* s);
+    i32 CanLoad(CFileMemBase* s);
 
     i32 RebuildPlanes(const char* base, i32 count);
     i32 ReadPlaneObjects(const PlaneObjectRecord* src);
