@@ -6,7 +6,6 @@
 #include <MsgParam.h>
 #include <Net/LatencyList.h>
 
-// @early-stop
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (m_list.GetCount() <= 0) {
