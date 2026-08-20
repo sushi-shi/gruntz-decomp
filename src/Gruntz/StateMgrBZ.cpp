@@ -121,7 +121,6 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000385e0, 0x9f)
 i32 StateMgrBZ::Flush() {
     CInputDevice* dev = m_device;
