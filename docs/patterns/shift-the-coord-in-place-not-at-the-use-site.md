@@ -61,3 +61,17 @@ construction/write-back order restored the complete `sar` census and raised the 
 current-source result to **77.60%**. The candidate has 947 instructions against retail's
 955 and preserves all 81 ordered referents. The remaining residue is not evidence for
 keeping all eight objects live together.
+
+## One used component can account for an exact eight-byte frame delta
+
+Do not introduce a derived scalar merely because only one component of each out-param is
+used. In `CGrunt::StepDiggerBehavior` the reconstructed source kept both real `Coord`s and
+also declared `cx = c1.m_x >> 5` and `cy = c2.m_y >> 5`. Retail instead emits a `sar`
+followed by a write-back to `c1.m_x` after the first `GetScreenPos`, and the same sequence
+for `c2.m_y` after the second call. Writing those two shifts in place removed exactly two
+dwords from the candidate frame (`0x94 -> 0x8c`, equal to retail), while preserving the
+address-taken aggregates. Together with moving the three scan initializers before the
+clip expansion, this raised the function from **68.18% to 83.84%** and made its 609
+instruction, 25-call and 29-relocation censuses exact. The detection signature is a frame
+wider by one dword per derived component plus retail stores back into the corresponding
+escaped aggregate slots.

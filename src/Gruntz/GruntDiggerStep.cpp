@@ -36,13 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
-// Reloc identities are identical to retail's (29/29, in order); 5 rets match.
-// Residue: retail parks the `isect = box` copy arm far from its join (je far +
-// no skip-jmp) where our inline copy arm lets cl skip the join's [esp+0x2c]
-// reload via an extra jmp (value already in eax) - block placement; plus
-// `this` in ebx/0x94 frame vs retail ebp/0x8c - regalloc. 194 mixed TU states
-// (164 prior + 30 this pass) moved neither decision.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
     // Retail holds the strcmp result in a `bool` (`sete cl / test cl,cl`).
@@ -55,10 +48,10 @@ i32 CGrunt::StepDiggerBehavior() {
 
     Coord c1;
     GetScreenPos(&c1);
-    i32 cx = c1.m_x >> TILE_SHIFT_PX;
+    c1.m_x >>= TILE_SHIFT_PX;
     Coord c2;
     GetScreenPos(&c2);
-    i32 cy = c2.m_y >> TILE_SHIFT_PX;
+    c2.m_y >>= TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -70,8 +63,8 @@ i32 CGrunt::StepDiggerBehavior() {
         }
     }
 
-    m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx.m_x = m_lastTilePx.m_x;
 
     i32 powered = m_poweredUp;
     if (powered != 0) {
@@ -171,10 +164,10 @@ L_tailc:
         if ((m_poweredUp == 0) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
             RECT box;
-            box.left = cx - r;
-            box.right = cx + r;
-            box.top = cy - r;
-            box.bottom = cy + r;
+            box.left = c1.m_x - r;
+            box.right = c1.m_x + r;
+            box.top = c2.m_y - r;
+            box.bottom = c2.m_y + r;
             RECT gb;
             gb.left = 0;
             gb.top = 0;
@@ -184,17 +177,17 @@ L_tailc:
             if (!IntersectRect(&isect, &box, &gb)) {
                 isect = box;
             }
-            GRID_CLIP_INL(grid, &isect);
             i32 best = INT_MAX;
             i32 bestCol = -1;
             i32 bestRow = -1;
+            GRID_CLIP_INL(grid, &isect);
             for (i32 row = isect.top; row < isect.bottom; row++) {
                 BrickzCell* cell = &grid->m_rows[row][isect.left];
                 for (i32 col = isect.left; col < isect.right; col++) {
                     if ((cell->m_flags & 0x10000) != 0) {
-                        i32 dr = row - cy;
+                        i32 dr = row - c2.m_y;
                         dr = abs(dr);
-                        i32 dc = col - cx;
+                        i32 dc = col - c1.m_x;
                         dc = abs(dc);
                         i32 dist = dr + dc;
                         if (dist < best) {
@@ -207,9 +200,9 @@ L_tailc:
                 }
             }
             if (best != INT_MAX) {
-                i32 dc = bestCol - cx;
+                i32 dc = bestCol - c1.m_x;
                 dc = abs(dc);
-                i32 dr = bestRow - cy;
+                i32 dr = bestRow - c2.m_y;
                 dr = abs(dr);
                 if (dc <= 1 && dr <= 1) {
                     m_tileMgr->ApplyTriggerA(

@@ -27,7 +27,7 @@ Measured across one 40-65% batch (2026-08-07):
 | `CGrunt::ChargeStep` 0xef6b0 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::ResetEntranceAnimation` 0x62e10 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::StepArrivalDefense` 0xf2b20 | 0xc | 0x10 | retail +4 |
-| `CGrunt::StepDiggerBehavior` 0xf36a0 | 0x94 | 0x8c | retail -8 |
+| `CGrunt::StepDiggerBehavior` 0xf36a0 | 0x94 -> 0x8c | 0x8c | retail -8 -> exact |
 | `CGrunt::StepGooSuckerBehavior` 0xf0e20 | 0x90 | 0x88 | retail -8 |
 | `CGrunt::LoadPickupSprites` 0x65e80 | `push ecx` (4) | 0 | retail -4 |
 
@@ -36,12 +36,14 @@ Each delta is a concrete, findable modelling fact, and each is different:
 - **retail has MORE** - a local object we never declared. `SaveRle16`'s +4 was a
   `BITMAPINFO` (44 B) modelled as a bare `BITMAPINFOHEADER` (40 B); retail's giveaway was
   `mov ecx,0xb / rep stos` (11 dwords) and a `Write(&hdr, 0x2c)`.
-- **retail has FEWER** - a local WE spill that retail keeps in a register, or a local
+- **retail has FEWER** - an invented derived scalar, a local WE spill that retail keeps in a register, or a local
   retail folds into a dead parameter's home slot. `LoadPickupSprites`'s `push ecx` holds a
   `CAniElement*` scratch; retail reuses the never-read 4th parameter's slot at `[esp+0x20]`
-  for it and allocates nothing. After removing two oversized `Coord[2]` out-parameter
-  locals, `StepDiggerBehavior` still keeps `this` in `ebx` with an eight-byte-wider frame,
-  where retail keeps it in `ebp` the whole way.
+  for it and allocates nothing. `StepDiggerBehavior`'s extra eight bytes were two derived
+  `cx`/`cy` scalars beside the real address-taken `Coord`s. Retail shifts `c1.m_x` and
+  `c2.m_y` back into their own slots; deleting the scalars made the frame exactly `0x8c`
+  and raised the function from 68.18% to 83.84%. Its remaining `this`-register difference
+  is therefore a same-frame allocation residue, not evidence for another local.
 
 ## The `mov <reg>,ecx` tell
 
