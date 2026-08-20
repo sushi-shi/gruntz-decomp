@@ -810,7 +810,7 @@ chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	85.9
 chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	85.1837	85.1837	15	13c27971e50f	0x205c0	85.1837	
 chatboxowner	?ResetCopy@zPTree@@QAEXXZ	100.0000	100.0000	2	e20644bf79bc	0x212a0	100.0000	
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	98260a187bb1	0x85e60	100.0000	
-cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	93.7755	93.7755	2	b5eb8a8e1742	0x22be0	98.5714	
+cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	3	2fca45fa0016	0x22be0	98.5714	
 cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	96.9595	96.9595	2	c8202356de1c	0x23090	96.9595	
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	2	7ad8557c1e6e	0x22b00	100.0000	
 cheatmgr	?Init@CCheatMgr@@QAEHPAUHWND__@@@Z	100.0000	100.0000	1	8494f3bea25c	0x22ad0	100.0000	
