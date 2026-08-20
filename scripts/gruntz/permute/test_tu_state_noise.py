@@ -73,6 +73,53 @@ class TuStateNoiseTests(unittest.TestCase):
             noise.target_state_identity(changed),
         )
 
+    def test_single_island_census_prints_structural_route(self):
+        metrics = {
+            "objdiff_size": 4,
+            "text_sha": "same",
+            "reloc_stream": ["00000000:0006:_target:00000000"],
+        }
+        trial = {
+            "trial": 1,
+            "family": "forest",
+            "tag": "probe",
+            "body": "typedef int PROBE;\n",
+            "candidate": dict(metrics),
+            "score": 66.75,
+            "topology": {"instruction_delta": 2},
+        }
+        census = noise.compiler_state_census(metrics, 66.75, [trial])
+        self.assertEqual(census["island_count"], 1)
+        self.assertEqual(census["executed_trials"], 1)
+        self.assertEqual(census["search_route"], "structural")
+        with mock.patch("builtins.print") as output:
+            noise.report_state_search_route(census)
+        output.assert_called_once_with(
+            "only a single compiler island was found across 1 executed trials; "
+            "compiler-state search is flat and the next search should be structural"
+        )
+
+    def test_multiple_islands_do_not_print_structural_route(self):
+        baseline = {
+            "objdiff_size": 4,
+            "text_sha": "base",
+            "reloc_stream": [],
+        }
+        trial = {
+            "trial": 1,
+            "family": "forest",
+            "tag": "probe",
+            "body": "typedef int PROBE;\n",
+            "candidate": dict(baseline, text_sha="different"),
+            "score": 70.0,
+        }
+        census = noise.compiler_state_census(baseline, 66.75, [trial])
+        self.assertEqual(census["island_count"], 2)
+        self.assertEqual(census["search_route"], "inspect-frontier")
+        with mock.patch("builtins.print") as output:
+            noise.report_state_search_route(census)
+        output.assert_not_called()
+
     def test_exact_closure_requires_score_size_and_ordered_relocations(self):
         metrics = {
             "reloc_stream_complete": True,

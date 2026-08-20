@@ -876,6 +876,58 @@ def target_state_identity(metrics: dict) -> str:
     return sha256_bytes(json.dumps(payload, sort_keys=True).encode("utf-8"))[:16]
 
 
+def compiler_state_census(
+    baseline_metrics: dict,
+    baseline_score: float,
+    trials: list[dict],
+) -> dict:
+    """Group every compiled target result by bytes and relocation topology."""
+    grouped: dict[str, dict] = {}
+    baseline_state = target_state_identity(baseline_metrics)
+    grouped[baseline_state] = {
+        "state": baseline_state,
+        "scores": [baseline_score],
+        "representative": None,
+    }
+    executed_trials = 0
+    for trial in trials:
+        if not trial.get("candidate") or trial.get("score") is None:
+            continue
+        executed_trials += 1
+        state_id = target_state_identity(trial["candidate"])
+        state = grouped.setdefault(state_id, {
+            "state": state_id,
+            "scores": [],
+            "representative": {
+                "trial": trial["trial"],
+                "family": trial["family"],
+                "tag": trial["tag"],
+                "body": trial["body"],
+            },
+            "topology": trial.get("topology"),
+        })
+        state["scores"].append(trial["score"])
+    island_count = len(grouped)
+    return {
+        "baseline_state": baseline_state,
+        "states": list(grouped.values()),
+        "island_count": island_count,
+        "executed_trials": executed_trials,
+        "search_route": "structural" if island_count == 1 else "inspect-frontier",
+    }
+
+
+def report_state_search_route(census: dict) -> None:
+    """State the required next action when parser-state search is byte-flat."""
+    if census["search_route"] != "structural":
+        return
+    print(
+        f"only a single compiler island was found across "
+        f"{census['executed_trials']} executed trials; compiler-state search "
+        "is flat and the next search should be structural"
+    )
+
+
 def comparable_reloc_stream(metrics: dict) -> list[str]:
     """Fold the one-sided EH scaffolding names that delinking cannot reproduce."""
     comparable = []
@@ -1535,30 +1587,13 @@ def main(argv: list[str] | None = None) -> int:
         print("FATAL: source or normalized target-hash restoration check failed", file=sys.stderr)
         source_lock.close()
         return 3
+    census = compiler_state_census(
+        baseline_target, baseline_score, manifest["trials"]
+    )
+    manifest["island_count"] = census["island_count"]
+    manifest["executed_trials"] = census["executed_trials"]
+    manifest["search_route"] = census["search_route"]
     if args.state_summary:
-        grouped: dict[str, dict] = {}
-        baseline_state = target_state_identity(baseline_target)
-        grouped[baseline_state] = {
-            "state": baseline_state,
-            "scores": [baseline_score],
-            "representative": None,
-        }
-        for trial in manifest["trials"]:
-            if not trial.get("candidate") or trial.get("score") is None:
-                continue
-            state_id = target_state_identity(trial["candidate"])
-            state = grouped.setdefault(state_id, {
-                "state": state_id,
-                "scores": [],
-                "representative": {
-                    "trial": trial["trial"],
-                    "family": trial["family"],
-                    "tag": trial["tag"],
-                    "body": trial["body"],
-                },
-                "topology": trial.get("topology"),
-            })
-            state["scores"].append(trial["score"])
         summary_path = args.state_summary if args.state_summary.is_absolute() \
             else root / args.state_summary
         summary_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1567,8 +1602,11 @@ def main(argv: list[str] | None = None) -> int:
             "source": str(source_rel),
             "insertion": args.insertion,
             "target": manifest["target"],
-            "baseline_state": baseline_state,
-            "states": list(grouped.values()),
+            "baseline_state": census["baseline_state"],
+            "states": census["states"],
+            "island_count": census["island_count"],
+            "executed_trials": census["executed_trials"],
+            "search_route": census["search_route"],
         }, indent=2) + "\n")
         manifest["state_summary"] = str(summary_path)
     record_error = False
@@ -1608,6 +1646,7 @@ def main(argv: list[str] | None = None) -> int:
         return 130
 
     if exact_closure is None:
+        report_state_search_route(census)
         retained = args.retain_best and (
             best_observed is not None or best_topology is not None
         )
