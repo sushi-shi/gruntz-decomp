@@ -1,4 +1,4 @@
-# The diagnose ladder CLASSIFIES a wall; only the operand multisets ADJUDICATE it
+# The diagnose ladder classifies a wall; operands and referents adjudicate it
 tags: topic:method topic:tooling topic:wall | asm:mov asm:fild asm:lea | cpp:member cpp:rect
 symptoms: diagnose says regalloc but the function is wrong; masked diff shows "identical asm"; b0/tN; exclusive key; fild count differs; member displacement differs; store source differs
 confidence: 9/10
@@ -7,8 +7,8 @@ confidence: 9/10
 inline/call-set -> cfg -> regalloc). It cannot answer "is this body correct":
 its call-set and branch-skeleton view is blind to a member read at the wrong
 displacement, a store fed from the wrong field, a dropped conversion, or a
-mask that lost a bit. Every live gameplay bug found on 2026-08-20 sat under a
-`regalloc` or `inline` classification.
+mask that lost a bit. Every substantive source-shape or runtime defect found
+on 2026-08-20 sat under a `regalloc` or `inline` classification.
 
 Adjudicate with `gruntz walls semdiff <fn>` (sweep a worklist with
 `walls semsweep <tsv>`). Read the **EXCLUSIVE** section first: a key ONE side
@@ -35,7 +35,7 @@ WORKED EXAMPLE 1 - a dropped conversion is a wrong initializer.
     m_posY = m_object->m_screenY;
 ```
 Every projectile integrated its flight from ~(+-1,+-1) - the wrong-spawn-
-coordinate bug the user saw. Fixed in d25a06796.
+coordinate bug the user saw. Fixed in 6a45165ce.
 
 WORKED EXAMPLE 2 - an inverted arm plus a missing tail.
 `CBattlezMapConfig::RouteToNearbyEnemy` 0x2e3a0 carried `@early-stop`; the
@@ -62,7 +62,7 @@ ORIGIN.
         ; ours, from the centre:  lea eax,[esi-0x7d] ... add edi,0x32
 ```
 Each constant shifts by the same 0x8e / 0x48, so the geometry is identical and
-the fix is arithmetic, not behavioural: 86.47 -> 90.30 (5c80fe329).
+the fix is arithmetic, not behavioural: 86.47 -> 90.30 (caed0e319).
 
 WORKED EXAMPLE 4 - a loop-guard rotation IS a boundary change.
 `WarpTextureBlit` 0x146a20 tested the shift bound at the BOTTOM
