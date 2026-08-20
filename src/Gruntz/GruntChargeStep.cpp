@@ -184,9 +184,8 @@ i32 CGrunt::ChargeStep() {
             CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
-                m_arrivalCell.m_x = -1;
+                m_arrivalCell.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
-                m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (t == NULL || t->m_entranceCommitted == 0
