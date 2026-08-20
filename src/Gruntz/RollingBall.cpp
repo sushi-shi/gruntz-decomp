@@ -61,17 +61,17 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
 
-    CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = 0x10 + (o->m_screenY & ~TILE_MASK_PX);
-    o->m_screenX = snapX;
+    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenX = snapX;
     m_subX = static_cast<double>(snapX);
-    o->m_screenY = snapY;
+    m_object->m_screenY = snapY;
     m_subY = static_cast<double>(snapY);
-    if (o->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
-        o->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
-        o->m_flags |= 0x20000;
+    if (m_object->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
+        m_object->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
+        m_object->m_flags |= 0x20000;
     }
+    CWwdGameObjectA* o = m_object;
 
     CWwdGameObjectA* obj38 = m_wwdObject;
     if (obj38->m_frameSet != NULL) {
@@ -476,7 +476,7 @@ i32 CRollingBall::Update() {
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = -1;
-                m_target.m_y -= 0x20;
+                m_target.Set(m_target.m_x, m_target.m_y - 0x20);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
@@ -485,7 +485,7 @@ i32 CRollingBall::Update() {
                 m_subX = m_moveDelta;
                 m_stepDirX = 1;
                 m_stepDirY = 0;
-                m_target.m_x += 0x20;
+                m_target.Set(m_target.m_x + 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
@@ -494,7 +494,7 @@ i32 CRollingBall::Update() {
                 m_subX = -m_moveDelta;
                 m_stepDirX = -1;
                 m_stepDirY = 0;
-                m_target.m_x -= 0x20;
+                m_target.Set(m_target.m_x - 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_WEST");
                 }
@@ -503,7 +503,7 @@ i32 CRollingBall::Update() {
                 m_subY = m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = 1;
-                m_target.m_y += 0x20;
+                m_target.Set(m_target.m_x, m_target.m_y + 0x20);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
                 }
