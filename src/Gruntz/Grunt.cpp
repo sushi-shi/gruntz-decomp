@@ -906,18 +906,12 @@ void CGrunt::ClearAllSprites() {
     m_arrived = 0;
 }
 
-// @early-stop
-// Same six args in the same order. Retail reads col/row at instruction 0 and
-// shuttles the four pass-through args through a saved esi, so the two scaled
-// values stay live from the top; cl sinks their computation to the last two
-// pushes and needs only eax/edx. Refuted with the real compiler in an isolated
-// harness: declaration order, inline-in-the-call, `<<` vs `*`, and reassigning
-// the parameters all emit the base form - the sink is not source-reachable.
 RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
-    i32 px = col * 0x20 + 0x10;
-    i32 py = row * 0x20 + 0x10;
-    return StepArrivalDrop(px, py, arrivalPhase, maskA, clearFlag, maskCIn);
+    Coord center;
+    Coord* point =
+        center.Set((col << TILE_SHIFT_PX) + TILE_HALF_PX, (row << TILE_SHIFT_PX) + TILE_HALF_PX);
+    return StepArrivalDrop(point->m_x, point->m_y, arrivalPhase, maskA, clearFlag, maskCIn);
 }
 
 RVA(0x0004b370, 0xb30)
