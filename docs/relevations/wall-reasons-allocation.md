@@ -466,6 +466,43 @@ tuple distinction that makes the per-block rotating picker home scratch and
 height without caching `m_pixels`. Parser-state noise, declaration order, and
 more row-pointer permutations are bounded.
 
+### Open RE case — `WarpTextureBlit` edge-cursor allocation
+
+`WarpTextureBlit` at `0x00146a20` is structurally aligned after replacing its
+two-break power-of-two scan with the bounded `while` form documented in
+`docs/patterns/loop-rotates-on-the-CONDITION-not-the-first-break.md`. That
+source correction raises 71.78242% to 74.44835% and gives both sides 16 calls,
+31 branches, and two returns. Retail emits 456 instructions in `0x5b7` bytes
+with a `0x28` frame and 84 relocations; the current compile emits 467
+instructions in `0x5d6` bytes with a `0x20` frame and 85 relocations.
+
+The remaining difference begins at the prologue and propagates through one
+allocation decision. Retail keeps `src` in ESI, immediately homes `minY` and
+`maxY`, carries the common `minY * sizeof(ClipVtx)` byte offset across both
+surface locks, and materializes independent left/right edge bases afterward.
+The current compile keeps `src` in EBX, initially carries `minY` in ESI, and
+materializes the left-table base before the locks. In each of the three mode
+arms it then derives the right cursor through the left base. That accounts for
+the one extra `_g_rasterEdgeL` relocation overall; the relocation identity is
+not a missing or misnamed global.
+
+The personal search bounded the source-visible axes. A classified campaign
+compiled 198 candidates (six syntax-aware source shapes crossed with 33 TU
+states) and found two islands: baseline and a worse 73.80% state caused by
+swapping the independent `top`/`bot` assignments. A 32-cell bounds-initializer,
+pitch/lock-order, and cursor-order grid found no state above baseline. Moving
+the pitch load before the second lock reached 73.84615% and changed the bounds'
+stack order toward retail, but rotated the rest of the function away from it.
+Five natural cursor constructions were byte-identical in each lock-order state.
+Six explicit one/two-stage mask spellings formed one island. A one-variable
+combined shift reached 74.60879% but emits one `shl` where retail has a constant
+shift followed by a variable shift, so it is rejected as a score-only topology
+change.
+
+Reopen this wall only with a mapped C1 tuple distinction or allocator evidence
+that selects retail's `src=ESI` state without changing the proven call, branch,
+return, mask-shift, or cursor semantics.
+
 ---
 
 ## S1 — When a value gets no register at all

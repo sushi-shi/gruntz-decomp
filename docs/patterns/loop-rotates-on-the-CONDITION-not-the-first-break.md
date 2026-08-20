@@ -118,6 +118,54 @@ mov edi,[ecx+4] / add ecx,4 / inc ebp / test edi,edi / jne LOOP`. 74.49 -> 80.31
 entry guard and the back-edge trade tests. A hand-written entry guard that duplicates a test
 the loop already makes is the fingerprint; delete it and promote its test to the condition.
 
+## The same mechanism in a bounded bit scan
+
+`WarpTextureBlit` at `0x00146a20` scans for the set bit in a width already proven
+to be a power of two. The reconstruction originally made both exits explicit
+breaks:
+
+```cpp
+for (;;) {
+    if ((width & mask) != 0) break;
+    mask <<= 1;
+    shift++;
+    if (static_cast<u32>(shift) >= 32) break;
+}
+```
+
+cl5 peeled the mask test, then repeated it at the latch after the bound test:
+
+```asm
+test  eax,ecx
+jne   exit
+loop: shl eax,1
+      inc edi
+      cmp edi,20h
+      jae exit
+      test ecx,eax
+      je loop
+```
+
+Retail instead has one mask test at the loop head and makes the unsigned bound
+the back-edge condition. Put the bound in the `while` condition and leave the
+mask test as the in-body break:
+
+```cpp
+while (static_cast<u32>(shift) < 32) {
+    if ((width & mask) != 0) break;
+    mask <<= 1;
+    shift++;
+}
+```
+
+That emits retail's exact loop topology (`test/jne`, then `shl/inc/cmp/jb`),
+reduces `WarpTextureBlit` from 32 to 31 branches, and raises 71.78242% to
+74.44835%. An eight-form exact-span matrix bounded the alternatives: signed
+`while`, `!= 32`, and body-update `for` forms reached 74.31648%; unsigned
+`for` reached 74.00879%; the compound-condition and guarded `do-while` forms
+were worse. The distinction is still which test is the condition, not the loop
+keyword by itself.
+
 ## How to read it off the target
 
 `--diff` and `gruntz walls diagnose --asm` mask address operands and will report the two functions identical.

@@ -466,10 +466,6 @@ static inline i16* Span16(u8* row) {
     return p.m_swords;
 }
 
-// @early-stop
-// CFG/register residue: retail has a 0x28 frame and one fewer branch. cl uses a
-// 0x20 frame, peels the first pow2 test, and still folds one raster cursor into
-// an index in each mode arm despite both cursors being live across the locks.
 RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
@@ -482,15 +478,12 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     i32 shift = 0;
     {
         i32 m = 1;
-        for (;;) {
+        while (static_cast<u32>(shift) < 0x20) {
             if ((src->m_width & m) != 0) {
                 break;
             }
             m <<= 1;
             shift++;
-            if (static_cast<u32>(shift) >= 0x20) {
-                break;
-            }
         }
     }
 

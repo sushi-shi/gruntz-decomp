@@ -71,9 +71,12 @@ below scores 66.9-68.3, and the two orderings of the pair are worth nothing.
 `Lock` calls. Moving both edge cursors above the calls and rotating the row loops
 to an explicit guard plus `do` raises the current-source result from 71.4791% to
 71.7824%. It is only a partial break there: the same pair feeds three mutually
-exclusive mode arms, and cl still folds the left cursor into an index in each
-arm. The remaining signature is one extra `_g_rasterEdgeL` reference per arm,
-not evidence for three different source arrays.
+exclusive mode arms, and cl still folds the right cursor relative to the left
+base in each arm. The remaining count signature is one extra `_g_rasterEdgeL`
+reference overall: the surplus is the pre-lock left-base materialization, while
+each arm carries the `g_rasterEdgeR - g_rasterEdgeL` pair. Retail instead keeps
+the shared byte offset across the calls and materializes both independent bases
+afterward. This is allocation residue, not evidence for different source arrays.
 
 ## What did NOT move it
 
