@@ -121,14 +121,17 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
     return 1;
 }
 
-// @early-stop
+// @early-stop regalloc: cl still CSEs the zero into a register unless the
+// device-list load is hoisted, and the hoist itself costs the 3-byte load's
+// placement; retail has neither the zero register nor the hoist.
 RVA(0x000385e0, 0x9f)
 i32 StateMgrBZ::Flush() {
     CInputDevice* dev = m_device;
+    CFixedPtrArray32* list = m_deviceList;
     if (dev) {
         m_edgeKeys = dev->m_edgeKeys;
         m_currentKeys = dev->m_currentKeys;
-    } else if (m_deviceList != NULL) {
+    } else if (list != NULL) {
         m_edgeKeys = m_keyboard->m_edgeKeys;
         m_currentKeys = m_keyboard->m_currentKeys;
         CInputDevice* joy = m_joystick;
@@ -142,7 +145,8 @@ i32 StateMgrBZ::Flush() {
             m_currentKeys |= mouse->m_currentKeys;
         }
     }
-    if (m_suppress != 0) {
+    i32 suppress = m_suppress;
+    if (suppress != 0) {
         m_edgeKeys = 0;
         m_currentKeys = 0;
     }
