@@ -63,7 +63,8 @@ i32 CAniPlayer::TickToggle(i32 param) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
-    CImage* cel = m_frameSet->GetAt(m_frameIndex);
+    CDDrawWorker* tbl = m_frameSet;
+    CImage* cel = tbl->GetAt(m_frameIndex);
     m_frame = cel;
     if (cel != NULL) {
         CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
