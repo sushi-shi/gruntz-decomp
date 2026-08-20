@@ -4069,7 +4069,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     return 1;
 }
 
-// @early-stop
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
@@ -4223,7 +4222,49 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             }
             Coord bc;
             best->GetScreenTile(&bc);
-            if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) == 0) {
+            if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) != 0) {
+                if (unit->m_defenderState != AISTATE_RETURN) {
+                    unit->m_defenderState = AISTATE_SEEK;
+                    unit->m_routeMaskC = 0;
+                }
+                if (unit->m_blockedVoicePending != 0) {
+                    __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
+                    if (elapsed >= m_routeWindow.m_v) {
+                        unit->m_blockedVoicePending = 0;
+                        CGameObject* lvl = unit->m_object;
+
+                        RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                        if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
+                            g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
+                        }
+                        // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
+                        // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the
+                        // clock) - and we emitted only six.  The zero pass has to go through the
+                        // ARRAY alias: written as `m_routeWindow.m_v = 0` cl proves the store
+                        // dead against the 0x1388 that follows and drops it, and the re-arm has
+                        // to stay two i32 halves for the same reason.
+                        m_routeTimers[0].m_v = 0;
+                        m_routeTimers[1].m_v = 0;
+                        m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
+                        m_routeWindowHi = 0;
+                        m_routeClock.m_v = g_frameTime;
+                    }
+                }
+
+                {
+                    CMapMgr* board = m_board;
+                    CRect gb(0, 0, board->m_width, board->m_height);
+                    RECT grc;
+                    grc = gb;
+                    RECT* grcDst = &board->m_bounds;
+                    if (!IntersectRect(grcDst, &grc, &gb)) {
+                        *grcDst = grc;
+                    }
+                    board->m_gridW = grcDst->right - grcDst->left;
+                    board->m_gridH = grcDst->bottom - grcDst->top;
+                }
+                unit->m_dwell = 0;
+            } else {
                 // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
                 CMapMgr* board = m_board;
                 CRect b(0, 0, board->m_width, board->m_height);
@@ -4238,47 +4279,6 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 unit->m_dwell = 0;
                 return 0;
             }
-            if (unit->m_defenderState != AISTATE_RETURN) {
-                unit->m_defenderState = AISTATE_SEEK;
-                unit->m_routeMaskC = 0;
-            }
-            if (unit->m_blockedVoicePending != 0) {
-                __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
-                if (elapsed >= m_routeWindow.m_v) {
-                    unit->m_blockedVoicePending = 0;
-                    CGameObject* lvl = unit->m_object;
-
-                    RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                    if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
-                    }
-                    // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
-                    // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the
-                    // clock) - and we emitted only six.  The zero pass has to go through the
-                    // ARRAY alias: written as `m_routeWindow.m_v = 0` cl proves the store
-                    // dead against the 0x1388 that follows and drops it, and the re-arm has
-                    // to stay two i32 halves for the same reason.
-                    m_routeTimers[0].m_v = 0;
-                    m_routeTimers[1].m_v = 0;
-                    m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
-                    m_routeWindowHi = 0;
-                    m_routeClock.m_v = g_frameTime;
-                }
-            }
-
-            {
-                CMapMgr* board = m_board;
-                CRect gb(0, 0, board->m_width, board->m_height);
-                RECT grc;
-                grc = gb;
-                RECT* grcDst = &board->m_bounds;
-                if (!IntersectRect(grcDst, &grc, &gb)) {
-                    *grcDst = grc;
-                }
-                board->m_gridW = grcDst->right - grcDst->left;
-                board->m_gridH = grcDst->bottom - grcDst->top;
-            }
-            unit->m_dwell = 0;
         }
         return 1;
     }

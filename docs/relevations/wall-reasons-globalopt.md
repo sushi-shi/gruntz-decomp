@@ -556,10 +556,17 @@ merge jump. The extra branch is therefore downstream of allocation, not a
 missing guard or arm. §6 still applies to the loop-family hoists themselves:
 any store in those loop bodies forbids the hoist, so a hoist we emit is a hoist
 our source wrote.
-`RouteToNearbyEnemy 0x0002e3a0` has the same closure signature: 25/25 calls and
-37/37 relocations are exact, while retail is one branch and 13 instructions
-longer because its late Clip/voice region is placed differently. Its repeated
-arm spellings are already symmetric; no missing call or referent remains.
+`RouteToNearbyEnemy 0x0002e3a0` initially had a superficially similar closure
+signature, but its late placement was source-reachable. The failure-first source
+wrote `if (RouteUnitTo(...) == 0) { Clip; return 0; }` before the success work;
+retail says `test eax,eax; je <failure-tail>`, runs the success/voice/final-Clip
+path, returns success, and only then emits the Clip-and-failure tail. Reconstructing
+that as the positive result arm with an `else` failure tail preserved 26/26 calls
+and 37/37 relocations and moved 69.3533 -> 84.88. The remaining 65/66 branch
+delta is downstream of zero placement around the optional voice call: retail
+materializes the timer-clear zero on both predecessors and jumps over the second
+definition after the call; the base materializes it once at the join. No semantic
+arm, call, return, or referent is missing at that residual.
 
 ---
 

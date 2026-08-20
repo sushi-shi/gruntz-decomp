@@ -415,6 +415,15 @@ This changed 67.4795 -> 68.7256 and made both sides agree at 96 blocks, 58 condi
 and three returns. This is not a condition-polarity guess: the retail `jbe` target proves that the
 cheap arm joins the later success tail.
 
+The same function carries a second, independent positive-gate signature after
+`RouteUnitTo`. Retail's `test eax,eax; je <late Clip-and-return-0 block>` proves
+that the success work is the fallthrough arm and the failure block is the tail.
+Writing the equivalent failure-first early return kept that block inline and
+plateaued at 69.3533. A positive result arm followed by an `else` failure tail
+restored retail's block order and raised the function to 84.88 without changing
+its 26 calls or 37 relocations. The remaining extra retail branch is a split zero
+definition around an optional voice call, not evidence for another source arm.
+
 ### Bound, re-confirmed
 
 `b_ret > t_ret` can also mean **the base is missing a whole inlined construction**, not a
