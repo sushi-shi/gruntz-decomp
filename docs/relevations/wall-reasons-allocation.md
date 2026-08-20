@@ -569,6 +569,40 @@ void p3() { int a,b,c,d; R r1;       take(&d);take(&c);taker(&r1);take(&b);take(
    `r1` lands at `-16` (the top of a 32-byte frame) in ALL THREE, whether it is
    declared 4th, 1st or last; the scalars occupy `-20 -24 -28 -32`.
 
+### Worked example — `CLightFxRender::ComputeRect` `0x000a3820`
+
+The inherited `@early-stop` called this a flat 156-instruction scheduling
+braid. A personal source-hash audit disproved that bound. Two real source
+entities move the wall:
+
+* retaining `RECT* dstRect = &m_dstRect` across `BltEx` raises the result from
+  68.87% to 70.12%, gives retail's 0x14-byte frame and 156-instruction count,
+  and explains why retail materializes `&m_dstRect` before the call and reuses
+  that address afterward;
+* expressing the surface through `m_surface` instead of an asserted local cache
+  reaches 76.38% and restores `this=ESI`. It also exposes the remaining count
+  question: the base is 400 bytes while retail is 398, and the base reloads
+  `m_surface` where retail retains one early load.
+
+The second result is structural evidence, not exact closure. The bounded
+negative controls were:
+
+* 198 syntax/TU-state cells and a separate 65-state sweep; compiler state was
+  flat within each source shape;
+* six destination-store/call/post-call pointer shapes, before and after the
+  surface correction;
+* four edge/extent declaration pipelines crossed with `RECT` versus `CRect`;
+* four POD `MakeRect` builder shapes (best alternative 67.76%);
+* assignment, `memcpy`, fieldwise copy and source/destination alias spellings
+  for the `m_srcRect` copy; and
+* four post-call left/top offset-source forms.
+
+These controls produced discrete structural islands rather than a continuous
+schedule frontier. Reopen at the C1 tuple/lifetime level: retail keeps the
+surface in caller-saved `ECX`, `this` in `ESI`, the destination address in
+`EBX`, and one additional scalar home. Do not re-run TU-state permutations or
+reorder the four extent declarations; those cells are proven flat.
+
 ---
 
 ## I1 — The hoisted zero register: `test r,r` versus `cmp r,<zreg>`

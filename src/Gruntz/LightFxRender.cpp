@@ -228,14 +228,9 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     return 1;
 }
 
-// @early-stop one scheduling braid: retail keeps surf in ecx and pipelines
-// w/h -> cx/cy -> qx/qy in source order with lea/inc forms; cl batches the
-// four rect loads first, homes surf in edi, and rotates the spill slots.
-// Same 156-instruction multiset, flat across 110 mixed TU states.
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
-    CDDSurface* surf = m_surface;
-    if (surf == NULL) {
+    if (m_surface == NULL) {
         return 0;
     }
     m_srcRect = *src;
@@ -246,8 +241,8 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 
     i32 cx = sl + w / 2;
     i32 cy = st + h / 2;
-    i32 qx = w / surf->m_width;
-    i32 qy = h / surf->m_height;
+    i32 qx = w / m_surface->m_width;
+    i32 qy = h / m_surface->m_height;
 
     i32 scale = qy;
     if (qx < qy) {
@@ -259,13 +254,14 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
         s = scale;
     }
     m_scale = s;
-    i32 dl = cx - surf->m_width * s / 2;
-    i32 dt = cy - surf->m_height * s / 2;
-    m_dstRect.left = dl;
-    m_dstRect.top = dt;
-    m_dstRect.right = surf->m_width * s + dl;
-    m_dstRect.bottom = surf->m_height * s + dt;
-    if (ctx->m_surface->BltEx(&m_dstRect, surf, 0, 0x1000000, 0) != 0) {
+    i32 dl = cx - m_surface->m_width * s / 2;
+    i32 dt = cy - m_surface->m_height * s / 2;
+    RECT* dstRect = &m_dstRect;
+    dstRect->left = dl;
+    dstRect->top = dt;
+    dstRect->right = m_surface->m_width * s + dl;
+    dstRect->bottom = m_surface->m_height * s + dt;
+    if (ctx->m_surface->BltEx(dstRect, m_surface, 0, 0x1000000, 0) != 0) {
         return 0;
     }
 
@@ -285,10 +281,10 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
         box.right += extension;
         box.bottom += extension;
     }
-    box.left += m_dstRect.left;
-    box.right += m_dstRect.left;
-    box.top += m_dstRect.top;
-    box.bottom += m_dstRect.top;
+    box.left += dstRect->left;
+    box.right += dstRect->left;
+    box.top += dstRect->top;
+    box.bottom += dstRect->top;
     DrawBorder(&box, ctx, 0xffff);
     return 1;
 }
