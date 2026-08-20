@@ -1271,14 +1271,6 @@ reProbe:
     return arrivalPhase != 0;
 }
 
-// @early-stop
-// Two separable residues. (1) Retail's frame is 8 bytes larger and it homes
-// the `blockMove` flag in a stack slot where we keep it in a register, so
-// every arm of the direction ladder carries retail's extra `mov [esp+N],ebp`.
-// (2) Retail leaves the `CoordCount() == 0 -> SetEntrancePos(1,1); return 0`
-// block at its source position near the tail and reaches it with a forward
-// `je`; cl places it as the fall-through of the guard, which is the one branch
-// and the ~25 instructions this side is short.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1724,7 +1716,7 @@ label_4cb4b:
         i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
 
-        bdl->m_rows[lastTileY][lastTileX].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+        bdl->m_rows[lastTileY][lastTileX].m_flagBytes[3] &= 0xdf;
         bdl->m_rows[lastTileY][lastTileX].m_occupantId = -1;
 
         tgtTileX = tgtPxX >> TILE_SHIFT_PX;
