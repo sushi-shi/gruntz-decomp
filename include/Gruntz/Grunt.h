@@ -264,7 +264,8 @@ public:
 
     i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot);
 
-    i32 LoadPickupSprites(PickupType type, i32 forced, i32 helpCueId, i32 unused, i32 countStats);
+    i32
+    LoadPickupSprites(PickupType type, i32 forced, i32 helpCueId, i32 pickupParam, i32 countStats);
 
     i32 BuildGruntLoseItemAnimation();
 

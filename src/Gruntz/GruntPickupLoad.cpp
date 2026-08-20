@@ -28,14 +28,14 @@
 
 // @early-stop
 // The three ActKey() comparisons are `bool eq = (strcmp(..) == 0); if (!eq)` - retail's
-// sete proves the polarity. Retail reuses the never-read 4th parameter's home slot for
-// the CAniElement* scratch; this source state instead makes cl allocate a 4-byte local.
+// sete proves the polarity. Retail reuses the LAST parameter's home slot for the
+// CAniElement* scratch; this source state instead makes cl allocate a 4-byte local.
 RVA(0x00065e80, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,
     i32 forced,
     i32 helpCueId,
-    i32 unused,
+    i32 pickupParam,
     i32 countStats
 ) {
     if (m_gruntKind == GRUNT_CONVERSION || m_gruntKind == GRUNT_DEATHTOUCH) {
@@ -175,6 +175,7 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_WAND:
             PICKUP("GRUNTZ_PICKUPS_WAND", 0x3db);
+            m_moveVariantOverride = pickupParam;
             break;
         case PICKUP_WARPSTONE:
             PICKUP("GRUNTZ_PICKUPS_WARPSTONE", 0x3dc);
@@ -208,6 +209,7 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_SCROLL:
             PICKUP("GRUNTZ_PICKUPS_SCROLL", 0x3d2);
+            m_moveKind = pickupParam;
             break;
         case PICKUP_SQUEAKTOY:
             PICKUP("GRUNTZ_PICKUPS_SQUEAKTOY", 0x3d7);
@@ -224,26 +226,36 @@ i32 CGrunt::LoadPickupSprites(
         case PICKUP_HEALTH3:
             PICKUP("GRUNTZ_PICKUPS_HEALTH3", 0x3e6);
             break;
+        // The seven timed powerupz take their duration from the pickup object's
+        // own parameter; Grunt.cpp's arm-the-powerup switch only falls back to the
+        // "Powerupz" bute default when this is still 0.
         case PICKUP_CONVERSION:
             PICKUP("GRUNTZ_PICKUPS_CONVERSION", 0x3e7);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_DEATHTOUCH:
             PICKUP("GRUNTZ_PICKUPS_DEATHTOUCH", 0x3e8);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_GHOST:
             PICKUP("GRUNTZ_PICKUPS_GHOST", 0x3ed);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_INVULNERABILITY:
             PICKUP("GRUNTZ_PICKUPS_INVULNERABILITY", 0x3ec);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_REACTIVEARMOR:
             PICKUP("GRUNTZ_PICKUPS_REACTIVEARMOR", 0x3eb);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_ROIDZ:
             PICKUP("GRUNTZ_PICKUPS_ROIDZ", 0x3ea);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_SUPERSPEED:
             PICKUP("GRUNTZ_PICKUPS_SUPERSPEED", 0x3e9);
+            m_powerupDuration = pickupParam;
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
