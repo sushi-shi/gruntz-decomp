@@ -1413,11 +1413,16 @@ i32 DSoundVoice::Stop() {
 
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** fmtOut, u8** dataOut, u32* sizeOut) {
-    u32 riffSize = riff->m_riffSize;
-    u32 waveTag = riff->m_waveTag;
-    u8* cursor = riff->m_chunks;
-    u8* end = cursor + riffSize - 4;
-    if (riff->m_riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
+    RecordBytes<WaveFormatX> cursor;
+    cursor.m_rec = reinterpret_cast<WaveFormatX*>(riff);
+    u32 riffTag = static_cast<u32>(*cursor.m_dwords);
+    cursor.m_bytes += 4;
+    u32 riffSize = static_cast<u32>(*cursor.m_dwords);
+    cursor.m_bytes += 4;
+    u32 waveTag = static_cast<u32>(*cursor.m_dwords);
+    cursor.m_bytes += 4;
+    u8* end = cursor.m_bytes + riffSize - 4;
+    if (riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
     if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
@@ -1425,20 +1430,19 @@ i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** fmtOut, u8** dataOut, u3
     }
     *fmtOut = NULL;
     *dataOut = NULL;
-    while (cursor < end) {
-        RecordBytes<RiffChunkHeader> chunkView;
-        chunkView.m_bytes = cursor;
-        RiffChunkHeader* chunk = chunkView.m_rec;
-        if (chunk->m_id == mmioFOURCC('f', 'm', 't', ' ')) {
-            RecordBytes<WaveFormatX> formatView;
-            formatView.m_bytes = chunk->m_data;
-            *fmtOut = formatView.m_rec;
-        } else if (chunk->m_id == mmioFOURCC('d', 'a', 't', 'a')) {
-            *dataOut = chunk->m_data;
-            *sizeOut = chunk->m_size;
+    while (cursor.m_bytes < end) {
+        u32 id = static_cast<u32>(*cursor.m_dwords);
+        cursor.m_bytes += 4;
+        u32 size = static_cast<u32>(*cursor.m_dwords);
+        cursor.m_bytes += 4;
+        if (id == mmioFOURCC('f', 'm', 't', ' ')) {
+            *fmtOut = cursor.m_rec;
+        } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
+            *dataOut = cursor.m_bytes;
+            *sizeOut = size;
             return *fmtOut != NULL;
         }
-        cursor = chunk->m_data + ((chunk->m_size + 1) & ~1);
+        cursor.m_bytes += (size + 1) & ~1;
     }
     return 0;
 }
