@@ -70,6 +70,32 @@ WORKED EXAMPLE 4 - a loop-guard rotation IS a boundary change.
 the top (`while ((u32)shift < 0x20)`) - one fewer branch, and a different
 value on the exhausted-scan path. Fixed in 591491fa3.
 
+WORKED EXAMPLE 5 - an exclusive member displacement plus a DEAD LOCAL of the
+same member is a dropped call argument. `??0CUFO` 0xb4a90 screened one key,
+`disp +0x60 base 0 target 1`; the source read `i32 sy = o->m_screenY;` and
+never used it, so cl deleted the load.
+
+```cpp
+    i32 sx = o->m_screenX;
+    i32 sy = o->m_screenY;            // dead - the load is gone from base
+    CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);   // WRONG, literal 0
+    CreateSprite(0, sx, sy, 0, "SpotLight", 0x40003);  // retail pushes both
+```
+Retail saves obj+0x5c and obj+0x60 into two frame slots and pushes both as the
+second and third argument; both UFO spotlights were being created at world row
+0. 84.84 -> 94.38 (0a4e50174). Grep the function for locals the diff says do
+not exist: an unread local is either the dropped argument or a dropped
+statement.
+
+WORKED EXAMPLE 6 - the mirror: a `store +N` the BASE alone has is one
+statement too many. `CGruntzMgr::Close` 0x8f440 screened `disp/store +0xc base
+1 target 0`; the hand-written `StateMgrBZ` teardown before `operator delete`
+zeroed six members where retail zeroes five (m_mouse is skipped). The
+six-store sequence is the CONSTRUCTOR, and the sibling teardown on
+`CGruntzMgr::Run`'s Init-failure path already had the correct five. 93.94 ->
+94.46 (2a436fe78). When two sites expand the same inline entity, diff them
+against each other first.
+
 DISCIPLINE. Ordinary count deltas are not evidence: the taxonomy in
 `gruntz.walls.semdiff`'s docstring lists eleven classes that produce a
 difference with identical semantics (register mirrors, cross-jump merge
