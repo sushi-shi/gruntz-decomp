@@ -588,9 +588,6 @@ void CMultiStartDlg::ReconcileChannel3() {
     Drive();
 }
 
-// @early-stop The zero-selection arm is a compound guard followed by an
-// else-if: retail re-tests m_humanControlled when the second conjunct fails,
-// but jumps over that re-test after DropChannelPlayer.
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     CWnd* owner = GetCtrlE(ch);

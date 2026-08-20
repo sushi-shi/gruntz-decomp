@@ -58,3 +58,13 @@ because one `jmp` became the re-test. The compound form emitted 11/11 branches w
 18/18 calls and 19/19 relocations, changing `gruntz walls diagnose` from CFG to
 REGALLOC/SCHEDULING. The remaining two-instruction delta is zero-register selection;
 bare truth tests and explicit `!= 0` spellings compile identically.
+
+The residual zero-register choice is bounded separately from the CFG result. Retail
+materializes zero in `EAX` beside the two flag stores and first `EnableWindow` call;
+the reconstruction keeps zero in `EDI` across the whole zero-selection arm. Standalone
+and call-argument chained assignments, a scoped `BOOL` value shared by those three
+uses, and top-of-function declarations all compile to the same `EDI` body. A controlled
+96-trial parser-visible TU-state search found one compiler island, and 122 compiling
+syntax-aware expression/member/helper variants found that same island. The source is
+therefore structurally complete at the branch level; this evidence does not justify a
+carrier local, generated helper, or retained TU-state declaration.
