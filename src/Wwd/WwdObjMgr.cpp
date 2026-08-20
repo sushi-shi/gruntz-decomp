@@ -1107,8 +1107,9 @@ i32 CDDrawChildGroup::CountActive() {
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
+            void* key = NULL;
             CWwdGameObject* val = NULL;
-            MapGetNextValue(m_registeredGameObjectsById, pos, val);
+            MapGetNext(m_registeredGameObjectsById, pos, key, val);
             if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
                 ++n;
             }
@@ -1125,8 +1126,9 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTy
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
+            void* key = NULL;
             CWwdGameObject* val = NULL;
-            MapGetNextValue(m_registeredGameObjectsById, pos, val);
+            MapGetNext(m_registeredGameObjectsById, pos, key, val);
             if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
                 val->Play(ar, mode, typeId, val);
             }
@@ -1143,8 +1145,9 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     if (pos != NULL) {
         do {
+            void* key = NULL;
             CWwdGameObject* val = NULL;
-            MapGetNextValue(m_registeredGameObjectsById, pos, val);
+            MapGetNext(m_registeredGameObjectsById, pos, key, val);
             if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
 
                 val->WriteSnapshot(ar, typeId);
@@ -1300,8 +1303,9 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
     }
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     while (pos != NULL) {
+        void* key = NULL;
         CWwdGameObject* val = NULL;
-        MapGetNextValue(m_registeredGameObjectsById, pos, val);
+        MapGetNext(m_registeredGameObjectsById, pos, key, val);
         if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
             i32 objectId = val->m_objectId;
             ar->Write(&objectId, sizeof(objectId));
@@ -1354,8 +1358,9 @@ i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
     while (pos != NULL) {
+        void* key = NULL;
         CWwdGameObject* val = NULL;
-        MapGetNextValue(m_registeredGameObjectsById, pos, val);
+        MapGetNext(m_registeredGameObjectsById, pos, key, val);
         if (val != NULL) {
 
             CWwdGameObject* found = NULL;
