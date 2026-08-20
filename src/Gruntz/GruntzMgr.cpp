@@ -364,6 +364,8 @@ void CGruntzMgr::Close() {
         m_cmdSubMgr = NULL;
     }
     if (g_spawnConfig) {
+        // The teardown skips m_mouse; the constructor's six stores are a
+        // different sequence (CGruntzMgr::Run's failure path agrees).
         StateMgrBZ* v = g_spawnConfig;
         v->m_device = NULL;
         v->m_keyboard = NULL;
