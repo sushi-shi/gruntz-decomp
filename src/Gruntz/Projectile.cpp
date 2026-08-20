@@ -245,8 +245,8 @@ i32 CProjectile::LoadProjectileSprites(
     double vx = dx / len;
     m_flightDist = len;
     m_velScale = len / t;
-    m_posX = vx;
-    m_posY = dy / len;
+    m_posX = m_object->m_screenX;
+    m_posY = m_object->m_screenY;
     m_velX = vx;
     m_velY = dy / len;
 
