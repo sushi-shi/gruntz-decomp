@@ -598,9 +598,9 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
         }
     }
 
-    u8* audioPtr1 = NULL;
+    u8* audioPtr1;
     DWORD audioBytes1;
-    u8* audioPtr2 = NULL;
+    u8* audioPtr2;
     DWORD audioBytes2;
     i32 hr = m_buffer->Lock(
         0,
@@ -641,8 +641,8 @@ i32 DirectSoundMgr::LockConvert(u8* src, u32 lockBytes, u32 convert) {
         return 0;
     }
 
-    u8* audioPtr1 = NULL;
-    u8* audioPtr2 = NULL;
+    u8* audioPtr1;
+    u8* audioPtr2;
     DWORD audioBytes1;
     DWORD audioBytes2;
     i32 hr = m_buffer->Lock(

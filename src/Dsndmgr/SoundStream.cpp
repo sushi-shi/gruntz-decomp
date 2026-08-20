@@ -527,9 +527,9 @@ i32 StreamFeeder::Pause() {
 
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
-    u8* lock1 = NULL;
+    u8* lock1;
     DWORD n1;
-    u8* lock2 = NULL;
+    u8* lock2;
     DWORD n2;
     if (m_buffer->Lock(writePos, bytes, &lock1, &n1, &lock2, &n2, 0) == 0) {
         return 0;
