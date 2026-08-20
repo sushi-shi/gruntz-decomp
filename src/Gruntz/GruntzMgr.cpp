@@ -548,11 +548,12 @@ i32 PumpIdleFrame() {
 // @early-stop
 // The prologue is byte-identical (this=edi, stateId=ebp, 0=ebx) - the earlier note
 // claiming a whole-function regalloc swap was wrong. Two residues remain:
-//   * retail EXPANDS the CCreditsState constructor into the GAMESTATE_CREDITS arm
-//     (the CState base ctor, two SetRect calls, the vtable stamp and the field
-//     zeroing) where cl declines it and calls ??0CCreditsState@@QAE@XZ - the /Ob1
-//     per-site budget (docs/patterns/inline-budget-emits-ool-comdat.md), i.e. an
-//     under-inlined CALLER, for which that pattern records no legitimate device.
+//   * the /Ob1 per-site budget declines nested constructors retail expands (the
+//     GAMESTATE_CREDITS arm, and three of the eight CPlay::ClockInterval sites).
+//     Bounded by measurement, not assumption: the eleven `operator new` sizes and
+//     their order are identical on both sides, so the caller is already finished
+//     and the model's only lever does not apply
+//     (docs/patterns/inline-budget-emits-ool-comdat.md, quantified PARK section).
 //   * the `obj` join lives in eax here and in esi in retail, so each of the nine
 //     `new` arms carries an extra `mov eax,esi` AND an extra
 //     `mov dword ptr [esp+0x1c],-1` EH-state reset (90 B).
