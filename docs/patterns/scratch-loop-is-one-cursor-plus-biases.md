@@ -18,8 +18,22 @@ bodies. What blocks the reduction in the "NO" example is not the extra cursor,
 it is that `d` is the incoming PARAMETER being stepped: no invariant base
 survives for cl to express the others against. What the hand-written bias does
 that plain copies do not is PIN which pointer stays the cursor - and that is
-otherwise controlled by DECLARATION ORDER (the first-declared coalescable cursor
-survives; measured in probe and at `CDDrawShadeBlit::ConvertRow` 0x0014c9f0).
+otherwise controlled by the first cursor entity that survives into globalopt.
+Declaration order selects that entity in the small probes and at
+`CDDrawShadeBlit::ConvertRow` 0x0014c9f0, but it is not universal.
+
+**REFINED 2026-08-20.** `ConvertRowDoubleFwd` 0x0014d5e0 is the counterexample.
+Reversing `sc/dd/ss` declarations was byte-identical. Reversing the independent
+16-bit value declarations was not: source `d = Load16(sc); a = Load16(ss);`
+made `src` the surviving IV, while `a = Load16(ss); d = Load16(sc);` made
+`g_scratch` survive and emitted the retail `src - g_scratch` bias. The cursor
+initializers had disappeared before globalopt; the first surviving value-use
+entities decided the family order. A walked incoming `dst` still remained a
+second IV, proving that the invariant-base condition is independent of this
+winner-selection rule. Therefore test declaration order first, but inspect the
+emitted `sub` operands; if declaration swaps are byte-flat, test the independent
+load/value creation order rather than transcribing a hand-written bias.
+
 Full matrix and the alias/IV model behind it:
 [docs/relevations/wall-reasons-globalopt.md](../relevations/wall-reasons-globalopt.md)
 §7-§9.

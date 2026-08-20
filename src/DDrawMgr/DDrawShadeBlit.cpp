@@ -2246,15 +2246,6 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     }
 }
 
-// @early-stop
-// Block skeleton matches retail (26 blocks both sides). REGISTER-HOMING residue:
-// per-arm cursor-anchor and widen-idiom coins inside the double-scanline arms.
-// Retail's SHADE_ALPHA_16 arm really is ONE g_scratch cursor plus db/sb biases
-// (0x14d7f3 `sub eax,edi` twice in the preheader, then `lea eax,[edx+edi]` and
-// `[eax]`/`[eax+edx]`), but spelling it that way makes cl anchor the induction
-// variable on the STORE address instead and re-derive both biases from it - about
-// 4.5 points worse, with or without an explicit `u8* p = sc + db;`. The
-// three-cursor spelling is kept.
 RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
@@ -2303,34 +2294,38 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst, count * 2);
-            u8* sc = g_scratch;
-            u8* ss = src;
             if (m_blendVariant) {
+                u8* sc = g_scratch;
+                u8* dd = dst;
+                u8* ss = src;
                 while (count-- > 0) {
                     i32 rd = rowDelta / 2 * 2;
-                    u32 d = Load16(sc);
                     u32 a = Load16(ss);
+                    u32 d = Load16(sc);
                     i32 v = m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)]
                             | m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)]
                             | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    Store16(dst, v);
-                    Store16(dst + rd, v);
-                    dst += 2;
+                    Store16(dd, v);
+                    Store16(dd + rd, v);
                     sc += 2;
+                    dd += 2;
                     ss += 2;
                 }
             } else {
+                u8* sc = g_scratch;
+                u8* dd = dst;
+                u8* ss = src;
                 while (count-- > 0) {
                     i32 rd = rowDelta / 2 * 2;
-                    u32 d = Load16(sc);
                     u32 a = Load16(ss);
+                    u32 d = Load16(sc);
                     i32 v = m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)]
                             | m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)]
                             | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    Store16(dst, v);
-                    Store16(dst + rd, v);
-                    dst += 2;
+                    Store16(dd, v);
+                    Store16(dd + rd, v);
                     sc += 2;
+                    dd += 2;
                     ss += 2;
                 }
             }

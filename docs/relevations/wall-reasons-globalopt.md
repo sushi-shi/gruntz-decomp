@@ -17,7 +17,9 @@ Two results up front, because they subsume a pile of one-off tricks:
 * **Induction variables coalesce on equal constant BYTE STRIDE, not on pointer
   type**, and only for cursors whose base is loop-INVARIANT. Incrementing a
   *parameter* destroys the invariant base and blocks the whole reduction. Which
-  pointer survives as the IV is settled by **declaration order**.
+  pointer survives as the IV is settled by the first cursor entity that survives
+  into globalopt: usually declaration order, but independent value-use order
+  when initializer-only cursor declarations have already collapsed.
 
 Everything below was measured 2026-08-18 on the pinned cl 5.0 SP3 under wine,
 `/O2 /MT /GX /GR`, with scratch probe TUs (never in the build graph, embedded
@@ -440,18 +442,23 @@ void f(u8* d, u8* s, int count){
 
 ---
 
-## 9. REASON: which pointer survives as the IV is set by DECLARATION ORDER
+## 9. REASON: which pointer survives is set by the first surviving cursor entity
 
 1. **REASON** — with two or more coalescable cursors, one is kept as the IV and
-   the rest become biases. The choice follows the order the cursor locals are
-   declared: the FIRST-declared coalescable cursor is the survivor. Five measured
-   cells, no exception: two-cursor `while(n--)` probe; two-cursor + a stride-1
-   third; three-cursor probe; and both declaration orders of the real
-   `ConvertRow` arm.
+   the rest become biases. The first cursor entity that reaches globalopt is the
+   survivor. Declaration order determines that entity while the cursor locals
+   remain distinct: five measured cells agree (two-cursor `while(n--)`, a
+   two-cursor loop plus a stride-1 third, a three-cursor probe, and both orders of
+   the real `ConvertRow` arm). It is not universal: in a larger arm, initializer-
+   only cursor locals can disappear before globalopt and the order of the first
+   independent loads/value declarations becomes the effective cursor order.
 2. **PASS + ADDRESS** — as §7.
-3. **WHAT DECIDES IT** — source declaration order of the cursor locals.
+3. **WHAT DECIDES IT** — declaration order when it changes the emitted cursor
+   entities; otherwise the first independent value-use order that does.
 4. **SOURCE-REACHABLE?** — **LEVER**, measured both in a probe and in the real
-   tree. This is the missing half of
+   tree. Start with declaration order, compile, and read the `sub` operands. If
+   declaration swaps are byte-flat, use value/load order as the controlled A/B.
+   This is the missing half of
    `docs/patterns/scratch-loop-is-one-cursor-plus-biases.md`, which says "which
    pointer is the surviving cursor is per-arm — read the preheader's `sub`
    operands" without giving a way to steer it.
@@ -494,6 +501,18 @@ void f(u8* d, u8* s, int count){
    counter (`mov [esp+0x1c],eax` / `dec` / `mov` per iteration) where retail and
    the hand form keep it in `edi`. **The residue is register pressure, not
    form.** The A/B is reported, not kept; `src/` is unchanged on this branch.
+
+7. **COUNTEREXAMPLE** — `CDDrawShadeBlit::ConvertRowDoubleFwd` 0x0014d5e0,
+   `SHADE_ALPHA_16`, measured 2026-08-20. With three invariant local walkers,
+   reversing declarations `sc/dd/ss` to `ss/dd/sc` emitted an identical object.
+   Keeping `sc/dd/ss` and changing only the independent values from
+   `d = Load16(sc); a = Load16(ss);` to `a = Load16(ss); d = Load16(sc);`
+   changed the surviving IV from `src` to `g_scratch`. The latter emitted
+   `src - g_scratch` and `dst - g_scratch` biases like retail. The modified-
+   parameter control kept scratch plus source bias but left `dst` as a second
+   stepped IV, independently re-proving §8. Explicit source biases, with or
+   without a `p = sc + db` store local, instead anchored the destination cursor;
+   they are rejected source transcriptions, not the solution.
 
 ---
 
