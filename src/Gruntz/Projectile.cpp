@@ -502,17 +502,16 @@ void CProjectile::AdvanceMotion() {
     }
     CAniElement* sprite;
     if (tier != 0) {
-        sprite = m_frames[PF_FALL];
-        if (sprite == NULL) {
+        if (m_frames[PF_FALL] == NULL) {
             goto noSprite;
         }
-        goto setupSprite;
+        sprite = m_frames[PF_FALL];
+    } else {
+        if (m_frames[PF_IMPACT] == NULL) {
+            goto noSprite;
+        }
+        sprite = m_frames[PF_IMPACT];
     }
-    sprite = m_frames[PF_IMPACT];
-    if (sprite == NULL) {
-        goto noSprite;
-    }
-setupSprite:
     SwitchAnimation(sprite);
     return;
 noSprite:
@@ -846,11 +845,12 @@ i32 CProjectile::SerializeMove(
         }
     }
 
-    if (CMovingLogic::SerializeMove(s, mode, typeId, pObj) == 0) {
-        goto fail;
+    i32 ok = CMovingLogic::SerializeMove(s, mode, typeId, pObj);
+    if (ok == 0) {
+        return ok;
     }
     if (s == NULL) {
-        goto fail;
+        return 0;
     }
 
     switch (mode) {
@@ -882,8 +882,6 @@ i32 CProjectile::SerializeMove(
         }
     }
     return 1;
-fail:
-    return 0;
 }
 
 RVA(0x000e15d0, 0x155)
