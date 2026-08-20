@@ -20,7 +20,6 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-// @early-stop
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
@@ -46,7 +45,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (key == NULL) {
         return 0;
     }
-    CObject* found = 0;
+    CObject* found = NULL;
     host->m_imageRegistry->m_workersByName.Lookup(key, found);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     m_frameSet = rec;

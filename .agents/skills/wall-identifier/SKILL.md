@@ -87,14 +87,22 @@ three source-selected regimes (separate returns / `goto fail` / `||`-collapse):
 `backward-goto-sinks-its-target-region.md` cover the common shapes.
 Screen candidates tree-wide with `python -m gruntz.audit.exit_merge_sieve --dup`.
 
-One narrow exception is proven on `CSBI_StatzTabGruntBar::Update` 0xea6c0. If the
+Two narrow exceptions are proven. On `CSBI_StatzTabGruntBar::Update` 0xea6c0, if the
 first real divergence is an earlier register rotation and every extra edge is confined
 to the two returns of an inlined value-only accessor, register availability can decide
 whether global optimization factors the caller tail. That produces a branch-count delta
 downstream of coloring with no authored CFG difference. Require the complete signature:
 same source guards, call set, constants and ordered referents; only the accessor-return
 tail is duplicated; and source-shaped result/receiver/scope controls are byte-flat. See
-`docs/patterns/range-guarded-array-get-is-an-inline-accessor.md`. This is not permission
+`docs/patterns/range-guarded-array-get-is-an-inline-accessor.md`.
+
+`CSBI_ImageSet::SetupImage` 0xe72f0 is the return-count twin: its first divergence is
+the instruction-zero host/`this` register rotation, and only later does retail give the
+`key == NULL` edge a direct epilogue because key is already zero in EAX (4 returns versus
+base 3). Require the same call, branch, ordered-referent, guard, store and inlined-accessor
+structure; host-first order is independently proved by the retail argument load. A nested
+positive gate is byte-flat, separate guards are worse, and owner-first is a false score win
+because it reverses the retail argument-test order. This is not permission
 to relabel an ordinary branch mismatch from counts alone—follow the first divergence.
 
 ### register / schedule

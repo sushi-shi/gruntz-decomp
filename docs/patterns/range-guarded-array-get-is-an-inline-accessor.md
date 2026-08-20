@@ -91,6 +91,17 @@ is still what retail's bytes say. Two disposable spellings were inert (binding h
 deleting the unused-parameter `static_cast<void>` no-op) and one was worse (two separate `if`
 guards, 67.45 - retail shares ONE exit target for both).
 
+This site is also a second, separately recognizable exception to the usual "return-count delta
+means authored CFG" rule. Current and retail have the same one `Lookup` call, seven branches,
+one ordered relocation, guards, stores, and inlined `GetAt` range arms, but current has three
+epilogues and retail four. The first divergence precedes every branch: current hoists the host
+load above `push esi`, while retail first saves `this` and assigns host to ECX. That allocation
+choice lets retail's `key == NULL` edge return directly with the already-zero key in EAX; current
+merges it into the shared `xor eax,eax` failure tail. The nested positive gate is byte-identical,
+and owner-first raises the score only by emitting the retail-refuted argument-test order. Diagnose
+this complete signature as register/schedule residue despite the downstream return-count delta;
+it does not license ignoring an ordinary CFG mismatch whose first divergence is a branch.
+
 ## When the recovery MOVES BYTES, and when it is cleanliness only (2026-08-16, 20-site sweep)
 
 Applying the four steps to 20 further sites across 11 files produced **zero** byte movement -
