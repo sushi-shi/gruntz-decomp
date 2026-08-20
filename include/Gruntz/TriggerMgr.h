@@ -212,47 +212,35 @@ public:
 
     i32 WireTileSwitchLogic(CGrunt* g, i32 x, i32 y);
 
-    // Zero every POD member: the class has no retail ctor symbol, so cl
-    // inlines this at `new CTriggerMgr` exactly as retail does. Without it
-    // m_grid/m_overlay are recycled heap and map load faults.
+    // No retail ctor symbol: cl inlines this at the one `new CTriggerMgr`, in
+    // CGruntzMgr::Run.  The member set and the three non-zero defaults are read
+    // off those bytes.  m_armed, m_recordPosition, m_reserved274,
+    // m_groupInitialized, m_phase, m_pendingFx, m_pendingFxKind and
+    // m_finishReasonFrame are deliberately NOT initialized here; SetLevel runs
+    // immediately after and supplies m_armed/m_pendingFx.  The embedded
+    // CPtrList/CByteArray members construct themselves.
     CTriggerMgr() {
-        // Every POD member: the class had NO constructor, so `new CTriggerMgr` left
-        // all of this as recycled heap. m_grid's garbage cells crashed
-        // ClearGridRange and m_overlay's garbage crashed Deactivate. The embedded
-        // CPtrList/CByteArray members construct themselves.
         memset(m_grid, 0, sizeof(m_grid));
         memset(m_rowCount, 0, sizeof(m_rowCount));
         memset(m_cellFlag, 0, sizeof(m_cellFlag));
         memset(m_gruntzExitedByPlayer, 0, sizeof(m_gruntzExitedByPlayer));
         memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
         m_world = NULL;
-        m_armed = 0;
-        memset(&m_recordPosition, 0, sizeof(m_recordPosition));
         m_goal = NULL;
         m_overlay = NULL;
-        memset(m_reserved274, 0, sizeof(m_reserved274));
-        m_groupInitialized = 0;
-        m_phase = static_cast<FinishLevelState>(0);
         m_timerBase = 0;
         m_timerWindow = 0;
-        m_pendingFx = NULL;
-        m_countdownActive = 0;
-        m_pendingFxKind = 0;
-        m_gooTimerBaseLo = 0;
-        m_gooTimerBaseHi = 0;
-        m_gooIntervalLo = 0;
-        m_gooIntervalHi = 0;
-        m_resourceTimerBaseLo = 0;
-        m_resourceTimerBaseHi = 0;
-        m_resourceIntervalLo = 0;
-        m_resourceIntervalHi = 0;
-        m_selSentinel = 0;
-        m_finishReasonFrame = static_cast<FinishLevelReason>(0);
+        m_countdownActive = 1;
+        m_gooTimerBase = 0;
+        m_gooInterval = 0;
+        m_resourceTimerBase = 0;
+        m_resourceInterval = 0;
+        m_selSentinel = -1;
         m_rollingballLoop = NULL;
         m_teleportLoop = NULL;
         m_rollingballWanted = 0;
         m_teleportWanted = 0;
-        m_groupFlag = 0;
+        m_groupFlag = 1;
         g_curPlayer = 0;
     }
     RVA(0x00085c50, 0x83)
