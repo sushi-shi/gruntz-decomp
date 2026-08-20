@@ -184,7 +184,7 @@ hash	10	10
 heapdiag	8	7
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	55	43
+imagepool	55	45
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -2112,7 +2112,7 @@ gruntcreationpoint	?SerializeMove@CGruntCreationPoint@@UAEHPAVCFileMemBase@@W4Se
 gruntdatarecord	?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	82e6a13b8a6d	0x56eb0	100.0000	
 gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	6aa69d4e50cb	0x56da0	100.0000	
 gruntdefensealt	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	78.9546	78.9546	17	54fe3e0e16a8	0xf1c70	78.9546	
-gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	87.9142	87.9142	23	7edd6e78ec78	0xf8240	87.9142	
+gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	87.9142	87.9142	24	22b4b075b4cf	0xf8240	87.9142	
 gruntdefensestep	?StepArrivalDefense@CGrunt@@QAEHXZ	83.0039	83.0039	21	9a9fa9633194	0xf2b20	83.0854	
 gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	83.8486	83.8486	12	8f8aea28d038	0xf36a0	83.8486	
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	1	215b427b5812	0x641b0	100.0000	
@@ -2698,11 +2698,11 @@ imagepool	?LoadDefault@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b788e
 imagepool	?LoadFromRez@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	1	e6044d0efa00	0x175a90	100.0000	
 imagepool	?LoadPalFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	79a2af78221b	0x1771f0	100.0000	
 imagepool	?LoadPcx@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	0edf461740dd	0x176190	100.0000	
-imagepool	?LoadPcxFile@CImagePaletteNode@@QAEHPADH@Z	93.9091	93.9091	1	59b78ebfbfda	0x1772e0	93.9091	
+imagepool	?LoadPcxFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	d76625183cc2	0x1772e0	100.0000	
 imagepool	?LoadPid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	0eb2e1983421	0x1766a0	100.0000	
 imagepool	?LoadRid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	760d8845277c	0x176310	100.0000	
 imagepool	?ParseDispatch@CImagePaletteNode@@QAEHPAEIW4RezDecodeKind@@H@Z	100.0000	100.0000	3	5a59f92bb5a9	0x177040	100.0000	
-imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAEIH@Z	88.5610	88.5610	2	ee9889b24729	0x177400	88.5610	
+imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAEIH@Z	100.0000	100.0000	3	1787a265ffe8	0x177400	100.0000	
 imagepool	?PasteFrom@CRezImage@@QAEHPAV1@HH@Z	84.6911	84.6911	1	39fb6983ed83	0x176960	84.6911	
 imagepool	?ProcessPal@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	35252db3382f	0x176e70	100.0000	
 imagepool	?ProcessPalBGR@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	acd2296f70fc	0x176f30	100.0000	
