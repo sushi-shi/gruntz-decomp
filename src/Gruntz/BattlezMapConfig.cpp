@@ -2404,13 +2404,9 @@ returnZero:
     return 0;
 }
 
-// @early-stop
-// Retail homes `coordList` at entry; its two reload paths around RemoveAll need
-// the extra merge jump. The source already declares that pointer: the 38/37
-// branch delta is downstream of allocation, not a missing guard or list arm.
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
-    CPtrList* coordList = &unit->m_coordList;
+    CGruntCoordList* coordList = &unit->m_coordList;
     if (coordList->GetCount() == 0) {
         return 1;
     }
