@@ -223,7 +223,7 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
-        LeafCue* out = 0;                                                                          \
+        LeafCue* out = NULL;                                                                       \
         MapLookup(reg->m_world->m_soundRegistry->m_cues, (key), out);                              \
         cue = out;                                                                                 \
     } while (0)
@@ -1281,29 +1281,6 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     return 1;
 }
 
-// @early-stop
-// The knockback chain and the diagonal-blocked probe now both have retail's shape.
-// Residue is the STACK FRAME: retail is `sub esp,0xb0`, this is `sub esp,0xac`, so every
-// esp-relative reference is displaced by 4.  Both sides give the 41 `LeafCue* out` a slot
-// each up to 0xb8; retail then needs ONE more (oyt at [esp+0xbc]) where cl colours oyt
-// onto a low out-home.  It is a colouring outcome, not a missing declaration: the two
-// words of `newPos` prove it - retail homes them apart and ADJACENT ([esp+0x14], stored
-// in every SETDIR arm, and [esp+0x18], never stored and read only at 0x5a6d2, the
-// undefined-direction path), while cl keeps both in registers (ebp/edi) and coalesces
-// their one dead home, which is why our 0x5a6d2 twin loads the SAME slot twice.  Making
-// them one Coord does not force the split either (frame stays 0xac, arms stay 11i);
-// what it buys is the whole-object `m_lastTilePx = newPos` at 0x5a9ee, where retail
-// takes m_x from its home and m_y from ebx in one go (73.25 -> 73.78; the same Coord
-// with the two fields assigned separately scores 73.25 again).
-// Secondary: at each `out` site retail schedules the `out = 0` store AFTER both argument
-// pushes (`push ecx; push key; mov ecx,[edx+0x28]; mov [esp+X+8],ebx`), cl puts it before
-// the first push; measured NEUTRAL against the `void*`-out spelling of MapLookup.
-// Also unmoved: the four quadrant arms test `& 0x2000` as `mov r,[mem]; test rh,0x20`
-// where retail pins the mask (`mov ebp,0x2000`) and tests `[mem],ebp` once per probe.
-// The SETDIR set itself is VERIFIED against retail: the 15 `lea <r>,[esi+0x43c]` sites
-// at 0x5a31d..0x5a6b0 carry cells SW,W,NW,NE,E,S,S,N,E,W,SE,NW,NE,S,N, which is this
-// source's arm-to-cell mapping exactly.  SETDIR's newY-then-newX order is measured: the
-// newX-first spelling that matches retail's emitted order scores 0.8 lower.
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
@@ -1382,7 +1359,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_killerSlot = srcRow;
     }
 
-    LeafCue* cue = 0;
+    LeafCue* cue = NULL;
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
     CGruntzMgr* reg = g_gameReg;
@@ -1539,12 +1516,15 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     L_cue:
 
-        if (cue != NULL && g_sndEnabled != 0) {
-            i32 clk = g_killCueClock;
-            if (static_cast<u32>((clk - cue->m_lastPlayTime))
-                >= static_cast<u32>(cue->m_replayDelay)) {
-                cue->m_lastPlayTime = clk;
-                cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+        if (cue != NULL) {
+            i32 cueTag = g_sndCueTag;
+            if (g_sndEnabled != 0) {
+                i32 clk = g_killCueClock;
+                if (static_cast<u32>((clk - cue->m_lastPlayTime))
+                    >= static_cast<u32>(cue->m_replayDelay)) {
+                    cue->m_lastPlayTime = clk;
+                    cue->m_sound->ConfigureItem(cueTag, 0, 0, 0);
+                }
             }
         }
     }
@@ -1633,9 +1613,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         } else if (srcPxY < this->m_object->m_screenY) {
             SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
         }
-        // No else: retail falls into the move block with newX/newY still undefined
-        // (0x5a49f `jge 0x5a6d2`; 0x5a6d2 is a lone `mov ebx,[esp+0x18]` - newY's home
-        // slot - falling into the move block at 0x5a6d6).  A skip would branch past it.
+        // No else: equal coordinates continue with the destination untouched.
     } else {
         float slope = static_cast<float>(dy) / dx;
         if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
@@ -1674,7 +1652,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                     );
                 }
             }
-            // No else - same fall-through as the dx==0 arm (0x5a62e `je 0x5a6d2`).
+            // No else: the boundary case has the same fall-through as dx == 0.
         } else {
             if (srcPxX > this->m_object->m_screenX) {
                 SETDIR(s_gruntDirEast, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
@@ -1711,11 +1689,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 dxt = nxt - oxt;
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
-                // The four quadrant probes are FLAT `else if`s, not a nested
-                // dxt/dyt tree: retail re-tests both deltas per arm and threads
-                // each failing arm straight onto the next arm's jcc (the shared
-                // flags at 0x5a7f2 / 0x5a84e / 0x5a8a4), and the arm ORDER is
-                // (+,+) (-,+) (+,-) (-,-), which a nested tree cannot produce.
+                // Four independent quadrant guards preserve the repeated delta tests.
                 if (dxt > 0 && dyt > 0) {
                     if (((ocell + 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
                         || ((cell - 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
@@ -1743,16 +1717,18 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_arrivalPending == 0) {
             m_tileMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
         }
-        CMapMgr* g2 = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
+        CMapMgr* oldGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         i32 ox = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        g2->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
-        g2->m_rows[oy][ox].m_occupantId = -1;
-        g2->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
-        g2->m_rows[nyt][nxt].m_occupantId = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
+        oldGrid->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
+        oldGrid->m_rows[oy][ox].m_occupantId = -1;
+
+        CMapMgr* newGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
+        newGrid->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
+        newGrid->m_rows[nyt][nxt].m_occupantId = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
 
         if (m_coordList.GetCount() != 0) {
-            Coord* node = 0;
+            Coord* node = NULL;
             i32 rx = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 ry = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
             if (g_coordPool.m_freeHead->m_next != NULL) {
@@ -1767,8 +1743,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_lastTilePx = newPos;
         this->m_prevAnimSetNode = this->m_objAux->m_actKey;
         this->m_objAux->m_actKey = ActFindId("O");
-        // Retail re-reads the member pair it has just written (0x5aa2e
-        // `fild [esi+0x17c]` / 0x5aa3c `fild [esi+0x180]`), not the locals.
+        // Derive motion from the committed member coordinates, not the source local.
         double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
         double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
