@@ -98,7 +98,7 @@ dialogs	64	63
 dircellmethods	20	19
 directdrawmgr	71	71
 directinputmgr2	45	45
-directsoundmgr	84	80
+directsoundmgr	84	82
 donothing	8	8
 droppedobject	29	26
 engstrrendertext	2	2
@@ -271,7 +271,7 @@ singleanimation	7	7
 singleframemessage	7	6
 slotcombofill	4	3
 soundfontpath	5	4
-soundstream	36	32
+soundstream	36	33
 soundvoicelist	5	5
 splashstate	9	9
 spotlight	8	4
@@ -1577,9 +1577,9 @@ directsoundmgr	?IsInHardware@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	34e9f8ea
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	1cd921a4e435	0x135440	100.0000	
 directsoundmgr	?IsLoopingEnabled@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	bd16d4e44612	0x135540	100.0000	
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	2dac8abb6ae9	0x1353f0	100.0000	
-directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	97.7333	97.7333	2	96bd1c359ab8	0x135e10	100.0000	
+directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	100.0000	100.0000	3	eb916c912341	0x135e10	100.0000	
 directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAEPAK01I@Z	100.0000	100.0000	3	54cd9e6c664b	0x136370	100.0000	
-directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	90.0884	90.0884	3	0c1ddbe530f1	0x135f40	100.0000	
+directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	100.0000	100.0000	4	b062bafd234f	0x135f40	100.0000	
 directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	100.0000	100.0000	12	e88cc77922e0	0x137110	100.0000	
 directsoundmgr	?Play@DSoundCloneInst@@QAEHXZ	100.0000	100.0000	1	df93f2a7b2a3	0x1360b0	100.0000	
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	3638b7ae6e0f	0x136270	100.0000	
@@ -3975,7 +3975,7 @@ soundstream	?FeedData@StreamFeeder@@UAEHXZ	100.0000	100.0000	1	59028c341f5e	0x13
 soundstream	?FeedData@StreamVoiceFeeder@@UAEHXZ	100.0000	100.0000	1	39cd9b726b30	0x137490	100.0000	
 soundstream	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	1	6c08aec973f1	0x137dc0	100.0000	
 soundstream	?FeederStart@StreamFeeder@@QAEHPAVSoundDevice@@PAUWaveFormatX@@IIPAVDirectSoundMgr@@H@Z	96.1587	96.1587	1	bf9a85929725	0x137d10	96.1587	
-soundstream	?FillBuffer@StreamFeeder@@QAEHII@Z	86.6605	86.6605	2	8aa301f89169	0x137f30	100.0000	
+soundstream	?FillBuffer@StreamFeeder@@QAEHII@Z	100.0000	100.0000	3	8b0ef148df60	0x137f30	100.0000	
 soundstream	?Free@SoundStream@@QAEXXZ	100.0000	100.0000	1	b950abcf9c8b	0x137740	100.0000	
 soundstream	?GetErrorString@DirectSoundMgr@@SAXPADHH@Z	100.0000	100.0000	1	205f64385c7f	0x138150	100.0000	
 soundstream	?OnDrain@StreamFeeder@@UAEXXZ	100.0000	100.0000	1	0885175e98bd	0x137e20	100.0000	
