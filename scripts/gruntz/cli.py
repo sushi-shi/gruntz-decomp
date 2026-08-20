@@ -40,7 +40,7 @@ from __future__ import annotations
 import sys
 
 TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil", "objdiff",
-         "objdump", "ghidra", "clangd")
+         "objdump", "ghidra", "clangd", "rez")
 
 
 def main(argv: list[str] | None = None) -> int:
