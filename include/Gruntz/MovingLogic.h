@@ -92,10 +92,11 @@ inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
 // untagged ctor spells the three stores itself.
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     InitOwner(0.001);
+    CMotionState* m = Motion();
     double z = static_cast<double>(g_defaultZ);
-    Motion()->m_maxStep.x = z;
-    Motion()->m_maxStep.y = z;
-    Motion()->m_maxStep.z = z;
+    m->m_maxStep.x = z;
+    m->m_maxStep.y = z;
+    m->m_maxStep.z = z;
     BeginMotion();
 }
 
