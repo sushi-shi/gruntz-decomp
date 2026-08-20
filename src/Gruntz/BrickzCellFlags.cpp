@@ -297,10 +297,9 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     m_tileGrid[m_colOffsets[y] + x] = id;
 }
 
-// @early-stop
 RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
-    CGrunt* best = 0;
+    CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     i32 tileX = w->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 tileY = w->m_lastTilePx.m_y >> TILE_SHIFT_PX;
