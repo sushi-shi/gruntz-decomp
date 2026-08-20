@@ -409,7 +409,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
     return 0;
 }
 
-// @early-stop
 RVA(0x00116b80, 0x120)
 CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     BrickTileId actionCode,

@@ -40,6 +40,10 @@ the gate polarity and the null-return block, in opposite directions, and never l
 
 An explicit `else` on the teardown is byte-identical to the trailing-statement form (measured on
 AddToList1). So is `delete m` versus a hand-written `m->m_live = 0; ::operator delete(m)`.
+On AddToList3Switch, a forward `goto occupied` over the initialization body is byte-identical to
+the teardown-first form, while making the allocation-null exit `return m` instead of literal zero
+is byte-identical to the body-first form and still loses one branch. Neither source-level identity
+distinction prevents cl's exit merge.
 
 The residue underneath is a three-block ROTATION no guard spelling reaches: retail lays out
 `[body][shared epilogue][teardown jmp back up]`, we lay out `[teardown][body][epilogue]` or
