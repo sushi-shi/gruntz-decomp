@@ -243,6 +243,55 @@ Raw dead statements and parser-state noise do not substitute for those sites.
 worse: HandleUnitContact 85.93 → 77.41, RouteToNearbyPickup 80.54 → 61.72.
 Reverted. The blocker there is the callers' inline content, not the device.
 
+## Quantified PARK: `CGruntzMgr::TransitionState` 0x8b960
+
+Worked 2026-08-21 with `walls inline-model`, and the first case where the model
+was run end-to-end to REFUSE a lever rather than find one.
+
+Retail expands three of the eight nested `CPlay::ClockInterval` constructors
+inside the inlined `CPlay` ctor; our compile expands none, and our standalone
+`??0CPlay` expands exactly one.
+
+MEASURED, not assumed. `inline-model --measure-cb` on the real ctor body against
+the pinned cl 5.0 (eight sites, small caller):
+
+```
+[measure-cb] ??0ClockInterval@@QAE@XZ: 1 expanded, 7 rejected of 8 -> cb in [501,1000]
+```
+
+So the leaf is nowhere near the `cb <= 0x28` budget-exempt floor and sits just
+under the 1000 candidacy gate - which already explains `??0CPlay`'s 1-of-8.
+Sweeping `caller_cb` through the model over TransitionState's eleven-arm site
+list (the CPlay arm carrying the eight nested sites):
+
+```
+caller_cb   budget   nested budget at the CPlay arm   ClockInterval expanded
+   4000      8000                 722                        0/8   <- ours
+   6000     12000                1166                        1/8
+   8000     16000                1611                        2/8
+  12000     24000                2500                        3/8   <- retail
+  16000     32000                3388                        4/8
+  >=17500   35000 (clamp)        3722                        4/8   ceiling
+```
+
+The lever the model would name is "finish the caller" - and it is unavailable
+here, because the caller is already finished: the eleven `operator new` sizes
+and their order (0x1b4, 0x1c0, 0x520, 0x660, 0x528, 0x1c0, 0x1b8, 0x1bc, 0x320,
+0x218, 0x244) are IDENTICAL on both sides, so no arm, class or allocation is
+missing. Reaching retail's 3/8 needs roughly triple this body's front-end mass,
+which no source-truth change can supply. PARK; the remaining charge is TU/front-
+end handle state, not this function's source.
+
+NEGATIVE CONTROL from the same session - do not repeat it. Retail's `gruntzmgr`
+compiland CALLS the empty `_AFXWIN_INLINE CRgn::CRgn()` and never calls
+`CGdiObject::CGdiObject()`, which looks exactly like the `<MfcNoInline.h>`
+fingerprint (a budget-exempt body can only become a call if it stopped being a
+candidate). It is not: the same compiland OWNS `??_GCRgn@@UAEPAXI@Z`, which only
+an inline-parsing TU emits. Adding `<MfcNoInline.h>` dropped that COMDAT to
+0.00% and took TransitionState 84.16 -> 82.13. A called MFC inline is evidence
+of budget, not of the inline switch, whenever the TU also owns one of that
+class's compiler-generated COMDATs.
+
 variants: [inline-ctor-comdat-via-vector-ctor-iterator.md](inline-ctor-comdat-via-vector-ctor-iterator.md),
 [inline-expanded-twice-costs-a-register.md](inline-expanded-twice-costs-a-register.md),
 [shared-inline-transcribed-once-per-call-site.md](shared-inline-transcribed-once-per-call-site.md)
