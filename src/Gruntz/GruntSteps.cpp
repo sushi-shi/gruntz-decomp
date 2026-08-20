@@ -891,56 +891,44 @@ commit:
     return 1;
 }
 
-// @early-stop
-// Calls, returns and relocation identities are exact. Retail coalesces the
-// seed pair with x/y in ebx/edi, keeping every case register-only; this build
-// homes x/y and cross-jumps the northeast arm into the north suffix.
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
-    // retail's arm layout (jump table at 0x452e24) proves the SW/S and NW/N pairs
-    // fall through: NW's body is `x -= 0x20` followed by N's `y -= 0x20`, and the
-    // table sends DIR_NORTH straight at that second instruction.  x and y carry no
-    // initializer - the out-of-range block at 0x452cc2 reads their never-written
-    // stack homes - so the seed pair is separate locals the arms read.
     Coord tile = m_lastTilePx;
-    i32 px = tile.m_x;
-    i32 py = tile.m_y;
-    i32 x;
-    i32 y;
+    Coord next;
     switch (m_entranceCell.direction) {
         case DIR_NORTHEAST:
-            x = px + 0x20;
-            y = py - 0x20;
+            next.m_x = tile.m_x + 0x20;
+            next.m_y = tile.m_y - 0x20;
             break;
         case DIR_EAST:
-            x = px + 0x20;
-            y = py;
+            next.m_x = tile.m_x + 0x20;
+            next.m_y = tile.m_y;
             break;
         case DIR_SOUTHEAST:
-            x = px + 0x20;
-            y = py + 0x20;
+            next.m_x = tile.m_x + 0x20;
+            next.m_y = tile.m_y + 0x20;
             break;
         case DIR_SOUTHWEST:
-            x = px - 0x20;
+            next.m_x = tile.m_x - 0x20;
             // fall through
         case DIR_SOUTH:
-            y = py + 0x20;
+            next.m_y = tile.m_y + 0x20;
             break;
         case DIR_WEST:
-            x = px - 0x20;
-            y = py;
+            next.m_x = tile.m_x - 0x20;
+            next.m_y = tile.m_y;
             break;
         case DIR_NORTHWEST:
-            x = px - 0x20;
+            next.m_x = tile.m_x - 0x20;
             // fall through
         case DIR_NORTH:
-            y = py - 0x20;
+            next.m_y = tile.m_y - 0x20;
             break;
     }
 
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    i32 tx = x >> TILE_SHIFT_PX;
-    i32 ty = y >> TILE_SHIFT_PX;
+    i32 tx = next.m_x >> TILE_SHIFT_PX;
+    i32 ty = next.m_y >> TILE_SHIFT_PX;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -966,8 +954,7 @@ i32 CGrunt::ClaimSwitchTile() {
     nb->m_rows[ty][tx].m_flags |= BRICKZ_CELL_OCCUPIED;
     nb->m_rows[ty][tx].m_occupantId = owner;
 
-    m_lastTilePx.m_x = x;
-    m_lastTilePx.m_y = y;
+    m_lastTilePx = next;
     ComputeFacing(1.0);
     m_arrivalPending = 1;
     return 1;

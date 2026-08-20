@@ -2236,7 +2236,7 @@ gruntstartingpoint	?SerializeMove@CGruntStartingPoint@@UAEHPAVCFileMemBase@@W4Se
 gruntstaterec	?SerializeFields@CSBI_StatzTabGruntBar@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	94.0312	94.0312	3	a13620dda86b	0xea990	94.0312	
 gruntstatestep	?StepDefenderUnit@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	77.5979	77.5979	7	50e28a72ac9e	0x33520	77.5979	
 gruntsteps	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	1	ed3ec36a6f27	0x514a0	100.0000	
-gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	69.2429	69.2429	3	ba891d3e184b	0x52c70	70.1500	
+gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	69.2357	69.2357	4	ea38e2a8a469	0x52c70	70.1500	
 gruntsteps	?ConsiderArrival@CGrunt@@QAEXH@Z	98.8667	98.8667	1	6ebf8706e784	0x52f40	98.8667	
 gruntsteps	?IsDropReady@CGrunt@@QAEHH@Z	98.7597	98.7597	2	c1347c448e82	0x51510	98.7597	
 gruntsteps	?LoadTypeTableClearMove@CGrunt@@QAEHW4PickupType@@@Z	100.0000	100.0000	1	b9fef7ea3b39	0x50ca0	100.0000	

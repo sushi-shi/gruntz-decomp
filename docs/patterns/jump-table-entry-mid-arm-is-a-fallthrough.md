@@ -48,10 +48,16 @@ arm names which one comes first in the source.
 The arms are cheap to re-spell and the switch is usually at the top of the
 function, so getting it wrong shifts the whole body. `CGrunt::ClaimSwitchTile`
 0x52c70 had eight independent arms where retail has six; restoring the two
-fall-throughs took it 67.95 -> 60.16 on the *current* score but moved the frame
-from `sub esp,8` to `sub esp,0x10` (retail's) and the arm layout to retail's
-exactly - the instruction count went 118 -> 126 against retail's 144. Judge this
-one by the arm layout and the frame, not the percent.
+fall-throughs reproduced retail's jump-table entries exactly. The frame movement
+to `sub esp,0x10` observed during that experiment was not durable: later correct
+aggregate and cell-type recovery rotated the current compile back to `sub esp,8`.
+The table entries are proof; the frame size is not.
+
+A 2026-08-20 re-audit also bounded the remaining 12-versus-13 branch delta as a
+downstream allocation/cross-jump difference, not a missing switch arm. Retail
+coalesces the source and destination `Coord` fields in EBX/EDI and emits six
+direct joins; the current compile keeps the source in EAX/ECX, homes the
+destination, and routes the northeast arm through the northwest suffix.
 
 ## Related
 

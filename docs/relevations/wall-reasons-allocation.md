@@ -386,6 +386,26 @@ function. Further work belongs in the allocator tuple-walk/rotation-cursor RE,
 not in additional source-order guesses. `Blit816` is a negative sibling: both
 sides bind its palette to ESI, so its separate residue is spill scheduling.
 
+### Open RE case — `CGrunt::ClaimSwitchTile` aggregate coalescing
+
+`ClaimSwitchTile` at `0x00052c70` has an exact source-level switch oracle: the
+retail jump table enters the middle of the northwest and southwest arms for the
+north and south cases, proving the two fall-throughs. After those are restored,
+retail carries the input and output `Coord` fields in EBX/EDI and sends all six
+arms directly to the join. The current compile carries the input in EAX/ECX,
+homes the output `Coord`, and routes the northeast arm through the northwest
+suffix. Calls (2), returns (2), and relocation identities (14) agree; the
+12-versus-13 branch difference is downstream cross-jumping, not missing logic.
+
+Measured controls bound the source-visible levers. Merging or moving the scalar
+declarations is byte-flat; modeling the destination as the complete `Coord`
+changes 69.24286% to 69.23572% while correcting the source model; separate
+lexical scopes are flat. A post-call snapshot of the old coordinate falls to
+67.30%. Splitting the owner construction around the occupied-flag store falls to
+68.14%, and C2 still hoists both member loads ahead of that store. The unresolved
+state is aggregate coalescing and the resulting cross-jump choice, not another
+switch spelling.
+
 ---
 
 ## S1 — When a value gets no register at all
