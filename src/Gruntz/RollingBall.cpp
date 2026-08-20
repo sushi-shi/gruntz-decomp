@@ -50,7 +50,6 @@ static __inline i32 VtblResolve(CTileImageSet* imageSet) {
 RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
-// @early-stop
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -61,17 +60,17 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
 
-    CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = 0x10 + (o->m_screenY & ~TILE_MASK_PX);
-    o->m_screenX = snapX;
+    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenX = snapX;
     m_subX = static_cast<double>(snapX);
-    o->m_screenY = snapY;
+    m_object->m_screenY = snapY;
     m_subY = static_cast<double>(snapY);
-    if (o->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
-        o->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
-        o->m_flags |= 0x20000;
+    if (m_object->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
+        m_object->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
+        m_object->m_flags |= 0x20000;
     }
+    CWwdGameObjectA* o = m_object;
 
     CWwdGameObjectA* obj38 = m_wwdObject;
     if (obj38->m_frameSet != NULL) {
@@ -137,11 +136,6 @@ void CRollingBall::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
-// @early-stop
-// cl pins 0 in ebp and compares members against it (`cmp mem,ebp`) where retail
-// loads and tests (`mov eax,mem; test eax,eax`), which also costs it the register
-// retail spends on the i64 timer's high dword; and it lays the fall/sink block
-// out after the movement code instead of before it.
 RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -476,7 +470,7 @@ i32 CRollingBall::Update() {
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = -1;
-                m_target.m_y -= 0x20;
+                m_target.Set(m_target.m_x, m_target.m_y - 0x20);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
@@ -485,7 +479,7 @@ i32 CRollingBall::Update() {
                 m_subX = m_moveDelta;
                 m_stepDirX = 1;
                 m_stepDirY = 0;
-                m_target.m_x += 0x20;
+                m_target.Set(m_target.m_x + 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
@@ -494,7 +488,7 @@ i32 CRollingBall::Update() {
                 m_subX = -m_moveDelta;
                 m_stepDirX = -1;
                 m_stepDirY = 0;
-                m_target.m_x -= 0x20;
+                m_target.Set(m_target.m_x - 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_WEST");
                 }
@@ -503,7 +497,7 @@ i32 CRollingBall::Update() {
                 m_subY = m_moveDelta;
                 m_stepDirX = 0;
                 m_stepDirY = 1;
-                m_target.m_y += 0x20;
+                m_target.Set(m_target.m_x, m_target.m_y + 0x20);
                 if (oldDir != dirObj2->m_direction) {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
                 }

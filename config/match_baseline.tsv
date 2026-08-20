@@ -3619,14 +3619,14 @@ rezmgr	?PerFrameTick@CGruntzMgr@@UAEHXZ	100.0000	100.0000	3	9a3c544be802	0x8b740
 rezsync	?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6c4e5160b9ee	0x85500	100.0000	
 rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	88.0713	88.0713	31	9df5bcb3b024	0x83450	88.0713	
 rockbreakeffectupdate	?Update@CExplosion@@QAEHXZ	98.4848	98.4848	3	f387d711db83	0x476b0	98.4848	
-rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	79.3127	79.3127	2	e453d769d19d	0xaf820	79.3127	
+rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	81.2268	81.2268	3	3ae14aa82987	0xaf820	81.2268	
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	cpp:7f8dd9fb487c	0x12f80	100.0000	
 rollingball	??_GCRollingBall@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7f8dd9fb487c	0x12f50	100.0000	
 rollingball	?FireActivation@CRollingBall@@UAEXH@Z	100.0000	100.0000	1	c5bd49faf2ab	0xafde0	100.0000	
 rollingball	?GetTypeTag@CRollingBall@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x12f30	100.0000	
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	100.0000	100.0000	1	b87024b8f1bd	0xaff40	100.0000	
 rollingball	?SerializeMove@CRollingBall@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	8a8c094b1129	0xb0fe0	100.0000	
-rollingball	?Update@CRollingBall@@QAEHXZ	88.7870	88.7746	31	df53f3909df9	0xb0140	88.7870	
+rollingball	?Update@CRollingBall@@QAEHXZ	89.5460	89.5460	32	72ef568c09c4	0xb0140	89.5460	
 savefrontbuffershot	?SaveFrontBufferShot@@YAXPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	100.0000	100.0000	1	582b35d6991b	0x114ec0	100.0000	
 savefrontbuffershot	?SaveFrontBufferShotImpl@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	100.0000	100.0000	4	a89e65b109ac	0x114f00	100.0000	
 savegame	?CheckMagic@CSaveGame@@QAEHXZ	100.0000	100.0000	1	b3c7116193ee	0xe5690	100.0000	
