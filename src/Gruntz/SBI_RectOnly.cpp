@@ -4502,10 +4502,10 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
 
     CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
     if (h->m_emitGate == 0) {
-        LeafCue* fly = NULL;
-        MapLookup(h->m_cues, "GAME_WARPSTONEFLY", fly);
-        if (fly) {
-
+        LeafCue* found = NULL;
+        MapLookup(h->m_cues, "GAME_WARPSTONEFLY", found);
+        if (found) {
+            LeafCue* fly = found;
             i32 gate = g_sndEnabled;
             i32 item = g_sndCueTag;
             if (gate != 0 && g_killCueClock - fly->m_lastPlayTime >= fly->m_replayDelay) {

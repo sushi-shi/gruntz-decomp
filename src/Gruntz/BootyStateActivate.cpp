@@ -368,9 +368,10 @@ i32 CBootyState::EnterState(GameStateId) {
     CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
     i32 token = reg->m_soundVolume;
     if (set->m_emitGate == 0) {
-        LeafCue* res = 0;
-        MapLookup(set->m_cues, "BOOTY_LOOP", res);
-        if (res != NULL && g_sndEnabled != 0) {
+        LeafCue* found = NULL;
+        MapLookup(set->m_cues, "BOOTY_LOOP", found);
+        if (found != NULL && g_sndEnabled != 0) {
+            LeafCue* res = found;
             u32 now = g_killCueClock;
             if (now - static_cast<u32>(res->m_lastPlayTime)
                 >= static_cast<u32>(res->m_replayDelay)) {
@@ -1100,8 +1101,9 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_slot++;
             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
             if (host->m_emitGate == 0) {
-                LeafCue* cue = NULL;
-                MapLookup(host->m_cues, "GAME_EXPLOSION1", cue);
+                LeafCue* found = NULL;
+                MapLookup(host->m_cues, "GAME_EXPLOSION1", found);
+                LeafCue* cue = found;
                 if (cue != NULL && g_sndEnabled != 0
                     && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                            >= static_cast<u32>(cue->m_replayDelay)) {
