@@ -528,9 +528,25 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     }
     if (drawType == SHADE_ALPHA_16 || drawType == SHADE_PAL_ALPHA_16) {
         i32 bank = (m_light >> 3) * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
-        m_lutBank0 = ClutAtByteOffset(CLUT_RED_OFFSET * sizeof(u16) + bank);
-        m_lutBank1 = ClutAtByteOffset(CLUT_GREEN_OFFSET * sizeof(u16) + bank);
-        m_lutBank2 = ClutAtByteOffset(CLUT_BLUE_OFFSET * sizeof(u16) + bank);
+        // The channel offset is a link-time DIR32 addend on g_clut and the bank is
+        // the run-time index, so the two must be added in that order: folding the
+        // bank in first makes cl derive the other two channels from it and loses
+        // one of the three relocations.
+        ClutByteCursor red;
+        red.m_words = g_clut;
+        red.m_bytes += CLUT_RED_OFFSET * sizeof(u16);
+        red.m_bytes += bank;
+        m_lutBank0 = red.m_words;
+        ClutByteCursor green;
+        green.m_words = g_clut;
+        green.m_bytes += CLUT_GREEN_OFFSET * sizeof(u16);
+        green.m_bytes += bank;
+        m_lutBank1 = green.m_words;
+        ClutByteCursor blue;
+        blue.m_words = g_clut;
+        blue.m_bytes += CLUT_BLUE_OFFSET * sizeof(u16);
+        blue.m_bytes += bank;
+        m_lutBank2 = blue.m_words;
     }
 
     if (sel) {
