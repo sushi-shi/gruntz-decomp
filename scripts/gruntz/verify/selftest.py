@@ -3263,9 +3263,8 @@ class SemDiffControls(unittest.TestCase):
 
 
 class EhActionControls(unittest.TestCase):
-    """`walls ehactions` exists to stop one specific wrong conclusion: reading
-    a funclet COUNT delta as missing cleanup code. Its classifier is the part
-    that can silently rot into always saying "defect"."""
+    """`walls ehactions` reports structure; neither count nor action shape is
+    sufficient by itself to call source cleanup defective."""
 
     def test_a_count_delta_is_not_an_action_defect(self):
         from difflib import SequenceMatcher
@@ -3276,23 +3275,41 @@ class EhActionControls(unittest.TestCase):
                if o[0] != "equal"]
         self.assertEqual(classify(b, t, ops), "count")
 
-    def test_a_changed_dtor_is_an_action_defect(self):
+    def test_a_changed_dtor_is_an_action_shape_difference(self):
         from difflib import SequenceMatcher
         from gruntz.walls.ehactions import classify
         b = ["[ebp-0x30] -> ??1CString@@QAE@XZ"]
         t = ["[ebp-0x30] -> ??3@YAXPAX@Z"]
         ops = [o for o in SequenceMatcher(None, b, t).get_opcodes()
                if o[0] != "equal"]
-        self.assertEqual(classify(b, t, ops), "action")
+        self.assertEqual(classify(b, t, ops), "shape")
 
-    def test_a_new_slot_among_inserts_is_an_action_defect(self):
+    def test_a_new_slot_among_inserts_is_an_action_shape_difference(self):
         from difflib import SequenceMatcher
         from gruntz.walls.ehactions import classify
         b = ["[ebp-0x30] -> ??3@YAXPAX@Z"]
         t = ["[ebp-0x30] -> ??3@YAXPAX@Z", "[ebp-0x44] -> ??3@YAXPAX@Z"]
         ops = [o for o in SequenceMatcher(None, b, t).get_opcodes()
                if o[0] != "equal"]
-        self.assertEqual(classify(b, t, ops), "action")
+        self.assertEqual(classify(b, t, ops), "shape")
+
+    def test_saved_receiver_plus_member_offset_is_decoded(self):
+        """ChangeState's retail CFecFile cleanup reloads a saved receiver and
+        then adds the CFile member offset; this must not print ``no slot``."""
+        from gruntz.walls.ehactions import action
+        body = bytes.fromhex("8b4df081c124010000e900000000")
+        self.assertEqual(
+            action(body, {10: "??1CFile@@UAE@XZ"}),
+            "*[ebp-0x10]+0x124 -> ??1CFile@@UAE@XZ")
+
+    def test_decoder_stops_at_the_first_transfer(self):
+        """Zero-extent base labels can expose bytes beyond one funclet; later
+        instructions must not mutate the first action's receiver."""
+        from gruntz.walls.ehactions import action
+        body = bytes.fromhex("8d4df0e90000000081c100010000")
+        self.assertEqual(
+            action(body, {4: "??1CString@@QAE@XZ"}),
+            "[ebp-0x10] -> ??1CString@@QAE@XZ")
 
     def test_the_canonical_map_skips_sectionless_rows(self):
         """The base side names funclets `$L<n>`, so their `__ehunwind$`

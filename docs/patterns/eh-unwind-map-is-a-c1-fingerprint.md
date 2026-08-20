@@ -111,7 +111,17 @@ an array member `T[n]`; its arguments expose dtor, count, `sizeof(T)`, and the
 member address.
 
 Compare the full map, not only `maxState`: `ChangeState` proves equal counts can
-hide different topology. Compare the candidate COMDAT from the retail group's
+hide different topology. `gruntz walls ehactions 0x8fab0` also proves that an
+action-sequence difference is not automatically an authored cleanup defect:
+retail calls the embedded playlist CArray ctor/dtor while base expands them,
+so retail has a preceding-member CFecFile action during construction and uses
+saved-receiver-plus-member-offset actions while decomposing destruction. The
+tool reports this as `ACTION SHAPE DIFFERS`; adjudicate the relevant ctor/dtor
+call boundaries and state map before changing source. Its decoder must retain
+both direct `lea ecx,[slot]` receivers and `mov ecx,[saved]; add ecx,offset`
+member receivers—the latter previously appeared incorrectly as `(no slot)`.
+
+Compare the candidate COMDAT from the retail group's
 owner TU: header-inline copies can have TU-specific C1 maps, and an arbitrary
 duplicate falsely reported `CMoviePlayer::~CMoviePlayer` as 4 versus 5 even
 though the owning `creditsstate` copies are 5 versus 5. Canonicalize both

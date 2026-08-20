@@ -15,14 +15,19 @@ of pairs is the only thing about a function's EH tail that carries meaning.
 This module decodes every `__ehunwind$<parent>$<n>` funclet on both sides of
 the normalized pair and diffs the two ACTION SEQUENCES.
 
-WHY THE COUNT IS THE WRONG QUESTION. A funclet exists per out-of-line
-destructible temporary, so the funclet COUNT is a readout of the
-ctor-inlining boundary, not of correctness: inline one more constructor and a
-temporary stops needing its own cleanup entry. Lane B closed three parents
-this way, matching the count arithmetically parent-by-parent - and then found
-all 18 funclets' ACTIONS equal across the pair. A count delta on its own is
-an inline-boundary observation; a differing object slot or a differing dtor
-symbol is an unwind-action defect.
+WHY THE COUNT IS THE WRONG QUESTION. A funclet exists per live cleanup state,
+so the funclet COUNT is partly a readout of ctor/dtor inlining, not of source
+correctness. Inline one more constructor and a temporary can stop needing its
+own cleanup entry. Lane B closed three parents this way, matching the count
+arithmetically parent-by-parent, and then found all 18 funclets' ACTIONS equal.
+
+The converse is not valid either: a differing action shape is a structural
+signal, not automatic proof of an authored cleanup defect. ChangeState is the
+negative control. Retail calls the CMoviePlayer member CArray ctor/dtor while
+base expands them; both sides have eleven funclets, but retail consequently
+has a preceding-member CFecFile cleanup during construction and decomposes an
+inlined CFecFile dtor through a saved receiver. Adjudicate action differences
+against constructor/destructor inline boundaries and the parent state map.
 
 ZERO-EXTENT INTERIOR LABELS - do not re-diagnose "unpaired" as missing code.
 The funclet labels are INTERIOR and carry `physical_size = 0` on both sides,
@@ -65,8 +70,9 @@ NORM = BUILD / "objdiff/compare-new"
 FUNCLET = "__ehunwind$"
 #: both funclet encodings: the cdecl `mov eax,<slot>; push; call` and the
 #: thiscall `lea ecx,<slot>; jmp`.
-SLOT = re.compile(r"^(mov\s+eax,\S*\s*PTR\s*|lea\s+ecx,)"
-                  r"\[(\S+?)([+-]0x[0-9a-f]+)?\]")
+SLOT = re.compile(r"^(mov|lea)\s+(eax|ecx),"
+                  r"(?:\S+\s+PTR\s*)?\[([^]]+)\]")
+ADJUST = re.compile(r"^add\s+(eax|ecx),(0x[0-9a-f]+)")
 TRANSFER = re.compile(r"^(call|jmp)\b")
 
 
@@ -135,7 +141,7 @@ def funclets(obj: Obj, side: str, unit: str, parent: str):
 
 def action(body: bytes, rel: dict[int, str]) -> str:
     """`<object slot> -> <dtor>` for one funclet, either encoding."""
-    slot, dtor = None, None
+    slot, slot_reg, indirect, adjust, dtor = None, None, False, 0, None
     for line in objdump.disassemble(body, vma=0).splitlines():
         if ":\t" not in line:
             continue
@@ -149,30 +155,39 @@ def action(body: bytes, rel: dict[int, str]) -> str:
         nbytes = len((parts[0] if len(parts) > 1 else "").split())
         m = SLOT.match(asm)
         if m and slot is None:
-            slot = f"[{m.group(2)}{m.group(3) or '+0x0'}]"
+            indirect = m.group(1) == "mov"
+            slot_reg = m.group(2)
+            slot = f"[{m.group(3)}]"
+        m = ADJUST.match(asm)
+        if m and slot is not None and m.group(1) == slot_reg:
+            adjust += int(m.group(2), 16)
         if TRANSFER.match(asm) and dtor is None:
             dtor = next((t for o, t in rel.items()
                          if addr <= o < addr + max(nbytes, 1)), None)
+            break
     if slot is None and dtor is None:
         return "?"
+    if slot is not None:
+        slot = ("*" if indirect else "") + slot
+        if adjust:
+            slot += f"+0x{adjust:x}"
     return f"{slot or '(no slot)'} -> {dtor or '(unrelocated)'}"
 
 
 def classify(base: list[str], target: list[str], ops) -> str:
-    """"count" when every divergence is a pure insertion/deletion whose
-    actions the two sides already share, else "action".
+    """"count" for repeated-action insertions/deletions, else "shape".
 
-    The distinction is the whole doctrine: a funclet COUNT delta is the
-    ctor-inlining boundary (one fewer out-of-line destructible temporary), a
-    changed object slot or destructor is a real unwind defect.
+    Neither result decides source correctness. ``count`` is commonly an
+    inline-boundary delta; ``shape`` requires constructor/destructor and state-
+    map adjudication before it can be called an authored cleanup defect.
     """
     common = set(base) & set(target)
     for op, i1, i2, j1, j2 in ops:
         if op == "replace":
-            return "action"
+            return "shape"
         extra = base[i1:i2] + target[j1:j2]
         if any(a not in common for a in extra):
-            return "action"
+            return "shape"
     return "count"
 
 
@@ -210,8 +225,9 @@ def report(token: str, raw: bool) -> int:
               f"   That is the out-of-line destructible-temporary count = the "
               f"ctor-inlining boundary, NOT an unwind defect.")
     else:
-        print(f"== ACTIONS DIFFER: {len(ops)} divergence(s) - a differing "
-              f"object slot or dtor IS an unwind defect")
+        print(f"== ACTION SHAPE DIFFERS: {len(ops)} divergence(s) - adjudicate "
+              f"ctor/dtor inline boundaries and the parent state map before "
+              f"calling this an authored cleanup defect")
     for op, i1, i2, j1, j2 in ops:
         print(f"   {op} base[{i1}:{i2}] target[{j1}:{j2}]")
         for x in acts["base"][i1:i2][:8]:
