@@ -2112,7 +2112,7 @@ gruntcreationpoint	?SerializeMove@CGruntCreationPoint@@UAEHPAVCFileMemBase@@W4Se
 gruntdatarecord	?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	82e6a13b8a6d	0x56eb0	100.0000	
 gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	6aa69d4e50cb	0x56da0	100.0000	
 gruntdefensealt	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	78.9546	78.9546	17	54fe3e0e16a8	0xf1c70	78.9546	
-gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	75.3928	75.3928	22	f87e5880e259	0xf8240	75.3928	
+gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	87.9142	87.9142	23	7edd6e78ec78	0xf8240	87.9142	
 gruntdefensestep	?StepArrivalDefense@CGrunt@@QAEHXZ	83.0039	83.0039	21	9a9fa9633194	0xf2b20	83.0854	
 gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	83.8486	83.8486	12	8f8aea28d038	0xf36a0	83.8486	
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	1	215b427b5812	0x641b0	100.0000	
