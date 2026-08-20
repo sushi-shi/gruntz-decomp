@@ -100,7 +100,7 @@ i32 CGrunt::SeekTarget() {
         slotTileB.m_y >>= 5;
         i32 dx = selfTile.m_x - slotTile.m_x;
         i32 dy = selfTileB.m_y - slotTileB.m_y;
-        if (((dx ^ (dx >> 31)) - (dx >> 31)) < 2 && ((dy ^ (dy >> 31)) - (dy >> 31)) < 2) {
+        if (abs(dx) <= 1 && abs(dy) <= 1) {
             PickupType r2 = slot->m_entranceReason;
             if (r2 > PICKUP_EQUIPPABLE_LAST) {
                 r2 = slot->m_toolId;

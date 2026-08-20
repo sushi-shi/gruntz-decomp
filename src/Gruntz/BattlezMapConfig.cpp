@@ -3639,7 +3639,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     } else {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
-                            m_cellQuery->SetCell(fcx, fcy, m_ownerId);
+                            m_play->m_beginMarker->SetCell(fcx, fcy, m_ownerId);
                         }
                     }
                 }
