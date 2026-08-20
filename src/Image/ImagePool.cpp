@@ -808,7 +808,6 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
     return DecodeBmpData(data, dc, ctrl);
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176840, 0x11f)
