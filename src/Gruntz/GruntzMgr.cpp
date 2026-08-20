@@ -1812,29 +1812,6 @@ char CGruntzMgr::GetGruntzDriveLetter() {
     return m_driveLetter;
 }
 
-// @early-stop
-// /Ob1 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// retail CALLS ??1CFecFile (0x390a0) and the CArray<PLAYLISTINFOSTRUCT*> ctor/dtor
-// COMDATs here; cl expands all three (Teardown + vptr stamp + operator delete,
-// Close + ~CDWordArray + ~CFile). One authentic inline definition stays.
-// Re-audited 2026-08-09 with the one-level-up xref rule: `sema xref 0x00038fc0` gives
-// ??1CMoviePlayer exactly ONE caller, CCreditsState::ReleaseResources' `delete vh`,
-// so retail EXPANDS the movie-player dtor here and only the ??1CFecFile inside it is
-// a call - i.e. one shape per entity, no per-class split to model.  Declaring
-// ~CMoviePlayer out of line in CreditsState.cpp (its 0xa5 COMDAT stays 100.00 either
-// way) does remove our expansion but scores 74.88 -> 70.54; reverted.
-//
-// QUANTIFIED 2026-08-11 against the reverse-engineered inliner rule (see
-// docs/patterns/inline-budget-emits-ool-comdat.md, worked example): the CArray ctor
-// has cb in [63,66] (charged, not free), this caller has SEVEN candidate sites under
-// /Ob0, and the nested budget at that site is `caller_budget / sites-remaining`.
-// Adding six throwaway FREE candidate sites AFTER `CMoviePlayer player;` flips it to
-// retail's `call` and it stays flipped - so the gap is ~6 missing inline call sites
-// in this body's tail, not a spelling and not statement mass (padding 20/60
-// statements never moved the decision, it only inflated the body).
-// The two early failures rely on the automatic CMoviePlayer destructor; an explicit
-// Teardown there duplicates retail's cleanup. Retail also initializes the nullable
-// DirectSound receiver before the member test, then conditionally overwrites it.
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::ChangeState(i32 arg) {
     if (arg < 1 || arg > 3) {
