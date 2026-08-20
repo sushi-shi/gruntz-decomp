@@ -184,7 +184,7 @@ hash	10	10
 heapdiag	8	7
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	55	45
+imagepool	55	47
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -1580,7 +1580,7 @@ directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	2dac8abb6ae
 directsoundmgr	?LoadFromFile@DirectSoundMgr@@QAEHPAU_iobuf@@IH@Z	97.7333	97.7333	2	96bd1c359ab8	0x135e10	100.0000	
 directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAEPAK01I@Z	100.0000	100.0000	3	54cd9e6c664b	0x136370	100.0000	
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAEII@Z	90.0884	90.0884	3	0c1ddbe530f1	0x135f40	100.0000	
-directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	100.0000	100.0000	11	532dd601b9bc	0x137110	100.0000	
+directsoundmgr	?ParseWaveChunks@@YAHPAURiffWaveHeader@@PAPAUWaveFormatX@@PAPAEPAI@Z	100.0000	100.0000	12	e88cc77922e0	0x137110	100.0000	
 directsoundmgr	?Play@DSoundCloneInst@@QAEHXZ	100.0000	100.0000	1	df93f2a7b2a3	0x1360b0	100.0000	
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	3638b7ae6e0f	0x136270	100.0000	
 directsoundmgr	?PurgeVoiceList@SoundDevice@@QAEHH@Z	100.0000	100.0000	1	1c5f66489eb6	0x136e20	100.0000	
@@ -2065,7 +2065,7 @@ gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d8
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	17	0f6239e9d6d1	0xec670	95.2908	
 gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	89.9578	89.9578	28	bc3e810646b3	0xf0130	89.9578	
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	91.2867	91.2867	16	010835a7b17c	0x60150	91.2867	
-gruntbehaviorleaf	?LoadGruntDecayConfig2@CGrunt@@QAEHXZ	81.3049	81.3049	2	757131978f9d	0x61570	81.3049	
+gruntbehaviorleaf	?LoadGruntDecayConfig2@CGrunt@@QAEHXZ	83.6098	83.6098	3	fabb217b4114	0x61570	83.6098	
 gruntbehaviorleaf	?LoadGruntDecayConfig@CGrunt@@QAEHXZ	90.8344	90.8344	5	3e0e258b98e3	0x612a0	90.8344	
 gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	83.8470	83.6955	12	7b544b670ef4	0xecc90	83.8470	
 gruntchargestep	?ChargeStep@CGrunt@@QAEHXZ	81.9419	81.9419	6	bb52f0f3caae	0xef6b0	82.0323	
@@ -2698,11 +2698,11 @@ imagepool	?LoadDefault@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b788e
 imagepool	?LoadFromRez@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	1	e6044d0efa00	0x175a90	100.0000	
 imagepool	?LoadPalFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	79a2af78221b	0x1771f0	100.0000	
 imagepool	?LoadPcx@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	0edf461740dd	0x176190	100.0000	
-imagepool	?LoadPcxFile@CImagePaletteNode@@QAEHPADH@Z	93.9091	93.9091	1	59b78ebfbfda	0x1772e0	93.9091	
+imagepool	?LoadPcxFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	d76625183cc2	0x1772e0	100.0000	
 imagepool	?LoadPid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	0eb2e1983421	0x1766a0	100.0000	
 imagepool	?LoadRid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	3	760d8845277c	0x176310	100.0000	
 imagepool	?ParseDispatch@CImagePaletteNode@@QAEHPAEIW4RezDecodeKind@@H@Z	100.0000	100.0000	3	5a59f92bb5a9	0x177040	100.0000	
-imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAEIH@Z	88.5610	88.5610	2	ee9889b24729	0x177400	88.5610	
+imagepool	?ParsePaletteTail@CImagePaletteNode@@QAEHPAEIH@Z	100.0000	100.0000	3	1787a265ffe8	0x177400	100.0000	
 imagepool	?PasteFrom@CRezImage@@QAEHPAV1@HH@Z	84.6911	84.6911	1	39fb6983ed83	0x176960	84.6911	
 imagepool	?ProcessPal@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	35252db3382f	0x176e70	100.0000	
 imagepool	?ProcessPalBGR@CImagePaletteNode@@QAEHPAEH@Z	100.0000	100.0000	2	acd2296f70fc	0x176f30	100.0000	
@@ -3253,7 +3253,7 @@ netcmdslot	?NetCmdIdAdd@CNetCmdSlot@@QAEXPAHH@Z	100.0000	100.0000	1	4e8334fbe098
 netcmdslot	?NetCmdIdClear@CNetCmdSlot@@QAEXPAHH@Z	100.0000	100.0000	1	ee8bb88a7d4d	0xc1060	100.0000	
 netcmdslot	?NetCmdIdFind@CNetCmdSlot@@QAEHPAHH@Z	100.0000	100.0000	1	d6d962196172	0xc0fd0	100.0000	
 netcmdslot	?NetCmdIdToString@@YGPADPAH@Z	95.3555	95.3555	1	999db54ec357	0xc10d0	95.3555	
-netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPADH@Z	79.3650	79.3650	3	2bcea7e58811	0xc0c70	79.3650	
+netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPADH@Z	79.6050	79.6050	4	754bee4df401	0xc0c70	79.6050	
 netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	3fea3964c857	0xc0fa0	100.0000	
 netcmdslot	?Ready@CNetCmdSlot@@QAEHXZ	78.5455	78.5455	1	4d4e7a49d550	0xc1320	78.5455	
 netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	cbd3a2858212	0xc11b0	100.0000	
@@ -3344,7 +3344,7 @@ netsessionmgr	?AllocateGruntRecord@@YAPAUGruntRec@@H@Z	100.0000	100.0000	2	6d3ed
 netsessionmgr	?ArmSlot@CNetSession@@QAEXPAVCGruntzCommand@@E@Z	100.0000	100.0000	2	88047da0814b	0xc03f0	100.0000	
 netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	88.0963	88.0963	2	31b025eb52c9	0xbf1d0	88.0963	
 netsessionmgr	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	55da87b22acd	0xc04a0	100.0000	
-netsessionmgr	?Checksum@CNetSession@@QAEHXZ	89.7973	85.6081	1	80d4ecabbbbf	0xc0590	89.7973	
+netsessionmgr	?Checksum@CNetSession@@QAEHXZ	89.7500	89.7500	2	d4f569c762fb	0xc0590	89.7973	
 netsessionmgr	?ClearAckFlags@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	e5e7ebd7d632	0xbf120	100.0000	
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	1	ab3bf773b8c8	0xbfff0	100.0000	
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetCtrlMsg@@H@Z	100.0000	100.0000	2	9ae018b12627	0xbf700	100.0000	
@@ -3360,7 +3360,7 @@ netsessionmgr	?Reconcile@CNetSession@@QAEXXZ	100.0000	100.0000	1	eefb408c7a63	0x
 netsessionmgr	?RecycleCmd@@YAXPAUGruntRec@@@Z	100.0000	100.0000	2	3b16f0feaef5	0xbf580	100.0000	
 netsessionmgr	?Reset@CNetSession@@QAEXXZ	100.0000	100.0000	1	cf56ec0eb070	0xbf150	100.0000	
 netsessionmgr	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	1	450f7ab8303a	0xc0070	100.0000	
-netsessionmgr	?ResetSync@CNetSession@@QAEXXZ	84.7260	84.7260	2	94eb40808066	0xbf000	84.7260	
+netsessionmgr	?ResetSync@CNetSession@@QAEXXZ	99.7260	99.7260	3	96ce4c9e88a9	0xbf000	99.7260	
 netsessionmgr	?SendAll@CNetSession@@QAEHXZ	100.0000	100.0000	1	428336c87d1a	0xbfb40	100.0000	
 netsessionmgr	?SendBatch@CNetSession@@QAEHXZ	100.0000	100.0000	1	d5cf8c62362e	0xbfd40	100.0000	
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	1	c908e81ff168	0xbfc70	97.6316	
