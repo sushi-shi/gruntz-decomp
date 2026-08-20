@@ -372,13 +372,6 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     surf->m_ddSurface->Unlock(0);
 }
 
-// @early-stop
-// Two residues, both codegen decisions this source cannot express. Retail declines
-// CRect::Width at all five sites and calls the COMDAT it emits at 0x17b500; a
-// 5-shape probe matrix (global / by-value param / escaping / 25 heavy expansions
-// ahead / MFC CString traffic) never made cl 5.0 decline it. And retail leaves the
-// first hcenter if/else un-tail-merged (6 DrawLine + 14 CString copy ctors against
-// our 5 + 13) where cl merges all five.
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
@@ -421,6 +414,7 @@ void FontRenderer::DrawWrapped(
                     TextExtent le = MeasureText(line);
                     i32 cx = rc.left + rc.Width() / 2 - le.width / 2;
                     DrawLine(line, surf, cx, rc.top, z);
+                    x = cx;
                 } else {
                     DrawLine(line, surf, rc.left, rc.top, z);
                 }

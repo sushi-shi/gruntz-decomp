@@ -1782,7 +1782,7 @@ font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	2	4789a8ecaa5b	0x179720	100
 font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	70.8889	70.8889	3	63e21b75ce62	0x179e70	72.9028	
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	1	1c99e425f732	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000	
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	75.7026	75.7026	2	8256ee153963	0x17a460	75.7026	
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	76.8479	76.8479	3	ce6f15a86fde	0x17a460	76.8479	
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	2	1430fdbbd0f1	0x1797b0	100.0000	
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:8c44cb1c6fc0	0x17b4f0	100.0000	
 font	?GetGlyph@Font@@QAEAAUGlyph@@AAU2@E@Z	100.0000	100.0000	1	aa81516dc6ec	0x179b80	100.0000	
