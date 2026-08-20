@@ -29,24 +29,14 @@ const AFX_MSGMAP CBattlezDlgColors::messageMap = {
 
 DATA(0x001e8d18)
 const AFX_MSGMAP_ENTRY CBattlezDlgColors::_messageEntries[] = {
-    {WM_MEASUREITEM,
-     0,
-     0,
-     0,
-     AfxSig_vOWNER,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlgColors::OnMeasureItem)}, // API-forced MFC seam.
-    {WM_DRAWITEM,
-     0,
-     0,
-     0,
-     AfxSig_vOWNER,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlgColors::OnDrawItem)}, // API-forced MFC seam.
+    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlgColors::OnMeasureItem)},
+    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlgColors::OnDrawItem)},
     {WM_COMMAND,
      CBN_DBLCLK,
      CTRL_COLOR_LIST,
      CTRL_COLOR_LIST,
      AfxSig_vv,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnOkCommand)}, // API-forced MFC seam.
+     GZ_MFC_PMSG(&CBattlezDlg::OnOkCommand)},
     {0, 0, 0, 0, AfxSig_end, 0},
 };
 

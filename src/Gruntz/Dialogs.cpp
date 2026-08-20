@@ -33,25 +33,19 @@ const AFX_MSGMAP CBattlezDlg::messageMap = {
 DATA(0x001e88b8)
 const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
 
-    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0) ON_CBN_SELCHANGE(
-        0x50e,
-        CBattlezDlg::ApplyOption1
-    ) ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2)
-        ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3)
+    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0)
+        ON_CBN_SELCHANGE(0x50e, CBattlezDlg::ApplyOption1)
+            ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2)
+                ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3)
 
-            {WM_MEASUREITEM,
-             0,
-             0,
-             0,
-             AfxSig_vOWNER,
+                    {WM_MEASUREITEM,
+                     0,
+                     0,
+                     0,
+                     AfxSig_vOWNER,
 
-             reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnMeasureItem)}, // API-forced MFC seam.
-    {WM_DRAWITEM,
-     0,
-     0,
-     0,
-     AfxSig_vOWNER,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)}, // API-forced MFC seam.
+                     GZ_MFC_PMSG(&CBattlezDlg::OnMeasureItem)},
+    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlg::OnDrawItem)},
     ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CBattlezDlg::ApplyColorSlot0) ON_BN_CLICKED(
         CTRL_PLAYER_COLOR1,
         CBattlezDlg::ApplyColorSlot1
@@ -70,7 +64,7 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
                                     ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnPlayerNameChange2)
                                         ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnPlayerNameChange3)
     // API-forced MFC message-map representation seam.
-    {WM_PAINT, 0, 0, 0, AfxSig_vv, reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)},
+    {WM_PAINT, 0, 0, 0, AfxSig_vv, GZ_MFC_PMSG(&CBattlezDlg::OnPaint)},
     ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0)
         ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1)
             ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2)

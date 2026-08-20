@@ -11,6 +11,10 @@
 #include <afx.h>
 #include <afxcoll.h>
 
+// API-forced: AFX_MSGMAP_ENTRY erases each typed member-function pointer to
+// the single AFX_PMSG representation consumed by MFC's dispatcher.
+#define GZ_MFC_PMSG(method) reinterpret_cast<AFX_PMSG>(method)
+
 // MMSYSTEM.H:1984, transcribed because cl 5.0 cannot take the SDK header here:
 // docs/patterns/large-sdk-header-in-a-shared-prelude.md has the measurement.
 // A unit that can afford <mmsystem.h> includes it instead.

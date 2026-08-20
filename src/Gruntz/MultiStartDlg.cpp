@@ -87,9 +87,9 @@ const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
     ON_CBN_SELCHANGE(IDC_MULTI_CONNECT, CMultiStartDlg::ConnectStep)
     ON_CBN_SELCHANGE(IDC_MULTI_CHANNEL2, CMultiStartDlg::ReconcileChannel2)
     ON_CBN_SELCHANGE(IDC_MULTI_CHANNEL3, CMultiStartDlg::ReconcileChannel3)
-    {WM_TIMER, 0, 0, 0, AfxSig_vw, reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnTimer)}, // API-forced MFC seam.
-    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnMeasureItem)}, // API-forced MFC seam.
-    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnDrawItem)}, // API-forced MFC seam.
+    {WM_TIMER, 0, 0, 0, AfxSig_vw, GZ_MFC_PMSG(&CMultiStartDlg::OnTimer)},
+    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CMultiStartDlg::OnMeasureItem)},
+    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CMultiStartDlg::OnDrawItem)},
     ON_BN_CLICKED(IDC_MULTI_COLOR0, CMultiStartDlg::OnColorSlot0)
     ON_BN_CLICKED(IDC_MULTI_COLOR1, CMultiStartDlg::OnColorSlot1)
     ON_BN_CLICKED(IDC_MULTI_COLOR2, CMultiStartDlg::OnColorSlot2)
