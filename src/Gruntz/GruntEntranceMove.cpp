@@ -715,12 +715,11 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_wwdObject->m_animCursor.m_finished == 0
-        || m_wwdObject->m_animCursor.m_frameTicksLeft != 0) {
+    CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
+    if (anim->m_finished == 0 || anim->m_frameTicksLeft != 0) {
         return 0;
     }
 
@@ -757,10 +756,9 @@ i32 CGrunt::UpdateEntranceAnim() {
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     m_entranceActive = 0;
 
-    CGruntzMgr* g = g_gameReg;
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    CGruntzMapMgr* board = g->m_tileGrid;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(board->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(board->m_height)) {

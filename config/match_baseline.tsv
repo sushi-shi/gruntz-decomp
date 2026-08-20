@@ -145,7 +145,7 @@ gruntdefenselean	1	0
 gruntdefensestep	1	0
 gruntdiggerstep	1	0
 gruntentrancearrival	22	8
-gruntentrancemove	18	8
+gruntentrancemove	18	9
 gruntgoosuckerstep	2	0
 grunthealthsprite	10	9
 gruntindicatorworkerhandlers	7	7
@@ -2154,7 +2154,7 @@ gruntentrancemove	?RunEntranceMove@CGrunt@@QAEHXZ	94.8595	94.8595	2	88ab75be1881
 gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	99.7190	99.7190	2	b165e5bb1d52	0x68520	99.7190	
 gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	90.9914	90.9914	2	e386e6a31da3	0x692f0	90.9914	
 gruntentrancemove	?StepAttackAction@CGrunt@@QAEHXZ	100.0000	100.0000	1	84fd4a8ab460	0x6b260	100.0000	
-gruntentrancemove	?UpdateEntranceAnim@CGrunt@@QAEHXZ	96.8162	96.8162	18	08ca628a1669	0x690a0	96.8162	
+gruntentrancemove	?UpdateEntranceAnim@CGrunt@@QAEHXZ	100.0000	100.0000	19	563bf586d259	0x690a0	100.0000	
 gruntgoosuckerstep	?CellTargetable@@YAHHH@Z	89.4688	89.4688	2	72494b236a4f	0xf0db0	89.4688	
 gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	80.5090	80.5007	2	a7c87b4949a2	0xf0e20	80.5090	
 grunthealthsprite	??0CGruntHealthSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	bb7bc817e1df	0x7eb00	100.0000	
