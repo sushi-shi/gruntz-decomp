@@ -533,8 +533,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             // Retail-proven ABI seam: WrapCoord receives the two by-value i32
             // argument slots directly; Win32 LONG has the same 32-bit storage.
             m_world->m_level->m_mainPlane->WrapCoord(
-                reinterpret_cast<LONG*>(&x),
-                reinterpret_cast<LONG*>(&y)
+                reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
+                reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
             );
             u16 color;
             if (cell->RectContains(x, y)) {
