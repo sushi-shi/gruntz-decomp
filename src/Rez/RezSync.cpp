@@ -407,6 +407,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
+    CInputDevice* keyboard = static_cast<CInputDevice*>(g_inputMgr->m_deviceA);
+    if (keyboard != NULL) {
+        keyboard->m_keyTable[0] = VK_CONTROL;
+        keyboard->m_keyTable[1] = 'X';
+        keyboard->m_keyTable[2] = VK_SPACE;
+        keyboard->m_keyTable[3] = VK_RETURN;
+        keyboard->m_keyTable[8] = 0;
+    }
+
     m_shadeCache = new CShadeTableCache;
     if (!m_shadeCache->Init()) {
         delete m_shadeCache;
