@@ -2877,8 +2877,8 @@ void CNetSession::ResetAll() {
     m_period = 1;
 
     i32 i;
-    CNetCmdSlot* slot = m_slots;
-    for (i = 4; i != 0; i--) {
+    for (i = 0; i < 4; i++) {
+        CNetCmdSlot* slot = &m_slots[i];
         slot->m_state = NETSLOT_EMPTY;
         slot->m_isRemote = 0;
         slot->m_latchedSeq = 0;
@@ -2894,18 +2894,15 @@ void CNetSession::ResetAll() {
         }
         slot->ResetTriple(slot->m_rangeA);
         slot->ResetTriple(slot->m_rangeB);
-        slot++;
     }
 
     memset(m_idMap, 0, sizeof(m_idMap));
 
-    GruntRec* e = m_records;
-    for (i = 0x80; i != 0; i--) {
-        e->m_seq = 0;
-        e->m_count = 0;
-        e->m_payloadLen = 0;
-        e->m_checksum = 0;
-        e++;
+    for (i = 0; i < 0x80; i++) {
+        m_records[i].m_seq = 0;
+        m_records[i].m_count = 0;
+        m_records[i].m_payloadLen = 0;
+        m_records[i].m_checksum = 0;
     }
 }
 
