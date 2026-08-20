@@ -732,8 +732,8 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans)
 }
 
 // @early-stop
-// The u8 division/multiplication spelling preserves the retail bank shift.
-// The format discriminator is one load: retail reuses its register in both arms.
+// The u8 division/multiplication spelling preserves retail's separate bank shifts.
+// A single cached red shift is reused by both format arms, as in retail.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f020, 0x43f)
@@ -749,61 +749,64 @@ i32 CDDSurface::ShadeBlt(
     if (m_bytesPerPixel != PIXEL16_BYTES_PER_PIXEL) {
         return 0;
     }
-    i32 srcW = sr.right - sr.left;
-    i32 dstW = dr.right - dr.left;
-    if (dstW != srcW) {
-        return 0;
-    }
-    i32 srcH = sr.bottom - sr.top;
-    i32 dstH = dr.bottom - dr.top;
-    if (dstH != srcH) {
-        return 0;
-    }
-    if (dr.left < 0) {
-        return 0;
-    }
-    if (dr.top < 0) {
-        return 0;
-    }
-    if (dr.right > m_width) {
-        return 0;
-    }
-    if (dr.bottom > m_height) {
-        return 0;
-    }
-    if (sr.left < 0) {
-        return 0;
-    }
-    if (sr.top < 0) {
-        return 0;
-    }
-    if (sr.right > srcW) {
-        return 0;
-    }
-    if (sr.bottom > srcH) {
-        return 0;
+    {
+        i32 srcW = sr.right - sr.left;
+        i32 dstW = dr.right - dr.left;
+        if (dstW != srcW) {
+            return 0;
+        }
+        i32 srcH = sr.bottom - sr.top;
+        i32 dstH = dr.bottom - dr.top;
+        if (dstH != srcH) {
+            return 0;
+        }
+        if (dr.left < 0) {
+            return 0;
+        }
+        if (dr.top < 0) {
+            return 0;
+        }
+        if (dr.right > m_width) {
+            return 0;
+        }
+        if (dr.bottom > m_height) {
+            return 0;
+        }
+        if (sr.left < 0) {
+            return 0;
+        }
+        if (sr.top < 0) {
+            return 0;
+        }
+        if (sr.right > srcW) {
+            return 0;
+        }
+        if (sr.bottom > srcH) {
+            return 0;
+        }
     }
 
-    u16* dstBits = static_cast<u16*>(Lock(0));
-    u16* srcBits = static_cast<u16*>(src->Lock(0));
+    u16 *dstPtr = static_cast<u16*>(Lock(0)), *srcPtr = static_cast<u16*>(src->Lock(0));
     i32 dstStride = m_pitch / 2;
-    u16* dstPtr = dstBits + (dr.top * dstStride + dr.left);
+    dstPtr += dr.top * dstStride + dr.left;
     i32 srcStride = src->m_pitch / 2;
-    u16* srcPtr = srcBits + (sr.top * srcStride + sr.left);
-    i32 dstRowAdv = dstStride - dstW;
-    i32 srcRowAdv = srcStride - srcW;
-    u16* temp = new u16[dstW * 2];
+    srcPtr += sr.top * srcStride + sr.left;
+    i32 dstRowAdv = dstStride + dr.left - dr.right;
+    i32 width = dr.right - dr.left;
+    i32 srcRowAdv = srcStride + sr.left - sr.right;
+    i32 height = dr.bottom - dr.top;
+    u16* temp = new u16[width * 2];
     i32 bank = static_cast<u8>(shade) / 8 * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
     i32 redDown = g_rDown;
 
     if (redDown == PIXEL16_RED_DOWN && g_gDown == redDown && g_bDown == redDown
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        i32 rows = dstH;
+        i32 rows = height;
         if (rows > 0) {
             do {
-                memcpy(temp, dstPtr, dstW * 2);
-                i32 n = dstW;
+                memcpy(temp, dstPtr, width * 2);
+                i32 n = width;
                 if (n > 0) {
                     u16* t = temp;
                     do {
@@ -835,11 +838,11 @@ i32 CDDSurface::ShadeBlt(
     } else if (redDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN && g_bDown == redDown
                && g_rUp == RGB565_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        i32 rows = dstH;
+        i32 rows = height;
         if (rows > 0) {
             do {
-                memcpy(temp, dstPtr, dstW * 2);
-                i32 n = dstW;
+                memcpy(temp, dstPtr, width * 2);
+                i32 n = width;
                 if (n > 0) {
                     u16* t = temp;
                     do {
