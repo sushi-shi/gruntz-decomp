@@ -235,9 +235,8 @@ i32 CGrunt::UpdateArrival() {
                     }
                 }
             } else {
-                this->m_arrivalCell.m_x = -1;
+                this->m_arrivalCell.Set(-1, -1);
                 this->m_defenderState = AISTATE_SEEK;
-                this->m_arrivalCell.m_y = -1;
             }
             break;
         }

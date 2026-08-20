@@ -663,12 +663,9 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     }
     unit->m_arrivalState = AI_BATTLEZ_PATH;
     unit->m_defenderState = AISTATE_SEEK;
-    unit->m_arrivalCell.m_x = -1;
-    unit->m_unusedBattleCell.m_x = -1;
-    unit->m_defenderPx.m_x = -1;
-    unit->m_arrivalCell.m_y = -1;
-    unit->m_unusedBattleCell.m_y = -1;
-    unit->m_defenderPx.m_y = -1;
+    unit->m_arrivalCell.Set(-1, -1);
+    unit->m_unusedBattleCell.Set(-1, -1);
+    unit->m_defenderPx.Set(-1, -1);
     unit->m_targetTeam = -1;
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
