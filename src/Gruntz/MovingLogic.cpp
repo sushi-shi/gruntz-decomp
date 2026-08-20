@@ -197,30 +197,30 @@ void CMotionState::Step(double dt) {
 
 RVA(0x0016f3c0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
-    if (m_acceleration.x == 0.0) {
+    if (m_acceleration.x == g_motionZero) {
         return m_velocity.x;
     }
     double disc =
         m_velocity.x * m_velocity.x - (target - m_position.x) * m_acceleration.x * g_motionNegTwo;
-    if (0.0 > disc) {
-        disc = 0.0;
+    if (g_motionZero > disc) {
+        disc = g_motionZero;
     }
     double r = sqrt(disc);
-    return (m_velocity.x > 0.0) ? r : -r;
+    return (m_velocity.x > g_motionZero) ? r : -r;
 }
 
 RVA(0x0016f430, 0x61)
 double CMotionState::ArrivalVelY(double target) {
-    if (m_acceleration.y == 0.0) {
+    if (m_acceleration.y == g_motionZero) {
         return m_velocity.y;
     }
     double disc =
         m_velocity.y * m_velocity.y - (target - m_position.y) * m_acceleration.y * g_motionNegTwo;
-    if (0.0 > disc) {
-        disc = 0.0;
+    if (g_motionZero > disc) {
+        disc = g_motionZero;
     }
     double r = sqrt(disc);
-    return (m_velocity.y > 0.0) ? r : -r;
+    return (m_velocity.y > g_motionZero) ? r : -r;
 }
 
 RVA(0x0016f4a0, 0x1da)
