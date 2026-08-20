@@ -497,8 +497,11 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (host->m_emitGate) {
             return;
         }
-        LeafCue* cue = NULL;
-        MapLookup(host->m_cues, "GAME_VOICE", cue);
+        LeafCue* found = NULL;
+        MapLookup(host->m_cues, "GAME_VOICE", found);
+        // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
+        // a register across the m_lastPlayTime store.
+        LeafCue* cue = found;
         if (!cue) {
             return;
         }
@@ -522,8 +525,11 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (host->m_emitGate) {
             return;
         }
-        LeafCue* cue = NULL;
-        MapLookup(host->m_cues, "GAME_CHIPFALLOUT", cue);
+        LeafCue* found = NULL;
+        MapLookup(host->m_cues, "GAME_CHIPFALLOUT", found);
+        // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
+        // a register across the m_lastPlayTime store.
+        LeafCue* cue = found;
         if (!cue) {
             return;
         }

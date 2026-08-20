@@ -181,8 +181,11 @@ void CPreviewState::LoadLevelPreviewScreen() {
     } else {
         CDDrawSubMgrLeafScan* h = m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
-            LeafCue* p = NULL;
-            MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", p);
+            LeafCue* found = NULL;
+            MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", found);
+            // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
+            // in a register across the m_lastPlayTime store.
+            LeafCue* p = found;
             if (p != NULL) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0

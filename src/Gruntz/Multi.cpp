@@ -1279,8 +1279,11 @@ i32 CMulti::ShowMultiStartDlg() {
     } else {
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_emitGate == 0) {
-            LeafCue* rec = NULL;
-            MapLookup(reg->m_cues, s_GameKey, rec);
+            LeafCue* found = NULL;
+            MapLookup(reg->m_cues, s_GameKey, found);
+            // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
+            // in a register across the m_lastPlayTime store.
+            LeafCue* rec = found;
             if (rec != NULL) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
@@ -2124,8 +2127,11 @@ i32 CMulti::LoadMenuSelectSprite(MenuSelectEvent* ev) {
         }
         CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
-            LeafCue* e = NULL;
-            MapLookup(host->m_cues, "GAME_MENUS_SELECT", e);
+            LeafCue* found = NULL;
+            MapLookup(host->m_cues, "GAME_MENUS_SELECT", found);
+            // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
+            // in a register across the m_lastPlayTime store.
+            LeafCue* e = found;
             if (e != NULL) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
