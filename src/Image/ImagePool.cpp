@@ -1151,7 +1151,6 @@ i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
     return ProcessPal(rgb, arg);
 }
 
-// @early-stop
 RVA(0x001772e0, 0x117)
 i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFile file;
@@ -1168,18 +1167,15 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     }
 
     u8* src = rgb;
-    PALETTEENTRY* dst = rgbq;
-    for (i32 i = 0x100; i != 0; i--) {
-        dst->peRed = *src++;
-        dst->peGreen = *src++;
-        dst->peBlue = *src++;
-        dst->peFlags = 0;
-        dst++;
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        rgbq[i].peRed = *src++;
+        rgbq[i].peGreen = *src++;
+        rgbq[i].peBlue = *src++;
+        rgbq[i].peFlags = 0;
     }
     return Build(rgbq, arg);
 }
 
-// @early-stop
 RVA(0x00177400, 0x76)
 i32 CImagePaletteNode::ParsePaletteTail(u8* buf, u32 size, i32 ctrl) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
@@ -1187,13 +1183,11 @@ i32 CImagePaletteNode::ParsePaletteTail(u8* buf, u32 size, i32 ctrl) {
         return 0;
     }
     u8* s = buf + size - PALETTE_RGB_BYTE_COUNT;
-    PALETTEENTRY* d = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        d->peRed = *s++;
-        d->peGreen = *s++;
-        d->peBlue = *s++;
-        d->peFlags = 0;
-        d++;
+        pal[i].peRed = *s++;
+        pal[i].peGreen = *s++;
+        pal[i].peBlue = *s++;
+        pal[i].peFlags = 0;
     }
     return Build(pal, ctrl);
 }
