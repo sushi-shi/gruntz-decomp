@@ -71,7 +71,8 @@ STEERABLE. Measured 2026-08-20, all on the LeafCue play-cue transcription:
 ## Bounds
 
 The copy only helps where the pointer is REASSIGNED-through, i.e. the body stores
-into the pointed-to object before its next read. One counter-example measured in
-the same batch: `CTriggerMgr::LoadFinishLevelSprite` re-uses an outer `p` for two
-successive lookups and the copy costs it (86.06 -> 84.30) - revert per site rather
-than sweeping a file.
+into the pointed-to object before its next read, and the lookup needs its OWN
+sink. `CTriggerMgr::LoadFinishLevelSprite` re-uses an outer `p` for two successive
+lookups: copying out of that shared `p` costs it (86.06 -> 84.30), giving the
+second lookup a fresh sink AND a fresh copy gains it (86.06 -> 88.36). Measure per
+site rather than sweeping a file.
