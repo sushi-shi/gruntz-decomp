@@ -2107,19 +2107,6 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     }
 }
 
-// @early-stop
-// Each arm now takes a LOCAL copy of `src` (retail reloads the parameter slot in
-// every arm preheader and never writes it back), which is what frees ebp for the
-// m_palDescr ternary the way retail colours it.
-// Residue: cl still preloads `src` into a register in the prologue for the ternary's
-// else-arm where retail reads the slot in that arm only, and the LERP arm needs an
-// entry `jmp` plus a 1-instruction loop header to reload the palette base.
-// SCORING ARTIFACT, not a defect: retail's `lea reg,[idx*2+0x6bed06]` /
-// `[idx+0x6bed07]` resolve to g_scratch MINUS 2 and MINUS 1, which land in the
-// 4-byte alignment gap after g_DirectDrawMgr, so the delinker names them
-// DAT_006bed06/07 while our reloc names g_scratch with a negative addend. Same
-// bytes, different symbol - `reloc_multiset` reports it and it cannot be closed
-// from source.
 RVA(0x0014cfc0, 0x620)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
@@ -2194,13 +2181,12 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         }
         case SHADE_PAL_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* pal = m_palDescr->Lut16();
             u8* sc = &g_scratch[count * 2 - 2];
             u8* sw = dst;
-            u8* ss = src;
+            u16* pal = m_palDescr->Lut16();
             if (m_blendVariant) {
                 while (count-- > 0) {
-                    u32 a = pal[*ss++];
+                    u32 a = pal[*src++];
                     u32 d = Load16(sc);
                     u16 r = m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)];
@@ -2211,7 +2197,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 }
             } else {
                 while (count-- > 0) {
-                    u32 a = pal[*ss++];
+                    u32 a = pal[*src++];
                     u32 d = Load16(sc);
                     u16 r = m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)];
