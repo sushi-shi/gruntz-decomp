@@ -218,10 +218,6 @@ static inline LONG RunRightEdge(const CRect& rc, i32 x) {
     return x - rc.left + rc.right;
 }
 
-// @early-stop
-// Calls, branches and returns are exact. Retail reloads g_bDown and g_gUp for
-// the final packed-pixel stores; this build CSEs both earlier loads across the
-// blend expression, accounting for the complete 25/23 relocation delta.
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
