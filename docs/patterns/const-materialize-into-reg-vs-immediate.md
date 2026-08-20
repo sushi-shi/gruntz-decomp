@@ -28,3 +28,14 @@ xor edi,edi ; cmp [ebp+4],edi ; mov [ebx],edi ; retail: 0 held in edi, reused
 WALL — not source-steerable; the register-vs-immediate + reuse decision is MSVC5's
 constant scheduler. Sibling ctors with <=1 large constant (CFxModeT3/4/5/6) match
 100%; FreeAll (no reused-0 store) matches 100%. Logic/layout are byte-correct.
+
+The 2026-08-20 personal re-audit of `CFxModeT2::CFxModeT2` tightened the
+boundary. Base and retail have the same base-constructor call, no branches, one
+return, one relocation, and the same eight member values. A local `POINT`
+initialized to `(0x140,0xf0)` folds back to the same immediate stores, so the
+adjacent center fields are not by themselves proof of an aggregate member.
+Chaining the two surface-pointer null assignments also leaves the instruction
+shape unchanged. A classified 65-state campaign found exactly one compiler
+island at 71.00%; the generator found no semantics-preserving AST mutation for
+the member stores. Reopen only if a real complete-object center use or a mapped
+C2 constant-materialization predicate supplies new structural evidence.

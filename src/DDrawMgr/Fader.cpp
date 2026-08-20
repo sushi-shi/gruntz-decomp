@@ -166,17 +166,6 @@ CFxModeT1::CFxModeT1() {
     m_palette = NULL;
 }
 
-// @early-stop
-// retail pre-materialises 0x140/0xf0/0 into eax/edx/ecx and stores members in
-// pure source order; cl folds both constants into immediate stores and groups
-// the zero stores. Statement orders, an inline SetCenter(320,240) helper and
-// every island family leave the shape unchanged. Also refuted: a full-body
-// inline member taking (cx, cy) - cl constant-propagates literal args into the
-// stores; a meminit-list for the centres - still immediate stores; /G3-/G6 CPU
-// profiles (/G3-5 byte-identical to the default, /G6 re-sorts but never
-// materialises and regresses the exact FP siblings); 54 more islands; a
-// mixed-kind TU-state probe panel (fader is flat under all 8 probe kinds -
-// C2-anchored, 2026-08-17).
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
     m_centerX = SCREEN_HALF_W_PX;
