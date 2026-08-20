@@ -64,7 +64,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
                     item->m_hWnd,
                     LB_ADDSTRING,
                     0,
-                    (name.m_str = static_cast<const char*>((s_custom + fd.name)), name.m_lparam)
+                    (name.m_str = static_cast<const char*>(CString(fd.name)), name.m_lparam)
                 );
             }
             while (_findnext(h, &fd) != -1) {
@@ -74,7 +74,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
                         item->m_hWnd,
                         LB_ADDSTRING,
                         0,
-                        (name.m_str = static_cast<const char*>((s_custom + fd.name)), name.m_lparam)
+                        (name.m_str = static_cast<const char*>(CString(fd.name)), name.m_lparam)
                     );
                 }
             }
