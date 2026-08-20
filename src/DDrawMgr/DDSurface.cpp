@@ -1334,11 +1334,6 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     return 1;
 }
 
-// @early-stop
-// Slot-assignment order + coloring: retail homes this at [esp+0x10] and pal in
-// ebx where cl rotates the spill slots one position and keeps pal in ebp; the
-// k-loop widens each pal byte through a serially-reused eax where cl batches
-// two byte registers.
 RVA(0x00140110, 0x30b)
 i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {

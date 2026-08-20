@@ -365,6 +365,27 @@ one onward, and `unsigned char` costs one from the first.
    over the VC6 model already recorded in
    `cl5-callcrossing-ebx-first-by-use-schedule.md`.
 
+### Open RE case — `CDDSurface::Blit824` parameter rotation
+
+`Blit824` at `0x00140110` is a bounded example where the known rules do not yet
+explain which rotation stop a parameter receives. Retail loads the palette into
+EBX before saving EBP; the current compile loads the same parameter into EBP.
+Both are frameless, save all four callee-saved registers, and have identical
+calls (2), branches (22), returns (3), relocations (1), frame size (`0x2c`), and
+semantic homes for all six byte/widened channel values. The base is 16 bytes and
+six instructions longer solely through the downstream register schedule.
+
+Personally measured negative controls: a typed palette alias defined before or
+after `Lock`, a `void*` parameter plus typed local, implicit versus explicit byte
+narrowing at the destination store, and four semantic palette identifier names
+all compile byte-identically at 69.83012%. A bounded 243/384 syntax campaign
+found 12 islands; its best 71.25869% state only reordered one commutative sum in
+the second duplicated arm, contrary to retail's unchanged square/add order, so
+it is not retained. The existing file-scope TU-state sweep is flat for this
+function. Further work belongs in the allocator tuple-walk/rotation-cursor RE,
+not in additional source-order guesses. `Blit816` is a negative sibling: both
+sides bind its palette to ESI, so its separate residue is spill scheduling.
+
 ---
 
 ## S1 — When a value gets no register at all
