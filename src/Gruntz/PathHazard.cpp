@@ -421,7 +421,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     SwitchGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CWwdGameObjectA* sl =
-            g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, sy, 0, "SpotLight", 0x40003);
         if (sl != NULL) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
             AnimWorkerObj* sub = sl->m_animWorker;
