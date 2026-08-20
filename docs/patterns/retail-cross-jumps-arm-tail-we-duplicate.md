@@ -54,6 +54,17 @@ it the other way round: the doc's rule predicts when cl merges TOO MUCH and how 
 stop it; there is no known source spelling that makes cl merge when it has decided
 not to. Both residues are one instruction-run each; park them.
 
+`CLightFxRender::Resize` at `0x0a3460` is the small no-call control.  Its
+`SpriteTeamColorVariant` switch has separate `PRIMARY` and `default` arms that
+both store `node->m_teamColor1`.  Retail cross-jumps them into one selected
+address/store block; the current `/O2` state emits both.  This accounts for the
+entire census delta: base/retail have 238/239 instructions, 48/47 branches,
+6/6 calls, 4/4 returns, and 8/8 ordered relocations.  Combining the labels is
+not the source: it collapses two more blocks (233 instructions, 46 branches)
+and lowers the function to 67.00%.  Reordering the four complete arms is
+byte-identical.  Keep the semantically complete switch and classify the one
+extra `je`/`jmp` as this cross-jump wall.
+
 Also measured on `LoadConfig`: retail folds the `g_diffScale` load into `fmul m32`
 where cl preloads with `fld`/`fmulp`. Reassociating the expression
 (`(m_x * g_diffScale) * r` instead of `r * (m_x * g_diffScale)`) does NOT produce

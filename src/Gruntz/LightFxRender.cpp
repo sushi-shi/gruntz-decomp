@@ -128,10 +128,6 @@ i32 CLightFxRender::AllocSurface() {
     return 1;
 }
 
-// @early-stop register colouring. The prologue and the first 68 loop instructions
-// are byte-exact and the frame matches; what is left is x/alt/this landing in
-// esi/edi/ebp vs edi/ebx/ebp and the y and x*0x1c spill slots being swapped.
-// Flat across 24 TU states (68.16-69.22) and across every desc/dst/alt spelling.
 RVA(0x000a3460, 0x2f3)
 i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (rebuild == 0) {
