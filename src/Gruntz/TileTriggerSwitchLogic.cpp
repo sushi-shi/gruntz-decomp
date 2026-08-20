@@ -117,8 +117,9 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
-            LeafCue* spr = NULL;
-            MapLookup(h->m_cues, "GAME_SWITCHDOWN", spr);
+            LeafCue* found = NULL;
+            MapLookup(h->m_cues, "GAME_SWITCHDOWN", found);
+            LeafCue* spr = found;
             if (spr) {
                 i32 sndEnabled = g_sndEnabled;
                 i32 cueTag = g_sndCueTag;
@@ -157,8 +158,9 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
-            LeafCue* spr = NULL;
-            MapLookup(h->m_cues, "GAME_SWITCHUP", spr);
+            LeafCue* found = NULL;
+            MapLookup(h->m_cues, "GAME_SWITCHUP", found);
+            LeafCue* spr = found;
             if (spr) {
                 i32 sndEnabled = g_sndEnabled;
                 i32 cueTag = g_sndCueTag;
@@ -877,8 +879,9 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     if (sreg->m_emitGate != 0) {
         return 0;
     }
-    LeafCue* out = NULL;
-    MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", out);
+    LeafCue* found = NULL;
+    MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
+    LeafCue* out = found;
     if (out == NULL) {
         return 0;
     }

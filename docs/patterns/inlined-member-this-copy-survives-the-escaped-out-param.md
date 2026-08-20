@@ -68,6 +68,14 @@ STEERABLE. Measured 2026-08-20, all on the LeafCue play-cue transcription:
 `CTriggerMgr::BuildRockBreakParticles` 90.01 -> 91.81,
 `CSpotLight::Tick` 78.88 -> 79.33.
 
+Second sweep 2026-08-21, same transcription in the switch/chat cue bodies:
+`CChatBox::PlayFocusSound` 90.20 -> **100.00 EXACT**,
+`CChatBox::PlayActivationSound` 90.20 -> **100.00 EXACT** (both inline one
+file-static `PlayChatCue`, so the copy is written once),
+`CGiantRockLogic::BuildRockBreakInGameText` 96.33 -> 99.46,
+`CTileTriggerSwitchLogic::SwitchDown` 89.46 -> 93.60,
+`CTileTriggerSwitchLogic::SwitchUp` 90.15 -> 93.60.
+
 ## Bounds
 
 The copy only helps where the pointer is REASSIGNED-through, i.e. the body stores
