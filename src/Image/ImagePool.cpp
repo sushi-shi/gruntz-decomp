@@ -657,10 +657,17 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
 
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(PidHeader* buf, HDC dc, i32 ctrl) {
-
-    i32 width = buf->width;
-    i32 height = buf->height;
-    i32 ok = DecodeBlit(buf->pixels, dc, width, height, BPP_PALETTED_8, ctrl);
+    // The RID head is read through one sequential cursor: each field read is
+    // followed by its own advance, so the skipped fields cost only an add.
+    RecordBytes<PidHeader> p;
+    p.m_rec = buf;
+    p.m_bytes += 2 * sizeof(u32);
+    i32 width = *p.m_dwords;
+    p.m_bytes += sizeof(u32);
+    i32 height = *p.m_dwords;
+    p.m_bytes += sizeof(u32);
+    p.m_bytes += 4 * sizeof(u32);
+    i32 ok = DecodeBlit(p.m_bytes, dc, width, height, BPP_PALETTED_8, ctrl);
     if (!(ctrl & 1)) {
         m_transparent = false;
     }
@@ -693,11 +700,19 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
 // @early-stop
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(PidHeader* buf, HDC dc, i32 ctrl) {
-    PidFlags flags = buf->flags;
-    i32 width = buf->width;
-    i32 height = buf->height;
-    i32 fill = buf->fill;
-    u8* src = buf->pixels;
+    RecordBytes<PidHeader> p;
+    p.m_rec = buf;
+    p.m_bytes += sizeof(u32);
+    PidFlags flags = static_cast<PidFlags>(*p.m_dwords);
+    p.m_bytes += sizeof(u32);
+    i32 width = *p.m_dwords;
+    p.m_bytes += sizeof(u32);
+    i32 height = *p.m_dwords;
+    p.m_bytes += sizeof(u32);
+    p.m_bytes += 2 * sizeof(u32);
+    i32 fill = *p.m_dwords;
+    p.m_bytes += sizeof(u32);
+    p.m_bytes += sizeof(u32);
 
     if (!DecodeBmpHeader(dc, width, height, BPP_PALETTED_8, ctrl)) {
         return 0;
@@ -719,17 +734,17 @@ i32 CRezImage::DecodePidData(PidHeader* buf, HDC dc, i32 ctrl) {
         i32 y = 0;
         i32 i = 0;
         while (y < m_height) {
-            i32 c = src[i];
+            i32 c = p.m_bytes[i];
             if (c & 0x80) {
                 i32 count = c - 0x80;
                 memset(dstRow + x, static_cast<u8>(fill), count);
-                x += (src[i] & 0xff) - 0x80;
+                x += (p.m_bytes[i] & 0xff) - 0x80;
                 i++;
             } else {
                 i32 count = c;
-                memcpy(dstRow + x, &src[i + 1], count);
-                x += src[i];
-                i += src[i] + 1;
+                memcpy(dstRow + x, &p.m_bytes[i + 1], count);
+                x += p.m_bytes[i];
+                i += p.m_bytes[i] + 1;
             }
             if (x >= m_width) {
                 y++;
@@ -745,10 +760,10 @@ i32 CRezImage::DecodePidData(PidHeader* buf, HDC dc, i32 ctrl) {
             u8* dst = m_pixels + m_rowOffsets[y];
             i32 n = width;
             while (n > 0) {
-                u8 c = *src++;
+                u8 c = *p.m_bytes++;
                 if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
                     i32 count = c & BYTE_RUN_LENGTH_MASK;
-                    u8 v = *src++;
+                    u8 v = *p.m_bytes++;
                     if (count > 0) {
                         memset(dst, v, count);
                         dst += count;
