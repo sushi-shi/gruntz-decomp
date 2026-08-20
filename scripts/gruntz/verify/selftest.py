@@ -3262,6 +3262,57 @@ class SemDiffControls(unittest.TestCase):
         self.assertNotEqual(referent_runs(b), referent_runs(t))
 
 
+class EhActionControls(unittest.TestCase):
+    """`walls ehactions` exists to stop one specific wrong conclusion: reading
+    a funclet COUNT delta as missing cleanup code. Its classifier is the part
+    that can silently rot into always saying "defect"."""
+
+    def test_a_count_delta_is_not_an_action_defect(self):
+        from difflib import SequenceMatcher
+        from gruntz.walls.ehactions import classify
+        b = ["[ebp-0x30] -> ??3@YAXPAX@Z"] * 9
+        t = ["[ebp-0x30] -> ??3@YAXPAX@Z"] * 12
+        ops = [o for o in SequenceMatcher(None, b, t).get_opcodes()
+               if o[0] != "equal"]
+        self.assertEqual(classify(b, t, ops), "count")
+
+    def test_a_changed_dtor_is_an_action_defect(self):
+        from difflib import SequenceMatcher
+        from gruntz.walls.ehactions import classify
+        b = ["[ebp-0x30] -> ??1CString@@QAE@XZ"]
+        t = ["[ebp-0x30] -> ??3@YAXPAX@Z"]
+        ops = [o for o in SequenceMatcher(None, b, t).get_opcodes()
+               if o[0] != "equal"]
+        self.assertEqual(classify(b, t, ops), "action")
+
+    def test_a_new_slot_among_inserts_is_an_action_defect(self):
+        from difflib import SequenceMatcher
+        from gruntz.walls.ehactions import classify
+        b = ["[ebp-0x30] -> ??3@YAXPAX@Z"]
+        t = ["[ebp-0x30] -> ??3@YAXPAX@Z", "[ebp-0x44] -> ??3@YAXPAX@Z"]
+        ops = [o for o in SequenceMatcher(None, b, t).get_opcodes()
+               if o[0] != "equal"]
+        self.assertEqual(classify(b, t, ops), "action")
+
+    def test_the_canonical_map_skips_sectionless_rows(self):
+        """The base side names funclets `$L<n>`, so their `__ehunwind$`
+        identity lives only in the normalizer's symbols.tsv - and a row with
+        `section_ordinal = 0` has no bytes to cut."""
+        from gruntz.walls import ehactions
+        with tempfile.TemporaryDirectory() as td:
+            side = Path(td) / "base"
+            side.mkdir()
+            (side / "u.symbols.tsv").write_text(
+                "canonical_name\tsection_ordinal\tsection_offset\n"
+                "__ehunwind$?P@@QAEXXZ$0\t481\t0x0\n"
+                "__ehunwind$?P@@QAEXXZ$1\t481\t0xb\n"
+                "$dup$__ehunwind$?P@@QAEXXZ$2\t0\t0x0\n"
+                "?Unrelated@@QAEXXZ\t481\t0x40\n")
+            with mock.patch.object(ehactions, "NORM", Path(td)):
+                got = ehactions._canonical_map("base", "u", "?P@@QAEXXZ")
+        self.assertEqual(got, {0: (481, 0x0), 1: (481, 0xB)})
+
+
 class MatchReferenceControls(unittest.TestCase):
     """`gruntz match --reference <bad path>` raised FileNotFoundError AFTER a
     full build - the work was done and the run ended in a traceback."""

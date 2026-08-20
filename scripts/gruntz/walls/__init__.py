@@ -20,6 +20,10 @@
     gruntz walls semsweep <tsv>   the same screen over a worklist range - one
                                   line per clean row, the exclusive keys and
                                   FP deltas for the rest
+    gruntz walls ehactions <fn>   the /GX unwind ACTION sequence (object slot
+                                  + dtor identity, in order) of one parent -
+                                  a funclet COUNT delta is the ctor-inlining
+                                  boundary, a differing action is a defect
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
 
@@ -45,6 +49,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "global-refs": "gruntz.walls.global_refs",
+         "ehactions": "gruntz.walls.ehactions",
          "semdiff": "gruntz.walls.semdiff",
          "semsweep": "gruntz.walls.semdiff",
          "stale-markers": "gruntz.walls.stale_markers",
