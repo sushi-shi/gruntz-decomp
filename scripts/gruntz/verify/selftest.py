@@ -3192,6 +3192,76 @@ class CompdbStalenessControls(unittest.TestCase):
         self.assertEqual(compdb.dead_include_dirs({"x": ["/imsvc"]}), [])
 
 
+class SemDiffControls(unittest.TestCase):
+    """`walls semdiff` screens a pair at OPERAND level, so its filters ARE the
+    tool: a filter that stops working turns every scheduling artifact into a
+    reported bug and the sweep becomes unreadable.  A screen nobody has seen
+    both PASS a known-equal pair and FLAG a real swap is not a screen."""
+
+    @staticmethod
+    def _lines(asms, ref=None):
+        from gruntz.walls.semdiff import Line
+        return [Line(i * 4, a, ref) for i, a in enumerate(asms)]
+
+    def test_a_known_equal_pair_screens_clean(self):
+        """Register mirror, frame size, cross-jump duplication and a byte-
+        continuation line - four observed false-positive classes at once."""
+        from gruntz.walls.semdiff import exclusive, features
+        base = self._lines([
+            "sub esp,0xc", "mov eax,DWORD PTR [esi+0x1ec]",
+            "and ecx,0xffffffe0", "mov DWORD PTR [esi+0x2f0],eax",
+            "call 0x1234", "ret 0x10",
+        ])
+        target = self._lines([
+            "sub esp,0x10", "mov edx,DWORD PTR [esi+0x1ec]",
+            "and al,0xffffffe0", "mov DWORD PTR [esi+0x2f0],edx",
+            "call 0x1234", "83 c4 10", "call 0x1234", "ret 0x10",
+        ])
+        fb, ft = features(base), features(target)
+        self.assertEqual(exclusive(fb, ft), [])          # nothing reported
+        self.assertEqual(fb["disp"]["+0x1ec"], ft["disp"]["+0x1ec"])
+
+    def test_a_swapped_member_is_flagged(self):
+        from gruntz.walls.semdiff import exclusive, features
+        base = self._lines(["mov eax,DWORD PTR [esi+0x1f0]"])
+        target = self._lines(["mov eax,DWORD PTR [esi+0x1ec]"])
+        keys = {(k, key) for k, key, _u, _v in exclusive(features(base),
+                                                         features(target))}
+        self.assertIn(("disp", "+0x1f0"), keys)
+        self.assertIn(("disp", "+0x1ec"), keys)
+
+    def test_a_dropped_conversion_is_flagged(self):
+        """cl never adds or drops an fild to schedule - the projectile
+        spawn-coordinate bug was exactly this delta."""
+        from gruntz.walls.semdiff import features
+        fb = features(self._lines(["fld QWORD PTR [esi+0x8]"]))
+        ft = features(self._lines(["fild DWORD PTR [esi+0x5c]",
+                                   "fld QWORD PTR [esi+0x8]"]))
+        self.assertEqual(fb["fp"]["fild"], 0)
+        self.assertEqual(ft["fp"]["fild"], 1)
+
+    def test_a_jump_table_never_reaches_the_multisets(self):
+        """A function's own index table decodes as junk with huge
+        displacements; counting it swamps every real key."""
+        from gruntz.walls.semdiff import features
+        me = "?Fn@C@@QAEHXZ"
+        junk = self._lines(["mov cl,BYTE PTR [eax+0xd1c]",
+                            "add BYTE PTR [edx-0x70ffffff],bl"], ref=me)
+        self.assertEqual(sum(features(junk, me)["disp"].values()), 0)
+        self.assertEqual(sum(features(junk, "?Other@@QAEXXZ")["disp"].values()),
+                         2)
+
+    def test_the_referent_sequence_sees_a_masked_swap(self):
+        """Relocated operands are masked in the scored bytes, so a swapped
+        pair of string keys is invisible to every value-level multiset."""
+        from gruntz.walls.semdiff import Line, referent_runs
+        b = [Line(0, "push 0x0", "??_C@_0A@AAA@KEY_A"),
+             Line(4, "push 0x0", "??_C@_0A@BBB@KEY_B")]
+        t = [Line(0, "push 0x0", "??_C@_0A@BBB@KEY_B"),
+             Line(4, "push 0x0", "??_C@_0A@AAA@KEY_A")]
+        self.assertNotEqual(referent_runs(b), referent_runs(t))
+
+
 class MatchReferenceControls(unittest.TestCase):
     """`gruntz match --reference <bad path>` raised FileNotFoundError AFTER a
     full build - the work was done and the run ended in a traceback."""
