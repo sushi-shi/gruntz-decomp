@@ -3720,14 +3720,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
 #undef ARR_RECYCLE
 
-// @early-stop
-// cl strength-reduces the loop-carried col/row derivatives (col*0x1c, col<<8,
-// row*4 decremented in slots, frame 0x68) where retail recomputes them from
-// col/row each iteration (frame 0x60), and retail routes list2's dtor jmp INTO
-// list3's `call ??1CPtrList` (one shared call instruction, receivers differ in
-// ecx). The while spelling and the guard+tail-recursion spelling compile
-// byte-identically - MSVC5 eliminates the self tail call BEFORE loop opts, so
-// the source form cannot reach either decision.
 RVA(0x0002d800, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     while (g_stepRun != 0) {
