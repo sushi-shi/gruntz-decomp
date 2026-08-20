@@ -86,6 +86,16 @@ cleared `m_mouse`, while retail skips that member. The sibling teardown in
 sequence as retail. Compare repeated expansions of the same source entity
 before treating an exclusive store as harmless scheduling.
 
+TRAP - a referent-sequence DELETE of a call is not automatically a missing
+call. `CBattlezMapConfig::AdvanceToEnemyBase` 0x33...  screened
+`delete base[11:12] B ?RemoveAll@CPtrList@@QAEXXZ`, and the call SITE counts
+agree with it: base 4, retail 3. It is still not a source difference. Retail
+reaches the third site from a fourth logical path by cross-jumping into it
+(`jmp 0xefe`, straight at another drain's `lea ecx,[esi+0x31c]`), so the
+statement is executed on all four paths and only the emitted site count
+differs. ALWAYS grep the retail side for a `jmp` into the surviving site's
+address before deleting the statement: count the PATHS, not the call sites.
+
 DISCIPLINE. Ordinary count deltas are not evidence: the taxonomy in
 `gruntz.walls.semdiff`'s docstring lists eleven classes that produce a
 difference with identical semantics (register mirrors, cross-jump merge

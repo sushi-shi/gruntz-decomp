@@ -106,3 +106,27 @@ bigger than a plausible compiled-out statement, the body was not visible.
   `DDrawWorkerCacheFindInline.h` (keeper theorem + depth-3 no-emission; the
   ASSERT inside both twins is what lets the point ctors decline at all),
   `LogicTypeTableInline.h` (keeper theorem + first-definer + inverse-size).
+
+## NEGATIVE CONTROL 2026-08-21: LightFx must NOT opt into the Find inline
+
+`DDrawWorkerCacheFindInline.h`'s own header comment reads as if `CLightFx`'s
+constructor is the intended consumer ("is why CLightFx's ctor can afford
+exactly ONE of its three sites"). It is not - the ctor is the WITNESS for the
+mixed shape, not a TU that should include the header.
+
+The byte evidence that invites the change is real: a whole-image screen of
+`?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` against
+`?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z` finds exactly ONE unit where
+the counts disagree - `lightfx`, base 3 Find / 1 Lookup against retail's
+2 Find / 2 Lookup - and `walls semdiff` names it as a referent REPLACE, which
+normally means a wrong callee.
+
+Adding `#include <DDrawMgr/DDrawWorkerCacheFindInline.h>` to `src/Gruntz/LightFx.cpp`
+does flip that site to `Lookup`, and takes `??0CLightFx@@QAE@PAUCGameObject@@@Z`
+from 96.46 to **0.00**: with the body visible cl 5.0 stops emitting the
+constructor's COMDAT at all. Same failure mode as the depth-3 no-emission
+result above, one level up. Reverted.
+
+Read-across: on this device a referent REPLACE between a wrapper and the
+function it wraps is an inline-VISIBILITY reading, and the visibility split is
+adjudicated by which COMDATs each obj still HOMES - never by the call alone.
