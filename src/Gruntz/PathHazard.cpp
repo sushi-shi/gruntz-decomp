@@ -327,16 +327,20 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
     if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
-            LeafCue* out = NULL;
-            MapLookup(host->m_cues, "LEVEL_CLOUDHAZARDKILL", out);
-            if (out != NULL) {
+            LeafCue* found = NULL;
+            MapLookup(host->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
+            // LeafCue::PlayIfElapsed inlined: the call's `this` copy is what holds
+            // the cue in a register across the m_lastPlayTime store - reading the
+            // escaped lookup out-param directly makes cl reload it from its home.
+            LeafCue* cue = found;
+            if (cue != NULL) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
                 if (enabled != 0) {
                     u32 now = g_killCueClock;
-                    if (static_cast<u32>((now - out->m_lastPlayTime)) >= out->m_replayDelay) {
-                        out->m_lastPlayTime = now;
-                        out->m_sound->ConfigureItem(tag, 0, 0, 0);
+                    if (static_cast<u32>((now - cue->m_lastPlayTime)) >= cue->m_replayDelay) {
+                        cue->m_lastPlayTime = now;
+                        cue->m_sound->ConfigureItem(tag, 0, 0, 0);
                     }
                 }
             }
