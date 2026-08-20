@@ -406,6 +406,28 @@ lexical scopes are flat. A post-call snapshot of the old coordinate falls to
 state is aggregate coalescing and the resulting cross-jump choice, not another
 switch spelling.
 
+### Open RE case — `CDDSurface::FlipVertical` locked-buffer home
+
+`FlipVertical` at `0x0013ebb0` is semantically aligned at five calls, two
+returns, and three ordered relocations. Retail keeps `this` in EBX, initially
+holds the locked buffer in EDI and homes it, leaves width in ECX, and reloads the
+buffer at the outer-loop latch. That reload creates the sole extra branch: the
+first iteration jumps over it because EDI still holds `Lock`'s result. The
+current compile keeps the buffer in EBP, assigns width to EDI, homes `this`, and
+strength-reduces `height - i - 1` into a decrementing height slot. Its latch
+therefore restores five values without the entry jump.
+
+The source-visible controls are bounded. `const` height, a lexical loop scope,
+a natural outer `for`, and assignment-inside-null-guard forms for both allocated
+pointers are byte-flat. Rewriting all three proven pointer-copy loops as one
+reused array index falls from 70.552635% to 44.47%. Earlier local/member
+height-width, bottom-row, and hoisted-pitch controls were inert or worse. A
+classified campaign compiled 260 variants (four source shapes crossed with 65
+TU states) and found one compiler island at baseline; no state or mutation
+changed one target byte. The remaining question is which C1 tuple ordering makes
+C2's per-block rotating picker home the locked buffer rather than `this`; repeat
+source permutation only if that tuple distinction becomes understood.
+
 ---
 
 ## S1 — When a value gets no register at all

@@ -538,19 +538,6 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
     return SetColorKey(DDCKEY_DESTBLT, &ck);
 }
 
-// @early-stop
-// Rotated-loop shape: retail enters the row loop through a forward jmp into the
-// middle (skeleton B5 `jmp B7`) with the back-edge below. The one-instruction
-// block the entry jump skips is `mov edi,[esp+0x14]` - reloading `buf` at the
-// LATCH, which the first iteration does not need because edi still holds Lock's
-// return. That is downstream of a register split, not a source restructure:
-// retail homes `buf` in a frame slot and keeps `this` in ebx for the whole body,
-// cl keeps `buf` in ebp and is then forced to clobber ebx with m_pitch and
-// re-home `this`, so its latch restores five values where retail restores two.
-// It also strength-reduces `height - i - 1` into a decrementing slot where
-// retail re-derives it from the height and i slots each iteration. All twelve
-// combinations of the botRow spelling x local-vs-member height/width x a hoisted
-// pitch local are measured inert or worse (member forms lose 3 and 10 points).
 RVA(0x0013ebb0, 0x126)
 void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
