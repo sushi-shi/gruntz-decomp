@@ -461,7 +461,6 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     return t->m_screenY;
 }
 
-// @early-stop
 RVA(0x00167ea0, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & 0x100)) {
