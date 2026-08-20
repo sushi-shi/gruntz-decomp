@@ -2150,15 +2150,16 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                 m_timerBase = g_frameTime;
                 CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
-                    p = NULL;
-                    MapLookup(h28->m_cues, "GAME_FINISHLEVEL", p);
-                    if (p != NULL) {
+                    LeafCue* found = NULL;
+                    MapLookup(h28->m_cues, "GAME_FINISHLEVEL", found);
+                    LeafCue* cue = found;
+                    if (cue != NULL) {
                         i32 tag = g_sndCueTag;
                         if (g_sndEnabled != 0
-                            && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
-                                   >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(tag, 0, 0, 0);
+                            && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+                                   >= static_cast<u32>(cue->m_replayDelay)) {
+                            cue->m_lastPlayTime = g_killCueClock;
+                            cue->m_sound->ConfigureItem(tag, 0, 0, 0);
                         }
                     }
                 }
