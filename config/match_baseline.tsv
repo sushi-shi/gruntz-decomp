@@ -65,7 +65,7 @@ butetail	3	3
 butetree	2	1
 bzkinddispatch	1	1
 chainforward	2	2
-chatbox	29	23
+chatbox	29	25
 chatboxowner	14	12
 cheatmgr	7	4
 checkpointdlg	6	6
@@ -786,8 +786,8 @@ chatbox	?MoveFocusRight@CChatBox@@QAEHXZ	100.0000	100.0000	1	605b39f5fc8a	0x1831
 chatbox	?MoveFocusRightFollowingLinks@CChatBox@@QAEHXZ	100.0000	100.0000	1	d8b2146a8c2b	0x1831f0	100.0000	
 chatbox	?MoveFocusUp@CChatBox@@QAEHXZ	100.0000	100.0000	1	3c72ab75a298	0x182d40	100.0000	
 chatbox	?MoveFocusUpFollowingLinks@CChatBox@@QAEHXZ	100.0000	100.0000	1	6f20ed055bdc	0x183210	100.0000	
-chatbox	?PlayActivationSound@CChatBox@@QAEHXZ	100.0000	90.1961	1	6956cd7907d0	0x1830b0	100.0000	
-chatbox	?PlayFocusSound@CChatBox@@QAEHXZ	100.0000	90.1961	1	3e65a5c0cd0e	0x183030	100.0000	
+chatbox	?PlayActivationSound@CChatBox@@QAEHXZ	100.0000	100.0000	1	6956cd7907d0	0x1830b0	100.0000	
+chatbox	?PlayFocusSound@CChatBox@@QAEHXZ	100.0000	100.0000	1	3e65a5c0cd0e	0x183030	100.0000	
 chatbox	?Post@CChatBox@@QAEHXZ	100.0000	100.0000	1	c5eef00606bd	0x182ce0	100.0000	
 chatbox	?Pre@CChatBox@@QAEHXZ	100.0000	100.0000	1	bf1e092fcb52	0x182cb0	100.0000	
 chatbox	?ReplaceNode@CChatBox@@QAEHPBD@Z	100.0000	100.0000	1	074b8c45be3b	0x182dd0	100.0000	
@@ -4218,7 +4218,7 @@ tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	1	e75f4e245e8b	0x
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	a3dd726fb408	0x110430	100.0000	
 tileswitchlogic	?ApplyByType@CGiantRockLogic@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	b7a0854980a7	0x113d40	100.0000	
 tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	97.1496	97.1496	2	41abb86416fc	0x112590	97.1496	
-tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	96.3333	96.3333	3	91989c11e1cf	0x1122a0	99.4590	
+tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	99.4590	99.4590	4	8d370e58cb5d	0x1122a0	99.4590	
 tileswitchlogic	?BuildSmall@CCheckpointTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	84.2553	84.2553	2	ddb748cfa7a4	0x112a50	84.2553	
 tileswitchlogic	?BuildSmall@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	100.0000	100.0000	1	cca65e1aa6b7	0x110460	100.0000	
 tileswitchlogic	?Classify@CTileTriggerLogic@@QAEHH@Z	98.8451	98.8451	1	ff68d44fd880	0x112970	98.8451	
@@ -4244,10 +4244,10 @@ tileswitchlogic	?SwitchDown@CCheckpointTriggerSwitchLogic@@EAEHXZ	99.1351	99.135
 tileswitchlogic	?SwitchDown@CTileExclusiveTriggerSwitchLogic@@EAEHXZ	99.7273	99.7273	2	09a0d13da0d8	0x112080	99.8182	
 tileswitchlogic	?SwitchDown@CTileSecretTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	01c9b768e75f	0x112820	100.0000	
 tileswitchlogic	?SwitchDown@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	c254d9ce9f8f	0x112840	100.0000	
-tileswitchlogic	?SwitchDown@CTileTriggerSwitchLogic@@UAEHXZ	89.4598	89.4598	3	f57168ada38d	0x110570	93.5977	
+tileswitchlogic	?SwitchDown@CTileTriggerSwitchLogic@@UAEHXZ	93.5977	93.5977	4	23f6a2781f62	0x110570	93.5977	
 tileswitchlogic	?SwitchUp@CCheckpointTriggerSwitchLogic@@EAEHXZ	99.1351	99.1351	2	a2d6b072db02	0x112bf0	99.1351	
 tileswitchlogic	?SwitchUp@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	7b45ebbbed7d	0x112860	100.0000	
-tileswitchlogic	?SwitchUp@CTileTriggerSwitchLogic@@UAEHXZ	90.1494	90.1494	3	56946405da6c	0x1106b0	93.5977	
+tileswitchlogic	?SwitchUp@CTileTriggerSwitchLogic@@UAEHXZ	93.5977	93.5977	4	028e8264916a	0x1106b0	93.5977	
 tileswitchlogic	?Tick@CTileSecretTriggerLogic@@EAEHXZ	85.3585	85.3585	2	c183b3d1e746	0x1128b0	87.6226	
 tileswitchlogic	?Tick@CTileTriggerLogic@@UAEHXZ	94.9255	94.9255	1	2da50c5f117b	0x110c10	94.9255	
 tileswitchlogic	?ValidateByType@CTileTriggerLogic@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	75ec2f0e8e25	0x113a90	100.0000	

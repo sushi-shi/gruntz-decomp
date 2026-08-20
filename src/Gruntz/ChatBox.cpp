@@ -280,8 +280,9 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0)
 // pushes into the inlined region, which is what gives the guard its own epilogue.
 static __inline i32 PlayChatCue(CDDrawSubMgrLeafScan* roster, const char* key) {
     if (!roster->m_emitGate) {
-        LeafCue* t = NULL;
-        MapLookup(roster->m_cues, key, t);
+        LeafCue* found = NULL;
+        MapLookup(roster->m_cues, key, found);
+        LeafCue* t = found;
         if (t != NULL) {
             i32 enabled = g_sndEnabled;
             i32 delta = g_sndCueTag;
