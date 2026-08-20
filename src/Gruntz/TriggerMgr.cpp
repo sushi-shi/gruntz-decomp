@@ -423,36 +423,6 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
     return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
 }
 
-// @early-stop
-// The case order is read off retail's own jump table (13 slots at 0x79298, byte
-// index at 0x792cc); sorting its distinct targets by address gives the source
-// order, and it is the order below.
-//
-// Two known residues.  (1) The second path block (retail 0x79080) CALLS
-// WrapCoord for `source` but has it expanded for `destination`, which never
-// leaves edi/ebx - so that expansion must come from an inline WrapCoord in the
-// Wwd header, not from a hand-written copy here.  Transcribing the body into
-// this arm makes cl re-order the switch arms; making
-// CDDrawWorkerHost::WrapCoord an in-class inline expands it at EVERY call site,
-// not at one of two (and drags `cimage` down with it).  There is no /Ob1 budget
-// split to buy; whatever produced retail's one-call/one-expansion pair is not
-// an `inline` keyword on this body - the destination wrap is now transcribed
-// below as the dev's open-coded scalar copy (dx/dy never leave registers in
-// retail, the plane chain is re-derived, the final adjust is the re-associated
-// bounds50-viewRect difference).  (2) THE wall: cl cross-jumps the identical
-// `LoadCursorSprites(...); return 1;` tails that retail keeps duplicated
-// (14 retail call sites vs 4 ours, 16 rets vs 6).  Measured 2026-08-17: plain
-// per-arm returns, goto-label sharing (lightUp/lightUp2/zero/done - which IS
-// retail's cross-arm sharing structure), tree-differentiated argument
-// spellings, and an added-mass regime all still merge; retail's copies differ
-// only in per-site scheduling of the world reload (before vs after the pushes)
-// and in the gk temp register, i.e. allocator state this pass sees before
-// merging.  identical-return-epilogue-tailmerge at scale; no source reach found.
-//
-// The retail bytes DO prove the receiver chains are re-derived, not held in a
-// spanning local: the clamp region's level dies in ecx before CTileImageSet
-// dispatch, and both path-preview sites re-chase m_world->m_level->m_mainPlane
-// from a reloaded `this` - hence no function-lifetime `view` local below.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -560,8 +530,12 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
             POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
             m_world->m_level->m_mainPlane->WrapCoord(&source.x, &source.y);
-            POINT destination = {x, y};
-            m_world->m_level->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+            // Retail-proven ABI seam: WrapCoord receives the two by-value i32
+            // argument slots directly; Win32 LONG has the same 32-bit storage.
+            m_world->m_level->m_mainPlane->WrapCoord(
+                reinterpret_cast<LONG*>(&x),
+                reinterpret_cast<LONG*>(&y)
+            );
             u16 color;
             if (cell->RectContains(x, y)) {
                 color = PackRgb16(0xff, 0, 0);
@@ -571,7 +545,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 world->LoadCursorSprites(pfk, 0);
             }
             world->m_pathPreviewSource = source;
-            world->m_pathPreviewDestination = destination;
+            world->m_pathPreviewDestination.x = x;
+            world->m_pathPreviewDestination.y = y;
             world->m_pathPreviewColor = color;
             world->m_drewThisFrame = 1;
             return 1;
@@ -725,7 +700,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     } else {
                         color = PackRgb16(0x20, 0x20, 0x20);
-                        world->LoadCursorSprites(pfk, 0);
+                        world->LoadCursorSprites(m_pendingFxKind, 0);
                     }
                     world->m_pathPreviewSource = source;
                     world->m_pathPreviewDestination.x = dx;
@@ -757,7 +732,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         }
     }
 
-    world->LoadCursorSprites(pfk, 0);
+    world->LoadCursorSprites(m_pendingFxKind, 0);
     return 1;
 }
 
