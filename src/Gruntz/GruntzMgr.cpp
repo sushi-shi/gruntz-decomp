@@ -288,7 +288,6 @@ i32 CGameMgr::HandleCommand(i32, GruntzCommandId, i32) {
 
 RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 
-// @early-stop
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
@@ -369,7 +368,6 @@ void CGruntzMgr::Close() {
         v->m_device = NULL;
         v->m_keyboard = NULL;
         v->m_joystick = NULL;
-        v->m_mouse = NULL;
         v->m_deviceList = NULL;
         v->m_mode = INPUTDEV_NONE;
         operator delete(v);

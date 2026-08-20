@@ -70,6 +70,22 @@ WORKED EXAMPLE 4 - a loop-guard rotation IS a boundary change.
 the top (`while ((u32)shift < 0x20)`) - one fewer branch, and a different
 value on the exhausted-scan path. Fixed in 591491fa3.
 
+WORKED EXAMPLE 5 - an exclusive member displacement plus a dead local of the
+same member is a dropped call argument. `CUFO::CUFO` 0xb4a90 screened one key,
+`disp +0x60 base 0 target 1`; the source read `i32 sy = o->m_screenY;` but
+passed literal zero to `CreateSprite`, so cl deleted the load. Retail saves
+obj+0x5c and obj+0x60 and pushes both as the second and third arguments. A dead
+local whose member displacement exists only in retail is evidence for a
+dropped statement or argument, not allocator residue.
+
+WORKED EXAMPLE 6 - the mirror case: a store displacement present only in base
+can identify one statement too many. `CGruntzMgr::Close` 0x855e0 screened
+`disp/store +0xc base 1 target 0`; its hand-written `StateMgrBZ` teardown
+cleared `m_mouse`, while retail skips that member. The sibling teardown in
+`CGruntzMgr::Run`'s failure path independently emits the same five-store
+sequence as retail. Compare repeated expansions of the same source entity
+before treating an exclusive store as harmless scheduling.
+
 DISCIPLINE. Ordinary count deltas are not evidence: the taxonomy in
 `gruntz.walls.semdiff`'s docstring lists eleven classes that produce a
 difference with identical semantics (register mirrors, cross-jump merge
