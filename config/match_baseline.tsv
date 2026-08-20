@@ -573,7 +573,7 @@ battlezmapconfig	?PickRandomIdleUnit@CBattlezMapConfig@@QAEPAVCGrunt@@H@Z	100.00
 battlezmapconfig	?PickSpawnCoord@CBattlezMapConfig@@QAEPAUCoord@@PAU2@PAVCGrunt@@H@Z	97.9048	97.9048	3	a42ae5eba70a	0x30f20	97.9048	
 battlezmapconfig	?Push@FreeNodePool@@QAEXPAX@Z	100.0000	100.0000	3	63aa5f2b5158	0x311b0	100.0000	
 battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	72.9688	72.9688	4	4b479de0025b	0x2a570	72.9688	
-battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	87.5306	87.5306	3	11a78025a8f4	0x2c690	87.5306	
+battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.0250	88.0250	4	4085c3b4b073	0x2c690	88.0250	
 battlezmapconfig	?ResolveTileClaim@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	82.4120	82.4120	2	b27c27bf8ce5	0x2dfa0	82.4120	
 battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	84.8849	84.8849	3	0e7ef7599c15	0x2e3a0	84.8849	
 battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	91.9651	91.9651	2	70648e585903	0x2c140	92.5930	
@@ -2176,7 +2176,7 @@ gruntindicatorworkerhandlers	?CreateGruntToyTimeSprite@@YAHPAUCGameObject@@@Z	10
 gruntindicatorworkerhandlers	?CreateGruntWingzTimeSprite@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	ad67361ac7bb	0x7e160	100.0000	
 gruntpeertracking	?StepPeerTracking@CGrunt@@QAEHXZ	97.9915	97.9915	3	97c27cf182a9	0xf7d90	97.9915	
 gruntphasestep	?PhaseStep@CGrunt@@QAEHXZ	82.8571	82.8571	23	e1839f0d53b4	0xf60f0	82.8688	
-gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHW4PickupType@@HHHH@Z	76.0151	76.0151	9	d43fdd50260f	0x65e80	76.0151	
+gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHW4PickupType@@HHHH@Z	77.2767	77.2767	10	95685ddcd503	0x65e80	77.2767	
 gruntpowerupsprite	??0CGruntPowerupSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	af2b6277e6d9	0x7fdb0	100.0000	
 gruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	cpp:606441ad1fc4	0x12370	100.0000	
 gruntpowerupsprite	??_GCGruntPowerupSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:606441ad1fc4	0x12340	100.0000	
@@ -2189,7 +2189,7 @@ gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	89.8214	13	ff509
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	5	d871f928c1b0	0x7d810	100.0000	
 gruntreticlescan	?ArrivalReticleScan@CGrunt@@QAEHXZ	85.1388	85.1361	12	7b101318dfb9	0xee800	85.1388	
 gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	70.0373	70.0373	7	cf5ca9fa467c	0xf42f0	70.0373	
-gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	85.1431	85.1431	23	29d97acea8ba	0xf71c0	85.1431	
+gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	85.6297	85.6297	24	94c188dfc298	0xf71c0	85.6297	
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	ea77f4ba9e4d	0x7e3e0	100.0000	
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e80	100.0000	
 gruntselectedsprite	??_GCGruntSelectedSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e50	100.0000	
