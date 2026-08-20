@@ -870,9 +870,6 @@ i32 CGruntzMgr::Rand() {
     return GetRandomNumber();
 }
 
-// @early-stop
-// Both range arms assign the same local: that identity lets cl hoist the shared
-// GetRandomNumber guard while retaining retail's two mutually exclusive updates.
 RVA(0x0000cd70, 0xe5)
 void CRandomAmbientSound::InitCycleTiming(
     i32 playDurationMin,
