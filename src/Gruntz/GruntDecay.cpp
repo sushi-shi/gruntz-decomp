@@ -79,7 +79,8 @@ i32 CGrunt::LoadGruntDecayConfig() {
 // @early-stop
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
-    if (static_cast<i64>(g_frameTime) - m_idleTimer >= m_idleWindow) {
+    i64 now = static_cast<i64>(g_frameTime);
+    if (now - m_idleTimer >= m_idleWindow) {
         Hide();
         m_wwdObject->m_frameSet->SetAllTypes(SHADE_COPY);
         if (m_cellRemovalNotified == 0) {
@@ -88,7 +89,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
         m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
-    i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
+    i64 e = now - m_idleTimer;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     CWwdGameObjectA* o = m_object;
     i32 r = static_cast<i32>(
