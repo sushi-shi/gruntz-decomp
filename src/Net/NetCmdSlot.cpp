@@ -112,12 +112,13 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, char* rec, i32 size) {
     }
     u8 opcode = static_cast<u8>(*rec);
     i32 odd = opcode & 1;
-    char* p = rec + 1;
+    char* start = rec;
+    rec++;
     if (m_state != NETSLOT_ACTIVE) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_desc->m_slotKey, rec, size);
+        return m_owner->DispatchRecvMsg(m_desc->m_slotKey, start, size);
     }
     if (odd == 0) {
         if (m_isRemote != 0) {
@@ -132,18 +133,18 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, char* rec, i32 size) {
 
     i32 rem = size - 1;
     if (odd) {
-        p++;
+        rec++;
         rem--;
     }
 
     CNetWireMsg wire;
-    wire.m_bytes = p;
+    wire.m_bytes = rec;
     CNetCmdHdr* h = wire.m_cmdHdr;
     i32 seq = h->m_sequence;
     i32 base = h->m_windowBase;
     i32 checksum = h->m_checksum;
     u8 count = h->m_entryCount;
-    char* cursor = p + 13;
+    char* cursor = rec + 13;
     rem -= 13;
 
     if (m_isRemote != 0 && odd) {
