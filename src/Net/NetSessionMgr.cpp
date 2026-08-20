@@ -51,35 +51,29 @@ void CNetSession::ResetSync() {
     m_snapshotDone = 0;
     m_seq = 0;
     m_period = 1;
-    CNetCmdSlot* s = m_slots;
-    i32 n = 4;
-    do {
-        s->m_isRemote = 0;
-        s->m_latchedSeq = 0;
-        s->m_state = NETSLOT_EMPTY;
-        s->m_desc = NULL;
-        s->m_latency = 0;
-        s->m_baseSeq = 0;
-        s->m_maxSeq = 0;
-        s->m_owner = NULL;
-        s->ClearCmds();
-        s->ClearAckFlags();
-        s->ResetTriple(s->m_rangeA);
-        s->ResetTriple(s->m_rangeB);
-        s++;
-    } while (--n);
+    for (i32 i = 0; i < 4; i++) {
+        m_slots[i].m_isRemote = 0;
+        m_slots[i].m_latchedSeq = 0;
+        m_slots[i].m_state = NETSLOT_EMPTY;
+        m_slots[i].m_desc = NULL;
+        m_slots[i].m_latency = 0;
+        m_slots[i].m_baseSeq = 0;
+        m_slots[i].m_maxSeq = 0;
+        m_slots[i].m_owner = NULL;
+        m_slots[i].ClearCmds();
+        m_slots[i].ClearAckFlags();
+        m_slots[i].ResetTriple(m_slots[i].m_rangeA);
+        m_slots[i].ResetTriple(m_slots[i].m_rangeB);
+    }
     for (i32 j = 0; j < 0x80; j++) {
         m_idMap[j] = NULL;
     }
-    GruntRec* r = m_records;
-    i32 k = 0x80;
-    do {
-        r->m_seq = 0;
-        r->m_count = 0;
-        r->m_payloadLen = 0;
-        r->m_checksum = 0;
-        r++;
-    } while (--k);
+    for (i32 k = 0; k < 0x80; k++) {
+        m_records[k].m_seq = 0;
+        m_records[k].m_count = 0;
+        m_records[k].m_payloadLen = 0;
+        m_records[k].m_checksum = 0;
+    }
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     while (freeList.GetCount() != 0) {
         GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
