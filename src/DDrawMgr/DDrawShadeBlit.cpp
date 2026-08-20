@@ -2378,10 +2378,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
     }
 }
 
-// @early-stop
-// The SHADE_DST_BY_LEVEL asymmetry (m_light for dst[0], *src for dst[rowDelta], src
-// never advanced) is retail's, confirmed at 0x14d9f5 - do not "fix" it. Block
-// skeleton matches retail (24 blocks both sides); REGISTER-HOMING residue only.
+// The SHADE_DST_BY_LEVEL arm intentionally uses m_light for dst[0] and the
+// unadvanced source byte for dst[rowDelta].
 RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
