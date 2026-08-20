@@ -35,6 +35,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @early-stop regalloc: retail binds `this` to EDI and the grid-slot cursor to
+// EBX; cl rotates them the other way here, and the swap colours the whole body.
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
@@ -167,93 +169,74 @@ i32 CGrunt::ScanNearestTarget() {
     switch (m_defenderState) {
         case AISTATE_SEEK: {
 
-            if (best == NULL) {
-                goto L_wander;
+            if (best != NULL) {
+                if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
+                    && best->m_object->m_screenX == best->m_lastTilePx.m_x
+                    && best->m_object->m_screenY == best->m_lastTilePx.m_y) {
+                    i32 pa;
+                    PRIO(pa, m_entranceReason);
+                    i32 pb;
+                    PRIO(pb, best->m_entranceReason);
+                    if (pa <= pb
+                        && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
+                               != 0) {
+                        Coord bestTile = best->m_lastTilePx;
+                        CommitNeighbor(
+                            best->m_tileOwnerHi,
+                            best->m_tileOwnerLo,
+                            bestTile.m_x,
+                            bestTile.m_y
+                        );
+                        return 1;
+                    }
+                }
             }
-            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
-                && best->m_object->m_screenX == best->m_lastTilePx.m_x
-                && best->m_object->m_screenY == best->m_lastTilePx.m_y) {
-                i32 pa;
-                PRIO(pa, m_entranceReason);
-                i32 pb;
-                PRIO(pb, best->m_entranceReason);
-                if (pa <= pb
-                    && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
-                           != 0) {
-                    CommitNeighbor(
-                        best->m_tileOwnerHi,
-                        best->m_tileOwnerLo,
-                        best->m_lastTilePx.m_x,
-                        best->m_lastTilePx.m_y
-                    );
+
+            if (best != NULL) {
+                i32 seekPa;
+                PRIO(seekPa, m_entranceReason);
+                i32 seekPb;
+                PRIO(seekPb, best->m_entranceReason);
+                if (seekPa <= seekPb && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
+                    m_defenderPx.m_x = m_lastTilePx.m_x;
+                    m_defenderPx.m_y = m_lastTilePx.m_y;
+                    i32 pathPa;
+                    PRIO(pathPa, m_entranceReason);
+                    i32 pathPb;
+                    PRIO(pathPb, best->m_entranceReason);
+                    if (pathPa <= pathPb
+                        && this->GruntInRadius(best->m_tileOwnerHi, best->m_tileOwnerLo) != 0) {
+                        Coord cc;
+                        best->GetScreenPos(&cc);
+                        if (this->TileSwitch(
+                                cc.m_x >> TILE_SHIFT_PX,
+                                cc.m_y >> TILE_SHIFT_PX,
+                                0,
+                                m_arrivalFlags,
+                                1,
+                                0
+                            )
+                            != 0) {
+                            SetEntrancePos(1, 1);
+                            m_arrivalCell.m_x = best->m_tileOwnerHi;
+                            m_arrivalCell.m_y = best->m_tileOwnerLo;
+                            m_defenderState = AISTATE_CHASE;
+                            CGruntzMgr* reg = g_gameReg;
+                            if (CGameLevel::PointInBounds(
+                                    &reg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    m_object->m_screenX,
+                                    m_object->m_screenY
+                                )
+                                != 0) {
+                                reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                            }
+                        }
+                    }
+                    m_dwell = 0;
                     return 1;
                 }
             }
 
-            if (best == NULL) {
-                goto L_wander;
-            }
-            {
-                i32 pa;
-                PRIO(pa, m_entranceReason);
-                i32 pb;
-                PRIO(pb, best->m_entranceReason);
-                if (pa > pb) {
-                    goto L_wander;
-                }
-            }
-            if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
-                goto L_wander;
-            }
-            m_defenderPx.m_x = m_lastTilePx.m_x;
-            m_defenderPx.m_y = m_lastTilePx.m_y;
-            {
-                i32 pa;
-                PRIO(pa, m_entranceReason);
-                i32 pb;
-                PRIO(pb, best->m_entranceReason);
-                if (pa > pb) {
-                    goto L_scanDone;
-                }
-            }
-            if (this->GruntInRadius(best->m_tileOwnerHi, best->m_tileOwnerLo) == 0) {
-                goto L_scanDone;
-            }
-            {
-                Coord cc;
-                best->GetScreenPos(&cc);
-                if (this->TileSwitch(
-                        cc.m_x >> TILE_SHIFT_PX,
-                        cc.m_y >> TILE_SHIFT_PX,
-                        0,
-                        m_arrivalFlags,
-                        1,
-                        0
-                    )
-                    == 0) {
-                    goto L_scanDone;
-                }
-            }
-            SetEntrancePos(1, 1);
-            m_arrivalCell.m_x = best->m_tileOwnerHi;
-            m_arrivalCell.m_y = best->m_tileOwnerLo;
-            m_defenderState = AISTATE_CHASE;
-            {
-                CGruntzMgr* reg = g_gameReg;
-                if (CGameLevel::PointInBounds(
-                        &reg->m_world->m_level->m_mainPlane->m_viewRect,
-                        m_object->m_screenX,
-                        m_object->m_screenY
-                    )
-                    != 0) {
-                    reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
-                }
-            }
-        L_scanDone:
-            m_dwell = 0;
-            return 1;
-
-        L_wander:
             if (m_resetApplied != 0 || m_hasExtent == 0
                 || static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
@@ -310,52 +293,40 @@ i32 CGrunt::ScanNearestTarget() {
                 m_arrivalCell.m_y = -1;
                 return 1;
             }
-            if (sg == NULL) {
-                goto L_clearMode;
+            if (sg != NULL) {
+                i32 pa;
+                PRIO(pa, m_entranceReason);
+                i32 pb;
+                PRIO(pb, sg->m_entranceReason);
+                if (pb >= pa && sg->m_entranceCommitted != 0
+                    && this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) != 0) {
+                    if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
+                        StepArrivalDrop(
+                            sg->m_lastTilePx.m_x,
+                            sg->m_lastTilePx.m_y,
+                            m_arrivalFlags,
+                            0,
+                            1,
+                            0
+                        );
+                        m_dwell = 0;
+                    }
+                    if (m_poweredUp != 0 || m_stamina < STAMINA_FULL) {
+                        return 1;
+                    }
+                    if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
+                        return 1;
+                    }
+                    if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
+                        || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
+                        return 1;
+                    }
+                    Coord sgTile = sg->m_lastTilePx;
+                    CommitNeighbor(sg->m_tileOwnerHi, sg->m_tileOwnerLo, sgTile.m_x, sgTile.m_y);
+                    m_defenderState = AISTATE_ATTACK;
+                    return 1;
+                }
             }
-            i32 pa;
-            PRIO(pa, m_entranceReason);
-            i32 pb;
-            PRIO(pb, sg->m_entranceReason);
-            if (pb < pa) {
-                goto L_clearMode;
-            }
-            if (sg->m_entranceCommitted == 0) {
-                goto L_clearMode;
-            }
-            if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
-                goto L_clearMode;
-            }
-            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                StepArrivalDrop(
-                    sg->m_lastTilePx.m_x,
-                    sg->m_lastTilePx.m_y,
-                    m_arrivalFlags,
-                    0,
-                    1,
-                    0
-                );
-                m_dwell = 0;
-            }
-            if (m_poweredUp != 0 || m_stamina < STAMINA_FULL) {
-                return 1;
-            }
-            if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
-                return 1;
-            }
-            if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
-                || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
-                return 1;
-            }
-            CommitNeighbor(
-                sg->m_tileOwnerHi,
-                sg->m_tileOwnerLo,
-                sg->m_lastTilePx.m_x,
-                sg->m_lastTilePx.m_y
-            );
-            m_defenderState = AISTATE_ATTACK;
-            return 1;
-        L_clearMode:
             m_defenderState = AISTATE_SEEK;
             return 1;
         }
@@ -368,40 +339,32 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 CGrunt* sg =
                     m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                if (sg == NULL) {
-                    goto L_setLock;
+                if (sg != NULL) {
+                    i32 pa;
+                    PRIO(pa, m_entranceReason);
+                    i32 pb;
+                    PRIO(pb, sg->m_entranceReason);
+                    if (pa <= pb && this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) != 0
+                        && sg->m_entranceCommitted != 0) {
+                        if (m_neighborValid != 0 || m_combatActive != 0
+                            || m_stamina < STAMINA_FULL) {
+                            return 1;
+                        }
+                        if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
+                                != 0
+                            && sg->m_object->m_screenX == sg->m_lastTilePx.m_x
+                            && sg->m_object->m_screenY == sg->m_lastTilePx.m_y) {
+                            Coord sgTile = sg->m_lastTilePx;
+                            CommitNeighbor(
+                                sg->m_tileOwnerHi,
+                                sg->m_tileOwnerLo,
+                                sgTile.m_x,
+                                sgTile.m_y
+                            );
+                            return 1;
+                        }
+                    }
                 }
-                i32 pa;
-                PRIO(pa, m_entranceReason);
-                i32 pb;
-                PRIO(pb, sg->m_entranceReason);
-                if (pa > pb) {
-                    goto L_setLock;
-                }
-                if (this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) == 0) {
-                    goto L_setLock;
-                }
-                if (sg->m_entranceCommitted == 0) {
-                    goto L_setLock;
-                }
-                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
-                    return 1;
-                }
-                if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
-                    goto L_setLock;
-                }
-                if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
-                    || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
-                    goto L_setLock;
-                }
-                CommitNeighbor(
-                    sg->m_tileOwnerHi,
-                    sg->m_tileOwnerLo,
-                    sg->m_lastTilePx.m_x,
-                    sg->m_lastTilePx.m_y
-                );
-                return 1;
-            L_setLock:
                 m_defenderState = AISTATE_CHASE;
                 m_dwell = DWELL_REPATH_MS;
                 return 1;
