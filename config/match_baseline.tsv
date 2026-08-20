@@ -2188,7 +2188,7 @@ gruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	1	a
 gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	89.8214	13	ff509a4c223d	0x80410	100.0000	
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	5	d871f928c1b0	0x7d810	100.0000	
 gruntreticlescan	?ArrivalReticleScan@CGrunt@@QAEHXZ	85.1388	85.1361	12	7b101318dfb9	0xee800	85.1388	
-gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	70.0373	70.0373	7	cf5ca9fa467c	0xf42f0	70.0373	
+gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	94.6012	94.6012	8	d976bdf9d13f	0xf42f0	94.6012	
 gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	85.6297	85.6297	24	94c188dfc298	0xf71c0	85.6297	
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	ea77f4ba9e4d	0x7e3e0	100.0000	
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e80	100.0000	
