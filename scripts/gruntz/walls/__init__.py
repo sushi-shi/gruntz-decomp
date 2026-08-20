@@ -13,6 +13,13 @@
                                   cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
                                   bug class; --calibrate = detector-bug rate)
+    gruntz walls semdiff <fn>     OPERAND-LEVEL adjudication of one pair:
+                                  exclusive fp/disp/store/imm keys, plus the
+                                  ordered referent sequence a masked diff
+                                  structurally cannot show
+    gruntz walls semsweep <tsv>   the same screen over a worklist range - one
+                                  line per clean row, the exclusive keys and
+                                  FP deltas for the rest
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
 
@@ -38,6 +45,8 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "global-refs": "gruntz.walls.global_refs",
+         "semdiff": "gruntz.walls.semdiff",
+         "semsweep": "gruntz.walls.semdiff",
          "stale-markers": "gruntz.walls.stale_markers",
          "review": "gruntz.walls.reviews"}
 
@@ -74,4 +83,5 @@ def main(argv=None) -> int:
         return 2
     mod = importlib.import_module(_SUBS[argv[0]])
     sys.argv = [f"gruntz walls {argv[0]}", *argv[1:]]
-    return mod.main(argv[1:])
+    entry = mod.sweep_main if argv[0] == "semsweep" else mod.main
+    return entry(argv[1:])
