@@ -2405,7 +2405,7 @@ gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	80ac12eeefd4	0x
 gruntzmgr	?ClearOptionsSlots@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	c0c80a1181ae	0x92ec0	100.0000	
 gruntzmgr	?ClearStateStack@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	ddda94d97a0d	0x90a50	100.0000	
 gruntzmgr	?ClearWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	e05685e8792d	0x8f480	100.0000	
-gruntzmgr	?Close@CGruntzMgr@@UAEXXZ	93.9446	93.9446	1	0fe87ebf91a0	0x855e0	93.9446	
+gruntzmgr	?Close@CGruntzMgr@@UAEXXZ	94.4606	94.4606	2	ebed150010ff	0x855e0	94.4606	
 gruntzmgr	?CountReadyOptionsSlots@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	1	7bb7ec42aa46	0x92e30	100.0000	
 gruntzmgr	?DebugGruntTypeDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	15f9d551a97c	0x92ab0	100.0000	
 gruntzmgr	?DebugJumpLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	8cd33af5aa9f	0x8e780	100.0000	
@@ -3372,7 +3372,7 @@ palettebmp	?Apply@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	c4424d847a4d
 palettebmp	?LoadBmpFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	a05f787bb8a9	0x177480	100.0000	
 pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	98.9474	98.9474	3	3672466a8782	0xb35a0	98.9474	
 pathhazard	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	2f0bb7a9dca4	0xb49b0	100.0000	
-pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	84.8409	84.8409	2	e0f64b89b11e	0xb4a90	84.8409	
+pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	94.3750	94.3750	3	56f8a36a36a2	0xb4a90	94.3750	
 pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13280	100.0000	
 pathhazard	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13340	100.0000	
 pathhazard	??_GCPathHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13250	100.0000	
