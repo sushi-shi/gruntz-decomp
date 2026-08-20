@@ -1,15 +1,19 @@
-# A UNIFORM funclet frame shift is a local cl refused to overlay - give it a block scope
+# A uniform frame shift is a local cl refused to overlay - give it a block scope
 
-tags: cpp:local cpp:eh cpp:temporary | asm:sub asm:lea | topic:codegen-idiom
-symptoms: `eh_band --census` reports a `frame-offset` group whose displacement histogram
-has a SINGLE delta ("UNIFORM +0xN"); `sub esp,N` is larger than retail's by exactly that
-delta; every funclet destroys the right object in the right order and only `[ebp+disp]`
-moves
+tags: cpp:local cpp:scope cpp:struct cpp:eh cpp:temporary | asm:sub asm:lea | topic:codegen-idiom
+symptoms: `sub esp,N` is larger than retail's by one aggregate slot and later escaped
+locals occupy distinct homes where retail reuses an earlier dead aggregate; for EH
+functions, `eh_band --census` reports the same fact as a `frame-offset` group with one
+displacement delta ("UNIFORM +0xN")
 confidence: 9/10
 
 ## The signal
 
-`gruntz.delink.eh_band --census` splits each unwind funclet into a skeleton, its
+In an ordinary function, list every address passed for a stack aggregate. If a later
+local gets a fresh home while retail reuses an earlier aggregate's home, the earlier
+local's lexical scope is too wide. In an EH function,
+`gruntz.delink.eh_band --census` makes the same error visible across all unwind
+funclets: it splits each funclet into a skeleton, its
 `[ebp+disp]` displacements and its relocation targets. A group in the `frame-offset`
 bucket already agrees on WHAT is destroyed and in WHAT ORDER - only the frame slots move -
 and the census prints `retail - ours` over those displacements. **One delta for the whole
@@ -63,6 +67,31 @@ reserving `0x24`. The same scope mechanism on
 `CStatusBarMgr::BuildTabzDialog` @0x10a340 (the `RECT src` / `RECT dst` / `CopyRect` head,
 with `cx`/`cy` hoisted out of the block because they outlive it) took `sub esp,0x40 ->
 0x30` and +12.
+
+The non-EH control is `CGrunt::ScanNearestTarget` @0xf42f0. Four `Coord` outputs are
+simultaneously live while a `RECT` is assembled, but all four are dead before a fifth
+`Coord bp` is passed to `GetScreenPos`. With the four construction outputs at function
+scope, base reserved `0x44`, put `bp` at `[esp+0x1c..0x20]`, and left the first output's
+`[esp+0x38..0x3c]` home unavailable. Retail reserves `0x40` and reuses that first home
+for `bp`. Keeping `RECT box` outside while bracing only its four construction outputs
+produced the retail allocation:
+
+```cpp
+RECT box;
+{
+    Coord p1;
+    // ... four escaped Coord outputs build box ...
+}
+if (best != NULL) {
+    Coord bp; // reuses p1's dead home
+    best->GetScreenPos(&bp);
+}
+```
+
+The controlled A/B changed `sub esp,0x44 -> 0x40`, object size `0x153c -> 0x1538`,
+and instruction count `1223 -> 1222`. The fuzzy score moved slightly down because the
+whole-function register schedule changed; the exact stack-home identity, not that
+navigation metric, proves the scope.
 
 ## Not this
 

@@ -761,7 +761,7 @@ butemgr	?flush@@YAAAVostream@@AAV1@@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x171
 butetail	??0CButeTail@@QAE@PBD@Z	100.0000	100.0000	1	1e62b78abd70	0x16f690	100.0000	
 butetail	??0CButeTail@@QAE@XZ	100.0000	100.0000	2	1e62b78abd70	0x16f680	100.0000	
 butetail	??1CButeTail@@QAE@XZ	100.0000	100.0000	1	922cde9b6054	0x16f6b0	100.0000	
-butetree	?FindOrInsert@zPTree@@QAEPAXPBDPAX@Z	78.7362	78.7362	3	0e2e593894e8	0x1933b0	78.7362	
+butetree	?FindOrInsert@zPTree@@QAEPAXPBDPAX@Z	78.7362	78.7362	4	d9bcce8ce287	0x1933b0	78.7362	
 butetree	?Walk@zPTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z	100.0000	100.0000	3	26cfa2256019	0x193340	100.0000	
 bzkinddispatch	?Dispatch@CLatencyList@@QAEHH@Z	100.0000	100.0000	14	1118f113cce6	0x37910	100.0000	
 chainforward	?ChainForward14@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	100.0000	100.0000	1	72e31400e147	0x114f50	100.0000	
@@ -2188,7 +2188,7 @@ gruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	1	a
 gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	89.8214	13	ff509a4c223d	0x80410	100.0000	
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	5	d871f928c1b0	0x7d810	100.0000	
 gruntreticlescan	?ArrivalReticleScan@CGrunt@@QAEHXZ	85.1388	85.1361	12	7b101318dfb9	0xee800	85.1388	
-gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	69.3123	69.3116	6	86a3900b4849	0xf42f0	69.3123	
+gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	70.0373	70.0373	7	cf5ca9fa467c	0xf42f0	70.0373	
 gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	85.1431	85.1431	23	29d97acea8ba	0xf71c0	85.1431	
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	ea77f4ba9e4d	0x7e3e0	100.0000	
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e80	100.0000	

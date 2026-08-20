@@ -35,11 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
-// All four switch dispatches and arm sets align; the residue is a whole-body
-// +4 frame-slot shift ([esp+0x34] vs retail 0x30), an ebx/edi role rotation,
-// and ~31 instructions of arm tails retail duplicates where ours shares
-// (365 vs 369 branches) - the Scan* family allocator-rotation wall.
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
@@ -54,9 +49,8 @@ i32 CGrunt::ScanNearestTarget() {
         if (row == ownerHi) {
             continue;
         }
-        CTriggerMgr* board = g_gameReg->m_cmdGrid;
         for (i32 col = 0; col < 15; col++) {
-            CGrunt* cand = board->m_grid[row * TM_GRID_COLS + col];
+            CGrunt* cand = g_gameReg->m_cmdGrid->m_grid[row * TM_GRID_COLS + col];
             if (cand != NULL && cand->m_entranceCommitted != 0
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
@@ -76,33 +70,33 @@ i32 CGrunt::ScanNearestTarget() {
         }
     }
 
-    i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
-    // Four separate Coord slots, each shifted to tile space IN PLACE - retail
-    // stores both shifted fields back through the escaped pointer.
-    Coord pt1;
-    GetScreenPos(&pt1);
-    pt1.m_x >>= TILE_SHIFT_PX;
-    pt1.m_y >>= TILE_SHIFT_PX;
-    i32 by = pt1.m_y;
-    Coord pt2;
-    GetScreenPos(&pt2);
-    pt2.m_x >>= TILE_SHIFT_PX;
-    pt2.m_y >>= TILE_SHIFT_PX;
-    i32 bx = pt2.m_x;
-    Coord pt3;
-    GetScreenPos(&pt3);
-    pt3.m_x >>= TILE_SHIFT_PX;
-    pt3.m_y >>= TILE_SHIFT_PX;
-    i32 t3y = pt3.m_y;
-    Coord pt4;
-    GetScreenPos(&pt4);
-    pt4.m_x >>= TILE_SHIFT_PX;
-    i32 t4x = pt4.m_x;
     RECT box;
-    box.left = t4x - halfBox;
-    box.top = t3y - halfBox;
-    box.right = bx + halfBox + 1;
-    box.bottom = by + halfBox + 1;
+    {
+        i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
+        Coord pt1;
+        GetScreenPos(&pt1);
+        pt1.m_x >>= TILE_SHIFT_PX;
+        pt1.m_y >>= TILE_SHIFT_PX;
+        i32 by = pt1.m_y;
+        Coord pt2;
+        GetScreenPos(&pt2);
+        pt2.m_x >>= TILE_SHIFT_PX;
+        pt2.m_y >>= TILE_SHIFT_PX;
+        i32 bx = pt2.m_x;
+        Coord pt3;
+        GetScreenPos(&pt3);
+        pt3.m_x >>= TILE_SHIFT_PX;
+        pt3.m_y >>= TILE_SHIFT_PX;
+        i32 t3y = pt3.m_y;
+        Coord pt4;
+        GetScreenPos(&pt4);
+        pt4.m_x >>= TILE_SHIFT_PX;
+        i32 t4x = pt4.m_x;
+        box.left = t4x - halfBox;
+        box.top = t3y - halfBox;
+        box.right = bx + halfBox + 1;
+        box.bottom = by + halfBox + 1;
+    }
     if (best != NULL) {
         Coord bp;
         best->GetScreenPos(&bp);
@@ -288,10 +282,8 @@ i32 CGrunt::ScanNearestTarget() {
                     }
                     i32 steps = CoordCount();
                     if (steps != 0) {
-                        if (spanX > spanY) {
-                            spanX = spanY;
-                        }
-                        if (steps > spanX) {
+                        i32 maxSpan = spanX > spanY ? spanX : spanY;
+                        if (steps > maxSpan) {
                             SetEntrancePos(1, 1);
                         }
                     }
