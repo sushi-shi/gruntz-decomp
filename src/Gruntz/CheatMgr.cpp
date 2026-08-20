@@ -96,8 +96,7 @@ void CCheatMgr::Empty() {
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     CheatEntry* existing = NULL;
-    MapLookup(m_map, code, existing);
-    CheatEntry* hit = existing;
+    CheatEntry* hit = MapLookup(m_map, code, existing) ? existing : NULL;
     if (hit != NULL) {
         return FALSE;
     }
