@@ -1400,10 +1400,6 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     return 1;
 }
 
-// @early-stop
-// As Blit824 (slot order + coloring); additionally retail copies srcv into the
-// dead palv slot as the cursor home and saves each widened channel to its own
-// slot right after its shift where cl defers the saves.
 RVA(0x00140420, 0x34f)
 i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
