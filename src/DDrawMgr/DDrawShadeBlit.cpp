@@ -893,31 +893,6 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     surf->m_ddSurface->Unlock(0);
 }
 
-// @early-stop
-// The conditional-branch census is 102/102 with one remaining target mismatch;
-// the block skeleton is 196/197. Four structural facts were recovered from the
-// target: arm 2's row loop is `row < clip->bottom` (retail
-// `jge`, not `jg`); arm 3 tests `x + run >= clip->right` with the CLAMPED path as
-// the if-body (retail `jl` to the full path), which is also what lets cl tail-merge
-// the two ConvertRow call sites into one; the destination/source/count expressions
-// are recomputed inside each doubleScanlines and each non-doubleScanlines arm rather
-// than hoisted above the mode test; and the per-arm loop invariants (rd, the scratch
-// and source biases) are declared INSIDE the loop so LICM lands them in the preheader
-// where retail has them, not in the pre-guard block.
-// Arm 1's non-doubleScanlines 16bpp arms now carry retail's one-cursor-plus-bias
-// shape and its palette/scratch statement order (docs/patterns/
-// scratch-loop-is-one-cursor-plus-biases.md).
-// REGISTER-HOMING residue: the three lut loads inside every ALPHA/PAL_ALPHA arm.
-// cl zero-extends each `mov reg16,[bank+idx*2]` with an `xor reg,reg` that retail
-// omits (retail's accumulator's high bits are dead and it proves it), and it picks
-// its own order for the `|` chain regardless of how the source spells it. Retyping
-// the accumulator `u16` makes cl mask instead of zero, which is worse; reordering
-// the terms moves nothing. Arm 1 also memory-homes x/pos where retail keeps them
-// in esi/ebp.
-// The arm chain is three EXPLICIT conditions, not an if/else-if/else: retail
-// re-tests `clip->right != m_width - 1` at the head of arm 3 (`cmp eax,ecx; je
-// <exit>` before the row and rleLen guards) because it cannot prove the memory
-// did not change across arm 1. Spelling arm 3 as a bare `else` loses that branch.
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* dst,
