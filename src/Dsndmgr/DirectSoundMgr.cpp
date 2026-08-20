@@ -1413,8 +1413,8 @@ i32 DSoundVoice::Stop() {
 
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** fmtOut, u8** dataOut, u32* sizeOut) {
-    RecordBytes<WaveFormatX> cursor;
-    cursor.m_rec = reinterpret_cast<WaveFormatX*>(riff);
+    RecordBytes<RiffWaveHeader> cursor;
+    cursor.m_rec = riff;
     u32 riffTag = static_cast<u32>(*cursor.m_dwords);
     cursor.m_bytes += 4;
     u32 riffSize = static_cast<u32>(*cursor.m_dwords);
@@ -1436,7 +1436,9 @@ i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** fmtOut, u8** dataOut, u3
         u32 size = static_cast<u32>(*cursor.m_dwords);
         cursor.m_bytes += 4;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            *fmtOut = cursor.m_rec;
+            RecordBytes<WaveFormatX> fmtView;
+            fmtView.m_bytes = cursor.m_bytes;
+            *fmtOut = fmtView.m_rec;
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = cursor.m_bytes;
             *sizeOut = size;
