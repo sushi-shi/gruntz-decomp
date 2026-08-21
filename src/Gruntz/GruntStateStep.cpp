@@ -62,6 +62,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 STEP_DRAIN(g);
             }
 
+            i32 arrivalMask = 0xdc7;
             i32 dist;
             {
                 Coord np;
@@ -82,7 +83,6 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 gp2.m_y = gp2.m_y >> TILE_SHIFT_PX;
                 dist = abs(np2.m_y - gp2.m_y) + abs(np.m_x - gp.m_x);
             }
-            i32 arrivalMask = 0xdc7;
             if (dist <= 0xa) {
 
                 Coord b0, b1, b2, b3;

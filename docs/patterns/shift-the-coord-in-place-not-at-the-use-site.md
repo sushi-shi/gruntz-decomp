@@ -52,6 +52,24 @@ object because its `m_y` is dead. The same order repeats for the second rectangl
 Moving all four calls before all shifts changes both entity lifetimes and register creation
 order even though the resulting `RECT` has the same values.
 
+## A neighbouring constant's initialization point is visible too
+
+The coordinate cluster does not decide only its own local order. In
+`StepDefenderUnit`, retail loads the branch-local arrival mask (`mov ebx,0xdc7`)
+immediately after the coordinate-list drain and before the first of the four
+`GetScreenPos` calls used to compute distance. Declaring the mask after that
+coordinate scope delayed the candidate load until after all four calls. Moving
+the real initialized local before the scope restored the retail instruction
+position and raised the current-source score from **77.85% to 78.02%**.
+
+This is an initialization-timing result, not a declaration-order or variable-
+identity trick. Swapping the uninitialized distance declaration around the mask,
+splitting the mask declaration from its assignment, and sharing one uninitialized
+mask across the two mutually exclusive arms were byte-identical controls. Read
+the `mov reg,imm` position relative to the escaped-object calls, then place the
+initializer at that source boundary; do not add a carrier or merge unrelated
+locals merely to obtain the same register.
+
 **Evidence.** `CBattlezMapConfig::StepDefenderUnit` @0x33520 first read `sarl 22 -> 34`
 and `movl 314 -> 368`. Deleting the invented `ScreenTile` helper, expanding its eight sites,
 and converting the remaining use-site shifts took it **66.96 -> 70.81**. Scoping completed
