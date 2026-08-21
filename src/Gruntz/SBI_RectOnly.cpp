@@ -1809,6 +1809,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(2, it);
             m_gaugeNotify = it;
+            it->SetEnabled(1);
             it = new CSBI_Image;
             if (!it->SetupImage(
                     this,
@@ -1854,8 +1855,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete goo;
                 return 0;
             }
-            AddTabItem(2, goo);
             m_gaugeSink = goo;
+            AddTabItem(2, goo);
             return 1;
 
         case TAB_RESOURCE:
@@ -2184,8 +2185,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete head;
                 return 0;
             }
-            AddTabItem(4, head);
             m_warlordHead[0] = head;
+            AddTabItem(4, head);
             head = new CSBI_WarlordHead;
             if (!head->SetupImage(
                     this,
@@ -2200,8 +2201,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete head;
                 return 0;
             }
-            AddTabItem(4, head);
             m_warlordHead[1] = head;
+            AddTabItem(4, head);
             head = new CSBI_WarlordHead;
             if (!head->SetupImage(
                     this,
@@ -2216,8 +2217,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete head;
                 return 0;
             }
-            AddTabItem(4, head);
             m_warlordHead[2] = head;
+            AddTabItem(4, head);
             head = new CSBI_WarlordHead;
             if (!head->SetupImage(
                     this,
@@ -2232,8 +2233,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete head;
                 return 0;
             }
-            AddTabItem(4, head);
             m_warlordHead[3] = head;
+            AddTabItem(4, head);
 
             {
                 CSBI_WarlordHead** slot = m_warlordHead;
@@ -2337,8 +2338,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete arrow;
                         return 0;
                     }
-                    AddTabItem(1, arrow);
                     m_statObj[i] = arrow;
+                    AddTabItem(1, arrow);
                     // Both arms take the same `0` (retail pushes it BEFORE the
                     // branch); only the entry point differs - a sampled stat gets
                     // the alternate arrow art (0xea170), an unsampled one the
