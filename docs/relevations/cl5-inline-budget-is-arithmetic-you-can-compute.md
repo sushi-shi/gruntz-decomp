@@ -181,3 +181,27 @@ costs are per statement AS WRITTEN, so a differently-spelled statement of the
 same semantics can have a different cost — re-titrate rather than assume. All
 probe TUs were scratch (never in the build graph) and are deleted; the builder
 A/B was on a copy of the TU, `src/` unchanged.
+
+## The helper route is bounded too (2026-08-21, measured)
+
+The natural reading of "the original builders held mass behind an inline
+member" was tested: the 11 uniform `new CSBI_Image` registration sites in
+`LoadTabSprites` were factored into one TU-static
+`TabImage(mgr, code, cmd, tab, rc, key, frame, extra)` carrying the
+new + SetupImage-check + delete-on-fail idiom (~50 cb by the table).
+Result, read from the obj: **TabImage was DECLINED at all 11 sites** (it
+exists as a real function with 11 calls; LoadTabSprites shrank 0x1d14 ->
+0x1b7c), Item declines moved +3 toward retail but Rect declines moved -3
+away as the freed budget re-expanded base ctors elsewhere. Reverted.
+
+The bound this fixes: under these callers' mass, any helper above ~45 cb is
+refused everywhere (the per-site share `trunc(budget/nrem)` sits below it),
+and the 40-cb exemption ceiling only admits bodies of ~2-3 cheap statements
+(~5-10 cb/site absorbed) - reaching the -100..-300 targets that way needs
+2-3 stacked micro-helpers per site, a fitted device, not a reconstruction.
+Together with the two axes already measured (statement mass, free
+static-inline call sites), every practical route to retail's decline counts
+is now individually bounded. These four walls are PARKED on arithmetic:
+the missing mass is real, but its source spelling is under-determined by
+the bytes, and every candidate spelling that fits the budget also has to
+keep zero-slack BuildStatusBarTabs untouched.
