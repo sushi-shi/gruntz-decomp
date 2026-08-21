@@ -351,58 +351,53 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     m_surface->m_ddSurface->Unlock(0);
 }
 
-// @early-stop
-// same polarity/over-merge family as InitFromSurface 0x163db0: retail SINKS the
-// unchanged-path `return 1` past the whole body (B24) and keeps the two surface
-// null guards as INLINE fall-through arms; our cl inlines the return-1 after the
-// head compares and folds both null-guard return-0s onto the bpp-chain's shared
-// block. `if (changed) {body} return 1` and `if (==&&==&&==) return 1; body`
-// are byte-identical (measured).
 RVA(0x00164250, 0x12b)
 i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
-    if (m_width == w && m_height == h && m_bpp == bpp) {
-        return 1;
-    }
-    i32 sysmem;
-    if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
-        DDSCAPS caps;
-        if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
-            sysmem = 0x800 & caps.dwCaps;
-        } else {
-            sysmem = 0;
+    if (m_width != w || m_height != h || m_bpp != bpp) {
+        i32 sysmem;
+        if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
+            DDSCAPS caps;
+            if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
+                sysmem = 0x800 & caps.dwCaps;
+            } else {
+                sysmem = 0;
+            }
         }
-    }
-    OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
-    m_surface = NULL;
-    if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
-        CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface = mgr->m_ptrColl->CreatePoolItem(mgr->m_drawTarget->m_frontPair->m_surface, 4);
-        if (m_surface == NULL) {
-            return 0;
+        OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
+        m_surface = NULL;
+        if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
+            CDDrawSurfaceMgr* mgr = OwnerMgr();
+            m_surface =
+                mgr->m_ptrColl->CreatePoolItem(mgr->m_drawTarget->m_frontPair->m_surface, 4);
+            if (m_surface == NULL) {
+                return 0;
+            }
         }
-    }
-    if (m_id != 1) {
-        if (sysmem != 0) {
-            m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
-        } else {
-            m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, bpp, 0, -1);
+        if (m_id != 1) {
+            if (sysmem != 0) {
+                m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
+            } else {
+                m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, bpp, 0, -1);
+            }
+            if (m_surface == NULL) {
+                return 0;
+            }
         }
-        if (m_surface == NULL) {
-            return 0;
+        if (w > 0 && h > 0
+            && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24
+                || bpp == BPP_RGB_32)) {
+            m_srcRect.left = 0;
+            m_srcRect.top = 0;
+            m_width = w;
+            m_height = h;
+            m_bpp = bpp;
+            m_srcRect.right = w;
+            m_srcRect.bottom = h;
+            return 1;
         }
+        return 0;
     }
-    if (w > 0 && h > 0
-        && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || bpp == BPP_RGB_32)) {
-        m_srcRect.left = 0;
-        m_srcRect.top = 0;
-        m_width = w;
-        m_height = h;
-        m_bpp = bpp;
-        m_srcRect.right = w;
-        m_srcRect.bottom = h;
-        return 1;
-    }
-    return 0;
+    return 1;
 }
 
 RVA(0x00164380, 0x98)
