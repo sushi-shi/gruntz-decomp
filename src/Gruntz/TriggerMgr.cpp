@@ -1782,12 +1782,15 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the
                 // cue in a register across the m_lastPlayTime store.
                 LeafCue* e = found;
-                if (e != NULL && g_sndEnabled != 0) {
+                if (e != NULL) {
+                    i32 gate = g_sndEnabled;
                     i32 tag = g_sndCueTag;
-                    u32 now = g_killCueClock;
-                    if (now - e->m_lastPlayTime >= e->m_replayDelay) {
-                        e->m_lastPlayTime = now;
-                        e->m_sound->ConfigureItem(tag, 0, 0, 0);
+                    if (gate != 0) {
+                        u32 now = g_killCueClock;
+                        if (now - e->m_lastPlayTime >= e->m_replayDelay) {
+                            e->m_lastPlayTime = now;
+                            e->m_sound->ConfigureItem(tag, 0, 0, 0);
+                        }
                     }
                 }
             }
