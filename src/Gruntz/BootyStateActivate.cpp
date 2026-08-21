@@ -383,11 +383,15 @@ i32 CBootyState::EnterState(GameStateId) {
     return 1;
 }
 
+static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    LeafCue* found = NULL;
+    MapLookup(cues, name, found);
+    return found;
+}
+
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId) {
-    LeafCue* value = NULL;
-    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", value);
-    LeafCue* found = value;
+    LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
@@ -2296,9 +2300,7 @@ i32 CMultiBootyState::EnterState(GameStateId) {
 
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId) {
-    LeafCue* value = NULL;
-    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", value);
-    LeafCue* found = value;
+    LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {

@@ -57,6 +57,40 @@ A file-local `static inline LeafCue* LookupCue(CMapStringToPtr&, LPCTSTR)` that
 returns the pointer is the same device (`src/Gruntz/InGameIcon.cpp` already uses
 it) - the return value is the non-aliasing temp.
 
+## Return the typed copy when the caller repeatedly reads one member
+
+There is a stronger form when the caller does not modify the looked-up object but
+repeatedly calls through one of its members. A sink plus a caller-side copy keeps
+the object in a register, but cl can replace that object identity with the address
+of the repeated member:
+
+```asm
+; sink + caller copy                    ; retail
+mov  eax,[esp+8]                        mov  esi,[esp+8]
+lea  edi,[eax+0x10]    ; &cue->m_sound  mov  ecx,[esi+0x10]
+call IsPlaying                          call IsPlaying
+mov  ecx,[edi]                          mov  ecx,[esi+0x10]
+```
+
+Put the typed sink inside a file-local inline helper and return it. The returned
+value is the caller's non-aliasing object identity, so every use remains
+`[cue+0x10]` and the extra `lea` disappears. Both
+`CBootyState::LeaveState` (0x18e40) and
+`CMultiBootyState::LeaveState` (0x1e660) moved **79.30 -> 89.75**, with retail's
+exact 45 instructions, 6 calls, 5 branches, one return, 7 relocations, identical
+mnemonics/constants/displacements, and zero ordered-referent divergence. The
+remaining residue is only an ESI/EDI swap between `this` and the returned cue.
+
+The boundary, not a spelling accident, is what matters. Taking the map by
+reference versus taking its sound-registry owner by pointer was byte-identical;
+using a `CObject*` sink and casting the returned value to `LeafCue*` was also
+byte-identical. Passing the whole `CState*` into the helper was worse (85.32),
+and a named sound-registry local was byte-flat. Moving the existing
+`CDDrawSubMgrLeafScan::Lookup` body into the header was rejected even though it
+gave the same caller shape: our compiler then emitted no standalone body, while
+retail has the exact 0x5b7e0 body and five TUs with out-of-line references.
+Preserve that real symbol until the missing inline-budget context is recovered.
+
 STEERABLE. Measured 2026-08-20, all on the LeafCue play-cue transcription:
 `CRainCloud::HitTest` 94.93 -> **100.00 EXACT**,
 `CPreviewState::LoadLevelPreviewScreen` 94.74 -> **100.00 EXACT** (unit to 100%),
