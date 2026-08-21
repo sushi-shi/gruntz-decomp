@@ -852,7 +852,6 @@ commit:
     return result;
 }
 
-// @early-stop
 RVA(0x0015e2f0, 0x1b7)
 i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 savedDestX = destX;
@@ -865,7 +864,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
     }
 
     if (moveFlags & 8) {
-        i32 outY = destY;
+        i32 outY;
         if (StepAxisAlt(t, destX, destY, &outY, moveFlags) != 0) {
             destY = outY;
         }
@@ -876,21 +875,24 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
     }
 
     if (moveFlags & 1) {
+        i32 coord = destX;
         i32 limit = t->m_extent.top + destY - 1;
-        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
-            i32 mid = destX;
-            i32 bracket = moveFlags & 0x10;
-            if (bracket != 0) {
-                i32 lo = destX;
-                i32 hi = destX;
-                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
-                    mid = (hi + lo) / 2;
+        if (AxisProbe(coord, limit) == TILEKIND_CLIMB) {
+            if (moveFlags & 0x10) {
+                i32 lo = coord;
+                i32 hi = coord;
+                if (ClampSpan(coord, limit, &lo, &hi) != 0) {
+                    coord = (hi + lo) / 2;
                 }
+            } else {
+                coord = destX;
             }
-            if (bracket != 0) {
-                destX = mid;
+            if (moveFlags & 0x10) {
+                destX = coord;
+                t->m_moveMode = MOVE_CLIMBING;
+            } else {
+                t->m_moveMode = MOVE_CLIMBING;
             }
-            t->m_moveMode = MOVE_CLIMBING;
         }
     }
 

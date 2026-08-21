@@ -1935,7 +1935,7 @@ gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	91.2247	91.2247	4	9b80205b31
 gamelevel	?LoadWwdWithCoords@CGameLevel@@UAEHPAUWwdHeader@@PAUtagRECT@@@Z	100.0000	100.0000	1	fd6bf702ab2a	0x15cf70	100.0000	
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	1	985fbc7515cc	0x160ee0	100.0000	
 gamelevel	?MoveClimbing@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	96.1157	96.1157	1	a5d8b0b1b18a	0x15e5b0	96.1157	
-gamelevel	?MoveFalling@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	81.7834	81.7834	1	f134f8cc4040	0x15e2f0	81.7834	
+gamelevel	?MoveFalling@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	96.2739	96.2739	2	1541cf439f77	0x15e2f0	96.2739
 gamelevel	?MoveGrounded@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	97.6101	97.6101	1	39f98178f764	0x15e130	97.6101	
 gamelevel	?MovePlane@CGameLevel@@AAEHHH@Z	100.0000	100.0000	1	bb5cf27bc1b0	0x15dbe0	100.0000	
 gamelevel	?MoveRising@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	100.0000	100.0000	1	0a7ffb70c6b2	0x15e4b0	100.0000	
