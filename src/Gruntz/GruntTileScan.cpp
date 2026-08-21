@@ -17,20 +17,12 @@
 
 #include <stdlib.h>
 
-static inline i32 ScanCellX(CGrunt* g) {
+static inline Coord ScanCell(CGrunt* g) {
     Coord t;
     g->GetScreenPos(&t);
     t.m_x >>= TILE_SHIFT_PX;
     t.m_y >>= TILE_SHIFT_PX;
-    return t.m_x;
-}
-
-static inline i32 ScanCellY(CGrunt* g) {
-    Coord t;
-    g->GetScreenPos(&t);
-    t.m_x >>= TILE_SHIFT_PX;
-    t.m_y >>= TILE_SHIFT_PX;
-    return t.m_y;
+    return t;
 }
 
 // @early-stop
@@ -67,9 +59,9 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
             CMapMgr* grid = m_board;
             RECT box;
-            box.left = ScanCellX(g) - 5;
-            box.top = ScanCellY(g) - 5;
-            box.right = ScanCellX(g) + 5;
+            box.left = ScanCell(g).m_x - 5;
+            box.top = ScanCell(g).m_y - 5;
+            box.right = ScanCell(g).m_x + 5;
             box.bottom = (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5;
             RECT gb;
             gb.left = 0;
