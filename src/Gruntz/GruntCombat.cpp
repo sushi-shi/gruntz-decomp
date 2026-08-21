@@ -1517,13 +1517,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
     L_cue:
 
         if (cue != NULL) {
-            i32 cueTag = g_sndCueTag;
-            if (g_sndEnabled != 0) {
+            i32 gate = g_sndEnabled;
+            i32 item = g_sndCueTag;
+            if (gate != 0) {
                 i32 clk = g_killCueClock;
                 if (static_cast<u32>((clk - cue->m_lastPlayTime))
                     >= static_cast<u32>(cue->m_replayDelay)) {
                     cue->m_lastPlayTime = clk;
-                    cue->m_sound->ConfigureItem(cueTag, 0, 0, 0);
+                    cue->m_sound->ConfigureItem(item, 0, 0, 0);
                 }
             }
         }
