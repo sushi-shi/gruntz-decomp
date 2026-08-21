@@ -139,14 +139,6 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     return 1;
 }
 
-// @early-stop
-// the OVER-MERGE mirror (docs/patterns/over-merge-is-decided-before-layout.md):
-// retail keeps the null guard's return-0 as an INLINE fall-through arm (jne over
-// xor/pops/ret, src in edx) while the two size guards share one SUNK block; our
-// cl folds all three onto the sunk copy (je), which frees eax and rotates
-// src->eax / w->edx and hoists the m_surface store. Measured identical at 77.50:
-// && gate, || early guard, positive wrap, else arm, separate nested ifs,
-// zero-local arm; goto-fail is 56.74.
 RVA(0x00163db0, 0x64)
 i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
 
