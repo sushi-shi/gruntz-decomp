@@ -363,13 +363,11 @@ reached:
     return 1;
 }
 
-// @early-stop
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     i32 ng = node->m_gCost + cost;
     i32 ncol = node->m_col + dx;
     i32 nrow = node->m_row + dy;
-    BrickzNode* found0 = 0;
     if (static_cast<u32>((ncol - m_bounds.left)) >= static_cast<u32>(m_gridW)) {
         return 1;
     }
@@ -407,7 +405,7 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
         }
     }
 relax:
-    BrickzNode* closed = 0;
+    BrickzNode* closed = NULL;
     BrickzCellNode* head = ncell->m_head;
     if (head != NULL) {
         closed = head->m_searchNode;
@@ -421,28 +419,22 @@ relax:
     if (ncell->m_count != 0) {
         open = Find(ncol, nrow);
     } else {
-        open = found0;
+        open = NULL;
     }
-    if (open != NULL) {
-        i32 og = open->m_gCost;
-        if (ng >= og) {
-            return 1;
-        }
-        if (open != NULL && ng < og) {
-            if (closed != NULL) {
-                CellPop(closed, 1);
-            }
-            Unlink(open);
-            open->m_fCost = ng + open->m_hCost;
-            open->m_parent = node;
-            open->m_gCost = ng;
-            Insert(open);
-            return 1;
-        }
+    if (open != NULL && ng >= open->m_gCost) {
+        return 1;
     }
-    // Two separate guards, not one nested block: retail tests `closed` at 0x9f1ed
-    // (`test edi,edi / je 0x9f223`), again after the cost compare falls through
-    // (0x9f215), so the CellPop(closed, 1) arm carries its OWN null test.
+    if (open != NULL && ng < open->m_gCost) {
+        if (closed != NULL) {
+            CellPop(closed, 1);
+        }
+        Unlink(open);
+        open->m_fCost = ng + open->m_hCost;
+        open->m_parent = node;
+        open->m_gCost = ng;
+        Insert(open);
+        return 1;
+    }
     if (closed != NULL && ng < closed->m_gCost) {
         CellPop(closed, 0);
         closed->m_parent = node;
