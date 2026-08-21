@@ -2251,7 +2251,7 @@ gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	1	49bf4fc7f565
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	1	bf3f90a0203c	0x517b0	100.0000	
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.2990	63.2990	7	6fd98b0aba89	0x51c00	63.2990	
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	93.2305	93.2305	9	3184d43a2b79	0x52fb0	93.2305	
-grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.5742	81.5742	9	33e2f5f5780d	0x32ce0	83.2773	
+grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	81.9104	10	78513ee3858a	0x32ce0	83.2773	
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	cc41dea30853	0x7f350	100.0000	
 grunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	cpp:0026165f45e9	0x122b0	100.0000	
 grunttoysprite	??_GCGruntToySprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0026165f45e9	0x12280	100.0000	
