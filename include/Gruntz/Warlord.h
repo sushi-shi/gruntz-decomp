@@ -12,6 +12,13 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
+struct WarlordTimer {
+    i64 m_start;
+    i64 m_window;
+
+    WarlordTimer() : m_start(0), m_window(0) {}
+};
+
 class CWarlord : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
@@ -21,12 +28,7 @@ public:
     }
 
 public:
-    CWarlord() {
-        m_cooldownStamp = 0;
-        m_cooldownWindow = 0;
-        m_timer2Stamp = 0;
-        m_timer2Window = 0;
-    }
+    CWarlord() {}
     CWarlord(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -60,10 +62,8 @@ public:
     CAniElement* m_animPanic;
     char m_pad84[0x88 - 0x84];
 
-    i64 m_cooldownStamp;
-    i64 m_cooldownWindow;
-    i64 m_timer2Stamp;
-    i64 m_timer2Window;
+    WarlordTimer m_cooldownTimer;
+    WarlordTimer m_notifyTimer;
     i32 m_deathStarted;
 
     i32 m_ownerTag;

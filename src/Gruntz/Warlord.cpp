@@ -113,16 +113,8 @@ typedef enum WarlordBattleTag {
         dst = h;                                                                                   \
     }
 
-// @early-stop
-
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-
-    m_cooldownStamp = 0;
-    m_cooldownWindow = 0;
-    m_timer2Stamp = 0;
-    m_timer2Window = 0;
-
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
 
@@ -185,8 +177,8 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
     WARLORD_ANIM_LOOKUP(m_animPanic, s__PANIC);
 
-    m_timer2Stamp = 0;
-    m_timer2Window = 0;
+    m_notifyTimer.m_start = 0;
+    m_notifyTimer.m_window = 0;
     m_deathStarted = 0;
     ResolveMovingAnimation();
 }
@@ -488,7 +480,7 @@ i32 CWarlord::SerializeMove(
     {
         // retail walks each stamp/window pair with one cursor (`add edi,8` /
         // `add ebp,8` between the two calls), not two member addresses.
-        i64* cooldown = &m_cooldownStamp;
+        i64* cooldown = &m_cooldownTimer.m_start;
         switch (mode) {
             case SERIAL_LOAD:
                 ar->Read(cooldown, sizeof(*cooldown));
@@ -501,7 +493,7 @@ i32 CWarlord::SerializeMove(
                 ar->Write(cooldown, sizeof(*cooldown));
                 break;
         }
-        i64* timer2 = &m_timer2Stamp;
+        i64* timer2 = &m_notifyTimer.m_start;
         switch (mode) {
             case SERIAL_LOAD:
                 ar->Read(timer2, sizeof(*timer2));
@@ -569,7 +561,7 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if (static_cast<i64>(g_frameTime) - m_cooldownStamp >= m_cooldownWindow) {
+    if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -598,10 +590,10 @@ i32 CWarlord::LoadAttributes2() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(g_frameTime) - m_cooldownStamp >= m_cooldownWindow) {
+        if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
             g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
-            m_cooldownWindow = 0x7530;
-            m_cooldownStamp = static_cast<u32>(g_frameTime);
+            m_cooldownTimer.m_window = 0x7530;
+            m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
         }
     }
     return 0;
@@ -682,8 +674,8 @@ i32 CWarlord::ResolveMovingAnimation() {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("B");
 
-    m_cooldownWindow = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
-    m_cooldownStamp = static_cast<u32>(g_frameTime);
+    m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
+    m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
     return 1;
 }
 
@@ -696,10 +688,10 @@ i32 CWarlord::NotifyFortUnderAttack() {
         if (!alreadyPanicking) {
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
-                m_cooldownWindow = 0x7530;
-                m_cooldownStamp = static_cast<u32>(g_frameTime);
+                m_cooldownTimer.m_window = 0x7530;
+                m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
-                if (static_cast<i64>(g_frameTime) - m_timer2Stamp >= m_timer2Window
+                if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start >= m_notifyTimer.m_window
                     && g_gameReg->m_cmdGrid->m_pendingFx == this) {
                     g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
@@ -712,12 +704,12 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         0,
                         0x11
                     );
-                    m_timer2Window =
+                    m_notifyTimer.m_window =
                         static_cast<u32>(g_buteMgr.GetIntDef("Warlordz", "NotifyTimer", 0x1770));
-                    m_timer2Stamp = static_cast<u32>(g_frameTime);
+                    m_notifyTimer.m_start = static_cast<u32>(g_frameTime);
                 }
-                m_cooldownWindow = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
-                m_cooldownStamp = static_cast<u32>(g_frameTime);
+                m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
+                m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             }
 
             SwitchAnimation(m_animPanic);

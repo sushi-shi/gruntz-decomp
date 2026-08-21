@@ -75,6 +75,20 @@ useful adjudication rule: the aggregate identity comes from batch boundaries and
 complete-object consumers, while a temporary inline-cut regression is not contrary
 evidence.
 
+`CWarlord::CWarlord` (0x42d40) supplies a second positive control. Four loose
+`i64` members at +0x88..+0xa7 emitted one batch of four lows followed by four
+highs. Retail instead emits `+0x88,+0x90,+0x8c,+0x94`, then
+`+0x98,+0xa0,+0x9c,+0xa4`, immediately after the preceding `CString` member
+constructor and before the derived-vptr stamp. Modeling those ranges as
+`m_cooldownTimer` and `m_notifyTimer`, each a two-`i64` `WarlordTimer`, reproduces
+both batches exactly and moves the first divergence from +0xfc to +0x12d
+(78.1128% -> 78.8385%). `SerializeMove` independently walks each range through
+one `i64*` cursor. Initializer-list versus constructor-body assignments and a
+typed helper versus native MFC `void*&` lookup were byte-flat; a classified
+32-island/33-state campaign found one compiler island. The remaining first
+divergence is the separately bounded in-place tile-snap register pair, not a
+reason to flatten the timers again.
+
 ## Related
 
 - [ctor-scalar-seeds-interleaved-are-a-mem-init-list](ctor-scalar-seeds-interleaved-are-a-mem-init-list.md)
