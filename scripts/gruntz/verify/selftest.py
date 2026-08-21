@@ -814,13 +814,22 @@ class StaleMarkerControls(unittest.TestCase):
 
 
 class WallReviewControls(unittest.TestCase):
+    def test_exact_requires_a_hash_valid_100_percent_bank(self):
+        from gruntz.walls import reviews
+
+        rows = {0x1000: (100.0, 100.0, "same")}
+        with mock.patch("gruntz.walls.inventory.baseline_rows", return_value=rows):
+            self.assertTrue(reviews.exact_is_banked(0x1000, "same"))
+            self.assertFalse(reviews.exact_is_banked(0x1000, "different"))
+            self.assertFalse(reviews.exact_is_banked(0x2000, "same"))
+
     def test_source_edit_invalidates_a_personal_review(self):
         from types import SimpleNamespace
 
         from gruntz.walls import reviews
         saved = {
             0x1000: {
-                "src_hash": "old", "status": "closed",
+                "src_hash": "old", "status": "bounded",
                 "wall_class": "cfg", "evidence": "checked",
             },
             0x2000: {
@@ -844,15 +853,16 @@ class WallReviewControls(unittest.TestCase):
                         side_effect=fingerprinter):
             self.assertEqual(set(reviews.current()), {0x2000})
 
-    def test_todo_excludes_only_hash_valid_closed_reviews(self):
+    def test_todo_excludes_only_hash_valid_terminal_reviews(self):
         from types import SimpleNamespace
         from gruntz.walls import inventory
 
         names = {
-            0x1000: "?Closed@CThing@@QAEHXZ",
+            0x1000: "?Bounded@CThing@@QAEHXZ",
             0x2000: "?Open@CThing@@QAEHXZ",
             0x3000: "?New@CThing@@QAEHXZ",
             0x4000: "?Proven@CThing@@QAEHXZ",
+            0x5000: "?Exact@CThing@@QAEHXZ",
         }
         funcs = [
             SimpleNamespace(unit="u", name=name, rva=rva, size=0x10)
@@ -866,11 +876,14 @@ class WallReviewControls(unittest.TestCase):
         }
         reviewed = {
             0x1000: {
-                "status": "closed", "wall_class": "cfg", "evidence": "done",
+                "status": "bounded", "wall_class": "cfg", "evidence": "done",
             },
             0x2000: {
                 "status": "open", "wall_class": "inline",
                 "evidence": "inspect site",
+            },
+            0x5000: {
+                "status": "exact", "wall_class": "cfg", "evidence": "100%",
             },
         }
         with mock.patch.object(inventory, "report_scores",

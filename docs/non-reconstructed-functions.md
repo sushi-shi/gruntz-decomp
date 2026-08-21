@@ -67,10 +67,12 @@ does not prove that an inherited early-stop decision was correct.
 
 Codex therefore uses `gruntz walls inventory --todo` for its explicit campaign queue.
 The queue starts from all 700 never-exact, non-EH reconstruction targets and subtracts
-only reviews Codex personally recorded as `closed` in
+only reviews Codex personally recorded as `bounded` or `exact` in
 `config/codex_wall_reviews.tsv`. Each review is keyed by RVA and the MAX ledger's exact
 function source hash, so editing the function makes the review stale automatically.
-An `open` review stays in the queue with its class and next evidence-bearing action.
+`exact` means the attempt reached 100%; `bounded` means the exact attempt exhausted its
+current evidence-backed source/compiler axes below 100%. An `open` review stays in the
+queue with its class and next evidence-bearing action.
 Inherited early-stop markers do not remove anything from this queue.
 
 There are 34 `@identity-TODO` occurrences. Twenty-four mark zero-reference leaves whose

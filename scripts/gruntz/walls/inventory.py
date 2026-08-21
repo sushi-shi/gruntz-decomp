@@ -24,9 +24,10 @@ a body count.
 
 ``--todo`` is Codex's explicit campaign queue.  It removes EH-band funclets,
 functions already proven exact historically, and only those functions Codex
-personally recorded as ``closed`` at the current source hash.  Inherited
-``@early-stop`` markers do not affect it.  Hash-valid ``open`` reviews remain
-in the queue with their recorded class and next evidence-bearing action.
+personally recorded as ``bounded`` or ``exact`` at the current source hash.
+Inherited ``@early-stop`` markers do not affect it.  Hash-valid ``open``
+reviews remain in the queue with their recorded class and next evidence-bearing
+action.
 """
 
 from __future__ import annotations
@@ -88,7 +89,7 @@ def build(
     todo: bool = False,
 ) -> list[dict]:
     from gruntz.model import resolve
-    from gruntz.walls.reviews import current as current_reviews
+    from gruntz.walls.reviews import TERMINAL_STATUSES, current as current_reviews
     _path, scores = report_scores()
     best = baseline_rows()
     reviews = current_reviews() if todo else {}
@@ -107,7 +108,7 @@ def build(
         if todo and (
             is_eh_band(sym)
             or hist == 100.0
-            or (review is not None and review["status"] == "closed")
+            or (review is not None and review["status"] in TERMINAL_STATUSES)
         ):
             continue
         rows.append({
@@ -139,7 +140,7 @@ def main(argv=None) -> int:
     ap.add_argument(
         "--todo",
         action="store_true",
-        help="exclude only proven rows and Codex-closed reviews at this source hash",
+        help="exclude proven rows and Codex-bounded/exact reviews at this source hash",
     )
     ap.add_argument("--json", action="store_true", help="the rows as JSON")
     a = ap.parse_args(argv)
