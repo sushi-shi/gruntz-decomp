@@ -522,7 +522,8 @@ void CRezImage::Fill(i32 value) {
 }
 
 RVA(0x00175e00, 0x3d)
-i32 CRezImage::DecodeBmpData(BITMAPINFOHEADER* ih, HDC dc, i32 ctrl) {
+i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
+    BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
@@ -571,7 +572,8 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 // Exact 158-instruction skeleton and all three referents; only the long-lived
 // width and scan-buffer EDI/EBP assignments differ.
 RVA(0x00176000, 0x18f)
-i32 CRezImage::DecodePcxData(PcxHeader* hdr, HDC dc, i32 ctrl) {
+i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
+    PcxHeader* hdr = static_cast<PcxHeader*>(buf);
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
@@ -656,11 +658,11 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
 }
 
 RVA(0x001762c0, 0x42)
-i32 CRezImage::DecodeRidData(PidHeader* buf, HDC dc, i32 ctrl) {
+i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
     // The RID head is read through one sequential cursor: each field read is
     // followed by its own advance, so the skipped fields cost only an add.
     RecordBytes<PidHeader> p;
-    p.m_rec = buf;
+    p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += 2 * sizeof(u32);
     i32 width = *p.m_dwords;
     p.m_bytes += sizeof(u32);
@@ -697,11 +699,10 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
     return result;
 }
 
-// @early-stop
 RVA(0x00176440, 0x25d)
-i32 CRezImage::DecodePidData(PidHeader* buf, HDC dc, i32 ctrl) {
+i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     RecordBytes<PidHeader> p;
-    p.m_rec = buf;
+    p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += sizeof(u32);
     PidFlags flags = static_cast<PidFlags>(*p.m_dwords);
     p.m_bytes += sizeof(u32);
@@ -710,7 +711,7 @@ i32 CRezImage::DecodePidData(PidHeader* buf, HDC dc, i32 ctrl) {
     i32 height = *p.m_dwords;
     p.m_bytes += sizeof(u32);
     p.m_bytes += 2 * sizeof(u32);
-    i32 fill = *p.m_dwords;
+    u32 fill = *p.m_dwords;
     p.m_bytes += sizeof(u32);
     p.m_bytes += sizeof(u32);
 
