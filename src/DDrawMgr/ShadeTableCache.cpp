@@ -814,12 +814,6 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
     }
 }
 
-// @early-stop
-// Block skeleton, instruction counts and byte size (203) are now exact; residue
-// is the frame-slot pool assignment - retail homes `bb` in b's own parameter
-// home, `rr` in pal's home and gives `best` a fresh local (the `push ecx`),
-// cl rotates the same three values one position. Local declaration order,
-// mask/delta interleave and the term orders are all measured inert on it.
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
     i32 gg = g & 0xff;
