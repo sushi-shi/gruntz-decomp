@@ -3928,7 +3928,6 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
 }
 
-// @early-stop
 RVA(0x0002dfa0, 0x325)
 i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     g_stepRun = 1;
