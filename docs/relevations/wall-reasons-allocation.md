@@ -739,6 +739,32 @@ int* t14()        { return &arr[4]; }                    // mov eax,OFFSET arr+1
 void t15()        { sink((int)&s.e); }                   // push OFFSET s+8
 ```
 
+### I4a — an `add`/`lea` census is a LIFETIME reading, and shortening the lifetime can cost more than the selection gains
+
+`walls semdiff`'s immediate multiset makes this rule greppable at corpus scale:
+an `imm` key that is a small negative constant (`0xffffffe0`, `0xfffffffb`)
+present on ONE side only, with `add`/`sub`/`lea` counts moving the same way, is
+the same value computed with a live operand on one side and a dead one on the
+other. Two 2026-08-21 rows, opposite verdicts:
+
+* **LEVER.** `CBattlezMapConfig::ScanRegion` `0x32ce0` screened
+  `imm 0xfffffffb base 0 target 2` with `sub` base 9 / target 7: retail's
+  `box.left`/`box.top` overwrite the shifted coordinate, ours kept it alive for
+  the sibling `+5` fields because two scalar getters (`ScanCellX`, `ScanCellY`)
+  returned one field each out of the same body. Collapsing them into one
+  by-value `Coord` helper gave each field store its own dying operand and
+  cleared the key. 81.57 -> 81.91.
+* **PARK — the mechanism fired and the function still lost.**
+  `CGrunt::StepCompassMove` `0x51c00` screened `imm 0xffffffe0 base 0 target 6`
+  with `lea` base 70 / target 53 and `add` base 32 / target 43: retail's
+  arrow-tile switch spells every `-= 0x20` as `add reg,-32`, ours as `lea`,
+  because the function-scope pixel coordinates stay live for the toy and bag
+  blocks further down. Scoping that block's copies to the block DOES produce
+  the `add`s (0 -> 4 measured in the base obj) and still falls 63.30 -> 62.04:
+  the two fewer long-lived values re-colour the rest of a 0x11xx-byte body
+  (R5). Reverted. **Confirming the selection mechanism is not the same as
+  confirming the source shape** — measure the whole function, not the key.
+
 ---
 
 ## I5 — Zero tests are always `test r,r`, at the operand's own width

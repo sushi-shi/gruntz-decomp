@@ -60,17 +60,56 @@ also reaches 100 but costs two other exact functions to the declaration ripple
 (`CSBI_Image::Render` 100 -> 74.04, `CGruntzCmdMgr::BlitTileMarker` 100 -> 83.79)
 - when a header and a local spelling both reach the same bytes, take the local.
 
+## The second sweep, 2026-08-21: read the DROP COMMIT, then classify
+
+Tracing all 49 rows against every revision of the ledger (one pass over
+`git show <sha>:config/match_baseline.tsv`, recording each row's `best` and
+`src_hash` per revision) splits them cleanly, and the split is what saves the
+budget:
+
+| class | tell | verdict |
+|---|---|---|
+| **an invented store** | the drop commit is a *typing/cleanliness* pass and its diff adds an initializer or deletes a copy | RECOVERABLE - the typing was never the cost |
+| **a deliberate trade** | the drop commit's message OR the function's own source comment states the structural gain | leave it; re-deriving it wastes a build |
+| **TU composition** | `src_hash` did NOT change across the drop | not a source bug |
+
+Recovered in that sweep, both from the same commit ("type gameplay sound cue
+lookups"): `_WinMain@16` 99.59 -> **100.00 EXACT** (a `= NULL` seed on
+`VerQueryValueA`'s out-pointer), and `CBootyState::LeaveState` +
+`CMultiBootyState::LeaveState` 77.27 -> **79.30**, each back to its peak - the
+pass made `found` the lookup's own sink and deleted the era source's pointer
+copy, so the escaped sink is reloaded at every use
+([inlined-member-this-copy-survives-the-escaped-out-param](inlined-member-this-copy-survives-the-escaped-out-param.md)).
+
+Classified as deliberate and left alone: `CRezImage::FlipVertical`,
+`CSBI_ImageSet::SetupImage`, `CWwdGameObjectA::BltDirtyEx`,
+`UpdateChipGrinderStatusBar`, `CLightFxRender::ComputeRect`,
+`ConvertRowDoubleFwd`, `CTileSecretTriggerLogic::Tick`,
+`FontRenderer::DrawGlyphRun` (its commit message even prints the 71.74 -> 68.10
+it accepted and why).
+
+**CORRECTION to the first sweep's discipline note.** It listed
+`CBattlezMapConfig::StepRowUnits` (88.22 -> 84.89) as a deliberate trade. It
+was not: the commit traded the aggregate model in with the WRONG SPELLING of it
+(see the Coord-aggregate pattern's probe table), and the target obj shows five
+real `or eax,-1 / or ecx,-1` pairs in that body. Re-folding with the
+whole-object-copy spelling took it to 85.12. "Deliberate" has to mean the
+commit or comment states the STRUCTURAL gain, not merely that someone accepted
+the number.
+
 ## Discipline
 
-* Not every gap is recoverable. `CSBI_ImageSet::SetupImage` (74.63 -> 68.31) and
-  `CBattlezMapConfig::StepRowUnits` (88.22 -> 84.89) were *deliberately* traded
-  for a correct model and their commits say so. Read the commit message before
-  reversing anything.
 * A row whose `src_hash` did NOT change across the drop is TU composition; its
   headroom is a bank-the-max opportunity, not a source bug.
 * Never "improve" a row whose `best` is already 100 - the edit resets it. Two
   such rows were nudged +0.63 in this session and had to be reverted to restore
   the 100.00 bank (`CMotionState::ArrivalVelX`/`Y`).
+* Not every `hist > best` row is a SOURCE deviation at all.
+  `CButeMgr::GetFloat` (99.77, hist 100) diagnoses as REFERENT with byte-
+  identical code: our `butemgr` `.rdata` contribution is 0x18 bytes against the
+  0x588-byte run the delinker carves for retail, so the content-hashed
+  `$Sdata_rdata_<sha>` blob names differ. That is delinker granularity, not a
+  body to fix. Diagnose before you bisect.
 
 ## Related
 
