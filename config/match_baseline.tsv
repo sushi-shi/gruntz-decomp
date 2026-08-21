@@ -40,7 +40,7 @@ areamgr	58	58
 arrayserialize	4	4
 attract	17	10
 attractstate	32	30
-battlezdata	31	29
+battlezdata	31	30
 battlezdlgcolors	9	9
 battlezmapconfig	48	23
 battlezrepath	2	1
@@ -513,7 +513,7 @@ battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	a5a2bdc617
 battlezdata	?GroupAllScored@CBattlezData@@QAEHXZ	100.0000	100.0000	1	3c3123c1d08d	0xfce80	100.0000	
 battlezdata	?GroupRatio@CBattlezData@@QAEMXZ	100.0000	100.0000	1	05cfc6c45756	0xfce00	100.0000	
 battlezdata	?InBounds@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	aab3829d67a1	0xfcd70	100.0000	
-battlezdata	?Init@CBattlezData@@QAEXXZ	81.0909	81.0909	1	f305eda1b84e	0xfca10	81.0909	
+battlezdata	?Init@CBattlezData@@QAEXXZ	100.0000	100.0000	2	1316a684400c	0xfca10	100.0000
 battlezdata	?InitWithRecords@CBattlezData@@QAEHPAUBattlezRecord@@@Z	100.0000	100.0000	2	1bebc97e8b32	0xfc9c0	100.0000	
 battlezdata	?MarkFlag@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	1ca8975640a7	0xfcb50	100.0000	
 battlezdata	?Serialize@CBattlezData@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	93.0628	93.0628	1	6328bbd3e5a0	0xfd3f0	93.0628	
@@ -4724,7 +4724,7 @@ wwdobjmgr	?IsKindUnique@CDDrawChildGroup@@QAEHH@Z	100.0000	100.0000	1	278c5a6e91
 wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	96.8849	96.8849	6	8feb5523b10f	0x15ad30	96.8849
 wwdobjmgr	?PruneList@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	3	7094ec7befa5	0x15aa90	100.0000	
 wwdobjmgr	?PruneOrphans@CDDrawChildGroup@@QAEHXZ	93.7541	93.7541	5	9a0ae91b3607	0x15b1d0	93.7541	
-wwdobjmgr	?RegisterObjectId@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	3	3e65bd0b9e68	0x15aba0	100.0000	
+wwdobjmgr	?RegisterObjectId@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	3	3e65bd0b9e68	0x15aba0	100.0000
 wwdobjmgr	?ReinsertUnflagged@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	1	72f292b08208	0x159e10	100.0000	
 wwdobjmgr	?RemoveAll@CDDrawChildGroup@@QAEXPAU__POSITION@@PAUCGameObject@@@Z	100.0000	100.0000	3	265a0b4ef62e	0x15ab30	100.0000	
 wwdobjmgr	?RemoveAndDelete@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	3	7ef66a3c9e3e	0x159db0	100.0000	

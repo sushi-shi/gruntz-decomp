@@ -27,7 +27,6 @@ CBattlezData::~CBattlezData() {
     Init();
 }
 
-// @early-stop
 RVA(0x000fca10, 0x8a)
 void CBattlezData::Init() {
     m_count = 0;
@@ -49,11 +48,10 @@ void CBattlezData::Init() {
     m_coinsAvailable = 0;
     ClearWins();
     ClearFlags();
-    m_counts[0] = 0;
-    m_counts[1] = 0;
-    m_counts[2] = 0;
-    m_counts[3] = 0;
     i32 i;
+    for (i = 0; i < BZ_PLAYER_COUNT; i++) {
+        m_counts[i] = 0;
+    }
     for (i = 0; i < 88; i++) {
         m_weaponPickupz[i] = 0;
     }
