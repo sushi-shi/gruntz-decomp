@@ -4279,7 +4279,7 @@ tiletriggercontainer	?ScanNeighborhood@CTileTriggerContainer@@QAEPAVCGiantRockLo
 tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	3	36df0db8e01b	0x117280	100.0000	
 tiletriggercontainer	?SerializeApplyA@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerSwitchLogic@@@Z	100.0000	100.0000	1	d2c6854ed031	0x117630	100.0000	
 tiletriggercontainer	?SerializeApplyB@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerLogic@@@Z	100.0000	100.0000	1	7cd6adf23e33	0x117710	100.0000	
-tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	76.6912	76.6912	1	2fbeacb0e8bf	0x117f60	76.6912	
+tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	85.4412	85.4412	2	18c9162ae6d9	0x117f60	85.4412	
 tiletriggercontainer	?TransferFlag74@CTileTriggerContainer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	a40a859b54e7	0x117e20	100.0000	
 timesplit	?BlockScreenSaver@@YAHPAXIIJ@Z	100.0000	100.0000	1	90e7f9539a5a	0x1192d0	100.0000	
 timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	3	e2d6db34e612	0x119210	100.0000	
