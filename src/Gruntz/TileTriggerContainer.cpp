@@ -458,7 +458,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     return m;
 }
 
-// @early-stop
 RVA(0x00116cf0, 0x111)
 CGiantRockLogic* CTileTriggerContainer::AddToList1(
     i32 tileX,
@@ -471,7 +470,7 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
 ) {
     CGiantRockLogic* e = new CGiantRockLogic;
     if (e == NULL) {
-        return 0;
+        return NULL;
     }
     if (e->m_initGate == 0) {
         memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
@@ -495,9 +494,8 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
         return e;
     }
 
-    CTileTriggerLogic* dead = e;
-    delete dead;
-    return 0;
+    delete e;
+    return NULL;
 }
 
 RVA(0x00116e60, 0x59)
