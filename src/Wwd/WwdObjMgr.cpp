@@ -1157,10 +1157,6 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
     return 1;
 }
 
-// @early-stop
-// Retail caches `reader` in ebx and uses ebp as the function's zero register; cl
-// swaps them (ebp=reader, ebx=zero, edi=this vs retail's esi) and therefore
-// reloads `reader` from its parameter home every iteration. Size is exact.
 RVA(0x0015ad30, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused) {
     i32 savedCounter = 0;
@@ -1171,6 +1167,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         WwdSnapshot desc;
         reader->Read(&desc, sizeof(desc));
 
+        CGameObject* createdObj = NULL;
         CWwdGameObject* found = NULL;
         if (MapLookupById(m_registeredGameObjectsById, desc.m_objectId, found) && found != NULL) {
             return 0;
@@ -1179,52 +1176,43 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         savedCounter = g_wwdObjIdCounter;
         g_wwdObjIdCounter = desc.m_objectId;
 
-        CGameObject* createdObj;
         switch (desc.m_classId) {
-            // Arm order is retail's, not the classId order: cl lays switch arms out
-            // in SOURCE order and retail's first arm is the CreateDeferredObject one
-            // (0x15adf0 calls 0x159440 with four pushes and no `val != NULL` guard),
-            // with the two six-argument arms behind it.
             case CLASSID_WWDOBJF: {
+                i32 sortKey = desc.m_sortKey;
+                i32 id = desc.m_id;
                 createdObj = CreateDeferredObject(
-                    desc.m_id,
-                    desc.m_sortKey,
+                    id,
+                    sortKey,
                     LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName),
                     0
                 );
                 break;
             }
             case CLASSID_WWDOBJA: {
-                AnimWorkerObj* tmpl =
+                i32 sortKey = desc.m_sortKey;
+                i32 y = desc.m_screenY;
+                i32 x = desc.m_screenX;
+                i32 id = desc.m_id;
+                AnimWorkerObj* worker =
                     LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName);
-                if (tmpl != NULL) {
-                    createdObj = CreateSpriteObject(
-                        desc.m_id,
-                        desc.m_screenX,
-                        desc.m_screenY,
-                        desc.m_sortKey,
-                        tmpl,
-                        0
-                    );
-                } else {
+                if (worker == NULL) {
                     createdObj = NULL;
+                } else {
+                    createdObj = CreateSpriteObject(id, x, y, sortKey, worker, 0);
                 }
                 break;
             }
             case CLASSID_WWDOBJB: {
-                AnimWorkerObj* tmpl =
+                i32 sortKey = desc.m_sortKey;
+                i32 y = desc.m_screenY;
+                i32 x = desc.m_screenX;
+                i32 id = desc.m_id;
+                AnimWorkerObj* worker =
                     LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName);
-                if (tmpl != NULL) {
-                    createdObj = CreateContainerObject(
-                        desc.m_id,
-                        desc.m_screenX,
-                        desc.m_screenY,
-                        desc.m_sortKey,
-                        tmpl,
-                        0
-                    );
-                } else {
+                if (worker == NULL) {
                     createdObj = NULL;
+                } else {
+                    createdObj = CreateContainerObject(id, x, y, sortKey, worker, 0);
                 }
                 break;
             }
@@ -1232,8 +1220,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 
                 CWwdGameObject* rec = NULL;
                 // m_serialTypeId is NOT a LogicTypeId: this phase keys off the
-                // record's own serial type id, so the callback's type-id parameter
-                // carries two domains depending on the phase. Recorded, not merged.
+                // record's own serial type id.
                 if (OwnerMgr()->InvokeCallback(
                         reader,
                         SERIAL_CREATE_BY_SERIAL_ID,
@@ -1263,7 +1250,6 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 break;
             }
             default:
-                createdObj = NULL;
                 break;
         }
 

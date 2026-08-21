@@ -4,7 +4,7 @@ symptoms: a single byte/instruction shifts when a store moves relative to a call
 confidence: 9/10
 
 At /O2 the visible instruction order tracks the SOURCE statement order more tightly than expected.
-Eight corollaries, all steerable by re-ordering/positioning source:
+Nine corollaries, all steerable by re-ordering/positioning source:
 
 - **A store emitted BETWEEN an arg push and its `call`** must be written *before* the call
   statement in source (moving it after the call shifts a byte). E.g. CNetMgr's shared-flag store
@@ -49,6 +49,18 @@ Eight corollaries, all steerable by re-ordering/positioning source:
   coordinate arithmetic, reproducing retail's EDX/ECX schedule and raising 80.1866 to
   90.0746. The object extent became exact; the remaining exit placement was independently
   closed by the partial `goto fail` regime.
+- **Values loaded before an intervening lookup are source-level argument lifetimes, and their
+  declaration order fixes their register roles.** If a switch arm loads every later constructor
+  argument before a map lookup, name those values before the lookup rather than re-reading the
+  record at the call. Order the declarations by the retail register assignment, then preserve
+  the retail fall-through arm. `CDDrawChildGroup::LoadObjects` preloads `sortKey,id` before its
+  deferred-object lookup and `sortKey,y,x,id` before both nullable worker lookups; writing the
+  null case first reproduced the two retail branch exits. Together with initializing the shared
+  result before the switch, this changed 218/21 instructions/branches into 231/23 against
+  retail's 236/23 and raised 80.2619% to 96.88%. Calls, returns, and all ordered referents remain
+  exact. A 32-state compiler forest was one flat island; 256 depth-1/2 structural variants found
+  no improvement, so the five-instruction residue is not a declaration merge, hoist, relation,
+  commutative order, or TU-state lever.
 
 STEERABLE. Evidence: CNetMgr::OnOutOfSync flag interleave; CState ctor (decl-order, byte-exact)
 vs CGameApp ctor (schedule-order); GetGruntzDriveLetter `"Software"` local; CGruntzApp::ShowError
@@ -79,3 +91,11 @@ load across the two `LoadPageImage` argument pushes exactly as retail does and r
 function from 96.39% to 99.69%. Both sides remain 64 instructions, 4 calls, 6 branches,
 6 returns, and 5 ordered referents. The sole residue is the already-bounded scratch
 register choice on `frontPair->m_surface`, shared with adjacent `CState::RunTitle`.
+
+`CDDrawChildGroup::LoadObjects` @0x15ad30 supplies the pre-lookup argument-lifetime form.
+The retail sprite/container arms load four snapshot fields before `CMapStringToOb::Lookup`,
+then use those values after the call. Keeping the field expressions at the constructor call
+lets VC5 delay all four loads and leaves the function 17 instructions short. Semantic locals
+recover the live-across-call set; their order is observed directly from retail's register loads,
+not selected by score. The negative worker guard is independently required: the positive form
+keeps the same meaning but chooses the opposite physical fall-through and loses the retail CFG.
