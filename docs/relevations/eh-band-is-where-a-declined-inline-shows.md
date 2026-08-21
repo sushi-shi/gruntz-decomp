@@ -140,6 +140,44 @@ because the funclet chain is now retail's chain. **Never trade funclets back for
 
 ---
 
+## The second reading of "short a state": a `new` whose ctor stayed a CALL
+
+`AttachToObject` above is the *temp* case — a destructible object that never entered the
+frame. There is a second, commoner producer of the same signature, and it points the opposite
+way: **an `X* p = new X;` whose constructor was DECLINED needs an unwind state of its own**, to
+hand the raw allocation back to `operator delete` if the ctor throws. Expand the ctor and the
+state disappears; decline it and the state appears. So in a factory full of `new`, the funclet
+count is not a census of temporaries — it is a census of *declined constructor calls*.
+
+Measured on `CStatusBarMgr::LoadTabSprites` `0x102250`, 37 `new` sites, 2026-08-21:
+
+| | out-of-line `??0CSBI_RectOnly` | out-of-line `??0CStatusBarItem` | sum | EH funclets |
+| :-- | --: | --: | --: | --: |
+| ours | 7 | 10 | **17** | **17** |
+| retail | 10 | 15 | **25** | **25** |
+
+The identity is exact on both sides, and it holds per site: aligning the two streams by the 37
+`??2@YAPAXI@Z` calls, exactly the eleven sites whose declined depth differs carry the funclet
+difference, and every other segment is instruction-for-instruction equal. The `imm 0x13..0x17`
+exclusives `walls semdiff` reports there are the state counter running further, not constants.
+
+**The trap.** Read "we are 8 funclets short" as "we are missing 8 destructible temporaries" and
+you will go looking for eight `CString`s that do not exist. The check that separates the two
+cases costs one command: count the out-of-line base-ctor calls on each side
+(`llvm-objdump -dr` + the `??0` relocations). If that count already explains the delta, the
+funclets are a *consequence* of the inline decision and the work is
+[cl5-inline-budget-is-arithmetic-you-can-compute.md](cl5-inline-budget-is-arithmetic-you-can-compute.md)'s
+front-end-mass problem, not a missing object.
+
+A second, independent axis on the same function confirms the mechanism is the nested share
+`trunc(budget / sites-remaining)` and not the top-level budget: inserting K calls to an empty
+`static inline` (cost-exempt, so they raise `nrem` without spending budget) after the last
+construction moves the declines monotonically — K=0 → 7/10, K=2..4 → 8..9/9..10, K=10 →
+12/8 plus one declined `??0CSBI_Image`, and the score 93.13 → 94.41. Neither axis alone reaches
+retail's 10/15: raising `nrem` and lowering caller mass move the two buckets differently, which
+is the same "the caller carries ~250-300 cb units too much" instruction stated from the other
+side. Probes were disposable and are not in the tree.
+
 ## Why the main band cannot see this
 
 A declined inline is not a wrong instruction. The caller loads the same arguments, the callee
