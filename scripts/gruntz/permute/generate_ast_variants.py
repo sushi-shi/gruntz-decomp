@@ -574,7 +574,9 @@ def declaration_hoist_edits(fn, blob: bytes) -> list[AstMutation]:
         return []
     insertion = body_start + 1
     open_line_start = blob.rfind(b"\n", 0, body_start) + 1
-    body_indent = blob[open_line_start:body_start] + b"    "
+    open_line_prefix = blob[open_line_start:body_start]
+    leading = len(open_line_prefix) - len(open_line_prefix.lstrip())
+    body_indent = open_line_prefix[:leading] + b"    "
 
     declarations = [
         node for node in fn.walk_preorder()

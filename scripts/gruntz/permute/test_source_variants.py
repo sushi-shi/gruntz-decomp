@@ -5,14 +5,19 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import clang.cindex as ci
+
 from gruntz.permute import batch_source_variants as batch
 from gruntz.permute.generate_ast_variants import (
     AstEdit,
     AstMutation,
     candidate_payloads,
+    configure_libclang,
     crossed_candidate_payloads,
+    declaration_hoist_edits,
     marker_span,
     non_overlapping,
+    target_function,
 )
 from gruntz.permute.topology import compare_topology, topology_rank
 
@@ -114,6 +119,39 @@ class BatchSourceVariantTests(unittest.TestCase):
 
 
 class AstVariantTests(unittest.TestCase):
+    def test_declaration_hoist_after_same_line_open_brace_is_valid_cpp(self):
+        blob = (
+            b"#define RVA(rva, size)\n"
+            b"RVA(0x00123456, 0x1)\n"
+            b"int Target() {\n"
+            b"    int value = 7;\n"
+            b"    return value;\n"
+            b"}\n"
+        )
+        configure_libclang()
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "unit.cpp"
+            source.write_bytes(blob)
+            index = ci.Index.create()
+            tu = index.parse(str(source), args=["-x", "c++", "-std=c++14"])
+            fn = target_function(tu, source, blob, 0x123456)
+            mutations = declaration_hoist_edits(fn, blob)
+            self.assertEqual(len(mutations), 1)
+            modified = blob
+            for edit in sorted(mutations[0].edits, key=lambda item: item.start, reverse=True):
+                modified = modified[:edit.start] + edit.replacement + modified[edit.end:]
+            self.assertIn(b"int Target() {\n    int value;\n", modified)
+            self.assertNotIn(b"int Target()     int value;", modified)
+            reparsed = index.parse(
+                str(source), args=["-x", "c++", "-std=c++14"],
+                unsaved_files=[(str(source), modified.decode("utf-8"))],
+            )
+            errors = [
+                str(diagnostic) for diagnostic in reparsed.diagnostics
+                if diagnostic.severity >= ci.Diagnostic.Error
+            ]
+            self.assertEqual(errors, [])
+
     def test_marker_span_uses_real_rva_markers(self):
         blob = (
             b"// RVA(0x00123456, in a comment\n"
