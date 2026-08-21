@@ -2009,11 +2009,6 @@ i32 CGrunt::CreateSelectedSprite() {
     return 1;
 }
 
-// @early-stop
-// Same class as StepGruntMovement: retail's frame is 8 bytes larger (0x18 vs
-// 0x10) and it spends two stack slots where we hold the -1 fill constant in
-// ebp and pre-load a parameter before the frame is set up, which rotates every
-// register from the first instruction on.
 RVA(0x0004d800, 0x440)
 i32 CGrunt::Place(
     class CTriggerMgr* board,
