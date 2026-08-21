@@ -104,7 +104,6 @@ void CNetCmdSlot::FullReset() {
     ResetTriple(m_rangeB);
 }
 
-// @early-stop
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessCmd(i32 playerId, char* rec, i32 size) {
     if (rec == NULL) {
