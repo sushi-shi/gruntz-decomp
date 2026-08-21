@@ -557,13 +557,6 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     return 1;
 }
 
-// @early-stop
-// REGISTER-HOMING wall. Arm structure and branch sequence agree with retail; the
-// residue is which values win registers. Base carries two blocks retail does not
-// (a lone `jmp` preheader plus a 1-instruction loop header) because cl spills the
-// `clip` pointer and reloads it at the top of every arm-2 iteration where retail
-// keeps it pinned in edi; the frame is 0xc against retail's 0x8 and every [esp+N]
-// shifts with it. Not reachable from the loop form (while(1)+break is worse).
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* dst,
