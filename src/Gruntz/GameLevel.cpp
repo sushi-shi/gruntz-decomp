@@ -632,10 +632,6 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     return 0;
 }
 
-// @early-stop
-// Liveness wall: retail holds destX in ecx and homes dy / kind / ok / stepX / goalX in
-// stack slots (it reuses the dead parameter slots); cl keeps them in registers, so the
-// body is 12 bytes short of retail's 0x164 with identical instruction selection.
 RVA(0x0015de40, 0x164)
 i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     CGameObject* t = target;
