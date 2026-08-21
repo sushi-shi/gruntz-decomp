@@ -20,10 +20,23 @@ same two values also stay live in registers and every use reads them from there.
 | `CTriggerMgr::ApplyTriggerA` | 0x6dae0 | `mov [esp+0x20],ecx` / `mov [esp+0x1c],eax` |
 | `CTriggerMgr::ApplyTriggerB` | 0x6e120 | `mov [esp+0x24],ecx` / `mov [esp+0x20],edx` |
 | `CTriggerMgr::ClearCell` | 0x6e800 | `mov [esp+0x10],edx` / `mov [esp+0x18],edx` (m_moveTile, not m_lastTilePx) |
+| `CBattlezMapConfig::CheckQueuedSpawnTile` | 0x34c70 | `mov [esp+0x14],esi` / `mov [esp+0x10],eax` |
 
-In all three the slots are `[S-8]` and `[S-4]` (S = esp at entry), i.e. exactly the
-`sub esp,0x8` area, and in all three they hold `x` then `y` out of `m_lastTilePx` - which
+In the original family the slots are `[S-8]` and `[S-4]` (S = esp at entry), i.e. exactly
+the `sub esp,0x8` area, and they hold `x` then `y` out of `m_lastTilePx` - which
 is what made a `Coord` local look obvious.
+
+`CheckQueuedSpawnTile` is the same allocator state with a different source aggregate:
+the stores hold `m_arrivalCell.y` and `.x`, while the live copies stay in registers and
+the board lookup reads those registers. Base/retail have the same three calls, thirteen
+branches, one return, seven relocations, and five-entry ordered referent sequence; the
+base is 87 instructions/0x12c and retail is 92/0x133. Retail additionally materializes
+zero in `EBX`, turning nine of the base's `test` forms into `cmp ...,ebx` and using the
+register for pushes/stores. Direct copy-initialization, an inlined by-value accessor,
+and an inline wrapper around the already-correct second `FreeNodePool::Push` expansion
+were byte-flat. A classified 32-island/33-state campaign found only one compiler island,
+so the search correctly routed back to structural checks; those checks found no missing
+source entity or boundary.
 
 ## The three facts that kill the `Coord`-local reading
 
