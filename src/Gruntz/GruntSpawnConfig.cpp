@@ -94,8 +94,6 @@ void CGruntSpawnConfig::ClearSprites() {
     memset(m_voices, 0, sizeof(m_voices));
 }
 
-// @early-stop
-
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     CGrunt* who,
@@ -114,8 +112,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         return 0;
     }
     i32 voiceId = GetButeSlot(who, cue);
-    CString cueKey;
     CString voiceSection;
+    CString cueKey;
     voiceSection.Format("SG%i", voiceId);
     cueKey.Format("G%i", cue);
     if (percent == -1) {
@@ -124,7 +122,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
             percent = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(cueKey), 0);
         }
     }
-    if (percent < 100 && percent < g_gameReg->Rand() % 0x65) {
+    if (percent < 100 && g_gameReg->Rand() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
@@ -134,7 +132,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     for (i32 i = 0; i < 2; i++) {
-        if (priority <= m_voices[i]->m_playFlags) {
+        if (m_voices[i]->m_playFlags >= priority) {
             return 0;
         }
     }
@@ -148,53 +146,47 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 b = v0c->m_playFlags;
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
-    StreamVoice** streams = m_streams;
-
-    CGameObject* gate = who->m_object;
     i32 chosen;
-    if (b < a) {
-        chosen = 1;
-        if (c == gate->m_objectId) {
-            chosen = 0;
-            if (b != 0 && streams[1] != NULL) {
-                (static_cast<DirectSoundMgr*>(streams[1]))
-                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+    if (a <= b) {
+        chosen = 0;
+        if (d == who->m_object->m_objectId) {
+            chosen = 1;
+            if (a != 0 && m_streams[0] != NULL) {
+                m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (a != 0 && streams[0] != NULL) {
-            (static_cast<DirectSoundMgr*>(streams[0]))
-                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        } else if (b != 0 && m_streams[1] != NULL) {
+            m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     } else {
-        chosen = 0;
-        if (d == gate->m_objectId) {
-            chosen = 1;
-            if (a != 0 && streams[0] != NULL) {
-                (static_cast<DirectSoundMgr*>(streams[0]))
-                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        chosen = 1;
+        if (c == who->m_object->m_objectId) {
+            chosen = 0;
+            if (b != 0 && m_streams[1] != NULL) {
+                m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-        } else if (b != 0 && streams[1] != NULL) {
-            (static_cast<DirectSoundMgr*>(streams[1]))
-                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        } else if (a != 0 && m_streams[0] != NULL) {
+            m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
-    if (streams[chosen] == NULL) {
-        streams[chosen] =
+    if (m_streams[chosen] == NULL) {
+        m_streams[chosen] =
             m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
-        if (streams[chosen] == NULL) {
+        if (m_streams[chosen] == NULL) {
             return 0;
         }
     }
-    StreamVoice* stream = streams[chosen];
+    StreamVoice* stream = m_streams[chosen];
     i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
-    if (stream->SetSource(src) != 0) {
-        stream->Configure(vol, 0, 0, 0);
+    if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
+        CGruntVoice* voice = m_voices[chosen];
+        if (voice->Setup(who->m_object->m_objectId, stream, priority, 0)) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
-    CGruntVoice* voice = m_voices[chosen];
-    if (voice->Setup(gate->m_objectId, stream, priority, 0) == 0) {
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 RVA(0x0011b3b0, 0x338)

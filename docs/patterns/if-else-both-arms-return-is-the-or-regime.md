@@ -38,6 +38,16 @@ guard) differing only in the shape of the LAST guard pair:
 Cells **A and C are identical instruction-for-instruction** (63 insns, verified
 after masking branch displacements). Cell B is the no-merge floor.
 
+The equal return value is essential. With different result arms, removing an
+explicit `else` can change the exit IL even when the C++ remains equivalent.
+`CGruntSpawnConfig::LoadGruntSpawnConfig` 0x11afb0 ends a successful
+`SetSource && Configure` block with `if (Setup(...)) return 1; else return 0;`.
+Letting the failure fall through to the later `return 0` kept the same 241
+instructions, 23 calls, 34 branches, and one machine return, but changed
+allocation enough to fall 91.78 -> 89.36. Retail has distinct success and
+failure cleanup arms, so the explicit different-valued `else` is retained. Do
+not apply the TOTAL-regime rule to `return 1` versus `return 0`.
+
 ## Why it matters
 
 The shape is easy to write while transcribing, reads as innocuous nesting, and

@@ -121,6 +121,20 @@ EH action sequences and zero referent divergence. In this shape, count the
 destructor calls in the parent function before dismissing the residue as EH
 epilogue scheduling.
 
+The census can expose missing behavior before it exposes a spelling. In
+`CGruntSpawnConfig::LoadGruntSpawnConfig` 0x11afb0, retail calls `SetSource`,
+conditionally calls `Configure`, tests the surviving return value, and reaches
+`CGruntVoice::Setup` only when both calls succeeded. The reconstruction called
+`Configure` conditionally but ignored both failure results and always ran
+`Setup`. Restoring the positive `SetSource(...) && Configure(...)` gate added
+the missing branch and moved 91.23 -> 91.78 (82.23 before the preceding
+structural repairs). Only then was the remaining 4-vs-6 CString-destructor
+census safe to classify as cleanup merging. A two-site failure label and a
+complete post-CString `goto fail` regime were both byte-identical to the
+compound gate and did not restore the extra cleanup pair. Inspect the
+instructions immediately before a repeated-destructor delta: a missing result
+gate is a semantic defect; only the residual duplicated cleanup is a wall.
+
 When the duplicated blocks are instead the whole unwind epilogue, they are an
 epilogue cross-jump and not this lever.
 
