@@ -28,10 +28,17 @@ spells `m_rleData[pos]` inline gets the reload for free - a source that writes
 `u8 b = m_rleData[pos]; i32 cnt = b;` keeps it live in a register across the loop and
 pays a spill slot for it.
 
-**3. `rowInc` IS `pitch`.** The vflip arm negates the pitch in place and the row loops
-add that one variable; a separate `rowInc` local is one dword of frame that retail does
-not have. (`BlitShadedMirrored` 0x14b770's frame becomes exactly retail's 0x30 on this
-change alone.)
+**3. In `BlitCopyMirrored`, `rowInc` IS `pitch`.** The vflip arm negates the pitch in
+place and the row loops add that one variable; a separate `rowInc` local is one dword
+of frame that retail does not have.
+
+Do not generalize that fact to the shaded sibling. `BlitShadedMirrored` 0x14b770 uses
+the original positive pitch for the second scanline (`d[pitch]` and the equivalent
+16-bit offset), while row traversal uses a separate value assigned `-pitch` or
+`pitch`. Retail loads the original pitch from `[esp+0x1c]` and stores the traversal
+value at `[esp+0x30]`. A controlled A/B on the current reconstruction moved the frame
+from 0x28 to 0x2c against retail's 0x30 and corrected the v-flip semantics; the still
+missing dword is independent evidence, not a reason to collapse the two values.
 
 ## Result
 
