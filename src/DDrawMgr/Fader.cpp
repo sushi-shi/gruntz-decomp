@@ -226,14 +226,6 @@ RVA_COMPGEN(0x0017e970, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
 RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
-// @early-stop
-// The inlined CRezBufferObject::SetSize body was missing MFC's shrink arm
-// (`else if (m_nSize > nNewSize) DestructElements(...)`, POD so only the dead
-// count store survives) and spelled the growth clamp as an assign-then-fix
-// instead of retail's if/else; both are fixed and the branch sequence now agrees
-// 19/19. Residue: cl seats `this` in esi where retail picks ebp (claimed between
-// the ebp and esi pushes), leaving retail one fewer loop register, so retail
-// carries x/bx/rowD2/halfW in frame slots across the inner loop.
 RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
