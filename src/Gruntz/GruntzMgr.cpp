@@ -542,23 +542,6 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
-// @early-stop
-// The prologue is byte-identical (this=edi, stateId=ebp, 0=ebx) - the earlier note
-// claiming a whole-function regalloc swap was wrong. Two residues remain:
-//   * the /Ob1 per-site budget declines nested constructors retail expands (the
-//     GAMESTATE_CREDITS arm, and three of the eight CPlay::ClockInterval sites).
-//     Bounded by measurement, not assumption: the eleven `operator new` sizes and
-//     their order are identical on both sides, so the caller is already finished
-//     and the model's only lever does not apply
-//     (docs/patterns/inline-budget-emits-ool-comdat.md, quantified PARK section).
-//   * the `obj` join lives in eax here and in esi in retail, so each of the nine
-//     `new` arms carries an extra `mov eax,esi` AND an extra
-//     `mov dword ptr [esp+0x1c],-1` EH-state reset (90 B).
-// Moving `obj = NULL` out of the declaration into the switch's default arm DOES
-// remove retail's absent `xor eax,eax` ahead of the jump-table dispatch, but the
-// join stays in eax and the arms keep the state reset: 86.43 -> 84.84. Reverted.
-// The zero-store interleave inside the inlined CPlay ctor (+0/+8/+4/+0xc) is the
-// member-class model documented on CPlay::CPlay in include/Gruntz/Play.h.
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
