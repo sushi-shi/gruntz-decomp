@@ -71,6 +71,14 @@ CONSTANT member offset where the address itself folds away:
    anchors `esi = &m_groupSlots[i].m_last`, sibling state/counter at
    -0x8/-0x4).
 
+The alias-opacity signature also applies to a fixed-size scalar member array. In
+`CTileTriggerContainer::SetCell` (0x117f60), writing four player flags directly let cl load
+`elem->m_actionCode` before the store run. Binding `i32* flags = elem->m_playerFlags` kept the
+four ascending stores together and pinned the action-code load after them, matching retail's
+statement schedule and raising 82.5735% → 85.4412%. This is not a generic pointer-style rule:
+the evidence is the retail run of `+0/+4/+8/+0xc` stores followed by a load from the owning
+object, and the pointer names the real array subobject.
+
 The i64-pair pointer is the established in-tree modeling of these
 {timestamp, interval} tails (`SyncClockPair(CFileMemBase*, SerialMode, i64*)`
 walks `pair` and `pair + 1` in `CStatusBarMgr::Sync`); prefer a real
