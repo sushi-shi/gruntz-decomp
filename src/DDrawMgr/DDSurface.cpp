@@ -872,15 +872,6 @@ reject:
     return 0;
 }
 
-// @early-stop
-// cl sinks the pct*32/100 chain below the Lock call where retail keeps it in
-// source order before the call; statement-reorder permutation does not move
-// it. Known cross-function-state-sensitive schedule (see the ShadeRect
-// predecessor A/B note in the permute skill).
-// The three g_clut byte displacements are 0x10000 / 0 / 0x20000, matching retail's
-// DIR32 addends. They used to carry a +2 that cancelled the (wrong) +2 in
-// BuildColorChannelTables; both are gone. Each lookup is (pct, channel, 0),
-// i.e. a straight channel * pct / 32 dim.
 RVA(0x0013f460, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > 100) {

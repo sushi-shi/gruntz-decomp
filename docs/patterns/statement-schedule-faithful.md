@@ -4,7 +4,7 @@ symptoms: a single byte/instruction shifts when a store moves relative to a call
 confidence: 9/10
 
 At /O2 the visible instruction order tracks the SOURCE statement order more tightly than expected.
-Nine corollaries, all steerable by re-ordering/positioning source:
+Ten corollaries, all steerable or diagnostically bounded by source lifetime/position:
 
 - **A store emitted BETWEEN an arg push and its `call`** must be written *before* the call
   statement in source (moving it after the call shifts a byte). E.g. CNetMgr's shared-flag store
@@ -61,6 +61,16 @@ Nine corollaries, all steerable by re-ordering/positioning source:
   exact. A 32-state compiler forest was one flat island; 256 depth-1/2 structural variants found
   no improvement, so the five-instruction residue is not a declaration merge, hoist, relation,
   commutative order, or TU-state lever.
+- **A loop-entry jump that skips one reload can be a call-crossing lifetime consequence, not a
+  different loop construct.** In `CDDSurface::ShadeRect`, retail computes the scaled percentage
+  before `Lock`, so `new[]` returns the scratch pointer in EAX and the first iteration of each row
+  loop jumps over the latch-only `mov eax,[scratch]`. The current compile sinks the percentage
+  calculation below `new[]`, consumes EAX, and therefore reloads scratch on the first iteration;
+  both forward jumps disappear. Computing the final LUT offset before `Lock` is the causal
+  control: it restores 28/28 branches and both skip-reload jumps, but changes the frame from
+  retail's 0x1c to 0x20 and grows the body to 0x2dc, proving that the final offset is the wrong
+  call-crossing value. Treat the jump pair as a live-range signature and reconstruct the value
+  that crosses the call; do not rewrite a correct `for` loop into a synthetic rotated loop.
 
 STEERABLE. Evidence: CNetMgr::OnOutOfSync flag interleave; CState ctor (decl-order, byte-exact)
 vs CGameApp ctor (schedule-order); GetGruntzDriveLetter `"Software"` local; CGruntzApp::ShowError
@@ -99,3 +109,14 @@ lets VC5 delay all four loads and leaves the function 17 instructions short. Sem
 recover the live-across-call set; their order is observed directly from retail's register loads,
 not selected by score. The negative worker guard is independently required: the positive form
 keeps the same meaning but chooses the opposite physical fall-through and loses the retail CFG.
+
+`CDDSurface::ShadeRect` @0x13f460 supplies the skip-reload diagnostic form. Base and retail agree
+on seven calls, two returns, twenty ordered relocations/addends and all format/LUT semantics, but
+the base has 26 branches/0x2ca against retail's 28/0x2da. A 32-island campaign found eleven target
+states: the 80.3591% state only fixes the RGB555 partial-register/table-load schedule and leaves
+the 26-branch topology unchanged. A second campaign covered all 71 atomic source mutations
+(72 shapes crossed with a state control); none improved or changed topology. Named scaled locals,
+split multiply/divide, an in-place post-allocation shift, and an inline scaling helper are also
+byte-inert at the decisive boundary. Only the deliberately over-live final-offset control moves
+the calculation before `Lock`; its wrong frame and register set bound the remaining gap as the
+compiler's choice of call-crossing value, not missing row-loop logic.
