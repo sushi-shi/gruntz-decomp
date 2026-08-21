@@ -563,15 +563,6 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     return t;
 }
 
-// @early-stop
-// Pack-order coin: retail evaluates the b-dependent blue term first, in source
-// order, and re-derives the whole three-channel pack inside the b loop; cl
-// reassociates the loop-invariant r|g pair, hoists it into the g loop and spills
-// it (one extra frame dword, `sub esp,0x40` vs retail's 0x3c), which also splits
-// the innermost loop into a rotated 1+35 pair where retail has a plain 33i
-// self-loop. Ten by-value/helper spellings plus all 18 order x grouping forms of
-// the `|` chain (flat, left-paren, right-paren, two- and three-statement splits)
-// are byte-identical: the reassociation is cl's LICM, not the source's shape.
 RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
     CShadeTable* t = new CShadeTable;
@@ -606,9 +597,9 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
                 for (i32 b = 0; b < 0x10; b++) {
                     u8 bn = static_cast<u8>((((b * level / 0xf) << 4) + subb));
                     *out++ = static_cast<u16>(
-                        ((static_cast<u8>((bn >> static_cast<u8>(g_bDown))))
-                         | (static_cast<u8>((rn >> static_cast<u8>(g_rDown))) << g_rUp)
-                         | (static_cast<u8>((gn >> static_cast<u8>(g_gDown))) << g_gUp))
+                        ((static_cast<u8>((bn >> g_bDown)))
+                         | (static_cast<u8>((rn >> g_rDown)) << g_rUp)
+                         | (static_cast<u8>((gn >> g_gDown)) << g_gUp))
                     );
                 }
             }

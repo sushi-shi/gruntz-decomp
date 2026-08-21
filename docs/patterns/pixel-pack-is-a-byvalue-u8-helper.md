@@ -58,3 +58,15 @@ misses it.
 
 Sibling call sites already in this shape: `src/Gruntz/TriggerMgr.cpp`
 `PackRgb16`, `src/Gruntz/LightFxRender.cpp` `Pack`.
+
+## Boundary of the pattern
+
+The helper is not a general optimizer fence. `CShadeTableCache::SubTable`
+0x14f310 already feeds three `u8` locals to a blue/red/green pack inside a
+nested loop. Moving that expression into a by-value `u8` inline helper and
+using native `i32` shift counts is byte-identical to the direct expression:
+cl still hoists the inner-loop-invariant red/green pair, spills it, and rotates
+the first iteration. A sequential `u16` accumulator, an inlined blue-value
+expression, and removing the shift-count casts are byte-identical as well.
+Apply this pattern only when its characteristic byte-width/evaluation-order/
+single-mask signature is present; an inline boundary alone does not block LICM.

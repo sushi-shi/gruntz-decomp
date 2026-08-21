@@ -3926,7 +3926,7 @@ shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETT
 shadetablecache	?RgbToHsv@@YA?AUColorHSV@@I@Z	100.0000	100.0000	1	5ab97e4af394	0x14fcc0	100.0000	
 shadetablecache	?Serialize@CShadeTableArray@@UAEXAAVCArchive@@@Z	100.0000	100.0000	1	f17036bc2d6b	0x14fe90	100.0000	
 shadetablecache	?SetSizeGrow@CShadeTableArray@@QAEXHH@Z	100.0000	100.0000	1	73aa64fb3661	0x150040	100.0000	
-shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	78.7150	78.7150	11	cb7dd1d250b1	0x14f310	78.7874	
+shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	78.7150	78.7150	12	67614aa65cd9	0x14f310	78.7874
 simpleanimation	??0CSimpleAnimation@@QAE@PAUCGameObject@@@Z	98.7203	98.7203	1	dff894535f43	0xab940	98.7203	
 simpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	cpp:04bd1e706233	0xf9d0	100.0000	
 simpleanimation	??_GCSimpleAnimation@@UAEPAXI@Z	100.0000	100.0000	1	cpp:04bd1e706233	0xf9a0	100.0000	
