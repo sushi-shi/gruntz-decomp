@@ -205,3 +205,44 @@ is now individually bounded. These four walls are PARKED on arithmetic:
 the missing mass is real, but its source spelling is under-determined by
 the bytes, and every candidate spelling that fits the budget also has to
 keep zero-slack BuildStatusBarTabs untouched.
+
+## The callee-cb axis breaks two of the walls (2026-08-21, measured and BANKED)
+
+The park above missed one axis: the BASE CTOR cb values are free parameters
+too. `cb(??0CStatusBarItem)` and `cb(??0CSBI_RectOnly)` sit just past the
+40 exemption (fitted 55/61), and their retail out-of-line copies (0x17/0x1b
+bytes) cannot falsify extra front-end mass — /O2 deletes it identically in
+the out-of-line copy. Titrating dead statements (+7 cb each) into the two
+header inline ctors:
+
+* **(item+2, rect+2)**: `LoadTabSprites` reaches the FULL retail call
+  multiset and skeleton (163/163 calls, 167/167 branches — objdiff class
+  drops to regalloc/scheduling, first byte diff +0x34) and scores **95.81**
+  (banked; prior MAX 93.13). `BuildTabzDialog` reaches retail decline
+  counts 4/8 and scores **92.16** (banked; prior 90.30) — its residue is
+  the separate duplicate-`AddTail` row.
+* No uniform point satisfies all four builders: `BuildStatusBarTabs` flips
+  a Rect site at rect+2-with-item+2 or item+3, and `BuildGameMenu` needs
+  item+3. The arithmetically consistent joint solution is **(item+2,
+  rect+0..2) plus the per-builder caller-mass removals already quantified
+  above** — the callee axis does not replace the structural instruction,
+  it splits the deficit with it.
+* `BuildGameMenu` at its count-parity point (item+3, rect+2) scores 84.66,
+  BELOW its 86.06 best: GM's wall is the branch-duplication/CFG question
+  (2x 25-insn prefix runs ours vs 2x 22 + 2x 11 retail), not counts.
+* A conservation law steers the search: in `LoadTabSprites` the
+  Rect+Item decline-event SUM is invariant under the derived-ctor knobs
+  (ImageSet/Image redistribute one sum, 21) and is raised only by the
+  Item-ctor knob (17 at baseline, 21, 23, 25 = retail at item+3) or by
+  caller-mass removal (each Rect flip adds one event).
+* Negative controls, all measured: the mem-init-list spelling of the Item
+  ctor is cb-IDENTICAL to body stores (0 movement — settles the cb half of
+  the contested mem-init question); fusing `X = new T;` into the `if` is
+  decline-neutral and byte-active (wrong spelling); a dead statement in
+  `SbGeom` or in the `CSBI_Image` ctor reaches `BuildStatusBarTabs`
+  through the MenuItem chain and breaks it.
+* No evidence-backed source spelling for the +14 cb per base ctor exists
+  yet, so the lever stays a DISPOSABLE TU-state experiment: banked while
+  applied (`verify bank --dirty`), reverted, currency re-banked — per the
+  bank-while-exact doctrine. The remaining recovery surface is the
+  per-builder caller mass (GM/LTS/BTD) and GM's duplication structure.
