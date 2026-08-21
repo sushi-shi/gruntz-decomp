@@ -31,7 +31,6 @@
 
 #include <string.h>
 
-// @early-stop
 RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CStatusBarMgr* parent,
@@ -46,8 +45,11 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     i32 onLeft
 ) {
     static_cast<void>(unused);
-    if (host == NULL || parent == NULL) {
-        return 0;
+    if (host == NULL) {
+        goto fail;
+    }
+    if (parent == NULL) {
+        goto fail;
     }
     m_host = host;
     m_tab = tab;
@@ -66,52 +68,54 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_onLeft = onLeft;
 
     if (onLeft != 0) {
-        CDDrawWorker* n = 0;
-        CObject* nOb = 0;
+        CDDrawWorker* worker;
+        CObject* found = NULL;
         g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
-            nOb
+            found
         );
-        n = static_cast<CDDrawWorker*>(nOb);
-        CImage* v;
-        if (n == NULL) {
-            v = NULL;
-        } else if (n->m_minIndex > 1 || n->m_maxIndex < 1) {
-            v = NULL;
+        worker = static_cast<CDDrawWorker*>(found);
+        CImage* frame;
+        if (worker == NULL) {
+            frame = NULL;
+        } else if (worker->m_minIndex > 1 || worker->m_maxIndex < 1) {
+            frame = NULL;
         } else {
-            v = static_cast<CImage*>(n->m_items.GetAt(1));
+            frame = static_cast<CImage*>(worker->m_items.GetAt(1));
         }
-        m_topFrame = v;
-        m_bottomFrameDy = 1;
+        m_topFrame = frame;
         m_drawPosition.m_x = parent->m_rect10.left - (rc.right - rc.left) / 2;
+        m_bottomFrameDy = 1;
     } else {
-        CDDrawWorker* n = 0;
-        CObject* nOb = 0;
+        CDDrawWorker* worker;
+        CObject* found = NULL;
         g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
-            nOb
+            found
         );
-        n = static_cast<CDDrawWorker*>(nOb);
-        CImage* v;
-        if (n == NULL) {
-            v = NULL;
-        } else if (n->m_minIndex > 1 || n->m_maxIndex < 1) {
-            v = NULL;
+        worker = static_cast<CDDrawWorker*>(found);
+        CImage* frame;
+        if (worker == NULL) {
+            frame = NULL;
+        } else if (worker->m_minIndex > 1 || worker->m_maxIndex < 1) {
+            frame = NULL;
         } else {
-            v = static_cast<CImage*>(n->m_items.GetAt(1));
+            frame = static_cast<CImage*>(worker->m_items.GetAt(1));
         }
-        m_topFrame = v;
-        m_bottomFrameDy = -1;
+        m_topFrame = frame;
         m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_rect10.right;
+        m_bottomFrameDy = -1;
     }
     m_drawPosition.m_y = colIndex * 0x12 + 0xd1;
     if (m_topFrame == NULL) {
-        return 0;
+        goto fail;
     }
     m_sampleMode = enabled;
     m_sampledValue = -1;
     m_drawGate = BuildHandle();
     return 1;
+fail:
+    return 0;
 }
 
 RVA(0x000e9800, 0x9)

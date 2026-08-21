@@ -4,7 +4,7 @@ symptoms: a single byte/instruction shifts when a store moves relative to a call
 confidence: 9/10
 
 At /O2 the visible instruction order tracks the SOURCE statement order more tightly than expected.
-Seven corollaries, all steerable by re-ordering/positioning source:
+Eight corollaries, all steerable by re-ordering/positioning source:
 
 - **A store emitted BETWEEN an arg push and its `call`** must be written *before* the call
   statement in source (moving it after the call shifts a byte). E.g. CNetMgr's shared-flag store
@@ -41,6 +41,14 @@ Seven corollaries, all steerable by re-ordering/positioning source:
   pushes and the `m_drawTarget` load after them. Do not retain a one-site local when an
   established accessor produces the same lifetime; neighbouring callers corroborate the
   source boundary.
+- **Two independent member assignments retain their authored priority even when arithmetic
+  is interleaved between them.** If retail finishes an X-coordinate expression before
+  storing an adjacent delta, write the X assignment first. In
+  `CSBI_SideTab::BuildStatzTabStatusBar`, moving `m_drawPosition.m_x` before
+  `m_bottomFrameDy` in both arms made cl keep the delta constant live while completing the
+  coordinate arithmetic, reproducing retail's EDX/ECX schedule and raising 80.1866 to
+  90.0746. The object extent became exact; the remaining exit placement was independently
+  closed by the partial `goto fail` regime.
 
 STEERABLE. Evidence: CNetMgr::OnOutOfSync flag interleave; CState ctor (decl-order, byte-exact)
 vs CGameApp ctor (schedule-order); GetGruntzDriveLetter `"Software"` local; CGruntzApp::ShowError

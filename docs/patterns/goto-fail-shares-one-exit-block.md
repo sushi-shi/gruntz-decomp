@@ -87,6 +87,17 @@ sequences agree). **The label's position in the SOURCE is irrelevant** - moving
 `StepArrivalDefense`'s `seek:` label from function scope into the end of the `case` block
 it is emitted in was byte-identical.
 
+Equal return counts do not rule this out. `CSBI_SideTab::BuildStatzTabStatusBar`
+0xe9600 had two returns and the same three incoming failure edges on both sides, but the
+source's leading `if (host == NULL || parent == NULL)` selected the total regime and sank
+the shared zero epilogue past the success return. Retail placed that epilogue immediately
+before the success block. A trailing `fail:` label alone was byte-identical; only splitting
+the short-circuit into two separate `goto fail` guards selected the partial regime and
+changed the last `je` to retail's `jne`. With the two arm-local member assignments already
+in retail order, this closed **90.0746 -> 100.0000 EXACT**: 0x18c bytes, 134 instructions,
+16 branches, two returns, and seven ordered referents on both sides. Detection therefore
+uses block position and predecessor identity, not merely a return-count delta.
+
 ## The shared block does not have to be a bare `return`
 
 Any statement list that several guards jump to is one label. `CGrunt::StepArrivalDefense`

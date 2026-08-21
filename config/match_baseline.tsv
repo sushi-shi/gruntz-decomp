@@ -255,7 +255,7 @@ sbi_imagesetani	5	3
 sbi_menuitem	11	9
 sbi_rectonly	116	95
 sbi_rectonlybase	3	3
-sbi_sidetab	8	6
+sbi_sidetab	8	7
 sbi_statztabarrow	3	2
 sbi_statztabgruntbar	6	5
 sbi_warlordhead	7	6
@@ -3813,7 +3813,7 @@ sbi_rectonlybase	?Setup@CSBI_RectOnly@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr
 sbi_sidetab	??1CSBI_SideTab@@UAE@XZ	100.0000	100.0000	1	640619ca6550	0x105200	100.0000	
 sbi_sidetab	??_GCSBI_SideTab@@UAEPAXI@Z	100.0000	100.0000	1	cpp:619defb59b73	0x1051d0	100.0000	
 sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	1	9fd121de1287	0xe9850	86.0101	
-sbi_sidetab	?BuildStatzTabStatusBar@CSBI_SideTab@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHW4StatusSampleMode@@H@Z	80.1866	80.1866	1	690bdbe48b9b	0xe9600	80.1866	
+sbi_sidetab	?BuildStatzTabStatusBar@CSBI_SideTab@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHW4StatusSampleMode@@H@Z	100.0000	100.0000	2	2b06f4d54372	0xe9600	100.0000
 sbi_sidetab	?Refresh@CSBI_SideTab@@UAEHH@Z	100.0000	100.0000	1	359b97a7b4d7	0xe9820	100.0000	
 sbi_sidetab	?Render@CSBI_SideTab@@UAEHXZ	100.0000	100.0000	1	95866f4e32a6	0xe99c0	100.0000	
 sbi_sidetab	?Reset@CSBI_SideTab@@UAEXXZ	100.0000	100.0000	1	f132d568c3b6	0xe9800	100.0000	
