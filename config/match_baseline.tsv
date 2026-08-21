@@ -3799,7 +3799,7 @@ sbi_rectonly	?TickGauge@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	2c0ba31f9e77	0
 sbi_rectonly	?ToggleStat@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	0ce52b692d5e	0x107aa0	100.0000	
 sbi_rectonly	?TryActivate@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	438342381b23	0x104d60	100.0000	
 sbi_rectonly	?UnusedPointerAction@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	386d8b544f2f	0x100570	100.0000	
-sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	83.1533	83.1533	5	19a5d10da304	0x1076a0	87.8102	
+sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	87.8102	87.8102	6	6a87ef7e5fd7	0x1076a0	87.8102	
 sbi_rectonly	?UpdateDestructButtonStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	e4ff1153f98f	0x10b320	100.0000	
 sbi_rectonly	?UpdateFallingItemStatusBar@CStatusBarMgr@@QAEHHHH@Z	89.6546	89.6546	4	3d912b9a056d	0x107590	89.6546	
 sbi_rectonly	?UpdateGruntOvenStatusBar@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	2	683e84873220	0x105310	99.7895	
