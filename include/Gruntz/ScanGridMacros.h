@@ -58,8 +58,7 @@
 #define GRID_CLIP(grid, srcRect)                                                                   \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \
-        RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
+        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
         RECT ra;                                                                                   \
         if (clipSrc != NULL) {                                                                     \
             ra = *clipSrc;                                                                         \

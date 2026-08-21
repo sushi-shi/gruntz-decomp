@@ -19,7 +19,6 @@
 #include <Wap32/ZVec.h>
 
 #include <math.h>
-#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,24 +36,6 @@
         (g)->m_coordList.RemoveAll();                                                              \
     }
 
-#define STEP_BOUNDS(grid)                                                                          \
-    {                                                                                              \
-        RECT ra;                                                                                   \
-        RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
-        ra.left = pb->left;                                                                        \
-        ra.top = pb->top;                                                                          \
-        ra.right = pb->right;                                                                      \
-        ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
-        }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
-    }
-
-// @early-stop
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     GruntAiState state = g->m_defenderState;
@@ -101,6 +82,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 gp2.m_y = gp2.m_y >> TILE_SHIFT_PX;
                 dist = abs(np2.m_y - gp2.m_y) + abs(np.m_x - gp.m_x);
             }
+            i32 arrivalMask = 0xdc7;
             if (dist <= 0xa) {
 
                 Coord b0, b1, b2, b3;
@@ -121,6 +103,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 box.top = b1.m_y - 5;
                 box.right = b2.m_x + 5;
                 box.bottom = b3.m_y + 5;
+                arrivalMask = 0x20000dc7;
                 GRID_CLIP(grid, &box);
             }
             {
@@ -128,7 +111,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 nb->GetScreenPos(&p);
                 p.m_x = p.m_x >> TILE_SHIFT_PX;
                 p.m_y = p.m_y >> TILE_SHIFT_PX;
-                if (g->TileSwitch(p.m_x, p.m_y, 0, 0x20000dc7, 0, 0)) {
+                if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
                     g->m_defenderState = AISTATE_ATTACK;
                     g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
                     g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
@@ -136,7 +119,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 }
             }
             if (dist <= 0xa) {
-                STEP_BOUNDS(m_board);
+                GRID_CLIP_NULL(m_board);
             }
         }
         goto tail;
@@ -241,6 +224,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
+            i32 arrivalMask = 0xdc7;
             i32 dist2;
             {
                 Coord c0;
@@ -280,6 +264,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 box.top = d1.m_y - 5;
                 box.right = d2.m_x + 5;
                 box.bottom = d3.m_y + 5;
+                arrivalMask = 0x20000dc7;
                 GRID_CLIP(grid, &box);
             }
             {
@@ -289,7 +274,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                         cp.m_x >> TILE_SHIFT_PX,
                         cp.m_y >> TILE_SHIFT_PX,
                         0,
-                        0x20000dc7,
+                        arrivalMask,
                         0,
                         0
                     )) {
