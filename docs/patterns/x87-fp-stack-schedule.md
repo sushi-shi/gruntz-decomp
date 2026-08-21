@@ -42,5 +42,19 @@ Evidence: CProjectile::StepMotion 70.7% (full control flow + muzzle-snap + expir
 path + all four `__ftol` screen-coord rounds byte-identical; only the sin/cos
 parabola fxch block diverges).
 
+`ProjectWallQuad` (0x1471d0) is an independently bounded instance at 76.6978%.
+Base/retail agree on two calls, three branches, one return, all displacement and
+immediate operands, and have zero exclusive semantic signal. Retail delays the
+`halfWidth` `fild` until after `fcos` and preloads two `g_c10` values before the
+quad-store schedule; base hoists the conversion across `fsqrt`. A classified
+32-state forest found only two normalized islands: baseline 76.6978% and a lower
+75.8705% state whose sole useful difference is another rotation-loop x87
+schedule. Splitting the real `hw` declaration/assignment, both beside the use and
+at function entry, selects that same lower island without moving the early
+`fild`. Removing the local and spelling both integer-to-float conversions inline
+falls to 70.5827%, adds an `fld g_c20`, and still misses retail's setup. Reopen
+this residue only for evidence of a real FP helper/boundary, not another local or
+TU-state spelling.
+
 variants: [[statement-schedule-faithful]] (integer statement scheduling),
 [[outparam-zeroinit-scheduling]] (integer temp scheduling).
