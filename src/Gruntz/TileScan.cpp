@@ -8,7 +8,6 @@
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 
-// @early-stop
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::Scan(CGrunt* arg) {
     if (static_cast<u32>(arg->m_dwell) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
