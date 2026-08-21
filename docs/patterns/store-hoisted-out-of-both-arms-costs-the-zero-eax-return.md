@@ -49,6 +49,24 @@ Both spellings emit ONE store in the same place. Only the liveness differs, and
 only the `xor` shows it. `CCreditsState::InitAttractTitle` 0x039570
 99.01 -> 100.00 EXACT.
 
+## The duplicated zero store can also trigger a function-wide zero register
+
+The source duplication is visible to the optimizer before the two stores are
+factored. When the common statement is `member = 0`, those two source uses can
+cross cl 5.0's threshold for pinning zero in a callee-saved register. The final
+assembly still contains only one store, but the chosen zero register also feeds
+earlier zero member seeds and call arguments.
+
+`CMulti::Connect` 0x0b67f0 was the exact control. With the call result in a local
+and one reset after the call, base used immediate-zero stores, saved only ESI,
+and omitted the second failure path's `xor eax,eax` (78.51%). Testing the call
+directly and writing `m_pumpGuard = 0` in both arms made cl hoist one
+`mov [esi+0x57c],edi` between the `test` and `jne`, pin EDI as zero from the
+prologue, and reproduce retail byte-for-byte (**100.00%**). Calls 3/3, branches
+2/2, returns 3/3, relocations 3/3, and the ordered referent sequence were already
+equal before the edit. A named zero/result local was byte-identical to the bad
+form, so the lever is the duplicated arm statement, not an artificial carrier.
+
 Inverse reading: if retail has NO `xor` where you emit one, the store retail put
 between the test and the branch is a store *of the tested value* - look for a
 member assignment whose right-hand side is the call result.

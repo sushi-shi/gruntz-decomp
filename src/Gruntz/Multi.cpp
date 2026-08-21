@@ -513,10 +513,6 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     return 1;
 }
 
-// @early-stop
-// Constant-0 materialisation: retail keeps 0 in a fifth register (push edi/xor
-// edi,edi) and stores it to the five zeroed sites, and emits both return-0 tails
-// separately; cl uses imm32 stores and merges the tails.
 RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
@@ -526,11 +522,11 @@ i32 CMulti::Connect(i32 mode) {
         return 0;
     }
     m_pumpGuard = 1;
-    i32 r = WaitForOtherPlayers();
-    m_pumpGuard = 0;
-    if (r == 0) {
+    if (WaitForOtherPlayers() == 0) {
+        m_pumpGuard = 0;
         return 0;
     }
+    m_pumpGuard = 0;
     m_connected = 1;
     return 1;
 }

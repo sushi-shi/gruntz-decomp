@@ -221,7 +221,7 @@ menupage	47	46
 menusparkle	8	7
 menustate	18	18
 movinglogic	5	1
-multi	105	87
+multi	105	88
 multihelpdlg	5	5
 multistartdlg	64	57
 namerecord	5	5
@@ -3084,7 +3084,7 @@ multi	?BroadcastOneChannel@CMulti@@QAEHPAVGruntzPlayer@@@Z	100.0000	100.0000	1	f
 multi	?BuildHostName@CNetCmdSlot@@QAE?AVCString@@XZ	100.0000	100.0000	1	7b4b6100d12f	0xbc3f0	100.0000	
 multi	?Close@CMulti@@QAEXXZ	100.0000	100.0000	1	6e22fe26f927	0xb7890	100.0000	
 multi	?CompleteLevel@CMulti@@UAEHXZ	100.0000	100.0000	1	a79763baa6d8	0xb6560	100.0000	
-multi	?Connect@CMulti@@QAEHH@Z	78.5135	78.5135	1	12b571382ce7	0xb67f0	78.5135	
+multi	?Connect@CMulti@@QAEHH@Z	100.0000	100.0000	2	9536aae5696b	0xb67f0	100.0000	
 multi	?CreateLocalPlayer@CMulti@@QAEHXZ	93.8426	93.8426	1	32992e9cb1e7	0xbc750	93.8426	
 multi	?CreateSession@CMulti@@QAEHXZ	97.6241	97.6241	1	6a4b8bba63b5	0xbbc90	97.6241	
 multi	?DetectConnectionConfig@CMulti@@QAEHXZ	100.0000	100.0000	1	13c70125f703	0xb82e0	100.0000	
