@@ -3703,14 +3703,12 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_fallRect.bottom = newHi;
             CSBI_ImageSet* w = m_extraNotify1;
             if (w) {
-                RECT rc;
                 i32 sx = m_rect10.left;
                 i32 sy = m_rect10.top;
-                rc.left = m_fallRect.left + sx;
-                rc.top = sy + newLo;
-                rc.right = m_fallRect.right + sx;
-                rc.bottom = sy + newHi;
-                w->m_rect14 = rc;
+                w->m_rect14.left = m_fallRect.left + sx;
+                w->m_rect14.top = sy + newLo;
+                w->m_rect14.right = m_fallRect.right + sx;
+                w->m_rect14.bottom = sy + newHi;
             }
             clock[1] = delay;
             clock[0] = g_frameTime;
