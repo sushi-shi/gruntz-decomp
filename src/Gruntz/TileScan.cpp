@@ -31,12 +31,13 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
     CGameObject* p = arg->m_object;
     i32 centerPxY = p->m_screenY;
     i32 centerPxX = p->m_screenX;
-    i32 rowStart = (centerPxY >> TILE_SHIFT_PX) - 1;
-    i32 rowEnd = (centerPxY >> TILE_SHIFT_PX) + 2;
-    i32 colStart = (centerPxX >> TILE_SHIFT_PX) - 1;
-    i32 colEnd = (centerPxX >> TILE_SHIFT_PX) + 2;
-    for (i32 row = rowStart; row < rowEnd; row++) {
-        for (i32 col = colStart; col < colEnd; col++) {
+    RECT box;
+    box.top = (centerPxY >> TILE_SHIFT_PX) - 1;
+    box.bottom = (centerPxY >> TILE_SHIFT_PX) + 2;
+    box.left = (centerPxX >> TILE_SHIFT_PX) - 1;
+    box.right = (centerPxX >> TILE_SHIFT_PX) + 2;
+    for (i32 row = box.top; row < box.bottom; row++) {
+        for (i32 col = box.left; col < box.right; col++) {
             if (col == (centerPxX >> TILE_SHIFT_PX) && row == (centerPxY >> TILE_SHIFT_PX)) {
                 continue;
             }
