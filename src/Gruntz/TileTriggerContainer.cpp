@@ -374,7 +374,6 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     return obj;
 }
 
-// @early-stop
 RVA(0x00116a40, 0xf5)
 CTileActionEvent* CTileTriggerContainer::AddToList3(
     BrickTileId actionCode,
