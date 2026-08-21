@@ -95,7 +95,23 @@ retail's one; a `seek:` label took it 76.85 -> **83.09** (rets 16->13, target 12
 near-clone `CGrunt::StepArrivalDefenseLean` 0xf8240 took the same edit 54.22 -> **63.47**
 (rets 13->10, matching retail).
 
-## An EH (`/GX`) function's duplicated exits are an EPILOGUE cross-jump, NOT this lever
+## In an EH (`/GX`) function, distinguish cleanup-call sites from full epilogues
+
+Repeated destructor CALL sites are still source-flow evidence. The two
+`CGruntSpawnConfig::SpawnVoiceDriver` overloads each began with two emitted
+`CString::~CString` calls against retail's seven because a positive-gate
+`SetSource(...) && Configure(...)` collapsed every failure onto one cleanup.
+Making all failures separate overshot to eight calls. Sending only the
+`SetSource` and `Configure` failures to one `streamFailed:` label produced the
+retail census exactly: 21 calls, 7 CString destructors, and the same branch and
+relocation counts. The pointer overload moved 76.41 -> **90.10** and the object-id
+overload 78.34 -> **92.47**; both then diagnosed as regalloc/scheduling with equal
+EH action sequences and zero referent divergence. In this shape, count the
+destructor calls in the parent function before dismissing the residue as EH
+epilogue scheduling.
+
+When the duplicated blocks are instead the whole unwind epilogue, they are an
+epilogue cross-jump and not this lever.
 
 When the duplicated blocks are the whole `mov ecx,[esp+N]; pop...; mov fs:0,ecx; pop ebx;
 add esp,N; ret` unwind epilogue, no source construct moves them. Retail emits ONE epilogue

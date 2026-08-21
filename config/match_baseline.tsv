@@ -2216,8 +2216,8 @@ gruntspawnconfig	?PauseAllVoices@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	7
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEPAUCParseSource@@H@Z	100.0000	100.0000	1	2104fdca4c03	0x11bec0	100.0000	
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEPAUCParseSource@@HH@Z	100.0000	100.0000	2	2104fdca4c03	0x11bee0	100.0000	
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	68da579bf378	0x11c7f0	100.0000	
-gruntspawnconfig	?SpawnVoiceDriver@CGruntSpawnConfig@@QAEHHHHHH@Z	78.3444	78.3444	1	2966b24e86c8	0x11b7c0	78.3444	
-gruntspawnconfig	?SpawnVoiceDriver@CGruntSpawnConfig@@QAEHPAVCGrunt@@HHHHH@Z	76.4131	76.4131	1	2966b24e86c8	0x11b3b0	76.4131	
+gruntspawnconfig	?SpawnVoiceDriver@CGruntSpawnConfig@@QAEHHHHHH@Z	92.4730	92.4730	2	de61cfa34ae2	0x11b7c0	92.4730	
+gruntspawnconfig	?SpawnVoiceDriver@CGruntSpawnConfig@@QAEHPAVCGrunt@@HHHHH@Z	90.1042	90.1042	2	de61cfa34ae2	0x11b3b0	90.1042	
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	230b3da9a3dc	0x11c730	100.0000	
 gruntspawnconfig	?VoicePlaying@CGruntSpawnConfig@@QAEHH@Z	100.0000	100.0000	4	6ce527737e12	0x11c700	100.0000	
 gruntstaminasprite	??0CGruntStaminaSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	e1824c8c37ca	0x7fae0	100.0000	

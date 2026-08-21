@@ -202,7 +202,6 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     return 1;
 }
 
-// @early-stop
 RVA(0x0011b3b0, 0x338)
 i32 CGruntSpawnConfig::SpawnVoiceDriver(
     CGrunt* who,
@@ -292,16 +291,21 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     StreamVoice* stream = m_streams[chosen];
     i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
-    if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
-        if (m_voices[chosen]->Setup(id, stream, priority, 0) == 0) {
-            return 0;
-        }
-        return 1;
+    if (stream->SetSource(src) == 0) {
+        goto streamFailed;
     }
+    if (stream->Configure(vol, 0, 0, 0) == 0) {
+        goto streamFailed;
+    }
+    if (m_voices[chosen]->Setup(id, stream, priority, 0) == 0) {
+        return 0;
+    }
+    return 1;
+
+streamFailed:
     return 0;
 }
 
-// @early-stop
 RVA(0x0011b7c0, 0x304)
 i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 objId,
@@ -385,12 +389,18 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     StreamVoice* stream = m_streams[chosen];
     i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
-    if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
-        if (m_voices[chosen]->Setup(objId, stream, priority, 1) == 0) {
-            return 0;
-        }
-        return 1;
+    if (stream->SetSource(src) == 0) {
+        goto streamFailed;
     }
+    if (stream->Configure(vol, 0, 0, 0) == 0) {
+        goto streamFailed;
+    }
+    if (m_voices[chosen]->Setup(objId, stream, priority, 1) == 0) {
+        return 0;
+    }
+    return 1;
+
+streamFailed:
     return 0;
 }
 
