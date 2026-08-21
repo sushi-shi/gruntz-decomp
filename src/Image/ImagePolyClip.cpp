@@ -110,15 +110,8 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     return dir == POLYGON_WINDING_CLOCKWISE;
 }
 
-// sq[] is the source-texture rectangle (left, top, right, bottom); the quad is
-// built in WINDING order TL, TR, BR, BL, so `prod`/`mtx` index 2 is the bottom
-// RIGHT corner, not the bottom left.  Getting that wrong makes the quad a
-// bowtie: retail's own store order (0x146097 loop + the u/v tail at 0x1460e7)
-// pins it.
-// @early-stop
-// Block skeleton, slot map and the whole store set agree; the residue is which
-// x87 spill slot each `fild` temp lands in and the fxch schedule around the four
-// scale multiplies.
+// sq[] is the source-texture rectangle. The quads use winding order TL, TR,
+// BR, BL, so index 2 is the bottom-right corner.
 RVA(0x00145f60, 0x242)
 void ImageRotateBlit(
     i32 destX,
