@@ -383,6 +383,7 @@ i32 CBootyState::EnterState(GameStateId) {
     return 1;
 }
 
+// @early-stop
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId) {
     LeafCue* value = NULL;
@@ -2286,6 +2287,7 @@ i32 CMultiBootyState::EnterState(GameStateId) {
     return 1;
 }
 
+// @early-stop
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId) {
     LeafCue* value = NULL;
