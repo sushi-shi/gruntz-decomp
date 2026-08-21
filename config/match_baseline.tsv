@@ -646,8 +646,8 @@ bootystateactivate	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	1	
 bootystateactivate	?GetWarlordName@CMultiBootyState@@QAE?AVCString@@H@Z	100.0000	100.0000	1	06674543a617	0x1ec20	100.0000	
 bootystateactivate	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	2	51b078323aad	0x1c8a0	100.0000	
 bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	2	f0d655888900	0x1f6f0	100.0000	
-bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	77.2727	77.2727	2	ba6e28648a14	0x18e40	79.2955	
-bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	77.2727	77.2727	2	8d0dead8e194	0x1e660	79.2955	
+bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	3	7c66cfaec84c	0x18e40	79.2955	
+bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	3	5704402ee2d9	0x1e660	79.2955	
 bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	89.1325	89.1325	6	01a99b80ad7f	0x1a700	89.1325	
 bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	92.5189	92.5189	2	1d54baced619	0x18830	92.5189	
 bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	82.6115	82.6115	3	7a2fff90049c	0x1d440	82.6115	
