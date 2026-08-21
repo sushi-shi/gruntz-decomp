@@ -228,8 +228,12 @@ header inline ctors:
   above** — the callee axis does not replace the structural instruction,
   it splits the deficit with it.
 * `BuildGameMenu` at its count-parity point (item+3, rect+2) scores 84.66,
-  BELOW its 86.06 best: GM's wall is the branch-duplication/CFG question
-  (2x 25-insn prefix runs ours vs 2x 22 + 2x 11 retail), not counts.
+  BELOW its 86.06 best: matching the COUNTS is not matching the SITES. The
+  repeat signature (ours 2x 25-insn prefix runs, retail 2x 22 + 2x 11) says
+  retail's declines land at the pause/resume arms specifically; a uniform
+  ctor-cb bump flips other sites first. GM is still a budget wall, but its
+  ~100 cb of excess caller mass has a POSITION: the removal must sit early
+  enough that the pause/resume arm is what crosses the share threshold.
 * A conservation law steers the search: in `LoadTabSprites` the
   Rect+Item decline-event SUM is invariant under the derived-ctor knobs
   (ImageSet/Image redistribute one sum, 21) and is raised only by the
