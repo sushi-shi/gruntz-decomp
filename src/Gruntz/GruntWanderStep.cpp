@@ -143,9 +143,9 @@ i32 CGrunt::WanderStep() {
             CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* active = m_tileMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
-                m_arrivalCell.m_x = -1;
+                Coord none;
+                m_arrivalCell = *none.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
-                m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (slot == NULL || slot->m_entranceCommitted == 0

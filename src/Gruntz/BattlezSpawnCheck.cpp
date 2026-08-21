@@ -99,7 +99,8 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             unit->m_coordList.RemoveAll();
         }
     }
-    unit->m_arrivalCell.Set(-1, -1);
+    Coord none;
+    unit->m_arrivalCell = *none.Set(-1, -1);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_dwell = 0;
     return 1;

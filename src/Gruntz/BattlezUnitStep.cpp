@@ -189,7 +189,8 @@ inflight: {
                 if (g->CoordCount() != 0) {
                     MOVE_RECYCLE(g);
                 }
-                g->m_arrivalCell.Set(-1, -1);
+                Coord none;
+                g->m_arrivalCell = *none.Set(-1, -1);
                 HandleUnitContact(g, cur);
                 g->m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -233,19 +234,22 @@ inflight: {
                 goto L_done;
             }
         }
-    L_clearAt:
-        g->m_arrivalCell.Set(-1, -1);
+    L_clearAt: {
+        Coord none;
+        g->m_arrivalCell = *none.Set(-1, -1);
         g->m_defenderState = AISTATE_SEEK;
+    }
     L_done:
         g->m_dwell = 0;
         return 1;
     }
 
-L_clear:
-    g->m_arrivalCell.m_x = -1;
+L_clear: {
+    Coord none;
+    g->m_arrivalCell = *none.Set(-1, -1);
     g->m_defenderState = AISTATE_SEEK;
-    g->m_arrivalCell.m_y = -1;
     return 1;
+}
 }
 }
 #undef MOVE_RECYCLE
@@ -283,7 +287,8 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                     }
                     unit->m_coordList.RemoveAll();
                 }
-                unit->m_arrivalCell.Set(-1, -1);
+                Coord none;
+                unit->m_arrivalCell = *none.Set(-1, -1);
                 HandleUnitContact(unit, target);
                 return 1;
             }
@@ -315,11 +320,12 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             return 1;
         }
 
-        unit->m_arrivalCell.Set(-1, -1);
-        unit->m_defenderPx.m_x = -1;
+        Coord noCell;
+        unit->m_arrivalCell = *noCell.Set(-1, -1);
+        Coord noPx;
+        unit->m_defenderPx = *noPx.Set(-1, -1);
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
-        unit->m_defenderPx.m_y = -1;
         if (unit->CoordCount() != 0) {
             CoordNode* n = unit->CoordHead();
             if (n != NULL) {
@@ -339,11 +345,12 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         return 1;
     }
 
-    unit->m_arrivalCell.Set(-1, -1);
-    unit->m_defenderPx.m_x = -1;
+    Coord noCell;
+    unit->m_arrivalCell = *noCell.Set(-1, -1);
+    Coord noPx;
+    unit->m_defenderPx = *noPx.Set(-1, -1);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
-    unit->m_defenderPx.m_y = -1;
     if (unit->CoordCount() != 0) {
         POSITION pos = unit->m_coordList.GetHeadPosition();
         while (pos != NULL) {
@@ -378,7 +385,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             return 1;
         }
         unit->m_targetTeam = band;
-        unit->m_defenderPx.Set(-1, -1);
+        Coord noPx;
+        unit->m_defenderPx = *noPx.Set(-1, -1);
     } else {
         GruntzPlayer* slot = &m_ctx->m_options[band];
         if (slot->m_clearedRound != 0 || slot->m_liveGate == 0) {
@@ -395,10 +403,11 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 }
                 unit->m_coordList.RemoveAll();
             }
-            unit->m_arrivalCell.Set(-1, -1);
-            unit->m_defenderPx.m_x = -1;
+            Coord noCell;
+            unit->m_arrivalCell = *noCell.Set(-1, -1);
+            Coord noPx;
+            unit->m_defenderPx = *noPx.Set(-1, -1);
             unit->m_targetTeam = -1;
-            unit->m_defenderPx.m_y = -1;
             unit->m_defenderState = AISTATE_SEEK;
             unit->m_routeMaskA = g_spawnCfg;
             unit->m_routeMaskC = g_spawnState;
@@ -468,7 +477,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                         }
                         unit->m_coordList.RemoveAll();
                     }
-                    unit->m_defenderPx.Set(-1, -1);
+                    Coord noPx;
+                    unit->m_defenderPx = *noPx.Set(-1, -1);
                     return 1;
                 }
                 CGameObject* lvl = unit->m_object;
@@ -600,7 +610,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             unit->m_coordList.RemoveAll();
         }
-        unit->m_defenderPx.Set(-1, -1);
+        Coord noPx;
+        unit->m_defenderPx = *noPx.Set(-1, -1);
         return 1;
     }
     CGameObject* lvl = unit->m_object;
