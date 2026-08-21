@@ -1138,8 +1138,12 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32
         return 0;
     }
 
+    // Retail reinterprets the unsigned length as the callee's signed size
+    // through a frame slot rather than converting it (frame 0x54, not 0x50).
+    AddrWord<char> handle;
+    handle.m_uword = src->m_length;
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->CreatePaletteFromTrailingData(data, src->m_length, flags) == 0) {
+    if (w->CreatePaletteFromTrailingData(data, handle.m_word, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
