@@ -537,9 +537,7 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 }
 
 // @early-stop
-// x87 scheduling residue: duration must remain live for the hold-window calculation.
-// Retail duplicates it before scaling; cl instead loads the constants into deeper stack
-// slots, while preserving the same six-branch CFG and the retail 0x8-byte frame.
+// Keep the converted duration live: it is reused for the Grunt hold window.
 RVA(0x000e0690, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(
     PickupType kind,
@@ -554,16 +552,17 @@ i32 CBoomerang::LoadProjectileSprites(
         return 0;
     }
     double duration = static_cast<double>(static_cast<u32>(m_timePerTile));
-    double d = g_projPhase0 / (duration * g_boomTimeScale * m_flightDist);
+    double d = g_projPhase0 / (duration * (g_boomTimeScale * m_flightDist));
     CWwdGameObjectA* owner = m_object;
     m_launchX = owner->m_screenX;
     m_launchY = owner->m_screenY;
+    double originY =
+        (static_cast<double>(m_targetY) + static_cast<double>(owner->m_screenY)) * g_boomHalf;
     m_originX =
         (static_cast<double>(m_targetX) + static_cast<double>(owner->m_screenX)) * g_boomHalf;
-    m_originY =
-        (static_cast<double>(m_targetY) + static_cast<double>(owner->m_screenY)) * g_boomHalf;
+    m_originY = originY;
     m_dirX = m_originX - static_cast<double>(m_launchX);
-    m_dirY = m_originY - static_cast<double>(m_launchY);
+    m_dirY = originY - static_cast<double>(m_launchY);
     m_phase = 0.0;
     m_velScale = d;
     CGrunt* g = g_gameReg->m_cmdGrid->m_grid[15 * a + b];

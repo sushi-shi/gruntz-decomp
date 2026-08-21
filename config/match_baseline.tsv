@@ -3538,7 +3538,7 @@ projectile	?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 projectile	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x12a20	100.0000	
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	100.0000	100.0000	2	d6511aaf140e	0xe2190	100.0000	
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	91.1232	91.1232	2	03cdea516aff	0xe1e60	91.1232	
-projectile	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	76.8618	76.8618	2	9f587ec90043	0xe0690	76.8618	
+projectile	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	82.7155	82.7155	3	4c89d052a4b7	0xe0690	82.7155	
 projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	87.2977	87.2977	7	dbb5a8b953a4	0xdf050	87.2977	
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	1	3a4fa0bb4236	0xe1990	100.0000	
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	1	4ac3951951d7	0xdfb00	100.0000	
