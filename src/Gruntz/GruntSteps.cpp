@@ -533,8 +533,6 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
-// same four-instruction head as RectContains (m_lastTilePx pre-stored into r1).
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     x >>= TILE_SHIFT_PX;
