@@ -360,7 +360,6 @@ void CNetCmdSlot::ClearCmds() {
     }
 }
 
-// @early-stop
 RVA(0x000c1320, 0x4a)
 i32 CNetCmdSlot::Ready() {
     CMulti* mgr = m_owner;
