@@ -286,9 +286,9 @@ i32 CGrunt::ScanNearestTarget() {
         case AISTATE_CHASE: {
             CGrunt* sg = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (best != NULL && best != sg) {
-                m_arrivalCell.m_x = -1;
+                Coord none;
+                m_arrivalCell = *none.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
-                m_arrivalCell.m_y = -1;
                 return 1;
             }
             if (sg != NULL) {

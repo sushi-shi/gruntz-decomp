@@ -104,8 +104,8 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     if (recA == NULL || cfgB == NULL) {
-        unit->m_arrivalCell.m_x = -1;
-        unit->m_arrivalCell.m_y = -1;
+        Coord none;
+        unit->m_arrivalCell = *none.Set(-1, -1);
         return 1;
     }
     if (recA->m_humanControlled == 0 && cfgB->m_active == 0) {
@@ -118,8 +118,8 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             }
         }
         unit->m_coordList.RemoveAll();
-        unit->m_arrivalCell.m_x = -1;
-        unit->m_arrivalCell.m_y = -1;
+        Coord none;
+        unit->m_arrivalCell = *none.Set(-1, -1);
         return 1;
     }
     i32 saved = unit->m_arrivalCell.m_x;

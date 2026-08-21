@@ -99,7 +99,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                m_arrivalCell.Set(-1, -1);
+                Coord none;
+                m_arrivalCell = *none.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }

@@ -153,8 +153,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 if (g->CoordCount() != 0) {
                     STEP_DRAIN(g);
                 }
-                g->m_arrivalCell.m_x = -1;
-                g->m_arrivalCell.m_y = -1;
+                Coord none;
+                g->m_arrivalCell = *none.Set(-1, -1);
                 {
                     // retail re-runs the act-key lookup for every letter; each
                     // comparison is materialised as a 0/1 before it is branched on.
@@ -227,9 +227,9 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
                     g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
                 }
-                g->m_arrivalCell.m_x = -1;
+                Coord none;
+                g->m_arrivalCell = *none.Set(-1, -1);
                 g->m_dwell = 0;
-                g->m_arrivalCell.m_y = -1;
                 g->m_defenderState = AISTATE_SEEK;
                 if (g->CoordCount() != 0) {
                     STEP_DRAIN(g);
@@ -293,8 +293,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                         0,
                         0
                     )) {
-                    g->m_arrivalCell.m_x = -1;
-                    g->m_arrivalCell.m_y = -1;
+                    Coord none;
+                    g->m_arrivalCell = *none.Set(-1, -1);
                     g->m_defenderState = AISTATE_SEEK;
                 }
             }
@@ -305,8 +305,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             goto tail;
         }
         // cur == NULL falls out of the target block into the reset path.
-        g->m_arrivalCell.m_x = -1;
-        g->m_arrivalCell.m_y = -1;
+        Coord none;
+        g->m_arrivalCell = *none.Set(-1, -1);
         g->m_defenderState = AISTATE_SEEK;
         g->RecycleCoords();
     }
