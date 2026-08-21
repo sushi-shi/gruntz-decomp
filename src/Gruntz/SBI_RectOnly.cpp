@@ -3643,12 +3643,6 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
-// The notify-rect run is the RECT-temp aggregate assign (retail's `add obj,0x14`
-// anchor exists only under aggregate IL - field-by-field never anchors and a
-// bound RECT* folds away, both A/B-proven). Residue: cl keeps rc's frame home
-// and spills rc.top where retail forwards all four fields (`push ecx` frame),
-// plus one ebx/edi allocation rotation.
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
