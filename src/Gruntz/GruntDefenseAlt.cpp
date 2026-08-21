@@ -35,14 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
-// Retail carries an 8-byte frame (`sub esp,0x8`) whose two dwords are written at
-// every CommitNeighbor site ([esp+0x10] = m_lastTilePx.m_x, [esp+0x14] = .m_y) and
-// never read anywhere in the function - and never address-taken either, so no
-// spelling found so far survives cl's DCE.  A whole-struct `Coord tile =
-// o->m_lastTilePx;` whose fields ARE then used as the call arguments gets the
-// closest (cl keeps the local but not the frame); making the copy genuinely dead
-// deletes it outright.  Every epilogue is therefore short one `add esp,0x8`.
 RVA(0x000f1c70, 0x620)
 i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
