@@ -1090,8 +1090,11 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionByCellKey(key);
     if (elem != NULL) {
         if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
-            elem->m_playerFlags[0] = elem->m_playerFlags[1] = elem->m_playerFlags[2] =
-                elem->m_playerFlags[3] = 1;
+            i32* flags = elem->m_playerFlags;
+            flags[0] = 1;
+            flags[1] = 1;
+            flags[2] = 1;
+            flags[3] = 1;
         } else {
             elem->m_playerFlags[playerSlot] = 1;
         }
@@ -1102,5 +1105,6 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     if (FindInLists12(key, TRIGID_COVERED_POWERUP_26) != NULL) {
         return 1;
     }
-    return ScanNeighborhood(tileX, tileY) != NULL;
+    CGiantRockLogic* found = ScanNeighborhood(tileX, tileY);
+    return found != NULL;
 }
