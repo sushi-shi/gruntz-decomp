@@ -47,7 +47,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DWORD dwSize = GetFileVersionInfoSizeA(szModulePath, 0);
         u8* pInfo = new u8[dwSize];
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
-        char* pValue = NULL;
+        char* pValue;
         UINT uLen;
         VerQueryValueA(
             pInfo,
