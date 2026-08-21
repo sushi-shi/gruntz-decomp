@@ -158,7 +158,7 @@ gruntreticlescan	1	0
 gruntscantarget	1	0
 gruntseektarget	1	0
 gruntselectedsprite	9	8
-gruntspawnconfig	21	15
+gruntspawnconfig	21	16
 gruntstaminasprite	5	5
 gruntstartingpoint	8	8
 gruntstaterec	1	0
@@ -360,7 +360,7 @@ actionoptionsmenubar	?HitHover@CActionOptionsMenuBar@@QAE?AW4ActionOptionHit@@HH
 actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEHW4ActionOptionButtonState@@0HHHH@Z	95.1321	95.1321	1	a4156038a2f9	0x9220	95.1321	
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8723	84.8723	1	b312fce77ce3	0x90e0	84.8723	
 actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	93.2432	93.2432	1	4d53010c2064	0x9330	93.2432	
-actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	82.3143	82.3143	1	4ab98e598033	0x94c0	82.3143	
+actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	94.4762	94.4762	2	a685e58626f1	0x94c0	94.4762
 actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	95.8667	95.8667	8	ff1c2cbab247	0x9810	95.8667	
 actionoptionsmenubar	?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z	91.4875	91.4875	2	4d92e231b09a	0xa000	91.4875	
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0	100.0000	
@@ -2206,11 +2206,11 @@ gruntspawnconfig	?AnyVoicePlaying@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	
 gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	774125527f6d	0x11c1a0	100.0000	
 gruntspawnconfig	?BuildVoiceSoundList@CGruntSpawnConfig@@QAEPAVCSpawnList@@H@Z	97.8063	97.8063	2	733f92ed30d4	0x11c210	97.8063	
 gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	87.2414	87.2414	1	b114388d6d8a	0x11ae30	87.2414	
-gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	82.0000	82.0000	1	e9da89747d9c	0x11af90	82.0000	
+gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	2	72c8fcc2d176	0x11af90	100.0000
 gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	1	07eea7fb1781	0x11bba0	100.0000	
 gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAVCGruntzMgr@@@Z	100.0000	100.0000	1	d438d5764b3d	0x11adc0	100.0000	
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	a2962066c8c6	0x11c830	100.0000	
-gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHPAVCGrunt@@HHHH@Z	82.2308	82.2308	1	17ba9c43c387	0x11afb0	82.2308	
+gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHPAVCGrunt@@HHHH@Z	91.7814	91.7814	2	510fd57d193f	0x11afb0	91.7814
 gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	223783bf2bce	0x11af00	100.0000	
 gruntspawnconfig	?PauseAllVoices@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	74fbbceec936	0x11c7b0	100.0000	
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEPAUCParseSource@@H@Z	100.0000	100.0000	1	2104fdca4c03	0x11bec0	100.0000	

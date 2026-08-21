@@ -62,6 +62,17 @@ already holding `m_world` — and only the final `->m_mainPlane` load targets
   because the whole tail's colouring follows from the eax/edx assignment at the
   chain. It had been filed as a "large state-machine wall, not source-steerable".
 
+`CActionOptionsMenuBar::Render` 0x0094c0 supplies the address-taken-argument
+extension (2026-08-21). Moving the back-buffer local before the clip-rectangle
+copy first reproduced retail's post-`WrapCoord` statement order and raised
+82.31% to 90.12%. Binding `m_world->m_level` before passing `&sx` and `&sy`
+then made the complete opening through `WrapCoord` byte-exact and raised the
+function to 94.48%. Binding the last link (`CDDrawWorkerHost*`) and leaving the
+full chain inline both stop at 90.12%. A 33-state forest and all 256 depth-1/2
+source variants each produced one compiler island; the remaining residue is
+three repeated post-call `mov edx,[g_gameReg]` loads where retail uses the
+five-byte EAX form.
+
 ## Related
 
 - [member-store-direct-not-via-temporary](member-store-direct-not-via-temporary.md)

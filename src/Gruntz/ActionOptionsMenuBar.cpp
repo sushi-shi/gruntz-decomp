@@ -197,18 +197,18 @@ i32 CActionOptionsMenuBar::Refresh() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000094c0, 0x131)
 i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
     }
+    CGameLevel* level = g_gameReg->m_world->m_level;
     LONG sx = m_screenX;
     LONG sy = m_screenY;
-    (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
+    level->m_mainPlane->WrapCoord(&sx, &sy);
 
-    RECT r = g_gameReg->m_world->m_level->m_planeCtx;
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+    LevelCoordRect r = g_gameReg->m_world->m_level->m_planeCtx;
     m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
 
     if (m_buttonFrame[0]) {
