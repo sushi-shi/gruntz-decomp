@@ -58,31 +58,22 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
     return 0;
 }
 
-// @early-stop
-// The six ret blocks now sit at retail's six positions and the four Clip sites
-// have their proven expansions.  Residue: the frame is 0x90 against retail's
-// 0x88 (two surplus dwords in the rect group), and cl holds `this` in edi where
-// retail takes esi - `push esi; mov esi,ecx; push edi` vs base's four pushes
-// then `mov edi,ecx`.  (The three `Coord x[2]` locals were frame padding, not a
-// buffer requirement - CUserLogic::GetScreenPos writes exactly two dwords - and
-// removing them took the frame 0xa4 -> 0x90.)
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eqI) {
         return 1;
     }
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_CLIP_NULL(grid);
 
     Coord c1;
     GetScreenPos(&c1);
-    i32 cx = c1.m_x >> TILE_SHIFT_PX;
+    c1.m_x >>= TILE_SHIFT_PX;
     Coord c2;
     GetScreenPos(&c2);
-    i32 cy = c2.m_y >> TILE_SHIFT_PX;
+    c2.m_y >>= TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -191,13 +182,14 @@ L_ed006b:
             if (m_blockedVoicePending != 0) {
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
+                CGruntzMgr* game = g_gameReg;
                 if (CGameLevel::PointInBounds(
-                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                        &game->m_world->m_level->m_mainPlane->m_viewRect,
                         x,
                         y
                     )
                     != 0) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    game->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
                 m_blockedVoicePending = 0;
             }
@@ -213,10 +205,10 @@ L_scanb:
 
         i32 r = m_defenderRadius;
         RECT box;
-        box.left = cx - r;
-        box.right = cx + r;
-        box.top = cy - r;
-        box.bottom = cy + r;
+        box.left = c1.m_x - r;
+        box.right = c1.m_x + r;
+        box.top = c2.m_y - r;
+        box.bottom = c2.m_y + r;
         RECT gb;
         gb.left = 0;
         gb.top = 0;
@@ -269,9 +261,9 @@ L_scanb:
             }
         }
         if (best != INT_MAX) {
-            i32 dx = bestX - cx;
+            i32 dx = bestX - c1.m_x;
             dx = abs(dx);
-            i32 dy = bestY - cy;
+            i32 dy = bestY - c2.m_y;
             dy = abs(dy);
             if (dx <= 1 && dy <= 1) {
                 m_tileMgr->ApplyTriggerA(

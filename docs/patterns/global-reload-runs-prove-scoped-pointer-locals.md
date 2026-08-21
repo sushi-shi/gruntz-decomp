@@ -28,6 +28,15 @@ relocations, and contradicted retail. Thus the relocation positions prove both
 the pointer entities and their scopes; the frame agreement is corroboration, not
 the sole argument.
 
+`CGrunt::StepGooSuckerBehavior` at `0xf0e20` supplies the one-region form. In
+the blocked-voice arm, retail loads `g_gameReg` once, preserves that pointer
+across `CGameLevel::PointInBounds`, and then reads `m_cueSink` from the same
+register. The reconstruction spelled the two chains independently and emitted
+two global relocations. A block-scoped `CGruntzMgr* game = g_gameReg` placed
+after the screen-coordinate loads removes the extra relocation (44 -> 43),
+matching retail's ordered referent sequence without caching the global in any
+other region.
+
 Use `gruntz verify assert-relocs <unit>` for the count and the unmasked base/target
 disassemblies for the positions. Do not create one function-scope cache merely to
 make the total smaller: it can erase reloads that retail retains and incorrectly

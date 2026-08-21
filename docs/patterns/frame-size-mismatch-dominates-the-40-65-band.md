@@ -28,7 +28,7 @@ Measured across one 40-65% batch (2026-08-07):
 | `CGrunt::ResetEntranceAnimation` 0x62e10 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::StepArrivalDefense` 0xf2b20 | 0xc | 0x10 | retail +4 |
 | `CGrunt::StepDiggerBehavior` 0xf36a0 | 0x94 -> 0x8c | 0x8c | retail -8 -> exact |
-| `CGrunt::StepGooSuckerBehavior` 0xf0e20 | 0x90 | 0x88 | retail -8 |
+| `CGrunt::StepGooSuckerBehavior` 0xf0e20 | 0x90 -> 0x88 | 0x88 | retail -8 -> exact |
 | `CGrunt::LoadPickupSprites` 0x65e80 | `push ecx` (4) | 0 | retail -4 |
 
 Each delta is a concrete, findable modelling fact, and each is different:
@@ -44,6 +44,10 @@ Each delta is a concrete, findable modelling fact, and each is different:
   `c2.m_y` back into their own slots; deleting the scalars made the frame exactly `0x8c`
   and raised the function from 68.18% to 83.84%. Its remaining `this`-register difference
   is therefore a same-frame allocation residue, not evidence for another local.
+  `StepGooSuckerBehavior` had the identical two-dword defect: retail shifts the
+  address-taken `c1.m_x` and `c2.m_y` values back into their own `Coord` slots,
+  while the reconstruction created separate `cx`/`cy` locals. Updating the real
+  fields removed exactly eight frame bytes and raised 80.50% -> 81.55%.
 
 ## The `mov <reg>,ecx` tell
 
