@@ -1178,7 +1178,7 @@ ddrawsurfacepair	?Probe@CDrawSubWorker@@QAEHXZ	100.0000	100.0000	1	2a18dc4b1854	
 ddrawsurfacepair	?PruneWorkers@CDDrawWorkerList@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	b08958a13f1a	0x163bf0	100.0000	
 ddrawsurfacepair	?Read@CFileMem@@UAEHPAXH@Z	100.0000	100.0000	1	aff0b5ad4602	0x165f00	100.0000	
 ddrawsurfacepair	?Ready@CFileMem@@UAEHXZ	100.0000	100.0000	1	763e2debc316	0x165ef0	100.0000	
-ddrawsurfacepair	?RemoveByKey@CDDrawWorkerMapSmall@@QAEHPBD@Z	77.6585	77.6585	2	4abae0b93b75	0x165d30	77.6585	
+ddrawsurfacepair	?RemoveByKey@CDDrawWorkerMapSmall@@QAEHPBD@Z	77.6585	77.6585	3	4edb30285ab9	0x165d30	77.6585	
 ddrawsurfacepair	?RemoveByValue@CDDrawWorkerMapSmall@@QAEHPAVCObject@@@Z	100.0000	100.0000	2	6fd9fbe31862	0x165c40	100.0000	
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	f14731ac2504	0x165fa0	100.0000	
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	3fba942a3e8d	0x1660b0	100.0000	

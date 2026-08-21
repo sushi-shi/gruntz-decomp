@@ -1194,11 +1194,6 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
     return 0;
 }
 
-// @early-stop
-// same live-range-split wall as CDDrawWorkerRegistry::RemoveByKey 0x156ec0:
-// retail `mov edi,[out-slot]; test edi` vs our eax-staged load+copy; downstream
-// the w/map register roles rotate (ebx<->edi) and the guard's `xor eax,eax`
-// elides because the tested value sits in eax. One coin, three symptoms.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165d30, 0x5f)
@@ -1206,7 +1201,7 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     CObject* val = NULL;
     m_map1.Lookup(key, val);
     CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
-    if (val == NULL) {
+    if (w == NULL) {
         return 0;
     }
     if (m_cachedWorker == w) {
