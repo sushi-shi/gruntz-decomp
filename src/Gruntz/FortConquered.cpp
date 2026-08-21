@@ -26,7 +26,6 @@
 
 #include <stddef.h>
 
-// @early-stop
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -70,8 +69,8 @@ i32 CExitTrigger::AdvanceAnim() {
             }
             GruntzPlayer* claimed = &g_gameReg->m_options[hitPlayer];
             if (claimed != NULL) {
-                CGameObject* found = 0;
-                CGameObject* warlordObj = 0;
+                CGameObject* found = NULL;
+                CGameObject* warlordObj = NULL;
                 if (MapLookupById(
                         g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                         claimed->m_warlordObjectId,
@@ -100,7 +99,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     cur->m_drawFillArg = tbl;
                     if (hitPlayer == g_curPlayer) {
                         CoordPoolNode* head = g_coordPool.m_freeHead;
-                        Coord* mark = 0;
+                        Coord* mark = NULL;
                         if (head->m_next != NULL) {
                             mark = &head->m_coord;
                             head = head->m_next;

@@ -1813,7 +1813,7 @@ fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	1	ac91dd77ab35	0x21d80
 fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	94.2241	94.2241	8	3d428ad82260	0x21e20	94.2241	
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	1	1164e8ea8f1a	0x1158f0	100.0000	
 fonts	?InitializeFonts@@YAHXZ	100.0000	100.0000	10	a2bf1cd90122	0x115810	100.0000	
-fortconquered	?AdvanceAnim@CExitTrigger@@QAEHXZ	78.2168	78.2168	10	6725bfac0a02	0x3f5f0	78.2168	
+fortconquered	?AdvanceAnim@CExitTrigger@@QAEHXZ	78.2168	78.2168	11	500a8b35f58a	0x3f5f0	78.2168
 fortressflag	??0CExplosion@@QAE@PAUCGameObject@@@Z	95.7653	95.7653	2	d6eeb25000ce	0x470e0	95.7653	
 fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	92.8214	92.8214	2	8aa5d46e5417	0x45d30	92.8214	
 fortressflag	??0CParticlez@@QAE@PAUCGameObject@@@Z	95.6316	95.6316	1	3794c9df68d6	0x46ad0	95.6316	
@@ -4458,9 +4458,9 @@ warlord	??_GCWarlord@@UAEPAXI@Z	100.0000	100.0000	1	cpp:f6598efd5e63	0x107c0	100
 warlord	?AdvanceMovingAnim@CWarlord@@QAEHXZ	100.0000	100.0000	1	fd1802869d10	0x44e70	100.0000	
 warlord	?BuildFortSplashParticles@CWarlord@@QAEHXZ	100.0000	100.0000	1	823009aeff3d	0x44f80	100.0000	
 warlord	?FireActivation@CWarlord@@UAEXH@Z	100.0000	100.0000	1	dc15f81fd717	0x44640	100.0000	
-warlord	?LoadAttributes2@CWarlord@@QAEHXZ	100.0000	100.0000	2	1bb8ac719dd0	0x44d10	100.0000
+warlord	?LoadAttributes2@CWarlord@@QAEHXZ	100.0000	100.0000	3	e91bfb58a49e	0x44d10	100.0000
 warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	2	eec0439bffe9	0x44c00	100.0000
-warlord	?NotifyFortUnderAttack@CWarlord@@QAEHXZ	98.3443	98.3443	3	1f7440c415d8	0x45270	98.3443
+warlord	?NotifyFortUnderAttack@CWarlord@@QAEHXZ	98.3443	98.3443	4	331ef9bf5c11	0x45270	98.3443
 warlord	?RaiseBattleAlert@CWarlord@@QAEHXZ	100.0000	100.0000	2	a12bc40d62a9	0x457b0	100.0000	
 warlord	?RearmMoving2@CWarlord@@QAEHXZ	100.0000	100.0000	1	1a8c1fe71e4f	0x44f30	100.0000	
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	1	1a59dedeaed5	0x44bb0	100.0000	
