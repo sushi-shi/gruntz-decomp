@@ -22,10 +22,7 @@ public:
     }
 
 public:
-    CRollingBall() : CUserLogic(CUserLogic::INLINE_BASE) {
-        m_explodeStart = 0;
-        m_explodeWindow = 0;
-    }
+    CRollingBall() : CUserLogic(CUserLogic::INLINE_BASE), m_explodeStart(0), m_explodeWindow(0) {}
     CRollingBall(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

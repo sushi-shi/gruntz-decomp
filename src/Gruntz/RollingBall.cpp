@@ -52,9 +52,7 @@ RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_explodeStart = 0;
-    m_explodeWindow = 0;
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_explodeStart(0), m_explodeWindow(0) {
     SwitchGeometry("GAME_CYCLE100", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
@@ -63,61 +61,56 @@ CRollingBall::CRollingBall(CGameObject* obj)
     i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenX = snapX;
-    m_subX = static_cast<double>(snapX);
     m_object->m_screenY = snapY;
+    m_subX = static_cast<double>(snapX);
     m_subY = static_cast<double>(snapY);
-    if (m_object->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
-        m_object->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* snapped = m_object;
+    if (snapped->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
+        snapped->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
+        snapped->m_flags |= 0x20000;
     }
-    CWwdGameObjectA* o = m_object;
-
-    CWwdGameObjectA* obj38 = m_wwdObject;
-    if (obj38->m_frameSet != NULL) {
+    CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
+    if (frameSet != NULL) {
         CString name;
-        name = obj38->m_frameSet->m_name;
-        const char* s;
-        s = static_cast<LPCTSTR>(name);
+        name = frameSet->m_name;
+        const char* s = name;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
-            o->m_direction = IDX(CARDINAL_NORTH);
+            m_object->m_direction = IDX(CARDINAL_NORTH);
             m_stepDirX = 0;
             m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
-            o->m_direction = IDX(CARDINAL_EAST);
+            m_object->m_direction = IDX(CARDINAL_EAST);
             m_stepDirX = 1;
             m_stepDirY = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
-            o->m_direction = IDX(CARDINAL_SOUTH);
+            m_object->m_direction = IDX(CARDINAL_SOUTH);
             m_stepDirX = 0;
             m_stepDirY = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
-            o->m_direction = IDX(CARDINAL_WEST);
+            m_object->m_direction = IDX(CARDINAL_WEST);
             m_stepDirX = -1;
             m_stepDirY = 0;
         }
     }
 
-    i32 time = o->m_animWorker->m_speed;
+    i32 time = m_object->m_animWorker->m_speed;
     if (time == 0) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
-    if (0 != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_SINGLE && o->m_smarts != 1) {
+    if (0 != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_SINGLE && m_object->m_smarts != 1) {
         time += 1000;
     }
-    m_explodeWindow = static_cast<u32>(o->m_points);
+    m_explodeWindow = static_cast<u32>(m_object->m_points);
     m_explodeStart = static_cast<u32>(g_frameTime);
-    // Both halves really do take the Y snap - retail loads the one spill slot
-    // twice (`mov [esi+0x78],edx` / `mov [esi+0x7c],ebp`, both = [esp+0x10]).
-    m_target.m_x = snapY;
-    m_target.m_y = snapY;
+    m_target.Set(snapX, snapY);
     m_explodeLatch = 0;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
-    o->m_area.left = 0;
-    o->m_area.right = 0;
-    o->m_area.top = 0;
-    o->m_area.bottom = 0;
+    m_object->m_area.left = 0;
+    m_object->m_area.right = 0;
+    m_object->m_area.top = 0;
+    m_object->m_area.bottom = 0;
     m_moveDelta = 0.0;
 }
 
