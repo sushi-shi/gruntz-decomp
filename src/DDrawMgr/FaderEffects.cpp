@@ -1361,18 +1361,6 @@ void CFaderShape::RenderFrame(i32 frame) {
     }
 }
 
-// @early-stop
-// Both old walls are broken: `u32 arcSpan` (its qword staging writes retail's dead
-// hi-zero at the pair slot) flips arc into edi with m_mode re-read per group, and
-// the natural per-statement loop spellings kill the row-loop rotation (immediate
-// `mov [row],0`, fallthrough 22-insn head). Residue: (1) retail folds the u32
-// divisor into `fidiv` dword while emitting the staging stores - our cl emits the
-// correct fild qword + fdivp (+1 insn/arm; keep/paren/cast spellings measured
-// identical); (2) retail sinks each memset else-arm past the ret while ours lays
-// it inline (arm order already retail's); (3) slot-index shift - retail spills
-// row and halfWidth separately where ours reuses one slot (frame 0x20 vs 0x24) -
-// plus the reg-role swaps downstream of it. 920 forest cells + 9-cell divisor
-// matrix exhausted on the residue.
 RVA(0x00181e50, 0x7b9)
 
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
