@@ -773,6 +773,29 @@ int* t14()        { return &arr[4]; }                    // mov eax,OFFSET arr+1
 void t15()        { sink((int)&s.e); }                   // push OFFSET s+8
 ```
 
+### I4a — an `add`/`lea` census is a lifetime reading
+
+`walls semdiff` makes this greppable: a small negative `imm` key present on
+only one side, with `add`/`sub`/`lea` counts moving in the same direction, can
+mean the same value is dead on one side and still live on the other. Two
+measured rows give opposite verdicts:
+
+- `CBattlezMapConfig::ScanRegion` (`0x32ce0`) had `imm 0xfffffffb base 0
+  target 2` with `sub` base 9 / target 7. Retail overwrites the shifted
+  coordinate at the `box.left`/`box.top` stores; ours kept it live for the
+  sibling `+5` fields because two scalar helpers returned one field each.
+  Replacing them with one by-value `Coord` helper cleared the key and moved
+  81.57% to 81.91%.
+- `CGrunt::StepCompassMove` (`0x51c00`) had `imm 0xffffffe0 base 0 target 6`
+  with `lea` base 70 / target 53 and `add` base 32 / target 43. Scoping the
+  pixel-coordinate copies to the arrow block produced the predicted `add`
+  forms, but moved the whole function from 63.30% to 62.04% because shortening
+  two lifetimes recolored the larger body. The experiment was reverted.
+
+Confirming the selection mechanism is not sufficient evidence for the source
+shape. Measure the whole function and retain only semantically supported
+lifetimes.
+
 ---
 
 ## I5 — Zero tests are always `test r,r`, at the operand's own width
