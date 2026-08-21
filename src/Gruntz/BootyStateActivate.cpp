@@ -1102,11 +1102,15 @@ i32 CBootyState::LevelMsgHudDriver() {
                 LeafCue* found = NULL;
                 MapLookup(host->m_cues, "GAME_EXPLOSION1", found);
                 LeafCue* cue = found;
-                if (cue != NULL && g_sndEnabled != 0
-                    && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-                           >= static_cast<u32>(cue->m_replayDelay)) {
-                    cue->m_lastPlayTime = g_killCueClock;
-                    cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                if (cue != NULL) {
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
+                    if (gate != 0
+                        && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+                               >= static_cast<u32>(cue->m_replayDelay)) {
+                        cue->m_lastPlayTime = g_killCueClock;
+                        cue->m_sound->ConfigureItem(item, 0, 0, 0);
+                    }
                 }
             }
             if (m_slot >= 8) {
@@ -1354,11 +1358,15 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     if (ss->m_emitGate == 0) {
                         LeafCue* res = 0;
                         MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
-                        if (res != NULL && g_sndEnabled != 0) {
-                            u32 clock = g_killCueClock;
-                            if (clock - res->m_lastPlayTime >= res->m_replayDelay) {
-                                res->m_lastPlayTime = clock;
-                                res->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        if (res != NULL) {
+                            i32 gate = g_sndEnabled;
+                            i32 item = g_sndCueTag;
+                            if (gate != 0) {
+                                u32 clock = g_killCueClock;
+                                if (clock - res->m_lastPlayTime >= res->m_replayDelay) {
+                                    res->m_lastPlayTime = clock;
+                                    res->m_sound->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
