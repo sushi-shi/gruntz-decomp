@@ -129,11 +129,11 @@ Fresh compile of `src/Gruntz/SBI_RectOnly.cpp` versus retail, counting DECLINED
 | `LoadTabSprites` | `0x00102250` | 10 / 15 | 7 / 10 | −3 / −5 |
 | `BuildTabzDialog` | `0x0010a340` | 4 / 8 | 2 / 7 | −2 / −1 |
 
-Every deficit has the SAME sign: we expand more than retail, i.e. **our callers
-have more budget than the originals**, i.e. **our reconstructions carry more
-front-end mass than the original functions did**. Injecting K statements of known
-cost (12 cb units each) at the top of each builder — a disposable A/B on a copy of
-the TU — moves them further away, which fixes the direction beyond argument:
+Every deficit has the SAME sign: we expand more than retail. With the current
+callee cb values held fixed, this means our callers have more budget than the
+originals. Injecting K statements of known cost (12 cb units each) at the top of
+each builder — a disposable A/B on a copy of the TU — moves them further away and
+fixes that caller-mass direction:
 
 | builder | retail | K=0 | K=4 | K=8 | K=16 | K=24 | K=32 |
 |---|---|---|---|---|---|---|---|
@@ -150,14 +150,15 @@ roughly one RectOnly decline per 8-12 statements (~100-150 cb units):
 * `BuildTabzDialog` ≈ **−200 cb** (≈16-24 statements)
 * `LoadTabSprites` ≈ **−250 to −300 cb** (≈24-30 statements)
 
-which is a structural instruction, not a knob: the original builders held that
-much of their body behind something we have spelled out inline — an inline member,
-a helper, or a loop where we wrote a run. (`BuildTabzDialog` also has one
-duplicate `AddTail` tail, 14 vs 13 — that is a separate structural row, not
-budget.) The known over-correction — converting all 72 `delete v; return 0;` runs
-into an inline member — overshoots every builder AND breaks `BuildStatusBarTabs`,
-which the table above explains: that edit removes far more than 100-300 cb units
-and `BuildStatusBarTabs` has no slack at all.
+which identifies the caller-mass axis, not its source spelling: the original
+builders may have held that much of their body behind an inline member, helper, or
+loop where we wrote a run. A second possibility — different front-end cost in an
+otherwise code-identical callee — is measured below. (`BuildTabzDialog` also has
+one duplicate `AddTail` tail, 14 vs 13; that is a separate structural row.) The
+known over-correction — converting all 72 `delete v; return 0;` runs into an inline
+member — overshoots every builder AND breaks `BuildStatusBarTabs`, which the table
+above explains: that edit removes far more than 100-300 cb units and
+`BuildStatusBarTabs` has no slack at all.
 
 ## What `walls inline-model --gap` should incorporate
 
@@ -181,3 +182,51 @@ costs are per statement AS WRITTEN, so a differently-spelled statement of the
 same semantics can have a different cost — re-titrate rather than assume. All
 probe TUs were scratch (never in the build graph) and are deleted; the builder
 A/B was on a copy of the TU, `src/` unchanged.
+
+## A uniform image helper does not supply the missing mass
+
+The natural helper hypothesis was tested on the 11 uniform `new CSBI_Image`
+registration sites in `LoadTabSprites`. A TU-static helper containing the
+allocation, `SetupImage` check, and delete-on-failure idiom was declined at all
+11 sites. It emitted a real function and 11 calls, shrinking `LoadTabSprites`
+from `0x1d14` to `0x1b7c`; Item declines moved three steps toward retail while
+Rect declines moved three steps away because the freed budget re-expanded base
+constructors elsewhere. The experiment was reverted.
+
+Under this caller mass, a helper above about 45 cb is refused at every site. The
+40-cb exemption admits only two or three cheap statements, so absorbing the
+measured 100-300 cb deficit would require several fitted micro-helpers per site.
+That is not evidence for an authentic source boundary.
+
+## Callee cb is an independent axis
+
+The two base-constructor costs are free parameters too. Fitting the measured
+staircase places `cb(CStatusBarItem::CStatusBarItem)` and
+`cb(CSBI_RectOnly::CSBI_RectOnly)` at 55 and 61, just above the free 40-cb
+threshold. Their retail out-of-line copies are only `0x17` and `0x1b` bytes, so
+front-end-only statements eliminated by `/O2` cannot be ruled out from those
+bodies. Disposable titration added two seven-cb statements to each header-inline
+constructor:
+
+* `LoadTabSprites` reached full retail call and branch parity (163/163 calls,
+  167/167 branches), moved to a regalloc/scheduling residue whose first byte
+  divergence is `+0x34`, and scored 95.8091 (previous MAX 93.1345).
+* `BuildTabzDialog` reached the retail 4/8 constructor-decline counts and scored
+  92.1588 (previous MAX 90.3029). Its duplicate-`AddTail` residue remains
+  independent.
+
+No uniform constructor-cost point closes all four builders. `BuildStatusBarTabs`
+loses a Rect expansion at item+2/rect+2, while `BuildGameMenu` needs item+3. At
+the latter's count-parity point (item+3/rect+2), its score falls to 84.66 from an
+86.06 best: equal counts are not equal sites. Retail declines the pause/resume
+arms specifically; a uniform cb increase crosses other sites first. The roughly
+100-cb caller-mass difference therefore also has a position — it must occur early
+enough to move the share threshold at those arms.
+
+Other controls were measured: moving Item initialization between the member
+initializer list and body stores is cb-identical; folding `p = new T` into the
+condition is decline-neutral but changes the wrong bytes; adding mass to `SbGeom`
+or `CSBI_Image` propagates through the MenuItem chain and breaks exact
+`BuildStatusBarTabs`. The two higher scores were banked against unchanged
+function source hashes while the constructor probes were active, then the probes
+were removed. They establish headroom and search direction, not source to land.

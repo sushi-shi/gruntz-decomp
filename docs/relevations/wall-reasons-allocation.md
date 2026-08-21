@@ -286,6 +286,15 @@ swapped, `if (g)` vs `if (g != NULL)`, deref inlined, `for` instead of
 — identical. The loop counter is source-visible, the zero is not, and the pair
 does not move.
 
+`CGruntPuddle::CGruntPuddle` (`0x00040490`) is the byte-register form of the
+same boundary. Base and retail have the same 123 instructions, 11 calls, 25
+relocations, and member operations, but retail assigns constant 1 to EBX and 0
+to EBP while the base assigns 0 to EBX and 1 to EBP. EBP has no byte form, so
+the EH-state stores become immediates and the `RegisterLogicTypesOnce` tail gains
+one branch. Five front-end IL probe kinds changed their expected handle state yet
+left all `0x1b0` emitted bytes unchanged. This is a measured C2-anchored
+hoisted-literal allocation, not evidence of missing constructor control flow.
+
 ---
 
 ## R5 — Pass 0 hands out only registers the function has ALREADY spent

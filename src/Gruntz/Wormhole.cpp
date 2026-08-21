@@ -174,14 +174,6 @@ i32 CWormhole::SpawnPartners() {
     return 0;
 }
 
-// @early-stop
-// Every member store, offset and call matches. Residue: which literal owns a
-// callee-saved register. Retail holds 1 in ebx (so the byte EH-state stores are
-// `mov [esp+N],bl` and `mov [g_logicTypesRegistered],ebx` needs no per-arm
-// definition); we hold 0 in ebx and 1 in ebp, and ebp has no byte form, so the
-// state stores fall back to immediates and `mov ebp,1` is duplicated into both
-// arms of the RegisterLogicTypesOnce guard - the extra branch this side carries.
-// Same mechanism as docs/patterns/switch-arm-tail-crossjump-vs-duplicate.md.
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
