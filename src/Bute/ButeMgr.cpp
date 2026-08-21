@@ -1734,12 +1734,6 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     return &s_empty;
 }
 
-// @early-stop
-// CopyValue, ~CButeValue, the CString constructor, and its deleting destructor are
-// independently exact. The remaining split is the first temporary's deleting-dtor
-// inline cut; the typed payload union must not be weakened to steer that budget.
-// Both source CopyValue sites are real: retail shares their expanded switch body,
-// so its one rep movsd versus our two is block merging, not an extra object.
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
