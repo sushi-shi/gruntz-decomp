@@ -85,7 +85,7 @@ ddrawshadeblit	22	11
 ddrawsubmgr	122	118
 ddrawsubmgrleaf	14	13
 ddrawsurfacemgr	22	20
-ddrawsurfacepair	54	41
+ddrawsurfacepair	54	42
 ddrawworkerhost	5	5
 ddrawworkerregistry	26	26
 ddsurface	57	50
@@ -1172,7 +1172,7 @@ ddrawsurfacepair	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	
 ddrawsurfacepair	?LoadFile@CAniElement@@QAEHPAVCDDrawSubMgrLeafScan@@PBDH@Z	100.0000	100.0000	2	df87383dbb7f	0x165620	100.0000	
 ddrawsurfacepair	?LoadImageA@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z	100.0000	100.0000	1	7563ba5d24a0	0x163e50	100.0000	
 ddrawsurfacepair	?LoadPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAUCParseSource@@PBDH@Z	100.0000	100.0000	4	24c4f38a9117	0x1658c0	100.0000	
-ddrawsurfacepair	?LoadSizedPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAUCParseSource@@HH@Z	91.2789	91.2789	3	90f168fcf059	0x165a90	100.0000	
+ddrawsurfacepair	?LoadSizedPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAUCAniRecordBase2@@PAUCParseSource@@HH@Z	100.0000	100.0000	4	7da9a63b2d73	0x165a90	100.0000	
 ddrawsurfacepair	?Open@CFileMem@@UAEHXZ	100.0000	100.0000	1	51f6fa0f4f43	0x165e60	100.0000	
 ddrawsurfacepair	?Probe@CDrawSubWorker@@QAEHXZ	100.0000	100.0000	1	2a18dc4b1854	0x164660	100.0000	
 ddrawsurfacepair	?PruneWorkers@CDDrawWorkerList@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	b08958a13f1a	0x163bf0	100.0000	
