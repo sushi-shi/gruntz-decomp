@@ -586,7 +586,7 @@ battlezmapconfig	?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z	100.0000
 battlezmapconfig	?StepAllRowSpawns@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	1	cecca5bc5558	0x25c20	100.0000	
 battlezmapconfig	?StepBoard@CBattlezMapConfig@@QAEHXZ	95.3292	95.3292	1	43b0ba2ed9c4	0x25d90	95.3292	
 battlezmapconfig	?StepRowSpawn@CBattlezMapConfig@@QAEHH@Z	84.4107	84.4107	3	8681acd4c7f5	0x26470	84.4107	
-battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	84.8865	84.8865	4	1c82c6ec594b	0x267c0	88.2172	
+battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	85.1188	85.1188	5	7f4dbbe77fad	0x267c0	88.2172	
 battlezmapconfig	?TileSwitch@@YGXPAVCGrunt@@HHHHH@Z	100.0000	100.0000	1	eb557163a8f4	0x29af0	100.0000	
 battlezmapconfig	?TrySeedSpawnAt@CBattlezMapConfig@@QAEHHH@Z	94.5918	94.5918	1	6dcff90f5825	0x30990	94.5918	
 battlezmapconfig	?ValidateUnitPath@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.0331	85.0331	10	949ca769f8db	0x29b40	85.0331	
