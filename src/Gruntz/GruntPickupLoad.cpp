@@ -20,16 +20,12 @@
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
-        CAniElement* geo = 0;                                                                      \
+        CAniElement* geo = NULL;                                                                   \
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key), geo);              \
-        id = (idv);                                                                                \
         m_pickupGeoSrc = geo;                                                                      \
+        id = (idv);                                                                                \
     } while (0)
 
-// @early-stop
-// The three ActKey() comparisons are `bool eq = (strcmp(..) == 0); if (!eq)` - retail's
-// sete proves the polarity. Retail reuses the LAST parameter's home slot for the
-// CAniElement* scratch; this source state instead makes cl allocate a 4-byte local.
 RVA(0x00065e80, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,

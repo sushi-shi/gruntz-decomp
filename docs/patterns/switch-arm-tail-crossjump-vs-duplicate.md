@@ -1,51 +1,61 @@
-# cl cross-jumps a switch arm's 10-14 byte tail out of ~1 arm in 3; retail duplicates it
+# Statement order decides whether cl can cross-jump a switch-arm tail
 
-tags: cpp:switch cpp:branch | asm:jmp asm:or | topic:wall topic:regalloc
-symptoms: a big per-`case` switch where MOST arms are byte-identical to retail but a
-  periodic subset (every 2nd/3rd) is exactly 10 or 14 bytes SHORT; the short arm ends
-  `mov edi,<imm>` + `jmp` to a label a few bytes BEFORE the label the full arms jump to;
-  the target has N copies of a two- or three-instruction tail and the base has one
-confidence: 9/10
-variants: retail-duplicates-small-return-epilogues.md, goto-fail-shares-one-exit-block.md
+tags: cpp:switch cpp:branch cpp:store | asm:jmp asm:mov asm:or | topic:codegen-idiom topic:wall topic:regalloc
+symptoms: a large per-case switch has periodic short arms; repeated member-store or immediate counts differ; an arm jumps into another arm's last two or three instructions
+confidence: 10/10
+variants: retail-duplicates-small-return-epilogues.md, goto-fail-shares-one-exit-block.md, switch-arm-break-not-return-replicates-the-epilogue.md
 
-Same compiler, same flags, same source: cl's cross-jump (tail-merge) pass hoists the
-last two or three instructions of *some* arms into one shared block and jumps to it,
-where retail's cl kept every copy. The arms it picks follow the /O2 register rotation
-(cl cycles eax/ecx/edx across consecutive identical arms), so a merge lands roughly
-every third arm - the one whose rotation makes its tail literally equal to the shared
-copy's. Nothing about the C++ differs between a merged and an unmerged arm.
+Do not classify a periodic 10-14 byte arm deficit as an unsteerable C2
+tail-merge until the semantic operand multisets agree. A shared tail can be a
+direct reading of statement order: cl can cross-jump only the suffix that the
+source makes common.
 
-```asm
-; TARGET - every arm keeps its own tail (54 B)
-  call  Lookup
-  mov   eax,[esp+0x20]
-  mov   edi,0x3c4
-  mov   [esi+0x3d8],eax
-  jmp   <common>
-; BASE - this arm (and every ~3rd) jumps to a shared 10-byte copy instead (44 B)
-  call  Lookup
-  mov   edi,0x3c4
-  jmp   <shared>          ; <shared>: mov eax,[esp+0x10]; mov [esi+0x3d8],eax
+`CGrunt::LoadPickupSprites` 0x65e80 is the decisive controlled A/B. Its lookup
+macro originally ended each arm as:
+
+```cpp
+id = idv;
+m_pickupGeoSrc = geo;
 ```
 
-A second face of the same pass: where an arm ends `flags |= 0x10`, whether cl emits the
-mergeable `or DWORD PTR [esi+0x248],0x10` (7 B) or retail's `mov eax,[m] / or al,0x10 /
-mov [m],eax` (14 B) is decided by whether EAX is free, and EAX is occupied exactly when
-cl CSE'd the shared constant `1` into it instead of into EBX as retail did. So one
-register choice flips instruction selection, which flips mergeability, which flips ~20
-arm tails at once.
+That form scored 77.2767. The candidate emitted only 43 stores to
+`m_pickupGeoSrc` (`this+0x3d8`) against retail's 58, only three stores to
+`m_powerupDuration` (`this+0x378`) against retail's seven, and materialized
+voice id `0x3bf` six times against retail's one. The periodic short arms were
+therefore not harmless residue: cl was sharing the wrong suffixes.
 
-WALL, not steerable - measured on `CGrunt::LoadPickupSprites` 0x65e80 (18 of 60 arms
-short by 10 B), `CGrunt::LoadGruntTypeTable` 0x4dd50 (12 of 20 `|= 0x10` sites) and
-named by the 2026-08-08 lane as the mechanism behind `CTriggerMgr::ResetGroup` 0x79520,
-which has a CLEAN extent and a CLEAN dispatch shape
-(`gruntz sema disasm <rva> --switch` reports it clean). Do not read a periodic 10-byte
-arm deficit as a missing statement: check first whether the short arm jumps a few bytes
-short of where its siblings jump.
+Retail's six W/A/R/P/Coin/Stopwatch arms each store their lookup result and
+then converge on one `mov edi,0x3bf`. Reversing the two real statements exposes
+exactly that suffix:
 
-RETRACTED for `CStatusBarMgr::SetTabState` 0x100d70 (2026-08-08, later the same day):
-it was listed here and it is NOT this pass. Its fifteen arms end in a statement-identical
-`return 1;`, which feeds cl's EARLY cross-jump of return statements; `break;` in every
-arm plus one trailing `return 1;` takes it **88.53 -> 100.00 EXACT**. Before assigning a
-switch to this (unsteerable) family, check the arm terminator against
-[switch-arm-break-not-return-replicates-the-epilogue.md](switch-arm-break-not-return-replicates-the-epilogue.md).
+```cpp
+m_pickupGeoSrc = geo;
+id = idv;
+```
+
+The source change raises the normal report to 80.7749 and makes every semantic
+multiset exact: 90/90 stores, 184/184 immediates, 142/142 ordered referents,
+68/68 calls, 164/164 branches, 2/2 returns, and 249/249 relocations. It also
+preserves all seven duration stores and emits one `0x3bf`. This is a source
+recovery, not a score-only reorder: the target's shared suffix states the
+statement order.
+
+After that correction, candidate and retail still differ by one instruction
+and eight bytes (0x1498/1250 versus 0x14a0/1251). Their duplicated-run reports
+are symmetric and semantic operands are exact. Ninety-seven target-adjacent
+TU-state trials, 49 top-of-TU trials, 19 relational variants, and 29
+commutative variants each found only the baseline compiler island. That
+post-adjudication residue is the genuine regalloc/scheduling wall.
+
+A second face of the same pass appears when an arm ends `flags |= 0x10`.
+Whether cl emits mergeable `or DWORD PTR [member],0x10` or
+`mov eax,[member] / or al,0x10 / mov [member],eax` depends on whether EAX is
+free. One register choice can change instruction selection and tail
+mergeability across many arms. Treat that as codegen closure only after calls,
+branches, referents, stores, and immediates have been reconciled.
+
+`CStatusBarMgr::SetTabState` 0x100d70 is a different source pattern. Its arms
+ended in statement-identical `return 1;`, feeding the early return cross-jump.
+Changing each arm to `break;` plus one trailing `return 1;` took 88.53 to exact.
+Always inspect the arm terminator and shared suffix before assigning a switch
+to the residual tail-merge family.
