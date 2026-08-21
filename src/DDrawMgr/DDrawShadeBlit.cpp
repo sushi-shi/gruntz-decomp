@@ -1479,16 +1479,6 @@ void CDDrawShadeBlit::BlitShadedForward(
     src->m_ddSurface->Unlock(0);
 }
 
-// @early-stop
-// Block skeleton matches retail exactly (166 blocks both sides, every branch target
-// agreeing). Recovered from the target: arm 2 tests `x - run <= clip->left` with the
-// INLINED switch as the if-body and the ConvertRowDouble/Flip calls as the else
-// (retail `jg` to the calls), and arm 3's row advance is the ELSE of `x > 0`, not the
-// if-body; both arms' address/count expressions are computed inside the branch that
-// uses them, and the loop invariants sit inside the loop so LICM places them in the
-// preheader.
-// REGISTER-HOMING residue only: per-arm register coloring and the same
-// second-induction-variable split described on BlitShadedForward.
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
@@ -1517,11 +1507,13 @@ void CDDrawShadeBlit::BlitShadedMirrored(
         }
     }
 
+    i32 rowInc;
     if (vflip) {
         base += dst->bottom * pitch + dst->left * m_dstBpp;
-        pitch = -pitch;
+        rowInc = -pitch;
     } else {
         base += dst->top * pitch + dst->left * m_dstBpp;
+        rowInc = pitch;
     }
 
     if (clip->left == 0 && clip->right == m_width - 1) {
@@ -1595,10 +1587,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                         i32 rd = pitch / 2 * 2;
                                         u32 a = Load16(ss2);
                                         u32 dv = Load16(sc);
-                                        i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
-                                                | m_lutBank1
-                                                    [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
-                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                        i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)];
+                                        v |= m_lutBank1
+                                            [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                        v |= m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d -= 2;
@@ -1610,10 +1602,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                         i32 rd = 2 * pitch / 2;
                                         u32 a = Load16(ss2);
                                         u32 dv = Load16(sc);
-                                        i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
-                                                | m_lutBank1
-                                                    [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
-                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                        i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)];
+                                        v |= m_lutBank1
+                                            [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                        v |= m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d -= 2;
@@ -1763,7 +1755,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = m_width;
             }
         }
@@ -1901,7 +1893,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = m_width;
             }
         }
@@ -1968,7 +1960,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                 }
             } else {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = m_width;
             }
         }
