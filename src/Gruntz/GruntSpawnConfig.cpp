@@ -89,14 +89,9 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
-    CGruntVoice** p = m_voices;
-    for (i32 i = 0; i < 2; i++) {
-        *p = NULL;
-        p++;
-    }
+    memset(m_voices, 0, sizeof(m_voices));
 }
 
 // @early-stop

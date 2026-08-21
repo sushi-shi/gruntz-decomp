@@ -1,7 +1,7 @@
-# A struct cleared with `memset` gets its OWN `xor reg,reg`; field stores borrow an accumulator's zero
-tags: cpp:local cpp:struct cpp:memset | asm:xor asm:mov | topic:codegen-idiom topic:regalloc
-symptoms: base is one instruction short; retail has a `xor eax,eax` immediately before a run of `mov [esp+N],eax` stores that clear a small stack struct, and reuses a DIFFERENT already-zero register for a later single-field clear; ours writes every clear from one shared zero register
-confidence: 8/10
+# A small clear written as `memset` owns its zero register and destination cursor
+tags: cpp:local cpp:struct cpp:array cpp:member cpp:memset | asm:add asm:xor asm:mov | topic:codegen-idiom topic:regalloc
+symptoms: retail has a dedicated `xor reg,reg` immediately before a short run of zero stores; for a member array it may also advance `this` in place, while a hand-written pointer loop keeps `this` and the zero in the opposite registers
+confidence: 9/10
 
 cl 5.0 expands a small `memset(&s, 0, sizeof s)` as a dedicated `xor reg,reg`
 plus one `mov` per dword. That zero is *its own* value, so it does not get
@@ -42,3 +42,30 @@ zero for one clear while reusing a live zero register for another clear of the
 SAME struct means the two clears came from different constructs - a `memset` and
 a field assignment. `HeapStats` 0x118bf0 97.34 -> 100.00 EXACT (its sibling
 `HeapCheckDump` already used `memset` and was exact).
+
+The same distinction applies to a small fixed member array even when the loop
+is fully unrolled and the instruction counts already agree. For two pointers at
+`this+8`, retail `CGruntSpawnConfig::ClearSprites` is:
+
+```asm
+add    ecx,8
+xor    eax,eax
+mov    [ecx],eax
+mov    [ecx+4],eax
+ret
+```
+
+The hand-written pointer loop emitted the same five operations with the roles
+reversed (`lea eax,[ecx+8]`, then `xor ecx,ecx`) and scored 82.00. Direct stores,
+post-increment, and indexed-pointer controls each scored 67.80. Restoring the
+single aggregate operation closed the function:
+
+```cpp
+memset(m_voices, 0, sizeof(m_voices));
+```
+
+`CGruntSpawnConfig::ClearSprites` 0x11af90: 82.00 -> 100.00 EXACT. The detection
+signature is an already byte-complete clear whose only difference is that
+retail destructively biases `this` to the member-array base and then creates a
+fresh zero in the accumulator. Do not retain a pointer loop merely because its
+stores and final state are equivalent.
