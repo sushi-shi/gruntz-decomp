@@ -2307,13 +2307,11 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(1, it);
 
             {
-                i32 aOff, cOff;
+                i32 aOff = 0xa;
+                i32 cOff = 0x21;
                 if (m_position == STATUSBAR_DOCK_LEFT) {
                     aOff = 0x7d;
                     cOff = 0x95;
-                } else {
-                    aOff = 0xa;
-                    cOff = 0x21;
                 }
                 i32 arrowL = bx + aOff;
                 i32 arrowR = bx + cOff;
