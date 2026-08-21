@@ -853,9 +853,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 tile = 1;
                             }
                             if (!(tile & 4)) {
-                                unit->m_arrivalCell.m_x = -1;
+                                Coord none;
+                                unit->m_arrivalCell = *none.Set(-1, -1);
                                 unit->m_battleState = BZTASK_ADVANCE;
-                                unit->m_arrivalCell.m_y = -1;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
@@ -880,9 +880,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 st = unit->m_toolId;
                             }
                             if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
-                                unit->m_arrivalCell.m_x = -1;
+                                Coord none;
+                                unit->m_arrivalCell = *none.Set(-1, -1);
                                 unit->m_battleState = BZTASK_ADVANCE;
-                                unit->m_arrivalCell.m_y = -1;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
@@ -923,8 +923,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         }
                                         unit->m_coordList.RemoveAll();
                                     }
-                                    unit->m_arrivalCell.m_x = -1;
-                                    unit->m_arrivalCell.m_y = -1;
+                                    Coord none;
+                                    unit->m_arrivalCell = *none.Set(-1, -1);
                                     unit->m_battleState = BZTASK_CARRY_GOOBER;
                                 }
                             }
@@ -935,9 +935,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 st = unit->m_toolId;
                             }
                             if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
-                                unit->m_arrivalCell.m_x = -1;
+                                Coord none;
+                                unit->m_arrivalCell = *none.Set(-1, -1);
                                 unit->m_battleState = BZTASK_ADVANCE;
-                                unit->m_arrivalCell.m_y = -1;
                                 if (unit->CoordCount() != 0) {
                                     POSITION pos = unit->m_coordList.GetHeadPosition();
                                     if (pos != NULL) {
@@ -1489,9 +1489,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 }
                                                 if (unit->CoordCount() == 0
                                                     && unit->m_defenderState == AISTATE_COOLDOWN) {
-                                                    unit->m_unusedBattleCell.m_x = -1;
+                                                    Coord none;
+                                                    unit->m_unusedBattleCell = *none.Set(-1, -1);
                                                     unit->m_defenderState = AISTATE_SEEK;
-                                                    unit->m_unusedBattleCell.m_y = -1;
                                                 }
                                                 {
                                                     char nd;

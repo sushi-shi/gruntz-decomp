@@ -101,5 +101,34 @@ identical; the remaining wall is structural allocation/scheduling. A 32-state
 campaign found only one compiler island, so further work belongs in structural
 source recovery rather than TU-state search.
 
-An `or reg,-1` feeding a comparison or arithmetic is not this signature. Trace
-both values into the adjacent member stores before applying it.
+The 2026-08-21 sweep folded 13 proven sites. Every site gained, and the census
+fell from 43 to 8 missing halves (`battlezunitstep` closed 8/24 to 24/24):
+
+| function | was | now |
+|---|---|---|
+| `CBattlezMapConfig::TrackAssignedEnemy` | 86.30 | **93.45** |
+| `CBattlezMapConfig::RetargetIdleUnit` | 84.88 | 86.59 |
+| `CBattlezMapConfig::AdvanceToEnemyBase` | 80.71 | 82.61 |
+| `CBattlezMapConfig::StepDefenderUnit` | 77.60 | 79.03 |
+| `CGrunt::WanderStep` | 86.35 | 87.86 |
+| `CBattlezMapConfig::CheckQueuedSpawnTile` | 76.86 | 78.19 |
+| `CGrunt::ChargeStep` | 82.95 | 83.91 |
+| `CGrunt::StepArrivalDefenseAlt` | 78.95 | 79.83 |
+| `CGrunt::StepArrivalDefenseLean` | 76.64 | 77.49 |
+| `CGrunt::StepArrivalDefense` | 84.98 | 85.68 |
+| `CGrunt::UpdateArrival` | 90.63 | 90.92 |
+| `CBattlezMapConfig::Step` | 87.13 | 87.23 |
+| `CGrunt::ScanNearestTarget` | 94.60 | 94.78 |
+
+An earlier bound claimed `TrySeedSpawnAt` and
+`StepRowUnits` "really do store the two fields independently" because the fold
+cost them score. The target objs refute that: `StepRowUnits` has FIVE
+`or eax,-1 / or ecx,-1` pairs and `TrySeedSpawnAt`'s single `or edx,-1` is a
+`cmp eax,edx` sentinel, not a store at all. Those two rows lost on the earlier
+fold because the fold used the one-temp spelling, so read a lost score as
+"wrong spelling", not as "retail wrote it field-wise". The site set is decided
+by the target's own byte census, never by the delta of a score.
+
+An `or reg,-1` feeding a comparison or arithmetic is not this signature
+(`or eax,-1; sub eax,edi` computes `~edi`). Trace both values into the adjacent
+member stores before applying it.
