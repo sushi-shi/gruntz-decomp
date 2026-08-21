@@ -218,10 +218,12 @@ constructor:
 No uniform constructor-cost point closes all four builders. `BuildStatusBarTabs`
 loses a Rect expansion at item+2/rect+2, while `BuildGameMenu` needs item+3. At
 the latter's count-parity point (item+3/rect+2), its score falls to 84.66 from an
-86.06 best: equal counts are not equal sites. Retail declines the pause/resume
-arms specifically; a uniform cb increase crosses other sites first. The roughly
-100-cb caller-mass difference therefore also has a position — it must occur early
-enough to move the share threshold at those arms.
+86.06 best: matching the counts is not matching the sites. The repeat signature
+(ours 2x 25-insn prefix runs, retail 2x 22 + 2x 11) says retail declines the
+pause/resume arms specifically; a uniform cb increase crosses other sites first.
+This remains an inline-budget wall, not a CFG wall, but its roughly 100-cb
+caller-mass difference has a position — the removal must occur early enough to
+move the share threshold at those arms.
 
 Other controls were measured: moving Item initialization between the member
 initializer list and body stores is cb-identical; folding `p = new T` into the

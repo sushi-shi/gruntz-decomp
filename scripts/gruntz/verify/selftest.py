@@ -1629,8 +1629,11 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
         name = "?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z"
         callee = "?RemoveHead@CPtrList@@QAEPAXXZ"
         binding = SimpleNamespace(unit="u", name=name, rva=0x4B370)
+        run = [f"{i:x}:\t90\tmov eax,0x{i:x}" for i in range(1, 11)]
+        base_asm = "\n".join(run + ["b:\t74 00\tje 0xd"]
+                             + run + ["17:\t75 00\tjne 0x19"])
         skeletons = [
-            (b"base", 3, 0, 0, 1, ""),
+            (b"base", 3, 0, 0, 1, base_asm),
             (b"target", 4, 0, 0, 1, ""),
         ]
         with tempfile.TemporaryDirectory() as td:
@@ -1654,6 +1657,8 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
         self.assertIn("INLINE/CALL-SET", text)
         self.assertIn("REPEATED-SITE DELTA: target 4, base 3", text)
         self.assertIn(callee, text)
+        self.assertIn("site-positioned inline-budget residue", text)
+        self.assertNotIn("is a CFG reconstruction question", text)
 
 
 class InlineModelFlagControls(unittest.TestCase):

@@ -224,7 +224,7 @@ def diagnose(token: str, show_asm: bool = False) -> int:
               "gap is outside this function (pairing, data, or unit-level)")
 
     if wall in ("cfg", "regalloc", "inline"):
-        _duplicate_tail_probe(basm, tasm)
+        _duplicate_tail_probe(basm, tasm, wall)
 
     if show_asm and wall != "none":
         print("  --- base ---")
@@ -301,7 +301,7 @@ def _repeat_runs(insns: list[str], minlen: int = 4):
 MIN_RUN = 10
 
 
-def _duplicate_tail_probe(basm: str, tasm: str) -> None:
+def _duplicate_tail_probe(basm: str, tasm: str, wall: str) -> None:
     """List the LONG repeated runs on each side, classified suffix vs prefix.
 
     Short runs repeat by chance in any large body (a 4-insn window recurs
@@ -342,9 +342,15 @@ def _duplicate_tail_probe(basm: str, tasm: str) -> None:
               "carried something ours factored away (a per-arm scope is the "
               "usual one).")
     elif (b or t) and not bs and not ts:
-        print("    -> the long repeats are PREFIXES that diverge; no merge "
-              "pass folds those, so a duplication difference here is a CFG "
-              "reconstruction question, not a placement coin.")
+        if wall == "inline":
+            print("    -> the long repeats are PREFIXES that diverge, but the "
+                  "call-set already differs: this can be site-positioned "
+                  "inline-budget residue. Compare ordered call sites before "
+                  "inferring a CFG reconstruction defect.")
+        else:
+            print("    -> the long repeats are PREFIXES that diverge; no "
+                  "merge pass folds those, so a duplication difference here "
+                  "is a CFG reconstruction question, not a placement coin.")
 
 
 def _call_targets(rel: dict, asm: str, own: str | None = None) -> list[tuple[str, int]]:
