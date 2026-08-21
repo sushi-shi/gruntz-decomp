@@ -1138,8 +1138,9 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32
         return 0;
     }
 
+    i32 length = static_cast<i32>(src->m_length);
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->CreatePaletteFromTrailingData(data, src->m_length, flags) == 0) {
+    if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
