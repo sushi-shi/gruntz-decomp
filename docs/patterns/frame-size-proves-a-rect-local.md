@@ -66,6 +66,38 @@ if (px < x1 && px >= x0 && py < y1 && py >= y0) {
 80.71 -> 87.78 with that plus walking the `startRow` parameter itself instead of a copy
 (see outparam-through-the-parameter-slot.md).
 
+## Read it BACKWARDS too: a 4-byte frame proves there is NO aggregate temp
+
+The inference runs both ways, and the negative direction is the cheaper find because
+`sub esp,N` is the first instruction of the function. `CStatusBarMgr::UpdateChipGrinder-
+StatusBar` 0x1076a0 allocates its whole frame with a bare **`push ecx`** - four bytes -
+so nothing 16-byte-wide lives in it. Our reconstruction had
+
+```cpp
+CSBI_ImageSet* w = m_extraNotify1;
+if (w) {
+    RECT rc;                        // 16 bytes cl cannot elide: the aggregate
+    i32 sx = m_rect10.left;         // assignment below reads it as a whole
+    rc.left = m_fallRect.left + sx;
+    ...
+    w->m_rect14 = rc;
+}
+```
+
+and paid `sub esp,0x14` for it. Storing the four coordinates through the owner —
+`w->m_rect14.left = m_fallRect.left + sx;` and so on — removed the frame and closed
+the body: **83.15 -> 87.81**, instruction counts equal at 139, residue only the R4
+coin between the hoisted zero and a state literal.
+
+**This falsifies an earlier note on that function** which claimed retail's `add obj,0x14`
+anchor "exists only under aggregate IL - field-by-field never anchors". Field-by-field
+member stores reproduce the anchor and the frame; the note has been removed. When a
+comment asserts that only one IL shape can produce an addressing form, check the frame
+size before believing it.
+
+Do not sweep this: the sibling `UpdateFallingItemStatusBar` 0x107590 keeps its `RECT rc`
+because retail has `sub esp,0x10` there and spills `rc.left`.
+
 ## Related
 
 - [member-aggregate-copied-not-field-by-field.md](member-aggregate-copied-not-field-by-field.md)
