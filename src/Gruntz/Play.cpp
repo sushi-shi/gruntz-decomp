@@ -4558,7 +4558,6 @@ i32 CPlay::SetCursorFrame(i32 item) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d1b60, 0xc90)
 i32 CPlay::ExecCommand(
     u8 targetIndex,
