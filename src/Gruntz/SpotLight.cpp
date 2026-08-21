@@ -210,7 +210,6 @@ i32 CSpotLight::Tick() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000b1ee0, 0x11d)
 int CSpotLight::Update() {
     if (m_object->m_score == 1) {
