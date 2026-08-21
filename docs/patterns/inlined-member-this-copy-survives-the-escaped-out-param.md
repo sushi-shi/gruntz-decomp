@@ -76,6 +76,50 @@ file-static `PlayChatCue`, so the copy is written once),
 `CTileTriggerSwitchLogic::SwitchDown` 89.46 -> 93.60,
 `CTileTriggerSwitchLogic::SwitchUp` 90.15 -> 93.60.
 
+## The second half of the same body: the gate and the tag are BOTH locals
+
+The `this` copy fixes the pointer. The play-cue body has a second, independent
+defect with the same cause — retail materialises **both** globals into registers
+before the gate test, so the tag is live across the elapsed comparison:
+
+```asm
+; retail 0xb1af0+0x1c1                  ; ours, tag read at the call
+mov  ecx,ds:g_sndEnabled                cmp  edi,ds:g_sndEnabled
+mov  edx,ds:g_sndCueTag                 je   skip
+cmp  edi,ecx                            ...
+je   skip                               mov  [eax+0x14],ecx
+...                                     mov  ecx,ds:g_sndCueTag   ; <- LATE
+mov  [eax+0x14],ecx                     push edi
+push edx           ; the tag            push ecx
+```
+
+One extra long-lived value shifts the whole callee-saved rotation (R2), and in
+`CSpotLight::Tick` it also decided the exit shape. The null test has to be split
+out of the gate so the loads sit between them:
+
+```cpp
+// NO
+if (cue != NULL && g_sndEnabled != 0) { ... ConfigureItem(g_sndCueTag, 0, 0, 0); }
+
+// YES
+if (cue != NULL) {
+    i32 gate = g_sndEnabled;
+    i32 item = g_sndCueTag;
+    if (gate != 0) { ... ConfigureItem(item, 0, 0, 0); }
+}
+```
+
+STEERABLE. Measured 2026-08-21: `CSpotLight::Tick` 79.33 -> **84.21**,
+`CGrunt::LoadGruntCombatAnimations` 74.45 -> 75.86,
+`CBootyState::LevelMsgHudDriver` 89.13 -> 90.69,
+`CTriggerMgr::BuildRockBreakParticles` 91.81 -> 92.52,
+`CBootyState::UpdateBootyWalkingGruntz` 95.24 -> 95.48.
+
+**Adjudicate per site.** `CGruntzMgr::CheatEclipseToggle` is EXACT with the
+tag-before-gate spelling and its body-sharing sibling `CheatSkeletonToggle`
+(99.25) must keep it; `CTriggerMgr::LoadFinishLevelSprite` is byte-flat under the
+change. Read the target's two `mov <reg>,ds:g_snd*` loads before editing.
+
 ## Bounds
 
 The copy only helps where the pointer is REASSIGNED-through, i.e. the body stores
