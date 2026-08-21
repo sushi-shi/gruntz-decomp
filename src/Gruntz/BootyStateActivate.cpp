@@ -383,14 +383,11 @@ i32 CBootyState::EnterState(GameStateId) {
     return 1;
 }
 
-// @early-stop
-// cl folds `&found->m_sound` into a register and reads `[edi]`; retail keeps `found`
-// itself and reloads `[esi+0x10]` at each of the four uses.  Dropping the `found` local
-// and casting the out-param at every site is worse (79.30 -> 77.27).
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId) {
-    LeafCue* found = NULL;
-    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", found);
+    LeafCue* value = NULL;
+    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", value);
+    LeafCue* found = value;
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
@@ -2289,12 +2286,11 @@ i32 CMultiBootyState::EnterState(GameStateId) {
     return 1;
 }
 
-// @early-stop
-// Same shape as CBootyState::LeaveState: cl CSEs `&found->m_sound`, retail reloads.
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId) {
-    LeafCue* found = NULL;
-    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", found);
+    LeafCue* value = NULL;
+    MapLookup(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP", value);
+    LeafCue* found = value;
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
