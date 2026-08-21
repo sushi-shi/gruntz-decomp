@@ -73,18 +73,64 @@ and hides the aggregate.
 
 SCREEN A WHOLE LANE IN ONE PASS - count `or reg,-1` in each unit's base obj
 against its target obj; a positive delta is that many missing aggregate writes
-(each `Set` contributes two). Measured 2026-08-21: `battlezunitstep` base 8 /
+(each site contributes two). Measured 2026-08-21: `battlezunitstep` base 8 /
 target 24, `battlezmapconfig` 6 / 12, `gruntchargestep` 0 / 2,
 `gruntdefensestep` 0 / 2, `gruntarrivalupdate` 1 / 2.
 
-STEERABLE. `CGrunt::StepArrivalDefense` 83.00 -> 84.98,
-`CGrunt::StepArrivalDefenseLean` 75.39 -> 76.64, `CGrunt::ChargeStep`
-81.94 -> 82.95, `CGrunt::UpdateArrival` 89.96 -> 90.63,
-`CBattlezMapConfig::Step` 86.81 -> 87.12, `CheckQueuedSpawnTile` 76.78 -> 76.86.
+### WHICH SPELLING PRODUCES THE PAIR (2026-08-21, decided by probe, not by score)
 
-BOUNDS - it is per-site, not per-file. In the same sweep
-`CBattlezMapConfig::TrySeedSpawnAt` fell 94.59 -> 91.90 and `StepRowUnits`
-84.89 -> 84.79 under the same fold; both keep the transcribed pair, so those
-retail bodies really do store the two fields independently. Fold, build, and
-revert the sites that lose - the delta count tells you how many sites take it,
-never which ones.
+The first reading of this section assumed `Set(-1,-1)` was the two-temp form.
+It is NOT: a member-DIRECT write CSEs the two constants no matter how it is
+spelled. The two temps come from copying a **local** aggregate into the member.
+Four cells, pinned cl 5.0 `/O2 /MT /GX /GR`, one member pair per function:
+
+| source | `or reg,-1` emitted |
+|---|---|
+| `g->c.Set(-1, -1);` | **1** |
+| `g->c.m_x = -1; g->c.m_y = -1;` | **1** |
+| `Coord t; t.m_x = -1; t.m_y = -1; g->c = t;` | **2** (retail) |
+| `Coord t; t.Set(-1, -1); g->c = t;` | **2** (retail) |
+| `g->c = *t.Set(-1, -1);` | **2** (retail, byte-identical to the two above) |
+| `g->c = Coord(-1, -1);` with a real 2-arg ctor | **2** (retail, byte-identical) |
+
+All four two-temp cells emit the same bytes, so take the one that needs no new
+entity: `Coord::Set` already returns `Coord*`, and `g->c = *t.Set(-1, -1);` is
+exactly what that return type is for. Adding a constructor would make `Coord`
+non-POD across the whole tree for no byte gain.
+
+The same probe explains the "unrelated store scheduled between the two
+coordinate stores": with two temps the pair is two independent IL values and
+the scheduler may separate them, which is why a transcription reads
+`m_x = -1; <other>; m_y = -1;` and hides the aggregate. Treat that interleaved
+form as the SAME site, not as evidence of field-wise stores.
+
+STEERABLE. 2026-08-21 sweep, 13 sites folded, every one gained, none lost, and
+the census fell 43 -> 8 missing halves (`battlezunitstep` closed 8/24 -> 24/24):
+
+| function | was | now |
+|---|---|---|
+| `CBattlezMapConfig::TrackAssignedEnemy` | 86.30 | **93.45** |
+| `CBattlezMapConfig::RetargetIdleUnit` | 84.88 | 86.59 |
+| `CBattlezMapConfig::AdvanceToEnemyBase` | 80.71 | 82.61 |
+| `CBattlezMapConfig::StepDefenderUnit` | 77.60 | 79.03 |
+| `CGrunt::WanderStep` | 86.35 | 87.86 |
+| `CBattlezMapConfig::CheckQueuedSpawnTile` | 76.86 | 78.19 |
+| `CGrunt::ChargeStep` | 82.95 | 83.91 |
+| `CGrunt::StepArrivalDefenseAlt` | 78.95 | 79.83 |
+| `CGrunt::StepArrivalDefenseLean` | 76.64 | 77.49 |
+| `CGrunt::StepArrivalDefense` | 84.98 | 85.68 |
+| `CGrunt::UpdateArrival` | 90.63 | 90.92 |
+| `CBattlezMapConfig::Step` | 87.13 | 87.23 |
+| `CGrunt::ScanNearestTarget` | 94.60 | 94.78 |
+
+CORRECTION to the earlier BOUNDS note. It claimed `TrySeedSpawnAt` and
+`StepRowUnits` "really do store the two fields independently" because the fold
+cost them score. The target objs refute that: `StepRowUnits` has FIVE
+`or eax,-1 / or ecx,-1` pairs and `TrySeedSpawnAt`'s single `or edx,-1` is a
+`cmp eax,edx` sentinel, not a store at all. Those two rows lost on the earlier
+fold because the fold used the ONE-temp spelling, so read a lost score as
+"wrong spelling", not as "retail wrote it field-wise". The site set is decided
+by the target's own byte census, never by the delta of a score.
+
+A `or reg,-1` that feeds a `cmp` or a `sub` (`or eax,-1; sub eax,edi` is `~edi`)
+is not this pattern; filter on the following two stores before counting a site.
