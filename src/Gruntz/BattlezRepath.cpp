@@ -51,11 +51,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
-        CGruntPuddle* best = 0;
+        CGruntPuddle* best = NULL;
         i32 bestDist = INT_MAX;
         POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
