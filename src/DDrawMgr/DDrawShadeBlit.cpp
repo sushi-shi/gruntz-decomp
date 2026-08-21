@@ -1953,16 +1953,6 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     surf->m_ddSurface->Unlock(0);
 }
 
-// @early-stop
-// REGISTER-HOMING wall. Every arm's block skeleton matches; the residue is which
-// value is spilled. In DST_BY_SRC_16 retail spills pal1 and keeps the trip count in
-// edi, cl does the opposite and pays a reload+dec+store per iteration.
-// The ALPHA and PAL_ALPHA arms now carry retail's ONE-cursor-plus-bias shape
-// (retail 0x14cb70 `mov edx,0x6bed08 / sub eax,edx / sub ecx,edx` in the preheader,
-// then `[edx]`, `[ecx+edx]`, store `[eax+edx]`) - see
-// docs/patterns/scratch-loop-is-one-cursor-plus-biases.md.
-// NOT a lever: reordering the three `|=` lut terms to retail's emission order. cl
-// schedules that chain independently of source order in every arm of this TU.
 RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     switch (m_drawType) {
@@ -1980,14 +1970,16 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_greyShadeTable->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            i32 sc = g_scratch - dst;
+            u8* pd = dst;
+            u8* sc = g_scratch;
             while (count-- > 0) {
-                u32 idx = pal2[Load16(dst + sc)];
-                dst += 2;
+                u32 idx = pal2[Load16(sc)];
+                sc += 2;
                 u32 hi = *src++;
                 hi >>= 4;
                 idx += hi << 12;
-                Store16(dst - 2, pal1[idx]);
+                Store16(pd, pal1[idx]);
+                pd += 2;
             }
             break;
         }

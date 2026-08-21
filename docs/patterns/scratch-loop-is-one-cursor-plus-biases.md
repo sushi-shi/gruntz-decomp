@@ -44,10 +44,12 @@ u8* sc = g_scratch;
 memcpy(g_scratch, d, count * 2);
 while (count-- > 0) { u32 i = pal2[Load16(sc)]; ...; Store16(d, v); d += 2; sc += 2; }
 
-// YES - one cursor (d) plus a bias
+// YES - invariant local cursors; cl keeps pd and derives the scratch bias
 memcpy(g_scratch, d, count * 2);
-i32 sc = g_scratch - d;
-while (count-- > 0) { u32 i = pal2[Load16(d + sc)]; d += 2; ...; Store16(d - 2, v); }
+u8* pd = d; u8* sc = g_scratch;
+while (count-- > 0) {
+    u32 i = pal2[Load16(sc)]; sc += 2; ...; Store16(pd, v); pd += 2;
+}
 ```
 ```asm
 mov    edi,0x6bed08          ; scratch

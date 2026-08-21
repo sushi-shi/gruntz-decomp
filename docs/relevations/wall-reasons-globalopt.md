@@ -465,14 +465,16 @@ void f(u8* d, u8* s, int count){
 5. **DETECTION SIGNATURE** — the `sub` operand order in the preheader, and which
    access is register-free (`[reg]` / `[reg-K]`) rather than `[reg+bias]`.
 6. **WORKED EXAMPLE** — real, in `src/DDrawMgr/DDrawShadeBlit.cpp`,
-   `CDDrawShadeBlit::ConvertRow` `0x0014c9f0`, `SHADE_DST_BY_SRC_16` arm. Three
-   spellings, one full `gruntz build` each:
+   `CDDrawShadeBlit::ConvertRow` `0x0014c9f0`, `SHADE_DST_BY_SRC_16` arm. The
+   original 2026-08-18 probe established which cursor survives. Repeating the
+   three spellings against the current TU on 2026-08-21 also settled which form
+   belongs in source:
 
    | spelling | ConvertRow fuzzy | surviving IV | retail's survivor |
    |---|---|---|---|
-   | in tree: `i32 sc = g_scratch - dst;` (a hand-written bias) | **78.7589** | `dst` | `dst` |
-   | `u8* sc = g_scratch; u8* pd = dst;` (sc first) | 78.2203 | `g_scratch` | ✗ |
-   | `u8* pd = dst; u8* sc = g_scratch;` (pd first) | 78.2637 | `dst` | ✓ |
+   | old tree: `i32 sc = g_scratch - dst;` (hand-written bias) | 79.9981, 523 insns | `dst` | `dst` |
+   | `u8* sc = g_scratch; u8* pd = dst;` (sc first) | 79.3597, 521 insns | `g_scratch` | ✗ |
+   | retained: `u8* pd = dst; u8* sc = g_scratch;` (pd first) | **82.0433, 521 insns** | `dst` | ✓ |
 
 ```asm
 ; sc declared first  -> scratch is the IV, dst is the bias
@@ -491,16 +493,24 @@ void f(u8* d, u8* s, int count){
    Retail `0x0014cac0`: `mov dx,WORD PTR [eax+esi]` / `add eax,2` /
    `mov WORD PTR [eax-0x2],dx` — the `pd`-first shape exactly.
 
-   **Two things follow, and the second is why the edit was reverted.** (a) The
+   **Two things follow.** (a) The
    bias is COMPILER OUTPUT: plain parallel cursors with invariant bases produce
    it, so `i32 sc = g_scratch - dst;` is a compiler artifact transcribed into the
    source and is not needed to get the form — the probe pair `S01` (hand bias)
-   and `S02` (copies) have byte-identical loop bodies. (b) The hand bias also
-   *pins the survivor*, which the copy form only does through declaration order,
-   and at this site it still wins by 0.5 because the copy form spills the trip
-   counter (`mov [esp+0x1c],eax` / `dec` / `mov` per iteration) where retail and
-   the hand form keep it in `edi`. **The residue is register pressure, not
-   form.** The A/B is reported, not kept; `src/` is unchanged on this branch.
+   and `S02` (copies) have byte-identical loop bodies. (b) Declaration order
+   pins the same survivor without spelling the optimizer artifact. On the
+   current TU, destination-first removes the two-instruction surplus, reproduces
+   retail's destination cursor plus scratch bias, and improves the score by
+   2.0452 points. The natural cursor spelling is therefore retained; the
+   remaining exact-census residue is register/schedule selection across the
+   other arms.
+
+   A `u16 a = pal[*src++]` control in the two palette-alpha arms moved the two
+   zero extensions from `xor`-before-load to retail's `and reg,0xffff`-after-load,
+   but reduced the function to 520 versus retail's 521 instructions and scored
+   79.94. The surrounding four clone families consistently use a widened
+   `u32` palette value, so the isolated opcode resemblance is scheduling, not
+   evidence to narrow only these two locals. The `u32` form remains.
 
 7. **COUNTEREXAMPLE** — `CDDrawShadeBlit::ConvertRowDoubleFwd` 0x0014d5e0,
    `SHADE_ALPHA_16`, measured 2026-08-20. With three invariant local walkers,
@@ -611,9 +621,10 @@ arm, call, return, or referent is missing at that residual.
 Measured 2026-08-18, pinned cl 5.0 SP3 under wine, `/O2 /MT /GX /GR`, against
 retail `0x0014c9f0` and `0x0002a570`; c2.exe imagebase `0x400000` (Ghidra's
 default), `.text` VA `0x401000` / file `0x600`, `.data` VA `0x48e000` / file
-`0x8d200`. Function boundaries are Ghidra 12.0.4 headless. The score numbers in
-§9 are three full `gruntz build` runs on this worktree; `src/` is unchanged
-(the A/B was reverted). Probe TUs were scratch, embedded above, deleted. The
+`0x8d200`. Function boundaries are Ghidra 12.0.4 headless. The original score
+numbers in §9 were three full `gruntz build` runs. The 2026-08-21 correction was
+re-measured on the current TU with controlled object rebuilds and a final full
+build. Probe TUs were scratch, embedded above, deleted. The
 semantics of the eight alias helpers in §1 field 2 beyond "they read the mode
 word" is a static reading and is UNCONFIRMED; the mode word's identity, its IL
 byte, and the policy table `{6,1,0,6}` are proven behaviourally by the `/Oa`
