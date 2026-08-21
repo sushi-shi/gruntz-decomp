@@ -67,10 +67,6 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     }
 }
 
-// @early-stop
-// Inline BlitDirtyRect plus the POD MakeRect builder gives retail's exact size,
-// five calls, eight branches, four returns and five relocations. The remaining
-// operand schedule is flat across 32 compiler-state variants.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {

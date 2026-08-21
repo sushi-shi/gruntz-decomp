@@ -122,10 +122,6 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     }
 }
 
-// @early-stop
-// Inline BlitDirtyRect plus the POD MakeRect builder gives retail's seven calls,
-// five branches, four returns and seven relocations. The remaining four bytes
-// are register/schedule residue; 32 compiler-state variants form one island.
 RVA(0x001506b0, 0x1ec)
 void CWwdGameObjectA::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {

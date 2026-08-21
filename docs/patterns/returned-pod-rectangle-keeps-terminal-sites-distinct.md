@@ -33,11 +33,24 @@ inline void Worker::BlitDirtyRect(SurfacePair* src, i32* pos, i32* size) {
 `CWwdGameObjectC::BltDirtyEx` at 0x1662a0 are the controlled pair. Their exact
 `BltDirtyRegions` siblings prove the caller CFG and arguments; the static receiver
 type selects the base inline helper for `CDrawSubWorker*` and the derived
-out-of-line empty helper for `CDDrawSurfacePair*`. With direct field stores,
+out-of-line empty helper for `CDDrawSurfacePair*`. The dead retail
+`CDDrawSubMgrPages::BltDirtyChildrenEx` caller passes its
+`CDDrawSurfaceChildA*` front pair, independently proving that the first argument
+uses the shared `CDrawSubWorker*` base rather than `CDDrawSurfacePair*`; names in
+the generated target COFF are reconstructed labels and are not ABI evidence.
+With direct field stores,
 aggregate initialization, direct MFC `CRect` construction, explicit early returns,
 or per-arm `RECT` locals, both recompiles retain only four `BltEx` calls. With the
 returned plain `RECT`, A has retail's 7 calls / 5 branches / 4 returns / 7
 relocations, and C has retail's 5 / 8 / 4 / 5 plus its exact 0x1fa-byte extent.
+
+Two apparently cleaner models are negative controls. Replacing each adjacent
+coordinate pair with `POINT`/`SIZE` changes no evidenced complete-object use and
+loses retail arithmetic. Passing four scalar values improves fuzzy alignment but
+makes A four instructions short and C two instructions short; a returned
+size-based rectangle builder is byte-identical to that scalar form. The pointer
+pair form is retained because it preserves retail's instruction counts and C's
+exact extent, not because its fuzzy score happens to be higher or lower.
 
 The remaining differences are operand scheduling, not evidence against the
 helper. Bounded 32-variant campaigns for both functions found one compiler island
