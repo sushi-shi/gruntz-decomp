@@ -773,19 +773,13 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     return 0;
 }
 
-// @early-stop
-// Retail re-reads m_arr.m_pData on the hit path (this stays in ecx); cl CSEs
-// the loop's cached base in edi and re-uses it for the return index, spending
-// `mov ecx,edi` in the preheader instead. Seven loop shapes (cursor pointer,
-// cursor+increment-in-the-for, hoisted size, per-element local, while form) are
-// measured inert or worse; the CSE is cl's, not the source's.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014fb40, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
-    for (i32 i = 0; i < m_arr.m_nSize; i++) {
-        if (m_arr.m_pData[i]->m_key == key) {
-            return m_arr.m_pData[i];
+    for (i32 i = 0; i < m_arr.GetSize(); i++) {
+        if (m_arr[i]->m_key == key) {
+            return m_arr[i];
         }
     }
     return 0;

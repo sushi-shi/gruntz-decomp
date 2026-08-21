@@ -46,6 +46,14 @@ struct CShadeTableArray : CObject {
     virtual void Serialize(CArchive& ar) OVERRIDE;
 
     void SetSizeGrow(i32 n, i32 grow);
+
+    i32 GetSize() const {
+        return m_nSize;
+    }
+
+    CShadeTable*& operator[](i32 i) {
+        return m_pData[i];
+    }
 };
 
 class CShadeTableCache {
