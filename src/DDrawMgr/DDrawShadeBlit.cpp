@@ -199,18 +199,6 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     return r;
 }
 
-// @early-stop
-// The depth parameter is BYTE-wide (docs/patterns/
-// byte-wide-compare-of-a-parameter-means-a-narrow-parameter.md): retail reads its
-// home with `mov cl,BYTE PTR [esp+0x1c]` and compares `cmp cl,0x10` / `cmp cl,0x8`,
-// which cl 5.0 never derives from an enum's value range. Residue: the embedded-
-// palette copy loop, where retail re-loads m_rleLen and m_palette in front of EACH
-// of the three channel stores and cl reloads them once per iteration. Retail also
-// groups the address as `(pid + m_rleLen) + i` (`mov edx,esi / add edx,edi` then
-// `[edx+eax+0x20]`) where cl groups `(pid + i) + m_rleLen` and needs a second
-// register for m_palette, so it must rematerialise the constant 2 after the loop.
-// Spelling the grouping explicitly - `(src->pixels + m_rleLen)[i]` - is
-// byte-identical, so the association is cl's, not the source's.
 RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt) {
     PidFlags flags = src->flags;
@@ -252,18 +240,15 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
             }
             m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
 
-            // The embedded palette sits directly after the RLE payload, so it
-            // starts at pixels[m_rleLen] - retail forms `pid + m_rleLen` once
-            // and indexes +0x20/+0x1e/+0x1f off it.
-            i32 i = 0;
-            i32 d = 0;
+            i32 destIndex = 0;
+            i32 sourceIndex = 0;
             do {
-                d++;
-                m_palette[d - 1].peRed = src->pixels[m_rleLen + i];
-                i += 3;
-                m_palette[d - 1].peGreen = src->pixels[m_rleLen + i - 2];
-                m_palette[d - 1].peBlue = src->pixels[m_rleLen + i - 1];
-            } while (i < 0x300);
+                destIndex++;
+                m_palette[destIndex - 1].peRed = src->pixels[m_rleLen + sourceIndex];
+                sourceIndex += 3;
+                m_palette[destIndex - 1].peGreen = src->pixels[m_rleLen + sourceIndex - 2];
+                m_palette[destIndex - 1].peBlue = src->pixels[m_rleLen + sourceIndex - 1];
+            } while (sourceIndex < PALETTE_RGB_BYTE_COUNT);
         }
     }
 
