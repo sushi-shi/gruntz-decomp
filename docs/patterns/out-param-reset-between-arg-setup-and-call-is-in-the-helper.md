@@ -57,6 +57,42 @@ placement ripples 40+ TUs).
 consecutive sites, ours pins eax/edx, so every third site matches) — regalloc class,
 not reachable from this lever.
 
+### An independent CFG wall can remain after the reset moves (2026-08-21)
+
+`CGameObject::ResolveLinkedObject` 0x151b90 is the `CMapPtrToPtr` out-reference
+control. Its wrapper returns the lookup `BOOL`, but owns the typed pointer reset:
+
+```cpp
+static inline BOOL LookupLinkedObject(
+    CMapPtrToPtr& map,
+    i32 id,
+    CWwdGameObject*& out
+) {
+    out = NULL;
+    // adapt the integer key and typed out-reference at the MFC boundary
+    return map.Lookup(...);
+}
+```
+
+Moving `out = NULL` across that inline boundary places the zero store at retail's
+exact schedule, after the receiver load and both argument computations. It raises
+the function from **80.5882 -> 85.8824**. It does not close the function: base and
+retail still have the same one call, three branches, one relocation and ordered
+referent, but base value-factors the lookup-failure and no-id tails into three
+returns while retail keeps four. The remaining first register difference is the
+receiver/out-address `ECX`/`EDX` rotation; the missing return is the independently
+proven pre-layout over-merge described by
+[over-merge-is-decided-before-layout.md](over-merge-is-decided-before-layout.md).
+
+Measured byte-flat controls at 85.8824 were all six helper parameter orders,
+key/adapter declaration order, positive versus negative lookup polarity, explicit
+inner and outer `else`, and named owner, child-group, or lookup-result locals. The
+named-local/explicit-arm forms also moved an unrelated function through TU state,
+so they were rejected rather than retained as steering devices. The flat outer
+guard does split the return count, but changes retail's block placement and remains
+worse at 74.1176 with the helper. Therefore the helper schedule is reusable even
+when `diagnose` must continue to classify the whole function as CFG.
+
 ### The helper may RETURN the value instead of taking an out-ref (2026-08-17)
 
 The same mechanism fires when the wrapper's out-param is purely internal and the

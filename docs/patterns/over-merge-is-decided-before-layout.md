@@ -53,9 +53,16 @@ arrangement — **one fall-through copy plus one SUNK `jcc`-target copy** — be
 the moment the guard is nested enough to sink B, A becomes a `jcc` target too and
 the pair merges. That is the whole wall, in one sentence.
 
-Scores: V0 74.71 (baseline), V1 62.94, **V2 80.59** (kept — the hoist fixes the
-argument-setup schedule, `push ecx; push eax; mov ecx,[edx+8]; add ecx,0x48`),
-V5 59.76.
+Scores: V0 74.71 (baseline), V1 62.94, **V2 80.59** (the first retained
+improvement — the hoist fixes part of the argument-setup schedule), V5 59.76.
+
+The later inline-helper reconstruction moves the out-param reset to its actual
+source boundary and raises V2 again to **85.8824**: receiver/out-address setup,
+both pushes, the zero store and the call now have retail's ordering. The helper
+does not change this pattern's conclusion. The lookup-failure and no-id exits are
+still value-factored into one block (3 returns versus retail's 4); the flat guard
+still splits them but remains structurally wrong at 74.1176. See
+[out-param-reset-between-arg-setup-and-call-is-in-the-helper.md](out-param-reset-between-arg-setup-and-call-is-in-the-helper.md).
 
 ## Rejected spellings — measured byte-identical, do not retry
 
@@ -68,6 +75,7 @@ V5 59.76.
 | `CDDrawSurfacePair::SetGeom` 0x164250 | positive changed-body with a late unchanged `return 1` versus the inverse early-return guard | 78.5294 -> **78.5294** (byte-identical); retain the positive body because it expresses retail's `jne`, `jne`, `je late-return` topology |
 | `CDDrawSurfacePair::SetGeom` | move the used `DDSCAPS` beside `sysmem` at function scope, in either declaration order | **78.5126** in both orders; a real C1 island, but still 3 returns versus retail's 5 |
 | `CProjectile::ScanTargets` 0xe0b10 | explicit trailing `return;` after the `do/while` | no change |
+| `CGameObject::ResolveLinkedObject` | helper parameter order (all six), key/adapter order, positive/negative polarity, explicit inner/outer `else`, named owner/group/result locals | **85.8824** byte-identical in the target body; named/explicit forms only perturb neighboring TU state and were rejected |
 
 The first row also settles the regime table's "positive-gate nest" row from
 [goto-fail-shares-one-exit-block](goto-fail-shares-one-exit-block.md): nesting an

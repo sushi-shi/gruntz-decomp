@@ -4635,7 +4635,7 @@ wwdgameobject	?Play@CWwdGameObjectA@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicT
 wwdgameobject	?PrepareSave@CGameObject@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	72ddc3d7da6f	0x1512e0	100.0000	
 wwdgameobject	?ReadState@CWwdGameObjectA@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	388c8baf4b7c	0x150b00	100.0000	
 wwdgameobject	?ReloadFrame@CDDrawWorker@@UAEHPAUCParseSource@@HH@Z	100.0000	100.0000	1	9111c3cd8f1b	0x1523b0	100.0000	
-wwdgameobject	?ResolveLinkedObject@CGameObject@@QAEHH@Z	80.5882	80.5882	5	3a380e3bc51b	0x151b90	80.5882	
+wwdgameobject	?ResolveLinkedObject@CGameObject@@QAEHH@Z	85.8824	85.8824	6	e1ea6f3cd9f7	0x151b90	85.8824
 wwdgameobject	?Serialize@CGameObject@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	034a15118dbc	0x151320	100.0000	
 wwdgameobject	?SerializeObjectState@CGameObject@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	ed1c32b54659	0x151780	100.0000	
 wwdgameobject	?SerializeSpriteName@CWwdGameObjectA@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	e55f9b02de55	0x150c30	100.0000	

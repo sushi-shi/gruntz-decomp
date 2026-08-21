@@ -745,7 +745,15 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     return 1;
 }
 
-// @early-stop
+static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*& out) {
+    out = NULL;
+    AddrWord<char> key;
+    key.m_word = id;
+    MapOutRef<CWwdGameObject> dst;
+    dst.m_asTyped = &out;
+    return map.Lookup(key.m_addr, *dst.m_asVoid);
+}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151b90, 0x70)
@@ -753,14 +761,18 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {
         return 0;
     }
-    CWwdGameObject* found = NULL;
+    CWwdGameObject* found;
     if (m_carrierId != 0) {
-        if (MapLookupById(OwnerMgr()->m_childGroup->m_registeredGameObjectsById, m_carrierId, found)
-            == 0) {
-            m_carrier = NULL;
+        if (LookupLinkedObject(
+                OwnerMgr()->m_childGroup->m_registeredGameObjectsById,
+                m_carrierId,
+                found
+            )
+            != 0) {
+            m_carrier = found;
             return 1;
         }
-        m_carrier = found;
+        m_carrier = NULL;
         return 1;
     }
     m_carrier = NULL;
