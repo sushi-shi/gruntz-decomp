@@ -20,9 +20,13 @@ pair objdiff scores (no recompile) and routes it in the order below. The manual
 equivalents, when you need the evidence itself:
 
 - `gruntz sema match <unit|rva>` — current % vs best-ever (is there proven headroom?)
-- `gruntz sema disasm <rva> --diff` — masked asm diff; rc 0 = byte-shape agrees
-- `gruntz sema disasm <rva> --branches --diff` — branch/ret counts + symbolic sequence
-- `gruntz sema disasm <rva> --blocks --diff` — block-aligned CFG view
+- `gruntz walls diagnose <rva> --asm` — normalized base/target pair, first
+  divergence class, call/branch/return counts, and the first 60 instructions
+  from each side
+- `gruntz walls semdiff <rva>` — operand, FP-opcode, constant, and ordered
+  referent comparison over that normalized pair
+- `gruntz sema disasm <rva> --blocks` — annotated retail-only basic-block view;
+  pairwise `--diff` and `--branches` flags are not implemented
 - `python -m gruntz.audit.assert_relocs <rva>` — the actual referent set, unmasked
 
 ## The four classes, in routing order
