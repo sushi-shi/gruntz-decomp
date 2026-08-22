@@ -4775,7 +4775,6 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 }
 
 // @early-stop
-// Register renaming only (edi/ebp and esi/edx swapped through the scan loop).
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;
@@ -4794,13 +4793,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                         Coord* c = cur->m_coord;
                         i32 x = c->m_x;
                         i32 y = c->m_y;
-                        i32 tile;
-                        if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
-                            && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
-                            tile = board->m_rowInts[y][x * 7];
-                        } else {
-                            tile = 1;
-                        }
+                        i32 tile = board->CellFlagsAt(x, y);
                         if ((tile & 4) && x == qx && y == qy) {
                             return 1;
                         }
