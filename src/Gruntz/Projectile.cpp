@@ -958,8 +958,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     i32 cy = m_object->m_screenY >> TILE_SHIFT_PX;
     CMapMgr* g = g_gameReg->m_tileGrid;
     if (cx < g->m_width && cy < g->m_height) {
-        BrickzCell* row = g->m_rows[cy];
-        row[cx].m_flags |= 0x1000000;
+        g->m_rowInts[cy][cx * 7] |= 0x1000000;
     }
     m_object->m_smarts = -1;
 }
@@ -981,8 +980,7 @@ static inline void TBombGridClear(CGameObject* obj) {
     i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        BrickzCell* row = g->m_rows[cy];
-        row[cx].m_flags &= ~0x1000000;
+        g->m_rowInts[cy][cx * 7] &= ~0x1000000;
     }
 }
 
