@@ -322,8 +322,6 @@ i32 CAmbientSound::InitFromSound(
     return 1;
 }
 
-#include <Gruntz/AmbientSoundInline.h>
-
 RVA(0x0000bf10, 0x72)
 void CAmbientSound::Recompute(i32 master) {
     if (m_scaleA == master) {
@@ -331,7 +329,7 @@ void CAmbientSound::Recompute(i32 master) {
     }
     i32 mult = m_level;
     m_scaleA = master;
-    i32 v = ScaleAmbientVolume(this, mult);
+    i32 v = ScaleVolume(mult);
     m_voice->SetVolumeByIndex(v);
 }
 
@@ -355,7 +353,7 @@ void CAmbientSound::Restart() {
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
     m_level = pos;
-    i32 v = ScaleAmbientVolume(this, pos);
+    i32 v = ScaleVolume(pos);
     m_voice->SetVolumeByIndex(v);
     m_level = pos;
     m_isPlaying = 1;
@@ -433,7 +431,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
 RVA(0x0000c200, 0x7e)
 i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
     m_level = value;
-    i32 v = ScaleAmbientVolume(this, value);
+    i32 v = ScaleVolume(value);
     if (mode == 0) {
         return m_voice->SetVolumeByIndex(v);
     }
@@ -586,7 +584,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 
     {
         m_level = vol;
-        i32 v = ScaleAmbientVolume(this, vol);
+        i32 v = ScaleVolume(vol);
         m_voice->SetVolumeByIndex(v);
     }
     m_panIndex = pan;
@@ -607,7 +605,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
     {
         m_level = vol;
-        i32 v = ScaleAmbientVolume(this, vol);
+        i32 v = ScaleVolume(vol);
         m_voice->SetVolumeByIndex(v);
     }
     m_level = vol;

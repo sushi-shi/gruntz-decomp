@@ -39,6 +39,24 @@ public:
         m_listNode = NULL;
     }
 
+    i32 ScaleVolume(i32 level) {
+        i32 scale = m_scaleA;
+        if (scale > 5) {
+            scale -= 0xf;
+        }
+        i32 volume = (scale * level) / 100;
+        if (m_scaleB > 0) {
+            volume = (volume * m_scaleB) / 100;
+        }
+        if (volume < 0) {
+            return 0;
+        }
+        if (volume > 0x64) {
+            return 0x64;
+        }
+        return volume;
+    }
+
     i32 SetLevel(i32 value, i32 mode, i32 extra);
 
     virtual void Update(i32 x, i32 y, i32 force);
