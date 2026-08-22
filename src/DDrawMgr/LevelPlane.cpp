@@ -268,18 +268,17 @@ void CDDrawWorkerHost::Unload() {
     }
 }
 
-// @early-stop
-// one insn: cl schedules the `val = NULL` zero store between the two Lookup arg
-// pushes, retail after both. init-at-decl, mgr-hoist, ref-cast spellings and the
-// permuter are inert on the placement.
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
-    CObject* val;
-    val = NULL;
-    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(key, val);
-    m_frameSets.SetAtGrow(index, val);
+    m_frameSets.SetAtGrow(index, LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, key));
 }
 
 // @early-stop
