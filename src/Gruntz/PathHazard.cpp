@@ -243,7 +243,6 @@ i32 CRainCloud::Tick() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
@@ -257,8 +256,9 @@ i32 CPathHazard::SiblingTick() {
         } else {
             m_strikeArmed = 0;
         }
+        CShadeTable* frame = g_gameReg->m_logicPump->m_tables[sel];
         CWwdGameObjectA* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, g_gameReg->m_logicPump->m_tables[sel]);
+        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
     }
 
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -291,8 +291,9 @@ i32 CPathHazard::SiblingTick() {
     CGruntzMgr* tableReg = g_gameReg;
     i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
     if (legElapsed >= m_leg.m_window) {
+        CShadeTable* frame = tableReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, tableReg->m_logicPump->m_tables[5]);
+        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
         this->BeginLeg();
         SET_ANIMATION_ACT("A");
         m_strikeArmed = 0;
