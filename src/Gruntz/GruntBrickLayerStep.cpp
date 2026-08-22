@@ -224,7 +224,7 @@ L_ed153:
                 TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
             }
         }
-        GRID_RECT_INLINE_PTR(grid);
+        GRID_RECT_INLINE(grid);
         m_dwell = 0;
         return 1;
     }

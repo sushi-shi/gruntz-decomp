@@ -13,6 +13,9 @@
 // 0x2b340 body with a non-constant src: the (0,0,w,h) rect is built by the
 // out-of-line CRect ctor, the src rect is copied and its right/bottom bumped,
 // and the NULL arm re-runs the ctor into a temporary.
+// Folding these two sites onto GRID_CLIP_INL costs StepDefenderUnit
+// 78.02 -> 76.28, so the out-of-line CRect ctor really is what retail built the
+// (0,0,w,h) rect with here.
 #define GRID_CLIP(grid, srcRect)                                                                   \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \
@@ -108,6 +111,9 @@
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
+// Absorbed the pointer-tail twin 2026-08-22 (byte-neutral): reading m_bounds
+// back through the register handed to IntersectRect and re-deriving it from the
+// grid are the same code, so StepBrickLayerBehavior shares this spelling.
 #define GRID_RECT_INLINE(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -146,28 +152,6 @@
         }                                                                                          \
         (grid)->m_gridW = ra.right - ra.left;                                                      \
         (grid)->m_gridH = ra.bottom - ra.top;                                                      \
-    }
-
-// StepBrickLayerBehavior's retail tail keeps &m_bounds in the register it handed
-// IntersectRect and reads the four size fields back through it.
-#define GRID_RECT_INLINE_PTR(grid)                                                                 \
-    {                                                                                              \
-        RECT ra;                                                                                   \
-        ra.left = 0;                                                                               \
-        ra.top = 0;                                                                                \
-        ra.right = (grid)->m_width;                                                                \
-        ra.bottom = (grid)->m_height;                                                              \
-        RECT rb;                                                                                   \
-        rb.left = 0;                                                                               \
-        rb.top = 0;                                                                                \
-        rb.right = (grid)->m_width;                                                                \
-        rb.bottom = (grid)->m_height;                                                              \
-        RECT* clipBounds = &(grid)->m_bounds;                                                      \
-        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
-            *clipBounds = ra;                                                                      \
-        }                                                                                          \
-        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
-        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
 #define PRIO(dst, r)                                                                               \
