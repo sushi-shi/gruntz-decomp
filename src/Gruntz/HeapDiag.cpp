@@ -173,8 +173,9 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     if (pFirst == NULL) {
         return 0;
     }
-    walkProc.m_raw = GetProcAddress(hK32, "Process32Next");
-    PFN_Process32 pNext = walkProc.m_fn;
+    ProcAddr<PFN_Process32> nextProc;
+    nextProc.m_raw = GetProcAddress(hK32, "Process32Next");
+    PFN_Process32 pNext = nextProc.m_fn;
     if (pNext == NULL) {
         return 0;
     }
@@ -194,9 +195,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     if (pFirst(hSnap, &pe)) {
         do {
             MODULEENTRY32 me;
-            // dwSize is dead on this path (LegacyFindModule memcpy's over it);
-            // retail's clear starts past it.
-            memset(&me.th32ModuleID, 0, sizeof(me) - sizeof(me.dwSize));
+            memset(&me, 0, sizeof(me));
             if (Utils::WinAPI::LegacyFindModule(
                     pe.th32ProcessID,
                     pe.th32ModuleID,
@@ -204,7 +203,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                     sizeof(me)
                 )) {
                 if (isFullPath) {
-                    if (_strcmpi(name, me.szExePath) == 0) {
+                    if (_strcmpi(me.szExePath, name) == 0) {
                         matchCount++;
                         if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
@@ -215,7 +214,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                         }
                     }
                 } else {
-                    if (_strcmpi(name, me.szModule) == 0) {
+                    if (_strcmpi(me.szModule, name) == 0) {
                         matchCount++;
                         if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
