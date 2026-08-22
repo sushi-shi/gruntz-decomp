@@ -43,11 +43,31 @@ Corroboration required before splitting: the boundary must be a class-family
 boundary in the rva order, and the split must keep both files' plain blocks
 ascending (the tu-order gate arbitrates).
 
-## The open dimension
+## Second production
 
-`CTileTriggerContainer::AddLogic` (0x116610) is unmerged in retail MID-TU,
-surrounded by same-class methods - first-in-TU cannot explain it, and no
-probed between-construct resets the state. The predicate has at least one
-more input (candidate axes: the function's own shape - pointer-returning
-factory arms, EH state count - or a C1 handle-state interaction). Titrate
-with an AddLogic-shaped probe before applying the oracle to mid-class rows.
+`CWwdGrid::Setup` (1 ret vs retail 2): the only plain body before it was the
+empty `~CWwdGridShell`, whose retail copy sits in the COMDAT band - a header
+inline. Moving the dtor into the header (emission deferred to the realizing
+TU, gamelevelmove) flips Setup's skeleton to retail's: 92.14 -> 95.18 with
+the residue regalloc; the dtor stays EXACT. The oracle's cheap A/B is a
+disposable hoist-first-in-file; the era-faithful fix is whatever retail's
+COMDAT placement says the preceding bodies really were.
+
+## Falsified refinements (2026-08-22, keep these from being re-run)
+
+* `$E` dyninit thunks do NOT set the warm state in era compiles: spotlight's
+  retail `$E`s sit MID-TU (0xb1590, pinned RVA_DYNINIT rows) before Tick
+  (0xb1af0) and retail Tick is still UNMERGED (3 rets). Consistently, moving
+  `GruntDirStatics.h` to the file tail in battlezunitstep and sbi_imageset
+  reorders the obj's `$E` emission but changes no scores. The r1/r3 probe
+  asymmetry (static before/after the body flipping the merge) therefore has
+  a different driver than the `$E` itself - unresolved.
+* A cold start does NOT unmerge PARTIAL-merge rows (base N rets vs target
+  N+1: SetupImage 3v4 compiled first-in-obj stays 3v4; Step@battlezunitstep
+  4v5 likewise). The oracle's reach is the FULL-merge rows (base 1 ret vs
+  target N).
+* A hoist alone did not flip `AddLogic` (1v3) or `CSpotLight::Tick` (1v3);
+  in Tick's case the template static `CActRegPool<CSpotLight>::s_table`
+  kept `$E33` as the obj's first emission, so the hoist never produced a
+  cold start - re-test those rows only with ALL earlier emissions removed
+  or relocated to their retail positions.
