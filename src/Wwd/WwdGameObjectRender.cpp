@@ -20,36 +20,22 @@
 #include <string.h>
 
 // @early-stop
-// Residue: cl hoists the m_screenY load above the clip-mode branch where retail
-// re-materialises it inside each arm, so retail is two instructions longer here.
 RVA(0x001660f0, 0xd1)
 void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
-    i32 m64 = m_clip.left;
-    i32 y = m_screenY;
-    i32 x = m_screenX;
-    if (m64 == COORD_UNSET) {
-        if (x < 0 || y < 0 || x >= a->m_width || y >= a->m_height) {
+    if (m_clip.left == COORD_UNSET) {
+        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= a->m_width || m_screenY >= a->m_height) {
             m_dirty.m_armed = -1;
             return;
         }
     } else {
-        if (x < m64 || y < m_clip.top || x > m_clip.right || y > m_clip.bottom) {
+        if (m_screenX < m_clip.left || m_screenY < m_clip.top || m_screenX > m_clip.right
+            || m_screenY > m_clip.bottom) {
             m_dirty.m_armed = -1;
             return;
         }
     }
 
-    {
-        CDDSurface* surf = a->m_surface;
-        u8 color = m_dotColor;
-        u8* base = static_cast<u8*>(surf->Lock(0));
-        if (base != NULL) {
-            i32 row = surf->m_pitch * y;
-            i32 col = surf->m_bytesPerPixel * x;
-            base[row + col] = color;
-            surf->m_ddSurface->Unlock(0);
-        }
-    }
+    a->m_surface->PutPixel(m_screenX, m_screenY, m_dotColor);
     m_dirty.m_lastX = m_screenX;
     m_dirty.m_lastY = m_screenY;
     m_dirty.m_w = 1;
