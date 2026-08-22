@@ -16,6 +16,7 @@
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/State.h>
+#include <Image/ImageClipMacros.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
@@ -499,60 +500,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     s.left = right - d.right;
     s.top = bottom - d.bottom;
@@ -582,60 +530,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     s.left = right - d.right;
     s.top = d.top - y;
@@ -665,60 +560,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     s.left = d.left - x;
     s.top = bottom - d.bottom;
@@ -748,60 +590,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    ShadeRect d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
     s.top = d.top - y;
@@ -829,60 +618,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    ShadeRect d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = right - d.right;
     s.top = bottom - d.bottom;
@@ -910,60 +646,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    ShadeRect d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
     s.top = d.top - y;
@@ -991,60 +674,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    ShadeRect d;
-    d.left = x;
-    d.top = y;
-    d.right = right;
-    d.bottom = bottom;
-    if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
-        RECT clip;
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));
-        if (x < clip.left) {
-            d.left += clip.left - x;
-        }
-        if (right > clip.right) {
-            d.right += clip.right - right;
-        }
-        if (y < clip.top) {
-            d.top += clip.top - y;
-        }
-        if (bottom > clip.bottom) {
-            d.bottom += clip.bottom - bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            d.left = 0;
-        }
-        if (right >= dst->m_width) {
-            d.right = dst->m_width - 1;
-        }
-        if (y < 0) {
-            d.top = 0;
-        }
-        if (bottom >= dst->m_height) {
-            d.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (x < info->m_clip.left) {
-            d.left = info->m_clip.left;
-        }
-        if (right > info->m_clip.right) {
-            d.right = info->m_clip.right;
-        }
-        if (y < info->m_clip.top) {
-            d.top = info->m_clip.top;
-        }
-        if (bottom > info->m_clip.bottom) {
-            d.bottom = info->m_clip.bottom;
-        }
-    }
-    i32 w = d.right - d.left + 1;
-    i32 h = d.bottom - d.top + 1;
-    if (w <= 0 || h <= 0) {
-        info->m_dirty.m_armed = -1;
-        return;
-    }
+    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
     s.top = bottom - d.bottom;

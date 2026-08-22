@@ -11,6 +11,10 @@ inline i32 IsGruntArrivalRerollPending(CGrunt* grunt) {
            < grunt->m_arrivalRerollWindow64;
 }
 
+inline i32 IsGruntHoldPending(CGrunt* grunt) {
+    return static_cast<i64>(g_frameTime) - grunt->m_holdAnchor64 < grunt->m_holdWindow64;
+}
+
 inline void ResetGruntArrivalReroll(CGrunt* grunt) {
     grunt->ResetEntranceAnimation(1, 1, 0);
     grunt->m_arrivalRerollLo = 0;

@@ -4,6 +4,7 @@
 
 #include <Bute/ButeTree.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 
 RVA_COMPGEN(0x00012100, 0x1e, ??_GCGruntToyTimeSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)
@@ -14,10 +15,7 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
-        o->m_sortKey = SORTKEY_GRUNT_HUD;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_health = 0;
     m_yOffset = -0x20;
 }

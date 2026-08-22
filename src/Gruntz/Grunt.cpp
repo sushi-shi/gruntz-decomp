@@ -1249,6 +1249,11 @@ reProbe:
     return arrivalPhase != 0;
 }
 
+#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/TileCoordMacros.h>
+
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1338,8 +1343,7 @@ i32 CGrunt::StepGruntMovement() {
     rec.column = recColumn;
     rec.direction = recDirection;
 
-    tgtPxY = (coordY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    tgtPxX = (coordX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    SET_TILE_CENTER_PIXEL_PAIR(tgtPxY, tgtPxX, coordY, coordX)
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> TILE_SHIFT_PX;
     tgtTileY = tgtPxY >> TILE_SHIFT_PX;
@@ -1429,8 +1433,7 @@ i32 CGrunt::StepGruntMovement() {
                 Coord* co = CoordHead()->m_coord;
                 i32 cx = co->m_x;
                 i32 cy = co->m_y;
-                tgtPxX = (cx << TILE_SHIFT_PX) + TILE_HALF_PX;
-                tgtPxY = (cy << TILE_SHIFT_PX) + TILE_HALF_PX;
+                SET_TILE_CENTER_PIXEL_PAIR(tgtPxX, tgtPxY, cx, cy)
                 i32 gx = m_object->m_screenX >> TILE_SHIFT_PX;
                 i32 gy = m_object->m_screenY >> TILE_SHIFT_PX;
                 if (cx > gx) {
@@ -1759,17 +1762,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
         m_arrivalActive = 0;
     }
     if (b && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
-
-        POSITION pos = m_coordList.GetHeadPosition();
-        while (pos != NULL) {
-            Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
-            if (buf) {
-                CoordPoolNode* slot = g_coordPool.NodeOf(buf);
-                slot->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = slot;
-            }
-        }
-        m_coordList.RemoveAll();
+        RECYCLE_GRUNT_COORDS_POSITION_INLINE_POOL(this)
     }
 }
 
@@ -1861,6 +1854,7 @@ i32 CGrunt::CreateStaminaSprite() {
     return 1;
 }
 
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
 
 // @early-stop
@@ -2109,8 +2103,7 @@ i32 CGrunt::Place(
                 m_defenderPx = m_lastTilePx;
                 m_arrivalState = AI_POSTGUARD;
             } else {
-                i32 px = (defenderQueuePosition << TILE_SHIFT_PX) + TILE_HALF_PX;
-                i32 py = (defenderPickupType << TILE_SHIFT_PX) + TILE_HALF_PX;
+                DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, defenderQueuePosition, defenderPickupType)
                 m_defenderPx.m_x = px;
                 m_defenderPx.m_y = py;
                 StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);
@@ -2351,17 +2344,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_toolConfigured = 1;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
-                    if (CoordCount() != 0) {
-                        CoordNode* p = CoordHead();
-                        while (p != NULL) {
-                            CoordNode* c = p;
-                            p = p->m_next;
-                            if (c->m_coord != NULL) {
-                                g_coordPool.Push(c->m_coord);
-                            }
-                        }
-                        m_coordList.RemoveAll();
-                    }
+                    RECYCLE_GRUNT_COORDS_IF_ANY(this)
                     for (;;) {
                         i32* h;
                         if (m_payloads.GetCount() != 0) {
@@ -3211,11 +3194,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             );
         } else {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
+                RESET_GRUNT_POWERED_STATE
             }
             CString* rec2;
             {
@@ -3252,8 +3231,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         i32 row = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
         if (tk == TILEKIND_CHECKPOINT || tk == TILEKIND_CHECKPOINT_UP) {
-            if (m_object->m_screenX == m_lastTilePx.m_x
-                && m_object->m_screenY == m_lastTilePx.m_y) {
+            if (GRUNT_SELF_AT_SAVED_SCREEN_POS) {
                 m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }

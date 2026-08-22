@@ -88,6 +88,8 @@ i32 CMenuSparkle::SerializeMove(
 }
 
 // @early-stop
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;
@@ -100,7 +102,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
-    if (anim->m_finished != 0 && anim->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(anim)) {
         if (anim != NULL) {
             anim->Recompute(1);
         }

@@ -14,8 +14,10 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -97,11 +99,7 @@ i32 CGrunt::ArrivalReticleScan() {
             if (m_neighborValid) {
                 return 1;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
         } else {
             m_neighborValid = 0;
         }
@@ -243,28 +241,13 @@ i32 CGrunt::ArrivalReticleScan() {
                                 } else {
                                     SetEntrancePos(1, 1);
                                     if (CoordCount() != 0) {
-                                        POSITION dpos = m_coordList.GetHeadPosition();
-                                        while (dpos != NULL) {
-                                            Coord* cur =
-                                                static_cast<Coord*>(m_coordList.GetNext(dpos));
-                                            if (cur != NULL) {
-                                                PushFreeNode(&g_coordPool, cur);
-                                            }
-                                        }
-                                        m_coordList.RemoveAll();
+                                        RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)
                                     }
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
                                 if (CoordCount() != 0) {
-                                    POSITION dpos = m_coordList.GetHeadPosition();
-                                    while (dpos != NULL) {
-                                        Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));
-                                        if (cur != NULL) {
-                                            PushFreeNode(&g_coordPool, cur);
-                                        }
-                                    }
-                                    m_coordList.RemoveAll();
+                                    RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)
                                 }
                             }
                             return 1;

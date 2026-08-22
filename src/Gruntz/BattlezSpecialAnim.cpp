@@ -20,6 +20,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
@@ -76,10 +77,10 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
     CGameObject* lvl = unit->m_object;
-    if (lvl->m_screenX != unit->m_lastTilePx.m_x) {
+    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(lvl, unit)) {
         goto fail;
     }
-    if (lvl->m_screenY != unit->m_lastTilePx.m_y) {
+    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
         return 0;
     }
     if (unit->m_entranceCommitted == 0) {

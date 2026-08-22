@@ -10,6 +10,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/XferArchive.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
@@ -78,10 +79,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
     m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_TOOB_SPIKE) {
-        o->m_sortKey = SORTKEY_TOOB_SPIKE;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TOOB_SPIKE)
 }
 
 RVA(0x00114860, 0x102)

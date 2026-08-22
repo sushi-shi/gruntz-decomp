@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -80,10 +81,10 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
         return 1;
     }
-    if (occ->m_object->m_screenX != occ->m_lastTilePx.m_x) {
+    if (occ->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, occ)) {
         return 1;
     }
-    if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
+    if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
         return 1;
     }
     Coord tile = occ->m_lastTilePx;

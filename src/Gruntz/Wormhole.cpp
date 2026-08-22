@@ -25,6 +25,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/Teleporter.h>
@@ -74,10 +75,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     m_wwdObject->ApplyName("GAME_WORMHOLE");
     SwitchGeometry("GAME_WORMHOLE", 0);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_TELEPORT) {
-        o->m_sortKey = SORTKEY_TELEPORT;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     i32 kind = m_object->m_smarts;
@@ -182,10 +180,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_PUDDLE) {
-        o->m_sortKey = SORTKEY_GRUNT_PUDDLE;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
     m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
     SwitchGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -339,10 +334,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_interval = 0;
     SetObjectFlags(0x2000002);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_TELEPORT) {
-        o->m_sortKey = SORTKEY_TELEPORT;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     LoadColors();
     ReapplyConfig();

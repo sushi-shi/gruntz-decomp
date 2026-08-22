@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/GameIconFlashState.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
@@ -15,7 +16,7 @@ i32 GameIconFlashEffect(CGameObject* obj) {
         if (state == GAME_ICON_FLASH_ACTIVE) {
             CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_animCursor;
             a->Advance(g_engineFrameDelta);
-            if (a->m_finished != 0 && a->m_frameTicksLeft == 0) {
+            if (IsAniCursorComplete(a)) {
                 obj->m_flags |= 0x10000;
                 return 1;
             }

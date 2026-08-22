@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Explosion.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -19,8 +20,7 @@ i32 CExplosion::Update() {
                 ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_smarts);
         }
     }
-    if (m_wwdObject->m_animCursor.m_finished != 0
-        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

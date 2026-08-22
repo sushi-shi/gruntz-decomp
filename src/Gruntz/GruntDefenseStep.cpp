@@ -16,7 +16,9 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -68,8 +70,7 @@ i32 CGrunt::StepArrivalDefense() {
                     return 1;
                 }
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
-                    && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
-                    && occ->m_object->m_screenY == occ->m_lastTilePx.m_y) {
+                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
                         g_gameReg->m_cmdGrid->ApplyTriggerB(
                             m_tileOwnerHi,
@@ -150,8 +151,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
-            if (occ->m_object->m_screenX == occ->m_lastTilePx.m_x
-                && occ->m_object->m_screenY == occ->m_lastTilePx.m_y) {
+            if (GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                 CommitNeighbor(
                     occ->m_tileOwnerHi,
                     occ->m_tileOwnerLo,
@@ -168,9 +168,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == NULL) {
                 goto L_f308a;
             }
-            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
-                && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
-                && occ->m_object->m_screenY == occ->m_lastTilePx.m_y
+            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
                     g_gameReg->m_cmdGrid->ApplyTriggerB(
@@ -181,10 +179,10 @@ i32 CGrunt::StepArrivalDefense() {
                     );
                     return 1;
                 }
-                if (occ->m_object->m_screenX != occ->m_lastTilePx.m_x) {
+                if (occ->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, occ)) {
                     return 1;
                 }
-                if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
+                if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
                     return 1;
                 }
                 CommitNeighbor(
@@ -243,18 +241,7 @@ i32 CGrunt::StepArrivalDefense() {
             // fall-through of the negated test.
             if (IsGruntArrivalRerollPending(this) != 0) {
                 CWwdGameObjectA* h = m_object;
-                i32 baseX = h->m_extent.left;
-                i32 spanX = abs(h->m_extent.right - baseX);
-                i32 baseY = h->m_extent.top;
-                i32 spanY = abs(h->m_extent.bottom - baseY);
-                i32 outX = baseX;
-                if (spanX != 0) {
-                    outX += rand() % spanX;
-                }
-                i32 outY = baseY;
-                if (spanY != 0) {
-                    outY += rand() % spanY;
-                }
+                SELECT_RANDOM_EXTENT_POINT_SIGNED_OUTPUT(h, baseX, spanX, baseY, spanY, outX, outY)
                 if (outX < g_gameReg->m_tileGrid->m_width
                     && outY < g_gameReg->m_tileGrid->m_height) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);

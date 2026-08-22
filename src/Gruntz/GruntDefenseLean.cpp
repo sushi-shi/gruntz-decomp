@@ -17,7 +17,9 @@
 #include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntArrivalRerollMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -62,8 +64,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                     return 1;
                 }
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
-                    && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
-                    && occ->m_object->m_screenY == occ->m_lastTilePx.m_y) {
+                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                     Coord cp = occ->m_lastTilePx;
                     CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, cp.m_x, cp.m_y);
                     return 1;
@@ -135,10 +136,10 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (occ->m_object->m_screenX != occ->m_lastTilePx.m_x) {
+            if (occ->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, occ)) {
                 return 1;
             }
-            if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
+            if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
                 return 1;
             }
             Coord cp = occ->m_lastTilePx;
@@ -171,18 +172,15 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (IsGruntArrivalRerollPending(this) != 0) {
                 {
                     CWwdGameObjectA* h = m_object;
-                    i32 baseX = h->m_extent.left;
-                    i32 spanX = abs(h->m_extent.right - baseX);
-                    i32 baseY = h->m_extent.top;
-                    i32 spanY = abs(h->m_extent.bottom - baseY);
-                    i32 outX = baseX;
-                    if (spanX != 0) {
-                        outX += rand() % spanX;
-                    }
-                    i32 outY = baseY;
-                    if (spanY != 0) {
-                        outY += rand() % spanY;
-                    }
+                    SELECT_RANDOM_EXTENT_POINT_SIGNED_OUTPUT(
+                        h,
+                        baseX,
+                        spanX,
+                        baseY,
+                        spanY,
+                        outX,
+                        outY
+                    )
                     CMapMgr* bd = g_gameReg->m_tileGrid;
                     if (static_cast<u32>(outX) < static_cast<u32>(bd->m_width)
                         && static_cast<u32>(outY) < static_cast<u32>(bd->m_height)) {

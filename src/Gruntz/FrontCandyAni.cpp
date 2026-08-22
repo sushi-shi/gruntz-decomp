@@ -16,6 +16,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
@@ -68,10 +69,7 @@ RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_OVERLAY) {
-        o->m_sortKey = SORTKEY_OVERLAY;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
 
@@ -91,10 +89,7 @@ RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != 0) {
-        o->m_sortKey = 0;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, 0)
     NORMALIZE_BIG_ANIMATION_DIRECT
 }
 
@@ -107,10 +102,7 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey == 0 && o->m_layer != NULL) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-        if (o->m_sortKey != v) {
-            o->m_sortKey = v;
-            o->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(o, v)
     }
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
@@ -129,10 +121,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey == 0 && o->m_layer != NULL) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-        if (o->m_sortKey != v) {
-            o->m_sortKey = v;
-            o->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(o, v)
     }
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
@@ -176,10 +165,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
         SwitchGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_OVERLAY) {
-        o->m_sortKey = SORTKEY_OVERLAY;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
 }
 
 RVA(0x000ad1b0, 0x102)

@@ -14,6 +14,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -1210,11 +1211,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
             LoadPowerupIconSprites(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
             cell->PlayMoveSound(bx, by);
             if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
-                cell->m_entranceActive = 0;
-                cell->m_combatActive = 0;
-                cell->m_neighborValid = 0;
-                cell->m_poweredUp = 0;
-                cell->ResetEntranceAnimation(1, 0, 0);
+                RESET_GRUNT_POWERED_STATE_FOR(cell)
             }
             cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             return 1;
@@ -1303,11 +1300,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         }
         cell->PlayMoveSound(bx, by);
         if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
-            cell->m_entranceActive = 0;
-            cell->m_combatActive = 0;
-            cell->m_neighborValid = 0;
-            cell->m_poweredUp = 0;
-            cell->ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE_FOR(cell)
         }
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
         return 1;
@@ -1340,11 +1333,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     cell->PlayMoveSound(bx, by);
     cell->m_neighborValid = 0;
     if (cell->m_poweredUp != 0) {
-        cell->m_entranceActive = 0;
-        cell->m_combatActive = 0;
-        cell->m_neighborValid = 0;
-        cell->m_poweredUp = 0;
-        cell->ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE_FOR(cell)
     }
 
     typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);

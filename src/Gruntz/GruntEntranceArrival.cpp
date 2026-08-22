@@ -25,8 +25,11 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -37,6 +40,7 @@
 #include <Gruntz/Projectile.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
@@ -195,10 +199,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     {
         CWwdGameObjectA* h = m_object;
         i32 z = h->m_screenY + 0x186c1;
-        if (h->m_sortKey != z) {
-            h->m_sortKey = z;
-            h->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(h, z)
     }
 
     CWwdGameObjectA* p = m_wwdObject;
@@ -376,10 +377,7 @@ i32 CGrunt::StepAttackFire() {
     }
     CWwdGameObjectA* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
-    if (h->m_sortKey != zkey) {
-        h->m_sortKey = zkey;
-        h->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(h, zkey)
     i32 v220 = m_poweredUp;
     m_entranceActive = 0;
     if (v220 != 0) {
@@ -418,25 +416,13 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
 
         if (m_poweredUp != 0 && m_neighborValid == 0) {
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
         }
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
 
         if (CoordCount() != 0) {
-
-            POSITION pos = m_coordList.GetHeadPosition();
-            while (pos != NULL) {
-                Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
-                if (buf != NULL) {
-                    g_coordPool.Push(buf);
-                }
-            }
-            m_coordList.RemoveAll();
+            RECYCLE_GRUNT_COORDS_POSITION(this)
         }
 
         m_entranceStamped = 0;
@@ -450,9 +436,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             SwitchGeometryDirect(m_poseToy[toyIdx], 0);
 
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-            CAniRecordView* el = desc->m_records.GetSize() > 0
-                                     ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                     : 0;
+            CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
             i32 frame = el->m_param;
             char* buf = (&m_frameSetName)->GetBuffer(0);
             m_wwdObject->ApplyLookupSprite(buf, frame);
@@ -497,11 +481,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
         m_toyTileIndex = 0;
         if (m_poweredUp != 0 && m_neighborValid == 0) {
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
         }
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("L");
@@ -523,10 +503,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     CWwdGameObjectA* h = m_object;
     i32 z = h->m_screenY + 0xc3500;
-    if (h->m_sortKey != z) {
-        h->m_sortKey = z;
-        h->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(h, z)
 
     i32 t0 = AT(m_poseToy, GRUNT_TOY1)->m_total;
     i32 t1 = AT(m_poseToy, GRUNT_TOY2)->m_total;
@@ -559,9 +536,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (m_wwdObject->m_animCursor.m_animation != want) {
         SwitchAnimation(want);
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* el = desc->m_records.GetSize() > 0
-                                 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                 : 0;
+        CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
         i32 frame = el->m_param;
         char* buf = (&m_frameSetName)->GetBuffer(0);
         m_wwdObject->ApplyLookupSprite(buf, frame);
@@ -616,10 +591,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         }
         CWwdGameObjectA* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_sortKey != v) {
-            h->m_sortKey = v;
-            h->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(h, v)
         return 0;
     }
 
@@ -851,9 +823,7 @@ latch:
         CString key = m_cells[base].IdleName();
 
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* elem = desc->m_records.GetSize() > 0
-                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                   : 0;
+        CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
         m_wwdObject->ApplyLookupSprite(key, elem->m_param);
     }
 }
@@ -861,8 +831,7 @@ latch:
 // @early-stop
 RVA(0x000633e0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
-    if (m_entranceActive != 0 && m_object->m_screenX == m_lastTilePx.m_x
-        && m_object->m_screenY == m_lastTilePx.m_y) {
+    if (m_entranceActive != 0 && GRUNT_SELF_AT_SAVED_SCREEN_POS) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -937,8 +906,7 @@ i32 CGrunt::ResolveEntranceArrival() {
 tail:
     if (m_wwdObject->m_animCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
 
-        if (m_wwdObject->m_animCursor.m_finished != 0
-            && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+        if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
             ResetEntranceAnimation(0, 0, 0);
         }
         return 0;
@@ -986,11 +954,7 @@ i32 CGrunt::StepEntranceReinit() {
         );
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
     m_tileMoveCommitted = 0;
     if (CoordCount() == 0) {
@@ -1113,8 +1077,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed = static_cast<i64>(g_frameTime) - m_toyClock;
     if (elapsed >= m_toyDuration) {
-        if (m_entranceStamped == 0 && m_object->m_screenX == m_lastTilePx.m_x
-            && m_object->m_screenY == m_lastTilePx.m_y) {
+        if (m_entranceStamped == 0 && GRUNT_SELF_AT_SAVED_SCREEN_POS) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
@@ -1200,11 +1163,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
 
     m_entranceActive = 1;
@@ -1303,10 +1262,7 @@ i32 CGrunt::StepCombatReaction(
     {
         CWwdGameObjectA* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_sortKey != v) {
-            h->m_sortKey = v;
-            h->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(h, v)
     }
 
     bool ne;
@@ -1357,11 +1313,7 @@ i32 CGrunt::StepCombatReaction(
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != 0 && m_neighborValid == 0) {
-                            m_entranceActive = 0;
-                            m_combatActive = 0;
-                            m_neighborValid = 0;
-                            m_poweredUp = 0;
-                            ResetEntranceAnimation(1, 0, 0);
+                            RESET_GRUNT_POWERED_STATE
                         }
                         m_tileMoveCommitted = 0;
                         m_prevAnimSetNode = m_objAux->m_actKey;
@@ -1394,10 +1346,9 @@ i32 CGrunt::StepCombatReaction(
                 eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "N") == 0);
                 if (eq) {
                     CWwdGameObjectA* h = m_object;
-                    i32 hx = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    i32 hy = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, hx, hy)
                     i32 flag = 1;
-                    if (hx != m_lastTilePx.m_x || hy != m_lastTilePx.m_y) {
+                    if (PIXEL_PAIR_NOT_AT_SELF_SAVED_SCREEN_POS(hx, hy)) {
                         if (IsDropReady(1)) {
                             m_coordToggle = (m_coordToggle == 0) ? 1 : 0;
                             flag = 0;
@@ -1421,10 +1372,7 @@ i32 CGrunt::StepCombatReaction(
     {
         CWwdGameObjectA* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
-        if (h->m_sortKey != v) {
-            h->m_sortKey = v;
-            h->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(h, v)
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
@@ -1436,7 +1384,7 @@ tail:
     m_combatTimeoutHi = 0;
     m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
-    if (m_object->m_screenX != m_lastTilePx.m_x || m_object->m_screenY != m_lastTilePx.m_y) {
+    if (GRUNT_SELF_NOT_AT_SAVED_SCREEN_POS) {
         ConsiderArrival(1);
     }
     if (LoadGruntCombatAnimations(
@@ -1635,11 +1583,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     m_moveTile.m_x = a;
     m_moveTile.m_y = b;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
 
     if (m_entranceReason == PICKUP_BOMB) {
@@ -1746,7 +1690,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
         );
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         m_entranceActive = 0;
         ResetEntranceAnimation(1, 0, 0);
     }

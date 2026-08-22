@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -54,8 +55,7 @@ i32 CGrunt::StepPeerTracking() {
         return 1;
     }
     CGameObject* a = p->m_object;
-    if (a->m_screenX == p->m_lastTilePx.m_x && a->m_screenY == p->m_lastTilePx.m_y
-        && RectContainsGated(a->m_screenX, a->m_screenY)) {
+    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p) && RectContainsGated(a->m_screenX, a->m_screenY)) {
         CGameObject* b = p->m_object;
         g_gameReg->m_cmdGrid
             ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);

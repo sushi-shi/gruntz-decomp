@@ -18,6 +18,7 @@
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -88,10 +89,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-    if (o->m_sortKey != v) {
-        o->m_sortKey = v;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, v)
     const char* name;
     // The WWD `Smarts` slot is per-logic; for a fortress flag it carries the
     // owning warlord (docs/domain: Smarts is the team number 0-3).
@@ -275,10 +273,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_ACTOR_BEHIND) {
-        o->m_sortKey = SORTKEY_ACTOR_BEHIND;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
     m_object->m_dirty.m_armed = 0;
 }
 
@@ -317,10 +312,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_OVERLAY) {
-        o->m_sortKey = SORTKEY_OVERLAY;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
     m_object->m_dirty.m_armed = 0;
 }
 

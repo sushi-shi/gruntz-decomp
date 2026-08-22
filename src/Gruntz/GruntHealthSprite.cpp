@@ -11,6 +11,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -37,10 +38,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     m_objAux->m_actKey = ActFindId("A");
     m_health = HEALTH_FULL;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
-        o->m_sortKey = SORTKEY_GRUNT_HUD;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_yOffset = -0x19;
 }
 

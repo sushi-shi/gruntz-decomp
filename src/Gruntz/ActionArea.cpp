@@ -15,6 +15,7 @@
 #include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
@@ -49,10 +50,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_ACTION_AREA) {
-        o->m_sortKey = SORTKEY_ACTION_AREA;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
     m_phase = 1;
     m_duration = 0;
     Hide();

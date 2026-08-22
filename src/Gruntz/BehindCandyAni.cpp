@@ -9,6 +9,7 @@
 #include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
@@ -35,10 +36,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
         SwitchGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != 0) {
-        o->m_sortKey = 0;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, 0)
     NORMALIZE_BIG_ANIMATION_WITH_AUX(aux)
 }
 

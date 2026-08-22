@@ -6,6 +6,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 
 RVA_COMPGEN(0x00012040, 0x1e, ??_GCGruntStaminaSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)
@@ -16,10 +17,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
-        o->m_sortKey = SORTKEY_GRUNT_HUD;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_health = HEALTH_FULL;
     m_yOffset = -0x20;
 }

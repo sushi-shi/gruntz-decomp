@@ -7,6 +7,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
@@ -74,11 +75,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
     if (m_entranceReason == PICKUP_WARPSTONE) {
         if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST) {

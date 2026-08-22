@@ -14,7 +14,9 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -43,16 +45,7 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
     if (this->CoordCount() != 0
         && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x] == NULL) {
-        CoordNode* p = this->CoordHead();
-        while (p != NULL) {
-            CoordNode* next = p->m_next;
-            Coord** link = &p->m_coord;
-            p = next;
-            if (*link != NULL) {
-                g_coordPool.Push(*link);
-            }
-        }
-        m_coordList.RemoveAll();
+        RECYCLE_GRUNT_COORDS(this)
         this->m_arrivalCell.m_x = 0;
     }
 
@@ -67,16 +60,7 @@ i32 CGrunt::SeekTarget() {
         CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
         if (slot == NULL || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
-                CoordNode* p = this->CoordHead();
-                while (p != NULL) {
-                    CoordNode* next = p->m_next;
-                    Coord** link = &p->m_coord;
-                    p = next;
-                    if (*link != NULL) {
-                        g_coordPool.Push(*link);
-                    }
-                }
-                m_coordList.RemoveAll();
+                RECYCLE_GRUNT_COORDS(this)
             }
             this->m_arrivalCell.m_x = -1;
             return 1;
@@ -112,16 +96,7 @@ i32 CGrunt::SeekTarget() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                CoordNode* p = this->CoordHead();
-                while (p != NULL) {
-                    CoordNode* next = p->m_next;
-                    Coord** link = &p->m_coord;
-                    p = next;
-                    if (*link != NULL) {
-                        g_coordPool.Push(*link);
-                    }
-                }
-                m_coordList.RemoveAll();
+                RECYCLE_GRUNT_COORDS(this)
                 return 1;
             }
         }
@@ -136,7 +111,7 @@ i32 CGrunt::SeekTarget() {
         i32 atTarget = 0;
         if (g != NULL) {
             i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+            if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
                 && RectContains(x, g->m_object->m_screenY) != 0) {
                 atTarget = 1;
@@ -198,7 +173,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL) {
             i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+            if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
                 && RectContains(x, g->m_object->m_screenY) != 0) {
                 CommitNeighbor(

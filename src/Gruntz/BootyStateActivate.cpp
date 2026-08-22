@@ -57,6 +57,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
@@ -526,10 +527,7 @@ i32 CBootyState::StepGlitterAnim() {
             e = m_trailSprites[i];
             e->m_screenY = g_bootyLetterCoords[i].m_y;
             e = m_trailSprites[i];
-            if (e->m_sortKey != 1) {
-                e->m_sortKey = 1;
-                e->m_flags |= 0x20000;
-            }
+            SET_SORT_KEY_IF_CHANGED(e, 1)
         }
         m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx].m_x;
         m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx].m_y;
@@ -573,10 +571,7 @@ i32 CBootyState::StepGlitterAnim() {
 
     if (m_radius == 0) {
         CWwdGameObjectA* e = m_trailSprites[i];
-        if (e->m_sortKey != 1) {
-            e->m_sortKey = 1;
-            e->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(e, 1)
         return 1;
     }
     return 0;
@@ -982,6 +977,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
 }
 
 // @early-stop
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
     if (m_initGate != 0) {
@@ -990,7 +987,7 @@ i32 CBootyState::LevelMsgHudDriver() {
 
             for (i32 i = 0; i < 8; i++) {
                 CWwdGameObjectA* e = m_expl[i];
-                if (e->m_animCursor.m_finished != 0 && e->m_animCursor.m_frameTicksLeft == 0) {
+                if (IsAniCursorComplete(&e->m_animCursor)) {
                     e->m_stateFlags |= SPRITE_STATE_HIDDEN;
                 }
             }
@@ -1069,7 +1066,7 @@ i32 CBootyState::LevelMsgHudDriver() {
 
     for (i32 j = 0; j < m_slot; j++) {
         CWwdGameObjectA* e = m_expl[j];
-        if (e->m_animCursor.m_finished != 0 && e->m_animCursor.m_frameTicksLeft == 0) {
+        if (IsAniCursorComplete(&e->m_animCursor)) {
             e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
     }
@@ -1392,7 +1389,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     } else if (m_walkStarted != 0) {
 
         CWwdGameObjectA* spr = m_animSprites[m_stepIndex];
-        if (spr->m_animCursor.m_finished != 0 && spr->m_animCursor.m_frameTicksLeft == 0) {
+        if (IsAniCursorComplete(&spr->m_animCursor)) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                 m_stepIndex = 4;
@@ -2195,10 +2192,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_warlordBooty->m_screenX = 0x64;
         m_warlordBooty->m_screenY = 0x64;
         CWwdGameObjectA* sorted = m_warlordBooty;
-        if (sorted->m_sortKey != SORTKEY_BOOTY_WARLORD) {
-            sorted->m_sortKey = SORTKEY_BOOTY_WARLORD;
-            sorted->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(sorted, SORTKEY_BOOTY_WARLORD)
         m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
         AddrWord<const Coord> flagPos;
@@ -2837,9 +2831,11 @@ i32 CMultiBootyState::OnKeyDown(i32, i32) {
     return PostCommandIfKey();
 }
 
+#include <Gruntz/LeafCueMacros.h>
+
 RVA(0x0001f940, 0x4c)
 i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
-    return PlayLeafCueIfElapsed(this, vol, pan, freqPct, loop);
+    return PLAY_LEAF_CUE_INLINE_HELPER(this, vol, pan, freqPct, loop);
 }
 
 RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)

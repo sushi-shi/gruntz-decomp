@@ -20,6 +20,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -112,15 +113,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     if (recA->m_humanControlled == 0 && cfgB->m_active == 0) {
-        CoordNode* n = unit->CoordHead();
-        while (n != NULL) {
-            CoordNode* cur = n;
-            n = n->m_next;
-            if (cur->m_coord != NULL) {
-                g_coordPool.Push(cur->m_coord);
-            }
-        }
-        unit->m_coordList.RemoveAll();
+        RECYCLE_GRUNT_COORDS(unit)
         Coord none;
         unit->m_arrivalCell = *none.Set(-1, -1);
         return 1;
@@ -156,14 +149,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
-    CoordNode* n = unit->CoordHead();
-    while (n != NULL) {
-        CoordNode* cur = n;
-        n = n->m_next;
-        if (cur->m_coord != NULL) {
-            PushFreeNode(&g_coordPool, cur->m_coord);
-        }
-    }
-    unit->m_coordList.RemoveAll();
+    RECYCLE_GRUNT_COORDS_INLINE_PUSH(unit)
     return 1;
 }

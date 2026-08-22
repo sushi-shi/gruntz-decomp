@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/ColorHsv.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Ints.h>
@@ -487,8 +488,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
     arr.SetSizeGrow(idx + 1, -1);
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
-    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
-        && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
+    if (PIXEL_FORMAT_IS_RGB555) {
         for (i32 v = 0; v < 0x10000; v++) {
             i32 acc = static_cast<u8>((v >> 0xb)) << 4;
             acc = (acc + static_cast<u8>((v >> 6) & 0xf)) << 4;
@@ -627,11 +627,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     u16* out = Pix16(t->m_data);
     PALETTEENTRY* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
-        u16 v = static_cast<u16>(
-            (static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp)
-            | (static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)
-            | static_cast<u8>((p->peBlue >> static_cast<u8>(g_bDown)))
-        );
+        u16 v = PACK_PIXEL16_SHIFT_CAST_RGB(p->peRed, p->peGreen, p->peBlue);
         *out++ = v;
         p++;
     }

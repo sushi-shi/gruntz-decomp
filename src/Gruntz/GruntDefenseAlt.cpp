@@ -15,6 +15,8 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -40,8 +42,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     i32 inRange = 0;
-    if (occ != NULL && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
-        && occ->m_object->m_screenY == occ->m_lastTilePx.m_y
+    if (occ != NULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
         && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
         inRange = 1;
     }
@@ -72,11 +73,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_neighborValid != 0) {
                 goto tail;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
             return 1;
         } else {
             if (inRange != 0) {
@@ -88,11 +85,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_neighborValid != 0) {
                 goto tail;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
             return 1;
         }
     }
@@ -104,8 +97,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 if (m_poweredUp != 0) {
                     goto tail;
                 }
-                if (m_stamina >= STAMINA_FULL && o->m_object->m_screenX == o->m_lastTilePx.m_x
-                    && o->m_object->m_screenY == o->m_lastTilePx.m_y
+                if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                     && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                     Coord tile = o->m_lastTilePx;
                     CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, tile.m_x, tile.m_y);
@@ -205,10 +197,10 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
                 goto tail;
             }
-            if (o->m_object->m_screenX != o->m_lastTilePx.m_x) {
+            if (o->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, o)) {
                 goto tail;
             }
-            if (o->m_object->m_screenY != o->m_lastTilePx.m_y) {
+            if (o->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, o)) {
                 goto tail;
             }
             Coord tile = o->m_lastTilePx;
@@ -239,9 +231,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (o == NULL) {
                 goto tail;
             }
-            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
-                && o->m_object->m_screenX == o->m_lastTilePx.m_x
-                && o->m_object->m_screenY == o->m_lastTilePx.m_y
+            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                 Coord tile = o->m_lastTilePx;
                 CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, tile.m_x, tile.m_y);

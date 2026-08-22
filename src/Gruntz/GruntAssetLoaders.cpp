@@ -13,10 +13,12 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileSnapMacros.h>
@@ -109,11 +111,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
@@ -123,10 +121,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     m_wwdObject->m_flags |= 1;
     {
         CWwdGameObjectA* o = m_object;
-        if (o->m_sortKey != SORTKEY_GRUNT_DEATH) {
-            o->m_sortKey = SORTKEY_GRUNT_DEATH;
-            o->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
     }
 
     if (killerSlot != -1) {
@@ -200,10 +195,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             {
                 CWwdGameObjectA* o = m_object;
-                if (o->m_sortKey != -1) {
-                    o->m_sortKey = -1;
-                    o->m_flags |= 0x20000;
-                }
+                SET_SORT_KEY_IF_CHANGED(o, -1)
             }
             DEATH_CUE(0x357);
             goto finalize;
@@ -221,10 +213,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 tag = 0x357;
                 {
                     CWwdGameObjectA* o = m_object;
-                    if (o->m_sortKey != -1) {
-                        o->m_sortKey = -1;
-                        o->m_flags |= 0x20000;
-                    }
+                    SET_SORT_KEY_IF_CHANGED(o, -1)
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
@@ -253,10 +242,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 tag = 0x357;
                 {
                     CWwdGameObjectA* o = m_object;
-                    if (o->m_sortKey != -1) {
-                        o->m_sortKey = -1;
-                        o->m_flags |= 0x20000;
-                    }
+                    SET_SORT_KEY_IF_CHANGED(o, -1)
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {

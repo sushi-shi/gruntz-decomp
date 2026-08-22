@@ -23,6 +23,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TileSnapMacros.h>
@@ -115,10 +116,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
 
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_WARLORD) {
-        o->m_sortKey = SORTKEY_WARLORD;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD)
     m_wwdObject->m_flags |= 0x2000002;
 
     // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
@@ -563,11 +561,13 @@ void RegisterWarlordActions() {
 #undef REGISTER_ACTION_TYPED
 #undef REGISTER_NAME
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         ResolveMovingAnimation();
     }
     return 0;
@@ -631,7 +631,7 @@ RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
@@ -648,7 +648,7 @@ RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         ResolveMovingAnimation();
     }
     return 0;
@@ -658,7 +658,7 @@ RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         CWwdGameObjectA* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
@@ -808,6 +808,8 @@ i32 CWarlord::RaiseBattleAlert() {
     return 1;
 }
 
+#include <Gruntz/AniElementInline.h>
+
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
     if (m_deathStarted != 0) {
@@ -834,8 +836,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     SwitchAnimation(anim);
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
     i32 frame = elem->m_param;
 
     m_wwdObject->ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);

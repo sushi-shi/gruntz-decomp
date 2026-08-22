@@ -354,11 +354,51 @@ the first score drop in isolation.
 
 Rejected or bounded candidates:
 
-- `PK` pixel packing: a shared header trades one exact closure in `LevelPlane` for a
-  fresh 0.027-point regression in `DDSurface::ShadeRect`. The two proven TU-local
-  inline functions remain separate.
+- `PK` pixel packing: a definition header placed at the top of `DDSurface.cpp`
+  trades one exact closure in `LevelPlane` for a fresh 0.027-point regression in
+  `CDDSurface::ShadeRect`. Scoping the header below `ShadeRect` retains stable macro
+  uses in `BuildColorChannelTables` and `Blit1624`; the earlier TU-local helper and
+  the exact `CSpriteRef::Build` / `CDDrawShadeBlit::EncodeRle16` spellings stay
+  textual.
 - `HS` sprite retirement as a pointer-reference function: `ClearAllSprites` stays
   exact, but exact `BuildGruntExitAnimation` moves to 98.4167% through register
   scheduling. The macro fallback above preserves the expansion.
 - Broad `LeafCue` conversion: several exact callers regress despite local include
   scoping. Only the eight green sites are retained.
+
+## Exhaustion pass
+
+The follow-up pass reconciled every code in the matrix and then searched the source
+again for the raw bodies. No inventory family remains unmodeled: every one now has a
+real inline helper or a used token-preserving macro fallback. This is exhaustion of
+the audited candidate inventory, not a claim that no future retail comparison can
+reveal another inline.
+
+| Code | Retained representation and source-wide result |
+|---|---|
+| `FP` | `PushFreeNode` plus the inline-pool recycle macro variants preserve both observed free-list spellings. |
+| `CR` | Five real `RecycleGruntCoords` call sites and 50 recycle-macro invocations cover the call, inline-push, direct-pool, and MFC `POSITION` traversals. The explicit `StepArrivalDrop` traversal is the load-bearing nested-inline control. |
+| `LC` | Seven caller expansions plus the standalone wrapper use `PlayLeafCueIfElapsed`; the wrapper also uses the call-preserving `PLAY_LEAF_CUE_INLINE_HELPER` macro. The remaining direct callers are bounded by measured exact-caller regressions. |
+| `AD` | Two real-helper sites and 67 movement-predicate macro sites cover the detected and broader source population. `StepArrivalDrop` and `StepDiggerBehavior` retain their direct predicate spelling because placing the definition boundary above them breaks MAX. |
+| `RX` | All seven source-visible random-extent variants use one of the six exact-expansion macros. |
+| `HE` | All seven detected hold/reroll predicates use `IsGruntHoldPending` or `IsGruntArrivalRerollPending`. |
+| `RT` | Five full helper sites and the compact macro variant cover all six reset bodies. |
+| `RP` | 33 self/receiver reset bodies use the powered-state macros. The two extra `StepDiggerBehavior` bodies remain the direct boundary control. |
+| `HS` | 49 retirement bodies use `HIDE_AND_CLEAR_GRUNT_SPRITE`; the six pre-`StepArrivalDrop` bodies in `ClearAllSprites` remain direct. |
+| `AC` | The real helper now covers all 34 safe source-visible predicates. The sole raw predicate is the pre-helper-boundary compound in `RunEntranceMove`. |
+| `A0` | The real helper now covers 23 safe guarded lookups. Two pre-`StepArrivalDrop` lookups stay direct, and `DEATH_FRAME` was already a macro. |
+| `TC` | All 13 audited adjacent tile-centre pairs use the set/declare macros. |
+| `SP` | All six audited functions use the snapped-pair declaration and comparison macros (12 sites). |
+| `SO` | All 13 audited object snap bodies use `SNAP_OBJECT_TO_TILE_CENTER`. |
+| `SK` | 72 exact compare/store/dirty bodies use the macros. `CGrunt`'s constructor stays direct because a definition/use before `StepArrivalDrop` changes that later inline set; the remaining flag-local variants are distinct schedules. |
+| `BA` | All seven audited big-animation normalizations use the two receiver-shape macros. |
+| `PK` | Four stable pack macro sites remain in three TUs; the earlier `DDSurface` helper and the two definition-boundary-sensitive functions retain direct spellings. |
+| `R5` | Two stable RGB555 macros remain below sensitive functions; the three earlier checks retain direct spelling. |
+| `CI` | All seven `CImage` functions use `DECLARE_CLIPPED_IMAGE_RECT`. |
+| `AV` | All seven volume blocks use `ScaleAmbientVolume`. |
+
+The full build after this pass scored 3,704 exact functions at 95.01% overall fuzzy,
+with 82 carried below-bank rows and zero fresh regressions. The load-bearing control
+scores were restored to `StepArrivalDrop` 32.302708%, `CSpriteRef::Build` 100.0000%,
+`StepDiggerBehavior` 83.86855%, `ConvertRowDoubleFwd` 71.84295%, and
+`CDDSurface::ShadeRect` 76.990906%.

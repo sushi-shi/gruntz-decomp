@@ -15,8 +15,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntArrivalRerollInline.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -60,7 +63,7 @@ i32 CGrunt::UpdateArrival() {
     i32 atTarget = 0;
     if (g != NULL) {
         i32 x = g->m_object->m_screenX;
-        if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+        if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
             && RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
@@ -122,7 +125,7 @@ i32 CGrunt::UpdateArrival() {
             if (g != NULL) {
                 if (this->m_stamina >= STAMINA_FULL) {
                     i32 x = g->m_object->m_screenX;
-                    if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+                    if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
                         && RectContains(x, g->m_object->m_screenY) != 0) {
                         Coord cp = g->m_lastTilePx;
                         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
@@ -165,16 +168,7 @@ i32 CGrunt::UpdateArrival() {
                 && static_cast<u32>(this->m_dwell) > 3000) {
                 if (IsGruntArrivalRerollPending(this) != 0) {
                     CGameObject* base = this->m_object;
-                    u32 lo = base->m_extent.left;
-                    i32 ax = abs(base->m_extent.right - static_cast<i32>(lo));
-                    u32 lo2 = base->m_extent.top;
-                    i32 ay = abs(base->m_extent.bottom - static_cast<i32>(lo2));
-                    if (ax != 0) {
-                        lo = lo + rand() % ax;
-                    }
-                    if (ay != 0) {
-                        lo2 = lo2 + rand() % ay;
-                    }
+                    SELECT_RANDOM_EXTENT_POINT_UNSIGNED_ASSIGN(base, lo, ax, lo2, ay)
                     if (lo < g_gameReg->m_tileGrid->m_width
                         && lo2 < g_gameReg->m_tileGrid->m_height) {
                         TileSwitch(
@@ -219,8 +213,7 @@ i32 CGrunt::UpdateArrival() {
                     );
                     if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
-                        && slot->m_object->m_screenX == slot->m_lastTilePx.m_x
-                        && slot->m_object->m_screenY == slot->m_lastTilePx.m_y) {
+                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
                         Coord cp = slot->m_lastTilePx;
                         CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
                         this->m_defenderState = AISTATE_ATTACK;
@@ -249,8 +242,7 @@ i32 CGrunt::UpdateArrival() {
                         break;
                     }
                     if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
-                        && slot->m_object->m_screenX == slot->m_lastTilePx.m_x
-                        && slot->m_object->m_screenY == slot->m_lastTilePx.m_y) {
+                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
                         Coord cp = slot->m_lastTilePx;
                         CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
                         break;
@@ -288,18 +280,7 @@ i32 CGrunt::UpdateArrival() {
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                CoordNode* p = this->CoordHead();
-                while (p != NULL) {
-                    CoordNode* next = p->m_next;
-                    Coord** link = &p->m_coord;
-                    p = next;
-                    if (*link != NULL) {
-                        CoordPoolNode* n2 = g_coordPool.NodeOf(*link);
-                        n2->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = n2;
-                    }
-                }
-                m_coordList.RemoveAll();
+                RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
             }
             g_gameReg->m_cmdGrid->ApplyTriggerA(
                 m_tileOwnerHi,

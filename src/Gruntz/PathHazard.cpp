@@ -21,6 +21,7 @@
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
@@ -64,10 +65,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_posX = static_cast<double>(snapX);
     m_posY = static_cast<double>(snapY);
     CWwdGameObjectA* h = m_object;
-    if (h->m_sortKey != SORTKEY_ACTOR) {
-        h->m_sortKey = SORTKEY_ACTOR;
-        h->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
     m_wp[0].x = m_object->m_screenX;
     m_wp[0].y = m_object->m_screenY;

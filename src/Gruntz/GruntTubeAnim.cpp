@@ -10,6 +10,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -36,11 +37,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     LoadAnimNameTable(0, 0);
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
 
     CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());

@@ -9,6 +9,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/UserLogic.h>
@@ -74,10 +75,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_OVERLAY) {
-        o->m_sortKey = SORTKEY_OVERLAY;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
 }
 
 RVA(0x0010c4b0, 0x102)

@@ -16,7 +16,10 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -114,7 +117,7 @@ i32 CGrunt::ScanNearestTarget() {
     i32 atTarget = 0;
     if (best != NULL) {
         i32 x = best->m_object->m_screenX;
-        if (x == best->m_lastTilePx.m_x && best->m_object->m_screenY == best->m_lastTilePx.m_y
+        if (GRUNT_X_AT_SAVED_POS(x, best) && best->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, best)
             && this->RectContains(x, best->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
@@ -140,11 +143,7 @@ i32 CGrunt::ScanNearestTarget() {
                 if (m_neighborValid != 0) {
                     return 1;
                 }
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
+                RESET_GRUNT_POWERED_STATE
                 return 1;
             }
             if (atTarget) {
@@ -156,11 +155,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_neighborValid != 0) {
                 return 1;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
             return 1;
         }
         m_neighborValid = 0;
@@ -172,8 +167,7 @@ i32 CGrunt::ScanNearestTarget() {
 
             if (best != NULL) {
                 if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
-                    && best->m_object->m_screenX == best->m_lastTilePx.m_x
-                    && best->m_object->m_screenY == best->m_lastTilePx.m_y) {
+                    && GRUNT_AT_SAVED_SCREEN_POS(best)) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);
                     i32 pb;
@@ -247,18 +241,7 @@ i32 CGrunt::ScanNearestTarget() {
                 if (IsGruntArrivalRerollPending(this) != 0) {
 
                     CWwdGameObjectA* hud = m_object;
-                    i32 baseCol = hud->m_extent.left;
-                    i32 spanX = hud->m_extent.right - baseCol;
-                    i32 baseRow = hud->m_extent.top;
-                    spanX = abs(spanX);
-                    i32 spanY = hud->m_extent.bottom - baseRow;
-                    spanY = abs(spanY);
-                    if (spanX != 0) {
-                        baseCol += rand() % spanX;
-                    }
-                    if (spanY != 0) {
-                        baseRow += rand() % spanY;
-                    }
+                    SELECT_RANDOM_EXTENT_POINT_SPLIT_ABS(hud, baseCol, spanX, baseRow, spanY)
                     CMapMgr* grid = g_gameReg->m_tileGrid;
                     if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
                         && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
@@ -310,8 +293,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
                         return 1;
                     }
-                    if (sg->m_object->m_screenX != sg->m_lastTilePx.m_x
-                        || sg->m_object->m_screenY != sg->m_lastTilePx.m_y) {
+                    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
                         return 1;
                     }
                     Coord sgTile = sg->m_lastTilePx;
@@ -345,8 +327,7 @@ i32 CGrunt::ScanNearestTarget() {
                         }
                         if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
                                 != 0
-                            && sg->m_object->m_screenX == sg->m_lastTilePx.m_x
-                            && sg->m_object->m_screenY == sg->m_lastTilePx.m_y) {
+                            && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
                             Coord sgTile = sg->m_lastTilePx;
                             CommitNeighbor(
                                 sg->m_tileOwnerHi,

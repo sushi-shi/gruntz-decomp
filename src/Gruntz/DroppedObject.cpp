@@ -28,6 +28,7 @@
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -216,10 +217,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_posX = static_cast<double>(snapX);
     m_posY = static_cast<double>(snapY);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_ACTOR_FRONT) {
-        o->m_sortKey = SORTKEY_ACTOR_FRONT;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
 
     CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
     if (frameSet != NULL) {
@@ -425,10 +423,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
     m_fallY = static_cast<double>(m_object->m_screenY);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_ACTOR_FRONT) {
-        o->m_sortKey = SORTKEY_ACTOR_FRONT;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
     m_timePerTile =
         g_objDropDiv
         / static_cast<double>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
@@ -576,10 +571,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     draw->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     draw->m_drawFillArg = fill;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_ACTOR_BEHIND) {
-        o->m_sortKey = SORTKEY_ACTOR_BEHIND;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
 }
 
 RVA(0x000c7750, 0x102)
@@ -604,8 +596,7 @@ i32 CDroppedObjectShadow::Advance() {
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
-    if (m_wwdObject->m_animCursor.m_finished != 0
-        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

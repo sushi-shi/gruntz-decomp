@@ -8,6 +8,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/StaminaPct.h>
@@ -45,14 +46,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             }
             if ((flags & 0x4000)
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
-                POSITION pos = g->m_coordList.GetHeadPosition();
-                while (pos != NULL) {
-                    Coord* coord = static_cast<Coord*>(g->m_coordList.GetNext(pos));
-                    if (coord != NULL) {
-                        g_coordPool.Push(coord);
-                    }
-                }
-                g->m_coordList.RemoveAll();
+                RECYCLE_GRUNT_COORDS_POSITION(g)
                 return 1;
             }
         }

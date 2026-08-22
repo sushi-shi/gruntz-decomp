@@ -17,6 +17,7 @@
 #include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -93,16 +94,7 @@ i32 CGrunt::ResolveArrivalReposition() {
             if (IsGruntArrivalRerollPending(this) != 0) {
 
                 CWwdGameObjectA* h = m_object;
-                i32 spanX = abs(h->m_extent.right - h->m_extent.left);
-                i32 spanY = abs(h->m_extent.bottom - h->m_extent.top);
-                i32 outX = h->m_extent.left;
-                i32 outY = h->m_extent.top;
-                if (spanX != 0) {
-                    outX += rand() % spanX;
-                }
-                if (spanY != 0) {
-                    outY += rand() % spanY;
-                }
+                SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, outX, outY)
                 TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 i32 m328 = CoordCount();
                 if (m328 != 0) {

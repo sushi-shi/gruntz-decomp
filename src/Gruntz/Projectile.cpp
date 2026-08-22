@@ -22,6 +22,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LeafCue.h>
@@ -32,6 +33,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -107,10 +109,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner)
     m_wwdObject->m_flags |= 0x2000002;
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_ACTOR) {
-        o->m_sortKey = SORTKEY_ACTOR;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
     memset(&m_frames[0], 0, 0x1c);
     m_sound = NULL;
     m_shadow = NULL;
@@ -511,13 +510,15 @@ noSprite:
     m_wwdObject->m_flags |= 0x10000;
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* r = m_wwdObject;
-    if (r->m_animCursor.m_finished != 0 && r->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&r->m_animCursor)) {
         r->m_flags |= 0x10000;
     }
     return 0;
@@ -565,16 +566,7 @@ i32 CBoomerang::LoadProjectileSprites(
         g->m_holdAnchorLo = g_frameTime;
         g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
-            POSITION pos = g->m_coordList.GetHeadPosition();
-            while (pos != NULL) {
-                Coord* data = static_cast<Coord*>(g->m_coordList.GetNext(pos));
-                if (data != NULL) {
-                    CoordPoolNode* p = g_coordPool.NodeOf(data);
-                    p->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = p;
-                }
-            }
-            g->m_coordList.RemoveAll();
+            RECYCLE_GRUNT_COORDS_POSITION_INLINE_POOL(g)
         }
     }
     m_launched = 0;
@@ -935,10 +927,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
     SetObjectFlags(0x2000002);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_PROJECTILE) {
-        o->m_sortKey = SORTKEY_PROJECTILE;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
     m_wwdObject->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");

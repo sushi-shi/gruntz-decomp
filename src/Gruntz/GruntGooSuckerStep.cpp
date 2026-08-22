@@ -16,6 +16,8 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -79,7 +81,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     i32 atTarget = 0;
     if (g != NULL) {
         i32 x = g->m_object->m_screenX;
-        if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+        if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
             && RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
@@ -113,11 +115,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
             if (m_neighborValid != 0) {
                 goto L_yes;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
         } else {
             m_neighborValid = 0;
         }
@@ -158,8 +156,7 @@ L_ed006b:
     if (m_poweredUp != 0) {
         goto L_scanb;
     }
-    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
-        && g->m_object->m_screenY == g->m_lastTilePx.m_y
+    if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         CommitNeighbor(
             g->m_tileOwnerHi,

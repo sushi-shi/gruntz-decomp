@@ -15,7 +15,9 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -112,9 +114,7 @@ state0: {
     if (nb->m_entranceCommitted == 0) {
         goto common;
     }
-    if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
-        && nb->m_object->m_screenX == nb->m_lastTilePx.m_x
-        && nb->m_object->m_screenY == nb->m_lastTilePx.m_y
+    if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         CommitNeighbor(
             nb->m_tileOwnerHi,
@@ -242,8 +242,7 @@ common: {
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
             if (CoordCount() != 0) {
-                RECYCLE_COORDS(CoordHead());
-                m_coordList.RemoveAll();
+                RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
             }
             g_gameReg->m_cmdGrid->ApplyTriggerA(
                 m_tileOwnerHi,
@@ -267,8 +266,7 @@ common: {
     m_arrivalCell.m_x = head->m_x;
     m_arrivalCell.m_y = head->m_y;
     if (CoordCount() != 0) {
-        RECYCLE_COORDS(CoordHead());
-        m_coordList.RemoveAll();
+        RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
     }
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;

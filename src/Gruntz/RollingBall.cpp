@@ -22,6 +22,7 @@
 #include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -65,10 +66,11 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_subX = static_cast<double>(snapX);
     m_subY = static_cast<double>(snapY);
     CWwdGameObjectA* snapped = m_object;
-    if (snapped->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
-        snapped->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
-        snapped->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED_AS(
+        snapped,
+        SORTKEY_ROLLING_BALL_BASE + snapY,
+        snapY + SORTKEY_ROLLING_BALL_BASE
+    )
     CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
     if (frameSet != NULL) {
         CString name;
@@ -129,12 +131,14 @@ void CRollingBall::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* anim = m_wwdObject;
-    if (anim->m_animCursor.m_finished != 0 && anim->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&anim->m_animCursor)) {
         anim->m_flags |= 0x10000;
         return 0;
     }
@@ -558,10 +562,7 @@ i32 CRollingBall::Update() {
     fin2->m_screenY = ny;
     CWwdGameObjectA* fin3 = m_object;
     i32 next = fin3->m_screenY + 0x186a0;
-    if (fin3->m_sortKey != next) {
-        fin3->m_sortKey = next;
-        fin3->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(fin3, next)
     return 0;
 }
 

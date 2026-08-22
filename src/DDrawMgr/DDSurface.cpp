@@ -964,10 +964,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 // increment first, every entry sat one slot high and the last red store ran two
 // bytes past g_clut into g_lut16[0]. objdiff masks the DIR32 displacement, so
 // that scored clean.
+#include <DDrawMgr/PixelFormatMacros.h>
+
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
-    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
-        && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
+    if (PIXEL_FORMAT_IS_RGB555) {
         i32 bShift = g_bUp;
         i32 a = 0;
         i32 stepA = 0x20;
@@ -1207,12 +1208,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 b = *srcv++;
                 u8 g = *srcv++;
                 u8 r = *srcv++;
-                u16 v =
-                    static_cast<u16>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp));
-                v = static_cast<u16>(
-                    (v | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp))
-                );
-                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
+                PACK_PIXEL16_GRB_TO(dst, v, g, r, b)
             }
         }
     } else {
@@ -1222,12 +1218,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 r = *srcv++;
                 u8 g = *srcv++;
                 u8 b = *srcv++;
-                u16 v =
-                    static_cast<u16>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp));
-                v = static_cast<u16>(
-                    (v | (static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp))
-                );
-                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
+                PACK_PIXEL16_RGB_TO(dst, v, r, g, b)
             }
         }
     }

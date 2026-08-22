@@ -14,9 +14,13 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntArrivalRerollInline.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -47,7 +51,7 @@ i32 CGrunt::WanderStep() {
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     if (g != NULL) {
         i32 gx = g->m_object->m_screenX;
-        if (gx == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+        if (GRUNT_X_AT_SAVED_POS(gx, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
             && RectContains(gx, g->m_object->m_screenY) != 0) {
             flag = 1;
         }
@@ -77,11 +81,7 @@ i32 CGrunt::WanderStep() {
                         goto retreat;
                     }
                 }
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
+                RESET_GRUNT_POWERED_STATE
             }
         } else {
             m_neighborValid = 0;
@@ -93,9 +93,7 @@ i32 CGrunt::WanderStep() {
     switch (m_defenderState) {
         case AISTATE_SEEK:
             if (g != NULL) {
-                if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
-                    && g->m_object->m_screenX == g->m_lastTilePx.m_x
-                    && g->m_object->m_screenY == g->m_lastTilePx.m_y
+                if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
                     && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                     Coord cp = g->m_lastTilePx;
                     CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
@@ -166,10 +164,10 @@ i32 CGrunt::WanderStep() {
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (slot->m_object->m_screenX != slot->m_lastTilePx.m_x) {
+            if (slot->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, slot)) {
                 return 1;
             }
-            if (slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
+            if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
                 return 1;
             }
             Coord cp = slot->m_lastTilePx;
@@ -202,24 +200,17 @@ i32 CGrunt::WanderStep() {
             if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0) {
                 goto ph1;
             }
-            if (slot->m_object->m_screenX != slot->m_lastTilePx.m_x) {
+            if (slot->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, slot)) {
                 goto ph1;
             }
-            if (slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
+            if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
                 goto ph1;
             }
             Coord cp = slot->m_lastTilePx;
             CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
-                POSITION pos = m_coordList.GetHeadPosition();
-                while (pos != NULL) {
-                    Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
-                    if (data != NULL) {
-                        PushFreeNode(&g_coordPool, data);
-                    }
-                }
-                m_coordList.RemoveAll();
+                RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)
             }
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;
@@ -290,16 +281,7 @@ timeout:
         && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
         if (IsGruntArrivalRerollPending(this) != 0) {
             CWwdGameObjectA* base = m_object;
-            u32 lx = static_cast<u32>(base->m_extent.left);
-            i32 ax = abs(base->m_extent.right - static_cast<i32>(lx));
-            u32 ly = static_cast<u32>(base->m_extent.top);
-            i32 ay = abs(base->m_extent.bottom - static_cast<i32>(ly));
-            if (ax != 0) {
-                lx += rand() % ax;
-            }
-            if (ay != 0) {
-                ly += rand() % ay;
-            }
+            SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lx, ax, ly, ay)
             if (lx < g_gameReg->m_tileGrid->m_width && ly < g_gameReg->m_tileGrid->m_height) {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }

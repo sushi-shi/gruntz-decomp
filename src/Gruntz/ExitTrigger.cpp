@@ -13,6 +13,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -35,10 +36,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     m_objAux->m_actKey = ActFindId("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_EXIT_TRIGGER) {
-        o->m_sortKey = SORTKEY_EXIT_TRIGGER;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)
     m_object->m_area.left = 1;
     m_object->m_area.right = 1;
     m_object->m_area.top = 1;

@@ -15,7 +15,10 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -52,8 +55,7 @@ i32 CGrunt::ChargeStep() {
     i32 hitGate = 0;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
-        if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
-            && RectContains(gp->m_screenX, gp->m_screenY)) {
+        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g) && RectContains(gp->m_screenX, gp->m_screenY)) {
             hitGate = 1;
         }
     }
@@ -77,11 +79,7 @@ i32 CGrunt::ChargeStep() {
                 if (m_neighborValid != 0) {
                     return 1;
                 }
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
+                RESET_GRUNT_POWERED_STATE
                 return 1;
             }
             if (hitGate != 0) {
@@ -93,11 +91,7 @@ i32 CGrunt::ChargeStep() {
             if (m_neighborValid != 0) {
                 return 1;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
+            RESET_GRUNT_POWERED_STATE
             return 1;
         }
         m_neighborValid = 0;
@@ -110,7 +104,7 @@ i32 CGrunt::ChargeStep() {
             if (g != NULL) {
                 if (hitGate != 0 && m_stamina >= STAMINA_FULL) {
                     CGameObject* gp = g->m_object;
-                    if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
+                    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
                         Coord cp = g->m_lastTilePx;
                         CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
@@ -152,16 +146,7 @@ i32 CGrunt::ChargeStep() {
             }
             if (m_resetApplied == 0 && m_hasExtent != 0 && static_cast<u32>(m_dwell) > 3000) {
                 CWwdGameObjectA* mp = m_object;
-                i32 baseX = mp->m_extent.left;
-                i32 spanX = abs(mp->m_extent.right - baseX);
-                i32 baseY = mp->m_extent.top;
-                i32 spanY = abs(mp->m_extent.bottom - baseY);
-                if (spanX != 0) {
-                    baseX += rand() % spanX;
-                }
-                if (spanY != 0) {
-                    baseY += rand() % spanY;
-                }
+                SELECT_RANDOM_EXTENT_POINT_SIGNED_BASE(mp, baseX, spanX, baseY, spanY)
                 CGruntzMgr* mgr = g_gameReg;
                 if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)
                     && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
@@ -200,8 +185,7 @@ i32 CGrunt::ChargeStep() {
             }
             if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
-                && t->m_object->m_screenX == t->m_lastTilePx.m_x
-                && t->m_object->m_screenY == t->m_lastTilePx.m_y) {
+                && GRUNT_AT_SAVED_SCREEN_POS(t)) {
                 Coord cp = t->m_lastTilePx;
                 CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, cp.m_x, cp.m_y);
                 m_defenderState = AISTATE_ATTACK;
@@ -223,8 +207,7 @@ i32 CGrunt::ChargeStep() {
                     return 1;
                 }
                 if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
-                    || t->m_object->m_screenX != t->m_lastTilePx.m_x
-                    || t->m_object->m_screenY != t->m_lastTilePx.m_y) {
+                    || GRUNT_NOT_AT_SAVED_SCREEN_POS(t)) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;

@@ -28,6 +28,7 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileTrigger.h>
@@ -364,10 +365,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
 
     CWwdGameObjectA* o = m_object;
     i32 zk = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-    if (o->m_sortKey != zk) {
-        o->m_sortKey = zk;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, zk)
     memset(m_state, 0, sizeof(m_state));
     if (m_object->m_extent.left == COORD_UNSET) {
         m_object->m_extent.left = 0;
@@ -579,10 +577,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     SetObjectFlags(0x1000000);
 
     CGameObject* o = m_object;
-    if (o->m_sortKey != 0) {
-        o->m_sortKey = 0;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, 0)
 }
 
 RVA(0x0010fd10, 0x102)
@@ -601,6 +596,8 @@ void CTileTriggerTransition::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
+#include <Gruntz/AniElementInline.h>
+
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     m_value = m_wwdObject->m_animCursor.m_animation;
@@ -608,8 +605,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
         return 0;
     }
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
     m_wwdObject->ApplyLookupSprite(sprite, elem->m_param);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");

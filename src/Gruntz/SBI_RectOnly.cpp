@@ -335,7 +335,7 @@ static __inline void HiCueFind() {
     if (host->m_emitGate == 0) {
         CObject* obj = ((host))->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
-            (static_cast<LeafCue*>(obj))->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            static_cast<LeafCue*>(obj)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 }

@@ -18,8 +18,11 @@
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -30,8 +33,10 @@
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -320,7 +325,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
                                                [(m_lastTilePx.m_x >> TILE_SHIFT_PX) * 7 + 4];
     TileCollisionKind tileKind = static_cast<TileCollisionKind>(code);
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
-        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
+        if (GRUNT_SELF_AT_SAVED_SCREEN_POS) {
 
             m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -478,10 +483,7 @@ void CGrunt::SnapToLastTile(i32 a) {
     m_object->m_screenX = m_lastTilePx.m_x;
     m_object->m_screenY = m_lastTilePx.m_y;
     CWwdGameObjectA* h = m_object;
-    if (h->m_sortKey != h->m_screenY + 0x186a0) {
-        h->m_sortKey = h->m_screenY + 0x186a0;
-        h->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
 
@@ -979,9 +981,8 @@ void CGrunt::ConsiderArrival(i32 a) {
     Coord tile = m_lastTilePx;
     i32 tx = tile.m_x;
     i32 ty = tile.m_y;
-    i32 px = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 py = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (px != tx || py != ty) {
+    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
+    if (PIXEL_PAIR_NOT_AT_POSITION(px, py, tx, ty)) {
         if (IsDropReady(a)) {
             return;
         }
@@ -1053,11 +1054,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != 0 && m_neighborValid == 0) {
-                            m_entranceActive = 0;
-                            m_combatActive = 0;
-                            m_neighborValid = 0;
-                            m_poweredUp = 0;
-                            ResetEntranceAnimation(1, 0, 0);
+                            RESET_GRUNT_POWERED_STATE
                         }
                         m_tileMoveCommitted = 0;
                         m_prevAnimSetNode = m_objAux->m_actKey;
@@ -1101,10 +1098,9 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 if (eq) {
 
                     CWwdGameObjectA* h = m_object;
-                    i32 px = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    i32 py = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
                     i32 redo = 1;
-                    if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
+                    if (PIXEL_PAIR_NOT_AT_SELF_SAVED_SCREEN_POS(px, py)) {
                         if (IsDropReady(1)) {
                             m_coordToggle = (m_coordToggle == 0);
                             redo = 0;
@@ -1142,10 +1138,7 @@ idleReseed:
     {
         i32 z = m_object->m_screenY + 0x186a0;
         CWwdGameObjectA* o = m_object;
-        if (o->m_sortKey != z) {
-            o->m_sortKey = z;
-            o->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(o, z)
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
@@ -1157,16 +1150,11 @@ applyTail:
         LoadWingzGruntSprites(0);
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
+        RESET_GRUNT_POWERED_STATE
     }
     m_tileMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {
-        i32 spawnPx = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-        i32 spawnPy = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+        DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
         m_object->m_screenX = spawnPx;
         m_object->m_screenY = spawnPy;
         {
@@ -1180,8 +1168,7 @@ applyTail:
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
-            RECYCLE_COORDS(CoordHead());
-            m_coordList.RemoveAll();
+            RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;

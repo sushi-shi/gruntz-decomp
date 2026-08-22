@@ -32,6 +32,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpellId.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -124,10 +125,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_object->m_screenY = snapY;
 
     CWwdGameObjectA* snapped = m_object;
-    if (snapped->m_sortKey != SORTKEY_INGAME_INFO) {
-        snapped->m_sortKey = SORTKEY_INGAME_INFO;
-        snapped->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_INGAME_INFO)
 
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
@@ -524,10 +522,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_countdown.m_v = 0;
     m_object->m_screenY -= 0x18;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
-        o->m_sortKey = SORTKEY_GRUNT_HUD;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
     m_countdown.m_v = 0x1388;
     m_startClock.m_v = static_cast<u32>(g_frameTime);
@@ -978,10 +973,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_INGAME_INFO) {
-        o->m_sortKey = SORTKEY_INGAME_INFO;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO)
     m_cachedAreaId = -1;
     m_cachedSubId = -1;
 }

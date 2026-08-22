@@ -23,6 +23,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TileTriggerTransition.h>
@@ -178,10 +179,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_duration.m_v = 0;
     ApplyName("GAME_EXCLAMATION");
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_VOICE) {
-        o->m_sortKey = SORTKEY_GRUNT_VOICE;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE)
     m_sample = NULL;
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;

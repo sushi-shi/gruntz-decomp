@@ -12,6 +12,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -36,10 +37,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     ApplyName("GAME_LIGHTING_POWERUP");
     SwitchGeometry("GAME_CYCLE100", 0);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_GRUNT_POWERUP) {
-        o->m_sortKey = SORTKEY_GRUNT_POWERUP;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_POWERUP)
     Hide();
 }
 

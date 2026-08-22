@@ -19,6 +19,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -108,10 +109,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdGameObjectA* o = m_object;
-        if (o->m_sortKey != 0) {
-            o->m_sortKey = 0;
-            o->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(o, 0)
         SetObjectFlags(2);
         Hide();
         m_prevAnimSetNode = m_objAux->m_actKey;
@@ -143,10 +141,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_isCustomLevel == 0) {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdGameObjectA* o = m_object;
-        if (o->m_sortKey != 0) {
-            o->m_sortKey = 0;
-            o->m_flags |= 0x20000;
-        }
+        SET_SORT_KEY_IF_CHANGED(o, 0)
         SetObjectFlags(2);
         Hide();
         m_prevAnimSetNode = m_objAux->m_actKey;

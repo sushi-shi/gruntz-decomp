@@ -20,6 +20,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -71,32 +72,10 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         }
         unit->m_battleState = BZTASK_ADVANCE;
 
-        if (unit->CoordCount() != 0) {
-            CoordNode* n = unit->CoordHead();
-            while (n != NULL) {
-                CoordNode* cur = n;
-                n = n->m_next;
-                if (cur->m_coord != NULL) {
-                    g_coordPool.Push(cur->m_coord);
-                }
-            }
-            unit->m_coordList.RemoveAll();
-        }
+        RECYCLE_GRUNT_COORDS_IF_ANY(unit)
     } else {
         unit->m_battleState = BZTASK_ADVANCE;
-        if (unit->CoordCount() != 0) {
-            CoordNode* n = unit->CoordHead();
-            while (n != NULL) {
-                CoordNode* cur = n;
-                n = n->m_next;
-                if (cur->m_coord != NULL) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_coord);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
-                }
-            }
-            unit->m_coordList.RemoveAll();
-        }
+        RECYCLE_GRUNT_COORDS_INLINE_POOL_IF_ANY(unit)
     }
     Coord none;
     unit->m_arrivalCell = *none.Set(-1, -1);

@@ -22,6 +22,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -69,10 +70,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     m_posX = static_cast<double>(snapX);
     m_posY = static_cast<double>(snapY);
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != SORTKEY_KITCHEN_SLIME) {
-        o->m_sortKey = SORTKEY_KITCHEN_SLIME;
-        o->m_flags |= 0x20000;
-    }
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME)
     m_tilePosition.m_y = snapY;
     m_tilePosition.m_x = snapX;
 
