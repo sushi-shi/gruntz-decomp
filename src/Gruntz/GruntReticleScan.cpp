@@ -309,7 +309,7 @@ i32 CGrunt::ArrivalReticleScan() {
         TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
     }
 
-    GRID_RECT_INLINE(g_gameReg->m_tileGrid);
+    GRID_RECT_INLINE_LOCAL(g_gameReg->m_tileGrid);
 
     return 1;
 }

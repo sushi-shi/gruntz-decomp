@@ -169,6 +169,49 @@
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
+// ArrivalReticleScan's retail tail reads the LOCAL rect (four frame fields), not
+// m_bounds - the intersection of (0,0,w,h) with itself makes them equal.
+#define GRID_RECT_INLINE_LOCAL(grid)                                                               \
+    {                                                                                              \
+        RECT ra;                                                                                   \
+        ra.left = 0;                                                                               \
+        ra.top = 0;                                                                                \
+        ra.right = (grid)->m_width;                                                                \
+        ra.bottom = (grid)->m_height;                                                              \
+        RECT rb;                                                                                   \
+        rb.left = 0;                                                                               \
+        rb.top = 0;                                                                                \
+        rb.right = (grid)->m_width;                                                                \
+        rb.bottom = (grid)->m_height;                                                              \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
+        }                                                                                          \
+        (grid)->m_gridW = ra.right - ra.left;                                                      \
+        (grid)->m_gridH = ra.bottom - ra.top;                                                      \
+    }
+
+// StepBrickLayerBehavior's retail tail keeps &m_bounds in the register it handed
+// IntersectRect and reads the four size fields back through it.
+#define GRID_RECT_INLINE_PTR(grid)                                                                 \
+    {                                                                                              \
+        RECT ra;                                                                                   \
+        ra.left = 0;                                                                               \
+        ra.top = 0;                                                                                \
+        ra.right = (grid)->m_width;                                                                \
+        ra.bottom = (grid)->m_height;                                                              \
+        RECT rb;                                                                                   \
+        rb.left = 0;                                                                               \
+        rb.top = 0;                                                                                \
+        rb.right = (grid)->m_width;                                                                \
+        rb.bottom = (grid)->m_height;                                                              \
+        RECT* clipBounds = &(grid)->m_bounds;                                                      \
+        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
+            *clipBounds = ra;                                                                      \
+        }                                                                                          \
+        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
+        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
+    }
+
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
         POSITION dpos = m_coordList.GetHeadPosition();                                             \
