@@ -70,8 +70,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("GAME_CURSORSNAPSPRITE");
     SwitchGeometry("GAME_SINGLEIMAGEANI", 0);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
     Hide();
 }

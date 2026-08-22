@@ -129,12 +129,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
         }
         if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
-                CommitNeighbor(
-                    g->m_tileOwnerHi,
-                    g->m_tileOwnerLo,
-                    g->m_lastTilePx.m_x,
-                    g->m_lastTilePx.m_y
-                );
+                COMMIT_GRUNT_NEIGHBOR(g);
                 DRAIN_COORDS();
                 return 1;
             }
@@ -158,12 +153,7 @@ L_ed006b:
     }
     if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-        CommitNeighbor(
-            g->m_tileOwnerHi,
-            g->m_tileOwnerLo,
-            g->m_lastTilePx.m_x,
-            g->m_lastTilePx.m_y
-        );
+        COMMIT_GRUNT_NEIGHBOR(g);
     }
     if (m_poweredUp != 0) {
         goto L_scanb;

@@ -42,8 +42,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     GruntDeathType mode = m_deathType;
     if (mode == DEATH_NORMAL || mode == DEATH_SQUASH || mode == DEATH_EXPLODE
         || mode == DEATH_SHATTER) {
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("R");
+        SET_ANIMATION_ACT("R");
         if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
@@ -65,9 +64,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
              / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
         );
         CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-        o->m_fillFraction = r;
+        SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
         return 0;
     }
     if (m_cellRemovalNotified == 0) {
@@ -97,8 +94,6 @@ i32 CGrunt::LoadGruntDecayConfig2() {
         (static_cast<double>(elapsed) * 256.0
          / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
     );
-    o->m_drawActive = 1;
-    o->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-    o->m_fillFraction = r;
+    SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
     return 0;
 }

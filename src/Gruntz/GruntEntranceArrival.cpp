@@ -92,8 +92,7 @@ i32 CGrunt::ResetGeometry() {
     const char* name = m_cells[index].AttackName().GetBuffer(0);
     m_wwdObject->ApplyLookupSprite(name, frame);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("E");
+    SET_ANIMATION_ACT("E");
     return 0;
 }
 
@@ -150,8 +149,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     m_neighborCell.m_x = col;
     m_neighborCell.m_y = row;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("F");
+    SET_ANIMATION_ACT("F");
 
     m_combatActive = 1;
 
@@ -222,8 +220,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 // @early-stop
 RVA(0x00061bc0, 0xb2)
 i32 CGrunt::RearmAttackAnim2() {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("F");
+    SET_ANIMATION_ACT("F");
 
     CWwdGameObjectA* p = m_wwdObject;
     m_value = p->m_animCursor.m_animation;
@@ -429,8 +426,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
 
         if (m_entranceReason == PICKUP_SCROLL) {
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("P");
+            SET_ANIMATION_ACT("P");
             i32 toyIdx = rand() % 2;
             SwitchGeometryDirect(m_poseToy[toyIdx], 0);
 
@@ -482,8 +478,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         if (m_poweredUp != 0 && m_neighborValid == 0) {
             RESET_GRUNT_POWERED_STATE
         }
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("L");
+        SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
         GruntDirectionCell cell = m_entranceCell;
         i32 colv = cell.column + cell.row * 2;
@@ -497,8 +492,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         return 0;
     }
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("G");
+    SET_ANIMATION_ACT("G");
 
     CWwdGameObjectA* h = m_object;
     i32 z = h->m_screenY + 0xc3500;
@@ -568,8 +562,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             CreateStaminaSprite();
             CreateToySprite();
         }
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("A");
+        SET_ANIMATION_ACT("A");
         LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = 0;
         CGruntzMgr* g = g_gameReg;
@@ -788,8 +781,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     }
 
 latch:
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
 
     if (!applied && apply == 0) {
         return;
@@ -965,8 +957,7 @@ i32 CGrunt::StepEntranceReinit() {
     i32 flag = b->CellFlagsAt(co->m_x, co->m_y);
     GruntDirectionCell cell;
     if (!(flag & 0x20000000)) {
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("D");
+        SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         cell = m_entranceCell;
     } else {
@@ -977,8 +968,7 @@ i32 CGrunt::StepEntranceReinit() {
         if (!(flag2 & 0x80)) {
             return 0;
         }
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("D");
+        SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         cell = m_entranceCell;
         m_entranceActive = 1;
@@ -1052,8 +1042,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             CreateStaminaSprite();
             CreateToySprite();
         }
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("A");
+        SET_ANIMATION_ACT("A");
         LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = 0;
 
@@ -1168,8 +1157,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_entranceActive = 1;
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("B");
+    SET_ANIMATION_ACT("B");
 
     CAniElement* found;
     i32 r = rand() % 0x1e1;
@@ -1315,8 +1303,7 @@ i32 CGrunt::StepCombatReaction(
                             RESET_GRUNT_POWERED_STATE
                         }
                         m_tileMoveCommitted = 0;
-                        m_prevAnimSetNode = m_objAux->m_actKey;
-                        m_objAux->m_actKey = ActFindId("D");
+                        SET_ANIMATION_ACT("D");
                         SwitchAnimation(m_poseWalk);
                         GruntDirectionCell cell = m_entranceCell;
                         i32 col = cell.column + cell.row * 2;
@@ -1355,8 +1342,7 @@ i32 CGrunt::StepCombatReaction(
                     }
                     SnapToLastTile(1);
                     if (flag != 0) {
-                        m_prevAnimSetNode = m_objAux->m_actKey;
-                        m_objAux->m_actKey = ActFindId("D");
+                        SET_ANIMATION_ACT("D");
                         SetupTubeAnim(m_coordToggle);
                     }
                 }
@@ -1416,8 +1402,7 @@ tail:
         ActNameConstructGrownSlots();
         ne = (strcmp(*rec, "O") != 0);
         if (ne) {
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("H");
+            SET_ANIMATION_ACT("H");
             CGrunt* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
             if (cellObj != NULL) {
                 CGameObject* oh = cellObj->m_object;
@@ -1586,8 +1571,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     }
 
     if (m_entranceReason == PICKUP_BOMB) {
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("M");
+        SET_ANIMATION_ACT("M");
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
         m_timePerTile = g_buteMgr.GetDwordDef("BOMBGRUNT", "RunningTimePerTile", 0x64);
         m_entranceActive = 1;
@@ -1595,8 +1579,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         SetEntrancePos(1, 1);
     } else if (m_entranceReason == PICKUP_TOOB) {
         m_entranceActive = 1;
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("N");
+        SET_ANIMATION_ACT("N");
         m_coordToggle = (m_coordToggle == 0);
     } else if (m_entranceReason == PICKUP_WAND) {
         i32 base;
@@ -1628,13 +1611,11 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
             g->m_cueSink->SpawnVoiceDriver(this, cueId, -1, 0, -1, -1);
         }
 
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("I");
+        SET_ANIMATION_ACT("I");
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
     } else {
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("I");
+        SET_ANIMATION_ACT("I");
         SetEntrancePos(1, 1);
     }
 
@@ -1727,8 +1708,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         CreateStaminaSprite();
         CreateToySprite();
     }
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("D");
+    SET_ANIMATION_ACT("D");
     SetupTubeAnim(m_coordToggle);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->m_tileGrid;

@@ -17,6 +17,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -111,12 +112,7 @@ i32 CGrunt::ArrivalReticleScan() {
             return 1;
         }
         if (m_combatActive == 0 && m_stamina >= STAMINA_FULL && occOnTile) {
-            CommitNeighbor(
-                occ->m_tileOwnerHi,
-                occ->m_tileOwnerLo,
-                occ->m_lastTilePx.m_x,
-                occ->m_lastTilePx.m_y
-            );
+            COMMIT_GRUNT_NEIGHBOR(occ);
             RecycleGruntCoords(this);
             return 1;
         }

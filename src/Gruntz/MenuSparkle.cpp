@@ -30,8 +30,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("MENU_SPARKLE");
     SwitchGeometry("MENU_FORWARD100", 0);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_objAux->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
 }
 

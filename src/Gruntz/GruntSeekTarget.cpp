@@ -176,12 +176,7 @@ i32 CGrunt::SeekTarget() {
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
                 && RectContains(x, g->m_object->m_screenY) != 0) {
-                CommitNeighbor(
-                    g->m_tileOwnerHi,
-                    g->m_tileOwnerLo,
-                    g->m_lastTilePx.m_x,
-                    g->m_lastTilePx.m_y
-                );
+                COMMIT_GRUNT_NEIGHBOR(g);
             }
         }
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {

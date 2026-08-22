@@ -14,8 +14,7 @@ RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
     ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_health = HEALTH_FULL;

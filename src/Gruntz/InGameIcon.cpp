@@ -127,8 +127,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CWwdGameObjectA* snapped = m_object;
     SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_INGAME_INFO)
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SwitchGeometry("GAME_CYCLE100", 0);
 
     SetObjectFlags(2);
@@ -475,9 +474,7 @@ i32 CInGameIcon::HandleInput() {
         return 1;
     }
     CWwdGameObjectA* o = m_object;
-    o->m_drawActive = 1;
-    o->m_drawFillCmd = SHADE_PAL_16;
-    o->m_drawFillArg = rec;
+    SET_DRAW_FILL(o, SHADE_PAL_16, rec);
     return 1;
 }
 
@@ -526,8 +523,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
     m_countdown.m_v = 0x1388;
     m_startClock.m_v = static_cast<u32>(g_frameTime);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
 }
 
 RVA(0x00098340, 0x71)
@@ -605,9 +601,7 @@ i32 CInGameIcon::PeekCycle() {
     if (static_cast<i64>(g_frameTime) - m_peekTimer.m_v >= m_peekWindow.m_v) {
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
         CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_PAL_16;
-        o->m_drawFillArg = rec;
+        SET_DRAW_FILL(o, SHADE_PAL_16, rec);
         m_peekWindow.m_lo = 0xfa;
         m_peekWindow.m_hi = 0;
         m_peekTimer.m_lo = g_frameTime;
@@ -761,8 +755,7 @@ i32 CInGameIcon::Reposition() {
     if (delta >= m_driftThresh.m_v) {
         CWwdGameObjectA* r = m_wwdObject;
         r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("A");
+        SET_ANIMATION_ACT("A");
 
         CGruntzMgr* reg = g_gameReg;
         CWwdGameObjectA* obj = m_object;
@@ -951,8 +944,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SwitchGeometry("GAME_CYCLE100", 0);
     m_wwdObject->ApplyName("GAME_HELPBOX");
     SetObjectFlags(2);

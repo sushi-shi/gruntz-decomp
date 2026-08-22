@@ -85,14 +85,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     g_lastScrollY = scrollY;
 
     CDDrawWorkerHost* v3 = pm->m_world->m_level->m_mainPlane;
-    if (!(v3->m_flags & 1)) {
-        v3->m_scaledX = static_cast<float>(scrollX * v3->m_scaleX);
-        v3->m_scaledY = static_cast<float>(scrollY * v3->m_scaleY);
-    } else {
-        v3->m_scaledX = static_cast<float>(scrollX);
-        v3->m_scaledY = static_cast<float>(scrollY);
-    }
-    v3->RecomputePlaneCoords();
+    SET_SCROLL_POSITION_PRODUCT_CAST(v3, scrollX, scrollY);
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
@@ -106,14 +99,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             CDDrawWorkerHost* g2 = g_backView;
-            if (!(g2->m_flags & 1)) {
-                g2->m_scaledX = static_cast<float>(nx * g2->m_scaleX);
-                g2->m_scaledY = static_cast<float>(ny * g2->m_scaleY);
-            } else {
-                g2->m_scaledX = static_cast<float>(nx);
-                g2->m_scaledY = static_cast<float>(ny);
-            }
-            g2->RecomputePlaneCoords();
+            SET_SCROLL_POSITION_PRODUCT_CAST(g2, nx, ny);
             g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollPace.m_lastTime = g_frameTime;
         }

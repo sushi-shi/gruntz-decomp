@@ -79,12 +79,7 @@ i32 CGrunt::StepArrivalDefense() {
                         );
                         return 1;
                     }
-                    CommitNeighbor(
-                        occ->m_tileOwnerHi,
-                        occ->m_tileOwnerLo,
-                        occ->m_lastTilePx.m_x,
-                        occ->m_lastTilePx.m_y
-                    );
+                    COMMIT_GRUNT_NEIGHBOR(occ);
                     return 1;
                 }
             } else if (occ == NULL) {
@@ -151,12 +146,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (GRUNT_AT_SAVED_SCREEN_POS(occ)) {
-                CommitNeighbor(
-                    occ->m_tileOwnerHi,
-                    occ->m_tileOwnerLo,
-                    occ->m_lastTilePx.m_x,
-                    occ->m_lastTilePx.m_y
-                );
+                COMMIT_GRUNT_NEIGHBOR(occ);
             }
             m_defenderState = AISTATE_ATTACK;
             return 1;
@@ -184,12 +174,7 @@ i32 CGrunt::StepArrivalDefense() {
                 if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
                     return 1;
                 }
-                CommitNeighbor(
-                    occ->m_tileOwnerHi,
-                    occ->m_tileOwnerLo,
-                    occ->m_lastTilePx.m_x,
-                    occ->m_lastTilePx.m_y
-                );
+                COMMIT_GRUNT_NEIGHBOR(occ);
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
@@ -210,9 +195,7 @@ i32 CGrunt::StepArrivalDefense() {
                         == 0) {
                         goto L_f318a;
                     }
-                    SetEntrancePos(1, 1);
-                    m_arrivalCell.m_x = occ->m_tileOwnerHi;
-                    m_arrivalCell.m_y = occ->m_tileOwnerLo;
+                    SET_GRUNT_ARRIVAL_TARGET(occ);
                     m_defenderState = AISTATE_CHASE;
                     CWwdGameObjectA* h = m_object;
                     CGruntzMgr* reg = g_gameReg;

@@ -573,9 +573,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     CWwdGameObjectA* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
-    m_object->m_drawActive = 1;
-    h->m_drawFillCmd = fillCmd;
-    h->m_drawFillArg = sel;
+    SET_DRAW_FILL_SPLIT(m_object, h, fillCmd, sel);
 }
 
 RVA(0x00049c60, 0x8d1)
@@ -2070,9 +2068,7 @@ i32 CGrunt::Place(
     if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    m_object->m_drawFillArg = shade;
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = SHADE_PAL_16;
+    SET_DRAW_FILL_ARG_FIRST(m_object, SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
         BuildEntranceAnimation(entranceMode);
         return 1;
@@ -2981,9 +2977,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
             i32 t = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
-            m_object->m_drawActive = 1;
-            m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-            m_object->m_fillFraction = t;
+            SET_DRAW_FILL_FRACTION(m_object, SHADE_PAL_ALPHA_16, t);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
             }

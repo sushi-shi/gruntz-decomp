@@ -31,8 +31,7 @@ RVA(0x0003df30, 0x161)
 CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("GAME_EXIT");
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->m_flags |= 1;
     SetObjectFlags(2);
     Hide();

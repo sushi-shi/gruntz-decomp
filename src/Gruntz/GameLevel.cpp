@@ -227,14 +227,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         i32 startX = source->startX;
         i32 startY = source->startY;
         CDDrawWorkerHost* mp = m_mainPlane;
-        if (mp->m_flags & 1) {
-            mp->m_scaledX = static_cast<float>(startX);
-            mp->m_scaledY = static_cast<float>(startY);
-        } else {
-            mp->m_scaledX = static_cast<float>(startX) * mp->m_scaleX;
-            mp->m_scaledY = static_cast<float>(startY) * mp->m_scaleY;
-        }
-        mp->RecomputePlaneCoords();
+        SET_SCROLL_POSITION_RAW_FIRST(mp, startX, startY);
 
         i32 ox = m_mainPlane->m_snappedX;
         i32 oy = m_mainPlane->m_snappedY;
@@ -242,14 +235,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) {
             if (i2 != m_mainIndex) {
                 CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(m_planes[i2]);
-                if (p->m_flags & 1) {
-                    p->m_scaledX = static_cast<float>(ox);
-                    p->m_scaledY = static_cast<float>(oy);
-                } else {
-                    p->m_scaledX = static_cast<float>(ox) * p->m_scaleX;
-                    p->m_scaledY = static_cast<float>(oy) * p->m_scaleY;
-                }
-                p->RecomputePlaneCoords();
+                SET_SCROLL_POSITION_RAW_FIRST(p, ox, oy);
             }
             ++i2;
         }

@@ -64,8 +64,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 }
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
                     && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
-                    Coord cp = occ->m_lastTilePx;
-                    CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, cp.m_x, cp.m_y);
+                    COMMIT_GRUNT_NEIGHBOR_COPY(occ, cp);
                     return 1;
                 }
                 {
@@ -141,8 +140,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
                 return 1;
             }
-            Coord cp = occ->m_lastTilePx;
-            CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, cp.m_x, cp.m_y);
+            COMMIT_GRUNT_NEIGHBOR_COPY(occ, cp);
             m_defenderState = AISTATE_ATTACK;
             return 1;
         }

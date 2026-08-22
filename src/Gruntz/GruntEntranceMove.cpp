@@ -160,8 +160,7 @@ i32 CGrunt::RunEntranceMove() {
             RESET_GRUNT_POWERED_STATE
         }
         m_tileMoveCommitted = 0;
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("D");
+        SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.column + cell.row * 2;
@@ -249,8 +248,7 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
 
 RVA(0x00067bd0, 0x2ef)
 i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("K");
+    SET_ANIMATION_ACT("K");
 
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
@@ -519,8 +517,7 @@ i32 CGrunt::StartBombGruntRun() {
     PlayMoveSoundAtTile(dx, dy);
     m_moveTile.m_x = dx;
     m_moveTile.m_y = dy;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("M");
+    SET_ANIMATION_ACT("M");
     m_timePerTile =
         static_cast<i32>(g_buteMgr.GetDwordDef("BOMBGRUNT", "RunningTimePerTile", 0x64));
     m_bombRunActive = 1;
@@ -698,8 +695,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         CreateToySprite();
     }
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     m_entranceActive = 0;
 
@@ -783,8 +779,7 @@ i32 CGrunt::StepArrivalCommit() {
                 RESET_GRUNT_POWERED_STATE
             }
             m_tileMoveCommitted = 0;
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
+            SET_ANIMATION_ACT("D");
             SwitchAnimation(m_poseWalk);
             GruntDirectionCell cell = m_entranceCell;
             i32 colv = cell.column + cell.row * 2;
@@ -809,8 +804,7 @@ i32 CGrunt::StepArrivalCommit() {
         }
         SnapToLastTile(1);
         if (redo) {
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
+            SET_ANIMATION_ACT("D");
             SetupTubeAnim(m_coordToggle);
         }
         goto finalize;
@@ -875,8 +869,7 @@ finalize:
     }
     m_entranceActive = 1;
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("Q");
+    SET_ANIMATION_ACT("Q");
     {
         i32 z = m_object->m_screenY + 0x186a0;
         CWwdGameObjectA* o = m_object;
@@ -1121,8 +1114,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #undef MV_SE
 #undef MV_SW
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("S");
+    SET_ANIMATION_ACT("S");
     return 1;
 }
 
@@ -1180,8 +1172,7 @@ i32 CGrunt::FinishActiveAction() {
                 RESET_GRUNT_POWERED_STATE
             }
             m_tileMoveCommitted = 0;
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
+            SET_ANIMATION_ACT("D");
             SwitchAnimation(m_poseWalk);
 
             GruntDirectionCell cell = m_entranceCell;
@@ -1205,8 +1196,7 @@ i32 CGrunt::FinishActiveAction() {
         }
         SnapToLastTile(1);
         if (redo) {
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
+            SET_ANIMATION_ACT("D");
             SetupTubeAnim(m_coordToggle);
         }
         return 1;

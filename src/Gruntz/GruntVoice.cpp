@@ -186,8 +186,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wwdObject->m_flags |= 0x4000002;
     Hide();
     m_playFlags = 0;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_source = 0;
     m_owner = 0;
 }
@@ -201,8 +200,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
     Hide();
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << TILE_SHIFT_PX) - 7;
     m_object->m_area.right = m_object->m_screenX + (m_object->m_extent.right << TILE_SHIFT_PX) + 7;
@@ -293,8 +291,7 @@ i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner
 RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
     m_sample = NULL;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_playFlags = 0;
     m_source = 0;
 }
@@ -311,8 +308,7 @@ i32 CGruntVoice::Update() {
         m_sample = NULL;
         m_source = 0;
         m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("A");
+        SET_ANIMATION_ACT("A");
         m_playFlags = 0;
         return 0;
     }

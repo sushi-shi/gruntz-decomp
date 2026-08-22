@@ -6054,14 +6054,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     }
     g->m_armed = 0;
     CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
-    if ((pg->m_flags & 1) == 0) {
-        pg->m_scaledX = static_cast<float>(x) * pg->m_scaleX;
-        pg->m_scaledY = static_cast<float>(y) * pg->m_scaleY;
-    } else {
-        pg->m_scaledX = static_cast<float>(x);
-        pg->m_scaledY = static_cast<float>(y);
-    }
-    pg->RecomputePlaneCoords();
+    SET_SCROLL_POSITION_SCALED_FIRST(pg, x, y);
     return 1;
 }
 

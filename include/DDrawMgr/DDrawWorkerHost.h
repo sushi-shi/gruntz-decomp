@@ -130,4 +130,44 @@ public:
     DDBLTFX m_bltFx;
 };
 
+#define SET_SCROLL_POSITION_SCALED_FIRST(plane, x, y)                                              \
+    if ((plane->m_flags & 1) == 0) {                                                               \
+        plane->m_scaledX = static_cast<float>(x) * plane->m_scaleX;                                \
+        plane->m_scaledY = static_cast<float>(y) * plane->m_scaleY;                                \
+    } else {                                                                                       \
+        plane->m_scaledX = static_cast<float>(x);                                                  \
+        plane->m_scaledY = static_cast<float>(y);                                                  \
+    }                                                                                              \
+    plane->RecomputePlaneCoords()
+
+#define SET_SCROLL_POSITION_RAW_FIRST(plane, x, y)                                                 \
+    if (plane->m_flags & 1) {                                                                      \
+        plane->m_scaledX = static_cast<float>(x);                                                  \
+        plane->m_scaledY = static_cast<float>(y);                                                  \
+    } else {                                                                                       \
+        plane->m_scaledX = static_cast<float>(x) * plane->m_scaleX;                                \
+        plane->m_scaledY = static_cast<float>(y) * plane->m_scaleY;                                \
+    }                                                                                              \
+    plane->RecomputePlaneCoords()
+
+#define SET_SCROLL_POSITION_PRODUCT_CAST(plane, x, y)                                              \
+    if (!(plane->m_flags & 1)) {                                                                   \
+        plane->m_scaledX = static_cast<float>(x * plane->m_scaleX);                                \
+        plane->m_scaledY = static_cast<float>(y * plane->m_scaleY);                                \
+    } else {                                                                                       \
+        plane->m_scaledX = static_cast<float>(x);                                                  \
+        plane->m_scaledY = static_cast<float>(y);                                                  \
+    }                                                                                              \
+    plane->RecomputePlaneCoords()
+
+#define SET_SCROLL_POSITION_ZERO(plane)                                                            \
+    if ((plane->m_flags & 1) == 0) {                                                               \
+        plane->m_scaledX = 0.0f * plane->m_scaleX;                                                 \
+        plane->m_scaledY = 0.0f * plane->m_scaleY;                                                 \
+    } else {                                                                                       \
+        plane->m_scaledX = 0.0f;                                                                   \
+        plane->m_scaledY = 0.0f;                                                                   \
+    }                                                                                              \
+    plane->RecomputePlaneCoords()
+
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

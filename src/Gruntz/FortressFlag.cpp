@@ -112,16 +112,13 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
             return;
     }
     m_wwdObject->ApplyName(name);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SwitchGeometry("GAME_CYCLE100", 0);
     m_wwdObject->m_flags |= 3;
     i32 idx = IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
-    spr->m_drawActive = 1;
-    spr->m_drawFillCmd = SHADE_PAL_16;
-    spr->m_drawFillArg = sel;
+    SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
 }
 
 RVA(0x00046080, 0x102)
@@ -159,9 +156,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c
         i32 idx = IDX(g_gameReg->m_options[spr->m_smarts].m_colorIndex);
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
-        spr->m_drawActive = 1;
-        spr->m_drawFillCmd = SHADE_PAL_16;
-        spr->m_drawFillArg = sel;
+        SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
     }
     return 1;
 }
@@ -270,8 +265,7 @@ i32 CreateExplosion(CGameObject* owner) {
 // a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
@@ -307,8 +301,7 @@ i32 CParticlez::Update() {
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("GAME_EXPLOSION");
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)

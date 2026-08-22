@@ -47,8 +47,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_timestamp = 0;
     m_duration = 0;
     ApplyName("GAME_ACTIONAREA_RED");
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
     m_phase = 1;

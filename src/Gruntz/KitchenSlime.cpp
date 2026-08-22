@@ -119,8 +119,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     if (LoadSprites() == 0) {
         m_wwdObject->m_flags |= 0x10000;
     }
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_object->m_area.left = 0;

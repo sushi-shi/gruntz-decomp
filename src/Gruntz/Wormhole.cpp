@@ -77,8 +77,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     SwitchGeometry("GAME_WORMHOLE", 0);
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     i32 kind = m_object->m_smarts;
     CShadeTable* color;
     if (kind == -1) {
@@ -88,9 +87,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
         color = g_gameReg->m_logicPump->m_tables[kind];
     }
     CWwdGameObjectA* s = m_object;
-    s->m_drawActive = 1;
-    s->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    s->m_drawFillArg = color;
+    SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
 }
 
 RVA(0x0003fed0, 0xa9)
@@ -114,9 +111,7 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CG
         }
 
         CWwdGameObjectA* s = m_object;
-        s->m_drawActive = 1;
-        s->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        s->m_drawFillArg = color;
+        SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
     }
     return 1;
 }
@@ -182,8 +177,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
     m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
     SwitchGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     m_pending = 1;
@@ -225,12 +219,9 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 placeConfi
     m_placeIndex = placeIndex;
     CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(placeIndex, 0);
     CWwdGameObjectA* obj = m_object;
-    obj->m_drawActive = 1;
-    obj->m_drawFillCmd = SHADE_PAL_16;
-    obj->m_drawFillArg = rec;
+    SET_DRAW_FILL(obj, SHADE_PAL_16, rec);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("B");
+    SET_ANIMATION_ACT("B");
     if (color == 0) {
         m_placed = 1;
         m_pending = 0;
@@ -313,9 +304,7 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
             CGameObject* obj = m_object;
-            obj->m_drawFillArg = sel;
-            obj->m_drawActive = 1;
-            obj->m_drawFillCmd = SHADE_PAL_16;
+            SET_DRAW_FILL_ARG_FIRST(obj, SHADE_PAL_16, sel);
             break;
         }
     }
@@ -362,17 +351,14 @@ void CTeleporter::LoadColors() {
 
     CWwdGameObjectA* s = m_object;
     CShadeTable* colorEntry = g_gameReg->m_logicPump->m_tables[s->m_health];
-    s->m_drawActive = 1;
-    s->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    s->m_drawFillArg = colorEntry;
+    SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, colorEntry);
 }
 
 RVA(0x000412c0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
     m_wwdObject->ApplyName("GAME_WORMHOLE");
     SwitchGeometry("GAME_TELEPORTEROPEN", 0);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_armed = 1;
     m_tickHandled = 0;
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
@@ -450,8 +436,7 @@ i32 CTeleporter::Begin() {
     m_interval = static_cast<u32>(m_object->m_animWorker->m_speed);
     m_armClock = static_cast<u32>(g_frameTime);
     SwitchGeometry("GAME_TELEPORTER", 0);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("B");
+    SET_ANIMATION_ACT("B");
     return 0;
 }
 

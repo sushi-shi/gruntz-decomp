@@ -94,8 +94,7 @@ i32 CGrunt::WanderStep() {
             if (g != NULL) {
                 if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
                     && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                    Coord cp = g->m_lastTilePx;
-                    CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
+                    COMMIT_GRUNT_NEIGHBOR_COPY(g, cp);
                     m_neighborScanEnabled = 0;
                     RecycleGruntCoords(this);
                     m_defenderState = AISTATE_RETREAT;
@@ -108,9 +107,7 @@ i32 CGrunt::WanderStep() {
                         c[0].m_x = c[0].m_x >> TILE_SHIFT_PX;
                         c[0].m_y = c[0].m_y >> TILE_SHIFT_PX;
                         if (TileSwitch(c[0].m_x, c[0].m_y, 0, m_arrivalFlags, 1, 0) != 0) {
-                            SetEntrancePos(1, 1);
-                            m_arrivalCell.m_x = g->m_tileOwnerHi;
-                            m_arrivalCell.m_y = g->m_tileOwnerLo;
+                            SET_GRUNT_ARRIVAL_TARGET(g);
                             m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
@@ -169,8 +166,7 @@ i32 CGrunt::WanderStep() {
             if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
                 return 1;
             }
-            Coord cp = slot->m_lastTilePx;
-            CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
+            COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
             m_neighborScanEnabled = 0;
             RecycleGruntCoords(this);
             m_defenderState = AISTATE_RETREAT;
@@ -205,8 +201,7 @@ i32 CGrunt::WanderStep() {
             if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
                 goto ph1;
             }
-            Coord cp = slot->m_lastTilePx;
-            CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
+            COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)

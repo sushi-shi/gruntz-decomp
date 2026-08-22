@@ -207,8 +207,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_lastDropTime = 0;
     m_dropInterval = 0;
     SwitchGeometry("LEVEL_OBJECTDROPPER", 0);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->m_flags |= 0x2000002;
 
     i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -253,9 +252,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
         m_scrollMode = 1;
     }
     CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    m_object->m_drawFillArg = sel;
+    SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
     m_lastDropTime = 0;
     m_dropInterval = 0;
     m_object->m_area.left = 1;
@@ -399,9 +396,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
         case SERIAL_POSTLOAD: {
             CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
             CWwdGameObjectA* o = m_object;
-            o->m_drawActive = 1;
-            o->m_drawFillArg = fill;
-            o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+            SET_DRAW_FILL_REVERSED(o, SHADE_DST_BY_SRC_16, fill);
             break;
         }
     }
@@ -412,8 +407,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
     SwitchGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_wwdObject->m_flags |= 0x2000002;
@@ -515,8 +509,7 @@ i32 CDroppedObject::AdvanceFall() {
             }
         }
         SwitchGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("B");
+        SET_ANIMATION_ACT("B");
         g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
         return 0;
     }
@@ -559,16 +552,13 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
     SwitchGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_wwdObject->m_flags |= 0x2000002;
     CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
     CWwdGameObjectA* draw = m_object;
-    draw->m_drawActive = 1;
-    draw->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    draw->m_drawFillArg = fill;
+    SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
 }
@@ -617,9 +607,7 @@ i32 CDroppedObjectShadow::SerializeMove(
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        o->m_drawFillArg = fill;
+        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, fill);
     }
     return 1;
 }

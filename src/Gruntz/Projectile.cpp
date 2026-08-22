@@ -281,8 +281,7 @@ i32 CProjectile::LoadProjectileSprites(
             );
     }
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     return 1;
 }
 
@@ -927,8 +926,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
     m_wwdObject->ApplyName("GAME_TIMEBOMB");
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     if (m_object->m_damage > 0) {
         m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);

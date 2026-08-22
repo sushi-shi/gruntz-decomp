@@ -402,3 +402,35 @@ with 82 carried below-bank rows and zero fresh regressions. The load-bearing con
 scores were restored to `StepArrivalDrop` 32.302708%, `CSpriteRef::Build` 100.0000%,
 `StepDiggerBehavior` 83.86855%, `ConvertRowDoubleFwd` 71.84295%, and
 `CDDSurface::ShadeRect` 76.990906%.
+
+## Second follow-up: semantic source pass
+
+A second source-wide semantic scan found six families that the initial normalized
+retail-window inventory did not group. Each was first tested as a real inline on
+representative callers. The local instruction streams matched, but definitions in
+the hot shared headers perturbed unrelated C1 state. The retained representation is
+therefore token-preserving macros, including separate retail-observed source shapes:
+
+| Family | Retained coverage |
+|---|---:|
+| animation-act transition (`m_prevAnimSetNode` then `ActFindId`) | 110 sites |
+| draw-fill table setup | 57 sites |
+| draw-fill fraction setup | 7 sites |
+| scaled/raw plane scroll plus `RecomputePlaneCoords` | 9 sites |
+| arrival-target reset/copy | 5 sites |
+| same-target `CommitNeighbor` argument expansion | 29 sites |
+
+The neighbor family needs two macro shapes: eleven callers originally read the
+target fields directly, while eighteen first copied `m_lastTilePx` into a `Coord`.
+Collapsing both populations to direct reads regressed seven functions by 0.79 to
+5.57 points; restoring the copy inside the second macro restored all seven current
+fingerprints. See `docs/patterns/inline-macro-must-preserve-caller-local.md`.
+
+The one animation transition with an intervening `m_playFlags` store remains
+textual because combining it would reorder observable stores. Partial draw-fill
+updates likewise remain textual; the macros cover only complete adjacent field
+sets.
+
+The authoritative full build on current `main` after this follow-up scored 3,738
+exact functions at 95.18% overall fuzzy, with 75 carried below-bank rows and zero
+fresh regressions.

@@ -613,9 +613,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
     CShadeTable* sel =
         g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdGameObjectA* h = m_object;
-    h->m_drawActive = 1;
-    h->m_drawFillCmd = SHADE_PAL_16;
-    h->m_drawFillArg = sel;
+    SET_DRAW_FILL(h, SHADE_PAL_16, sel);
 }
 
 RVA(0x00057890, 0x19c)
@@ -1747,8 +1745,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
 
         this->m_lastTilePx = newPos;
-        this->m_prevAnimSetNode = this->m_objAux->m_actKey;
-        this->m_objAux->m_actKey = ActFindId("O");
+        SET_ANIMATION_ACT("O");
         // Derive motion from the committed member coordinates, not the source local.
         double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
         double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
@@ -1848,8 +1845,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             }
             SnapToLastTile(1);
             if (redo) {
-                m_prevAnimSetNode = m_objAux->m_actKey;
-                m_objAux->m_actKey = ActFindId("D");
+                SET_ANIMATION_ACT("D");
                 SetupTubeAnim(m_coordToggle);
             }
         }
@@ -2171,9 +2167,7 @@ void CGrunt::XferName(char*) {
             } else {
                 i32 fade = g_buteMgr.GetIntDef("Grunt", s_FadeTransparency, 0xc0);
                 CWwdGameObjectA* o2 = m_object;
-                o2->m_drawActive = 1;
-                o2->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-                o2->m_fillFraction = fade;
+                SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
             }
             i32 flash = g_buteMgr.GetIntDef("Grunt", s_SafeFlashTime, 0x32);
             if (g_buteMgr.GetIntDef("Grunt", s_AccelerateFlash, 0) == 1) {
@@ -2736,9 +2730,7 @@ kindDispatch:
                     g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
                 CWwdGameObjectA* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
-                obj->m_drawActive = 1;
-                obj->m_drawFillCmd = cmd;
-                obj->m_drawFillArg = sel;
+                SET_DRAW_FILL(obj, cmd, sel);
             }
         }
         i64 left = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
@@ -2756,9 +2748,7 @@ kindDispatch:
                     * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
                     );
                 CWwdGameObjectA* obj = m_object;
-                obj->m_drawActive = 1;
-                obj->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-                obj->m_fillFraction = frac;
+                SET_DRAW_FILL_FRACTION(obj, SHADE_PAL_ALPHA_16, frac);
             } else {
                 CWwdGameObjectA* obj = m_object;
                 if (!HAS(obj->m_stateFlags, SPRITE_STATE_FLASHING)) {

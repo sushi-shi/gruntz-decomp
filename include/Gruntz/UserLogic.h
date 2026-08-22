@@ -130,6 +130,10 @@ public:
     i32 m_prevAnimSetNode;
 };
 
+#define SET_ANIMATION_ACT(key)                                                                     \
+    m_prevAnimSetNode = m_objAux->m_actKey;                                                        \
+    m_objAux->m_actKey = ActFindId(key)
+
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
     out->m_x >>= TILE_SHIFT_PX;

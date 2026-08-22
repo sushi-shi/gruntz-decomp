@@ -32,8 +32,7 @@ RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)

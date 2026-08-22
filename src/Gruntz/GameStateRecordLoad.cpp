@@ -276,16 +276,12 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     i32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), flag);
     CWwdGameObjectA* cb = m_object;
-    cb->m_drawActive = 1;
-    cb->m_drawFillCmd = SHADE_PAL_16;
-    cb->m_drawFillArg = r;
+    SET_DRAW_FILL(cb, SHADE_PAL_16, r);
 
     if (m_gruntKind == GRUNT_GHOST) {
         CWwdGameObjectA* cb2 = m_object;
         i32 v = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
-        cb2->m_drawActive = 1;
-        cb2->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-        cb2->m_fillFraction = v;
+        SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);
     }
     return 1;
 }

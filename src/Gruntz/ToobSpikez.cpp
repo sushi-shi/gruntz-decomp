@@ -73,8 +73,7 @@ CActReg CActRegPool<CToobSpikez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SwitchGeometry("GAME_CYCLE100", 2);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
     m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
     m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;

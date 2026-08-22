@@ -43,8 +43,7 @@ RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     RECT r;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_wwdObject->m_id);
     {
         RECT bounds;

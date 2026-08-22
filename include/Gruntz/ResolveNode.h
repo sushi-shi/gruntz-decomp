@@ -108,4 +108,29 @@ public:
     RECT m_clip;
 };
 
+#define SET_DRAW_FILL(node, mode, table)                                                           \
+    node->m_drawActive = 1;                                                                        \
+    node->m_drawFillCmd = mode;                                                                    \
+    node->m_drawFillArg = table
+
+#define SET_DRAW_FILL_REVERSED(node, mode, table)                                                  \
+    node->m_drawActive = 1;                                                                        \
+    node->m_drawFillArg = table;                                                                   \
+    node->m_drawFillCmd = mode
+
+#define SET_DRAW_FILL_SPLIT(activeNode, node, mode, table)                                         \
+    activeNode->m_drawActive = 1;                                                                  \
+    node->m_drawFillCmd = mode;                                                                    \
+    node->m_drawFillArg = table
+
+#define SET_DRAW_FILL_ARG_FIRST(node, mode, table)                                                 \
+    node->m_drawFillArg = table;                                                                   \
+    node->m_drawActive = 1;                                                                        \
+    node->m_drawFillCmd = mode
+
+#define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
+    node->m_drawActive = 1;                                                                        \
+    node->m_drawFillCmd = mode;                                                                    \
+    node->m_fillFraction = fraction
+
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

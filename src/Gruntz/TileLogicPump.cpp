@@ -224,8 +224,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj)
         Hide();
         m_wwdObject->m_flags |= 0x10000;
     }
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
 }
 
 RVA(0x0010d8c0, 0x102)
@@ -252,8 +251,7 @@ i32 CWarpStonePad::AdvanceAnim() {
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
 
     SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
@@ -285,8 +283,7 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
     Hide();
@@ -317,8 +314,7 @@ void CTileTrigger::RegisterActs() {
 // @early-stop
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
     Hide();
@@ -360,8 +356,7 @@ i32 CTileTrigger::AdvanceAnim() {
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
     m_wwdObject->m_flags |= 1;
 
@@ -449,9 +444,7 @@ i32 CCheckpointTrigger::Act() {
         }
     }
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-
-    m_objAux->m_actKey = ActFindId("B");
+    SET_ANIMATION_ACT("B");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
@@ -607,8 +600,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
     m_wwdObject->ApplyLookupSprite(sprite, elem->m_param);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     return 1;
 }
 

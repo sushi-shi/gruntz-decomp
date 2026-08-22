@@ -117,8 +117,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     if (BeginLeg() == 0) {
         m_wwdObject->m_flags |= 0x10000;
     } else {
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("A");
+        SET_ANIMATION_ACT("A");
         SwitchGeometry("GAME_CYCLE100", 0);
     }
 }
@@ -184,8 +183,7 @@ i32 CPathHazard::Tick() {
             if (segs > 0) {
                 m_leg.m_window = static_cast<u32>(segs);
                 m_leg.m_deadline = static_cast<u32>(g_frameTime);
-                m_prevAnimSetNode = m_objAux->m_actKey;
-                m_objAux->m_actKey = ActFindId("B");
+                SET_ANIMATION_ACT("B");
                 return 0;
             }
             this->BeginLeg();
@@ -243,9 +241,7 @@ i32 CRainCloud::Tick() {
         }
         CShadeTable* frame = g_gameReg->m_logicPump->m_tables[idx];
         CWwdGameObjectA* spr = m_object;
-        spr->m_drawActive = 1;
-        spr->m_drawFillArg = frame;
-        spr->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+        SET_DRAW_FILL_REVERSED(spr, SHADE_DST_BY_SRC_16, frame);
     }
     CPathHazard::Tick();
     return 0;
@@ -266,9 +262,7 @@ i32 CPathHazard::SiblingTick() {
             m_strikeArmed = 0;
         }
         CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[sel];
+        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, g_gameReg->m_logicPump->m_tables[sel]);
     }
 
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -302,12 +296,9 @@ i32 CPathHazard::SiblingTick() {
     i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
     if (legElapsed >= m_leg.m_window) {
         CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        o->m_drawFillArg = tableReg->m_logicPump->m_tables[5];
+        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, tableReg->m_logicPump->m_tables[5]);
         this->BeginLeg();
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId("A");
+        SET_ANIMATION_ACT("A");
         m_strikeArmed = 0;
     }
     return 0;
@@ -401,9 +392,7 @@ RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
     CShadeTable* n = g_gameReg->m_logicPump->m_tables[5];
-    o->m_drawActive = 1;
-    o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    o->m_drawFillArg = n;
+    SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, n);
     SwitchGeometry("LEVEL_RAINCLOUD", 0);
     m_object->m_area.left = 1;
     m_object->m_area.right = 1;
@@ -434,9 +423,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             (static_cast<CSpotLight*>(sl->m_animWorker->m_logic))->m_focus = m_object;
         }
     }
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = SHADE_ALPHA_16;
-    m_object->m_fillFraction = 0x80;
+    SET_DRAW_FILL_FRACTION(m_object, SHADE_ALPHA_16, 0x80);
     m_object->m_area.left = 0;
     m_object->m_area.right = 0;
     m_object->m_area.top = 0;
@@ -469,9 +456,7 @@ i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId 
     if (tag == SERIAL_POSTLOAD) {
         CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
-        o->m_drawActive = 1;
-        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        o->m_drawFillArg = x;
+        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, x);
     }
     return 1;
 }

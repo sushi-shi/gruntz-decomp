@@ -175,8 +175,7 @@ i32 CLightFx::SerializeMove(
 
 RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     return 0;
 }
 

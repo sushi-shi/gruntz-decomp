@@ -368,14 +368,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
-    if (t->m_flags & 1) {
-        t->m_scaledX = static_cast<float>(x);
-        t->m_scaledY = static_cast<float>(y);
-    } else {
-        t->m_scaledX = static_cast<float>(x) * t->m_scaleX;
-        t->m_scaledY = static_cast<float>(y) * t->m_scaleY;
-    }
-    t->RecomputePlaneCoords();
+    SET_SCROLL_POSITION_RAW_FIRST(t, x, y);
     return 1;
 }
 

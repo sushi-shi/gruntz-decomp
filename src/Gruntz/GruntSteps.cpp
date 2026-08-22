@@ -1057,8 +1057,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                             RESET_GRUNT_POWERED_STATE
                         }
                         m_tileMoveCommitted = 0;
-                        m_prevAnimSetNode = m_objAux->m_actKey;
-                        m_objAux->m_actKey = ActFindId("D");
+                        SET_ANIMATION_ACT("D");
                         SwitchAnimation(m_poseWalk);
 
                         GruntDirectionCell cell = m_entranceCell;
@@ -1112,8 +1111,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     if (redo == 0) {
                         goto applyTail;
                     }
-                    m_prevAnimSetNode = m_objAux->m_actKey;
-                    m_objAux->m_actKey = ActFindId("D");
+                    SET_ANIMATION_ACT("D");
                     SetupTubeAnim(m_coordToggle);
                     goto applyTail;
                 }

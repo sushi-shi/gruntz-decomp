@@ -115,8 +115,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     }
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(DATA_COMPGEN(0x0020cc90, "C"));
+    SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
 
     m_wwdObject->m_flags |= 1;
     {
@@ -309,8 +308,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_EXITZ_DRAIN);
             SwitchAnimation(m_poseDeath);
             m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", DEATH_FRAME());
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("B");
+            SET_ANIMATION_ACT("B");
             goto tail;
         }
 

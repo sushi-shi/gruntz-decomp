@@ -106,8 +106,7 @@ i32 CGrunt::ChargeStep() {
                     CGameObject* gp = g->m_object;
                     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
-                        Coord cp = g->m_lastTilePx;
-                        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
+                        COMMIT_GRUNT_NEIGHBOR_COPY(g, cp);
                         return 1;
                     }
                 }
@@ -124,9 +123,7 @@ i32 CGrunt::ChargeStep() {
                             0
                         )
                         != 0) {
-                        SetEntrancePos(1, 1);
-                        m_arrivalCell.m_x = g->m_tileOwnerHi;
-                        m_arrivalCell.m_y = g->m_tileOwnerLo;
+                        SET_GRUNT_ARRIVAL_TARGET(g);
                         m_defenderState = AISTATE_CHASE;
                         CWwdGameObjectA* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
@@ -186,8 +183,7 @@ i32 CGrunt::ChargeStep() {
             if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {
-                Coord cp = t->m_lastTilePx;
-                CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, cp.m_x, cp.m_y);
+                COMMIT_GRUNT_NEIGHBOR_COPY(t, cp);
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
@@ -212,8 +208,7 @@ i32 CGrunt::ChargeStep() {
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                Coord cp = t->m_lastTilePx;
-                CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, cp.m_x, cp.m_y);
+                COMMIT_GRUNT_NEIGHBOR_COPY(t, cp);
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;

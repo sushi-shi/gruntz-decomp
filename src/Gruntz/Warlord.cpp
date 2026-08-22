@@ -132,9 +132,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     CWwdGameObjectA* d = m_object;
-    d->m_drawActive = 1;
-    d->m_drawFillCmd = SHADE_PAL_16;
-    d->m_drawFillArg = sel;
+    SET_DRAW_FILL(d, SHADE_PAL_16, sel);
 
     switch (owner) {
         case WARLORDZ_KING:
@@ -498,9 +496,7 @@ i32 CWarlord::SerializeMove(
             }
 
             CWwdGameObjectA* sprite = m_object;
-            sprite->m_drawActive = 1;
-            sprite->m_drawFillCmd = SHADE_PAL_16;
-            sprite->m_drawFillArg = sel;
+            SET_DRAW_FILL(sprite, SHADE_PAL_16, sel);
             break;
         }
     }
@@ -699,8 +695,7 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     SwitchAnimation(m_animMoving);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("B");
+    SET_ANIMATION_ACT("B");
 
     m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
     m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
@@ -744,8 +739,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
 
             m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
 
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
+            SET_ANIMATION_ACT("D");
             return 1;
         }
     }
@@ -775,8 +769,7 @@ i32 CWarlord::ResolveDeathAnimation() {
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + "_DEATH");
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("C");
+    SET_ANIMATION_ACT("C");
     return 1;
 }
 
@@ -803,8 +796,7 @@ i32 CWarlord::RaiseBattleAlert() {
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__JOY);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("E");
+    SET_ANIMATION_ACT("E");
     return 1;
 }
 
@@ -839,8 +831,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     m_wwdObject->ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     return 1;
 }
 
@@ -870,7 +861,6 @@ i32 CWarlord::ResolveBattlecryAnimation() {
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("F");
+    SET_ANIMATION_ACT("F");
     return 1;
 }

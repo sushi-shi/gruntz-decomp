@@ -141,8 +141,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_object->m_area.right = m_object->m_area.left + 14;
     m_object->m_area.top = m_object->m_screenY - 7;
     m_object->m_area.bottom = m_object->m_area.top + 14;
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_wwdObject->m_flags |= 0x2000002;
     m_object->m_animCursor.m_consumeDraw = 0;
     m_object->m_smarts = IDX(g_areaHazardDeath);
@@ -205,8 +204,7 @@ i32 CStaticHazard::LoadAttributes2() {
         CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
         m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
     }
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("B");
+    SET_ANIMATION_ACT("B");
     return 0;
 }
 
@@ -235,8 +233,7 @@ i32 CStaticHazard::LoadAttributes() {
                 return 0;
             }
 
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("A");
+            SET_ANIMATION_ACT("A");
             SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_wwdObject->m_animCursor.m_animation;

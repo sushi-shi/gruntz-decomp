@@ -126,8 +126,7 @@ i32 CGrunt::UpdateArrival() {
                     i32 x = g->m_object->m_screenX;
                     if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
                         && RectContains(x, g->m_object->m_screenY) != 0) {
-                        Coord cp = g->m_lastTilePx;
-                        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
+                        COMMIT_GRUNT_NEIGHBOR_COPY(g, cp);
                         break;
                     }
                 }
@@ -144,9 +143,7 @@ i32 CGrunt::UpdateArrival() {
                                 0x20
                             )
                             != 0) {
-                            SetEntrancePos(1, 1);
-                            this->m_arrivalCell.m_x = g->m_tileOwnerHi;
-                            this->m_arrivalCell.m_y = g->m_tileOwnerLo;
+                            SET_GRUNT_ARRIVAL_TARGET(g);
                             this->m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             i32 r = CGameLevel::PointInBounds(
@@ -213,8 +210,7 @@ i32 CGrunt::UpdateArrival() {
                     if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        Coord cp = slot->m_lastTilePx;
-                        CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
+                        COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
                 }
@@ -242,8 +238,7 @@ i32 CGrunt::UpdateArrival() {
                     }
                     if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        Coord cp = slot->m_lastTilePx;
-                        CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
+                        COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
                         break;
                     }
                 }

@@ -34,8 +34,7 @@ RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     m_health = HEALTH_FULL;
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)

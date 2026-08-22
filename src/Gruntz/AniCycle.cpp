@@ -32,8 +32,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
 }
 
 RVA(0x000aaf80, 0x102)

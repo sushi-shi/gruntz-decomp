@@ -174,13 +174,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (pa <= pb
                         && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
                                != 0) {
-                        Coord bestTile = best->m_lastTilePx;
-                        CommitNeighbor(
-                            best->m_tileOwnerHi,
-                            best->m_tileOwnerLo,
-                            bestTile.m_x,
-                            bestTile.m_y
-                        );
+                        COMMIT_GRUNT_NEIGHBOR_COPY(best, bestTile);
                         return 1;
                     }
                 }
@@ -211,9 +205,7 @@ i32 CGrunt::ScanNearestTarget() {
                                 0
                             )
                             != 0) {
-                            SetEntrancePos(1, 1);
-                            m_arrivalCell.m_x = best->m_tileOwnerHi;
-                            m_arrivalCell.m_y = best->m_tileOwnerLo;
+                            SET_GRUNT_ARRIVAL_TARGET(best);
                             m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
@@ -295,8 +287,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
                         return 1;
                     }
-                    Coord sgTile = sg->m_lastTilePx;
-                    CommitNeighbor(sg->m_tileOwnerHi, sg->m_tileOwnerLo, sgTile.m_x, sgTile.m_y);
+                    COMMIT_GRUNT_NEIGHBOR_COPY(sg, sgTile);
                     m_defenderState = AISTATE_ATTACK;
                     return 1;
                 }
@@ -327,13 +318,7 @@ i32 CGrunt::ScanNearestTarget() {
                         if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
                                 != 0
                             && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
-                            Coord sgTile = sg->m_lastTilePx;
-                            CommitNeighbor(
-                                sg->m_tileOwnerHi,
-                                sg->m_tileOwnerLo,
-                                sgTile.m_x,
-                                sgTile.m_y
-                            );
+                            COMMIT_GRUNT_NEIGHBOR_COPY(sg, sgTile);
                             return 1;
                         }
                     }

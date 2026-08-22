@@ -133,28 +133,14 @@ i32 CreateDemoMover(CGameObject* owner) {
             }
 
             CDDrawWorkerHost* mg = gh->m_mainPlane;
-            if (!(mg->m_flags & 1)) {
-                mg->m_scaledX = static_cast<float>(curX * mg->m_scaleX);
-                mg->m_scaledY = static_cast<float>(curY * mg->m_scaleY);
-            } else {
-                mg->m_scaledX = static_cast<float>(curX);
-                mg->m_scaledY = static_cast<float>(curY);
-            }
-            mg->RecomputePlaneCoords();
+            SET_SCROLL_POSITION_PRODUCT_CAST(mg, curX, curY);
 
             i32 snapX = gh->m_mainPlane->m_snappedX;
             i32 snapY = gh->m_mainPlane->m_snappedY;
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
                 if (i != gh->m_mainIndex) {
                     CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
-                    if (!(p->m_flags & 1)) {
-                        p->m_scaledX = static_cast<float>(snapX * p->m_scaleX);
-                        p->m_scaledY = static_cast<float>(snapY * p->m_scaleY);
-                    } else {
-                        p->m_scaledX = static_cast<float>(snapX);
-                        p->m_scaledY = static_cast<float>(snapY);
-                    }
-                    p->RecomputePlaneCoords();
+                    SET_SCROLL_POSITION_PRODUCT_CAST(p, snapX, snapY);
                 }
             }
 

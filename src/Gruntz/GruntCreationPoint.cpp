@@ -55,12 +55,9 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = SHADE_PAL_16;
-    m_object->m_drawFillArg = sel;
+    SET_DRAW_FILL(m_object, SHADE_PAL_16, sel);
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    SET_ANIMATION_ACT("A");
 }
 
 RVA_DYNINIT(0x0003e8c0, 0xa, CActRegPool<CGruntCreationPoint>::s_table)
@@ -99,9 +96,7 @@ i32 CGruntCreationPoint::SerializeMove(
             sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
         CWwdGameObjectA* obj = m_object;
-        obj->m_drawActive = 1;
-        obj->m_drawFillCmd = SHADE_PAL_16;
-        obj->m_drawFillArg = sel;
+        SET_DRAW_FILL(obj, SHADE_PAL_16, sel);
     }
     return 1;
 }

@@ -116,12 +116,7 @@ state0: {
     }
     if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
-        CommitNeighbor(
-            nb->m_tileOwnerHi,
-            nb->m_tileOwnerLo,
-            nb->m_lastTilePx.m_x,
-            nb->m_lastTilePx.m_y
-        );
+        COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdGameObjectA* hit = nb->m_object;
         m_arrivalCell.m_x = hit->m_screenX >> TILE_SHIFT_PX;
         m_arrivalCell.m_y = hit->m_screenY >> TILE_SHIFT_PX;

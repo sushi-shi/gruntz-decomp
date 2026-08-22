@@ -105,8 +105,7 @@ i32 CGrunt::LoadPickupSprites(
         }
     }
 
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("J");
+    SET_ANIMATION_ACT("J");
 
     i32 id = 0;
     forced = 0;
