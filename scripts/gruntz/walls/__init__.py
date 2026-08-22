@@ -9,6 +9,9 @@
                                   --measure-cb titrates with the real compiler)
     gruntz walls aggregate-copies rep-movs count sieve; a source/CFG lead,
                                   never proof until block merging is excluded
+    gruntz walls framescan        stack-frame-size sieve: our `sub esp,N`
+                                  against retail's, ranked by what survives
+                                  masking the displacements a frame shift moves
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
                                   cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
@@ -48,6 +51,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "inline-model": "gruntz.walls.inline_model",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
+         "framescan": "gruntz.walls.framescan",
          "global-refs": "gruntz.walls.global_refs",
          "ehactions": "gruntz.walls.ehactions",
          "semdiff": "gruntz.walls.semdiff",
