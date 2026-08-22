@@ -419,8 +419,9 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     SwitchGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_wwdObject->m_flags |= 0x2000002;
     i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenX = adjX;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
     m_fallY = static_cast<double>(m_object->m_screenY);
     CWwdGameObjectA* o = m_object;
