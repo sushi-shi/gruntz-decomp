@@ -2014,7 +2014,8 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     CGameObject* o = src->m_object;
     i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    PickupType k = ArrivalPickup(src);
+    PickupType k =
+        (src->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? src->m_toolId : src->m_entranceReason;
     PickupType vis = src->m_vehiclePickupType;
     this->CellDispatch(srcRow, srcCol, DEATH_DROP, dstRow);
     CDDrawChildGroup* fac = m_world->m_childGroup;

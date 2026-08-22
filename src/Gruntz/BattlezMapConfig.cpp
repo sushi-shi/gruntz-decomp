@@ -689,7 +689,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         {
             {
                 if (unit != NULL) {
-                    if (!IsGruntArrivalRerollPending(unit)) {
+                    if (!unit->IsArrivalRerollPending()) {
                         RouteToNearbyPickup(unit);
                         if (unit->m_poweredUp != 0) {
                             eq = (ANIMATION_ACT_EQUALS_FOR(unit, "A"));
@@ -1082,7 +1082,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         hit = 0;
         if (unit != NULL) {
-            if (!IsGruntArrivalRerollPending(unit)) {
+            if (!unit->IsArrivalRerollPending()) {
                 BattlezTask d8 = unit->m_battleState;
                 if (d8 != BZTASK_ASSIGNED_TARGET && d8 != BZTASK_SEEK_SWITCH) {
                     if (unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0

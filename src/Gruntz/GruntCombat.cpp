@@ -30,7 +30,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
@@ -660,12 +659,18 @@ i32 CGrunt::TryPowerupAtTile() {
     CWwdGameObjectA* h = m_object;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
-    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
-    i32 flags = b->CellFlagsAt(tx, ty);
+    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
+    i32 flags;
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
+        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
+        flags = 1;
+    } else {
+        flags = b->m_rowInts[ty][tx * 7];
+    }
     if ((flags & BRICKZ_BLOCKED_MASK) || (flags & 2)) {
         return 0;
     }
@@ -2495,7 +2500,7 @@ afterTile:
             grid->m_gridH = bounds->bottom - bounds->top;
         }
         if (m_arrivalState != AI_NONE) {
-            if (!IsGruntHoldPending(this)) {
+            if (!IsHoldPending()) {
                 switch (m_arrivalState) {
                     case AI_DUMBCHASER:
                         ChargeStep();
