@@ -1749,9 +1749,9 @@ feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	1	06702c305199	0x17b840	100
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	1	2c46d365562e	0x17b5a0	100.0000	
 feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60	100.0000	
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.2571	13	c0fc17d2ef3b	0x17b5f0	86.2571	
-fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	87.0701	86.9579	3	d11f32674397	0x144b30	87.0701	
+fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	98.5047	98.5047	4	ea55e9d1ad30	0x144b30	98.5047	
 fileimage	?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUBmpFileImage@@I@Z	100.0000	100.0000	5	ce08757647d9	0x143fc0	100.0000	
-fileimage	?DecodePcx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@I@Z	100.0000	100.0000	3	0b44f84491b9	0x144ee0	100.0000	
+fileimage	?DecodePcx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@I@Z	100.0000	99.8775	3	0b44f84491b9	0x144ee0	100.0000	
 fileimage	?DecodePcxData@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPidHeader@@HHI@Z	89.9810	89.9810	2	854166ac0198	0x1457a0	89.9810	
 fileimage	?DecodePcxEx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADHI@Z	100.0000	100.0000	1	fb707cdecdd0	0x1459d0	100.0000	
 fileimage	?DecodePid@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPidHeader@@II@Z	96.1019	96.1019	4	2a08dbcc9809	0x145b10	96.1019	
@@ -1767,7 +1767,7 @@ fileimage	?RunDecode3@CDDSurface@@QAEHPAE0HH@Z	100.0000	100.0000	2	34b8e3886a4c	
 fileimage	?SaveBmp@CDDSurface@@QAEHPBDPAVCFileImagePal@@H@Z	100.0000	100.0000	4	771d79704d90	0x1443b0	100.0000	
 fileimage	?SaveDispatch@CDDSurface@@QAEHPADPAVCFileImagePal@@H@Z	100.0000	100.0000	2	2a53ce4def63	0x144350	100.0000	
 fileimage	?SaveRle16@CDDSurface@@QAEHPADPAVCFileImagePal@@H@Z	91.8957	91.8957	3	ccc8481efa16	0x144640	91.8957	
-fileimage	?SaveTga@CDDSurface@@QAEHPBDPAVCFileImagePal@@H@Z	86.6546	86.6546	10	aaab3e242b93	0x144900	86.6546	
+fileimage	?SaveTga@CDDSurface@@QAEHPBDPAVCFileImagePal@@H@Z	100.0000	100.0000	11	7bf85a4d7fb3	0x144900	100.0000	
 filestream	?CloseFileIOGlobal@@YAXXZ	100.0000	100.0000	2	a5519c59bd4b	0xbd430	100.0000	
 filestream	?IsLoggingEnabled@CFileLog@@QAEHXZ	100.0000	100.0000	1	8e711575bdc1	0xbd480	100.0000	
 filestream	?OpenGruntzLog@CFileLog@@QAEXXZ	100.0000	100.0000	1	5a2e5a9ab3f9	0xbd450	100.0000	
@@ -3946,7 +3946,7 @@ singleanimation	?AdvanceAnim@CSingleAnimation@@QAEHXZ	100.0000	100.0000	1	53ae0c
 singleanimation	?FireActivation@CSingleAnimation@@UAEXH@Z	100.0000	100.0000	1	f5289a299a95	0xaea20	100.0000	
 singleanimation	?RegisterActs@CSingleAnimation@@SAXXZ	100.0000	100.0000	1	6ce79925fd49	0xaeb80	100.0000	
 singleanimation	?SerializeMove@CSingleAnimation@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	6cff25e6f0c1	0x104a0	100.0000	
-singleframemessage	??0CSingleFrameMessage@@QAE@PAUCGameObject@@@Z	86.3070	86.3070	1	72b9fe67af32	0xab310	86.3070	
+singleframemessage	??0CSingleFrameMessage@@QAE@PAUCGameObject@@@Z	86.3070	86.3070	2	19e8ad1204a9	0xab310	86.3070	
 singleframemessage	??1CSingleFrameMessage@@UAE@XZ	100.0000	100.0000	1	cpp:79a89cecfbf7	0xf640	100.0000	
 singleframemessage	??_GCSingleFrameMessage@@UAEPAXI@Z	100.0000	100.0000	1	cpp:79a89cecfbf7	0xf610	100.0000	
 singleframemessage	?AdvanceAnim@CSingleFrameMessage@@QAEHXZ	100.0000	100.0000	1	eba642db1473	0xab910	100.0000	
@@ -4333,7 +4333,7 @@ triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	95.2749	95.2749	6	8b74658c
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	100.0000	100.0000	1	30a510c97236	0x78960	100.0000	
 triggermgr	?LoadExplosionSprites@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	1	ac1a40273130	0x7b330	100.0000	
 triggermgr	?LoadFinishLevelSprite@CTriggerMgr@@QAEXW4FinishLevelReason@@@Z	90.8440	90.8440	3	88d359b1ff29	0x7c3d0	90.8440	
-triggermgr	?LoadGruntResurrectTuning@CTriggerMgr@@QAEHHHH@Z	87.9890	87.9890	1	2d084c2ac0fe	0x7be60	87.9890	
+triggermgr	?LoadGruntResurrectTuning@CTriggerMgr@@QAEHHHH@Z	91.9724	91.9724	2	1efc9eeade61	0x7be60	91.9724	
 triggermgr	?LoadPowerupIconSprites@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	1	4d12c1fbe1e3	0x7c620	100.0000	
 triggermgr	?LoadToyBoxIcon@CTriggerMgr@@QAEHHHHW4PickupType@@H@Z	100.0000	100.0000	1	53818ef4adde	0x7a3f0	100.0000	
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	1	0d57524b96a3	0x7d1d0	100.0000	
