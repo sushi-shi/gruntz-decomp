@@ -926,8 +926,6 @@ i32 CDDSurface::RunDecode3(u8* dstBuf, u8* src, i32 width, i32 height) {
 #pragma optimize("", on)
 
 // @early-stop
-// Retail reads the PidHeader fields through a walking cursor (lea +4 / add 4 /
-// add 0x14) rather than fixed displacements off the parameter.
 RVA(0x001457a0, 0x22c)
 i32 CDDSurface::DecodePcxData(
     CDDrawPtrCollections* dst,
@@ -936,10 +934,15 @@ i32 CDDSurface::DecodePcxData(
     i32 caps,
     u32 key
 ) {
-    PidFlags flags = hdr->flags;
-    i32 w = hdr->width;
-    i32 h = hdr->height;
-    u8* data = hdr->pixels;
+    RecordBytes<PidHeader> p;
+    p.m_rec = hdr;
+    p.m_dwords++;
+
+    PidFlags flags = static_cast<PidFlags>(*p.m_dwords++);
+    i32 w = *p.m_dwords++;
+    i32 h = *p.m_dwords++;
+    p.m_dwords += 4;
+    u8* data = p.m_bytes;
 
     if (w & 3) {
         return 0;
@@ -980,13 +983,11 @@ i32 CDDSurface::DecodePcxData(
         } while (i < 0x100);
         palette = s_palPcxData;
     } else {
-        if (remap) {
-            if (palette == NULL) {
-                return 0;
-            }
-            if (palBpp == BPP_PALETTED_8 && dst->m_hasPalette == 0) {
-                return 0;
-            }
+        if (remap && palette == NULL) {
+            return 0;
+        }
+        if (remap && palBpp == BPP_PALETTED_8 && dst->m_hasPalette == 0) {
+            return 0;
         }
     }
 
