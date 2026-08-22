@@ -832,8 +832,8 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     for (i32 j = 0; j <= 2; j++) {
         for (i32 i = 0; i <= 2; i++) {
             i32 value = m_matrix[j * 3 + i];
-            i32 px = i + m_tileX - 1;
             i32 py = j + m_tileY - 1;
+            i32 px = i + m_tileX - 1;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* plane = reg->m_world->m_level->m_mainPlane;
             SET_WORKER_HOST_CELL(plane, px, py, value);
@@ -866,8 +866,8 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         txt->m_smarts = m_textId;
     }
 
-    i32 bx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 by = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 bx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (bx >= g_gameReg->m_viewBounds.right || bx < g_gameReg->m_viewBounds.left
         || by >= g_gameReg->m_viewBounds.bottom || by < g_gameReg->m_viewBounds.top) {
         return 0;
