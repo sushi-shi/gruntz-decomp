@@ -114,7 +114,6 @@ filestream	5	5
 font	22	19
 fontconfig	15	10
 fonts	2	2
-fortconquered	1	0
 fortressflag	26	23
 frontcandyani	24	18
 fxmodedesc	1	1
@@ -313,7 +312,7 @@ winapimodule	1	0
 winmain	1	1
 worldsoundset	36	33
 wormhole	26	24
-wormholeacts	2	2
+wormholeacts	3	2
 wwdfactoryobject	56	52
 wwdgameobject	47	37
 wwdgameobjectrender	15	11
@@ -1814,7 +1813,6 @@ fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	1	ac91dd77ab35	0x21d80
 fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	94.2241	94.2241	8	3d428ad82260	0x21e20	94.2241	
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	1	1164e8ea8f1a	0x1158f0	100.0000	
 fonts	?InitializeFonts@@YAHXZ	100.0000	100.0000	10	a2bf1cd90122	0x115810	100.0000	
-fortconquered	?AdvanceAnim@CExitTrigger@@QAEHXZ	89.3821	89.3821	12	062180706c95	0x3f5f0	89.3821	
 fortressflag	??0CExplosion@@QAE@PAUCGameObject@@@Z	95.7653	95.7653	2	d6eeb25000ce	0x470e0	95.7653	
 fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	92.8214	92.8214	2	8aa5d46e5417	0x45d30	92.8214	
 fortressflag	??0CParticlez@@QAE@PAUCGameObject@@@Z	95.6316	95.6316	1	3794c9df68d6	0x46ad0	95.6316	
@@ -4547,6 +4545,7 @@ wormhole	?SerializeMove@CTeleporter@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicT
 wormhole	?SerializeMove@CWormhole@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ec658ccb5822	0x3fed0	100.0000	
 wormhole	?SpawnPartners@CWormhole@@QAEHXZ	100.0000	100.0000	1	0323be4816e2	0x403b0	100.0000	
 wormhole	?Update@CTeleporter@@QAEHXZ	100.0000	100.0000	22	8e3f4d3eb002	0x41aa0	100.0000	
+wormholeacts	?AdvanceAnim@CExitTrigger@@QAEHXZ	96.5908	96.5908	12	062180706c95	0x3f5f0	96.5908	
 wormholeacts	?FireActivation@CExitTrigger@@UAEXH@Z	100.0000	100.0000	1	dd9513c84d27	0x3f290	100.0000	
 wormholeacts	?RegisterActs@CExitTrigger@@SAXXZ	100.0000	100.0000	6	b3391ffa14ff	0x3f3f0	100.0000	
 wwdfactoryobject	??0CAniAdvanceCursor@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	98d698bfdc02	0x15b730	100.0000	
