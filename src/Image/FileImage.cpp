@@ -442,10 +442,12 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
-    i32 height = m_height;
+    i32 width = m_width;
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    i32 width = m_width;
+    i32 height = m_height;
+    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biSizeImage = 0;
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
@@ -453,8 +455,6 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     fh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
-    bi.bmiHeader.biCompression = 0;
-    bi.bmiHeader.biSizeImage = 0;
     fh.m_hdr.bfOffBits = 0x3a;
 
     u8* buf = static_cast<u8*>(Lock(0));
