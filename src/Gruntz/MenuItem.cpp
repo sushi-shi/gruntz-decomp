@@ -18,6 +18,12 @@
 
 #include <stdio.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(
     CMenuPage* page,
@@ -171,7 +177,6 @@ i32 CMenuItem::Hit(i32 x, i32 y) {
     return y <= m_hitBottom;
 }
 
-// @early-stop
 RVA(0x00185750, 0x123)
 i32 CMenuItem2::Init(
     CMenuPage* page,
@@ -192,22 +197,15 @@ i32 CMenuItem2::Init(
     m_frameDelay = 0x64;
 
     char buf[0x80];
-    CObject* sprite;
 
     sprintf(buf, "%s_NORMAL", spriteKey);
-    sprite = NULL;
-    m_owner->m_imageRegistry->m_workersByName.Lookup(buf, sprite);
-    m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
+    m_spriteNormal = LookupWorker(m_owner->m_imageRegistry->m_workersByName, buf);
 
     sprintf(buf, "%s_SELECTED", spriteKey);
-    sprite = NULL;
-    m_owner->m_imageRegistry->m_workersByName.Lookup(buf, sprite);
-    m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
+    m_spriteSelected = LookupWorker(m_owner->m_imageRegistry->m_workersByName, buf);
 
     sprintf(buf, "%s_DISABLED", spriteKey);
-    sprite = NULL;
-    m_owner->m_imageRegistry->m_workersByName.Lookup(buf, sprite);
-    m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);
+    m_spriteDisabled = LookupWorker(m_owner->m_imageRegistry->m_workersByName, buf);
 
     return 1;
 }
