@@ -201,7 +201,7 @@ inputdevice	14	14
 inputdeviceconfig	2	2
 keyedlist	3	3
 kitchenslime	9	6
-latencylist	5	5
+latencylist	9	8
 levelplane	28	17
 levelpreview	11	11
 levelrezpath	3	2
@@ -269,7 +269,6 @@ shadetablecache	26	16
 simpleanimation	7	6
 singleanimation	7	7
 singleframemessage	7	6
-slotcombofill	4	3
 soundfontpath	5	4
 soundstream	36	33
 soundvoicelist	5	5
@@ -2823,11 +2822,15 @@ kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	94.7480	94.7480	1	1975f52c6d91	0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	100.0000	100.0000	1	e087b8b36351	0xb2aa0	100.0000	
 kitchenslime	?SerializeMove@CKitchenSlime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	c76319dcf5ed	0xb2ff0	100.0000	
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	95.1542	95.1542	26	053362b965f2	0xb2ca0	95.1542	
+latencylist	?FillCombo@CLatencyList@@QAEHPAUHWND__@@H@Z	82.6316	82.6316	2	2e05e30811db	0x37ff0	82.6316	
+latencylist	?GetName@CKeyedNode@@QAE?AVCString@@XZ	100.0000	100.0000	1	48be84f74af2	0x38120	100.0000	
+latencylist	?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	9448f974d5e0	0x38220	100.0000	
 latencylist	?PopulateGenericOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	829d3ed82ede	0x37f00	100.0000	
 latencylist	?PopulateIpxOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	0961c5ba4c68	0x37b40	100.0000	
 latencylist	?PopulateModemOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	85d3b00c1359	0x37d20	100.0000	
 latencylist	?PopulateSerialOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	acc6f6564cec	0x37e10	100.0000	
 latencylist	?PopulateTcpIpOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	6e389e128928	0x37c30	100.0000	
+latencylist	?SelectItem@CLatencyList@@QAEHPAUHWND__@@HHH@Z	100.0000	100.0000	2	5d48efdb78d7	0x38150	100.0000	
 levelplane	??0CDDrawWorkerHost@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	4329479a809e	0x1615a0	100.0000	
 levelplane	??1CWwdGridIter@@UAE@XZ	100.0000	100.0000	1	cpp:272def40b6ef	0x163a10	100.0000	
 levelplane	??1CWwdSpatialMgr@@QAE@XZ	100.0000	100.0000	1	cpp:272def40b6ef	0x163a40	100.0000	
@@ -3950,10 +3953,6 @@ singleframemessage	?AdvanceAnim@CSingleFrameMessage@@QAEHXZ	100.0000	100.0000	1	
 singleframemessage	?FireActivation@CSingleFrameMessage@@UAEXH@Z	100.0000	100.0000	1	e72a33e4f437	0xab5b0	100.0000	
 singleframemessage	?RegisterActs@CSingleFrameMessage@@SAXXZ	100.0000	100.0000	1	ff1f718a4179	0xab710	100.0000	
 singleframemessage	?SerializeMove@CSingleFrameMessage@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	9266441565d0	0xf5a0	100.0000	
-slotcombofill	?FillCombo@CLatencyList@@QAEHPAUHWND__@@H@Z	73.2237	73.2237	2	2e05e30811db	0x37ff0	73.2237	
-slotcombofill	?GetName@CKeyedNode@@QAE?AVCString@@XZ	100.0000	100.0000	1	48be84f74af2	0x38120	100.0000	
-slotcombofill	?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	9448f974d5e0	0x38220	100.0000	
-slotcombofill	?SelectItem@CLatencyList@@QAEHPAUHWND__@@HHH@Z	100.0000	100.0000	2	5d48efdb78d7	0x38150	100.0000	
 soundfontpath	?BuildSoundFontPath@@YAHD@Z	99.8901	99.8901	1	14e7249a8927	0xf8f30	99.8901	
 soundfontpath	?CloseSoundFontDevice@@YAXXZ	100.0000	100.0000	1	a065fcfc3bcf	0xf8e20	100.0000	
 soundfontpath	?SfDeviceInitKeys@@YAHXZ	100.0000	100.0000	1	75076a64d12c	0xf8ec0	100.0000	
