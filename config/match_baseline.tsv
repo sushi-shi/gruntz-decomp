@@ -805,7 +805,7 @@ chatboxowner	?Configure@CChatBoxOwner@@QAEXW4ChatBoxLayout@@@Z	100.0000	100.0000
 chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	1	eb73b4fa90d4	0x20510	100.0000	
 chatboxowner	?GetInputText@CFontConfig@@QAE?AVCString@@XZ	100.0000	100.0000	1	5dab2982a8d3	0x20ef0	100.0000	
 chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	100.0000	100.0000	1	5ad7961eb46a	0x21140	100.0000	
-chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	85.9857	85.9857	1	3e908992e5e9	0x20f40	85.9857	
+chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	89.0357	89.0357	2	73c9eadf545e	0x20f40	89.0357	
 chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	85.1837	85.1837	15	13c27971e50f	0x205c0	85.1837	
 chatboxowner	?ResetCopy@zPTree@@QAEXXZ	100.0000	100.0000	2	e20644bf79bc	0x212a0	100.0000	
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	98260a187bb1	0x85e60	100.0000	
@@ -850,7 +850,7 @@ creditsstate	??1CMoviePlayer@@QAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x38fc
 creditsstate	??1CRgn@@UAE@XZ	100.0000	100.0000	1	cpp:752db8b0aca8	0x8c400	100.0000	
 creditsstate	??_GCCreditsState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:752db8b0aca8	0x8d5b0	100.0000	
 creditsstate	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	bd29ddd935dc	0x3a1d0	100.0000	
-creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	86.0773	86.0773	1	aca56c193ae9	0x396f0	86.0773	
+creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	87.8164	87.8164	2	ac1edd5b8030	0x396f0	87.8164	
 creditsstate	?EnterState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	c1897443820a	0x39120	100.0000	
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	5b6722d9ab3b	0x39c40	100.0000	
 creditsstate	?FlashColor@CCreditsState@@QAEHXZ	100.0000	100.0000	1	1b7c8be0b408	0x39d00	100.0000	
@@ -1748,7 +1748,7 @@ feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	1	e2e41f20f7af	0x17b510	100.00
 feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	1	06702c305199	0x17b840	100.0000	
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	1	2c46d365562e	0x17b5a0	100.0000	
 feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60	100.0000	
-feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	85.2000	85.2000	12	6018c45e58cd	0x17b5f0	85.2000	
+feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.2571	13	c0fc17d2ef3b	0x17b5f0	86.2571	
 fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	87.0701	86.9579	3	d11f32674397	0x144b30	87.0701	
 fileimage	?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUBmpFileImage@@I@Z	100.0000	100.0000	5	ce08757647d9	0x143fc0	100.0000	
 fileimage	?DecodePcx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@I@Z	100.0000	100.0000	3	0b44f84491b9	0x144ee0	100.0000	
@@ -3370,7 +3370,7 @@ netsessionmgr	?SendAll@CNetSession@@QAEHXZ	100.0000	100.0000	1	428336c87d1a	0xbf
 netsessionmgr	?SendBatch@CNetSession@@QAEHXZ	100.0000	100.0000	1	d5cf8c62362e	0xbfd40	100.0000	
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	1	c908e81ff168	0xbfc70	97.6316	
 netsessionmgr	?SendOne@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	84.1579	84.1579	1	3ff41ccb471b	0xbfeb0	84.1579	
-netsessionmgr	?Tick@CNetSession@@QAEHXZ	86.0323	86.0323	1	eabb5da5e93a	0xbf9e0	86.0323	
+netsessionmgr	?Tick@CNetSession@@QAEHXZ	99.8710	99.8710	2	026c4cb0c680	0xbf9e0	99.8710	
 netsessionmgr	?Verify@CNetSession@@QAEHH@Z	100.0000	89.5349	1	b2b21951de05	0xc0290	100.0000	
 netsessionmgr	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	6	b2b21951de05	0xc04f0	100.0000	
 palettebmp	?Apply@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	c4424d847a4d	0x1775f0	100.0000	
@@ -4024,7 +4024,7 @@ spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	100.0000	100.0000	2	f59a5f52dc26
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	1	981f5317f08f	0x9bc70	100.0000	
 spriteloaders	?Serialize@CTimer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	bab1e6bdc3bc	0x9c2e0	100.0000	
 spriteloaders	?SetTime@CTimer@@QAEXHH@Z	100.0000	100.0000	1	e1026f578b91	0x9c090	100.0000	
-spriteloaders	?Tick@CTimer@@QAEHH@Z	85.0610	85.0610	33	62ac4b2114e7	0x9bca0	85.0704	
+spriteloaders	?Tick@CTimer@@QAEHH@Z	87.4178	87.4178	34	4af8e8cf933e	0x9bca0	87.4178	
 spriteref	?Build@CSpriteRef@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	100.0000	100.0000	2	033340aa6a77	0xe2df0	100.0000	
 spriteref	?Free@CSpriteRef@@QAEXXZ	100.0000	100.0000	6	86e0783476c6	0xe32e0	100.0000	
 spritereftable	?Add@CSpriteRefTable@@QAEPAVCSpriteRef@@PADW4ColorTint@@@Z	97.5000	97.5000	3	8531caa19679	0xe2890	97.5000	
