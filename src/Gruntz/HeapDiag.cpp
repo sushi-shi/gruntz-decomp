@@ -185,14 +185,18 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     }
 
     PROCESSENTRY32 pe;
-    memset(&pe, 0, sizeof(pe));
+    // Retail zeroes past dwSize only (0x49 dwords from pe+4) and then stores
+    // the full SDK sizeof.
+    memset(&pe.cntUsage, 0, sizeof(pe) - sizeof(pe.dwSize));
     pe.dwSize = sizeof(pe);
     i32 matchCount = 0;
 
     if (pFirst(hSnap, &pe)) {
         do {
             MODULEENTRY32 me;
-            memset(&me, 0, sizeof(me));
+            // dwSize is dead on this path (LegacyFindModule memcpy's over it);
+            // retail's clear starts past it.
+            memset(&me.th32ModuleID, 0, sizeof(me) - sizeof(me.dwSize));
             if (Utils::WinAPI::LegacyFindModule(
                     pe.th32ProcessID,
                     pe.th32ModuleID,
