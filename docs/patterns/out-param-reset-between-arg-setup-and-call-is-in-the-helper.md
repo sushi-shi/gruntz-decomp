@@ -171,3 +171,26 @@ call's argument setup and the call is a candidate first-statement-of-the-inline.
 
 related: inline-expansion-boundary-pins-a-neighbour.md,
 subexpression-position-names-its-statement.md, member-not-reread-after-a-call-names-a-source-local.md
+
+### Three more productions (2026-08-22)
+
+| function | rva | before | after | shape |
+|---|---|---|---|---|
+| `CActionOptionsMenuBar::LoadAssets` | 0x000090e0 | 84.87 | **100.0000** | four `CMapStringToOb` sites, typed-return helper |
+| `CGruntzMgr::DelayedQuit` | 0x0008f530 | 84.84 | 94.67 | the `MENU_ACTIVATE` double lookup, typed-return `LookupCue` |
+| `CSBI_Image::SerializeFields` | 0x000e6e40 | 84.97 | 89.73 | see below - the helper was INERT, the fix was the index local |
+
+The `SerializeFields` row is the useful negative: retail shows the reset at the
+deep position (`lea &out / push / push / mov ecx,[reg+0x28] / mov [esp+N],eax /
+call`), yet converting the site to the typed-return helper measured **byte-flat**
+and cost the exact sibling `CSBI_Image::Render` 100 -> 74 through the added
+declaration. What actually moved it was a different lever in the same block:
+`idx` is address-taken by `ar->Read(&idx, ...)`, so every use after the Lookup
+call re-read its home slot, while retail loads it into ESI *before* the call's
+argument setup. A plain `i32 frameIndex = idx;` copy is the only thing that can
+hold a register there. Read the reset position AND the surrounding lifetimes
+before assuming the helper is the lever.
+
+Its own residue is a cross-jump decline: retail keeps the two `m_frame = NULL`
+arms separate because its `this` is homed in one arm and in ESI in the other, so
+the two epilogues are not byte-identical; ours merges them.

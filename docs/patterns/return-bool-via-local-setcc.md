@@ -37,3 +37,12 @@ tail from `neg/sbb/neg` to retail's `xor/test/setne/mov` and raised 76.6912% →
 `CGiantRockLogic*` result was named; `i32 found = call(...) != NULL` was byte-neutral. related:
 int-to-bool-normalize.md (the opposite, inline form), seh-bool-return-canonicalize.md (the /GX
 setne variant).
+
+### The named result can also fix the ALLOCATION, not just the tail
+
+`CNetSession::SendOne` 0x0bfeb0 84.16 -> 88.74 on `i32 status = m_netMgr->SetData(...); return
+status == 0;`. Beyond the expected tail flip (`neg/sbb/inc` -> `xor/test/sete/mov`), naming the
+result removed the extra long-lived value that had displaced the `val` parameter: the
+call-crossing set became retail's (`val` in ESI, `slot->m_baseSeq` in EDI) and the CSE'd
+`&slot->m_rangeA` address went back to being rematerialized per call site, as retail does. So
+read a `neg/sbb` tail as a candidate even when the visible wall is the register roles.
