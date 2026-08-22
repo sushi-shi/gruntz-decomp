@@ -2490,8 +2490,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = this->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
-            i32 by = g->m_viewRect.top - q->m_planeCtx.top + my;
-            i32 bx = g->m_viewRect.left - q->m_planeCtx.left + mx;
+            RECT* view = &g->m_viewRect;
+            i32 by = view->top - q->m_planeCtx.top + my;
+            i32 bx = view->left - q->m_planeCtx.left + mx;
             host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
@@ -2504,9 +2505,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 my = this->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
-        i32 by = ((g->m_viewRect.top - q->m_planeCtx.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 bx = ((this->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~TILE_MASK_PX)
-                 + TILE_HALF_PX;
+        RECT* view = &g->m_viewRect;
+        i32 by = ((view->top - q->m_planeCtx.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 bx =
+            ((this->m_cursorX - q->m_planeCtx.left + view->left) & ~TILE_MASK_PX) + TILE_HALF_PX;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
@@ -2826,12 +2828,11 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 // other's callee-saved register, the rotating-cursor class - see
 // docs/relevations/cl5-c2-register-picker-is-a-rotating-cursor.md.  Retail also
 // re-reads y from [esp+0x3c] at every use where cl enregisters it.
-// MEASURED AND REJECTED (twice, independently): retail materialises `&m_viewRect`
-// for the first scroll conversion (0xcdc0f `add eax,0x40`) where the
-// `cam->m_viewRect.left` form below uses a displacement, but spelling it as a
-// pointer local emits that instruction and re-colours the rest of the body away
-// from retail.  See docs/patterns/whole-struct-copy-vs-scalars.md for the same
-// lesson on OnKeyDown.
+// The `RECT* view = &cam->m_viewRect` local reproduces retail's 0xcdc0f
+// `add eax,0x40` scroll conversion. Two pre-merge lanes measured the same
+// spelling as a net loss (body recolor); the 2026-08-22 tree measures it a
+// gain with the +0x40/+0x44 operand exclusives cleared - the earlier
+// rejection was TU-state, not structure.
 // MEASURED AND REJECTED: naming the `(char)g_curPlayer` argument as a `char` local -
 // retail stages that byte through the dead first-parameter home (`mov byte
 // [esp+0x40],cl` / `mov ecx,[esp+0x40]`), but a named local gets its own dword and
@@ -2879,8 +2880,9 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
         }
         CGameLevel* geom = m_mgr->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
-        sx = cam->m_viewRect.left - geom->m_planeCtx.left + xr;
-        sy = cam->m_viewRect.top - geom->m_planeCtx.top + y;
+        RECT* view = &cam->m_viewRect;
+        sx = view->left - geom->m_planeCtx.left + xr;
+        sy = view->top - geom->m_planeCtx.top + y;
 
         if (m_dragInhibit1 != 0 && m_playerCommandPending == 0) {
             // The "placed" flag IS the parameter reused: retail writes 0/1 into the
