@@ -245,6 +245,12 @@ WwdRegion* CWwdGridIter::GetNext() {
             m_next = static_cast<WwdRegion*>(m_cur->m_next);
             if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
                 || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
+                // DELIBERATE DIVERGENCE: retail's reject arm has NO cursor advance -
+                // 0x191c96 reloads m_cur from [esi+8] and stores only m_next, so an
+                // out-of-rect region spins here forever (five live callers). Dropping
+                // this line reproduces retail byte-for-byte and measures 93.71 vs
+                // 90.65, but ships the hang. Held while runtime defects are under
+                // playtest; flip it only with the user's ruling.
                 m_cur = m_next;
                 continue;
             }
