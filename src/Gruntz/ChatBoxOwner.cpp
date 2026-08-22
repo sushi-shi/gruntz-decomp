@@ -28,6 +28,15 @@
 #include <string.h>
 #include <strstrea.h>
 
+// The zero-store scheduled between the Lookup arg pushes and the call is the
+// inline wrapper's first statement (docs/patterns/
+// out-param-reset-between-arg-setup-and-call-is-in-the-helper.md).
+inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* ob = NULL;
+    map.Lookup(name, ob);
+    return static_cast<CDDrawWorker*>(ob);
+}
+
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
     m_world = world;
@@ -199,10 +208,8 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    CDDrawWorker* spr = 0;
-    CObject* sprOb = 0;
-    self->m_world->m_imageRegistry->m_workersByName.Lookup("GAME_CHATBOX", sprOb);
-    spr = static_cast<CDDrawWorker*>(sprOb);
+    CDDrawWorker* spr =
+        LookupWorker(self->m_world->m_imageRegistry->m_workersByName, "GAME_CHATBOX");
     if (!spr) {
         return 0;
     }
