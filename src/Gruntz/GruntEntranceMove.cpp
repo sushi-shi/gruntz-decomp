@@ -243,8 +243,14 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
 // ONE frame dword (`push ecx`), cl takes three and reserves two (`sub esp,8`), so
 // retail has a spare register to park the constant 1 in (`mov [esi+0x25c],ebp`,
 // `cmp eax,ebp`) where cl spells every such site as an immediate.
+static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* result = NULL;
+    MapLookup(map, name, result);
+    return result;
+}
+
 RVA(0x00067bd0, 0x2ef)
-void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
+i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("K");
 
@@ -266,8 +272,8 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     if (mode == GRUNT_ENTRANCE_WORMHOLE) {
         i32 onScreen = 0;
         {
-            i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
+            i32 x = m_object->m_screenX;
             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
                 onScreen = 1;
             } else {
@@ -290,33 +296,27 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
         i32 r = rand() % 0x1e1;
         if (r > 0x140) {
-            found = NULL;
-            MapLookup(
+            found = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_GRUNTZ_ENTRANCEZ_ONE,
-                found
+                s_GRUNTZ_ENTRANCEZ_ONE
             );
             if (onScreen) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
-            found = NULL;
-            MapLookup(
+            found = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_GRUNTZ_ENTRANCEZ_TWO,
-                found
+                s_GRUNTZ_ENTRANCEZ_TWO
             );
             if (onScreen) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else {
-            found = NULL;
-            MapLookup(
+            found = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_GRUNTZ_ENTRANCEZ_THREE,
-                found
+                s_GRUNTZ_ENTRANCEZ_THREE
             );
             if (onScreen) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
@@ -324,19 +324,15 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
-        found = NULL;
-        MapLookup(
+        found = LookupAnimation(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_GRUNTZ_ENTRANCEZ_DROP,
-            found
+            s_GRUNTZ_ENTRANCEZ_DROP
         );
         key = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        found = NULL;
-        MapLookup(
+        found = LookupAnimation(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_GRUNTZ_ENTRANCEZ_RESSURECT,
-            found
+            s_GRUNTZ_ENTRANCEZ_RESSURECT
         );
         key = "GRUNTZ_DEATHZ_MELT";
     }
@@ -351,6 +347,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                                    : 0;
         m_wwdObject->ApplyLookupSprite(key, elem->m_param);
     }
+    return 0;
 }
 
 // @early-stop
@@ -566,7 +563,6 @@ i32 CGrunt::StartBombGruntRun() {
 // local reference is 8 bytes higher.
 RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
-    CAniElement* _out;
     if (enable != 0) {
         m_wingzEnabled = 1;
         m_wingzDurationLo =
@@ -595,14 +591,13 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[7].WalkName() = s_S_ITEM;
         m_cells[8].WalkName() = s_SE_ITEM;
 
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM, _out);
-        m_poseWalk = _out;
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM, _out);
+        m_poseWalk =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM);
+        CAniElement* pose =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM);
         AT(m_poseIdle, GRUNT_IDLE3) = 0;
-        AT(m_poseIdle, GRUNT_IDLE1) = _out;
-        AT(m_poseIdle, GRUNT_IDLE2) = _out;
+        AT(m_poseIdle, GRUNT_IDLE1) = pose;
+        AT(m_poseIdle, GRUNT_IDLE2) = pose;
         AT(m_poseIdle, GRUNT_IDLE4) = 0;
         AT(m_poseIdle, GRUNT_IDLE5) = 0;
 
@@ -638,24 +633,18 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[7].IdleName() = s_S_IDLE;
         m_cells[8].IdleName() = s_SE_IDLE;
 
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_WALK, _out);
-        m_poseWalk = _out;
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE1, _out);
-        AT(m_poseIdle, GRUNT_IDLE1) = _out;
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE2, _out);
-        AT(m_poseIdle, GRUNT_IDLE2) = _out;
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE3, _out);
-        AT(m_poseIdle, GRUNT_IDLE3) = _out;
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE4, _out);
-        AT(m_poseIdle, GRUNT_IDLE4) = _out;
-        _out = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE5, _out);
-        AT(m_poseIdle, GRUNT_IDLE5) = _out;
+        m_poseWalk =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_WALK);
+        AT(m_poseIdle, GRUNT_IDLE1) =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE1);
+        AT(m_poseIdle, GRUNT_IDLE2) =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE2);
+        AT(m_poseIdle, GRUNT_IDLE3) =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE3);
+        AT(m_poseIdle, GRUNT_IDLE4) =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE4);
+        AT(m_poseIdle, GRUNT_IDLE5) =
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE5);
     }
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);

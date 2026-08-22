@@ -753,7 +753,7 @@ public:
     void ResetEntranceAnimation(i32 a, i32 b, i32 c);
     i32 ResolveEntranceArrival();
     void ClearAllSprites();
-    void BuildEntranceAnimation(GruntEntranceMode mode);
+    i32 BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
 
     void SetEntrancePos(i32 a, i32 b);
