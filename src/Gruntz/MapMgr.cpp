@@ -237,8 +237,8 @@ i32 CMapMgr::Search(
     if (static_cast<u32>((x1 - ox)) >= static_cast<u32>(m_gridW)) {
         return 0;
     }
-    i32 oy = m_bounds.top;
     i32 hgt = m_gridH;
+    i32 oy = m_bounds.top;
     if (static_cast<u32>((y1 - oy)) >= static_cast<u32>(hgt)) {
         return 0;
     }
@@ -309,7 +309,8 @@ i32 CMapMgr::Search(
     BrickzNode* node = 0;
     while (m_openList != NULL) {
         node = PopFront();
-        (&m_rows[node->m_row][node->m_col])->m_count--;
+        BrickzCell* cell = &m_rows[node->m_row][node->m_col];
+        cell->m_count--;
         if (node->m_col == m_goal.m_x && node->m_row == m_goal.m_y) {
             goto reached;
         }
@@ -337,12 +338,14 @@ reached:
     // (block B25 at the `reached:` label carries a jcc past the body).
     while (p != NULL) {
         CoordPoolNode* rec = g_coordPool.m_freeHead;
+        i32 cellX = p->m_col;
+        i32 cellY = p->m_row;
         Coord* slot = 0;
         if (rec->m_next != NULL) {
             slot = &rec->m_coord;
-            rec->m_coord.m_x = p->m_col;
-            rec->m_coord.m_y = p->m_row;
-            g_coordPool.m_freeHead = rec->m_next;
+            slot->m_x = cellX;
+            slot->m_y = cellY;
+            g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
 
         list->AddHead(slot);
