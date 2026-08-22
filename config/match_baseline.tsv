@@ -123,7 +123,7 @@ gameassetnamespaces	1	0
 gameiconflasheffect	1	1
 gameinfostring	4	3
 gamelevel	96	78
-gamelevelmove	14	9
+gamelevelmove	17	12
 gameobjectfactory	1	1
 gamesave	1	1
 gamestaterecordload	1	0
@@ -317,7 +317,7 @@ wormholeacts	2	2
 wwdfactoryobject	56	52
 wwdgameobject	47	37
 wwdgameobjectrender	15	11
-wwdgrid	16	12
+wwdgrid	13	9
 wwdobjmgr	54	41
 wwdspatialmgr	14	12
 zdarrayderived	3	2
@@ -1992,6 +1992,9 @@ gamelevel	?VisitVisible@CGameLevel@@QAEXPAVCDDrawSurfacePair@@PAVCDDrawChildGrou
 gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	1	90e952ab5ce3	0x160a40	100.0000	
 gamelevel	?WwdFile_CompressMainBlock@@YGHPAEK0K@Z	100.0000	100.0000	1	6004417d5720	0x160870	100.0000	
 gamelevel	?WwdFile_InflateMainBlock@@YGPAEPAUWwdHeader@@PAEI@Z	88.7400	88.7400	6	63e2980253ef	0x160790	88.7400	
+gamelevelmove	??1CWwdGrid@@UAE@XZ	100.0000	100.0000	1	cpp:196267b9ebad	0x168c10	100.0000	
+gamelevelmove	??1CWwdGridShell@@UAE@XZ	100.0000	100.0000	1	78b63b78841e	0x1682a0	100.0000	
+gamelevelmove	??_GCWwdGrid@@UAEPAXI@Z	100.0000	100.0000	1	cpp:196267b9ebad	0x168bf0	100.0000	
 gamelevelmove	??_GCWwdGridShell@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08eecef35a65	0x168280	100.0000	
 gamelevelmove	?ApplyMove@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	100.0000	100.0000	1	02854f9305ef	0x167130	100.0000	
 gamelevelmove	?BroadPhase@CGameLevel@@QAEHPAUCGameObject@@HH@Z	76.1567	75.9776	1	3ae4bb95a069	0x167ea0	76.1567	
@@ -4666,10 +4669,7 @@ wwdgameobjectrender	?Setup@CWwdGameObject@@UAEHHHHPAUAnimWorkerObj@@@Z	100.0000	
 wwdgameobjectrender	?WalkChildWorkers@CWwdGameObject@@QAEHXZ	100.0000	100.0000	5	608e73840e46	0x166880	100.0000	
 wwdgrid	??0BucketHead@@QAE@XZ	100.0000	100.0000	1	cpp:196267b9ebad	0x191d00	100.0000	
 wwdgrid	??1BucketHead@@QAE@XZ	100.0000	100.0000	1	283b887b7b91	0x191d10	100.0000	
-wwdgrid	??1CWwdGrid@@UAE@XZ	100.0000	100.0000	1	cpp:196267b9ebad	0x168c10	100.0000	
-wwdgrid	??1CWwdGridShell@@UAE@XZ	100.0000	100.0000	1	78b63b78841e	0x1682a0	100.0000	
 wwdgrid	??_EBucketHead@@QAEPAXI@Z	100.0000	100.0000	1	cpp:196267b9ebad	0x191720	100.0000	
-wwdgrid	??_GCWwdGrid@@UAEPAXI@Z	100.0000	100.0000	1	cpp:196267b9ebad	0x168bf0	100.0000	
 wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	1	61789b14fc81	0x191840	100.0000	
 wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	1	2a8daf35a783	0x191a70	100.0000	
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	1	059a627e40c6	0x191800	100.0000	
@@ -4678,7 +4678,7 @@ wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	
 wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	1	c24edc1b943f	0x1918c0	99.9250	
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	1	84bdcc32917f	0x191890	100.0000	
 wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	3	dbfa3085cab7	0x191770	100.0000	
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	92.1368	92.1368	3	dbfa3085cab7	0x1915c0	92.1368	
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	95.1795	95.1795	3	dbfa3085cab7	0x1915c0	95.1795	
 wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@H@Z	100.0000	100.0000	3	ac8c5c9f0e52	0x191ad0	100.0000	
 wwdobjmgr	??0AnimWorkerObj@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	5e8744ec88de	0x15b300	100.0000	
 wwdobjmgr	??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	5f3b8752f172	0x15b2c0	100.0000	
