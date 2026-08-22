@@ -3169,7 +3169,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ApplyLookupSprite(m_cells[cell.row * 3 + cell.column].m_names[1].GetBuffer(0), handle);
         } else {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
-                RESET_GRUNT_POWERED_STATE
+                RESET_GRUNT_POWERED_STATE(this)
             }
             CString* rec2;
             {

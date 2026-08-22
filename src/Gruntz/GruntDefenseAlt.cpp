@@ -73,7 +73,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_neighborValid != 0) {
                 goto tail;
             }
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
             return 1;
         } else {
             if (inRange != 0) {
@@ -85,7 +85,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_neighborValid != 0) {
                 goto tail;
             }
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
             return 1;
         }
     }

@@ -73,7 +73,7 @@ i32 CGrunt::WanderStep() {
                         goto retreat;
                     }
                 }
-                RESET_GRUNT_POWERED_STATE
+                RESET_GRUNT_POWERED_STATE(this)
             }
         } else {
             m_neighborValid = 0;

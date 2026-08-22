@@ -155,7 +155,7 @@ i32 CGrunt::RunEntranceMove() {
     eq = (strcmp(nm0, DATA_COMPGEN(0x0020cca4, "D")) == 0);
     if (eq) {
         if (m_poweredUp != 0 && m_neighborValid == 0) {
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
         }
         m_tileMoveCommitted = 0;
         SET_ANIMATION_ACT("D");
@@ -479,7 +479,7 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
     BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
     SnapToLastTile(1);
@@ -747,7 +747,7 @@ i32 CGrunt::StepArrivalCommit() {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
         if (eq) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
-                RESET_GRUNT_POWERED_STATE
+                RESET_GRUNT_POWERED_STATE(this)
             }
             m_tileMoveCommitted = 0;
             SET_ANIMATION_ACT("D");
@@ -836,7 +836,7 @@ finalize:
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
     BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
     SET_ANIMATION_ACT("Q");
@@ -1134,7 +1134,7 @@ i32 CGrunt::FinishActiveAction() {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
         if (eq) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
-                RESET_GRUNT_POWERED_STATE
+                RESET_GRUNT_POWERED_STATE(this)
             }
             m_tileMoveCommitted = 0;
             SET_ANIMATION_ACT("D");

@@ -135,7 +135,7 @@ i32 CGrunt::ScanNearestTarget() {
                 if (m_neighborValid != 0) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE
+                RESET_GRUNT_POWERED_STATE(this)
                 return 1;
             }
             if (atTarget) {
@@ -147,7 +147,7 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_neighborValid != 0) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
             return 1;
         }
         m_neighborValid = 0;

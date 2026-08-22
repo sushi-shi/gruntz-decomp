@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -193,7 +192,11 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_dwell = 0;
                 return 1;
             }
-            RESET_GRUNT_ARRIVAL_REROLL_COMPACT
+            ResetEntranceAnimation(1, 1, 0);
+            m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+            m_arrivalRerollHi = 0;
             m_dwell = 0;
             return 1;
 

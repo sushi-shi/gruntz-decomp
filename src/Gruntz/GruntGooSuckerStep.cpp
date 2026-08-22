@@ -107,7 +107,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
             if (m_neighborValid != 0) {
                 goto L_yes;
             }
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
         } else {
             m_neighborValid = 0;
         }

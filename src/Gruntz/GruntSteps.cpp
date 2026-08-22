@@ -1048,7 +1048,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != 0 && m_neighborValid == 0) {
-                            RESET_GRUNT_POWERED_STATE
+                            RESET_GRUNT_POWERED_STATE(this)
                         }
                         m_tileMoveCommitted = 0;
                         SET_ANIMATION_ACT("D");
@@ -1144,7 +1144,7 @@ applyTail:
         LoadWingzGruntSprites(0);
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
     m_tileMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {

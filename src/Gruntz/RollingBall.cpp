@@ -62,11 +62,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_subX, m_subY)
     CWwdGameObjectA* snapped = m_object;
-    SET_SORT_KEY_IF_CHANGED_AS(
-        snapped,
-        SORTKEY_ROLLING_BALL_BASE + snapY,
-        snapY + SORTKEY_ROLLING_BALL_BASE
-    )
+    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_ROLLING_BALL_BASE + snapY)
     CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
     if (frameSet != NULL) {
         CString name;

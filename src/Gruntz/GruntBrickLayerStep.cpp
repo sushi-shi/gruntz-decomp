@@ -90,7 +90,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
             if (m_neighborValid != 0) {
                 goto L_powered_yes;
             }
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
         } else {
             m_neighborValid = 0;
         }

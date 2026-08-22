@@ -1403,7 +1403,7 @@ resetEntrance: {
     if (pw == 0) {
         return 1;
     }
-    RESET_GRUNT_POWERED_STATE_FOR(unit)
+    RESET_GRUNT_POWERED_STATE(unit)
     return 1;
 }
 

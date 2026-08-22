@@ -402,7 +402,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
 
         if (m_poweredUp != 0 && m_neighborValid == 0) {
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
         }
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
@@ -464,7 +464,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
         m_toyTileIndex = 0;
         if (m_poweredUp != 0 && m_neighborValid == 0) {
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
         }
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
@@ -914,7 +914,7 @@ i32 CGrunt::StepEntranceReinit() {
         );
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
     m_tileMoveCommitted = 0;
     if (CoordCount() == 0) {
@@ -1109,7 +1109,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
 
     BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
@@ -1256,7 +1256,7 @@ i32 CGrunt::StepCombatReaction(
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != 0 && m_neighborValid == 0) {
-                            RESET_GRUNT_POWERED_STATE
+                            RESET_GRUNT_POWERED_STATE(this)
                         }
                         m_tileMoveCommitted = 0;
                         SET_ANIMATION_ACT("D");
@@ -1506,7 +1506,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     m_moveTile.m_x = a;
     m_moveTile.m_y = b;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
 
     if (m_entranceReason == PICKUP_BOMB) {

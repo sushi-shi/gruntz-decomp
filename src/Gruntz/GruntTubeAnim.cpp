@@ -37,7 +37,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     LoadAnimNameTable(0, 0);
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
 
     CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());

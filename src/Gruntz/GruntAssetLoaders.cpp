@@ -111,7 +111,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 

@@ -75,7 +75,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
-        RESET_GRUNT_POWERED_STATE
+        RESET_GRUNT_POWERED_STATE(this)
     }
     if (m_entranceReason == PICKUP_WARPSTONE) {
         if (type >= PICKUP_EQUIPPABLE_FIRST && type <= PICKUP_EQUIPPABLE_LAST) {

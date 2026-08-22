@@ -2652,14 +2652,14 @@ afterArrival:
             }
             if (eq) {
                 if (m_poweredUp != 0 && m_neighborValid == 0) {
-                    RESET_GRUNT_POWERED_STATE
+                    RESET_GRUNT_POWERED_STATE(this)
                 }
             }
         }
     } else {
         if (static_cast<i64>(g_frameTime) - m_combatClock64 >= m_combatTimeout64) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
-                RESET_GRUNT_POWERED_STATE
+                RESET_GRUNT_POWERED_STATE(this)
             }
             if (m_arrived == 0
                 && static_cast<i64>(g_frameTime) - m_hudRetireClock64 >= m_hudRetireWindow64) {

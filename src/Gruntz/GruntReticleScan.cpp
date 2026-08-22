@@ -99,7 +99,7 @@ i32 CGrunt::ArrivalReticleScan() {
             if (m_neighborValid) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE
+            RESET_GRUNT_POWERED_STATE(this)
         } else {
             m_neighborValid = 0;
         }
