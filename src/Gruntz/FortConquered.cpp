@@ -91,7 +91,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[owningPlayer].m_colorIndex),
+                        IDX(g_gameReg->m_options[hitPlayer].m_colorIndex),
                         0
                     );
                     cur->m_drawActive = 1;
@@ -116,7 +116,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[owningPlayer].m_colorIndex),
+                        IDX(g_gameReg->m_options[hitPlayer].m_colorIndex),
                         0
                     );
                     cur->m_drawActive = 1;
@@ -139,7 +139,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 goto done;
             }
             GruntzPlayer* slot = &g_gameReg->m_options[lostPlayer];
-            if (g_gameReg->m_options[lostPlayer].m_joined == 0) {
+            if (slot->m_joined == 0) {
                 goto done;
             }
             if (slot->m_clearedRound != 0) {
