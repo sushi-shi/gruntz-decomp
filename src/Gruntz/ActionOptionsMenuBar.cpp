@@ -82,7 +82,6 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00009220, 0x8f)
 i32 CActionOptionsMenuBar::Init(
     ActionOptionButtonState primaryState,
@@ -110,12 +109,12 @@ i32 CActionOptionsMenuBar::Init(
     } else {
         yy = y + 0x34;
     }
-    m_screenX = x;
     m_gridX = gx;
-    m_screenY = yy;
-    m_buttonState[1] = secondaryState;
     m_gridY = gy;
+    m_screenX = x;
+    m_screenY = yy;
     m_buttonState[0] = primaryState;
+    m_buttonState[1] = secondaryState;
     if (Refresh() == 0) {
         return 0;
     }
