@@ -13,7 +13,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
@@ -62,10 +62,7 @@ void CGrunt::RecycleCoords() {
             n = n->m_next;
             Coord* coord = cur->m_coord;
             if (coord != NULL) {
-
-                CoordPoolNode* slot = g_coordPool.NodeOf(coord);
-                slot->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = slot;
+                PushFreeNode(&g_coordPool, coord);
             }
         } while (n != NULL);
     }

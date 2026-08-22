@@ -527,11 +527,12 @@ i32 CDroppedObject::AdvanceFall() {
     return 0;
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (m_wwdObject->m_animCursor.m_finished != 0
-        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

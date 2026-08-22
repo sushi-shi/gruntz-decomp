@@ -24,6 +24,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileGrid.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/XferArchive.h>
@@ -112,8 +113,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
         m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
     }
 
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0) {
         o->m_sortKey = 0;

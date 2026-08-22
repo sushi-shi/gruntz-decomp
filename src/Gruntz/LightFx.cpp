@@ -179,11 +179,12 @@ i32 CLightFx::RebindNode() {
     return 0;
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (m_wwdObject->m_animCursor.m_finished && !m_wwdObject->m_animCursor.m_frameTicksLeft
-        && m_anchorB) {
+    if (IsAniCursorComplete(&m_wwdObject->m_animCursor) && m_anchorB) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

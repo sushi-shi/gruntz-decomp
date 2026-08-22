@@ -21,6 +21,7 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -1146,10 +1147,7 @@ idleReseed:
             o->m_flags |= 0x20000;
         }
     }
-    if (m_toyTimeSprite != NULL) {
-        m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
     StopStruckSlotSound();
 

@@ -37,6 +37,7 @@
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
@@ -2628,10 +2629,7 @@ afterArrival:
         i64 left2 = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
             m_toyTime = 0;
-            if (m_toyTimeSprite != NULL) {
-                m_toyTimeSprite->m_flags |= 0x10000;
-                m_toyTimeSprite = NULL;
-            }
+            HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         }
     }
 
@@ -2648,10 +2646,7 @@ afterArrival:
             );
         }
         if (m_stamina == STAMINA_FULL) {
-            if (m_staminaSprite != NULL) {
-                m_staminaSprite->m_flags |= 0x10000;
-                m_staminaSprite = NULL;
-            }
+            HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
         }
     }
 
@@ -2718,18 +2713,9 @@ afterArrival:
             }
             if (m_arrived == 0
                 && static_cast<i64>(g_frameTime) - m_hudRetireClock64 >= m_hudRetireWindow64) {
-                if (m_healthSprite != NULL) {
-                    m_healthSprite->m_flags |= 0x10000;
-                    m_healthSprite = NULL;
-                }
-                if (m_toySprite != NULL) {
-                    m_toySprite->m_flags |= 0x10000;
-                    m_toySprite = NULL;
-                }
-                if (m_staminaSprite != NULL) {
-                    m_staminaSprite->m_flags |= 0x10000;
-                    m_staminaSprite = NULL;
-                }
+                HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+                HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+                HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
             }
         }
     }

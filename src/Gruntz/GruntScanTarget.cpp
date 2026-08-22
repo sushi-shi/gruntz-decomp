@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -243,7 +244,7 @@ i32 CGrunt::ScanNearestTarget() {
             }
 
             {
-                if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
+                if (IsGruntArrivalRerollPending(this) != 0) {
 
                     CWwdGameObjectA* hud = m_object;
                     i32 baseCol = hud->m_extent.left;
@@ -271,15 +272,7 @@ i32 CGrunt::ScanNearestTarget() {
                         }
                     }
                 } else {
-                    ResetEntranceAnimation(1, 1, 0);
-                    m_arrivalRerollLo = 0;
-                    m_arrivalRerollWindowLo = 0;
-                    m_arrivalRerollHi = 0;
-                    m_arrivalRerollWindowHi = 0;
-                    m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
-                    m_arrivalRerollWindowHi = 0;
-                    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-                    m_arrivalRerollHi = 0;
+                    ResetGruntArrivalReroll(this);
                 }
             }
             m_dwell = 0;

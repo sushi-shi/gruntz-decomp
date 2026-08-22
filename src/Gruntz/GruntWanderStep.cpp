@@ -7,13 +7,15 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -98,16 +100,7 @@ i32 CGrunt::WanderStep() {
                     Coord cp = g->m_lastTilePx;
                     CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
                     m_neighborScanEnabled = 0;
-                    if (CoordCount() != 0) {
-                        POSITION pos = m_coordList.GetHeadPosition();
-                        while (pos != NULL) {
-                            Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
-                            if (data != NULL) {
-                                g_coordPool.Push(data);
-                            }
-                        }
-                        m_coordList.RemoveAll();
-                    }
+                    RecycleGruntCoords(this);
                     m_defenderState = AISTATE_RETREAT;
                     return 1;
                 }
@@ -182,17 +175,7 @@ i32 CGrunt::WanderStep() {
             Coord cp = slot->m_lastTilePx;
             CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
             m_neighborScanEnabled = 0;
-            if (CoordCount() != 0) {
-
-                POSITION pos = m_coordList.GetHeadPosition();
-                while (pos != NULL) {
-                    Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
-                    if (data != NULL) {
-                        g_coordPool.Push(data);
-                    }
-                }
-                m_coordList.RemoveAll();
-            }
+            RecycleGruntCoords(this);
             m_defenderState = AISTATE_RETREAT;
             return 1;
         }
@@ -233,9 +216,7 @@ i32 CGrunt::WanderStep() {
                 while (pos != NULL) {
                     Coord* data = static_cast<Coord*>(m_coordList.GetNext(pos));
                     if (data != NULL) {
-                        CoordPoolNode* fslot = g_coordPool.NodeOf(data);
-                        fslot->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = fslot;
+                        PushFreeNode(&g_coordPool, data);
                     }
                 }
                 m_coordList.RemoveAll();
@@ -307,7 +288,7 @@ i32 CGrunt::WanderStep() {
 timeout:
     if (m_resetApplied == 0 && m_hasExtent != 0
         && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
-        if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
+        if (IsGruntArrivalRerollPending(this) != 0) {
             CWwdGameObjectA* base = m_object;
             u32 lx = static_cast<u32>(base->m_extent.left);
             i32 ax = abs(base->m_extent.right - static_cast<i32>(lx));
@@ -333,15 +314,7 @@ timeout:
                 }
             }
         } else {
-            ResetEntranceAnimation(1, 1, 0);
-            m_arrivalRerollLo = 0;
-            m_arrivalRerollWindowLo = 0;
-            m_arrivalRerollHi = 0;
-            m_arrivalRerollWindowHi = 0;
-            m_arrivalRerollWindowLo = rand() % 30000 + 30000;
-            m_arrivalRerollWindowHi = 0;
-            m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-            m_arrivalRerollHi = 0;
+            ResetGruntArrivalReroll(this);
         }
         m_dwell = 0;
     }

@@ -322,6 +322,8 @@ i32 CAmbientSound::InitFromSound(
     return 1;
 }
 
+#include <Gruntz/AmbientSoundInline.h>
+
 RVA(0x0000bf10, 0x72)
 void CAmbientSound::Recompute(i32 master) {
     if (m_scaleA == master) {
@@ -329,19 +331,7 @@ void CAmbientSound::Recompute(i32 master) {
     }
     i32 mult = m_level;
     m_scaleA = master;
-    i32 lvl = master;
-    if (lvl > 5) {
-        lvl -= 0xf;
-    }
-    i32 v = (lvl * mult) / 100;
-    if (m_scaleB > 0) {
-        v = (v * m_scaleB) / 100;
-    }
-    if (v < 0) {
-        v = 0;
-    } else if (v > 0x64) {
-        v = 0x64;
-    }
+    i32 v = ScaleAmbientVolume(this, mult);
     m_voice->SetVolumeByIndex(v);
 }
 
@@ -365,19 +355,7 @@ void CAmbientSound::Restart() {
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
     m_level = pos;
-    i32 scale = m_scaleA;
-    if (scale > 5) {
-        scale -= 0xf;
-    }
-    i32 v = (scale * pos) / 100;
-    if (m_scaleB > 0) {
-        v = (v * m_scaleB) / 100;
-    }
-    if (v < 0) {
-        v = 0;
-    } else if (v > 0x64) {
-        v = 0x64;
-    }
+    i32 v = ScaleAmbientVolume(this, pos);
     m_voice->SetVolumeByIndex(v);
     m_level = pos;
     m_isPlaying = 1;
@@ -455,19 +433,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
 RVA(0x0000c200, 0x7e)
 i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
     m_level = value;
-    i32 scale = m_scaleA;
-    if (scale > 5) {
-        scale -= 0xf;
-    }
-    i32 v = (scale * value) / 100;
-    if (m_scaleB > 0) {
-        v = (v * m_scaleB) / 100;
-    }
-    if (v < 0) {
-        v = 0;
-    } else if (v > 0x64) {
-        v = 0x64;
-    }
+    i32 v = ScaleAmbientVolume(this, value);
     if (mode == 0) {
         return m_voice->SetVolumeByIndex(v);
     }
@@ -493,24 +459,8 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
         }
         if (mode == 0) {
             m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-            i32 t = m_scaleA;
             m_level = level;
-            if (t > 5) {
-                t -= 0xf;
-            }
-            i32 v = (t * level) / 100;
-            if (m_scaleB > 0) {
-                v = (v * m_scaleB) / 100;
-            }
-            if (v < 0) {
-                m_voice->SetVolumeByIndex(0);
-                m_level = level;
-                m_isPlaying = 1;
-                return;
-            }
-            if (v > 0x64) {
-                v = 0x64;
-            }
+            i32 v = ScaleAmbientVolume(this, level);
             m_voice->SetVolumeByIndex(v);
             m_level = level;
             m_isPlaying = 1;
@@ -518,20 +468,8 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
         }
 
         m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-        i32 t = m_scaleA;
         m_level = level;
-        if (t > 5) {
-            t -= 0xf;
-        }
-        i32 v = (t * level) / 100;
-        if (m_scaleB > 0) {
-            v = (v * m_scaleB) / 100;
-        }
-        if (v < 0) {
-            v = 0;
-        } else if (v > 0x64) {
-            v = 0x64;
-        }
+        i32 v = ScaleAmbientVolume(this, level);
         m_voice->CloneAndPlay(v, mode, 0);
         m_level = level;
         m_isPlaying = 1;
@@ -623,20 +561,8 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     }
 
     {
-        i32 t = m_scaleA;
         m_level = vol;
-        if (t > 5) {
-            t -= 0xf;
-        }
-        i32 v = (t * vol) / 100;
-        if (m_scaleB > 0) {
-            v = (v * m_scaleB) / 100;
-        }
-        if (v < 0) {
-            v = 0;
-        } else if (v > 0x64) {
-            v = 0x64;
-        }
+        i32 v = ScaleAmbientVolume(this, vol);
         m_voice->SetVolumeByIndex(v);
     }
     m_panIndex = pan;
@@ -656,20 +582,8 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
     {
-        i32 t = m_scaleA;
         m_level = vol;
-        if (t > 5) {
-            t -= 0xf;
-        }
-        i32 v = (t * vol) / 100;
-        if (m_scaleB > 0) {
-            v = (v * m_scaleB) / 100;
-        }
-        if (v < 0) {
-            v = 0;
-        } else if (v > 0x64) {
-            v = 0x64;
-        }
+        i32 v = ScaleAmbientVolume(this, vol);
         m_voice->SetVolumeByIndex(v);
     }
     m_level = vol;

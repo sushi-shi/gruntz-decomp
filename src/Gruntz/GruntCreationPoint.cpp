@@ -17,6 +17,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -57,8 +58,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = SHADE_PAL_16;
     m_object->m_drawFillArg = sel;
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
 }

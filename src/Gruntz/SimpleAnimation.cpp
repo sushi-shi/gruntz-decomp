@@ -9,6 +9,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -51,20 +52,7 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
 
 RVA(0x000abc10, 0x102)

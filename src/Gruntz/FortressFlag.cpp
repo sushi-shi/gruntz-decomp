@@ -297,11 +297,13 @@ void CParticlez::RegisterActs() {
     (*((PartLookup(id)))) = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_wwdObject;
-    if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&o->m_animCursor)) {
         o->m_flags |= 0x10000;
     }
     return 0;

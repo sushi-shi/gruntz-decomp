@@ -7,6 +7,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/BehindCandy.h>
+#include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/DoNothing.h>
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/EyeCandyAni.h>
@@ -71,20 +72,7 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         o->m_sortKey = SORTKEY_OVERLAY;
         o->m_flags |= 0x20000;
     }
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
 
 // @early-stop
@@ -93,20 +81,7 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(1);
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
 
 // @early-stop
@@ -120,19 +95,7 @@ CBehindCandy::CBehindCandy(CGameObject* obj)
         o->m_sortKey = 0;
         o->m_flags |= 0x20000;
     }
-    if (m_object->m_layer != NULL) {
-        i32 bigW = m_object->m_layer->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_DIRECT
 }
 
 // @early-stop
@@ -149,20 +112,7 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
             o->m_flags |= 0x20000;
         }
     }
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
 
 // @early-stop
@@ -184,20 +134,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
             o->m_flags |= 0x20000;
         }
     }
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
 }
 
 RVA(0x000acbb0, 0x102)

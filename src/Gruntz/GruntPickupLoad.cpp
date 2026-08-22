@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -456,26 +457,11 @@ i32 CGrunt::LoadPickupSprites(
     m_entranceActive = 1;
     m_entrancePickup = type;
     m_helpCueId = helpCueId;
-    if (m_healthSprite != NULL) {
-        m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = NULL;
-    }
-    if (m_staminaSprite != NULL) {
-        m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = NULL;
-    }
-    if (m_toySprite != NULL) {
-        m_toySprite->m_flags |= 0x10000;
-        m_toySprite = NULL;
-    }
-    if (m_toyTimeSprite != NULL) {
-        m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = NULL;
-    }
-    if (m_wingzTimeSprite != NULL) {
-        m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     SwitchAnimation(m_pickupGeoSrc);
     m_wwdObject->ApplyName("GRUNTZ_PICKUPS");
     return 1;

@@ -7,7 +7,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -66,7 +67,7 @@ i32 CGrunt::ArrivalReticleScan() {
     i32 occOnTile = 0;
     if (occ) {
         CGameObject* oo = occ->m_object;
-        if (oo->m_screenX == occ->m_lastTilePx.m_x && oo->m_screenY == occ->m_lastTilePx.m_y) {
+        if (IsGruntAtSavedScreenPos(occ) != 0) {
             if (RectContains(oo->m_screenX, oo->m_screenY)) {
                 occOnTile = 1;
             }
@@ -118,25 +119,11 @@ i32 CGrunt::ArrivalReticleScan() {
                 occ->m_lastTilePx.m_x,
                 occ->m_lastTilePx.m_y
             );
-            if (CoordCount()) {
-                for (CoordNode* n = CoordHead(); n; n = n->m_next) {
-                    if (n->m_coord) {
-                        g_coordPool.Push(n->m_coord);
-                    }
-                }
-                m_coordList.RemoveAll();
-            }
+            RecycleGruntCoords(this);
             return 1;
         }
         if (occOnTile) {
-            if (CoordCount()) {
-                for (CoordNode* n = CoordHead(); n; n = n->m_next) {
-                    if (n->m_coord) {
-                        g_coordPool.Push(n->m_coord);
-                    }
-                }
-                m_coordList.RemoveAll();
-            }
+            RecycleGruntCoords(this);
             return 1;
         }
     } else {
@@ -242,18 +229,14 @@ i32 CGrunt::ArrivalReticleScan() {
                                 i32 backDy = abs(previous->m_y - occTY);
                                 i32 backDist = backDx > backDy ? backDx : backDy;
                                 if (backDist <= m_reachRect.right) {
-                                    CoordPoolNode* trimNode = g_coordPool.NodeOf(trimCoord);
-                                    trimNode->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = trimNode;
+                                    PushFreeNode(&g_coordPool, trimCoord);
                                     m_coordList.RemoveAt(trimPos);
                                     while (pos != NULL) {
                                         POSITION nextPos = pos;
                                         Coord* coord =
                                             static_cast<Coord*>(m_coordList.GetNext(pos));
                                         if (coord != NULL) {
-                                            CoordPoolNode* node = g_coordPool.NodeOf(coord);
-                                            node->m_next = g_coordPool.m_freeHead;
-                                            g_coordPool.m_freeHead = node;
+                                            PushFreeNode(&g_coordPool, coord);
                                         }
                                         m_coordList.RemoveAt(nextPos);
                                     }
@@ -265,9 +248,7 @@ i32 CGrunt::ArrivalReticleScan() {
                                             Coord* cur =
                                                 static_cast<Coord*>(m_coordList.GetNext(dpos));
                                             if (cur != NULL) {
-                                                CoordPoolNode* node = g_coordPool.NodeOf(cur);
-                                                node->m_next = g_coordPool.m_freeHead;
-                                                g_coordPool.m_freeHead = node;
+                                                PushFreeNode(&g_coordPool, cur);
                                             }
                                         }
                                         m_coordList.RemoveAll();
@@ -280,9 +261,7 @@ i32 CGrunt::ArrivalReticleScan() {
                                     while (dpos != NULL) {
                                         Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));
                                         if (cur != NULL) {
-                                            CoordPoolNode* node = g_coordPool.NodeOf(cur);
-                                            node->m_next = g_coordPool.m_freeHead;
-                                            g_coordPool.m_freeHead = node;
+                                            PushFreeNode(&g_coordPool, cur);
                                         }
                                     }
                                     m_coordList.RemoveAll();

@@ -116,6 +116,8 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner)
     m_shadow = NULL;
 }
 
+#include <Gruntz/FreeNodePoolInline.h>
+
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
     if (m_sound != NULL) {
@@ -126,9 +128,7 @@ CProjectile::~CProjectile() {
         Coord* data = static_cast<Coord*>(m_hitList.GetNext(pos));
         if (data != NULL) {
 
-            CoordPoolNode* node = g_coordPool.NodeOf(data);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            PushFreeNode(&g_coordPool, data);
         }
     }
     m_hitList.RemoveAll();

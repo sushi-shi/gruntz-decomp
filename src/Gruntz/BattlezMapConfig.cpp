@@ -18,7 +18,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
@@ -492,9 +492,7 @@ i32 CBattlezMapConfig::StepBoard() {
                                 CoordNode* cur = n;
                                 n = n->m_next;
                                 if (cur->m_coord != NULL) {
-                                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                                    node->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = node;
+                                    PushFreeNode(&g_coordPool, cur->m_coord);
                                 }
                             }
                             unit->m_coordList.RemoveAll();
@@ -508,9 +506,7 @@ i32 CBattlezMapConfig::StepBoard() {
                                 CoordNode* cur = n;
                                 n = n->m_next;
                                 if (cur->m_coord != NULL) {
-                                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                                    node->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = node;
+                                    PushFreeNode(&g_coordPool, cur->m_coord);
                                 }
                             }
                             unit->m_coordList.RemoveAll();
@@ -1716,9 +1712,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 CoordNode* cur = n;
                                 n = n->m_next;
                                 if (cur->m_coord != NULL) {
-                                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                                    node->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = node;
+                                    PushFreeNode(&g_coordPool, cur->m_coord);
                                 }
                             } while (n != NULL);
                         }
@@ -2234,9 +2228,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                         CoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != NULL) {
-                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                            fn->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = fn;
+                            PushFreeNode(&g_coordPool, cur->m_coord);
                             coordList->RemoveAt(MfcPositionFromNode(cur));
                         }
                     }
@@ -2371,9 +2363,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                             CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != NULL) {
-                                CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                                fn->m_next = g_coordPool.m_freeHead;
-                                g_coordPool.m_freeHead = fn;
+                                PushFreeNode(&g_coordPool, cur->m_coord);
                             }
                         }
                         coordList->RemoveAll();
@@ -4699,9 +4689,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                         CoordNode* curn = n;
                         n = n->m_next;
                         if (curn->m_coord != NULL) {
-                            CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
-                            node->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = node;
+                            PushFreeNode(&g_coordPool, curn->m_coord);
                         }
                     }
                     u->m_coordList.RemoveAll();
@@ -4728,9 +4716,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                         CoordNode* curn = n;
                         n = n->m_next;
                         if (curn->m_coord != NULL) {
-                            CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
-                            node->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = node;
+                            PushFreeNode(&g_coordPool, curn->m_coord);
                         }
                     }
                     unit->m_coordList.RemoveAll();
@@ -4743,9 +4729,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                     CoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != NULL) {
-                        CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
-                        node->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = node;
+                        PushFreeNode(&g_coordPool, curn->m_coord);
                     }
                 }
                 unit->m_coordList.RemoveAll();
@@ -4888,7 +4872,6 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
     CoordNode* n;
     CoordNode* p;
     Coord* head;
-    CoordPoolNode* node;
     POSITION qp;
 
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur));
@@ -4929,9 +4912,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
     }
     head = static_cast<Coord*>(list.RemoveHead());
     if (head != NULL) {
-        node = g_coordPool.NodeOf(head);
-        node->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = node;
+        PushFreeNode(&g_coordPool, head);
     }
     if (list.GetCount() != 0) {
         if (n != NULL) {
@@ -4946,9 +4927,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
                 do {
                     CGruntCoordList* listPayload = &unit->m_coordList;
                     if (listPayload != NULL) {
-                        node = g_coordPool.NodeOf(listPayload);
-                        node->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = node;
+                        PushFreeNode(&g_coordPool, listPayload);
                     }
                 } while (h != n);
             }
@@ -4960,9 +4939,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
                 CoordNode* cur4 = p;
                 p = p->m_next;
                 if (cur4->m_coord != NULL) {
-                    node = g_coordPool.NodeOf(cur4->m_coord);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
+                    PushFreeNode(&g_coordPool, cur4->m_coord);
                 }
             }
             unit->m_coordList.RemoveAll();
@@ -5295,9 +5272,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         if (list.GetCount() != 0) {
             Coord* head = static_cast<Coord*>(list.RemoveHead());
             if (head != NULL) {
-                CoordPoolNode* node = g_coordPool.NodeOf(head);
-                node->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = node;
+                PushFreeNode(&g_coordPool, head);
             }
             if (list.GetCount() != 0) {
 
@@ -5307,9 +5282,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
                         CoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != NULL) {
-                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                            fn->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = fn;
+                            PushFreeNode(&g_coordPool, cur->m_coord);
                         }
                     }
                     unit->m_coordList.RemoveAll();
@@ -5408,9 +5381,7 @@ char* _zdvec::IndexToPtr(i32 i) {
 
 RVA(0x000311b0, 0x14)
 void FreeNodePool::Push(void* p) {
-    CoordPoolNode* node = NodeOf(p);
-    node->m_next = m_freeHead;
-    m_freeHead = node;
+    PushFreeNode(this, p);
 }
 
 RVA(0x000311e0, 0x4c)

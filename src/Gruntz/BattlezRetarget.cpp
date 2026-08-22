@@ -13,7 +13,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
@@ -161,9 +161,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         CoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != NULL) {
-            CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_coord);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, cur->m_coord);
         }
     }
     unit->m_coordList.RemoveAll();

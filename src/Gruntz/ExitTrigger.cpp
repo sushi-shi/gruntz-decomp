@@ -13,6 +13,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Warlord.h>
@@ -32,8 +33,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SetObjectFlags(2);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_EXIT_TRIGGER) {
         o->m_sortKey = SORTKEY_EXIT_TRIGGER;

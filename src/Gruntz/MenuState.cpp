@@ -30,6 +30,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
 #include <Gruntz/MenuVersion.h>
@@ -255,16 +256,8 @@ void CMenuState::StartMusic() {
     if (!saved) {
         g_sndEnabled = 1;
     }
-    i32 flag = g_sndEnabled;
     i32 item = g_gameReg->m_soundVolume;
-    LeafCue* mus = m_menuMusicCue;
-    if (flag) {
-        u32 clk = g_killCueClock;
-        if (clk - mus->m_lastPlayTime >= static_cast<u32>(mus->m_replayDelay)) {
-            mus->m_lastPlayTime = clk;
-            mus->m_sound->ConfigureItem(item, 0, 0, 1);
-        }
-    }
+    PlayLeafCueIfElapsed(m_menuMusicCue, item, 0, 0, 1);
     if (!saved) {
         g_sndEnabled = saved;
     }

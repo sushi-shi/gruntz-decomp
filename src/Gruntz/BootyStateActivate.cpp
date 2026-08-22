@@ -50,6 +50,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/PickupType.h>
@@ -370,14 +371,8 @@ i32 CBootyState::EnterState(GameStateId) {
     if (set->m_emitGate == 0) {
         LeafCue* found = NULL;
         MapLookup(set->m_cues, "BOOTY_LOOP", found);
-        if (found != NULL && g_sndEnabled != 0) {
-            LeafCue* res = found;
-            u32 now = g_killCueClock;
-            if (now - static_cast<u32>(res->m_lastPlayTime)
-                >= static_cast<u32>(res->m_replayDelay)) {
-                res->m_lastPlayTime = now;
-                res->m_sound->ConfigureItem(token, 0, 0, 1);
-            }
+        if (found != NULL) {
+            PlayLeafCueIfElapsed(found, token, 0, 0, 1);
         }
     }
     return 1;
@@ -1362,15 +1357,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         LeafCue* res = NULL;
                         MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
                         if (res != NULL) {
-                            i32 gate = g_sndEnabled;
-                            i32 item = g_sndCueTag;
-                            if (gate != 0) {
-                                u32 clock = g_killCueClock;
-                                if (clock - res->m_lastPlayTime >= res->m_replayDelay) {
-                                    res->m_lastPlayTime = clock;
-                                    res->m_sound->ConfigureItem(item, 0, 0, 0);
-                                }
-                            }
+                            PlayLeafCueIfElapsed(res, g_sndCueTag, 0, 0, 0);
                         }
                     }
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_PICKUPS");
@@ -1458,13 +1445,8 @@ i32 CBootyState::CheckPerfectBonus() {
         if (m28->m_emitGate == 0) {
             LeafCue* found = NULL;
             MapLookup(m28->m_cues, "BOOTY_PERFECT", found);
-            if (found && g_sndEnabled != 0) {
-                LeafCue* p = found;
-                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                    >= static_cast<u32>(p->m_replayDelay)) {
-                    p->m_lastPlayTime = g_killCueClock;
-                    p->m_sound->ConfigureItem(item, 0, 0, 0);
-                }
+            if (found) {
+                PlayLeafCueIfElapsed(found, item, 0, 0, 0);
             }
         }
     }
@@ -2286,13 +2268,8 @@ i32 CMultiBootyState::EnterState(GameStateId) {
     if (m28->m_emitGate == 0) {
         LeafCue* found = NULL;
         MapLookup(m28->m_cues, "BOOTY_LOOP", found);
-        if (found && g_sndEnabled != 0) {
-            LeafCue* p = found;
-            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                >= static_cast<u32>(p->m_replayDelay)) {
-                p->m_lastPlayTime = g_killCueClock;
-                p->m_sound->ConfigureItem(item, 0, 0, 1);
-            }
+        if (found) {
+            PlayLeafCueIfElapsed(found, item, 0, 0, 1);
         }
     }
     return 1;
@@ -2867,14 +2844,7 @@ i32 CMultiBootyState::OnKeyDown(i32, i32) {
 
 RVA(0x0001f940, 0x4c)
 i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
-    if (g_sndEnabled == 0) {
-        return 0;
-    }
-    if (g_killCueClock - static_cast<u32>(m_lastPlayTime) < static_cast<u32>(m_replayDelay)) {
-        return 0;
-    }
-    m_lastPlayTime = g_killCueClock;
-    return m_sound->ConfigureItem(vol, pan, freqPct, loop);
+    return PlayLeafCueIfElapsed(this, vol, pan, freqPct, loop);
 }
 
 RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)

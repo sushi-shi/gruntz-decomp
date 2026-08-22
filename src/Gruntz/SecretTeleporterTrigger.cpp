@@ -20,6 +20,7 @@
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -105,8 +106,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_wwdObject->m_flags |= 0x10000;
     } else {
-        m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+        SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdGameObjectA* o = m_object;
         if (o->m_sortKey != 0) {
             o->m_sortKey = 0;
@@ -141,8 +141,7 @@ RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_isCustomLevel == 0) {
-        m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+        SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdGameObjectA* o = m_object;
         if (o->m_sortKey != 0) {
             o->m_sortKey = 0;

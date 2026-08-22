@@ -28,6 +28,7 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/Teleporter.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -136,13 +137,15 @@ void RegisterWormholeLogic() {
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x000403b0, 0xa5)
 i32 CWormhole::SpawnPartners() {
 
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* g = m_wwdObject;
-    if (g->m_animCursor.m_finished == 0 || g->m_animCursor.m_frameTicksLeft != 0) {
+    if (!IsAniCursorComplete(&g->m_animCursor)) {
         return 0;
     }
     g->m_flags |= 0x10000;
@@ -188,8 +191,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     m_pending = 1;
     m_placed = 0;
 }
@@ -272,7 +274,7 @@ i32 CGruntPuddle::Remove() {
     }
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_wwdObject;
-    if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&o->m_animCursor)) {
         if (m_placed == 0) {
             SwitchGeometry(g_puddleSpriteKey, 0);
             m_placed = 1;
@@ -341,8 +343,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         o->m_sortKey = SORTKEY_TELEPORT;
         o->m_flags |= 0x20000;
     }
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     LoadColors();
     ReapplyConfig();
 }
@@ -467,7 +468,7 @@ RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* a = m_wwdObject;
-    if (a->m_animCursor.m_finished != 0 && a->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&a->m_animCursor)) {
         if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
             a->m_flags |= 0x10000;
         } else {

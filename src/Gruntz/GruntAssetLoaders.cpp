@@ -14,10 +14,12 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Utils/MapTyped.h>
@@ -88,34 +90,13 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     m_health = 0;
     m_entranceCommitted = 0;
 
-    if (m_healthSprite) {
-        m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = NULL;
-    }
-    if (m_staminaSprite) {
-        m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = NULL;
-    }
-    if (m_toySprite) {
-        m_toySprite->m_flags |= 0x10000;
-        m_toySprite = NULL;
-    }
-    if (m_toyTimeSprite) {
-        m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = NULL;
-    }
-    if (m_wingzTimeSprite) {
-        m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = NULL;
-    }
-    if (m_powerupSprite) {
-        m_powerupSprite->m_flags |= 0x10000;
-        m_powerupSprite = NULL;
-    }
-    if (m_selectedSprite) {
-        m_selectedSprite->m_flags |= 0x10000;
-        m_selectedSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
@@ -201,8 +182,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             goto finalize;
 
         case DEATH_QUICKFALL:
-            m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-            m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+            SNAP_OBJECT_TO_TILE_CENTER(m_object)
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
             );
@@ -236,8 +216,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                         o->m_flags |= 0x20000;
                     }
                 }
-                m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
                 m_poseDeath = static_cast<CAniElement*>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_FALL)
@@ -269,8 +248,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                         o->m_flags |= 0x20000;
                     }
                 }
-                m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
                 CAniElement* out = NULL;
                 MapLookup(

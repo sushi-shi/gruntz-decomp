@@ -25,6 +25,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameText.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -35,6 +36,7 @@
 #include <Gruntz/SpellId.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/ToyPeek.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -971,8 +973,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         }
     }
 
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_INGAME_INFO) {
         o->m_sortKey = SORTKEY_INGAME_INFO;
@@ -1043,16 +1044,7 @@ i32 CInGameText::Update() {
             if (set->m_emitGate == 0) {
                 LeafCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
-                    i32 enable = g_sndEnabled;
-                    i32 token = g_sndCueTag;
-                    if (enable != 0) {
-                        u32 now = g_killCueClock;
-                        if (static_cast<u32>((now - res->m_lastPlayTime))
-                            >= static_cast<u32>(res->m_replayDelay)) {
-                            res->m_lastPlayTime = now;
-                            res->m_sound->ConfigureItem(token, 0, 0, 0);
-                        }
-                    }
+                    PlayLeafCueIfElapsed(res, g_sndCueTag, 0, 0, 0);
                 }
             }
         }

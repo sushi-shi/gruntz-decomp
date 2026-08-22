@@ -28,6 +28,7 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameIcon.h>
@@ -69,13 +70,15 @@ static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
 DATA(0x0020e250)
 static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+#include <Gruntz/AniElementInline.h>
+
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     SwitchAnimation(m_poseAttackIdle);
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
     i32 frame = elem->m_param;
 
     GruntDirectionCell cell = m_entranceCell;
@@ -203,8 +206,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     p->m_animCursor.Setup(m_poseAttack[idx]);
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* el =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
     i32 frame = el->m_param;
 
     GruntDirectionCell cell = m_entranceCell;
@@ -228,8 +230,7 @@ i32 CGrunt::RearmAttackAnim2() {
     p->m_animCursor.Setup(AT(m_poseAttack, GRUNT_ATTACK2));
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* el =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
+    CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
     i32 frame = el->m_param;
 
     GruntDirectionCell cell = m_entranceCell;
@@ -439,14 +440,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
 
         m_entranceStamped = 0;
-        if (m_healthSprite != NULL) {
-            m_healthSprite->m_flags |= 0x10000;
-            m_healthSprite = NULL;
-        }
-        if (m_toySprite != NULL) {
-            m_toySprite->m_flags |= 0x10000;
-            m_toySprite = NULL;
-        }
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
 
         if (m_entranceReason == PICKUP_SCROLL) {
             m_prevAnimSetNode = m_objAux->m_actKey;
@@ -593,7 +588,7 @@ RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
     i32 ready = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         if (m_arrived != 0) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -630,15 +625,10 @@ i32 CGrunt::StepEntranceRelatchA() {
 
     i64 diff = static_cast<i64>(g_frameTime) - m_toyClock;
     if (diff >= m_toyDuration && m_entranceStamped == 0 && ready == 1) {
-        if (m_toyTimeSprite != NULL) {
-            m_toyTimeSprite->m_flags |= 0x10000;
-            m_toyTimeSprite = NULL;
-        }
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* elem = desc->m_records.GetSize() > 0
-                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                   : 0;
+        CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
         i32 frame = elem->m_param;
         char* nm = (&m_frameSetName)->GetBuffer(0);
         m_wwdObject->ApplyLookupSprite(nm, frame);
@@ -1093,7 +1083,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         if (m_arrived) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -1125,18 +1115,13 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     if (elapsed >= m_toyDuration) {
         if (m_entranceStamped == 0 && m_object->m_screenX == m_lastTilePx.m_x
             && m_object->m_screenY == m_lastTilePx.m_y) {
-            if (m_toyTimeSprite) {
-                m_toyTimeSprite->m_flags |= 0x10000;
-                m_toyTimeSprite = NULL;
-            }
+            HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
             SwitchGeometryDirect(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-            CAniRecordView* elem = desc->m_records.GetSize() > 0
-                                       ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                       : 0;
+            CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
 
             i32 frame = elem->m_param;
             char* buf = (&m_frameSetName)->GetBuffer(0);
@@ -1205,34 +1190,13 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_entranceCommitted = 0;
     m_deathAnimStarted = 1;
 
-    if (m_healthSprite) {
-        m_healthSprite->m_flags |= 0x10000;
-        m_healthSprite = NULL;
-    }
-    if (m_staminaSprite) {
-        m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = NULL;
-    }
-    if (m_toySprite) {
-        m_toySprite->m_flags |= 0x10000;
-        m_toySprite = NULL;
-    }
-    if (m_toyTimeSprite) {
-        m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = NULL;
-    }
-    if (m_wingzTimeSprite) {
-        m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = NULL;
-    }
-    if (m_powerupSprite) {
-        m_powerupSprite->m_flags |= 0x10000;
-        m_powerupSprite = NULL;
-    }
-    if (m_selectedSprite) {
-        m_selectedSprite->m_flags |= 0x10000;
-        m_selectedSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
@@ -1303,7 +1267,7 @@ RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(sub)) {
         if (m_deathType == GRUNT_DEATH_WARPOUT) {
             CState* st = g_gameReg->m_curState;
             i32 lvl = st->m_levelIndex + 0x64;
@@ -1462,10 +1426,7 @@ i32 CGrunt::StepCombatReaction(
             h->m_flags |= 0x20000;
         }
     }
-    if (m_toyTimeSprite != NULL) {
-        m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
     StopStruckSlotSound();
 
@@ -1535,12 +1496,7 @@ tail:
     i32 frame;
     {
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* elem;
-        if (desc->m_records.GetSize() > 0) {
-            elem = static_cast<CAniRecordView*>(desc->m_records.GetAt(0));
-        } else {
-            elem = NULL;
-        }
+        CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
         frame = elem->m_param;
     }
     {
@@ -1566,7 +1522,7 @@ RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished == 0 || sub->m_frameTicksLeft != 0) {
+    if (!IsAniCursorComplete(sub)) {
         return 0;
     }
     if (m_health <= 0) {
@@ -1608,7 +1564,7 @@ i32 CGrunt::StepArrivalCommitB() {
 
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished == 0 || sub->m_frameTicksLeft != 0) {
+    if (!IsAniCursorComplete(sub)) {
         return 0;
     }
     m_entranceActive = 0;
@@ -1819,7 +1775,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         );
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished == 0 || sub->m_frameTicksLeft != 0) {
+    if (!IsAniCursorComplete(sub)) {
         return 0;
     }
     m_entranceActive = 0;

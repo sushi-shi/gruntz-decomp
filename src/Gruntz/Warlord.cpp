@@ -25,6 +25,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -115,8 +116,7 @@ typedef enum WarlordBattleTag {
 
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
 
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_WARLORD) {

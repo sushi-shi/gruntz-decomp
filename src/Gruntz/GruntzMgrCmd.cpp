@@ -19,6 +19,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -605,15 +606,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             _c = NULL;
                             MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
                             if (_c) {
-                                i32 _tag = g_sndCueTag;
-                                if (g_sndEnabled) {
-                                    i32 now = g_killCueClock;
-                                    if (static_cast<u32>((now - _c->m_lastPlayTime))
-                                        >= static_cast<u32>(_c->m_replayDelay)) {
-                                        _c->m_lastPlayTime = now;
-                                        _c->m_sound->ConfigureItem(_tag, 0, 0, 0);
-                                    }
-                                }
+                                PlayLeafCueIfElapsed(_c, g_sndCueTag, 0, 0, 0);
                             }
                         }
                         ShowToggleMessage("Explosionz", g_explosionz);

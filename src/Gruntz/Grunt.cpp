@@ -914,6 +914,9 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
     return StepArrivalDrop(point->m_x, point->m_y, arrivalPhase, maskA, clearFlag, maskCIn);
 }
 
+#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/GruntMovementInline.h>
+
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -925,7 +928,6 @@ i32 CGrunt::StepArrivalDrop(
 ) {
     CoordNode* n;
     CoordNode* cur;
-    CoordPoolNode* pooled;
     Coord* tail;
     POSITION pos;
     i32 lastX, lastY, tileX, tileY;
@@ -944,17 +946,7 @@ i32 CGrunt::StepArrivalDrop(
         goto commitPhase;
     }
 
-    if (CoordCount() != 0) {
-        n = CoordHead();
-        while (n != NULL) {
-            cur = n;
-            n = n->m_next;
-            if (cur->m_coord != NULL) {
-                g_coordPool.Push(cur->m_coord);
-            }
-        }
-        m_coordList.RemoveAll();
-    }
+    RecycleGruntCoords(this);
     lastX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     lastY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     tileX = pxX >> TILE_SHIFT_PX;
@@ -969,9 +961,7 @@ i32 CGrunt::StepArrivalDrop(
             ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
         != 0) {
         if (CoordCount() != 0) {
-            pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
-            pooled->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = pooled;
+            PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
         }
     pathGate:
         reinit = 1;
@@ -1027,18 +1017,14 @@ i32 CGrunt::StepArrivalDrop(
                 // `jg` (0x4b681), so the SHORT-path count is the `if` and the
                 // free-everything walk is the `else`.
                 if (probe.GetCount() <= cnt + 3) {
-                    pooled = g_coordPool.NodeOf(probe.RemoveHead());
-                    pooled->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = pooled;
+                    PushFreeNode(&g_coordPool, probe.RemoveHead());
                     if (CoordCount() != 0) {
                         n = CoordHead();
                         while (NULL != n) {
                             cur = n;
                             n = n->m_next;
                             if (cur->m_coord != NULL) {
-                                pooled = g_coordPool.NodeOf(cur->m_coord);
-                                pooled->m_next = g_coordPool.m_freeHead;
-                                g_coordPool.m_freeHead = pooled;
+                                PushFreeNode(&g_coordPool, cur->m_coord);
                             }
                         }
                         m_coordList.RemoveAll();
@@ -1050,9 +1036,7 @@ i32 CGrunt::StepArrivalDrop(
                 } else {
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
-                        pooled = g_coordPool.NodeOf(probe.GetNext(pos));
-                        pooled->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = pooled;
+                        PushFreeNode(&g_coordPool, probe.GetNext(pos));
                     }
                 }
                 probe.RemoveAll();
@@ -1125,13 +1109,9 @@ i32 CGrunt::StepArrivalDrop(
     grid = g_gameReg->m_tileGrid;
     if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) != 0
         && CoordCount() != 0) {
-        pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
-        pooled->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = pooled;
+        PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
         if (CoordCount() != 0) {
-            pooled = g_coordPool.NodeOf(m_coordList.RemoveTail());
-            pooled->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = pooled;
+            PushFreeNode(&g_coordPool, m_coordList.RemoveTail());
             if (CoordCount() != 0) {
                 nudged = 1;
                 tail = CoordTail()->m_coord;
@@ -1254,14 +1234,12 @@ reProbe:
             ->SearchEdge(lastX, lastY, walkX, walkY, &m_coordList, clearFlag, maskA, maskC)
         != 0) {
         if (CoordCount() != 0) {
-            pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
-            pooled->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = pooled;
+            PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
         }
         goto pathGate;
     }
     SetEntrancePos(1, 1);
-    if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
+    if (IsGruntAtSavedScreenPos(this) != 0) {
         PlayMoveSoundAtTile(walkX, walkY);
     }
     if (m_arrivalPending == 0) {
@@ -1884,6 +1862,8 @@ i32 CGrunt::CreateStaminaSprite() {
     return 1;
 }
 
+#include <Gruntz/GruntSpriteMacros.h>
+
 // @early-stop
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
@@ -1891,14 +1871,8 @@ i32 CGrunt::CreateToyTimeSprite() {
         return 0;
     }
 
-    if (m_staminaSprite) {
-        m_staminaSprite->m_flags |= 0x10000;
-        m_staminaSprite = NULL;
-    }
-    if (m_wingzTimeSprite) {
-        m_wingzTimeSprite->m_flags |= 0x10000;
-        m_wingzTimeSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
     m_toyTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
@@ -1927,10 +1901,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
         return 0;
     }
 
-    if (m_toyTimeSprite) {
-        m_toyTimeSprite->m_flags |= 0x10000;
-        m_toyTimeSprite = NULL;
-    }
+    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
 
     m_wingzTimeSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
@@ -2218,10 +2189,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         m_wingzEnabled = 0;
         m_wingzDurationLo = 0;
         m_wingzDurationHi = 0;
-        if (m_wingzTimeSprite != NULL) {
-            m_wingzTimeSprite->m_flags |= 0x10000;
-            m_wingzTimeSprite = NULL;
-        }
+        HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     }
     fresh = 0;
     defer = 0;

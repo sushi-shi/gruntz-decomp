@@ -616,11 +616,12 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     return 1;
 }
 
+#include <Gruntz/AniAdvanceCursorInline.h>
+
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (m_wwdObject->m_animCursor.m_finished != 0
-        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
         m_wwdObject->m_flags |= 0x10000;
     }
     return 0;

@@ -1,0 +1,364 @@
+# Inline-pattern inventory — 2026-08-22
+
+Status: investigative snapshot and campaign input. This is not a source-model
+claim, or a replacement for the derived `gruntz walls inventory`.
+
+The audit inspected 3,719 source function anchors and normalized instruction
+windows across 10,700 retail functions. Percentages were rechecked against the live
+inventory at 2026-08-22 10:58 UTC. Concurrent work changed several unrelated scores
+during the scan, but none of the candidate rows below changed.
+
+No source files were edited and no build was run during the initial inventory pass.
+The implementation campaign recorded below was performed afterward in an isolated
+worktree.
+
+## Main findings
+
+The strongest nested-inline signal is coordinate cleanup:
+
+- A `CGrunt::RecycleCoords`-shaped traversal occurs in 32 callers.
+- Within it, the `FreeNodePool::Push` free-list splice is expanded in 21 functions.
+- Another 17 functions retain the call to `Push`.
+- Several functions contain both forms at different sites.
+
+The initial mixed call/expansion population looked budget-dependent, but the campaign
+disproved a one-entity explanation for `FreeNodePool::Push`: its body is below VC5's
+free-inline threshold, so a canonical header-inline definition expands at every site,
+removes the standalone body, and creates 23 broad regressions. The retained model is
+an out-of-line `Push` plus an opt-in inline sibling for the proven expansions. This is
+the two-entity mechanism documented in
+`docs/patterns/two-shapes-need-two-entities.md`.
+
+Other especially strong findings:
+
+- `LeafCue::PlayIfElapsed`: 34 caller functions. Its body is currently out-of-line
+  in `src/Gruntz/BootyStateActivate.cpp`, while retail repeatedly contains its
+  expansion.
+- `CAniElement::AtChecked(0)`: nine callers contain the guarded `GetAt(0)`
+  expansion despite the current out-of-line definition in
+  `src/Gruntz/GruntEntranceMove.cpp`.
+- Animation-complete predicate: 17 callers repeat
+  `m_finished != 0 && m_frameTicksLeft == 0`; there is no corresponding method in
+  `include/Gruntz/AniAdvanceCursor.h`.
+- Pixel packing: the same pack operation occurs across five TUs, while the current
+  tree has separate TU-local copies in `src/DDrawMgr/DDSurface.cpp` and
+  `src/DDrawMgr/LevelPlane.cpp`.
+- The common Grunt AI routines repeatedly contain arrival, elapsed-timer,
+  random-point, powered-state-reset, and reroll-timer bodies. `WanderStep` contains
+  six detected candidates; `UpdateArrival`, `TryTeleportToCell`, and
+  `ScanNearestTarget` each contain five.
+- `StepArrivalDrop`, currently 32.303%, already exhibits three nested candidates:
+  arrival predicate, coordinate-recycle body, and expanded pool push. Its low
+  starting score should not exclude it from later inline accounting.
+
+## Candidate legend
+
+The names below are descriptive labels, not claims about the original spelling.
+
+| Code | Candidate inline body |
+|---|---|
+| `FP` | `FreeNodePool::Push` free-list splice |
+| `CR` | coordinate-list recycle loop, with `Push` retained as a call |
+| `LC` | `LeafCue::PlayIfElapsed` |
+| `AD` | Grunt has arrived at its stored pixel destination |
+| `RX` | select random point inside object extent |
+| `HE` | 64-bit hold timer has elapsed |
+| `RT` | reset arrival reroll timer, including random delay |
+| `RP` | reset powered/entrance state and animation |
+| `HS` | hide a sprite and clear its member slot |
+| `AC` | animation cursor is complete |
+| `A0` | `CAniElement::AtChecked(0)` |
+| `TC` | tile `Coord` to pixel-centre pair |
+| `SP` | snap and compare a pixel pair to tile centre |
+| `SO` | snap an object's `screenX/screenY` to tile centre |
+| `SK` | set sort key if changed and mark dirty |
+| `BA` | normalize big-animation flags |
+| `PK` | pack RGB components into a 16-bit palette entry |
+| `R5` | test whether the global pixel format is RGB555 |
+| `CI` | common `CImage` clipping block |
+| `AV` | scale and clamp ambient volume |
+
+## Complete function matrix
+
+`100.000` means the function was exact and therefore absent from the sub-100
+inventory at the snapshot time.
+
+```text
+RVA     current  function                                         inlinees
+00bf10  100.000  CAmbientSound::Recompute                         AV
+00bfb0  100.000  CAmbientSound::Restart                           AV
+00c200  100.000  CAmbientSound::SetLevel                          AV
+00c2a0   89.257  CAmbientSound::Fade                              AV
+00c5b0  100.000  CAmbientPosSound::Update                         AV
+018d30   98.851  CBootyState::EnterState                          LC
+01b690   95.483  CBootyState::UpdateBootyWalkingGruntz            LC
+01c0f0  100.000  CBootyState::CheckPerfectBonus                   LC
+01e570  100.000  CMultiBootyState::EnterState                     LC
+025d90   95.329  CBattlezMapConfig::StepBoard                     AD,FP
+0267c0   85.119  CBattlezMapConfig::StepRowUnits                  AD,HE,TC,FP
+029b40   86.263  CBattlezMapConfig::ValidateUnitPath              FP,CR
+02a570   72.969  CBattlezMapConfig::RepathAroundBlockedTiles      TC,CR
+02c690   88.025  CBattlezMapConfig::ResolveArrival                CR
+02edb0   85.515  CBattlezMapConfig::PathToNearestCandidate        CR
+02f620   95.085  CBattlezMapConfig::ChooseIdleBehavior            FP
+0300c0   85.148  CBattlezMapConfig::RouteUnitTo                   CR
+0302c0   91.755  CBattlezMapConfig::RouteUnitToGoal               FP
+030b20   87.820  CBattlezMapConfig::PathToNearestGoal             TC,FP
+031610   87.230  CBattlezMapConfig::Step                          CR
+031ca0   93.453  CBattlezMapConfig::TrackAssignedEnemy            FP
+032060   83.043  CBattlezMapConfig::AdvanceToEnemyBase            FP,CR
+032ce0   81.910  CBattlezMapConfig::ScanRegion                    CR
+0343f0  100.000  CGrunt::RecycleCoords                            FP
+0358a0   85.084  CBattlezMapConfig::RetargetIdleUnit              FP,CR
+037260   94.257  ScrollDialog                                     LC
+03e520   81.971  CGruntCreationPoint::CGruntCreationPoint         SO
+03ecf0   97.764  CExitTrigger::CExitTrigger                       SO
+0403b0  100.000  CWormhole::SpawnPartners                         AC
+040490   56.165  CGruntPuddle::CGruntPuddle                       SO
+040d20  100.000  CGruntPuddle::Remove                             AC
+041020   96.029  CTeleporter::CTeleporter                         SO
+041aa0  100.000  CTeleporter::Update                              AC
+041e90   97.876  CSecretTeleporterTrigger::CSecretTeleporterTrigger SO
+0424b0   97.780  CSecretLevelTrigger::CSecretLevelTrigger         SO
+042d40   78.839  CWarlord::CWarlord                               SO
+047090  100.000  CParticlez::Update                               AC
+047a10   89.743  CGrunt::CGrunt                                   SK
+048360  100.000  CGrunt::OnObjectRemoved                          FP
+04ac10   95.397  CGrunt::PlaySound                                A0
+04b240  100.000  CGrunt::ClearAllSprites                          HS
+04b370   32.303  CGrunt::StepArrivalDrop                          AD,FP,CR
+04d060  100.000  CGrunt::SetEntrancePos                           FP
+04d3e0   99.722  CGrunt::CreateToyTimeSprite                      HS
+04d520   99.706  CGrunt::CreateWingzTimeSprite                    HS
+04dd50   95.005  CGrunt::LoadGruntTypeTable                       HS,RP,CR
+050a50   98.825  CGrunt::SetupTubeAnim                            RP
+051510   98.760  CGrunt::IsDropReady                              SK
+0517b0  100.000  CGrunt::SnapToLastTile                           SK
+052f40   98.867  CGrunt::ConsiderArrival                          SP
+052fb0   93.230  CGrunt::TryTeleportToCell                        HS,SP,SK,RP,FP
+0555e0   96.431  CGrunt::LoadStateRecord                          FP
+057db0   89.192  CGrunt::PathScan                                 CR
+05b050   95.351  CGrunt::CommitNeighbor                           SP
+05b6f0  100.000  CGrunt::FindGridNeighbor                         AD
+05d210   86.831  CGrunt::XferName                                 HS,RP
+05ecd0   96.369  CGrunt::FinalizeStep                             SK
+05f310   91.850  CGrunt::AdvanceMotion                            AD,TC,SK
+060150   91.287  CGrunt::LoadGruntDeathAnimations                 HS,RP
+0616e0  100.000  CGrunt::ResetGeometry                            A0
+061940   88.742  CGrunt::RearmAttackAnim                          A0
+061bc0   95.784  CGrunt::RearmAttackAnim2                         A0
+061cb0   98.761  CGrunt::StepAttackFire                           SK
+062110   95.475  CGrunt::UpdateArrival                            HS,RP
+062840  100.000  CGrunt::StepEntranceRelatchA                     HS,AC,SK,A0
+0633e0   92.520  CGrunt::ResolveEntranceArrival                   AD
+0637a0   90.462  CGrunt::StepEntranceReinit                       RP
+063db0  100.000  CGrunt::LoadVehicleGruntAnimations               AD,HS,AC,A0
+0641b0  100.000  CGrunt::BuildGruntExitAnimation                  HS
+064540   98.766  CGrunt::StepWarpExit                             AC
+0646b0   94.024  CGrunt::StepCombatReaction                       HS,SP,RP,A0
+065300  100.000  CGrunt::StepArrivalCommitA                       AC
+0654b0  100.000  CGrunt::StepArrivalCommitB                       AC
+065c20   98.219  CGrunt::StepEntranceRelatchB                     AC
+065e80   80.775  CGrunt::LoadPickupSprites                        HS,RP
+067850   94.859  CGrunt::RunEntranceMove                          RP
+067f80   89.031  CGrunt::LoadEntranceConfig                       SK
+068370  100.000  CGrunt::RearmEntranceDrop                        AC,A0
+068520   99.719  CGrunt::StartBombGruntRun                        HS
+068880   89.800  CGrunt::LoadWingzGruntSprites                    HS
+0690a0  100.000  CGrunt::UpdateEntranceAnim                       AC,SK,A0
+0692f0   90.991  CGrunt::StepArrivalCommit                        HS,SP,SK,RP
+069fd0  100.000  CGrunt::FinishEntranceMove                       AC
+06a6d0   89.264  CGrunt::FinishActiveAction                       HS,SP,SK,RP
+06dae0   85.701  CTriggerMgr::ApplyTriggerA                       RP
+075e90   79.390  CTriggerMgr::LoadTileArrivalFx                   LC
+07b440   92.515  CTriggerMgr::BuildRockBreakParticles             LC
+07cc60   89.224  CTriggerMgr::RebuildSelectionList                FP
+07d0c0  100.000  CTriggerMgr::ClearSelections                     FP
+07e3e0  100.000  CGruntSelectedSprite::CGruntSelectedSprite       SK
+0862f0   98.541  CGruntzMgr::HandleCommand                        LC
+091250   99.250  CGruntzMgr::CheatSkeletonToggle                  LC
+091390  100.000  CGruntzMgr::CheatEclipseToggle                   LC
+099110   97.014  CInGameText::CInGameText                         SO
+0997c0   96.707  CInGameText::Update                              LC
+09d7b0  100.000  CLightFx::AdvanceAnim                            AC
+0a05a0  100.000  CMenuState::StartMusic                           LC
+0ab940   98.720  CSimpleAnimation::CSimpleAnimation               BA
+0abfa0   99.831  CFrontCandy::CFrontCandy                         BA
+0ac1d0   99.829  CDoNothing::CDoNothing                           BA
+0ac3f0   99.829  CBehindCandy::CBehindCandy                       BA
+0ac620   97.849  CEyeCandy::CEyeCandy                             BA
+0ac870   98.105  CEyeCandyAni::CEyeCandyAni                       BA
+0acf40   91.186  CFrontCandyAni::CFrontCandyAni                   SK
+0ad540   94.545  CBehindCandyAni::CBehindCandyAni                 BA
+0aed80  100.000  CSingleAnimation::AdvanceAnim                    AC
+0b0140   89.546  CRollingBall::Update                             SK
+0b1af0   83.298  CSpotLight::Tick                                 LC
+0b4640  100.000  CRainCloud::HitTest                              LC
+0b86c0  100.000  CMulti::ShowMultiStartDlg                        LC
+0ba620  100.000  CMulti::LoadMenuSelectSprite                     LC
+0c7350  100.000  CDroppedObject::AdvanceAnimation                 AC
+0c7490  100.000  CDroppedObjectShadow::CDroppedObjectShadow       SK
+0de420  100.000  CPreviewState::LoadLevelPreviewScreen            LC
+0def60  100.000  CProjectile::~CProjectile                        FP
+0e2df0  100.000  CSpriteRef::Build                                PK
+0e8310  100.000  CSBI_MenuItem::SetState                          LC
+0ec670   95.291  CGrunt::ResolveArrivalReposition                 RX,HE,RT
+0ecc90   83.830  CGrunt::StepBrickLayerBehavior                   AD,CR
+0ed9f0   87.862  CGrunt::WanderStep                               AD,RX,HE,RT,FP,CR
+0ee800   85.226  CGrunt::ArrivalReticleScan                       AD,FP,CR
+0ef6b0   83.910  CGrunt::ChargeStep                               AD,RX,RP
+0f0130   90.919  CGrunt::UpdateArrival                            AD,RX,HE,RT,RP
+0f0e20   81.559  CGrunt::StepGooSuckerBehavior                    AD,CR
+0f1c70   79.831  CGrunt::StepArrivalDefenseAlt                    AD,RP
+0f26f0   86.544  CGrunt::ResolveArrivalNeighbor                   AD
+0f2b20   85.678  CGrunt::StepArrivalDefense                       AD,RX,HE
+0f36a0   83.869  CGrunt::StepDiggerBehavior                       AD
+0f42f0   94.784  CGrunt::ScanNearestTarget                        AD,RX,HE,RT,RP
+0f60f0   82.857  CGrunt::PhaseStep                                AD,FP
+0f71c0   85.630  CGrunt::SeekTarget                               AD,RP,CR
+0f7d90   97.992  CGrunt::StepPeerTracking                         AD
+0f8240   88.973  CGrunt::StepArrivalDefenseLean                   AD,RX,HE
+0fb7a0   91.685  CStaticHazard::CStaticHazard                     SO
+0fe910   94.865  CStatusBarMgr::UpdateStatusBarTabHighlight       LC
+0ff850   97.584  CStatusBarMgr::ClickHilite                       LC
+104e60  100.000  CStatusBarMgr::LoadStatzTabToggleSprite          LC
+1055b0  100.000  CStatusBarMgr::LoadGooCookingSprite              LC
+105e40   99.154  CStatusBarMgr::LoadRezMachineConfig              LC
+106bb0   94.149  CStatusBarMgr::LoadChipMachineConfig             LC
+109bd0   91.329  CWarpStoneFly::Init                              LC
+10b5d0  100.000  CStatusBarMgr::HlClickGroup0                     LC
+10b6f0  100.000  CStatusBarMgr::HlClickGroup1                     LC
+10b810  100.000  CStatusBarMgr::HlClickGroup2                     LC
+10c230  100.000  CStatusBarSprite::CStatusBarSprite               SK
+110110  100.000  CTileTriggerTransition::TransitionAct            AC
+110570   93.598  CTileTriggerSwitchLogic::SwitchDown              LC
+1106b0   93.598  CTileTriggerSwitchLogic::SwitchUp                LC
+1122a0   99.459  CGiantRockLogic::BuildRockBreakInGameText        LC
+114120  100.000  CDDrawSubMgrLeafScan::RefreshAsset               LC
+1145c0   96.453  CToobSpikez::CToobSpikez                         SK
+119b50   98.317  CVoiceTrigger::CVoiceTrigger                     SO
+13f020   70.144  CDDSurface::ShadeBlt                             R5
+13f460   76.991  CDDSurface::ShadeRect                            R5
+13f740  100.000  BuildColorChannelTables                          R5
+13fbb0   99.956  CDDSurface::Blit168                              PK
+13fce0   95.148  CDDSurface::Blit1624                             PK
+1495d0   91.007  CDDrawShadeBlit::EncodeRle16                     PK
+1497f0  100.000  CDDrawShadeBlit::Blit                            R5
+14eef0   92.864  CShadeTableCache::GreyTable                      R5
+14f5b0   99.747  CShadeTableCache::AlphaTable                     PK
+1538c0   98.759  CImage::BlitNorm                                 CI
+153b20   97.464  CImage::BlitFlipV                                CI
+153d90   97.990  CImage::BlitFlipH                                CI
+153ff0   97.197  CImage::BlitShadeFlipHV                          CI
+154270   99.852  CImage::BlitShadeNorm                            CI
+1544d0   99.828  CImage::BlitShadeFlipV                           CI
+154750   99.258  CImage::BlitShadeFlipH                           CI
+163670  100.000  CDDrawWorkerHost::ResolveColorKey                PK
+183030  100.000  CChatBox::PlayFocusSound                         LC
+1830b0  100.000  CChatBox::PlayActivationSound                    LC
+```
+
+## Population qualifications
+
+Most matrix entries are supported directly by repeated normalized retail
+instructions. The few broader source-semantic additions are:
+
+- `RX`: six exact retail clones plus `ScanNearestTarget`, whose scheduling differs.
+- `HS`: six exact retail clones; eleven additional CGrunt functions contain the
+  same hide-and-null body.
+- `BA`: six exact clones plus `CDoNothing`.
+- `CI`: five long exact clones, six shorter exact clones, seven source-equivalent
+  functions.
+- `AV`: four exact clones plus the same block inside `CAmbientPosSound::Update`.
+
+The sort-key family is intentionally conservative: 18 exact retail-pattern
+functions are in the matrix, although 67 source functions contain the broader
+"compare sort key, store, set dirty" idiom.
+
+## Confirmed existing inlines
+
+These were also found, but are already explicitly modeled or are library/compiler
+inlines rather than new candidates:
+
+- `GetRandomNumber`: 38 expansion sites in 20 functions. Current nonexact examples
+  include `CRandomAmbientSound::InitCycleTiming` 75.692%, `CSpotLight::Tick`
+  83.298%, `CInGameIcon::PeekCycle` 88.678%, both
+  `CGruntSpawnConfig::SpawnVoiceDriver` overloads at 90.104% and 92.473%, and
+  `CFaderSine::RenderFrame` 88.888%.
+- `CDDrawWorker::GetAt`: `Refresh` 93.243%, `RenderCel` 75.636%,
+  `CSBI_ImageSet::Render` 87.842%, `CSBI_GruntMachine::Render` 95.769%,
+  `CSBI_StatzTabGruntBar::Update` 90.918%, `PlaceFrame` 100%, and
+  `CDDrawWorkerHost::Draw` 80.615%.
+- `CGameLevel::PointInBounds`/`PointInRect`: 28 functions across 18 TUs.
+- `CMapMgr::CellFlagsAt` and related `m_rows[y][x]` accessors: numerous
+  register/schedule variants across at least 23 functions and 12 TUs.
+- `LOGIC_WORKER_PUMP`: 68 functions across 17 TUs.
+- Act-name registrar/grow machinery: 65 functions across 43 TUs.
+- `PROBE_TILE`: 26 functions.
+- MFC `CArray::SetSize`, list traversal/GetNext, CString comparisons,
+  destructors/EH, and CRT digit/pixel-copy loops were classified as
+  library/compiler patterns and excluded from the candidate matrix.
+
+## Scope boundary
+
+The matrix remains the identification snapshot, not a hand-maintained worklist. The
+campaign outcomes below qualify it; future work must still recheck the current source
+hash, live percentage, retail call set, CFG, and ordered referents.
+
+## Implementation campaign outcomes
+
+Kept real inline abstractions, counted at call sites:
+
+- `PushFreeNode`: 32 expanded free-list splices, with the standalone
+  `FreeNodePool::Push` wrapper retained.
+- `RecycleGruntCoords`: five coordinate-list cleanup bodies.
+- `IsGruntAtSavedScreenPos`: two arrival predicates.
+- `IsAniCursorComplete`: 17 animation-complete predicates.
+- `GetAniElementAt`: nine guarded animation-element lookups.
+- `PlayLeafCueIfElapsed`: eight elapsed-cue bodies in the green subset of callers.
+- `ScaleAmbientVolume`: seven volume calculations.
+- `ResetGruntArrivalReroll`: five full reroll resets.
+- `IsGruntArrivalRerollPending`: six 64-bit reroll-window predicates.
+
+Kept exact-expansion macro fallbacks:
+
+- `HIDE_AND_CLEAR_GRUNT_SPRITE`: 49 sprite-retirement bodies across seven TUs.
+  The six bodies in `ClearAllSprites` remain textual because macro-origin metadata
+  before `StepArrivalDrop` changes that later caller's inline set even though
+  `ClearAllSprites` itself remains exact.
+- `RESET_GRUNT_ARRIVAL_REROLL_COMPACT`: the shorter `DefenseLean` spelling. The
+  real full helper moved that function 88.9729% to 88.7946%; the macro restores it.
+- `SNAP_OBJECT_TO_TILE_CENTER`: 13 complete two-axis tile-centre expansions. All
+  owner-member, object-member, free-helper, and by-reference function forms had
+  lowered the ten initially measured constructor callers; the token-preserving
+  macro is green across those callers and three additional in-function sites.
+- `NORMALIZE_BIG_ANIMATION_WITH_AUX` / `NORMALIZE_BIG_ANIMATION_DIRECT`: all seven
+  big-animation blocks, preserving the two observed receiver spellings. The real
+  helpers lowered every caller by roughly four to five points; both macro forms
+  preserve every measured caller's pre-macro fuzzy score.
+
+Measured score improvements retained by the campaign:
+
+| Function | Snapshot | Retained | Delta |
+|---|---:|---:|---:|
+| `CAmbientSound::Fade` | 89.25694% | 91.80556% | +2.54862 |
+| `CGrunt::ArrivalReticleScan` | 85.22585% | 85.99320% | +0.76735 |
+| `CBootyState::UpdateBootyWalkingGruntz` | 95.48321% | 95.99254% | +0.50933 |
+| `CGruntzMgr::HandleCommand` | 98.54093% | 98.56809% | +0.02716 |
+
+`StepArrivalDrop` is the local-minimum control. Making the coordinate cleanup and
+arrival predicate visible initially sent it to 0.000%; composing the cleanup helper,
+the selected arrival site, and the expanded pool-splice sibling recovered its banked
+32.302708%. This validates the instruction to finish the caller rather than reverting
+the first score drop in isolation.
+
+Rejected or bounded candidates:
+
+- `PK` pixel packing: a shared header trades one exact closure in `LevelPlane` for a
+  fresh 0.027-point regression in `DDSurface::ShadeRect`. The two proven TU-local
+  inline functions remain separate.
+- `HS` sprite retirement as a pointer-reference function: `ClearAllSprites` stays
+  exact, but exact `BuildGruntExitAnimation` moves to 98.4167% through register
+  scheduling. The macro fallback above preserves the expansion.
+- Broad `LeafCue` conversion: several exact callers regress despite local include
+  scoping. Only the eight green sites are retained.

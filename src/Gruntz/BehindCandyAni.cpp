@@ -6,6 +6,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/BigAnimationMacros.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Image/CImage.h>
@@ -47,20 +48,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
         o->m_sortKey = 0;
         o->m_flags |= 0x20000;
     }
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = aux->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(aux)
 }
 
 RVA(0x000ad850, 0x102)
