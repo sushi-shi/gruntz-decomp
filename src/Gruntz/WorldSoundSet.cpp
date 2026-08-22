@@ -459,8 +459,20 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
         }
         if (mode == 0) {
             m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+            i32 t = m_scaleA;
             m_level = level;
-            i32 v = ScaleAmbientVolume(this, level);
+            if (t > 5) {
+                t -= 0xf;
+            }
+            i32 v = (t * level) / 100;
+            if (m_scaleB > 0) {
+                v = (v * m_scaleB) / 100;
+            }
+            if (v < 0) {
+                v = 0;
+            } else if (v > 0x64) {
+                v = 0x64;
+            }
             m_voice->SetVolumeByIndex(v);
             m_level = level;
             m_isPlaying = 1;
@@ -468,8 +480,20 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
         }
 
         m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+        i32 t = m_scaleA;
         m_level = level;
-        i32 v = ScaleAmbientVolume(this, level);
+        if (t > 5) {
+            t -= 0xf;
+        }
+        i32 v = (t * level) / 100;
+        if (m_scaleB > 0) {
+            v = (v * m_scaleB) / 100;
+        }
+        if (v < 0) {
+            v = 0;
+        } else if (v > 0x64) {
+            v = 0x64;
+        }
         m_voice->CloneAndPlay(v, mode, 0);
         m_level = level;
         m_isPlaying = 1;
