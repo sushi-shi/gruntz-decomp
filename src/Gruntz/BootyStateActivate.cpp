@@ -219,13 +219,7 @@ CString g_levelMsgStrings[8] = {
 };
 
 DATA(0x00229f30)
-SecretMsgRow g_secretMsgRows[24];
-// The cheat loader walks all 25 rows of the run, so these two are the 25th row's
-// pair; ShowSecretBonusMessage draws them on their own.
-DATA(0x0022ae30)
-char g_secretMsgA[0x20];
-DATA(0x0022ae50)
-char g_secretMsgB[0x80];
+SecretMsgRow g_secretMsgRows[25];
 
 DATA(0x0022af10)
 i32 g_bootyCheatBuilt = 0;
@@ -248,7 +242,9 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
         AddrWord<char> cur;
         AddrWord<char> last;
-        last.m_addr = g_secretMsgB + sizeof(g_secretMsgB);
+        // Retail compares against 0x22aef0 - the 26th row's strB, one row past the
+        // array, which lands in the GruntDirStatics copies that follow it.
+        last.m_addr = g_secretMsgRows[24].strB + sizeof(SecretMsgRow);
         char* p = g_secretMsgRows[0].strB;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
@@ -407,8 +403,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
         s.Format("The Secret of Secretz:");
         ShowHudMessage(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
-        CString s2(g_secretMsgA);
-        CString s3(g_secretMsgB);
+        CString s2(g_secretMsgRows[24].strA);
+        CString s3(g_secretMsgRows[24].strB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }

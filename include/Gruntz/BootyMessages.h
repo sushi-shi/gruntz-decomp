@@ -20,8 +20,6 @@ class CString;
 extern const Coord g_bootyLetterCoords[16];
 
 extern const float g_secretRatioScale;
-extern char g_secretMsgA[0x20];
-extern char g_secretMsgB[0x80];
 
 i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
