@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -117,7 +116,7 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     i64 rem = m_accum.m_v - static_cast<u32>(g_frameTime) + m_baseTime.m_v;
-    i32 v = (rem >= 0) ? static_cast<i32>(rem) : 0;
+    i32 v = (rem < 0) ? 0 : static_cast<i32>(rem);
     m_currentMs = v;
 
     if (v == 0) {
@@ -139,18 +138,15 @@ i32 CTimer::Tick(i32 dt) {
         }
         i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
-            i32 found = 0;
-
             CGameObject* obj = 0;
-            found = MapLookupById(
-                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                key,
-                obj
-            );
-
-            AddrWord<CGameObject> raw;
-            raw.m_word = key;
-            CGameObject* hit = found ? obj : raw.m_addr;
+            CGameObject* hit = 0;
+            if (MapLookupById(
+                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    key,
+                    obj
+                )) {
+                hit = obj;
+            }
             if (hit != NULL && hit->m_animWorker->m_logic != NULL) {
                 static_cast<CWarlord*>(hit->m_animWorker->m_logic)->ResolveDeathAnimation();
             }
@@ -158,28 +154,25 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
 
-    u32 t = static_cast<u32>(m_currentMs);
-    if (t < 0xea60) {
+    if (static_cast<u32>(v) < 0xea60) {
         i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
-            i32 found = 0;
-
             CGameObject* obj = 0;
-            found = MapLookupById(
-                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                key,
-                obj
-            );
-
-            AddrWord<CGameObject> raw;
-            raw.m_word = key;
-            CGameObject* hit = found ? obj : raw.m_addr;
+            CGameObject* hit = 0;
+            if (MapLookupById(
+                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    key,
+                    obj
+                )) {
+                hit = obj;
+            }
             if (hit != NULL && hit->m_animWorker->m_logic != NULL) {
                 static_cast<CWarlord*>(hit->m_animWorker->m_logic)->NotifyFortUnderAttack();
             }
         }
     }
 
+    u32 t = static_cast<u32>(m_currentMs);
     i32 d10min = t / (MILLIS_PER_MINUTE * 10);
     i32 d1min = t / MILLIS_PER_MINUTE % 10;
     if (d1min == 0 && d10min != 0) {
@@ -191,7 +184,7 @@ i32 CTimer::Tick(i32 dt) {
         d10sec = 10;
     }
     i32 d1sec = r / MILLIS_PER_SECOND % 10;
-    if (d1sec == 0 && d10min == 0 && d1min == 0 && d10sec == 0) {
+    if (d1sec == 0 && (d10min != 0 || d1min != 0 || d10sec != 0)) {
         d1sec = 10;
     }
 
