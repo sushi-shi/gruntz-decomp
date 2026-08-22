@@ -217,17 +217,13 @@ CString g_levelMsgStrings[8] = {
 
 DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24];
-// 24 * sizeof(SecretMsgRow) = 0xf00, so these two land at 0x22ae30 / 0x22ae50 - the
-// addresses ShowSecretBonusMessage's two CString ctors take.
+// The cheat loader walks all 25 rows of the run, so these two are the 25th row's
+// pair; ShowSecretBonusMessage draws them on their own.
 DATA(0x0022ae30)
 char g_secretMsgA[0x20];
 DATA(0x0022ae50)
 char g_secretMsgB[0x80];
 
-// @early-stop
-
-char g_cheatTable[0xfa0];
-char g_cheatTableEnd[4];
 DATA(0x0022af10)
 i32 g_bootyCheatBuilt = 0;
 
@@ -236,7 +232,7 @@ RVA(0x00018830, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
-        goto fail;
+        return 0;
     }
 
     if (g_bootyCheatBuilt == 0) {
@@ -249,8 +245,8 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
         AddrWord<char> cur;
         AddrWord<char> last;
-        last.m_addr = g_cheatTableEnd;
-        char* p = g_cheatTable;
+        last.m_addr = g_secretMsgB + sizeof(g_secretMsgB);
+        char* p = g_secretMsgRows[0].strB;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetIntDef(bootyCheatz, grp, 1);
@@ -270,15 +266,15 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_stateBank = m_symParser->ResolvePath("STATEZ_BOOTY");
     if (!m_stateBank) {
-        goto fail;
+        return 0;
     }
     m_gameBank = m_symParser->ResolvePath("GAME");
     if (!m_gameBank) {
-        goto fail;
+        return 0;
     }
     m_gruntzBank = m_symParser->ResolvePath("GRUNTZ");
     if (!m_gruntzBank) {
-        goto fail;
+        return 0;
     }
 
     m_world->m_childGroup->ClearChildren();
@@ -286,19 +282,19 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     {
         CSymTab* soundz = SymTab2c()->FindSub("SOUNDZ");
         if (!soundz) {
-            goto fail;
+            return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
 
         CSymTab* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
-            goto fail;
+            return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
         CSymTab* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {
-            goto fail;
+            return 0;
         }
         m_world->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
     }
@@ -314,19 +310,19 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     m_secretHudHandled = 0;
 
     if (!BuildWarpStoneGlitterAnimation()) {
-        goto fail;
+        return 0;
     }
     if (!BuildGruntSprintAnimation()) {
-        goto fail;
+        return 0;
     }
     if (!LoadGruntEffectSprites()) {
-        goto fail;
+        return 0;
     }
     if (!BuildBootyWalkingGruntz()) {
-        goto fail;
+        return 0;
     }
     if (!BuildBootyPerfectAnimation()) {
-        goto fail;
+        return 0;
     }
 
     m_frameIntervalLo = 0x21;
@@ -334,9 +330,6 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     m_frameStampLo = g_frameTime;
     m_frameStampHi = 0;
     return 1;
-
-fail:
-    return 0;
 }
 
 // @early-stop
