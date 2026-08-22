@@ -8,13 +8,6 @@
 
 #include <math.h>
 
-RVA(0x001682a0, 0x46)
-CWwdGridShell::~CWwdGridShell() {}
-
-RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
-
-RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
-
 // @early-stop
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {

@@ -517,6 +517,9 @@ void CWwdGridShell::OnFound(WwdRegion* r) {
 
 RVA(0x00168080, 0x1f6)
 RVA_COMPGEN(0x00168280, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
+RVA_COMPGEN(0x001682a0, 0x46, ??1CWwdGridShell@@UAE@XZ)
+RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
+RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
 i32 CWwdSpatialMgr::Init(
     CDDrawChildGroup* owner,

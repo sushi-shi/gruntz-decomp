@@ -9,7 +9,7 @@
 struct WwdRegion;
 
 struct CWwdGridShell : public CWwdGrid {
-    virtual ~CWwdGridShell() OVERRIDE;
+    virtual ~CWwdGridShell() OVERRIDE {}
     virtual void OnFound(WwdRegion* r) OVERRIDE;
     CWwdGridShell() {}
 };
