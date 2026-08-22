@@ -4429,22 +4429,22 @@ CWarpStoneFly::CWarpStoneFly() {
     m_owner = NULL;
 }
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 // @early-stop
-// frame 0x18 vs retail's 0x14: retail homes one of the two delta scalars in the dead
-// `fragment` parameter's slot; cl finds only the `owner` param home (both put the
-// Lookup out-param there) and gives both deltas real slots. No cl 5.0 flag moves it -
-// /Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave `sub esp,0x18`.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = owner;
 
-    CObject* spr_ob = 0;
     i32 n = IDX(fragment) + 1;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
-        spr_ob
+    CDDrawWorker* spr = LookupWorker(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName,
+        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE"
     );
-    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     CImage* frame = (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex)
                         ? static_cast<CImage*>(spr->m_items.GetAt(n))
                         : 0;
