@@ -509,9 +509,6 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 }
 
 // @early-stop
-// The cursor placement is fixed by the indexed form.  Residue is the FP stack: retail
-// finishes `ang` before loading the coordinate, and it converts (step+5) with `fild`
-// where cl folds the two double constants and reaches it with `fimul`.
 RVA(0x000196c0, 0x1d3)
 i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
@@ -532,27 +529,20 @@ i32 CBootyState::StepGlitterAnim() {
     i32 idx = m_letterIdx;
     double r = static_cast<float>(m_radius);
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
-    m_scratchX =
-        static_cast<i32>((sin(ang) * r + static_cast<float>(g_bootyLetterCoords[idx].m_x)));
-    m_scratchY =
-        static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx].m_y)));
+    m_scratchX = static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x));
+    m_scratchY = static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y));
     m_angleStep = step + 5;
-    m_radius = static_cast<i32>(
-        (kGlitterStartRadius - (step + 5) * kGlitterShrinkRate * kGlitterStartRadius)
-    );
+    double shrink = static_cast<float>(step + 5) * kGlitterShrinkRate;
+    m_radius = static_cast<i32>((kGlitterStartRadius - shrink * kGlitterStartRadius));
 
     i32 i = 0;
     if (idx > 0) {
-        const Coord* tbl = g_bootyLetterCoords;
-        CWwdGameObjectA** ap = m_trailSprites;
         do {
-            CWwdGameObjectA* e = *ap;
+            CWwdGameObjectA* e = m_trailSprites[i];
+            e->m_screenX = g_bootyLetterCoords[i].m_x;
+            e = m_trailSprites[i];
+            e->m_screenY = g_bootyLetterCoords[i].m_y;
             i++;
-            ap++;
-            e->m_screenX = tbl->m_x;
-            e = ap[-1];
-            e->m_screenY = tbl->m_y;
-            tbl++;
         } while (i < m_letterIdx);
     }
 
