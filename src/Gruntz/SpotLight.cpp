@@ -246,6 +246,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
         return 0;
     }
     CGruntzMgr* reg = g_gameReg;
+    CDDrawSurfaceMgr* world = reg->m_world;
     CFileMemBase* s = static_cast<CFileMemBase*>(arc);
     switch (mode) {
         case SERIAL_SAVE:
@@ -284,8 +285,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
                 s->Read(&id, sizeof(id));
                 CGameObject* out = 0;
                 CGameObject* resolved;
-                if (MapLookupById(reg->m_world->m_childGroup->m_registeredGameObjectsById, id, out)
-                    == 0) {
+                if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, id, out) == 0) {
                     resolved = NULL;
                 } else if (out == NULL) {
                     resolved = NULL;
