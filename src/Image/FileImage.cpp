@@ -926,6 +926,9 @@ i32 CDDSurface::RunDecode3(u8* dstBuf, u8* src, i32 width, i32 height) {
 #pragma optimize("", on)
 
 // @early-stop
+// Code bytes match. The palette loop's end bound is `&s_palPcxData[0x100]`, which
+// is also `&g_warpU`, so the target-side relocation resolves to the neighbouring
+// symbol and objdiff scores the referent name.
 RVA(0x001457a0, 0x22c)
 i32 CDDSurface::DecodePcxData(
     CDDrawPtrCollections* dst,
@@ -942,7 +945,6 @@ i32 CDDSurface::DecodePcxData(
     i32 w = *p.m_dwords++;
     i32 h = *p.m_dwords++;
     p.m_dwords += 4;
-    u8* data = p.m_bytes;
 
     if (w & 3) {
         return 0;
@@ -997,7 +999,7 @@ i32 CDDSurface::DecodePcxData(
 
     u8* decoded = 0;
     if (!remap) {
-        if (!DecodeRun8(data)) {
+        if (!DecodeRun8(p.m_bytes)) {
             return 0;
         }
     } else {
@@ -1005,7 +1007,7 @@ i32 CDDSurface::DecodePcxData(
         if (!decoded) {
             return 0;
         }
-        if (!RunDecode1(decoded, data, w, h)) {
+        if (!RunDecode1(decoded, p.m_bytes, w, h)) {
             delete[] decoded;
             return 0;
         }
