@@ -719,9 +719,9 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
             aux = m_objAux;
             SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
-            m_driftPos.m_lo = owner->m_damage;
+            m_driftPos.m_lo = g_frameTime;
             m_driftPos.m_hi = 0;
-            m_driftThresh.m_lo = g_frameTime;
+            m_driftThresh.m_lo = owner->m_damage;
             m_driftThresh.m_hi = 0;
             return 1;
         }

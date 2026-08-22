@@ -263,8 +263,8 @@ i32 CGrunt::ScanNearestTarget() {
                         StepArrivalDrop(
                             sg->m_lastTilePx.m_x,
                             sg->m_lastTilePx.m_y,
-                            m_arrivalFlags,
                             0,
+                            m_arrivalFlags,
                             1,
                             0
                         );

@@ -157,8 +157,8 @@ inflight: {
             if (g->TileSwitch(
                     s->m_screenX >> TILE_SHIFT_PX,
                     s->m_screenY >> TILE_SHIFT_PX,
-                    0xd87,
                     0,
+                    0xd87,
                     0,
                     0
                 )
@@ -213,8 +213,8 @@ inflight: {
             if (g->TileSwitch(
                     s->m_screenX >> TILE_SHIFT_PX,
                     s->m_screenY >> TILE_SHIFT_PX,
-                    0xd87,
                     0,
+                    0xd87,
                     0,
                     0
                 )

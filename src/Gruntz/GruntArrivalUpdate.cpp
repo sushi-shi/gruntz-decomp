@@ -127,8 +127,8 @@ i32 CGrunt::UpdateArrival() {
                         Coord c[2];
                         g->GetScreenPos(c);
                         if (TileSwitch(
-                                c[0].m_y >> TILE_SHIFT_PX,
                                 c[0].m_x >> TILE_SHIFT_PX,
+                                c[0].m_y >> TILE_SHIFT_PX,
                                 0,
                                 this->m_arrivalFlags,
                                 0,

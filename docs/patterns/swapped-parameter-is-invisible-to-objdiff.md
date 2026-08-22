@@ -110,3 +110,22 @@ responsible function has identical call, branch, displacement-multiset, and
 referent counts. At every coordinate-bearing call, reconstruct the ordered
 arguments from the final stack layout; do not accept a matching operand
 multiset as proof.
+## Full-corpus reverse audit
+A 2026-08-22 reverse audit covered all 641 primary functions whose historical
+MAX remained below 100, with 10,911 equal-callee call sites paired between the
+rebuilt and retail objects. Comparing symbolic pushed-value vectors found three
+more source defects:
+- two pursuit calls in `CBattlezMapConfig::Step` put `0xd87` in
+  `arrivalPhase`; retail puts it in `maskA`;
+- `CGrunt::ScanNearestTarget` put `m_arrivalFlags` in `arrivalPhase`; retail
+  puts it in `maskA`;
+- a source-level coordinate-pair pass found `CGrunt::UpdateArrival` passing
+  one `Coord` as `(y, x)` where retail passes `(x, y)`.
+The vector screen also produced useful negative controls. Cross-jumped branch
+arms can leave two unrelated call setups in one linear pre-call window, and cl
+5.0 freely rotates local homes or reuses dead parameter homes. A raw
+`[esp+N]` operand is therefore not an argument identity. Normalize it by the
+epilogue-derived fixed frame and the current push depth, then trace the value's
+definition. `CTriggerMgr::ClearCell` is the compact control: rebuilt and retail
+use different frame sizes, but after depth normalization both pass the rounded
+world coordinates as `(x, y)`.
