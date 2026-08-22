@@ -2772,21 +2772,24 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
 }
 
 // @early-stop
-// docs/patterns/duplicated-zero-constant-claims-the-fourth-callee-saved-register.md
-// - exhausted there: 11 spellings, a 400-iteration hill-climb and a flat
-// declaration-count window. Do not chase the prologue tells on their own.
 RVA(0x0002b340, 0xaa)
 void CMapMgr::Clip(const RECT* src) {
     RECT a, b;
-    b.left = b.top = 0;
-    b.right = m_width;
-    b.bottom = m_height;
+    i32 w = m_width;
+    i32 h = m_height;
+    b.left = 0;
+    b.top = 0;
+    b.right = w;
+    b.bottom = h;
     if (src) {
         a = *src;
         a.right++;
         a.bottom++;
     } else {
-        a = b;
+        a.left = 0;
+        a.top = 0;
+        a.right = w;
+        a.bottom = h;
     }
     RECT* dst = &m_bounds;
     if (!IntersectRect(dst, &a, &b)) {
