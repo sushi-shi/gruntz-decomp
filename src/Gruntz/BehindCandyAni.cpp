@@ -26,22 +26,13 @@ RVA_COMPGEN(0x000100c0, 0x1e, ??_GCBehindCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x000100f0, 0x44, ??1CBehindCandyAni@@UAE@XZ)
 
 // @early-stop
-// Residue is one shared idiom (see
-// docs/patterns/known-zero-reload-before-call.md): retail RE-READS
-// m_wwdObject->m_animCursor.m_animation through the call's `this` even though the
-// guard just proved it 0, while cl here copy-propagates the guard's zero register
-// into the store. No source spelling reaches retail's form - 7 spellings tested
-// (plain, wwdObject local, cursor-pointer local, mixed receivers, both statement
-// orders); every assign-BEFORE-call form also costs an extra zero-constant use,
-// which makes cl claim a 4th callee-saved register and shifts every frame offset.
 RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-        m_value = m_wwdObject->m_animCursor.m_animation;
+        SwitchGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0) {
