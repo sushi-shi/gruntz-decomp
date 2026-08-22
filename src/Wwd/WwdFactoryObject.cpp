@@ -798,6 +798,12 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     return 1;
 }
 
+static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* result = NULL;
+    MapLookup(map, name, result);
+    return result;
+}
+
 // @early-stop
 // Retail re-reads m_element for the final guard - it loads it into the register
 // that held `this`, since every member address it still needs is already in a
@@ -823,10 +829,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (strlen(buf) == 0) {
         m_animation = NULL;
     } else {
-
-        CAniElement* out = NULL;
-        MapLookup(OwnerMgr()->m_animRegistry->m_animations, buf, out);
-        m_animation = out;
+        m_animation = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, buf);
     }
     CAniElement* w = m_animation;
     if (w != NULL) {
