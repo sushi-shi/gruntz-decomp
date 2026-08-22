@@ -58,8 +58,8 @@ struct CNetVersionPacket {
     char m_pad1[3];
 
     NetMsgId m_statId;
-    i32 m_cfgWord;
     i32 m_butePos;
+    i32 m_cfgWord;
     char m_pad10[8];
     i32 m_remoteVersion;
     i32 m_localVersion;
