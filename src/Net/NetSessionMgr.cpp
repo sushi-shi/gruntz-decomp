@@ -364,8 +364,9 @@ i32 CNetSession::Tick() {
         rec->m_count = 0;
         rec->m_checksum = Checksum();
         char* payload = rec->m_payload;
-        i32 next = seq + 1;
-        for (i32 t = seq * m_period; t < next * m_period; t++) {
+        i32 t = seq * m_period;
+        seq = seq + 1;
+        for (; t < seq * m_period; t++) {
             CGruntzCommand* obj = GetSlotPtr(t);
             if (obj) {
                 NoopSync(obj);
