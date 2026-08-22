@@ -480,16 +480,11 @@ i32 CBootyState::ShowSecretBonusMessage() {
     }
 }
 
-// @early-stop
-// Retail hoists ~SPRITE_STATE_HIDDEN (-2) into ebp for the whole function and reaches
-// the flag with `mov/or/mov` where cl has a free al and emits `or al,1`.
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
-    CGruntzMgr* reg = g_gameReg;
-
     CWwdGameObjectA** slot = m_trailSprites;
+    m_letterIdx = (g_gameReg->m_scoreHud->m_count - 1) % 4;
     m_radius = 0xc8;
-    m_letterIdx = (reg->m_scoreHud->m_count - 1) % 4;
     m_angleStep = 0;
     m_scratchX = 0;
     m_scratchY = 0;
