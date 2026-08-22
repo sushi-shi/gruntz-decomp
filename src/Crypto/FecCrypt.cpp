@@ -105,14 +105,13 @@ i32 CFecFile::ReadArchive(const char* name) {
             if (m_stream.Read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
                 goto fail;
             }
-            if (m_stream.Seek(m_entry.m_scramble - FEC_SCRAMBLE_BASE, CFile::current)
-                != static_cast<i32>(m_index[i - 1]) + stride + m_entry.m_scramble
-                       - FEC_NEXT_PAYLOAD_ADJUSTMENT) {
+            u16 scr = m_entry.m_scramble;
+            if (m_stream.Seek(scr - FEC_SCRAMBLE_BASE, CFile::current)
+                != static_cast<i32>(m_index[i - 1]) + stride + scr - FEC_NEXT_PAYLOAD_ADJUSTMENT) {
                 goto fail;
             }
             m_index.Add(
-                static_cast<i32>(m_index[i - 1]) + stride + m_entry.m_scramble
-                - FEC_NEXT_PAYLOAD_ADJUSTMENT
+                static_cast<i32>(m_index[i - 1]) + stride + scr - FEC_NEXT_PAYLOAD_ADJUSTMENT
             );
         }
     }
