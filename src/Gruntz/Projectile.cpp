@@ -857,9 +857,7 @@ i32 CProjectile::SerializeMove(
                 m_value = NULL;
                 return 1;
             }
-            CAniElement* out = NULL;
-            MapLookup(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, buf, out);
-            m_value = out;
+            m_value = LookupAnim(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, buf);
             return 1;
         }
         case SERIAL_SAVE: {
