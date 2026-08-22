@@ -231,3 +231,56 @@ visibility device.** Retail's Push split is per SITE: BattlezUnitStep.cpp calls
 `RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY` a few lines apart. A visibility header
 cannot express per-site at all; two spellings can, so two entities are what the
 evidence supports.
+
+## 2026-08-22 AUDIT: the macro side of the same device, collapsed the same way
+
+`FreeNodePoolInline.h` survived the *Inline.h sweep because retail's `Push`
+split is per SITE, and the thing that expressed the per-site split was
+`include/Gruntz/GruntCoordRecycleMacros.h` - **ten macro variants of one loop,
+named for the inline expansion each produced** (`..._POSITION_INLINE_POOL_IF_ANY`
+and friends) across 50 sites in 15 TUs. Same audit method as the headers: fold
+each pair, full build, read the per-function rows.
+
+**Four axes; only two were real.** The census is the whole finding:
+
+| axis | fold | measured | verdict |
+|---|---|---|---|
+| walk: `m_coordList.GetHeadPosition()`/`GetNext` vs `CoordHead()`/`m_next` | rewrite the 3 POSITION macros to the node walk | **0 rows moved** (6 sites) | DELETED |
+| guard: `if (CoordCount() != 0)` inside the macro (`*_IF_ANY`) | hoist to all 21 call sites | **0 rows moved** | DELETED |
+| push: `g_coordPool.Push(...)` (call 0x311b0) vs expanded | collapse the call arm into the expansion | **-26.85 over 9 fns** (CheckQueuedSpawnTile -6.61, RouteUnitTo -4.51, PathToNearestCandidate -3.94) | KEPT |
+| walk: `CGruntCoordList::NextData` (0x29a30) vs inlined step | collapse into the inline walk | **-16.37 over 4 fns** (TrackAssignedEnemy -9.43, Step -4.10) | KEPT |
+
+Ten variants to three, net compare effect one unrelated row (+0.0089).
+
+**The walk axis was never a codegen choice, and the reason generalizes.**
+`<MfcNoInline.h>` cannot suppress `CPtrList::GetNext`: `afxcoll.inl` is parsed
+inside `<Mfc.h>` itself, so the `#undef _AFX_ENABLE_INLINES` that follows is a
+no-op for every `afx`/`afxcoll` accessor - the same mechanism that
+`mfcnoinline-is-inert-when-the-own-header-pulls-mfcwin.md` records for
+`afxwin1.inl`. `CoordHead()` is `MfcNodeFromPosition<CoordNode>(GetHeadPosition())`
+and `node->m_next` is `GetNext`'s body, so the two spellings are the same IL.
+**A macro variant that exists to choose between an MFC accessor and its
+hand-transcribed body is always deletable.** `CGrunt::SetEntrancePos` (0x4d060,
+100.00 EXACT) is the golden reference for the loop retail actually emits:
+`GetCount` test, `GetHeadPosition`, then the hoisted `m_freeHead` splice.
+
+**A guard hidden in a macro NAME is worse than a codegen-named macro.**
+`RECYCLE_GRUNT_COORDS_IF_ANY` buried a live conditional in an identifier, and
+the same tree already wrote `if (unit->CoordCount() != 0) { RECYCLE_... }`
+explicitly at other sites - one source construct with two appearances. Hoisting
+it is byte-free and makes the branch readable; check the call sites for
+dangling-`else` first (all 21 here were plain statements).
+
+**A spelling that is byte-identical at every site can still be blocked by the
+LEDGER.** The expanded arm can be written `PushFreeNode(&g_coordPool, ...)`
+instead of the three-line splice; it is identical code at all 24 sites and
+*zero* macro-host functions move. But losing the `slot` local rotates cl 5.0's
+allocation cursor for the NEXT function in `Projectile.cpp`, so
+`CBoomerang::AdvanceMotion` goes 86.25 -> **84.58** - a fresh MAX regression on
+a function whose source never changed, reproducible across two different TU
+states. The longhand stays with the measurement and a removal condition
+(break AdvanceMotion's regalloc wall first). Related: a single unused
+`#include <Gruntz/FreeNodePoolInline.h>` in `GruntSteps.cpp` restores
+`CGrunt::StepCompassMove` to its banked 63.2990 from 62.0438 - a real
+declaration-count-window datum for that wall, and exactly the fitted artifact
+that must NOT be left in the tree.
