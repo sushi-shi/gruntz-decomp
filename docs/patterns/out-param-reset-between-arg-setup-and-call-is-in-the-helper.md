@@ -194,3 +194,20 @@ before assuming the helper is the lever.
 Its own residue is a cross-jump decline: retail keeps the two `m_frame = NULL`
 arms separate because its `this` is homed in one arm and in ESI in the other, so
 the two epilogues are not byte-identical; ours merges them.
+
+### Two more, on the shape parked by out-param-lea-vs-zero-store-slot.md (2026-08-22)
+
+| function | rva | before | after |
+|---|---|---|---|
+| `CMenuPage::ResolveSubPage` | 0x001833f0 | 90.48 | **100.0000** |
+| `CDDrawWorkerHost::RegisterNamed` | 0x00161c50 | 90.48 | **100.0000** |
+
+Both were the residual "one insn" wall: the whole body is `CObject* v = NULL;
+map.Lookup(key, v);` and retail's zero store lands AFTER BOTH `Lookup` pushes
+while cl puts it between them. `out-param-lea-vs-zero-store-slot.md` records
+that family as source-unreachable after four negative controls; that verdict
+does NOT extend to the store's position relative to the pushes. Routing the
+site through the same typed-return inline helper the sibling TU already used
+(`static inline CDDrawWorker* LookupWorker(CMapStringToOb&, LPCTSTR)`) makes
+the reset the helper's first statement and both go byte-exact. Detection is
+unchanged: our zero store before the last push, retail's after it.
