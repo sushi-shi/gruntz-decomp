@@ -103,17 +103,13 @@ typedef enum WarlordBattleTag {
     WARLORD_TAG_VIKING = 0x445,
 } WarlordBattleTag;
 
-#define WARLORD_ANIM_LOOKUP(dst, suffix)                                                           \
-    {                                                                                              \
-        CAniElement* h = NULL;                                                                     \
-        MapLookup(                                                                                 \
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
-            "GRUNTZ_" + m_warlordName + (suffix),                                                  \
-            h                                                                                      \
-        );                                                                                         \
-        dst = h;                                                                                   \
-    }
+static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* found = NULL;
+    MapLookup(map, name, found);
+    return found;
+}
 
+// @early-stop
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -165,24 +161,56 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, 0);
 
-    WARLORD_ANIM_LOOKUP(m_idleAnims[0], "_IDLE1");
-    WARLORD_ANIM_LOOKUP(m_idleAnims[1], "_IDLE2");
-    WARLORD_ANIM_LOOKUP(m_idleAnims[2], "_IDLE3");
-    WARLORD_ANIM_LOOKUP(m_idleAnims[3], "_IDLE4");
-    WARLORD_ANIM_LOOKUP(m_battlecryAnims[0], s__BATTLECRY1);
-    WARLORD_ANIM_LOOKUP(m_battlecryAnims[1], s__BATTLECRY2);
-    WARLORD_ANIM_LOOKUP(m_battlecryAnims[2], s__BATTLECRY3);
-    WARLORD_ANIM_LOOKUP(m_animJoy, s__JOY);
-    WARLORD_ANIM_LOOKUP(m_animDeath, "_DEATH");
-    WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
-    WARLORD_ANIM_LOOKUP(m_animPanic, s__PANIC);
+    m_idleAnims[0] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + "_IDLE1"
+    );
+    m_idleAnims[1] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + "_IDLE2"
+    );
+    m_idleAnims[2] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + "_IDLE3"
+    );
+    m_idleAnims[3] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + "_IDLE4"
+    );
+    m_battlecryAnims[0] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + s__BATTLECRY1
+    );
+    m_battlecryAnims[1] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + s__BATTLECRY2
+    );
+    m_battlecryAnims[2] = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + s__BATTLECRY3
+    );
+    m_animJoy = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + s__JOY
+    );
+    m_animDeath = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + "_DEATH"
+    );
+    m_animMoving = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + s__MOVING
+    );
+    m_animPanic = LookupAnim(
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+        "GRUNTZ_" + m_warlordName + s__PANIC
+    );
 
     m_notifyTimer.m_start = 0;
     m_notifyTimer.m_window = 0;
     m_deathStarted = 0;
     ResolveMovingAnimation();
 }
-#undef WARLORD_ANIM_LOOKUP
 
 // @early-stop
 RVA(0x00043670, 0xc20)
