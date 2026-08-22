@@ -91,6 +91,17 @@ static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
     return found;
 }
 
+static inline CWwdGameObjectA* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
+    CGameObject* found = NULL;
+    if (MapLookupById(byId, id, found) == 0) {
+        return NULL;
+    }
+    if (found == NULL) {
+        return NULL;
+    }
+    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(found) : NULL;
+}
+
 // @early-stop
 // Frame, saved-register set and every call/string referent now agree with retail.
 // Residue is which register carries the re-materialised m_object in each ladder arm
@@ -816,7 +827,7 @@ i32 CInGameIcon::SerializeMove(
     CGameObject* obj
 ) {
 
-    char chainName[SERIAL_NAME_LEN];
+    char name[SERIAL_NAME_LEN];
 
     if (ar == NULL) {
         return 0;
@@ -827,30 +838,31 @@ i32 CInGameIcon::SerializeMove(
 
     switch (mode) {
         case SERIAL_LOAD: {
-            ar->Read(chainName, SERIAL_NAME_LEN);
+            char aniName[SERIAL_NAME_LEN];
+            ar->Read(aniName, SERIAL_NAME_LEN);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
             m_animWorker = obj->m_animWorker;
-            if (strlen(chainName) == 0) {
+            if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
                 m_value =
-                    LookupAni(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, chainName);
+                    LookupAni(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, aniName);
             }
             break;
         }
         case SERIAL_SAVE: {
-            memset(chainName, 0, sizeof(chainName));
+            memset(name, 0, sizeof(name));
             if (m_value != NULL) {
                 strcpy(
-                    chainName,
+                    name,
                     static_cast<const char*>(
                         m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
                     )
                 );
             }
-            ar->Write(chainName, SERIAL_NAME_LEN);
+            ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(m_blob, 0x10);
             break;
         }
@@ -883,19 +895,18 @@ i32 CInGameIcon::SerializeMove(
             break;
     }
 
-    char tailName[SERIAL_NAME_LEN];
     switch (mode) {
         case SERIAL_SAVE: {
-            memset(tailName, 0, sizeof(tailName));
+            memset(name, 0, sizeof(name));
             if (m_cue != NULL) {
                 strcpy(
-                    tailName,
+                    name,
                     static_cast<const char*>(
                         m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue)
                     )
                 );
             }
-            ar->Write(tailName, SERIAL_NAME_LEN);
+            ar->Write(name, SERIAL_NAME_LEN);
             g_serialCounter++;
             i32 id = 0;
             if (m_glitterSprite != NULL) {
@@ -905,28 +916,20 @@ i32 CInGameIcon::SerializeMove(
             break;
         }
         case SERIAL_LOAD: {
-            ar->Read(tailName, SERIAL_NAME_LEN);
+            ar->Read(name, SERIAL_NAME_LEN);
 
-            if (strlen(tailName) == 0) {
-                m_cue = NULL;
+            if (strlen(name) != 0) {
+                m_cue = LookupCue(m_animWorker->m_ownerCtx->m_soundRegistry->m_cues, name);
             } else {
-                m_cue = LookupCue(m_animWorker->m_ownerCtx->m_soundRegistry->m_cues, tailName);
+                m_cue = NULL;
             }
             g_serialCounter++;
-            i32 id = 0;
+            i32 id;
             ar->Read(&id, sizeof(id));
-            CGameObject* found = NULL;
-            CWwdGameObjectA* sprite = NULL;
-            if (MapLookupById(
-                    m_animWorker->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
-                    id,
-                    found
-                )
-                != 0) {
-                sprite = (found != NULL && found->GetClassId() == CLASSID_SERIALREF)
-                             ? static_cast<CWwdGameObjectA*>(found)
-                             : NULL;
-            }
+            CWwdGameObjectA* sprite = LookupSerialRef(
+                m_animWorker->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                id
+            );
             m_glitterSprite = sprite;
             if (sprite != NULL) {
                 break;
