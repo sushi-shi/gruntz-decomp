@@ -2000,6 +2000,10 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     i32 base = dstRow * TM_GRID_COLS;
     if (m_grid[base] != NULL) {
         CGrunt** p = &m_grid[dstRow * TM_GRID_COLS];
+        // Retail keeps the bound test at the loop TOP with a far-jumped duplicate
+        // return-0 at 0x127; cl 5.0 rotates it to the bottom under every shape
+        // tried (while+break, for(;;)+break, for(;;)+return 0 = 87.75). C2
+        // loop-rotation coin, independent of the ArrivalPickup spelling.
         while (free < TM_GRID_COLS) {
             p++;
             free++;
@@ -2014,8 +2018,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     CGameObject* o = src->m_object;
     i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    PickupType k =
-        (src->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? src->m_toolId : src->m_entranceReason;
+    PickupType k = ArrivalPickup(src);
     PickupType vis = src->m_vehiclePickupType;
     this->CellDispatch(srcRow, srcCol, DEATH_DROP, dstRow);
     CDDrawChildGroup* fac = m_world->m_childGroup;

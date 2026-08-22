@@ -474,6 +474,7 @@ wrapper, still runnable as `python -m gruntz.<...>`):
   disposable A/B that decides it, keep only the winner, and record the outcome. A
   genuinely bounded wall is parked with `@early-stop` and its state lives in the
   DERIVED inventory (`gruntz walls inventory`), never in a hand-kept ledger file.
+- **INLINE/MACRO PRIOR (user ruling 2026-08-22).** The era devs DID write inlines and macros, so an inline/macro spelling is a priori MORE likely to be the real source than a hand-expanded transcription. When a candidate scores LOWER than what is in the tree, "ours wins" is decisive ONLY if ours is at 100%; if both are below 100, take the inline/macro form as a BASE and compose further levers on it - the higher-scoring transcription may be a local maximum. Record which base you explored from.
 - **EXPLORATORY DESCENT (user ruling 2026-08-22): compose levers through dips.** A
   single-lever dip is not a falsification of the path - it may be the right BASE for
   a second lever. When a spelling drops the score but moves the codegen TOWARD

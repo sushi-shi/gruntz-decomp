@@ -4355,7 +4355,7 @@ triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	4	039
 triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	99.1379	99.1379	2	015b9ea790ce	0x788d0	100.0000	
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	1	f9e6393ec7c9	0x7d2a0	100.0000	
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	bb198cd45dc6	0x7a5e0	100.0000	
-triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	94.3750	94.3750	3	56f32a9ebd97	0x7c110	94.3750	
+triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	93.2188	93.2188	4	56fc876f5150	0x7c110	94.3750	
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	1	2621a4d1bd22	0x7a180	100.0000	
 triggermgr	?SpawnTileFx@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	2	2d442650bf4c	0x79ea0	100.0000	
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	20bf88b4fc7d	0x7be10	100.0000	

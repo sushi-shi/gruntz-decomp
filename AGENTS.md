@@ -79,6 +79,17 @@
   (no-sane-dev test) and either >= the bank or an adjudicated, documented
   keep. One-step hill-climbing that reverts at the first dip prunes every
   composed path and only finds local maxima.
+- INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline
+  functions and macros, so an inline/macro spelling is a priori MORE likely to
+  be the real source than a hand-expanded transcription. We may still overrule
+  it, but only with evidence, and the question stays OPEN rather than settled.
+  The resolution rule that follows: when a candidate spelling scores LOWER than
+  the one in the tree, "ours wins" is decisive ONLY if ours is at 100%. If
+  BOTH are below 100 neither is proven, so do not stop at the higher number -
+  take the inline/macro form as a BASE and compose further levers on it (see
+  EXPLORATORY DESCENT above); it may be the shape that reaches 100 while the
+  higher-scoring transcription is a local maximum. Record which base you
+  explored from, so a later session does not redo it.
 - Historical MAX is banked only by a real build against the same per-function
   source fingerprint. If an unchanged function reaches exact under a
   disposable TU-state experiment, bank while exact, remove the experiment,
