@@ -1037,8 +1037,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         if (m_gruntKind == GRUNT_GHOST) {
             return;
         }
-        i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
+        i32 x = m_object->m_screenX;
         if (c < 5) {
             CGruntzMgr* g = g_gameReg;
             const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
@@ -1057,8 +1057,8 @@ void CGrunt::OnStruck(i32 wasHit) {
     }
 
     if (c < 5) {
-        i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
+        i32 x = m_object->m_screenX;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
@@ -1067,8 +1067,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         return;
     }
     if (c < 0xa) {
-        i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
+        i32 x = m_object->m_screenX;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
@@ -1077,8 +1077,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         return;
     }
     {
-        i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
+        i32 x = m_object->m_screenX;
         m_struckCount = 0;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
