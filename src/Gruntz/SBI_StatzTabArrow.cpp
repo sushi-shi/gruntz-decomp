@@ -31,6 +31,12 @@
 
 #include <string.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x000ea0f0, 0x5c)
 void CSBI_StatzTabArrow::SetDirection(StatusBarDock position, i32 animate) {
     if (position == STATUSBAR_DOCK_RIGHT) {
@@ -116,12 +122,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     CImage* val;
     if (selMode != 0) {
-        found = NULL;
-        m_host->m_imageRegistry->m_workersByName.Lookup(
-            "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR",
-            found
+        CDDrawWorker* sel = LookupWorker(
+            m_host->m_imageRegistry->m_workersByName,
+            "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR"
         );
-        CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
         if (sel == NULL) {
             return 0;
@@ -133,12 +137,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
         val = m_glyphMap->GetAt(0x22);
     } else {
-        found = NULL;
-        m_host->m_imageRegistry->m_workersByName.Lookup(
-            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
-            found
+        CDDrawWorker* sel = LookupWorker(
+            m_host->m_imageRegistry->m_workersByName,
+            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR"
         );
-        CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
         if (sel == NULL) {
             return 0;
