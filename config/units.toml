@@ -212,10 +212,6 @@ unit = "rollingball"
 source = "src/Gruntz/RollingBall.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "slotcombofill"
-source = "src/Gruntz/SlotComboFill.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "levelrezpath"
