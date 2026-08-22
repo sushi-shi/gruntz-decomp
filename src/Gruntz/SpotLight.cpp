@@ -42,13 +42,6 @@ const double g_spotRateNum = 3.1415927;
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0;
 
-RVA_DYNINIT(0x000b1590, 0xa, CActRegPool<CSpotLight>::s_table)
-RVA_DYNINIT(0x000b15b0, 0x15, CActRegPool<CSpotLight>::s_table)
-RVA_DYNINIT(0x000b15e0, 0xe, CActRegPool<CSpotLight>::s_table)
-RVA_DYNINIT(0x000b1600, 0x1f, CActRegPool<CSpotLight>::s_table)
-template<> DATA(0x00246188)
-CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-
 RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
@@ -119,6 +112,13 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
         m_storyMode = 1;
     }
 }
+
+RVA_DYNINIT(0x000b1590, 0xa, CActRegPool<CSpotLight>::s_table)
+RVA_DYNINIT(0x000b15b0, 0x15, CActRegPool<CSpotLight>::s_table)
+RVA_DYNINIT(0x000b15e0, 0xe, CActRegPool<CSpotLight>::s_table)
+RVA_DYNINIT(0x000b1600, 0x1f, CActRegPool<CSpotLight>::s_table)
+template<> DATA(0x00246188)
+CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
