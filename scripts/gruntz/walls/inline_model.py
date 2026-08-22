@@ -245,6 +245,11 @@ def measure_cb(src: Path, callee: str, caller: str, n_sites: int):
     rejected = len(re.findall(r"\b(?:call|jmp)\s+[^\n;]*" + re.escape(callee),
                               text))
     expanded = n_sites - rejected
+    if expanded < 0:
+        die(f"measure-cb: found {rejected} call/jmp site(s) to {callee} in "
+            f"{caller}, more than --sites {n_sites}. Pass --sites {rejected} "
+            f"(or check the mangled name - a tail `jmp` to the callee counts "
+            f"as a rejection too).")
     if expanded == n_sites:
         lo, hi = None, SMALL_FREE       # never rejected: cb <= 40 (or the
         #                                 budget never bound - use more sites)
