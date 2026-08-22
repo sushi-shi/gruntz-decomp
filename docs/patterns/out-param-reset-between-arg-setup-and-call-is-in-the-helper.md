@@ -156,11 +156,16 @@ without implying that every surrounding scheduling residue belongs to the lookup
 ### It is per-site, not per-idiom — measure before converting a whole family
 
 A fourth site with the identical source idiom, `CPlay::BeginGridWalk` 0x000d0920,
-**regressed 97.6191 -> 92.6786** on the same helper and was left inline. Its key is a
-`const char*` PARAMETER rather than a pooled literal, so there is no `push <literal>`
-to schedule the store behind; retail instead emits `lea ecx,[esp+8] / push ecx / mov
-ecx,[eax+0x10]` and the helper form reorders that lea/push pair. Convert sites one at a
-time and read the per-function score, not the family.
+**regressed 97.6191 -> 92.6786** on the same helper - but the reading "its key is a
+`const char*` parameter, so there is no `push <literal>` to schedule the store behind"
+is WRONG. The variable is the helper's PARAMETER, not the caller's key: retail emits
+`lea ecx,[esp+8] / push ecx / mov ecx,[eax+0x10]`, i.e. it takes `&out` BEFORE the
+receiver step, which is the signature of a helper that receives the already-live owner
+pointer and does the chain inside its own body. `LookupWorker(CDDrawSurfaceMgr* host,
+LPCTSTR name)` called as `LookupWorker(m_world, key)` puts it at **100.0000 EXACT**.
+Convert sites one at a time and read the per-function score - and when a site regresses,
+try the other helper shape before filing it inline (see
+[out-param-null-init-belongs-to-an-inline-helper.md](out-param-null-init-belongs-to-an-inline-helper.md)).
 
 ## How to spot it
 

@@ -1,11 +1,12 @@
-# The out-param `lea`/zero-store slot is NOT source-reachable - two in-tree EXACT controls prove the spelling
+# The out-param `lea`/zero-store slot IS reachable - by ownership, not by spelling
 
-tags: cpp:local cpp:call msvc5:mfc | asm:lea asm:mov | topic:wall topic:scheduling
-symptoms: a `Map.Lookup(key, out)` site at 96-98% whose ENTIRE residue is that retail emits
+tags: cpp:local cpp:call cpp:inline msvc5:mfc | asm:lea asm:mov | topic:codegen-idiom topic:scheduling
+symptoms: a `Map.Lookup(key, out)` site at 88-98% whose ENTIRE residue is that retail emits
 `lea r,[out]` before `mov [out],0` (or sinks the store one further slot into the argument
-pushes) and cl emits them the other way round; identical size, identical instruction
-multiset, `walls diagnose` says REGALLOC/SCHEDULING
-confidence: 9/10 (2 EXACT controls, 4 measured negative controls)
+pushes), or hoists one step of the receiver chain above the key load, and cl emits them the
+other way round; identical size, identical instruction multiset, `walls diagnose` says
+REGALLOC/SCHEDULING
+confidence: 9/10 (three named sites closed to EXACT)
 
 ```cpp
 CObject* found = 0;
@@ -20,29 +21,54 @@ mov  ecx,DWORD PTR [ecx+0x18]         mov  ecx,DWORD PTR [ecx+0x18]
 push eax                              push eax
 ```
 
-## Why the spelling is already right
+## This entry used to say PARKED. That verdict was wrong.
 
-Two functions in the tree use the SAME three-line spelling and are **100.000 EXACT**:
-`CDDrawChildGroup::AttachSprite` 0x159830 (`CObject* tmpl_ob = 0;` + a two-level receiver
-chain, `lea` then store, exactly retail's order) and `CGruntzSoundZ::FindBank` 0x138730.
-So the source is not the variable: cl reaches retail's order from this spelling whenever the
-surrounding block lets it. The affected sites are `CSpriteRefTable::LoadGruntzPalette`
-0xe2d10, `CSpriteRefTable::Add` 0xe2890 (retail sinks the store one slot FURTHER, past the
-second `push`) and `CGrunt::EnsureStruckSlot` 0x57b70 (two slots). Both orders cost the
-same 5 Pentium issue slots - the `mov [esp+disp8],imm32` carries both a displacement and an
-immediate, so it is unpairable either way - which is why the tie exists at all.
+The four probes it recorded (declaring the out-local above the guard, hoisting the receiver
+into an anonymous local, moving the `char buf[0x40]` declaration, a 0..15 declaration-count
+sweep) are all CALLER-SPELLING probes. None of them changes who OWNS the local, which is the
+only lever that reaches this slot - see
+[out-param-null-init-belongs-to-an-inline-helper.md](out-param-null-init-belongs-to-an-inline-helper.md).
+All three sites this entry named are now EXACT:
 
-## Negative controls (measured, all removed)
+| function | before | after | lever |
+|---|---|---|---|
+| `CSpriteRefTable::Add` 0xe2890 | 97.50 | **100.00** | typed-return `LookupWorker(CMapStringToOb&, LPCTSTR)` inline |
+| `CSpriteRefTable::LoadGruntzPalette` 0xe2d10 | 96.92 | **100.00** | the same helper, called for its truth value |
+| `CGrunt::EnsureStruckSlot` 0x57b70 | 88.22 | **100.00** | `CDDrawSurfaceMgr* world = g_gameReg->m_world;` - a NAMED local |
 
-| probe | result |
-|---|---|
-| declare the out-local above the early-return guard | 96.923 -> **95.831** (the store moves into the entry block and the frame grows 0x40 -> 0x44; retail keeps the local in the dead `src` parameter home slot) |
-| hoist the receiver into its own local (`CDDrawWorkerMapSmall* wm = ...`) | neutral to the byte |
-| declare the `char buf[0x40]` before the out-local | neutral to the byte |
-| TU declaration-count sweep, N = 0..15 throwaway prototypes above the first project include | **dead flat**: `LoadGruntzPalette` 96.9231 and `Add` 97.5000 to four decimals at every N |
+The two in-tree EXACT controls the old entry cited (`CDDrawChildGroup::AttachSprite`
+0x159830, `CGruntzSoundZ::FindBank` 0x138730) are still EXACT with the caller-owned
+spelling. They prove the tie exists, not that it is unbreakable: both orders cost the same
+5 Pentium issue slots (`mov [esp+disp8],imm32` carries both a displacement and an immediate,
+so it is unpairable either way), and which side of the tie cl lands on is decided by which
+IL the store belongs to.
 
-So the lever of `declaration-count-window-steers-regalloc.md` is unavailable in this TU too,
-and the class is C2-anchored. Park it; do not re-derive these four probes.
+## The second lever: hoist the receiver into a NAMED local
 
-related: [declaration-count-window-steers-regalloc.md](declaration-count-window-steers-regalloc.md),
-[animation-switch-pair-is-one-inline-member.md](animation-switch-pair-is-one-inline-member.md)
+`EnsureStruckSlot` is the control that separates the two levers - it has no helper and its
+zero-store is already before the pushes on BOTH sides. Its whole residue was that retail
+loads `g_gameReg->m_world` immediately after the guard and cl loads it three instructions
+later:
+
+```asm
+; retail                              ; cl
+mov eax,ds:g_gameReg                  mov eax,ds:g_gameReg
+mov ecx,[eax+0x10]                    mov ecx,[eax+0x10]
+test ecx,ecx / je                     test ecx,ecx / je
+mov eax,[eax+0x30]        <- hoisted  mov edx,[esp+0xc]
+mov edx,[esp+0xc]                     mov DWORD PTR [esp+0x4],0
+lea ecx,[esp+0x4]                     mov eax,[eax+0x30]
+mov DWORD PTR [esp+0x4],0             lea ecx,[esp+0x4]
+```
+
+`CDDrawSurfaceMgr* world = g_gameReg->m_world;` as its own statement puts the load where
+retail has it and closed the function. The same edit took `CSpotLight::SerializeMove`
+0xb2050 98.06 -> 99.96 and simultaneously fixed a whole-function EBX/EBP swap: with `world`
+declared before the mode `switch` it becomes a call-crossing value that binds a callee-saved
+register, which is why retail's parameter binding order differs from a body that re-reads
+`reg->m_world` inside one arm. Read the retail disassembly for a member load hoisted ABOVE
+the block that uses it - that is the source declaring a local, not the scheduler.
+
+related: [out-param-null-init-belongs-to-an-inline-helper.md](out-param-null-init-belongs-to-an-inline-helper.md),
+[out-param-reset-between-arg-setup-and-call-is-in-the-helper.md](out-param-reset-between-arg-setup-and-call-is-in-the-helper.md),
+[repeated-member-expression-is-an-inline-helper.md](repeated-member-expression-is-an-inline-helper.md)

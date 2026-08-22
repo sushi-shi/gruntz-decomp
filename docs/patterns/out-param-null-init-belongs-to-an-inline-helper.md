@@ -112,3 +112,58 @@ not. Folding the two helpers into a template did not help - the instantiations
 count too. Source spelling of the multiply (`h*w`, `w*h`, `h; h*=w`, a local for
 `h`) is inert, so the flip is TU state, not the expression. Budget the helpers:
 add the one that buys the most call sites.
+
+## The helper's PARAMETER decides where the receiver chain is evaluated
+
+Two helper shapes sink the zero-store equally well, and they are NOT
+interchangeable - they differ in when the receiver is computed:
+
+```cpp
+// (a) map by reference: the caller evaluates the whole chain as the argument
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name);
+LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
+
+// (b) owner pointer: the chain is evaluated INSIDE the expansion
+static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name);
+LookupWorker(m_page, key);
+```
+
+Shape (a) is right when the receiver needs more than one load, because cl splits
+it: the first member load schedules early and `mov ecx,[r+N]; add ecx,K` stays
+next to the call (`CSBI_MenuItem::ResolveFrame` 0xe81e0 92.45 -> **100.00**,
+`CSpriteRefTable::Add` 0xe2890 97.50 -> **100.00**). Shape (b) is right when the
+owner is ALREADY live in a register - a parameter, or a member the guard just
+tested - because (a) then hoists the finished map address to the top of the block
+and clobbers the owner: `CChatBox::ConfigureLeftCursorAnimation`/`Right` 0x182df0
+/0x182e60 both went 94.87 -> **100.00** under (b) and were WORSE under (a).
+Read which one retail used straight off the disassembly: `lea r,[&out]` before
+the receiver load means (b), after it means (a).
+
+This refines the `BeginGridWalk` counter-example in
+[out-param-reset-between-arg-setup-and-call-is-in-the-helper.md](out-param-reset-between-arg-setup-and-call-is-in-the-helper.md):
+`CPlay::BeginGridWalk` 0xd0920 regresses under (a) and is 97.62 -> **100.00**
+under (b) (`LookupWorker(m_world, key)`), so "no literal push to schedule behind"
+was the wrong reading - the receiver shape was.
+
+More sites closed with the same two shapes: `CDDrawWorkerMapSmall::RemoveByKey`
+0x165d30 77.66 -> **100.00**, `CDDrawWorkerB::Helper` 0x166040 95.00 -> **100.00**,
+`CWwdGameObject::CreateNamed` 0x166780 94.12 -> **100.00**,
+`CSpriteRefTable::LoadGruntzPalette` 0xe2d10 96.92 -> **100.00**,
+`CDDrawWorkerHost::Read` 0x161640 96.72 -> 97.36,
+`CSBI_SideTab::BuildHandle` 0xe9850 86.01 -> 90.04.
+
+## When the helper costs a sibling, convert the TU's OTHER sites too
+
+The declaration cost above is real but it is not a reason to stop at one helper.
+In `sbi_menuitem` a single helper took `ResolveFrame` to EXACT and dropped the
+unedited `CSBI_MenuItem::Render` 100.00 -> 74.04 (a fresh MAX-gate regression, so
+uncommittable). Render is completely source-inert - four rewrites of its body and
+a 0..20 typedef sweep are byte-identical - so the only variable was how many
+declarations precede it. Converting the TU's two OTHER lookup sites (a
+`LookupWorker(CDDrawSurfaceMgr*, LPCTSTR)` overload for `SerializeFields`, a
+`LookupCue` for `SetState`) put THREE declarations ahead of Render and it returned
+to **100.00** byte-for-byte, with `SetState` and `SerializeFields` still exact:
+unit 98.36 -> 99.16, 9/11 -> 10/11. Two declarations alone were not enough (Render
+recovered retail's 0x45 size but not its first four instructions). So: when the
+sibling drop appears, finish the TU's conversion before judging the lever - each
+site you were going to convert anyway is also a step of the window.
