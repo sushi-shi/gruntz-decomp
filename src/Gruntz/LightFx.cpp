@@ -27,6 +27,18 @@
 
 #include <stddef.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
+static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* result = NULL;
+    MapLookup(map, name, result);
+    return result;
+}
+
 RVA_DYNINIT(0x0009d120, 0xa, CActRegPool<CLightFx>::s_table)
 RVA_DYNINIT(0x0009d140, 0x15, CActRegPool<CLightFx>::s_table)
 RVA_DYNINIT(0x0009d170, 0xe, CActRegPool<CLightFx>::s_table)
@@ -98,16 +110,11 @@ void CLightFx::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 
-// @early-stop the out-parameter's `= NULL` store, which retail schedules AFTER the
-// argument pushes and cl before them. 16 spellings of both out-params (void* vs
-// typed, declaration position, extra copy) compiled byte-identical at 253 B, and
-// the unit is FLAT across 24 TU-state probes.
+// @early-stop
 RVA(0x0009d520, 0xfd)
 void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
-    CObject* nodeOb = 0;
-
-    m_animWorker->m_ownerCtx->m_imageRegistry->m_workersByName.Lookup(spec, nodeOb);
-    CDDrawWorker* en = static_cast<CDDrawWorker*>(nodeOb);
+    CDDrawWorker* en =
+        LookupWorker(m_animWorker->m_ownerCtx->m_imageRegistry->m_workersByName, spec);
     g_gameReg->m_logicPump->Push(en, anchorA, SHADE_DST_BY_SRC_16);
     CWwdGameObjectA* o = m_wwdObject;
     if (en != NULL) {
@@ -126,9 +133,9 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
 
     MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
     if (node != NULL) {
-        node = NULL;
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
-        SwitchAnimation(node);
+        SwitchAnimation(
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect)
+        );
         RebindNode();
     }
 }
