@@ -171,15 +171,18 @@ i32 CChatBox::ReplaceNode(const char* key) {
     return AttachNode(Find(key));
 }
 
-// @early-stop
+static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
+    CObject* found = NULL;
+    host->m_imageRegistry->m_workersByName.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x00182df0, 0x69)
 i32 CChatBox::ConfigureLeftCursorAnimation(const char* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_workersByName.Lookup(key, a_ob);
-    CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
+    CDDrawWorker* a = LookupWorker(m_page, key);
     m_row0Anim = a;
     if (!a) {
         return 0;
@@ -192,15 +195,12 @@ i32 CChatBox::ConfigureLeftCursorAnimation(const char* key, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00182e60, 0x69)
 i32 CChatBox::ConfigureRightCursorAnimation(const char* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_workersByName.Lookup(key, a_ob);
-    CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
+    CDDrawWorker* a = LookupWorker(m_page, key);
     m_row1Anim = a;
     if (!a) {
         return 0;
