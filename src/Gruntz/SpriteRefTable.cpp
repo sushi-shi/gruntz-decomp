@@ -273,16 +273,20 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser* src) {
     return 1;
 }
 
-// @early-stop
+static inline CAniRecordBase2* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CAniRecordBase2*>(found);
+}
+
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
-    CObject* out = 0;
-    m_spriteMgrHolder->m_workerMap->m_map1.Lookup(szName, out);
-    if (!out) {
+    CAniRecordBase2* rec = LookupWorker(m_spriteMgrHolder->m_workerMap->m_map1, szName);
+    if (!rec) {
         return 0;
     }
 
-    PALETTEENTRY* entries = (static_cast<CAniRecordBase2*>(out))->m_buf->m_cacheA;
+    PALETTEENTRY* entries = rec->m_buf->m_cacheA;
     if (!entries) {
         return 0;
     }
@@ -326,16 +330,13 @@ i32 CSpriteRefTable::LoadToolToyPalettes(CSymParser* src) {
     return 0;
 }
 
-// @early-stop
 RVA(0x000e2d10, 0xa1)
 i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!src) {
         return 0;
     }
 
-    CObject* found = 0;
-    m_spriteMgrHolder->m_workerMap->m_map1.Lookup(name, found);
-    if (found) {
+    if (LookupWorker(m_spriteMgrHolder->m_workerMap->m_map1, name)) {
         return 1;
     }
 
