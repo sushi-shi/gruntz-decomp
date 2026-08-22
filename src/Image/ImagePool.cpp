@@ -835,21 +835,22 @@ void CRezImage::FlipVertical() {
     if (scratch == NULL) {
         return;
     }
-    i32 hgt = m_height;
     i32 wid = m_width;
-    i32 pairs = hgt / 2;
+    i32 pairs = m_height / 2;
     i32 x;
     for (i32 i = 0; i < pairs; i++) {
+        u8* top = m_pixels + i * wid;
         for (x = 0; x < wid; x++) {
-            scratch[x] = m_pixels[i * wid + x];
+            scratch[x] = top[x];
         }
 
-        i32 botOff = (hgt - i - 1) * wid;
+        i32 botOff = (m_height - i - 1) * wid;
         for (x = 0; x < wid; x++) {
             m_pixels[i * wid + x] = m_pixels[botOff + x];
         }
+        u8* bot = m_pixels + botOff;
         for (x = 0; x < wid; x++) {
-            m_pixels[botOff + x] = scratch[x];
+            bot[x] = scratch[x];
         }
     }
     delete[] scratch;
