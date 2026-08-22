@@ -83,6 +83,12 @@ static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
     return found;
 }
 
+static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* found = NULL;
+    MapLookup(map, name, found);
+    return found;
+}
+
 // @early-stop
 // Frame, saved-register set and every call/string referent now agree with retail.
 // Residue is which register carries the re-materialised m_object in each ladder arm
@@ -829,9 +835,8 @@ i32 CInGameIcon::SerializeMove(
             if (strlen(chainName) == 0) {
                 m_value = NULL;
             } else {
-                CAniElement* value = NULL;
-                MapLookup(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, chainName, value);
-                m_value = value;
+                m_value =
+                    LookupAni(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, chainName);
             }
             break;
         }
@@ -905,9 +910,7 @@ i32 CInGameIcon::SerializeMove(
             if (strlen(tailName) == 0) {
                 m_cue = NULL;
             } else {
-                LeafCue* value = NULL;
-                MapLookup(m_animWorker->m_ownerCtx->m_soundRegistry->m_cues, tailName, value);
-                m_cue = value;
+                m_cue = LookupCue(m_animWorker->m_ownerCtx->m_soundRegistry->m_cues, tailName);
             }
             g_serialCounter++;
             i32 id = 0;
