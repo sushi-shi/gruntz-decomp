@@ -172,7 +172,7 @@ gruntvoice	22	19
 gruntwanderstep	1	0
 gruntwingztimesprite	5	5
 gruntzapp	16	16
-gruntzcmdmgr	44	41
+gruntzcmdmgr	44	43
 gruntzmapmgr	4	3
 gruntzmgr	171	159
 gruntzmgrcmd	1	0
@@ -284,7 +284,7 @@ statereleaseresources	1	0
 statichazard	9	7
 statusbarspriteacts	7	7
 statusbartabbuilders	6	3
-streamrecordloaders	2	1
+streamrecordloaders	2	2
 symtab	72	65
 terraintileloader	1	0
 tilelogicpump	57	54
@@ -672,7 +672,7 @@ bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	86638
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9786	99.9786	1	2d17ef0ad520	0x1c9d0	99.9786	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	1	659ee76e9f5b	0x18f00	100.0000	
-bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	93.4552	93.4552	3	814fbc5fd4ef	0x196c0	93.6045	
+bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	98.0597	98.0597	4	9122552a4915	0x196c0	98.0597	
 bootystateactivate	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d3f0	100.0000	
 bootystateactivate	?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d4c0	100.0000	
 bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.9925	95.9925	18	e44ed3d1006a	0x1b690	95.9925	
@@ -2251,7 +2251,7 @@ gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicType
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	1	49bf4fc7f565	0x52ed0	100.0000	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	2	edda728953e1	0x517b0	100.0000	
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.2990	62.0438	7	6fd98b0aba89	0x51c00	63.2990	
-gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	93.6518	93.6518	11	a00e73780891	0x52fb0	93.6518	
+gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	94.2627	94.2627	12	90f62a18157a	0x52fb0	94.2627	
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	81.9104	11	17d64d7d8d5b	0x32ce0	83.2773	
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	bf9f643ac968	0x7f350	100.0000	
 grunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	cpp:0026165f45e9	0x122b0	100.0000	
@@ -2338,8 +2338,8 @@ gruntzcmdmgr	?Load@CGruntzMultiCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.000
 gruntzcmdmgr	?Load@CGruntzSingleCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	86107c3d950b	0x245f0	100.0000	
 gruntzcmdmgr	?Pack@CGruntzMultiCommand@@UAEHPADH@Z	100.0000	100.0000	1	a11dce4e9def	0x240d0	100.0000	
 gruntzcmdmgr	?Pack@CGruntzSingleCommand@@UAEHPADH@Z	100.0000	100.0000	1	53dfd7df47ca	0x24050	100.0000	
-gruntzcmdmgr	?Parse@CGruntzMultiCommand@@UAEHPADH@Z	92.0000	92.0000	3	90fad71192a0	0x24000	92.0000	
-gruntzcmdmgr	?Parse@CGruntzSingleCommand@@UAEHPADH@Z	93.5484	93.5484	3	2da9baa99933	0x23f90	93.5484	
+gruntzcmdmgr	?Parse@CGruntzMultiCommand@@UAEHPADH@Z	100.0000	100.0000	4	8d0c59840e5a	0x24000	100.0000	
+gruntzcmdmgr	?Parse@CGruntzSingleCommand@@UAEHPADH@Z	100.0000	100.0000	4	bdf4f5e0ad48	0x23f90	100.0000	
 gruntzcmdmgr	?RemoveMatchingTarget@CGruntzCmdMgr@@QAEXHH@Z	100.0000	100.0000	1	68811d8750de	0x23b40	100.0000	
 gruntzcmdmgr	?Save@CGruntzMultiCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	51a94da7911b	0x24710	100.0000	
 gruntzcmdmgr	?Save@CGruntzSingleCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	b8df6100feca	0x24520	100.0000	
@@ -4072,7 +4072,7 @@ statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	95.3077	2	2e30f9
 statusbartabbuilders	?Reset@CSBI_GruntMachine@@UAEXXZ	100.0000	100.0000	1	ab73dab21f01	0xe8c70	100.0000	
 statusbartabbuilders	?SerializeFields@CSBI_GruntMachine@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	99.8940	99.8940	1	85ec2702da1e	0xe8e00	99.8940	
 statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	3	cf4de0de8f26	0xe8dc0	100.0000	
-streamrecordloaders	?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z	93.9657	93.9657	1	0cd1f2e69d70	0x9c650	93.9657	
+streamrecordloaders	?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	e8336c4d9140	0x9c650	100.0000	
 streamrecordloaders	?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	b5a0f36ad3c5	0x9cab0	100.0000	
 symtab	??0CParseSource@@QAE@XZ	100.0000	100.0000	1	0d8b75123f92	0x1396f0	100.0000	
 symtab	??0CSymParser@@QAE@PADHH@Z	100.0000	100.0000	3	8f5b30de0af0	0x13ab00	100.0000	
@@ -4662,7 +4662,7 @@ wwdgameobjectrender	?CreateNamed@CWwdGameObject@@QAEPAV1@HHHHPBDH@Z	100.0000	100
 wwdgameobjectrender	?CreateObject@CWwdGameObject@@QAEPAV1@HHHHPAUAnimWorkerObj@@H@Z	87.4000	87.4000	1	08c1ef46124c	0x166640	87.4000	
 wwdgameobjectrender	?RemoveChild@CWwdGameObject@@QAEHPAUCGameObject@@@Z	100.0000	100.0000	1	bf1b351123f0	0x166850	100.0000	
 wwdgameobjectrender	?Render@CWwdGameObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	1	1315cf5b6d52	0x1668b0	100.0000	
-wwdgameobjectrender	?Render@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@@Z	93.5405	93.5405	2	535913a84127	0x1660f0	93.5405	
+wwdgameobjectrender	?Render@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@@Z	99.8378	99.8378	3	7c3e80e960b6	0x1660f0	99.8378	
 wwdgameobjectrender	?Setup@CWwdGameObject@@UAEHHHHPAUAnimWorkerObj@@@Z	100.0000	100.0000	1	41ba8c159576	0x1665e0	100.0000	
 wwdgameobjectrender	?WalkChildWorkers@CWwdGameObject@@QAEHXZ	100.0000	100.0000	5	608e73840e46	0x166880	100.0000	
 wwdgrid	??0BucketHead@@QAE@XZ	100.0000	100.0000	1	cpp:196267b9ebad	0x191d00	100.0000	
