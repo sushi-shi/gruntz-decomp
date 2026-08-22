@@ -156,7 +156,7 @@ i32 CGrunt::UpdateArrival() {
                 && static_cast<u32>(this->m_dwell) > 3000) {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
-                    SELECT_RANDOM_EXTENT_POINT_UNSIGNED_ASSIGN(base, lo, ax, lo2, ay)
+                    SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
                     if (lo < g_gameReg->m_tileGrid->m_width
                         && lo2 < g_gameReg->m_tileGrid->m_height) {
                         TileSwitch(

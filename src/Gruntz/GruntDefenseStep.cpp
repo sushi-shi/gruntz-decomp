@@ -222,7 +222,7 @@ i32 CGrunt::StepArrivalDefense() {
             // fall-through of the negated test.
             if (IsArrivalRerollPending() != 0) {
                 CWwdGameObjectA* h = m_object;
-                SELECT_RANDOM_EXTENT_POINT_SIGNED_OUTPUT(h, baseX, spanX, baseY, spanY, outX, outY)
+                SELECT_RANDOM_EXTENT_POINT(h, outX, spanX, outY, spanY)
                 if (outX < g_gameReg->m_tileGrid->m_width
                     && outY < g_gameReg->m_tileGrid->m_height) {
                     TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);

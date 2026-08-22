@@ -224,7 +224,7 @@ i32 CGrunt::ScanNearestTarget() {
                 if (IsArrivalRerollPending() != 0) {
 
                     CWwdGameObjectA* hud = m_object;
-                    SELECT_RANDOM_EXTENT_POINT_SPLIT_ABS(hud, baseCol, spanX, baseRow, spanY)
+                    SELECT_RANDOM_EXTENT_POINT(hud, baseCol, spanX, baseRow, spanY)
                     CMapMgr* grid = g_gameReg->m_tileGrid;
                     if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
                         && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {

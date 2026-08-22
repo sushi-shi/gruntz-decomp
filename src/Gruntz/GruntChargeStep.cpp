@@ -143,7 +143,7 @@ i32 CGrunt::ChargeStep() {
             }
             if (m_resetApplied == 0 && m_hasExtent != 0 && static_cast<u32>(m_dwell) > 3000) {
                 CWwdGameObjectA* mp = m_object;
-                SELECT_RANDOM_EXTENT_POINT_SIGNED_BASE(mp, baseX, spanX, baseY, spanY)
+                SELECT_RANDOM_EXTENT_POINT(mp, baseX, spanX, baseY, spanY)
                 CGruntzMgr* mgr = g_gameReg;
                 if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)
                     && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {

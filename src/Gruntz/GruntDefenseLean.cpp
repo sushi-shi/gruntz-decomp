@@ -168,7 +168,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (IsArrivalRerollPending() != 0) {
                 {
                     CWwdGameObjectA* h = m_object;
-                    SELECT_RANDOM_EXTENT_POINT_SIGNED_OUTPUT(
+                    SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(
                         h,
                         baseX,
                         spanX,
