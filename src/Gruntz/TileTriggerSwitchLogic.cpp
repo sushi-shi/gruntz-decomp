@@ -1069,7 +1069,6 @@ ret1:
     return 1;
 }
 
-// @early-stop
 RVA(0x00112a50, 0xdd)
 
 i32 CCheckpointTriggerSwitchLogic::BuildSmall(
@@ -1083,8 +1082,12 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 damageParam,
     i32 checkpointType
 ) {
-    i32 ok = 0;
-    if (m_initGate == 0 && !(typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0)) {
+    i32 ok;
+    if (m_initGate != 0) {
+        ok = 0;
+    } else if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
+        ok = 0;
+    } else {
         memcpy(m_block, rect, sizeof(m_block));
         ok = Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
     }
