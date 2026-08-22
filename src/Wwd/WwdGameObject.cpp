@@ -46,27 +46,21 @@
 DATA(0x002bf674)
 i32 g_logicTypesRegistered;
 
-// @early-stop
-// one scheduling slot: retail sinks the `sprOb = 0` store below both Lookup
-// argument pushes. The post-call body is exact; 96 mixed TU states and 35
-// local variants were byte-identical at this remaining slot.
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* result = NULL;
+    map.Lookup(name, result);
+    return static_cast<CDDrawWorker*>(result);
+}
+
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
-    CObject* sprOb = 0;
-    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(name, sprOb);
-    CDDrawWorker* spr = static_cast<CDDrawWorker*>(sprOb);
+    CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
     m_frameSet = spr;
     if (spr) {
         CImage* f = spr->GetAt(frame);
         m_frameIndex = frame;
         m_layer = f;
     }
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* result = NULL;
-    map.Lookup(name, result);
-    return static_cast<CDDrawWorker*>(result);
 }
 
 RVA(0x00150540, 0x65)
@@ -400,12 +394,15 @@ i32 CGameObject::EnsureHitWorker(AnimWorkerObj* src) {
     return m_hitWorker->Init(src->m_notify, 0);
 }
 
-// @early-stop
+static inline AnimWorkerObj* LookupAnimWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* result = NULL;
+    map.Lookup(name, result);
+    return static_cast<AnimWorkerObj*>(result);
+}
+
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
-    CObject* handlerOb = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(key, handlerOb);
-    EnsureHitWorker(static_cast<AnimWorkerObj*>(handlerOb));
+    EnsureHitWorker(LookupAnimWorker(OwnerMgr()->m_workerCache->m_workers, key));
 }
 
 RVA(0x00150f90, 0x98)
@@ -425,12 +422,9 @@ i32 CGameObject::EnsureAttackWorker(AnimWorkerObj* src) {
     return m_attackWorker->Init(src->m_notify, 0);
 }
 
-// @early-stop
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
-    CObject* handlerOb = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(key, handlerOb);
-    EnsureAttackWorker(static_cast<AnimWorkerObj*>(handlerOb));
+    EnsureAttackWorker(LookupAnimWorker(OwnerMgr()->m_workerCache->m_workers, key));
 }
 
 RVA(0x00151070, 0x98)
@@ -450,12 +444,9 @@ i32 CGameObject::EnsureBumpWorker(AnimWorkerObj* src) {
     return m_collideWorker->Init(src->m_notify, 0);
 }
 
-// @early-stop
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
-    CObject* handlerOb = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(key, handlerOb);
-    EnsureBumpWorker(static_cast<AnimWorkerObj*>(handlerOb));
+    EnsureBumpWorker(LookupAnimWorker(OwnerMgr()->m_workerCache->m_workers, key));
 }
 
 // @early-stop
