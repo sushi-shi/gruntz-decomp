@@ -1245,7 +1245,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     // global-load tree, so the two walks stay distinct while the global load CSEs
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tx, ty, IDX(code));
-    reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));
+    g_gameReg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }
 
