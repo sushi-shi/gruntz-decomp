@@ -122,3 +122,19 @@ function at 0x29a50 in battlezmapconfig, ruling out cross-TU inlining).
 Probe TU reproduces ours cold AND warm - not a TU-state input. Same residue
 family as AddLogic's EH cleanup home ([ebp+0x8] vs [ebp-0x70]): cl's
 slot/home assignment carries one more unmapped input.
+
+## Round 4: the real-TU warm driver is still unidentified
+
+`CGrunt::ChargeStep` isolates it: retail keeps TEN identical 4-insn
+epilogues (fully cold, +30 insns - the whole 83.91 residue's skeleton half),
+ours merges them even when ChargeStep is the obj's FIRST emission with the
+`$E`s tailed. The probe stays COLD under every axis tried: the real MFC
+prelude (Mfc/MfcNoInline/MfcWin), /GR, 50/200/800 parsed-but-unused inline
+bodies, statics/templates in any position. Identical cflags
+(`/O2 /MT /GX`). So the warm input is something the real TUs feed C2 that
+none of these probes reproduce - candidates not yet separable: the sheer
+header-graph C1 handle state, or a retail-side flag/pragma difference on
+the step-band compilands. The step-band rows' skeleton deltas (ChargeStep
+10v11, WanderStep 11v12, ScanNearestTarget 11v12, RunEntranceMove 5v6) are
+all THIS one input; mapping it would close the band's CFG residue in one
+move.
