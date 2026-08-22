@@ -1098,9 +1098,11 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 if (eq) {
 
                     CWwdGameObjectA* h = m_object;
+                    i32 savedX = m_lastTilePx.m_x;
+                    i32 savedY = m_lastTilePx.m_y;
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
                     i32 redo = 1;
-                    if (PIXEL_PAIR_NOT_AT_SELF_SAVED_SCREEN_POS(px, py)) {
+                    if (PIXEL_PAIR_NOT_AT_POSITION(px, py, savedX, savedY)) {
                         if (IsDropReady(1)) {
                             m_coordToggle = (m_coordToggle == 0);
                             redo = 0;
@@ -1179,16 +1181,11 @@ applyTail:
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, spawnPx, spawnPy, 0, "Wormhole", 0x40003);
             if (spawned != NULL) {
-                const char* colorKey;
-                i32 colorDef;
                 if (useSecretColor != 0) {
-                    colorKey = "SecretColor";
-                    colorDef = 1;
+                    spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
                 } else {
-                    colorKey = "EntranceColor";
-                    colorDef = 3;
+                    spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3);
                 }
-                spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", colorKey, colorDef);
             }
         }
     }
