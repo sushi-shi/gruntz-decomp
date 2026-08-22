@@ -42,18 +42,18 @@ RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
+    RECT r;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_wwdObject->m_id);
     {
-        RECT r;
         RECT bounds;
         CopyRect(&r, g_gameReg->GetRect(&bounds));
-        i32 centerY = r.top + (r.bottom - r.top) / 2;
-        i32 centerX = r.left + (r.right - r.left) / 2;
-        m_object->m_screenX = centerX;
-        m_object->m_screenY = centerY;
     }
+    i32 centerY = r.top + (r.bottom - r.top) / 2;
+    i32 centerX = r.left + (r.right - r.left) / 2;
+    m_object->m_screenX = centerX;
+    m_object->m_screenY = centerY;
 }
 
 RVA(0x000ab5b0, 0x102)
