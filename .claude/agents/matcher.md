@@ -474,6 +474,16 @@ wrapper, still runnable as `python -m gruntz.<...>`):
   disposable A/B that decides it, keep only the winner, and record the outcome. A
   genuinely bounded wall is parked with `@early-stop` and its state lives in the
   DERIVED inventory (`gruntz walls inventory`), never in a hand-kept ledger file.
+- **EXPLORATORY DESCENT (user ruling 2026-08-22): compose levers through dips.** A
+  single-lever dip is not a falsification of the path - it may be the right BASE for
+  a second lever. When a spelling drops the score but moves the codegen TOWARD
+  retail's texture (structure, addressing shape, register roles), keep it applied,
+  diff the DIPPED state against retail, and compose the next lever on top; iterate a
+  few levels before concluding. A % drop is never problematic while it is
+  exploratory. The MAX gate governs what is COMMITTED, not what may be tried
+  mid-session: the final kept state must be humane source (no-sane-dev test) and
+  either >= the bank or an adjudicated, documented keep. One-step hill-climbing that
+  reverts at the first dip prunes every composed path and only finds local maxima.
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.

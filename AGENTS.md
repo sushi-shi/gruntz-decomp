@@ -68,6 +68,17 @@
   the public command first requires a regalloc/scheduling diagnosis and a
   historical MAX below 100; variants are deterministic, source-hash scoped,
   syntax-aware or exact-span reviewed, and stop at audited exact closure.
+- EXPLORATORY DESCENT (user ruling 2026-08-22): a single-lever dip is not a
+  falsification of the path - it may be the right BASE for a second lever.
+  When a spelling drops the score but moves the codegen TOWARD retail's
+  texture (structure, addressing shape, register roles), keep it applied,
+  diff the DIPPED state against retail, and compose the next lever on top;
+  iterate a few levels before concluding. A % drop is never problematic
+  while it is exploratory. The MAX gate governs what is COMMITTED, not what
+  may be tried mid-session: the final kept state must be humane source
+  (no-sane-dev test) and either >= the bank or an adjudicated, documented
+  keep. One-step hill-climbing that reverts at the first dip prunes every
+  composed path and only finds local maxima.
 - Historical MAX is banked only by a real build against the same per-function
   source fingerprint. If an unchanged function reaches exact under a
   disposable TU-state experiment, bank while exact, remove the experiment,
