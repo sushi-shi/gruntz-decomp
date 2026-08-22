@@ -41,3 +41,14 @@ on the retail side.
 realloc-result home (EDX vs EBP), a rotation coin: the result does not cross
 a call in that arm, so cl gives it a scratch register while retail unified it
 with arm 1's callee-saved home.
+
+The same mechanism applies to LOCALS, not just parameters: `CNetSession::Tick`
+0xbf9e0 (netsessionmgr) spelled the loop bound base as a fresh
+`i32 next = seq + 1` and sat at 86.03 with a `lea ecx,[edi+0x1]` where retail
+copies the old value out and increments in place (`mov ebx,edi; inc edi`).
+Respelling as `i32 t = seq * m_period; seq = seq + 1; for (; t < seq *
+m_period; ...)` took it to 99.87 in one build; the residue is one
+load-order coin in the per-iteration bound recompute (which of the two
+memory operands of the imul loads first). Detection is the same either way:
+base `lea r2,[r1+K]` keeping r1 alive against retail `mov r2,r1` + in-place
+`add/inc r1`.
