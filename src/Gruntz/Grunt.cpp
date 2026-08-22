@@ -1825,8 +1825,7 @@ i32 CGrunt::CreateToySprite() {
     );
     m_toySprite->m_animWorker->m_notify(m_toySprite);
 
-    AnimWorkerObj* inner = m_toySprite->m_animWorker;
-    CGruntToySprite* reg = static_cast<CGruntToySprite*>(inner->m_logic);
+    CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_animWorker->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_wwdObject->m_flags |= 0x10000;
         m_toySprite = NULL;
@@ -1970,8 +1969,8 @@ i32 CGrunt::CreateSelectedSprite() {
     );
     m_selectedSprite->m_animWorker->m_notify(m_selectedSprite);
 
-    AnimWorkerObj* inner = m_selectedSprite->m_animWorker;
-    CGruntSelectedSprite* reg = static_cast<CGruntSelectedSprite*>(inner->m_logic);
+    CGruntSelectedSprite* reg =
+        static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_animWorker->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_wwdObject->m_flags |= 0x10000;
         m_selectedSprite = NULL;
