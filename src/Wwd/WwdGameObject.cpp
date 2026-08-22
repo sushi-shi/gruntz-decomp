@@ -93,11 +93,15 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     return 1;
 }
 
-// @early-stop
+static inline LeafCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
+    LeafCue* result = NULL;
+    MapLookup(map, name, result);
+    return result;
+}
+
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
-    LeafCue* cue = 0;
-    MapLookup(OwnerMgr()->m_soundRegistry->m_cues, name, cue);
+    LeafCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
     if (cue == NULL) {
         return 0;
     }
