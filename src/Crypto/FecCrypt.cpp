@@ -277,7 +277,6 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     m_stream.Seek(FEC_ENTRY_TABLE_OFFSET, CFile::begin);
 
     for (u16 i = 0; i < static_cast<u32>(m_header.m_fileCount); i++) {
-        u32 copied = 0;
         if (m_stream.Read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
             _chdir(cwd);
             return 0;
@@ -293,6 +292,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             _chdir(cwd);
             return 0;
         }
+        u32 copied = 0;
         i32 done = 0;
         while (done == 0) {
             if (pProgress != NULL) {
