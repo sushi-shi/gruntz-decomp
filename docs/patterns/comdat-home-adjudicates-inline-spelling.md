@@ -130,3 +130,32 @@ result above, one level up. Reverted.
 Read-across: on this device a referent REPLACE between a wrapper and the
 function it wraps is an inline-VISIBILITY reading, and the visibility split is
 adjudicated by which COMDATs each obj still HOMES - never by the call alone.
+
+## 2026-08-22 RETEST: the "no emitter" premise is FALSE, and the device is a workaround
+
+The user challenged the opt-in-inline device on principle ("we shouldn't have
+an opt-in variant; this is usually the inline limit in the function itself").
+Tested directly on the smallest instance - `CDDrawWorkerCache::Find` collapsed
+to ONE entity: an in-class body in `DDrawWorkerCache.h` carrying
+`RVA(0x0009cab0, 0x23)`, the out-of-line definition in StreamRecordLoaders.cpp
+deleted, both `DDrawWorkerCacheFindInline.h` includes removed.
+
+Result: **0x9cab0 was still emitted - by `guardpoint.obj` - and still scored
+100.00 EXACT.** So a TU that declines the expansion DOES emit the COMDAT, and
+the header's "an in-class body leaves 0x9cab0 with NO emitter" justification,
+plus the depth-3 "emits nothing" cell above, do not hold for the
+single-entity configuration (they were measured with the split in place, where
+the decliners had another definition available to call).
+
+What the split actually buys is narrower: it keeps `lightfx.cpp` from SEEING
+the body. With one visible body `??0CLightFx@@QAE@PAUCGameObject@@@Z` goes
+94.87 -> **0.00** (plus four sub-0.1 ripples in levelplane/wwdobjmgr), because
+cl expands a different number of its three `Find` tests than retail did.
+
+That makes the device a WORKAROUND FOR CALLER-SIDE MODELLING ERROR, not a
+reconstruction of era structure - retail's own lightfx expands one of the
+three, so era source had visibility in that TU and the header is the wrong
+shape for it; it merely scores better while our ctor's `cb` differs from
+retail's. REMOVAL CONDITION: model `CLightFx::CLightFx` accurately enough that
+its own budget declines sites 2 and 3, and all three entities collapse to one
+visible body. Until then the device stays, labelled, with this measurement.

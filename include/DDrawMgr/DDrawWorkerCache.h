@@ -44,10 +44,11 @@ public:
     virtual AnimWorkerObj* CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags);
 
     // Out of line at 0x9cab0 in StreamRecordLoaders.cpp;
-    // <DDrawMgr/DDrawWorkerCacheFindInline.h> is the opt-in inline view
-    // (survivor: an in-class body leaves 0x9cab0 with NO emitter - cl 5.0
-    // plants the declined nested calls without emitting the COMDAT; measured
-    // 2026-08-15, ledger in docs/patterns/comdat-home-adjudicates-inline-spelling.md).
+    // <DDrawMgr/DDrawWorkerCacheFindInline.h> is the opt-in inline view - a
+    // workaround for caller-side modelling error with a stated removal
+    // condition, NOT a proven era structure.  The "an in-class body leaves
+    // 0x9cab0 with no emitter" claim is falsified (2026-08-22): a declining TU
+    // does emit the COMDAT.  See that header for the retest and the condition.
     CObject* Find(const char* key);
 
     CString FindKeyOfValue(CObject* target);
