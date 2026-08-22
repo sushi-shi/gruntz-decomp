@@ -90,7 +90,13 @@ COMDAT placement says the preceding bodies really were.
   456 insns between the arms. And ours is not always-merge either
   (battlezunitstep Step keeps 4 rets warm). The residual is a per-PAIR
   merge predicate shared by both compilers with one unmapped input;
-  next probe: find any source shape where a WARMED probe keeps two
-  identical epilogues (candidate axes: EH-state deltas between the arms,
-  arms inside vs outside a try-level, the number of predecessor edges
-  into each epilogue).
+  FOUND (third round): a WARMED probe whose arms return at DIFFERENT EH
+  STATES (an extra destructible object live at one arm) keeps separate
+  epilogues (e1/e2: 3 rets warm). cl cross-jumps return epilogues only
+  between returns at the SAME EH state. So warm-side merge-degree deltas
+  reduce to EH-STATE-MAP deltas - the ctor-inlining axis `walls ehactions`
+  reads. Caveat from the first application: AddLogic's state MAPS match
+  (4/4 funclets, same actions) and only the cleanup SLOT differs (ours
+  tracks the new-result in the dead arg home [ebp+0x8], retail in a
+  dedicated local [ebp-0x70]); per-arm derived-type temps did not move it.
+  The slot/home assignment is the still-unmapped residue for such rows.
