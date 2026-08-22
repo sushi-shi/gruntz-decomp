@@ -79,16 +79,15 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
+#include <Wwd/WwdGameObjectGeometryInline.h>
+
 RVA(0x001505b0, 0x5e)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CAniElement* spr = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
     if (!spr) {
         return 0;
     }
-    m_animCursor.Setup(spr);
-    if (applyDefault) {
-        m_animCursor.Advance(g_engineFrameDelta);
-    }
+    APPLY_GEOMETRY_DIRECT(this, spr, applyDefault)
     return 1;
 }
 
@@ -909,6 +908,15 @@ void CDDrawWorker::Unload() {
     m_maxIndex = 0;
 }
 
+#define ADD_FRAME_AT(elem, index)                                                                  \
+    m_items.SetAtGrow(index, elem);                                                                \
+    if (index < m_minIndex) {                                                                      \
+        m_minIndex = index;                                                                        \
+    }                                                                                              \
+    if (index > m_maxIndex) {                                                                      \
+        m_maxIndex = index;                                                                        \
+    }
+
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
@@ -922,13 +930,7 @@ CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
         }
         return 0;
     }
-    m_items.SetAtGrow(n, static_cast<CObject*>(worker));
-    if (n < m_minIndex) {
-        m_minIndex = n;
-    }
-    if (n > m_maxIndex) {
-        m_maxIndex = n;
-    }
+    ADD_FRAME_AT(static_cast<CObject*>(worker), n)
     return worker;
 }
 
@@ -947,13 +949,7 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
         return 0;
     }
 
-    m_items.SetAtGrow(index, static_cast<CObject*>(nf));
-    if (index < m_minIndex) {
-        m_minIndex = index;
-    }
-    if (index > m_maxIndex) {
-        m_maxIndex = index;
-    }
+    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
     return nf;
 }
 
@@ -973,13 +969,7 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
         return 0;
     }
 
-    m_items.SetAtGrow(index, static_cast<CObject*>(nf));
-    if (index < m_minIndex) {
-        m_minIndex = index;
-    }
-    if (index > m_maxIndex) {
-        m_maxIndex = index;
-    }
+    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
     return nf;
 }
 
@@ -998,28 +988,14 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
         return 0;
     }
 
-    m_items.SetAtGrow(index, static_cast<CObject*>(nf));
-    if (index < m_minIndex) {
-        m_minIndex = index;
-    }
-    if (index > m_maxIndex) {
-        m_maxIndex = index;
-    }
+    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
     return nf;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001521c0, 0x2b)
-void CDDrawWorker::AddFrameAt(CObject* elem, i32 index) {
-    m_items.SetAtGrow(index, elem);
-    if (index < m_minIndex) {
-        m_minIndex = index;
-    }
-    if (index > m_maxIndex) {
-        m_maxIndex = index;
-    }
-}
+void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
 RVA(0x001521f0, 0xbc)
 i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {

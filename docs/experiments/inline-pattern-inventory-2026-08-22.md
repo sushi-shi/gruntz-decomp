@@ -492,3 +492,99 @@ motif.
 The authoritative full build after this pass scored 3,741 exact functions at 95.20%
 overall fuzzy, with 73 carried below-bank rows, 328 strict-below rows (255 sub-EPS),
 and zero fresh regressions.
+
+## Fourth follow-up: definition-against-every-function pass
+
+The final pass changed the question from repeated local motifs to whether the complete
+body of every reconstructed function occurs as a statement subsequence inside any other
+function. Receiver names, local names, and harmless wrapper syntax were normalized. A
+second scanner compared optimized retail instruction fragments so that an expansion
+whose prologue, registers, or surrounding schedule differs from its standalone body was
+still considered.
+
+- 3,709 `RVA`-bound source definitions were compared against every other function.
+- The final nested source scan contains 51 candidate records. The survivors are the
+  retained macro invocations below, generic one-statement operations, separate virtual
+  overrides, or the bounded cases listed after the table.
+- The optimized-retail scan produced 418 broad fragments. Requiring high body coverage
+  and useful instruction mass reduced that to 91; every one was reconciled against
+  source ownership, retail calls, branches, and referents.
+
+The following standalone functions are exact in the final experimental build. The
+`expanded inside` column names the functions in which their complete useful body was
+open-coded. A semicolon-separated list means multiple expansion sites or source shapes.
+
+| Standalone function | Current | Expanded inside |
+|---|---:|---|
+| `CDDrawWorkerHost::Build` | 100.000% | `CDDrawWorkerHost::Read`, `CDDrawWorkerHost::InitGeometry` |
+| `CTimer::Reset` | 100.000% | `CTimer::CTimer` |
+| `CGruntSpawnConfig::ClearSprites` | 100.000% | `CGruntSpawnConfig::Init` |
+| `CDDrawChildGroup::RemoveByPosition` | 100.000% | `CDDrawChildGroup::RemoveAll` |
+| `CDDrawSubMgrLeaf::AddEntry` | 100.000% | both `CreateAniEntry` variants |
+| `CDDrawSubMgrLeafScan::AddEntry` | 100.000% | `CreateEntry`, `CreateEntry2` |
+| `CGameApp::FreeGameManager` | 100.000% | `CGameApp::CloseResources` |
+| `CGrunt::DestroyAnims` | 100.000% | `LoadGruntDeathAnimations`, `BuildGruntExitAnimation` |
+| `CGameLevel::SyncToMainIndex` | 100.000% | first half of `VisitVisible` |
+| `CGameLevel::SyncAfterMainIndex` | 100.000% | second half of `VisitVisible` |
+| `CGameLevel::ResetMainPlane` | 100.000% | `CGameLevel::RemovePlane` |
+| `CChatBox::Init` | 100.000% | `CChatBox::Reset` |
+| `GruntzPlayer::Clear` | 100.000% | `GruntzPlayer::Reset` |
+| `CDDrawWorker::AddFrameAt` | 100.000% | `InsertFrame`, `LoadFrame`, `CreateDescriptorFrame`, `CreateBlankFrame` |
+| `CGameLevel::ReleaseChildren` | 100.000% | `CGameLevel::Unload` |
+| `CWwdGameObject::Clear` | 100.000% | `CWwdGameObject::Setup` |
+| `CMenuPage::ResolveSubPage` | 100.000% | `CMenuPage::Configure` |
+| `CGruntzMgr::IsStandardMode` | 100.000% | `CGruntzMgr::RestoreVideoMode` |
+| `CAniElement::DeleteAll` | 100.000% | failure cleanup in `CAniElement::Build` |
+| `CDDrawWorkerHost::SetCell` | 100.000% | 24 complete tile-grid stores in loaders, triggers, and map setup |
+| `CDDrawWorkerHost::SetTileSizeFromImage` | 100.000% | `CDDrawWorkerHost::Read`, `SetTileSizeFromImageSet` |
+| `CDDrawChildGroup::RegisterObjectId` | 100.000% | `CDDrawChildGroup::InsertSorted` |
+| `Font::SetGlyph` | 100.000% | `Font::AllocateMemory` |
+| `CDDrawSurfacePair::BltSelf` | 100.000% | `CreateOverlay`, `TransTitle`, `TransExit`, `CCreditsState::StepVideo` |
+| `CDDrawWorkerBase::SetPosition` | 100.000% | `CDDrawWorkerA::PlaceFrameValue`; three `CDDrawWorkerB::Place*` functions |
+| `CGameMgr::Close` | 100.000% | `CGameMgr::CGameMgr` |
+| `CWwdGameObjectA::ApplyGeometryDirect` | 100.000% | `CWwdGameObjectA::ApplyLookupGeometry` |
+| `CMapArrayA/B` zero-state bodies | 100.000% | both constructors and both `Free` tails |
+
+Every family is represented once by a named macro because a real helper either changed
+the retail source shape or could not retain both the expansion and the pinned standalone
+COMDAT. `ApplyGeometryDirect` is a controlled example: a narrow real inline preserved the
+two target functions but moved the later exact `CDDrawWorker::GetMemoryUsage` to 99.9623%.
+The macro fallback restored all three to 100.000%.
+
+`CDDrawWorkerHost::Build` proves why a canonical header-inline member is not always the
+answer. Making that member visible to both TUs expanded every use, removed its standalone
+body, and changed the two retail call sites in `CGameLevel`. The retained macro preserves
+the exact pinned body, the two expansions, and the two real calls. Its definition boundary
+does move the later `CDDrawWorkerHost::Draw` from its banked 85.6551% to 81.5202% while
+`Build` remains exact, `Read` remains 97.36%, and `InitGeometry` remains 97.71%. This is a
+measured C1 state effect, not evidence against the recovered inline relationship.
+
+`CGameLevel::ReleaseChildren` supplies the second retained descent. Its complete body is
+expanded in `Unload`; consolidating it leaves the standalone exact and moves `Unload`
+from 100.0000% to 99.8824% through an independent-store schedule. Both cases are humane,
+source-structural macro fallbacks with their historical MAX preserved, and are adjudicated
+as documented keeps under the exploratory-descent ruling.
+
+Bounded and rejected final candidates:
+
+- `CDDrawWorkerHost::SetTileSize` shares substantial optimized arithmetic with
+  `InitGeometry`, but it is not expanded there as one body. A whole-body macro moved
+  `InitGeometry` from 97.7143% to 65.08%. `gruntz walls diagnose 0x1619f0` found the same
+  five calls, eight branches, one return, and seven relocations, but retail stores grid
+  size, tile size, bounds, and movement before the wrap products and loops. No legal
+  single insertion point reproduces that interleaving, so the experiment was reverted.
+- `CParticlez::Update` is a suffix of `CProjectile::DetachRenderObj`, but the handlers
+  have incompatible owners and different semantics. Their real shared predicate is
+  already `IsAniCursorComplete`; inventing a cross-class call would be a model defect.
+- `CImage::RenderFrame` and `RenderFrameClipped` have similar clipping blocks but distinct
+  function-local statics and dynamic-initializer identities. Combining them would merge
+  retail storage identities.
+- `StreamVoice::~StreamVoice` is not manually expanded in `SoundStream::DestroyVoice`:
+  `delete voice` already invokes the destructor, while the explicit feeder reset is a
+  separate pre-destruction operation.
+- the repeated `IsLoaded` bodies are independent overrides; state `ReleaseResources`
+  bodies are base calls; serialization bodies already use their common macro; music
+  mute/restore and UI `PostMessage` hits are only generic guard/return subsequences.
+
+After these classifications, no remaining source or optimized-retail candidate supports
+another missing inline boundary.

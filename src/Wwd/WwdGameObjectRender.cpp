@@ -110,16 +110,19 @@ void CWwdGameObjectC::BltDirtyRegions(
     }
 }
 
+#define CLEAR_WWD_GAME_OBJECT_CHILDREN                                                             \
+    POSITION pos = m_children.GetHeadPosition();                                                   \
+    while (pos != NULL) {                                                                          \
+        CObject* child = m_children.GetNext(pos);                                                  \
+        if (child != NULL) {                                                                       \
+            delete child;                                                                          \
+        }                                                                                          \
+    }                                                                                              \
+    m_children.RemoveAll()
+
 RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        CObject* p = m_children.GetNext(pos);
-        if (p != NULL) {
-            delete p;
-        }
-    }
-    m_children.RemoveAll();
+    CLEAR_WWD_GAME_OBJECT_CHILDREN;
     return CGameObject::Setup(x, y, sortKey, tmpl) != 0;
 }
 
@@ -193,14 +196,7 @@ i32 CWwdGameObject::AddChild(CGameObject* child) {
 
 RVA(0x00166810, 0x32)
 void CWwdGameObject::Clear() {
-    POSITION pos = m_children.GetHeadPosition();
-    while (pos != NULL) {
-        CGameObject* o = static_cast<CGameObject*>(m_children.GetNext(pos));
-        if (o) {
-            delete o;
-        }
-    }
-    m_children.RemoveAll();
+    CLEAR_WWD_GAME_OBJECT_CHILDREN;
 }
 
 // @dead-code

@@ -17,6 +17,8 @@
 #include <ddraw.h>
 #include <limits.h>
 
+#define SET_FONT_GLYPH(c, glyph) m_glyphs[c] = glyph
+
 RVA(0x00179700, 0x10)
 Font::Font() {
     m_surfaces = NULL;
@@ -48,7 +50,7 @@ i32 Font::AllocateMemory(i32 count) {
         Glyph g;
         g.width = 0;
         g.height = 0;
-        m_glyphs[i] = g;
+        SET_FONT_GLYPH(i, g);
     }
 
     m_maxHeight = 0;
@@ -150,7 +152,7 @@ Glyph& Font::GetGlyph(Glyph& out, u8 c) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179bb0, 0x1e)
 void Font::SetGlyph(u8 c, Glyph glyph) {
-    m_glyphs[c] = glyph;
+    SET_FONT_GLYPH(c, glyph);
 }
 
 RVA(0x00179bd0, 0x4)

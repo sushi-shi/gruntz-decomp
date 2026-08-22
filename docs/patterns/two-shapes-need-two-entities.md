@@ -143,6 +143,21 @@ Six rows in `config/match_baseline.tsv` were in this state (all recovered to 100
 `??1CWorldSoundSet@@QAE@XZ`. Two remain: `??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z`
 (0x15b390) and `??0CUserLogic@@QAE@PAUCGameObject@@@Z` (0x58cd0).
 
+## Non-constructor controls from the exhaustive source pass
+
+`CDDrawWorkerHost::Build` adds a larger, multi-TU control. Retail has an exact standalone
+body, two expanded copies in `Read` and `InitGeometry`, and two real calls from
+`CGameLevel`. A canonical header-inline definition expanded every use and emitted no
+standalone body. The retained two-entity form is a shared statement macro plus the pinned
+one-line wrapper: one textual body, all four retail site shapes, and no address-taking or
+TU switch.
+
+`CWwdGameObjectA::ApplyGeometryDirect` is the zero-direct-caller form. Its exact standalone
+body is wholly expanded in exact `ApplyLookupGeometry`; a narrow inline sibling reproduces
+both, while a macro fallback avoids a later C1-state perturbation. A missing direct retail
+call therefore does not disprove the relationship when the complete semantic body and
+referents occur inside another function and the standalone COMDAT identity is retained.
+
 related: [inline-visibility-splits-call-and-expansion.md](inline-visibility-splits-call-and-expansion.md),
 [base-ctor-pinned-out-of-line-costs-every-derived-ctor.md](base-ctor-pinned-out-of-line-costs-every-derived-ctor.md),
 [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md),

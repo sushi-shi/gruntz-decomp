@@ -155,15 +155,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
 
 RVA(0x000a0280, 0x2b)
 void CChatBox::Init() {
-    m_page = NULL;
-    m_wnd = NULL;
-    m_activeNode = NULL;
-    m_row0Anim = NULL;
-    m_row1Anim = NULL;
-    m_row0Frame = NULL;
-    m_row1Frame = NULL;
-    m_row0Key.Empty();
-    m_row1Key.Empty();
+    INIT_CHAT_BOX_MEMBERS;
 }
 
 RVA(0x000a02c0, 0x7d)

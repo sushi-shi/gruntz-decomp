@@ -34,11 +34,14 @@ RVA_DYNINIT(0x0009fd70, 0x17, s_gruntDirNorthWest)
 RVA_DYNINIT(0x0009fda0, 0x5, s_gruntDirCenter)
 RVA_DYNINIT(0x0009fdc0, 0x1a, s_gruntDirCenter)
 
+#define RESET_MAP_ARRAY_STORAGE                                                                    \
+    m_storage = NULL;                                                                              \
+    m_freeList = NULL;                                                                             \
+    m_count = 0
+
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
-    m_storage = NULL;
-    m_freeList = NULL;
-    m_count = 0;
+    RESET_MAP_ARRAY_STORAGE;
 }
 
 RVA(0x0009e720, 0x5)
@@ -79,16 +82,12 @@ void CMapArrayA::Free() {
     if (m_storage) {
         delete[] m_storage;
     }
-    m_storage = NULL;
-    m_freeList = NULL;
-    m_count = 0;
+    RESET_MAP_ARRAY_STORAGE;
 }
 
 RVA(0x0009e820, 0xd)
 CMapArrayB::CMapArrayB() {
-    m_storage = NULL;
-    m_freeList = NULL;
-    m_count = 0;
+    RESET_MAP_ARRAY_STORAGE;
 }
 
 RVA(0x0009e840, 0x5)
@@ -130,9 +129,7 @@ void CMapArrayB::Free() {
     if (m_storage) {
         delete[] m_storage;
     }
-    m_storage = NULL;
-    m_freeList = NULL;
-    m_count = 0;
+    RESET_MAP_ARRAY_STORAGE;
 }
 
 RVA(0x0009e940, 0x73)

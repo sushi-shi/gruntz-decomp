@@ -445,6 +445,8 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     InsertSorted(obj, 0);
 }
 
+#define REGISTER_CHILD_OBJECT_ID(obj) m_registeredGameObjectsById[WwdKey(obj)] = obj
+
 RVA(0x00159e40, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (obj->m_flags & 0x800) {
@@ -453,7 +455,7 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     }
     if (addToMaps != 0) {
         m_activeGameObjectsById[WwdKey(obj)] = obj;
-        m_registeredGameObjectsById[WwdKey(obj)] = obj;
+        REGISTER_CHILD_OBJECT_ID(obj);
     }
     POSITION pos = m_list.GetHeadPosition();
     i32 key = obj->m_sortKey;
@@ -1065,22 +1067,24 @@ i32 CDDrawChildGroup::SumWeighted() {
     return sum;
 }
 
+#define REMOVE_ACTIVE_OBJECT_AT(pos, obj)                                                          \
+    m_list.RemoveAt(pos);                                                                          \
+    m_activeGameObjectsById.RemoveKey(WwdKey(obj))
+
 RVA(0x0015ab30, 0x38)
 void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
-    m_list.RemoveAt(pos);
-    m_activeGameObjectsById.RemoveKey(WwdKey(obj));
+    REMOVE_ACTIVE_OBJECT_AT(pos, obj);
     m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
 void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
-    m_list.RemoveAt(pos);
-    m_activeGameObjectsById.RemoveKey(WwdKey(obj));
+    REMOVE_ACTIVE_OBJECT_AT(pos, obj);
 }
 
 RVA(0x0015aba0, 0x1a)
 void CDDrawChildGroup::RegisterObjectId(CWwdGameObject* obj) {
-    m_registeredGameObjectsById[WwdKey(obj)] = obj;
+    REGISTER_CHILD_OBJECT_ID(obj);
 }
 
 RVA(0x0015abc0, 0x5e)

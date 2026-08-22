@@ -22,6 +22,16 @@ i32 g_wap32Run7c = 0;
 DATA(0x00253c80)
 i32 g_wap32Run80 = 0;
 
+#define FREE_GAME_MANAGER                                                                          \
+    if (m_gameMgr) {                                                                               \
+        delete m_gameMgr;                                                                          \
+        m_gameMgr = NULL;                                                                          \
+    }
+
+#define CLEAR_GAME_MANAGER_WINDOW                                                                  \
+    m_gameWnd = NULL;                                                                              \
+    m_owner = NULL
+
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_gameWnd = NULL;
@@ -163,10 +173,7 @@ void CGameApp::CloseResources() {
         DestroyAcceleratorTable(m_hAccel);
         m_hAccel = NULL;
     }
-    if (m_gameMgr) {
-        delete m_gameMgr;
-        m_gameMgr = NULL;
-    }
+    FREE_GAME_MANAGER
     if (m_gameWnd) {
         delete m_gameWnd;
         m_gameWnd = NULL;
@@ -308,12 +315,7 @@ void CGameApp::OnIdle() {
 }
 
 RVA(0x0013dc90, 0x19)
-void CGameApp::FreeGameManager() {
-    if (m_gameMgr) {
-        delete m_gameMgr;
-        m_gameMgr = NULL;
-    }
-}
+void CGameApp::FreeGameManager(){FREE_GAME_MANAGER}
 
 RVA(0x0013dcb0, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
@@ -334,8 +336,7 @@ RVA(0x0013dd10, 0x35)
 CGameMgr::CGameMgr() {
     m_soundEnabled = 1;
     m_musicEnabled = 1;
-    m_gameWnd = NULL;
-    m_owner = NULL;
+    CLEAR_GAME_MANAGER_WINDOW;
     m_frameGate = 0;
     m_pacingGate = 0;
     InitTimeFields(1);
@@ -363,8 +364,7 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
 RVA(0x0013ddb0, 0x9)
 void CGameMgr::Close() {
-    m_gameWnd = NULL;
-    m_owner = NULL;
+    CLEAR_GAME_MANAGER_WINDOW;
 }
 
 RVA(0x0013ddc0, 0xaa)

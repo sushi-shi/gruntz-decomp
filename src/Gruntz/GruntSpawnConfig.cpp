@@ -19,6 +19,8 @@
 #include <Gruntz/SpawnList.h>
 #include <Rez/RezTypeTag.h>
 
+#define CLEAR_GRUNT_VOICE_SPRITES memset(m_voices, 0, sizeof(m_voices))
+
 RVA(0x00085df0, 0x4a)
 CGruntSpawnConfig::~CGruntSpawnConfig() {
     Clear();
@@ -30,7 +32,7 @@ BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
         return 0;
     }
     m_configTree = NULL;
-    memset(m_voices, 0, sizeof(m_voices));
+    CLEAR_GRUNT_VOICE_SPRITES;
     memset(m_streams, 0, sizeof(m_streams));
     m_owner = owner;
     m_configTree = owner->m_world;
@@ -91,7 +93,7 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
 
 RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
-    memset(m_voices, 0, sizeof(m_voices));
+    CLEAR_GRUNT_VOICE_SPRITES;
 }
 
 RVA(0x0011afb0, 0x321)

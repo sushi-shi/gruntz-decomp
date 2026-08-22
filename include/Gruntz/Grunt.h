@@ -959,4 +959,8 @@ void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRa
 
 static void GruntScratchTeardown();
 
+#define STOP_GRUNT_STRUCK_SOUNDS                                                                   \
+    StopStruckSlotSound();                                                                         \
+    StopStruckVoiceSound()
+
 #endif // SRC_GRUNTZ_GRUNT_H

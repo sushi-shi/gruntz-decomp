@@ -1092,8 +1092,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     FinishActiveAction();
-    StopStruckSlotSound();
-    StopStruckVoiceSound();
+    STOP_GRUNT_STRUCK_SOUNDS;
 
     m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
     m_entranceCommitted = 0;

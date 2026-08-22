@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <DDrawMgr/DDrawWorkerHostBuildInline.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
@@ -120,7 +121,7 @@ i32 CDDrawWorkerHost::Read(
         for (i32 f = 0; f < set->m_items.GetSize(); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
-                SetTileSize(first->m_width, first->m_height);
+                SET_TILE_SIZE_FROM_IMAGE(first);
                 break;
             }
         }
@@ -132,16 +133,7 @@ i32 CDDrawWorkerHost::Read(
     m_bltFx.dwFillColor = pd->fillColor;
     m_flags = pd->flags;
 
-    if (bounds->left != COORD_UNSET) {
-        LevelCoordRect local;
-        CopyRect((&local), (bounds));
-        m_bounds50 = local;
-        m_viewW = m_bounds50.right - m_bounds50.left + 1;
-        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
-        m_anchorX = m_viewW / 2;
-        m_anchorY = m_viewH / 2;
-        RecomputePlaneCoords();
-    }
+    APPLY_WORKER_HOST_BOUNDS(bounds);
 
     m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
@@ -230,16 +222,7 @@ i32 CDDrawWorkerHost::InitGeometry(
     if (name != NULL) {
         strcpy(m_name, name);
     }
-    if (bounds->left != COORD_UNSET) {
-        LevelCoordRect local;
-        CopyRect((&local), (bounds));
-        m_bounds50 = local;
-        m_viewW = m_bounds50.right - m_bounds50.left + 1;
-        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
-        m_anchorX = m_viewW / 2;
-        m_anchorY = m_viewH / 2;
-        RecomputePlaneCoords();
-    }
+    APPLY_WORKER_HOST_BOUNDS(bounds);
     m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
     m_tileGrid = new i32[m_gridW * m_gridH];
@@ -372,16 +355,7 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
 
 RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
-    if (coords->left != COORD_UNSET) {
-        LevelCoordRect local;
-        CopyRect((&local), (coords));
-        m_bounds50 = local;
-        m_viewW = m_bounds50.right - m_bounds50.left + 1;
-        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
-        m_anchorX = m_viewW / 2;
-        m_anchorY = m_viewH / 2;
-        RecomputePlaneCoords();
-    }
+    APPLY_WORKER_HOST_BOUNDS(coords);
 }
 
 // @early-stop
@@ -412,7 +386,7 @@ void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161f80, 0x14)
 void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
-    SetTileSize(image->m_width, image->m_height);
+    SET_TILE_SIZE_FROM_IMAGE(image);
 }
 
 // @dead-code
@@ -422,7 +396,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
-            SetTileSize(f->m_width, f->m_height);
+            SET_TILE_SIZE_FROM_IMAGE(f);
             break;
         }
     }

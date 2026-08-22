@@ -68,3 +68,29 @@ localization tool, not permission for disposable TU-state probes in retained sou
 The positive control is 49 sprite-retirement expansions across seven Grunt TUs: after
 the six pre-`StepArrivalDrop` sites were excluded, the macro form introduced no fresh
 MAX regression.
+
+## Retained structural exceptions
+
+The definition-against-every-function campaign found two cases where moving the macro
+boundary cannot be separated from the proven relationship:
+
+- `CDDrawWorkerHost::Build` has a 100.000% standalone COMDAT, two expanded bodies in
+  `Read` and `InitGeometry`, and two real retail calls from `CGameLevel`. A canonical
+  member inline expands all four uses and removes the COMDAT. The two-entity macro form
+  preserves those shapes but moves the later `CDDrawWorkerHost::Draw` from 85.6551% to
+  81.5202%.
+- `CGameLevel::ReleaseChildren` remains 100.000% while its consolidated expansion moves
+  `Unload` from 100.0000% to 99.8824%. Calls, branches, referents, and semantic store set
+  are unchanged; only the independent-store schedule differs.
+
+These do not license inert steering. They narrow the reverse-use rule: first try a real
+inline, exact-expansion macro, and source-order scoping; if the mixed retail call/expansion
+shape still requires the boundary, retain a humane structural macro only with the
+downstream effect measured, documented, historical MAX preserved, and the bank explicitly
+adjudicated. A useful abstraction need not be duplicated merely to protect current fuzzy.
+
+A third A/B demonstrates why macro fallback remains the preferred final lever.
+`CWwdGameObjectA::ApplyGeometryDirect` is standalone at 100.000% and fully expanded inside
+the exact `ApplyLookupGeometry`. A narrow real inline kept both exact but moved the later
+exact `CDDrawWorker::GetMemoryUsage` to 99.9623%; the token-preserving macro restored all
+three to 100.000%.

@@ -26,6 +26,50 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DRAW_PLANES_THROUGH_MAIN(visitor, index)                                                   \
+    i32 index = 0;                                                                                 \
+    if (m_mainIndex >= 0) {                                                                        \
+        do {                                                                                       \
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index]))->Draw(visitor);            \
+            ++index;                                                                               \
+        } while (index <= m_mainIndex);                                                            \
+    }
+
+#define DRAW_PLANES_AFTER_MAIN(visitor, index)                                                     \
+    i32 index = m_mainIndex + 1;                                                                   \
+    if (index < m_planes.GetSize()) {                                                              \
+        do {                                                                                       \
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index]))->Draw(visitor);            \
+            ++index;                                                                               \
+        } while (index < m_planes.GetSize());                                                      \
+    }
+
+#define RESET_MAIN_PLANE_SELECTION(index)                                                          \
+    m_mainIndex = -1;                                                                              \
+    m_mainPlane = NULL;                                                                            \
+    for (i32 index = 0; index < m_planes.GetSize(); index++) {                                     \
+        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index])->m_flags &= ~1;                  \
+    }
+
+#define RELEASE_LEVEL_CHILDREN                                                                     \
+    i32 i;                                                                                         \
+    for (i = 0; i < m_planes.GetSize(); i++) {                                                     \
+        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);           \
+        if (child) {                                                                               \
+            delete child;                                                                          \
+        }                                                                                          \
+    }                                                                                              \
+    m_planes.SetSize(0, -1);                                                                       \
+    for (i = 0; i < m_imageSets.GetSize(); i++) {                                                  \
+        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);              \
+        if (child) {                                                                               \
+            delete child;                                                                          \
+        }                                                                                          \
+    }                                                                                              \
+    m_imageSets.SetSize(0, -1);                                                                    \
+    m_mainPlane = NULL;                                                                            \
+    m_mainIndex = -1
+
 // @early-stop
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
@@ -114,24 +158,8 @@ void CGameLevel::ResetParamBlock() {
 
 RVA(0x0015d1f0, 0x87)
 void CGameLevel::Unload() {
-    i32 i;
-    for (i = 0; i < m_planes.GetSize(); i++) {
-        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);
-        if (child) {
-            delete child;
-        }
-    }
-    m_planes.SetSize(0, -1);
-    for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);
-        if (child) {
-            delete child;
-        }
-    }
-    m_imageSets.SetSize(0, -1);
+    RELEASE_LEVEL_CHILDREN;
     m_planeCtx.left = COORD_UNSET;
-    m_mainPlane = NULL;
-    m_mainIndex = -1;
     memset(&m_header, 0, 1524);
 }
 
@@ -294,23 +322,7 @@ i32 CGameLevel::LoadFromSource(CParseSource* arg) {
 
 RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
-    i32 i;
-    for (i = 0; i < m_planes.GetSize(); i++) {
-        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);
-        if (child) {
-            delete child;
-        }
-    }
-    m_planes.SetSize(0, -1);
-    for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);
-        if (child) {
-            delete child;
-        }
-    }
-    m_imageSets.SetSize(0, -1);
-    m_mainPlane = NULL;
-    m_mainIndex = -1;
+    RELEASE_LEVEL_CHILDREN;
 }
 
 RVA(0x0015d700, 0x81)
@@ -457,28 +469,12 @@ void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015dad0, 0x2c)
-void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor) {
-    i32 i = 0;
-    if (m_mainIndex >= 0) {
-        do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->Draw(visitor);
-            ++i;
-        } while (i <= m_mainIndex);
-    }
-}
+void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_THROUGH_MAIN(visitor, i)}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015db00, 0x2e)
-void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor) {
-    i32 i = m_mainIndex + 1;
-    if (i < m_planes.GetSize()) {
-        do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->Draw(visitor);
-            ++i;
-        } while (i < m_planes.GetSize());
-    }
-}
+void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_AFTER_MAIN(visitor, i)}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -499,11 +495,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
                                    ? static_cast<CDDrawWorkerHost*>(m_planes[last])
                                    : 0;
         if (lp != NULL) {
-            m_mainIndex = -1;
-            m_mainPlane = NULL;
-            for (i32 i = 0; i < m_planes.GetSize(); i++) {
-                (static_cast<CDDrawWorkerHost*>(m_planes[i]))->m_flags &= ~1;
-            }
+            RESET_MAIN_PLANE_SELECTION(i)
             m_mainIndex = last;
             m_mainPlane = lp;
             lp->m_flags |= 1;
@@ -537,13 +529,7 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015dc50, 0x33)
-void CGameLevel::ResetMainPlane() {
-    m_mainIndex = -1;
-    m_mainPlane = NULL;
-    for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])->m_flags &= ~1;
-    }
-}
+void CGameLevel::ResetMainPlane(){RESET_MAIN_PLANE_SELECTION(i)}
 
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
@@ -589,21 +575,9 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
         return;
     }
 
-    i32 idx = 0;
-    if (m_mainIndex >= 0) {
-        do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[idx]))->Draw(visitor);
-            ++idx;
-        } while (idx <= m_mainIndex);
-    }
+    DRAW_PLANES_THROUGH_MAIN(visitor, idx)
     ctx->RenderChildren(visitor);
-    i32 j = m_mainIndex + 1;
-    if (j < m_planes.GetSize()) {
-        do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[j]))->Draw(visitor);
-            ++j;
-        } while (j < m_planes.GetSize());
-    }
+    DRAW_PLANES_AFTER_MAIN(visitor, j)
 }
 
 RVA(0x0015dde0, 0x5c)

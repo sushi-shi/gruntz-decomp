@@ -108,7 +108,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -148,7 +148,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -382,7 +382,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xca;
+            SET_WORKER_HOST_CELL(pl, tx, ty, 0xca);
             reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xca);
             break;
         }
@@ -395,7 +395,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xc9;
+            SET_WORKER_HOST_CELL(pl, tx, ty, 0xc9);
             reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xc9);
             break;
         }
@@ -408,7 +408,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xcc;
+            SET_WORKER_HOST_CELL(pl, tx, ty, 0xcc);
             reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xcc);
             break;
         }
@@ -421,7 +421,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xcb;
+            SET_WORKER_HOST_CELL(pl, tx, ty, 0xcb);
             reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xcb);
             break;
         }
@@ -436,14 +436,14 @@ i32 CTileTriggerLogic::Tick() {
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
                         CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        pl->m_tileGrid[pl->m_colOffsets[gy] + gx] = 0xfd;
+                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfd);
                         reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfd);
                         anim = "GAME_PYRAMIDUP";
                         hit = 1;
                     } else if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_DOWN) {
                         CGruntzMgr* reg = g_gameReg;
                         CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        pl->m_tileGrid[pl->m_colOffsets[gy] + gx] = 0xfe;
+                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfe);
                         reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfe);
                         anim = "GAME_PYRAMIDDOWN";
                         hit = 1;
@@ -495,10 +495,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_GREENPYRAMID_UP) {
-                pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xfb;
+                SET_WORKER_HOST_CELL(pl, tx, ty, 0xfb);
                 reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xfb);
             } else {
-                pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xfc;
+                SET_WORKER_HOST_CELL(pl, tx, ty, 0xfc);
                 reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xfc);
             }
             break;
@@ -517,10 +517,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_PURPLEPYRAMID_UP) {
-                pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xff;
+                SET_WORKER_HOST_CELL(pl, tx, ty, 0xff);
                 reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xff);
             } else {
-                pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0x100;
+                SET_WORKER_HOST_CELL(pl, tx, ty, 0x100);
                 reg->m_tileGrid->ComputeCellFlags(tx, ty, 0x100);
             }
             break;
@@ -539,10 +539,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_ORANGEPYRAMID_UP) {
-                pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xf7;
+                SET_WORKER_HOST_CELL(pl, tx, ty, 0xf7);
                 reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xf7);
             } else {
-                pl->m_tileGrid[pl->m_colOffsets[ty] + tx] = 0xf8;
+                SET_WORKER_HOST_CELL(pl, tx, ty, 0xf8);
                 reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xf8);
             }
             break;
@@ -836,7 +836,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 py = j + m_tileY - 1;
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* plane = reg->m_world->m_level->m_mainPlane;
-            plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
+            SET_WORKER_HOST_CELL(plane, px, py, value);
             reg->m_tileGrid->ComputeCellFlags(px, py, value);
             i32 sx = ((i + m_tileX) << TILE_SHIFT_PX) - 0x10;
             i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
@@ -904,7 +904,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         i32 ty = m_tileY;
         i32 tx = m_tileX;
         CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-        L->m_tileGrid[L->m_colOffsets[ty] + tx] = tok;
+        SET_WORKER_HOST_CELL(L, tx, ty, tok);
         (reg->m_tileGrid)->ComputeCellFlags(tx, ty, tok);
     } else {
         switch (verb) {
@@ -917,7 +917,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 // write through the un-cached global: defeats the address-CSE so the
                 // store re-walks m_world->m_level->m_mainPlane exactly as retail does
                 CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
-                L2->m_tileGrid[tx + L2->m_colOffsets[ty]] = v;
+                SET_WORKER_HOST_CELL(L2, tx, ty, v);
                 (reg->m_tileGrid)->ComputeCellFlags(tx, ty, v);
                 break;
             }
@@ -926,7 +926,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 i32 ty = m_tileY;
                 i32 tx = m_tileX;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                L->m_tileGrid[L->m_colOffsets[ty] + tx] = 0x5b;
+                SET_WORKER_HOST_CELL(L, tx, ty, 0x5b);
                 (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 break;
             }
@@ -935,7 +935,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 i32 ty = m_tileY;
                 i32 tx = m_tileX;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                L->m_tileGrid[L->m_colOffsets[ty] + tx] = 0x5a;
+                SET_WORKER_HOST_CELL(L, tx, ty, 0x5a);
                 (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 break;
             }
@@ -1014,7 +1014,7 @@ i32 CTileSecretTriggerLogic::Tick() {
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[grp + layer2->m_colOffsets[idx]] = oldTok;
+    SET_WORKER_HOST_CELL(layer2, grp, idx, oldTok);
     mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
     m_tileToken = newTok;
     return 1;
@@ -1122,7 +1122,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 1;
     return 1;
@@ -1139,7 +1139,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 0;
     return 1;
@@ -1244,7 +1244,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     // walk2 through the cached local: the layer-init chain hangs off the raw
     // global-load tree, so the two walks stay distinct while the global load CSEs
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[tx + layer2->m_colOffsets[ty]] = IDX(code);
+    SET_WORKER_HOST_CELL(layer2, tx, ty, IDX(code));
     reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }

@@ -58,4 +58,7 @@ inline void CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i3
     m_surface->BltEx(&rc, other->m_surface, &rc, 0x1000000, 0);
 }
 
+#define BLT_SURFACE_PAIR_SELF(dst, src)                                                            \
+    (dst)->m_surface->BltFast(0, 0, (src)->m_surface, &(src)->m_srcRect, 0x10)
+
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

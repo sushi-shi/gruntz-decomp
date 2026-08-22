@@ -122,6 +122,21 @@ class CImage;
         }                                                                                          \
     } while (0)
 
+#define CLEAR_GRUNTZ_PLAYER                                                                        \
+    m_playerIndex = -1;                                                                            \
+    m_slotKey = -2;                                                                                \
+    m_liveGate = 0;                                                                                \
+    m_humanControlled = 1;                                                                         \
+    m_name = "";                                                                                   \
+    m_colorIndex = TINT_ORANGE;                                                                    \
+    m_configId = 0;                                                                                \
+    m_focusX = 0;                                                                                  \
+    m_focusY = 0;                                                                                  \
+    m_comboSel = 0xf;                                                                              \
+    m_doneFlag = 0;                                                                                \
+    m_presenceCounted = 0;                                                                         \
+    m_latency.Clear()
+
 // The header-inline `~PlayerLatency() {}` (GruntzPlayer.h) emitted out of line:
 // the unwind funclets of ??0GruntzPlayer and ??1GruntzPlayer take its address, so
 // cl gives it a COMDAT. Retail keeps one 1-byte `ret` copy, isolated by 0xcc
@@ -168,36 +183,12 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
 
 RVA(0x000da960, 0x5b)
 void GruntzPlayer::Clear() {
-    m_playerIndex = -1;
-    m_slotKey = -2;
-    m_liveGate = 0;
-    m_humanControlled = 1;
-    m_name = "";
-    m_colorIndex = TINT_ORANGE;
-    m_configId = 0;
-    m_focusX = 0;
-    m_focusY = 0;
-    m_comboSel = 0xf;
-    m_doneFlag = 0;
-    m_presenceCounted = 0;
-    m_latency.Clear();
+    CLEAR_GRUNTZ_PLAYER;
 }
 
 RVA(0x000da9e0, 0x60)
 i32 GruntzPlayer::Reset() {
-    m_playerIndex = -1;
-    m_slotKey = -2;
-    m_liveGate = 0;
-    m_humanControlled = 1;
-    m_name = "";
-    m_colorIndex = TINT_ORANGE;
-    m_configId = 0;
-    m_focusX = 0;
-    m_focusY = 0;
-    m_comboSel = 0xf;
-    m_doneFlag = 0;
-    m_presenceCounted = 0;
-    m_latency.Clear();
+    CLEAR_GRUNTZ_PLAYER;
     return 1;
 }
 

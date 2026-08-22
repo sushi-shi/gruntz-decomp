@@ -294,7 +294,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
 
 RVA(0x00077dc0, 0x1d)
 void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
-    m_tileGrid[m_colOffsets[y] + x] = id;
+    SET_WORKER_HOST_CELL(this, x, y, id);
 }
 
 RVA(0x00077df0, 0x13d)

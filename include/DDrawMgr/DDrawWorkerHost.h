@@ -170,4 +170,6 @@ public:
     }                                                                                              \
     plane->RecomputePlaneCoords()
 
+#define SET_WORKER_HOST_CELL(plane, x, y, id) (plane)->m_tileGrid[(plane)->m_colOffsets[y] + x] = id
+
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

@@ -915,6 +915,19 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
 // the cursor ([ebp-0x18]); ours derives the cursor with one lea from ebx.
 // Downstream ecx/edx/eax rotation follows. Cursor-init reorder and 250
 // generated variants are flat.
+#define DELETE_ANI_ELEMENT_CONTENTS(index)                                                         \
+    for (index = 0; index < m_records.GetSize(); index++) {                                        \
+        CObject* item = m_records.GetAt(index);                                                    \
+        if (item != NULL) {                                                                        \
+            delete (static_cast<CAniRecordView*>(item));                                           \
+        }                                                                                          \
+    }                                                                                              \
+    if (m_name != NULL) {                                                                          \
+        delete[] m_name;                                                                           \
+        m_name = NULL;                                                                             \
+    }                                                                                              \
+    m_records.SetSize(0, -1)
+
 RVA(0x00165460, 0x156)
 i32 CAniElement::Build(CDDrawSubMgrLeafScan* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
@@ -954,17 +967,7 @@ fail:
     if (rec != NULL) {
         delete rec;
     }
-    for (i = 0; i < m_records.GetSize(); i++) {
-        CObject* p = m_records.GetAt(i);
-        if (p != NULL) {
-            delete (static_cast<CAniRecordView*>(p));
-        }
-    }
-    if (m_name != NULL) {
-        delete[] m_name;
-        m_name = NULL;
-    }
-    m_records.SetSize(0, -1);
+    DELETE_ANI_ELEMENT_CONTENTS(i);
     return 0;
 }
 
@@ -1004,17 +1007,8 @@ i32 CAniElement::LoadFile(CDDrawSubMgrLeafScan* ctx, const char* filename, i32 u
 
 RVA(0x00165730, 0x4c)
 void CAniElement::DeleteAll() {
-    for (i32 i = 0; i < m_records.GetSize(); i++) {
-        CAniRecordView* el = static_cast<CAniRecordView*>(m_records.GetAt(i));
-        if (el != NULL) {
-            delete el;
-        }
-    }
-    if (m_name != NULL) {
-        delete[] m_name;
-        m_name = NULL;
-    }
-    m_records.SetSize(0, -1);
+    i32 i;
+    DELETE_ANI_ELEMENT_CONTENTS(i);
 }
 
 // CAniRecordView header inlines this TU materializes: link.exe kept the

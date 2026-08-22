@@ -87,6 +87,8 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     return n;
 }
 
+#define ADD_ANIMATION_ENTRY(elem, key) m_animations[key] = elem
+
 RVA(0x001528d0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, CParseSource* entry) {
     CAniElement* el = new CAniElement;
@@ -98,7 +100,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, CParseSource* ent
         delete el;
         return 0;
     }
-    m_animations[key] = el;
+    ADD_ANIMATION_ENTRY(el, key);
     return el;
 }
 
@@ -115,7 +117,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, const char* entr
         delete el;
         return 0;
     }
-    m_animations[key] = el;
+    ADD_ANIMATION_ENTRY(el, key);
     return el;
 }
 
@@ -133,7 +135,7 @@ CAniElement* CDDrawSubMgrLeaf::AddFromSource(CParseSource* src) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152ab0, 0x16)
 void CDDrawSubMgrLeaf::AddEntry(CAniElement* elem, const char* key) {
-    m_animations[key] = elem;
+    ADD_ANIMATION_ENTRY(elem, key);
 }
 
 RVA(0x00152ad0, 0x17f)

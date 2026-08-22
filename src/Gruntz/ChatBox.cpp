@@ -44,15 +44,7 @@ i32 CChatBox::InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e
 RVA(0x00182b30, 0x30)
 void CChatBox::Reset() {
     Clear();
-    m_page = NULL;
-    m_wnd = NULL;
-    m_activeNode = NULL;
-    m_row0Anim = NULL;
-    m_row1Anim = NULL;
-    m_row0Frame = NULL;
-    m_row1Frame = NULL;
-    m_row0Key.Empty();
-    m_row1Key.Empty();
+    INIT_CHAT_BOX_MEMBERS;
 }
 
 RVA(0x00182b60, 0x3e)

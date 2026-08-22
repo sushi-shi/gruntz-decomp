@@ -127,10 +127,10 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 BridgeTileId bridgeTile = static_cast<BridgeTileId>(tileId);
                 if (bridgeTile == BRIDGETILE_WATER_UP_ALT) {
                     tileId = IDX(BRIDGETILE_WATER_UP);
-                    grid->m_tileGrid[grid->m_colOffsets[col] + row] = IDX(BRIDGETILE_WATER_UP);
+                    SET_WORKER_HOST_CELL(grid, row, col, IDX(BRIDGETILE_WATER_UP));
                 } else if (bridgeTile == BRIDGETILE_DEATH_UP_ALT) {
                     tileId = IDX(BRIDGETILE_DEATH_UP);
-                    grid->m_tileGrid[grid->m_colOffsets[col] + row] = IDX(BRIDGETILE_DEATH_UP);
+                    SET_WORKER_HOST_CELL(grid, row, col, IDX(BRIDGETILE_DEATH_UP));
                 }
             }
 
@@ -172,7 +172,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     default:
                         break;
                 }
-                grid->m_tileGrid[grid->m_colOffsets[col] + row] = tileId;
+                SET_WORKER_HOST_CELL(grid, row, col, tileId);
             }
 
             TileCollisionKind typeCode = m_attrMgr->m_level->LookupTile(row, col);

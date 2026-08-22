@@ -926,9 +926,11 @@ i32 CDDrawPtrCollections::GetCapsChecked() {
     return hr;
 }
 
+#define IS_STANDARD_VIDEO_MODE (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX)
+
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
-    if (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX) {
+    if (IS_STANDARD_VIDEO_MODE) {
         if (save) {
             m_savedModeSize = m_modeSize;
         }
@@ -1754,7 +1756,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
-    if (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX) {
+    if (IS_STANDARD_VIDEO_MODE) {
         return 1;
     }
     return 0;
@@ -2275,7 +2277,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             for (i32 j = 0; j < spr->m_gridW; j++) {
                 i32 val = parity ? savedIdx : -1;
                 parity ^= 1;
-                spr->m_tileGrid[spr->m_colOffsets[i] + j] = val;
+                SET_WORKER_HOST_CELL(spr, j, i, val);
             }
             parity ^= 1;
         }

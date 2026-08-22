@@ -431,7 +431,7 @@ i32 CCreditsState::StepVideo() {
             ret = FinishState();
         }
         if (dst && src) {
-            src->m_surface->BltFast(0, 0, dst->m_surface, &dst->m_srcRect, 0x10);
+            BLT_SURFACE_PAIR_SELF(src, dst);
         }
     }
     return ret;
@@ -490,7 +490,7 @@ void CCreditsState::LoadCreditzAssets() {
 
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
-    m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, 0x10);
+    BLT_SURFACE_PAIR_SELF(this, src);
 }
 
 RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)

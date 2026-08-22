@@ -28,6 +28,15 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
+#define RESET_TIMER_SPRITES                                                                        \
+    m_sprite = NULL;                                                                               \
+    m_frameMinTens = NULL;                                                                         \
+    m_frameMinOnes = NULL;                                                                         \
+    m_frameColon = NULL;                                                                           \
+    m_frameSecTens = NULL;                                                                         \
+    m_frameSecOnes = NULL;                                                                         \
+    m_active = 0
+
 RVA(0x0009bab0, 0x35)
 CTimer::CTimer() {
     // Halves, not the i64: cl5 batches a RUN of 64-bit stores as all-lo-then-all-hi,
@@ -40,13 +49,7 @@ CTimer::CTimer() {
     m_unusedStamp.m_lo = 0;
     m_startStamp.m_hi = 0;
     m_unusedStamp.m_hi = 0;
-    m_sprite = NULL;
-    m_frameMinTens = NULL;
-    m_frameMinOnes = NULL;
-    m_frameColon = NULL;
-    m_frameSecTens = NULL;
-    m_frameSecOnes = NULL;
-    m_active = 0;
+    RESET_TIMER_SPRITES;
     m_running = 0;
 }
 
@@ -89,13 +92,7 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
 
 RVA(0x0009bc70, 0x18)
 void CTimer::Reset() {
-    m_sprite = NULL;
-    m_frameMinTens = NULL;
-    m_frameMinOnes = NULL;
-    m_frameColon = NULL;
-    m_frameSecTens = NULL;
-    m_frameSecOnes = NULL;
-    m_active = 0;
+    RESET_TIMER_SPRITES;
 }
 
 // @early-stop

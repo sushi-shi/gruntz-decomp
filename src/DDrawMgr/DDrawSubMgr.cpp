@@ -187,10 +187,13 @@ i32 CDDrawWorkerA::IsLoaded() {
     return 0;
 }
 
+#define SET_RESOLVE_POSITION_REFERENCED(x, y)                                                      \
+    m_refCount = 2;                                                                                \
+    return CResolveNode::SetPosition(x, y)
+
 RVA(0x00157080, 0x19)
 i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
-    m_refCount = 2;
-    return CResolveNode::SetPosition(x, y);
+    SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001570a0, 0x6)
@@ -208,8 +211,7 @@ CDDrawWorkerA::~CDDrawWorkerA() {
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::PlaceFrameValue(i32 x, i32 y, i32 frame) {
     m_pixelValue = static_cast<char>(frame);
-    m_refCount = 2;
-    return CResolveNode::SetPosition(x, y);
+    SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x00157130, 0x17)
@@ -260,23 +262,20 @@ CDDrawWorkerB::~CDDrawWorkerB() {
 RVA(0x00157280, 0x30)
 i32 CDDrawWorkerB::PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex) {
     Helper(key, frameIndex);
-    m_refCount = 2;
-    return CResolveNode::SetPosition(x, y);
+    SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
     CImage* frame = src->GetAt(frameIndex);
     m_frame = frame;
-    m_refCount = 2;
-    return CResolveNode::SetPosition(x, y);
+    SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001572f0, 0x20)
 i32 CDDrawWorkerB::PlaceFrameValue(i32 x, i32 y, i32 frame) {
     m_frameValue = frame;
-    m_refCount = 2;
-    return CResolveNode::SetPosition(x, y);
+    SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x00157310, 0x1a)
@@ -531,6 +530,10 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     return n;
 }
 
+#define ADD_SOUND_CUE_ENTRY(elem, key)                                                             \
+    m_cues[key] = elem;                                                                            \
+    elem->m_replayDelay = m_replayDelay
+
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
     if (m_emitGate != 0) {
@@ -544,8 +547,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
         delete e;
         return 0;
     }
-    m_cues[key] = e;
-    e->m_replayDelay = m_replayDelay;
+    ADD_SOUND_CUE_ENTRY(e, key);
     return e;
 }
 
@@ -564,8 +566,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
         delete e;
         return 0;
     }
-    m_cues[key] = e;
-    e->m_replayDelay = m_replayDelay;
+    ADD_SOUND_CUE_ENTRY(e, key);
     return e;
 }
 
@@ -586,8 +587,7 @@ LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157ec0, 0x20)
 void CDDrawSubMgrLeafScan::AddEntry(LeafCue* elem, const char* key) {
-    m_cues[key] = elem;
-    elem->m_replayDelay = m_replayDelay;
+    ADD_SOUND_CUE_ENTRY(elem, key);
 }
 
 RVA(0x00157ee0, 0x1c6)

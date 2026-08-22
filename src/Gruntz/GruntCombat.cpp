@@ -761,8 +761,7 @@ void CGrunt::ReapplyVoiceParams() {
 
 RVA(0x00057d80, 0x11)
 void CGrunt::DestroyAnims() {
-    StopStruckSlotSound();
-    StopStruckVoiceSound();
+    STOP_GRUNT_STRUCK_SOUNDS;
 }
 
 // @early-stop
@@ -1086,12 +1085,11 @@ void CGrunt::OnStruck(i32 wasHit) {
     }
 }
 
+#include <Wwd/WwdGameObjectGeometryInline.h>
+
 RVA(0x00058b60, 0x2d)
-void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
-    m_animCursor.Setup(srcSprite);
-    if (applyDefault) {
-        m_animCursor.Advance(g_engineFrameDelta);
-    }
+void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault){
+    APPLY_GEOMETRY_DIRECT(this, srcSprite, applyDefault)
 }
 
 RVA(0x00058bc0, 0xa1)

@@ -85,4 +85,15 @@ public:
     i32 m_row1FrameIdx;
 };
 
+#define INIT_CHAT_BOX_MEMBERS                                                                      \
+    m_page = NULL;                                                                                 \
+    m_wnd = NULL;                                                                                  \
+    m_activeNode = NULL;                                                                           \
+    m_row0Anim = NULL;                                                                             \
+    m_row1Anim = NULL;                                                                             \
+    m_row0Frame = NULL;                                                                            \
+    m_row1Frame = NULL;                                                                            \
+    m_row0Key.Empty();                                                                             \
+    m_row1Key.Empty()
+
 #endif // GRUNTZ_CHATBOX_H
