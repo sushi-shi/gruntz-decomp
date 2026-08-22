@@ -171,19 +171,22 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     return static_cast<CWwdGameObject*>(result);
 }
 
-// @early-stop
+static inline AnimWorkerObj* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<AnimWorkerObj*>(found);
+}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
-    CObject* val = 0;
-
-    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
-    if (val == NULL) {
+    AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
+    if (tmpl == NULL) {
         return 0;
     }
-    return CreateObject(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
+    return CreateObject(id, x, y, sortKey, tmpl, stateFlags);
 }
 
 // @dead-code
