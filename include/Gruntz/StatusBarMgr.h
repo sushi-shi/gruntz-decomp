@@ -88,6 +88,13 @@ struct CSbiHlRow {
     // place.  See docs/patterns/inline-ctor-comdat-via-vector-ctor-iterator.md.
     RVA(0x000c86d0, 0x11)
     CSbiHlRow() {
+        // DELIBERATE DIVERGENCE (retail body is the four clock stores only):
+        // retail never writes m_state/m_value before SetHlCell reads them on the
+        // fresh-level path and only survives because virgin heap pages are zero
+        // (HLROW_OFF == 0); a recycled chunk breaks the drop animation. Zeroing
+        // here pins the value retail's luck supplied. User-ruled fix 2026-08-22.
+        m_state = IDX(HLROW_OFF);
+        m_value = 0;
         m_lastLo = 0;
         m_intervalLo = 0;
         m_lastHi = 0;
