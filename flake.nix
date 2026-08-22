@@ -434,6 +434,31 @@
         '';
       };
 
+      # PLAY-only shell, deliberately NOT folded into the one shell above:
+      # gamescope drags a vulkan/SDL/wlroots closure that every worker entering
+      # `.#build` would have to realise for something the build loop never runs.
+      # Same staging wine as the build shell - build/game-wine/prefix3 was
+      # created by it.
+      #
+      # The runner itself is GENERATED - build/game-wine/play.sh (template:
+      # scripts/gruntz/graph/play.py, installed by create-wine-prefix.py,
+      # refreshed by `gruntz play` = build + link + install + run). play.sh
+      # enters this shell by itself when gamescope is not on PATH, so `gruntz
+      # play` works from the build shell. The scaling contract (gamescope's
+      # nested -w/-h == the prefix's 640x480 wine virtual desktop, integer-
+      # scaled x3 to 1920x1440, pillarboxed, pixel-perfect) lives in the
+      # template, beside the knobs.
+      playShell = pkgs.mkShell {
+        name = "gruntz-play";
+        packages = [ pkgs.gamescope pkgs.wineWow64Packages.staging ];
+        shellHook = ''
+          export GRUNTZ_DIR="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
+          export WINEPREFIX="$GRUNTZ_DIR/build/game-wine/prefix3"   # the GAME prefix, not the build one
+          export WINEDLLOVERRIDES="mscoree,mshtml="
+          echo "[gruntz] play       : gamescope + wine, WINEPREFIX=$WINEPREFIX (runner: build/game-wine/play.sh, or \`gruntz play\`)" >&2
+        '';
+      };
+
     in {
       packages.${system} = {
         inherit vostok-delinker objdiff objdiff-cli gruntz-exe gruntz-toolchain
@@ -448,6 +473,8 @@
         # not need it but it is a harmless superset).
         default = gruntzShell;
         build = gruntzShell;
+        # Playing the game, not building it - see playShell above.
+        play = playShell;
       };
     };
 }

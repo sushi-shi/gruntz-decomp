@@ -3,6 +3,9 @@
     gruntz build [targets...] [-j N] [--force-delink] [-v]
     gruntz link  [--engine-lib] [--order F] ...     -> `ninja candidate`
     gruntz match [--reference R] [--all]            -> build, then the deltas
+    gruntz play  [--retail]                         -> build + link, install
+                                                       into the game env, run
+                                                       scaled (play.sh)
 
 `build` configures if the manifest is missing (after that ninja's generator
 edge owns it) and runs the default target. `link` is the same graph with the
@@ -264,7 +267,63 @@ def match_main(argv: list[str] | None = None) -> int:
     return rc
 
 
-VERBS = {"build": build_main, "link": link_main, "match": match_main}
+# --------------------------------------------------------------------------- #
+# gruntz play
+# --------------------------------------------------------------------------- #
+GAME_ENV = "build/game-wine"
+
+
+def play_main(argv: list[str] | None = None) -> int:
+    """Build + link, install the candidate into the game env, run it scaled.
+
+    The whole test loop in one verb: compile (`gruntz build`), link the
+    candidate (`ninja candidate`), make sure <env>/game/GRUNTZ.EXE is the
+    image just linked, then launch through <env>/play.sh - the generated
+    gamescope runner (integer-scaled 640x480, pixel-perfect; see
+    gruntz.graph.play). play.sh stamps the md5 so the log proves which
+    binary ran. `--retail` skips the build and runs the retail control
+    instead - the first move when triaging a black screen.
+    """
+    import argparse
+    import shutil
+    ap = argparse.ArgumentParser(prog="gruntz play", description=play_main.__doc__)
+    ap.add_argument("--retail", action="store_true",
+                    help="run GRUNTZ.retail.EXE (no build/link) - the env control")
+    a = ap.parse_args(argv)
+
+    env = REPO / GAME_ENV
+    game = env / "game"
+    if not (env / "prefix3" / "drive_c").is_dir() or not game.is_dir():
+        print(f"[play] no game env at {GAME_ENV} - provision it once:\n"
+              "[play]   python3 scripts/create-wine-prefix.py <resources-dir>",
+              file=sys.stderr)
+        return 1
+
+    if not a.retail:
+        rc = build_main([])
+        if rc:
+            return rc
+        rc = ninja(["candidate"])
+        if rc:
+            return rc
+        cand = REPO / graph.CANDIDATE_EXE
+        exe = game / "GRUNTZ.EXE"
+        if exe.exists() and exe.samefile(cand):
+            pass  # the env symlinks the candidate; the link already installed it
+        else:
+            exe.unlink(missing_ok=True)
+            shutil.copy2(cand, exe)
+            print(f"[play] installed {graph.CANDIDATE_EXE} -> "
+                  f"{GAME_ENV}/game/GRUNTZ.EXE")
+
+    from gruntz.graph.play import write_play_sh
+    play_sh = write_play_sh(env, REPO)
+    run = [str(play_sh)] + (["GRUNTZ.retail.EXE"] if a.retail else [])
+    return subprocess.run(run, cwd=REPO).returncode
+
+
+VERBS = {"build": build_main, "link": link_main, "match": match_main,
+         "play": play_main}
 
 
 def main() -> int:

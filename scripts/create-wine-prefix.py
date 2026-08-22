@@ -3,15 +3,22 @@
 
 The sibling of create-toolchain-release.py: a one-shot provisioner, not part
 of the build loop (the BUILD prefix is `gruntz tool wine --init`). It REQUIRES
-the retail resources folder - the runtime set we cannot distribute:
+the retail resources folder - the runtime set we cannot distribute - the first
+time; once game/ is populated a bare run just refreshes the rest (play.sh,
+registry keys):
 
-    python3 scripts/create-wine-prefix.py <resources-dir> [--target ~/gruntz-wine]
+    python3 scripts/create-wine-prefix.py [<resources-dir>] \\
+                                          [--target build/game-wine]
 
 and assembles:
 
     <target>/game/     Gruntz.REZ, GRUNTZ.VRZ, *.FNT, MSS32.DLL, SMACKW32.DLL
                        + GRUNTZ.retail.EXE (the control, from build/exe/);
-                       `gruntz link` installs the rebuilt GRUNTZ.EXE here
+                       `gruntz play` installs the rebuilt GRUNTZ.EXE here
+    <target>/play.sh   the generated gamescope runner: 640x480 integer-scaled
+                       (x3, pillarboxed, pixel-perfect) - the ONE launch
+                       definition, template in scripts/gruntz/graph/play.py;
+                       `gruntz play` = build + link + install + this
     <target>/cd/GAME/  the CD check's target: GetGruntzDriveLetter() wants a
                        DRIVE_CDROM drive holding <L>:\\GAME\\GRUNTZ.EXE
     <target>/prefix3/  a dedicated wine prefix, SEPARATE from the build prefix
@@ -21,7 +28,11 @@ Prefix doctrine, all MEASURED (2026-08-10, the hand-grown ~/gruntz-wine):
     path, so no audio driver can initialise; the game runs fine on default.
   * NO `Audio` driver pin and no cached device tree - a pin once froze a stale
     HDMI sink and killed sound; auto-probe follows the current default sink.
-  * a 1024x768 virtual desktop, so the game cannot switch the host video mode.
+  * a 640x480 virtual desktop, so the game cannot switch the host video mode.
+    It is the mode the game actually runs (no saved "Resolution" value ->
+    RES_640X480), which lets play.sh's gamescope use the same size as its
+    nested screen and scale it whole; raise it here AND in play.sh's -w/-h
+    together if a larger in-game mode is ever saved.
   * D: maps to <target>/cd as a cdrom drive + the Monolith registry key.
 
 Idempotent: existing files (saves, an already-populated game/) are never
@@ -38,12 +49,15 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO / "scripts"))
+from gruntz.graph.play import write_play_sh  # noqa: E402  (import-light module)
 
 #: the retail runtime set the resources folder MUST provide
 REQUIRED = ("Gruntz.REZ", "GRUNTZ.VRZ", "LARGE.FNT", "MEDIUM.FNT",
             "SMALL.FNT", "TINY.FNT", "MSS32.DLL", "SMACKW32.DLL")
 
-DEFAULT_TARGET = Path.home() / "gruntz-wine"
+#: where the flake's `.#play` shell and `gruntz play` expect the env
+DEFAULT_TARGET = REPO / "build" / "game-wine"
 
 
 def log(msg: str) -> None:
@@ -69,22 +83,28 @@ def _wine(prefix: Path, *args: str) -> None:
                    stderr=subprocess.DEVNULL)
 
 
-def setup(resources: Path, target: Path) -> None:
-    if not resources.is_dir():
-        die(f"resources folder missing: {resources}")
-    found = {name: find_ci(resources, name) for name in REQUIRED}
-    missing = sorted(name for name, p in found.items() if p is None)
-    if missing:
-        die("resources folder lacks the retail runtime set: "
-            + ", ".join(missing)
-            + f"\n(searched {resources}; copy them from a retail Gruntz install)")
-
+def setup(resources: Path | None, target: Path) -> None:
+    # idempotency is decided at the DESTINATION: only what game/ lacks is
+    # demanded of the resources folder, so a populated env (even one whose
+    # files are symlinks elsewhere) refreshes without the retail set.
     game = target / "game"
     game.mkdir(parents=True, exist_ok=True)
-    for _name, src in found.items():
-        dst = game / src.name
-        if not dst.exists():
-            shutil.copy2(src, dst)
+    needed = [name for name in REQUIRED if find_ci(game, name) is None]
+    if needed:
+        if resources is None:
+            die(f"{game} lacks {', '.join(needed)} and no resources folder "
+                "was given (copy them from a retail Gruntz install)")
+        if not resources.is_dir():
+            die(f"resources folder missing: {resources}")
+        found = {name: find_ci(resources, name) for name in needed}
+        missing = sorted(name for name, p in found.items() if p is None)
+        if missing:
+            die("resources folder lacks the retail runtime set: "
+                + ", ".join(missing)
+                + f"\n(searched {resources}; copy them from a retail Gruntz "
+                  "install)")
+        for src in found.values():
+            shutil.copy2(src, game / src.name)
             log(f"installed {src.name}")
 
     # the retail control beside the rebuilt EXE (gruntz link installs that one)
@@ -113,7 +133,7 @@ def setup(resources: Path, target: Path) -> None:
         _wine(prefix, "reg", "add", r"HKCU\Software\Wine\Explorer",
               "/v", "Desktop", "/d", "Default", "/f")
         _wine(prefix, "reg", "add", r"HKCU\Software\Wine\Explorer\Desktops",
-              "/v", "Default", "/d", "1024x768", "/f")
+              "/v", "Default", "/d", "640x480", "/f")
 
     dos_d = prefix / "dosdevices" / "d:"
     if not dos_d.is_symlink():
@@ -129,18 +149,24 @@ def setup(resources: Path, target: Path) -> None:
           "/v", "CdRom Drive", "/d", "D:\\", "/f")
     subprocess.run(["wineserver", "-w"], check=False,
                    env=dict(os.environ, WINEPREFIX=str(prefix)))
-    log(f"ready: {target} (run with WINEPREFIX={prefix})")
+
+    # the scaler: play.sh launches through gamescope with the proportional
+    # (integer, pixel-perfect) upscale of the 640x480 desktop above
+    write_play_sh(target, REPO)
+    log("installed play.sh (gamescope integer-scaling runner)")
+    log(f"ready: {target} (run {target / 'play.sh'}, or `gruntz play`)")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("resources", help="retail resources folder "
-                                      "(Gruntz.REZ, GRUNTZ.VRZ, fonts, DLLs)")
+    ap.add_argument("resources", nargs="?",
+                    help="retail resources folder (Gruntz.REZ, GRUNTZ.VRZ, "
+                         "fonts, DLLs); optional once game/ is populated")
     ap.add_argument("--target", default=str(DEFAULT_TARGET),
                     help=f"environment root (default {DEFAULT_TARGET})")
     a = ap.parse_args()
-    setup(Path(a.resources), Path(a.target))
+    setup(Path(a.resources) if a.resources else None, Path(a.target))
     return 0
 
 

@@ -11,6 +11,9 @@
     gruntz link                      the opt-in candidate link (EXE + .map)
     gruntz match                     build, then the compare summary for the
                                      units whose objs changed
+    gruntz play                      build + link, install the candidate into
+                                     the game env, run it under gamescope
+                                     (integer-scaled; --retail = the control)
     gruntz configure                 re-emit build/build.ninja
     gruntz sema <sub>                read-only investigation views (disasm,
                                      xref, rva, vtable, classof, strings, ...)
@@ -125,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             from gruntz.permute.match_variants import main as permute_main
         return permute_main(permute_args)
-    if cmd in ("build", "link", "match"):
+    if cmd in ("build", "link", "match", "play"):
         from gruntz.graph.verbs import VERBS
         return VERBS[cmd](rest)
     if cmd == "configure":
