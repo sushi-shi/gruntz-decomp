@@ -2141,7 +2141,7 @@ gruntentrancearrival	?UpdateGruntStatus@CGrunt@@QAEHXZ	100.0000	100.0000	20	9c30
 gruntentrancemove	?Apply@CWapX@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	1	42b4c6794352	0x6b2e0	100.0000	
 gruntentrancemove	?AtChecked@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	2	81d1400e0522	0x6b270	100.0000	
 gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	99.1475	99.1475	5	910835290c76	0x67bd0	100.0000	
-gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	89.2566	89.2566	7	5a28e1896c38	0x6a6d0	89.2642	
+gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	89.2554	89.2554	8	15c279926187	0x6a6d0	89.2642	
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	3	e69a8175178c	0x69fd0	100.0000	
 gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.7347	90.7143	1	b3bb2f011329	0x67b00	90.7347	
 gruntentrancemove	?LoadEntranceConfig@CGrunt@@QAEHXZ	89.0307	89.0307	4	84d95a937843	0x67f80	89.0307	

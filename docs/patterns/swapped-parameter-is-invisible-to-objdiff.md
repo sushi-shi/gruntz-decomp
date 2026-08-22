@@ -69,3 +69,44 @@ Separating a spill from a use needs real dataflow, not a linear scan.
 Wall for tooling, hand-fixable in source: the fix is a one-token source change
 and it raised SaveRle16 91.82 -> 91.90. Sibling writers `SaveBmp` and `SaveTga`
 open `path` correctly — only this one slipped.
+
+## Outgoing variant — read the pushed argument vector
+
+Measured 2026-08-22: `CGrunt::FinishActiveAction` (0x6a6d0) had the same
+runtime-defect signature on an outgoing call. Its knockback (`"O"`) cleanup
+snapped the Grunt to `m_lastTilePx`, then called:
+
+```cpp
+// WRONG: rewires the transposed map cell.
+m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
+```
+
+The multiset-style semantic diff reported no exclusive displacement, store,
+constant, or referent difference: both sides still read `+0x17c` and `+0x180`
+once and call the same function. The ordered argument vector was different.
+For the three stack arguments of the `__thiscall` callee, retail emits:
+
+```asm
+mov  edx,[esi+0x180]       ; y
+mov  eax,[esi+0x17c]       ; x
+push edx                   ; rightmost argument: y
+push eax                   ; x
+push esi                   ; grunt
+call WireTileSwitchLogic
+```
+
+The wrong source pushed `x`, then `y`, then the Grunt, making the callee see
+`(grunt, y, x)`. Correcting the call to `(this, m_lastTilePx.m_x,
+m_lastTilePx.m_y)` makes the rebuilt object push the same `(y, x, grunt)`
+sequence as retail. Fuzzy moved slightly down, 89.2566 -> 89.2554, despite the
+call protocol becoming correct.
+
+This arm finalizes an interrupted knockback after the old cell has already been
+released and the destination cell claimed. Rewiring `(y, x)` can therefore
+leave the Grunt's logical cell and map ownership out of agreement with its
+snapped screen position. The reverse-audit trigger is an in-game entity stuck
+after an interrupted action, sometimes with ownership/colour damage, while the
+responsible function has identical call, branch, displacement-multiset, and
+referent counts. At every coordinate-bearing call, reconstruct the ordered
+arguments from the final stack layout; do not accept a matching operand
+multiset as proof.

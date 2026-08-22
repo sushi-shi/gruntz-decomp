@@ -1125,7 +1125,7 @@ i32 CGrunt::FinishActiveAction() {
     eq = ANIMATION_ACT_EQUALS("O");
     if (eq) {
         SnapToLastTile(1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         return 1;
     }
     eq = ANIMATION_ACT_EQUALS("J");
