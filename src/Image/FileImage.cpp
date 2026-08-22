@@ -521,21 +521,17 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
         return 0;
     }
 
-    PALETTEENTRY* palette = 0;
-    if (convert) {
-        if (srcFmt == BPP_PALETTED_8) {
+    PALETTEENTRY* palette = NULL;
+    if (convert && srcFmt == BPP_PALETTED_8) {
 
-            RecordBytes<PcxHeader> sb;
-            sb.m_rec = src;
-            u8* p = sb.m_bytes + len - 0x300;
-            COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
-            palette = g_grayRamp;
-        } else if (curFmt == BPP_PALETTED_8) {
-            if (info->m_hasPalette != 0) {
-                palette = info->m_palette;
-            } else {
-                palette = NULL;
-            }
+        RecordBytes<PcxHeader> sb;
+        sb.m_rec = src;
+        u8* p = sb.m_bytes + len - 0x300;
+        COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
+        palette = g_grayRamp;
+    } else if (convert && curFmt == BPP_PALETTED_8) {
+        if (info->m_hasPalette != 0) {
+            palette = info->m_palette;
         } else {
             palette = NULL;
         }
