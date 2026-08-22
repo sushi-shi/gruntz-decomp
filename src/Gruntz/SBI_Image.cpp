@@ -104,11 +104,12 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
             ar->Read(name, SERIAL_NAME_LEN);
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
+                i32 frameIndex = idx;
                 CObject* r_ob = 0;
                 mgr->m_imageRegistry->m_workersByName.Lookup(name, r_ob);
                 CDDrawWorker* r = static_cast<CDDrawWorker*>(r_ob);
-                if (r && idx >= r->m_minIndex && idx <= r->m_maxIndex) {
-                    m_frame = static_cast<CImage*>(r->m_items.GetAt(idx));
+                if (r && frameIndex >= r->m_minIndex && frameIndex <= r->m_maxIndex) {
+                    m_frame = static_cast<CImage*>(r->m_items.GetAt(frameIndex));
                 } else {
                     m_frame = NULL;
                 }
