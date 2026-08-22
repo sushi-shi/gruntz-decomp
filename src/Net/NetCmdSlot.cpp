@@ -51,7 +51,6 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state) {
     if (owner == NULL) {
         return 0;
     }
-    m_owner = owner;
     m_state = state;
     m_isRemote = 0;
     m_latchedSeq = 0;
@@ -59,6 +58,7 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state) {
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;
+    m_owner = owner;
     ClearCmds();
 
     for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
