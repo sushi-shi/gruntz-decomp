@@ -650,7 +650,6 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     PickupType reason = m_entranceReason;
@@ -660,11 +659,11 @@ i32 CGrunt::TryPowerupAtTile() {
     CWwdGameObjectA* h = m_object;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
-    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
+    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 flags;
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
