@@ -13,11 +13,6 @@
 
 #include <string.h>
 
-// @early-stop
-// frame 0x8c vs retail's 0x88: three address-taken dwords (the `reg` spill, `out`,
-// and the idx/value temp) where retail has two. Merging `idx` into `v` (they live in
-// disjoint switch arms) is byte-neutral and does NOT shrink the frame, so the pair
-// retail shares is `out` with one of the others, not idx/v.
 RVA(0x000ea990, 0xa72)
 i32 CSBI_StatzTabGruntBar::SerializeFields(
     CFileMemBase* s,
@@ -34,12 +29,10 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
     }
 
     char buf[SERIAL_NAME_LEN];
-    CObject* out;
-    i32 idx;
-    i32 v;
 
     switch (mode) {
-        case SERIAL_SAVE:
+        case SERIAL_SAVE: {
+            i32 v;
 
 #define GS_SUBREC(field)                                                                           \
     g_serialCounter++;                                                                             \
@@ -84,8 +77,11 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             }
             s->Write(buf, SERIAL_NAME_LEN);
             break;
+        }
 
-        case SERIAL_LOAD:
+        case SERIAL_LOAD: {
+            CObject* out;
+            i32 idx;
 
 #define GS_IDXREF(field)                                                                           \
     g_serialCounter++;                                                                             \
@@ -133,6 +129,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
 #undef GS_IDXREF
 #undef GS_NAMEREF
             break;
+        }
     }
 
     return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
