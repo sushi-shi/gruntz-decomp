@@ -9,33 +9,6 @@
 // The grunt scan/step compilands share these force-inline devices; MSVC 5.0
 // macros are the faithful model of the always-inlined expansion.
 
-#define GRID_BOUNDS(grid)                                                                          \
-    {                                                                                              \
-        CRect ra(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        ra = rb;                                                                                   \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
-        }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
-    }
-
-#define RECYCLE_COORDS(head)                                                                       \
-    {                                                                                              \
-        CoordNode* n = (head);                                                                     \
-        while (n != NULL) {                                                                        \
-            CoordNode* next = n->m_next;                                                           \
-            Coord* pay = n->m_coord;                                                               \
-            if (pay != NULL) {                                                                     \
-                CoordPoolNode* slot = g_coordPool.NodeOf(pay);                                     \
-                slot->m_next = g_coordPool.m_freeHead;                                             \
-                g_coordPool.m_freeHead = slot;                                                     \
-            }                                                                                      \
-            n = next;                                                                              \
-        }                                                                                          \
-    }
-
 #define GRID_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
         CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
