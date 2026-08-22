@@ -533,7 +533,9 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (!cue) {
             return;
         }
-        if (!g_sndEnabled) {
+        i32 gate = g_sndEnabled;
+        i32 item = g_sndCueTag;
+        if (!gate) {
             return;
         }
         if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
@@ -541,7 +543,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         cue->m_lastPlayTime = g_killCueClock;
-        cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+        cue->m_sound->ConfigureItem(item, 0, 0, 0);
         return;
     }
 }
