@@ -15,6 +15,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -52,7 +53,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
     m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_RECT_BOUNDS(grid);
+    GRID_CLIP_NULL(grid);
 
     Coord c1;
     GetScreenPos(&c1);
@@ -105,12 +106,16 @@ i32 CGrunt::StepBrickLayerBehavior() {
         if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                DRAIN_COORDS();
+                if (CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS(this)
+                }
                 return 1;
             }
         } else {
             if (atTarget) {
-                DRAIN_COORDS();
+                if (CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS(this)
+                }
                 return 1;
             }
         }

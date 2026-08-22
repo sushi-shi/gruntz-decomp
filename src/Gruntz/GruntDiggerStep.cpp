@@ -45,7 +45,7 @@ i32 CGrunt::StepDiggerBehavior() {
         return 1;
     }
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_RECT_BOUNDS(grid);
+    GRID_CLIP_NULL(grid);
 
     Coord c1;
     GetScreenPos(&c1);

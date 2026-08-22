@@ -9,21 +9,6 @@
 // The grunt scan/step compilands share these force-inline devices; MSVC 5.0
 // macros are the faithful model of the always-inlined expansion.
 
-#define GRID_RECT_BOUNDS(grid)                                                                     \
-    {                                                                                              \
-        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        RECT ra;                                                                                   \
-        /* Retail copies the second ctor's returned CRect into a separate RECT. */                 \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        /* Retail keeps this address as the common base for the call, copy and size reads. */      \
-        RECT* clipBounds = &(grid)->m_bounds;                                                      \
-        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
-            *clipBounds = ra;                                                                      \
-        }                                                                                          \
-        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
-        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
-    }
-
 // CMapMgr::Clip(src) expanded in place -- the shape cl emits when it inlines the
 // 0x2b340 body with a non-constant src: the (0,0,w,h) rect is built by the
 // out-of-line CRect ctor, the src rect is copied and its right/bottom bumped,
@@ -183,18 +168,6 @@
         }                                                                                          \
         (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
-    }
-
-#define DRAIN_COORDS()                                                                             \
-    if (CoordCount() != 0) {                                                                       \
-        POSITION dpos = m_coordList.GetHeadPosition();                                             \
-        while (dpos != 0) {                                                                        \
-            Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));                           \
-            if (cur != 0) {                                                                        \
-                g_coordPool.Push(cur);                                                             \
-            }                                                                                      \
-        }                                                                                          \
-        m_coordList.RemoveAll();                                                                   \
     }
 
 #define PRIO(dst, r)                                                                               \
