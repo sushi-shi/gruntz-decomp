@@ -674,7 +674,6 @@ i32 CGrunt::TryPowerupAtTile() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
     DirectSoundMgr*& sample = m_struckSlotSound;
@@ -684,8 +683,9 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
+    CDDrawSurfaceMgr* world = g_gameReg->m_world;
     LeafCue* entry = NULL;
-    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, entry);
+    MapLookup(world->m_soundRegistry->m_cues, key, entry);
     if (entry == NULL) {
         return;
     }
