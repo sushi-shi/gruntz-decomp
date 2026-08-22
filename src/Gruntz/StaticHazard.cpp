@@ -37,6 +37,12 @@
 
 #include <stddef.h>
 
+static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* found = NULL;
+    MapLookup(map, name, found);
+    return found;
+}
+
 RVA_DYNINIT(0x000fbb50, 0xa, CActRegPool<CStaticHazard>::s_table)
 RVA_DYNINIT(0x000fbb70, 0x15, CActRegPool<CStaticHazard>::s_table)
 RVA_DYNINIT(0x000fbba0, 0xe, CActRegPool<CStaticHazard>::s_table)
@@ -144,8 +150,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
-    CAniElement* entry = NULL;
-    MapLookup(g_gameReg->m_world->m_animRegistry->m_animations, "LEVEL_STATICHAZARDGO", entry);
+    CAniElement* entry =
+        LookupAnimation(g_gameReg->m_world->m_animRegistry->m_animations, "LEVEL_STATICHAZARDGO");
     if (entry != NULL) {
         i32 total = entry->m_total;
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + total;
