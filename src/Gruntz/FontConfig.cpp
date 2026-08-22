@@ -307,54 +307,52 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 RVA_COMPGEN(0x000220f0, 0x46, ??1CPen@@UAE@XZ)
 
 // @early-stop
-// residue: cl parks the result in esi where retail keeps it in eax, plus the
-// DrawTextA argument-load schedule that follows from it.
+// Residue is the second DrawTextA setup: cl hoists the string load above the
+// RECT copy and then has EAX free for the `setle`, where retail loads the string
+// last and lands the format in ECX with a copy to EAX.
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
-    i32 ok;
     if (hdc == NULL) {
-        ok = 0;
-    } else {
-        CString text(m_inputText);
-        if (GetAsyncKeyState(0x11) & 0x8000) {
-            for (i32 i = 0; i < text.GetLength(); i++) {
-                text.SetAt(i, '*');
-            }
-        }
-        i32 t;
-        if (g_frameDelta >= static_cast<u32>(g_caretBlinkMs)) {
-            t = 0;
-        } else {
-            t = g_caretBlinkMs - g_frameDelta;
-        }
-        g_caretBlinkMs = t;
-        if (t == 0) {
-            g_caretBlinkMs = 0xc8;
-            g_caretBlinkOn ^= 1;
-        }
-        if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
-            MeasureLabel(hdc, rect);
-        } else {
-            HGDIOBJ prev = 0;
-            if (m_arialFont) {
-                prev = SelectObject(hdc, m_arialFont);
-            }
-            if (g_caretBlinkOn) {
-                MeasureLabel(hdc, rect);
-            }
-            int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
-            RECT rc = *rect;
-            pDraw(hdc, text, text.GetLength(), &rc, 0x420);
-            i32 fmt = ((rc.right - rc.left) > maxWidth) ? 0x22 : 0x20;
-            g_lastDrawTextFormat = fmt;
-            pDraw(hdc, text, text.GetLength(), rect, fmt);
-            if (prev) {
-                SelectObject(hdc, prev);
-            }
-        }
-        ok = 1;
+        return 0;
     }
-    return ok;
+    CString text(m_inputText);
+    if (GetAsyncKeyState(0x11) & 0x8000) {
+        for (i32 i = 0; i < text.GetLength(); i++) {
+            text.SetAt(i, '*');
+        }
+    }
+    i32 t;
+    if (g_frameDelta >= static_cast<u32>(g_caretBlinkMs)) {
+        t = 0;
+    } else {
+        t = g_caretBlinkMs - g_frameDelta;
+    }
+    g_caretBlinkMs = t;
+    if (t == 0) {
+        g_caretBlinkMs = 0xc8;
+        g_caretBlinkOn ^= 1;
+    }
+    if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
+        MeasureLabel(hdc, rect);
+        return 1;
+    }
+    HGDIOBJ prev = 0;
+    if (m_arialFont) {
+        prev = SelectObject(hdc, m_arialFont);
+    }
+    if (g_caretBlinkOn) {
+        MeasureLabel(hdc, rect);
+    }
+    int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
+    RECT rc = *rect;
+    pDraw(hdc, text, text.GetLength(), &rc, 0x420);
+    i32 fmt = ((rc.right - rc.left) > maxWidth) ? 0x22 : 0x20;
+    g_lastDrawTextFormat = fmt;
+    pDraw(hdc, text, text.GetLength(), rect, fmt);
+    if (prev) {
+        SelectObject(hdc, prev);
+    }
+    return 1;
 }
 
 typedef enum FontItemFlag {
