@@ -99,13 +99,9 @@ bigger than a plausible compiled-out statement, the body was not visible.
   the tagged inline sibling `CResolveNode(.., EInlineSeed)` defined in
   WwdFactoryObject.h (a header only the two Wwd TUs include), used by
   0x15b390's init list. two-shapes ctor recipe; byte-exact on both sides.
-* SURVIVORS (dev-source duplication is the faithful model; each carries the
-  refutation in its header comment): `AnimWorkerObjCtorInline.h` (the call and
-  the expansion sit inside ONE spelling of CGameObject::AttachToOwner, and the
-  slice-coupling row above closes every single-spelling escape),
-  `DDrawWorkerCacheFindInline.h` (keeper theorem + depth-3 no-emission; the
-  ASSERT inside both twins is what lets the point ctors decline at all),
-  `LogicTypeTableInline.h` (keeper theorem + first-definer + inverse-size).
+* SURVIVORS as of 2026-08-15 (the justifications below are SUPERSEDED - see the
+  2026-08-22 audit section): `AnimWorkerObjCtorInline.h`,
+  `DDrawWorkerCacheFindInline.h`, `LogicTypeTableInline.h`.
 
 ## NEGATIVE CONTROL 2026-08-21: LightFx must NOT opt into the Find inline
 
@@ -159,3 +155,79 @@ shape for it; it merely scores better while our ctor's `cb` differs from
 retail's. REMOVAL CONDITION: model `CLightFx::CLightFx` accurately enough that
 its own budget declines sites 2 and 3, and all three entities collapse to one
 visible body. Until then the device stays, labelled, with this measurement.
+
+## 2026-08-22 AUDIT: every *Inline.h device collapsed and measured
+
+The user's principle objection ("a header that makes one function inline-visible
+to SOME TUs and not others is not something a developer writes") was tested on
+all ten remaining devices by the same method: collapse to ONE entity - the body
+moved in-class or out-of-class-inline into the owning class header carrying its
+`RVA(...)` pin, the separate out-of-line definition deleted, every include of
+the opt-in header removed, the header deleted - then a full `gruntz build`, and
+read (a) does the pinned RVA still get an emitter and which unit emits it, and
+(b) which functions moved.
+
+**Three devices were not devices at all and are GONE.** Where the helper had NO
+out-of-line twin, the opt-in header was only narrowing visibility for no
+structural reason:
+
+| collapsed | model | measured |
+|---|---|---|
+| `DDrawSubWorkerDirtyRectInline.h` | body to the bottom of DDrawSurfacePair.h | CPlay::StepScroll 88.03 -> 100.00 EXACT, HandleDragMove 93.58 -> 97.41, CDDrawWorker::GetMemoryUsage -> 100.00 |
+| `GruntArrivalRerollInline.h` | three CGrunt members in Grunt.h | +23.18 total, exact unchanged |
+| `AmbientSoundInline.h` | CAmbientSound::ScaleVolume in AmbientSound.h | byte-neutral (0 changed rows) |
+
+Two of the three IMPROVED the score, which is the direct refutation: the device
+was costing match, not buying it.
+
+**The "an in-class body leaves the RVA with NO emitter" premise is FALSE in
+three of the seven survivors.** Collapsed, `Find` was still homed (by
+guardpoint, then droppedobject) at 100.00 EXACT, `LeafCue::PlayIfElapsed`
+rehomed bootystateactivate -> sbi_rectonly at 100.00 EXACT, and
+`CUserLogic::BuildLogicTypeTable` was homed by actionarea - at 65.58 alone, and
+at **100.00 EXACT** when the Find device is collapsed at the same time. The
+keeper theorem holds only where no TU declines at all; that is an empirical
+per-case fact, not a rule, and it must be re-measured rather than cited.
+
+**What the surviving devices actually buy is hiding the body from the TUs retail
+CALLS it from**, whose ctors/callers expand it once they can see it. That is a
+caller-side modelling error, so every survivor now carries its measurement and a
+REMOVAL CONDITION in its own header:
+
+| kept | pinned RVA under collapse | the cost |
+|---|---|---|
+| `AnimWorkerObjCtorInline.h` | 0x15b300 loses every emitter (unique-names FATAL) | the three wwdobjmgr creators expand it: 100.00 -> 86.14 / 84.92 / 83.04 plus ten unwind funclets |
+| `LogicTypeTableInline.h` | homed by actionarea | ~11 point-logic ctors expand it: CBehindCandy 99.83 -> 66.44, CTileTriggerTransition 100.00 -> 44.76 (-676) |
+| `LeafCueInline.h` | rehomed, 100.00 EXACT | ~15 callers expand it: CRezImage::FillRectAt 100.00 -> 66.44, CSBI_MenuItem::Render -> 74.04 (-221, -12 exact) |
+| `AniElementInline.h` | 0x6b270 loses every emitter | CAniAdvanceCursor::Advance 92.75 -> 77.28 (-118, -2 exact) |
+| `GruntMovementInline.h` | 0x29a80 and 0x343f0 both lose every emitter | -122 and -111; all 86 Grunt.h TUs expand, none declines |
+| `FreeNodePoolInline.h` | 0x311b0 loses every emitter | ~20 grunt/battlez steps drop 1-10 points (-175) |
+| `AniAdvanceCursorInline.h` | no retail entity exists | -31.55, -3 exact of pure /O2 ripple; blocked by the LEDGER, not the bytes (see below) |
+
+**COUPLING.** `LogicTypeTableInline.h` and `DDrawWorkerCacheFindInline.h` hide
+the same body from the same TUs at two depths. Collapsed together, both pinned
+RVAs land at 100.00 EXACT in earlier units, but ??0CLightFx goes 94.87 -> 0.00
+and the point-logic ctors drop further (-815 total). Neither can be adjudicated
+without the other.
+
+**A LEDGER effect that constrains this whole class of cleanup.** Collapsing a
+device rewrites its call sites, which changes those functions' per-function
+source hashes, so `best` RESETS to the current value. If a sibling is currently
+dipped on unrelated ripple, the rewrite BANKS the dip. That is what blocks
+`AniAdvanceCursorInline.h`: CTeleporter::Update is banked at 100.00 but sits at
+98.91 on ripple from other lanes, and the collapse would reset it. Do a
+call-site-rewriting collapse in a build where the touched TUs read their banked
+current values.
+
+**Mid-file includes are NOT part of the device.** Twenty-two `#include
+<...Inline.h>` directives sat below code in fifteen TUs, gating visibility by
+line number as well as by TU. Hoisting all of them into the canonical include
+block moved exactly one function by +0.005 - the placement was lazy, not
+load-bearing.
+
+**`FreeNodePoolInline.h` is a different animal and should not be read as a
+visibility device.** Retail's Push split is per SITE: BattlezUnitStep.cpp calls
+0x311b0 through `RECYCLE_GRUNT_COORDS_IF_ANY` and expands it through
+`RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY` a few lines apart. A visibility header
+cannot express per-site at all; two spellings can, so two entities are what the
+evidence supports.
