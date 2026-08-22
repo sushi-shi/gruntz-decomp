@@ -4,13 +4,13 @@
 
 #include <new>
 
-// @early-stop
-// The PMF construction walk is complete. VC5 retains its dead cursor initializer
-// like retail, but colors it eax instead of edx and schedules the return move last.
+// The PMF element type is trivially constructible, so the walk is dead code that
+// VC5 keeps only as the homed `first` initializer.
 template<> RVA(0x00008710, 0x2b)
 zDArray<CActHandler>::zDArray(i32 lo, i32 hi)
     : _zdvec(sizeof(CActHandler), lo, hi, ZVecNoScratch()) {
-    for (CActHandler* cursor = AsElem(m_alloc); cursor < AsElem(m_alloc) + m_grown; ++cursor) {
+    CActHandler* first = AsElem(m_alloc);
+    for (CActHandler* cursor = first; cursor < first + m_grown; ++cursor) {
         new (cursor) CActHandler;
     }
 }
