@@ -566,7 +566,7 @@ battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAVCGruntzMgr@@HH@Z	95.2833	
 battlezmapconfig	?NextData@CGruntCoordList@@QAEAAPAXAAPAU__POSITION@@@Z	100.0000	100.0000	1	3b4f32e22475	0x29a30	100.0000	
 battlezmapconfig	?PathCrossesMarkedTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	1	708dcee4efef	0x30530	100.0000	
 battlezmapconfig	?PathToNearbyUnit@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	1	7130831ad2be	0x2ed90	100.0000	
-battlezmapconfig	?PathToNearestCandidate@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	83.4358	83.4358	2	667f3a5c99b0	0x2edb0	83.4358	
+battlezmapconfig	?PathToNearestCandidate@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	85.5154	85.5154	3	0be637814157	0x2edb0	85.5154	
 battlezmapconfig	?PathToNearestGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z	87.8199	87.8199	2	0efb2845638f	0x30b20	87.8199	
 battlezmapconfig	?PickRandomIdleUnit@CBattlezMapConfig@@QAEPAVCGrunt@@H@Z	100.0000	100.0000	2	b20bfe5d4f36	0x2ad40	100.0000	
 battlezmapconfig	?PickSpawnCoord@CBattlezMapConfig@@QAEPAUCoord@@PAU2@PAVCGrunt@@H@Z	97.9048	97.9048	3	a42ae5eba70a	0x30f20	97.9048	
@@ -597,7 +597,7 @@ battlezspawncheck	?CheckQueuedSpawnTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	78.
 battlezspecialanim	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.2548	94.2548	1	2119c2bdadce	0x34460	94.2548	
 battlezspecialanim	?RecycleCoords@CGrunt@@QAEXXZ	100.0000	100.0000	2	2d5258c871b7	0x343f0	100.0000	
 battlezspecialanim	?Report@zErrHandling@@QAEXPADH@Z	100.0000	100.0000	2	f8f0fb8e94d8	0x34960	100.0000	
-battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	82.6080	82.6080	6	ace8c58039c6	0x32060	82.6080	
+battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	83.0432	83.0432	7	34cd63e2d0b0	0x32060	83.0432	
 battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	85.7000	85.7000	1	f89bca6b4e27	0x31c70	85.7000	
 battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	87.2296	87.2296	4	a2a74b9e1e7f	0x31610	87.2296	
 battlezunitstep	?TrackAssignedEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	93.4529	93.4529	7	f51e6a268270	0x31ca0	93.4529	
@@ -4416,7 +4416,7 @@ typekeycoll	?Find@zPTree@@QAEPAXPBD@Z	90.6038	90.6038	1	07b324f6e866	0x16d190	90
 typekeycoll	?FirstDiffBit@@YAHPBD0@Z	100.0000	100.0000	1	4a157b5880de	0x16e480	100.0000	
 typekeycoll	?GetCallerRetAddr@@YAPAXXZ	100.0000	100.0000	1	9f81347cf374	0x16e0f0	100.0000	
 typekeycoll	?GetRetAddr@@YAPAXXZ	100.0000	100.0000	1	535250c8cddd	0x16d990	100.0000	
-typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	82.6372	82.6372	2	695d64539c2b	0x16da80	82.6372	
+typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	91.8584	91.8584	3	86eeaa06f1fb	0x16da80	91.8584	
 typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	89.9948	89.9948	1	7121e3cd4271	0x16db90	89.9948	
 typekeycoll	?LogicAttackFactory@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	971328b83139	0x16e4d0	100.0000	
 typekeycoll	?LogicBumpFactory@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	868cea7a478c	0x16e4e0	100.0000	
