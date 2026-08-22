@@ -27,6 +27,24 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
+static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
+    CObject* found = NULL;
+    host->m_imageRegistry->m_workersByName.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
+static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    LeafCue* found = NULL;
+    MapLookup(cues, name, found);
+    return found;
+}
+
 // @early-stop
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
@@ -69,16 +87,13 @@ i32 CSBI_MenuItem::Refresh(i32) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (key == NULL) {
         return 0;
     }
 
-    CObject* rec_v = 0;
-    m_host->m_imageRegistry->m_workersByName.Lookup(key, rec_v);
-    CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
+    CDDrawWorker* rec = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
     m_record = rec;
     if (rec == NULL) {
         return 0;
@@ -127,8 +142,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
 
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_emitGate == 0) {
-            LeafCue* found = NULL;
-            MapLookup(mh->m_cues, "GAME_TABHIGHLIGHT2", found);
+            LeafCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;
@@ -190,9 +204,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
             g_serialCounter++;
             ar->Read(tmp, SERIAL_NAME_LEN);
             if (strlen(tmp) != 0) {
-                CObject* found_ob = 0;
-                mgr->m_imageRegistry->m_workersByName.Lookup(tmp, found_ob);
-                m_record = static_cast<CDDrawWorker*>(found_ob);
+                m_record = LookupWorker(mgr, tmp);
             } else {
                 m_record = NULL;
             }
