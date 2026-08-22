@@ -719,6 +719,14 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
     return 1;
 }
 
+static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
+    i32 range = hi - lo + 1;
+    if (range == 0) {
+        return (mgr->Rand() & 1) ? lo : hi;
+    }
+    return mgr->Rand() % range + lo;
+}
+
 // @early-stop
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
@@ -761,15 +769,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
 
     m_phase ^= 1;
     if (m_phase != 0) {
-        i32 lo = m_playDurationMin;
-        i32 hi = m_playDurationMax;
-        i32 span = hi - lo + 1;
-        i32 r;
-        if (span == 0) {
-            r = (g_gameReg->Rand() & 1) ? lo : hi;
-        } else {
-            r = g_gameReg->Rand() % span + lo;
-        }
+        i32 r = RandRange(g_gameReg, m_playDurationMin, m_playDurationMax);
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1;
         if (half > 0x3e8) {
@@ -777,15 +777,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         }
         Fade(1, 0x64, half);
     } else {
-        i32 lo = m_silenceDurationMin;
-        i32 hi = m_silenceDurationMax;
-        i32 span = hi - lo + 1;
-        i32 r;
-        if (span == 0) {
-            r = (g_gameReg->Rand() & 1) ? lo : hi;
-        } else {
-            r = g_gameReg->Rand() % span + lo;
-        }
+        i32 r = RandRange(g_gameReg, m_silenceDurationMin, m_silenceDurationMax);
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1;
         if (half > 0x3e8) {
