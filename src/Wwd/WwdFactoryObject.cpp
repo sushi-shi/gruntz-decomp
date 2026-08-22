@@ -196,11 +196,14 @@ RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 // of the ~CGameObject sub-object site's /Ob1 budget, cascading the whole tail
 // (docs/patterns/dowhile-macro-c1-mass-prices-out-the-inline-site.md).
 // Residue: one nested step short - retail also expands ~CResolveNode's body and
-// CALLS ??1CWapObj; our budget still declines ~CResolveNode (calls it) after
-// paying for the Unload expansion. Writing m_dirty.Reset()'s stores directly in
-// ~CResolveNode does not flip it and dents ~CWwdGameObjectF (99.71), so the
-// member-call spelling stands; ~WwdDirtyRect's user-declared empty dtor is
-// retail-real (0x15b290) and cannot be shaved.
+// CALLS ??1CWapObj; ours does the exact inverse. NOT the budget deficit this
+// note used to assume: `walls inline-model --measure-cb ... --sites 2` reports
+// both sites rejected and ~CResolveNode NOT AN INLINE CANDIDATE at all, so the
+// open question is candidacy (what makes cl consider a base sub-object dtor
+// here), not how much budget the Unload expansion leaves. Writing
+// m_dirty.Reset()'s stores directly in ~CResolveNode does not flip it and dents
+// ~CWwdGameObjectF (99.71), so the member-call spelling stands;
+// ~WwdDirtyRect's user-declared empty dtor is retail-real (0x15b290).
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();
