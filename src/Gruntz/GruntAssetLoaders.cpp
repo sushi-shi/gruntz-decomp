@@ -78,6 +78,12 @@ static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
         }                                                                                          \
     } while (0)
 
+static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* found = NULL;
+    MapLookup(map, name, found);
+    return found;
+}
+
 // @early-stop
 RVA(0x00060150, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
@@ -254,13 +260,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
-                CAniElement* out = NULL;
-                MapLookup(
+                m_poseDeath = LookupAnim(
                     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                    s_DEATHZ_FALL2,
-                    out
+                    s_DEATHZ_FALL2
                 );
-                m_poseDeath = out;
             }
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
@@ -271,13 +274,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         }
 
         case DEATH_ELECTROCUTE: {
-            CAniElement* out = NULL;
-            MapLookup(
+            m_poseDeath = LookupAnim(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_DEATHZ_ELECTROCUTE,
-                out
+                s_DEATHZ_ELECTROCUTE
             );
-            m_poseDeath = out;
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
@@ -286,13 +286,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
         case DEATH_MELT: {
             SnapToLastTile(1);
-            CAniElement* out = NULL;
-            MapLookup(
+            m_poseDeath = LookupAnim(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                "GRUNTZ_DEATHZ_MELT",
-                out
+                "GRUNTZ_DEATHZ_MELT"
             );
-            m_poseDeath = out;
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
             DEATH_CUE(0x359);
@@ -300,9 +297,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         }
 
         case DEATH_KAROKE: {
-            CAniElement* out = NULL;
-            MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_KAROKE, out);
-            m_poseDeath = out;
+            m_poseDeath =
+                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_KAROKE);
             SwitchGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
@@ -314,9 +310,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 SwitchAnimation(m_poseDeath);
                 goto pathA;
             }
-            CAniElement* out = NULL;
-            MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_EXPLODE, out);
-            m_poseDeath = out;
+            m_poseDeath =
+                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_EXPLODE);
             SwitchAnimation(m_poseDeath);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -324,9 +319,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         }
 
         case DEATH_DRAIN: {
-            CAniElement* out = NULL;
-            MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_EXITZ_DRAIN, out);
-            m_poseDeath = out;
+            m_poseDeath =
+                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_EXITZ_DRAIN);
             SwitchAnimation(m_poseDeath);
             m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_actKey;
