@@ -166,9 +166,9 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 }
 
 // @early-stop
-// Frame is 4 bytes bigger than retail's - the LOAD arm needs two address-taken
-// locals (out, idx) where retail's needs one. Block-scoping `out` does not
-// overlay them and costs another 84 diff lines.
+// Retail overlays the cached g_gameReg->m_world onto the LOAD arm's index slot,
+// which a named function-scope local cannot express; the whole residue is that
+// one dword of frame.
 RVA(0x000e8e00, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(
     CFileMemBase* s,
