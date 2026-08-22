@@ -263,22 +263,30 @@ i32 CKitchenSlime::LoadSprites() {
         CGameObject* lvl = Level();
         i32 sw = lvl->m_smarts;
         switch (static_cast<CardinalDir>(sw)) {
-            case CARDINAL_NORTH:
-                tile.m_x = m_tilePosition.m_x;
-                tile.m_y = m_tilePosition.m_y - 0x20;
+            case CARDINAL_NORTH: {
+                Coord step = m_tilePosition;
+                step.m_y -= 0x20;
+                tile = step;
                 break;
-            case CARDINAL_EAST:
-                tile.m_x = m_tilePosition.m_x + 0x20;
-                tile.m_y = m_tilePosition.m_y;
+            }
+            case CARDINAL_EAST: {
+                Coord step = m_tilePosition;
+                step.m_x += 0x20;
+                tile = step;
                 break;
-            case CARDINAL_SOUTH:
-                tile.m_x = m_tilePosition.m_x;
-                tile.m_y = m_tilePosition.m_y + 0x20;
+            }
+            case CARDINAL_SOUTH: {
+                Coord step = m_tilePosition;
+                step.m_y += 0x20;
+                tile = step;
                 break;
-            case CARDINAL_WEST:
-                tile.m_x = m_tilePosition.m_x - 0x20;
-                tile.m_y = m_tilePosition.m_y;
+            }
+            case CARDINAL_WEST: {
+                Coord step = m_tilePosition;
+                step.m_x -= 0x20;
+                tile = step;
                 break;
+            }
         }
 
         i32 gx = tile.m_x >> TILE_SHIFT_PX;
