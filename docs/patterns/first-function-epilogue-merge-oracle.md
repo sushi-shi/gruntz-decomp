@@ -131,10 +131,21 @@ ours merges them even when ChargeStep is the obj's FIRST emission with the
 `$E`s tailed. The probe stays COLD under every axis tried: the real MFC
 prelude (Mfc/MfcNoInline/MfcWin), /GR, 50/200/800 parsed-but-unused inline
 bodies, statics/templates in any position. Identical cflags
-(`/O2 /MT /GX`). So the warm input is something the real TUs feed C2 that
-none of these probes reproduce - candidates not yet separable: the sheer
-header-graph C1 handle state, or a retail-side flag/pragma difference on
-the step-band compilands. The step-band rows' skeleton deltas (ChargeStep
+(`/O2 /MT /GX`). RESOLVED (round 5): the missing warm input is INLINE EXPANSION INSIDE
+THE FUNCTION ITSELF - a first-in-TU probe with one tiny `inline` callee
+expanded in its first guard emits the MERGED shape (2 rets), and the
+preprocessed real TU minimizes to `GruntDirStatics.h` alone as the
+preceding-warmth carrier while headers-without-it stay cold. The full
+model: C2's cross-jump activates at the first function-like IL processed -
+a preceding body, a `$E` at its source position, OR the function's own
+first inline expansion. ChargeStep warms itself via `m_coordList.GetCount()`
+(MFC inline; no MfcNoInline in this TU). Since retail's call set is EQUAL
+yet retail keeps ten cold epilogues, the era compile reached those returns
+BEFORE its first expansion - i.e. the activation is POSITIONAL within the
+function, and the two sides' merge degree differs by WHERE the first
+expansion sits in IL order. Next experiment: probe with the inline
+expansion between return k and k+1 and confirm returns before it stay
+unmerged; then steer the step band by the accessor placement. The step-band rows' skeleton deltas (ChargeStep
 10v11, WanderStep 11v12, ScanNearestTarget 11v12, RunEntranceMove 5v6) are
 all THIS one input; mapping it would close the band's CFG residue in one
 move.
