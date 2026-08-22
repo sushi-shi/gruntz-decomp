@@ -31,6 +31,18 @@
 #include <stdio.h>
 #include <string.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
+static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
+    CObject* found = NULL;
+    host->m_imageRegistry->m_workersByName.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)
     : CWapObj(mapData, field04, flags, CWapObj::NO_SEED) {
@@ -76,10 +88,7 @@ i32 CDDrawWorkerHost::Read(
         nameBuf[len] = 0;
         if (len > 0) {
 
-            CObject* val;
-            val = NULL;
-            OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(nameBuf, val);
-            m_frameSets.SetAtGrow(static_cast<char>(n), val);
+            m_frameSets.SetAtGrow(static_cast<char>(n), LookupWorker(OwnerMgr(), nameBuf));
         }
     }
 
@@ -266,12 +275,6 @@ void CDDrawWorkerHost::Unload() {
         delete[] m_colOffsets;
         m_colOffsets = NULL;
     }
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
 }
 
 // @dead-code
