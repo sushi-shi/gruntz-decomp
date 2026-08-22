@@ -337,7 +337,8 @@ i32 CCreditsState::DrawScrollingCredits() {
         }
     }
 
-    m_scrollAccum += static_cast<double>(g_frameDelta) * m_scrollStep * kMsToSeconds;
+    double step = static_cast<double>(g_frameDelta) * m_scrollStep;
+    m_scrollAccum += step * kMsToSeconds;
     m_drawRect = m_scrollRect;
     i32 scrolled = static_cast<i32>(m_scrollAccum);
     m_drawRect.top -= scrolled;
