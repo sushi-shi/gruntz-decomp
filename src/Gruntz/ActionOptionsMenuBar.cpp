@@ -20,6 +20,12 @@
 
 #include <string.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x00009090, 0x32)
 CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_frame = NULL;
@@ -32,17 +38,13 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_loaded = 0;
 }
 
-// @early-stop
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
-    CObject* spr_ob = 0;
-
     m_active = 0;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_ACTIONOPTIONZMENUBAR",
-        spr_ob
+    CDDrawWorker* spr = LookupWorker(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName,
+        "GAME_ACTIONOPTIONZMENUBAR"
     );
-    CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     m_frame = (spr && spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
                   ? static_cast<CImage*>(spr->m_items.GetAt(1))
                   : 0;
@@ -50,34 +52,28 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr_ob = NULL;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_INGAMEICONZ_NORMCHIPZ",
-        spr_ob
+    spr = LookupWorker(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName,
+        "GAME_INGAMEICONZ_NORMCHIPZ"
     );
-    spr = static_cast<CDDrawWorker*>(spr_ob);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr_ob = NULL;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_INGAMEICONZ_HIGHCHIPZ",
-        spr_ob
+    spr = LookupWorker(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName,
+        "GAME_INGAMEICONZ_HIGHCHIPZ"
     );
-    spr = static_cast<CDDrawWorker*>(spr_ob);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr_ob = NULL;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_INGAMEICONZ_GREYCHIPZ",
-        spr_ob
+    spr = LookupWorker(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName,
+        "GAME_INGAMEICONZ_GREYCHIPZ"
     );
-    spr = static_cast<CDDrawWorker*>(spr_ob);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
