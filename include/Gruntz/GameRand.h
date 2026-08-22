@@ -14,9 +14,11 @@
 //         return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 //     }
 // Kept in that exact form. NOT `static __inline`: a non-static inline's local
-// static gets external linkage, so every TU shares ONE copy - which is why
-// retail has exactly one dynamic-init guard byte at 0x2c127d immediately
-// followed by one seed at 0x2c1288, rather than a pair per TU.
+// static is a same-named COMMON in every TU and the era linker FOLDS them -
+// probe-proven with the era link map - so 12 game TUs share the one guard
+// 0x2c127d / seed 0x2c1288 pair. The wwd and fader modules carry their own
+// diverged revisions (three distinct mangled names are the only way retail
+// gets three copies): docs/patterns/header-inline-local-static-three-copies.md.
 __inline i32 GetRandomNumber() {
     static long holdrand = timeGetTime();
     return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);

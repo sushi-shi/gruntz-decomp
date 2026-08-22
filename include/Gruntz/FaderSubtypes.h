@@ -50,9 +50,13 @@ public:
 
 class CFaderSine : public CFader {
 public:
-    // Monolith's GetRandomNumber, in-class (implicitly inline, no keyword) so the
-    // local static is emitted COMMON with this class in its mangled name - which
-    // is what gives this module its own guard/seed pair. See <Gruntz/GameRand.h>.
+    // The fader module's own revision of Monolith's GetRandomNumber. In-class so
+    // the static's mangled name differs from the game header's - three distinct
+    // names are the only mechanism for retail's three guard/seed pairs (same-name
+    // COMMONs fold, `static __inline` layout disproven):
+    // docs/patterns/header-inline-local-static-three-copies.md. This module's
+    // GetRandom below builds on it where the game's builds on rand() - the
+    // diverged-revision proof.
     i32 GetRandomNumber() {
         static long holdrand = timeGetTime();
         return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
