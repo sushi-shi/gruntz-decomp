@@ -216,3 +216,13 @@ site through the same typed-return inline helper the sibling TU already used
 (`static inline CDDrawWorker* LookupWorker(CMapStringToOb&, LPCTSTR)`) makes
 the reset the helper's first statement and both go byte-exact. Detection is
 unchanged: our zero store before the last push, retail's after it.
+
+A third site of the same shape, this time with SIX lookups in one body:
+`CTimer::Deserialize` 0x0009c650 (streamrecordloaders) held one function-scope
+`CObject* out;` and reset it at each site before the pushes, sitting at 93.97.
+Replacing all six with the typed-return
+`static inline CDDrawWorker* LookupWorker(CMapStringToOb&, LPCTSTR)` and
+deleting the shared out-param made every reset land between the two pushes as
+retail has it: **100.0000 EXACT**, and the whole unit went to 100%. The
+shared function-scope out-param is itself the detection signal - one `out`
+serving several lookups can only be reset in the caller.

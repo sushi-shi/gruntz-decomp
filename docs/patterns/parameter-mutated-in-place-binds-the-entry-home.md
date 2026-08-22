@@ -52,3 +52,18 @@ load-order coin in the per-iteration bound recompute (which of the two
 memory operands of the imul loads first). Detection is the same either way:
 base `lea r2,[r1+K]` keeping r1 alive against retail `mov r2,r1` + in-place
 `add/inc r1`.
+
+The SNAPSHOT direction is the same tuple question read backwards. When a
+function walks a buffer and returns the number of bytes consumed, retail
+copies the incoming pointer out once and then advances the PARAMETER
+(`mov esi,eax; inc eax; mov dl,[eax]`), where a derived-cursor spelling
+(`char* buf = data + 1; char* start = buf - 1;`) makes cl advance the derived
+local and recover the origin afterwards with a trailing `lea esi,[eax-0x1]`.
+The origin snapshot must therefore read the parameter directly, and the cursor
+must be the parameter: `char* start = data; ++data; ... = *data++; return data
+- start;`. `CGruntzSingleCommand::Parse` 0x23f90 and `CGruntzMultiCommand::Parse`
+0x24000 (gruntzcmdmgr) are both EXACT with that spelling (93.55 / 93.88 before);
+initialising `start` from the cursor instead (`start = data; buf = data + 1`, or
+`buf = data; start = buf; ++buf`) drops both to 86.45 / 83.20, because the
+parameter then dies at the first derived definition and the allocator loads it
+into the callee-saved register directly.
