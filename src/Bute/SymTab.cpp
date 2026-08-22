@@ -675,32 +675,28 @@ i32 CSymTab::AddNodeSubEntry(CSymRec* rec, CParseSource* src) {
 RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     i32 ok = 1;
-    if (static_cast<u32>(dataSize) > 0) {
-        CHashElement* e = m_subTabs.First();
+    if (static_cast<u32>(dataSize) <= 0) {
+        return ok;
+    }
+    CHashElement* e = m_subTabs.First();
+    while (e) {
+        e->m_symTab->m_dataOff = 0;
+        e = e->Next();
+    }
+    if (ApplyRange(stream, dataOff, dataSize, mergeDuplicates) != 0) {
+        e = m_subTabs.First();
         while (e) {
-            e->m_symTab->m_dataOff = 0;
+            CSymTab* sub = e->m_symTab;
+            if (sub->m_dataOff != 0) {
+                if (sub->ApplyRecursive(stream, sub->m_dataOff, sub->m_dataSize, mergeDuplicates)
+                    == 0) {
+                    ok = 0;
+                }
+            }
             e = e->Next();
         }
-        if (ApplyRange(stream, dataOff, dataSize, mergeDuplicates) != 0) {
-            e = m_subTabs.First();
-            while (e) {
-                CSymTab* sub = e->m_symTab;
-                if (sub->m_dataOff != 0) {
-                    if (sub->ApplyRecursive(
-                            stream,
-                            sub->m_dataOff,
-                            sub->m_dataSize,
-                            mergeDuplicates
-                        )
-                        == 0) {
-                        ok = 0;
-                    }
-                }
-                e = e->Next();
-            }
-        } else {
-            ok = 0;
-        }
+    } else {
+        ok = 0;
     }
     return ok;
 }
