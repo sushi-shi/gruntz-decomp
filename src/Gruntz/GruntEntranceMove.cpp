@@ -767,7 +767,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (eq) {
         DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, px, py)
         i32 redo = 1;
-        if (PIXEL_PAIR_NOT_AT_SELF_SAVED_SCREEN_POS(px, py)) {
+        if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)) {
             if (IsDropReady(1)) {
                 m_coordToggle = (m_coordToggle == 0);
                 redo = 0;
@@ -1155,7 +1155,8 @@ i32 CGrunt::FinishActiveAction() {
     if (eq) {
         DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, px, py)
         i32 redo = 1;
-        if (PIXEL_PAIR_NOT_AT_SELF_SAVED_SCREEN_POS(px, py) && IsDropReady(1)) {
+        if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)
+            && IsDropReady(1)) {
             m_coordToggle = (m_coordToggle == 0);
             redo = 0;
         }

@@ -798,7 +798,7 @@ latch:
 // @early-stop
 RVA(0x000633e0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
-    if (m_entranceActive != 0 && GRUNT_SELF_AT_SAVED_SCREEN_POS) {
+    if (m_entranceActive != 0 && GRUNT_AT_SAVED_SCREEN_POS(this)) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -1026,7 +1026,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed = static_cast<i64>(g_frameTime) - m_toyClock;
     if (elapsed >= m_toyDuration) {
-        if (m_entranceStamped == 0 && GRUNT_SELF_AT_SAVED_SCREEN_POS) {
+        if (m_entranceStamped == 0 && GRUNT_AT_SAVED_SCREEN_POS(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
@@ -1290,7 +1290,7 @@ i32 CGrunt::StepCombatReaction(
                     CWwdGameObjectA* h = m_object;
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, hx, hy)
                     i32 flag = 1;
-                    if (PIXEL_PAIR_NOT_AT_SELF_SAVED_SCREEN_POS(hx, hy)) {
+                    if (PIXEL_PAIR_NOT_AT_POSITION(hx, hy, m_lastTilePx.m_x, m_lastTilePx.m_y)) {
                         if (IsDropReady(1)) {
                             m_coordToggle = (m_coordToggle == 0) ? 1 : 0;
                             flag = 0;
@@ -1322,7 +1322,7 @@ i32 CGrunt::StepCombatReaction(
 tail:
     CreateHealthSprite();
     ArmGruntCombatTimeout(this);
-    if (GRUNT_SELF_NOT_AT_SAVED_SCREEN_POS) {
+    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(this)) {
         ConsiderArrival(1);
     }
     if (LoadGruntCombatAnimations(

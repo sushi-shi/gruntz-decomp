@@ -2831,7 +2831,7 @@ void CGrunt::FinalizeStep(char* name) {
     // Retail 0x5ee48 sends the already-at-tile case to 0x5efc1 - the ScratchResolve
     // block below - not to a `ret`, so the guard is part of the arm's condition and
     // the arm is SKIPPED (falls into the "S" handling), it does not return.
-    if (eqO && (GRUNT_SELF_NOT_AT_SAVED_SCREEN_POS)) {
+    if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = c.row;
         switch (row) {
@@ -2888,7 +2888,7 @@ void CGrunt::FinalizeStep(char* name) {
     ActNameConstructGrownSlots();
     bool eqPos = (strcmp(*rec, "S") == 0);
     if (eqPos) {
-        if (GRUNT_SELF_AT_SAVED_SCREEN_POS) {
+        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
         double d48 = EntranceCell()->m_motion.m_direction.x;
@@ -2983,7 +2983,7 @@ void CGrunt::AdvanceMotion() {
             }
         }
     }
-    if (GRUNT_SELF_AT_SAVED_SCREEN_POS) {
+    if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
         if (m_arrivalPending != 0) {
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_arrivalPending = 0;
