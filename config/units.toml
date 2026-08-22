@@ -996,6 +996,11 @@ source = "src/DDrawMgr/DDrawSubMgr.cpp"
 flags = "cpp"
 
 [[unit]]
+unit = "ddrawsubmgrpages"
+source = "src/DDrawMgr/DDrawSubMgrPages.cpp"
+flags = "cpp"
+
+[[unit]]
 unit = "wwdobjmgr"
 source = "src/Wwd/WwdObjMgr.cpp"
 flags = "cpp"
