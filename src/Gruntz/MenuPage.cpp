@@ -70,15 +70,20 @@ void CMenuPage::Clear() {
     m_items.RemoveAll();
 }
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
-    CObject* slot_ob = 0;
-    m_owner->m_imageRegistry->m_workersByName.Lookup(key, slot_ob);
-    m_subPage = static_cast<CDDrawWorker*>(slot_ob);
-    return slot_ob != NULL;
+    CDDrawWorker* found = LookupWorker(m_owner->m_imageRegistry->m_workersByName, key);
+    m_subPage = found;
+    return found != NULL;
 }
 
 RVA(0x00183430, 0x24)
