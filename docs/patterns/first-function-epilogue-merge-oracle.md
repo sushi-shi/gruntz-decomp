@@ -43,6 +43,15 @@ Corroboration required before splitting: the boundary must be a class-family
 boundary in the rva order, and the split must keep both files' plain blocks
 ascending (the tu-order gate arbitrates).
 
+Candidate generator (both directions): for every sub-100 unit opener, check
+whether the rva-PREDECESSOR function belongs to the SAME CLASS in a different
+unit - a one-liner over the baseline. The 2026-08-22 run listed 34 such
+boundaries; the two with a cold/warm ret signature both paid (AdvanceAnim
++7.2 via the WormholeActs fold, FillCombo +9.4 via the LatencyList fold -
+the latter also recovering the era MFC prelude). A fold WITHOUT a codegen
+signature measured neutral twice (gruntbricklayerstep, battlezrepath
+prelude) - do not churn boundaries the bytes do not corroborate.
+
 ## Second production
 
 `CWwdGrid::Setup` (1 ret vs retail 2): the only plain body before it was the
