@@ -2825,11 +2825,9 @@ i32 CMultiBootyState::OnKeyDown(i32, i32) {
     return PostCommandIfKey();
 }
 
-#include <Gruntz/LeafCueMacros.h>
-
 RVA(0x0001f940, 0x4c)
 i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
-    return PLAY_LEAF_CUE_INLINE_HELPER(this, vol, pan, freqPct, loop);
+    return PlayLeafCueIfElapsed(this, vol, pan, freqPct, loop);
 }
 
 RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)
