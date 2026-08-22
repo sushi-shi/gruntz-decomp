@@ -373,7 +373,6 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00009bb0, 0x367)
 i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
@@ -389,7 +388,6 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     char buf[SERIAL_NAME_LEN];
-    CObject* out;
     i32 idx;
 
     s->Read(this, 8);
@@ -403,9 +401,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        out = NULL;
-        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
-        m_normChipSprite = static_cast<CDDrawWorker*>(out);
+        m_normChipSprite = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
     } else {
         m_normChipSprite = NULL;
     }
@@ -413,9 +409,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        out = NULL;
-        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
-        m_highChipSprite = static_cast<CDDrawWorker*>(out);
+        m_highChipSprite = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
     } else {
         m_highChipSprite = NULL;
     }
@@ -423,9 +417,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        out = NULL;
-        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
-        m_greyChipSprite = static_cast<CDDrawWorker*>(out);
+        m_greyChipSprite = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
     } else {
         m_greyChipSprite = NULL;
     }
@@ -435,9 +427,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = NULL;
-        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
-        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
+        CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -454,9 +444,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = NULL;
-        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
-        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
+        CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
@@ -473,9 +461,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        out = NULL;
-        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
-        CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
+        CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = static_cast<CImage*>(tt->m_items.GetAt(i));
