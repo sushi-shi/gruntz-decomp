@@ -1320,7 +1320,14 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
     return 1;
 }
 
-// @early-stop
+inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
+    CWwdGameObject* found = NULL;
+    if (MapLookup(map, key, found) == 0) {
+        found = NULL;
+    }
+    return found;
+}
+
 RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
@@ -1331,8 +1338,7 @@ i32 CDDrawChildGroup::PruneOrphans() {
         MapGetNext(m_registeredGameObjectsById, pos, key, val);
         if (val != NULL) {
 
-            CWwdGameObject* found = NULL;
-            if (MapLookup(m_activeGameObjectsById, WwdKey(val), found) == 0 || found == NULL) {
+            if (LookupActiveObject(m_activeGameObjectsById, WwdKey(val)) == NULL) {
                 m_registeredGameObjectsById.RemoveKey(WwdKey(val));
                 if (val != NULL) {
                     delete val;
