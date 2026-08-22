@@ -804,13 +804,21 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
+static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
+    CAniRecordView* rec;
+    if (index >= 0 && index < anim->m_records.GetSize()) {
+        rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(index));
+    } else {
+        rec = NULL;
+    }
+    return rec;
+}
+
 // @early-stop
-// Retail re-reads m_element for the final guard - it loads it into the register
-// that held `this`, since every member address it still needs is already in a
-// spill slot from the ar->Read() calls. cl forwards the store instead and drops
-// the test, so its `e != NULL` edge jumps straight into the body. Storing the
-// member directly in the arms, or reading it back through a fresh local, does not
-// stop it.
+// Residue is one address-CSE too many: cl enregisters `&m_index` in EBP, so the
+// four member addresses the tail still needs after EBX is rebound to m_element
+// all spill, and the frame grows by a dword. Retail rematerialises m_index off
+// the live `this` and gives EBP to `&m_pendingDraw`.
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -833,25 +841,14 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     }
     CAniElement* w = m_animation;
     if (w != NULL) {
-        CAniRecordView* e;
-        if (m_index >= 0 && m_index < w->m_records.GetSize()) {
-            e = static_cast<CAniRecordView*>(w->m_records.GetAt(m_index));
-        } else {
-            e = NULL;
-        }
-        m_element = e;
-        if (e == NULL) {
+        m_element = RecordAt(w, m_index);
+        if (m_element == NULL) {
             m_index = 0;
-            if (w->m_records.GetSize() > 0) {
-                e = static_cast<CAniRecordView*>(w->m_records.GetAt(0));
-            } else {
-                e = NULL;
-            }
-            m_element = e;
+            m_element = RecordAt(w, 0);
         }
         if (m_element != NULL) {
-            m_frameTicksLeft = 0;
             m_finished = 0;
+            m_frameTicksLeft = 0;
             m_curDraw = m_pendingDraw;
             m_pendingDraw = m_element->m_drawValue;
         }
