@@ -519,14 +519,14 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
     g_netCmdSendMsg.m_count = entry->m_count;
     memcpy(g_netCmdSendMsg.m_payload, entry->m_payload, entry->m_payloadLen);
 
-    return m_netMgr->SetData(
-               m_localDesc->m_id,
-               slot->m_desc->m_slotKey,
-               0,
-               &g_netCmdSendMsg,
-               entry->m_payloadLen + offsetof(NetCmdSendMsg, m_payload)
-           )
-           == 0;
+    i32 status = m_netMgr->SetData(
+        m_localDesc->m_id,
+        slot->m_desc->m_slotKey,
+        0,
+        &g_netCmdSendMsg,
+        entry->m_payloadLen + offsetof(NetCmdSendMsg, m_payload)
+    );
+    return status == 0;
 }
 
 RVA(0x000bfff0, 0x5d)
