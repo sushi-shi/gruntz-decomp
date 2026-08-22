@@ -494,25 +494,25 @@ RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     char* p;
     if (idx < m_lo) {
-        i32 lonew = idx - at;
-        p = static_cast<char*>(realloc(m_base, (m_hi - lonew + 1) * m_stride));
+        idx -= at;
+        p = static_cast<char*>(realloc(m_base, (m_hi - idx + 1) * m_stride));
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
             m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
             return 0;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-        i32 shift = m_lo - lonew;
+        i32 shift = m_lo - idx;
         m_grown = shift;
         m_alloc = p;
         memcpy(m_alloc + shift * m_stride, p, oldbytes);
         memset(m_alloc, 0, m_grown * m_stride);
-        m_lo = lonew;
+        m_lo = idx;
         m_base = p;
         return p;
     }
-    i32 hinew = idx + at;
-    p = static_cast<char*>(realloc(m_base, (hinew - m_lo + 1) * m_stride));
+    idx += at;
+    p = static_cast<char*>(realloc(m_base, (idx - m_lo + 1) * m_stride));
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
@@ -520,10 +520,10 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
     char* fill = p + oldbytes;
-    m_grown = hinew - m_hi;
+    m_grown = idx - m_hi;
     m_alloc = fill;
     memset(fill, 0, m_grown * m_stride);
-    m_hi = hinew;
+    m_hi = idx;
     m_base = p;
     return p;
 }
