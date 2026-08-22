@@ -21,11 +21,13 @@
 #include <string.h>
 
 // @early-stop
+// Residue: cl hoists the m_screenY load above the clip-mode branch where retail
+// re-materialises it inside each arm, so retail is two instructions longer here.
 RVA(0x001660f0, 0xd1)
 void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     i32 m64 = m_clip.left;
-    i32 x = m_screenX;
     i32 y = m_screenY;
+    i32 x = m_screenX;
     if (m64 == COORD_UNSET) {
         if (x < 0 || y < 0 || x >= a->m_width || y >= a->m_height) {
             m_dirty.m_armed = -1;
