@@ -4657,12 +4657,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 cx;
     i32 cy;
     {
-        const LevelCoordRect& lr = w->m_level->m_planeCtx;
-        RECT src;
-        src.left = lr.left;
-        src.top = lr.top;
-        src.right = lr.right;
-        src.bottom = lr.bottom;
+        RECT src = w->m_level->m_planeCtx;
         RECT dst;
         CopyRect(&dst, &src);
         cx = dst.left + (dst.right - dst.left) / 2;
@@ -4730,6 +4725,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     cx -= 0x8e;
     cy -= 0x48;
 
+    i32 reason = IDX(g_gameReg->m_cmdGrid->m_finishReasonFrame);
+
     CSBI_Image* dialog = new CSBI_Image;
     if (!dialog->SetupImage(
             this,
@@ -4745,8 +4742,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 0;
     }
     AddTabItem(6, dialog);
-
-    i32 reason = IDX(g_gameReg->m_cmdGrid->m_finishReasonFrame);
 
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
 
