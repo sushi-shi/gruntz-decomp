@@ -48,6 +48,9 @@ RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
 // @early-stop
+// Residue: the object pointer and the snapped y land in the opposite pair of
+// scratch registers to retail, and the constant arm lowers `ax - 0x20` as
+// `add eax,-0x20` where retail emits `sub eax,0x20`.
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -95,9 +98,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
         m_angle = 0;
     }
     CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_powerup];
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    m_object->m_drawFillArg = looked;
+    CWwdGameObjectA* d = m_object;
+    d->m_drawActive = 1;
+    d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    d->m_drawFillArg = looked;
     m_focus = NULL;
     m_object->m_area.left = 0;
     m_object->m_area.right = 0;
