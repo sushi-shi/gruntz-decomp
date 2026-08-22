@@ -27,7 +27,10 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>
+#include <Rez/FrameClock.h>
 #include <Utils/MfcTyped.h>
+
+#include <stdlib.h>
 
 GZ_ENUM_FORWARD(BattlezTask);
 GZ_ENUM_FORWARD(EnemyAiType);
@@ -751,6 +754,26 @@ public:
 
     void LoadCellAnimNames(i32 a, i32 b);
     void ResetEntranceAnimation(i32 a, i32 b, i32 c);
+
+    i32 IsArrivalRerollPending() {
+        return static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64;
+    }
+
+    i32 IsHoldPending() {
+        return static_cast<i64>(g_frameTime) - m_holdAnchor64 < m_holdWindow64;
+    }
+
+    void ResetArrivalReroll() {
+        ResetEntranceAnimation(1, 1, 0);
+        m_arrivalRerollLo = 0;
+        m_arrivalRerollWindowLo = 0;
+        m_arrivalRerollHi = 0;
+        m_arrivalRerollWindowHi = 0;
+        m_arrivalRerollWindowLo = rand() % 30000 + 30000;
+        m_arrivalRerollWindowHi = 0;
+        m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+        m_arrivalRerollHi = 0;
+    }
     i32 ResolveEntranceArrival();
     void ClearAllSprites();
     i32 BuildEntranceAnimation(GruntEntranceMode mode);

@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
@@ -91,7 +90,7 @@ i32 CGrunt::ResolveArrivalReposition() {
         u32 dwell = static_cast<u32>(m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_hasExtent != 0 && dwell > 0xbb8) {
 
-            if (IsGruntArrivalRerollPending(this) != 0) {
+            if (IsArrivalRerollPending() != 0) {
 
                 CWwdGameObjectA* h = m_object;
                 SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, outX, outY)
@@ -104,7 +103,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                     }
                 }
             } else {
-                ResetGruntArrivalReroll(this);
+                ResetArrivalReroll();
             }
             m_blockedVoicePending = 1;
             goto L8a2;

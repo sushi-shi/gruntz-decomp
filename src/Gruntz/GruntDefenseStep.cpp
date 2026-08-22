@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -239,7 +238,7 @@ i32 CGrunt::StepArrivalDefense() {
             }
             // retail lays the reroll arm LAST: the window-still-open arm is the
             // fall-through of the negated test.
-            if (IsGruntArrivalRerollPending(this) != 0) {
+            if (IsArrivalRerollPending() != 0) {
                 CWwdGameObjectA* h = m_object;
                 SELECT_RANDOM_EXTENT_POINT_SIGNED_OUTPUT(h, baseX, spanX, baseY, spanY, outX, outY)
                 if (outX < g_gameReg->m_tileGrid->m_width
@@ -256,7 +255,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_dwell = 0;
                 return 1;
             }
-            ResetGruntArrivalReroll(this);
+            ResetArrivalReroll();
             m_dwell = 0;
             return 1;
 

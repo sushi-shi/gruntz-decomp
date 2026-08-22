@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -238,7 +237,7 @@ i32 CGrunt::ScanNearestTarget() {
             }
 
             {
-                if (IsGruntArrivalRerollPending(this) != 0) {
+                if (IsArrivalRerollPending() != 0) {
 
                     CWwdGameObjectA* hud = m_object;
                     SELECT_RANDOM_EXTENT_POINT_SPLIT_ABS(hud, baseCol, spanX, baseRow, spanY)
@@ -255,7 +254,7 @@ i32 CGrunt::ScanNearestTarget() {
                         }
                     }
                 } else {
-                    ResetGruntArrivalReroll(this);
+                    ResetArrivalReroll();
                 }
             }
             m_dwell = 0;

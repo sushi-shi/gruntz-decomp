@@ -13,7 +13,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
@@ -279,7 +278,7 @@ i32 CGrunt::WanderStep() {
 timeout:
     if (m_resetApplied == 0 && m_hasExtent != 0
         && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
-        if (IsGruntArrivalRerollPending(this) != 0) {
+        if (IsArrivalRerollPending() != 0) {
             CWwdGameObjectA* base = m_object;
             SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lx, ax, ly, ay)
             if (lx < g_gameReg->m_tileGrid->m_width && ly < g_gameReg->m_tileGrid->m_height) {
@@ -296,7 +295,7 @@ timeout:
                 }
             }
         } else {
-            ResetGruntArrivalReroll(this);
+            ResetArrivalReroll();
         }
         m_dwell = 0;
     }

@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntArrivalRerollMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -169,7 +168,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
-            if (IsGruntArrivalRerollPending(this) != 0) {
+            if (IsArrivalRerollPending() != 0) {
                 {
                     CWwdGameObjectA* h = m_object;
                     SELECT_RANDOM_EXTENT_POINT_SIGNED_OUTPUT(

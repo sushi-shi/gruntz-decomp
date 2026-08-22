@@ -25,7 +25,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
@@ -674,7 +673,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
     for (i32 i = 0; i < 15; i++) {
         unit = m_triggerMgr->m_grid[m_ownerId * 15 + i];
         if (unit != NULL) {
-            if (IsGruntHoldPending(unit)) {
+            if (unit->IsHoldPending()) {
                 return 1;
             }
         }

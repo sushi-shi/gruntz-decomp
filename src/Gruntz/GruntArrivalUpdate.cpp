@@ -14,7 +14,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntArrivalRerollInline.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -166,7 +165,7 @@ i32 CGrunt::UpdateArrival() {
             }
             if (this->m_resetApplied == 0 && this->m_hasExtent != 0
                 && static_cast<u32>(this->m_dwell) > 3000) {
-                if (IsGruntArrivalRerollPending(this) != 0) {
+                if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
                     SELECT_RANDOM_EXTENT_POINT_UNSIGNED_ASSIGN(base, lo, ax, lo2, ay)
                     if (lo < g_gameReg->m_tileGrid->m_width
@@ -189,7 +188,7 @@ i32 CGrunt::UpdateArrival() {
                         }
                     }
                 } else {
-                    ResetGruntArrivalReroll(this);
+                    ResetArrivalReroll();
                 }
                 this->m_dwell = 0;
             }
