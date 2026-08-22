@@ -117,7 +117,7 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     i64 rem = m_accum.m_v - static_cast<u32>(g_frameTime) + m_baseTime.m_v;
-    i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
+    i32 v = (rem >= 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
     if (v == 0) {
@@ -158,7 +158,8 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
 
-    if (static_cast<u32>(v) < 0xea60) {
+    u32 t = static_cast<u32>(m_currentMs);
+    if (t < 0xea60) {
         i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
             i32 found = 0;
@@ -179,7 +180,6 @@ i32 CTimer::Tick(i32 dt) {
         }
     }
 
-    u32 t = static_cast<u32>(v);
     i32 d10min = t / (MILLIS_PER_MINUTE * 10);
     i32 d1min = t / MILLIS_PER_MINUTE % 10;
     if (d1min == 0 && d10min != 0) {
@@ -196,16 +196,16 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     CDDrawWorker* spr = m_sprite;
-    m_frameMinTens = (spr->m_minIndex <= d10min && d10min <= spr->m_maxIndex)
+    m_frameMinTens = (d10min >= spr->m_minIndex && d10min <= spr->m_maxIndex)
                          ? static_cast<CImage*>(spr->m_items.GetAt(d10min))
                          : 0;
-    m_frameMinOnes = (spr->m_minIndex <= d1min && d1min <= spr->m_maxIndex)
+    m_frameMinOnes = (d1min >= spr->m_minIndex && d1min <= spr->m_maxIndex)
                          ? static_cast<CImage*>(spr->m_items.GetAt(d1min))
                          : 0;
-    m_frameSecTens = (spr->m_minIndex <= d10sec && d10sec <= spr->m_maxIndex)
+    m_frameSecTens = (d10sec >= spr->m_minIndex && d10sec <= spr->m_maxIndex)
                          ? static_cast<CImage*>(spr->m_items.GetAt(d10sec))
                          : 0;
-    m_frameSecOnes = (spr->m_minIndex <= d1sec && d1sec <= spr->m_maxIndex)
+    m_frameSecOnes = (d1sec >= spr->m_minIndex && d1sec <= spr->m_maxIndex)
                          ? static_cast<CImage*>(spr->m_items.GetAt(d1sec))
                          : 0;
     return 1;
