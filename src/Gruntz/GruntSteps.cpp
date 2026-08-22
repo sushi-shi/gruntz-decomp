@@ -889,6 +889,7 @@ commit:
     return 1;
 }
 
+// @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = m_lastTilePx;

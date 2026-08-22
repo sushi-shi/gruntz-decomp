@@ -286,15 +286,6 @@ swapped, `if (g)` vs `if (g != NULL)`, deref inlined, `for` instead of
 — identical. The loop counter is source-visible, the zero is not, and the pair
 does not move.
 
-`CGruntPuddle::CGruntPuddle` (`0x00040490`) is the byte-register form of the
-same boundary. Base and retail have the same 123 instructions, 11 calls, 25
-relocations, and member operations, but retail assigns constant 1 to EBX and 0
-to EBP while the base assigns 0 to EBX and 1 to EBP. EBP has no byte form, so
-the EH-state stores become immediates and the `RegisterLogicTypesOnce` tail gains
-one branch. Five front-end IL probe kinds changed their expected handle state yet
-left all `0x1b0` emitted bytes unchanged. This is a measured C2-anchored
-hoisted-literal allocation, not evidence of missing constructor control flow.
-
 ---
 
 ## R5 — Pass 0 hands out only registers the function has ALREADY spent
@@ -578,40 +569,6 @@ void p3() { int a,b,c,d; R r1;       take(&d);take(&c);taker(&r1);take(&b);take(
    `r1` lands at `-16` (the top of a 32-byte frame) in ALL THREE, whether it is
    declared 4th, 1st or last; the scalars occupy `-20 -24 -28 -32`.
 
-### Worked example — `CLightFxRender::ComputeRect` `0x000a3820`
-
-The inherited `@early-stop` called this a flat 156-instruction scheduling
-braid. A personal source-hash audit disproved that bound. Two real source
-entities move the wall:
-
-* retaining `RECT* dstRect = &m_dstRect` across `BltEx` raises the result from
-  68.87% to 70.12%, gives retail's 0x14-byte frame and 156-instruction count,
-  and explains why retail materializes `&m_dstRect` before the call and reuses
-  that address afterward;
-* expressing the surface through `m_surface` instead of an asserted local cache
-  reaches 76.38% and restores `this=ESI`. It also exposes the remaining count
-  question: the base is 400 bytes while retail is 398, and the base reloads
-  `m_surface` where retail retains one early load.
-
-The second result is structural evidence, not exact closure. The bounded
-negative controls were:
-
-* 198 syntax/TU-state cells and a separate 65-state sweep; compiler state was
-  flat within each source shape;
-* six destination-store/call/post-call pointer shapes, before and after the
-  surface correction;
-* four edge/extent declaration pipelines crossed with `RECT` versus `CRect`;
-* four POD `MakeRect` builder shapes (best alternative 67.76%);
-* assignment, `memcpy`, fieldwise copy and source/destination alias spellings
-  for the `m_srcRect` copy; and
-* four post-call left/top offset-source forms.
-
-These controls produced discrete structural islands rather than a continuous
-schedule frontier. Reopen at the C1 tuple/lifetime level: retail keeps the
-surface in caller-saved `ECX`, `this` in `ESI`, the destination address in
-`EBX`, and one additional scalar home. Do not re-run TU-state permutations or
-reorder the four extent declarations; those cells are proven flat.
-
 ---
 
 ## I1 — The hoisted zero register: `test r,r` versus `cmp r,<zreg>`
@@ -782,28 +739,31 @@ int* t14()        { return &arr[4]; }                    // mov eax,OFFSET arr+1
 void t15()        { sink((int)&s.e); }                   // push OFFSET s+8
 ```
 
-### I4a — an `add`/`lea` census is a lifetime reading
+### I4a — an `add`/`lea` census is a LIFETIME reading, and shortening the lifetime can cost more than the selection gains
 
-`walls semdiff` makes this greppable: a small negative `imm` key present on
-only one side, with `add`/`sub`/`lea` counts moving in the same direction, can
-mean the same value is dead on one side and still live on the other. Two
-measured rows give opposite verdicts:
+`walls semdiff`'s immediate multiset makes this rule greppable at corpus scale:
+an `imm` key that is a small negative constant (`0xffffffe0`, `0xfffffffb`)
+present on ONE side only, with `add`/`sub`/`lea` counts moving the same way, is
+the same value computed with a live operand on one side and a dead one on the
+other. Two 2026-08-21 rows, opposite verdicts:
 
-- `CBattlezMapConfig::ScanRegion` (`0x32ce0`) had `imm 0xfffffffb base 0
-  target 2` with `sub` base 9 / target 7. Retail overwrites the shifted
-  coordinate at the `box.left`/`box.top` stores; ours kept it live for the
-  sibling `+5` fields because two scalar helpers returned one field each.
-  Replacing them with one by-value `Coord` helper cleared the key and moved
-  81.57% to 81.91%.
-- `CGrunt::StepCompassMove` (`0x51c00`) had `imm 0xffffffe0 base 0 target 6`
-  with `lea` base 70 / target 53 and `add` base 32 / target 43. Scoping the
-  pixel-coordinate copies to the arrow block produced the predicted `add`
-  forms, but moved the whole function from 63.30% to 62.04% because shortening
-  two lifetimes recolored the larger body. The experiment was reverted.
-
-Confirming the selection mechanism is not sufficient evidence for the source
-shape. Measure the whole function and retain only semantically supported
-lifetimes.
+* **LEVER.** `CBattlezMapConfig::ScanRegion` `0x32ce0` screened
+  `imm 0xfffffffb base 0 target 2` with `sub` base 9 / target 7: retail's
+  `box.left`/`box.top` overwrite the shifted coordinate, ours kept it alive for
+  the sibling `+5` fields because two scalar getters (`ScanCellX`, `ScanCellY`)
+  returned one field each out of the same body. Collapsing them into one
+  by-value `Coord` helper gave each field store its own dying operand and
+  cleared the key. 81.57 -> 81.91.
+* **PARK — the mechanism fired and the function still lost.**
+  `CGrunt::StepCompassMove` `0x51c00` screened `imm 0xffffffe0 base 0 target 6`
+  with `lea` base 70 / target 53 and `add` base 32 / target 43: retail's
+  arrow-tile switch spells every `-= 0x20` as `add reg,-32`, ours as `lea`,
+  because the function-scope pixel coordinates stay live for the toy and bag
+  blocks further down. Scoping that block's copies to the block DOES produce
+  the `add`s (0 -> 4 measured in the base obj) and still falls 63.30 -> 62.04:
+  the two fewer long-lived values re-colour the rest of a 0x11xx-byte body
+  (R5). Reverted. **Confirming the selection mechanism is not the same as
+  confirming the source shape** — measure the whole function, not the key.
 
 ---
 
