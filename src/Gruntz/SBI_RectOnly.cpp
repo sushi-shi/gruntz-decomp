@@ -3395,12 +3395,9 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
 }
 
 // @early-stop
-// Frame 0xc against retail's 0x10.  Retail's fourth dword (slot 0x1c) takes five
-// WRITE-ONLY `mov ...,1` stores, one inside each belt-advance body, plus the cue
-// `item` home in the BELT_FALLING_OFF arm; no read of the constant exists anywhere.
-// A function-scope write-only flag reproducing those stores is DELETED by cl (A/B:
-// identical emission), so whatever kept retail's stores alive is not reachable from
-// a plain local spelling; the flag-slot swap and edi=1 hoists all follow from it.
+// Frame 0xc against retail's 0x10: the BELT_FALLING_OFF cue block spills its
+// g_sndCueTag copy and binds both replay-clock fields, where the two earlier
+// copies of the same source keep them in registers - arm-local pressure.
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 rectFlag = 0;
@@ -3411,12 +3408,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
                 m_itemRect.left += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRect.right += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
             if (m_itemRect.left >= 0x6d) {
                 m_itemRect.left = 0x6d;
                 m_itemRect.right = 0x84;
+                rectFlag = 1;
                 m_machinePhase = BELT_SPEWING;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemInMachineTime", 0x7d0);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3466,6 +3465,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
                 m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
@@ -3511,6 +3511,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
                 m_itemRect.left -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRect.right -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
@@ -3536,6 +3537,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 // this lookup always misses and takes the default. Correcting it would
                 // drop a string from .rdata and stop matching.
                 m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
+                rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
