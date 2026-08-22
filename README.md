@@ -31,7 +31,7 @@ _Started units alone: 3,705/4,427 fns exact, 95.02% fuzzy over 1,136,757 of 1,13
 | `Io`         |     4 |       39 / 40 (97.5%) |  99.5% |     99.5% |
 | `Utils`      |     7 |       24 / 27 (88.9%) |  99.3% |     99.8% |
 | `Font`       |     1 |       19 / 22 (86.4%) |  87.8% |     87.8% |
-| `Crypto`     |     2 |       14 / 17 (82.4%) |  97.1% |     97.1% |
+| `Crypto`     |     2 |       14 / 17 (82.4%) |  97.9% |     97.9% |
 
 _Excluded from the % above — generated/library code, not independent reconstruction targets:_
 
