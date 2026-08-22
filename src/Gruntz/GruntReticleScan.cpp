@@ -61,8 +61,7 @@ i32 CGrunt::ArrivalReticleScan() {
     i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - (m_defenderPx.m_y >> TILE_SHIFT_PX));
     i32 dist = dTX > dTY ? dTX : dTY;
     if (dist > m_defenderRadius) {
-        m_defenderPx.m_x = m_lastTilePx.m_x;
-        m_defenderPx.m_y = m_lastTilePx.m_y;
+        m_defenderPx = m_lastTilePx;
         return 1;
     }
 

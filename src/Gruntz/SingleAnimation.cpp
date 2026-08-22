@@ -27,10 +27,7 @@ i32 CSingleAnimation::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)
@@ -61,8 +58,6 @@ void CSingleAnimation::RegisterActs() {
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
-        m_wwdObject->m_flags |= 0x10000;
-    }
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
     return 0;
 }

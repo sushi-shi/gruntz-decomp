@@ -434,3 +434,61 @@ sets.
 The authoritative full build on current `main` after this follow-up scored 3,738
 exact functions at 95.18% overall fuzzy, with 75 carried below-bank rows and zero
 fresh regressions.
+
+## Third follow-up: residual whole-source pass
+
+A third pass rescanned every `RVA`-anchored function after the first two campaigns,
+then audited the remaining repeated statement sequences against the current header
+inlines. The normalized source-clone population fell from 166 to 156 sequences. The
+ten removed motifs were cohesive operations; the surviving high-frequency motifs are
+null guards, `CFile::Open`, `GetDC`/`Lock` prologues, serialization scaffolding,
+separate out-of-line `IsLoaded` bodies, and generic tile/rectangle arithmetic. Those
+survivors are not evidence of another missing inline boundary.
+
+New real inline abstractions retained by this pass:
+
+- `FlipFrontAndRestoreOverlay`: three identical page flip plus overlay-restore bodies
+  in both booty renderers and `CChatBox::Post`.
+- `PurgeVoices`: thirteen guarded sound-stream purge bodies. A member declaration in
+  the widely included `CDDrawSubMgrLeafScan` header produced eleven fresh regressions;
+  the free inline in a narrow definition header retained the caller bodies and restored
+  the full gate.
+- `CMapMgr::CellFlagsAt`: four final guarded flag reads in
+  `CBattlezMapConfig::{StepRowUnits,ValidateUnitPath}` plus the complete
+  `CMapMgr::IsCellClear` wrapper. `IsCellClear` remains exact, and both large callers
+  retain their pre-conversion scores.
+- `CDDrawChildGroup::NextChild`: the final eight typed `m_list.GetNext` expansions in
+  `WwdSpatialMgr`, `BrickzLoad`, `BattlezMapConfig`, and `TriggerMgr` now use the real
+  inline. No typed raw child-group traversal remains.
+- `CDDrawWorker::GetAt`: every remaining complete bounds-check/frame-access body was
+  folded. Real calls are retained where VC5 reproduces the retail expansion, including
+  `CWwdGameObjectA::SwitchGeometry` (which became exact), serializers, glyph loaders,
+  status widgets, and the worker's own `GetFrame`/`ReloadFrame` wrappers.
+
+New exact-expansion macro fallbacks:
+
+- the four `DDRAW_WORKER_*` range-test shapes plus
+  `DDRAW_WORKER_FRAME_AT_UNCHECKED` preserve guarded `GetAt` callers whose real inline
+  changed CFG or register scheduling;
+- `GET_SCREEN_TILE_Y_FIRST` preserves the two reversed-axis expansions in
+  `CBattlezMapConfig::StepRowUnits` (real `GetScreenTile` changed 85.4017% to
+  85.1993%);
+- `INITIALIZE_STATUS_BAR_ITEM` covers four five-statement widget initialization
+  bodies; the real inline moved an exact later `CSBI_ImageSetAni::Render` to 99.8667%;
+- `READ_TILE_IMAGE_DIMENSIONS` covers the three tile-image parsers. The shared
+  `m_height` field was moved from all three derived classes to `CTileImageSet`, keeping
+  every object layout unchanged. A real helper left `CImageSet1/2::Parse` unchanged
+  and moved exact `CImageSet3::Parse` to 70.3051%; the token macro restores exact;
+- the existing caller-shape macros cover the last `NextChild`, pickup, lookup,
+  object-flag, and frame-selection sites where a real helper changed a caller or later
+  TU state.
+
+The complete guarded `CDDrawWorker::GetAt`, `CMapMgr::CellFlagsAt`, reversed
+`GetScreenTile`, and typed `CDDrawChildGroup::NextChild` raw-body searches are now
+empty apart from the helper definitions and deliberate unchecked first/last-frame
+accesses. The final clone audit therefore has no remaining actionable inline-shaped
+motif.
+
+The authoritative full build after this pass scored 3,741 exact functions at 95.20%
+overall fuzzy, with 73 carried below-bank rows, 328 strict-below rows (255 sub-EPS),
+and zero fresh regressions.

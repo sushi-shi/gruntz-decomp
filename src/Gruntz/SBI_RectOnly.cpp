@@ -2542,7 +2542,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
     CSBI_SideTab* r = m_hitRects[idx];
     if (r != NULL) {
         r->m_sampleMode = mode;
-        r->m_enabled = 1;
+        r->SetEnabled(1);
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetDirectionAlt(m_position, 1);
@@ -2575,7 +2575,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
     CSBI_SideTab* r = m_hitRects[idx];
     if (r != NULL) {
         r->m_sampleMode = STATUS_SAMPLE_NONE;
-        r->m_enabled = 0;
+        r->SetEnabled(0);
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetDirection(m_position, 1);
@@ -4449,9 +4449,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE"
     );
-    CImage* frame = (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex)
-                        ? static_cast<CImage*>(spr->m_items.GetAt(n))
-                        : 0;
+    CImage* frame = spr ? spr->GetAt(n) : 0;
     m_sprite = frame;
     if (frame == NULL) {
 
@@ -4546,12 +4544,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
                 CObject* out = 0;
                 lvl->m_imageRegistry->m_workersByName.Lookup(name, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r;
-                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
-                } else {
-                    r = NULL;
-                }
+                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                 m_sprite = r;
             } else {
                 m_sprite = NULL;

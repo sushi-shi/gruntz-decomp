@@ -32,7 +32,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("GAME_EXIT");
     SET_ANIMATION_ACT("A");
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     SetObjectFlags(2);
     Hide();
 }

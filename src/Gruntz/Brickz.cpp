@@ -169,11 +169,5 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
 
 RVA(0x000853f0, 0x46)
 i32 CMapMgr::IsCellClear(i32 x, i32 y) {
-    i32 occ;
-    if (static_cast<u32>(x) >= m_width || static_cast<u32>(y) >= m_height) {
-        occ = 1;
-    } else {
-        occ = m_rows[y][x].m_flags;
-    }
-    return occ == 0;
+    return CellFlagsAt(x, y) == 0;
 }

@@ -7,6 +7,7 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
@@ -104,10 +105,7 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-    if (reg->m_soundStream != NULL) {
-        reg->m_soundStream->PurgeVoiceList(-1);
-    }
+    PurgeVoices(m_world->m_soundRegistry);
     if (static_cast<u32>(g_wap32FrameDelta) >= m_previewCountdownMs) {
         m_previewCountdownMs = 0;
     } else {

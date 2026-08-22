@@ -30,10 +30,7 @@ RVA_COMPGEN(0x000100f0, 0x44, ??1CBehindCandyAni@@UAE@XZ)
 RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SET_ANIMATION_ACT("A");
-    if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        SwitchGeometry("GAME_CYCLE100", 0);
-    }
+    INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, 0)
     NORMALIZE_BIG_ANIMATION_WITH_AUX(aux)

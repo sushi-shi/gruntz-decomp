@@ -30,6 +30,8 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntArrivalRerollInline.h>
+#include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
@@ -648,6 +650,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     return 1;
 }
 
+// @early-stop
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     PickupType reason = m_entranceReason;
@@ -657,18 +660,12 @@ i32 CGrunt::TryPowerupAtTile() {
     CWwdGameObjectA* h = m_object;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
+    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 py = (my & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
-    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        flags = 1;
-    } else {
-        flags = b->m_rowInts[ty][tx * 7];
-    }
+    i32 flags = b->CellFlagsAt(tx, ty);
     if ((flags & BRICKZ_BLOCKED_MASK) || (flags & 2)) {
         return 0;
     }
@@ -925,13 +922,7 @@ i32 CGrunt::PathScan() {
                 i32 rr = target.m_y + dy;
                 i32 cc = target.m_x + dx;
 
-                i32 cf;
-                if (static_cast<u32>(cc) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(rr) < static_cast<u32>(grid->m_height)) {
-                    cf = ((grid->m_rowInts[rr]))[cc * 7];
-                } else {
-                    cf = 1;
-                }
+                i32 cf = grid->CellFlagsAt(cc, rr);
                 i32 mf = (m_arrivalFlags | 0x20040002) & cf;
                 if (mf & 0x20000000) {
                     continue;
@@ -1777,23 +1768,14 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
-            flags = 1;
-        } else {
-            flags = bd->m_rowInts[ty][tx * 7];
-        }
+        i32 flags = bd->CellFlagsAt(tx, ty);
         if (flags & 0x80) {
             return 0;
         }
     }
 
     CreateHealthSprite();
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
-    m_combatTimeoutHi = 0;
-    m_combatClockLo = static_cast<i32>(g_frameTime);
-    m_combatClockHi = 0;
+    ArmGruntCombatTimeout(this);
     m_neighborScanEnabled = 1;
 
     CGrunt* nb = m_tileMgr->m_grid[a * TM_GRID_COLS + b];
@@ -1802,7 +1784,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
+    eq = ANIMATION_ACT_EQUALS("F");
     if (eq) {
         return 0;
     }
@@ -1820,7 +1802,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 1;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1831,7 +1813,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             WWDDRAW_NO_ANIMATION
         );
     } else {
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "N") == 0);
+        eq = ANIMATION_ACT_EQUALS("N");
         if (eq) {
             i32 lastX = m_lastTilePx.m_x;
             i32 lastY = m_lastTilePx.m_y;
@@ -1857,11 +1839,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
     m_poweredUp = 1;
     nb->CreateHealthSprite();
-    nb->m_combatTimeoutLo =
-        static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
-    nb->m_combatTimeoutHi = 0;
-    nb->m_combatClockLo = static_cast<i32>(g_frameTime);
-    nb->m_combatClockHi = 0;
+    ArmGruntCombatTimeout(nb);
     ArrivalRecycle(c, d, 1, a, b);
     m_neighborCell.m_x = a;
     m_neighborCell.m_y = b;
@@ -1897,11 +1875,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
                 m_combatActive = 1;
                 CreateHealthSprite();
 
-                m_combatTimeoutLo =
-                    static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
-                m_combatTimeoutHi = 0;
-                m_combatClockLo = static_cast<i32>(g_frameTime);
-                m_combatClockHi = 0;
+                ArmGruntCombatTimeout(this);
                 m_neighborScanEnabled = 1;
                 m_attackTargetPx.m_x = a;
                 m_attackTargetPx.m_y = b;
@@ -2142,9 +2116,9 @@ void CGrunt::XferName(char*) {
     m_dwell += g_frameDelta;
 
     if (m_entranceDropActive != 0) {
-        bool differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
+        bool differs = ANIMATION_ACT_DIFFERS("A");
         if (differs) {
-            differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "K") != 0);
+            differs = ANIMATION_ACT_DIFFERS("K");
             if (differs) {
                 goto dropExpire;
             }
@@ -2251,12 +2225,7 @@ void CGrunt::XferName(char*) {
         i32 flags;
         {
             CMapMgr* bd = reg2->m_tileGrid;
-            if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
-                || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
-                flags = 1;
-            } else {
-                flags = ((bd->m_rowInts[ty]))[tx * 7];
-            }
+            flags = bd->CellFlagsAt(tx, ty);
         }
         if (flags & 0x100000) {
             reg2->m_options[0]
@@ -2405,8 +2374,7 @@ void CGrunt::XferName(char*) {
                 goto afterTile;
             }
             if (m_entranceReason == PICKUP_BOMB) {
-                bool nameDiffers =
-                    (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "M") != 0);
+                bool nameDiffers = ANIMATION_ACT_DIFFERS("M");
                 if (!nameDiffers) {
                     goto afterTile;
                 }
@@ -2527,7 +2495,7 @@ afterTile:
             grid->m_gridH = bounds->bottom - bounds->top;
         }
         if (m_arrivalState != AI_NONE) {
-            if (static_cast<i64>(g_frameTime) - m_holdAnchor64 >= m_holdWindow64) {
+            if (!IsGruntHoldPending(this)) {
                 switch (m_arrivalState) {
                     case AI_DUMBCHASER:
                         ChargeStep();
@@ -2834,9 +2802,9 @@ void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
     if (m_struckSlotSound != NULL) {
-        bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") != 0);
+        bool neL = ANIMATION_ACT_DIFFERS("L");
         if (neL) {
-            bool neG = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") != 0);
+            bool neG = ANIMATION_ACT_DIFFERS("G");
             if (neG) {
                 StopStruckSlotSound();
             }
@@ -2854,7 +2822,7 @@ void CGrunt::FinalizeStep(char* name) {
             }
         }
     }
-    bool eqO = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
+    bool eqO = ANIMATION_ACT_EQUALS("O");
     // Retail 0x5ee48 sends the already-at-tile case to 0x5efc1 - the ScratchResolve
     // block below - not to a `ret`, so the guard is part of the arm's condition and
     // the arm is SKIPPED (falls into the "S" handling), it does not return.
@@ -2954,7 +2922,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
         bool eq;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
+        eq = ANIMATION_ACT_EQUALS("A");
         if (eq && CoordCount() != 0) {
             CoordNode* head = CoordHead();
             Coord* co = head->m_coord;

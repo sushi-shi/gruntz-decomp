@@ -29,6 +29,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -96,14 +97,14 @@ static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     if (list->m_walkCursor == NULL) {
         return 0;
     }
-    return static_cast<CGameObject*>(list->m_list.GetNext(list->m_walkCursor));
+    return list->NextChild(list->m_walkCursor);
 }
 
 static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
     if (list->m_walkCursor == NULL) {
         return 0;
     }
-    return static_cast<CGameObject*>(list->m_list.GetNext(list->m_walkCursor));
+    return list->NextChild(list->m_walkCursor);
 }
 
 // @early-stop
@@ -446,31 +447,31 @@ i32 CBattlezMapConfig::StepBoard() {
                     continue;
                 }
                 bool eq;
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "G") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "L") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "P") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "J") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "C") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "R") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                 if (eq) {
                     continue;
                 }
@@ -688,13 +689,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
         {
             {
                 if (unit != NULL) {
-                    if (static_cast<i64>(g_frameTime) - unit->m_arrivalReroll64
-                        >= unit->m_arrivalRerollWindow64) {
+                    if (!IsGruntArrivalRerollPending(unit)) {
                         RouteToNearbyPickup(unit);
                         if (unit->m_poweredUp != 0) {
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "A")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "A"));
                             if (eq) {
                                 goto resetEntrance;
                             }
@@ -704,18 +702,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             i32 ax = ac->m_x;
                             i32 ay = ac->m_y;
                             Coord sp;
-                            (static_cast<CUserLogic*>(unit))->GetScreenPos((&sp));
-                            sp.m_x >>= 5;
-                            sp.m_y >>= 5;
+                            (static_cast<CUserLogic*>(unit))->GetScreenTile((&sp));
                             if (sp.m_x == ax && sp.m_y == ay) {
                                 goto arriveHead;
                             }
                         }
                         {
-                            PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_EQUIPPABLE_LAST) {
-                                st = unit->m_toolId;
-                            }
+                            PickupType st = ArrivalPickup(unit);
                             if (st == PICKUP_BRICK && unit->m_battleState == BZTASK_UNASSIGNED) {
                                 unit->m_battleState = BZTASK_CARRY_BRICK;
                                 if (unit->CoordCount() != 0) {
@@ -726,59 +719,19 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != 0
                             && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
                             && unit->m_poweredUp == 0) {
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                             if (!eq) {
-                                eq =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                         "G"
-                                     )
-                                     == 0);
+                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
                                 if (!eq) {
-                                    eq =
-                                        (strcmp(
-                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                             "L"
-                                         )
-                                         == 0);
+                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
                                     if (!eq) {
-                                        eq =
-                                            (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_actKey
-                                                 )),
-                                                 "P"
-                                             )
-                                             == 0);
+                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
                                         if (!eq) {
-                                            eq =
-                                                (strcmp(
-                                                     (*g_typeColl.GetNameRecord(
-                                                         unit->m_objAux->m_actKey
-                                                     )),
-                                                     "J"
-                                                 )
-                                                 == 0);
+                                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
                                             if (!eq) {
-                                                eq =
-                                                    (strcmp(
-                                                         (*g_typeColl.GetNameRecord(
-                                                             unit->m_objAux->m_actKey
-                                                         )),
-                                                         "C"
-                                                     )
-                                                     == 0);
+                                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
                                                 if (!eq) {
-                                                    eq =
-                                                        (strcmp(
-                                                             (*g_typeColl.GetNameRecord(
-                                                                 unit->m_objAux->m_actKey
-                                                             )),
-                                                             "R"
-                                                         )
-                                                         == 0);
+                                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                                                     if (!eq) {
                                                         PickupType st2 = unit->m_entranceReason;
                                                         if (st2 > PICKUP_EQUIPPABLE_LAST) {
@@ -815,13 +768,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             (static_cast<CUserLogic*>(unit))->GetScreenPos((&s2));
                             s2.m_y >>= 5;
                             s2.m_x >>= 5;
-                            i32 tile;
-                            if (static_cast<u32>(s2.m_x) < m_board->m_width
-                                && static_cast<u32>(qy) < m_board->m_height) {
-                                tile = m_board->m_rows[qy][s2.m_x].m_flags;
-                            } else {
-                                tile = 1;
-                            }
+                            i32 tile = m_board->CellFlagsAt(s2.m_x, qy);
                             if (!(tile & 4)) {
                                 Coord none;
                                 unit->m_arrivalCell = *none.Set(-1, -1);
@@ -834,10 +781,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_EQUIPPABLE_LAST) {
-                                st = unit->m_toolId;
-                            }
+                            PickupType st = ArrivalPickup(unit);
                             if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
                                 Coord none;
                                 unit->m_arrivalCell = *none.Set(-1, -1);
@@ -850,10 +794,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_EQUIPPABLE_LAST) {
-                                st = unit->m_toolId;
-                            }
+                            PickupType st = ArrivalPickup(unit);
                             if (st == PICKUP_GOOBER) {
                                 BattlezTask d8 = unit->m_battleState;
                                 if (d8 != BZTASK_CARRY_GOOBER && d8 != BZTASK_ASSIGNED_TARGET) {
@@ -867,10 +808,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = unit->m_entranceReason;
-                            if (st > PICKUP_EQUIPPABLE_LAST) {
-                                st = unit->m_toolId;
-                            }
+                            PickupType st = ArrivalPickup(unit);
                             if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
                                 Coord none;
                                 unit->m_arrivalCell = *none.Set(-1, -1);
@@ -894,59 +832,19 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             char ne;
-                            ne =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "C")
-                                 != 0);
+                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "C"));
                             if (ne) {
-                                ne =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                         "R"
-                                     )
-                                     != 0);
+                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "R"));
                                 if (ne) {
-                                    ne =
-                                        (strcmp(
-                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                             "C"
-                                         )
-                                         != 0);
+                                    ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "C"));
                                     if (ne) {
-                                        ne =
-                                            (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_actKey
-                                                 )),
-                                                 "G"
-                                             )
-                                             != 0);
+                                        ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "G"));
                                         if (ne) {
-                                            ne =
-                                                (strcmp(
-                                                     (*g_typeColl.GetNameRecord(
-                                                         unit->m_objAux->m_actKey
-                                                     )),
-                                                     "L"
-                                                 )
-                                                 != 0);
+                                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "L"));
                                             if (ne) {
-                                                ne =
-                                                    (strcmp(
-                                                         (*g_typeColl.GetNameRecord(
-                                                             unit->m_objAux->m_actKey
-                                                         )),
-                                                         "P"
-                                                     )
-                                                     != 0);
+                                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "P"));
                                                 if (ne) {
-                                                    ne =
-                                                        (strcmp(
-                                                             (*g_typeColl.GetNameRecord(
-                                                                 unit->m_objAux->m_actKey
-                                                             )),
-                                                             "J"
-                                                         )
-                                                         != 0);
+                                                    ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "J"));
                                                     if (ne) {
                                                         if (unit->m_object->m_screenX
                                                                 == unit->m_lastTilePx.m_x
@@ -963,9 +861,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             c1.m_x >>= 5;
                                                             Coord c2;
                                                             (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c2));
-                                                            c2.m_x >>= 5;
-                                                            c2.m_y >>= 5;
+                                                                ->GetScreenTile((&c2));
                                                             Coord c3;
                                                             (static_cast<CUserLogic*>(unit))
                                                                 ->GetScreenPos((&c3));
@@ -973,23 +869,17 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             c3.m_x >>= 5;
                                                             Coord c4;
                                                             (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c4));
-                                                            c4.m_x >>= 5;
-                                                            c4.m_y >>= 5;
+                                                                ->GetScreenTile((&c4));
                                                             box.left = c4.m_x - 4;
                                                             box.top = c3.m_y - 4;
                                                             box.right = c2.m_x + 4;
                                                             box.bottom = c1.m_y + 4;
                                                             Coord c5;
                                                             (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c5));
-                                                            c5.m_x >>= 5;
-                                                            c5.m_y >>= 5;
+                                                                ->GetScreenTile((&c5));
                                                             Coord c6;
                                                             (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c6));
-                                                            c6.m_x >>= 5;
-                                                            c6.m_y >>= 5;
+                                                                ->GetScreenTile((&c6));
                                                             Coord c7;
                                                             (static_cast<CUserLogic*>(unit))
                                                                 ->GetScreenPos((&c7));
@@ -997,9 +887,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             c7.m_x >>= 5;
                                                             Coord c8;
                                                             (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c8));
-                                                            c8.m_x >>= 5;
-                                                            c8.m_y >>= 5;
+                                                                ->GetScreenTile((&c8));
                                                             i32 rowEnd = c5.m_y + 2;
                                                             i32 colEnd = c6.m_x + 2;
                                                             i32 rowBeg = c7.m_y - 1;
@@ -1088,45 +976,31 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (unit->m_entranceActive != 0) {
                                 special = 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                             if (eq) {
                                 special = 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "G")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
                             if (eq) {
                                 special = 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "L")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
                             if (eq) {
                                 special = 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "P")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
                             if (eq) {
                                 return 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "J")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
                             if (eq) {
                                 special = 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "C")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
                             if (eq) {
                                 special = 0;
                             }
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "R")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                             if (eq) {
                                 special = 0;
                             }
@@ -1146,59 +1020,19 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != 0
                             && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
                             && unit->m_poweredUp == 0) {
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                             if (!eq) {
-                                eq =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                         "G"
-                                     )
-                                     == 0);
+                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
                                 if (!eq) {
-                                    eq =
-                                        (strcmp(
-                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                             "L"
-                                         )
-                                         == 0);
+                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
                                     if (!eq) {
-                                        eq =
-                                            (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_actKey
-                                                 )),
-                                                 "P"
-                                             )
-                                             == 0);
+                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
                                         if (!eq) {
-                                            eq =
-                                                (strcmp(
-                                                     (*g_typeColl.GetNameRecord(
-                                                         unit->m_objAux->m_actKey
-                                                     )),
-                                                     "J"
-                                                 )
-                                                 == 0);
+                                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
                                             if (!eq) {
-                                                eq =
-                                                    (strcmp(
-                                                         (*g_typeColl.GetNameRecord(
-                                                             unit->m_objAux->m_actKey
-                                                         )),
-                                                         "C"
-                                                     )
-                                                     == 0);
+                                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
                                                 if (!eq) {
-                                                    eq =
-                                                        (strcmp(
-                                                             (*g_typeColl.GetNameRecord(
-                                                                 unit->m_objAux->m_actKey
-                                                             )),
-                                                             "R"
-                                                         )
-                                                         == 0);
+                                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                                                     if (!eq) {
                                                         for (i32 j = 0; j < 4; j++) {
                                                             if (j != m_ownerId) {
@@ -1248,61 +1082,25 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         hit = 0;
         if (unit != NULL) {
-            if (static_cast<i64>(g_frameTime) - unit->m_arrivalReroll64
-                >= unit->m_arrivalRerollWindow64) {
+            if (!IsGruntArrivalRerollPending(unit)) {
                 BattlezTask d8 = unit->m_battleState;
                 if (d8 != BZTASK_ASSIGNED_TARGET && d8 != BZTASK_SEEK_SWITCH) {
                     if (unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
                         && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
                         char ne;
-                        ne =
-                            (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I")
-                             != 0);
+                        ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "I"));
                         if (ne) {
-                            ne =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "G")
-                                 != 0);
+                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "G"));
                             if (ne) {
-                                ne =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                         "L"
-                                     )
-                                     != 0);
+                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "L"));
                                 if (ne) {
-                                    ne =
-                                        (strcmp(
-                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                             "P"
-                                         )
-                                         != 0);
+                                    ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "P"));
                                     if (ne) {
-                                        ne =
-                                            (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_actKey
-                                                 )),
-                                                 "J"
-                                             )
-                                             != 0);
+                                        ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "J"));
                                         if (ne) {
-                                            ne =
-                                                (strcmp(
-                                                     (*g_typeColl.GetNameRecord(
-                                                         unit->m_objAux->m_actKey
-                                                     )),
-                                                     "C"
-                                                 )
-                                                 != 0);
+                                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "C"));
                                             if (ne) {
-                                                ne =
-                                                    (strcmp(
-                                                         (*g_typeColl.GetNameRecord(
-                                                             unit->m_objAux->m_actKey
-                                                         )),
-                                                         "R"
-                                                     )
-                                                     != 0);
+                                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "R"));
                                                 if (ne) {
                                                     if (unit->m_battleState != BZTASK_UNASSIGNED) {
                                                         if (RouteToNearbyEnemy(unit) != 0) {
@@ -1324,40 +1122,19 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != 0
                 && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
                 && unit->m_poweredUp == 0) {
-                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "G") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
                     if (!eq) {
-                        eq =
-                            (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "L")
-                             == 0);
+                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
                         if (!eq) {
-                            eq =
-                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "P")
-                                 == 0);
+                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
                             if (!eq) {
-                                eq =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                         "J"
-                                     )
-                                     == 0);
+                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
                                 if (!eq) {
-                                    eq =
-                                        (strcmp(
-                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)),
-                                             "C"
-                                         )
-                                         == 0);
+                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
                                     if (!eq) {
-                                        eq =
-                                            (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_actKey
-                                                 )),
-                                                 "R"
-                                             )
-                                             == 0);
+                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                                         if (!eq) {
                                             if (static_cast<u32>(m_roundRobinTick) % 15
                                                 == static_cast<u32>(i)) {
@@ -1419,14 +1196,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 }
                                                 {
                                                     char nd;
-                                                    nd =
-                                                        (strcmp(
-                                                             (*g_typeColl.GetNameRecord(
-                                                                 unit->m_objAux->m_actKey
-                                                             )),
-                                                             "D"
-                                                         )
-                                                         != 0);
+                                                    nd = (ANIMATION_ACT_DIFFERS_FOR(unit, "D"));
                                                     if (nd) {
                                                         ResolveArrival(unit);
                                                     }
@@ -1439,32 +1209,14 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     && unit->m_deathAnimStarted == 0
                                                     && unit->m_entranceActive == 0
                                                     && unit->m_poweredUp == 0) {
-                                                    eq =
-                                                        (strcmp(
-                                                             (*g_typeColl.GetNameRecord(
-                                                                 unit->m_objAux->m_actKey
-                                                             )),
-                                                             "I"
-                                                         )
-                                                         == 0);
+                                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                                                     if (!eq) {
-                                                        eq =
-                                                            (strcmp(
-                                                                 (*g_typeColl.GetNameRecord(
-                                                                     unit->m_objAux->m_actKey
-                                                                 )),
-                                                                 "G"
-                                                             )
-                                                             == 0);
+                                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
                                                         if (!eq) {
-                                                            eq =
-                                                                (strcmp(
-                                                                     (*g_typeColl.GetNameRecord(
-                                                                         unit->m_objAux->m_actKey
-                                                                     )),
-                                                                     "L"
-                                                                 )
-                                                                 == 0);
+                                                            eq = (ANIMATION_ACT_EQUALS_FOR(
+                                                                unit,
+                                                                "L"
+                                                            ));
                                                             if (!eq) {
                                                                 eq =
                                                                     (strcmp(
@@ -1586,7 +1338,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit->CoordCount() != 0) {
-            eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "A") == 0);
+            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "A"));
             if (eq) {
                 Coord* gc = (unit->CoordHead())->m_coord;
                 i32 gx = gc->m_x;
@@ -1617,10 +1369,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto flagsArm;
                     }
                 wingzGate: {
-                    PickupType wp = unit->m_entranceReason;
-                    if (wp > PICKUP_EQUIPPABLE_LAST) {
-                        wp = unit->m_toolId;
-                    }
+                    PickupType wp = ArrivalPickup(unit);
                     if (wp != PICKUP_WINGZ) {
                         goto nexti;
                     }
@@ -1662,14 +1411,10 @@ perimSweep: {
     Coord q0;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&q0));
     i32 col = (q0.m_x >> TILE_SHIFT_PX) - 2;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
-    scratch.m_x >>= 5;
-    scratch.m_y >>= 5;
+    (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
     while (col < scratch.m_x + 3) {
         Coord qa;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&qa));
-        qa.m_y >>= TILE_SHIFT_PX;
-        qa.m_x >>= TILE_SHIFT_PX;
+        GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(unit), qa)
         i32 rt = qa.m_y - 2;
         if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rt) < m_board->m_height) {
             if (unit->TileSwitch(col, rt, 0, 0x2000098b, 1, 0) != 0) {
@@ -1677,9 +1422,7 @@ perimSweep: {
             }
         }
         Coord qc;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&qc));
-        qc.m_y >>= TILE_SHIFT_PX;
-        qc.m_x >>= TILE_SHIFT_PX;
+        GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(unit), qc)
         i32 rb = qc.m_y + 2;
         if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rb) < m_board->m_height) {
             if (unit->TileSwitch(col, rb, 0, 0x2000098b, 1, 0) != 0) {
@@ -1687,22 +1430,16 @@ perimSweep: {
             }
         }
         col++;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
-        scratch.m_x >>= 5;
-        scratch.m_y >>= 5;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
     }
     {
         Coord u0;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&u0));
         i32 row = (u0.m_y >> TILE_SHIFT_PX) - 2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
-        scratch.m_x >>= 5;
-        scratch.m_y >>= 5;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
         while (row < scratch.m_y + 3) {
             Coord ua;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&ua));
-            ua.m_x >>= 5;
-            ua.m_y >>= 5;
+            (static_cast<CUserLogic*>(unit))->GetScreenTile((&ua));
             i32 xl = ua.m_x - 2;
             if (static_cast<u32>(xl) < m_board->m_width
                 && static_cast<u32>(row) < m_board->m_height) {
@@ -1722,9 +1459,7 @@ perimSweep: {
                 }
             }
             row++;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
-            scratch.m_x >>= 5;
-            scratch.m_y >>= 5;
+            (static_cast<CUserLogic*>(unit))->GetScreenTile((&scratch));
         }
     }
     {
@@ -1797,15 +1532,9 @@ flagsArm: {
     // (a second register), the second overwrites er in place because it is dead.
     if (cell & 8) {
         PickupType er = unit->m_entranceReason;
-        PickupType held = er;
-        if (er > PICKUP_EQUIPPABLE_LAST) {
-            held = unit->m_toolId;
-        }
+        PickupType held = ArrivalPickupOf(unit, er);
         if (held != PICKUP_TOOB) {
-            PickupType held2 = er;
-            if (er > PICKUP_EQUIPPABLE_LAST) {
-                held2 = unit->m_toolId;
-            }
+            PickupType held2 = ArrivalPickupOf(unit, er);
             if (held2 != PICKUP_WINGZ) {
                 ok = 0;
             }
@@ -1813,15 +1542,9 @@ flagsArm: {
     }
     if (cell & 0x200) {
         PickupType er = unit->m_entranceReason;
-        PickupType held = er;
-        if (er > PICKUP_EQUIPPABLE_LAST) {
-            held = unit->m_toolId;
-        }
+        PickupType held = ArrivalPickupOf(unit, er);
         if (held != PICKUP_TOOB) {
-            PickupType held2 = er;
-            if (er > PICKUP_EQUIPPABLE_LAST) {
-                held2 = unit->m_toolId;
-            }
+            PickupType held2 = ArrivalPickupOf(unit, er);
             if (held2 != PICKUP_WINGZ) {
                 ok = 0;
             }
@@ -1943,13 +1666,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             goto recycleBail;
         }
 
-        i32 tile0;
-        if (static_cast<u32>(ux) < static_cast<u32>(m_board->m_width)
-            && static_cast<u32>(uy) < static_cast<u32>(m_board->m_height)) {
-            tile0 = (static_cast<BrickzCell*>(m_board->m_rows[uy]))[ux].m_flags;
-        } else {
-            tile0 = 1;
-        }
+        i32 tile0 = m_board->CellFlagsAt(ux, uy);
         if (static_cast<u8>(tile0) == 1) {
             if (unit->CoordCount() == 0) {
                 goto returnZero;
@@ -1992,19 +1709,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             srcA = &scratchA;
         }
         scratchA = *srcA;
-        PickupType prim = unit->m_entranceReason;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            prim = unit->m_toolId;
-        }
+        PickupType prim = ArrivalPickup(unit);
 
         Coord pt2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
-        pt2.m_x >>= TILE_SHIFT_PX;
-        pt2.m_y >>= TILE_SHIFT_PX;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
         i32 sgy = pt2.m_y;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-        pt.m_x >>= TILE_SHIFT_PX;
-        pt.m_y >>= TILE_SHIFT_PX;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt));
         i32 sgx = pt.m_x;
         BrickzCell scratchB;
         const BrickzCell* srcB;
@@ -2018,13 +1728,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         scratchB = *srcB;
 
         if ((scratchB.m_flags & 0x4) && unit->m_battleState != BZTASK_SEEK_SWITCH) {
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-            pt.m_x >>= TILE_SHIFT_PX;
-            pt.m_y >>= TILE_SHIFT_PX;
+            (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt));
             i32 rx = pt.m_x;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
-            pt2.m_x >>= TILE_SHIFT_PX;
-            pt2.m_y >>= TILE_SHIFT_PX;
+            (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
             i32 ry = pt2.m_y;
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
@@ -2036,10 +1742,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
 
-        PickupType entranceMode = unit->m_entranceReason;
-        if (entranceMode > PICKUP_EQUIPPABLE_LAST) {
-            entranceMode = unit->m_toolId;
-        }
+        PickupType entranceMode = ArrivalPickup(unit);
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
             CoordNode* node = unit->CoordHead();
             Coord* ca = node->m_coord;
@@ -2049,21 +1752,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 ay = ca->m_y;
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
-            i32 tB;
-            if (static_cast<u32>(bx) < static_cast<u32>(m_board->m_width)
-                && static_cast<u32>(by) < static_cast<u32>(m_board->m_height)) {
-                tB = (static_cast<BrickzCell*>(m_board->m_rows[by]))[bx].m_flags;
-            } else {
-                tB = 1;
-            }
+            i32 tB = m_board->CellFlagsAt(bx, by);
             if (tB & 0x20) {
-                i32 tA2;
-                if (static_cast<u32>(ax) < static_cast<u32>(m_board->m_width)
-                    && static_cast<u32>(ay) < static_cast<u32>(m_board->m_height)) {
-                    tA2 = (static_cast<BrickzCell*>(m_board->m_rows[ay]))[ax].m_flags;
-                } else {
-                    tA2 = 1;
-                }
+                i32 tA2 = m_board->CellFlagsAt(ax, ay);
                 if (!(tA2 & 0x2)) {
                     m_triggerMgr->ApplyTriggerA(
                         unit->m_tileOwnerHi,
@@ -2113,10 +1804,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         if (sA & 0x200) {
-            PickupType p = unit->m_entranceReason;
-            if (p > PICKUP_EQUIPPABLE_LAST) {
-                p = unit->m_toolId;
-            }
+            PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
@@ -2125,27 +1813,18 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 hi = sA & 0x100;
             if (hi) {
                 PickupType er = unit->m_entranceReason;
-                PickupType p = er;
-                if (er > PICKUP_EQUIPPABLE_LAST) {
-                    p = unit->m_toolId;
-                }
+                PickupType p = ArrivalPickupOf(unit, er);
                 if (p == PICKUP_WINGZ) {
                     return 1;
                 }
-                PickupType entranceMode2 = er;
-                if (er > PICKUP_EQUIPPABLE_LAST) {
-                    entranceMode2 = unit->m_toolId;
-                }
+                PickupType entranceMode2 = ArrivalPickupOf(unit, er);
                 if (entranceMode2 == PICKUP_TOOB) {
                     return 1;
                 }
             }
             i32 lo2 = sA & 0x2;
             if (lo2) {
-                PickupType p = unit->m_entranceReason;
-                if (p > PICKUP_EQUIPPABLE_LAST) {
-                    p = unit->m_toolId;
-                }
+                PickupType p = ArrivalPickup(unit);
                 if (p == PICKUP_WINGZ) {
                     goto returnOne;
                 }
@@ -2183,10 +1862,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
         if (sA & 0x40) {
-            PickupType p = unit->m_entranceReason;
-            if (p > PICKUP_EQUIPPABLE_LAST) {
-                p = unit->m_toolId;
-            }
+            PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 if (prim == PICKUP_SHOVEL) {
                     goto returnZero;
@@ -2199,10 +1875,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
         if (sA & 0x2) {
-            PickupType p = unit->m_entranceReason;
-            if (p > PICKUP_EQUIPPABLE_LAST) {
-                p = unit->m_toolId;
-            }
+            PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
@@ -2210,10 +1883,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (sA & BRICKZ_CELL_OCCUPIED) {
             return RepathAroundBlockedTiles(unit);
         }
-        PickupType pk = unit->m_entranceReason;
-        if (pk > PICKUP_EQUIPPABLE_LAST) {
-            pk = unit->m_toolId;
-        }
+        PickupType pk = ArrivalPickup(unit);
         if (pk != PICKUP_GOOBER) {
             goto returnOne;
         }
@@ -2307,10 +1977,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         // One load of m_entranceReason, kept live across all three gates: retail
         // guards on IT (`cmp er,0x16`) and lands the select in a second register.
         PickupType er = unit->m_entranceReason;
-        PickupType prim = er;
-        if (er > PICKUP_EQUIPPABLE_LAST) {
-            prim = unit->m_toolId;
-        }
+        PickupType prim = ArrivalPickupOf(unit, er);
         if (prim == PICKUP_TOOB) {
             flags = 0x100;
         }
@@ -2526,23 +2193,23 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
         return 0;
     }
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "J") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "C") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "R") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "G") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "L") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
     if (eq) {
         return 0;
     }
@@ -2579,10 +2246,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     CGameObject* ul3 = unit->m_object;
     (static_cast<CGrunt*>(tgt))
         ->CommitNeighbor(unit->m_tileOwnerHi, unit->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
-    PickupType prim = tgt->m_entranceReason;
-    if (prim > PICKUP_EQUIPPABLE_LAST) {
-        prim = tgt->m_toolId;
-    }
+    PickupType prim = ArrivalPickup(tgt);
     if (prim != PICKUP_TIMEBOMB) {
         return 1;
     }
@@ -2938,10 +2602,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->m_gruntKind != GRUNT_NORMAL) {
         return 0;
     }
-    PickupType prim = unit->m_entranceReason;
-    if (prim > PICKUP_EQUIPPABLE_LAST) {
-        prim = unit->m_toolId;
-    }
+    PickupType prim = ArrivalPickup(unit);
     if (prim != PICKUP_NONE) {
         return 0;
     }
@@ -2952,19 +2613,13 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     i32 left;
     {
         Coord c1;
-        unit->GetScreenPos(&c1);
-        c1.m_x >>= TILE_SHIFT_PX;
-        c1.m_y >>= TILE_SHIFT_PX;
+        unit->GetScreenTile(&c1);
         bottom = c1.m_y;
         Coord c2;
-        unit->GetScreenPos(&c2);
-        c2.m_x >>= TILE_SHIFT_PX;
-        c2.m_y >>= TILE_SHIFT_PX;
+        unit->GetScreenTile(&c2);
         right = c2.m_x;
         Coord c3;
-        unit->GetScreenPos(&c3);
-        c3.m_x >>= TILE_SHIFT_PX;
-        c3.m_y >>= TILE_SHIFT_PX;
+        unit->GetScreenTile(&c3);
         top = c3.m_y;
         Coord c4;
         unit->GetScreenPos(&c4);
@@ -3076,10 +2731,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                         return 1;
                     }
                 } else {
-                    PickupType entranceMode = unit->m_entranceReason;
-                    if (entranceMode > PICKUP_EQUIPPABLE_LAST) {
-                        entranceMode = unit->m_toolId;
-                    }
+                    PickupType entranceMode = ArrivalPickup(unit);
                     if (entranceMode == PICKUP_NONE) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CMapMgr* bd = m_board;
@@ -3106,7 +2758,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         if (c->m_scanCursor == NULL) {
             g = NULL;
         } else {
-            CGameObject* pp = static_cast<CGameObject*>(c->m_list.GetNext(c->m_scanCursor));
+            CGameObject* pp = c->NextChild(c->m_scanCursor);
             if (pp->GetClassId() == CLASSID_SERIALREF) {
                 g = pp;
             } else {
@@ -3130,36 +2782,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         }                                                                                          \
         coordList->RemoveAll();                                                                    \
     }
-
-// The engine's "which pickup is this grunt arriving with" select, spelled out at
-// every use site in retail (cl re-evaluates it per site; it never CSEs).
-static __inline PickupType ArrivalPickup(CGrunt* g) {
-    PickupType p = g->m_entranceReason;
-    if (p > PICKUP_EQUIPPABLE_LAST) {
-        p = g->m_toolId;
-    }
-    return p;
-}
-
-// The same select against an entrance reason the caller already holds.  A block
-// that asks more than once loads m_entranceReason ONCE and keeps it live, which
-// is why retail's guard there reads `cmp er,0x16 / mov p,er / jle / mov p,tool`
-// (a second register) instead of overwriting the loaded value in place.
-static __inline PickupType ArrivalPickupOf(CGrunt* g, PickupType er) {
-    PickupType p = er;
-    if (er > PICKUP_EQUIPPABLE_LAST) {
-        p = g->m_toolId;
-    }
-    return p;
-}
-
-static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
-    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-        return grid->m_rows[row][col].m_flags;
-    }
-    return 1;
-}
 
 // @identity-TODO BattlezMapConfigAcceptAlwaysArg - the surviving external
 // thunk and `ret 4` prove one callee-popped dword, but no use survives to prove
@@ -3226,8 +2848,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     // Retail spells THIS one with the `<=` arm first: its two stores to the
     // `type` slot are ordered entranceReason-then-toolId behind a `jg`, which
     // is the arm order only the `<=` condition produces.
-    PickupType type =
-        (g->m_entranceReason <= PICKUP_EQUIPPABLE_LAST) ? g->m_entranceReason : g->m_toolId;
+    PickupType type = ARRIVAL_PICKUP_TERNARY_LE(g);
 
     if ((dest.m_flags & 0x400) && g->m_defenderState == AISTATE_RETURN
         && ArrivalPickup(g) != PICKUP_GRAVITYBOOTZ) {
@@ -3424,7 +3045,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     for (i32 col = fcx - 1; col < fcx + 2; col++) {
                         if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
                             && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
-                            i32 cf = arrCell(m_board, col, row);
+                            i32 cf = m_board->CellFlagsAt(col, row);
                             if (cf & BRICKZ_BLOCKED_MASK) {
                                 return 1;
                             }
@@ -3442,8 +3063,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x4000) {
-        PickupType t =
-            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
             if (r != NULL) {
@@ -3464,8 +3084,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x8000) {
-        PickupType t =
-            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
             ARR_RECYCLE(g);
             ResolveTileClaim(g, fcx, fcy, 1);
@@ -3474,8 +3093,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x20) {
-        PickupType t =
-            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_GAUNTLETZ) {
             if (maskFlags & 0x4000) {
                 CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
@@ -3541,8 +3159,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 1;
     }
     {
-        PickupType t =
-            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+        PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_WINGZ) {
             return 1;
         }
@@ -3556,8 +3173,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
             return 1;
         }
-        i32 c0 = arrCell(m_board, col, row);
-        i32 c1 = arrCell(m_board, col, row) & 0x987;
+        i32 c0 = m_board->CellFlagsAt(col, row);
+        i32 c1 = m_board->CellFlagsAt(col, row) & 0x987;
         if (c1 & BRICKZ_CELL_OCCUPIED) {
             return 1;
         }
@@ -3845,25 +3462,13 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         i32 savedY = unit->m_entrancePx.m_y;
         i32 col = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
         i32 row = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
-        u32 tile0;
-        if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
-            && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
-            tile0 = m_board->m_rowInts[row][col * 7];
-        } else {
-            tile0 = 1;
-        }
+        u32 tile0 = m_board->CellFlagsAt(col, row);
         i32 flag = (tile0 >> 2) & 1;
         if (unit->CoordCount() != 0) {
             Coord* c = (unit->CoordTail())->m_coord;
             i32 cx = c->m_x;
             i32 cy = c->m_y;
-            i32 tile1;
-            if (static_cast<u32>(cx) < static_cast<u32>(m_board->m_width)
-                && static_cast<u32>(cy) < static_cast<u32>(m_board->m_height)) {
-                tile1 = m_board->m_rowInts[cy][cx * 7];
-            } else {
-                tile1 = 1;
-            }
+            i32 tile1 = m_board->CellFlagsAt(cx, cy);
             if (tile1 & 4) {
                 savedX = c->m_x;
                 savedY = c->m_y;
@@ -3968,23 +3573,23 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 continue;
             }
             bool ne;
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_actKey)), "C") != 0;
+            ne = ANIMATION_ACT_DIFFERS_FOR(u, "C");
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_actKey)), "R") != 0;
+            ne = ANIMATION_ACT_DIFFERS_FOR(u, "R");
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_actKey)), "J") != 0;
+            ne = ANIMATION_ACT_DIFFERS_FOR(u, "J");
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_actKey)), "G") != 0;
+            ne = ANIMATION_ACT_DIFFERS_FOR(u, "G");
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_actKey)), "L") != 0;
+            ne = ANIMATION_ACT_DIFFERS_FOR(u, "L");
             if (!ne) {
                 continue;
             }
@@ -4042,10 +3647,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
             i32 flags = 0;
             PickupType prim = unit->m_entranceReason;
-            PickupType t = prim;
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                t = unit->m_toolId;
-            }
+            PickupType t = ArrivalPickupOf(unit, prim);
             if (t == PICKUP_TOOB) {
                 flags = 0x100;
             }
@@ -4187,14 +3789,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             if (unit->CoordCount() != 0) {
                 CoordNode* p = unit->CoordHead();
                 Coord* c = p->m_coord;
-                i32 word;
                 CMapMgr* b = m_board;
-                if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
-                    && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
-                    word = b->m_rows[c->m_y][c->m_x].m_flags;
-                } else {
-                    word = 1;
-                }
+                i32 word = b->CellFlagsAt(c->m_x, c->m_y);
                 if (!(word & BRICKZ_CELL_OCCUPIED)) {
                     return 1;
                 }
@@ -4223,24 +3819,24 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 && cand->m_deathAnimStarted == 0 && cand->m_entranceActive == 0
                 && cand->m_poweredUp == 0) {
                 bool eq;
-                eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "I") == 0);
+                eq = (ANIMATION_ACT_EQUALS_FOR(cand, "I"));
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "G") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "G"));
                 }
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "L") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "L"));
                 }
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "P") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "P"));
                 }
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "J") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "J"));
                 }
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "C") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "C"));
                 }
                 if (!eq) {
-                    eq = (strcmp((*g_typeColl.GetNameRecord(cand->m_objAux->m_actKey)), "R") == 0);
+                    eq = (ANIMATION_ACT_EQUALS_FOR(cand, "R"));
                 }
                 if (!eq && cand != unit && cand->m_defenderState != AISTATE_RETURN
                     && cand->m_defenderState != AISTATE_RETREAT) {
@@ -4323,7 +3919,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
     if (eq) {
         return 0;
     }
@@ -4427,10 +4023,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     band++;
     if (band <= m_toolzPct) {
 
-        PickupType cur = unit->m_entranceReason;
-        if (cur > PICKUP_EQUIPPABLE_LAST) {
-            cur = unit->m_toolId;
-        }
+        PickupType cur = ArrivalPickup(unit);
         if (cur != PICKUP_NONE) {
             return 1;
         }
@@ -5182,7 +4775,7 @@ CGameObject* CDDrawChildGroup::Drain() {
         if (m_scanCursor == NULL) {
             return 0;
         }
-        CGameObject* data = static_cast<CGameObject*>(m_list.GetNext(m_scanCursor));
+        CGameObject* data = NextChild(m_scanCursor);
         if (data->GetClassId() == CLASSID_SERIALREF) {
             return data;
         }

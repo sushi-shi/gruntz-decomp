@@ -96,12 +96,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
         out = 0;                                                                                   \
         reg->m_imageRegistry->m_workersByName.Lookup(buf, out);                                    \
         CDDrawWorker* gm = static_cast<CDDrawWorker*>(out);                                        \
-        CImage* r;                                                                                 \
-        if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                               \
-            r = static_cast<CImage*>(gm->m_items.GetAt(i));                                        \
-        } else {                                                                                   \
-            r = 0;                                                                                 \
-        }                                                                                          \
+        CImage* r = gm != 0 ? gm->GetAt(i) : 0;                                                    \
         field = r;                                                                                 \
     } else {                                                                                       \
         field = 0;                                                                                 \

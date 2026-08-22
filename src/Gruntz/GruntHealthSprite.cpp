@@ -89,12 +89,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
         CWwdGameObjectA* obj = m_object;
         CDDrawWorker* holder = obj->m_frameSet;
         if (holder != NULL) {
-            CImage* glyph;
-            if (slot >= holder->m_minIndex && slot <= holder->m_maxIndex) {
-                glyph = static_cast<CImage*>(holder->m_items.GetAt(slot));
-            } else {
-                glyph = NULL;
-            }
+            CImage* glyph = holder->GetAt(slot);
             obj->m_layer = glyph;
             obj->m_frameIndex = slot;
         }
@@ -124,8 +119,5 @@ i32 CGruntHealthSprite::SerializeMove(
             ar->Read(&m_yOffset, sizeof(m_yOffset));
             break;
     }
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    return Chain(ar, mode, typeId, pObj) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
 }

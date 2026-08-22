@@ -14,6 +14,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -101,13 +102,7 @@ i32 CTriggerMgr::PlaceObject(
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
         i32 tx = x >> TILE_SHIFT_PX;
         i32 ty = y >> TILE_SHIFT_PX;
-        i32 attr;
-        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
-            attr = 1;
-        } else {
-            attr = plane->m_rowInts[ty][tx * 7];
-        }
+        i32 attr = plane->CellFlagsAt(tx, ty);
         if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
             goto fail;
         }
@@ -242,7 +237,7 @@ i32 CTriggerMgr::PlaceObject(
                     mode
                 )
                 == 0) {
-                logic->m_wwdObject->m_flags |= 0x10000;
+                logic->SetObjectFlags(0x10000);
                 return -1;
             }
 
@@ -250,7 +245,7 @@ i32 CTriggerMgr::PlaceObject(
                 CWwdGameObjectA* hole =
                     m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
                 if (hole == NULL) {
-                    logic->m_wwdObject->m_flags |= 0x10000;
+                    logic->SetObjectFlags(0x10000);
                     return -1;
                 }
                 hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
@@ -334,7 +329,7 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
         for (i32 col = 0; col < TM_GRID_COLS; col++) {
             CGrunt* c = cell[col];
             if (c != NULL) {
-                c->m_wwdObject->m_flags |= 0x10000;
+                c->SetObjectFlags(0x10000);
                 cell[col] = NULL;
                 m_cellFlag[r * TM_GRID_COLS + col] = 0;
             }
@@ -816,10 +811,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw->m_checkpointType == 0) {
                 sw->SwitchDown();
             } else {
-                PickupType gruntKind = g->m_entranceReason;
-                if (gruntKind > PICKUP_EQUIPPABLE_LAST) {
-                    gruntKind = g->m_toolId;
-                }
+                PickupType gruntKind = ArrivalPickup(g);
                 // m_checkpointType is a PickupType stored as i32 (declared in
                 // TileTriggerSwitchLogic.h, fed from LevelTileValidation).
                 if (IDX(gruntKind) == sw->m_checkpointType
@@ -1078,10 +1070,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (o->m_screenY != cell->m_lastTilePx.m_y) {
         return -1;
     }
-    PickupType k = cell->m_entranceReason;
-    if (k > PICKUP_EQUIPPABLE_LAST) {
-        k = cell->m_toolId;
-    }
+    PickupType k = ArrivalPickup(cell);
     if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
         if (cellTileX != argTileX || cellTileY != argTileY) {
             return 0;
@@ -1090,10 +1079,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 1;
     }
     if (cellTileX == argTileX && cellTileY == argTileY) {
-        PickupType kSame = cell->m_entranceReason;
-        if (kSame > PICKUP_EQUIPPABLE_LAST) {
-            kSame = cell->m_toolId;
-        }
+        PickupType kSame = ArrivalPickup(cell);
         if (kSame != PICKUP_SPY) {
             return 0;
         }
@@ -1103,10 +1089,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         cell->RunMoveConfig(cellTileX, cellTileY);
         return 1;
     }
-    PickupType kDiag = cell->m_entranceReason;
-    if (kDiag > PICKUP_EQUIPPABLE_LAST) {
-        kDiag = cell->m_toolId;
-    }
+    PickupType kDiag = ArrivalPickup(cell);
     if (kDiag == PICKUP_BOMB) {
 
         if (cellTileY != argTileY && cellTileX != argTileX) {
@@ -1140,10 +1123,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     }
     CGruntzMapMgr* map = g_gameReg->m_tileGrid;
     TileCollisionKind bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
-    PickupType kind = cell->m_entranceReason;
-    if (kind > PICKUP_EQUIPPABLE_LAST) {
-        kind = cell->m_toolId;
-    }
+    PickupType kind = ArrivalPickup(cell);
 
     switch (kind) {
         case PICKUP_GAUNTLETZ:
@@ -1200,11 +1180,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 return 0;
             }
-            i32 flags = 1;
-            if (static_cast<u32>(argTileX) < map->m_width
-                && static_cast<u32>(argTileY) < map->m_height) {
-                flags = map->m_rows[argTileY][argTileX].m_flags;
-            }
+            i32 flags = map->CellFlagsAt(argTileX, argTileY);
             if ((flags & 0x40939) != 0 || (flags & 2) != 0) {
                 return 0;
             }
@@ -1266,13 +1242,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, TM_GRID_ROW_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-        i32 flags;
-        if (static_cast<u32>(argTileX) < map->m_width
-            && static_cast<u32>(argTileY) < map->m_height) {
-            flags = map->m_rows[argTileY][argTileX].m_flags;
-        } else {
-            flags = 1;
-        }
+        i32 flags = map->CellFlagsAt(argTileX, argTileY);
         if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
             return 0;
         }
@@ -1313,15 +1283,15 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
 
     // Retail holds each strcmp result in a `bool` before testing it (`sete cl /
     // test cl,cl`), five times over this function.
-    isG = (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "G") == 0);
+    isG = (ANIMATION_ACT_EQUALS_FOR(hit, "G"));
     if (isG) {
         return 0;
     }
-    isL = (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "L") == 0);
+    isL = (ANIMATION_ACT_EQUALS_FOR(hit, "L"));
     if (isL) {
         return 0;
     }
-    isP = (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "P") == 0);
+    isP = (ANIMATION_ACT_EQUALS_FOR(hit, "P"));
     if (isP) {
         return 0;
     }
@@ -1445,10 +1415,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (!differ) {
         return;
     }
-    PickupType k = cell->m_entranceReason;
-    if (k > PICKUP_EQUIPPABLE_LAST) {
-        k = cell->m_toolId;
-    }
+    PickupType k = ArrivalPickup(cell);
     if (k != PICKUP_WARPSTONE) {
         return;
     }

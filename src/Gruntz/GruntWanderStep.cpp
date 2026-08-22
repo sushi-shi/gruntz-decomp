@@ -47,14 +47,7 @@ i32 CGrunt::WanderStep() {
     m_defenderPx = m_lastTilePx;
 
     i32 flag = 0;
-    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-    if (g != NULL) {
-        i32 gx = g->m_object->m_screenX;
-        if (GRUNT_X_AT_SAVED_POS(gx, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-            && RectContains(gx, g->m_object->m_screenY) != 0) {
-            flag = 1;
-        }
-    }
+    FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(g, flag, gx)
 
     i32 powered = m_poweredUp;
     if (powered != 0) {
@@ -103,9 +96,7 @@ i32 CGrunt::WanderStep() {
                 if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
-                        g->GetScreenPos(c);
-                        c[0].m_x = c[0].m_x >> TILE_SHIFT_PX;
-                        c[0].m_y = c[0].m_y >> TILE_SHIFT_PX;
+                        g->GetScreenTile(c);
                         if (TileSwitch(c[0].m_x, c[0].m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(g);
                             m_defenderState = AISTATE_CHASE;

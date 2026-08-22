@@ -50,12 +50,11 @@
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
     m_neighborScanEnabled = 0;
-    bool isFlag = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
+    bool isFlag = ANIMATION_ACT_EQUALS("F");
     if (isFlag) {
         return 1;
     }
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
 
     // Mirror the grunt across m_arrivalCell: the destination tile is
     // 2*here - arrival on each axis, and each axis re-reads the live screen
@@ -168,7 +167,7 @@ s0_reset:
 }
 
 state2: {
-    bool isFlagObj = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
+    bool isFlagObj = ANIMATION_ACT_EQUALS("F");
     if (isFlagObj) {
         goto common;
     }

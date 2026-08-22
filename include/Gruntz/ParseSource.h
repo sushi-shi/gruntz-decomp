@@ -73,4 +73,27 @@ struct CParseSource {
     char* m_buffer;
 };
 
+#define BEGIN_FILE_IMAGE_PARSE(source, format, bytes)                                              \
+    FileImageFormat format;                                                                        \
+    switch (static_cast<u32>(source->GetEntryTag())) {                                             \
+        case IMGTAG_PMB:                                                                           \
+            format = FMT_BMP;                                                                      \
+            break;                                                                                 \
+        case IMGTAG_XCP:                                                                           \
+            format = FMT_PCX;                                                                      \
+            break;                                                                                 \
+        case IMGTAG_DIR:                                                                           \
+            format = FMT_RID;                                                                      \
+            break;                                                                                 \
+        case IMGTAG_DIP:                                                                           \
+            format = FMT_PID;                                                                      \
+            break;                                                                                 \
+        default:                                                                                   \
+            return 0;                                                                              \
+    }                                                                                              \
+    char* bytes = source->BeginParse();                                                            \
+    if (bytes == NULL) {                                                                           \
+        return 0;                                                                                  \
+    }
+
 #endif // GRUNTZ_CPARSESOURCE_H

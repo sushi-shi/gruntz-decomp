@@ -65,13 +65,13 @@ i32 CSBI_MenuItem::SetupImage(
         m_host = host;
         m_tab = tab;
         m_kind = SBI_KIND_MENU_ITEM;
-        m_frame = NULL;
+        SetFrame(NULL);
 
         m_rect14 = rc;
         m_redrawFrames = 0;
         m_cmd = cmd;
         m_state = MENUITEM_NORMAL;
-        m_enabled = 1;
+        SetEnabled(1);
         return ResolveFrame(key, frame) != 0;
     }
     return 0;
@@ -79,7 +79,7 @@ i32 CSBI_MenuItem::SetupImage(
 
 RVA(0x000e81a0, 0x8)
 void CSBI_MenuItem::Reset() {
-    m_frame = NULL;
+    SetFrame(NULL);
 }
 
 RVA(0x000e81c0, 0x8)
@@ -100,9 +100,9 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     }
 
     if (a == -1) {
-        m_frame = static_cast<CImage*>(rec->m_items.GetAt(rec->m_minIndex));
+        SetFrame(static_cast<CImage*>(rec->m_items.GetAt(rec->m_minIndex)));
     } else {
-        m_frame = rec->GetAt(a);
+        SetFrame(rec->GetAt(a));
     }
     return m_frame != NULL;
 }
@@ -159,7 +159,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
     }
     CDDrawWorker* r = m_record;
     CImage* frame = r->GetAt(IDX(state));
-    m_frame = frame;
+    SetFrame(frame);
     m_state = state;
     SetSubtype();
     return 1;

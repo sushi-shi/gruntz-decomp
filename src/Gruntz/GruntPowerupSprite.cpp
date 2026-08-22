@@ -86,12 +86,7 @@ i32 CGruntPowerupSprite::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    if (Chain(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, pObj)
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_cell, sizeof(m_cell));

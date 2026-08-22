@@ -46,12 +46,11 @@
 // epilogue.  The ordered branch sequences otherwise agree.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
-    bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    bool eqI = ANIMATION_ACT_EQUALS("I");
     if (eqI) {
         return 1;
     }
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
@@ -62,15 +61,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     GetScreenPos(&c2);
     c2.m_y >>= TILE_SHIFT_PX;
 
-    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-    i32 atTarget = 0;
-    if (g != NULL) {
-        i32 x = g->m_object->m_screenX;
-        if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-            && RectContains(x, g->m_object->m_screenY) != 0) {
-            atTarget = 1;
-        }
-    }
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
     i32 powered = m_poweredUp;
     if (powered != 0) {

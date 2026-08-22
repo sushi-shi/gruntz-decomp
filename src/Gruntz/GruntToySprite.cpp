@@ -105,8 +105,5 @@ i32 CGruntToySprite::SerializeMove(
             ar->Read(&m_lastLayer, sizeof(m_lastLayer));
             break;
     }
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    return Chain(ar, mode, typeId, pObj) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
 }

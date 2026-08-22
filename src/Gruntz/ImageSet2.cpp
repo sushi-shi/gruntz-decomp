@@ -1,13 +1,11 @@
 #include <rva.h>
 
-#include <Gruntz/ImageSets.h>
+#include <Gruntz/ImageSetInline.h>
 
 // @early-stop
 RVA(0x00166990, 0x4c)
 i32 CImageSet2::Parse(WwdTileImageRecord* record) {
-    i32* p = &record->m_width;
-    m_width = *p++;
-    m_height = *p++;
+    READ_TILE_IMAGE_DIMENSIONS(record, p)
     m_outsideValue = *p++;
     m_insideValue = *p++;
     m_left = *p++;

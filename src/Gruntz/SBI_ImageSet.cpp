@@ -16,6 +16,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarItemInline.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
@@ -34,11 +35,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (host == NULL || owner == NULL) {
         return 0;
     }
-    m_owner = owner;
-    m_tab = obj;
-    m_host = host;
-    m_redrawFrames = 0;
-    m_enabled = 1;
+    INITIALIZE_STATUS_BAR_ITEM(owner, obj, host)
 
     m_rect14 = rect;
     m_cmd = cmd;
@@ -58,14 +55,14 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_frameIndex = f;
 
-    m_frame = rec->GetAt(f);
+    SetFrame(rec->GetAt(f));
     return 1;
 }
 
 RVA(0x000e7400, 0x9)
 void CSBI_ImageSet::Reset() {
     m_frameSet = NULL;
-    m_frame = NULL;
+    SetFrame(NULL);
 }
 
 RVA(0x000e7420, 0x8)
@@ -80,13 +77,8 @@ i32 CSBI_ImageSet::Render() {
         m_redrawFrames--;
         i32 idx = m_frameIndex;
         CDDrawWorker* tbl = m_frameSet;
-        CImage* cel;
-        if (idx >= tbl->m_minIndex && idx <= tbl->m_maxIndex) {
-            cel = static_cast<CImage*>(tbl->m_items.GetAt(idx));
-        } else {
-            cel = NULL;
-        }
-        m_frame = cel;
+        CImage* cel = tbl->GetAt(idx);
+        SetFrame(cel);
         if (cel != NULL) {
             i32 y = cel->m_anchorY + m_rect14.top;
             i32 x = cel->m_anchorX + m_rect14.left;

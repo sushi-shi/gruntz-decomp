@@ -176,27 +176,7 @@ void CDDrawSurfacePair::Unload() {
 
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
-    FileImageFormat type;
-    switch (static_cast<u32>(src->GetEntryTag())) {
-        case IMGTAG_PMB:
-            type = FMT_BMP;
-            break;
-        case IMGTAG_XCP:
-            type = FMT_PCX;
-            break;
-        case IMGTAG_DIR:
-            type = FMT_RID;
-            break;
-        case IMGTAG_DIP:
-            type = FMT_PID;
-            break;
-        default:
-            return 0;
-    }
-    char* buf = src->BeginParse();
-    if (buf == NULL) {
-        return 0;
-    }
+    BEGIN_FILE_IMAGE_PARSE(src, type, buf)
     i32 r = m_surface->Resolve(OwnerMgr()->m_ptrColl, buf, type, src->m_length, 0);
     src->EndParse();
     return r;
@@ -1322,13 +1302,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
     CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, key);
-    CImage* v;
-    if (p != NULL && idx >= p->m_minIndex && idx <= p->m_maxIndex) {
-
-        v = static_cast<CImage*>(p->m_items.GetAt(idx));
-    } else {
-        v = NULL;
-    }
+    CImage* v = p != NULL ? p->GetAt(idx) : NULL;
     m_frame = v;
     return v != NULL;
 }

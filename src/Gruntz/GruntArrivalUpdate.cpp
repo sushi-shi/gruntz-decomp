@@ -58,15 +58,7 @@ i32 CGrunt::UpdateArrival() {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;
-    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-    i32 atTarget = 0;
-    if (g != NULL) {
-        i32 x = g->m_object->m_screenX;
-        if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-            && RectContains(x, g->m_object->m_screenY) != 0) {
-            atTarget = 1;
-        }
-    }
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
     i32 poweredUp = this->m_poweredUp;
     if (poweredUp != 0) {

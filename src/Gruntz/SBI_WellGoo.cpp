@@ -51,7 +51,7 @@ i32 CSBI_WellGoo::Setup(
     m_host = host;
     m_tab = tab;
     m_redrawFrames = 0;
-    m_enabled = 1;
+    SetEnabled(1);
     m_rect14 = rc;
     m_cmd = cmd;
     m_fillScale = fillScale;
@@ -74,7 +74,7 @@ i32 CSBI_WellGoo::Setup(
     found = NULL;
     m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    m_frame = (set != NULL) ? set->GetAt(4) : 0;
+    SetFrame((set != NULL) ? set->GetAt(4) : 0);
     if (m_frame == NULL) {
         goto fail;
     }

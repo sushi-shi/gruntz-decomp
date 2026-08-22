@@ -17,7 +17,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -492,13 +494,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             return 1;
         }
         CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-        i32 attr;
-        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
-            attr = 1;
-        } else {
-            attr = plane->m_rowInts[ty][tx * 7];
-        }
+        i32 attr = plane->CellFlagsAt(tx, ty);
         if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & 2) != 0) {
             world->LoadCursorSprites(pfk, 0);
         } else {
@@ -507,10 +503,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         return 1;
     }
 
-    PickupType gruntKind = cell->m_entranceReason;
-    if (gruntKind > PICKUP_EQUIPPABLE_LAST) {
-        gruntKind = cell->m_toolId;
-    }
+    PickupType gruntKind = ArrivalPickup(cell);
 
     if (hitFlag != 0) {
         if (pfk == 0) {
@@ -715,13 +708,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     break;
                 }
                 CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-                i32 attr;
-                if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
-                    || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
-                    attr = 1;
-                } else {
-                    attr = plane->m_rowInts[ty][tx * 7];
-                }
+                i32 attr = plane->CellFlagsAt(tx, ty);
                 if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     return 1;
@@ -809,13 +796,9 @@ i32 CTriggerMgr::ResetGroup(
                     if (cell != hit) {
                         goto reportError;
                     }
-                    PickupType v = (hit->m_entranceReason <= PICKUP_EQUIPPABLE_LAST)
-                                       ? hit->m_entranceReason
-                                       : hit->m_toolId;
+                    PickupType v = ARRIVAL_PICKUP_TERNARY_LE(hit);
                     if (v != PICKUP_SPY) {
-                        PickupType v2 = (hit->m_entranceReason <= PICKUP_EQUIPPABLE_LAST)
-                                            ? hit->m_entranceReason
-                                            : hit->m_toolId;
+                        PickupType v2 = ARRIVAL_PICKUP_TERNARY_LE(hit);
                         if (v2 != PICKUP_WAND) {
                             goto reportError;
                         }
@@ -1036,13 +1019,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
-    i32 tile;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-        tile = 1;
-    } else {
-        tile = grid->m_rowInts[ty][tx * 8 - tx];
-    }
+    i32 tile = grid->CellFlagsAt(tx, ty);
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
         this->LoadPowerupIconSprites(
             PICKUP_WARPSTONE,
@@ -1145,7 +1122,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         d = 0x19;
     }
     if (tgt->Place(sprite->m_smarts, sprite->m_score, color, d) == 0) {
-        tgt->m_wwdObject->m_flags |= 0x10000;
+        tgt->SetObjectFlags(0x10000);
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
     }
@@ -1161,10 +1138,10 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
             if (o->m_pending != 0) {
-                tgt->m_wwdObject->m_flags |= 0x10000;
+                tgt->SetObjectFlags(0x10000);
                 return 0;
             }
-            o->m_wwdObject->m_flags |= 0x10000;
+            o->SetObjectFlags(0x10000);
             m_baseList.RemoveAt(cur);
             stop = 1;
             replaced = 1;
@@ -1177,7 +1154,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
             POSITION cur = pos;
             CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
             if (o->m_pending == 0) {
-                o->m_wwdObject->m_flags |= 0x10000;
+                o->SetObjectFlags(0x10000);
                 m_baseList.RemoveAt(cur);
                 stop = 1;
             }
@@ -1195,7 +1172,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
 
     POSITION pos = fac->m_list.GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(fac->m_list.GetNext(pos));
+        CGameObject* obj = fac->NextChild(pos);
         GameObjNotifyFn init = obj->m_animWorker->m_notify;
         if (init == CreateInGameIcon || init == CreateInGameText) {
             i32 ox = obj->m_screenX >> TILE_SHIFT_PX;
@@ -1595,10 +1572,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
-        PickupType alt = cell->m_entranceReason;
-        if (alt > PICKUP_EQUIPPABLE_LAST) {
-            alt = cell->m_toolId;
-        }
+        PickupType alt = ArrivalPickup(cell);
         if (alt == PICKUP_WAND) {
             g_gameReg->m_cmdGrid->ResetGroup(
                 cell->m_lastTilePx.m_x,
@@ -1854,12 +1828,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         }
                         g->m_health = HEALTH_FULL;
                         g->CreateHealthSprite();
-                        g->m_combatTimeoutLo = static_cast<i32>(
-                            g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388)
-                        );
-                        g->m_combatTimeoutHi = 0;
-                        g->m_combatClockLo = g_frameTime;
-                        g->m_combatClockHi = 0;
+                        ArmGruntCombatTimeout(g);
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
@@ -2004,7 +1973,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         if (ok) {
-            g->m_wwdObject->m_flags |= 0x10000;
+            g->SetObjectFlags(0x10000);
 
             m_baseList.RemoveAt(cur);
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2024,10 +1993,6 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 }
 
 // @early-stop
-// Residue: cl rotates the free-slot scan so the count guard lands at the bottom
-// and needs a second copy after the loop, where retail tests it at the loop head
-// and branches straight into a shared return-0; plus the failure arm's flag set
-// stays a load/or/store instead of retail's `or [mem],imm`.
 RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     CGrunt* src = m_grid[srcRow * TM_GRID_COLS + srcCol];
@@ -2049,8 +2014,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     CGameObject* o = src->m_object;
     i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    PickupType k =
-        (src->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? src->m_toolId : src->m_entranceReason;
+    PickupType k = ArrivalPickup(src);
     PickupType vis = src->m_vehiclePickupType;
     this->CellDispatch(srcRow, srcCol, DEATH_DROP, dstRow);
     CDDrawChildGroup* fac = m_world->m_childGroup;
@@ -2077,7 +2041,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
             GRUNT_ENTRANCE_NONE
         )
         == 0) {
-        logic->m_wwdObject->m_flags |= 0x10000;
+        logic->SetObjectFlags(0x10000);
         return 0;
     }
     m_grid[base + free] = logic;
@@ -2654,10 +2618,10 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CObList& chain = m_world->m_childGroup->m_list;
-    POSITION pos = chain.GetHeadPosition();
+    CDDrawChildGroup* children = m_world->m_childGroup;
+    POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
+        CGameObject* obj = children->NextChild(pos);
         if (obj != NULL) {
             AnimWorkerObj* desc = obj->m_animWorker;
 
@@ -2717,10 +2681,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
             OverlayTick();
         } else {
-            PickupType v = cell->m_entranceReason;
-            if (v > PICKUP_EQUIPPABLE_LAST) {
-                v = cell->m_toolId;
-            }
+            PickupType v = ArrivalPickup(cell);
             if (v == PICKUP_WAND) {
                 Coord pt;
                 pt.Set(cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);

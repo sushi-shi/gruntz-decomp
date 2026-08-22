@@ -9,10 +9,7 @@
 
 RVA(0x00010370, 0x47)
 i32 CGuardPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(a, b, c, d)) {
-        return 0;
-    }
-    return Chain(a, b, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(a, b, c, d)
 }
 
 RVA_COMPGEN(0x000103e0, 0x1e, ??_GCGuardPoint@@UAEPAXI@Z)

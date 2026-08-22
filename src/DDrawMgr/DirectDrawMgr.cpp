@@ -1100,12 +1100,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFromRgb(u8* buf, i32 z) {
         return 0;
     }
     const u8* src = buf;
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        m_palette[i].peRed = *src++;
-        m_palette[i].peGreen = *src++;
-        m_palette[i].peBlue = *src++;
-        m_palette[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(m_palette, src, i, PALETTE_ENTRY_COUNT)
     m_hasPalette = 1;
     m_paletteTag = z;
     return 1;

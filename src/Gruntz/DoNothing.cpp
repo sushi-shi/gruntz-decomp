@@ -12,10 +12,7 @@
 
 RVA(0x0000f6d0, 0x47)
 i32 CDoNothing::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x0000f740, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
@@ -28,10 +25,7 @@ i32 CDoNothingNormal::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x0000f870, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)

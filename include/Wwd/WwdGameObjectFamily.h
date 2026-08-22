@@ -369,6 +369,8 @@ public:
     char _p18d[0x190 - 0x18d];
 };
 
+#define NEXT_CHILD_FROM_LIST(list, pos) static_cast<CGameObject*>(list.GetNext(pos))
+
 inline CGameObject* CDDrawChildGroup::NextChild(POSITION& pos) {
     return static_cast<CGameObject*>(m_list.GetNext(pos));
 }

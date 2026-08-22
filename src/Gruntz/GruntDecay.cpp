@@ -70,7 +70,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     if (m_cellRemovalNotified == 0) {
         m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
-    m_wwdObject->m_flags |= 0x10000;
+    SetObjectFlags(0x10000);
     return 0;
 }
 
@@ -84,7 +84,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
         if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         return 0;
     }
     i64 e = now - m_idleTimer;

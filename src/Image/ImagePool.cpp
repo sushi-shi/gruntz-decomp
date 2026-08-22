@@ -1184,12 +1184,7 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     }
 
     u8* src = rgb;
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        rgbq[i].peRed = *src++;
-        rgbq[i].peGreen = *src++;
-        rgbq[i].peBlue = *src++;
-        rgbq[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(rgbq, src, i, PALETTE_ENTRY_COUNT)
     return Build(rgbq, arg);
 }
 
@@ -1200,11 +1195,6 @@ i32 CImagePaletteNode::ParsePaletteTail(u8* buf, u32 size, i32 ctrl) {
         return 0;
     }
     u8* s = buf + size - PALETTE_RGB_BYTE_COUNT;
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        pal[i].peRed = *s++;
-        pal[i].peGreen = *s++;
-        pal[i].peBlue = *s++;
-        pal[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(pal, s, i, PALETTE_ENTRY_COUNT)
     return Build(pal, ctrl);
 }

@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRand.h>
@@ -251,10 +252,7 @@ void CWorldSoundSet::Resume() {
         }
     }
 
-    CDDrawSubMgrLeafScan* w = m_world;
-    if (w->m_soundStream != NULL) {
-        w->m_soundStream->PurgeVoiceList(-1);
-    }
+    PurgeVoices(m_world);
 }
 
 RVA(0x0000bd60, 0x4b)
@@ -269,10 +267,7 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
         }
     }
 
-    CDDrawSubMgrLeafScan* world = m_world;
-    if (world->m_soundStream != NULL) {
-        world->m_soundStream->PurgeVoiceList(-1);
-    }
+    PurgeVoices(m_world);
 }
 
 RVA(0x0000bdd0, 0x53)
@@ -662,7 +657,7 @@ i32 CreateAmbientSound(CGameObject* obj) {
             }
         }
         obj->m_flags |= 0x10000;
-        aux->m_actKey = 5;
+        aux->SetActKey(5);
     }
     return 1;
 }
@@ -697,7 +692,7 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
             delete sound;
         }
         aux->m_positionedSound = NULL;
-        aux->m_actKey = 0;
+        aux->SetActKey(0);
         return 1;
     }
 
@@ -720,7 +715,7 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
             }
         }
     }
-    aux->m_actKey = 5;
+    aux->SetActKey(5);
     return 1;
 }
 

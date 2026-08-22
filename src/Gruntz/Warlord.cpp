@@ -119,7 +119,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD)
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
 
     // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
@@ -222,9 +222,7 @@ i32 CWarlord::SerializeMove(
     char buf[SERIAL_NAME_LEN];
     char hdr[SERIAL_NAME_LEN];
 
-    if (CUserLogic::SerializeMove(ar, mode, typeId, obj) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, obj)
     if (ar == NULL) {
 
         goto fail;
@@ -561,8 +559,7 @@ void RegisterWarlordActions() {
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         ResolveMovingAnimation();
     }
@@ -625,8 +622,7 @@ i32 CWarlord::LoadAttributes2() {
 
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
@@ -642,8 +638,7 @@ i32 CWarlord::AdvanceMovingAnim() {
 
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         ResolveMovingAnimation();
     }
@@ -652,8 +647,7 @@ i32 CWarlord::RearmMoving2() {
 
 RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         CWwdGameObjectA* o = m_object;
         i32 y = o->m_screenY;
@@ -680,7 +674,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         if (slot != NULL) {
             slot->m_warlordObjectId = 0;
         }
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
     return 0;
 }
@@ -691,7 +685,7 @@ i32 CWarlord::ResolveMovingAnimation() {
         return 0;
     }
 
-    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__MOVING);
+    ApplyName("GRUNTZ_" + m_warlordName + s__MOVING);
 
     SwitchAnimation(m_animMoving);
 
@@ -707,7 +701,7 @@ RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == 0) {
-        bool alreadyPanicking = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") == 0);
+        bool alreadyPanicking = ANIMATION_ACT_EQUALS("D");
         if (!alreadyPanicking) {
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
@@ -737,7 +731,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
 
             SwitchAnimation(m_animPanic);
 
-            m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
+            ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
 
             SET_ANIMATION_ACT("D");
             return 1;
@@ -767,7 +761,7 @@ i32 CWarlord::ResolveDeathAnimation() {
 
     SwitchAnimation(m_animDeath);
 
-    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + "_DEATH");
+    ApplyName("GRUNTZ_" + m_warlordName + "_DEATH");
 
     SET_ANIMATION_ACT("C");
     return 1;
@@ -794,7 +788,7 @@ i32 CWarlord::RaiseBattleAlert() {
     CAniElement* anim = m_animJoy;
     SwitchAnimation(anim);
 
-    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__JOY);
+    ApplyName("GRUNTZ_" + m_warlordName + s__JOY);
 
     SET_ANIMATION_ACT("E");
     return 1;
@@ -825,11 +819,9 @@ i32 CWarlord::ResolveIdleAnimation() {
     CAniElement* anim = m_idleAnims[idx];
     SwitchAnimation(anim);
 
-    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-    i32 frame = elem->m_param;
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-    m_wwdObject->ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);
+    ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);
 
     SET_ANIMATION_ACT("A");
     return 1;
@@ -859,7 +851,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     CAniElement* anim = m_battlecryAnims[idx];
     SwitchAnimation(anim);
 
-    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
+    ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
 
     SET_ANIMATION_ACT("F");
     return 1;

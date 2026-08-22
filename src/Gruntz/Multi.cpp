@@ -51,6 +51,7 @@
 #include <MsgParam.h>
 #include <Net/InterfaceObject.h>
 #include <Net/LobbyDialogs.h>
+#include <Net/NetCmdSlotInline.h>
 #include <Net/NetLobby.h>
 #include <Net/NetLobbyCtrlId.h>
 #include <Net/NetMgr.h>
@@ -223,8 +224,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     for (i32 i = 0; i < 4; i++) {
         m_channelLatency[i] = 0;
         PlayerLatency* lat = &g_gameReg->m_options[i].m_latency;
-        lat->m_avg = 0;
-        lat->m_count = 0;
+        lat->Clear();
     }
 
     NetGameMgr()->m_loadingSaveGame = 0;
@@ -2269,8 +2269,7 @@ i32 CMulti::RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32
     ch->m_readyFlag = 0;
     ch->m_slotKey = e;
     ch->m_liveGate = 1;
-    ch->m_latency.m_avg = 0;
-    ch->m_latency.m_count = 0;
+    ch->m_latency.Clear();
     return 1;
 }
 
@@ -2848,13 +2847,7 @@ CNetCmdSlot::CNetCmdSlot() {
     m_baseSeq = 0;
     m_maxSeq = 0;
     m_owner = NULL;
-    ClearCmds();
-
-    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
-        m_ackFlags[i] = 0;
-    }
-    ResetTriple(m_rangeA);
-    ResetTriple(m_rangeB);
+    ResetNetCmdSlotCommandWindow(this);
 }
 
 // @early-stop
@@ -2883,13 +2876,7 @@ void CNetSession::ResetAll() {
         slot->m_baseSeq = 0;
         slot->m_maxSeq = 0;
         slot->m_owner = NULL;
-        slot->ClearCmds();
-
-        for (i32 k = 0; k < 4; k++) {
-            slot->m_ackFlags[k] = 0;
-        }
-        slot->ResetTriple(slot->m_rangeA);
-        slot->ResetTriple(slot->m_rangeB);
+        ResetNetCmdSlotCommandWindow(slot);
     }
 
     memset(m_idMap, 0, sizeof(m_idMap));

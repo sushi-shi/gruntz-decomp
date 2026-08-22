@@ -302,12 +302,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         m_frameSet = found;
         if (found != NULL && flag == 1) {
             i32 idx = m_frameIndex;
-            CImage* frame;
-            if (idx >= found->m_minIndex && idx <= found->m_maxIndex) {
-                frame = static_cast<CImage*>(found->m_items.GetAt(idx));
-            } else {
-                frame = NULL;
-            }
+            CImage* frame = found->GetAt(idx);
             m_layer = frame;
         }
     }
@@ -482,7 +477,7 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
             m_animWorker->m_notify(this);
             notifyWorker = m_animWorker;
             if (notifyWorker->WorkerAct() == notifyAct) {
-                notifyWorker->m_actKey = notifySaved;
+                notifyWorker->SetActKey(notifySaved);
             }
         }
         default:
@@ -503,7 +498,7 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
             m_animWorker->m_notify(this);
             notifyWorker = m_animWorker;
             if (notifyWorker->WorkerAct() == notifyAct) {
-                notifyWorker->m_actKey = notifySaved;
+                notifyWorker->SetActKey(notifySaved);
             }
             goto dispatch;
         }
@@ -552,7 +547,7 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
             m_animWorker->m_notify(this);
             notifyWorker = m_animWorker;
             if (notifyWorker->WorkerAct() == notifyAct) {
-                notifyWorker->m_actKey = notifySaved;
+                notifyWorker->SetActKey(notifySaved);
             }
             goto dispatch;
     }
@@ -829,10 +824,10 @@ i32 CGameObject::NotifyHooked(i32 arg) {
         return 0;
     }
     i32 saved = p->m_actKey;
-    p->m_actKey = arg;
+    p->SetActKey(arg);
     m_animWorker->m_notify(this);
     if (m_animWorker->m_actKey == arg) {
-        m_animWorker->m_actKey = saved;
+        m_animWorker->SetActKey(saved);
     }
     return 1;
 }
@@ -1065,8 +1060,8 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
     i32 n = m_items.GetSize();
     for (i32 i = 0; i < n; i++) {
         CImage* el;
-        if (i >= m_minIndex && i <= m_maxIndex) {
-            el = static_cast<CImage*>(m_items.GetAt(i));
+        if (DDRAW_WORKER_FRAME_IN_RANGE(this, i)) {
+            el = DDRAW_WORKER_FRAME_AT_UNCHECKED(this, i);
         } else {
             el = NULL;
         }
@@ -1102,12 +1097,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
 
 RVA(0x001523b0, 0x3b)
 i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
-    CImage* el;
-    if (n >= m_minIndex && n <= m_maxIndex) {
-        el = static_cast<CImage*>(m_items.GetAt(n));
-    } else {
-        el = NULL;
-    }
+    CImage* el = GetAt(n);
     if (el == NULL) {
         return 0;
     }

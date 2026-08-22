@@ -40,7 +40,7 @@
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
     // Retail holds the strcmp result in a `bool` (`sete cl / test cl,cl`).
-    bool isI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    bool isI = ANIMATION_ACT_EQUALS("I");
     if (isI) {
         return 1;
     }
@@ -54,15 +54,7 @@ i32 CGrunt::StepDiggerBehavior() {
     GetScreenPos(&c2);
     c2.m_y >>= TILE_SHIFT_PX;
 
-    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-    i32 atTarget = 0;
-    if (g != NULL) {
-        i32 x = g->m_object->m_screenX;
-        if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
-            && RectContains(x, g->m_object->m_screenY) != 0) {
-            atTarget = 1;
-        }
-    }
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
     m_defenderPx.m_y = m_lastTilePx.m_y;
     m_defenderPx.m_x = m_lastTilePx.m_x;

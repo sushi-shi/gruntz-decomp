@@ -2,6 +2,7 @@
 
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -133,10 +134,7 @@ i32 CAttract::LeaveState(GameStateId arg) {
         return 1;
     }
     do {
-        CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
-        if (reg->m_soundStream) {
-            reg->m_soundStream->PurgeVoiceList(-1);
-        }
+        PurgeVoices(menuRoot()->m_soundRegistry);
     } while (m_host->m_sound->IsPlaying());
     return 1;
 }
@@ -151,10 +149,7 @@ i32 CAttract::Render() {
         }
     }
 
-    CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
-    if (reg->m_soundStream) {
-        reg->m_soundStream->PurgeVoiceList(-1);
-    }
+    PurgeVoices(menuRoot()->m_soundRegistry);
 
     if (g_frameDelta >= m_idleTimer) {
         m_idleTimer = 0;

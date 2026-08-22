@@ -23,4 +23,22 @@ union Palette256 {
 
 extern HINSTANCE g_resModule;
 
+#define COPY_RGB_PALETTE(entries, rgb, index, count)                                               \
+    for (i32 index = 0; index < count; index++) {                                                  \
+        entries[index].peRed = *rgb++;                                                             \
+        entries[index].peGreen = *rgb++;                                                           \
+        entries[index].peBlue = *rgb++;                                                            \
+        entries[index].peFlags = 0;                                                                \
+    }
+
+#define COPY_RGB_PALETTE_DO(entries, rgb, index, count)                                            \
+    i32 index = 0;                                                                                 \
+    do {                                                                                           \
+        entries[index].peRed = *rgb++;                                                             \
+        entries[index].peGreen = *rgb++;                                                           \
+        entries[index].peBlue = *rgb++;                                                            \
+        entries[index].peFlags = 0;                                                                \
+        index++;                                                                                   \
+    } while (index < count);
+
 #endif // GRUNTZ_DDRAWMGR_DIRPAL_H

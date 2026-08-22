@@ -20,10 +20,7 @@ public:
     RVA(0x00011320, 0x47)
     virtual i32 SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d)
         OVERRIDE {
-        if (!CUserLogic::SerializeMove(a, b, c, d)) {
-            return 0;
-        }
-        return Chain(a, b, c, d) != 0;
+        SERIALIZE_USER_LOGIC_AND_CHAIN(a, b, c, d)
     }
 
     virtual void FireActivation(i32 id) OVERRIDE;

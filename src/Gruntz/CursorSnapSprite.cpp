@@ -18,10 +18,7 @@ i32 CCursorSnapSprite::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)

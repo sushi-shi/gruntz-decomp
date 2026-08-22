@@ -11,7 +11,9 @@
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSubMgrPagesInline.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -385,9 +387,7 @@ i32 CBootyState::LeaveState(GameStateId) {
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
-            if (m_world->m_soundRegistry->m_soundStream != NULL) {
-                m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
-            }
+            PurgeVoices(m_world->m_soundRegistry);
         }
     }
     return 1;
@@ -1568,12 +1568,8 @@ i32 CBootyState::Render() {
     m_world->m_childGroup->TickKillCues(1);
     m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
-    dt->m_frontPair->m_surface->Flip(0);
-    dt->m_backPair->m_surface
-        ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_world->m_soundRegistry->m_soundStream != NULL) {
-        m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
-    }
+    FlipFrontAndRestoreOverlay(dt);
+    PurgeVoices(m_world->m_soundRegistry);
     return 1;
 }
 
@@ -2109,12 +2105,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             CWwdGameObjectA* o = m_tabSprites[t];
             CDDrawWorker* set = o->m_frameSet;
             if (set != NULL) {
-                CImage* mapped;
-                if (frame >= set->m_minIndex && frame <= set->m_maxIndex) {
-                    mapped = static_cast<CImage*>(set->m_items.GetAt(frame));
-                } else {
-                    mapped = NULL;
-                }
+                CImage* mapped = set->GetAt(frame);
                 o->m_layer = mapped;
                 o->m_frameIndex = frame;
             }
@@ -2253,9 +2244,7 @@ i32 CMultiBootyState::LeaveState(GameStateId) {
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->CloneAndPlay(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
-            if (m_world->m_soundRegistry->m_soundStream != NULL) {
-                m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
-            }
+            PurgeVoices(m_world->m_soundRegistry);
         }
     }
     return 1;
@@ -2723,12 +2712,8 @@ i32 CMultiBootyState::Render() {
     ShowHudMessageAlt(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
-    dt->m_frontPair->m_surface->Flip(0);
-    dt->m_backPair->m_surface
-        ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_world->m_soundRegistry->m_soundStream != NULL) {
-        m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
-    }
+    FlipFrontAndRestoreOverlay(dt);
+    PurgeVoices(m_world->m_soundRegistry);
     return 1;
 }
 

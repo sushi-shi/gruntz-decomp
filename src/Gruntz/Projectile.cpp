@@ -108,8 +108,7 @@ RVA_COMPGEN(0x00058ba0, 0x1, ??1CMotionState@@QAE@XZ)
 // m_wwdObject load instead of before it.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
-    m_wwdObject->m_flags |= 0x2000002;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    SET_OBJECT_FLAGS_AND_HIDE_INLINE(0x2000002)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
     memset(&m_frames[0], 0, 0x1c);
@@ -228,7 +227,7 @@ i32 CProjectile::LoadProjectileSprites(
         LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
 
     SwitchAnimation(m_frames[0]);
-    m_wwdObject->ApplyName(key + "_OBJECT");
+    ApplyName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
     double len = sqrt(dx * dx + dy * dy);
@@ -431,13 +430,7 @@ void CProjectile::AdvanceMotion() {
         CMapMgr* plane = reg->m_tileGrid;
         i32 tileX = m_targetX >> TILE_SHIFT_PX;
         i32 tileY = m_targetY >> TILE_SHIFT_PX;
-        u32 flags;
-        if (static_cast<u32>(tileX) >= static_cast<u32>(plane->m_width)
-            || static_cast<u32>(tileY) >= static_cast<u32>(plane->m_height)) {
-            flags = 1;
-        } else {
-            flags = plane->m_rowInts[tileY][tileX * 7];
-        }
+        u32 flags = plane->CellFlagsAt(tileX, tileY);
         if ((flags & 0x900) == 0) {
             if (flags & 0x2) {
                 if (flags & 0x40) {
@@ -467,7 +460,7 @@ void CProjectile::AdvanceMotion() {
                                     fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                                 }
                             }
-                            m_wwdObject->m_flags |= 0x10000;
+                            SetObjectFlags(0x10000);
                             return;
                     }
                 }
@@ -487,7 +480,7 @@ void CProjectile::AdvanceMotion() {
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
             return;
         }
     }
@@ -506,7 +499,7 @@ void CProjectile::AdvanceMotion() {
     SwitchAnimation(sprite);
     return;
 noSprite:
-    m_wwdObject->m_flags |= 0x10000;
+    SetObjectFlags(0x10000);
 }
 
 RVA(0x000e05e0, 0x4e)
@@ -589,7 +582,7 @@ void CBoomerang::AdvanceMotion() {
             m_shadow->m_flags |= 0x10000;
             m_shadow = NULL;
         }
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         return;
     }
     ScanTargets(0);
@@ -925,7 +918,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     SetObjectFlags(0x2000002);
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
-    m_wwdObject->ApplyName("GAME_TIMEBOMB");
+    ApplyName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     if (m_object->m_damage > 0) {
@@ -974,7 +967,7 @@ RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
     i32 cell = TBombGridCell(m_object);
     if ((cell & BRICKZ_BLOCKED_MASK) || (cell & 2)) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         TBombGridClear(m_object);
         return 0;
     }
@@ -987,7 +980,7 @@ i32 CTimeBomb::LoadAttributes() {
             m_startTime = g_frameTime;
             m_fastPhase = 1;
         } else {
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
             TBombGridClear(m_object);
             g_gameReg->m_cmdGrid->LoadExplosionSprites(
                 m_object->m_screenX,
@@ -1020,10 +1013,7 @@ i32 CTimeBomb::SerializeMove(
             sa->Write(&m_fastPhase, sizeof(m_fastPhase));
             break;
     }
-    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, pObj)
 }
 
 RVA(0x000e2190, 0x83)

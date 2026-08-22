@@ -43,15 +43,9 @@ i32 DrawGlyphString(
     }
     for (i32 i = 0; i < len; i++) {
         i32 c = static_cast<signed char>(str[i]);
-        i32 glyph;
-        if (c >= font->m_minIndex && c <= font->m_maxIndex) {
-
-            AddrWord<CImage> g;
-            g.m_addr = static_cast<CImage*>(font->m_items.GetAt(c));
-            glyph = g.m_word;
-        } else {
-            glyph = 0;
-        }
+        AddrWord<CImage> g;
+        g.m_addr = font->GetAt(c);
+        i32 glyph = g.m_word;
         if (glyph) {
             ctx->m_workerList->CreateWorkerB28(x, y, glyph, 0);
         }

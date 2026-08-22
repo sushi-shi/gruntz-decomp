@@ -89,8 +89,5 @@ i32 CGruntSelectedSprite::SerializeMove(
     } else {
         sa->Write(&m_cell, sizeof(m_cell));
     }
-    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, pObj)
 }

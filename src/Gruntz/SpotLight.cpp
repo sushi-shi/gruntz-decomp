@@ -103,10 +103,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     d->m_drawFillArg = looked;
     m_focus = NULL;
-    m_object->m_area.left = 0;
-    m_object->m_area.right = 0;
-    m_object->m_area.top = 0;
-    m_object->m_area.bottom = 0;
+    CLEAR_OBJECT_AREA
     m_cellRow = -1;
     m_cellCol = -1;
     m_storyMode = 0;
@@ -241,12 +238,7 @@ int CSpotLight::Update() {
 // @early-stop
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c, CGameObject* d) {
-    if (CUserLogic::SerializeMove(arc, mode, c, d) == 0) {
-        return 0;
-    }
-    if (Chain(static_cast<CFileMemBase*>(arc), mode, c, d) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(arc, static_cast<CFileMemBase*>(arc), mode, c, d)
     CGruntzMgr* reg = g_gameReg;
     CDDrawSurfaceMgr* world = reg->m_world;
     CFileMemBase* s = static_cast<CFileMemBase*>(arc);

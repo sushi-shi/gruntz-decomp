@@ -36,12 +36,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)
-    m_object->m_area.left = 1;
-    m_object->m_area.right = 1;
-    m_object->m_area.top = 1;
-    m_object->m_area.bottom = 1;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SET_OBJECT_AREA(1)
+    SwitchGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
     if (slot->m_liveGate == 0) {
@@ -83,13 +79,8 @@ i32 CExitTrigger::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-        return 0;
-    }
     CFileMemBase* arc = ar;
-    if (!Chain(arc, mode, typeId, pObj)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(ar, arc, mode, typeId, pObj)
 
     CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {

@@ -41,9 +41,7 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         return 0;
     }
 
-    CImage* f = (m_frameSet->m_minIndex <= 1 && m_frameSet->m_maxIndex >= 1)
-                    ? static_cast<CImage*>(m_frameSet->m_items.GetAt(1))
-                    : 0;
+    CImage* f = m_frameSet->GetAt(1);
     if (f == NULL) {
         return 0;
     }
@@ -54,9 +52,7 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         f->m_owned->m_palDescr = palDescr;
     }
 
-    f = (m_frameSet->m_minIndex <= 2 && m_frameSet->m_maxIndex >= 2)
-            ? static_cast<CImage*>(m_frameSet->m_items.GetAt(2))
-            : 0;
+    f = m_frameSet->GetAt(2);
     if (f == NULL) {
         return 0;
     }
@@ -102,7 +98,7 @@ i32 CSBI_WarlordHead::Render() {
         cfg = m_frameSet;
         i32 idx = m_frameIndex;
         CImage* g = cfg->GetAt(idx);
-        m_frame = g;
+        SetFrame(g);
         if (g) {
             g->RenderFrame(target, m_rect14.left + g->m_anchorX, m_rect14.top + g->m_anchorY, 0);
         }

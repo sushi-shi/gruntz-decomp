@@ -62,27 +62,7 @@ i32 CImage::Create(char* path, i32 keyed) {
 
 RVA(0x00152f20, 0x86)
 i32 CImage::Resolve(CParseSource* src, i32 arg) {
-    FileImageFormat index;
-    switch (static_cast<u32>(src->GetEntryTag())) {
-        case IMGTAG_PMB:
-            index = FMT_BMP;
-            break;
-        case IMGTAG_XCP:
-            index = FMT_PCX;
-            break;
-        case IMGTAG_DIR:
-            index = FMT_RID;
-            break;
-        case IMGTAG_DIP:
-            index = FMT_PID;
-            break;
-        default:
-            return 0;
-    }
-    char* resolved = src->BeginParse();
-    if (resolved == NULL) {
-        return 0;
-    }
+    BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
 
     RecordBytes<PidHeader> blob;
     blob.m_chars = resolved;
@@ -285,27 +265,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
         return this->Resolve(src, arg);
     }
 
-    FileImageFormat index;
-    switch (static_cast<u32>(src->GetEntryTag())) {
-        case IMGTAG_PMB:
-            index = FMT_BMP;
-            break;
-        case IMGTAG_XCP:
-            index = FMT_PCX;
-            break;
-        case IMGTAG_DIR:
-            index = FMT_RID;
-            break;
-        case IMGTAG_DIP:
-            index = FMT_PID;
-            break;
-        default:
-            return 0;
-    }
-    char* resolved = src->BeginParse();
-    if (resolved == NULL) {
-        return 0;
-    }
+    BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
     if (src->m_length == 0) {
         return 0;
     }

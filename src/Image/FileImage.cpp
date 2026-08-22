@@ -528,12 +528,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
             RecordBytes<PcxHeader> sb;
             sb.m_rec = src;
             u8* p = sb.m_bytes + len - 0x300;
-            for (i32 i = 0; i < 0x100; i++) {
-                g_grayRamp[i].peRed = *p++;
-                g_grayRamp[i].peGreen = *p++;
-                g_grayRamp[i].peBlue = *p++;
-                g_grayRamp[i].peFlags = 0;
-            }
+            COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
             palette = g_grayRamp;
         } else if (curFmt == BPP_PALETTED_8) {
             if (info->m_hasPalette != 0) {
@@ -648,14 +643,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                 PALETTEENTRY* palette = NULL;
                 if (remap && bitcount == BPP_PALETTED_8) {
                     u8* src = hdr->m_pixels + size - 0x380;
-                    i32 i = 0;
-                    do {
-                        s_palPcx[i].peRed = *src++;
-                        s_palPcx[i].peGreen = *src++;
-                        s_palPcx[i].peBlue = *src++;
-                        s_palPcx[i].peFlags = 0;
-                        i++;
-                    } while (i < 0x100);
+                    COPY_RGB_PALETTE_DO(s_palPcx, src, i, 0x100)
                     palette = s_palPcx;
                 } else if (remap && palBpp == BPP_PALETTED_8) {
                     if (pal->m_hasPalette != 0) {
@@ -975,14 +963,7 @@ i32 CDDSurface::DecodePcxData(
         RecordBytes<PidHeader> hb;
         hb.m_rec = hdr;
         u8* src = hb.m_bytes + size - 0x300;
-        i32 i = 0;
-        do {
-            s_palPcxData[i].peRed = *src++;
-            s_palPcxData[i].peGreen = *src++;
-            s_palPcxData[i].peBlue = *src++;
-            s_palPcxData[i].peFlags = 0;
-            i++;
-        } while (i < 0x100);
+        COPY_RGB_PALETTE_DO(s_palPcxData, src, i, 0x100)
         palette = s_palPcxData;
     } else {
         if (remap && palette == NULL) {
@@ -1087,14 +1068,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             RecordBytes<PidHeader> hb;
             hb.m_rec = hdr;
             u8* src = hb.m_bytes + size - 0x300;
-            i32 i = 0;
-            do {
-                s_palPidData[i].peRed = *src++;
-                s_palPidData[i].peGreen = *src++;
-                s_palPidData[i].peBlue = *src++;
-                s_palPidData[i].peFlags = 0;
-                i++;
-            } while (i < 0x100);
+            COPY_RGB_PALETTE_DO(s_palPidData, src, i, 0x100)
             palette = s_palPidData;
         } else if ((remap && palette == NULL)
                    || (remap && palBpp == BPP_PALETTED_8 && hasPal == 0)) {

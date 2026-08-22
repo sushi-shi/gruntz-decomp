@@ -47,9 +47,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         CGrunt* nb;
         {
             Coord tp;
-            g->GetScreenPos(&tp);
-            tp.m_x = tp.m_x >> TILE_SHIFT_PX;
-            tp.m_y = tp.m_y >> TILE_SHIFT_PX;
+            g->GetScreenTile(&tp);
             nb = FindIdleGruntInBox(
                 tp.m_x,
                 tp.m_y,
@@ -66,35 +64,21 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             i32 dist;
             {
                 Coord np;
-                nb->GetScreenPos(&np);
-                np.m_x = np.m_x >> TILE_SHIFT_PX;
-                np.m_y = np.m_y >> TILE_SHIFT_PX;
+                nb->GetScreenTile(&np);
                 Coord gp;
-                g->GetScreenPos(&gp);
-                gp.m_x = gp.m_x >> TILE_SHIFT_PX;
-                gp.m_y = gp.m_y >> TILE_SHIFT_PX;
+                g->GetScreenTile(&gp);
                 Coord np2;
-                nb->GetScreenPos(&np2);
-                np2.m_x = np2.m_x >> TILE_SHIFT_PX;
-                np2.m_y = np2.m_y >> TILE_SHIFT_PX;
+                nb->GetScreenTile(&np2);
                 Coord gp2;
-                g->GetScreenPos(&gp2);
-                gp2.m_x = gp2.m_x >> TILE_SHIFT_PX;
-                gp2.m_y = gp2.m_y >> TILE_SHIFT_PX;
+                g->GetScreenTile(&gp2);
                 dist = abs(np2.m_y - gp2.m_y) + abs(np.m_x - gp.m_x);
             }
             if (dist <= 0xa) {
 
                 Coord b0, b1, b2, b3;
-                g->GetScreenPos(&b3);
-                b3.m_x = b3.m_x >> TILE_SHIFT_PX;
-                b3.m_y = b3.m_y >> TILE_SHIFT_PX;
-                g->GetScreenPos(&b2);
-                b2.m_x = b2.m_x >> TILE_SHIFT_PX;
-                b2.m_y = b2.m_y >> TILE_SHIFT_PX;
-                g->GetScreenPos(&b1);
-                b1.m_x = b1.m_x >> TILE_SHIFT_PX;
-                b1.m_y = b1.m_y >> TILE_SHIFT_PX;
+                g->GetScreenTile(&b3);
+                g->GetScreenTile(&b2);
+                g->GetScreenTile(&b1);
                 g->GetScreenPos(&b0);
                 b0.m_x = b0.m_x >> TILE_SHIFT_PX;
                 CMapMgr* grid = m_board;
@@ -108,9 +92,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             {
                 Coord p;
-                nb->GetScreenPos(&p);
-                p.m_x = p.m_x >> TILE_SHIFT_PX;
-                p.m_y = p.m_y >> TILE_SHIFT_PX;
+                nb->GetScreenTile(&p);
                 if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
                     g->m_defenderState = AISTATE_ATTACK;
                     g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
@@ -228,34 +210,20 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             i32 dist2;
             {
                 Coord c0;
-                cur->GetScreenPos(&c0);
-                c0.m_x = c0.m_x >> TILE_SHIFT_PX;
-                c0.m_y = c0.m_y >> TILE_SHIFT_PX;
+                cur->GetScreenTile(&c0);
                 Coord c1;
-                g->GetScreenPos(&c1);
-                c1.m_x = c1.m_x >> TILE_SHIFT_PX;
-                c1.m_y = c1.m_y >> TILE_SHIFT_PX;
+                g->GetScreenTile(&c1);
                 Coord c2;
-                cur->GetScreenPos(&c2);
-                c2.m_x = c2.m_x >> TILE_SHIFT_PX;
-                c2.m_y = c2.m_y >> TILE_SHIFT_PX;
+                cur->GetScreenTile(&c2);
                 Coord c3;
-                g->GetScreenPos(&c3);
-                c3.m_x = c3.m_x >> TILE_SHIFT_PX;
-                c3.m_y = c3.m_y >> TILE_SHIFT_PX;
+                g->GetScreenTile(&c3);
                 dist2 = abs(c0.m_x - c1.m_x) + abs(c2.m_y - c3.m_y);
             }
             if (dist2 <= 0xa) {
                 Coord d0, d1, d2, d3;
-                g->GetScreenPos(&d3);
-                d3.m_x = d3.m_x >> TILE_SHIFT_PX;
-                d3.m_y = d3.m_y >> TILE_SHIFT_PX;
-                g->GetScreenPos(&d2);
-                d2.m_x = d2.m_x >> TILE_SHIFT_PX;
-                d2.m_y = d2.m_y >> TILE_SHIFT_PX;
-                g->GetScreenPos(&d1);
-                d1.m_x = d1.m_x >> TILE_SHIFT_PX;
-                d1.m_y = d1.m_y >> TILE_SHIFT_PX;
+                g->GetScreenTile(&d3);
+                g->GetScreenTile(&d2);
+                g->GetScreenTile(&d1);
                 g->GetScreenPos(&d0);
                 d0.m_x = d0.m_x >> TILE_SHIFT_PX;
                 CMapMgr* grid = m_board;

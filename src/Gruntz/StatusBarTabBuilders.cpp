@@ -21,6 +21,7 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarItem.h>
+#include <Gruntz/StatusBarItemInline.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
@@ -59,11 +60,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         goto fail;
     }
     h = host;
-    m_owner = owner;
-    m_tab = tab;
-    m_host = h;
-    m_redrawFrames = 0;
-    m_enabled = 1;
+    INITIALIZE_STATUS_BAR_ITEM(owner, tab, h)
 
     m_rect14 = g;
 
@@ -74,10 +71,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         found
     );
     rec = static_cast<CDDrawWorker*>(found);
-    if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
+    if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
         spr = NULL;
     } else {
-        spr = static_cast<CImage*>(rec->m_items.GetAt(1));
+        spr = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, 1);
     }
     m_standaloneFrame = spr;
     if (spr == NULL) {
@@ -255,8 +252,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
                 } else {
                     r = NULL;
                 }
@@ -275,8 +272,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
                 } else {
                     r = NULL;
                 }
@@ -294,8 +291,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
                 } else {
                     r = NULL;
                 }

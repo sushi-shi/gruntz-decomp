@@ -183,7 +183,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_sample = NULL;
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;
-    m_wwdObject->m_flags |= 0x4000002;
+    SetObjectFlags(0x4000002);
     Hide();
     m_playFlags = 0;
     SET_ANIMATION_ACT("A");
@@ -263,7 +263,7 @@ i32 CVoiceTrigger::Tick() {
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, hx, hy)) {
             if (g_gameReg->m_cueSink
                     ->SpawnVoiceDriver(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
-                m_wwdObject->m_flags |= 0x10000;
+                SetObjectFlags(0x10000);
             }
         }
     }
@@ -284,7 +284,7 @@ i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner
     m_startStamp.m_v = g_frameTime;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_playFlags = playFlags;
-    m_objAux->m_actKey = ActFindId("B");
+    m_objAux->SetActKey(ActFindId("B"));
     return 1;
 }
 

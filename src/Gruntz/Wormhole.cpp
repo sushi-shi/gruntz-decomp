@@ -73,7 +73,7 @@ RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(0x2000002);
-    m_wwdObject->ApplyName("GAME_WORMHOLE");
+    ApplyName("GAME_WORMHOLE");
     SwitchGeometry("GAME_WORMHOLE", 0);
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
@@ -92,12 +92,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
     if (tag == SERIAL_POSTLOAD) {
 
         i32 kind = m_object->m_smarts;
@@ -175,10 +170,10 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     SetObjectFlags(2);
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
-    m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
+    ApplyName("GRUNTZ_GRUNTPUDDLE");
     SwitchGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     SET_ANIMATION_ACT("A");
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    Hide();
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     m_pending = 1;
     m_placed = 0;
@@ -237,15 +232,9 @@ i32 CGruntPuddle::Remove() {
         i32 ty = m_tileY;
         CMapMgr* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
-        i32 flags;
-        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
-            flags = ((grid->m_rowInts[ty]))[tx * 7];
-        } else {
-            flags = 1;
-        }
+        i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & 0x2) != 0) {
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
             CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
             POSITION pos = list.GetHeadPosition();
             while (pos != NULL) {
@@ -273,12 +262,7 @@ i32 CGruntPuddle::Remove() {
 
 RVA(0x00040e50, 0x170)
 i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
     switch (tag) {
         case SERIAL_SAVE:
             ar->Write(&m_tileX, sizeof(m_tileX));
@@ -356,7 +340,7 @@ void CTeleporter::LoadColors() {
 
 RVA(0x000412c0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
-    m_wwdObject->ApplyName("GAME_WORMHOLE");
+    ApplyName("GAME_WORMHOLE");
     SwitchGeometry("GAME_TELEPORTEROPEN", 0);
     SET_ANIMATION_ACT("A");
     m_armed = 1;
@@ -367,12 +351,7 @@ i32 CTeleporter::ReapplyConfig() {
 
 RVA(0x00041350, 0xee)
 i32 CTeleporter::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
     // one cursor over the adjacent m_armClock/m_interval pair - retail hoists it
     // above the arms and advances it, rather than re-lea'ing each member.
     i64* clocks = &m_armClock;
@@ -423,9 +402,7 @@ void CTeleporter_RegisterActs() {
 
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-
-    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(cur, g_engineFrameDelta)
     if (cur->m_finished == 0) {
         return 0;
     }

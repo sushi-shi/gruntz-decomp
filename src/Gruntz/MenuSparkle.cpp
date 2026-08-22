@@ -64,12 +64,7 @@ i32 CMenuSparkle::SerializeMove(
         return 0;
     }
 
-    if (!CUserLogic::SerializeMove(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
-        return 0;
-    }
-    if (!Chain(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)
     if (mode != SERIAL_SAVE) {
         if (mode != SERIAL_LOAD) {
             return 1;

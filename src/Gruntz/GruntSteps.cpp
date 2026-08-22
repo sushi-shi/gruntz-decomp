@@ -931,13 +931,7 @@ i32 CGrunt::ClaimSwitchTile() {
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
     i32 tx = next.m_x >> TILE_SHIFT_PX;
     i32 ty = next.m_y >> TILE_SHIFT_PX;
-    i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        flags = 1;
-    } else {
-        flags = b->m_rowInts[ty][tx * 7];
-    }
+    i32 flags = b->CellFlagsAt(tx, ty);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
     }
@@ -1002,15 +996,15 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
+    eq = ANIMATION_ACT_DIFFERS("A");
     if (!eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") != 0);
+    eq = ANIMATION_ACT_DIFFERS("D");
     if (!eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
 
         if (m_entranceReason == PICKUP_WAND) {
@@ -1030,24 +1024,24 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
+    eq = ANIMATION_ACT_EQUALS("G");
     if (!eq) {
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
+        eq = ANIMATION_ACT_EQUALS("L");
         if (!eq) {
-            eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
+            eq = ANIMATION_ACT_EQUALS("P");
             if (!eq) {
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
+                eq = ANIMATION_ACT_EQUALS("O");
                 if (eq) {
 
                     SnapToLastTile(1);
                     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                     goto applyTail;
                 }
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "Q") == 0);
+                eq = ANIMATION_ACT_EQUALS("Q");
                 if (eq) {
                     return 1;
                 }
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
+                eq = ANIMATION_ACT_EQUALS("J");
                 if (eq) {
 
                     m_entranceActive = 0;
@@ -1064,7 +1058,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                         i32 col = cell.column + cell.row * 2;
                         i32 base = cell.row + col;
                         char* nm = m_cells[base].WalkName().GetBuffer(0);
-                        m_wwdObject->ApplyName(nm);
+                        ApplyName(nm);
                     } else {
                         ResetEntranceAnimation(1, 0, 0);
                     }
@@ -1202,9 +1196,7 @@ i32 CGrunt::SerializeMove(
         return 0;
     }
 
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, pObj)
 
     if (CWapX::Chain(ar, mode, typeId, pObj) == 0) {
         return 0;

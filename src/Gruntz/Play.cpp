@@ -2244,7 +2244,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 }
             } else {
 
-                slot = static_cast<Coord*>(this->m_cameraBookmarks.GetAt(0));
+                slot = this->CameraBookmarkAt(0);
                 this->m_cameraBookmarks.RemoveAt(0, 1);
                 i32 c = this->m_cameraBookmarkIndex - 1;
                 this->m_cameraBookmarkIndex = c;
@@ -4063,8 +4063,8 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     }
     CDDrawWorker* g = m_grid;
     CImage* frame;
-    if (index >= g->m_minIndex && index <= g->m_maxIndex) {
-        frame = static_cast<CImage*>(g->m_items.GetAt(index));
+    if (DDRAW_WORKER_FRAME_IN_RANGE(g, index)) {
+        frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, index);
     } else {
         frame = NULL;
     }
@@ -4092,8 +4092,8 @@ i32 CPlay::StepGridWalk(i32 dt) {
         i32 idx = m_gridRow;
         CDDrawWorker* g = m_grid;
         CImage* frame;
-        if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
-            frame = static_cast<CImage*>(g->m_items.GetAt(idx));
+        if (DDRAW_WORKER_FRAME_IN_RANGE(g, idx)) {
+            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, idx);
         } else {
             frame = NULL;
         }
@@ -6679,15 +6679,12 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart = (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
-                           ? static_cast<CImage*>(spr->m_items.GetAt(1))
-                           : 0;
-    m_revealCapMid = (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(2))
-                         : 0;
-    m_revealCapEnd = (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(3))
-                         : 0;
+    m_revealCapStart =
+        DDRAW_WORKER_CONTAINS_FRAME(spr, 1) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1) : 0;
+    m_revealCapMid =
+        DDRAW_WORKER_CONTAINS_FRAME(spr, 2) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 2) : 0;
+    m_revealCapEnd =
+        DDRAW_WORKER_CONTAINS_FRAME(spr, 3) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 3) : 0;
     m_revealFrame = 1;
     return 1;
 }
@@ -7023,10 +7020,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             CObject* found = NULL;
             res->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(nameBuf), found);
             CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
-            if (set == NULL || idx < set->m_minIndex || idx > set->m_maxIndex) {
+            if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
                 m_gridCurFrame = NULL;
             } else {
-                m_gridCurFrame = static_cast<CImage*>(set->m_items.GetAt(idx));
+                m_gridCurFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, idx);
             }
         } else {
             m_gridCurFrame = NULL;
@@ -7362,7 +7359,7 @@ i32 CPlay::NotifyVisibleEntities() {
     POSITION pos = chain.GetHeadPosition();
 
     while (pos != NULL) {
-        CGameObject* o = static_cast<CGameObject*>(chain.GetNext(pos));
+        CGameObject* o = NEXT_CHILD_FROM_LIST(chain, pos);
         GameObjNotifyFn id = o->m_animWorker->m_notify;
         if (id == CreateGrunt || id == CreateInGameIcon || id == CreateGruntPuddle
             || id == CreateGruntToySprite || id == CreateGruntStaminaSprite

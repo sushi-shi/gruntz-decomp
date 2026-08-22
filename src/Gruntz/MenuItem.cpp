@@ -194,7 +194,7 @@ i32 CMenuItem2::Init(
     }
     m_frameIdx = 0;
     m_frameCountdown = 0;
-    m_frameDelay = 0x64;
+    SET_MENU_ITEM2_FRAME_DELAY_INLINE(0x64);
 
     char buf[0x80];
 

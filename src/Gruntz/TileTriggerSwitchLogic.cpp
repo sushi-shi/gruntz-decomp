@@ -375,7 +375,7 @@ i32 CTileTriggerLogic::Tick() {
     switch (srcId) {
         case TILEKIND_ARROW_UP_B: {
             if (trans != NULL) {
-                trans->m_wwdObject->m_flags |= 0x10000;
+                trans->SetObjectFlags(0x10000);
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -388,7 +388,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case TILEKIND_ARROW_DOWN_B: {
             if (trans != NULL) {
-                trans->m_wwdObject->m_flags |= 0x10000;
+                trans->SetObjectFlags(0x10000);
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -401,7 +401,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case TILEKIND_ARROW_LEFT_B: {
             if (trans != NULL) {
-                trans->m_wwdObject->m_flags |= 0x10000;
+                trans->SetObjectFlags(0x10000);
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -414,7 +414,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case TILEKIND_ARROW_RIGHT_B: {
             if (trans != NULL) {
-                trans->m_wwdObject->m_flags |= 0x10000;
+                trans->SetObjectFlags(0x10000);
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -468,7 +468,7 @@ i32 CTileTriggerLogic::Tick() {
                             CTileTriggerTransition* lg =
                                 static_cast<CTileTriggerTransition*>(o->m_animWorker->m_logic);
                             if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
-                                lg->m_wwdObject->m_flags |= 0x10000;
+                                lg->SetObjectFlags(0x10000);
                             }
                         }
                     }
@@ -700,7 +700,7 @@ i32 CTileTriggerLogic::Tick() {
 
     if (trans != NULL) {
         if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
-            trans->m_wwdObject->m_flags |= 0x10000;
+            trans->SetObjectFlags(0x10000);
         }
     }
     LoadBridgeMove(srcId);

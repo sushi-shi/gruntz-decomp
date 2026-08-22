@@ -24,6 +24,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -57,14 +58,9 @@ CRollingBall::CRollingBall(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_explodeStart(0), m_explodeWindow(0) {
     SwitchGeometry("GAME_CYCLE100", 0);
     SET_ANIMATION_ACT("A");
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
 
-    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenX = snapX;
-    m_object->m_screenY = snapY;
-    m_subX = static_cast<double>(snapX);
-    m_subY = static_cast<double>(snapY);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_subX, m_subY)
     CWwdGameObjectA* snapped = m_object;
     SET_SORT_KEY_IF_CHANGED_AS(
         snapped,
@@ -109,10 +105,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_explodeLatch = 0;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
-    m_object->m_area.left = 0;
-    m_object->m_area.right = 0;
-    m_object->m_area.top = 0;
-    m_object->m_area.bottom = 0;
+    CLEAR_OBJECT_AREA
     m_moveDelta = 0.0;
 }
 
@@ -147,7 +140,7 @@ i32 CRollingBall::Update() {
     CWwdGameObjectA* logic = m_object;
     if (logic->m_points > 0) {
         if (static_cast<i64>(g_frameTime) - m_explodeStart >= m_explodeWindow) {
-            m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
+            ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
             CWwdGameObjectA* lg = m_object;
@@ -189,12 +182,7 @@ i32 CRollingBall::Update() {
             map->m_rowInts[ty][tx * 7] &= 0xefffffff;
         }
         CMapMgr* map2 = g_gameReg->m_tileGrid;
-        i32 terrain;
-        if (static_cast<u32>(tx) < map2->m_width && static_cast<u32>(ty) < map2->m_height) {
-            terrain = map2->m_rowInts[ty][tx * 7];
-        } else {
-            terrain = 1;
-        }
+        i32 terrain = map2->CellFlagsAt(tx, ty);
 
         if ((terrain & BRICKZ_BLOCKED_MASK) != 0 || (terrain & 2) != 0) {
             CString fall;
@@ -270,7 +258,7 @@ i32 CRollingBall::Update() {
                             break;
                         }
                     }
-                    m_wwdObject->ApplyName(fall);
+                    ApplyName(fall);
                     SwitchGeometry(explosion, 0);
                     if (act != IDX(TILEKIND_DEATH)) {
                         m_explodeLatch = 1;
@@ -361,7 +349,7 @@ i32 CRollingBall::Update() {
                 case TILEKIND_SINK_HAZARD:
                 case TILEKIND_WATERBRIDGE_UP:
                 case TILEKIND_TOGGLEWATERBRIDGE_UP: {
-                    m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
+                    ApplyName("LEVEL_ROLLINGBALL_SINK");
                     SwitchGeometry("LEVEL_ROLLINGBALLSINKWATER", 0);
                     CWwdGameObjectA* o = m_object;
                     i32 px = o->m_screenX;
@@ -388,10 +376,10 @@ i32 CRollingBall::Update() {
                     LevelArea kind = static_cast<LevelArea>(g_gameReg->m_curState->m_levelType);
                     if (kind == AREA_HIGH_ON_SWEETZ || kind == AREA_HIGH_ROLLERZ
                         || kind == AREA_GRUNTZ_IN_SPACE) {
-                        m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_FALL");
+                        ApplyName("LEVEL_ROLLINGBALL_FALL");
                         SwitchGeometry("LEVEL_ROLLINGBALLFALL", 0);
                     } else {
-                        m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
+                        ApplyName("LEVEL_ROLLINGBALL_SINK");
                         SwitchGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
                     }
                     m_explodeLatch = 1;
@@ -399,7 +387,7 @@ i32 CRollingBall::Update() {
                 }
 
                 default: {
-                    m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
+                    ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
                     SwitchGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
                     m_explodeLatch = 1;
                     return 0;
@@ -467,7 +455,7 @@ i32 CRollingBall::Update() {
                 m_stepDirY = -1;
                 m_target.Set(m_target.m_x, m_target.m_y - 0x20);
                 if (oldDir != dirObj2->m_direction) {
-                    m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_NORTH");
+                    ApplyName("LEVEL_ROLLINGBALL_NORTH");
                 }
                 break;
             case CARDINAL_EAST:
@@ -476,7 +464,7 @@ i32 CRollingBall::Update() {
                 m_stepDirY = 0;
                 m_target.Set(m_target.m_x + 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
-                    m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EAST");
+                    ApplyName("LEVEL_ROLLINGBALL_EAST");
                 }
                 break;
             case CARDINAL_WEST:
@@ -485,7 +473,7 @@ i32 CRollingBall::Update() {
                 m_stepDirY = 0;
                 m_target.Set(m_target.m_x - 0x20, m_target.m_y);
                 if (oldDir != dirObj2->m_direction) {
-                    m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_WEST");
+                    ApplyName("LEVEL_ROLLINGBALL_WEST");
                 }
                 break;
             default:
@@ -494,7 +482,7 @@ i32 CRollingBall::Update() {
                 m_stepDirY = 1;
                 m_target.Set(m_target.m_x, m_target.m_y + 0x20);
                 if (oldDir != dirObj2->m_direction) {
-                    m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
+                    ApplyName("LEVEL_ROLLINGBALL_SOUTH");
                 }
                 break;
         }
@@ -566,12 +554,7 @@ i32 CRollingBall::Update() {
 
 RVA(0x000b0fe0, 0x1ab)
 i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
 
     // Retail walks one pointer over the two adjacent i64 clocks (lea + add 8),
     // so it stays live across the call in a callee-saved register.

@@ -9,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Sprite.h>
@@ -157,10 +158,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         overrideVal = -1;
         selectVal = 0;
 
-        PickupType cap = level;
-        if (level > PICKUP_EQUIPPABLE_LAST) {
-            cap = unit->m_toolId;
-        }
+        PickupType cap = ArrivalPickupOf(unit, level);
         if (cap != PICKUP_NONE) {
             abilityVal = IDX(level);
             if (level > PICKUP_EQUIPPABLE_LAST) {

@@ -119,10 +119,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekTimer.m_hi = 0;
     m_peekWindow.m_hi = 0;
 
-    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenX = snapX;
-    m_object->m_screenY = snapY;
+    SNAP_OBJECT_TO_TILE_CENTER_COPY(m_object, snapX, snapY)
 
     CWwdGameObjectA* snapped = m_object;
     SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_INGAME_INFO)
@@ -316,28 +313,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                m_wwdObject->m_flags |= 0x10000;
+                SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_W);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                m_wwdObject->m_flags |= 0x10000;
+                SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_A);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                m_wwdObject->m_flags |= 0x10000;
+                SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_R);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                m_wwdObject->m_flags |= 0x10000;
+                SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_P);
@@ -402,7 +399,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (HandleInput() == 0) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         return;
     }
 
@@ -520,7 +517,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_object->m_screenY -= 0x18;
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
-    m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
+    ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
     m_countdown.m_v = 0x1388;
     m_startClock.m_v = static_cast<u32>(g_frameTime);
     SET_ANIMATION_ACT("A");
@@ -558,12 +555,7 @@ i32 CToyPeek::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    if (Chain(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, pObj)
 
     SerBandPair(ar, mode, &m_startClock);
     return 1;
@@ -588,7 +580,7 @@ i32 CInGameIcon::PeekCycle() {
                 grid->m_rows[tileY][tileX].m_objectId = 0;
                 grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
             }
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
         }
         return 0;
     }
@@ -725,8 +717,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         if (owner->m_damage > 0) {
             owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
             aux = m_objAux;
-            m_prevAnimSetNode = aux->m_actKey;
-            aux->m_actKey = ActFindId("B");
+            SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
             m_driftPos.m_lo = owner->m_damage;
             m_driftPos.m_hi = 0;
@@ -820,9 +811,7 @@ i32 CInGameIcon::SerializeMove(
     if (ar == NULL) {
         return 0;
     }
-    if (CUserLogic::SerializeMove(ar, mode, typeId, obj) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, obj)
 
     switch (mode) {
         case SERIAL_LOAD: {
@@ -941,24 +930,24 @@ i32 CInGameIcon::SerializeMove(
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         return;
     }
     SET_ANIMATION_ACT("A");
     SwitchGeometry("GAME_CYCLE100", 0);
-    m_wwdObject->ApplyName("GAME_HELPBOX");
+    ApplyName("GAME_HELPBOX");
     SetObjectFlags(2);
 
     InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
     if (vis == INGAME_TEXT_EASY_ONLY) {
 
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
             return;
         }
     } else if (vis == INGAME_TEXT_NORMAL_ONLY) {
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
             return;
         }
     }
@@ -1051,12 +1040,7 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
     if (ar == NULL) {
         return 0;
     }
-    if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
-        return 0;
-    }
-    if (Chain(ar, tag, a, b) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, a, b)
     switch (tag) {
         case SERIAL_SAVE:
             ar->Write(&m_cachedAreaId, sizeof(m_cachedAreaId));

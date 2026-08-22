@@ -106,14 +106,14 @@ RVA(0x00008580, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
     switch (static_cast<ActionAreaOwner>(owner)) {
         case ACTION_AREA_BLUE_OWNER: {
-            m_wwdObject->ApplyName("GAME_ACTIONAREA_BLUE");
+            ApplyName("GAME_ACTIONAREA_BLUE");
 
             CDDrawWorker* rec = m_wwdObject->m_frameSet;
             rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
         case ACTION_AREA_RED_OWNER: {
-            m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
+            ApplyName("GAME_ACTIONAREA_RED");
 
             CDDrawWorker* rec = m_wwdObject->m_frameSet;
             rec->SetAllTypes(SHADE_ALPHA_16);
@@ -131,12 +131,7 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
     if (ar == NULL) {
         return 0;
     }
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
     SerBandPair(ar, tag, &m_timing);
     switch (tag) {
         case SERIAL_SAVE:

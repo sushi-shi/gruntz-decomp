@@ -59,33 +59,23 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
         return 0;
     }
 
-    m_frameMinTens = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : NULL;
+    m_frameMinTens = spr->GetAt(10);
     if (!m_frameMinTens) {
         return 0;
     }
-    m_frameMinOnes = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : NULL;
+    m_frameMinOnes = spr->GetAt(10);
     if (!m_frameMinOnes) {
         return 0;
     }
-    m_frameColon = (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11)
-                       ? static_cast<CImage*>(spr->m_items.GetAt(11))
-                       : NULL;
+    m_frameColon = spr->GetAt(11);
     if (!m_frameColon) {
         return 0;
     }
-    m_frameSecTens = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : NULL;
+    m_frameSecTens = spr->GetAt(10);
     if (!m_frameSecTens) {
         return 0;
     }
-    m_frameSecOnes = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
-                         : NULL;
+    m_frameSecOnes = spr->GetAt(10);
     if (!m_frameSecOnes) {
         return 0;
     }
@@ -189,18 +179,10 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     CDDrawWorker* spr = m_sprite;
-    m_frameMinTens = (d10min >= spr->m_minIndex && d10min <= spr->m_maxIndex)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(d10min))
-                         : 0;
-    m_frameMinOnes = (d1min >= spr->m_minIndex && d1min <= spr->m_maxIndex)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(d1min))
-                         : 0;
-    m_frameSecTens = (d10sec >= spr->m_minIndex && d10sec <= spr->m_maxIndex)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(d10sec))
-                         : 0;
-    m_frameSecOnes = (d1sec >= spr->m_minIndex && d1sec <= spr->m_maxIndex)
-                         ? static_cast<CImage*>(spr->m_items.GetAt(d1sec))
-                         : 0;
+    m_frameMinTens = spr->GetAt(d10min);
+    m_frameMinOnes = spr->GetAt(d1min);
+    m_frameSecTens = spr->GetAt(d10sec);
+    m_frameSecOnes = spr->GetAt(d1sec);
     return 1;
 }
 

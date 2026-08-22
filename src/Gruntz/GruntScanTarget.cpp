@@ -43,8 +43,7 @@
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    COPY_LAST_TILE_TO_DEFENDER
     i32 cx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 cy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
@@ -79,19 +78,13 @@ i32 CGrunt::ScanNearestTarget() {
     {
         i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
         Coord pt1;
-        GetScreenPos(&pt1);
-        pt1.m_x >>= TILE_SHIFT_PX;
-        pt1.m_y >>= TILE_SHIFT_PX;
+        GetScreenTile(&pt1);
         i32 by = pt1.m_y;
         Coord pt2;
-        GetScreenPos(&pt2);
-        pt2.m_x >>= TILE_SHIFT_PX;
-        pt2.m_y >>= TILE_SHIFT_PX;
+        GetScreenTile(&pt2);
         i32 bx = pt2.m_x;
         Coord pt3;
-        GetScreenPos(&pt3);
-        pt3.m_x >>= TILE_SHIFT_PX;
-        pt3.m_y >>= TILE_SHIFT_PX;
+        GetScreenTile(&pt3);
         i32 t3y = pt3.m_y;
         Coord pt4;
         GetScreenPos(&pt4);
@@ -186,8 +179,7 @@ i32 CGrunt::ScanNearestTarget() {
                 i32 seekPb;
                 PRIO(seekPb, best->m_entranceReason);
                 if (seekPa <= seekPb && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                    m_defenderPx.m_x = m_lastTilePx.m_x;
-                    m_defenderPx.m_y = m_lastTilePx.m_y;
+                    COPY_LAST_TILE_TO_DEFENDER
                     i32 pathPa;
                     PRIO(pathPa, m_entranceReason);
                     i32 pathPb;

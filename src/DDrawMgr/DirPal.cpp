@@ -49,12 +49,7 @@ i32 CDDPalette::CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags) {
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
 
     u8* src = rgb;
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        entries[i].peRed = *src++;
-        entries[i].peGreen = *src++;
-        entries[i].peBlue = *src++;
-        entries[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(entries, src, i, PALETTE_ENTRY_COUNT)
     return Create(dd, entries, flags);
 }
 
@@ -121,12 +116,7 @@ i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
         return 0;
     }
     u8* src = rgb;
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        pe[i].peRed = *src++;
-        pe[i].peGreen = *src++;
-        pe[i].peBlue = *src++;
-        pe[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(pe, src, i, PALETTE_ENTRY_COUNT)
     return Create(dd, pe, flags);
 }
 
@@ -138,12 +128,7 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
     u8* src = static_cast<u8*>(data) + size - PALETTE_RGB_BYTE_COUNT;
 
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        entries[i].peRed = *src++;
-        entries[i].peGreen = *src++;
-        entries[i].peBlue = *src++;
-        entries[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(entries, src, i, PALETTE_ENTRY_COUNT)
     return Create(dd, entries, flags);
 }
 
@@ -159,12 +144,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
         return 0;
     }
     u8* src = rgb;
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        pe[i].peRed = *src++;
-        pe[i].peGreen = *src++;
-        pe[i].peBlue = *src++;
-        pe[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(pe, src, i, PALETTE_ENTRY_COUNT)
     return Create(dd, pe, flags);
 }
 
@@ -183,12 +163,7 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     if (!src) {
         return 0;
     }
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        pal[i].peRed = *src++;
-        pal[i].peGreen = *src++;
-        pal[i].peBlue = *src++;
-        pal[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(pal, src, i, PALETTE_ENTRY_COUNT)
     return Create(dd, pal, flags);
 }
 
@@ -234,12 +209,7 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
         return 0x80070057;
     }
 
-    for (i32 i = 0; i < count; i++) {
-        buf[i].peRed = *rgb++;
-        buf[i].peGreen = *rgb++;
-        buf[i].peBlue = *rgb++;
-        buf[i].peFlags = 0;
-    }
+    COPY_RGB_PALETTE(buf, rgb, i, count)
     i32 hr = SetAndNotify(start, count, buf, unused);
     delete[] buf;
     return hr;

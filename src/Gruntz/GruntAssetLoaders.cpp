@@ -117,7 +117,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
     SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
 
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     {
         CWwdGameObjectA* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
@@ -138,13 +138,13 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SQUASH)
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_SQUASH, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_SQUASH, DEATH_FRAME());
             DEATH_CUE(0x35b);
             goto finalize;
 
         case DEATH_DROP:
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
             goto tail;
 
         case DEATH_SINK:
@@ -152,7 +152,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SINK)
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             LoadGruntMovingDeathConfig();
@@ -163,7 +163,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_HOLE)
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_HOLE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_HOLE, DEATH_FRAME());
             DEATH_CUE(0x357);
             goto finalize;
 
@@ -172,7 +172,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_SHATTER)
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
 
@@ -181,7 +181,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_BURN)
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_BURN, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_BURN, DEATH_FRAME());
             DEATH_CUE(0x352);
             goto finalize;
 
@@ -191,7 +191,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             {
                 CWwdGameObjectA* o = m_object;
                 SET_SORT_KEY_IF_CHANGED(o, -1)
@@ -221,7 +221,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 );
             }
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             LoadGruntMovingDeathConfig();
@@ -251,7 +251,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 );
             }
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
             LoadGruntMovingDeathConfig();
@@ -264,7 +264,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 s_DEATHZ_ELECTROCUTE
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
             goto finalize;
         }
@@ -276,7 +276,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 "GRUNTZ_DEATHZ_MELT"
             );
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
             DEATH_CUE(0x359);
             goto finalize;
         }
@@ -285,7 +285,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_poseDeath =
                 LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_KAROKE);
             SwitchGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
             goto tail;
         }
@@ -298,7 +298,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_poseDeath =
                 LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_EXPLODE);
             SwitchAnimation(m_poseDeath);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
         }
@@ -307,14 +307,14 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_poseDeath =
                 LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_EXITZ_DRAIN);
             SwitchAnimation(m_poseDeath);
-            m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_EXITZ", DEATH_FRAME());
             SET_ANIMATION_ACT("B");
             goto tail;
         }
 
         default:
             SwitchAnimation(m_poseDeath);
-            m_wwdObject->ApplyName(static_cast<const char*>(m_deathFrameSetName));
+            APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
@@ -327,13 +327,13 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
             if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 SwitchGeometry("GRUNTZ_NORMALGRUNT_DEATH", 0);
-                m_wwdObject->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
+                APPLY_NAME_INLINE("GRUNTZ_NORMALGRUNT_DEATH");
             }
             goto tail;
     }
 
 pathA:
-    m_wwdObject->ApplyName(static_cast<const char*>(m_deathFrameSetName));
+    APPLY_NAME_INLINE(static_cast<const char*>(m_deathFrameSetName));
     {
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(

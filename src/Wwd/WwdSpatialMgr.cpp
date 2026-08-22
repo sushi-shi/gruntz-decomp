@@ -103,7 +103,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
     POSITION pos = m_mgr->m_list.GetHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_mgr->m_list.GetNext(pos));
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_mgr->NextChild(pos));
         if (obj->m_flags & 0x40) {
 
             if (newX < m_bounds.left - 0x140 || newX > m_bounds.right + 0x140
@@ -160,7 +160,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                         w->SetWorkerAct(ACT_LEAVE_ACTIVE_REGION);
                         w->m_notify(obj);
                         if (w->WorkerAct() == ACT_LEAVE_ACTIVE_REGION) {
-                            w->m_actKey = saved;
+                            w->SetActKey(saved);
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -187,7 +187,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                         w->SetWorkerAct(ACT_LEAVE_ACTIVE_REGION);
                         w->m_notify(obj);
                         if (w->WorkerAct() == ACT_LEAVE_ACTIVE_REGION) {
-                            w->m_actKey = saved;
+                            w->SetActKey(saved);
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -214,7 +214,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                         w->SetWorkerAct(ACT_LEAVE_ACTIVE_REGION);
                         w->m_notify(obj);
                         if (w->WorkerAct() == ACT_LEAVE_ACTIVE_REGION) {
-                            w->m_actKey = saved;
+                            w->SetActKey(saved);
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);

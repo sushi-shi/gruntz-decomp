@@ -145,7 +145,7 @@ i32 CreateDemoMover(CGameObject* owner) {
             }
 
             if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
-                st->m_actKey = IDX(DEMO_MOVER_CHOOSE_TARGET);
+                st->SetActKey(IDX(DEMO_MOVER_CHOOSE_TARGET));
             }
             return 1;
         }

@@ -59,9 +59,9 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_cmd = cmd;
 
     if (enabled != STATUS_SAMPLE_NONE) {
-        m_enabled = 1;
+        SetEnabled(1);
     } else {
-        m_enabled = 0;
+        SetEnabled(0);
     }
     m_rowIndex = rowIndex;
     m_colIndex = colIndex;
@@ -78,10 +78,10 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
-        } else if (worker->m_minIndex > 1 || worker->m_maxIndex < 1) {
+        } else if (DDRAW_WORKER_MISSES_FRAME(worker, 1)) {
             frame = NULL;
         } else {
-            frame = static_cast<CImage*>(worker->m_items.GetAt(1));
+            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
         }
         m_topFrame = frame;
         m_drawPosition.m_x = parent->m_rect10.left - (rc.right - rc.left) / 2;
@@ -97,10 +97,10 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
-        } else if (worker->m_minIndex > 1 || worker->m_maxIndex < 1) {
+        } else if (DDRAW_WORKER_MISSES_FRAME(worker, 1)) {
             frame = NULL;
         } else {
-            frame = static_cast<CImage*>(worker->m_items.GetAt(1));
+            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
         }
         m_topFrame = frame;
         m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_rect10.right;
@@ -186,10 +186,10 @@ i32 CSBI_SideTab::BuildHandle() {
         "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"
     );
     CImage* glyph;
-    if (gm == NULL || val < gm->m_minIndex || val > gm->m_maxIndex) {
+    if (gm == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(gm, val)) {
         glyph = NULL;
     } else {
-        glyph = static_cast<CImage*>(gm->m_items.GetAt(val));
+        glyph = DDRAW_WORKER_FRAME_AT_UNCHECKED(gm, val);
     }
     m_sampledValue = val;
     m_bottomFrame = glyph;
@@ -265,8 +265,8 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
                 } else {
                     r = NULL;
                 }
@@ -284,8 +284,8 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
-                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
                 } else {
                     r = NULL;
                 }

@@ -219,10 +219,10 @@ RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         Hide();
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
     SET_ANIMATION_ACT("A");
 }
@@ -254,7 +254,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
     SET_ANIMATION_ACT("A");
 
     SetObjectFlags(2);
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     Hide();
 }
 
@@ -285,7 +285,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     Hide();
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -316,7 +316,7 @@ RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
     Hide();
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -358,7 +358,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
-    m_wwdObject->m_flags |= 1;
+    SetObjectFlags(1);
 
     CWwdGameObjectA* o = m_object;
     i32 zk = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
@@ -445,8 +445,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     SET_ANIMATION_ACT("B");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CHECKPOINTFLAGSET", 0);
+    SwitchGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
     if (play->m_frameMarker != NULL) {
         i32 a = m_object->m_score;
@@ -553,10 +552,7 @@ i32 CCheckpointTrigger::SerializeMove(
             sa->Write(&m_firstEmpty, sizeof(m_firstEmpty));
             break;
     }
-    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, pObj)
 }
 
 RVA(0x0010fa60, 0x19)
@@ -593,13 +589,10 @@ void CTileTriggerTransition::RegisterActs() {
 
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    if (m_wwdObject->ApplyLookupGeometry(geom, 0) == 0) {
+    if (SwitchGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-    m_wwdObject->ApplyLookupSprite(sprite, elem->m_param);
+    APPLY_CURRENT_ANIMATION_FRAME_SPRITE(sprite, desc, elem)
     SET_ANIMATION_ACT("A");
     return 1;
 }
@@ -607,8 +600,6 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
-        m_wwdObject->m_flags |= 0x10000;
-    }
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
     return 0;
 }

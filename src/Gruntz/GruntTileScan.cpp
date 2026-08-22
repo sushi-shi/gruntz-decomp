@@ -20,9 +20,7 @@
 
 static inline Coord ScanCell(CGrunt* g) {
     Coord t;
-    g->GetScreenPos(&t);
-    t.m_x >>= TILE_SHIFT_PX;
-    t.m_y >>= TILE_SHIFT_PX;
+    g->GetScreenTile(&t);
     return t;
 }
 
@@ -37,13 +35,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 col = c->m_x;
             i32 row = c->m_y;
             CMapMgr* grid = m_board;
-            i32 flags;
-            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-                flags = grid->m_rows[row][col].m_flags;
-            } else {
-                flags = 1;
-            }
+            i32 flags = grid->CellFlagsAt(col, row);
             if ((flags & 0x4000)
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
                 RECYCLE_GRUNT_COORDS_POSITION(g)

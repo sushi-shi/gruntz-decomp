@@ -852,10 +852,7 @@ i32 CAniRecordView::Rng2Next() {
 
 RVA(0x0015cc30, 0x1e)
 CImage* CDDrawWorker::GetFrame(i32 n) {
-    if (n >= m_minIndex && n <= m_maxIndex) {
-        return static_cast<CImage*>(m_items.GetAt(n));
-    }
-    return 0;
+    return GetAt(n);
 }
 
 RVA(0x0015cc50, 0x38)

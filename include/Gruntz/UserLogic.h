@@ -134,6 +134,99 @@ public:
     m_prevAnimSetNode = m_objAux->m_actKey;                                                        \
     m_objAux->m_actKey = ActFindId(key)
 
+#define ANIMATION_ACT_EQUALS(key) (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), key) == 0)
+
+#define ANIMATION_ACT_DIFFERS(key) (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), key) != 0)
+
+#define ANIMATION_ACT_EQUALS_FOR(logic, key)                                                       \
+    (strcmp(*g_typeColl.GetNameRecord(logic->m_objAux->m_actKey), key) == 0)
+
+#define ANIMATION_ACT_DIFFERS_FOR(logic, key)                                                      \
+    (strcmp(*g_typeColl.GetNameRecord(logic->m_objAux->m_actKey), key) != 0)
+
+#define APPLY_NAME_INLINE(name) m_wwdObject->ApplyName(name)
+
+#define APPLY_LOOKUP_SPRITE_INLINE(name, frame) m_wwdObject->ApplyLookupSprite(name, frame)
+
+#define ADVANCE_CURRENT_ANIMATION_CURSOR(cursor, elapsed)                                          \
+    m_wwdObject->m_animCursor.Advance(elapsed);                                                    \
+    CAniAdvanceCursor* cursor = &m_wwdObject->m_animCursor;
+
+#define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                        \
+    (logic)->GetScreenPos((&out));                                                                 \
+    out.m_y >>= TILE_SHIFT_PX;                                                                     \
+    out.m_x >>= TILE_SHIFT_PX;
+
+#define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
+    CAniElement* animation = m_wwdObject->m_animCursor.m_animation;                                \
+    CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
+    i32 frame = record->m_param;
+
+#define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->m_flags |= bits
+
+#define HIDE_OBJECT_INLINE() m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN
+
+#define SET_OBJECT_FLAGS_AND_HIDE_INLINE(bits)                                                     \
+    SET_OBJECT_FLAGS_INLINE(bits);                                                                 \
+    HIDE_OBJECT_INLINE();
+
+#define INITIALIZE_DEFAULT_CYCLE_ANIMATION                                                         \
+    SET_ANIMATION_ACT("A");                                                                        \
+    if (m_wwdObject->m_animCursor.m_animation == NULL) {                                           \
+        SwitchGeometry("GAME_CYCLE100", 0);                                                        \
+    }
+
+#define MARK_OBJECT_COMPLETE_IF(condition)                                                         \
+    if (condition) {                                                                               \
+        SET_OBJECT_FLAGS_INLINE(0x10000);                                                          \
+    }
+
+#define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
+    CAniElement* animation = m_wwdObject->m_animCursor.m_animation;                                \
+    CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
+    APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
+
+#define SET_OBJECT_AREA(value)                                                                     \
+    m_object->m_area.left = value;                                                                 \
+    m_object->m_area.right = value;                                                                \
+    m_object->m_area.top = value;                                                                  \
+    m_object->m_area.bottom = value;
+
+#define CLEAR_OBJECT_AREA                                                                          \
+    m_object->m_area.left = 0;                                                                     \
+    m_object->m_area.right = 0;                                                                    \
+    m_object->m_area.top = 0;                                                                      \
+    m_object->m_area.bottom = 0;
+
+#define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                   \
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, object)) {                                    \
+        return 0;                                                                                  \
+    }
+
+#define SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)                                   \
+    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                       \
+    return Chain(ar, mode, typeId, object) != 0;
+
+#define SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)                         \
+    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                       \
+    if (!Chain(ar, mode, typeId, object)) {                                                        \
+        return 0;                                                                                  \
+    }
+
+#define SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(baseAr, chainAr, mode, typeId, object)                 \
+    if (!CUserLogic::SerializeMove(baseAr, mode, typeId, object)) {                                \
+        return 0;                                                                                  \
+    }                                                                                              \
+    return Chain(chainAr, mode, typeId, object) != 0;
+
+#define SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(baseAr, chainAr, mode, typeId, object)       \
+    if (!CUserLogic::SerializeMove(baseAr, mode, typeId, object)) {                                \
+        return 0;                                                                                  \
+    }                                                                                              \
+    if (!Chain(chainAr, mode, typeId, object)) {                                                   \
+        return 0;                                                                                  \
+    }
+
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
     out->m_x >>= TILE_SHIFT_PX;
@@ -245,13 +338,7 @@ public:
     RVA(0x000111f0, 0x47)
     virtual i32
     SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE {
-        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-            return 0;
-        }
-        return Chain(ar, mode, typeId, pObj) != 0;
-    }
-    RVA(0x000111d0, 0x6)
+        OVERRIDE{SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)} RVA(0x000111d0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TILETRIGGER;
     }

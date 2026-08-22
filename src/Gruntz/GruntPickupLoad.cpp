@@ -459,6 +459,6 @@ i32 CGrunt::LoadPickupSprites(
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     SwitchAnimation(m_pickupGeoSrc);
-    m_wwdObject->ApplyName("GRUNTZ_PICKUPS");
+    ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }

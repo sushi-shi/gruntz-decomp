@@ -15,6 +15,7 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarItemInline.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
@@ -43,11 +44,7 @@ i32 CSBI_ImageSetAni::Init(
     if (owner == NULL) {
         goto fail;
     }
-    m_owner = owner;
-    m_tab = tab;
-    m_host = host;
-    m_redrawFrames = 0;
-    m_enabled = 1;
+    INITIALIZE_STATUS_BAR_ITEM(owner, tab, host)
 
     m_rect14 = rc;
     m_cmd = cmd;
@@ -78,12 +75,12 @@ i32 CSBI_ImageSetAni::Init(
     m_frameIndex = m_frameStart;
 
     CImage* cel;
-    if (m_frameStart < tbl->m_minIndex || m_frameStart > tbl->m_maxIndex) {
+    if (DDRAW_WORKER_FRAME_OUT_OF_RANGE(tbl, m_frameStart)) {
         cel = NULL;
     } else {
-        cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameStart));
+        cel = DDRAW_WORKER_FRAME_AT_UNCHECKED(tbl, m_frameStart);
     }
-    m_frame = cel;
+    SetFrame(cel);
     return cel != NULL;
 fail:
     return 0;
@@ -99,7 +96,7 @@ RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_redrawFrames > 0) {
         CImage* cel = m_frameSet->GetAt(m_frameIndex);
-        m_frame = cel;
+        SetFrame(cel);
         if (cel != NULL) {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(

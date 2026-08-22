@@ -40,7 +40,7 @@ i32 CSBI_Image::SetupImage(
         m_tab = tab;
         m_host = host;
         m_redrawFrames = 0;
-        m_enabled = 0;
+        SetEnabled(0);
         m_rect14 = rc;
         m_cmd = cmd;
         if (key != NULL) {
@@ -48,12 +48,12 @@ i32 CSBI_Image::SetupImage(
             host->m_imageRegistry->m_workersByName.Lookup(key, found);
             CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
             CImage* val;
-            if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
+            if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
                 val = NULL;
             } else {
-                val = static_cast<CImage*>(rec->m_items.GetAt(1));
+                val = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, 1);
             }
-            m_frame = val;
+            SetFrame(val);
             return val != NULL;
         }
     }
@@ -62,7 +62,7 @@ i32 CSBI_Image::SetupImage(
 
 RVA(0x000e6d90, 0x8)
 void CSBI_Image::Reset() {
-    m_frame = NULL;
+    SetFrame(NULL);
 }
 
 RVA(0x000e6db0, 0x8)
@@ -108,13 +108,13 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
                 CObject* r_ob = 0;
                 mgr->m_imageRegistry->m_workersByName.Lookup(name, r_ob);
                 CDDrawWorker* r = static_cast<CDDrawWorker*>(r_ob);
-                if (r && frameIndex >= r->m_minIndex && frameIndex <= r->m_maxIndex) {
-                    m_frame = static_cast<CImage*>(r->m_items.GetAt(frameIndex));
+                if (r && DDRAW_WORKER_FRAME_IN_RANGE(r, frameIndex)) {
+                    SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(r, frameIndex));
                 } else {
-                    m_frame = NULL;
+                    SetFrame(NULL);
                 }
             } else {
-                m_frame = NULL;
+                SetFrame(NULL);
             }
             break;
         case SERIAL_SAVE:

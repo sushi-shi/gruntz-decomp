@@ -31,6 +31,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/State.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -208,14 +209,9 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_dropInterval = 0;
     SwitchGeometry("LEVEL_OBJECTDROPPER", 0);
     SET_ANIMATION_ACT("A");
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
 
-    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenX = snapX;
-    m_object->m_screenY = snapY;
-    m_posX = static_cast<double>(snapX);
-    m_posY = static_cast<double>(snapY);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
 
@@ -255,10 +251,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    m_object->m_area.left = 1;
-    m_object->m_area.right = 1;
-    m_object->m_area.top = 1;
-    m_object->m_area.bottom = 1;
+    SET_OBJECT_AREA(1)
 }
 
 RVA(0x000c5f80, 0x102)
@@ -299,14 +292,7 @@ i32 CObjectDropper::Update() {
                         CMapMgr* plane = g_gameReg->m_tileGrid;
                         i32 cx = fx >> TILE_SHIFT_PX;
                         i32 cy = fy >> TILE_SHIFT_PX;
-                        u32 flags;
-                        if (static_cast<u32>(cx) >= static_cast<u32>(plane->m_width)
-                            || static_cast<u32>(cy) >= static_cast<u32>(plane->m_height)) {
-                            flags = 1;
-                        } else {
-
-                            flags = static_cast<u32>(plane->m_rows[cy][cx].m_flags);
-                        }
+                        u32 flags = plane->CellFlagsAt(cx, cy);
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
@@ -363,12 +349,7 @@ i32 CObjectDropper::Update() {
 
 RVA(0x000c6680, 0x1b4)
 i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
 
     SerBandPair(ar, tag, &m_dropTiming);
 
@@ -408,9 +389,9 @@ RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
+    ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
     SwitchGeometry("LEVEL_DROPPEDOBJECT", 0);
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
     i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
@@ -457,23 +438,18 @@ i32 CDroppedObject::AdvanceFall() {
         {
             i32 cx = x >> TILE_SHIFT_PX;
             i32 cy = m_landY >> TILE_SHIFT_PX;
-            if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-                && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-                cell = g->m_rows[cy][cx].m_flags;
-            } else {
-                cell = 1;
-            }
+            cell = g->CellFlagsAt(cx, cy);
         }
         if ((cell & 0x900) == 0) {
             if (cell & IDX(CELL_FLAG_SPECIAL)) {
                 if (cell == IDX(CELL_FLAG_REVEALED_POWERUP)) {
-                    m_wwdObject->m_flags |= 0x10000;
+                    SetObjectFlags(0x10000);
                 } else {
                     switch (g_gameReg->m_curState->m_levelType) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:
-                            m_wwdObject->m_flags |= 0x10000;
+                            SetObjectFlags(0x10000);
                             // fall through
                         case AREA_MINIATURE_MASTERZ:
                         default:
@@ -520,20 +496,13 @@ i32 CDroppedObject::AdvanceFall() {
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
-        m_wwdObject->m_flags |= 0x10000;
-    }
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
     return 0;
 }
 
 RVA(0x000c73a0, 0xb5)
 i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
     switch (tag) {
         case SERIAL_SAVE:
             ar->Write(&m_timePerTile, sizeof(m_timePerTile));
@@ -553,9 +522,9 @@ RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
+    ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
     SwitchGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
     CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
     CWwdGameObjectA* draw = m_object;
     SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
@@ -585,9 +554,7 @@ i32 CDroppedObjectShadow::Advance() {
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
-    if (IsAniCursorComplete(&m_wwdObject->m_animCursor)) {
-        m_wwdObject->m_flags |= 0x10000;
-    }
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
     return 0;
 }
 
@@ -598,12 +565,7 @@ i32 CDroppedObjectShadow::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, mode, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, mode, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, c, d)
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;

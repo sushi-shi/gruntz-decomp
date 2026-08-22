@@ -8,6 +8,7 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -277,10 +278,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-        if (reg->m_soundStream) {
-            reg->m_soundStream->PurgeVoiceList(-1);
-        }
+        PurgeVoices(m_world->m_soundRegistry);
     } while (m_menuMusicCue->m_sound->IsPlaying());
 }
 

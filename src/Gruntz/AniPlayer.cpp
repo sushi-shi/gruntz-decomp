@@ -65,7 +65,7 @@ RVA(0x000e5c10, 0x54)
 i32 CAniPlayer::RenderCel() {
     CDDrawWorker* tbl = m_frameSet;
     CImage* cel = tbl->GetAt(m_frameIndex);
-    m_frame = cel;
+    SetFrame(cel);
     if (cel != NULL) {
         CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
         cel->RenderFrame(

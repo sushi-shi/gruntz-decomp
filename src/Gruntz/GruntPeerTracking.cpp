@@ -39,8 +39,7 @@
 // @early-stop
 RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepPeerTracking() {
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
     if (m_vehiclePickupType == PICKUP_NONE) {
         m_arrivalState = AI_POSTGUARD;
         m_defenderState = AISTATE_SEEK;

@@ -71,10 +71,7 @@ i32 CSecretTeleporterTrigger::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(a, b, c, d)) {
-        return 0;
-    }
-    return Chain(a, b, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(a, b, c, d)
 }
 
 RVA_COMPGEN(0x00010a80, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
@@ -90,10 +87,7 @@ i32 CSecretLevelTrigger::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x00010c20, 0x1e, ??_GCSecretLevelTrigger@@UAEPAXI@Z)
@@ -105,7 +99,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdGameObjectA* o = m_object;
@@ -145,7 +139,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
         Hide();
         SET_ANIMATION_ACT("A");
     } else {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
 }
 
@@ -186,7 +180,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (ok) {
             g_gameReg->m_cmdGrid->CellDispatch(outB, outA, DEATH_DRAIN, -1);
         }
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
     return 0;
 }
@@ -225,7 +219,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
                 g->m_cueSink->SpawnVoiceDriver(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
     return 0;
 }

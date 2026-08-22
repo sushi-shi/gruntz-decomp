@@ -42,8 +42,7 @@
 // GruntInRadius/m_entranceCommitted guards, so we are two branches short.
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepArrivalDefense() {
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
     CGrunt* occ;
     switch (m_defenderState) {
         case AISTATE_ATTACK:

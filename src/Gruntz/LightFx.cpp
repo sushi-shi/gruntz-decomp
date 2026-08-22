@@ -148,12 +148,7 @@ i32 CLightFx::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
-    if (Chain(ar, mode, typeId, pObj) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, pObj)
     switch (mode) {
         case SERIAL_SAVE:
             (ar)->Write(&m_anchorA, sizeof(m_anchorA));
@@ -182,8 +177,6 @@ i32 CLightFx::RebindNode() {
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (IsAniCursorComplete(&m_wwdObject->m_animCursor) && m_anchorB) {
-        m_wwdObject->m_flags |= 0x10000;
-    }
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor) && m_anchorB)
     return 0;
 }

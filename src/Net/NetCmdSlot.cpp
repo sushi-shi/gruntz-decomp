@@ -12,6 +12,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 #include <Net/CmdPool.h>
+#include <Net/NetCmdSlotInline.h>
 #include <Net/NetMgr.h>
 #include <Net/NetSlotState.h>
 #include <Pix16.h>
@@ -59,13 +60,7 @@ i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state) {
     m_baseSeq = 0;
     m_maxSeq = 0;
     m_owner = owner;
-    ClearCmds();
-
-    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
-        m_ackFlags[i] = 0;
-    }
-    ResetTriple(m_rangeA);
-    ResetTriple(m_rangeB);
+    ResetNetCmdSlotCommandWindow(this);
     return 1;
 }
 
@@ -79,13 +74,7 @@ void CNetCmdSlot::ResetAll() {
     m_baseSeq = 0;
     m_maxSeq = 0;
     m_owner = NULL;
-    ClearCmds();
-
-    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
-        m_ackFlags[i] = 0;
-    }
-    ResetTriple(m_rangeA);
-    ResetTriple(m_rangeB);
+    ResetNetCmdSlotCommandWindow(this);
 }
 
 RVA(0x000c0c20, 0x3f)
@@ -95,13 +84,7 @@ void CNetCmdSlot::FullReset() {
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;
-    ClearCmds();
-
-    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
-        m_ackFlags[i] = 0;
-    }
-    ResetTriple(m_rangeA);
-    ResetTriple(m_rangeB);
+    ResetNetCmdSlotCommandWindow(this);
 }
 
 RVA(0x000c0c70, 0x20f)

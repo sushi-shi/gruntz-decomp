@@ -32,10 +32,7 @@ CActReg CActRegPool<CFrontCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0000fa60, 0x47)
 i32 CFrontCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x0000fad0, 0x1e, ??_GCFrontCandy@@UAEPAXI@Z)
@@ -43,10 +40,7 @@ RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
 
 RVA(0x0000fdf0, 0x47)
 i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x0000fe60, 0x1e, ??_GCFrontCandyAni@@UAEPAXI@Z)
@@ -54,10 +48,7 @@ RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
 
 RVA(0x0000ff20, 0x47)
 i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x0000ff90, 0x1e, ??_GCEyeCandyAni@@UAEPAXI@Z)
@@ -113,10 +104,7 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SET_ANIMATION_ACT("A");
-    if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        SwitchGeometry("GAME_CYCLE100", 0);
-    }
+    INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey == 0 && o->m_layer != NULL) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
@@ -158,10 +146,7 @@ i32 CEyeCandyAni::AdvanceAnim() {
 RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SET_ANIMATION_ACT("A");
-    if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        SwitchGeometry("GAME_CYCLE100", 0);
-    }
+    INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
 }

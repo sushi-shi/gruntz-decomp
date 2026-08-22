@@ -73,4 +73,16 @@ public:
     i32 m_maxIndex;
 };
 
+// Caller-shape fallbacks for sites where VC5 cannot preserve the GetAt expansion.
+#define DDRAW_WORKER_CONTAINS_FRAME(worker, index)                                                 \
+    worker->m_minIndex <= index && worker->m_maxIndex >= index
+#define DDRAW_WORKER_FRAME_IN_RANGE(worker, index)                                                 \
+    index >= worker->m_minIndex&& index <= worker->m_maxIndex
+#define DDRAW_WORKER_FRAME_OUT_OF_RANGE(worker, index)                                             \
+    index<worker->m_minIndex || index> worker->m_maxIndex
+#define DDRAW_WORKER_MISSES_FRAME(worker, index)                                                   \
+    worker->m_minIndex > index || worker->m_maxIndex < index
+#define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                             \
+    static_cast<CImage*>(worker->m_items.GetAt(index))
+
 #endif // GRUNTZ_CDDRAWWORKER_H

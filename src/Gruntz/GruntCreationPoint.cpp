@@ -38,15 +38,14 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
         f |= 0x20000;
         o->m_flags = f;
     }
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SwitchGeometry("GAME_CYCLE100", 0);
 
     i32 idx = m_object->m_smarts;
     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         if (g_gameReg->m_options[idx].m_liveGate != 0) {
             idx = IDX(g_gameReg->m_options[idx].m_colorIndex);
         } else {
-            m_wwdObject->m_flags |= 0x10000;
+            SetObjectFlags(0x10000);
 
             AddrWord<CGameObject> handle;
             handle.m_addr = obj;
@@ -74,12 +73,7 @@ i32 CGruntCreationPoint::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    if (!Chain(ar, tag, c, d)) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
     if (tag != SERIAL_SAVE && tag == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {

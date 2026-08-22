@@ -40,9 +40,8 @@
 
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
-    bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    m_defenderPx = m_lastTilePx;
+    bool eqI = ANIMATION_ACT_EQUALS("I");
     if (eqI) {
         return 1;
     }

@@ -14,6 +14,9 @@
 GZ_ENUM_FORWARD(MenuItemState);
 
 class CMenuPage;
+
+#define SET_MENU_ITEM2_FRAME_DELAY_INLINE(value) m_frameDelay = value
+
 class CMenuItem2 : public CMenuItem {
 public:
     CMenuItem2();

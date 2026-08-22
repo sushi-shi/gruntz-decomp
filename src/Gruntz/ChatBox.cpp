@@ -3,6 +3,7 @@
 #include <Gruntz/ChatBox.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSubMgrPagesInline.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -117,9 +118,7 @@ i32 CChatBox::Pre() {
 RVA(0x00182ce0, 0x36)
 i32 CChatBox::Post() {
     CDDrawSubMgrPages* s = m_page->m_drawTarget;
-    s->m_frontPair->m_surface->Flip(0);
-    s->m_backPair->m_surface
-        ->BltFast(0, 0, s->m_overlayPair->m_surface, &s->m_overlayPair->m_srcRect, 0x10);
+    FlipFrontAndRestoreOverlay(s);
     return 1;
 }
 

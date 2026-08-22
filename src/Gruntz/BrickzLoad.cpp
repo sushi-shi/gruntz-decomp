@@ -424,7 +424,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     mgr->m_walkCursor = mgr->m_list.GetHeadPosition();
     CGameObject* obj;
     if (mgr->m_walkCursor != NULL) {
-        obj = static_cast<CGameObject*>(mgr->m_list.GetNext(mgr->m_walkCursor));
+        obj = mgr->NextChild(mgr->m_walkCursor);
     } else {
         obj = NULL;
     }
@@ -462,7 +462,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         }
         CDDrawChildGroup* nextMgr = g_gameReg->m_world->m_childGroup;
         if (nextMgr->m_walkCursor != NULL) {
-            obj = static_cast<CGameObject*>(nextMgr->m_list.GetNext(nextMgr->m_walkCursor));
+            obj = nextMgr->NextChild(nextMgr->m_walkCursor);
         } else {
             obj = NULL;
         }

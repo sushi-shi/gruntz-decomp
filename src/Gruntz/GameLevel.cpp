@@ -1389,10 +1389,10 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32
         return 0;
     }
 
-    CObList& chain = OwnerMgr()->m_childGroup->m_list;
-    POSITION pos = chain.GetHeadPosition();
+    CDDrawChildGroup* children = OwnerMgr()->m_childGroup;
+    POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* pl = static_cast<CGameObject*>(chain.GetNext(pos));
+        CGameObject* pl = children->NextChild(pos);
         if (pl->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
             if (AltStepValidate(t, pl, destX, destY, outY, moveFlags) != 0) {
                 t->m_moveMode = MOVE_GROUNDED;

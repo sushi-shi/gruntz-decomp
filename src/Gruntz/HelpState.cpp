@@ -6,6 +6,7 @@
 
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
+#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
@@ -105,10 +106,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-    if (reg->m_soundStream) {
-        reg->m_soundStream->PurgeVoiceList(-1);
-    }
+    PurgeVoices(m_world->m_soundRegistry);
 
     CFixedPtrArray32* list = g_actorList;
     i32 i;

@@ -25,6 +25,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Ufo.h>
@@ -58,12 +59,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SetObjectFlags(0x2000002);
 
-    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenX = snapX;
-    m_object->m_screenY = snapY;
-    m_posX = static_cast<double>(snapX);
-    m_posY = static_cast<double>(snapY);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdGameObjectA* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
@@ -115,7 +111,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (BeginLeg() == 0) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     } else {
         SET_ANIMATION_ACT("A");
         SwitchGeometry("GAME_CYCLE100", 0);
@@ -394,10 +390,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CShadeTable* n = g_gameReg->m_logicPump->m_tables[5];
     SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, n);
     SwitchGeometry("LEVEL_RAINCLOUD", 0);
-    m_object->m_area.left = 1;
-    m_object->m_area.right = 1;
-    m_object->m_area.top = 1;
-    m_object->m_area.bottom = 1;
+    SET_OBJECT_AREA(1)
 }
 
 RVA(0x000b4a90, 0x145)
@@ -424,10 +417,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
         }
     }
     SET_DRAW_FILL_FRACTION(m_object, SHADE_ALPHA_16, 0x80);
-    m_object->m_area.left = 0;
-    m_object->m_area.right = 0;
-    m_object->m_area.top = 0;
-    m_object->m_area.bottom = 0;
+    CLEAR_OBJECT_AREA
 }
 
 RVA(0x000b4c40, 0x4b)
@@ -481,12 +471,13 @@ i32 CPathHazard::SerializeMove(
     CGameObject* d
 ) {
     CFileMemBase* s = stream;
-    if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
-        return 0;
-    }
-    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, d) == 0) {
-        return 0;
-    }
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(
+        stream,
+        static_cast<CFileMemBase*>(stream),
+        tag,
+        c,
+        d
+    )
     SerQuadPair(s, tag, &m_leg);
     SerQuadPair(s, tag, &m_strike);
     if (tag != SERIAL_SAVE) {

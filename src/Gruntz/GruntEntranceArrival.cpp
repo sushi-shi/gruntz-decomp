@@ -27,10 +27,12 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -80,9 +82,7 @@ RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     SwitchAnimation(m_poseAttackIdle);
 
-    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-    i32 frame = elem->m_param;
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
     GruntDirectionCell cell = m_entranceCell;
     i32 row = cell.row;
@@ -90,7 +90,7 @@ i32 CGrunt::ResetGeometry() {
     i32 index = 3 * row + column;
 
     const char* name = m_cells[index].AttackName().GetBuffer(0);
-    m_wwdObject->ApplyLookupSprite(name, frame);
+    ApplyLookupSprite(name, frame);
 
     SET_ANIMATION_ACT("E");
     return 0;
@@ -177,10 +177,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CreateHealthSprite();
 
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
-    m_combatTimeoutHi = 0;
-    m_combatClockLo = static_cast<i32>(g_frameTime);
-    m_combatClockHi = 0;
+    ArmGruntCombatTimeout(this);
 
     {
         CWwdGameObjectA* h = m_object;
@@ -203,16 +200,14 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_value = p->m_animCursor.m_animation;
     p->m_animCursor.Setup(m_poseAttack[idx]);
 
-    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-    i32 frame = el->m_param;
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
     GruntDirectionCell cell = m_entranceCell;
     i32 cellRow = cell.row;
     i32 cellColumn = cell.column;
     i32 base = cellRow + (cellColumn + 2 * cellRow);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
-    m_wwdObject->ApplyLookupSprite(buf, frame);
+    ApplyLookupSprite(buf, frame);
     m_struckPose = 1;
     return 0;
 }
@@ -226,16 +221,14 @@ i32 CGrunt::RearmAttackAnim2() {
     m_value = p->m_animCursor.m_animation;
     p->m_animCursor.Setup(AT(m_poseAttack, GRUNT_ATTACK2));
 
-    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-    i32 frame = el->m_param;
+    DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
     GruntDirectionCell cell = m_entranceCell;
     i32 row = cell.row;
     i32 column = cell.column;
     i32 base = row + (column + 2 * row);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
-    m_wwdObject->ApplyLookupSprite(buf, frame);
+    ApplyLookupSprite(buf, frame);
     m_struckPose = 1;
     return 0;
 }
@@ -273,7 +266,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_wwdObject->m_flags |= 0x10000;
+                    s->SetObjectFlags(0x10000);
                 }
                 break;
             }
@@ -298,7 +291,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->m_wwdObject->m_flags |= 0x10000;
+                    s->SetObjectFlags(0x10000);
                 }
                 break;
             }
@@ -327,10 +320,7 @@ i32 CGrunt::StepAttackFire() {
                         0,
                         m_gruntKind
                     );
-                    PickupType t = tgt->m_entranceReason;
-                    if (t > PICKUP_EQUIPPABLE_LAST) {
-                        t = tgt->m_toolId;
-                    }
+                    PickupType t = ArrivalPickup(tgt);
                     if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
                         m_tileMgr->CellDispatch(
                             m_tileOwnerHi,
@@ -430,11 +420,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             i32 toyIdx = rand() % 2;
             SwitchGeometryDirect(m_poseToy[toyIdx], 0);
 
-            CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-            CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-            i32 frame = el->m_param;
+            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
             char* buf = (&m_frameSetName)->GetBuffer(0);
-            m_wwdObject->ApplyLookupSprite(buf, frame);
+            ApplyLookupSprite(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
             i32 m380 = m_moveVariant;
@@ -484,7 +472,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         i32 colv = cell.column + cell.row * 2;
         i32 basev = cell.row + colv;
         char* nm = m_cells[basev].WalkName().GetBuffer(0);
-        m_wwdObject->ApplyName(nm);
+        ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
         m_idleDelay = tt >> 1;
@@ -528,11 +516,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     CAniElement* want = m_poseToy[sel];
     if (m_wwdObject->m_animCursor.m_animation != want) {
         SwitchAnimation(want);
-        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* el = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-        i32 frame = el->m_param;
+        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
         char* buf = (&m_frameSetName)->GetBuffer(0);
-        m_wwdObject->ApplyLookupSprite(buf, frame);
+        ApplyLookupSprite(buf, frame);
     }
 
     CWwdGameObjectA* hud = m_object;
@@ -569,13 +555,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-            flags = 1;
-        } else {
-            flags = ((grid->m_rowInts[ty]))[tx * 7];
-        }
+        i32 flags = grid->CellFlagsAt(tx, ty);
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -591,11 +571,9 @@ i32 CGrunt::StepEntranceRelatchA() {
     if (diff >= m_toyDuration && m_entranceStamped == 0 && ready == 1) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
-        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-        i32 frame = elem->m_param;
+        DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* nm = (&m_frameSetName)->GetBuffer(0);
-        m_wwdObject->ApplyLookupSprite(nm, frame);
+        ApplyLookupSprite(nm, frame);
         m_entranceStamped = 1;
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;
@@ -695,7 +673,7 @@ RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
 
-    bool notIdle = strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0;
+    bool notIdle = ANIMATION_ACT_DIFFERS("A");
     i32 applied = 0;
 
     if (notIdle && cycle == 0) {
@@ -813,9 +791,7 @@ latch:
         i32 base = cell.row + col;
         CString key = m_cells[base].IdleName();
 
-        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-        m_wwdObject->ApplyLookupSprite(key, elem->m_param);
+        APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
     }
 }
 
@@ -827,13 +803,7 @@ i32 CGrunt::ResolveEntranceArrival() {
         CMapMgr* grid = g->m_tileGrid;
         i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
         i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-            flags = 1;
-        } else {
-            flags = ((grid->m_rowInts[ty]))[tx * 7];
-        }
+        i32 flags = grid->CellFlagsAt(tx, ty);
         if (!(flags & 0x80)) {
             m_entranceActive = 0;
         }
@@ -859,8 +829,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                     m_arrivalRerollWindowLo = 0;
                     m_arrivalRerollHi = 0;
                     m_arrivalRerollWindowHi = 0;
-                    m_defenderPx.m_x = m_lastTilePx.m_x;
-                    m_defenderPx.m_y = m_lastTilePx.m_y;
+                    m_defenderPx = m_lastTilePx;
                     m_tileClaimed = 1;
                     PickupType kind = m_entranceReason;
 
@@ -917,11 +886,11 @@ tail:
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") == 0);
+    eq = ANIMATION_ACT_EQUALS("D");
     if (eq) {
         return 0;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
+    eq = ANIMATION_ACT_EQUALS("L");
     if (eq) {
         return 0;
     }
@@ -932,7 +901,7 @@ i32 CGrunt::StepEntranceReinit() {
     m_arrivalVoiceClockHi = 0;
     m_neighborScanEnabled = 0;
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
 
         m_tileMgr->LoadTileArrivalFx(
@@ -977,7 +946,7 @@ i32 CGrunt::StepEntranceReinit() {
     i32 base = cell.row + col;
 
     char* nm = m_cells[base].WalkName().GetBuffer(0);
-    m_wwdObject->ApplyName(nm);
+    ApplyName(nm);
     return 0;
 }
 
@@ -1033,9 +1002,7 @@ i32 CGrunt::StepArrivalReroll() {
 
 RVA(0x00063db0, 0x32f)
 i32 CGrunt::LoadVehicleGruntAnimations() {
-    m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (IsAniCursorComplete(sub)) {
         if (m_arrived) {
             CreateHealthSprite();
@@ -1049,13 +1016,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 flags;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-            flags = 1;
-        } else {
-            flags = ((grid->m_rowInts[ty]))[tx * 7];
-        }
+        i32 flags = grid->CellFlagsAt(tx, ty);
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -1071,12 +1032,9 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             m_entranceStamped = 1;
             SwitchGeometryDirect(AT(m_poseToy, GRUNT_TOY_BREAK), 0);
 
-            CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-            CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
-
-            i32 frame = elem->m_param;
+            DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
             char* buf = (&m_frameSetName)->GetBuffer(0);
-            m_wwdObject->ApplyLookupSprite(buf, frame);
+            ApplyLookupSprite(buf, frame);
 
             CWwdGameObjectA* h = m_object;
             CGruntzMgr* g = g_gameReg;
@@ -1154,8 +1112,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         RESET_GRUNT_POWERED_STATE
     }
 
-    m_entranceActive = 1;
-    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
+    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
 
     SET_ANIMATION_ACT("B");
 
@@ -1202,7 +1159,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CWapX::Apply(found, 0);
     i32 frame =
         static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->AtChecked(0))->m_param;
-    m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", frame);
+    ApplyLookupSprite("GRUNTZ_EXITZ", frame);
     return 0;
 }
 
@@ -1211,8 +1168,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 // in esi, cl picks them the other way round - callee-saved allocation order only.
 RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         if (m_deathType == GRUNT_DEATH_WARPOUT) {
             CState* st = g_gameReg->m_curState;
@@ -1226,7 +1182,7 @@ i32 CGrunt::StepWarpExit() {
         if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
         }
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
     return 0;
 }
@@ -1254,15 +1210,15 @@ i32 CGrunt::StepCombatReaction(
 
     bool ne;
     bool eq;
-    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
+    ne = ANIMATION_ACT_DIFFERS("A");
     if (!ne) {
         goto tail;
     }
-    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") != 0);
+    ne = ANIMATION_ACT_DIFFERS("D");
     if (!ne) {
         goto tail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
@@ -1277,24 +1233,24 @@ i32 CGrunt::StepCombatReaction(
         );
         goto tail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
+    eq = ANIMATION_ACT_EQUALS("G");
     if (!eq) {
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
+        eq = ANIMATION_ACT_EQUALS("L");
         if (!eq) {
-            eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
+            eq = ANIMATION_ACT_EQUALS("P");
             if (!eq) {
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
+                eq = ANIMATION_ACT_EQUALS("O");
                 if (eq) {
                     SnapToLastTile(1);
                     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                     goto tail;
                 }
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "Q") == 0);
+                eq = ANIMATION_ACT_EQUALS("Q");
                 if (eq) {
                     m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
                     return 0;
                 }
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
+                eq = ANIMATION_ACT_EQUALS("J");
                 if (eq) {
                     m_entranceActive = 0;
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
@@ -1309,7 +1265,7 @@ i32 CGrunt::StepCombatReaction(
                         i32 col = cell.column + cell.row * 2;
                         i32 base = cell.row + col;
                         char* cn = m_cells[base].WalkName().GetBuffer(0);
-                        m_wwdObject->ApplyName(cn);
+                        ApplyName(cn);
                     } else {
                         ResetEntranceAnimation(1, 0, 0);
                     }
@@ -1329,7 +1285,7 @@ i32 CGrunt::StepCombatReaction(
                     }
                     goto tail;
                 }
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "N") == 0);
+                eq = ANIMATION_ACT_EQUALS("N");
                 if (eq) {
                     CWwdGameObjectA* h = m_object;
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, hx, hy)
@@ -1365,10 +1321,7 @@ i32 CGrunt::StepCombatReaction(
 
 tail:
     CreateHealthSprite();
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
-    m_combatTimeoutHi = 0;
-    m_combatClockLo = static_cast<i32>(g_frameTime);
-    m_combatClockHi = 0;
+    ArmGruntCombatTimeout(this);
     if (GRUNT_SELF_NOT_AT_SAVED_SCREEN_POS) {
         ConsiderArrival(1);
     }
@@ -1436,7 +1389,7 @@ tail:
         i32 col = cell.column + cell.row * 2;
         i32 base = cell.row + col;
         char* cn = m_cells[base].StruckName().GetBuffer(0);
-        m_wwdObject->ApplyLookupSprite(cn, frame);
+        ApplyLookupSprite(cn, frame);
     }
     {
         CWwdGameObjectA* h = m_object;
@@ -1452,8 +1405,7 @@ tail:
 
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (!IsAniCursorComplete(sub)) {
         return 0;
     }
@@ -1467,13 +1419,7 @@ i32 CGrunt::StepArrivalCommitA() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-        flags = 1;
-    } else {
-        flags = ((grid->m_rowInts[ty]))[tx * 7];
-    }
+    i32 flags = grid->CellFlagsAt(tx, ty);
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -1494,8 +1440,7 @@ i32 CGrunt::StepArrivalCommitA() {
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
 
-    m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (!IsAniCursorComplete(sub)) {
         return 0;
     }
@@ -1513,13 +1458,7 @@ i32 CGrunt::StepArrivalCommitB() {
     CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-        flags = 1;
-    } else {
-        flags = ((grid->m_rowInts[ty]))[tx * 7];
-    }
+    i32 flags = grid->CellFlagsAt(tx, ty);
     if (flags & 0x80) {
         return 0;
     }
@@ -1544,7 +1483,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 poseIdx = 0;
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1625,7 +1564,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 col = cell.column + cell.row * 2;
     i32 base = cell.row + col;
     char* name = m_cells[base].ItemName().GetBuffer(0);
-    m_wwdObject->ApplyName(name);
+    ApplyName(name);
     return 0;
 }
 
@@ -1714,13 +1653,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    i32 f1;
-    if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-        f1 = 1;
-    } else {
-        f1 = ((grid->m_rowInts[ty]))[tx * 7];
-    }
+    i32 f1 = grid->CellFlagsAt(tx, ty);
     if (f1 & 0x2000000) {
         BuildGruntLoseItemAnimation();
         g = g_gameReg;

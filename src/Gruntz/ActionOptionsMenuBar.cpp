@@ -10,6 +10,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
@@ -45,9 +46,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_ACTIONOPTIONZMENUBAR"
     );
-    m_frame = (spr && spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
-                  ? static_cast<CImage*>(spr->m_items.GetAt(1))
-                  : 0;
+    m_frame = spr ? spr->GetAt(1) : 0;
     if (!m_frame) {
         return 0;
     }
@@ -153,9 +152,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         } else if (m_buttonState[1] == ACTIONOPTION_DISABLED) {
             m_buttonState[1] = ACTIONOPTION_NORMAL;
         }
-        PickupType prim = (grunt->m_entranceReason > PICKUP_EQUIPPABLE_LAST)
-                              ? grunt->m_toolId
-                              : grunt->m_entranceReason;
+        PickupType prim = ArrivalPickup(grunt);
         m_buttonIcon[0] = prim;
         if (prim == PICKUP_NONE) {
             m_buttonIcon[0] = PICKUP_BARE_HANDS_ICON;
@@ -428,12 +425,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
-        } else {
-            r = NULL;
-        }
+        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_frame = r;
     } else {
         m_frame = NULL;
@@ -445,12 +437,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
-        } else {
-            r = NULL;
-        }
+        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_buttonFrame[0] = r;
     } else {
         m_buttonFrame[0] = NULL;
@@ -462,12 +449,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
-        } else {
-            r = NULL;
-        }
+        CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_buttonFrame[1] = r;
     } else {
         m_buttonFrame[1] = NULL;

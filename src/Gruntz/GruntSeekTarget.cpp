@@ -17,6 +17,8 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPickupInline.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -41,8 +43,7 @@
 // One dead spill of the candidate's tile x at 0xf778f remains unreached.
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
-    this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
-    this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+    COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
         && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x] == NULL) {
         RECYCLE_GRUNT_COORDS(this)
@@ -67,21 +68,13 @@ i32 CGrunt::SeekTarget() {
         }
 
         Coord selfTile;
-        GetScreenPos(&selfTile);
-        selfTile.m_x >>= 5;
-        selfTile.m_y >>= 5;
+        GetScreenTile(&selfTile);
         Coord slotTile;
-        slot->GetScreenPos(&slotTile);
-        slotTile.m_x >>= 5;
-        slotTile.m_y >>= 5;
+        slot->GetScreenTile(&slotTile);
         Coord selfTileB;
-        GetScreenPos(&selfTileB);
-        selfTileB.m_x >>= 5;
-        selfTileB.m_y >>= 5;
+        GetScreenTile(&selfTileB);
         Coord slotTileB;
-        slot->GetScreenPos(&slotTileB);
-        slotTileB.m_x >>= 5;
-        slotTileB.m_y >>= 5;
+        slot->GetScreenTile(&slotTileB);
         i32 dx = selfTile.m_x - slotTile.m_x;
         i32 dy = selfTileB.m_y - slotTileB.m_y;
         if (abs(dx) <= 1 && abs(dy) <= 1) {
@@ -107,16 +100,7 @@ i32 CGrunt::SeekTarget() {
         reason = IDX(this->m_toolId);
     }
     if (reason != 0) {
-        CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-        i32 atTarget = 0;
-        if (g != NULL) {
-            i32 x = g->m_object->m_screenX;
-            if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-
-                && RectContains(x, g->m_object->m_screenY) != 0) {
-                atTarget = 1;
-            }
-        }
+        FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
         i32 powered = this->m_poweredUp;
         if (powered != 0) {
             i32 neighborValid = this->m_neighborValid;
@@ -137,11 +121,7 @@ i32 CGrunt::SeekTarget() {
                     if (this->m_neighborValid != 0) {
                         return 1;
                     }
-                    this->m_entranceActive = 0;
-                    this->m_combatActive = 0;
-                    this->m_neighborValid = 0;
-                    this->m_poweredUp = 0;
-                    ResetEntranceAnimation(1, 0, 0);
+                    RESET_CURRENT_GRUNT_POWERED_STATE
                     return 1;
                 } else {
                     if (atTarget) {
@@ -153,11 +133,7 @@ i32 CGrunt::SeekTarget() {
                     if (this->m_neighborValid != 0) {
                         return 1;
                     }
-                    this->m_entranceActive = 0;
-                    this->m_combatActive = 0;
-                    this->m_neighborValid = 0;
-                    this->m_poweredUp = 0;
-                    ResetEntranceAnimation(1, 0, 0);
+                    RESET_CURRENT_GRUNT_POWERED_STATE
                     return 1;
                 }
             } else {
@@ -165,8 +141,7 @@ i32 CGrunt::SeekTarget() {
             }
             return 1;
         }
-        this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
-        this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+        COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
         if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
             this->m_blockedVoicePending = 0;
             return 1;
@@ -219,14 +194,14 @@ i32 CGrunt::SeekTarget() {
                 CGrunt* sv = slots[i];
                 if (sv != NULL && sv->m_entranceCommitted != 0) {
                     PickupType k = sv->m_entranceReason;
-                    if ((k <= PICKUP_EQUIPPABLE_LAST ? k : sv->m_toolId) != PICKUP_NONE
-                        && (k <= PICKUP_EQUIPPABLE_LAST ? k : sv->m_toolId) != PICKUP_WARPSTONE
-                        && (k <= PICKUP_EQUIPPABLE_LAST ? k : sv->m_toolId) != PICKUP_BOMB) {
+                    if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_NONE
+                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
+                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
                         i32 seekable = 1;
                         if (sv->m_gruntKind == GRUNT_GHOST) {
                             seekable = 0;
                         }
-                        if ((k <= PICKUP_EQUIPPABLE_LAST ? k : sv->m_toolId) == PICKUP_WARPSTONE) {
+                        if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) == PICKUP_WARPSTONE) {
                             seekable = 0;
                         }
                         if (seekable) {

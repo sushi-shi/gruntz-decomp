@@ -97,15 +97,15 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "G") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "L") == 0);
+    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
     if (eq) {
         return 0;
     }

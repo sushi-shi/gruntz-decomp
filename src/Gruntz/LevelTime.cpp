@@ -13,8 +13,5 @@ i32 CLevelTime::SerializeMove(
     LogicTypeId typeId,
     CGameObject* pObj
 ) {
-    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(ar, mode, typeId, pObj) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
 }

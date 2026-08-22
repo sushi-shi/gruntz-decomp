@@ -27,10 +27,7 @@ i32 CSingleFrameMessage::SerializeMove(
     LogicTypeId c,
     CGameObject* d
 ) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
 }
 
 RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
@@ -74,6 +71,6 @@ void CSingleFrameMessage::RegisterActs() {
 
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
-    m_wwdObject->m_flags |= 0x10000;
+    SetObjectFlags(0x10000);
     return 0;
 }

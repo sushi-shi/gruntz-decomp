@@ -15,4 +15,11 @@
     grunt->m_poweredUp = 0;                                                                        \
     grunt->ResetEntranceAnimation(1, 0, 0);
 
+#define RESET_CURRENT_GRUNT_POWERED_STATE                                                          \
+    this->m_entranceActive = 0;                                                                    \
+    this->m_combatActive = 0;                                                                      \
+    this->m_neighborValid = 0;                                                                     \
+    this->m_poweredUp = 0;                                                                         \
+    ResetEntranceAnimation(1, 0, 0);
+
 #endif // GRUNTZ_GRUNTPOWEREDSTATEMACROS_H

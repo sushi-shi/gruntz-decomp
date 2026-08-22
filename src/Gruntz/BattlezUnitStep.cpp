@@ -25,6 +25,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
@@ -82,9 +83,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         i32 W = m_board->m_width;
         i32 H = m_board->m_height;
         Coord c0;
-        g->GetScreenPos((&c0));
-        c0.m_x >>= 5;
-        c0.m_y >>= 5;
+        g->GetScreenTile((&c0));
         CGrunt* nb = FindIdleGruntInBox(
             c0.m_x,
             c0.m_y,
@@ -93,9 +92,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
         );
         if (nb != NULL) {
             Coord c1;
-            nb->GetScreenPos((&c1));
-            c1.m_x >>= 5;
-            c1.m_y >>= 5;
+            nb->GetScreenTile((&c1));
             if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
@@ -136,9 +133,7 @@ inflight: {
     i32 W = m_board->m_width;
     i32 H = m_board->m_height;
     Coord c0;
-    g->GetScreenPos((&c0));
-    c0.m_x >>= 5;
-    c0.m_y >>= 5;
+    g->GetScreenTile((&c0));
     CGrunt* nb = FindIdleGruntInBox(
         c0.m_x,
         c0.m_y,
@@ -437,10 +432,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 PickupType prim = unit->m_entranceReason;
                 i32 cfg = unit->m_routeMaskA;
                 i32 flags = unit->m_routeMaskC;
-                PickupType t = prim;
-                if (prim > PICKUP_EQUIPPABLE_LAST) {
-                    t = unit->m_toolId;
-                }
+                PickupType t = ArrivalPickupOf(unit, prim);
                 if (t == PICKUP_TOOB) {
                     flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
                 } else {
@@ -500,10 +492,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 board->m_gridH = rcDst->bottom - rcDst->top;
                 PickupType prim = unit->m_entranceReason;
                 i32 flags = unit->m_routeMaskC;
-                PickupType t = prim;
-                if (prim > PICKUP_EQUIPPABLE_LAST) {
-                    t = unit->m_toolId;
-                }
+                PickupType t = ArrivalPickupOf(unit, prim);
                 if (t == PICKUP_TOOB) {
                     flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
                 } else {

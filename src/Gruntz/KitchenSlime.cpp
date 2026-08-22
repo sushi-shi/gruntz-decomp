@@ -24,6 +24,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -63,12 +64,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(0x2000002);
 
-    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_object->m_screenX = snapX;
-    m_object->m_screenY = snapY;
-    m_posX = static_cast<double>(snapX);
-    m_posY = static_cast<double>(snapY);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME)
     m_tilePosition.m_y = snapY;
@@ -77,7 +73,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     m_object->m_speedX = (m_object->m_speedX << TILE_SHIFT_PX) + TILE_HALF_PX;
     m_object->m_speedY = (m_object->m_speedY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (m_object->m_screenX == m_object->m_speedX && m_object->m_screenY == m_object->m_speedY) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         return;
     }
     m_object->m_extent.left =
@@ -117,15 +113,11 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
 
     m_stepMag = 0.0;
     if (LoadSprites() == 0) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
     }
     SET_ANIMATION_ACT("A");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_object->m_area.left = 0;
-    m_object->m_area.right = 0;
-    m_object->m_area.top = 0;
-    m_object->m_area.bottom = 0;
+    SwitchGeometry("GAME_CYCLE100", 0);
+    CLEAR_OBJECT_AREA
 }
 
 RVA(0x000b2940, 0x102)
@@ -170,7 +162,7 @@ i32 CKitchenSlime::Tick() {
     CGameObject* lvl = Level();
     if (lvl->m_screenX == m_tilePosition.m_x && lvl->m_screenY == m_tilePosition.m_y
         && LoadSprites() == 0) {
-        m_wwdObject->m_flags |= 0x10000;
+        SetObjectFlags(0x10000);
         return 0;
     }
 
@@ -256,10 +248,7 @@ i32 CKitchenSlime::SerializeMove(
         s->Write(&m_tilePosition, sizeof(m_tilePosition));
         s->Write(&m_stepMag, sizeof(m_stepMag));
     }
-    if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
-        return 0;
-    }
-    return Chain(stream, tag, c, d) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN(stream, tag, c, d)
 }
 
 // @early-stop
@@ -294,14 +283,8 @@ i32 CKitchenSlime::LoadSprites() {
 
         i32 gx = tile.m_x >> TILE_SHIFT_PX;
         i32 gy = tile.m_y >> TILE_SHIFT_PX;
-        i32 tileFlags;
         CMapMgr* map = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width)
-            || static_cast<u32>(gy) >= static_cast<u32>(map->m_height)) {
-            tileFlags = 1;
-        } else {
-            tileFlags = ((map->m_rowInts[gy]))[gx * 7];
-        }
+        i32 tileFlags = map->CellFlagsAt(gx, gy);
 
         if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right
             && tile.m_y <= lvl->m_extent.bottom && tile.m_x >= lvl->m_extent.left
@@ -381,8 +364,8 @@ i32 CKitchenSlime::LoadSprites() {
         CWwdGameObjectA* player = Anim();
         CDDrawWorker* spr = player->m_frameSet;
         if (spr != NULL) {
-            if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
-                CImage* img = static_cast<CImage*>(spr->m_items.GetAt(1));
+            if (DDRAW_WORKER_CONTAINS_FRAME(spr, 1)) {
+                CImage* img = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1);
                 player->m_frameIndex = 1;
                 player->m_layer = img;
                 m_stepMag = 0.0;

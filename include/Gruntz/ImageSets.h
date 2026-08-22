@@ -42,6 +42,7 @@ public:
     virtual i32 GetStride();
 
     i32 m_width;
+    i32 m_height;
 };
 
 struct CImageSet1 : public CTileImageSet {
@@ -107,7 +108,6 @@ struct CImageSet1 : public CTileImageSet {
         ::operator delete(p);
     }
 
-    i32 m_height;
     i32 m_collisionValue;
 };
 struct CImageSet2 : public CTileImageSet {
@@ -150,7 +150,6 @@ struct CImageSet2 : public CTileImageSet {
         ::operator delete(p);
     }
 
-    i32 m_height;
     i32 m_outsideValue;
     i32 m_insideValue;
     i32 m_left;
@@ -195,7 +194,6 @@ struct CImageSet3 : public CTileImageSet {
         ::operator delete(p);
     }
 
-    i32 m_height;
     i32 m_heightLog2;
     i32 m_byteSize;
 

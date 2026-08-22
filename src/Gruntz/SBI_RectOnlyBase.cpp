@@ -23,7 +23,7 @@ i32 CSBI_RectOnly::Setup(
     m_tab = tab;
     m_rect14 = rc;
     m_cmd = cmd;
-    m_enabled = 1;
+    SetEnabled(1);
     return 1;
 }
 

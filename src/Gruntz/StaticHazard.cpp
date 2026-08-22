@@ -115,14 +115,9 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
-    {
-        CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
-        m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-    }
+    {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)}
 
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    CWwdGameObjectA* o = m_object;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object) CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, 0)
     m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
     m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
@@ -142,7 +137,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_object->m_area.top = m_object->m_screenY - 7;
     m_object->m_area.bottom = m_object->m_area.top + 14;
     SET_ANIMATION_ACT("A");
-    m_wwdObject->m_flags |= 0x2000002;
+    SetObjectFlags(0x2000002);
     m_object->m_animCursor.m_consumeDraw = 0;
     m_object->m_smarts = IDX(g_areaHazardDeath);
     m_activeWindow = 0;
@@ -199,12 +194,7 @@ i32 CStaticHazard::LoadAttributes2() {
     }
     m_fired = 1;
     SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
-    {
-        CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
-        m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-    }
-    SET_ANIMATION_ACT("B");
+    {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} SET_ANIMATION_ACT("B");
     return 0;
 }
 
@@ -223,11 +213,8 @@ i32 CStaticHazard::LoadAttributes() {
 
                 SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
                 {
-                    CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-                    CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
-                    m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-                }
-                CWwdGameObjectA* o = m_object;
+                    APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
+                } CWwdGameObjectA* o = m_object;
                 SET_SORT_KEY_IF_CHANGED(o, 0)
                 m_fired = 0;
                 return 0;
@@ -235,12 +222,8 @@ i32 CStaticHazard::LoadAttributes() {
 
             SET_ANIMATION_ACT("A");
             SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
-            {
-                CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-                CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
-                m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-            }
-            CWwdGameObjectA* o = m_object;
+            {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdGameObjectA* o =
+                m_object;
             SET_SORT_KEY_IF_CHANGED(o, 0)
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -255,12 +238,8 @@ i32 CStaticHazard::LoadAttributes() {
     } else if (m_fired == 0 && m_object->m_damage == 0) {
 
         SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
-        {
-            CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-            CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
-            m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-        }
-        CWwdGameObjectA* o = m_object;
+        {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdGameObjectA* o =
+            m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
         m_fired = 1;
         return 0;
@@ -297,12 +276,8 @@ i32 CStaticHazard::LoadAttributes() {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
         if (IsAniCursorComplete(sub)) {
             SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
-            {
-                CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-                CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(d, 0));
-                m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-            }
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+            {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
+                g_gameReg->m_tileGrid;
             i32 row = m_tileRow;
             i32 col = m_tileCol;
             if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
@@ -340,8 +315,5 @@ i32 CStaticHazard::SerializeMove(
             arc->Read(&m_tileRow, sizeof(m_tileRow));
             break;
     }
-    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
-        return 0;
-    }
-    return Chain(arc, mode, typeId, pObj) != 0;
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(ar, arc, mode, typeId, pObj)
 }
