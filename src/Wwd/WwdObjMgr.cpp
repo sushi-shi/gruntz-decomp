@@ -111,10 +111,6 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     return result;
 }
 
-// @early-stop
-// docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
-// store past BOTH Lookup arg pushes; eight source spellings re-measured here,
-// all byte-identical.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001593e0, 0x53)
@@ -127,15 +123,12 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     int dotColor,
     int stateFlags
 ) {
-    CObject* val = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
-
     return CreateDotObject(
         id,
         x,
         y,
         sortKey,
-        static_cast<AnimWorkerObj*>(val),
+        LookupWorker(OwnerMgr()->m_workerCache->m_workers, name),
         dotColor,
         stateFlags
     );
@@ -158,18 +151,17 @@ CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl,
     return result;
 }
 
-// @early-stop
-// docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
-// store past BOTH Lookup arg pushes; eight source spellings re-measured here,
-// all byte-identical.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags) {
-    CObject* val = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
-    return CreateDeferredObject(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
+    return CreateDeferredObject(
+        id,
+        sortKey,
+        LookupWorker(OwnerMgr()->m_workerCache->m_workers, name),
+        stateFlags
+    );
 }
 
 RVA(0x00159600, 0x1ab)
@@ -236,10 +228,7 @@ i32 CDDrawChildGroup::AttachSprite(
     if (!obj) {
         return 0;
     }
-    CObject* tmpl_ob = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(name, tmpl_ob);
-
-    AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
+    AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
     if (!tmpl) {
         return 0;
     }
@@ -279,10 +268,6 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     return result;
 }
 
-// @early-stop
-// docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
-// store past BOTH Lookup arg pushes; eight source spellings re-measured here,
-// all byte-identical.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159a10, 0x57)
@@ -294,12 +279,11 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     const char* name,
     int stateFlags
 ) {
-    CObject* val = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(name, val);
+    AnimWorkerObj* val = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
     if (val == NULL) {
         return 0;
     }
-    return CreateContainerObject(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
+    return CreateContainerObject(id, x, y, sortKey, val, stateFlags);
 }
 
 // @early-stop
@@ -951,9 +935,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
 // @early-stop
 RVA(0x0015a8c0, 0x7d)
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
-    CObject* found = 0;
-    OwnerMgr()->m_workerCache->m_workers.Lookup(key, found);
-    AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);
+    AnimWorkerObj* fp = LookupWorker(OwnerMgr()->m_workerCache->m_workers, key);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(m_list.GetNext(pos));
