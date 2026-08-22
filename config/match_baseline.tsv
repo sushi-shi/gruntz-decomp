@@ -30,7 +30,7 @@
 # Query: python3 -m gruntz.verify status | check | bank
 # [units]	unit	n_functions	matched
 actionarea	28	27
-actionoptionsmenubar	13	7
+actionoptionsmenubar	13	9
 adler32	1	1
 advancedoptions	5	5
 anicycle	8	7
@@ -54,7 +54,7 @@ behindcandyani	8	7
 bitarray	3	2
 bitarraystream	2	2
 blowfish	6	6
-bootystateactivate	52	32
+bootystateactivate	52	33
 bracketvalue	1	1
 brickz	4	2
 brickzcellflags	3	1
@@ -106,7 +106,7 @@ engstrrendertext	2	2
 exittrigger	5	3
 eyecandy	4	4
 fader	25	20
-fadereffects	39	26
+fadereffects	39	28
 fadermgr	13	13
 feccrypt	11	8
 fileimage	19	13
@@ -216,7 +216,7 @@ logicworkerhandlersb	6	6
 mainmenubuilder	2	2
 maplogic	1	1
 mapmgr	27	20
-menuitem	20	19
+menuitem	20	20
 menupage	47	47
 menusparkle	8	7
 menustate	18	18
@@ -353,7 +353,7 @@ actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	100.0000	100.0000	1	9df962
 actionoptionsmenubar	?Activate@CActionOptionsMenuBar@@QAEHH@Z	100.0000	100.0000	1	08f36f03c780	0x9300	100.0000	
 actionoptionsmenubar	?Clear@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	e4120f31ae64	0x92e0	100.0000	
 actionoptionsmenubar	?Deactivate@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	c9319d779db1	0x97f0	100.0000	
-actionoptionsmenubar	?Deserialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	91.7760	91.7760	1	cb9f5f9b1646	0x9bb0	91.7760	
+actionoptionsmenubar	?Deserialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	5d1115095d06	0x9bb0	100.0000	
 actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	100.0000	100.0000	1	49b23a69d2f8	0x9650	100.0000	
 actionoptionsmenubar	?HitHover@CActionOptionsMenuBar@@QAE?AW4ActionOptionHit@@HH@Z	100.0000	100.0000	2	a6cd798c1372	0x9760	100.0000	
 actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEHW4ActionOptionButtonState@@0HHHH@Z	95.1321	95.1321	1	a4156038a2f9	0x9220	95.1321	
@@ -361,7 +361,7 @@ actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	100.0000	100.0000
 actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	93.2432	93.2432	1	4d53010c2064	0x9330	93.2432	
 actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	94.4762	94.4762	2	a685e58626f1	0x94c0	94.4762	
 actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	95.8667	95.8667	8	ff1c2cbab247	0x9810	95.8667	
-actionoptionsmenubar	?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z	91.4875	91.4875	2	4d92e231b09a	0xa000	91.4875	
+actionoptionsmenubar	?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z	100.0000	100.0000	3	3021a5ce35bc	0xa000	100.0000	
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0	100.0000	
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	79b9e10b211e	0xafb0	100.0000	
 advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	1	a80f3175e25e	0xb1b0	100.0000	
@@ -634,7 +634,7 @@ bootystateactivate	?BuildBootyPerfectAnimation@CBootyState@@QAEHXZ	100.0000	100.
 bootystateactivate	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7500	92.7500	2	ba3dbe50b261	0x1b450	92.7500	
 bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	98.4014	98.4014	1	dd75246be14e	0x19920	98.4014	
 bootystateactivate	?BuildPowerupIconKeys@CMultiBootyState@@QAEXPAVCString@@H@Z	100.0000	100.0000	1	0832618fb172	0x1e720	100.0000	
-bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	91.4216	91.4216	1	7b9f1c97c67a	0x19540	91.4216	
+bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	100.0000	100.0000	2	7936e6327782	0x19540	100.0000	
 bootystateactivate	?CheckPerfectBonus@CBootyState@@QAEHXZ	100.0000	100.0000	3	755c6b750c62	0x1c0f0	100.0000	
 bootystateactivate	?DrawBattleStats@CMultiBootyState@@QAEXXZ	94.4378	94.4378	1	ce1f30fee1d5	0x1ed30	94.4378	
 bootystateactivate	?EnterState@CBootyState@@UAEHW4GameStateId@@@Z	98.8513	98.8513	3	af3823987f76	0x18d30	98.8513	
@@ -1703,7 +1703,7 @@ fadereffects	??_GCFaderShape@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0d8102634e10	0x1
 fadereffects	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0d8102634e10	0x17fdd0	100.0000	
 fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	1	ba9fd6b0e73f	0x17f5e0	100.0000	
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFxModeDesc@@@Z	95.7887	95.7887	1	c57dcdde1d33	0x1804a0	95.7887	
-fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	91.6023	91.5380	1	0a9d9cff5239	0x17fa40	91.6023	
+fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	2	300190d2a03b	0x17fa40	100.0000	
 fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	91.8740	91.8740	1	000e926fbbf9	0x1817e0	91.8740	
 fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	93.7255	93.7255	2	26976224942e	0x17fe00	93.7255	
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	1	471a472ee35d	0x181660	100.0000	
@@ -1714,11 +1714,11 @@ fadereffects	?GetFrameCount@CFaderFlat@@UAEHXZ	100.0000	100.0000	1	6339f7edae6e	
 fadereffects	?GetFrameCount@CFaderLight@@UAEHXZ	100.0000	100.0000	1	1a8ec269bb48	0x1814f0	100.0000	
 fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e243	0x17fda0	100.0000	
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	1	11cf80538388	0x182900	100.0000	
-fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	99.5000	1	96216f38b8bc	0x180400	100.0000	
+fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	1	96216f38b8bc	0x180400	100.0000	
 fadereffects	?PrepareFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	6e2d2e824b3a	0x17f980	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	98.8538	1	b8429a8e25ea	0x180fb0	98.8538	
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.7854	90.7854	2	78f3a8e752d5	0x17f660	90.7854	
-fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	89.5019	89.1603	1	cf9266033270	0x180640	89.5019	
+fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	89.5019	89.4956	1	cf9266033270	0x180640	89.5019	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	1	1bf4ecf4e429	0x17fc60	88.5833	
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.6626	1	a06314f5b222	0x181b00	99.9080	
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	88.8875	88.8875	1	7ba962f6c4eb	0x17ff30	88.8875	
@@ -2634,7 +2634,7 @@ hash	?Walk@CHashB@@QAEPAVCSymTab@@PBDH@Z	100.0000	100.0000	2	b09ec672468f	0x13c3
 hash	?Walk@CHashC@@QAEPAUCParseSource@@PBDH@Z	100.0000	100.0000	8	3a13e3442783	0x13c270	100.0000	
 heapdiag	?ClearTopmostStyle@@YAXPAX@Z	100.0000	100.0000	1	3b7f1a1e01c6	0x118990	100.0000	
 heapdiag	?FileExists@@YAHPBD@Z	100.0000	100.0000	1	f621848b9726	0x1189c0	100.0000	
-heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	91.6364	91.6364	2	cd880cd5868c	0x118ce0	91.6364	
+heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	97.6234	97.6234	3	117605d7a32e	0x118ce0	97.6234	
 heapdiag	?HeapCheckDump@@YAHH@Z	100.0000	100.0000	1	567034d25bd3	0x118a30	100.0000	
 heapdiag	?HeapStats@@YAHXZ	100.0000	100.0000	1	237f51b4e446	0x118bf0	100.0000	
 heapdiag	?ReportHeapStatus@@YAXH@Z	100.0000	100.0000	1	48ed71963746	0x118b50	100.0000	
@@ -2980,7 +2980,7 @@ menuitem	?GetFrameWidth@CMenuItem@@UAEHXZ	100.0000	100.0000	1	45b241c7cd1a	0x185
 menuitem	?GetWidth@CMenuItem2@@UAEHXZ	100.0000	100.0000	1	0ca679e74c1f	0x185890	100.0000	
 menuitem	?GetWidth@CMenuItem@@UAEHXZ	100.0000	100.0000	1	b0c0438d295b	0x185550	100.0000	
 menuitem	?Hit@CMenuItem@@QAEHHH@Z	100.0000	100.0000	1	9d93f1299933	0x185700	100.0000	
-menuitem	?Init@CMenuItem2@@UAEHPAVCMenuPage@@PBD1H1H@Z	91.6211	91.6211	1	77e9d7566c95	0x185750	91.6211	
+menuitem	?Init@CMenuItem2@@UAEHPAVCMenuPage@@PBD1H1H@Z	100.0000	100.0000	2	2472ab6a936f	0x185750	100.0000	
 menuitem	?Init@CMenuItem@@UAEHPAVCMenuPage@@PBD1H1H@Z	100.0000	100.0000	1	c93ba0f72fa2	0x185460	100.0000	
 menuitem	?NextFrame@CMenuItem2@@QAEHXZ	100.0000	100.0000	1	e789666cb273	0x1859c0	100.0000	
 menuitem	?Notify@CMenuItem2@@UAEHI@Z	100.0000	100.0000	1	0e25bc7b9bc2	0x1858a0	100.0000	
@@ -3843,7 +3843,7 @@ sbi_wellgoo	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	1	ae1c1565f45a	0x104bb0	10
 sbi_wellgoo	??_GCSBI_WellGoo@@UAEPAXI@Z	100.0000	100.0000	1	cpp:f7cc398ace40	0x104b80	100.0000	
 sbi_wellgoo	?Refresh@CSBI_WellGoo@@UAEHH@Z	100.0000	100.0000	1	96e7233b789c	0xe6360	100.0000	
 sbi_wellgoo	?Render@CSBI_WellGoo@@UAEHXZ	100.0000	100.0000	1	803ee94372ce	0xe6380	100.0000	
-sbi_wellgoo	?SerializeFields@CSBI_WellGoo@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	91.9189	91.9189	1	3fdd5007daa7	0xe64c0	91.9189	
+sbi_wellgoo	?SerializeFields@CSBI_WellGoo@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	97.7108	97.7108	2	ae7a7b18c0b7	0xe64c0	97.7108	
 sbi_wellgoo	?Setup@CSBI_WellGoo@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDH@Z	87.6078	87.6078	2	9a6926c474b7	0xe6020	87.6078	
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	633e870936e7	0x182a80	100.0000	
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	100.0000	100.0000	26	95b60704982d	0x182940	100.0000	
@@ -4050,7 +4050,7 @@ statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	2	e1d405080121	0x386b0	10
 statemgrbz	?SetDirBits@StateMgrBZ@@QAEHH@Z	100.0000	100.0000	1	7e0222bb7b41	0x38770	100.0000	
 statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	4	d822be3a6a52	0x38340	100.0000	
 statereleaseresources	?ReleaseResources@CState@@UAEXXZ	94.5238	94.5238	3	9646c1950171	0xfa150	94.5238	
-statichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	91.6847	91.6847	5	13b1a1f8a70b	0xfb7a0	91.6847	
+statichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	94.6601	94.6601	6	8748028d3091	0xfb7a0	94.6601	
 statichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	cpp:b5bf25203869	0x12b30	100.0000	
 statichazard	??_GCStaticHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5bf25203869	0x12b00	100.0000	
 statichazard	?CreateStaticHazard@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	33a2ac77a03d	0xfb660	100.0000	
