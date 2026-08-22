@@ -152,3 +152,26 @@ call census before any source churn. The step-band rows' skeleton deltas (Charge
 10v11, WanderStep 11v12, ScanNearestTarget 11v12, RunEntranceMove 5v6) are
 all THIS one input; mapping it would close the band's CFG residue in one
 move.
+
+## Round 6: the mechanism, probe-complete (our side)
+
+The size/warmth framings were artifacts. The controlling pair, isolated by
+matched probes:
+
+| probe (first in TU, /GX)                  | rets |
+|-------------------------------------------|------|
+| guards + NEW-expressions (61..549 insns)  | UNMERGED (4) |
+| same guards, dtor-local EH, NO news       | MERGED (2)   |
+| news + ANY preceding function-like IL     | MERGED       |
+
+So: cl 5.0 SP3 suppresses return-epilogue cross-jumping exactly when the
+function is the TU's FIRST function-like IL AND contains new-expression EH
+(allocation-cleanup states). A preceding body, `$E` thunk, or the
+function's own earlier inline expansion lifts the suppression; local-object
+dtor EH does not trigger it. This exactly reproduces CreateChildren
+(3 news, first -> EXACT unmerged; mid-TU -> merged) and every fold
+production. STILL OPEN for the era side only: retail's step band
+(ChargeStep etc.) is unmerged WITHOUT news and not first - no SP3
+configuration reproduced that; the leading remaining hypothesis is a
+different compiler build (RTM vs SP3) for those compilands, untestable
+until an RTM toolchain is provisioned.
