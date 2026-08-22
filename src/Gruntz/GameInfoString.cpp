@@ -26,7 +26,6 @@ i32 ValidateGameTime(CGameInfoTime* t) {
     return t != NULL;
 }
 
-// @early-stop
 RVA(0x00118330, 0x57)
 i32 BuildGameDate(CGameInfoTime* out) {
     if (out == NULL) {
