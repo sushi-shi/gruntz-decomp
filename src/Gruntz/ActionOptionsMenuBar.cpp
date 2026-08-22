@@ -264,7 +264,6 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00009760, 0x6c)
 ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
@@ -274,7 +273,8 @@ ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     i32 x0 = m_screenX;
     i32 ylo = y0 - 0xc;
     i32 yhi = y0 + 0xc;
-    if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo
+    i32 xlo = x0 - 0x18;
+    if (mx < x0 && mx >= xlo && my < yhi && my >= ylo
         && m_buttonState[0] != ACTIONOPTION_DISABLED) {
         return ACTIONOPTION_HIT_PRIMARY;
     }
