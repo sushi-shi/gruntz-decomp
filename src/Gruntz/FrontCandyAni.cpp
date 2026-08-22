@@ -173,8 +173,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-        m_value = m_wwdObject->m_animCursor.m_animation;
+        SwitchGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_OVERLAY) {
