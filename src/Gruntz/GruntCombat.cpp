@@ -1196,10 +1196,10 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 sy = inner->m_screenY;
                 i32 sx = inner->m_screenX;
-                i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 sy = inner->m_screenY;
                 i32 xMasked = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 applied;
                 if (phase == ARRIVAL_TAG_TRIGGER_B) {
                     if (RectContainsGated(xMasked, yMasked) != 0) {
@@ -1220,58 +1220,57 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                 }
             }
         }
-        return 1;
-    }
+    } else {
+        PlayMoveSound(a, b);
 
-    PlayMoveSound(a, b);
-
-    // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
-    // out of line at the first and expanded it at the other two.
-    // The SLOT is what survives the grown-slot construction, not the buffer it
-    // currently points at: retail parks the record pointer in ebx across
-    // ActNameConstructGrownSlots and only then loads `[ebx]` (0x5941fe `mov
-    // ebx,eax` / 0x59420 `mov eax,[ebx]`).  Dereferencing before the call reads
-    // a pointer the reconstruction can replace - and it is also what the two
-    // sibling sites below already do.
-    char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
-    ActNameConstructGrownSlots();
-    bool neH = (strcmp(*rec0, "H") != 0);
-    if (neH) {
-        i32 keyF = m_objAux->m_actKey;
-        g_typeColl.m_grown = 0;
-        CString* recF;
-        if (keyF < g_typeColl.m_lo || keyF > g_typeColl.m_hi) {
-            if (g_typeColl.GrowTo(keyF, 0) != NULL) {
-                recF = g_typeColl.Elem(keyF);
-            } else {
-                g_typeColl.Report(g_errOutOfMem, 0xc);
-                recF = g_typeColl.Scratch();
-            }
-        } else {
-            recF = g_typeColl.Elem(keyF);
-        }
+        // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
+        // out of line at the first and expanded it at the other two.
+        // The SLOT is what survives the grown-slot construction, not the buffer it
+        // currently points at: retail parks the record pointer in ebx across
+        // ActNameConstructGrownSlots and only then loads `[ebx]` (0x5941fe `mov
+        // ebx,eax` / 0x59420 `mov eax,[ebx]`).  Dereferencing before the call reads
+        // a pointer the reconstruction can replace - and it is also what the two
+        // sibling sites below already do.
+        char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, "F")) != 0);
-        if (neF) {
-            i32 keyO = m_objAux->m_actKey;
+        bool neH = (strcmp(*rec0, "H") != 0);
+        if (neH) {
+            i32 keyF = m_objAux->m_actKey;
             g_typeColl.m_grown = 0;
-            CString* recO;
-            if (keyO < g_typeColl.m_lo || keyO > g_typeColl.m_hi) {
-                if (g_typeColl.GrowTo(keyO, 0) != NULL) {
-                    recO = g_typeColl.Elem(keyO);
+            CString* recF;
+            if (keyF < g_typeColl.m_lo || keyF > g_typeColl.m_hi) {
+                if (g_typeColl.GrowTo(keyF, 0) != NULL) {
+                    recF = g_typeColl.Elem(keyF);
                 } else {
-                    char* msg = g_errOutOfMem;
-                    g_retAddrBreadcrumb = GetRetAddr();
-                    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-                    recO = g_typeColl.Scratch();
+                    g_typeColl.Report(g_errOutOfMem, 0xc);
+                    recF = g_typeColl.Scratch();
                 }
             } else {
-                recO = g_typeColl.Elem(keyO);
+                recF = g_typeColl.Elem(keyF);
             }
             ActNameConstructGrownSlots();
-            bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), "O") != 0);
-            if (neO) {
-                ResetGeometry();
+            bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, "F")) != 0);
+            if (neF) {
+                i32 keyO = m_objAux->m_actKey;
+                g_typeColl.m_grown = 0;
+                CString* recO;
+                if (keyO < g_typeColl.m_lo || keyO > g_typeColl.m_hi) {
+                    if (g_typeColl.GrowTo(keyO, 0) != NULL) {
+                        recO = g_typeColl.Elem(keyO);
+                    } else {
+                        char* msg = g_errOutOfMem;
+                        g_retAddrBreadcrumb = GetRetAddr();
+                        g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
+                        recO = g_typeColl.Scratch();
+                    }
+                } else {
+                    recO = g_typeColl.Elem(keyO);
+                }
+                ActNameConstructGrownSlots();
+                bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), "O") != 0);
+                if (neO) {
+                    ResetGeometry();
+                }
             }
         }
     }
