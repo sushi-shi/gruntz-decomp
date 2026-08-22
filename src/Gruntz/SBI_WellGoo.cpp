@@ -223,11 +223,12 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(buf, SERIAL_NAME_LEN);
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
+                i32 frameIndex = idx;
                 CObject* found = 0;
                 mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != NULL) {
-                    m_fgFrame = set->GetAt(idx);
+                    m_fgFrame = set->GetAt(frameIndex);
                 } else {
                     m_fgFrame = NULL;
                 }
@@ -238,11 +239,12 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(buf, SERIAL_NAME_LEN);
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
+                i32 frameIndex = idx;
                 CObject* found = 0;
                 mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != NULL) {
-                    m_baseFrame = set->GetAt(idx);
+                    m_baseFrame = set->GetAt(frameIndex);
                 } else {
                     m_baseFrame = NULL;
                 }
