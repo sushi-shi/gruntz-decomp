@@ -845,10 +845,6 @@ unit = "fortressflag"
 source = "src/Gruntz/FortressFlag.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "fortconquered"
-source = "src/Gruntz/FortConquered.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "cursorsnapsprite"
