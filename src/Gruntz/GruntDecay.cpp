@@ -47,15 +47,17 @@ i32 CGrunt::LoadGruntDecayConfig() {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }
         i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+        i32 epoch;
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
-            m_idleTimerLo = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
+            epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
             m_idleWindowLo = dt;
             m_idleWindowHi = 0;
         } else {
             m_idleWindowLo = dt;
             m_idleWindowHi = 0;
-            m_idleTimerLo = static_cast<i32>(g_frameTime);
+            epoch = static_cast<i32>(g_frameTime);
         }
+        m_idleTimerLo = epoch;
         m_idleTimerHi = 0;
         i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
