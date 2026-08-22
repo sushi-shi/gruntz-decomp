@@ -1710,6 +1710,7 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
 }
 
 // @early-stop
+// @early-stop
 RVA(0x0008f7f0, 0x131)
 void CGruntzMgr::RecomputeViewScale() {
     if (m_world == NULL) {
