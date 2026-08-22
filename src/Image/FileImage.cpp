@@ -514,7 +514,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
 
     i32 convert = 0;
     ColorDepth curFmt = info->m_palBpp;
-    if (srcFmt != curFmt) {
+    if (curFmt != srcFmt) {
         convert = 1;
     }
     if (convert && curFmt == BPP_PALETTED_8 && info->m_hasPalette == 0) {
@@ -528,14 +528,12 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
             RecordBytes<PcxHeader> sb;
             sb.m_rec = src;
             u8* p = sb.m_bytes + len - 0x300;
-            PALETTEENTRY* d = g_grayRamp;
-            do {
-                d->peRed = *p++;
-                d->peGreen = *p++;
-                d->peBlue = *p++;
-                d->peFlags = 0;
-                d++;
-            } while (d < &g_grayRamp[0x100]);
+            for (i32 i = 0; i < 0x100; i++) {
+                g_grayRamp[i].peRed = *p++;
+                g_grayRamp[i].peGreen = *p++;
+                g_grayRamp[i].peBlue = *p++;
+                g_grayRamp[i].peFlags = 0;
+            }
             palette = g_grayRamp;
         } else if (curFmt == BPP_PALETTED_8) {
             if (info->m_hasPalette != 0) {
@@ -557,24 +555,28 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     i32 result;
     if (convert == 0) {
         if (srcFmt == BPP_PALETTED_8) {
-            result = DecodeRun8(run);
+            if (DecodeRun8(run) == 0) {
+                return 0;
+            }
         } else {
-            result = DecodeRun24(run);
-        }
-        if (result == 0) {
-            return 0;
+            if (DecodeRun24(run) == 0) {
+                return 0;
+            }
         }
     } else {
-        if (width % 2 != 0) {
-            return 0;
-        }
         if (srcFmt == BPP_PALETTED_8) {
+            if (width % 2 != 0) {
+                return 0;
+            }
             buf = new u8[height * width];
             if (buf == NULL) {
                 return 0;
             }
             result = RunDecode1(buf, run, width, height);
         } else {
+            if (width % 2 != 0) {
+                return 0;
+            }
             buf = new u8[height * width * 3];
             if (buf == NULL) {
                 return 0;
