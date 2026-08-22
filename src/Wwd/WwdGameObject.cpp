@@ -454,6 +454,9 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 // @early-stop
+// Residue is the shared notify block: cl passes `&notifyWorker->m_actKey` across
+// the goto edge instead of the worker pointer, and binds notifySaved/notifyAct to
+// EBX/EDI there where the two inline arms (and retail everywhere) use EDI/EBX.
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self) {
     if (ar == NULL) {
@@ -529,15 +532,13 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
                         found
                     )
                     == 0) {
-                    m_carrier = NULL;
-                    goto carrierResolved;
+                    found = NULL;
                 }
                 m_carrier = found;
-                goto carrierResolved;
+            } else {
+                m_carrier = NULL;
             }
-            m_carrier = NULL;
 
-        carrierResolved:
             notifyWorker = m_animWorker;
             if (notifyWorker != NULL) {
                 notifySaved = notifyWorker->m_actKey;
