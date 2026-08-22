@@ -34,8 +34,8 @@ struct AnimWorkerObj : public CWapObj {
     AnimWorkerObj() {}
 
     // Out of line at 0x15b300 in WwdObjMgr.cpp; <DDrawMgr/AnimWorkerObjCtorInline.h>
-    // is the opt-in inline view for the one TU that expands it (survivor:
-    // measured irreducible, see the header and docs/patterns/comdat-home-adjudicates-inline-spelling.md).
+    // is the opt-in inline view for the one TU that expands it - a workaround
+    // whose cost and removal condition are measured in that header.
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
 
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {

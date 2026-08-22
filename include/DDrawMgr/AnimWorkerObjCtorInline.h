@@ -6,14 +6,27 @@
 #include <DDrawMgr/AnimWorkerObj.h>
 
 // Opt-in inline visibility for AnimWorkerObj's three-argument ctor (out of
-// line at 0x15b300 in WwdObjMgr.cpp) - a surviving per-TU visibility split.
-// A single visible body is refuted by measurement (2026-08-15): the call and
-// the expansion sit inside ONE spelling of CGameObject::AttachToOwner, and
-// the creators' budget slice is coupled to CResolveNode's site - with
-// CResolveNode out of line the slice affords cb 60+, so no plausible
-// compiled-out content makes the creators decline this cb 56-58 body, and a
-// tag sibling cannot ride the shared AttachToOwner text.  Ledger:
-// docs/patterns/comdat-home-adjudicates-inline-spelling.md.
+// line at 0x15b300 in WwdObjMgr.cpp, same text on both sides).  This is a
+// WORKAROUND for caller-side modelling error, not a proven era structure - no
+// dev writes a per-TU visibility header.  Retested 2026-08-22 by collapsing to
+// ONE in-class body carrying the RVA pin, with the out-of-line definition and
+// this header deleted:
+//   * 0x15b300 lost every emitter - verify unique-names goes FATAL ("no body in
+//     ANY claiming unit's object") and the row scores 100.00 -> 0.00, so unlike
+//     CDDrawWorkerCache::Find no TU declines this one;
+//   * the three creators retail CALLS it from expanded it instead:
+//     CreateSpriteObject 100.00 -> 86.14, CreateDotObject 100.00 -> 84.92,
+//     CreateDeferredObject 100.00 -> 83.04, plus ten of their /GX unwind
+//     funclets (three to 0.00).
+// The expansion site is `new AnimWorkerObj(owner, id, 0)` inside the single
+// inline CGameObject::AttachToOwner body - depth 2 from the pinned CGameObject
+// ctor (WwdFactoryObject, expands) and depth 3 from wwdobjmgr's creators
+// (retail calls).  One text feeds both, so no per-site spelling (the tagged
+// sibling that dissolved CResolveNode's .inl) can express the split.
+// REMOVAL CONDITION: model wwdobjmgr's three creators' pre-optimization cost
+// accurately enough that cl 5.0 declines the depth-3 site on its own budget and
+// homes 0x15b300 in wwdobjmgr; then one visible body reproduces both shapes.
+// Ledger: docs/patterns/comdat-home-adjudicates-inline-spelling.md.
 inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CWapObj(owner, id, stateFlags, CWapObj::NO_SEED) {
     ResetWorkerFields();
