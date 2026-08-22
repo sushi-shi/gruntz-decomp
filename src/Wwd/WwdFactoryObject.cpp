@@ -13,6 +13,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -590,12 +591,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* anim = m_animation;
                         m_index = m_index + 1;
-                        CAniRecordView* rec;
-                        if (m_index >= 0 && m_index < anim->m_records.GetSize()) {
-                            rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(m_index));
-                        } else {
-                            rec = NULL;
-                        }
+                        CAniRecordView* rec =
+                            static_cast<CAniRecordView*>(GetAniElementAt(anim, m_index));
                         m_element = rec;
                         if (rec == NULL) {
                             m_index = 0;
@@ -616,12 +613,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* anim = m_animation;
                         m_index = m_index + 1;
-                        CAniRecordView* rec;
-                        if (m_index >= 0 && m_index < anim->m_records.GetSize()) {
-                            rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(m_index));
-                        } else {
-                            rec = NULL;
-                        }
+                        CAniRecordView* rec =
+                            static_cast<CAniRecordView*>(GetAniElementAt(anim, m_index));
                         m_element = rec;
                         if (rec == NULL) {
                             m_index = 0;
@@ -642,12 +635,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* anim = m_animation;
                         m_index = m_index + 1;
-                        CAniRecordView* rec;
-                        if (m_index >= 0 && m_index < anim->m_records.GetSize()) {
-                            rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(m_index));
-                        } else {
-                            rec = NULL;
-                        }
+                        CAniRecordView* rec =
+                            static_cast<CAniRecordView*>(GetAniElementAt(anim, m_index));
                         m_element = rec;
                         if (rec == NULL) {
                             m_index = 0;
@@ -665,11 +654,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 if (rd->m_loopMode != WWDLOOP_FINISH) {
                     arr = m_animation;
                     m_index = m_index + 1;
-                    if (m_index >= 0 && m_index < arr->m_records.GetSize()) {
-                        nd = static_cast<CAniRecordView*>(arr->m_records.GetAt(m_index));
-                    } else {
-                        nd = NULL;
-                    }
+                    nd = static_cast<CAniRecordView*>(GetAniElementAt(arr, m_index));
                     m_element = nd;
                     if (nd == NULL) {
                         m_index = 0;
@@ -688,12 +673,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         m_index = m_index + 1;
-                        CAniRecordView* p;
-                        if (m_index >= 0 && m_index < a->m_records.GetSize()) {
-                            p = static_cast<CAniRecordView*>(a->m_records.GetAt(m_index));
-                        } else {
-                            p = NULL;
-                        }
+                        CAniRecordView* p =
+                            static_cast<CAniRecordView*>(GetAniElementAt(a, m_index));
                         m_element = p;
                         if (p == NULL) {
                             m_index = 0;
@@ -841,8 +822,9 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     }
     CAniElement* w = m_animation;
     if (w != NULL) {
-        m_element = RecordAt(w, m_index);
-        if (m_element == NULL) {
+        CAniRecordView* e = static_cast<CAniRecordView*>(GetAniElementAt(w, m_index));
+        m_element = e;
+        if (e == NULL) {
             m_index = 0;
             m_element = RecordAt(w, 0);
         }
