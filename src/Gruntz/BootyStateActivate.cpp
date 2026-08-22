@@ -1198,9 +1198,10 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_WALK", 0);
         m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        m_animSprites[i]->m_drawActive = 1;
-        m_animSprites[i]->m_drawFillCmd = SHADE_PAL_16;
-        m_animSprites[i]->m_drawFillArg = sel;
+        CWwdGameObjectA* anim = m_animSprites[i];
+        anim->m_drawActive = 1;
+        anim->m_drawFillCmd = SHADE_PAL_16;
+        anim->m_drawFillArg = sel;
         m_visSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_visSprites[i] == NULL) {
