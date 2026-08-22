@@ -63,6 +63,11 @@ public:
 
 class CGruntzSoundZ {
 public:
+    CGruntzSoundZ() {
+        m_pCurrent = NULL;
+        m_ownerWnd = NULL;
+    }
+
     ~CGruntzSoundZ() {
         Shutdown();
     }

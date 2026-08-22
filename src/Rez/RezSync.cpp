@@ -622,10 +622,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         }
         if (TransitionState(mode, 1, 0, 0)) {
             g_frameDelta = 0;
-        } else if (mode == GAMESTATE_MULTI && TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-            g_frameDelta = 0;
+        } else if (mode == GAMESTATE_MULTI) {
+            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+                g_frameDelta = 0;
+            } else {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x41c);
+                return 0;
+            }
         } else {
-            ReportError(IDX(IDS_SET_GAME_STATE), mode == GAMESTATE_MULTI ? 0x41c : 0x41d);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x41d);
             return 0;
         }
     }
