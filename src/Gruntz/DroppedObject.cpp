@@ -9,6 +9,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CardinalDir.h>
 #include <Gruntz/CombatCueKind.h>
@@ -522,8 +523,6 @@ i32 CDroppedObject::AdvanceFall() {
     m_object->m_screenY = landed;
     return 0;
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {

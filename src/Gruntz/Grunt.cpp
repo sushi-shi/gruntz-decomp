@@ -28,6 +28,7 @@
 #include <Gruntz/DirectionClassify.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -37,6 +38,7 @@
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -913,9 +915,6 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
         center.Set((col << TILE_SHIFT_PX) + TILE_HALF_PX, (row << TILE_SHIFT_PX) + TILE_HALF_PX);
     return StepArrivalDrop(point->m_x, point->m_y, arrivalPhase, maskA, clearFlag, maskCIn);
 }
-
-#include <Gruntz/FreeNodePoolInline.h>
-#include <Gruntz/GruntMovementInline.h>
 
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(

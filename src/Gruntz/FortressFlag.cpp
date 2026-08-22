@@ -7,6 +7,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/AnimWorker.h>
 #include <Gruntz/Explosion.h>
@@ -291,8 +292,6 @@ void CParticlez::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((PartLookup(id)))) = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {

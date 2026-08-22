@@ -5,6 +5,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Rez/FrameClock.h>
@@ -57,8 +58,6 @@ void CSingleAnimation::RegisterActs() {
     (*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {

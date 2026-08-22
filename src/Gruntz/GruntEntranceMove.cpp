@@ -13,7 +13,9 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -226,9 +228,6 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     }
     return 0;
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
-#include <Gruntz/AniElementInline.h>
 
 // @early-stop
 // The animation-set name is assigned to `key` INSIDE each arm, not collected into a

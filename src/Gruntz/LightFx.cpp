@@ -8,6 +8,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -178,8 +179,6 @@ i32 CLightFx::RebindNode() {
     m_objAux->m_actKey = ActFindId("A");
     return 0;
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {

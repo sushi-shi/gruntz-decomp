@@ -10,6 +10,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
@@ -134,8 +135,6 @@ void RegisterWormholeLogic() {
     CActHandler* dslot = CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x000403b0, 0xa5)
 i32 CWormhole::SpawnPartners() {

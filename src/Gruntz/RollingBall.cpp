@@ -7,6 +7,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CardinalDir.h>
 #include <Gruntz/GameLevel.h>
@@ -130,8 +131,6 @@ void CRollingBall::RegisterActs() {
     (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {

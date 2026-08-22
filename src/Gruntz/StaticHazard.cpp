@@ -10,7 +10,9 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -108,9 +110,6 @@ i32 CreateStaticHazard(CGameObject* owner) {
 // reuses the dead constructor-argument home for Lookup's output while the typed
 // MapLookup boundary retains a separate slot; the rest is equivalent byte-vs-
 // dword masking, add-vs-sub encoding, and register scheduling.
-#include <Gruntz/AniAdvanceCursorInline.h>
-#include <Gruntz/AniElementInline.h>
-
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

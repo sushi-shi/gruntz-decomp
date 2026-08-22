@@ -15,7 +15,9 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
@@ -73,9 +75,6 @@ DATA(0x0020e23c)
 static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
 DATA(0x0020e250)
 static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
-
-#include <Gruntz/AniAdvanceCursorInline.h>
-#include <Gruntz/AniElementInline.h>
 
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {

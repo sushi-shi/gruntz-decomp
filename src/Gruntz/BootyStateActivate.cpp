@@ -19,6 +19,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattleStatRow.h>
@@ -970,8 +971,6 @@ i32 CBootyState::LoadGruntEffectSprites() {
 }
 
 // @early-stop
-#include <Gruntz/AniAdvanceCursorInline.h>
-
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
     if (m_initGate != 0) {

@@ -6,6 +6,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MenuSparkleSerial.h>
 #include <Gruntz/SerialArchive.h>
@@ -88,8 +89,6 @@ i32 CMenuSparkle::SerializeMove(
 }
 
 // @early-stop
-#include <Gruntz/AniAdvanceCursorInline.h>
-
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;

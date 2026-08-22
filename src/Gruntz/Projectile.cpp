@@ -14,10 +14,12 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -114,8 +116,6 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner)
     m_sound = NULL;
     m_shadow = NULL;
 }
-
-#include <Gruntz/FreeNodePoolInline.h>
 
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
@@ -509,8 +509,6 @@ void CProjectile::AdvanceMotion() {
 noSprite:
     m_wwdObject->m_flags |= 0x10000;
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {

@@ -9,7 +9,9 @@
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
@@ -561,8 +563,6 @@ void RegisterWarlordActions() {
 #undef REGISTER_ACTION_TYPED
 #undef REGISTER_NAME
 
-#include <Gruntz/AniAdvanceCursorInline.h>
-
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -807,8 +807,6 @@ i32 CWarlord::RaiseBattleAlert() {
     m_objAux->m_actKey = ActFindId("E");
     return 1;
 }
-
-#include <Gruntz/AniElementInline.h>
 
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {

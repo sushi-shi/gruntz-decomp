@@ -16,6 +16,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
@@ -258,8 +259,6 @@ Coord CGrunt::GetTilePos() {
     out.m_y = h->m_screenY >> TILE_SHIFT_PX;
     return out;
 }
-
-#include <Gruntz/FreeNodePoolInline.h>
 
 // @early-stop
 RVA(0x00031ca0, 0x2f2)

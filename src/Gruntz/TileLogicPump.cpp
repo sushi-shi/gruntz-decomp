@@ -9,7 +9,9 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/CheckpointTrigger.h>
@@ -596,8 +598,6 @@ void CTileTriggerTransition::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
-#include <Gruntz/AniElementInline.h>
-
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     m_value = m_wwdObject->m_animCursor.m_animation;
@@ -611,8 +611,6 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     m_objAux->m_actKey = ActFindId("A");
     return 1;
 }
-
-#include <Gruntz/AniAdvanceCursorInline.h>
 
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
