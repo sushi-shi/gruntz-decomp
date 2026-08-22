@@ -73,7 +73,7 @@ public:
 
     CSymRec* FindOrAddSym(i32 key);
 
-    struct CParseSource* AddNamedValue(void* unused, const char* name, i32 key);
+    struct CParseSource* AddNamedValue(void* table, const char* name, i32 key);
 
     i32 ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates);
 

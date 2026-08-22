@@ -599,11 +599,10 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     return child;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a400, 0xa9)
-CParseSource* CSymTab::AddNamedValue(void* unused, const char* name, i32 key) {
+CParseSource* CSymTab::AddNamedValue(void* table, const char* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
     if (rec->m_valTable.Walk(name, m_owner->m_caseSensitive == 0) != NULL) {
         return 0;
@@ -612,7 +611,7 @@ CParseSource* CSymTab::AddNamedValue(void* unused, const char* name, i32 key) {
     slot->Build(
         this,
         name,
-        &rec->m_valTable,
+        table,
         rec,
         0,
         0,
