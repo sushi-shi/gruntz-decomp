@@ -276,41 +276,39 @@ i32 CGruntzCommand::SetMaskFromList(
     return 1;
 }
 
-// @early-stop
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(char* data, i32) {
-    char* buf = data + 1;
-    char* start = buf - 1;
-    m_targetIndex = *buf++;
-    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
-    m_targetType = *buf++;
-    m_posX = PeekI16(buf);
-    buf += 2;
-    m_posY = PeekI16(buf);
-    buf += 2;
-    m_gruntIndex = *buf++;
+    char* start = data;
+    ++data;
+    m_targetIndex = *data++;
+    m_commandKind = static_cast<PlayerCommandKind>(*data++);
+    m_targetType = *data++;
+    m_posX = PeekI16(data);
+    data += 2;
+    m_posY = PeekI16(data);
+    data += 2;
+    m_gruntIndex = *data++;
 
     if (static_cast<u8>(IDX(m_commandKind)) >= 8) {
-        m_extraByte = *buf++;
+        m_extraByte = *data++;
     }
-    return buf - start;
+    return data - start;
 }
 
-// @early-stop
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(char* data, i32) {
-    char* buf = data + 1;
-    char* start = buf - 1;
-    m_targetIndex = *buf++;
-    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
-    m_targetType = *buf++;
-    m_posX = PeekI16(buf);
-    buf += 2;
-    m_posY = PeekI16(buf);
-    buf += 2;
-    m_gruntMask = static_cast<u16>(PeekI16(buf));
-    buf += 2;
-    return buf - start;
+    char* start = data;
+    ++data;
+    m_targetIndex = *data++;
+    m_commandKind = static_cast<PlayerCommandKind>(*data++);
+    m_targetType = *data++;
+    m_posX = PeekI16(data);
+    data += 2;
+    m_posY = PeekI16(data);
+    data += 2;
+    m_gruntMask = static_cast<u16>(PeekI16(data));
+    data += 2;
+    return data - start;
 }
 
 RVA(0x00024050, 0x57)
