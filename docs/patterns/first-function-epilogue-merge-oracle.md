@@ -139,13 +139,16 @@ preceding-warmth carrier while headers-without-it stay cold. The full
 model: C2's cross-jump activates at the first function-like IL processed -
 a preceding body, a `$E` at its source position, OR the function's own
 first inline expansion. ChargeStep warms itself via `m_coordList.GetCount()`
-(MFC inline; no MfcNoInline in this TU). Since retail's call set is EQUAL
-yet retail keeps ten cold epilogues, the era compile reached those returns
-BEFORE its first expansion - i.e. the activation is POSITIONAL within the
-function, and the two sides' merge degree differs by WHERE the first
-expansion sits in IL order. Next experiment: probe with the inline
-expansion between return k and k+1 and confirm returns before it stay
-unmerged; then steer the step band by the accessor placement. The step-band rows' skeleton deltas (ChargeStep
+(MFC inline; no MfcNoInline in this TU). POSITIONAL variant falsified in
+the same round: the expansion warms the WHOLE function wherever it sits
+(early-guard and last-guard probes both fully merge). The sharp residue:
+retail ChargeStep is cold with EQUAL call multisets and equal operands -
+the era compile expanded NO inline there, yet its count reads are direct
+member loads like ours and its accessor calls match ours. What non-inline,
+non-call spelling produced its member reads (or what suppressed its C1
+expansions TU-wide) is the single open question for the step band; test
+/Ob-flag and era-header-inline-visibility hypotheses against a full-band
+call census before any source churn. The step-band rows' skeleton deltas (ChargeStep
 10v11, WanderStep 11v12, ScanNearestTarget 11v12, RunEntranceMove 5v6) are
 all THIS one input; mapping it would close the band's CFG residue in one
 move.
