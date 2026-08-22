@@ -181,3 +181,11 @@ V3-consistent datum: hoisting `AddLogic` first does NOT unmerge it - its
 so ours can never reproduce retail's 3 epilogues under SP3 regardless of
 position. With equal call multisets on both sides, retail's cold copy joins
 the ChargeStep-class era anomaly - more weight on the RTM-provenance test.
+
+The anomaly is WIDER than epilogue merging: `CMulti::PollSession`
+(0xb95f0, 88.41, 96v103) shows retail RE-TESTING a register it just tested
+(`cmp ecx,edi; jne` on ecx still holding m_5bc from the immediately
+preceding null guard - so era CSE ran, era jump-threading did not) while
+ours threads the provably-redundant second guard away. Source carries both
+guards verbatim. Era-class signature: redundant-compare retention with CSE
+intact. Same provenance test decides it.

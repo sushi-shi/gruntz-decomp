@@ -71,20 +71,23 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                 r++;
             }
             i32 band = r % 4;
+            // retail emits this guard (test edi,edi); SP3 folds it - era residue
             CBattlezMapConfig* b = &m_ctx->m_options[band].m_battlezConfig;
-            i32 cnt = b->m_attackWaypoints.GetSize();
-            i32 x = b->m_marker.m_x;
-            i32 y = b->m_marker.m_y;
-            if (cnt != 0) {
-                Coord** arr = MfcPtrArrayData<Coord>(b->m_attackWaypoints);
-                Coord* pair = arr[rand() % cnt];
-                x = pair->m_x;
-                y = pair->m_y;
-            }
-            if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
-                unit->m_arrivalCell.m_x = band;
-                unit->m_arrivalCell.m_y = 0;
-                AcceptAlways(unit);
+            if (b != NULL) {
+                i32 cnt = b->m_attackWaypoints.GetSize();
+                i32 x = b->m_marker.m_x;
+                i32 y = b->m_marker.m_y;
+                if (cnt != 0) {
+                    Coord** arr = MfcPtrArrayData<Coord>(b->m_attackWaypoints);
+                    Coord* pair = arr[rand() % cnt];
+                    x = pair->m_x;
+                    y = pair->m_y;
+                }
+                if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
+                    unit->m_arrivalCell.m_x = band;
+                    unit->m_arrivalCell.m_y = 0;
+                    AcceptAlways(unit);
+                }
             }
             unit->m_dwell = 0;
             return 1;
