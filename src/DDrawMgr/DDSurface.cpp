@@ -1208,7 +1208,12 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 b = *srcv++;
                 u8 g = *srcv++;
                 u8 r = *srcv++;
-                PACK_PIXEL16_GRB_TO(dst, v, g, r, b)
+                u16 v =
+                    static_cast<u16>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp));
+                v = static_cast<u16>(
+                    (v | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp))
+                );
+                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
             }
         }
     } else {
@@ -1218,7 +1223,12 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 r = *srcv++;
                 u8 g = *srcv++;
                 u8 b = *srcv++;
-                PACK_PIXEL16_RGB_TO(dst, v, r, g, b)
+                u16 v =
+                    static_cast<u16>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp));
+                v = static_cast<u16>(
+                    (v | (static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp))
+                );
+                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
             }
         }
     }
