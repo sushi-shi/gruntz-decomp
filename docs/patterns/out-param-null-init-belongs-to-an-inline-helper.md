@@ -43,6 +43,22 @@ functions that were already EXACT (`ApplyName`, `ApplyLookupGeometry`) are the
 two that call a helper, and the four below 100 were the ones with the local
 inline. That asymmetry inside one TU is the detection signature.
 
+## Screening: the codegen, not the source
+
+A `T* x = NULL;` beside a `Lookup` is NOT itself the defect - cl schedules the
+store after the pushes on its own at most sites, and converting one of those is
+inert or harmful (a whole TU of 26 candidate sites yielded exactly one). Screen by
+disassembling both sides of `build/objdiff/compare-new/{base,target}` and looking
+at where the zero-store lands relative to that call's pushes. Two shortcuts:
+
+* base `sub esp,N` LARGER than the target's is a strong positive - the caller-owned
+  local takes its own slot where the helper's is homed in a dead parameter slot
+  (`CWarpStoneFly::Init` 0x18 vs 0x14). It is not necessary, though: `PruneOrphans`
+  had equal frames and was still the pattern.
+* a frame delta with the stores already aligned means some OTHER local is extra;
+  `CGiantRockLogic::BuildRockBreakInGameText` has the 0x18/0x14 delta and its
+  lookup site is byte-identical.
+
 ## Evidence
 
 | function | before | after |
@@ -51,10 +67,40 @@ inline. That asymmetry inside one TU is the detection signature.
 | `CWwdGameObjectA::ApplyLookupSprite` 0x1504d0 | 94.29 | **100.00** |
 | `CGrunt::BuildEntranceAnimation` 0x67bd0 (5 sites) | 83.82 | **100.00** |
 | `CGrunt::LoadWingzGruntSprites` 0x68880 (8 sites) | 89.80 | 93.75 |
+| `CWarlord::CWarlord` 0x42d40 (11 sites, was a block macro) | 78.84 | 93.08 |
+| `CWarpStoneFly::Init` 0x109bd0 | 91.33 | 96.62 |
+| `CDDrawChildGroup::PruneOrphans` 0x15b1d0 | 93.75 | **100.00** |
 
 `ApplyLookupSprite` had carried an `@early-stop` reading "96 mixed TU states and
 35 local variants were byte-identical at this remaining slot" - none of those
 variants moved the local's OWNERSHIP, which is the only lever that reaches it.
+
+A block MACRO that declares the local is the caller's scope for this purpose:
+`WARLORD_ANIM_LOOKUP(dst, suffix)` expanded `CAniElement* h = NULL; MapLookup(...);
+dst = h;` eleven times in `CWarlord`'s ctor and every zero-store was hoisted ahead
+of the `CString` concatenation calls that build the key. Only a real inline
+function moves them.
+
+## The miss path must ASSIGN, not `return`
+
+When the helper has to reproduce retail's `Lookup(...) == 0 || out == NULL` test,
+the spelling of its failure path decides between a branch and a mask:
+
+```cpp
+// cl folds the two exits into a select: `mov edx,[out]; neg eax; sbb eax,eax; and eax,edx`
+if (!MapLookup(map, key, found)) { return NULL; }
+return found;
+
+// retail: `test eax,eax; je +4; mov eax,[out]` - the taken branch skips only the
+// load, reusing the already-zero EAX as the result
+if (MapLookup(map, key, found) == 0) { found = NULL; }
+return found;
+```
+
+Both spellings are semantically identical and both sink the zero-store correctly;
+`PruneOrphans` scored 91.72 with the early return and 100.00 with the assignment.
+Swapping the arms (`if (MapLookup(...)) return found; return NULL;`) is the early
+return again and scores the same 91.72.
 
 ## Cost: the helper is a declaration, and declarations are TU state
 
