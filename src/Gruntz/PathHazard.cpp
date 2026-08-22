@@ -300,12 +300,13 @@ i32 CPathHazard::SiblingTick() {
         }
     }
 
+    CGruntzMgr* tableReg = g_gameReg;
     i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
     if (legElapsed >= m_leg.m_window) {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-        o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
+        o->m_drawFillArg = tableReg->m_logicPump->m_tables[5];
         this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
