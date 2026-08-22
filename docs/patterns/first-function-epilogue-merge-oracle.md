@@ -71,3 +71,26 @@ COMDAT placement says the preceding bodies really were.
   kept `$E33` as the obj's first emission, so the hoist never produced a
   cold start - re-test those rows only with ALL earlier emissions removed
   or relocated to their retail positions.
+
+## Refined map (second titration round)
+
+* `$E` dyninit thunks are emitted AND compiled at the STATIC'S SOURCE
+  POSITION (probe objs: before -> head, between -> middle, after -> tail),
+  and they DO carry the warm state at that position (static-before-fn =
+  merged, static-after-fn = cold). Template member statics with dynamic
+  init behave identically (t2). The earlier "$Es don't warm" reading
+  conflated era rva placement with compile order.
+* The era contradiction narrows to a WINDOW: retail spotlight's Tick sits
+  AFTER the unit's `$E`s in rva order (warm by the position rule) yet keeps
+  3 rets - PARTIAL merging. Ours merges the same function to 1 ret. The
+  remaining unmapped factor is why the two warm compiles merge to different
+  DEGREES - a cross-jump distance/window input (retail AddLogic keeps two
+  IDENTICAL return-0 epilogues 0x1f1 bytes apart that ours folds).
+  Arm-distance titrated: NO window - a warmed probe still fully merges with
+  456 insns between the arms. And ours is not always-merge either
+  (battlezunitstep Step keeps 4 rets warm). The residual is a per-PAIR
+  merge predicate shared by both compilers with one unmapped input;
+  next probe: find any source shape where a WARMED probe keeps two
+  identical epilogues (candidate axes: EH-state deltas between the arms,
+  arms inside vs outside a try-level, the number of predecessor edges
+  into each epilogue).
