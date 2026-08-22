@@ -78,9 +78,9 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
     m_pairA[1] = 250;
-    m_pairC[0] = 250;
     m_pairB[0] = 1000;
     m_pairB[1] = 1000;
+    m_pairC[0] = 250;
 
     m_planeCtx.left = COORD_UNSET;
     m_mainPlane = NULL;
