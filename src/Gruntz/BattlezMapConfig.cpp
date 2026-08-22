@@ -2280,11 +2280,11 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     p = unit->m_toolId;
                 }
                 if (p == PICKUP_WINGZ) {
-                    return 1;
+                    goto returnOne;
                 }
             }
             if (PathToNearestGoal(unit, cx, cy) != 0) {
-                return 1;
+                goto returnOne;
             }
             i32 sB = scratchB.m_flags;
             if ((sB & 0x200) || (sB & 0x8)) {
@@ -2348,7 +2348,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             pk = unit->m_toolId;
         }
         if (pk != PICKUP_GOOBER) {
-            return 1;
+            goto returnOne;
         }
 
         POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
@@ -2385,6 +2385,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         return 1;
     }
+returnOne:
+    return 1;
 recycleBail:
     if (unit->CoordCount() != 0) {
         CoordNode* n = unit->CoordHead();
