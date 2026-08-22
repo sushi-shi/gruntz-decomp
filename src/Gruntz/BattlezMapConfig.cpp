@@ -4401,8 +4401,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                     && cand->m_defenderState != AISTATE_RETREAT) {
                     CGameObject* ul = unit->m_object;
                     CGameObject* cl = cand->m_object;
-                    i32 dx = (ul->m_screenX >> TILE_SHIFT_PX) - (cl->m_screenX >> TILE_SHIFT_PX);
-                    i32 dy = (ul->m_screenY >> TILE_SHIFT_PX) - (cl->m_screenY >> TILE_SHIFT_PX);
+                    i32 cx = cl->m_screenX >> TILE_SHIFT_PX;
+                    i32 cy = cl->m_screenY >> TILE_SHIFT_PX;
+                    i32 dx = (ul->m_screenX >> TILE_SHIFT_PX) - cx;
+                    i32 dy = (ul->m_screenY >> TILE_SHIFT_PX) - cy;
                     dx = abs(dx);
                     dy = abs(dy);
                     if (dx * dx + dy * dy <= 0x190) {
@@ -4418,12 +4420,11 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                         CPtrList list(10);
                         Coord oc;
                         (static_cast<CUserLogic*>(unit))->GetScreenPos((&oc));
-                        CGameObject* dl = cand->m_object;
                         if ((m_board)->SearchEdge(
                                 oc.m_x >> TILE_SHIFT_PX,
                                 oc.m_y >> TILE_SHIFT_PX,
-                                dl->m_screenX >> TILE_SHIFT_PX,
-                                dl->m_screenY >> TILE_SHIFT_PX,
+                                cx,
+                                cy,
                                 &list,
                                 1,
                                 0x98b,
