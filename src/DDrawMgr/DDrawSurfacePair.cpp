@@ -1189,13 +1189,17 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
     return 0;
 }
 
+static inline CAniRecordBase2* LookupRecord(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CAniRecordBase2*>(found);
+}
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
-    CObject* val = NULL;
-    m_map1.Lookup(key, val);
-    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
+    CAniRecordBase2* w = LookupRecord(m_map1, key);
     if (w == NULL) {
         return 0;
     }
@@ -1309,16 +1313,15 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     }
 }
 
-// @early-stop
-// one scheduling slot: retail sinks the `obj = 0` store below BOTH Lookup arg
-// pushes, ours lands between them. Flat across receiver hoists (mgr/registry),
-// late-zero, p-decl-first, the fast permuter (250 iters) and the AST tree.
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
-    CObject* obj = NULL;
-    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(key, obj);
-
-    CDDrawWorker* p = static_cast<CDDrawWorker*>(obj);
+    CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, key);
     CImage* v;
     if (p != NULL && idx >= p->m_minIndex && idx <= p->m_maxIndex) {
 
