@@ -1936,8 +1936,8 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     i32 hx = cx >> TILE_SHIFT_PX;
     i32 hy = cy >> TILE_SHIFT_PX;
     rect.left = hx - r;
-    rect.right = hx + r;
     rect.top = hy - r;
+    rect.right = hx + r;
     rect.bottom = hy + r;
 
     POSITION pos = m_baseList.GetHeadPosition();
