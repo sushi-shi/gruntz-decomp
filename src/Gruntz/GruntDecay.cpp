@@ -49,8 +49,8 @@ i32 CGrunt::LoadGruntDecayConfig() {
         }
         i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
-            m_idleWindowLo = dt;
             m_idleTimerLo = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
+            m_idleWindowLo = dt;
             m_idleWindowHi = 0;
         } else {
             m_idleWindowLo = dt;
@@ -64,9 +64,10 @@ i32 CGrunt::LoadGruntDecayConfig() {
             (static_cast<double>(elapsed) * 256.0
              / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
         );
-        m_object->m_drawActive = 1;
-        m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
-        m_object->m_fillFraction = r;
+        CWwdGameObjectA* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = SHADE_PAL_ALPHA_16;
+        o->m_fillFraction = r;
         return 0;
     }
     if (m_cellRemovalNotified == 0) {
