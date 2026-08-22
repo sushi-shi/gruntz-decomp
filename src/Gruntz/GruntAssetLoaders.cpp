@@ -56,11 +56,15 @@ DATA(0x0020e158)
 static char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
+// The `->m_param` is outside the conditional in retail, so the empty-list arm
+// dereferences a null CAniRecordView (a latent retail defect reproduced here).
 #define DEATH_FRAME()                                                                              \
-    (m_wwdObject->m_animCursor.m_animation->m_records.GetSize() > 0                                \
-         ? static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->m_records.GetAt(0)) \
-               ->m_param                                                                           \
-         : static_cast<CAniRecordView*>(0)->m_param)
+    (static_cast<CAniRecordView*>(                                                                 \
+         m_wwdObject->m_animCursor.m_animation->m_records.GetSize() > 0                            \
+             ? m_wwdObject->m_animCursor.m_animation->m_records.GetAt(0)                           \
+             : NULL                                                                                \
+    )                                                                                              \
+         ->m_param)
 
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
