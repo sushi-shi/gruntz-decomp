@@ -189,9 +189,6 @@ CFaderRadial::~CFaderRadial() {
     FreeBuffer();
 }
 
-// @early-stop
-// Retail spills the inner `x` counter and keeps m_srcSurface in edi across the
-// Lock/Unlock pair; cl does the reverse, so its frame is one dword smaller.
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
@@ -242,16 +239,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
             cell.m_vx = static_cast<float>(dx) * fade;
             cell.m_vy = static_cast<float>(m_centerY - y) * fade;
-            u8* base = static_cast<u8*>(m_srcSurface->Lock(0));
-            if (base != NULL) {
-                u8 pix = *static_cast<u8*>(
-                    (base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y)
-                );
-                m_srcSurface->m_ddSurface->Unlock(0);
-                cell.m_pixel = pix;
-            } else {
-                cell.m_pixel = 0;
-            }
+            cell.m_pixel = m_srcSurface->GetPixel(x, y);
             m_cells[y * m_srcSurface->m_width + x] = cell;
         }
     }
