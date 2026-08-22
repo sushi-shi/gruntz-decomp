@@ -130,6 +130,12 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
     return 0;
 }
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 // @early-stop
 RVA(0x000e9850, 0x111)
 i32 CSBI_SideTab::BuildHandle() {
@@ -175,12 +181,10 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampledValue == val) {
         return 1;
     }
-    CObject* gm_ob = 0;
-    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
-        gm_ob
+    CDDrawWorker* gm = LookupWorker(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName,
+        "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"
     );
-    CDDrawWorker* gm = static_cast<CDDrawWorker*>(gm_ob);
     CImage* glyph;
     if (gm == NULL || val < gm->m_minIndex || val > gm->m_maxIndex) {
         glyph = NULL;
