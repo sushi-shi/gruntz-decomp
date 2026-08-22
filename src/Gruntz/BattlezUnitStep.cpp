@@ -445,9 +445,8 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 Coord c1;
                 (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
                 i32 dxA = abs(rx - (c1.m_x >> TILE_SHIFT_PX));
-                Coord c2;
-                (static_cast<CUserLogic*>(unit))->GetScreenPos((&c2));
-                i32 dyA = abs(ry - (c2.m_y >> TILE_SHIFT_PX));
+                (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
+                i32 dyA = abs(ry - (c1.m_y >> TILE_SHIFT_PX));
                 i32 distA = dxA * dxA + dyA * dyA;
                 i32 dxB = abs(rx - gx);
                 i32 dyB = abs(ry - gy);
@@ -540,12 +539,14 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
+                i32 h = board->m_height;
+                i32 w = board->m_width;
                 RECT box2;
                 box2.left = 0;
                 box2.top = 0;
-                box2.right = board->m_width;
-                box2.bottom = board->m_height;
-                RECT rc = CRect(0, 0, board->m_width, board->m_height);
+                box2.right = w;
+                box2.bottom = h;
+                RECT rc = CRect(0, 0, w, h);
                 RECT* rcDst = &board->m_bounds;
                 if (!IntersectRect(rcDst, &rc, &box2)) {
                     *rcDst = rc;
