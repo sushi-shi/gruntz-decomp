@@ -796,7 +796,6 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
     m_errCallback = cb;
 }
 
-// @early-stop
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
     i32 delta = m_stream->get() - m_streamBase;
@@ -808,7 +807,11 @@ void CButeMgr::NextChar() {
         m_lineNo++;
     }
     m_curChar = static_cast<char>(delta);
-    m_countLine = delta == '\n';
+    if (delta == '\n') {
+        m_countLine = true;
+    } else {
+        m_countLine = false;
+    }
     m_pos += delta;
 }
 
