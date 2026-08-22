@@ -264,26 +264,30 @@ i32 CKitchenSlime::LoadSprites() {
         i32 sw = lvl->m_smarts;
         switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH: {
-                Coord step = m_tilePosition;
-                step.m_y -= 0x20;
+                Coord step;
+                step.m_x = m_tilePosition.m_x;
+                step.m_y = m_tilePosition.m_y - 0x20;
                 tile = step;
                 break;
             }
             case CARDINAL_EAST: {
-                Coord step = m_tilePosition;
-                step.m_x += 0x20;
+                Coord step;
+                step.m_x = m_tilePosition.m_x + 0x20;
+                step.m_y = m_tilePosition.m_y;
                 tile = step;
                 break;
             }
             case CARDINAL_SOUTH: {
-                Coord step = m_tilePosition;
-                step.m_y += 0x20;
+                Coord step;
+                step.m_x = m_tilePosition.m_x;
+                step.m_y = m_tilePosition.m_y + 0x20;
                 tile = step;
                 break;
             }
             case CARDINAL_WEST: {
-                Coord step = m_tilePosition;
-                step.m_x -= 0x20;
+                Coord step;
+                step.m_x = m_tilePosition.m_x - 0x20;
+                step.m_y = m_tilePosition.m_y;
                 tile = step;
                 break;
             }
