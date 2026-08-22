@@ -419,6 +419,12 @@ void CTriggerMgr::OverlayTick() {
 // The 16-bit path-preview colour: retail packs all THREE channels through the
 // runtime shift globals even when green/blue are zero (cl5 does not fold
 // `0 >> var`, so the zero channels are visible as xor/sar/shl).
+static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    LeafCue* found = NULL;
+    MapLookup(cues, name, found);
+    return found;
+}
+
 static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
     return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
 }
@@ -2122,15 +2128,11 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                LeafCue* p = 0;
-                MapLookup(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL", p);
+                LeafCue* p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_timerWindow = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_timerBase = g_frameTime;
-                CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
-                if (h28->m_emitGate == 0) {
-                    LeafCue* found = NULL;
-                    MapLookup(h28->m_cues, "GAME_FINISHLEVEL", found);
-                    LeafCue* cue = found;
+                if (m_world->m_soundRegistry->m_emitGate == 0) {
+                    LeafCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {
                         i32 tag = g_sndCueTag;
                         if (g_sndEnabled != 0
