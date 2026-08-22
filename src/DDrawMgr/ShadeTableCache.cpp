@@ -319,13 +319,13 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
         for (i32 j = 0; j < steps; j++) {
             float t0 = g_one - static_cast<float>(j) / static_cast<float>(steps);
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
-            i32 bn = static_cast<i32>(
+            u8 bn = static_cast<u8>(
                 (t0 * static_cast<float>(p->peBlue) + t1 * static_cast<float>(GetBValue(rgb)))
             );
-            i32 gn = static_cast<i32>(
+            u8 gn = static_cast<u8>(
                 (t0 * static_cast<float>(p->peGreen) + t1 * static_cast<float>(GetGValue(rgb)))
             );
-            i32 rn = static_cast<i32>(
+            u8 rn = static_cast<u8>(
                 (t0 * static_cast<float>(p->peRed) + t1 * static_cast<float>(GetRValue(rgb)))
             );
             data[i * steps + j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
@@ -800,11 +800,11 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 }
 
 RVA(0x0014fbf0, 0xcb)
-i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
-    i32 gg = g & 0xff;
-    i32 bb = b & 0xff;
+i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b) {
+    i32 gg = g;
+    i32 bb = b;
     i32 best = 0;
-    i32 rr = r & 0xff;
+    i32 rr = r;
     i32 dg = gg - pal->peGreen;
     i32 db = bb - pal->peBlue;
     i32 dr = rr - pal->peRed;

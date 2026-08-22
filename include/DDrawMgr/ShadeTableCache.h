@@ -82,7 +82,7 @@ public:
 
     static i32 __cdecl CompareHue(const void* a, const void* b);
 
-    static i32 __cdecl FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b);
+    static i32 __cdecl FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b);
 
     i32 m_initialized;
     CShadeTableArray m_arr;
