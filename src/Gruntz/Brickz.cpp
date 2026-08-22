@@ -19,12 +19,13 @@ i32 CMapMgr::SearchEdge(
     i32 maskA,
     i32 maskC
 ) {
-    if (static_cast<u32>(xA) >= m_width || static_cast<u32>(yA) >= m_height
-        || static_cast<u32>(xB) >= m_width || static_cast<u32>(yB) >= m_height) {
+    CMapMgr* self = this;
+    if (static_cast<u32>(xA) >= self->m_width || static_cast<u32>(yA) >= self->m_height
+        || static_cast<u32>(xB) >= self->m_width || static_cast<u32>(yB) >= self->m_height) {
         return 0;
     }
-    BrickzCell* cellB = &m_rows[yB][xB];
-    BrickzCell* cellA = &m_rows[yA][xA];
+    BrickzCell* cellB = &self->m_rows[yB][xB];
+    BrickzCell* cellA = &self->m_rows[yA][xA];
     i32 savedB0 = cellB->m_flags;
     i32 savedA4 = cellA->m_occupantId;
     i32 savedA0 = cellA->m_flags;
