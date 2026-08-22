@@ -248,7 +248,8 @@ i32 CProjectile::LoadProjectileSprites(
     m_posX = m_object->m_screenX;
     m_posY = m_object->m_screenY;
     m_velX = vx;
-    m_velY = dy / len;
+    dy /= len;
+    m_velY = dy;
 
     if (vx > 0.0) {
         m_roundX = 0.5;
