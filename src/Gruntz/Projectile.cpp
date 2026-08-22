@@ -138,6 +138,17 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
     return found;
 }
 
+static inline CWwdGameObjectA* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
+    CGameObject* found = NULL;
+    if (MapLookupById(byId, id, found) == 0) {
+        return NULL;
+    }
+    if (found == NULL) {
+        return NULL;
+    }
+    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(found) : NULL;
+}
+
 // @early-stop
 RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
@@ -728,9 +739,7 @@ i32 CProjectile::SerializeMove(
                 g_serialCounter++;
                 s->Read(buf, SERIAL_NAME_LEN);
                 if (strlen(buf) != 0) {
-                    CAniElement* out = NULL;
-                    MapLookup(reg->m_animRegistry->m_animations, buf, out);
-                    m_frames[ni] = out;
+                    m_frames[ni] = LookupAnim(reg->m_animRegistry->m_animations, buf);
                 } else {
                     m_frames[ni] = NULL;
                 }
@@ -739,28 +748,18 @@ i32 CProjectile::SerializeMove(
             g_serialCounter++;
             i32 count;
             s->Read(&count, sizeof(count));
-            CGameObject* out = NULL;
-            CGameObject* r;
-            if (MapLookupById(reg->m_childGroup->m_registeredGameObjectsById, count, out) == 0) {
-                r = NULL;
-            } else if (out == NULL) {
-                r = NULL;
-            } else {
-
-                r = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
-            }
-            m_shadow = static_cast<CWwdGameObjectA*>(r);
+            m_shadow = LookupSerialRef(reg->m_childGroup->m_registeredGameObjectsById, count);
             if (m_shadow == NULL && count != 0) {
                 return 0;
             }
 
             s->Read(&count, sizeof(count));
             for (i32 ci = 0; ci < count; ci++) {
-                CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
+                CoordPoolNode* node = g_coordPool.m_freeHead;
                 Coord* payload = NULL;
                 if (node->m_next != NULL) {
-                    g_coordPool.m_freeHead = node->m_next;
                     payload = &node->m_coord;
+                    g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                 }
                 s->Read(payload, 8);
                 m_hitList.AddTail(payload);
