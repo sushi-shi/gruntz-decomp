@@ -2031,6 +2031,10 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 }
 
 // @early-stop
+// Residue: cl rotates the free-slot scan so the count guard lands at the bottom
+// and needs a second copy after the loop, where retail tests it at the loop head
+// and branches straight into a shared return-0; plus the failure arm's flag set
+// stays a load/or/store instead of retail's `or [mem],imm`.
 RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     CGrunt* src = m_grid[srcRow * TM_GRID_COLS + srcCol];
@@ -2052,10 +2056,8 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
     CGameObject* o = src->m_object;
     i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    PickupType k = src->m_entranceReason;
-    if (k > PICKUP_EQUIPPABLE_LAST) {
-        k = src->m_toolId;
-    }
+    PickupType k =
+        (src->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? src->m_toolId : src->m_entranceReason;
     PickupType vis = src->m_vehiclePickupType;
     this->CellDispatch(srcRow, srcCol, DEATH_DROP, dstRow);
     CDDrawChildGroup* fac = m_world->m_childGroup;
