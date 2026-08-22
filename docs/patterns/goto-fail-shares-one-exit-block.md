@@ -166,13 +166,33 @@ so it bailed even when the overlay was built (86.63 -> **100.00 EXACT**, with a
 unconditionally after the `if` (75.48 -> **90.39**). Check the guard's semantics against the
 target blocks before reaching for a label.
 
-**The mirror direction is NOT solved.** When retail has MORE exits than we do
-(`exit_merge_sieve --over`, 47 functions) our source has a `||`/`&&` guard collapsing
-the others, and there is no spelling that keeps one solo `return 0` while a *sunk*
-shared block exists: the goto form always hoists its block in front of the body
-instead of past the success return. Measured on `CSBI_MenuItem::SetupImage` 0xe80e0
-(92.17 -> 84.24 with goto, reverted) and `CDDrawSurfacePair::InitFromSurface` 0x163db0
-(77.50 -> 56.74, reverted).
+**The mirror direction is NOT solved when our side spells the TOTAL regime.** When
+retail has MORE exits than we do (`exit_merge_sieve --over`, 47 functions) and our
+source has a `||`/`&&` guard collapsing the others, there is no spelling that keeps
+one solo `return 0` while a *sunk* shared block exists: the goto form always hoists
+its block in front of the body instead of past the success return. Measured on
+`CSBI_MenuItem::SetupImage` 0xe80e0 (92.17 -> 84.24 with goto, reverted) and
+`CDDrawSurfacePair::InitFromSurface` 0x163db0 (77.50 -> 56.74, reverted).
+
+**But when our side spells the PARTIAL regime it IS solved - drop to NONE.** The
+other half of the mirror is a source that already says `goto fail;` where retail
+duplicated the exit at every guard. Its signature is not a ret-count delta at all
+(both sides have one `ret`): each of retail's failed steps reads
+
+```asm
+jne  <next step>            ; base has `je <the shared fail block>` instead
+xor  eax,eax
+jmp  <the epilogue>
+```
+
+and, because a duplicated exit carries no EH-state join, retail's `/GX` state
+numbers at the *following* guards are all one higher than ours - so the immediates
+in `mov [esp+N],<state>` diverge for the whole rest of the body and the wall reads
+much larger than the exit blocks themselves. Replacing every `goto fail;` with a
+plain `return 0;` and deleting the label is the whole fix:
+`CBootyState::LoadGameAssetNamespaces` 0x18830 92.52 -> **99.53** (six duplicated
+exits recovered, branches 17 -> 22 against retail's 22). Read which regime the
+SOURCE currently spells before concluding the mirror is unreachable.
 
 `/Os` and `/O1` DO enable a real machine-level cross-jump pass (a 6-ret probe collapses
 to 1), so the pass exists - but it is all-or-nothing and everything else about the
