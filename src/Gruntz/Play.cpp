@@ -178,6 +178,12 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(ob);
 }
 
+static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
+    CObject* ob = 0;
+    host->m_imageRegistry->m_workersByName.Lookup(name, ob);
+    return static_cast<CDDrawWorker*>(ob);
+}
+
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;
 DATA(0x002bf3c0)
@@ -4034,17 +4040,12 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d0920, 0xfe)
 i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
     if (m_world == NULL) {
         return 0;
     }
-    CDDrawWorker* grid = 0;
-    CObject* gridOb = 0;
-
-    m_world->m_imageRegistry->m_workersByName.Lookup(key, gridOb);
-    grid = static_cast<CDDrawWorker*>(gridOb);
+    CDDrawWorker* grid = LookupWorker(m_world, key);
     m_grid = grid;
     if (grid == NULL) {
         return 0;
