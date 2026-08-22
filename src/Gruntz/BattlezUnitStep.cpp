@@ -116,7 +116,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
                 -1
             );
             if (g->CoordCount() > m_idleRouteLimitY + m_idleRouteLimitX && g->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_OPS_POSITION(g)
+                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g)
             }
             g->m_dwell = 0;
         }
@@ -266,7 +266,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             CGameObject* lvl = target->m_object;
             if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
                 if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                 }
                 Coord none;
                 unit->m_arrivalCell = *none.Set(-1, -1);
@@ -307,7 +307,9 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         unit->m_defenderPx = *noPx.Set(-1, -1);
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
-        RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+        if (unit->CoordCount() != 0) {
+            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+        }
         return 1;
     }
 
@@ -318,7 +320,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
     if (unit->CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
     }
     return 1;
 }
@@ -351,7 +353,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         if (slot->m_clearedRound != 0 || slot->m_liveGate == 0) {
 
             if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
             }
             Coord noCell;
             unit->m_arrivalCell = *noCell.Set(-1, -1);
@@ -415,7 +417,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (gx == -1 || gy == -1) {
 
                     unit->m_defenderState = AISTATE_SEEK;
-                    RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+                    if (unit->CoordCount() != 0) {
+                        RECYCLE_GRUNT_COORDS(unit)
+                    }
                     Coord noPx;
                     unit->m_defenderPx = *noPx.Set(-1, -1);
                     return 1;
@@ -532,7 +536,9 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (gx == -1 || gy == -1) {
 
         unit->m_defenderState = AISTATE_SEEK;
-        RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+        if (unit->CoordCount() != 0) {
+            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+        }
         Coord noPx;
         unit->m_defenderPx = *noPx.Set(-1, -1);
         return 1;
@@ -543,7 +549,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (dx * dx + dy * dy > 0x10) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS_INLINE_PUSH(unit)
+    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
     unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
     unit->m_routeMaskA = g_spawnCfg;
     unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;

@@ -556,7 +556,7 @@ i32 CBoomerang::LoadProjectileSprites(
         g->m_holdAnchorLo = g_frameTime;
         g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_POSITION_INLINE_POOL(g)
+            RECYCLE_GRUNT_COORDS_EXPANDED(g)
         }
     }
     m_launched = 0;

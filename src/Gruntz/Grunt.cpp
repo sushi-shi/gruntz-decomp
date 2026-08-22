@@ -1742,7 +1742,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
         m_arrivalActive = 0;
     }
     if (b && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_POSITION_INLINE_POOL(this)
+        RECYCLE_GRUNT_COORDS_EXPANDED(this)
     }
 }
 
@@ -2322,7 +2322,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_toolConfigured = 1;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
-                    RECYCLE_GRUNT_COORDS_IF_ANY(this)
+                    if (this->CoordCount() != 0) {
+                        RECYCLE_GRUNT_COORDS(this)
+                    }
                     for (;;) {
                         i32* h;
                         if (m_payloads.GetCount() != 0) {

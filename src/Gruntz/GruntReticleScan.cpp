@@ -236,13 +236,13 @@ i32 CGrunt::ArrivalReticleScan() {
                                 } else {
                                     SetEntrancePos(1, 1);
                                     if (CoordCount() != 0) {
-                                        RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)
+                                        RECYCLE_GRUNT_COORDS_EXPANDED(this)
                                     }
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
                                 if (CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)
+                                    RECYCLE_GRUNT_COORDS_EXPANDED(this)
                                 }
                             }
                             return 1;

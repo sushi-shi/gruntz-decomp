@@ -72,10 +72,14 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         }
         unit->m_battleState = BZTASK_ADVANCE;
 
-        RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+        if (unit->CoordCount() != 0) {
+            RECYCLE_GRUNT_COORDS(unit)
+        }
     } else {
         unit->m_battleState = BZTASK_ADVANCE;
-        RECYCLE_GRUNT_COORDS_INLINE_POOL_IF_ANY(unit)
+        if (unit->CoordCount() != 0) {
+            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+        }
     }
     Coord none;
     unit->m_arrivalCell = *none.Set(-1, -1);

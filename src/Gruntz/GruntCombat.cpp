@@ -1751,7 +1751,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
         if (m_coordList.GetCount() != 0) {
-            RECYCLE_GRUNT_COORDS_POSITION_INLINE_POOL(this)
+            RECYCLE_GRUNT_COORDS_EXPANDED(this)
         }
         this->m_arrivalPending = 0;
     }

@@ -266,7 +266,7 @@ i32 CGrunt::UpdateArrival() {
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
+                RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
             g_gameReg->m_cmdGrid->ApplyTriggerA(
                 m_tileOwnerHi,

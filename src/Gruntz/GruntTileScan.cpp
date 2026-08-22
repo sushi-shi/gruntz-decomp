@@ -38,7 +38,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 flags = grid->CellFlagsAt(col, row);
             if ((flags & 0x4000)
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
-                RECYCLE_GRUNT_COORDS_POSITION(g)
+                RECYCLE_GRUNT_COORDS(g)
                 return 1;
             }
         }

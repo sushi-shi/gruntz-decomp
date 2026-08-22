@@ -149,6 +149,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS_INLINE_PUSH(unit)
+    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
     return 1;
 }

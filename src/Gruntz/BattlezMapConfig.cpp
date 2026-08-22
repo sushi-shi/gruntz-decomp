@@ -492,11 +492,15 @@ i32 CBattlezMapConfig::StepBoard() {
 
                 switch (mode) {
                     case PICKUP_WINGZ: {
-                        RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+                        if (unit->CoordCount() != 0) {
+                            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                        }
                         break;
                     }
                     case PICKUP_TOOB: {
-                        RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+                        if (unit->CoordCount() != 0) {
+                            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                        }
                         break;
                     }
                 }
@@ -712,7 +716,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (st == PICKUP_BRICK && unit->m_battleState == BZTASK_UNASSIGNED) {
                                 unit->m_battleState = BZTASK_CARRY_BRICK;
                                 if (unit->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                             }
                         }
@@ -774,7 +778,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 unit->m_arrivalCell = *none.Set(-1, -1);
                                 unit->m_battleState = BZTASK_ADVANCE;
                                 if (unit->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                                 unit->m_routeMaskC = 0;
                                 unit->m_defenderState = AISTATE_SEEK;
@@ -787,7 +791,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 unit->m_arrivalCell = *none.Set(-1, -1);
                                 unit->m_battleState = BZTASK_ADVANCE;
                                 if (unit->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                                 unit->m_routeMaskC = 0;
                                 unit->m_defenderState = AISTATE_SEEK;
@@ -799,7 +803,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 BattlezTask d8 = unit->m_battleState;
                                 if (d8 != BZTASK_CARRY_GOOBER && d8 != BZTASK_ASSIGNED_TARGET) {
                                     if (unit->CoordCount() != 0) {
-                                        RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                                        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                     }
                                     Coord none;
                                     unit->m_arrivalCell = *none.Set(-1, -1);
@@ -814,7 +818,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 unit->m_arrivalCell = *none.Set(-1, -1);
                                 unit->m_battleState = BZTASK_ADVANCE;
                                 if (unit->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+                                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
                                 unit->m_routeMaskC = 0;
                                 unit->m_defenderState = AISTATE_SEEK;
@@ -1382,7 +1386,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     }
                     goto nexti;
                 dropCoords:
-                    RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+                    if (unit->CoordCount() != 0) {
+                        RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                    }
                 }
             }
         }
@@ -1403,7 +1409,7 @@ resetEntrance: {
 
 arriveHead:
     if (unit->CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_OPS_POSITION(unit)
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
     }
     return 1;
 
@@ -1735,7 +1741,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->m_defenderState = AISTATE_SEEK;
-                RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+                if (unit->CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS(unit)
+                }
                 unit->m_battleState = BZTASK_SEEK_SWITCH;
                 unit->m_dwell = 0;
                 return 0;
@@ -1779,7 +1787,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 cy * 0x20 + 0x10
             );
             unit->m_defenderState = AISTATE_SEEK;
-            RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+            if (unit->CoordCount() != 0) {
+                RECYCLE_GRUNT_COORDS(unit)
+            }
             return 0;
         }
         // Retail re-tests `sA & 0x8000` here (the CSE'd `and` is re-`test`ed at
@@ -1902,7 +1912,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                         ox * 0x20 + 0x10,
                         oy * 0x20 + 0x10
                     );
-                    RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+                    if (unit->CoordCount() != 0) {
+                        RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                    }
                     m_spawnTimer += static_cast<i32>((static_cast<u32>(m_gruntCreationTime) >> 2));
                     return 1;
                 }
@@ -1913,7 +1925,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 returnOne:
     return 1;
 recycleBail:
-    RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+    if (unit->CoordCount() != 0) {
+        RECYCLE_GRUNT_COORDS(unit)
+    }
 returnZero:
     return 0;
 }
@@ -3779,7 +3793,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
         if (found != 0) {
             if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
 
-                RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+                if (unit->CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS(unit)
+                }
                 unit->m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -3881,8 +3897,12 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                 }
                             }
                             if (list.GetHeadPosition() != NULL) {
-                                RECYCLE_GRUNT_COORDS_IF_ANY(cand)
-                                RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+                                if (cand->CoordCount() != 0) {
+                                    RECYCLE_GRUNT_COORDS(cand)
+                                }
+                                if (unit->CoordCount() != 0) {
+                                    RECYCLE_GRUNT_COORDS(unit)
+                                }
                                 POSITION pp = list.GetHeadPosition();
                                 while (pp != NULL) {
                                     unit->m_coordList.AddTail(list.GetNext(pp));
@@ -4111,7 +4131,9 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 }
                 (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
                 u->m_battleState = BZTASK_CARRY_BRICK;
-                RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(u)
+                if (u->CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS_EXPANDED(u)
+                }
             }
             return 1;
         }
@@ -4128,10 +4150,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         // lets the WINGZ copy own the fall-through, which is the else-arm order.
         if (mode != PICKUP_TOOB) {
             if (mode == PICKUP_WINGZ) {
-                RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+                if (unit->CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                }
             }
         } else {
-            RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+            if (unit->CoordCount() != 0) {
+                RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            }
         }
     }
 
@@ -4227,7 +4253,9 @@ i32 CBattlezMapConfig::RouteUnitTo(
                     g_coordPool.m_freeHead = node;
                 }
                 if (list.GetCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_IF_ANY(unit)
+                    if (unit->CoordCount() != 0) {
+                        RECYCLE_GRUNT_COORDS(unit)
+                    }
 
                     POSITION pp = list.GetHeadPosition();
                     while (pp != NULL) {
@@ -4326,7 +4354,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
         }
 
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_INLINE_PUSH(unit)
+            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
         }
 
         qp = list.GetHeadPosition();
@@ -4653,7 +4681,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             }
             if (list.GetCount() != 0) {
 
-                RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY(unit)
+                if (unit->CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                }
 
                 POSITION pp = list.GetHeadPosition();
                 while (pp != NULL) {

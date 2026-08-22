@@ -1162,7 +1162,7 @@ applyTail:
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
+            RECYCLE_GRUNT_COORDS_EXPANDED(this)
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;

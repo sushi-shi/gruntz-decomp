@@ -236,7 +236,7 @@ common: {
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
             if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
+                RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
             g_gameReg->m_cmdGrid->ApplyTriggerA(
                 m_tileOwnerHi,
@@ -260,7 +260,7 @@ common: {
     m_arrivalCell.m_x = head->m_x;
     m_arrivalCell.m_y = head->m_y;
     if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_INLINE_POOL(this)
+        RECYCLE_GRUNT_COORDS_EXPANDED(this)
     }
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;

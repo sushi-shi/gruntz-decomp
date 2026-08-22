@@ -195,7 +195,7 @@ i32 CGrunt::WanderStep() {
             COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_POSITION_INLINE_PUSH(this)
+                RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;

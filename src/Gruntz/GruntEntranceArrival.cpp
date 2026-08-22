@@ -408,7 +408,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         SetEntrancePos(1, 1);
 
         if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_POSITION(this)
+            RECYCLE_GRUNT_COORDS(this)
         }
 
         m_entranceStamped = 0;
