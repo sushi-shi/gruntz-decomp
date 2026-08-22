@@ -282,6 +282,10 @@ i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner
     m_sample = sample;
     m_duration.m_v = sample->ComputeRatio();
     m_startStamp.m_v = g_frameTime;
+    // Retail loads playFlags into ECX at +0x27 (right after ComputeRatio) yet
+    // stores it at +0x47, and defers the m_objAux read to +0x44. Swapping these
+    // two statements moves the ECX load onto retail's slot but hoists the member
+    // read to +0x2b (81.50); neither order reproduces both. Schedule coin.
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_playFlags = playFlags;
     m_objAux->SetActKey(ActFindId("B"));
