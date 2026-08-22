@@ -175,3 +175,9 @@ production. STILL OPEN for the era side only: retail's step band
 configuration reproduced that; the leading remaining hypothesis is a
 different compiler build (RTM vs SP3) for those compilands, untestable
 until an RTM toolchain is provisioned.
+
+V3-consistent datum: hoisting `AddLogic` first does NOT unmerge it - its
+`AddTail` MFC-inline expansions self-warm it (the TU has no MfcNoInline),
+so ours can never reproduce retail's 3 epilogues under SP3 regardless of
+position. With equal call multisets on both sides, retail's cold copy joins
+the ChargeStep-class era anomaly - more weight on the RTM-provenance test.
