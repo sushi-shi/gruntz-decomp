@@ -512,28 +512,26 @@ void CGruntzMgr::AccrueScoreTime() {
     TransitionState(GAMESTATE_MULTIBOOTY, 1, 0, 0);
 }
 
-// @early-stop
 RVA(0x0008b8c0, 0x76)
 i32 PumpIdleFrame() {
     if (g_pendingFrame == 0) {
         return 0;
     }
-    CGruntzMgr* mgr = g_gameReg;
     g_pendingFrame = 0;
-    if (mgr == NULL) {
+    if (g_gameReg == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* world = mgr->m_world;
+    CDDrawSurfaceMgr* world = g_gameReg->m_world;
     if (world == NULL) {
         return 0;
     }
     if (world->m_imageRegistry == NULL) {
         return 0;
     }
-    if (mgr->m_curState == NULL) {
+    if (g_gameReg->m_curState == NULL) {
         return 0;
     }
-    if (mgr->m_curState->InputVirtual() == 0) {
+    if (g_gameReg->m_curState->InputVirtual() == 0) {
         g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
     }
