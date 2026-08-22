@@ -189,3 +189,14 @@ preceding null guard - so era CSE ran, era jump-threading did not) while
 ours threads the provably-redundant second guard away. Source carries both
 guards verbatim. Era-class signature: redundant-compare retention with CSE
 intact. Same provenance test decides it.
+
+Second mid-TU production of the wider anomaly, ARM cross-jump this time:
+`CWwdSpatialMgr::Relocate` (0x168500, 86.88, 14v19 calls). Retail keeps FOUR
+`RemoveAll` release arms where arms 2 and 3 are BYTE-IDENTICAL to each other
+(only arm 1 differs, by an eax/ecx schedule) and still un-merged; our SP3
+compile cross-jumps them to two sites. Splitting the TU so Relocate opens its
+compiland does NOT unmerge (falsified 2026-08-22) - first-in-TU gates only
+/GX EPILOGUE merging, not mid-function arm cross-jump, and Relocate has one
+ret on both sides anyway. Identical-arm retention under a converging join is
+therefore another era-class datum for the RTM-provenance test, not a source
+shape.
