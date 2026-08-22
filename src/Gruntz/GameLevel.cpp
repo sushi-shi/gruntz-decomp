@@ -158,8 +158,24 @@ void CGameLevel::ResetParamBlock() {
 
 RVA(0x0015d1f0, 0x87)
 void CGameLevel::Unload() {
-    RELEASE_LEVEL_CHILDREN;
+    i32 i;
+    for (i = 0; i < m_planes.GetSize(); i++) {
+        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);
+        if (child) {
+            delete child;
+        }
+    }
+    m_planes.SetSize(0, -1);
+    for (i = 0; i < m_imageSets.GetSize(); i++) {
+        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);
+        if (child) {
+            delete child;
+        }
+    }
+    m_imageSets.SetSize(0, -1);
     m_planeCtx.left = COORD_UNSET;
+    m_mainPlane = NULL;
+    m_mainIndex = -1;
     memset(&m_header, 0, 1524);
 }
 
