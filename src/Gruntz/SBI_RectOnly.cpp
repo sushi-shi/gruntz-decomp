@@ -3601,13 +3601,9 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 }
 
 // @early-stop
-// Retail reserves the 16-byte home of the `RECT rc` local (`sub esp,0x10`) and spills
-// rc.left through it; cl scalar-replaces the whole struct for us and needs no frame.
-// A shared rc for both m_fallRect and m_rect14, `RECT rc = SbGeom(...)` and a
-// function-scope declaration were all measured and none allocate the home.  So was
-// building rc first and offsetting it IN PLACE (`m_fallRect = rc;` then `rc.left += x;`
-// ...), which is the shape retail's `mov [esp+0x10],ecx` spill looks like: 76.42, and
-// 67.15 / 71.07 for the field-by-field and x-then-y orderings of the same idea.
+// Frame and instruction selection are retail's; the residue is which callee-saved
+// pair the x/y parameters take (retail edi/ebx, cl ebx/ebp), which rotates every
+// operand below the GetDwordDef call.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     m_extraNotifyArg1 = item;
@@ -4433,10 +4429,9 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 // @early-stop
-// frame 0x18 vs retail's 0x14: retail homes one of the two delta scalars in the dead
-// `fragment` parameter's slot; cl finds only the `owner` param home (both put the
-// Lookup out-param there) and gives both deltas real slots. No cl 5.0 flag moves it -
-// /Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave `sub esp,0x18`.
+// Frame and branch skeleton are retail's; the residue is the register pair the
+// fragment table's two constants are materialised into (retail ecx/edx, cl edx/edi)
+// across all four arms.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = owner;

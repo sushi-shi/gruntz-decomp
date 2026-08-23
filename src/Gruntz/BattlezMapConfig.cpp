@@ -661,12 +661,8 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 }
 
 // @early-stop
-// Branch sequence, ret count and the whole referent multiset AGREE (460/460
-// branches, 8/8 rets, 15/15 ??0CRect@@QAE@HHHH@Z calls, reloc_multiset clean),
-// and the labelled blocks come out in retail's order.  What is left is /O2
-// register colouring at scale: retail carries `this` in ecx across the outer
-// loop and reloads it in the latch, we reload it at the loop head, and retail's
-// frame is one dword larger.
+// Retail carries `this` in ecx across the outer loop and reloads it in the latch
+// where we reload it at the loop head, and retail's frame is one dword larger.
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -2192,20 +2188,11 @@ void CBattlezMapConfig::Clear() {
 }
 
 // @early-stop
-// Frame 0x24 vs retail's 0x34 and 1048 bytes vs 1070 are ONE cause: retail runs out
-// of registers here and we do not. Retail spills only box.top/box.bottom (to
-// [esp+0x28]/[esp+0x30]) and keeps box.left/box.right in ebx/ebp, so `box` needs its
-// own 16-byte slot; we forward all four fields and cl coalesces box's slot onto b's.
-// Both sides still take box's address for the inlined Clip's `src != NULL` test
-// (retail `lea edx,[esp+0x24]`, ours `lea ebx,[esp+0x24]`), so the address-take is
-// not the difference. The ~22 missing bytes are that spill/reload traffic.
-// The trailing `mov ecx,[esi+0xc]` does NOT prove a `m_board->Clip(0)` re-read: esi
-// is reloaded from the `this` spill for the adjacent RouteUnitTo receiver, and with
-// all four callee-saved registers live cl rematerialises m_board from it rather than
-// spill a cached local. Spelling it `m_board->Clip(0)` measures 85.96 -> 81.31.
-// Not fixable by making CMapMgr::Clip a header inline: cl 5.0 then expands BOTH
-// sites (85.93 -> 77.41) and no obj emits the 0x2b340 COMDAT - see
-// docs/patterns/inline-budget-emits-ool-comdat.md.
+// Measured and REJECTED, so nobody re-runs them: spelling the trailing m_board
+// read as `m_board->Clip(0)` loses ground - esi is reloaded from the `this` spill
+// for the adjacent RouteUnitTo receiver, so that load is a rematerialisation, not
+// a re-read; and making CMapMgr::Clip a header inline makes cl 5.0 expand BOTH
+// sites and no obj emits the 0x2b340 COMDAT (docs/patterns/inline-budget-emits-ool-comdat.md).
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     if (unit->m_entranceCommitted == 0) {

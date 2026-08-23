@@ -231,7 +231,7 @@ char g_customLevelText[0x200];
 //
 // (b) the CSbiHlRow arrays inside the expanded inline CStatusBarMgr ctor: retail
 // hands the element ctor's ADDRESS to ??_H twice (m_groupSlots[3], m_hlGrid[12])
-// and expands the two scalars; we emit ctor loops and no ??_H.  This one IS
+// and expands the two scalars; we reach one ??_H and a ctor loop.  This one IS
 // budget-bound - cb(CSbiHlRow::CSbiHlRow) = 13 + 4 stores sits right at the <= 40
 // exemption edge, and padding it makes ??_H appear (K=1 and K=8 emit one).  The
 // response is non-monotone, as sequential consumption predicts, so the open
@@ -1984,8 +1984,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
 }
 
 // @early-stop
-// Instruction COUNT is already retail's (1990 vs 1993); the residue is ordering.
-// Two things dominate: cl materialises both loop constants in the prologue (the
+// The residue is ordering. Two things dominate: cl materialises both loop constants in the prologue (the
 // zero and the 1), so the five leading guards read `cmp [x],reg` where retail,
 // which materialises each at its first use, reads `mov eax,[x]` / `test eax,eax`;
 // and cl cross-jumps the 'Y' and 'Q' arms' identical CLEAR_TAB_HINT + phase-check
@@ -1996,7 +1995,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
 // reads exactly like a whole-struct `LevelCoordRect r = ...->m_planeCtx;` local at
 // both bounds tests - and it is not.  Writing it that way (with `m_mgr`/`m_guts`
 // inlined so cl stops spilling them, which does give retail's `sub esp,0x10`)
-// drops the instruction count to 1957 and the in-order agreement from 47% to 34%.
+// drops the instruction count further below retail's and the in-order agreement with it.
 // The four scalars are closer everywhere else, so they stay and the frame does not
 // match.  See docs/patterns/whole-struct-copy-vs-scalars.md.  Hoisting the four
 // bounds to function scope does NOT buy the frame either: cl sizes it by SPILL

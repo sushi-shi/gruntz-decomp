@@ -143,9 +143,7 @@
 
 // @early-stop
 // The frame matches retail exactly (`sub esp,0x94`) and so does every parameter
-// displacement, and `--branches --diff` reports 313 conditional branches and 1 ret on
-// BOTH sides with only four polarity flips (all four in CHEAT_MONOLITH) - so the
-// control flow, and with it the source shape, is right. What is left is dominated by
+// displacement, and the single `ret` is retail's. What is left is dominated by
 // ONE cl decision we have not been able to steer: which duplicate blocks get
 // cross-jumped. Retail folds far more `return 1;`
 // sites into a shared `mov eax,1` block than we do (110 `mov eax,1` in retail vs 122

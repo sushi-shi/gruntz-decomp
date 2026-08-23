@@ -40,11 +40,10 @@
 #include <string.h>
 
 // @early-stop
-// The frame is retail's 0x7c and both sides have 70 conditional branches.  Keeping
-// the entry power state as a distinct local preserves retail's low-stamina re-test;
-// reading the member directly lets cl fold it.  Candidate still has seven returns
+// Keeping the entry power state as a distinct local preserves retail's low-stamina
+// re-test; reading the member directly lets cl fold it.  We still emit seven returns
 // against retail's six because the first empty DRAIN_COORDS path gets a duplicate
-// epilogue.  The ordered branch sequences otherwise agree.
+// epilogue, and the frame is one dword wider than retail's.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = ANIMATION_ACT_EQUALS("I");
