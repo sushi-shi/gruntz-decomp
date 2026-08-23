@@ -289,7 +289,7 @@ symtab	72	66
 terraintileloader	1	0
 tilelogicpump	57	54
 tilescan	1	0
-tileswitchlogic	50	37
+tileswitchlogic	50	38
 tiletriggercontainer	27	21
 timesplit	3	3
 timestring	1	1
@@ -2126,7 +2126,7 @@ gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	96.2
 gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	92.2417	92.2417	6	3d4f17ec5e90	0x62e10	92.2417	
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	100.0000	100.0000	4	1cd6d87e899a	0x616e0	100.0000	
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	92.5204	92.5204	4	6ec22f1239f5	0x633e0	92.5204	
-gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	83.1843	83.1843	5	12c2f4ac8b23	0x65630	83.1843	
+gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	92.0745	92.0745	6	474718f8e865	0x65630	92.0745	
 gruntentrancearrival	?StepArrivalCommitA@CGrunt@@QAEHXZ	100.0000	100.0000	3	0b124633f0e6	0x65300	100.0000	
 gruntentrancearrival	?StepArrivalCommitB@CGrunt@@QAEHXZ	100.0000	100.0000	3	e03006bab131	0x654b0	100.0000	
 gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	95.3440	95.3440	1	56077bcde847	0x63b60	95.3440	
@@ -4219,7 +4219,7 @@ tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	1	e75f4e245e8b	0x
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	a3dd726fb408	0x110430	100.0000	
 tileswitchlogic	?ApplyByType@CGiantRockLogic@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	b7a0854980a7	0x113d40	100.0000	
 tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	97.1496	97.1496	3	9f3d11269012	0x112590	97.1496	
-tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	99.9617	99.9617	6	bf2614fc6af0	0x1122a0	99.9617	
+tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	100.0000	100.0000	7	fd35d7b44161	0x1122a0	100.0000	
 tileswitchlogic	?BuildSmall@CCheckpointTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	100.0000	100.0000	3	05b4a96fa419	0x112a50	100.0000	
 tileswitchlogic	?BuildSmall@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	100.0000	100.0000	1	cca65e1aa6b7	0x110460	100.0000	
 tileswitchlogic	?Classify@CTileTriggerLogic@@QAEHH@Z	98.8451	98.8451	1	ff68d44fd880	0x112970	98.8451	
