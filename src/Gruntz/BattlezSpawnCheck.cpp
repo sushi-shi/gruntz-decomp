@@ -57,10 +57,9 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
     if (unit->CoordCount() != 0) {
         return 1;
     }
-    Coord arrivalCell;
-    arrivalCell = unit->m_arrivalCell;
-    BrickzCell* tile =
-        &(static_cast<BrickzCell*>((m_board)->m_rows[arrivalCell.m_y]))[arrivalCell.m_x];
+    BrickzCell* tile = &(
+        static_cast<BrickzCell*>((m_board)->m_rows[unit->ArrivalCell().m_y])
+    )[unit->ArrivalCell().m_x];
     if (tile->m_flags & 0x20) {
         if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
