@@ -85,6 +85,9 @@ i32 CSBI_Image::Render() {
 }
 
 // @early-stop
+// The SAVE and LOAD arms hold SEPARATE escaped scalars: retail's sit at different
+// frame slots (0x10 and 0x18), which one shared variable cannot produce. Residue is
+// the ar/this register pair, swapped against retail, and the `this` spill that costs.
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
     if (ar == NULL) {
@@ -97,6 +100,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
 
     char name[SERIAL_NAME_LEN];
     i32 idx;
+    i32 v;
     switch (kind) {
         case SERIAL_LOAD:
 
@@ -119,14 +123,14 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
             break;
         case SERIAL_SAVE:
 
-            idx = 0;
+            v = 0;
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_frame) {
-                mgr->m_imageRegistry->AnyValueMatches(m_frame, name, &idx);
+                mgr->m_imageRegistry->AnyValueMatches(m_frame, name, &v);
             }
             ar->Write(name, SERIAL_NAME_LEN);
-            ar->Write(&idx, sizeof(idx));
+            ar->Write(&v, sizeof(v));
             break;
     }
 
