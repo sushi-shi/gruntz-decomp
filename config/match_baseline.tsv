@@ -69,7 +69,7 @@ chatbox	29	27
 chatboxowner	14	12
 cheatmgr	7	4
 checkpointdlg	6	6
-cimage	20	9
+cimage	20	10
 cmdscrollapply	3	2
 creditsstate	23	21
 cremusnode	6	6
@@ -181,7 +181,7 @@ gruntzsoundz	36	35
 gruntzwnd	32	31
 guardpoint	5	5
 hash	10	10
-heapdiag	8	7
+heapdiag	8	8
 helpstate	14	14
 imagepolyclip	8	1
 imagepool	55	46
@@ -264,7 +264,7 @@ scattersamples	2	2
 secretteleportertrigger	17	15
 serializesyncmarker	1	1
 serialobjectfactory	40	39
-sfselectdevice	1	0
+sfselectdevice	1	1
 shadetablecache	26	17
 simpleanimation	7	6
 singleanimation	7	7
@@ -821,14 +821,14 @@ checkpointdlg	??_GCCheckpointDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:249003fe119e
 checkpointdlg	?DoDataExchange@CCheckpointDlg@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	1	43b23447bbea	0x23520	100.0000	
 checkpointdlg	?GetMessageMap@CCheckpointDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	1	27713149344a	0x23570	100.0000	
 checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	100.0000	100.0000	5	5815f9699068	0x23590	100.0000	
-cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.9900	97.9801	2	34726e39d88d	0x153d90	98.0498	
+cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.9900	97.9751	2	34726e39d88d	0x153d90	98.0498	
 cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.4638	97.3526	2	10ca36939922	0x153b20	97.4638	
 cimage	?BlitNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.7588	98.6332	2	684ae7acecc7	0x1538c0	98.7588	
 cimage	?BlitShadeFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.2584	99.2584	2	91ab943f5e12	0x154750	99.9426	
 cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.1972	97.1972	2	3bed9b2917ba	0x153ff0	97.1972	
 cimage	?BlitShadeFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8277	99.8277	2	8dcd1a7758fd	0x1544d0	99.9378	
 cimage	?BlitShadeNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8522	99.8522	2	8b46422b45ff	0x154270	100.0000	
-cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	98.6286	98.6286	1	0db289b550b1	0x153180	98.6286	
+cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	100.0000	100.0000	2	7ef6f934fbd3	0x153180	100.0000	
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	1	ef4f2298fab7	0x1532b0	100.0000	
 cimage	?Create@CImage@@UAEHPADH@Z	100.0000	100.0000	1	00929ac52812	0x152e90	100.0000	
 cimage	?CreateBlankSurface@CImage@@UAEHHHH@Z	100.0000	100.0000	1	2d0ef7676784	0x1530e0	100.0000	
@@ -2634,7 +2634,7 @@ hash	?Walk@CHashB@@QAEPAVCSymTab@@PBDH@Z	100.0000	100.0000	3	3bdd5a215d4d	0x13c3
 hash	?Walk@CHashC@@QAEPAUCParseSource@@PBDH@Z	100.0000	100.0000	9	910ee61e59d1	0x13c270	100.0000	
 heapdiag	?ClearTopmostStyle@@YAXPAX@Z	100.0000	100.0000	1	3b7f1a1e01c6	0x118990	100.0000	
 heapdiag	?FileExists@@YAHPBD@Z	100.0000	100.0000	1	f621848b9726	0x1189c0	100.0000	
-heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	95.8961	95.8961	4	da9e1ba45691	0x118ce0	97.6234	
+heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	100.0000	100.0000	5	f994c7525da5	0x118ce0	100.0000	
 heapdiag	?HeapCheckDump@@YAHH@Z	100.0000	100.0000	1	567034d25bd3	0x118a30	100.0000	
 heapdiag	?HeapStats@@YAHXZ	100.0000	100.0000	1	237f51b4e446	0x118bf0	100.0000	
 heapdiag	?ReportHeapStatus@@YAXH@Z	100.0000	100.0000	1	48ed71963746	0x118b50	100.0000	
@@ -3905,7 +3905,7 @@ serialobjectfactory	?SerializeMove@CTileTriggerSwitch@@UAEHPAVCFileMemBase@@W4Se
 serialobjectfactory	?SerializeMove@CTileTriggerTransition@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:3653373a86b4	0x11750	100.0000	
 serialobjectfactory	?SerializeMove@CToobSpikez@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:47495a4523b1	0x12bc0	100.0000	
 serialobjectfactory	?SerializeMove@CWarpStonePad@@EAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:3653373a86b4	0x10f20	100.0000	
-sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	99.9291	99.9291	18	8be78d1ea75f	0xf8970	99.9291	
+sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	100.0000	100.0000	19	ed82bad04019	0xf8970	100.0000	
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	47b9b22b6715	0x14de30	100.0000	
 shadetablecache	??1CShadeTableArray@@UAE@XZ	100.0000	100.0000	1	73f683cefd76	0x14fe30	100.0000	
 shadetablecache	??1CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	f6966bb46107	0x14de50	100.0000	
@@ -4024,7 +4024,7 @@ spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	100.0000	100.0000	3	8633b309cdb0
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	2	f66a95f44d59	0x9bc70	100.0000	
 spriteloaders	?Serialize@CTimer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	bab1e6bdc3bc	0x9c2e0	100.0000	
 spriteloaders	?SetTime@CTimer@@QAEXHH@Z	100.0000	100.0000	1	e1026f578b91	0x9c090	100.0000	
-spriteloaders	?Tick@CTimer@@QAEHH@Z	98.7981	98.7981	37	2c85b41c4721	0x9bca0	98.7981	
+spriteloaders	?Tick@CTimer@@QAEHH@Z	98.8075	98.8075	38	3f4b65d11388	0x9bca0	98.8075	
 spriteref	?Build@CSpriteRef@@QAEHPAVCShadeTableCache@@PAUCShadeTable@@W4ColorTint@@@Z	100.0000	96.4676	2	033340aa6a77	0xe2df0	100.0000	
 spriteref	?Free@CSpriteRef@@QAEXXZ	100.0000	100.0000	6	86e0783476c6	0xe32e0	100.0000	
 spritereftable	?Add@CSpriteRefTable@@QAEPAVCSpriteRef@@PADW4ColorTint@@@Z	100.0000	100.0000	5	356e8ebf2303	0xe2890	100.0000	
@@ -4261,7 +4261,7 @@ tiletriggercontainer	?AddLogicFromRecord@CTileTriggerContainer@@QAEXW4TileCollis
 tiletriggercontainer	?AddSwitchLogic@CTileTriggerContainer@@QAEPAVCTileTriggerSwitchLogic@@W4TrigLogicId@@HHHUtagRECT@@11111HHH@Z	100.0000	100.0000	2	41bbf11144eb	0x115f60	100.0000	
 tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HHHPAHHHH@Z	77.4051	77.4051	2	3163bf2d561f	0x116cf0	77.4051	
 tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHHHHH@Z	80.1184	80.1184	2	e4c23f61eae2	0x116a40	80.1184	
-tiletriggercontainer	?AddToList3Switch@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	75.7826	75.7826	2	8107b1d0eded	0x116b80	75.7826	
+tiletriggercontainer	?AddToList3Switch@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	75.7826	75.7826	3	bdda3d53c31e	0x116b80	75.7826	
 tiletriggercontainer	?DelFromList1@CTileTriggerContainer@@QAEHPAVCTileTriggerLogic@@@Z	100.0000	100.0000	1	6edcce1eb4d1	0x116e60	100.0000	
 tiletriggercontainer	?DelFromList3@CTileTriggerContainer@@QAEHPAVCTileActionEvent@@@Z	100.0000	100.0000	1	f1466a4bd151	0x117200	100.0000	
 tiletriggercontainer	?DrawPageDebugText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	2	d053c39640d5	0x115b60	100.0000	
@@ -4286,7 +4286,7 @@ timesplit	?BlockScreenSaver@@YAHPAXIIJ@Z	100.0000	100.0000	1	90e7f9539a5a	0x1192
 timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	3	e2d6db34e612	0x119210	100.0000	
 timesplit	?TerminateString@@YAXPADH@Z	100.0000	100.0000	1	da52c3206003	0x1192a0	100.0000	
 timestring	?FormatElapsedTime@@YA?AVCString@@I@Z	100.0000	100.0000	24	845ba279c589	0x1190f0	100.0000	
-toobspikez	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	96.4528	96.4528	5	7db23974c993	0x1145c0	96.4528	
+toobspikez	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	96.5000	96.5000	6	2423d4c02b81	0x1145c0	96.5000	
 toobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	cpp:47495a4523b1	0x12c60	100.0000	
 toobspikez	??_GCToobSpikez@@UAEPAXI@Z	100.0000	100.0000	1	cpp:47495a4523b1	0x12c30	100.0000	
 toobspikez	?AdvanceAnim@CToobSpikez@@QAEHXZ	100.0000	100.0000	1	bfa938499718	0x114bc0	100.0000	
