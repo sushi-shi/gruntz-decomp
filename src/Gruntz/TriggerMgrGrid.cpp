@@ -1219,10 +1219,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
-    if (o->m_screenX != cell->m_lastTilePx.m_x) {
+    if (o->m_screenX != cell->LastTilePx().m_x) {
         goto bad;
     }
-    if (o->m_screenY != cell->m_lastTilePx.m_y) {
+    if (o->m_screenY != cell->LastTilePx().m_y) {
         return -1;
     }
 
