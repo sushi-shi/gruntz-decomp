@@ -75,6 +75,16 @@
                                   the slot-shift group's displacement deltas
                                   and says whether each parent's objects moved
                                   as a unit or relative to each other
+    gruntz walls calibrate        the REFLEXIVITY control the paired sieves
+                                  lacked: framescan/loopscan/jccscan/storescan/
+                                  residue over the EXACT rows, where every cell
+                                  must be 0. It tests the REFERENT filters (the
+                                  two objects are cl's and the delinker's, and
+                                  their relocation tables differ even at
+                                  100.00); it structurally CANNOT test whether
+                                  a byte-keyed quantity is comparable between
+                                  two different builds - that is equal here by
+                                  construction
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
     gruntz walls priors           BOTH prior-verdict stores for a worklist -
@@ -97,7 +107,8 @@ harness compiles under build/inline-model/.
 
 from __future__ import annotations
 
-_SUBS = {"inventory": "gruntz.walls.inventory",
+_SUBS = {"calibrate": "gruntz.walls.calibrate",
+         "inventory": "gruntz.walls.inventory",
          "diagnose": "gruntz.walls.diagnose",
          "inline-model": "gruntz.walls.inline_model",
          "aggregate-copies": "gruntz.walls.aggregate_copies",

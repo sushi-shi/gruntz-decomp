@@ -770,6 +770,103 @@ class JccScanControls(unittest.TestCase):
         same = codes(self._lines(["je 0x8", "jl 0xc", "ret"]))
         self.assertIsNone(classify(same, same))
 
+    def test_a_cold_block_after_the_last_ret_is_KEPT(self):
+        """The mirror of the test above, and the error the last-`ret` cut made
+        in the other direction: cl places cold blocks AFTER the last `ret`,
+        entered by a forward branch and leaving by a `jmp` back into the body.
+        Measured 2026-08-23, cutting them discarded 5524/6147 instructions over
+        the todo queue - 531/599 of them condition codes - and asymmetrically
+        on 41 rows.  What separates a cold block from a byte index table is
+        that something BRANCHES to it."""
+        from gruntz.walls.jccscan import codes
+        body = ["cmp eax,0x4", "je 0x14", "ret",
+                # 0xc: table payload - nothing branches here
+                "js 0x40",
+                # 0x10: reached by the `je 0x14`... which is the NEXT line
+                "jne 0x8", "jmp 0x0",
+                # and the padding after it is data again
+                "jo 0x44"]
+        lines = self._lines(body)
+        self.assertEqual(lines[4].addr, 0x10)
+        lines[1].asm = "je 0x10"
+        self.assertEqual(dict(codes(lines)), {"je": 1, "jne": 1})
+
+
+class StoreScanFrameControls(unittest.TestCase):
+    """`walls storescan` compares member-store ORDER, so its key has to be a
+    MEMBER offset.  Excluding the literal `esp` base was not enough: cl builds
+    a local aggregate's address in an ordinary register and fills it through
+    that, and those displacements are esp offsets the two sides do not share -
+    the same incomparable key `walls valuetemp` was corrected for.  No exact
+    row can show this: an exact row has the SAME frame on both sides."""
+
+    @staticmethod
+    def _lines(asms):
+        from types import SimpleNamespace
+        return [SimpleNamespace(addr=i * 4, asm=a, ref=None)
+                for i, a in enumerate(asms)]
+
+    def _runs(self, asms):
+        from gruntz.walls.storescan import store_runs
+        return store_runs(self._lines(asms), 3)
+
+    def test_a_run_through_a_member_pointer_is_a_member_run(self):
+        runs = self._runs(["mov DWORD PTR [esi+0x4],eax",
+                           "mov DWORD PTR [esi+0x8],ecx",
+                           "mov DWORD PTR [esi+0xc],edx"])
+        self.assertEqual([r["frame"] for r in runs], [False])
+
+    def test_a_run_through_an_lea_from_esp_is_a_FRAME_FILL(self):
+        runs = self._runs(["lea esi,[esp+0x20]",
+                           "mov DWORD PTR [esi+0x4],eax",
+                           "mov DWORD PTR [esi+0x8],ecx",
+                           "mov DWORD PTR [esi+0xc],edx"])
+        self.assertEqual([r["frame"] for r in runs], [True])
+
+    def test_the_taint_survives_a_copy_and_a_constant_bias(self):
+        runs = self._runs(["lea eax,[esp+0x20]", "mov esi,eax", "add esi,0x10",
+                           "mov DWORD PTR [esi+0x4],eax",
+                           "mov DWORD PTR [esi+0x8],ecx",
+                           "mov DWORD PTR [esi+0xc],edx"])
+        self.assertEqual([r["frame"] for r in runs], [True])
+
+    def test_a_fresh_definition_clears_the_taint(self):
+        runs = self._runs(["lea esi,[esp+0x20]", "mov esi,DWORD PTR [ecx+0x8]",
+                           "mov DWORD PTR [esi+0x4],eax",
+                           "mov DWORD PTR [esi+0x8],ecx",
+                           "mov DWORD PTR [esi+0xc],edx"])
+        self.assertEqual([r["frame"] for r in runs], [False])
+
+    def test_a_one_sided_frame_fill_does_not_shift_the_member_pairing(self):
+        """The second half of the defect.  Runs are paired POSITIONALLY, so a
+        local fill present on one side only re-indexes every member run after
+        it - and then two unrelated runs get compared."""
+        from gruntz.walls.storescan import permuted
+        member = ["mov DWORD PTR [edi+0x10],eax",
+                  "mov DWORD PTR [edi+0x14],ecx",
+                  "mov DWORD PTR [edi+0x18],edx"]
+        ours = self._runs(["lea esi,[esp+0x20]",
+                           "mov DWORD PTR [esi+0x0],eax",
+                           "mov DWORD PTR [esi+0x4],ecx",
+                           "mov DWORD PTR [esi+0x8],edx",
+                           "call 0x0"] + member)
+        retail = self._runs(member)
+        self.assertEqual(len(ours), 2)
+        self.assertEqual(len(retail), 1)
+        self.assertEqual(permuted(ours, retail), [])   # and no false hit
+        # the same member run, genuinely permuted, still reports
+        swapped = self._runs(["mov DWORD PTR [edi+0x14],eax",
+                              "mov DWORD PTR [edi+0x10],ecx",
+                              "mov DWORD PTR [edi+0x18],edx"])
+        self.assertEqual(len(permuted(ours, swapped)), 1)
+
+    def test_an_immediate_stored_into_the_frame_leaves_the_value_screen(self):
+        from gruntz.walls.storescan import imm_map
+        lines = self._lines(["lea esi,[esp+0x20]",
+                             "mov DWORD PTR [esi+0x4],0x2a",
+                             "mov DWORD PTR [edi+0x8],0x2a"])
+        self.assertEqual(sorted(imm_map(lines)), ["DWORD+0x8"])
+
 
 class PairscanControls(unittest.TestCase):
     def test_rep_movsd_folds_and_movsx_does_not_count(self):
@@ -3334,6 +3431,38 @@ class CompdbStalenessControls(unittest.TestCase):
     def test_a_flag_without_its_operand_is_not_a_crash(self):
         from gruntz.graph import compdb
         self.assertEqual(compdb.dead_include_dirs({"x": ["/imsvc"]}), [])
+
+
+class DecodeNormalizationControls(unittest.TestCase):
+    """`semdiff._decode` is the substrate under every paired sieve, and it owns
+    the two normalizations none of them can do afterwards: the function's own
+    jump/index TABLE is data, and a relocation naming the function ITSELF on a
+    real instruction is a self-transfer the delinked side does not relocate at
+    all.  The second one was found by the exact-row reflexivity control, where
+    two byte-identical recursive functions read as a `selection` residual."""
+
+    #: `call rel32` (self-relocated at +1), `ret`, two `nop`, then two
+    #: self-relocated dwords - a jump table objdump decodes as instructions
+    BODY = bytes([0xe8, 0, 0, 0, 0, 0xc3, 0x90, 0x90,
+                  0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88])
+    REL = {1: ("Self", 0), 8: ("Self", 0), 12: ("Self", 0)}
+
+    def test_without_the_name_the_table_decodes_as_three_instructions(self):
+        """The negative control: one of them is a `ja`, which is exactly the
+        phantom condition code `walls jccscan` counts."""
+        from gruntz.walls.semdiff import _decode
+        lines = _decode(self.BODY, self.REL)
+        self.assertEqual([x.addr for x in lines], [0, 5, 6, 7, 8, 0xa, 0xe])
+        self.assertTrue(any(x.asm.startswith("ja ") for x in lines))
+        self.assertEqual(lines[0].ref, "Self")
+
+    def test_the_table_is_dropped_and_the_self_call_keeps_its_instruction(self):
+        from gruntz.walls.semdiff import _decode
+        lines = _decode(self.BODY, self.REL, "Self")
+        self.assertEqual([x.addr for x in lines], [0, 5, 6, 7])
+        self.assertTrue(lines[0].asm.startswith("call "))
+        # the referent means "here" and only our own object spells it
+        self.assertIsNone(lines[0].ref)
 
 
 class SemDiffControls(unittest.TestCase):

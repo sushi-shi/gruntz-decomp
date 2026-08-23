@@ -432,6 +432,65 @@ def shift_report(limit: int, as_json: bool) -> int:
     return 0
 
 
+def calibrate(limit: int, as_json: bool) -> int:
+    """The census over the parents whose EVERY band row is already at 100.00.
+
+    The census's own inputs are not symmetric and never were: the base side's
+    funclets are cl's `$L<n>` LOCAL labels mapped to canonical names through
+    `<unit>.symbols.tsv`, while the target side defines real `__ehunwind$`
+    symbols and reports `section_ordinal = 0` for them. Two different
+    discovery paths, and the sub-100 census exercises both on rows that DO
+    differ, where a discovery miss is indistinguishable from a real `count`.
+
+    Running the same code where the funclets are byte-identical separates
+    them: every parent must read `equal`, and anything else is a discovery or
+    decode bug in this module. This is reachable precisely because funclet
+    discovery is NAME-driven - the part of a sieve an exact row can test.
+    """
+    from collections import Counter, defaultdict
+    from gruntz.walls.inventory import report_scores
+    _p, scores = report_scores()
+    parents: dict[tuple[str, str], list[float]] = defaultdict(list)
+    for (unit, sym), pct in scores.items():
+        m = BAND_ROW.match(sym)
+        if m:
+            parents[(unit, m.group("parent"))].append(pct)
+    exact = {k: v for k, v in parents.items() if all(p >= 100.0 for p in v)}
+
+    tally, bad = Counter(), []
+    for (unit, parent), pcts in sorted(exact.items()):
+        try:
+            acts = {side: [action(body, rel) for _i, body, rel in
+                           funclets(_cached_obj(side, unit), side, unit, parent)]
+                    for side in ("base", "target")}
+        except BaseException as err:
+            tally["error"] += 1
+            bad.append((unit, parent, "error", str(err)[:90], [], []))
+            continue
+        verdict = census_verdict(acts["base"], acts["target"])
+        tally[verdict] += 1
+        if verdict not in ("equal", "empty"):
+            bad.append((unit, parent, verdict, f"{len(pcts)} band rows",
+                        acts["base"], acts["target"]))
+    if as_json:
+        import json
+        json.dump({"tally": dict(tally),
+                   "bad": [b[:4] for b in bad]}, __import__("sys").stdout)
+        return 0
+    print(f"parents whose whole EH band is EXACT: {len(exact)}")
+    print("every one must read `equal`; anything else is a DETECTOR bug in "
+          "this module\n")
+    for k, n in tally.most_common():
+        print(f"  {n:4d}  {k}")
+    print(f"\nparents firing: {len(bad)}")
+    for unit, parent, verdict, why, b, t in bad[:limit]:
+        print(f"  {verdict:<14} {unit}/{parent[:60]}   {why}")
+        for label, acts in (("base  ", b), ("target", t)):
+            for a in acts[:6]:
+                print(f"      {label} {a[:96]}")
+    return 1 if bad else 0
+
+
 def census(limit: int, as_json: bool) -> int:
     from collections import Counter, defaultdict
     from gruntz.walls.inventory import build
@@ -589,9 +648,15 @@ def main(argv=None) -> int:
                     help="the slot-shift group only: is each parent's "
                          "displacement delta one number (the frame base moved) "
                          "or many (the locals are homed differently)?")
+    ap.add_argument("--calibrate", action="store_true",
+                    help="the same census over the parents whose whole EH "
+                         "band is already EXACT - every one must read `equal`, "
+                         "which is what tests the two DISCOVERY paths")
     ap.add_argument("--limit", type=int, default=60)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
+    if args.calibrate:
+        return calibrate(args.limit, args.json)
     if args.shift:
         return shift_report(args.limit, args.json)
     if args.census:
