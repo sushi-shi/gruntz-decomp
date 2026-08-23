@@ -37,13 +37,26 @@ channel additionally requires both sides to hold the SAME NUMBER of loops,
 because a loop that exists on one side only (loopscan's own class) makes
 every load inside it read as exclusive here.
 
+THE BASE-FOLD FALSE POSITIVE, AND THE CONTROL FOR IT.  A displacement is only
+comparable while both sides fold the same base into it.  When cl parks
+`base + 0x10` in the register instead of `base`, EVERY key on that side shifts
+by 0x10 at once and the channel reads a whole set of exclusives.  Measured:
+`CNetSession::Verify` 0x0c0290 reports six, and it is a body already PROVEN at
+100.00 - ours reads `[esi-0x14]/[esi-0x10]/[esi-0xc]` where retail reads
+`[esi-0x4]/[esi+0x4]/[esi+0x10]`, the same three fields.  That is exactly the
+failure mode a byte-identical control set cannot express, so the sieve tests
+for it directly: it searches for the constant delta that best aligns the two
+sides' whole read multiset, and a row whose best delta is non-zero is tagged
+`base-fold` and left out of the hit list.  One row of six.
+
 WHAT THE SIEVE STRUCTURALLY CANNOT SEE.  A displacement is not an object:
 two different classes with a field at +0x8 share one key, and a reload of one
-cancels against a hoist of the other.  It cannot see a reload whose address cl
-folded differently (`lea r,[base+0x150]` then `[r+0x24]` against `[base+0x174]`
-is the same field under two keys).  It reads loads only, so a re-STORE is
-invisible.  And it names the displacement, never the statement - the detail
-view prints the neighbourhood so a reader can find it.
+cancels against a hoist of the other.  The base-fold guard only catches a
+UNIFORM shift - a single member reached through a `lea`d array base while the
+rest of the function uses the object base still reads as two keys.  It reads
+loads only, so a re-STORE is invisible.  And it names the displacement, never
+the statement - the detail view prints the neighbourhood so a reader can find
+it.
 
     gruntz walls reloadscan [--todo] [--unit U] [--limit N] [--json]
                             [--call | --loop | --iv]     one channel only
@@ -151,6 +164,28 @@ def channels(lines, self_name: str = "") -> tuple[Counter, Counter, Counter]:
     return across, in_loop, shape
 
 
+def _key(value: int) -> str:
+    return ("+" if value >= 0 else "-") + hex(abs(value))
+
+
+def base_fold(base: Counter, target: Counter) -> int:
+    """The constant that best aligns the two sides' whole read multiset.
+
+    Non-zero means one side reached these members through a base register cl
+    folded a fixed distance away, so EVERY displacement key shifted at once
+    and the exclusives below are that shift, not a source difference.
+    """
+    def overlap(delta: int) -> int:
+        return sum(min(n, target.get(_key(int(k, 16) + delta), 0))
+                   for k, n in base.items())
+
+    keys_b, keys_t = list(base)[:40], list(target)[:40]
+    cands = {0} | {int(t, 16) - int(b, 16) for b in keys_b for t in keys_t}
+    # ties go to the smallest shift, and to 0 above all
+    best = max(cands, key=lambda d: (overlap(d), -abs(d)))
+    return best if overlap(best) > overlap(0) else 0
+
+
 def exclusive(base: Counter, target: Counter, floor: int = 2) -> dict:
     """A displacement one side touches at least `floor` times and the other
     never.  A shared key whose count merely differs is scheduling."""
@@ -170,10 +205,16 @@ def scan_one(token: str, floor: int = 2) -> dict:
         for k in ("scaled", "stride"):
             if abs(sb[k] - st[k]) >= floor:
                 iv[k] = (sb[k], st[k])
+    fold = 0
+    if call or loop:
+        fold = base_fold(Counter(d for _i, d in reads(base)),
+                         Counter(d for _i, d in reads(target)))
+        if fold:
+            call, loop = {}, {}
     return {"call": {k: list(v) for k, v in call.items()},
             "loop": {k: list(v) for k, v in loop.items()},
             "iv": {k: list(v) for k, v in iv.items()},
-            "loops": [sb["loops"], st["loops"]],
+            "loops": [sb["loops"], st["loops"]], "fold": fold,
             "n": len(call) + len(loop) + len(iv)}
 
 
@@ -203,11 +244,13 @@ def report(rows: list[dict], limit: int, want: list[str]) -> None:
         if chan in want:
             print(f"  exclusive {label:<32}: "
                   f"{sum(1 for r in ok if r[chan]):4d}")
+    print(f"  suppressed, one side folds its base : "
+          f"{sum(1 for r in ok if r.get('fold')):4d}")
     print()
     hit = [r for r in ok if any(r[c] for c in want)]
     for r in sorted(hit, key=lambda x: x["cur"])[:limit]:
-        print(f"{r['rva']:>10} {r['cur']:7.2f}  loops {r['loops'][0]}/"
-              f"{r['loops'][1]}  {r['unit']}/{r['symbol'][:44]}")
+        print(f"{r['rva']:>10} {r['cur']:7.2f} hist {r['hist_max']:6.2f}  loops "
+              f"{r['loops'][0]}/{r['loops'][1]}  {r['unit']}/{r['symbol'][:44]}")
         for chan in want:
             for key, val in sorted(r[chan].items()):
                 print(f"{'':>12}{CHANNELS[chan]:<32} {key:<8} "
@@ -222,6 +265,12 @@ def detail(token: str) -> None:
     print(f"   loops: ours {sb['loops']}, retail {st['loops']}"
           + ("   (unequal - loopscan owns this row first)"
              if sb["loops"] != st["loops"] else ""))
+    fold = base_fold(Counter(d for _i, d in reads(base)),
+                     Counter(d for _i, d in reads(target)))
+    if fold:
+        print(f"   BASE-FOLD {fold:+#x}: one side reaches these members through "
+              f"a base register folded {fold:+#x} away, so every displacement "
+              f"below shifted at once - the exclusives are not source")
     for label, cb, ct in (("reload across a call", ab, at),
                           ("load inside a loop", lb, lt)):
         print(f"   -- {label}")

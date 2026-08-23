@@ -4658,6 +4658,30 @@ class DeclinedMemoryOptimizationControls(unittest.TestCase):
         self.assertEqual((walk["stride"], walk["scaled"]), (1, 0))
         self.assertEqual((index["stride"], index["scaled"]), (0, 1))
 
+    def test_a_uniformly_shifted_base_is_not_a_source_difference(self):
+        """The measured false positive, and one a byte-identical control set
+        CANNOT express: `CNetSession::Verify` is PROVEN at 100.00 and still
+        reports six exclusives, because ours reads `[esi-0x14]/[esi-0x10]/
+        [esi-0xc]` where retail reads `[esi-0x4]/[esi+0x4]/[esi+0x10]` - the
+        same three fields under a base cl folded 0x10 away."""
+        from collections import Counter
+
+        from gruntz.walls.reloadscan import base_fold
+        ours = Counter({"-0x14": 1, "-0x10": 2, "-0xc": 1})
+        retail = Counter({"-0x4": 1, "+0x0": 2, "+0x4": 1})
+        self.assertEqual(base_fold(ours, retail), 0x10)
+        self.assertEqual(base_fold(ours, ours), 0)
+
+    def test_a_real_difference_is_not_called_a_base_fold(self):
+        """The other direction: when the two sides agree on their keys and
+        differ only in COUNT, no shift explains it better than none."""
+        from collections import Counter
+
+        from gruntz.walls.reloadscan import base_fold
+        ours = Counter({"+0x64": 4, "+0x68": 4, "+0x6c": 4, "+0x8": 12})
+        retail = Counter({"+0x64": 1, "+0x68": 1, "+0x6c": 1, "+0x8": 16})
+        self.assertEqual(base_fold(ours, retail), 0)
+
     def test_the_exclusive_floor_rejects_a_single_touch(self):
         from collections import Counter
 
