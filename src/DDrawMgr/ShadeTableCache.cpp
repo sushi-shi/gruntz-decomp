@@ -596,11 +596,13 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
                 u8 gn = static_cast<u8>((((g * level / 0xf) << 4) + subg));
                 for (i32 b = 0; b < 0x10; b++) {
                     u8 bn = static_cast<u8>((((b * level / 0xf) << 4) + subb));
-                    *out++ = static_cast<u16>(
-                        ((static_cast<u8>((bn >> g_bDown)))
-                         | (static_cast<u8>((rn >> g_rDown)) << g_rUp)
-                         | (static_cast<u8>((gn >> g_gDown)) << g_gUp))
-                    );
+                    // Accumulated channel by channel: one OR expression lets cl
+                    // reassociate the loop-invariant red|green pair and hoist it
+                    // into a b-loop preheader retail does not have.
+                    u16 v = static_cast<u8>(bn >> g_bDown);
+                    v |= static_cast<u16>(static_cast<u8>(rn >> g_rDown) << g_rUp);
+                    v |= static_cast<u16>(static_cast<u8>(gn >> g_gDown) << g_gUp);
+                    *out++ = v;
                 }
             }
         }
