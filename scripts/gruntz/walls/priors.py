@@ -30,6 +30,12 @@ from gruntz.core.paths import REPO
 
 ROOTS = ("src", "include")
 PIN = re.compile(r"\bRVA(?:_COMPGEN|_DYNINIT)?\s*\(\s*(0x[0-9a-fA-F]+)")
+# `RVA_COMPGEN(rva, size, MANGLED)` pins a COMDAT at the emitting unit; the BODY,
+# and therefore any verdict written beside it, is at the definition - for
+# `??0CPlay@@QAE@XZ` that is `inline CPlay::CPlay()` in Play.h, a whole
+# `@early-stop` block the pin site cannot see.  384 such pins exist tree-wide.
+COMPGEN = re.compile(r"\bRVA_(?:COMPGEN|DYNINIT)\s*\(\s*0x[0-9a-fA-F]+\s*,"
+                     r"\s*[^,)]+,\s*([^)\s]+)\s*\)")
 COMMENT = re.compile(r"^\s*(?://|/\*|\*)")
 # A machine directive addressed to a formatter or linter carries no verdict, and
 # a block made only of them must not read as one.
@@ -79,6 +85,58 @@ def _comment_above(rel: str, line: int) -> list[str]:
     return block_above((REPO / rel).read_text(errors="replace").split("\n"), line)
 
 
+CTOR = re.compile(r"^\?\?0(\w+)@@")
+DTOR = re.compile(r"^\?\?1(\w+)@@")
+METH = re.compile(r"^\?(\w+)@(\w+)@@")
+
+
+def source_name(mangled: str) -> str | None:
+    """`Class::Member` for the mangled forms that HAVE a source spelling.
+
+    Deliberately narrow.  A compiler-generated thunk (`??_G` scalar deleting
+    destructor, `??_E`, `??_L` vector ctor iterator) is not written by anyone,
+    so there is no definition to find and inventing a name would manufacture a
+    verdict out of whatever comment happens to sit near a same-named symbol.
+    """
+    m = CTOR.match(mangled)
+    if m:
+        return f"{m.group(1)}::{m.group(1)}"
+    m = DTOR.match(mangled)
+    if m:
+        return f"{m.group(1)}::~{m.group(1)}"
+    m = METH.match(mangled)
+    if m:
+        return f"{m.group(2)}::{m.group(1)}"
+    return None
+
+
+def is_definition(line: str, qualified: str) -> bool:
+    """Is this line the DEFINITION of `qualified`, rather than a call to it?
+
+    A qualified call inside another body (`CPlay::ReleaseResources();` in
+    `~CPlay`) would otherwise hand back the comment above THAT function.  A
+    definition opens a parameter list and does not terminate the statement.
+    """
+    if qualified + "(" not in line:
+        return False
+    return ";" not in line and "return" not in line
+
+
+def definition_block(qualified: str) -> tuple[str, int, list[str]] | None:
+    """(path, 1-based line, comment block) above `qualified`'s definition."""
+    for root in ROOTS:
+        for path in sorted((REPO / root).rglob("*")):
+            if path.suffix not in (".cpp", ".h"):
+                continue
+            lines = path.read_text(errors="replace").split("\n")
+            for i, line in enumerate(lines):
+                if is_definition(line, qualified):
+                    block = block_above(lines, i + 1)
+                    if block:
+                        return str(path.relative_to(REPO)), i + 1, block
+    return None
+
+
 def _targets(a) -> list[str]:
     toks = list(a.target)
     if a.stdin:
@@ -116,7 +174,22 @@ def report(token: str, sites: dict, reviews: dict, fresh: set[int]) -> bool:
             for text in block:
                 print(f"      {text}")
         else:
-            print(f"  source   {rel}:{line}  (no comment above the pin)")
+            owner = COMPGEN.search((REPO / rel).read_text(
+                errors="replace").split("\n")[line - 1])
+            hit = definition_block(source_name(owner.group(1)) or "") \
+                if owner else None
+            if hit:
+                found = True
+                drel, dline, dblock = hit
+                print(f"  source   {rel}:{line} is a COMDAT pin; the body and "
+                      f"its verdict are at {drel}:{dline}")
+                for text in dblock:
+                    print(f"      {text}")
+            elif owner:
+                print(f"  source   {rel}:{line}  (COMDAT pin for "
+                      f"{owner.group(1)}; no comment here or at its definition)")
+            else:
+                print(f"  source   {rel}:{line}  (no comment above the pin)")
     if b.rva not in sites:
         print("  source   no RVA() pin found in src/ or include/")
 

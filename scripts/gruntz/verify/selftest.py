@@ -867,6 +867,37 @@ class PriorsBlockControls(unittest.TestCase):
         src = ["// the previous function's note", "}", "", "RVA(0x1, 0x2)"]
         self.assertEqual(block_above(src, 4), [])
 
+    def test_a_compgen_pin_resolves_to_its_definition_name(self):
+        """`RVA_COMPGEN` pins a COMDAT where it is EMITTED; the body, and any
+        verdict beside it, is at the definition.  CPlay::CPlay 0x8c9d0 is pinned
+        in GruntzMgr.cpp and defined in Play.h under a 12-line `@early-stop`."""
+        from gruntz.walls.priors import source_name
+        self.assertEqual(source_name("??0CPlay@@QAE@XZ"), "CPlay::CPlay")
+        self.assertEqual(source_name("??1CState@@UAE@XZ"), "CState::~CState")
+        self.assertEqual(source_name("?Render@CImage@@UAEHXZ"), "CImage::Render")
+
+    def test_a_compiler_generated_thunk_resolves_to_nothing(self):
+        """NEGATIVE control.  `??_G` scalar deleting destructors, `??_E` and the
+        `??_L` vector ctor iterator have no source spelling at all, so guessing a
+        name would attach whatever comment sits near a same-named symbol."""
+        from gruntz.walls.priors import source_name
+        for m in ("??_GCRgn@@UAEPAXI@Z", "??_ECPlay@@UAEPAXI@Z",
+                  "??_L@YGXPAXIHP6EX0@Z1@Z", "__ehreg$?Foo@@YAXXZ"):
+            self.assertIsNone(source_name(m), m)
+
+    def test_a_qualified_CALL_is_not_mistaken_for_a_definition(self):
+        """NEGATIVE control, taken from the tree: `~CPlay`'s body is the single
+        line `CPlay::ReleaseResources();`, so a name-only search would hand back
+        the destructor's comment as that method's verdict."""
+        from gruntz.walls.priors import is_definition
+        self.assertFalse(is_definition("    CPlay::ReleaseResources();",
+                                       "CPlay::ReleaseResources"))
+        self.assertFalse(is_definition("    return CPlay::Render();",
+                                       "CPlay::Render"))
+        self.assertTrue(is_definition("inline CPlay::CPlay() {", "CPlay::CPlay"))
+        self.assertTrue(is_definition("i32 CImage::Render(CDDrawWorker* w)",
+                                      "CImage::Render"))
+
 
 class StoreScanFrameControls(unittest.TestCase):
     """`walls storescan` compares member-store ORDER, so its key has to be a
