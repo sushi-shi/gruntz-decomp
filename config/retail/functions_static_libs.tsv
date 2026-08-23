@@ -666,8 +666,7 @@ rva	name	lib	confidence	source
 0x169aa0	msc_iostream_scalardtor_169aa0	LIBCMT	LOW	iostream-cluster-bail
 0x169ad0	??0strstream@@QAE@PADHH@Z	LIBCIMT	HIGH	manual-crt-reclass
 0x169bc0	??_Diostream@@QAEXXZ	LIBCIMT	HIGH	manual-unmatched-library-audit
-0x169be0	??1iostream@@UAE@XZ	LIBCIMT	HIGH	vbase-adjust-0x14
-0x169be0	??1strstream@@UAE@XZ	LIBCIMT	HIGH	manual-unmatched-library-audit
+0x169be0	??1strstream@@UAE@XZ	LIBCIMT	HIGH	vbase-dtor-stamps-5f0394-tails-to-??1iostream
 0x169c00	msc_ios_ctor_169c00	LIBCMT	MED	manual-unmatched-library-audit
 0x169c70	??_Gios@@UAEPAXI@Z	LIBCIMT	HIGH	deleting-dtor-calls-??1ios-0x169d70
 0x169c90	msc_ios_ctor_169c90	LIBCMT	LOW	iostream-cluster-bail
