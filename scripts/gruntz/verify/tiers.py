@@ -158,15 +158,18 @@ TIERS: dict[str, list[tuple[str, object]]] = {
         ("dead-code", _dead_code),
         ("undefined-closure", _undefined_closure),
         ("review-claims", _review_claims),
+        # The data-VALUE gates run by default: a wrong datum leaves the code
+        # byte-identical, so nothing else on the default path can see it.
+        # ~10s total; the slow full-tier gates stay opt-in.
+        ("data-relocs", _data_relocs),
+        ("data-access", _data_access),
+        ("data-coverage", _data_coverage),
     ],
     "full": [
         ("vtables", _vtables),
         ("alloc-size", _alloc_size),
         ("assert-relocs", _assert_relocs),
-        ("data-relocs", _data_relocs),
         ("caller-callee", _caller_callee),
-        ("data-access", _data_access),
-        ("data-coverage", _data_coverage),
     ],
     "link": [
         ("link-tier", _link_tier),
