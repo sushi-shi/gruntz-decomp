@@ -351,7 +351,8 @@ def _pair(token, unit: str | None = None):
         tp = NORM / "target" / f"{binding.unit}.obj"
     bb, brel, _ = _find_function(base, binding.name)
     tb, trel, _ = _find_function(Obj(tp), binding.name)
-    return binding, _decode(bb, brel), _decode(tb, trel)
+    return (binding, _decode(bb, brel, binding.name),
+            _decode(tb, trel, binding.name))
 
 
 #: a register name is an allocation accident; the DISPLACEMENT is the model

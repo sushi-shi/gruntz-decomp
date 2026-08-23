@@ -90,7 +90,7 @@ from difflib import SequenceMatcher
 from gruntz.core.paths import BUILD
 from gruntz.delink.coffx import Obj
 from gruntz.tool import objdump
-from gruntz.walls.diagnose import _find_function, _locate
+from gruntz.walls.diagnose import _find_function, _jump_table_bytes, _locate
 
 NORM = BUILD / "objdiff/compare-new"
 
@@ -116,9 +116,31 @@ class Line:
         self.addr, self.asm, self.ref = addr, asm, ref
 
 
-def _decode(body: bytes, rel: dict) -> list[Line]:
+def _decode(body: bytes, rel: dict, self_name: str | None = None) -> list[Line]:
     """Disassemble one function window and attach each relocation to the
-    instruction whose bytes contain it."""
+    instruction whose bytes contain it.
+
+    Given the function's own name, two normalizations that every consumer
+    needs and none of them can do afterwards:
+
+      * the function's own jump/index TABLE is DATA embedded in .text, and
+        objdump decodes it as instructions.  The offsets a self-referent
+        relocation covers are the table (the rule `walls diagnose` already
+        applies through `_jump_table_bytes`), and a line STARTING inside them
+        is dropped.  A real self-transfer is never dropped by this: its
+        relocation sits at `addr+1`, so the instruction's own address is not
+        covered.
+      * a relocation that names the function ITSELF on a real instruction is
+        a self-transfer - a recursive `call`, a tail `jmp`, or the indirect
+        `jmp` that ADDRESSES the table - and the delinked target resolves it
+        inside its own section with NO relocation at all.  The two sides then
+        disagree about a name that only means "here".  Measured 2026-08-23 on
+        the exact-row reflexivity control: `zPTree::Walk` and
+        `CDDrawSubMgrLeaf::ScanTree` are both byte-identical to retail and
+        both read as a one-instruction `selection` residual purely from this.
+        The referent is dropped; the instruction is kept.
+    """
+    table = _jump_table_bytes(rel, self_name) if self_name else ()
     out: list[Line] = []
     for line in objdump.disassemble(body, vma=0).splitlines():
         if ":\t" not in line:
@@ -128,6 +150,8 @@ def _decode(body: bytes, rel: dict) -> list[Line]:
             addr = int(head.strip(), 16)
         except ValueError:
             continue
+        if addr in table:
+            continue
         parts = rest.split("\t")
         asm = " ".join((parts[-1] if len(parts) > 1 else parts[0]).split())
         nbytes = len((parts[0] if len(parts) > 1 else "").split())
@@ -136,6 +160,8 @@ def _decode(body: bytes, rel: dict) -> list[Line]:
             if addr <= off < addr + max(nbytes, 1):
                 ref = re.sub(r"\+0x[0-9a-f]+$", "", target)
                 break
+        if self_name and ref == self_name:
+            ref = None
         out.append(Line(addr, asm, ref))
     return out
 
@@ -152,7 +178,7 @@ def pair_lines(token: str):
     tgt = Obj(tgt_path)
     bb, brel, _bs = _find_function(base, b.name)
     tb, trel, _ts = _find_function(tgt, b.name)
-    return b, _decode(bb, brel), _decode(tb, trel)
+    return b, _decode(bb, brel, b.name), _decode(tb, trel, b.name)
 
 
 def features(lines: list[Line], self_name: str = "") -> dict[str, Counter]:
