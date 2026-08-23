@@ -329,7 +329,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = startCol; col < clippedW; col++) {
-                    u8 cover = glyphBuf[row * gm.width + col];
+                    u8 cover = glyphBuf[row * g.width + col];
 
                     if (cover == 0) {
                     } else if (cover != UCHAR_MAX) {
@@ -360,7 +360,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = startCol; col < clippedW; col++) {
-                    if (glyphBuf[row * gm.width + col] != 0) {
+                    if (glyphBuf[row * g.width + col] != 0) {
                         *dst = packedColor;
                     }
                     dst++;
