@@ -927,6 +927,17 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
     }                                                                                              \
     m_records.SetSize(0, -1)
 
+// @early-stop
+// Every instruction, offset and constant agrees; both loops and the whole tail from
+// the SetAtGrow call to the `ret 0xc` are exact. What differs is which register the
+// `src` parameter is materialized into. Retail reads it into EBP one push later
+// (`push ebx / push ebp / mov ebp,[esp+0x10]`), copies it to EBX and bumps EBP by
+// 0x20, so `src->m_flags` reads as `[ebp-0x18]`; cl reads it into EBX one push
+// earlier and derives the cursor with `lea ebp,[ebx+0x20]`, one instruction shorter,
+// and then keeps EBX as the base for every `src->` load. Same final assignment
+// (EBX = src, EBP = cursor), opposite derivation. Declaring `cursor` as the first
+// statement was measured and the prologue does not move - the scheduler absorbs the
+// statement order, so the binding is not reachable from this body.
 RVA(0x00165460, 0x156)
 i32 CAniElement::Build(CDDrawSubMgrLeafScan* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;

@@ -461,7 +461,14 @@ inline CPlay::~CPlay() {
 // The nine ClockInterval members recover retail's +0,+8,+4,+0xc zero-store
 // order. The remaining residue is scheduling around the three following
 // member ctors: retail issues each receiver LEA between the interval's low and
-// high stores, while this TU schedules the LEA before all four stores.
+// high stores, while this TU schedules the LEA before all four stores. Only the
+// intervals FOLLOWED BY a member-ctor call split that way; two consecutive
+// intervals stay whole on both sides, so the moved instruction is the next
+// receiver's setup, not the expansion.
+// Measured byte-identical, so nobody re-runs it: writing the ctor as two chained
+// assignments (`m_interval.m_lo = m_start.m_lo = 0;`) instead of four statements.
+// The front end normalizes them, so the four-statement form carries no cost and
+// the two-statement form buys no inline budget either.
 inline CPlay::CPlay() {
     m_returnToMenuOnComplete = 0;
     m_completedFinalLevel = 0;
