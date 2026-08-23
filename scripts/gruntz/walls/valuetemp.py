@@ -17,12 +17,20 @@ two adjacent member offsets through one base register:
 
 DEAD is decided by the EVENT ORDER on the slot: a store is dead when the next
 event on its slot is another store (the RectContains form, where the real value
-overwrites the temp) or nothing at all (the GetModeSize form). Two things make
-the order the only workable rule. ESP IS TRACKED - a `push` between a store and
-its read renumbers the slot. And an ADDRESS-TAKEN aggregate names only its BASE,
-so a per-dword read scan calls its interior fields dead; an `lea` therefore
-observes the whole object it points at, and it observes it AT ITS OWN INDEX -
-the RectContains temp escapes the same slot, just after its successor killed it.
+overwrites the temp) or nothing at all (the GetModeSize form). Three things make
+the order the only workable rule.
+
+ESP IS TRACKED, and a CALL RESTORES THE FRAME LEVEL - argument pushes are gone
+once it returns. Counting pushes without that drifts the delta upward
+monotonically, so one `[esp+0x54]` normalises to five different slots across a
+body and the same physical slot before and after a call reads as two.
+
+An ADDRESS-TAKEN aggregate names only its BASE, so a per-dword read scan calls
+its interior fields dead; an `lea` observes the whole object it points at, and
+it keeps observing it, because the pointer outlives the `lea`.
+
+And a store is only dead against its OWN slot's later events - the RectContains
+temp escapes the same slot its successor already killed.
 
 `--calibrate` is the negative control this sieve exists to have: it reports the
 rows on 100.00% functions, where the two sides ARE the same bytes and any row is
@@ -54,28 +62,79 @@ LEA = re.compile(r"^e[a-z][a-z],\[esp(?:\+0x([0-9a-f]+))?\]$")
 # object: up to the next address-taken base, capped at the widest aggregate this
 # codebase passes that way.
 WIDEST_AGGREGATE = 0x10          # RECT; Coord is 8
-# (unit, symbol, member offset, which sides must carry it). The first two took
-# the accessor and agree; ApplyTriggerA took it too but cl still gives its two
-# calls SEPARATE slots where retail shares one pair, so it stays target-only -
-# which exercises the disagreement path the sweep exists to report.
+SAVE_REGS = ("ebx", "ebp", "esi", "edi")
+# (unit, symbol, member offset, which sides must carry it - "" = NEITHER). The
+# first two took the accessor and agree. ApplyTriggerA is the NEGATIVE: it read
+# target-only while esp tracking ignored callee-popped arguments, and under a
+# correct frame level retail's two stores are a live local Coord whose address
+# it passes (`lea edx,[esp+0x20]` at slot -0x8), not a dead by-value temp.
 CONTROL = (("gruntsteps", "?RectContains@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("gruntsteps", "?RectContainsGated@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
-           ("triggermgrgrid", "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z", 0x17C, "t"))
+           ("triggermgrgrid", "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z", 0x17C, ""))
 LOOKBACK = 40
 
 
+def _frame_level(ins) -> int:
+    """esp's depth once the frame is established - what a call restores to.
+
+    Getting this wrong is not a rounding error: the level is what a call
+    restores to, so a level short by the saved registers makes every post-call
+    slot collide with a pre-call one (measured on CTriggerMgr::ApplyTriggerA,
+    whose `sub esp,0x14` PRECEDES four pushes, and whose switch table decodes as
+    trailing garbage so the epilogue cannot be read backwards either).
+
+    The prologue is `sub esp,N` plus the callee-save pushes, and cl 5.0
+    interleaves `mov`s and non-esp `lea`s among them - so the run cannot be cut
+    at the first non-push. What ends it is an ARGUMENT push, and cl 5.0 saves
+    only ebx/ebp/esi/edi and each only once, so the first push that is not a
+    fresh one of those is the boundary. A /GX function is the exception: its
+    prologue pushes -1, the handler and the old fs:0 chain, and it is
+    recognisable by `mov ebp,esp`."""
+    ebp_frame = any(mn == "mov" and ops == "ebp,esp" for _o, mn, ops in ins[:4])
+    d, saved = 0, set()
+    for _off, mn, ops in ins:
+        if mn == "push":
+            if not ebp_frame:
+                if ops not in SAVE_REGS or ops in saved:
+                    break
+                saved.add(ops)
+            d += 4
+        elif mn == "sub" and ops.startswith("esp,0x"):
+            d += int(ops.split("0x", 1)[1], 16)
+        elif mn in ("call", "ret") or mn.startswith("j") \
+                or (mn == "lea" and "[esp" in ops):
+            break
+    return d
+
+
 def _esp_trace(ins):
-    """[(mnemonic, operands, delta)] - esp's offset below its value at entry."""
-    out, d = [], 0
+    """[(mnemonic, operands, delta)] - esp's offset below its value at entry.
+
+    A CALL RESTORES THE FRAME LEVEL. Argument pushes are popped by the callee
+    under this codebase's `__thiscall`/`__stdcall`, and by the caller's own
+    `add esp,N` under `__cdecl`; either way esp is back at the frame level once
+    the call returns. Counting pushes without that made the delta drift upward
+    monotonically - measured on CBattlezMapConfig::RepathAroundBlockedTiles, one
+    `[esp+0x54]` normalised to five different slots across the body - so the
+    same physical slot before and after a call read as two, which is a false
+    dead store in one direction and a missed one in the other."""
+    out, d = [], _frame_level(ins)
+    level, d, after_call = d, 0, False
     for _off, mn, ops in ins:
         out.append((mn, ops, d))
         if mn == "push":
             d += 4
         elif mn == "pop":
-            d -= 4
+            d = max(level, d - 4)
         elif mn in ("sub", "add") and ops.startswith("esp,0x"):
             n = int(ops.split("0x", 1)[1], 16)
-            d += n if mn == "sub" else -n
+            if mn == "sub":
+                d += n
+            elif not after_call:      # a cdecl cleanup the call already undid
+                d = max(level, d - n)
+        elif mn in ("call", "ret"):
+            d = level
+        after_call = mn == "call"
     return out
 
 
@@ -102,12 +161,16 @@ def _escape_slots(base: int, bases: list[int]) -> range:
 def temps(ins):
     """{member offset N} for each dead adjacent store pair fed by [b+N],[b+N+4].
 
-    Liveness is decided by the EVENT ORDER on each slot, not by whole-function
-    sets: a store is dead when the next event on its slot is another store (or
-    nothing). Order is what separates the two forms - the RectContains form
-    overwrites the slot before its address is taken, so the address-take never
-    observes the temp, while ScanRegion's `lea`+push comes straight after its
-    stores and observes them."""
+    A store is dead when the next event on its slot is another store - the
+    RectContains form, where the real value overwrites the temp - or when the
+    slot is never observed at all. Order is what separates a kill from a read,
+    and it is why an escape cannot be a set: RectContains OVERWRITES the temp
+    slot and then takes that slot's address, so a set-based escape screen loses
+    the established positive. But an escape is not a point event either. The
+    pointer outlives the `lea`, so a slot whose address is taken ANYWHERE is
+    observed by any store with no killing store after it - CBattlezMapConfig::
+    RepathAroundBlockedTiles fills a RECT and schedules the last field's store
+    after the `lea`+pushes that consume it."""
     tr = _esp_trace(ins)
     events: dict[int, list[tuple[int, str]]] = {}
     src_of: dict[int, tuple[str, int]] = {}
@@ -127,9 +190,11 @@ def temps(ins):
             events.setdefault((int(g.group(1), 16) if g.group(1) else 0) - d,
                               []).append((i, "r"))
     bases = sorted({b for _i, b in leas})
+    escaped: set[int] = set()
     for i, base in leas:
         for slot in _escape_slots(base, bases):
             events.setdefault(slot, []).append((i, "r"))
+            escaped.add(slot)
 
     dead: dict[int, tuple[str, int]] = {}
     for slot, evs in events.items():
@@ -138,7 +203,8 @@ def temps(ins):
         if first_store is None or slot not in src_of:
             continue
         after = evs[first_store + 1:]
-        if not after or after[0][1] == "w":
+        killed = bool(after) and after[0][1] == "w"
+        if killed or (not after and slot not in escaped):
             dead[slot] = src_of[slot]
     out = set()
     for k, (b, n) in dead.items():
@@ -221,7 +287,8 @@ def main(argv=None) -> int:
             b, t = _sides(bobj, tobj, bf, tf, sym)
             ok = ((want in b) == ("b" in sides)) and ((want in t) == ("t" in sides))
             bad += not ok
-            print(f"{'ok  ' if ok else 'FAIL'}  {u:<16} +{want:#x} on {sides:<2}  "
+            print(f"{'ok  ' if ok else 'FAIL'}  {u:<16} +{want:#x} on "
+                  f"{sides or 'neither':<7}  "
                   f"base={[hex(x) for x in sorted(b)]} "
                   f"target={[hex(x) for x in sorted(t)]}  {sym}")
         print("\nthe detector fires on every established row"

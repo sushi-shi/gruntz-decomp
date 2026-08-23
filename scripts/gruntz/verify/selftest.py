@@ -3942,6 +3942,35 @@ class ValueTempLivenessControls(unittest.TestCase):
             "mov ecx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x14],ecx",
             "push ebx", "mov edx,DWORD PTR [esp+0x14]")), set())
 
+    def test_a_call_restores_the_frame_level(self):
+        """The argument pushes are gone once the call returns - the callee pops
+        them under `__thiscall`/`__stdcall`.  Carrying them forward drifts the
+        delta upward for the rest of the body, so the SAME slot read after the
+        call scores as a different one and the pair reads dead."""
+        from gruntz.walls.valuetemp import temps
+        self.assertEqual(temps(self._ins(
+            "sub esp,0x10", "push ebx",
+            "mov eax,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x4],eax",
+            "mov ecx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x8],ecx",
+            "push 0x1", "push 0x2", "call 0x0",
+            "mov edx,DWORD PTR [esp+0x4]")), set())
+
+    def test_the_frame_level_counts_saves_that_follow_sub_esp(self):
+        """cl 5.0 puts `sub esp,N` on either side of the callee-save pushes, so
+        the prologue cannot be cut at the first non-push; an ARGUMENT push ends
+        it, and only ebx/ebp/esi/edi are saved, each once."""
+        from gruntz.walls.valuetemp import _frame_level
+        self.assertEqual(_frame_level(self._ins(
+            "sub esp,0x14", "mov eax,DWORD PTR [esp+0x18]", "push ebx",
+            "push ebp", "lea eax,[eax+eax*2]", "push esi", "push edi",
+            "mov DWORD PTR [esp+0x14],ecx", "je 0x0")), 0x24)
+
+    def test_an_argument_push_ends_the_prologue(self):
+        from gruntz.walls.valuetemp import _frame_level
+        self.assertEqual(_frame_level(self._ins(
+            "sub esp,0x10", "push ebx", "push 0x1", "push 0x2",
+            "call 0x0")), 0x14)
+
 
 class EhActionControls(unittest.TestCase):
     """`walls ehactions` reports structure; neither count nor action shape is
