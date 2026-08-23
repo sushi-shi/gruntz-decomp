@@ -397,8 +397,8 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     m_landY = adjY;
     m_object->m_screenX = adjX;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
-    m_fallY = static_cast<double>(m_object->m_screenY);
     CWwdGameObjectA* o = m_object;
+    m_fallY = static_cast<double>(o->m_screenY);
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
     m_timePerTile =
         g_objDropDiv

@@ -34,11 +34,11 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_cellCount = m_rows * m_cols;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
-    if (arr != NULL) {
-        m_allocated = 1;
-        return 1;
+    if (arr == NULL) {
+        return 0;
     }
-    return 0;
+    m_allocated = 1;
+    return 1;
 }
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
