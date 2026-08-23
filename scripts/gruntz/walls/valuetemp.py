@@ -80,6 +80,9 @@ CONTROL = (("gruntsteps", "?RectContains@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("gruntsteps", "?RectContainsGated@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("triggermgrgrid", "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z", 0x17C, ""))
 LOOKBACK = 40
+# One temp is emitted as one run, so its two dead stores are neighbours. Without
+# a bound, two unrelated dead stores at adjacent slots read as a pair.
+PAIR_SPAN = 24
 
 
 def _frame_level(ins) -> int:
@@ -180,10 +183,14 @@ def temps(ins):
     pointer outlives the `lea`, so a slot whose address is taken ANYWHERE is
     observed by any store with no killing store after it - CBattlezMapConfig::
     RepathAroundBlockedTiles fills a RECT and schedules the last field's store
-    after the `lea`+pushes that consume it."""
+    after the `lea`+pushes that consume it.
+
+    Deadness is a property of ONE STORE, not of the slot: a slot cl reuses holds
+    several stores with different sources, and attributing the first store's
+    verdict to a later store's source reports a pair that is not there."""
     tr = _esp_trace(ins)
     events: dict[int, list[tuple[int, str]]] = {}
-    src_of: dict[int, tuple[str, int]] = {}
+    src_of: dict[tuple[int, int], tuple[str, int]] = {}
     leas: list[tuple[int, int]] = []
     for i, (mn, ops, d) in enumerate(tr):
         m = STORE.match(ops) if mn == "mov" else None
@@ -191,8 +198,8 @@ def temps(ins):
             slot = (int(m.group(1), 16) if m.group(1) else 0) - d
             events.setdefault(slot, []).append((i, "w"))
             src = _source_of(ins, i, m.group(2))
-            if src and slot not in src_of:
-                src_of[slot] = src
+            if src:
+                src_of[(slot, i)] = src
             continue
         if mn == "lea" and (g := LEA.match(ops)):
             leas.append((i, (int(g.group(1), 16) if g.group(1) else 0) - d))
@@ -206,29 +213,28 @@ def temps(ins):
             events.setdefault(slot, []).append((i, "r"))
             escaped.add(slot)
 
-    dead: dict[int, tuple[str, int]] = {}
+    dead: dict[int, tuple[str, int, int]] = {}
     for slot, evs in events.items():
         evs.sort()
-        first_store = next((n for n, (_i, k) in enumerate(evs) if k == "w"), None)
-        if first_store is None or slot not in src_of:
-            continue
-        after = evs[first_store + 1:]
-        killed = bool(after) and after[0][1] == "w"
-        if killed or (not after and slot not in escaped):
-            dead[slot] = src_of[slot]
+        for pos, (i, kind) in enumerate(evs):
+            src = src_of.get((slot, i)) if kind == "w" else None
+            if src is None:
+                continue
+            after = evs[pos + 1:]
+            killed = bool(after) and after[0][1] == "w"
+            if killed or (not after and slot not in escaped):
+                dead[slot] = (*src, i)
+                break
     out = set()
-    for k, (b, n) in dead.items():
+    for k, (b, n, at) in dead.items():
         # The base REGISTER is not comparable across sides - the two sides put
         # `this` in different registers - but whether the source is a member or
         # another frame slot is, and it decides the remedy: only a member pair
         # is an accessor's return value. `esp` pairs are stack aggregate copies.
         kind = "esp" if b == "esp" else "mem"
         hi = dead.get(k + 4)
-        if hi and hi[0] == b and hi[1] == n + 4:
+        if hi and hi[0] == b and hi[1] == n + 4 and abs(hi[2] - at) <= PAIR_SPAN:
             out.add((kind, n))
-        lo = dead.get(k - 4)
-        if lo and lo[0] == b and lo[1] == n - 4:
-            out.add((kind, n - 4))
     return out
 
 

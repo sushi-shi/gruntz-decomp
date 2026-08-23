@@ -3971,6 +3971,19 @@ class ValueTempLivenessControls(unittest.TestCase):
             "sub esp,0x10", "push ebx", "push 0x1", "push 0x2",
             "call 0x0")), 0x14)
 
+    def test_a_reused_slot_does_not_lend_its_source_to_an_earlier_store(self):
+        """Deadness belongs to ONE STORE.  cl reuses a slot, so taking the
+        slot's first store for the verdict and its first MEMBER-sourced store
+        for the identity reports a member pair that was never dead - the
+        surviving stores here are the ones the `lea` keeps live."""
+        from gruntz.walls.valuetemp import temps
+        self.assertEqual(temps(self._ins(
+            "xor eax,eax", "mov DWORD PTR [esp+0x20],eax",
+            "xor ecx,ecx", "mov DWORD PTR [esp+0x24],ecx",
+            "mov edx,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x20],edx",
+            "mov ebx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x24],ebx",
+            "lea eax,[esp+0x20]", "push eax", "call 0x0")), set())
+
     def test_the_gx_preamble_pushes_are_frame(self):
         """A /GX function pushes -1, the handler and the old fs:0 chain before
         anything else, and cl 5.0 gives it no ebp frame - so the callee-save
