@@ -18,9 +18,9 @@ the classifier names it from the NET residual, most-actionable first:
                    never names anywhere
     selection      the mnemonic multiset differs       instruction selection
     operand        same mnemonics, different operands  term order / CSE
-    arm-copy       target has callee-saved `mov r,r`   the arm-result temp is
-                   the base lacks                      MISSING (register case)
-    extra-copy     the inverse                         a temp we invented
+    arm-copy       target has one more `mov r,r`       MOSTLY REGALLOC - read
+                   than the base                       the printed evidence
+    extra-copy     the inverse                         MOSTLY REGALLOC, ditto
     missing-store  target repeats a member store       the arm-result temp is
     dup-store      base repeats one                    PRESENT and should not
                                                        be (memory case)
@@ -35,6 +35,15 @@ docs/patterns/arm-result-temp-controls-copies-and-shared-store.md; `--arm`
 answers the same question directly over the WHOLE stream (every member store
 and every callee-saved register copy, not just the ones inside a diff chunk),
 which is the sensitive form.
+
+USE `--arm`, NOT `--kind arm-copy`. The whole `arm-copy`/`extra-copy` bucket
+was read on 2026-08-23 (44 rows) and it is a REGALLOC bucket: 28 rows print an
+EMPTY evidence list or a self-move (`mov edi,edi`), meaning the extra `mov r,r`
+has a scratch or 8-bit destination and the callee-saved-copy signature is
+absent; 11 rows were hand-read against the retail bytes and 0 were an arm
+result. Read the printed evidence before believing the kind name -
+`target has []` is the tool saying it found nothing. Detail and the withdrawn
+"43 rows" claim: docs/patterns/equal-frame-residual-census.md.
 
 Thirteen encoding mirrors are normalized away, because each was measured
 mislabelling real rows: the addend of a RELOCATED call or jump (position

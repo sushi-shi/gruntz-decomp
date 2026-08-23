@@ -33,13 +33,32 @@ STEERABLE, and the fix is a declaration move, not a body edit. **The
 discriminator is that the value is DEAD**: retail routinely materialises a
 *pushed argument* through ECX where we use EDX (`mov ecx,[ebx]; push eax; push
 ecx; call CellTargetable`), and that is a register-name rotation, not a receiver.
-`pop ecx` is cl's `add esp,4` and is never a receiver either. Read the ECX source
-to name the class - a `[reg+N]` member load names the field, `mov ecx,ebp` after a
+`pop ecx` is cl's `add esp,4` and is never a receiver either. A definition that
+is dead but is not a LOAD is also not a receiver: `and ecx,0x3` is arithmetic
+that landed in ECX (`?FileExists@@YAHPBD@Z`). Read the ECX source to name the
+class - a `[reg+N]` member load names the field, `mov ecx,ebp` after a
 prologue `mov ebp,ecx` names the caller's own `this`, and a spilled-`this` frame
 slot is identified by the sibling call that used it (`CSymParser::PackTag` takes
 `mov ecx,[esp+0x14]`, then `add esp,4` shifts the same slot to `[esp+0x10]`).
-Sweep it with `gruntz walls thisscan` (`--inverse` for the mirror). Evidence:
+
+**SWEEP IT WITH `gruntz walls thisscan --retail`, not the paired form.** Our
+side has no receiver by construction, so the paired "we lack it" test is a
+recall tax rather than evidence; the retail-only screen reads retail's own call
+sites, needs no report, and reaches callers that are EXACT, unpaired or
+unreconstructed. See
+[one-sided-screen-beats-the-paired-diff](one-sided-screen-beats-the-paired-diff.md)
+for the calibration and the measured noise floor.
+
+Evidence, four instances, no callee's bytes moved in any of them:
 `CMultiStartDlg::CommitLatencyOption` 92.08 -> 100.00 EXACT
 (`CLatencyList::GetSelItemData`), `CSymParser::ParseRecords` 99.67 -> 100.00
 EXACT (`CSymParser::UnpackTag`), `CGameLevel::LoadWwd` 95.53 -> 96.24
-(`CGameLevel::InflateMainBlock`); no callee's bytes moved in any of the three.
+(`CGameLevel::InflateMainBlock`), and `CBattlezMapConfig::TileSwitch` 0x029af0 -
+which the PAIRED screen structurally could not reach. It sat at 100.00 EXACT as
+`void __stdcall TileSwitch(CGrunt*, i32, i32, i32, i32, i32)`; retail's sole
+caller `CBattlezMapConfig::Step` does `mov ecx,edi` with `edi` the prologue's
+own `this`, and the callee opens `mov eax,[esp+0x10]` so ECX is dead in the
+body too. The caller is at 87%, so our side ALSO had an ECX definition in the
+window and the paired screen cancelled the row. Note the call site needed no
+edit: an unqualified `TileSwitch(g, ...)` inside a `CBattlezMapConfig` method
+resolves to the member once the free declaration is gone.

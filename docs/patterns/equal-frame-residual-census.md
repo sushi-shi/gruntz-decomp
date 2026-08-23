@@ -31,9 +31,9 @@ was adjudicated by hand against the retail bytes first.
 | `immediate` | 75 | 72 | **68** | **68** | a constant differs |
 | `schedule` | 36 | 36 | 39 | 40 | a pure permutation |
 | `operand` | 32 | 32 | 32 | **14** | same mnemonics, different operands |
-| `arm-copy` | 30 | 30 | 31 | 31 | retail has callee-saved `mov r,r` the base lacks |
+| `arm-copy` | 30 | 30 | 31 | 31 | retail has an extra `mov r,r` the base lacks - 21 of 31 are REGALLOC, see below |
 | `none` | 6 | 15 | 19 | 21 | nothing survives the mask |
-| `extra-copy` | 13 | 13 | 13 | 13 | the inverse of `arm-copy` |
+| `extra-copy` | 13 | 13 | 13 | 13 | the inverse of `arm-copy` - 7 of 13 are REGALLOC |
 | `subobject` | - | - | 2 | 2 | one side splits an address, the other folds it |
 | `referent` | 15 | **2** | **2** | **2** | one side names a symbol the other never names |
 
@@ -89,10 +89,43 @@ candidates in 595 rows, and both are a base-pointer shift (every offset moves by
 one constant, 0x2c0 and 4) rather than a swap. Check the SUM before believing a
 storescan row.
 
-**The arm-result-temp defect is 43 rows (30 + 13)** measured on the diff chunks,
-and the direct whole-stream screen (`--arm`) finds 78 rows whose member-store
-COUNT differs and 113 whose callee-saved copy count does. Both cases are real and
-both are steerable — see the worked examples below.
+**The `arm-copy`/`extra-copy` buckets are NOT an arm-result-temp worklist —
+they are a regalloc bucket with a misleading name.** An earlier revision of
+this file said "the arm-result-temp defect is 43 rows (30 + 13)"; that claim is
+withdrawn. The whole bucket was read on 2026-08-23 (44 rows: 31 `arm-copy` +
+13 `extra-copy`), and the tool's own printed evidence disqualifies most of it
+before any hand-reading:
+
+| what the row prints | arm-copy | extra-copy | what it is |
+|---|---:|---:|---|
+| a callee-saved `mov r,r` in the exact residual | 10 | 6 | the documented signature |
+| **`target has []` / `base has []`** | 20 | 5 | the deficit is a move whose DESTINATION is scratch (or an 8-bit register) — `raw()` filters to 32-bit callee-saved destinations, so an empty list means the signature is absent |
+| a SELF-move (`mov edi,edi`) | 1 | 2 | cl's 2-byte encoding used as a pad, or the zero-carrier register |
+
+So **28 of 44 rows (64%) never carried the signature at all.** The three empty
+rows read by hand are unambiguous, and none is an arm result:
+
+* `?GetGruntzDriveLetter@@YADXZ` 0x01ffe0 — retail keeps the byte in `al` and
+  copies `mov bl,al`; base loads straight into `bl`. Which register the byte
+  lives in.
+* `?OnExit@CPlay@@UAEXXZ` 0x0cb400 — retail `mov eax,ds:<global>` then
+  `mov ecx,eax`; base loads straight into `ecx`.
+* `?GetTilePos@CGrunt@@QAE?AUCoord@@XZ` 0x031c70 — the whole 7-instruction
+  residual is `eax`/`edx` swapped plus the copy that swap needs.
+
+Three of the sixteen that DO carry the signature were read too, and they are
+allocation as well: `?Draw@CChatBox@@...` 0x182f90 is a load-compare-keep whose
+compare operand retail puts in EAX; `?RebuildSelectionList@CTriggerMgr@@...`
+0x07cc60 is a whole-body `ebp`↔`ebx` rotation with the rotation's entry copy;
+`?LoadFinishLevelSprite@CTriggerMgr@@...` 0x07c3d0 is §-zero-carrier (retail
+holds zero in `edi` and spells `cmp x,edi` / `push edi` for the immediate).
+With the eight rows sampled earlier that is **11 of 44 hand-adjudicated and 0
+confirmed arm-result-temp defects.**
+
+The real arm-result worklist is the whole-stream screen (`--arm`): 78 rows whose
+member-store COUNT differs and 113 whose callee-saved copy count does, and its
+two worked examples below are real and steerable. Rank from there, not from
+`--kind arm-copy`.
 
 ## The false positives, i.e. what a raw diff calls a difference and is not
 
