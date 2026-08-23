@@ -3280,6 +3280,41 @@ class SemDiffControls(unittest.TestCase):
         self.assertNotEqual(referent_runs(b), referent_runs(t))
 
 
+class EhRegistrationRenameControls(unittest.TestCase):
+    """`_eh_funclet_owners` renames a delinked `push <undefined FUN_<rva>>` to
+    `__ehreg$<owner>` so the two sides co-name their EH machinery.  On the
+    delinked side that is the ONLY structure available, and a
+    `push <$E atexit thunk>; call _atexit` has exactly the same shape - it was
+    renamed on 12 sites in the tree, asserting a registration stub that does
+    not exist (`0x153800` is `mov ecx,&clip; jmp ~CResolveNode`).  The
+    discriminator is the instruction that makes a pushed record ACTIVE."""
+
+    def test_the_registration_prologue_is_recognized(self):
+        from gruntz.compare.canonicalize import _installs_seh_frame
+        # push <stub> / mov eax,fs:[0] / push eax / mov fs:[0],esp
+        body = bytes.fromhex("64a10000000050" "64892500000000")
+        self.assertTrue(_installs_seh_frame(body, 0))
+
+    def test_the_interleaved_registration_prologue_is_recognized(self):
+        """363 of the 911 real sites load `fs:[0]` BEFORE the push, so the
+        window has to start at `push eax`, not at the `fs` prefix."""
+        from gruntz.compare.canonicalize import _installs_seh_frame
+        self.assertTrue(_installs_seh_frame(
+            bytes.fromhex("50" "64892500000000"), 0))
+
+    def test_an_atexit_thunk_push_is_rejected(self):
+        from gruntz.compare.canonicalize import _installs_seh_frame
+        # push <$E thunk> / call _atexit / add esp,4 / mov edx,[..]
+        self.assertFalse(_installs_seh_frame(
+            bytes.fromhex("e80000000083c4048b150000000000000000000000000000"), 0))
+
+    def test_a_static_guard_push_is_rejected(self):
+        from gruntz.compare.canonicalize import _installs_seh_frame
+        # the CButeMgr shape: or dl,al / mov [guard],... then the atexit call
+        self.assertFalse(_installs_seh_frame(
+            bytes.fromhex("0ad0c705000000000000000000000000000000000000"), 0))
+
+
 class ResidueClassifierControls(unittest.TestCase):
     """`walls residue` names what a masked residual IS.  Its whole value is
     that a scheduling coin and a wrong constant land in different buckets, so

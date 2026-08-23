@@ -914,6 +914,17 @@ def _assert_only_canonical_changes(
                 "jump-table relocation resolved-target postcondition failed")
 
 
+#: `mov fs:[0],esp` - the instruction that makes a pushed record the ACTIVE
+#: exception registration. cl 5.0 emits it within a few instructions of the
+#: registration `push`, whatever else the prologue interleaves.
+SEH_INSTALL = bytes.fromhex("64892500000000")
+SEH_INSTALL_WINDOW = 24
+
+
+def _installs_seh_frame(data: bytes, start: int) -> bool:
+    return SEH_INSTALL in data[start:start + SEH_INSTALL_WINDOW]
+
+
 def _eh_funclet_owners(
         coff: CoffObject,
         stubs: list[tuple[str, "Symbol"]] | None = None) -> dict[int, str]:
@@ -980,7 +991,17 @@ def _eh_funclet_owners(
                      target.name.startswith("$L") and
                      target.section != relocation.section and
                      coff.sections[target.section - 1].characteristics & MEM_EXECUTE)
-        target_side = target.section == 0 and _EH_TARGET_FUNCLET.match(target.name)
+        # On the delinked side the only structure available is "an undefined
+        # FUN_<rva>", which is ALSO what a `push <$E atexit thunk>; call
+        # _atexit` looks like - and naming one of those `__ehreg$<owner>`
+        # asserts an EH registration that does not exist. The push has to be
+        # the one that INSTALLS the frame, so require the `mov fs:[0],esp`
+        # that always follows it inside the prologue: 911/911 of the base
+        # side's structurally-identified registrations satisfy it and 0/12 of
+        # the delinked FUN_<rva> pushes in the tree do.
+        target_side = (target.section == 0
+                       and _EH_TARGET_FUNCLET.match(target.name)
+                       and _installs_seh_frame(coff.data, operand + 4))
         if not (base_side or target_side):
             continue
         owner = owner_of(relocation.section, relocation.site)
