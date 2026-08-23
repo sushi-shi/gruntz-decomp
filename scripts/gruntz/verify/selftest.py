@@ -4879,7 +4879,7 @@ class MemberOffsetControls(unittest.TestCase):
         pad = ["nop"] * (EDGE + 1)
         shift = len(pad)
         bump = lambda d: {k + shift: v for k, v in (d or {}).items()}
-        bad, _aligned, _total, swapped, _edged = mismatches(
+        bad, _aligned, _total, swapped, _edged, _tiny = mismatches(
             _asm_lines(pad + ours + pad, bump(orefs)),
             _asm_lines(pad + theirs + pad, bump(trefs)))
         return bad, swapped
@@ -4944,7 +4944,7 @@ class MemberOffsetControls(unittest.TestCase):
         framed_retail = ["mov eax,DWORD PTR [ebp+0x18]"]
         from gruntz.walls.offsetscan import EDGE, mismatches
         prologue = ["push ebp", "mov ebp,esp"] + ["nop"] * (EDGE + 1)
-        bad, _a, _t, _s, _e = mismatches(
+        bad, _a, _t, _s, _e, _n = mismatches(
             _asm_lines(prologue + framed_ours + ["nop"] * (EDGE + 1)),
             _asm_lines(prologue + framed_retail + ["nop"] * (EDGE + 1)))
         self.assertEqual(bad, [])
@@ -4956,6 +4956,54 @@ class MemberOffsetControls(unittest.TestCase):
                            ["mov cl,BYTE PTR [eax+0x1348]"],
                            orefs={0: "$L1"}, trefs={0: "$L1"})
         self.assertEqual(bad, [])
+
+    def test_a_relocated_immediate_leaves_the_displacement_readable(self):
+        """A relocation sits in exactly ONE operand.  `mov DWORD PTR
+        [this+N],OFFSET ??_7X@@6B@` - the vptr stamp - keeps a real member
+        offset in the memory operand, so a vptr stamped into the wrong
+        subobject moves two bytes and must not be dropped with the tables."""
+        bad, _ = self._bad(["mov DWORD PTR [esi+0x70],0x0"],
+                           ["mov DWORD PTR [esi+0x0],0x0"],
+                           orefs={0: "??_7CObject@@6B@"},
+                           trefs={0: "??_7CObject@@6B@"})
+        self.assertEqual([(m["ours_disp"], m["retail_disp"]) for m in bad],
+                         [(0x70, 0x0)])
+
+    def test_a_line_referring_to_its_own_function_is_table_data(self):
+        """The function's own index table decodes as instructions, and one of
+        those can decode with an immediate operand.  A self-referent line is
+        its own table whichever operand the relocation appears to own."""
+        own = "?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHH@Z"
+        from gruntz.walls.offsetscan import EDGE, mismatches
+        pad = ["nop"] * (EDGE + 1)
+        bad, _a, _t, _s, _e, _n = mismatches(
+            _asm_lines(pad + ["mov DWORD PTR [eax+0x126c],0x0"] + pad,
+                       {len(pad): own}),
+            _asm_lines(pad + ["mov DWORD PTR [eax+0x1348],0x0"] + pad,
+                       {len(pad): own}),
+            own)
+        self.assertEqual(bad, [])
+
+    def test_a_run_too_short_to_corroborate_is_counted_apart(self):
+        """A run of 2*EDGE instructions or fewer has no interior, so the EDGE
+        rule discards it wholesale.  That is "nothing here can be
+        corroborated", not "the pairing slipped at a boundary"."""
+        from gruntz.walls.offsetscan import EDGE, mismatches
+        # one aligned instruction between two `replace` blocks: the whole run
+        # is the boundary
+        ours = ["mov eax,0x1", "mov ecx,DWORD PTR [esi+0x24]", "mov eax,0x2"]
+        retail = ["mov eax,0x3", "mov ecx,DWORD PTR [esi+0x3c]", "mov eax,0x4"]
+        bad, _a, _t, _s, edged, tiny = mismatches(_asm_lines(ours),
+                                                  _asm_lines(retail))
+        self.assertEqual(bad, [])
+        self.assertEqual((edged, tiny), (0, 1))
+        # a long run keeps the EDGE reading: same mismatch, real interior
+        pad = ["nop"] * 8
+        bad, _a, _t, _s, edged, tiny = mismatches(
+            _asm_lines(["mov ecx,DWORD PTR [esi+0x24]"] + pad),
+            _asm_lines(["mov ecx,DWORD PTR [esi+0x3c]"] + pad))
+        self.assertEqual(bad, [])
+        self.assertEqual((edged, tiny), (1, 0))
 
     def test_a_scaled_index_off_an_absolute_address_is_not_a_field(self):
         bad, _ = self._bad(["mov eax,DWORD PTR [ecx*4+0x127c]"],
@@ -4977,7 +5025,7 @@ class MemberOffsetControls(unittest.TestCase):
                       for off in range(0x1b8, 0x1b8 + 6 * 4, 4)] + pad
         retail = pad + [f"mov DWORD PTR [esi+{off:#x}],edi"
                         for off in range(0x810, 0x810 + 6 * 4, 4)] + pad
-        bad, _a, _t, _s, _e = mismatches(_asm_lines(ours), _asm_lines(retail))
+        bad, _a, _t, _s, _e, _n = mismatches(_asm_lines(ours), _asm_lines(retail))
         self.assertEqual(kind(bad), "run")
         self.assertEqual(kind([]), "clean")
 

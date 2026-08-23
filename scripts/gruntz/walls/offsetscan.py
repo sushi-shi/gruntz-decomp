@@ -31,10 +31,12 @@ WHAT IS EXCLUDED, AND WHY:
     671 retail bodies, and in a frameless body EBP is an ordinary value
     register, so `lea eax,[ebp+0x4]` is a heap field.  `frame_regs` (shared
     with `escapescan`) decides per side.
-  * every line carrying a RELOCATION.  An absolute `ds:0x...`, a global folded
-    into `[eax+<table>]`, a `$L` block address: the displacement is a link-time
-    address objdiff masks, the referent channel owns it, and `assert-relocs`
-    already proves it.
+  * a line whose relocation IS its memory operand.  An absolute `ds:0x...`, a
+    global folded into `[eax+<table>]`, a `$L` block address, the function's own
+    index table decoding as junk: the displacement is a link-time address
+    objdiff masks, the referent channel owns it, `assert-relocs` proves it.  A
+    relocated line whose relocation is a separate IMMEDIATE is NOT excluded -
+    see `reloc_owns_operand`.
   * the function's own switch/index table, which decodes as instructions -
     removed by `code_pair`'s byte-range filter, as `diagnose` removes it - and
     the indirect `jmp`/`call` through it, whose displacement is the table's
@@ -49,20 +51,76 @@ WHAT IS EXCLUDED, AND WHY:
     is where the pairing slips: one side has an extra instruction and the tail
     walks off by one, so two unrelated accesses meet.  Three live rows read
     that way and every one was an extra instruction, not a different field.
+    Counted apart from `short-run`, below.
+  * a candidate in a run of 2*EDGE instructions or fewer.  Such a run has no
+    interior at all, so the EDGE rule discards it wholesale; that is the
+    different statement "nothing here can be corroborated", not "the pairing
+    slipped at a boundary", and conflating the two told a reader a run had
+    slipped when there was never a run.
   * an aligned pair whose BASE REGISTERS differ.  Two instructions indexing off
     different pointers are two different accesses the masked key happened to
     align; requiring the same base is what separates the reading from the
     alignment's own noise.  It bounds the sieve in exchange: a real wrong
     member whose base register rotated too does not reach the report.
 
-WHAT THE LIVE SWEEP IS WORTH.  Hand-read 2026-08-23 over five of the seven live
-`field` rows: ONE genuine (an addressing SHAPE, not a wrong member - see the
-pattern), three alignment SLIPS whose extra instruction sat further than EDGE
-from the mismatch, and one the known aligning-delta artifact of a body already
-proven exact.  Coverage predicts a slip without excluding one:
+WHAT THE SUPPRESSIONS THROW AWAY, measured 2026-08-23 by re-running the sweep
+with each filter OFF and classifying all 6983 candidate pairs over 588 rows:
+
+  frame     5204 pairs.  Structurally undecidable, not discarded evidence: the
+            slot base moves between builds, and a stack STRUCT's field offset
+            is folded into the same number, so `[esp+0x40]` against
+            `[esp+0x44]` cannot be told from a wrong field of a local RECT.
+            framescan owns it.
+  order      757 pairs, of which 686 are per-field BALANCED - each side touches
+            both displacements the same number of times in the run, which is
+            what a permutation means.  Of the 71 unbalanced, only THREE show
+            the wrong-member signature (ours favours one field, retail the
+            other); all three were read against the disassembly
+            (CFaderShape::ApplyInit +0x60/+0x64, CGrunt::
+            LoadGruntCombatAnimations +0x17c/+0x180 twice) and every one is
+            mirrored rematerialization of the same value.
+  basereg    858 pairs.  The blind spot is real but not reachable: derive the
+            register correspondence from the alignment itself (inside one run,
+            ours `[ebx+D]` against retail `[esi+D]` for the same D witnesses
+            ebx=esi there) and admit mismatches between corresponding
+            registers, and the whole image yields SEVEN such pairs and ZERO
+            live ones - even demanding a single witness.  A rotated base
+            register travels with a wholesale regalloc divergence that leaves
+            nothing to corroborate against.
+  edge        75 pairs, 29 of them in runs of <= 2*EDGE.  That is why the two
+            are now counted apart.  Every long-run case was read: they are the
+            CSbiHlRow ctor divergence, the CGrunt ctor's interleaved clearing
+            run, and lea-folded array bases.
+  scaled       1 pair, and it was table junk.  Sound by construction: an
+            operand whose only register is scaled has no object pointer, so its
+            displacement cannot be a member offset.
+  reloc       46 pairs.  This one WAS hiding a class: a relocation sits in
+            exactly one operand, and `mov DWORD PTR [this+0x70],OFFSET
+            ??_7CObject@@6B@` - the vptr stamp - keeps a real member offset in
+            the memory operand while the relocation is the immediate.  A vptr
+            stamped into the wrong subobject moves two bytes and no channel
+            read them.  SPLIT rather than loosened: the suppression now asks
+            which operand the relocation owns.  Admitting the immediate class
+            adds zero rows to the live sweep, so the split is a closed blind
+            spot, not new noise.
+
+WHAT THE LIVE SWEEP IS WORTH.  All seven live rows of 2026-08-23 hand-read:
+ONE genuine (`CStatusBarMgr::LoadRezMachineConfig`, an addressing SHAPE - a
+cursor into the array where retail names the array - now EXACT and gone), and
+six alignment SLIPS.  Coverage predicts a slip without excluding one:
 `CProjectile::LoadProjectileSprites` reads as a 4-byte layout shift at 93.7%
 coverage and both sides in fact use the same four offsets.  Read every row
 against the disassembly before believing it.
+
+THE READING THAT SETTLES A ROW is the whole-function displacement census, taken
+with the base register IGNORED (it rotates).  Equal counts on every displacement
+means the positional hit is a slip - `CWarlord`'s ctor is exactly that, 33 keys
+identical and every store at the same byte address, off a one-instruction index
+shift.  Two cautions, both measured: a census delta of +1/-1 on adjacent members
+is usually mirrored rematerialization rather than a swap, and the census cannot
+see through a folded base - `CGrunt::StepDiggerBehavior` reads `this->m_rect`
+partly through `this` (+0x64/+0x68/+0x6c) and partly through a pointer to it,
+which reads as three fields retail never touches and is the same four addresses.
 
 WHAT IT STRUCTURALLY CANNOT SEE.  A wrong member whose offset happens to
 coincide with the right one moves no byte.  A wrong member inside a block the
@@ -113,6 +171,28 @@ MEM = re.compile(r"\[(e[a-z]{2})(\*\d)?"
 REG = re.compile(r"\be[a-z]{2}\b|\b[a-d][lh]\b|\b[a-d]x\b|\b[sd]i\b|\b[sb]p\b")
 IMM = re.compile(r"0x[0-9a-f]+")
 
+#: an immediate operand OUTSIDE the brackets, which is where a relocation sits
+#: when it is NOT the memory operand's displacement
+OUTSIDE_IMM = re.compile(r"(?:^|,)\s*0x[0-9a-f]+\s*$")
+
+
+def reloc_owns_operand(asm: str, ref: str, self_name: str | None) -> bool:
+    """True when this line's relocation is the MEMORY operand's displacement.
+
+    A relocation sits in exactly one operand, and which one decides whether the
+    displacement means anything.  In `[eax+<g_table>]` or in the function's own
+    index table decoding as junk, the displacement IS the masked link-time
+    address and belongs to the referent channel.  In `mov DWORD PTR
+    [this+0x70],OFFSET ??_7CObject@@6B@` - the vptr stamp - the relocation is
+    the IMMEDIATE and `0x70` is a real member offset, so a stamp into the wrong
+    subobject must reach the report.  An immediate outside the brackets is the
+    discriminator; a line whose referent is the function ITSELF is its own
+    table either way.
+    """
+    if self_name and ref == self_name:
+        return True
+    return OUTSIDE_IMM.search(asm) is None
+
 
 def operand(asm: str) -> tuple[str, int] | None:
     """(base register, displacement) of this line's MEMBER operand, or None.
@@ -138,15 +218,19 @@ def key(asm: str) -> str:
     return IMM.sub("I", REG.sub("R", asm))
 
 
-def field_lines(lines) -> list[tuple[str, tuple[str, int] | None]]:
+def field_lines(lines, self_name: str | None = None) \
+        -> list[tuple[str, tuple[str, int] | None]]:
     """Each instruction as (alignment key, member operand or None)."""
     frame = set(frame_regs(lines))
     out = []
     for ln in lines:
-        # A line carrying a RELOCATION has a link-time address folded into its
-        # operand - a global, a jump/index table base - which objdiff masks and
-        # which is not a field of anything.
-        op = None if ln.ref else operand(ln.asm)
+        # A relocation only disqualifies the displacement when the relocation
+        # IS that displacement - a global, a jump/index table base, the
+        # function's own table decoding as junk.  When it is a separate
+        # immediate the displacement is a real member offset and is read.
+        op = operand(ln.asm)
+        if op and ln.ref and reloc_owns_operand(ln.asm, ln.ref, self_name):
+            op = None
         if op and op[0] in frame:
             op = None
         out.append((key(ln.asm), op))
@@ -173,18 +257,26 @@ def _touched(side, lo: int, hi: int) -> set:
     return {side[k][1][1] for k in range(lo, hi) if side[k][1]}
 
 
-def mismatches(base, target) -> tuple[list[dict], int, int, int, int]:
+def mismatches(base, target, self_name: str | None = None) \
+        -> tuple[list[dict], int, int, int, int, int]:
     """Aligned positions whose member displacements differ, how many
     instructions the alignment matched, and how many candidates were
-    suppressed as an order swap or as an alignment slip at a run edge."""
-    fb, ft = field_lines(base), field_lines(target)
+    suppressed as an order swap, as a run too short to corroborate anything,
+    or as an alignment slip at the edge of a longer run."""
+    fb, ft = field_lines(base, self_name), field_lines(target, self_name)
     sm = difflib.SequenceMatcher(a=[k for k, _ in fb], b=[k for k, _ in ft],
                                  autojunk=False)
-    out, aligned, swapped, edged = [], 0, 0, 0
+    out, aligned, swapped, edged, tiny = [], 0, 0, 0, 0
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
         if tag != "equal":
             continue
         aligned += i2 - i1
+        # A run of 2*EDGE or fewer instructions has no interior: EVERY position
+        # in it is within EDGE of a boundary, so the rule below would discard it
+        # wholesale.  That is a different statement - the run is too short to
+        # corroborate anything - and it is counted apart so a reader is not told
+        # a pairing "slipped at an edge" when there was never a run to slip in.
+        short = (i2 - i1) <= 2 * EDGE
         ours_run, retail_run = _touched(fb, i1, i2), _touched(ft, j1, j2)
         for i, j in zip(range(i1, i2), range(j1, j2)):
             ob, ot = fb[i][1], ft[j][1]
@@ -213,12 +305,15 @@ def mismatches(base, target) -> tuple[list[dict], int, int, int, int]:
             # CInGameIcon::PlaceAt, CRollingBall's ctor), every one an extra
             # instruction on our side rather than a different field.
             if min(i - i1, i2 - 1 - i, j - j1, j2 - 1 - j) < EDGE:
-                edged += 1
+                if short:
+                    tiny += 1
+                else:
+                    edged += 1
                 continue
             out.append({"ours": base[i].asm, "retail": target[j].asm,
                         "ours_disp": ob[1], "retail_disp": ot[1],
                         "shape": fb[i][0]})
-    return out, aligned, min(len(fb), len(ft)), swapped, edged
+    return out, aligned, min(len(fb), len(ft)), swapped, edged, tiny
 
 
 #: a run of this many mismatches sharing ONE masked instruction shape is a
@@ -244,13 +339,14 @@ def kind(bad: list[dict]) -> str:
 
 def scan_one(token: str) -> dict:
     binding, base, target = code_pair(token)
-    bad, aligned, total, swapped, edged = mismatches(base, target)
+    bad, aligned, total, swapped, edged, tiny = \
+        mismatches(base, target, binding.name)
     swaps: dict[str, int] = {}
     for m in bad:
         swaps[f"{m['ours_disp']:#x}->{m['retail_disp']:#x}"] = \
             swaps.get(f"{m['ours_disp']:#x}->{m['retail_disp']:#x}", 0) + 1
     return {"nbad": len(bad), "swaps": swaps, "sites": bad,
-            "order_swaps": swapped, "edge_slips": edged,
+            "order_swaps": swapped, "edge_slips": edged, "short_runs": tiny,
             "kind": kind(bad),
             "coverage": round(100.0 * aligned / total, 1) if total else 0.0}
 
@@ -294,10 +390,12 @@ def report(rows: list[dict], limit: int, show_all: bool) -> None:
 
 def detail(token: str) -> None:
     binding, base, target = code_pair(token)
-    bad, aligned, total, swapped, edged = mismatches(base, target)
+    bad, aligned, total, swapped, edged, tiny = \
+        mismatches(base, target, binding.name)
     cov = round(100.0 * aligned / total, 1) if total else 0.0
     print(f"== {binding.unit}/{binding.name}   aligned {aligned}/{total} "
-          f"({cov}%)   suppressed: {swapped} order, {edged} run-edge")
+          f"({cov}%)   suppressed: {swapped} order, {edged} run-edge, "
+          f"{tiny} short-run")
     if not bad:
         print("   no aligned member offset differs")
     for m in bad:
@@ -339,7 +437,43 @@ def _hermetic() -> int:
     print("      POSITIVE: the puddle block's own bytes - the gauge award at "
           "+0x68 for retail's +0x64, and CUserLogic::m_object (+0x10) for "
           "CWapX::m_wwdObject (+0x38)")
-    return 0 if ok else 1
+    return (0 if ok else 1) + _hermetic_reloc()
+
+
+def _hermetic_reloc() -> int:
+    """The relocated-IMMEDIATE positive and its NEGATIVE partner.
+
+    `mov DWORD PTR [this+N],OFFSET ??_7X@@6B@` carries a relocation, and until
+    2026-08-23 that alone dropped the line - so a vptr stamped into the wrong
+    subobject moved two bytes and no channel read them.  The negative is the
+    same suppression doing its real job: a global folded INTO the memory
+    operand, where the displacement is the masked link-time address.
+    """
+    from gruntz.walls.semdiff import Line
+    pad = ["nop"] * (EDGE + 1)
+    mk = lambda a, r: [Line(i * 4, t, r if i - len(pad) in (0,) else None)
+                       for i, t in enumerate(pad + a + pad)]
+    bad = 0
+
+    stamp_o = mk(["mov DWORD PTR [esi+0x70],0x0", "mov eax,esi"], "??_7CObject@@6B@")
+    stamp_r = mk(["mov DWORD PTR [esi+0x0],0x0", "mov eax,esi"], "??_7CObject@@6B@")
+    got = {(m["ours_disp"], m["retail_disp"])
+           for m in mismatches(stamp_o, stamp_r)[0]}
+    ok = got == {(0x70, 0x0)}
+    print(f"{'FIRES ' if ok else 'BROKEN'} hermetic-reloc-imm  "
+          f"{'ok' if ok else f'got {got}, want {{(0x70, 0x0)}}'}")
+    print("      POSITIVE: the relocation is the IMMEDIATE, so the vptr stamp's "
+          "own displacement is a real member offset and must be read")
+    bad += 0 if ok else 1
+
+    folded_o = mk(["mov eax,DWORD PTR [esi+0x70]", "mov eax,esi"], "?g_table@@3PAHA")
+    folded_r = mk(["mov eax,DWORD PTR [esi+0x0]", "mov eax,esi"], "?g_table@@3PAHA")
+    n = len(mismatches(folded_o, folded_r)[0])
+    print(f"{'SILENT' if n == 0 else 'BROKEN'} hermetic-reloc-mem  "
+          f"{'ok' if n == 0 else f'{n} hit(s), want 0'}")
+    print("      NEGATIVE: the relocation IS the memory operand, so the "
+          "displacement is a masked link-time address the referent channel owns")
+    return bad + (0 if n == 0 else 1)
 
 
 def control() -> int:
