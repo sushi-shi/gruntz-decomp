@@ -1580,12 +1580,12 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_gruntKind == GRUNT_ROIDZ) {
                 downtime = 0;
             }
-            m_stamina = 0;
-            m_lowStaminaCued = 0;
-            m_attackClockLo = g_frameTime;
-            m_attackClockHi = 0;
             m_attackDowntimeLo = downtime;
             m_attackDowntimeHi = 0;
+            m_attackClockLo = g_frameTime;
+            m_attackClockHi = 0;
+            m_lowStaminaCued = 0;
+            m_stamina = 0;
             if (m_healthSprite != NULL) {
                 CreateStaminaSprite();
             }
