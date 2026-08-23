@@ -1017,6 +1017,130 @@ class ReviewCountClaimControls(unittest.TestCase):
         )
 
 
+class ReviewClaimGateControls(unittest.TestCase):
+    """The `review-claims` tier row - the certifications re-measured on EVERY
+    build.  It exists because the MAX gate structurally cannot see this class
+    of drift: c1c1616a gave `PlaceObjectFull` the 16th `ret` retail has and
+    silently lost a cross-jump elsewhere (calls +1, branches -1, relocs +1),
+    the SCORE ROSE, and the source hash did not move, so neither the ledger nor
+    a source reader had anything to look at.  The recognizer controls above
+    prove the parser; these drive `gate_findings`, which is what the tier
+    calls."""
+
+    RVA = 0x078A50
+
+    def _findings(self, evidence, counts, *, resolves=True, measurable=True):
+        import types as _types
+
+        from gruntz.walls import recheck
+        row = {"src_hash": "f96c455cab0e", "status": "open",
+               "wall_class": "inline", "evidence": evidence}
+        b = _types.SimpleNamespace(
+            rva=self.RVA, unit="triggermgrplace",
+            name="?PlaceObjectFull@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z")
+        located = (b, "") if resolves else (
+            None, f"no CLAIMED function starts at 0x{self.RVA:x}")
+        measured = ((counts, "inline") if measurable
+                    else "normalized pair missing for triggermgrplace")
+        with mock.patch("gruntz.walls.reviews.load",
+                        return_value={self.RVA: row}), \
+             mock.patch("gruntz.walls.reviews.current", return_value={}), \
+             mock.patch("gruntz.walls.diagnose._locate", return_value=located), \
+             mock.patch.object(recheck, "measure", return_value=measured):
+            return recheck.gate_findings()
+
+    #: the drifted pair c1c1616a actually produced, against the certification
+    #: the review still carried
+    DRIFTED = {"calls": (25, 24), "branches": (95, 96), "returns": (16, 16),
+               "relocs": (65, 64), "insns": (300, 300), "bytes": (0x400, 0x400)}
+    HOLDING = {"calls": (24, 24), "branches": (96, 96), "returns": (15, 16),
+               "relocs": (64, 64), "insns": (300, 300), "bytes": (0x400, 0x400)}
+    CERT = ("Base/retail now agree at 24 calls, 96 branches, and 64 relocs; "
+            "base has 15 vs retail 16 returns because the grouped preview "
+            "keeps world in EBP on one arm.")
+
+    def test_the_known_positive_reaches_the_gate(self):
+        """POSITIVE control carrying the property under test end to end: the
+        certification that drifted, measured against the pair that drifted it.
+        A parser control alone would not prove the GATE reads it."""
+        out = self._findings(self.CERT, self.DRIFTED)
+        self.assertEqual(len(out), 3, out)
+        self.assertTrue(all(f"0x{self.RVA:06x}" in f for f in out))
+        self.assertEqual(
+            {f.split("both sides at ")[1].split(" - ")[0] for f in out},
+            {"24 calls, now base 25 / target 24",
+             "96 branches, now base 95 / target 96",
+             "64 relocs, now base 65 / target 64"},
+        )
+
+    def test_a_holding_certification_is_silent(self):
+        """The clean pass.  The stated `15 vs 16` returns divergence is NOT a
+        claim, so a pair that still shows it must not fail the gate."""
+        self.assertEqual(self._findings(self.CERT, self.HOLDING), [])
+
+    def test_a_review_row_that_names_no_claimed_function_fails(self):
+        """A review whose row no longer exists is a dangling ledger entry, not
+        a hold: nothing was measured, so nothing may pass."""
+        out = self._findings(self.CERT, self.HOLDING, resolves=False)
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("names no claimed function", out[0])
+
+    def test_an_unreadable_pair_is_not_a_pass(self):
+        """A gate that SKIPS is not a gate that PASSES: a stated count whose
+        normalized pair cannot be read is reported, not assumed green."""
+        out = self._findings(self.CERT, None, measurable=False)
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("unmeasurable", out[0])
+        # ... but a review that certifies NO count has nothing to measure.
+        self.assertEqual(
+            self._findings("Regalloc wall: retail keeps world in EBP.",
+                           None, measurable=False), [])
+
+    def test_a_non_certification_sentence_cannot_fail_the_gate(self):
+        """NEGATIVE control, the three sentence classes the parser must not
+        read as a certification of the committed pair: two source spellings
+        measured against each other, a REJECTED frontier, and a disposable
+        `inline_depth(0)` probe.  Each is paired with counts that contradict
+        its numbers - a gate that read them would fire here."""
+        contradicting = {"calls": (1, 2), "branches": (1, 2),
+                         "returns": (1, 2), "relocs": (1, 2),
+                         "insns": (1, 2), "bytes": (1, 2)}
+        for sentence in (
+            "An explicit forward null-success goto and the exact authored "
+            "shape suggested by retail both compile byte-identically at 77.50 "
+            "with 30 instructions, 3 branches and 2 returns.",
+            "Best structural frontier had 320/319 instructions, 32/32 "
+            "branches and 21/21 relocs but emitted bank arithmetic before "
+            "both Locks, so it was rejected.",
+            "Disposable inline_depth(0) at those expressions proves 59/59 "
+            "calls, 43/43 branches, 65/65 relocs.",
+        ):
+            self.assertEqual(self._findings(sentence, contradicting), [],
+                             sentence)
+
+    def test_the_tier_runs_it(self):
+        """The row is REGISTERED, and it is this gate the runner calls - a
+        gate nothing invokes is documentation."""
+        import contextlib
+        import io
+
+        from gruntz.verify import tiers
+        self.assertIn("review-claims", dict(tiers.TIERS["normal"]))
+        with mock.patch("gruntz.walls.recheck.gate_findings",
+                        return_value=["planted drift"]) as g:
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                failed = tiers.run(["normal"])
+        g.assert_called_once()
+        self.assertGreaterEqual(failed, 1)
+        self.assertIn("review-claims: FAIL", out.getvalue())
+        # ONE implementation: the registered gate module IS the walls tool the
+        # campaign runs by hand, not a second copy that could drift from it.
+        from gruntz.verify import _GATES
+        self.assertEqual(_GATES["review-claims"], "gruntz.walls.recheck")
+        self.assertEqual(tiers._rerun_command("review-claims"),
+                         "gruntz verify review-claims")
+
+
 class StoreScanFrameControls(unittest.TestCase):
     """`walls storescan` compares member-store ORDER, so its key has to be a
     MEMBER offset.  Excluding the literal `esp` base was not enough: cl builds

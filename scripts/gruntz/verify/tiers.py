@@ -3,7 +3,8 @@
   fast    text/ledger checks (board, bans, casts, enum domains, label style,
           include order) - seconds, no build artifacts.
   normal  model/layout joins (unique names, library overlap, tu order, data
-          tu order, undefined closure) - needs bindings + base/target objs.
+          tu order, undefined closure, the wall-review count certifications) -
+          needs bindings + base/target objs.
   full    binary-evidence audits (vtable tier, alloc size, assert relocs,
           data relocs, caller-callee, the retail data-access map + the
           claim-side coverage census) - compiles nothing but reads many
@@ -95,6 +96,11 @@ def _dead_code():
     return dead_code.gate_findings()
 
 
+def _review_claims():
+    from gruntz.walls import recheck
+    return recheck.gate_findings()
+
+
 def _vtables():
     from gruntz.verify import vtables
     return vtables.gate_findings()
@@ -151,6 +157,7 @@ TIERS: dict[str, list[tuple[str, object]]] = {
         ("data-tu-order", _data_tu_order),
         ("dead-code", _dead_code),
         ("undefined-closure", _undefined_closure),
+        ("review-claims", _review_claims),
     ],
     "full": [
         ("vtables", _vtables),

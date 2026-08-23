@@ -141,13 +141,25 @@ def ladder(bmask, tmask, bref, tref, bcalls, tcalls, skeleton) -> str:
     return "none"
 
 
-def _locate(token: str):
+def named_functions() -> tuple:
+    """The Model's NAMED function bindings.
+
+    A SWEEP resolves this once and hands it to every `_locate` call.
+    `gruntz.model.resolve` re-reads every census and claim channel each time
+    (~0.33 s), so locating one row at a time paid that per row: `walls
+    recheck` over 112 reviews spent 35 s of its 40 s here, which is the
+    difference between a build gate and a manual sweep.  It is a parameter
+    rather than a process-wide cache because a cache would outlive a mocked
+    Model and answer from the previous test."""
+    from gruntz.model import resolve
+    return tuple(f for f in resolve().functions if f.name)
+
+
+def _locate(token: str, named: tuple | None = None):
     """The claimed function a token names: a hex rva, the mangled name, or the
     readable `CClass::Member` spelling every other view accepts."""
-    from gruntz.model import resolve
     from gruntz.sema.index import short_name
-    model = resolve()
-    named = [f for f in model.functions if f.name]
+    named = named_functions() if named is None else named
     if token.lower().startswith("0x"):
         try:
             rva = int(token, 16)

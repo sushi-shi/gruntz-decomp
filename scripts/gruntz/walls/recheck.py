@@ -24,6 +24,11 @@ counts both still hold is a verdict the edit did not invalidate.
     gruntz walls recheck --broken        only rows with a failed count claim
     gruntz walls recheck --strict        exit 1 when any count claim is broken
 
+`gate_findings` is the same sweep as the `review-claims` row of `gruntz verify
+check --tier normal`, so every build re-measures the ledger.  It belongs in a
+tier because it is the drift the MAX gate cannot see: the MAX gate watches the
+SCORE, and the commit that broke `PlaceObjectFull`'s certification raised it.
+
 Only AGREEMENT claims are extracted, and deliberately so.  "base 59/retail 43
 calls" states a known divergence whose direction depends on the writer's word
 order; asserting it back would test the parser, not the tree.  An agreement
@@ -216,10 +221,87 @@ def measure(binding) -> tuple[dict[str, tuple[int, int]], str] | str:
     return {u: (side["base"][u], side["target"][u]) for u in side["base"]}, wall
 
 
+def sweep(wanted: set[int] | None = None) -> list[dict]:
+    """One record per review row: the re-measured verdicts, in rva order.
+
+    The printer and the build gate both consume this, so the two can never
+    answer differently - the same reason `measure` calls `diagnose.ladder`
+    instead of reimplementing the class ladder."""
+    from gruntz.walls import reviews
+    from gruntz.walls.diagnose import _locate, named_functions
+
+    rows = reviews.load()
+    fresh = set(reviews.current())
+    named = named_functions()
+    out: list[dict] = []
+    for rva in sorted(rows):
+        if wanted and rva not in wanted:
+            continue
+        row = rows[rva]
+        stated, skipped = claims(row["evidence"])
+        rec = {
+            "rva": rva, "row": row, "stated": stated, "skipped": skipped,
+            "fresh": rva in fresh, "binding": None, "verdicts": [],
+            "wall": None, "error": None,
+        }
+        b, why = _locate(f"0x{rva:x}", named)
+        if b is None:
+            rec["error"] = ("unresolved", why)
+            out.append(rec)
+            continue
+        rec["binding"] = b
+        got = measure(b)
+        if isinstance(got, str):
+            rec["error"] = ("unmeasured", got)
+            out.append(rec)
+            continue
+        counts, wall = got
+        rec["wall"] = wall
+        rec["verdicts"] = [(counts[u][0] == n == counts[u][1], u, n, *counts[u])
+                           for u, n, _s in stated]
+        out.append(rec)
+    return out
+
+
+def gate_findings() -> list[str]:
+    """Every count a review certifies, re-measured against today's pair.
+
+    This is the drift the MAX gate structurally CANNOT see.  The MAX gate
+    watches the SCORE, so a commit that trades one cross-jump for another -
+    `PlaceObjectFull` gaining the 16th `ret` retail has while losing a merge
+    elsewhere, calls +1 / branches -1 / relocs +1 - passes it with the score
+    going UP, and no source reader can see it either because the source hash
+    did not move.  A review's "base and retail agree on 24 calls, 96 branches
+    and 64 relocs" is the only record of that shape, and until it is
+    re-measured it is prose."""
+    out: list[str] = []
+    for rec in sweep():
+        rva = rec["rva"]
+        if rec["error"]:
+            why, detail = rec["error"]
+            if why == "unresolved":
+                out.append(f"0x{rva:06x}: review row names no claimed function "
+                           f"({detail})")
+            elif rec["stated"]:
+                # A row whose pair cannot be read is not a row that passed.
+                out.append(f"0x{rva:06x}: {len(rec['stated'])} certified "
+                           f"count(s) unmeasurable - {detail}")
+            continue
+        name = rec["binding"].name
+        for ok, unit, n, base, target in rec["verdicts"]:
+            if ok:
+                continue
+            fmt = (lambda v: f"{v:#x}") if unit == "bytes" else str
+            out.append(f"0x{rva:06x} {name}: review certifies both sides at "
+                       f"{fmt(n)} {unit}, now base {fmt(base)} / target "
+                       f"{fmt(target)} - re-review or re-certify "
+                       f"(`gruntz walls diagnose 0x{rva:x}`)")
+    return out
+
+
 def main(argv=None) -> int:
     import argparse
 
-    from gruntz.walls import reviews
     from gruntz.walls.diagnose import _locate
 
     ap = argparse.ArgumentParser(
@@ -234,8 +316,6 @@ def main(argv=None) -> int:
                     help="also print the mixed sentences the parser declined to read")
     a = ap.parse_args(argv)
 
-    rows = reviews.load()
-    fresh = set(reviews.current())
     wanted = set()
     for token in a.target:
         b, why = _locate(token)
@@ -248,56 +328,48 @@ def main(argv=None) -> int:
     unparsed: list[int] = []
     broken_rows: list[int] = []
     n_class = Counter()
-    for rva in sorted(rows):
-        if wanted and rva not in wanted:
+    for rec in sweep(wanted):
+        rva, row = rec["rva"], rec["row"]
+        if rec["error"]:
+            why, detail = rec["error"]
+            if why == "unresolved":
+                print(f"  0x{rva:06x} UNRESOLVED {detail}")
+            elif rec["stated"]:
+                print(f"  0x{rva:06x} UNMEASURED {detail}")
+            if rec["stated"]:
+                broken_rows.append(rva)
             continue
-        row = rows[rva]
-        stated, skipped = claims(row["evidence"])
-        b, why = _locate(f"0x{rva:x}")
-        if b is None:
-            print(f"  0x{rva:06x} UNRESOLVED {why}")
-            continue
-        got = measure(b)
-        if isinstance(got, str):
-            if stated:
-                print(f"  0x{rva:06x} UNMEASURED {got}")
-            continue
-        counts, wall = got
         # The CLASS is an assertion too, and it is the one a matcher acts on.
         # It is scored separately: the review names the CAUSE it traced, this
         # names the FIRST divergence, so a disagreement is a lead, not a defect.
-        same_class = wall == row["wall_class"]
+        same_class = rec["wall"] == row["wall_class"]
         n_class["same" if same_class else "differs"] += 1
-        verdicts = []
-        for unit, n, _s in stated:
-            base, target = counts[unit]
-            ok = base == n == target
-            n_claims += 1
-            n_hold += ok
-            n_broken += not ok
-            verdicts.append((ok, unit, n, base, target))
-        n_rows += bool(stated)
-        if not stated:
+        verdicts = rec["verdicts"]
+        n_claims += len(verdicts)
+        n_hold += sum(1 for ok, *_ in verdicts if ok)
+        n_broken += sum(1 for ok, *_ in verdicts if not ok)
+        n_rows += bool(rec["stated"])
+        if not rec["stated"]:
             unparsed.append(rva)
         row_broken = any(not ok for ok, *_ in verdicts)
         if row_broken:
             broken_rows.append(rva)
         if a.broken and not row_broken:
             continue
-        freshness = "current" if rva in fresh else "STALE"
+        freshness = "current" if rec["fresh"] else "STALE"
         print(f"0x{rva:06x} {freshness:7} {row['status']:8} {row['wall_class']:8} "
-              f"{b.name}  [{b.unit}]")
+              f"{rec['binding'].name}  [{rec['binding'].unit}]")
         print(f"    {'HOLD  ' if same_class else 'DIFFERS'} class"
               + ("" if same_class else
                  f"     review says {row['wall_class']}, first divergence is "
-                 f"{wall}"))
+                 f"{rec['wall']}"))
         for ok, unit, n, base, target in verdicts:
             tag = "HOLD  " if ok else "BROKEN"
             fmt = (lambda v: f"{v:#x}") if unit == "bytes" else str
             print(f"    {tag} {unit:9} certified both {fmt(n):>7}   "
                   f"now base {fmt(base):>7}  target {fmt(target):>7}")
         if a.skipped:
-            for s in skipped:
+            for s in rec["skipped"]:
                 print(f"    (skipped, mixed sentence) {s}")
 
     print(f"\n[recheck] {n_rows} review(s) state counts: {n_claims} claim(s), "

@@ -69,6 +69,12 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "data-tu-order": "gruntz.verify.data_tu_order",
           "dead-code": "gruntz.verify.dead_code",
           "undefined-closure": "gruntz.verify.undefined_closure",
+          # the one gate whose module lives OUTSIDE gruntz.verify: the wall
+          # ledger's count certifications are re-measured by the same
+          # gruntz.walls.recheck the campaign runs by hand. Registering the
+          # module rather than a forwarding shim keeps ONE implementation, and
+          # keeps the tier label typeable (`gruntz verify review-claims`).
+          "review-claims": "gruntz.walls.recheck",
           "vtables": "gruntz.verify.vtables",
           "vtable-scan": "gruntz.verify.vtable_scan",
           "alloc-size": "gruntz.verify.alloc_size",

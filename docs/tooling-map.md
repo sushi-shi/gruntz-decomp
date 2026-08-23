@@ -49,7 +49,7 @@ all read).
 | tier | gates |
 | :-- | :-- |
 | **fast** — text/ledger, no build artifacts | `board` `vtable-bans` `casts` `enum-domains` `label-style` `include-order` |
-| **normal** — model/layout joins | `unique-names` `library-overlap` `tu-order` `data-tu-order` `undefined-closure` |
+| **normal** — model/layout joins | `unique-names` `library-overlap` `tu-order` `data-tu-order` `dead-code` `undefined-closure` `review-claims` |
 | **full** — binary evidence | `vtables` `alloc-size` `assert-relocs` `data-relocs` `caller-callee` `data-access` `data-coverage` |
 | **link** — the candidate image | `link-tier` (link defects + section census + reloc-masked image diff) |
 
@@ -57,6 +57,14 @@ all read).
 `full` and `link` opt in. Every gate returns findings and writes nothing —
 blessing a baseline is always a separate manual verb (`board --update`,
 `verify bank`).
+
+`review-claims` is the one gate whose module lives outside `gruntz.verify`: it
+IS `gruntz walls recheck`, registered so the tier label stays typeable and so
+there is one implementation rather than a forwarding copy. It re-measures every
+count a wall review certifies against today's normalized pair, which is the
+drift the MAX gate structurally cannot see — the MAX gate watches the SCORE, and
+the commit that broke `PlaceObjectFull`'s `24 calls / 96 branches / 64 relocs`
+certification (trading one cross-jump for another) raised it.
 
 ## The walls slice — the remaining matching campaign
 
