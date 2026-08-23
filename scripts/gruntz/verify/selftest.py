@@ -712,9 +712,10 @@ class JccScanControls(unittest.TestCase):
     control, and each of the three verdicts gets a demonstrated case."""
 
     @staticmethod
-    def _lines(asms):
+    def _lines(asms, ref=None, self_at=()):
         from types import SimpleNamespace
-        return [SimpleNamespace(addr=i * 4, asm=a, ref=None)
+        return [SimpleNamespace(addr=i * 4, asm=a,
+                                ref=ref if i in self_at else None)
                 for i, a in enumerate(asms)]
 
     def test_jump_table_payload_past_the_last_ret_is_not_a_branch(self):
@@ -723,6 +724,26 @@ class JccScanControls(unittest.TestCase):
                 # everything below is table/padding objdump decodes as code
                 "js 0x40", "jo 0x44", "jp 0x48"]
         self.assertEqual(dict(codes(self._lines(body))), {"je": 1})
+
+    def test_a_table_byte_decoding_as_ret_does_not_re_admit_the_payload(self):
+        """The control the last-`ret` cut alone FAILS. A 0xc3 inside the table
+        decodes as `ret`, so `max(ret)` lands in the middle of the data and
+        every branch-shaped table byte after it is counted. Observed on
+        CGruntzMgr::HandleCommand 0x862f0: the phantom `ret` read the row as
+        OPERATOR d=187 where the code is POLARITY d=8. The table base is taken
+        from the self-referent dispatch instead."""
+        from gruntz.walls.jccscan import code_region, codes
+        me = "?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z"
+        body = ["cmp eax,0x4",
+                "jmp DWORD PTR [ecx*4+0x0010]",   # dispatch: table base 0x10
+                "je 0x20", "ret 0x8",
+                "jne 0x40", "ret", "jne 0x48"]    # index 4.. == addr 0x10..
+        lines = self._lines(body, ref=me, self_at=(1,))
+        # the last `ret` is index 5, inside the table; the cut must precede it
+        self.assertEqual([x.asm for x in code_region(lines, me)][-1], "ret 0x8")
+        self.assertEqual(dict(codes(lines, me)), {"je": 1})
+        # and without the owning name the tool must not silently over-trim
+        self.assertEqual(dict(codes(lines)), {"je": 1, "jne": 1})
 
     def test_a_signedness_transposition_is_reported_as_SIGNED(self):
         from gruntz.walls.jccscan import classify, codes

@@ -27,10 +27,20 @@ different things.  It counts codes, not operands.  And a branch cl folded away
 entirely (a constant-folded guard) leaves no code to count, so a genuinely
 missing comparison reads as a plain surplus on the other side.
 
-Everything past the LAST `ret` is excluded.  A jump table and the alignment
-padding after it decode as instructions, and `js`/`jo`/`jp` out of that region
-are the sieve's whole false-positive population - `CPlay::LoadCursorSprites`
-0xd0120 read as three retail-only `js` that were all jump-table payload.
+WHERE THE CODE ENDS.  A switch table and the alignment padding after it decode
+as instructions, and that payload is the sieve's whole false-positive
+population - `CPlay::LoadCursorSprites` 0xd0120 read as three retail-only `js`
+that were all table bytes.  Cutting at the LAST `ret` is NOT enough: a table
+byte 0xc3 decodes as `ret`, and in `CGruntzMgr::HandleCommand` 0x862f0 (seven
+tables) that phantom `ret` re-admitted ~450 lines of payload and read the row
+as OPERATOR d=187 when the code is POLARITY d=8.
+
+The table base is stated by the code itself.  A switch dispatch is
+`mov cl,BYTE PTR [eax+0xTTTT]` / `jmp DWORD PTR [ecx*4+0xTTTT]` carrying a
+relocation to the function's OWN symbol, and 0xTTTT is where the data starts.
+So cut at the lowest such base, then at the last `ret` before it.  Verified on
+0x862f0: past the lowest base both sides hold zero external referents and zero
+real calls, i.e. it is entirely data.
 
     gruntz walls jccscan [--todo] [--unit U] [--below N] [--limit N] [--json]
     gruntz walls jccscan <rva|name> ...      one row, every site listed
@@ -40,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 
@@ -58,16 +69,27 @@ EQ = {"je", "jne"}
 ORD = {"jl", "jle", "jg", "jge", "jb", "jbe", "ja", "jae"}
 
 
-def code_region(lines):
-    """Up to and including the LAST `ret`; past that is jump-table or
-    alignment payload objdump decodes as instructions."""
+#: a switch dispatch reading its own table: the displacement is the table base
+TABLE = re.compile(r"^(?:jmp|mov)\b.*\[[^]]*\+0x([0-9a-f]{3,})\]")
+
+
+def code_region(lines, self_name: str = ""):
+    """Up to the last `ret` BEFORE the function's own switch tables.
+
+    The tables are located from the dispatch instructions that read them (a
+    self-referent `jmp [reg*4+0xTTTT]` / `mov r8,BYTE PTR [reg+0xTTTT]`), not
+    from the last `ret` alone - a 0xc3 table byte decodes as `ret`."""
+    base = min((int(m.group(1), 16) for x in lines if x.ref == self_name
+                for m in [TABLE.match(x.asm)] if m), default=None)
+    if base is not None:
+        lines = [x for x in lines if x.addr < base]
     last = max((i for i, x in enumerate(lines) if x.asm.startswith("ret")),
                default=len(lines) - 1)
     return lines[:last + 1]
 
 
-def codes(lines) -> Counter:
-    return Counter(x.asm.split()[0] for x in code_region(lines)
+def codes(lines, self_name: str = "") -> Counter:
+    return Counter(x.asm.split()[0] for x in code_region(lines, self_name)
                    if x.asm.split()[0] in CC)
 
 
@@ -90,13 +112,14 @@ def classify(ours: Counter, retail: Counter) -> dict | None:
 
 def scan_one(rva: str) -> dict:
     binding, base, target = pair_lines(rva)
-    rec = classify(codes(base), codes(target))
+    rec = classify(codes(base, binding.name), codes(target, binding.name))
     return {"agree": rec is None, **(rec or {})}
 
 
 def detail(token: str, limit: int = 12) -> None:
     binding, base, target = pair_lines(token)
-    ours, retail = codes(base), codes(target)
+    ours = codes(base, binding.name)
+    retail = codes(target, binding.name)
     rec = classify(ours, retail)
     print(f"== {binding.unit}/{binding.name}")
     if rec is None:
@@ -110,7 +133,7 @@ def detail(token: str, limit: int = 12) -> None:
               + ", ".join(f"ours {a} vs retail {b}" for a, b in rec["signed"]))
     want = set(rec["ours_extra"]) | set(rec["retail_extra"])
     for nm, lines in (("ours  ", base), ("retail", target)):
-        region = code_region(lines)
+        region = code_region(lines, binding.name)
         sites = [i for i, x in enumerate(region) if x.asm.split()[0] in want]
         for i in sites[:limit]:
             ctx = " ; ".join(y.asm for y in region[max(0, i - 2):i + 1])
