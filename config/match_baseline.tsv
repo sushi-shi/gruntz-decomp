@@ -4671,7 +4671,7 @@ wwdgrid	??_EBucketHead@@QAEPAXI@Z	100.0000	100.0000	1	cpp:196267b9ebad	0x191720	
 wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	1	61789b14fc81	0x191840	100.0000	
 wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	1	2a8daf35a783	0x191a70	100.0000	
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	1	059a627e40c6	0x191800	100.0000	
-wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdRegion@@XZ	90.6463	90.6463	3	648e1f04214b	0x191c30	90.6463	
+wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdRegion@@XZ	93.7073	93.7073	4	c0b18bbec9c6	0x191c30	93.7073	
 wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	2	18409b107b29	0x191b10	95.5000	
 wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	1	c24edc1b943f	0x1918c0	99.9250	
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	1	84bdcc32917f	0x191890	100.0000	

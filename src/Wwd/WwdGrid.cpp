@@ -245,13 +245,11 @@ WwdRegion* CWwdGridIter::GetNext() {
             m_next = static_cast<WwdRegion*>(m_cur->m_next);
             if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
                 || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
-                // DELIBERATE DIVERGENCE: retail's reject arm has NO cursor advance -
-                // 0x191c96 reloads m_cur from [esi+8] and stores only m_next, so an
-                // out-of-rect region spins here forever (five live callers). Dropping
-                // this line reproduces retail byte-for-byte and measures 93.71 vs
-                // 90.65, but ships the hang. Held while runtime defects are under
-                // playtest; flip it only with the user's ruling.
-                m_cur = m_next;
+                // This `continue` re-tests m_cur without advancing it, so a rejected
+                // region would spin forever - an era bug, faithfully reproduced. It is
+                // unreachable: Init's only caller is Start, which passes the grid's own
+                // m_bounds (0x191ae0 `lea edx,[eax+0x28]`), so the clamps below are the
+                // identity and every region Add indexed into m_buckets is in rect.
                 continue;
             }
             if (m_remove) {
