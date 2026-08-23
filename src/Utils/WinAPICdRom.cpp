@@ -74,7 +74,6 @@ char CheckCdRomRegistry() {
     return letter;
 }
 
-// @early-stop
 RVA(0x0001ffe0, 0x192)
 char GetGruntzDriveLetter() {
     if (g_cdDriveLetter == 0) {
@@ -91,9 +90,10 @@ char GetGruntzDriveLetter() {
             value[0] = 0;
             if (reg.GetValueString("CdRom Drive", value, &valueSize, NULL)
                 && static_cast<i8>(value[0]) > 0x14) {
-                letter = value[0];
-                sprintf(drivePath, "%c:\\", letter);
+                char regLetter = value[0];
+                sprintf(drivePath, "%c:\\", regLetter);
                 if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
+                    letter = regLetter;
                     sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
                     if (FileExistsCopy(exePath)) {
                         goto found;
