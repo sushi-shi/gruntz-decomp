@@ -205,7 +205,7 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
 }
 
 RVA(0x00038220, 0x73)
-i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
+i32 CLatencyList::GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     HWND list = GetDlgItem(hDlg, id);
     if (!list) {
         return 0;

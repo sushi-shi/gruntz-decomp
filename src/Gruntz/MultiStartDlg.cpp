@@ -1501,7 +1501,7 @@ void CMultiStartDlg::CommitLatencyOption() {
     }
     i32 lo, hi;
     HWND h = GetSafe1c();
-    GetSelItemData(h, IDX(IDC_MULTI_LATENCY), &lo, &hi);
+    m_slotList->GetSelItemData(h, IDX(IDC_MULTI_LATENCY), &lo, &hi);
     if (lo != 0 || hi != 0) {
         g_multiState->m_commandDelay = lo;
         g_multiState->m_drainReload = hi;
