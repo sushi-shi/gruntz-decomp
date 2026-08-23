@@ -55,11 +55,82 @@ transposed. Rewriting the run in the header's declaration order
 
 emits 8, 0, c, 18, 4, 14 - retail's order, **100.00% EXACT**, no other change.
 
+## The stronger form: the run is one OBJECT, so write one assignment
+
+Declaration order is the remedy when the run really is N independent members.
+When the permuted offsets are the fields of ONE embedded object, the humane
+spelling is the object copy, and it is a better fixed point than any ordering,
+because it removes the ordering question from the source entirely.
+
+`CGrunt::IsDropReady` 0x00051510 (`gruntsteps`) carried the two `Coord` cursor
+updates field-wise:
+
+    m_lastTilePx.m_x = m_commitPx.m_x;      // +0x17c
+    m_lastTilePx.m_y = m_commitPx.m_y;      // +0x180
+    m_commitPx.m_x   = m_entrancePx.m_x;    // +0x184
+    m_commitPx.m_y   = m_entrancePx.m_y;    // +0x188
+
+That is already declaration order, and C2 still transposed the first pair
+(emitting 180, 17c where retail emits 17c, 180) because the y value was
+register-resident and ECX was wanted for the next argument. Writing what the
+object copy actually is:
+
+    m_lastTilePx = m_commitPx;
+    m_commitPx   = m_entrancePx;
+
+lands the run on retail's order: **98.76 -> 99.84**, residue reduced to a
+five-instruction EDI/EDX rotation elsewhere in the body. Applied at the four
+coord-pool clone sites the same way, `RepathAroundBlockedTiles` went
+72.97 -> 73.68 and `PhaseStep` 83.37 -> 83.79.
+
+The counter-case is worth knowing: `CTriggerMgr::NotifyCell`'s `Coord pt` is a
+reconstruction of a retail SPILL PAIR, not a source local
+(`dead-eight-byte-coord-temp-is-unreproduced.md`), and copy-initialising it
+costs 5 points. Convert a run to an object copy only where the object is real.
+
 ## Use
 
-On an all-counts-equal store-run residue, try the declaration order of the
-members BEFORE reaching for a scheduling wall. It costs one build, it is the
-humane spelling, and it removes a transcription that was fitted to the output.
+On an all-counts-equal store-run residue, ask in this order:
+
+1. are the permuted offsets the fields of one embedded object? write the copy;
+2. otherwise try the members' declaration order.
+
+Either costs one build, is the humane spelling, and removes a transcription
+that was fitted to the output.
+
+`gruntz walls storescan [--todo]` finds the rows mechanically: it reports every
+paired function whose member-store runs are permutations of each other, and
+separates the ones where bytes, instructions, calls, branches, returns,
+relocations and the `semdiff` multisets are ALL equal. Of the 578-row campaign
+queue on 2026-08-23: 274 rows carry a store run of 3 or more, 56 have a
+permuted run, 13 of those also have every count equal, and 11 have equal
+multisets too. `--values` is the companion screen for the live-bug case (two
+offsets that EXCHANGED their constants rather than their order); it found none
+in that queue.
+
+## When the permutation is a consequence, not the defect
+
+Four false-positive classes, each observed on a flagged row:
+
+* **Shared-inline expansion.** The run comes from an inline expanded at N
+  sites. If any sibling expansion is EXACT the order is already proven.
+  `CGameLevel::SetCoordExtents` (84.28) flags on the scroll-parameter block,
+  but `SetCoords`, `ResetParamBlock`, `LoadFileWithCoords`,
+  `LoadSourceWithCoords` and `LoadWwdWithCoords` all expand the same
+  `SetParamBlockDefaults()` at 100.00 - so the block's declaration order is
+  correct and the residue is one immediate store filling a load-use shadow.
+* **Regalloc serialization.** Retail keeps two constants live in two
+  registers; ours funnels both through EAX, which FORCES the group reorder.
+  `CBattlezMapConfig::CBattlezMapConfig`: retail holds `eax=0xbb8` and
+  `edx=0x7d0` across the timer block, ours materialises 0xbb8, drains its two
+  stores, then reloads EAX with 0x7d0. The store permutation is downstream of
+  the register choice; no source ordering reaches it.
+* **Frame / local-count wall.** A `sub esp` delta shifts every slot and the
+  store swap rides on it (`CGrunt::ResolveArrivalReposition`, frame 0x8 vs
+  0xc). Run `walls framescan` first.
+* **vptr-stamp placement.** The moved "store" is the `??_7` stamp, which is
+  not a source statement at all (`CActionArea` and `CGruntVoice` ctors, where
+  retail sinks it past the trailing i64 zero stores and we do not).
 
 Related: `param-store-last-forces-callee-saved.md` (same "emitted order does not
 name the source order" mechanism, seen through the callee-saved push count) and

@@ -15,6 +15,10 @@
     gruntz walls residue          what the masked residual IS, once position
                                   and register-name differences are cancelled
                                   (arm-result temps, wrong constants/offsets)
+    gruntz walls storescan        permuted-member-store-run sieve: the two
+                                  sides store the same fields in a different
+                                  ORDER, so the source transcribed C2's output
+                                  (--values screens for a swapped CONSTANT)
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
                                   cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
@@ -56,6 +60,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "eh-frame": "gruntz.walls.eh_frame",
          "framescan": "gruntz.walls.framescan",
          "residue": "gruntz.walls.residue",
+         "storescan": "gruntz.walls.storescan",
          "global-refs": "gruntz.walls.global_refs",
          "ehactions": "gruntz.walls.ehactions",
          "semdiff": "gruntz.walls.semdiff",
