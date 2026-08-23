@@ -6,6 +6,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCellInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LogicTypeId.h>
@@ -79,7 +80,7 @@ i32 CGruntHealthSprite::GetDisplayedValue(CGrunt* g) {
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
 
-    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
+    CGrunt* e = GruntAtCell(g_gameReg, m_cell);
     if (e == NULL) {
         return 0;
     }
