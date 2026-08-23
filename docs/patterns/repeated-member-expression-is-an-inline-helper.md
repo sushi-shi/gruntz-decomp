@@ -62,3 +62,17 @@ frame 0xc -> 0x8); `CLightFxRender::DrawBorderRaw` 72.07 -> 92.01 via a
 **Measure per function**: the neighbour `CLightFxRender::DrawBorder` is banked at
 MAX 100.00 with the expression spelled OUT at all four of its sites, which is the
 byte evidence that retail wrote the two differently.
+
+**SCOPE - this is about repeated LOADS, not about arithmetic (measured
+2026-08-23).** An inline call boundary does NOT stop cl 5.0 from sharing pure
+register arithmetic: the expansions are folded first and the identical trees CSE
+afterwards. `CBattlezMapConfig::Scan` 0x35f10 is the control. Retail loads
+`m_screenY` ONCE and then copies the raw value into two registers and shifts
+BOTH (`mov edx,ecx / mov esi,ecx / sar edx,0x5 / sar esi,0x5`), where we emit one
+`sar` and reach `-1`/`+2` with a `lea` - the shared LEAF with duplicated trees
+that this pattern would predict an inline helper produces. Routing all five sites
+through a `static inline i32 PxToTile(i32 px) { return px >> TILE_SHIFT_PX; }`
+is **byte-identical**: 77.97 before, 77.97 after. So the duplicated `sar` in
+retail is not reachable by adding a helper, and
+`retail-recomputes-a-shift-we-cse.md` stays a wall - its three refuted spellings
+are now four.
