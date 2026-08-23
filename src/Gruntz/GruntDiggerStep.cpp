@@ -56,8 +56,7 @@ i32 CGrunt::StepDiggerBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
-    m_defenderPx.m_y = m_lastTilePx.m_y;
-    m_defenderPx.m_x = m_lastTilePx.m_x;
+    m_defenderPx = m_lastTilePx;
 
     i32 powered = m_poweredUp;
     if (powered != 0) {

@@ -500,10 +500,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             } else {
                 SetTextColor(hdc, TCLR_WHITE);
             }
-            calc.left = cur.left;
-            calc.right = cur.right;
-            calc.bottom = cur.bottom;
-            calc.top = cur.top;
+            calc = cur;
             DrawTextA(hdc, item->name, strlen(item->name), &calc, format | DT_CALCRECT);
             DrawTextA(hdc, item->name, strlen(item->name), &cur, format);
             i32 measuredBottom = calc.bottom;

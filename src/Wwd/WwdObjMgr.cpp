@@ -754,11 +754,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 i32 y = obj->m_screenY;
                 RECT box;
                 SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
-                RECT rc;
-                rc.left = box.left;
-                rc.top = box.top;
-                rc.right = box.right;
-                rc.bottom = box.bottom;
+                RECT rc = box;
                 view->WrapCoord(&rc.left, &rc.top);
                 view->WrapCoord(&rc.right, &rc.bottom);
                 if (fr->m_owned != NULL) {
