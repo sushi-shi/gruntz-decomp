@@ -3453,6 +3453,61 @@ class ResidueClassifierControls(unittest.TestCase):
         self.assertEqual(self._kind(["lea edi,[eax*8+0x0]"],
                                     ["lea ecx,[edx*8+0x0]"]), "regname")
 
+    def test_a_split_sub_object_address_is_not_a_layout_bug(self):
+        """`lea eax,[esi+0x20]` then `[eax+0x4]` addresses what `[esi+0x24]`
+        addresses.  Register-stripping cannot prove the sum, so the RECT
+        CImage::RenderImage writes through a pointer read as four wrong member
+        offsets."""
+        self.assertEqual(self._kind(
+            ["mov DWORD PTR [esi+0x20],eax", "mov DWORD PTR [esi+0x24],ecx",
+             "mov DWORD PTR [esi+0x28],edx"],
+            ["lea edi,[esi+0x20]", "mov DWORD PTR [edi],eax",
+             "mov DWORD PTR [edi+0x4],ecx", "mov DWORD PTR [edi+0x8],edx"]),
+            "subobject")
+
+    def test_a_lone_pair_is_never_cleared_as_a_sub_object(self):
+        """A single offset against a single other offset is exactly the
+        wrong-field signature this bucket exists to find, and SOME constant
+        always reconciles two numbers - so the run has to be at least two."""
+        self.assertEqual(self._kind(
+            ["lea edi,[esi+0x4]", "mov eax,DWORD PTR [esi+0x180]"],
+            ["lea edi,[esi+0x4]", "mov eax,DWORD PTR [esi+0x17c]"]),
+            "displacement")
+
+    def test_lea_for_arithmetic_is_the_same_register_choice(self):
+        """cl takes the three-operand `lea` for exactly one reason: the
+        destination is not the source.  That is the register pick `reg_key`
+        already erases, so `lea esi,[eax+0x1]` IS `inc esi` and
+        `lea ecx,[eax+eax*1]` IS `add eax,eax`.  Un-mirrored, the lea's
+        displacement read as a member offset (RandRange, UpdateMgrScroll,
+        CRandomAmbientSound::Update, DrawBorderRaw, _zvec::GrowTo)."""
+        self.assertEqual(self._kind(["inc esi"], ["lea esi,[eax+0x1]"]),
+                         "regname")
+        self.assertEqual(self._kind(["add eax,eax"], ["lea ecx,[eax+eax*1]"]),
+                         "regname")
+
+    def test_the_lea_mirror_still_sees_a_real_offset(self):
+        """Only the +1 and the doubling fold; a genuine `lea` of a member
+        address stays visible."""
+        self.assertEqual(self._kind(["lea eax,[esi+0x10]"],
+                                    ["lea eax,[esi+0x14]"]), "displacement")
+
+    def test_the_three_byte_lea_pad_is_a_nop(self):
+        """`lea ecx,[ecx+0x0]` is cl's 3-byte alignment pad, the same padding
+        a `nop` is (CKitchenSlime::LoadSprites, CGrunt::ArrivalRecycle)."""
+        self.assertEqual(self._kind(["nop"], ["lea ecx,[ecx+0x0]"]), "regname")
+
+    def test_the_accumulator_memory_form_is_one_access(self):
+        """`a1 <addr>` prints `mov eax,ds:0x0`; the general `8b 0d <addr>`
+        prints `mov ecx,DWORD PTR ds:0x0`.  Same load, and cl takes the short
+        form only when the value lands in EAX."""
+        from gruntz.walls.residue import classify, masked, residual_of
+        from gruntz.walls.semdiff import Line
+        g = "?g_errOutOfMem@@3PADA"
+        mb = masked([Line(0, "mov ecx,DWORD PTR ds:0x0", g)])
+        mt = masked([Line(0, "mov eax,ds:0x0", g)])
+        self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0], "regname")
+
     def test_a_wrong_referent_is_flagged(self):
         """Relocated operands are masked in the scored bytes, so a global
         bound to the wrong symbol is invisible to the byte diff."""

@@ -17,22 +17,26 @@ names — and naming what survives.
 ## The census
 
 The first census (left column) was taken before four of the mirrors below were
-normalized; the right column is the same 505 rows after. Every row that moved
-moved from an actionable bucket into a coin bucket, and each move was
+normalized; the right column is after §14-16 and the §12 arithmetic. Every row
+that moved moved from an actionable bucket into a coin bucket, and each move was
 adjudicated by hand against the retail bytes first.
 
 | kind | first | now | what it means |
 |---|---:|---:|---|
-| `regname` | 148 | 153 | register rotation only |
-| `displacement` | 84 | 75 | a member offset differs |
-| `selection` | 66 | 77 | the mnemonic multiset differs |
-| `immediate` | 75 | 72 | a constant differs |
+| `regname` | 148 | 172 | register rotation only |
+| `displacement` | 84 | 91 | a member offset differs |
+| `selection` | 66 | 109 | the mnemonic multiset differs |
+| `immediate` | 75 | 99 | a constant differs |
 | `schedule` | 36 | 36 | a pure permutation |
-| `operand` | 32 | 32 | same mnemonics, different operands |
-| `arm-copy` | 30 | 30 | retail has callee-saved `mov r,r` the base lacks |
-| `none` | 6 | 15 | nothing survives the mask |
-| `extra-copy` | 13 | 13 | the inverse of `arm-copy` |
+| `operand` | 32 | 17 | same mnemonics, different operands |
+| `arm-copy` | 30 | 37 | retail has callee-saved `mov r,r` the base lacks |
+| `none` | 6 | 18 | nothing survives the mask |
+| `extra-copy` | 13 | 14 | the inverse of `arm-copy` |
+| `subobject` | - | 3 | one side splits an address, the other folds it |
 | `referent` | 15 | **2** | one side names a symbol the other never names |
+
+(the `first` column was 505 rows; `now` is the 598-row todo queue after §14-16,
+so read the two columns as a shape, not a subtraction.)
 
 **204 of 505 (40%) are `regname` + `schedule` + `none`** — nothing a source edit
 reaches. Restricted to residual <= 4 the coin share is 62%: the closer a row is,
@@ -50,9 +54,9 @@ both are steerable — see the worked examples below.
 
 ## The false positives, i.e. what a raw diff calls a difference and is not
 
-Each of these was measured mislabelling real rows. The tool normalizes §1-4 and
-§8-11; §5-7 and §12-13 it cannot see, so apply them by hand before calling a row
-a bug.
+Each of these was measured mislabelling real rows. The tool normalizes §1-4,
+§8-11, §12 and §14-16; §5-7 and §13 it cannot see, so apply them by hand before
+calling a row a bug.
 
 **1. A relocated call's addend.** `call 0xe4` vs `call 0xe0` against the same
 `|?GetAt@CStringArray@@...` referent is position state — anything inserted above
@@ -142,10 +146,53 @@ lever. Now mirrored.
 
 **12. A sub-object base pointer against a flat offset.** `mov ecx,[esi+0x38];
 add ecx,0x1a0; mov eax,[ecx+0x28]` against `mov eax,[esi+0x38]; lea ecx,[eax+
-0x1a0]; mov eax,[eax+0x1c8]` — 0x1a0 + 0x28 == 0x1c8, the SAME field. The tool
-cannot normalize this (register-stripping cannot prove the sum), so do the
-arithmetic: `CMenuSparkle::AdvanceAnim` 0xae2a0 and `CStaticHazard`'s
-`[eax+0x1cc]` vs `add eax,0x1a0; [eax+0x2c]` are both this.
+0x1a0]; mov eax,[eax+0x1c8]` — 0x1a0 + 0x28 == 0x1c8, the SAME field.
+Register-stripping cannot prove the sum, so the tool now runs the ARITHMETIC:
+it draws every K from a pointer-materializing `lea r,[…+K]` / `add r,K`
+anywhere in either stream and asks whether shifting one side's displacements
+by K reproduces the other's. A run of two or more reclassifies to
+`subobject`; a LONE pair only gets the arithmetic printed in the note,
+because one offset against one other offset is exactly the wrong-field
+signature this bucket exists to find and some constant always reconciles two
+numbers. Reclassified: `CImage::RenderImage` 0x153470 (a four-dword RECT at
++0x20 written through `lea eax,[esi+0x20]`), `CGruntzMgr::RecomputeViewScale`
+0x8f7f0 (the same shape READ, `[esi+0x10..0x1c]` against `lea`+`[0,4,8,c]`),
+`CAniAdvanceCursor::Deserialize` 0x15ca70. Noted-only, all hand-confirmed:
+`CNetSession::SendOne` 0xbfeb0 (`lea [r+r+0x3b0]` then `[r+0x4]` against
+`[r+r+0x3b4]`), `CBattlezMapConfig::ClaimCellFromRow` 0x30730
+(`lea [r+r*8+0x188]` then `[r+0xd4]` against `[r+r*8+0x25c]`),
+`CSBI_WellGoo::Setup`, `CTriggerMgr::CellHitTest`,
+`CGruntzMgr::SyncOptionsState` (the 0x238-stride walk),
+`CImageSet1/2::Parse`. `CMenuSparkle::AdvanceAnim` 0xae2a0 and
+`CStaticHazard`'s `[eax+0x1cc]` vs `add eax,0x1a0; [eax+0x2c]` were the
+original two.
+
+**14. LEA standing in for the arithmetic instruction.** cl takes the
+three-operand `lea` for exactly one reason: the destination is not the source,
+i.e. the source register stays live. That is the register pick `reg_key`
+already erases, so `lea esi,[eax+0x1]` IS `inc esi` and `lea ecx,[eax+eax*1]`
+IS `add eax,eax` — but un-mirrored the lea's displacement read as a member
+offset the other side never touched (`CGruntzMgr::RandRange`,
+`UpdateMgrScroll`, `CRandomAmbientSound::Update`,
+`CLightFxRender::DrawBorderRaw`, `_zvec::GrowTo`,
+`CTileTriggerLogic::Classify`). The flag side effect does NOT fold: `lea` sets
+none, so retail's extra `test r,r` survives and the row reads `selection`,
+which is honestly what it is.
+
+**15. cl's 3-byte `lea r,[r+0x0]` alignment pad** is the same padding a `nop`
+is (`CKitchenSlime::LoadSprites`, `CGrunt::ArrivalRecycle`,
+`CMultiStartDlg::Watchdog`, `CPlay::LoadWarlordSprites`). Rule 10 has already
+shortened it to `lea r,[r]`; it now folds to `nop`.
+
+**16. The accumulator form of an absolute memory operand.** `a1 <addr>` prints
+`mov eax,ds:0x0`; the general `8b 0d <addr>` prints
+`mov ecx,DWORD PTR ds:0x0`. Same load of the same global, and cl takes the
+short form only when the value lands in EAX — the §2 mirror again, on a
+different operand (`CGrunt::ArrivalRecycle`, `CMultiStartDlg::Watchdog`,
+`ScrollDialog`, `CPlay::ResetPlayState`).
+
+Together 14-16 moved **21 rows out of `displacement` (112 -> 91)** and 15 out
+of `operand` (32 -> 17); every one landed in `regname` or `selection`.
 
 **13. cl folding a parameter inside the arm that tested it.** `CPlay::
 LoadCursorSprites` 0xd0120 stores `mov [esi+0x2f8],0x66` where retail stores the
@@ -175,6 +222,26 @@ function's body for a member-assigning ternary. Over the 62 memory-case rows in
 the todo queue only 3 carried one, so the population is small — but each is
 worth double digits.
 
+## Worked example: the one real defect the DISPLACEMENT bucket has produced
+
+`CMultiStartDlg::CommitLatencyOption` 0xc5020 read `displacement`: retail has
+`mov ecx,[ecx+0x60]` — `m_slotList` — that our obj never emits, immediately
+before a call, and never uses the value again. A dead load is not something
+cl 5.0 emits: it is the receiver of a **`__thiscall` member whose body reads
+no member**. 0x38220 takes its four arguments off the stack
+(`mov eax,[esp+8]; mov ecx,[esp+4]`) and `ret 0x10`, which a member with four
+stack args does exactly as a free `__stdcall` does — so the callee's own bytes
+are identical either way and only the CALLER could show the difference.
+`CLatencyList::SelectItem`, the write side of the same packed combo item data,
+was already a member. Making `GetSelItemData` one took the caller
+92.08 -> EXACT and left the callee EXACT.
+
+**The signature to reuse: a member load whose value is never consumed, sitting
+immediately before a `call`, is a `this` we are not passing** — i.e. a free
+function in our model that retail declares inside a class. It is invisible to
+the call-set test (same callee), to the CFG test (same skeleton) and to the
+frame test (same frame); only the displacement bucket sees it.
+
 ## Worked example: the one real defect, and it was in the MODEL
 
 `CButeMgr::Save` 0x171640 read `referent`: our obj calls
@@ -201,12 +268,26 @@ DERIVED class and its BASE is a FID ambiguity, not a source bug — read
     gruntz walls residue --arm --todo               the arm-result worklist
     gruntz walls residue --show <rva>               NET and EXACT residual
 
-A row that lands in `regname`, `schedule` or `none` is PARKED: its source is not
-what differs. A row in `immediate`, `displacement` or `referent` gets the
-false-positive list above applied by hand before it is called a bug.
+A row that lands in `regname`, `schedule`, `subobject` or `none` is PARKED: its
+source is not what differs. A row in `immediate`, `displacement` or `referent`
+gets the false-positive list above applied by hand before it is called a bug.
 
-The hit rate is the thing to plan around: **forty rows of the three actionable
-buckets were adjudicated against the retail bytes and ONE was a defect** — and
-that one was a label, not C++. The bucket's value is not that it finds many
-bugs; it is that a row it clears is a row nobody needs to open again, so every
-false positive removed from it is worth more than another pass over it.
+The hit rate is the thing to plan around: **sixty-five rows of the three
+actionable buckets have been adjudicated against the retail bytes and TWO were
+defects** — one a label, one a calling convention, and neither a wrong member
+offset. The bucket's value is not that it finds many bugs; it is that a row it
+clears is a row nobody needs to open again, so every false positive removed from
+it is worth more than another pass over it.
+
+What the `displacement` bucket is actually made of, after §10, §12 and §14-16
+have been taken out, is three recurring shapes that no source edit reaches:
+
+* a **rematerialization count** — both sides read the same member set and only
+  which copy stays in a register differs (`CEyeCandy`'s ctor, `CreateDemoMover`,
+  `CUFO`'s ctor before it was fixed, `FillPlayerList`, `BoxesOverlap`,
+  `LoadVehicleGruntSprites`, `CGrunt::LoadGruntDecayConfig2`, which recomputes a
+  64-bit subtraction retail keeps and cl CSEs);
+* a **cross-jump merge degree** — one side shares an exit the other duplicates,
+  which renumbers every branch displacement (`CSBI_WellGoo::Setup`);
+* a **spill-slot renumbering** from one extra 4-byte local
+  (`CAniAdvanceCursor::Deserialize`, `CImage::RenderImage`).

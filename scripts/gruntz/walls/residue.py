@@ -24,6 +24,8 @@ the classifier names it from the NET residual, most-actionable first:
     missing-store  target repeats a member store       the arm-result temp is
     dup-store      base repeats one                    PRESENT and should not
                                                        be (memory case)
+    subobject      one side splits an address into a   the SAME field, park
+                   pointer + offset, the other folds
     regname        register rotation only              R1/R2, park
     schedule       a pure permutation                  park
     none           nothing survives the mask
@@ -34,15 +36,20 @@ answers the same question directly over the WHOLE stream (every member store
 and every callee-saved register copy, not just the ones inside a diff chunk),
 which is the sensitive form.
 
-Five encoding mirrors are normalized away, because each was measured
+Nine encoding mirrors are normalized away, because each was measured
 mislabelling real rows: the addend of a RELOCATED call or jump (position
 state - the referent is compared separately), cl's 2-byte `and al,imm8`
 form of `and eax,0xffffff00|imm8`, `add r,-K` against `sub r,K`, the forced
-zero displacement of an EBP-based or base-less memory operand, and a
+zero displacement of an EBP-based or base-less memory operand, a
 referent NEITHER side has a name for (`$anon_data_<sha>` against `FUN_<va>`
-- a `$E` dynamic-init helper). The referent test also compares symbol SETS
-over the whole stream, so a CSE'd second load of a global both sides name
-is not an identity row.
+- a `$E` dynamic-init helper), the three-operand `lea` standing in for
+`inc`/`dec`/`add r,r` when the destination is not the source, cl's 3-byte
+`lea r,[r+0x0]` alignment pad against a `nop`, and the accumulator form of
+an absolute memory operand (`a1` against `8b 0d`). The referent test also
+compares symbol SETS over the whole stream, so a CSE'd second load of a
+global both sides name is not an identity row; and `subobject` runs the
+arithmetic that register-stripping structurally cannot, so a RECT written
+through `lea eax,[esi+0x20]` stops reading as four wrong member offsets.
 
     gruntz walls residue [--todo] [--unit U] [--max-resid N] [--kind K,...]
     gruntz walls residue --arm [...]        the arm-result worklist
@@ -95,6 +102,31 @@ ADDNEG = re.compile(r"^(add|sub)\s+(e[a-z][a-z]),0x([0-9a-f]{8})$")
 #: `referent` rows were one address under two non-names - every one a `$E`
 #: dynamic-initializer helper, which the label rules deliberately never name.
 UNNAMED = re.compile(r"^(FUN_|DAT_|\$gap_|\$anon_data_)")
+
+#: LEA against the arithmetic instruction computing the same value. cl takes the
+#: three-operand `lea` form for exactly one reason: the destination is not the
+#: source, i.e. the source register stays live - which is the register choice
+#: `reg_key` already erases. So `lea r,[r+0x1]` IS `inc r` and `lea r,[r+r*1]`
+#: IS `add r,r` once the names are gone. Left un-mirrored, the lea's
+#: displacement reads as a member offset the other side never touches
+#: (`CGruntzMgr::RandRange`, `UpdateMgrScroll`, `CRandomAmbientSound::Update`,
+#: `CLightFxRender::DrawBorderRaw`, `_zvec::GrowTo`). The flag side effect does
+#: NOT fold: `lea` sets none, so retail's extra `test r,r` survives into the
+#: residual and the row reads `selection`, which is what it is.
+LEA_ARITH = {"lea r,[r+0x1]": "inc r", "lea r,[r-0x1]": "dec r",
+             "lea r,[r+r*1]": "add r,r"}
+
+#: cl's 3-byte `lea r,[r+0x0]` alignment pad, which the forced-zero rule above
+#: has already shortened to `lea r,[r]`, is the same padding as a `nop`
+#: (`CKitchenSlime::LoadSprites`, `CGrunt::ArrivalRecycle`,
+#: `CMultiStartDlg::Watchdog`).
+LEA_NOP = "lea r,[r]"
+
+#: the accumulator form of an absolute memory operand: `a1 <addr>` prints as
+#: `mov r,ds:0x0` where the general `8b 0d <addr>` prints as
+#: `mov r,DWORD PTR ds:0x0`. cl takes the short form only when the value lands
+#: in EAX - a register choice, not a different access.
+ACCMEM = re.compile(r"^mov (r|ds:0x[0-9a-f]+),(ds:0x[0-9a-f]+|r)$")
 
 
 def strip_regs(asm: str) -> str:
@@ -160,9 +192,15 @@ def reg_key(asm: str) -> str:
 
     The forced zero displacement folds here and only here: which base register
     cl picked is exactly what this key is meant to erase, and `[ebp+0x0]`
-    addresses what `[ecx]` addresses."""
+    addresses what `[ecx]` addresses. The LEA-for-arithmetic and accumulator
+    memory forms fold for the same reason: each is chosen by which register the
+    value landed in."""
     head, sep, ref = asm.partition("|")
-    return strip_regs(head).replace("+0x0]", "]") + sep + ref
+    key = strip_regs(head).replace("+0x0]", "]")
+    key = LEA_ARITH.get(key, "nop" if key == LEA_NOP else key)
+    if ACCMEM.match(key):
+        key = key.replace("ds:0x", "DWORD PTR ds:0x")
+    return key + sep + ref
 
 
 def net_residual(chunks):
@@ -183,6 +221,50 @@ def disp(d: str) -> str:
     zero reads as a member-offset difference: a quarter of the `displacement`
     bucket was this one encoding."""
     return "" if d in ("+0x0", "-0x0") else d
+
+
+#: an instruction that MATERIALIZES a pointer at a constant offset - the K of
+#: `mov ecx,[esi+0x38]; add ecx,0x1a0; mov eax,[ecx+0x28]` against the folded
+#: `mov eax,[esi+0x1c8]`. 0x1a0 + 0x28 == 0x1c8, the SAME field.
+PTR_BASE = re.compile(r"^(?:lea r,\[r(?:\+r(?:\*\d)?)?([+-]0x[0-9a-f]+)\]"
+                      r"|add r,(0x[0-9a-f]+))$")
+
+
+def _disps(lines) -> Counter:
+    """displacement VALUES of every memory operand in `lines`, `[r]` as 0."""
+    return Counter(int(d, 16) if d else 0
+                   for x in lines for d in DISP.findall(x))
+
+
+def subobject_shift(only_b, only_t, base_m, tgt_m):
+    """(K, n) when one side SPLITS an address into a sub-object pointer plus a
+    member offset and the other folds the whole thing into one displacement.
+
+    Register-stripping cannot prove the sum, so the two sides read as different
+    member offsets; the arithmetic is what settles it, and it settled
+    CImage::RenderImage (a RECT at +0x20 written through `lea eax,[esi+0x20]`),
+    CGruntzMgr::RecomputeViewScale, CNetSession::SendOne (`[r+r+0x3b0]` then
+    `[r+0x4]` against `[r+r+0x3b4]`) and CBattlezMapConfig::ClaimCellFromRow
+    (`lea [r+r*8+0x188]` then `[r+0xd4]` against `[r+r*8+0x25c]`).
+
+    K is drawn from a pointer-materializing `lea`/`add` ANYWHERE in either
+    stream, because the lea is often a line both sides share. `n` is how many
+    displacements the shift reconciles: a LONE pair is exactly the wrong-field
+    signature this bucket exists to find, so the caller must not clear one."""
+    db, dt = _disps(only_b), _disps(only_t)
+    if not db or not dt:
+        return None
+    ks = {int(m.group(1) or m.group(2), 16)
+          for x in base_m + tgt_m
+          if (m := PTR_BASE.match(strip_regs(bare(x))))}
+    for k in sorted(ks - {0}):
+        for split, fold in ((db, dt), (dt, db)):
+            s = Counter(split)
+            if s[k]:                       # the materializing lea's own K
+                s -= Counter({k: 1})
+            if Counter({v + k: n for v, n in s.items()}) == fold:
+                return k, sum(fold.values())
+    return None
 
 
 def classify(chunks, base_m, tgt_m):
@@ -227,8 +309,16 @@ def classify(chunks, base_m, tgt_m):
     bd = Counter(disp(d) for x in only_b for d in DISP.findall(x))
     td = Counter(disp(d) for x in only_t for d in DISP.findall(x))
     if bd != td:
-        return "displacement", (f"base {sorted((bd - td).elements())} vs target"
-                                f" {sorted((td - bd).elements())}")
+        note = (f"base {sorted((bd - td).elements())} vs target"
+                f" {sorted((td - bd).elements())}")
+        shift = subobject_shift(only_b, only_t, base_m, tgt_m)
+        if shift:
+            note += f"  [sub-object {shift[0]:+#x} over {shift[1]}]"
+            # a LONE pair reconciled by some constant is exactly the wrong-field
+            # signature; only a run of them is evidence of a split address.
+            if shift[1] >= 2:
+                return "subobject", note
+        return "displacement", note
     br = Counter(x.split("|", 1)[1] for x in exact_b.elements() if "|" in x)
     tr = Counter(x.split("|", 1)[1] for x in exact_t.elements() if "|" in x)
     # A COUNT difference on a symbol both sides reference is CSE or
@@ -298,7 +388,7 @@ def scan(rows, progress=None):
 
 ORDER = ["immediate", "displacement", "referent", "selection", "operand",
          "arm-copy", "dup-store", "missing-store", "extra-store",
-         "extra-copy", "regname", "schedule", "none"]
+         "extra-copy", "subobject", "regname", "schedule", "none"]
 
 
 def report(rows, max_resid, kinds, limit):
