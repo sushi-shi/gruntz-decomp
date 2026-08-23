@@ -79,6 +79,14 @@
   (no-sane-dev test) and either >= the bank or an adjudicated, documented
   keep. One-step hill-climbing that reverts at the first dip prunes every
   composed path and only finds local maxima.
+- BASELINE-DELTA CHECK (2026-08-23): before composing levers toward a
+  structural feature you read off a DIPPED state, confirm that feature is
+  actually ABSENT from the baseline. Blit1624 cost four composed levers chasing
+  retail's spilled byte temp (`mov BYTE PTR [esp+0x1c],cl` / `mov bl,...`)
+  that the 95.15 baseline was already emitting identically - the feature was
+  read from the dipped disassembly and assumed new. Diff the FEATURE against
+  the baseline, not just the dip against retail; a dip is only a base when it
+  moves something the baseline did not already have.
 - INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline
   functions and macros, so an inline/macro spelling is a priori MORE likely to
   be the real source than a hand-expanded transcription. We may still overrule
