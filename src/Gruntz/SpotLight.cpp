@@ -163,8 +163,7 @@ i32 CSpotLight::Tick() {
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 CDDrawSubMgrLeafScan* obj = g_gameReg->m_world->m_soundRegistry;
                 if (obj->m_emitGate == 0) {
-                    LeafCue* found = NULL;
-                    MapLookup(obj->m_cues, name, found);
+                    LeafCue* found = obj->FindCue(name);
                     // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds
                     // the cue in a register across the m_lastPlayTime store.
                     LeafCue* cue = found;
