@@ -540,6 +540,21 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
+// @early-stop
+// Each arm assigns `m_curState` directly and there is no `default:`; the
+// out-of-range path proves it, because retail's `ja` from the jump-table guard
+// lands on `cmp DWORD PTR [edi+0x2c],ebx` and never stores. A `CState* obj`
+// local would need the store on that path and a second zeroing ahead of the
+// switch, which is what the earlier spelling emitted.
+// The residue is one nested inline-budget decision, in both directions at once:
+// retail expands all nine `ClockInterval` ctors inside the inlined
+// `CPlay::CPlay` and then, further down the tuple, has too little budget left to
+// expand `CRgn::CRgn()` into CCreditsState - so it emits that COMDAT (0x8c3b0,
+// one caller: this) and calls it, where we expand it and call its base
+// `CGdiObject::CGdiObject()` instead. cl 5.0 gives a nested expansion
+// budget/sites-remaining (gruntz walls inline-model), so both sides of the
+// difference follow from one budget, and nothing in this body's own statements
+// moves it.
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
@@ -572,44 +587,40 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
     }
 
     TRACE("creating state %d\n", stateId);
-    CState* obj = NULL;
     switch (stateId) {
         // arm order is byte-proven by the retail bodies' allocation sizes
         // (0x1c0, 0x520, 0x660, 0x528, 0x1c0, 0x1b8, 0x1bc, 0x320, 0x218, 0x244)
         case GAMESTATE_ATTRACT:
-            obj = new CAttract;
+            m_curState = new CAttract;
             break;
         case GAMESTATE_PLAY:
-            obj = new CPlay;
+            m_curState = new CPlay;
             break;
         case GAMESTATE_MULTI:
-            obj = new CMulti;
+            m_curState = new CMulti;
             break;
         case GAMESTATE_DEMO:
-            obj = new CDemo;
+            m_curState = new CDemo;
             break;
         case GAMESTATE_MENU:
-            obj = new CMenuState;
+            m_curState = new CMenuState;
             break;
         case GAMESTATE_HELP:
-            obj = new CHelpState;
+            m_curState = new CHelpState;
             break;
         case GAMESTATE_SPLASH:
-            obj = new CSplashState;
+            m_curState = new CSplashState;
             break;
         case GAMESTATE_BOOTY:
-            obj = new CBootyState;
+            m_curState = new CBootyState;
             break;
         case GAMESTATE_CREDITS:
-            obj = new CCreditsState;
+            m_curState = new CCreditsState;
             break;
         case GAMESTATE_MULTIBOOTY:
-            obj = new CMultiBootyState;
-            break;
-        default:
+            m_curState = new CMultiBootyState;
             break;
     }
-    m_curState = obj;
 
     if (m_curState == NULL) {
         m_owner->m_running = 0;
