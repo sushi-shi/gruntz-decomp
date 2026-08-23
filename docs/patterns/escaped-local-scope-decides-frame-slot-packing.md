@@ -57,4 +57,6 @@ of it anywhere). That is a compiler spill and its slot count is a register-press
 reading, not a declaration - `CAniAdvanceCursor::Deserialize` 0x15ca70 carries one
 address-CSE too many (`&m_index` in EBP), `CGrunt::LoadEntranceConfig` 0x67f80 one
 extra shifted-coordinate spill, and neither moves under a scope edit. Tree-wide
-census 2026-08-23: of 29 frame-LARGER rows, 11 have no `lea [esp+N]` at all.
+census 2026-08-23: of the 29 frame-LARGER rows, 28 pair cleanly and 10 of those have
+no `lea [esp+N]` of any slot at all (the 29th, `ConvertRowDoubleFwd` 0x14d5e0, has an
+embedded jump table that truncates the base-side disassembly).
