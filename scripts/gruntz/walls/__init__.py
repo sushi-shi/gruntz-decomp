@@ -32,6 +32,29 @@
                                   bytes against RETAIL's caller cleanup, still
                                   one-sided. --virtual runs the vtable-slot
                                   census over the same names
+    gruntz walls signscan         ARITHMETIC signedness sieve, the complement of
+                                  jccscan: cl lowers a division, modulo, shift
+                                  or narrow load through different instructions
+                                  per declared signedness, so `cdq`/`idiv`/`div`
+                                  /one-operand `imul`/`mul` counts and a
+                                  sar<->shr or movsx<->movzx swap name a TYPE.
+                                  The only wall class that is a CORRECTNESS
+                                  difference (--control fires it on a positive)
+    gruntz walls escapescan       ADDRESS-ESCAPE sieve (declined enregistration):
+                                  retail materializing a frame address INTO a
+                                  call we feed from a register says the source
+                                  is missing an `&` or a whole local object.
+                                  Keyed on the callee referent, because the raw
+                                  `lea [esp+N]` count is rematerialization, not
+                                  source
+    gruntz walls reloadscan       the three DECLINED memory optimizations, one
+                                  machine: a load retail repeats ACROSS a call
+                                  (CSE declined - the source re-reads it), a
+                                  load retail repeats INSIDE a loop (hoisting
+                                  declined - aliasing or an escaped address),
+                                  and an INDEX vs pointer-walk loop body
+                                  (strength reduction declined - the induction
+                                  variable is live after the loop)
     gruntz walls valuetemp        by-value struct temp sieve: retail's inlined
                                   accessor returns a pair BY VALUE and leaves the
                                   UNREAD half's store dead in the frame
@@ -116,6 +139,9 @@ _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "framescan": "gruntz.walls.framescan",
          "jccscan": "gruntz.walls.jccscan",
          "loopscan": "gruntz.walls.loopscan",
+         "signscan": "gruntz.walls.signscan",
+         "escapescan": "gruntz.walls.escapescan",
+         "reloadscan": "gruntz.walls.reloadscan",
          "valuetemp": "gruntz.walls.valuetemp",
          "residue": "gruntz.walls.residue",
          "retscan": "gruntz.walls.retscan",

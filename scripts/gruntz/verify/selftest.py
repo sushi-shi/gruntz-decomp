@@ -4422,6 +4422,253 @@ class ToolchainIsADeclaredInput(unittest.TestCase):
                          "every cl edge must declare the toolchain identity")
 
 
+def _asm_lines(asms, refs=None):
+    """One instruction per 4 bytes, so a branch operand `0xN` names the
+    instruction at index N/4."""
+    from gruntz.walls.semdiff import Line
+    refs = refs or {}
+    return [Line(i * 4, a, refs.get(i)) for i, a in enumerate(asms)]
+
+
+class ArithmeticSignednessControls(unittest.TestCase):
+    """`walls signscan` reads the signedness of a division, modulo, shift or
+    narrow load off the instruction cl chose.  The sequences below are the
+    real cl 5.0 SP3 /O2 output for the named C expression, so a change in the
+    classifier that stops separating them is a regression against the
+    compiler, not against a fixture."""
+
+    SDIV10 = ["mov ecx,DWORD PTR [esp+0x4]", "mov eax,0x66666667", "imul ecx",
+              "mov eax,edx", "sar eax,0x2", "mov ecx,eax", "shr ecx,0x1f",
+              "add eax,ecx", "ret"]
+    UDIV10 = ["mov eax,0xcccccccd", "mul DWORD PTR [esp+0x4]", "mov eax,edx",
+              "shr eax,0x3", "ret"]
+    SMOD16 = ["mov eax,DWORD PTR [esp+0x4]", "cdq", "xor eax,edx",
+              "sub eax,edx", "and eax,0xf", "xor eax,edx", "sub eax,edx"]
+    UMOD16 = ["mov eax,DWORD PTR [esp+0x4]", "and eax,0xf"]
+
+    def _dec(self, ours, theirs):
+        from gruntz.walls.signscan import decisive, features
+        return decisive(features(_asm_lines(ours)),
+                        features(_asm_lines(theirs)))
+
+    def test_signed_and_unsigned_division_are_separated(self):
+        d = self._dec(self.SDIV10, self.UDIV10)
+        self.assertEqual(d.get("imul"), (1, 0))
+        self.assertEqual(d.get("mul"), (0, 1))
+
+    def test_the_signed_sign_extract_is_not_read_as_an_unsigned_shift(self):
+        """`shr r,0x1f` is step five of the SIGNED magic sequence.  Counting
+        it inverts the reading: the signed form would look MORE unsigned than
+        the unsigned form."""
+        from gruntz.walls.signscan import features
+        self.assertEqual(features(_asm_lines(self.SDIV10))[("shr", "0x1f")], 0)
+
+    def test_signed_and_unsigned_modulo_are_separated(self):
+        self.assertEqual(self._dec(self.SMOD16, self.UMOD16).get("cdq"), (1, 0))
+
+    def test_the_same_lowering_on_both_sides_is_silent(self):
+        self.assertEqual(self._dec(self.SDIV10, self.SDIV10), {})
+
+    def test_an_interleaved_instruction_does_not_break_the_reading(self):
+        """The measured false positive: cl schedules an unrelated load into
+        the middle of the modulo sequence (`cdq / xor / mov ecx,[ebx+0x18] /
+        sub / and`).  A sequence MATCHER called that a lost modulo; counting
+        position-independent anchors does not."""
+        scheduled = ["mov eax,DWORD PTR [esp+0x4]", "cdq", "xor eax,edx",
+                     "mov ecx,DWORD PTR [ebx+0x18]", "sub eax,edx",
+                     "and eax,0xf", "xor eax,edx", "sub eax,edx"]
+        self.assertEqual(self._dec(self.SMOD16, scheduled), {})
+
+    def test_the_mask_living_in_a_register_does_not_break_the_reading(self):
+        """The second measured false positive: cl parks the constant 1 in EBX
+        and writes `and eax,ebx`, so the modulus is not an immediate at all."""
+        in_ebx = [a.replace("and eax,0xf", "and eax,ebx") for a in self.SMOD16]
+        self.assertEqual(self._dec(self.SMOD16, in_ebx), {})
+
+    def test_a_two_operand_imul_is_not_a_division(self):
+        from gruntz.walls.signscan import features
+        self.assertEqual(features(_asm_lines(["imul eax,ecx,0x1c"]))["imul"], 0)
+
+    def test_the_divisor_is_recovered_from_the_magic_and_the_shift(self):
+        """Every pair is a real cl 5.0 emission; the same magic serves both
+        signednesses for 9 and 30, which is why the MNEMONIC decides and the
+        constant does not."""
+        from gruntz.walls.signscan import divisor
+        for magic, shift, want in ((0x66666667, 2, 10), (0xcccccccd, 3, 10),
+                                   (0x38e38e39, 1, 9), (0x88888889, 4, 30),
+                                   (0x55555556, 0, 3), (0xaaaaaaab, 1, 3)):
+            self.assertEqual(divisor(magic, shift), want, hex(magic))
+
+    def test_a_swap_needs_both_directions(self):
+        """Two more `sar` on one side and two more `shr` on the same side is
+        a bigger function, not a signedness flip."""
+        from gruntz.walls.signscan import decisive, features
+        big = features(_asm_lines(["sar eax,0x10", "sar eax,0x10",
+                                   "shr ecx,0x10", "shr ecx,0x10"]))
+        small = features(_asm_lines(["sar eax,0x10", "shr ecx,0x10"]))
+        self.assertEqual(decisive(big, small), {})
+        flip = features(_asm_lines(["shr eax,0x10", "shr eax,0x10"]))
+        two = features(_asm_lines(["sar eax,0x10", "sar eax,0x10"]))
+        self.assertTrue(decisive(two, flip))
+
+
+class AddressEscapeControls(unittest.TestCase):
+    """`walls escapescan` says our source is missing an `&`.  Every control
+    here is a measured FALSE POSITIVE from building it: the census read 51
+    rows before the frame-register control, 15 before the callee key, 3 before
+    the branch control and 5 after the convention and constructor controls."""
+
+    @staticmethod
+    def _esc(asms, refs=None):
+        from gruntz.walls.escapescan import escapes
+        return escapes(_asm_lines(asms, refs))
+
+    def test_esp_relative_address_reaching_a_call_is_an_escape(self):
+        arg, _this = self._esc(["lea eax,[esp+0x10]", "push eax", "call 0x0"],
+                               {2: "?Sink@@YAXPAH@Z"})
+        self.assertEqual(arg["?Sink@@YAXPAH@Z"], 1)
+
+    def test_ebp_is_a_value_register_without_an_ebp_prologue(self):
+        """THE headline control.  /O2 omits the frame pointer in 669 of 671
+        retail bodies, so `lea eax,[ebp+0x4]` is a field of whatever heap
+        object EBP happens to hold.  Reading it as `&local` is what made the
+        first census three times too big."""
+        arg, _this = self._esc(["mov ebp,DWORD PTR ds:0x0",
+                                "lea eax,[ebp+0x4]", "push eax", "call 0x0"],
+                               {3: "?AddHead@CPtrList@@QAEPAXPAX@Z"})
+        self.assertEqual(sum(arg.values()), 0)
+
+    def test_ebp_counts_when_the_prologue_really_builds_a_frame(self):
+        arg, _this = self._esc(["push ebp", "mov ebp,esp", "sub esp,0x10",
+                                "lea eax,[ebp-0x4]", "push eax", "call 0x0"],
+                               {5: "?Sink@@YAXPAH@Z"})
+        self.assertEqual(arg["?Sink@@YAXPAH@Z"], 1)
+
+    def test_a_push_the_branch_carries_away_is_not_this_calls_argument(self):
+        """Retail's shared-return idiom pushes `&result` and JUMPS to a block
+        the two arms share.  Attributing that push to the next call in linear
+        order invented an escape in GetMapBaseName."""
+        arg, _this = self._esc(["lea edx,[esp+0xc]", "push edx", "jmp 0x28",
+                                "mov ecx,esi", "call 0x0"],
+                               {4: "?Other@@QAEXXZ"})
+        self.assertEqual(sum(arg.values()), 0)
+
+    def test_ecx_is_a_receiver_only_at_a_thiscall_callee(self):
+        """`_fopen`, `__imp__PtInRect@12` and `?Format@CString@@QAAXPBDZZ`
+        (the `A` is __cdecl) never read ECX, so a frame address left in it is
+        a leftover."""
+        stream = ["lea ecx,[esp+0x10]", "call 0x0"]
+        _arg, cdecl = self._esc(stream, {1: "_fopen"})
+        self.assertEqual(sum(cdecl.values()), 0)
+        _arg, varargs = self._esc(stream, {1: "?Format@CString@@QAAXPBDZZ"})
+        self.assertEqual(sum(varargs.values()), 0)
+        _arg, thiscall = self._esc(stream, {1: "?Empty@CString@@QAEXXZ"})
+        self.assertEqual(thiscall["?Empty@CString@@QAEXXZ"], 1)
+
+    def test_a_constructor_hands_the_same_address_back_in_eax(self):
+        """Reusing the ctor's EAX and re-`lea`ing the slot are the same
+        address, so the two spellings must not read as a source difference."""
+        ctor = "??0ofstream@@QAE@PBDHH@Z"
+        reuse, _ = self._esc(["lea ecx,[esp+0x40]", "call 0x0", "push eax",
+                              "call 0x0"], {1: ctor, 3: "?Encode@C@@QAEXPAX@Z"})
+        relea, _ = self._esc(["lea ecx,[esp+0x40]", "call 0x0",
+                              "lea edx,[esp+0x40]", "push edx", "call 0x0"],
+                             {1: ctor, 4: "?Encode@C@@QAEXPAX@Z"})
+        self.assertEqual(reuse["?Encode@C@@QAEXPAX@Z"],
+                         relea["?Encode@C@@QAEXPAX@Z"])
+
+    def test_a_non_constructor_return_is_not_a_frame_address(self):
+        """The rule above was first written for EVERY call, which promptly
+        called `CString::GetBuffer`'s heap pointer a frame address."""
+        arg, _this = self._esc(["lea ecx,[esp+0x18]", "call 0x0", "push eax",
+                                "call 0x0"],
+                               {1: "?GetBuffer@CString@@QAEPADH@Z",
+                                3: "??6ostream@@QAEAAV0@E@Z"})
+        self.assertEqual(arg["??6ostream@@QAEAAV0@E@Z"], 0)
+
+    def test_only_an_exclusive_delta_is_reported(self):
+        """A shared callee whose count merely differs is cross-jump merge
+        degree - the same caveat aggregate-copies carries."""
+        from collections import Counter
+
+        from gruntz.walls.escapescan import exclusive
+        merged = exclusive(Counter({"??1CString@@QAE@XZ": 12}),
+                           Counter({"??1CString@@QAE@XZ": 3}))
+        self.assertEqual(merged, {})
+        real = exclusive(Counter({"?Width@CRect@@QBEHXZ": 0}),
+                         Counter({"?Width@CRect@@QBEHXZ": 5}))
+        self.assertEqual(real, {"?Width@CRect@@QBEHXZ": (0, 5)})
+
+
+class DeclinedMemoryOptimizationControls(unittest.TestCase):
+    """`walls reloadscan` claims a repeated load is a source re-read.  It is
+    only that if the repetition really straddles the thing that forbids the
+    optimization, so each channel's boundary is controlled here."""
+
+    @staticmethod
+    def _chan(asms, refs=None):
+        from gruntz.walls.reloadscan import channels
+        return channels(_asm_lines(asms, refs))
+
+    def test_a_second_load_with_a_call_between_is_a_reload(self):
+        across, _loop, _shape = self._chan(
+            ["mov eax,DWORD PTR [esi+0x6c]", "call 0x0",
+             "mov eax,DWORD PTR [esi+0x6c]"], {1: "?Step@@YAXXZ"})
+        self.assertEqual(across["+0x6c"], 1)
+
+    def test_a_second_load_with_no_call_between_is_not(self):
+        """cl keeps a value in a register across straight-line code, so two
+        loads of one displacement with nothing between them is scheduling."""
+        across, _loop, _shape = self._chan(
+            ["mov eax,DWORD PTR [esi+0x6c]", "add eax,0x1",
+             "mov ecx,DWORD PTR [esi+0x6c]"])
+        self.assertEqual(sum(across.values()), 0)
+
+    def test_a_store_is_not_a_read(self):
+        across, _loop, _shape = self._chan(
+            ["mov DWORD PTR [esi+0x6c],eax", "call 0x0",
+             "mov DWORD PTR [esi+0x6c],ecx"], {1: "?Step@@YAXXZ"})
+        self.assertEqual(sum(across.values()), 0)
+
+    def test_lea_computes_an_address_and_reads_nothing(self):
+        across, _loop, _shape = self._chan(
+            ["lea eax,[esi+0x6c]", "call 0x0", "lea ecx,[esi+0x6c]"],
+            {1: "?Step@@YAXXZ"})
+        self.assertEqual(sum(across.values()), 0)
+
+    def test_the_loop_channel_counts_only_the_body(self):
+        _across, loop, shape = self._chan(
+            ["mov eax,DWORD PTR [esi+0x10]", "mov ecx,DWORD PTR [esi+0x14]",
+             "inc edx", "jne 0x4"])
+        self.assertEqual(shape["loops"], 1)
+        self.assertEqual(loop["+0x14"], 1)
+        self.assertEqual(loop["+0x10"], 0)      # hoisted above the head
+
+    def test_a_relocated_backward_branch_leaves_the_function(self):
+        _across, _loop, shape = self._chan(
+            ["mov eax,DWORD PTR [esi+0x10]", "jmp 0x0"],
+            {1: "?Other@@YAXXZ"})
+        self.assertEqual(shape["loops"], 0)
+
+    def test_the_index_channel_separates_a_walk_from_a_subscript(self):
+        _a, _l, walk = self._chan(["mov eax,DWORD PTR [esi]", "add esi,0x4",
+                                   "dec ecx", "jne 0x0"])
+        _a, _l, index = self._chan(["mov eax,DWORD PTR [esi+edx*4]", "inc edx",
+                                    "dec ecx", "jne 0x0"])
+        self.assertEqual((walk["stride"], walk["scaled"]), (1, 0))
+        self.assertEqual((index["stride"], index["scaled"]), (0, 1))
+
+    def test_the_exclusive_floor_rejects_a_single_touch(self):
+        from collections import Counter
+
+        from gruntz.walls.reloadscan import exclusive
+        self.assertEqual(exclusive(Counter({"+0x8": 1}), Counter()), {})
+        self.assertEqual(exclusive(Counter({"+0x8": 2}), Counter()),
+                         {"+0x8": (2, 0)})
+        self.assertEqual(exclusive(Counter({"+0x8": 5}), Counter({"+0x8": 4})),
+                         {})
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(
