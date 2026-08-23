@@ -5,9 +5,12 @@ stores that hold one.  Screening only the source comment reads half the record:
 7 of 17 rows on one lane's worklist carried a `codex_wall_reviews.tsv` review
 that nobody saw, and one of them listed the exact A/B that lane was queuing.
 
-  source     the contiguous `//` block directly above the function's `RVA(...)`
-             pin - what the matcher who parked it wrote, plus the `@early-stop`
-             marker itself.  Re-derive the residue; the prose can be stale.
+  source     the `//` block above the function's `RVA(...)` pin - what the
+             matcher who parked it wrote, plus the `@early-stop` marker itself.
+             Re-derive the residue; the prose can be stale.  ONE blank line may
+             separate the block from the pin (measured: 14 pins in the tree are
+             spelled that way and every one of them is a real verdict, four of
+             them 30+ lines); a formatter directive alone is not a verdict.
   review     config/codex_wall_reviews.tsv, keyed by rva AND source hash, so a
              row is reported `current` only when the body has not changed since
              the review was written; `STALE` means the verdict predates an edit.
@@ -28,6 +31,10 @@ from gruntz.core.paths import REPO
 ROOTS = ("src", "include")
 PIN = re.compile(r"\bRVA(?:_COMPGEN|_DYNINIT)?\s*\(\s*(0x[0-9a-fA-F]+)")
 COMMENT = re.compile(r"^\s*(?://|/\*|\*)")
+# A machine directive addressed to a formatter or linter carries no verdict, and
+# a block made only of them must not read as one.
+DIRECTIVE = re.compile(r"^\s*(?://|/\*)\s*(?:clang-format|NOLINT)")
+BLANK_GAP = 1                          # blank lines tolerated between block and pin
 
 
 def _pin_sites() -> dict[int, list[tuple[str, int]]]:
@@ -45,15 +52,31 @@ def _pin_sites() -> dict[int, list[tuple[str, int]]]:
     return sites
 
 
-def _comment_above(rel: str, line: int) -> list[str]:
-    """The contiguous comment block immediately above a pin, in source order."""
-    lines = (REPO / rel).read_text(errors="replace").split("\n")
-    out: list[str] = []
+def block_above(lines: list[str], line: int) -> list[str]:
+    """The verdict comment block above a 1-based pin line, in source order.
+
+    A single blank line between the block and the pin is ordinary breathing
+    room, not a separator: reading only the CONTIGUOUS block hid 13 real
+    verdicts, among them the 33-line `@early-stop` on CGruntzMgr::HandleCommand,
+    which is how that row reached a worklist labelled unadjudicated.  Two blank
+    lines are a section break and are still respected.
+    """
     i = line - 2                       # 0-based index of the line above the pin
+    for _ in range(BLANK_GAP):
+        if i >= 0 and not lines[i].strip():
+            i -= 1
+        else:
+            break
+    out: list[str] = []
     while i >= 0 and COMMENT.match(lines[i]):
         out.append(lines[i].strip())
         i -= 1
+    out = [x for x in out if not DIRECTIVE.match(x)]
     return list(reversed(out))
+
+
+def _comment_above(rel: str, line: int) -> list[str]:
+    return block_above((REPO / rel).read_text(errors="replace").split("\n"), line)
 
 
 def _targets(a) -> list[str]:

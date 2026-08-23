@@ -792,6 +792,53 @@ class JccScanControls(unittest.TestCase):
         self.assertEqual(dict(codes(lines)), {"je": 1, "jne": 1})
 
 
+class PriorsBlockControls(unittest.TestCase):
+    """`walls priors` reads the verdict block above a pin.  Reading only the
+    CONTIGUOUS block made one blank line hide a whole verdict, so a row with a
+    33-line `@early-stop` on it reported `no comment above the pin` and reached
+    a worklist labelled unadjudicated.  The gap rule that fixes it can also
+    MANUFACTURE a verdict out of a formatter directive, so both directions get a
+    control, and both are taken from the tree rather than invented."""
+
+    def test_one_blank_line_does_not_hide_the_verdict(self):
+        """POSITIVE control, carrying the property under test: the real
+        GruntzMgrCmd.cpp spelling - block, blank line, pin."""
+        from gruntz.walls.priors import block_above
+        src = ["// @early-stop", "// 313 branches on both sides.", "",
+               "RVA(0x000862f0, 0x4369)"]
+        self.assertEqual(block_above(src, 4),
+                         ["// @early-stop", "// 313 branches on both sides."])
+
+    def test_two_blank_lines_are_still_a_section_break(self):
+        from gruntz.walls.priors import block_above
+        src = ["// a note about something else", "", "",
+               "RVA(0x000862f0, 0x4369)"]
+        self.assertEqual(block_above(src, 4), [])
+
+    def test_a_formatter_directive_alone_is_not_a_verdict(self):
+        """NEGATIVE control.  MultiStartDlg.cpp:119 is the tree's only pin whose
+        gap-1 block is `// clang-format on` closing the table above it - the one
+        row the gap rule would otherwise turn into a written verdict."""
+        from gruntz.walls.priors import block_above
+        src = ["};", "// clang-format on", "", "RVA(0x000c1750, 0x88)"]
+        self.assertEqual(block_above(src, 4), [])
+
+    def test_a_directive_does_not_suppress_the_prose_beside_it(self):
+        from gruntz.walls.priors import block_above
+        src = ["// clang-format off", "// @early-stop", "RVA(0x1, 0x2)"]
+        self.assertEqual(block_above(src, 3), ["// @early-stop"])
+
+    def test_the_contiguous_case_is_unchanged(self):
+        from gruntz.walls.priors import block_above
+        src = ["// @early-stop", "RVA(0x1, 0x2)"]
+        self.assertEqual(block_above(src, 2), ["// @early-stop"])
+
+    def test_a_gapped_block_is_not_read_across_code(self):
+        from gruntz.walls.priors import block_above
+        src = ["// the previous function's note", "}", "", "RVA(0x1, 0x2)"]
+        self.assertEqual(block_above(src, 4), [])
+
+
 class StoreScanFrameControls(unittest.TestCase):
     """`walls storescan` compares member-store ORDER, so its key has to be a
     MEMBER offset.  Excluding the literal `esp` base was not enough: cl builds
