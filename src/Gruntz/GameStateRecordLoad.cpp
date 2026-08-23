@@ -21,15 +21,18 @@
 
 #define SERIALREF(field)                                                                           \
     do {                                                                                           \
+        i32 id;                                                                                    \
+        CGameObject* obj;                                                                          \
         ++g_serialCounter;                                                                         \
         ar->Read(&id, 4);                                                                          \
         obj = NULL;                                                                                \
         CGameObject* r;                                                                            \
-        if (MapLookupById(dir->m_childGroup->m_registeredGameObjectsById, id, obj) != 0            \
-            && obj != NULL) {                                                                      \
-            r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
-        } else {                                                                                   \
+        if (MapLookupById(dir->m_childGroup->m_registeredGameObjectsById, id, obj) == 0) {         \
             r = NULL;                                                                              \
+        } else if (obj == NULL) {                                                                  \
+            r = NULL;                                                                              \
+        } else {                                                                                   \
+            r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
         }                                                                                          \
         (field) = static_cast<CWwdGameObjectA*>(r);                                                \
         if (r == NULL && id != 0) {                                                                \
@@ -55,7 +58,6 @@
         }                                                                                          \
     } while (0)
 
-// @early-stop
 RVA(0x000555e0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -66,8 +68,6 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         return 0;
     }
 
-    i32 id;
-    CGameObject* obj;
     char buf[SERIAL_NAME_LEN];
 
     m_struckSlotSound = NULL;
@@ -211,27 +211,23 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalTargetPx, sizeof(m_arrivalTargetPx));
 
     CGruntCellRec* row = m_cells;
-    for (i32 gi = 0; gi < 3; ++gi) {
+    for (i32 gi = 0; gi < 3; ++gi, row += 3) {
         CGruntCellRec* cell = row;
-        for (i32 gj = 0; gj < 3; ++gj) {
+        for (i32 gj = 0; gj < 3; ++gj, ++cell) {
             if (cell->DeserializeStrings(ar) == 0) {
                 return 0;
             }
-            cell += 1;
         }
-        row += 3;
     }
 
     if (m_coordList.GetCount() != 0) {
         POSITION pos = m_coordList.GetHeadPosition();
         if (pos != NULL) {
-            CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
                 Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
                 if (buf != NULL) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
-                    n2->m_next = fl;
-                    fl = n2;
+                    n2->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = n2;
                 }
             } while (pos != NULL);
@@ -253,9 +249,9 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_coordList)->AddTail(item);
     }
 
-    // Retail's drain condition: a count-guarded head term tested for NULL, then
-    // the count re-test (0x567c0..0x567dd) - the fused && form emits 2 blocks, not 6.
-    while ((m_payloads.GetCount() != 0 ? m_payloads.GetHead() : NULL) != NULL
+    // The count-guarded head term is spelled `== 0 ? NULL :` so the ternary's NULL
+    // arm falls through; the `!= 0 ?` spelling inverts the branch and costs a block.
+    while ((m_payloads.GetCount() == 0 ? NULL : m_payloads.GetHead()) != NULL
            && m_payloads.GetCount() != 0) {
         i32* rem = static_cast<i32*>((&m_payloads)->RemoveHead());
         delete[] rem;
@@ -264,10 +260,12 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     for (i32 b = 0; b < count; ++b) {
         i32* mem = new i32[0xb];
-        i32* item = NULL;
+        i32* item;
         if (mem != NULL) {
             memset(mem, 0, 0xb * 4);
             item = mem;
+        } else {
+            item = NULL;
         }
         ar->Read(item, 0x2c);
         (&m_payloads)->AddTail(item);
