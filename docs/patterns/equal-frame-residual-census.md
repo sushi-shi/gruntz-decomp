@@ -25,22 +25,22 @@ was adjudicated by hand against the retail bytes first.
 
 | kind | first | +§8-11 | now | what it means |
 |---|---:|---:|---:|---|
-| `regname` | 148 | 153 | RN | register rotation only |
-| `displacement` | 84 | 75 | DI | a member offset differs |
-| `selection` | 66 | 77 | SE | the mnemonic multiset differs |
-| `immediate` | 75 | 72 | IM | a constant differs |
-| `schedule` | 36 | 36 | SC | a pure permutation |
-| `operand` | 32 | 32 | OP | same mnemonics, different operands |
-| `arm-copy` | 30 | 30 | AC | retail has callee-saved `mov r,r` the base lacks |
-| `none` | 6 | 15 | NO | nothing survives the mask |
-| `extra-copy` | 13 | 13 | EC | the inverse of `arm-copy` |
-| `subobject` | - | - | SO | one side splits an address, the other folds it |
-| `referent` | 15 | **2** | RE | one side names a symbol the other never names |
+| `regname` | 148 | 153 | 159 | register rotation only |
+| `displacement` | 84 | 75 | 61 | a member offset differs |
+| `selection` | 66 | 77 | 90 | the mnemonic multiset differs |
+| `immediate` | 75 | 72 | **68** | a constant differs |
+| `schedule` | 36 | 36 | 39 | a pure permutation |
+| `operand` | 32 | 32 | 32 | same mnemonics, different operands |
+| `arm-copy` | 30 | 30 | 31 | retail has callee-saved `mov r,r` the base lacks |
+| `none` | 6 | 15 | 19 | nothing survives the mask |
+| `extra-copy` | 13 | 13 | 13 | the inverse of `arm-copy` |
+| `subobject` | - | - | 2 | one side splits an address, the other folds it |
+| `referent` | 15 | **2** | **2** | one side names a symbol the other never names |
 
 (the `first` column was 505 rows and `now` is the larger todo queue, so read the
 columns as a shape, not a subtraction.)
 
-**COINS of TOTAL (COINPCT) are `regname` + `schedule` + `none`** - nothing a source edit
+**217 of 516 (42%) are `regname` + `schedule` + `none`** - nothing a source edit
 reaches. Restricted to residual <= 4 the coin share is 62%: the closer a row is,
 the more likely the remainder is a coin. Rank by KIND, not by residual.
 
