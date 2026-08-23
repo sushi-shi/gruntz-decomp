@@ -30,6 +30,8 @@ Entry requirements — a revelation is not a tip:
 | [wall-reasons-layout.md](wall-reasons-layout.md) | pre-layout block order is **topological** (after the last predecessor), while later value factoring can create backward edges in the final graph; the unconditional tail cross-jump is **`/Os`-gated and off in our build**, switch xlat obeys `3·range > 4·targets + 12`, frame slots are declaration+first-use order, and an EH state index is a lexical **count** | one "block-placement coin" covering four unrelated decisions |
 | [wall-reasons-allocation.md](wall-reasons-allocation.md) | the allocation/selection wall catalogue: a value's register is **the rotation cursor at the tuple that requests it**, call-crossing values bind ESI/EDI/EBX/EBP in **definition** order, and `test r,r` vs `cmp r,<reg>` counts the function's **zero stores** | one undifferentiated "regalloc/scheduling" verdict to park |
 
+| [a-control-that-cannot-fail-is-not-a-calibration.md](a-control-that-cannot-fail-is-not-a-calibration.md) | every paired sieve's *"returns zero over the exact rows"* is **vacuous for byte-keyed comparisons** — the two inputs are identical there, so `f(x)==f(x)` cannot fail; the one live cell is the two objects' differing **relocation tables** | proof a sieve measures what it claims |
+
 Reference indexes, not revelations:
 
 * [**data-matching-checklist.md**](data-matching-checklist.md) — the terse whole-checklist
