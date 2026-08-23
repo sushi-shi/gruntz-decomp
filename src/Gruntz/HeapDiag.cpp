@@ -141,7 +141,6 @@ int HeapStats() {
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
-// @early-stop
 RVA(0x00118ce0, 0x1f5)
 i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     if (name == NULL || *name == 0) {
@@ -193,8 +192,8 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     i32 matchCount = 0;
 
     if (pFirst(hSnap, &pe)) {
+        MODULEENTRY32 me = {0};
         do {
-            MODULEENTRY32 me = {0};
             if (Utils::WinAPI::LegacyFindModule(
                     pe.th32ProcessID,
                     pe.th32ModuleID,

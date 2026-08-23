@@ -158,7 +158,6 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00153180, 0xda)
 i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
@@ -167,7 +166,8 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    if (!owned->Build(desc, static_cast<i32>(size), m_ownerCtx->m_drawTarget->m_frontPair->m_bpp)) {
+    ColorDepth fmt = m_ownerCtx->m_drawTarget->m_frontPair->m_bpp;
+    if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
     i32 w = m_owned->m_width;

@@ -79,7 +79,6 @@ i32 g_sfReady = 0;
 DATA(0x0024e0c0)
 u8 g_sfDeviceRatings[344] = {0};
 
-// @early-stop
 RVA(0x000f8970, 0x3b4)
 i32 SFManager_SelectBestDevice() {
     g_sfDll = LoadLibraryA("SFMAN32.DLL");
@@ -175,9 +174,9 @@ i32 SFManager_SelectBestDevice() {
     g_sfDevice->SF_GetRouterID(g_sfDeviceId, &g_sfRouterId);
     DWORD v = g_sfRouterId;
     g_routerSysEx[7] = static_cast<unsigned char>((v & 0x7f));
-    g_routerSysEx[10] = static_cast<unsigned char>(((v >> 0x18) & 0x7f));
-    g_sfReady = 1;
     g_routerSysEx[8] = static_cast<unsigned char>(((v >> 8) & 0x7f));
     g_routerSysEx[9] = static_cast<unsigned char>(((v >> 0x10) & 0x7f));
+    g_routerSysEx[10] = static_cast<unsigned char>(((v >> 0x18) & 0x7f));
+    g_sfReady = 1;
     return 1;
 }
