@@ -89,8 +89,10 @@ static __inline BrickTileId PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 }
 
 // @early-stop
-// Calls and all 122 relocations agree. The residue is register homes and consequent
-// loop-entry/join layout: retail pins zero in ebx and keeps both counters in registers.
+// Calls and all 122 relocations agree; the residue is branch/join layout in the tile
+// switch. The exit-trigger neighbour walk is settled: retail's `cdq / and edx,0x1f /
+// add` is cl's own `/ TILE_SIZE_PX`, and `cx` is a real outer-loop variable - retail
+// homes the x offset at esp+0x58 precisely because its register carries `tileX + xo`.
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
@@ -431,15 +433,16 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     while (obj != NULL) {
 
         if (obj->m_animWorker->m_notify == &CreateExitTrigger) {
-            i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & TILE_MASK_PX)) >> TILE_SHIFT_PX;
-            i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & TILE_MASK_PX)) >> TILE_SHIFT_PX;
+            i32 tileX = obj->m_screenX / TILE_SIZE_PX;
+            i32 tileY = obj->m_screenY / TILE_SIZE_PX;
             for (i32 xo = -1; xo < 2; xo++) {
+                i32 cx = tileX + xo;
                 for (i32 yo = -1; yo < 2; yo++) {
 
                     Coord* elem = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
                         elem = &g_coordPool.m_freeHead->m_coord;
-                        elem->m_x = tileX + xo;
+                        elem->m_x = cx;
                         elem->m_y = tileY + yo;
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
