@@ -3124,7 +3124,8 @@ void CGrunt::AdvanceMotion() {
             m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
             return;
         }
-        if (m_lastTilePx.m_x == m_entrancePx.m_x && m_lastTilePx.m_y == m_entrancePx.m_y) {
+        Coord entrance = EntrancePx();
+        if (m_lastTilePx.m_x == entrance.m_x && m_lastTilePx.m_y == entrance.m_y) {
             m_arrivalPhase = 0;
             ResetEntranceAnimation(1, 0, 0);
             return;
