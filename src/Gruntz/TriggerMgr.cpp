@@ -503,7 +503,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         return 1;
     }
 
-    PickupType gruntKind = ArrivalPickup(cell);
+    PickupType gruntKind = ARRIVAL_PICKUP_TERNARY_GT(cell);
 
     if (hitFlag != 0) {
         if (pfk == 0) {
