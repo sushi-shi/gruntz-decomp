@@ -28,6 +28,9 @@ USAGE
     gruntz walls inline-model --selftest
     gruntz walls inline-model --spec sites.json [--json]
     gruntz walls inline-model --gap sites.json  [--json]
+    gruntz walls inline-model --gap 0x08b960    # the address form: the
+                                      # call-set delta + each site's /Ob1
+                                      # candidacy, derived, no cb needed
     gruntz walls inline-model --measure-cb h.cpp --fn CALLEE \\
         --caller CALLER --sites N     # titrate cb with the real cl 5.0
                                       # (harness: --gen-harness)
@@ -383,6 +386,92 @@ def _load_spec(path: Path):
     return spec["caller_cb"], [mk_site(s) for s in spec["sites"]]
 
 
+def gap_from_rva(token: str) -> int:
+    """`--gap <rva>`: name the call-set delta and screen each site's CANDIDACY.
+
+    CLAUDE.md points every inline/call-set wall at this verb, but the only form
+    it had took a spec JSON of front-end `cb` estimates - numbers nobody has for
+    a real row - so the documented lever could not be invoked at an address at
+    all.  What IS exactly derivable from an address is the two questions that
+    come BEFORE the budget arithmetic, and they decide whether the budget lever
+    applies:
+
+      1. WHICH callees differ, from the same normalized pair `walls diagnose`
+         reads;
+      2. whether each one is an inline CANDIDATE in this TU, from our own base
+         obj's symbol table.  `/O2` implies `/Ob1`, so an unmarked, out-of-line
+         callee is never expanded at any budget: if the symbol is UNDEFINED in
+         the obj that calls it, growing the caller cannot help and the fix is
+         to make the definition inline-visible.  Only a callee the TU already
+         emitted as its own COMDAT is a live candidate that the budget declined.
+
+    The `cb` arithmetic still needs `cb`, and this refuses to invent one:
+    measure it with `--measure-cb` and pass a spec.  A guessed budget deficit
+    printed as a model output would be indistinguishable from a measured one.
+    """
+    from collections import Counter
+
+    from gruntz.walls.diagnose import (
+        NORM, _call_targets, _find_function, _jump_table_bytes, _locate,
+        _skeleton,
+    )
+    from gruntz.delink.coffx import Obj
+
+    b, why = _locate(token)
+    if b is None:
+        die(why)
+    base_p = NORM / "base" / f"{b.unit}.obj"
+    tgt_p = next((p for p in (NORM / "target" / f"{b.unit}.c.obj",
+                              NORM / "target" / f"{b.unit}.obj") if p.is_file()),
+                 None)
+    if not base_p.is_file() or tgt_p is None:
+        die(f"normalized pair missing for {b.unit} - run `gruntz build` first")
+
+    calls = {}
+    for tag, path in (("base", base_p), ("target", tgt_p)):
+        payload, rel, _size = _find_function(Obj(path), b.name)
+        if payload is None:
+            die(f"{tag} obj does not define {b.name}")
+        _m, _c, _br, _r, _i, asm = _skeleton(
+            payload, rel, data=_jump_table_bytes(rel, b.name))
+        calls[tag] = Counter(n for n, _a in _call_targets(rel, asm, b.name))
+
+    obj = Obj(base_p)
+    defined = {obj.sym_name(i) for i, _v, sn in obj.iter_symbols() if sn > 0}
+
+    print(f"[budget-gap] {b.name}  [{b.unit}]  rva 0x{b.rva:06x}")
+    delta = [n for n in sorted(calls["base"].keys() | calls["target"].keys())
+             if calls["base"][n] != calls["target"][n]]
+    if not delta:
+        print("  call-set delta: none - this row is not an inline/call-set "
+              "wall, so the budget model has nothing to say about it.")
+        return 0
+    for n in delta:
+        bn, tn = calls["base"][n], calls["target"][n]
+        side = "base calls MORE" if bn > tn else "base calls FEWER"
+        print(f"  {n}\n      target {tn}, base {bn}   ({side})")
+        if bn > tn:
+            if n in defined:
+                print("      CANDIDATE: this TU emits its own COMDAT for it, so"
+                      " it is inline-visible and the\n"
+                      "                 budget declined the site. Measure its "
+                      "cb (`--measure-cb`) and\n"
+                      "                 pass a spec to quantify the deficit.")
+            else:
+                print("      NOT A CANDIDATE: UNDEFINED external in this obj -"
+                      " out of line, and /O2\n"
+                      "                       implies /Ob1, so no budget "
+                      "expands it. Growing the caller\n"
+                      "                       cannot help; make the definition "
+                      "inline-visible first.")
+        else:
+            print("      base EXPANDS where retail calls - the budget lever "
+                  "runs the wrong way here;\n"
+                  "                 the question is why our definition is a "
+                  "candidate and retail's was not.")
+    return 0
+
+
 def gen_harness(statements: int, sites: int, pad: int) -> str:
     """The --measure-cb harness TU: a callee of S statements, a caller with N
     same-callee sites behind PAD statements of caller mass (folded in from the
@@ -404,8 +493,11 @@ def main(argv=None) -> int:
     ap.add_argument("--selftest", action="store_true",
                     help="replay the validated oracle cases through predict()")
     ap.add_argument("--spec", help="JSON caller/sites spec to predict")
-    ap.add_argument("--gap", help="JSON caller/sites spec: report the budget "
-                    "deficit per starved site as CALLER statements")
+    ap.add_argument("--gap", metavar="SPEC|RVA",
+                    help="a JSON caller/sites spec: report the budget deficit "
+                    "per starved site as CALLER statements. Or an rva/name: "
+                    "name the call-set delta from the normalized pair and "
+                    "screen each site's /Ob1 candidacy in our own base obj")
     ap.add_argument("--measure-cb", dest="measure_cb", metavar="TU",
                     help="titrate a callee's cb: compile TU, count rejected "
                     "sites in --caller")
@@ -451,7 +543,9 @@ def main(argv=None) -> int:
         return 0
     if args.gap:
         if not Path(args.gap).is_file():
-            die(f"spec JSON missing: {args.gap}")
+            if args.gap.endswith(".json"):
+                die(f"spec JSON missing: {args.gap}")
+            return gap_from_rva(args.gap)
         caller_cb, sites = _load_spec(Path(args.gap))
         g = budget_gap(caller_cb, sites)
         if args.json:

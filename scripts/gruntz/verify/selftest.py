@@ -899,6 +899,34 @@ class PriorsBlockControls(unittest.TestCase):
                                       "CImage::Render"))
 
 
+class InlineModelGapArgumentControls(unittest.TestCase):
+    """CLAUDE.md points every inline/call-set wall at `walls inline-model
+    --gap`, but its only form took a spec JSON of front-end `cb` estimates, so
+    `--gap 0x08b960` answered `spec JSON missing` and the documented lever could
+    not be invoked at an address at all.  The address form has to be reachable,
+    and a mistyped spec path must NOT silently become an address."""
+
+    @staticmethod
+    def _err(argv):
+        import contextlib
+        import io
+        from gruntz.walls import inline_model
+        buf = io.StringIO()
+        with contextlib.redirect_stderr(buf), contextlib.suppress(SystemExit):
+            inline_model.main(argv)
+        return buf.getvalue()
+
+    def test_a_missing_spec_path_still_says_spec_json_missing(self):
+        """NEGATIVE control: a typo'd `.json` must not be read as an rva."""
+        self.assertIn("spec JSON missing", self._err(["--gap", "nope.json"]))
+
+    def test_an_unresolvable_address_reports_the_address_not_the_spec(self):
+        """POSITIVE control carrying the property: a non-`.json` argument takes
+        the address path, so its failure names the address."""
+        err = self._err(["--gap", "0xdeadbee"])
+        self.assertNotIn("spec JSON missing", err)
+
+
 class ReviewCountClaimControls(unittest.TestCase):
     """`walls recheck` re-measures the COUNT certifications a review states.  A
     review that says "base/retail agree on 24 calls" is an assertion and nothing

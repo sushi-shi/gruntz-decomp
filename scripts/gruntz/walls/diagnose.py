@@ -231,8 +231,9 @@ def diagnose(token: str, show_asm: bool = False) -> int:
                 print(f"    target calls, base expanded/lacks: {n}")
             else:
                 print(f"    base calls, target expanded/lacks:  {n}")
-        print("  lever: gruntz walls inline-model --gap (budget deficit per "
-              "starved site)")
+        print(f"  lever: gruntz walls inline-model --gap 0x{b.rva:06x} "
+              f"(/Ob1 candidacy per site; an UNDEFINED callee is not a "
+              f"candidate at any budget)")
     elif wall == "cfg":
         print(f"  class: CFG - branch/return skeleton differs "
               f"(base {bbr}/{bret}, target {tbr}/{tret}); a structural "

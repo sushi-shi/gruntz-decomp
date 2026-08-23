@@ -4,9 +4,14 @@
                                   match_baseline) - ascending historical MAX
     gruntz walls diagnose <fn>    classify one wall from the normalized pair:
                                   referent -> inline/call-set -> cfg -> regalloc
-    gruntz walls inline-model     the cl 5.0 inline-budget model (--gap
-                                  quantifies the finish-the-caller lever;
-                                  --measure-cb titrates with the real compiler)
+    gruntz walls inline-model     the cl 5.0 inline-budget model. `--gap <rva>`
+                                  names the call-set delta and screens each
+                                  site's /Ob1 candidacy from our own base obj -
+                                  an UNDEFINED callee is not a candidate at any
+                                  budget, so finishing the caller cannot help.
+                                  `--gap <spec.json>` quantifies the deficit
+                                  once cb is known; --measure-cb titrates cb
+                                  with the real compiler
     gruntz walls aggregate-copies rep-movs count sieve; a source/CFG lead,
                                   never proof until block merging is excluded
     gruntz walls framescan        stack-frame-size sieve: our `sub esp,N`
