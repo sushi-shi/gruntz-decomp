@@ -292,11 +292,12 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
         CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
         RECT ra;                                                                                   \
         ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
+        RECT* rd = &(grid)->m_bounds;                                                              \
+        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
+            *rd = ra;                                                                              \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+        (grid)->m_gridW = rd->right - rd->left;                                                    \
+        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
     }
 
 #define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
@@ -308,11 +309,12 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
         rb.bottom = (grid)->m_height;                                                              \
         RECT ra;                                                                                   \
         ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
+        RECT* rd = &(grid)->m_bounds;                                                              \
+        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
+            *rd = ra;                                                                              \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+        (grid)->m_gridW = rd->right - rd->left;                                                    \
+        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
     }
 
 #define FREELIST_PUSH(elem)                                                                        \
