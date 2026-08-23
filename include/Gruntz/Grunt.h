@@ -468,14 +468,14 @@ public:
     };
     i32 m_hasExtent;
 
-    CGruntCoordList m_coordList;
+    CPtrList m_coordList;
     CPtrList m_payloads;
 
     CoordNode* CoordHead() const {
         return MfcNodeFromPosition<CoordNode>(m_coordList.GetHeadPosition());
     }
     CGruntCoordList* CoordListOps() {
-        return &m_coordList;
+        return static_cast<CGruntCoordList*>(&m_coordList);
     }
     CoordNode* CoordTail() const {
         return MfcNodeFromPosition<CoordNode>(m_coordList.GetTailPosition());

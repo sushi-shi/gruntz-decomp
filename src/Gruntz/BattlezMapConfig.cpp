@@ -662,7 +662,11 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 
 // @early-stop
 // Retail carries `this` in ecx across the outer loop and reloads it in the latch
-// where we reload it at the loop head, and retail's frame is one dword larger.
+// where we reload it at the loop head, and its frame is two dwords larger.  The
+// CFG lead is the reroll/clamp tail: the four rowHit/colHit label blocks are
+// textually identical, cl cross-jumps all four into ONE `m_gridH` store + `ret`,
+// and retail keeps TWO (one on ebp, one on esi) - so retail's row pair and column
+// pair each merged on their own.
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -1936,7 +1940,7 @@ returnZero:
 
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
-    CGruntCoordList* coordList = &unit->m_coordList;
+    CPtrList* coordList = &unit->m_coordList;
     if (coordList->GetCount() == 0) {
         return 1;
     }
@@ -4335,7 +4339,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
                 // `test ecx,ecx` on a member address is also unfolded.  Both are
                 // retail's, transcribed as-is.
                 do {
-                    CGruntCoordList* listPayload = &unit->m_coordList;
+                    CPtrList* listPayload = &unit->m_coordList;
                     if (listPayload != NULL) {
                         PushFreeNode(&g_coordPool, listPayload);
                     }
