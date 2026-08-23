@@ -140,20 +140,19 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     i32 count = bute.GetIntDef("Cheatz", "NumCheatz", 0);
                     for (i32 i = 1; i <= count; i++) {
                         group.Format("Cheat%i", i);
-                        const char* groupName = static_cast<const char*>(group);
                         // key == NULL is Exists()'s "the tag itself is present" form
                         // (0x171a60 returns true before the key lookup).
-                        if (!bute.Exists(groupName, NULL)) {
+                        if (!bute.Exists(group, NULL)) {
                             continue;
                         }
-                        code = *bute.GetStringDef(groupName, "Text", &code);
+                        code = *bute.GetStringDef(group, "Text", &code);
                         if (code.GetLength() == 0) {
                             continue;
                         }
-                        if (bute.GetIntDef(groupName, "NonCheat", 0) == 1) {
+                        if (bute.GetIntDef(group, "NonCheat", 0) == 1) {
                             if (g_gameReg->m_cheatMgr->AddCheat(
                                     static_cast<const char*>(code),
-                                    bute.GetIntDef(groupName, "Value", 0x807b),
+                                    bute.GetIntDef(group, "Value", 0x807b),
                                     1
                                 )) {
                                 enabled++;
@@ -161,7 +160,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                         } else {
                             if (g_gameReg->m_cheatMgr->AddCheat(
                                     static_cast<const char*>(code),
-                                    bute.GetIntDef(groupName, "Value", 0x807b),
+                                    bute.GetIntDef(group, "Value", 0x807b),
                                     0
                                 )) {
                                 enabled++;
