@@ -97,14 +97,31 @@ Two things this instance adds:
   a bare `return;` in the body is the whole fix, and the `f.Close()` before it is retail's
   own order.
 
-**Census instrument for the reverse direction.** A shrink-wrapped function has a branch
-target strictly INSIDE its final pop run (the guards enter the epilogue below the sunk
-pops). Detecting that over every function in `build/objdiff/compare-new/{base,target}`
-turns "regalloc noise" into a three-row worklist: 92 base / 90 target, **89 in both**,
-3 base-only (`BuildLevelTitleString`, `CArray<PLAYLISTINFOSTRUCT*>::FreeExtra`, one `.text`
-COMDAT) and 1 target-only (`CFaderRadial::RenderFrame` 0x17fc60, 88.58 - the forward
-direction, still open). An 89/90 agreement means a side-only split epilogue is evidence,
-not a coin.
+**Census instrument, and it has TWO forms.** A shrink-wrapped function's epilogue comes
+out either MERGED - the guard's exit branches strictly INSIDE the final pop run, below the
+sunk pops - or TAIL-DUPLICATED, with the guard given its own shorter pop run and `ret` and
+no branch into the tail at all. They are the same decision. `FreeSamples`, `GetItem`,
+`UpdateGruntStatus`, `DeactivateDistantObjects` and `StepGridWalk` above are ALL the
+duplicated form, so a census written only for the merged form does not see any of them.
+
+Decode each side from its OWN instruction stream. The two sides are not byte-symmetric -
+our `call rel32` displacements are relocation-zeroed while the delinked target resolves
+self-calls internally - so a raw-byte scan mixes decoder noise into the answer.
+
+* **MERGED**, 2026-08-23: 48 base / 48 target / **48 agreeing** over 4712 paired symbols,
+  **zero disagreements**. The last target-only row, `CFaderRadial::RenderFrame` 0x17fc60,
+  closed 88.58 -> 99.72 (see the related link) and now splits on both sides.
+* **CONTROL for that zero.** Retargeting RenderFrame's guard `je` by one byte in the real
+  base obj (`0f 84 e7` -> `e6`, onto the head of the pop run instead of below `pop ebp`)
+  makes the census report exactly one TARGET-ONLY row naming that function; the same byte
+  in the target obj reports exactly one BASE-ONLY row; restoring both returns 48/48/48.
+* **DUPLICATED**, read as the pop-run length multiset at every `ret` and restricted to
+  symbols whose two sides have EQUAL ret counts (unequal counts are a tail-duplication
+  difference, not a shrink-wrap one): 814 base / 814 target, 811 agreeing, and a six-row
+  worklist - base-only `CGameLevel::MoveToward` (1,4,4,4 vs 4,4,4,4),
+  `WarpTextureBlit` (2,3 vs 2,2), `CMapMgr::CellPush` (1,3 vs 3,3); target-only
+  `CGrunt::LoadGruntDecayConfig2` (1,1 vs 1,3), `CPlay::HandleDragMove` (4,4,4,4,4 vs
+  1,4,4,4,4), `CVariantSlot::Add` (3,3,3,3,3 vs 2,3,3,3,3).
 
 **Screen out TU state before searching the source.** On BuildLevelTitleString, moving the
 function to the head and to the tail of its TU, inserting a static definition immediately
@@ -114,4 +131,4 @@ guards, beside the `CFile`), guard shape (`&&` gate, `||` gate, brace-less retur
 initializers and value hoists are byte-identical too. When the census says one side is the
 outlier, count the source's returns; do not sweep declarations.
 
-related: [tail-block-placement-cross-jump-wall.md](tail-block-placement-cross-jump-wall.md) (the wall this breaks), [trailing-error-block-is-a-crossjump-magnet.md](trailing-error-block-is-a-crossjump-magnet.md) (the half that is still a wall: merging guards with `||` feeds cl's cross-jump).
+related: [named-element-pointer-steals-a-callee-saved-register.md](named-element-pointer-steals-a-callee-saved-register.md) (the forward direction: a named element pointer eats the register the guard needed), [tail-block-placement-cross-jump-wall.md](tail-block-placement-cross-jump-wall.md) (the wall this breaks), [trailing-error-block-is-a-crossjump-magnet.md](trailing-error-block-is-a-crossjump-magnet.md) (the half that is still a wall: merging guards with `||` feeds cl's cross-jump).

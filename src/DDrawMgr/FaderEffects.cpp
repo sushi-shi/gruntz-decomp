@@ -254,27 +254,24 @@ void CFaderRadial::FreeBuffer() {
 }
 
 // @early-stop
-// register colouring around the Lock/Clear call cluster and the per-cell loop;
-// structure and callee set match. Greedy permuter and islands inert.
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
     u8* scratch = new u8[m_dstSurface->m_width];
     m_dstSurface->Clear(0);
     m_srcSurface->Lock(NULL);
-    u8* base = static_cast<u8*>(m_dstSurface->Lock(0));
+    u8* base = static_cast<u8*>(m_dstSurface->Lock(NULL));
     if (m_table->m_data == NULL) {
         return;
     }
 
     for (i32 i = 0; i < m_srcSurface->m_width * m_srcSurface->m_height; i++) {
-        CFaderRadialCell* c = &m_cells[i];
-        float d = c->m_radius - static_cast<float>(static_cast<u32>(frame));
+        float d = m_cells[i].m_radius - static_cast<float>(static_cast<u32>(frame));
         if (d > g_faderOne) {
             float sf = d / m_fadeDivisor - g_faderBiasFade;
-            i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
-            i32 py = m_centerY - static_cast<i32>((c->m_vy / sf));
+            i32 px = m_centerX + static_cast<i32>((m_cells[i].m_vx / sf));
+            i32 py = m_centerY - static_cast<i32>((m_cells[i].m_vy / sf));
             if (px > 0 && px < m_dstSurface->m_width && py > 0 && py < m_dstSurface->m_height) {
-                (base)[py * m_dstSurface->m_pitch + px] = c->m_pixel;
+                base[py * m_dstSurface->m_pitch + px] = m_cells[i].m_pixel;
             }
         }
     }
