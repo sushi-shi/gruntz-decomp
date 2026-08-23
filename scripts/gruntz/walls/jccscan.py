@@ -37,25 +37,37 @@ different things.  It counts codes, not operands.  And a branch cl folded away
 entirely (a constant-folded guard) leaves no code to count, so a genuinely
 missing comparison reads as a plain surplus on the other side.
 
-NOR IS A ONE-BRANCH RESIDUE PROOF OF A SOURCE DIFFERENCE.  The eight
-`CButeMgr::Set*` rows are banked at best 100 on unchanged source and every one of
-them currently shows retail holding one `je` we do not - a branch count moves
-under TU composition alone.  Read the residue as a lead, then check the ledger.
+NOR IS A ONE-BRANCH RESIDUE PROOF OF A SOURCE DIFFERENCE.  Eight
+`CButeMgr::Set*` rows have reached 100.00 EXACT on the source now in the tree
+(best = hist = 100 at an unchanged hash) and every one of them CURRENTLY sits at
+82-96 showing retail hold one `je` we do not - a branch count moves under TU
+composition alone.  Read the residue as a lead, then check the ledger.
 
-WHERE THE CODE ENDS.  A switch table and the alignment padding after it decode
-as instructions, and that payload is the sieve's whole false-positive
-population - `CPlay::LoadCursorSprites` 0xd0120 read as three retail-only `js`
-that were all table bytes.  Cutting at the LAST `ret` is NOT enough: a table
-byte 0xc3 decodes as `ret`, and in `CGruntzMgr::HandleCommand` 0x862f0 (seven
-tables) that phantom `ret` re-admitted ~450 lines of payload and read the row
-as OPERATOR d=187 when the code is POLARITY d=8.
+THE REGION RULE, corrected twice on 2026-08-23 and in BOTH directions.  A switch
+table and its padding decode as instructions, and that payload was the sieve's
+whole false-positive population - `CPlay::LoadCursorSprites` 0xd0120 read as
+three retail-only `js` that were all table bytes.  Cutting at the last `ret` is
+wrong twice over:
 
-The table base is stated by the code itself.  A switch dispatch is
-`mov cl,BYTE PTR [eax+0xTTTT]` / `jmp DWORD PTR [ecx*4+0xTTTT]` carrying a
-relocation to the function's OWN symbol, and 0xTTTT is where the data starts.
-So cut at the lowest such base, then at the last `ret` before it.  Verified on
-0x862f0: past the lowest base both sides hold zero external referents and zero
-real calls, i.e. it is entirely data.
+  * it does not reliably remove the DATA - a table byte 0xc3 decodes as `ret`,
+    and in `CGruntzMgr::HandleCommand` 0x862f0 (seven tables) that phantom
+    `ret` re-admitted ~450 lines of payload and read the row as OPERATOR
+    d=187 when the code is POLARITY d=8;
+  * it discards real CODE - cl places cold blocks AFTER the last `ret`, each
+    entered by a forward branch and leaving by a `jmp` back into the body. The
+    cut threw away 5524 base / 6147 target instructions over the todo queue,
+    531/599 of them condition codes, and the discarded count differs between
+    the sides on 41 rows (`CGrunt::StepArrivalDrop` loses 18 instructions on
+    ours and 535, holding 55 codes, on retail's).
+
+So the region is bounded from BOTH ends.  The data boundary is stated by the
+code itself: a switch dispatch is `mov cl,BYTE PTR [eax+0xTTTT]` /
+`jmp DWORD PTR [ecx*4+0xTTTT]` carrying a relocation to the function's OWN
+symbol, and the lowest such 0xTTTT is where the data starts - past it 0x862f0
+holds zero external referents and zero real calls, i.e. it is entirely data.
+Below that boundary the region is everything up to the last `ret` PLUS every
+later run that starts at an intra-function branch target and ends at its
+terminator, because nothing ever branches to a byte index table.
 
     gruntz walls jccscan [--todo] [--unit U] [--below N] [--limit N] [--json]
     gruntz walls jccscan --flips             rank by the first flip's jump distance
@@ -116,21 +128,44 @@ def fold_complements(ours: dict, retail: dict):
 
 #: a switch dispatch reading its own table: the displacement is the table base
 TABLE = re.compile(r"^(?:jmp|mov)\b.*\[[^]]*\+0x([0-9a-f]{3,})\]")
+#: a branch and its target - a cold block is ENTERED, a byte table never is
+TARGET = re.compile(r"^(?:j\w+|loop\w*)\s+(0x[0-9a-f]+)$")
+TERMINATOR = re.compile(r"^(?:ret|jmp)\b")
 
 
 def code_region(lines, self_name: str = ""):
-    """Up to the last `ret` BEFORE the function's own switch tables.
+    """The instruction stream with the trailing DATA removed - and only that.
 
-    The tables are located from the dispatch instructions that read them (a
-    self-referent `jmp [reg*4+0xTTTT]` / `mov r8,BYTE PTR [reg+0xTTTT]`), not
-    from the last `ret` alone - a 0xc3 table byte decodes as `ret`."""
+    Bounded from both ends, because cutting at the last `ret` alone is wrong in
+    both directions (see the module docstring for the two measurements).
+
+    First the DATA boundary, which the code states positively: a self-referent
+    `jmp [reg*4+0xTTTT]` / `mov r8,BYTE PTR [reg+0xTTTT]` is a dispatch reading
+    its own table, so the lowest such base is where the function's data starts.
+    That is a stronger claim than "nothing branches here" and it removes the
+    0xc3-decodes-as-`ret` case outright.
+
+    Then, below that boundary, keep the cold blocks: everything up to the last
+    `ret`, plus every later run entered at an intra-function branch target and
+    ending at its terminator.
+    """
     base = min((int(m.group(1), 16) for x in lines if x.ref == self_name
                 for m in [TABLE.match(x.asm)] if m), default=None)
     if base is not None:
         lines = [x for x in lines if x.addr < base]
     last = max((i for i, x in enumerate(lines) if x.asm.startswith("ret")),
                default=len(lines) - 1)
-    return lines[:last + 1]
+    targets = {int(m.group(1), 16) for x in lines
+               if x.ref is None and (m := TARGET.match(x.asm))}
+    out, live = lines[:last + 1], False
+    for ln in lines[last + 1:]:
+        if ln.addr in targets:
+            live = True
+        if live:
+            out.append(ln)
+            if TERMINATOR.match(ln.asm):
+                live = False
+    return out
 
 
 def codes(lines, self_name: str = "") -> Counter:
