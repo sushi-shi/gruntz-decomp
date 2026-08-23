@@ -14,6 +14,14 @@
                                   with the real compiler
     gruntz walls aggregate-copies rep-movs count sieve; a source/CFG lead,
                                   never proof until block merging is excluded
+    gruntz walls aggdecl          AGGREGATE-VS-SCALAR DECLARATION sieve: per
+                                  member pair (K, K+4), does each side store a
+                                  whole-object COPY or two independent scalars.
+                                  A disagreement names the direction we are
+                                  wrong in. WALK/ARG sub-kinds separate the
+                                  three shapes that look identical and are not
+                                  an aggregate; `--control` re-proves the
+                                  detector on all four fixtures
     gruntz walls framescan        stack-frame-size sieve: our `sub esp,N`
                                   against retail's, ranked by what survives
                                   masking the displacements a frame shift moves
@@ -184,6 +192,7 @@ _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "offsetscan": "gruntz.walls.offsetscan",
          "vptrscan": "gruntz.walls.vptrscan",
          "aggscan": "gruntz.walls.aggscan",
+         "aggdecl": "gruntz.walls.aggdecl",
          "escapescan": "gruntz.walls.escapescan",
          "reloadscan": "gruntz.walls.reloadscan",
          "valuetemp": "gruntz.walls.valuetemp",
