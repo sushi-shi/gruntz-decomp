@@ -890,41 +890,42 @@ commit:
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = m_lastTilePx;
-    Coord next;
+    i32 nextX;
+    i32 nextY;
     switch (m_entranceCell.direction) {
         case DIR_NORTHEAST:
-            next.m_x = tile.m_x + 0x20;
-            next.m_y = tile.m_y - 0x20;
+            nextX = tile.m_x + 0x20;
+            nextY = tile.m_y - 0x20;
             break;
         case DIR_EAST:
-            next.m_x = tile.m_x + 0x20;
-            next.m_y = tile.m_y;
+            nextX = tile.m_x + 0x20;
+            nextY = tile.m_y;
             break;
         case DIR_SOUTHEAST:
-            next.m_x = tile.m_x + 0x20;
-            next.m_y = tile.m_y + 0x20;
+            nextX = tile.m_x + 0x20;
+            nextY = tile.m_y + 0x20;
             break;
         case DIR_SOUTHWEST:
-            next.m_x = tile.m_x - 0x20;
+            nextX = tile.m_x - 0x20;
             // fall through
         case DIR_SOUTH:
-            next.m_y = tile.m_y + 0x20;
+            nextY = tile.m_y + 0x20;
             break;
         case DIR_WEST:
-            next.m_x = tile.m_x - 0x20;
-            next.m_y = tile.m_y;
+            nextX = tile.m_x - 0x20;
+            nextY = tile.m_y;
             break;
         case DIR_NORTHWEST:
-            next.m_x = tile.m_x - 0x20;
+            nextX = tile.m_x - 0x20;
             // fall through
         case DIR_NORTH:
-            next.m_y = tile.m_y - 0x20;
+            nextY = tile.m_y - 0x20;
             break;
     }
 
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    i32 tx = next.m_x >> TILE_SHIFT_PX;
-    i32 ty = next.m_y >> TILE_SHIFT_PX;
+    i32 tx = nextX >> TILE_SHIFT_PX;
+    i32 ty = nextY >> TILE_SHIFT_PX;
     i32 flags = b->CellFlagsAt(tx, ty);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
@@ -944,7 +945,8 @@ i32 CGrunt::ClaimSwitchTile() {
     nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
     nb->m_rowInts[ty][tx * 7 + 1] = owner;
 
-    m_lastTilePx = next;
+    m_lastTilePx.m_x = nextX;
+    m_lastTilePx.m_y = nextY;
     ComputeFacing(1.0);
     m_arrivalPending = 1;
     return 1;
