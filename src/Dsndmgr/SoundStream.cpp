@@ -420,7 +420,7 @@ i32 StreamFeeder::FeederStart(
         m_silenceByte = 0x80;
     }
     if (buf == NULL) {
-        m_buffer = owner->CreateBuffer(fmt, len, 0x100e0);
+        m_buffer = owner->CreateBuffer(fmt, len, DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLDEFAULT);
     } else {
         m_buffer = buf;
     }
