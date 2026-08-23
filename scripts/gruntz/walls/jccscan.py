@@ -243,7 +243,21 @@ def first_flip(base, target, self_name):
 
     Not decided by this one site alone either way: cl also chooses WHICH of
     several identical returns stays inline, so check the neighbouring guards
-    (see that pattern's over-application note, ApplyTriggerA 0x6dae0)."""
+    (see that pattern's over-application note, ApplyTriggerA 0x6dae0).
+
+    THE POSITIONAL WALK BELOW IS SOUND, AND RE-ALIGNING IT IS WORSE.  Zipping
+    two sequences by index normally drifts on the first insert or delete, but
+    `--flips` only ever ranks rows `classify` called BALANCED, and balanced
+    surpluses means equal branch COUNTS (checked: 23 of 23).  A plain
+    insert/delete therefore cannot occur here, only a compensated pair.  Both
+    difflib re-alignments were measured and both invent divergences the
+    disassembly refutes: keyed on the bare condition code the 16-symbol
+    alphabet is under-determined and it put LoadStateRecord 0x555e0's surplus
+    at branch #0 where the two sides are instruction-identical; keyed on the
+    preceding opcodes it is over-determined and any scheduling change breaks
+    the anchor, so it read Sync 0x1084d0, ArrivalReticleScan 0xee800 and
+    WireTileSwitchLogic 0x6c130 as `extra branch` rows when all three have
+    hand-verified corresponding pairs at the site this walk reports."""
     o, t = code_region(base, self_name), code_region(target, self_name)
     ob, rb = branch_seq(o), branch_seq(t)
     for k in range(min(len(ob), len(rb))):
