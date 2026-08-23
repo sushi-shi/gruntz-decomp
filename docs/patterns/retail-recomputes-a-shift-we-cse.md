@@ -21,6 +21,13 @@ and again inside the loop body, and again in `CTriggerMgr::FindNearestEnemy` 0x7
 `(x>>5) - r` and `(x>>5) + r + 1` each get their own `sar`. So retail's cl CSEs *memory
 loads* but not the *arithmetic* built on them.
 
+A third instance, found by the loop-body sieve 2026-08-23:
+`CBattlezMapConfig::RepathToFreeCell` 0x350d0 (77.80). Its single loop is 38 instructions
+against retail's 47 and the whole surplus is `retail holds: movx7, sarx2` - retail copies
+the two coordinates to scratch registers and shifts the copies for the equality test, then
+shifts the ORIGINALS again for the distance subtraction. Same asymmetry, same three
+spellings already rejected below; recorded so the sieve does not re-open it.
+
 Tried and REJECTED (all still emit one `sar`, cl5 /O2 CSEs it every time):
 - named locals `tileX = v >> 5` then `tileX - 1` / `tileX + 2` (the obvious spelling);
 - the shift written out at all four use sites in the `for` header;
