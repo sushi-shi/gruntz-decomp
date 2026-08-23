@@ -4658,6 +4658,30 @@ class DeclinedMemoryOptimizationControls(unittest.TestCase):
         self.assertEqual((walk["stride"], walk["scaled"]), (1, 0))
         self.assertEqual((index["stride"], index["scaled"]), (0, 1))
 
+    def test_an_array_element_read_carries_no_member_key(self):
+        """`[base+idx*S+D]`'s displacement is a base offset the two sides fold
+        differently the moment their addressing shape differs.
+        `ClaimTilesAround` reads `[ecx+eax*1-0x4]` where retail reads
+        `[base+idx*4]` - one field, keys `-0x4` and `+0x0` - and reported six
+        exclusives that are one strength-reduction difference.  That belongs
+        to the `iv` channel, which still sees it as scaled 2 against 21."""
+        _across, _loop, shape = self._chan(
+            ["mov ecx,DWORD PTR [ecx+eax*1-0x4]", "call 0x0",
+             "mov edx,DWORD PTR [ecx+eax*1-0x4]"], {1: "?Step@@YAXXZ"})
+        self.assertEqual(sum(_across.values()), 0)
+        self.assertEqual(self._chan(["mov ecx,DWORD PTR [esi+eax*4]"])[2]
+                         ["scaled"], 0)   # outside a loop it is only shape
+
+    def test_a_frame_pointer_body_drops_its_frame_slots(self):
+        """The other two of 671: an EBP prologue makes `[ebp-N]` a local, and
+        a frame offset is not comparable across sides."""
+        framed = ["push ebp", "mov ebp,esp", "mov eax,DWORD PTR [ebp-0x18]",
+                  "call 0x0", "mov ecx,DWORD PTR [ebp-0x18]"]
+        flat = ["mov esi,ecx", "mov eax,DWORD PTR [ebp-0x18]", "call 0x0",
+                "mov ecx,DWORD PTR [ebp-0x18]"]
+        self.assertEqual(sum(self._chan(framed, {3: "?S@@YAXXZ"})[0].values()), 0)
+        self.assertEqual(self._chan(flat, {2: "?S@@YAXXZ"})[0]["-0x18"], 1)
+
     def test_a_uniformly_shifted_base_is_not_a_source_difference(self):
         """The measured false positive, and one a byte-identical control set
         CANNOT express: `CNetSession::Verify` is PROVEN at 100.00 and still

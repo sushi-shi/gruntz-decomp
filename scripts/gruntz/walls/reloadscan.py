@@ -32,10 +32,11 @@ across sides (allocation rotates it) but a member displacement is - it is the
 class model.  The raw count delta is far too noisy to act on: 76 rows differ
 on the call channel and 54 on the loop channel, and a delta of one is
 scheduling.  What survives is the EXCLUSIVE delta - a displacement one side
-reloads at least twice and the other never - which is 3 and 4 rows.  The loop
-channel additionally requires both sides to hold the SAME NUMBER of loops,
-because a loop that exists on one side only (loopscan's own class) makes
-every load inside it read as exclusive here.
+reloads at least twice and the other never.  Over the 671-row sub-100 set that
+is 2 rows on the call channel, 1 on the loop channel and 8 on the index
+channel.  The loop channel additionally requires both sides to hold the SAME
+NUMBER of loops, because a loop that exists on one side only (loopscan's own
+class) makes every load inside it read as exclusive here.
 
 THE BASE-FOLD FALSE POSITIVE, AND THE CONTROL FOR IT.  A displacement is only
 comparable while both sides fold the same base into it.  When cl parks
@@ -58,6 +59,11 @@ loads only, so a re-STORE is invisible.  And it names the displacement, never
 the statement - the detail view prints the neighbourhood so a reader can find
 it.
 
+THE THREE CHANNELS ARE NOT EQUALLY PROVEN.  `--control` fires the call channel
+and the index channel on rows read by hand.  The loop channel's one surviving
+row co-fires with the index channel and is a second view of that same
+difference, so a loop-channel-only hit is a lead until someone reads it.
+
     gruntz walls reloadscan [--todo] [--unit U] [--limit N] [--json]
                             [--call | --loop | --iv]     one channel only
     gruntz walls reloadscan <rva|name> ...   one row, all three channels
@@ -74,11 +80,11 @@ import sys
 from collections import Counter, defaultdict
 
 from gruntz.walls import check_unit
-from gruntz.walls.escapescan import code_pair
+from gruntz.walls.escapescan import code_pair, frame_regs
 
 #: `[reg+N]` / `[reg+idx*s+N]`; ESP is deliberately absent - a stack slot is a
 #: frame-layout accident, a member displacement is the class model.
-MEM = re.compile(r"\[(e[a-d]x|e[sd]i|ebx|ecx|ebp)(?:\+e[a-z]{2}\*\d)?"
+MEM = re.compile(r"\[(e[a-d]x|e[sd]i|ebx|ecx|ebp)(\+e[a-z]{2}\*\d)?"
                  r"([+-]0x[0-9a-f]+)?\]")
 STORE_SIDE = re.compile(r"^(?:DWORD|BYTE|WORD|QWORD) PTR")
 BRANCH = re.compile(r"^(j[a-z]+|loop[a-z]*)\s")
@@ -114,7 +120,25 @@ def loop_spans(lines, self_name: str = "") -> list[tuple[int, int]]:
 
 
 def reads(lines) -> list[tuple[int, str]]:
-    """(index, displacement) for every memory READ."""
+    """(index, displacement) for every memory READ.
+
+    Two operand shapes are dropped, both because their displacement is not a
+    member key:
+
+      * `[ebp+N]` when the body really builds an EBP frame.  With /O2 the
+        frame pointer is omitted in 669 of 671 retail bodies, so EBP is a
+        value register and its displacement IS a member - but in the two that
+        do build a frame it is a local or an argument, and a frame offset is
+        not comparable across sides.  `WarpTextureBlit` reported five bogus
+        exclusives that way, all `[ebp-0x18]`..`[ebp-0x28]` stack slots.
+      * `[base+idx*S+D]`, an ARRAY ELEMENT.  Its D is a base offset the two
+        sides fold differently the moment their addressing shape differs -
+        `ClaimTilesAround` reads `[ecx+eax*1-0x4]` where retail reads
+        `[base+idx*4]`, the same field under keys `-0x4` and `+0x0`, and
+        reported six exclusives that are one strength-reduction difference.
+        That difference is real, and it is what the `iv` channel is for.
+    """
+    frame = set(frame_regs(lines))
     out = []
     for i, ln in enumerate(lines):
         asm = ln.asm
@@ -128,7 +152,9 @@ def reads(lines) -> list[tuple[int, str]]:
                 STORE_SIDE.match(rest.split(",", 1)[0].strip()):
             continue                      # the memory operand is the DESTINATION
         for m in MEM.finditer(rest):
-            out.append((i, m.group(2) or "+0x0"))
+            if m.group(1) in frame or m.group(2):
+                continue
+            out.append((i, m.group(3) or "+0x0"))
     return out
 
 
@@ -296,12 +322,20 @@ def detail(token: str) -> None:
 #: hand-verified positives, re-derived from the disassembly in the session
 #: that built this sieve.
 CONTROL = {
-    "0x00057db0": "CGrunt::PathScan - we re-read [esi+0x64], [esi+0x68] and "
-                  "[esi+0x6c] at five sites across calls (15 loads); retail "
-                  "reads all three ONCE at the top and never again",
-    "0x00146a20": "WarpTextureBlit - retail loads [r-0x28] and [r-0x24] four "
-                  "times each inside the loop; we never load them there",
+    "0x00057db0": "call channel: CGrunt::PathScan - we re-read [esi+0x64], "
+                  "[esi+0x68] and [esi+0x6c] at five sites across calls (15 "
+                  "loads of grid->m_bounds); retail reads all three ONCE at "
+                  "the top and never again",
+    "0x0002d800": "iv channel: CBattlezMapConfig::ClaimTilesAround - retail "
+                  "addresses the neighbour cells with a scaled index 21 times "
+                  "(`[base+idx*4]`); we compute a byte offset and read "
+                  "`[ecx+eax*1-0x4]`, scaling only twice",
 }
+#: THE LOOP CHANNEL HAS NO INDEPENDENTLY VERIFIED POSITIVE.  Its one surviving
+#: row, `CDDSurface::ShadeBlt`, co-fires with the `iv` channel (`stride` 6
+#: against 0) and its `-0x2` reads are `p[-1]` on our pointer walk against
+#: retail's subscript - the same difference, seen twice.  Until a row fires it
+#: ALONE and is read by hand, treat a loop-channel-only hit as a lead.
 
 
 def control() -> int:
