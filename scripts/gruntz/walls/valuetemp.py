@@ -15,6 +15,13 @@ two adjacent member offsets through one base register:
                 `LastTilePx().m_x`, NOT bound to a named local).
   base-only     the mirror: we copy a pair retail reads in place.
 
+The base register decides which of those remedies applies, so each row is tagged
+with it. A MEMBER base (`+0x17c`) is an accessor's return value. An `esp` base
+(`esp+0x4c`) is a stack aggregate copied into another frame slot - a local
+`CRect r = box;` or `Coord c = other;` one side writes and the other does not.
+The register NAME is never compared: the two sides put `this` in different
+registers, so only member-vs-frame is portable across a pair.
+
 DEAD is decided by the EVENT ORDER on the slot: a store is dead when the next
 event on its slot is another store (the RectContains form, where the real value
 overwrites the temp) or nothing at all (the GetModeSize form). Three things make
@@ -208,12 +215,17 @@ def temps(ins):
             dead[slot] = src_of[slot]
     out = set()
     for k, (b, n) in dead.items():
+        # The base REGISTER is not comparable across sides - the two sides put
+        # `this` in different registers - but whether the source is a member or
+        # another frame slot is, and it decides the remedy: only a member pair
+        # is an accessor's return value. `esp` pairs are stack aggregate copies.
+        kind = "esp" if b == "esp" else "mem"
         hi = dead.get(k + 4)
         if hi and hi[0] == b and hi[1] == n + 4:
-            out.add(n)
+            out.add((kind, n))
         lo = dead.get(k - 4)
         if lo and lo[0] == b and lo[1] == n - 4:
-            out.add(n - 4)
+            out.add((kind, n - 4))
     return out
 
 
@@ -256,11 +268,14 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
     return agree, miss, extra
 
 
+def _label(pairs) -> str:
+    return "/".join(f"{'esp' if k == 'esp' else ''}+{n:#x}" for k, n in pairs)
+
+
 def _show(title, rows):
     print(f"\n{title}: {len(rows)}")
     for pct, unit, sym, offs in sorted(rows):
-        print(f"{pct:7.2f}  {unit:<22} "
-              f"+{'/+'.join(hex(o) for o in offs):<16} {sym}")
+        print(f"{pct:7.2f}  {unit:<22} {_label(offs):<22} {sym}")
 
 
 def main(argv=None) -> int:
@@ -285,12 +300,12 @@ def main(argv=None) -> int:
                 bad += 1
                 continue
             b, t = _sides(bobj, tobj, bf, tf, sym)
-            ok = ((want in b) == ("b" in sides)) and ((want in t) == ("t" in sides))
+            hit = ("mem", want)
+            ok = ((hit in b) == ("b" in sides)) and ((hit in t) == ("t" in sides))
             bad += not ok
             print(f"{'ok  ' if ok else 'FAIL'}  {u:<16} +{want:#x} on "
                   f"{sides or 'neither':<7}  "
-                  f"base={[hex(x) for x in sorted(b)]} "
-                  f"target={[hex(x) for x in sorted(t)]}  {sym}")
+                  f"base={_label(sorted(b))!r} target={_label(sorted(t))!r}  {sym}")
         print("\nthe detector fires on every established row"
               if not bad else f"\n{bad} control(s) FAILED - the detector is "
                               "measuring nothing; fix it before reading a sweep")

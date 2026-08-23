@@ -3910,7 +3910,7 @@ class ValueTempLivenessControls(unittest.TestCase):
             "mov edx,DWORD PTR [ecx+0x17c]", "mov DWORD PTR [esp+0x10],edx",
             "mov eax,DWORD PTR [ecx+0x184]", "mov DWORD PTR [esp+0x10],eax",
             "mov eax,DWORD PTR [ecx+0x188]", "mov DWORD PTR [esp+0x14],eax",
-            "lea edx,[esp+0x10]", "push edx")), {0x17c})
+            "lea edx,[esp+0x10]", "push edx")), {("mem", 0x17C)})
 
     def test_an_address_taken_aggregates_interior_fields_are_not_dead(self):
         """The known negative (CBattlezMapConfig::ScanRegion).  Two adjacent
@@ -3930,7 +3930,7 @@ class ValueTempLivenessControls(unittest.TestCase):
         self.assertEqual(temps(self._ins(
             "mov eax,DWORD PTR [esi+0x38]", "mov DWORD PTR [esp+0x20],eax",
             "mov ecx,DWORD PTR [esi+0x3c]", "mov DWORD PTR [esp+0x24],ecx",
-            "ret")), {0x38})
+            "ret")), {("mem", 0x38)})
 
     def test_a_push_between_the_store_and_its_read_is_not_a_second_slot(self):
         """ESP tracking.  After a `push`, the SAME slot is spelled +4 higher;
