@@ -3477,10 +3477,9 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     }
     ClaimTilesAround(unit, col, row, requireUnoccupied);
     if (g_stepRun == 0) {
-        i32 savedX = unit->m_entrancePx.m_x;
-        i32 savedY = unit->m_entrancePx.m_y;
-        i32 col = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
-        i32 row = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
+        Coord saved = unit->EntrancePx();
+        i32 col = saved.m_x >> TILE_SHIFT_PX;
+        i32 row = saved.m_y >> TILE_SHIFT_PX;
         u32 tile0 = m_board->CellFlagsAt(col, row);
         i32 flag = (tile0 >> 2) & 1;
         if (unit->CoordCount() != 0) {
@@ -3489,15 +3488,13 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
             i32 cy = c->m_y;
             i32 tile1 = m_board->CellFlagsAt(cx, cy);
             if (tile1 & 4) {
-                savedX = c->m_x;
-                savedY = c->m_y;
+                saved = *c;
                 flag = 1;
             }
         }
         unit->TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != 0) {
-            unit->m_entrancePx.m_x = savedX;
-            unit->m_entrancePx.m_y = savedY;
+            unit->m_entrancePx = saved;
         }
     }
 
