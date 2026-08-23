@@ -13,10 +13,10 @@ typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
 namespace Utils {
     namespace WinAPI {
 
-        // @early-stop
         RVA(0x00118f60, 0x134)
         i32 LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
             i32 found = 0;
+            HANDLE snap = NULL;
             MODULEENTRY32 me32 = {0};
 
             HMODULE k32 = GetModuleHandleA("KERNEL32.DLL");
@@ -45,7 +45,7 @@ namespace Utils {
                 return 0;
             }
 
-            HANDLE snap = pCreateSnapshot(TH32CS_SNAPMODULE, th32ProcessID);
+            snap = pCreateSnapshot(TH32CS_SNAPMODULE, th32ProcessID);
             if (snap == INVALID_HANDLE_VALUE) {
                 return 0;
             }
