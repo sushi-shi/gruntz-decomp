@@ -77,6 +77,33 @@ retail mov edx,DWORD PTR [ebx+0x64]      retail mov ebx,DWORD PTR [ebx+0x38]
 sieve's live NEGATIVE control; the POSITIVE is those same bytes as a fixture,
 because the only known live positive is the one the sieve closed.
 
+## What the live sweep is worth
+
+Measured 2026-08-23 by hand-reading five of the seven live `field` rows: ONE was
+a genuine finding and three were alignment SLIPS that survived the edge rule
+because the extra instruction sat further than two positions away.  The
+remaining one is the known aligning-delta artifact.  So the detector is proven
+and the channel is real, but the live rows are LEADS with a majority
+false-positive rate, and low coverage predicts a slip without excluding one:
+`CProjectile::LoadProjectileSprites` reads as a 4-byte layout shift at 93.7%
+coverage and both sides in fact use 0x1e0/0x1e4/0x1e8/0x1ec identically.
+
+The genuine one is worth stating because it is not a wrong member at all but a
+wrong ADDRESSING SHAPE, which this reading also catches.
+`CStatusBarMgr::LoadRezMachineConfig` named the row array through a pointer to
+the ARRAY (`CSbiHlRow* g = m_groupSlots; g[col].m_state`), which folds the
+member offset into the `lea`:
+
+```
+ours    lea edi,[esi+edx*8+0x2c0]   mov [edi],0x4        mov [edi+0x10],eax
+retail  lea edi,[esi+ecx*8]         mov [edi+0x2c0],0x4  mov [edi+0x2d0],eax
+```
+
+Writing `m_groupSlots[col].m_state` reproduces retail's form byte for byte and
+silences the row - and costs 99.15 -> 91.50, because the shorter body flips one
+`ConfigureItem` and one `GetDwordDef` site's tail-merge.  Not committed for that
+reason; recorded here so the next reader does not re-derive it.
+
 ## Reading a hit
 
 Every hit is a LEAD, not a verdict. The disassembly says which member the

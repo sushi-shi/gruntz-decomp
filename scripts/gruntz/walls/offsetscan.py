@@ -55,6 +55,15 @@ WHAT IS EXCLUDED, AND WHY:
     alignment's own noise.  It bounds the sieve in exchange: a real wrong
     member whose base register rotated too does not reach the report.
 
+WHAT THE LIVE SWEEP IS WORTH.  Hand-read 2026-08-23 over five of the seven live
+`field` rows: ONE genuine (an addressing SHAPE, not a wrong member - see the
+pattern), three alignment SLIPS whose extra instruction sat further than EDGE
+from the mismatch, and one the known aligning-delta artifact of a body already
+proven exact.  Coverage predicts a slip without excluding one:
+`CProjectile::LoadProjectileSprites` reads as a 4-byte layout shift at 93.7%
+coverage and both sides in fact use the same four offsets.  Read every row
+against the disassembly before believing it.
+
 WHAT IT STRUCTURALLY CANNOT SEE.  A wrong member whose offset happens to
 coincide with the right one moves no byte.  A wrong member inside a block the
 alignment could not match - an inline/call-set or CFG wall shifts the streams
