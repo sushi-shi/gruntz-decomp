@@ -491,14 +491,14 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         PickupType alt = cell->m_vehiclePickupType;
         if (hitFlag != 0) {
             world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
-            return 1;
-        }
-        CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-        i32 attr = plane->CellFlagsAt(tx, ty);
-        if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & 2) != 0) {
-            world->LoadCursorSprites(pfk, 0);
         } else {
-            world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
+            CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+            i32 attr = plane->CellFlagsAt(tx, ty);
+            if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & 2) != 0) {
+                world->LoadCursorSprites(pfk, 0);
+            } else {
+                world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
+            }
         }
         return 1;
     }
