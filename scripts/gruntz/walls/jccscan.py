@@ -22,10 +22,25 @@ Three readings, in descending strength:
             merged-call-arms-expose-the-if-else-order.md and
             allocate-check-then-body-is-the-then-block.md.
 
+COMPLEMENT FOLDING is what makes the third reading usable.  `je` against `jne`,
+`jl` against `jge`, `jle` against `jg` are one branch asked the other way, which
+at source level is an arm order far more often than a different predicate.  So
+the surpluses are cancelled pairwise FIRST and the verdict is taken on what is
+LEFT: a row that folds to nothing is pure polarity, and a row with residue is
+holding a comparison the other side has not got.  The fold also demotes rows the
+raw multiset over-reads - `CBattlezMapConfig::ValidateUnitPath` 0x29b40 and
+`CTriggerMgr::SpawnGrunt` 0x7c110 each read OPERATOR on a bare je/jne plus jle/jg
+surplus and are two arm orders, nothing more.
+
 WHAT IT CANNOT SEE.  Equal multisets prove nothing: two `je` can still test
 different things.  It counts codes, not operands.  And a branch cl folded away
 entirely (a constant-folded guard) leaves no code to count, so a genuinely
 missing comparison reads as a plain surplus on the other side.
+
+NOR IS A ONE-BRANCH RESIDUE PROOF OF A SOURCE DIFFERENCE.  The eight
+`CButeMgr::Set*` rows are banked at best 100 on unchanged source and every one of
+them currently shows retail holding one `je` we do not - a branch count moves
+under TU composition alone.  Read the residue as a lead, then check the ledger.
 
 WHERE THE CODE ENDS.  A switch table and the alignment padding after it decode
 as instructions, and that payload is the sieve's whole false-positive
@@ -68,6 +83,35 @@ SIGNED = {"jl": "jb", "jle": "jbe", "jg": "ja", "jge": "jae",
 EQ = {"je", "jne"}
 ORD = {"jl", "jle", "jg", "jge", "jb", "jbe", "ja", "jae"}
 
+#: code <-> the code that tests the NEGATION of the same question
+COMPLEMENT = {"je": "jne", "jl": "jge", "jle": "jg", "jb": "jae",
+              "jbe": "ja", "js": "jns", "jo": "jno", "jp": "jnp"}
+COMPLEMENT.update({v: k for k, v in COMPLEMENT.items()})
+
+
+def fold_complements(ours: dict, retail: dict):
+    """Cancel each `jcc`/`jncc` pair across the two sides and return the
+    flips plus what is LEFT.
+
+    A complement pair is one branch asking the same question the other way,
+    which at source level is an arm order (`if (x) A else B` written the
+    other way round) far more often than a different predicate.  Cancelling
+    them first is what makes the residue readable: a row that folds to
+    nothing is pure polarity, and a row that does not is holding a
+    comparison the other side has not got."""
+    ours, retail = dict(ours), dict(retail)
+    flips = []
+    for k in list(ours):
+        c = COMPLEMENT.get(k)
+        if c and retail.get(c):
+            n = min(ours[k], retail[c])
+            flips.append((k, c, n))
+            ours[k] -= n
+            retail[c] -= n
+    return (flips,
+            {k: v for k, v in ours.items() if v},
+            {k: v for k, v in retail.items() if v})
+
 
 #: a switch dispatch reading its own table: the displacement is the table base
 TABLE = re.compile(r"^(?:jmp|mov)\b.*\[[^]]*\+0x([0-9a-f]{3,})\]")
@@ -98,15 +142,18 @@ def classify(ours: Counter, retail: Counter) -> dict | None:
         return None
     so = {k: ours[k] - retail.get(k, 0) for k in ours if ours[k] > retail.get(k, 0)}
     sr = {k: retail[k] - ours.get(k, 0) for k in retail if retail[k] > ours.get(k, 0)}
-    signed = [(k, SIGNED[k]) for k in so
-              if k in SIGNED and SIGNED[k] in sr and so[k] == sr[SIGNED[k]]]
+    flips, ro, rr = fold_complements(so, sr)
+    signed = [(k, SIGNED[k]) for k in ro
+              if k in SIGNED and SIGNED[k] in rr and ro[k] == rr[SIGNED[k]]]
     if signed:
         kind = "SIGNED"
-    elif (set(so) & EQ and set(sr) & ORD) or (set(so) & ORD and set(sr) & EQ):
+    elif (set(ro) & EQ and set(rr) & ORD) or (set(ro) & ORD and set(rr) & EQ):
         kind = "OPERATOR"
     else:
         kind = "POLARITY"
     return {"kind": kind, "ours_extra": so, "retail_extra": sr,
+            "flips": flips, "residue_ours": ro, "residue_retail": rr,
+            "balanced": sum(so.values()) == sum(sr.values()),
             "signed": signed, "delta": sum(so.values()) + sum(sr.values())}
 
 
@@ -128,6 +175,15 @@ def detail(token: str, limit: int = 12) -> None:
         return
     print(f"   {rec['kind']}   ours {dict(ours)}")
     print(f"   {'':8}retail {dict(retail)}")
+    if rec["flips"]:
+        print("   complement flips (arm order, or the predicate written the "
+              "other way): "
+              + ", ".join(f"ours {a} / retail {b}" + (f" x{n}" if n > 1 else "")
+                          for a, b, n in rec["flips"]))
+    if rec["residue_ours"] or rec["residue_retail"]:
+        print(f"   residue after folding: ours {rec['residue_ours']} "
+              f"retail {rec['residue_retail']}"
+              "   <- a comparison one side has and the other has not")
     if rec["signed"]:
         print("   signed/unsigned pairs: "
               + ", ".join(f"ours {a} vs retail {b}" for a, b in rec["signed"]))
