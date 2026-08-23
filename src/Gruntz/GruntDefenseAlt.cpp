@@ -106,8 +106,12 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_poweredUp != 0) {
                 goto tail;
             }
-            if (m_lastTilePx.m_x != m_entrancePx.m_x || m_lastTilePx.m_y != m_entrancePx.m_y) {
-                goto tail;
+            {
+                Coord entrance = EntrancePx();
+                Coord tile = LastTilePx();
+                if (tile.m_x != entrance.m_x || tile.m_y != entrance.m_y) {
+                    goto tail;
+                }
             }
             {
                 i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;

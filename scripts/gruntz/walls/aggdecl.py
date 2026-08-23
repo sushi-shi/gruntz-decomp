@@ -497,7 +497,8 @@ def control() -> bool:
     return ok
 
 
-def explain(unit: str, sym: str, disp: int, ctx: int = 6) -> int:
+def explain(unit: str, sym: str, disp: int, ctx: int = 6,
+            reads: bool = False) -> int:
     """Print the instruction neighbourhood behind one key on both sides."""
     pair = pairscan.require_pairs({unit}).get(unit)
     for tag, path in (("OURS", pair[0]), ("RETAIL", pair[1])):
@@ -508,7 +509,7 @@ def explain(unit: str, sym: str, disp: int, ctx: int = 6) -> int:
             print(f"==== {tag}: no symbol matching {sym!r}")
             continue
         ins = pairscan.insns(obj, *fns[names[0]])
-        cl = classify(ins)
+        cl = (classify_reads if reads else classify)(ins)
         hits = [(k, v) for k, v in cl.items() if k[1] == disp]
         print(f"==== {tag}  ({len(ins)} insns)  +0x{disp:x} -> "
               f"{[x[0] for _k, v in hits for x in v]}")
@@ -543,7 +544,8 @@ def main(argv=None) -> int:
     if a.control:
         return 0 if control() else 1
     if a.explain:
-        return explain(a.explain[0], a.explain[1], int(a.explain[2], 0))
+        return explain(a.explain[0], a.explain[1], int(a.explain[2], 0),
+                       reads=a.reads)
     unit = check_unit(a.unit)
     over, under, tally, n_fn, n_keys, unpaired = scan(
         unit, a.fn, a.todo, a.calibrate, a.reads)
