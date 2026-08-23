@@ -3390,7 +3390,7 @@ class ResidueClassifierControls(unittest.TestCase):
     def _kind(self, base, target):
         from gruntz.walls.residue import classify, masked, residual_of
         mb, mt = masked(self._lines(base)), masked(self._lines(target))
-        return classify(residual_of(mb, mt)[1], mb)[0]
+        return classify(residual_of(mb, mt)[1], mb, mt)[0]
 
     def test_a_lone_immediate_is_not_hidden_by_the_mask(self):
         from gruntz.walls.residue import masked
@@ -3419,6 +3419,17 @@ class ResidueClassifierControls(unittest.TestCase):
         self.assertEqual(self._kind(["and ecx,0xffffffe0"],
                                     ["and al,0xe0"]), "regname")
 
+    def test_add_of_a_negative_is_the_same_subtraction(self):
+        """`add ecx,0xfffffff9` IS `sub ecx,0x7`, and cl picks between them on
+        its own - measured going BOTH ways against retail in one tree, so it
+        is not even a source lever, only noise in the immediate bucket."""
+        self.assertEqual(self._kind(["add ecx,0xfffffff9"],
+                                    ["sub ecx,0x7"]), "none")
+
+    def test_the_add_sub_mirror_still_sees_a_real_constant(self):
+        self.assertEqual(self._kind(["add ecx,0xffffffe0"],
+                                    ["sub ecx,0x21"]), "immediate")
+
     def test_a_wrong_constant_is_flagged(self):
         self.assertEqual(self._kind(["cmp eax,0x1e"],
                                     ["cmp eax,0x9"]), "immediate")
@@ -3428,13 +3439,52 @@ class ResidueClassifierControls(unittest.TestCase):
                                     ["mov eax,DWORD PTR [esi+0x17c]"]),
                          "displacement")
 
+    def test_a_forced_zero_displacement_is_an_encoding(self):
+        """`[ebp+0x0]` IS `[ecx]`: EBP as a base cannot encode without a
+        displacement byte, and register-stripping erases which base it was.
+        A quarter of the `displacement` bucket was this one encoding."""
+        self.assertEqual(self._kind(["mov eax,DWORD PTR [ebx]"],
+                                    ["mov eax,DWORD PTR [ebp+0x0]"]),
+                         "regname")
+
+    def test_a_baseless_scaled_index_zero_is_an_encoding(self):
+        """`lea edi,[ebp*8+0x0]` IS `shl`-free `[eax*8]` under a base: with no
+        base register the ModRM demands a disp32."""
+        self.assertEqual(self._kind(["lea edi,[eax*8+0x0]"],
+                                    ["lea ecx,[edx*8+0x0]"]), "regname")
+
     def test_a_wrong_referent_is_flagged(self):
         """Relocated operands are masked in the scored bytes, so a global
         bound to the wrong symbol is invisible to the byte diff."""
         from gruntz.walls.residue import classify, masked, residual_of
         mb = masked(self._lines(["mov ebx,0x0"], "?g_a@@3HA"))
         mt = masked(self._lines(["mov ebx,0x0"], "?g_b@@3HA"))
-        self.assertEqual(classify(residual_of(mb, mt)[1], mb)[0], "referent")
+        self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0],
+                         "referent")
+
+    def test_a_recomputed_global_load_is_not_an_identity_row(self):
+        """Retail reads `g_gameReg` twice where cl keeps one copy: both sides
+        NAME the symbol, so the count difference is CSE, not a wrong claim.
+        Un-normalized this read `referent` on CTriggerMgr::
+        LoadGruntResurrectTuning and on five `g_p01` loads in FlashTable."""
+        from gruntz.walls.residue import classify, masked, residual_of
+        from gruntz.walls.semdiff import Line
+        g = "?g_gameReg@@3PAVCGruntzMgr@@A"
+        mb = masked([Line(0, "mov ebx,0x0", g), Line(4, "push ebx", None)])
+        mt = masked([Line(0, "mov ebx,0x0", g), Line(4, "mov ecx,0x0", g),
+                     Line(8, "push ebx", None)])
+        self.assertNotEqual(classify(residual_of(mb, mt)[1], mb, mt)[0],
+                            "referent")
+
+    def test_two_non_names_for_one_address_are_not_a_referent_row(self):
+        """objdiff calls our unnamed symbol `$anon_data_<sha>_0`; the delinker,
+        with no claim on the address, calls retail's `FUN_<va>`. Eleven of the
+        fifteen `referent` rows were one `$E` dynamic-init helper under two
+        non-names."""
+        from gruntz.walls.residue import classify, masked, residual_of
+        mb = masked(self._lines(["push 0x0"], "$anon_data_deadbeef_0"))
+        mt = masked(self._lines(["push 0x0"], "FUN_004183b0"))
+        self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0], "none")
 
     def test_a_missing_arm_temp_is_the_register_case(self):
         """docs/patterns/arm-result-temp-controls-copies-and-shared-store.md:

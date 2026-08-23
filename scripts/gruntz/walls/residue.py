@@ -14,7 +14,8 @@ the classifier names it from the NET residual, most-actionable first:
 
     immediate      a constant differs                  possible semantic bug
     displacement   a member offset differs             possible layout bug
-    referent       a relocation names another symbol   possible identity bug
+    referent       one side names a symbol the other   possible identity bug
+                   never names anywhere
     selection      the mnemonic multiset differs       instruction selection
     operand        same mnemonics, different operands  term order / CSE
     arm-copy       target has callee-saved `mov r,r`   the arm-result temp is
@@ -33,10 +34,15 @@ answers the same question directly over the WHOLE stream (every member store
 and every callee-saved register copy, not just the ones inside a diff chunk),
 which is the sensitive form.
 
-Two encoding mirrors are normalized away, because each was measured
+Five encoding mirrors are normalized away, because each was measured
 mislabelling real rows: the addend of a RELOCATED call or jump (position
-state - the referent is compared separately) and cl's 2-byte `and al,imm8`
-form of `and eax,0xffffff00|imm8`.
+state - the referent is compared separately), cl's 2-byte `and al,imm8`
+form of `and eax,0xffffff00|imm8`, `add r,-K` against `sub r,K`, the forced
+zero displacement of an EBP-based or base-less memory operand, and a
+referent NEITHER side has a name for (`$anon_data_<sha>` against `FUN_<va>`
+- a `$E` dynamic-init helper). The referent test also compares symbol SETS
+over the whole stream, so a CSE'd second load of a global both sides name
+is not an identity row.
 
     gruntz walls residue [--todo] [--unit U] [--max-resid N] [--kind K,...]
     gruntz walls residue --arm [...]        the arm-result worklist
@@ -76,6 +82,20 @@ REG = re.compile(r"\b(eax|ecx|edx|ebx|esi|edi|ebp|al|cl|dl|bl|ah|ch|dh|bh"
 ACC8 = re.compile(r"^(and|or|xor)\s+([abcd])l,0x([0-9a-f]{1,2})$")
 ACC8_HIGH = {"and": "ffffff", "or": "000000", "xor": "000000"}
 
+#: `add eax,0xffffffe0` IS `sub eax,0x20` - same three bytes' worth of work,
+#: same value, and cl picks between them on its own (measured going BOTH ways
+#: against retail in one tree: CSpotLight's ctor has the add where retail has
+#: the sub, CStaticHazard's has the sub where retail has the add). Left alone,
+#: the pair reads as two different constants.
+ADDNEG = re.compile(r"^(add|sub)\s+(e[a-z][a-z]),0x([0-9a-f]{8})$")
+
+#: a referent NEITHER side has a name for. objdiff calls our obj's unnamed
+#: symbol `$anon_data_<sha>_N`; the delinker, with no claim on the address,
+#: calls retail's `FUN_<va>` / `DAT_<va>` / `$gap_<va>`. Eleven of the fifteen
+#: `referent` rows were one address under two non-names - every one a `$E`
+#: dynamic-initializer helper, which the label rules deliberately never name.
+UNNAMED = re.compile(r"^(FUN_|DAT_|\$gap_|\$anon_data_)")
+
 
 def strip_regs(asm: str) -> str:
     return REG.sub("r", asm)
@@ -86,6 +106,10 @@ def mirror(asm: str) -> str:
     if m:
         return (f"{m.group(1)} e{m.group(2)}x,"
                 f"0x{ACC8_HIGH[m.group(1)]}{int(m.group(3), 16):02x}")
+    m = ADDNEG.match(asm)
+    if m and int(m.group(3), 16) >= 0x80000000:
+        flip = "sub" if m.group(1) == "add" else "add"
+        return f"{flip} {m.group(2)},0x{0x100000000 - int(m.group(3), 16):x}"
     return asm
 
 
@@ -108,7 +132,8 @@ def masked(lines, self_name: str = "") -> list[str]:
             asm = asm.split()[0] + " L"
         if FRAME_IMM.match(asm):
             asm = "FRAME"
-        out.append(mirror(asm) + (f"|{ln.ref}" if ln.ref else ""))
+        ref = "?unnamed" if ln.ref and UNNAMED.match(ln.ref) else ln.ref
+        out.append(mirror(asm) + (f"|{ref}" if ref else ""))
     return out
 
 
@@ -131,9 +156,13 @@ def bare(asm: str) -> str:
 
 def reg_key(asm: str) -> str:
     """Register-stripped, but the REFERENT is kept: two loads of different
-    globals are not the same tuple however the registers land."""
+    globals are not the same tuple however the registers land.
+
+    The forced zero displacement folds here and only here: which base register
+    cl picked is exactly what this key is meant to erase, and `[ebp+0x0]`
+    addresses what `[ecx]` addresses."""
     head, sep, ref = asm.partition("|")
-    return strip_regs(head) + sep + ref
+    return strip_regs(head).replace("+0x0]", "]") + sep + ref
 
 
 def net_residual(chunks):
@@ -146,7 +175,17 @@ def net_residual(chunks):
     return bo, to, exact_b, exact_t, kb - kt, kt - kb
 
 
-def classify(chunks, base_m):
+def disp(d: str) -> str:
+    """An x86 memory operand with EBP as its base, or with a scaled index and
+    no base at all, CANNOT encode without a displacement byte/dword, so cl
+    writes `[ebp+0x0]` / `[eax*8+0x0]` for the same address `[ecx]` / `[eax*8]`
+    encodes bare. Register-stripping erases which base it was, so an explicit
+    zero reads as a member-offset difference: a quarter of the `displacement`
+    bucket was this one encoding."""
+    return "" if d in ("+0x0", "-0x0") else d
+
+
+def classify(chunks, base_m, tgt_m):
     bo, to, exact_b, exact_t, net_b, net_t = net_residual(chunks)
     if not bo and not to:
         return "none", ""
@@ -185,16 +224,22 @@ def classify(chunks, base_m):
     if bi != ti:
         return "immediate", (f"base {sorted((bi - ti).elements())} vs target "
                              f"{sorted((ti - bi).elements())}")
-    bd = Counter(d for x in only_b for d in DISP.findall(x))
-    td = Counter(d for x in only_t for d in DISP.findall(x))
+    bd = Counter(disp(d) for x in only_b for d in DISP.findall(x))
+    td = Counter(disp(d) for x in only_t for d in DISP.findall(x))
     if bd != td:
         return "displacement", (f"base {sorted((bd - td).elements())} vs target"
                                 f" {sorted((td - bd).elements())}")
     br = Counter(x.split("|", 1)[1] for x in exact_b.elements() if "|" in x)
     tr = Counter(x.split("|", 1)[1] for x in exact_t.elements() if "|" in x)
-    if br != tr:
-        return "referent", (f"base {sorted((br - tr).elements())} vs target "
-                            f"{sorted((tr - br).elements())}")
+    # A COUNT difference on a symbol both sides reference is CSE or
+    # rematerialization, not an identity question - only a symbol the other
+    # side never names anywhere is a claim to check.
+    seen_b = {x.split("|", 1)[1] for x in base_m if "|" in x}
+    seen_t = {x.split("|", 1)[1] for x in tgt_m if "|" in x}
+    only_br = sorted(r for r in (br - tr) if r not in seen_t)
+    only_tr = sorted(r for r in (tr - br) if r not in seen_b)
+    if only_br or only_tr:
+        return "referent", f"base {only_br} vs target {only_tr}"
     if Counter(x.split()[0] for x in only_b) != \
        Counter(x.split()[0] for x in only_t):
         return "selection", f"{sorted(only_b)} vs {sorted(only_t)}"
@@ -224,7 +269,7 @@ def scan_one(rva: str) -> dict:
     tgt_res, tgt_push = frame(target)
     mb, mt = masked(base, binding.name), masked(target, binding.name)
     residual, chunks = residual_of(mb, mt)
-    kind, note = classify(chunks, mb)
+    kind, note = classify(chunks, mb, mt)
     sb, st = store_census(mb), store_census(mt)
     return {"base_frame": base_res, "tgt_frame": tgt_res,
             "base_push": base_push, "tgt_push": tgt_push,
