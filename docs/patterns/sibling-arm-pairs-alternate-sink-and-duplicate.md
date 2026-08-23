@@ -28,13 +28,20 @@ case was purely these two pairs; every other block already agreed):
 |---|---|---|---|---|
 | `CFaderFlat::ApplyInit` 0x17f5e0 | sink, dup | **89.74** (sink, sink) | **100.00 EXACT** | - |
 | `CFaderLight::ApplyInit` 0x1804a0 | sink, dup | **92.25** (sink, sink) | **96.12** | - |
-| `CFaderSine::ApplyInit` 0x17fe00 | **dup, sink** | 87.09 (sink, sink) | 93.73 | **96.50** |
+| `CFaderSine::ApplyInit` 0x17fe00 | **dup, sink** | 87.09 (sink, sink) | 93.73 | **96.50** APPLIED |
 | `CFaderRadial::ApplyInit` 0x17fa40 | sink, dup | - | already correct | - |
 
 Read the table twice. `CFaderSine` wants the OPPOSITE assignment from the other
 three, and gets it from the OPPOSITE spelling — so this is not "always write
 if/else". It is: **read the two block shapes off the target, then pick the pair of
 spellings that produces them**, four cells, one build each.
+
+2026-08-23: the `CFaderSine` cell is applied and re-measured at **96.50** on the
+live tree, the figure above to the digit. `CFaderLight::ApplyInit` reads 95.79
+rather than 96.12 after the same TU's regalloc ripple; the cell it sits in is
+unchanged. This is the discriminator for reading any of these tables against the
+ledger: a row is free score only when it names a SOURCE SHAPE the tree lacks. A
+number the tree's own spelling already produces is TU state and closes.
 
 The mechanism is the statement-list sink of
 [trailing-statement-blocks-arm-tail-sink](trailing-statement-blocks-arm-tail-sink.md)
