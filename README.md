@@ -67,9 +67,7 @@ resources against the retail image (see [Resources](#resources)).
 
 Size attribution and the region census are written up in
 [`docs/image-diff.md`](docs/image-diff.md) and
-[`docs/link-section-audit.md`](docs/link-section-audit.md); both record
-measurements taken with the retired whole-image instruments and are dated
-accordingly.
+[`docs/link-section-audit.md`](docs/link-section-audit.md).
 
 
 ## Repo layout
@@ -95,13 +93,14 @@ scripts/gruntz/               THE package: ALL importable code (run `python3 -m 
   ghidra/                     the one-way viewer export (never flows back)
 recomp/                       execute RETAIL's own code as an oracle (harness/ + docs/)
 tools/                        a Rust workspace of clean-room codecs + the format oracle,
-                              independent of src/ (gruntz-codec / gruntz-rez / gruntz-oracle)
+                              independent of src/ (gruntz-codec / gruntz-rez / gruntz-oracle
+                              / gruntz-cast)
 src/                          reconstructed C++ (single source of truth), grouped by the retail
                               compiland dirs: DDrawMgr/ DinMgr2/ Dsndmgr/ Net/ Gruntz/ Wwd/ …
 include/                      shared headers (mirror retail `incs\`): rva.h (RVA()/DATA()
                               annotations), Ints.h (i32/u32 aliases), Mfc.h + Win32.h umbrellas,
                               and per-TU headers under module subdirs (each TU exports its own
-                              globals — the catch-all Globals.h/.cpp are retired)
+                              globals)
 vendor/                       third-party source (miles-6.0c, sfman-1.01, smacker-3.2f,
                               zlib-1.0.4) — kept verbatim, never formatted
 config/                       units.toml (per-TU build manifest), match_baseline.tsv
@@ -109,6 +108,11 @@ config/                       units.toml (per-TU build manifest), match_baseline
   retail/                    labels and boundary evidence for the retail executable
 docs/                         build system, matching notes, gotchas, and the confirmed
                               non-reconstructed-function inventory
+  patterns/                   THE campaign asset: one file per proven cl 5.0 codegen idiom,
+                              each with its controlled A/B and detection signature, indexed
+                              by INDEX.md — read this before opening a wall
+  relevations/                the cross-cutting mechanisms (allocation/spill catalogue,
+                              what a calibration can and cannot prove)
   domain/                     game semantics: Toyz/Toolz/Powerupz/enemy-AI/logic classes
   formats/                    the on-disk asset formats (REZ v1 container …), from the
                               archived bytes + retail's own reader disassembly
@@ -142,8 +146,7 @@ From a fresh clone to a running match loop, four commands:
 nix develop          # ONE shell: analysis tools + MSVC 5.0-under-Wine
 ```
 
-There is a single shell now (`nix develop .#build` is a kept alias, so old
-spellings still work). It provides `vostok-delinker`, `objdiff` / `objdiff-cli`,
+One shell provides everything: `vostok-delinker`, `objdiff` / `objdiff-cli`,
 `ghidra`, `llvm-pdbutil`, python/ripgrep/etc. **and** the MSVC 5.0 toolchain under
 Wine. The flake fetches `GRUNTZ.EXE` (plus the `CLAW`/`MEDIEVAL` cross-diff siblings
 and the VC5 toolchain) automatically and exports `$GRUNTZ_EXE`.
@@ -247,11 +250,7 @@ ruling**: matching works from `gruntz sema disasm` assembly, never from a decomp
 and nothing Ghidra produces flows back into delinking, matching or the gates.
 
 ```sh
-gruntz ghidra build      # create the project and apply the payload
-gruntz ghidra update     # re-apply after the Model moved (a digest compare when clean)
-gruntz ghidra status     # what exists, and is it stale
-gruntz ghidra verify RVA # read chosen addresses back OUT of the project
-gruntz ghidra export     # the payload alone, no Ghidra
+gruntz ghidra -h         # build / update / status / verify RVA / export
 ```
 
 There is one name authority: the **Model**. `gruntz ghidra export` flattens
