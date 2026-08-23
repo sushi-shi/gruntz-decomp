@@ -881,25 +881,22 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         return 0;
     }
     CDDrawSubMgrLeafScan* sreg = g_gameReg->m_world->m_soundRegistry;
-    if (sreg->m_emitGate != 0) {
-        return 0;
+    if (sreg->m_emitGate == 0) {
+        LeafCue* found = NULL;
+        MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
+        LeafCue* out = found;
+        if (out != NULL) {
+            i32 tag = g_sndCueTag;
+            if (g_sndEnabled != 0) {
+                i32 kc = g_killCueClock;
+                if (static_cast<u32>((kc - out->m_lastPlayTime))
+                    >= static_cast<u32>(out->m_replayDelay)) {
+                    out->m_lastPlayTime = kc;
+                    out->m_sound->ConfigureItem(tag, 0, 0, 0);
+                }
+            }
+        }
     }
-    LeafCue* found = NULL;
-    MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
-    LeafCue* out = found;
-    if (out == NULL) {
-        return 0;
-    }
-    i32 tag = g_sndCueTag;
-    if (g_sndEnabled == 0) {
-        return 0;
-    }
-    i32 kc = g_killCueClock;
-    if (static_cast<u32>((kc - out->m_lastPlayTime)) < static_cast<u32>(out->m_replayDelay)) {
-        return 0;
-    }
-    out->m_lastPlayTime = kc;
-    out->m_sound->ConfigureItem(tag, 0, 0, 0);
     return 0;
 }
 
