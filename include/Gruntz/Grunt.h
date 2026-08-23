@@ -221,6 +221,13 @@ public:
         return m_entrancePx;
     }
 
+    // By value, like EntrancePx. Every retail caller inlines it, and the frame
+    // temp that carries the result is what leaves the unread half as a dead
+    // store (RectContains, RectContainsGated).
+    Coord LastTilePx() {
+        return m_lastTilePx;
+    }
+
     i32 CreateHealthSprite();
     i32 CreateToySprite();
     i32 CreateStaminaSprite();

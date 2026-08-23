@@ -490,13 +490,12 @@ void CGrunt::SnapToLastTile(i32 a) {
     }
 }
 
-// @early-stop
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
+    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
-    i32 dx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     RECT r1 = m_reachRect;
     RECT r2 = m_reachExclusionRect;
@@ -531,13 +530,12 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
+    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
-    i32 dx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     RECT r1 = m_toyRectA;
     RECT r2 = m_toyRectB;
