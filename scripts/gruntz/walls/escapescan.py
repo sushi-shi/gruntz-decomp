@@ -53,7 +53,9 @@ across sides.  It names the call, never the variable.
 
     gruntz walls escapescan [--todo] [--unit U] [--limit N] [--all] [--json]
     gruntz walls escapescan <rva|name> ...   one row, both channels in full
-    gruntz walls escapescan --control        re-prove it fires on a known positive
+    gruntz walls escapescan --control        re-prove the verdict on every row read
+                                             by hand (positives fire, closed rows
+                                             stay silent)
 """
 
 from __future__ import annotations
@@ -229,19 +231,21 @@ def detail(token: str) -> None:
 #: hand-verified positives, re-derived from the disassembly in the session
 #: that built this sieve.
 CONTROL = {
-    "0x0009cf00": "CLightFx::CLightFx - retail expands CDDrawWorkerCache::Find "
+    "0x0009cf00": (True,
+                  "POSITIVE: CLightFx::CLightFx - retail expands CDDrawWorkerCache::Find "
                   "at the FIRST of its three sites, so the inlined "
                   "`CObject* found = NULL` is materialized and its address goes "
                   "to CMapStringToOb::Lookup; we call the out-of-line Find at "
-                  "all three (the adjudicated DDrawWorkerCacheFindInline case)",
-    "0x0017a460": "FontRenderer::DrawWrapped - retail calls CRect::Width() "
-                  "out of line on a stack CRect five times; we expand it",
+                  "all three (the adjudicated DDrawWorkerCacheFindInline case)"),
+    "0x0017a460": (True,
+                  "POSITIVE: FontRenderer::DrawWrapped - retail calls CRect::Width() "
+                  "out of line on a stack CRect five times; we expand it"),
 }
 
 
 def control() -> int:
     bad = 0
-    for rva, why in CONTROL.items():
+    for rva, (expect, why) in CONTROL.items():
         try:
             rec = scan_one(rva)
         except BaseException as err:
@@ -249,13 +253,14 @@ def control() -> int:
             bad += 1
             continue
         fires = bool(rec["n"])
+        ok = fires == expect
         print(f"{'FIRES ' if fires else 'SILENT'} {rva}  "
-              f"arg={rec['arg']} this={rec['this']}")
+              f"{'ok' if ok else 'UNEXPECTED'}  arg={rec['arg']} this={rec['this']}")
         print(f"      {why}")
-        bad += 0 if fires else 1
+        bad += 0 if ok else 1
     if bad:
-        print("\nthe positive no longer fires: either the row was fixed (pick "
-              "a new positive) or the detector regressed")
+        print("\na control changed verdict: the row was fixed or regressed, or "
+              "the detector did - read it, then re-pick")
     return 1 if bad else 0
 
 

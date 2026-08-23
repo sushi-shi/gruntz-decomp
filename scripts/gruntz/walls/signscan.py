@@ -64,8 +64,11 @@ the statement: two divisions of different divisors cancel in the census.
 
     gruntz walls signscan [--todo] [--unit U] [--limit N] [--all] [--json]
     gruntz walls signscan <rva|name> ...   one row, every anchor in context
-    gruntz walls signscan --control        re-prove the detector fires on the
-                                           hand-verified positive
+    gruntz walls signscan --control        re-prove the verdict on every row
+                                           read by hand: a POSITIVE that must
+                                           still fire, and each row this sieve
+                                           already CLOSED, which must stay
+                                           silent
 """
 
 from __future__ import annotations
@@ -240,29 +243,38 @@ def detail(token: str) -> None:
 #: session that built this sieve.  A sieve nobody has seen FIRE is a green
 #: light, not a check.
 CONTROL = {
-    "0x00107d00": "CStatusBarMgr::StartChipMachineCycle - the SAME inlined LCG "
-                  "expands eight times; retail shifts the seed `shr` in the "
-                  "four `range == 0` coin arms and `sar` in the four `% range` "
-                  "arms, we emit `sar` at all eight",
+    "0x00107d00": (True,
+                   "POSITIVE: CStatusBarMgr::StartChipMachineCycle - the SAME "
+                   "inlined LCG expands eight times against one `holdrand` "
+                   "relocation; retail shifts the seed `shr` in the four "
+                   "`range == 0` coin arms and `sar` in the four `% range` "
+                   "arms, we emit `sar` at all eight"),
+    "0x000810f0": (False,
+                   "NEGATIVE: CGruntzMapMgr::LoadAttributes held retail's two "
+                   "extra `cdq` - a signed `/ 32` we had hand-expanded as "
+                   "`(px + (px >> 31 & 0x1f)) >> 5` - and `px / TILE_SIZE_PX` "
+                   "closed it.  It must stay silent"),
 }
 
 
 def control() -> int:
     bad = 0
-    for rva, why in CONTROL.items():
+    for rva, (expect, why) in CONTROL.items():
         try:
             rec = scan_one(rva)
         except BaseException as err:
             print(f"FAIL {rva}: {err}")
             bad += 1
             continue
-        state = "FIRES" if rec["ndec"] else "SILENT  <-- the control is broken"
-        print(f"{state} {rva}  {rec['decisive']}")
+        fires = bool(rec["ndec"])
+        ok = fires == expect
+        print(f"{'FIRES ' if fires else 'SILENT'} {rva}  "
+              f"{'ok' if ok else 'UNEXPECTED'}  {rec['decisive']}")
         print(f"      {why}")
-        bad += 0 if rec["ndec"] else 1
+        bad += 0 if ok else 1
     if bad:
-        print("\nthe positive no longer fires: either the row was fixed (pick "
-              "a new positive) or the detector regressed")
+        print("\na control changed verdict: the row was fixed or regressed, or "
+              "the detector did - read it, then re-pick")
     return 1 if bad else 0
 
 

@@ -59,15 +59,20 @@ loads only, so a re-STORE is invisible.  And it names the displacement, never
 the statement - the detail view prints the neighbourhood so a reader can find
 it.
 
-THE THREE CHANNELS ARE NOT EQUALLY PROVEN.  `--control` fires the call channel
-and the index channel on rows read by hand.  The loop channel's one surviving
-row co-fires with the index channel and is a second view of that same
-difference, so a loop-channel-only hit is a lead until someone reads it.
+THE THREE CHANNELS ARE NOT EQUALLY PROVEN.  The index channel has a live
+POSITIVE read by hand.  The call channel's positive was `CGrunt::PathScan`,
+which this sieve found and the RECT-cursor fix CLOSED, so it survives as a
+NEGATIVE control - it must stay silent - and its mechanics live in the
+synthetic controls.  The loop channel has neither: its one surviving row
+co-fires with the index channel and is a second view of that same difference,
+so a loop-channel-only hit is a lead until someone reads it.
 
     gruntz walls reloadscan [--todo] [--unit U] [--limit N] [--json]
                             [--call | --loop | --iv]     one channel only
     gruntz walls reloadscan <rva|name> ...   one row, all three channels
-    gruntz walls reloadscan --control        re-prove it fires on a positive
+    gruntz walls reloadscan --control        re-prove the verdict on every row read
+                                             by hand (positives fire, closed rows
+                                             stay silent)
 """
 
 from __future__ import annotations
@@ -322,25 +327,30 @@ def detail(token: str) -> None:
 #: hand-verified positives, re-derived from the disassembly in the session
 #: that built this sieve.
 CONTROL = {
-    "0x00057db0": "call channel: CGrunt::PathScan - we re-read [esi+0x64], "
-                  "[esi+0x68] and [esi+0x6c] at five sites across calls (15 "
-                  "loads of grid->m_bounds); retail reads all three ONCE at "
-                  "the top and never again",
-    "0x0002d800": "iv channel: CBattlezMapConfig::ClaimTilesAround - retail "
-                  "addresses the neighbour cells with a scaled index 21 times "
-                  "(`[base+idx*4]`); we compute a byte offset and read "
-                  "`[ecx+eax*1-0x4]`, scaling only twice",
+    "0x0002d800": (True,
+                   "iv channel POSITIVE: CBattlezMapConfig::ClaimTilesAround - "
+                   "retail addresses the neighbour cells with a scaled index 21 "
+                   "times (`[base+idx*4]`); we compute a byte offset and read "
+                   "`[ecx+eax*1-0x4]`, scaling only twice"),
+    "0x00057db0": (False,
+                   "call channel NEGATIVE: CGrunt::PathScan was this sieve's "
+                   "first positive - 15 loads of grid->m_bounds against retail's "
+                   "3, four reloads across calls on each of +0x64/+0x68/+0x6c - "
+                   "and the RECT-cursor fix closed it (89.19 -> 90.58).  It must "
+                   "stay silent: a hit here is either the source regressing or "
+                   "the detector inventing a reload"),
 }
-#: THE LOOP CHANNEL HAS NO INDEPENDENTLY VERIFIED POSITIVE.  Its one surviving
-#: row, `CDDSurface::ShadeBlt`, co-fires with the `iv` channel (`stride` 6
-#: against 0) and its `-0x2` reads are `p[-1]` on our pointer walk against
-#: retail's subscript - the same difference, seen twice.  Until a row fires it
-#: ALONE and is read by hand, treat a loop-channel-only hit as a lead.
+#: THE LOOP CHANNEL HAS NO VERIFIED ROW OF ITS OWN.  Its one surviving row,
+#: `CDDSurface::ShadeBlt`, co-fires with the `iv` channel (`stride` 6 against 0)
+#: and its `-0x2` reads are `p[-1]` on our pointer walk against retail's
+#: subscript - the same difference, seen twice.  The synthetic controls in
+#: `gruntz verify selftest -k DeclinedMemory` cover its mechanics; until a real
+#: row fires it ALONE and is read by hand, treat a loop-only hit as a lead.
 
 
 def control() -> int:
     bad = 0
-    for rva, why in CONTROL.items():
+    for rva, (expect, why) in CONTROL.items():
         try:
             rec = scan_one(rva)
         except BaseException as err:
@@ -348,13 +358,15 @@ def control() -> int:
             bad += 1
             continue
         fires = bool(rec["n"])
-        print(f"{'FIRES ' if fires else 'SILENT'} {rva}  call={rec['call']} "
+        ok = fires == expect
+        print(f"{'FIRES ' if fires else 'SILENT'} {rva}  "
+              f"{'ok' if ok else 'UNEXPECTED'}  call={rec['call']} "
               f"loop={rec['loop']} iv={rec['iv']}")
         print(f"      {why}")
-        bad += 0 if fires else 1
+        bad += 0 if ok else 1
     if bad:
-        print("\nthe positive no longer fires: either the row was fixed (pick "
-              "a new positive) or the detector regressed")
+        print("\na control changed verdict: the row was fixed or regressed, or "
+              "the detector did - read it, then re-pick")
     return 1 if bad else 0
 
 
