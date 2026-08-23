@@ -1262,8 +1262,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             LoadTileArrivalFx(
                 col,
                 row,
-                cell->m_moveTile.m_x,
-                cell->m_moveTile.m_y,
+                cell->MoveTile().m_x,
+                cell->MoveTile().m_y,
                 cell->m_entranceReason,
                 WWDDRAW_NO_ANIMATION
             );
@@ -1320,8 +1320,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         LoadTileArrivalFx(
             col,
             row,
-            cell->m_moveTile.m_x,
-            cell->m_moveTile.m_y,
+            cell->MoveTile().m_x,
+            cell->MoveTile().m_y,
             cell->m_entranceReason,
             WWDDRAW_NO_ANIMATION
         );
