@@ -1187,7 +1187,7 @@ ddrawsurfacepair	?ResolveTarget@AnimWorkerObj@@QAEHPAX@Z	99.3333	99.3333	4	bf0ac
 ddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	100.0000	100.0000	1	9bfa84569ff6	0x163f00	100.0000	
 ddrawsurfacepair	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	a98e4bba5913	0x164960	100.0000	
 ddrawsurfacepair	?SetGeom@CDDrawSurfaceChildA@@UAEHHHW4ColorDepth@@@Z	100.0000	100.0000	2	314d95465191	0x1646b0	100.0000	
-ddrawsurfacepair	?SetGeom@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@@Z	78.5294	78.5294	4	015a59f4771c	0x164250	78.5294	
+ddrawsurfacepair	?SetGeom@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@@Z	84.0336	84.0336	5	1f5b8fcbebac	0x164250	84.0336	
 ddrawsurfacepair	?SetGeometry@CDDrawSurfaceChildA@@UAEHHHW4ColorDepth@@@Z	91.3694	91.3694	4	e199542f5128	0x1644a0	91.3694	
 ddrawsurfacepair	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	2	51ed711f6679	0x165e30	100.0000	
 ddrawsurfacepair	?SetPosition@CResolveNode@@UAEHHH@Z	90.5556	90.5556	1	9c6f9daf1bbd	0x164790	90.5556	
@@ -3534,7 +3534,7 @@ projectile	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cf51d207de	0x129d
 projectile	??_GCProjectile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cf51d207de	0x12980	100.0000	
 projectile	??_GCTimeBomb@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cf51d207de	0x12a40	100.0000	
 projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	86.2481	86.2481	2	06afdde08ca9	0xe08b0	86.2481	
-projectile	?AdvanceMotion@CProjectile@@UAEXXZ	96.0192	96.0192	5	062ccf92c479	0xdfd00	96.0192	
+projectile	?AdvanceMotion@CProjectile@@UAEXXZ	96.9188	96.9188	6	7dcc8ccb3152	0xdfd00	96.9188	
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	2	0e046d22ba8d	0xe05e0	100.0000	
 projectile	?FireActivation@CProjectile@@UAEXH@Z	100.0000	100.0000	2	44a943aed59a	0xdf9a0	100.0000	
 projectile	?FireActivation@CTimeBomb@@UAEXH@Z	100.0000	100.0000	2	ec9d0f6cd568	0xe1830	100.0000	
