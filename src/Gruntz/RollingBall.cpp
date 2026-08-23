@@ -369,14 +369,17 @@ i32 CRollingBall::Update() {
                 }
 
                 case TILEKIND_REVEALED_POWERUP: {
-                    LevelArea kind = static_cast<LevelArea>(g_gameReg->m_curState->m_levelType);
-                    if (kind == AREA_HIGH_ON_SWEETZ || kind == AREA_HIGH_ROLLERZ
-                        || kind == AREA_GRUNTZ_IN_SPACE) {
-                        ApplyName("LEVEL_ROLLINGBALL_FALL");
-                        SwitchGeometry("LEVEL_ROLLINGBALLFALL", 0);
-                    } else {
-                        ApplyName("LEVEL_ROLLINGBALL_SINK");
-                        SwitchGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
+                    switch (static_cast<LevelArea>(g_gameReg->m_curState->m_levelType)) {
+                        case AREA_HIGH_ON_SWEETZ:
+                        case AREA_HIGH_ROLLERZ:
+                        case AREA_GRUNTZ_IN_SPACE:
+                            ApplyName("LEVEL_ROLLINGBALL_FALL");
+                            SwitchGeometry("LEVEL_ROLLINGBALLFALL", 0);
+                            break;
+                        default:
+                            ApplyName("LEVEL_ROLLINGBALL_SINK");
+                            SwitchGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
+                            break;
                     }
                     m_explodeLatch = 1;
                     return 0;
