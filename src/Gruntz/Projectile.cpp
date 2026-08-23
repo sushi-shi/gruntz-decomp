@@ -495,21 +495,11 @@ void CProjectile::AdvanceMotion() {
             return;
         }
     }
-    CAniElement* sprite;
-    if (tier != 0) {
-        if (m_frames[PF_FALL] == NULL) {
-            goto noSprite;
-        }
-        sprite = m_frames[PF_FALL];
-    } else {
-        if (m_frames[PF_IMPACT] == NULL) {
-            goto noSprite;
-        }
-        sprite = m_frames[PF_IMPACT];
+    CAniElement* sprite = (tier != 0) ? m_frames[PF_FALL] : m_frames[PF_IMPACT];
+    if (sprite != NULL) {
+        SwitchAnimation(sprite);
+        return;
     }
-    SwitchAnimation(sprite);
-    return;
-noSprite:
     SetObjectFlags(0x10000);
 }
 
