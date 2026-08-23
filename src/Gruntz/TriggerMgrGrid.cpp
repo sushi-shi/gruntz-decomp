@@ -1214,8 +1214,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     if (cell == NULL || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
-    i32 cellTileX = cell->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 cellTileY = cell->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 cellTileX = cell->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
