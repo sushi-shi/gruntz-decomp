@@ -436,7 +436,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
             a = 1;
             break;
         case PLAYER_SLOT_ALL:
-            a = b = c = 1;
+            c = b = a = 1;
             // falls through to PLAYER_SLOT_0's d = 1
         case PLAYER_SLOT_0:
             d = 1;
