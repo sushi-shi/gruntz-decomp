@@ -70,6 +70,27 @@ arm `jmp` landed one store later. Binding the value to a local and assigning the
 member after the if/else gives retail's shared block: 94.77 -> 95.26, 163/163
 instructions.
 
+## Worked example 3 - the memory case INVERTED (the arm temp is PRESENT and should not be)
+
+The same signature runs the other way when OUR source binds a value the arms
+should have written directly. `CSBI_ImageSetAni::Init` 0xe7980 spelled the range
+selection as a ternary, so cl shared one `m_frameEnd` store after the merge where
+retail writes it inside each arm and cross-jumps only two of the three. The
+sibling `SetRange` (0xe7c30, EXACT) spells both selections as an explicit
+if/else, so the idiom is the class's own: 94.43 -> 99.86 with both blocks
+converted. Converting only ONE of the two blocks scores 90.89 - a dip that is a
+BASE, not a falsification.
+
+`CTileTriggerContainer::AddLogic` 0x116610 is the receiver form of it:
+`(logicType == TRIGID_TIME_TRIGGER_23 ? m_list2 : m_list1).AddTail(obj)` selects
+the container, so the inlined `AddTail` lands once after the merge. Two
+statements under an if/else: 83.86 -> 97.84.
+
+Screen for both directions mechanically with `gruntz walls residue --arm`, which
+counts every member store keyed on its DESTINATION and every callee-saved
+register copy over the whole stream (78 and 113 rows in the 579-row todo queue),
+then grep the flagged function for a member-assigning ternary.
+
 ## Two negative controls, both measured on `LoadSprites`/`LoadGruntDecayConfig`
 
 1. **Do not hoist the temp's declaration out of the arm and do not initialise it.**

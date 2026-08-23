@@ -3331,6 +3331,10 @@ class ResidueClassifierControls(unittest.TestCase):
         mb, mt = masked(self._lines(base)), masked(self._lines(target))
         return classify(residual_of(mb, mt)[1], mb)[0]
 
+    def test_a_lone_immediate_is_not_hidden_by_the_mask(self):
+        from gruntz.walls.residue import masked
+        self.assertEqual(len(masked(self._lines(["cmp eax,0x1e"]))), 1)
+
     def test_a_pure_register_rotation_is_not_actionable(self):
         self.assertEqual(self._kind(
             ["mov ebx,DWORD PTR [esi+0x84]", "sub ebx,0x20"],
@@ -3395,6 +3399,21 @@ class ResidueClassifierControls(unittest.TestCase):
                                              "mov DWORD PTR [esi+0x4c],edx"])))
         self.assertEqual(c["r+0x4c"], 2)
         self.assertEqual(len(c), 1)
+
+    def test_a_jump_table_never_reaches_the_residual(self):
+        """A function's own index table decodes as junk with huge
+        displacements; one table produced 500 residual lines on a single row
+        before it was filtered."""
+        from gruntz.walls.residue import masked
+        me = "?Fn@C@@QAEHXZ"
+        junk = self._lines(["add BYTE PTR [eax+0x1e000001],cl",
+                            "add BYTE PTR [edx-0x47fffffc],bl"], ref=me)
+        self.assertEqual(masked(junk, me), [])
+        self.assertEqual(len(masked(junk, "?Other@@QAEXXZ")), 2)
+
+    def test_a_byte_continuation_line_is_dropped(self):
+        from gruntz.walls.residue import masked
+        self.assertEqual(masked(self._lines(["83 c4 10"])), [])
 
     def test_a_stack_store_is_not_a_member_store(self):
         from gruntz.walls.residue import store_census, masked
