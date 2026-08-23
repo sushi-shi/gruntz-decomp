@@ -168,7 +168,11 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 // @early-stop
 // Retail overlays the cached g_gameReg->m_world onto the LOAD arm's index slot,
 // which a named function-scope local cannot express; the whole residue is that
-// one dword of frame.
+// one dword of frame. `sub esp,0x8c` against retail's `sub esp,0x88` with zero
+// exclusive semdiff keys - every displacement, store, immediate, mnemonic and
+// referent is equal, so the extra dword is addressed by nothing. Measured and
+// rejected: sharing ONE function-scope `idx` between the SAVE and LOAD arms
+// instead of a per-arm `v` and `idx` leaves the frame at 0x8c and costs 0.04.
 RVA(0x000e8e00, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(
     CFileMemBase* s,
