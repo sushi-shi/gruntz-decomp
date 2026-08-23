@@ -684,7 +684,7 @@ brickz	?UpdateDiagonals@CMapMgr@@QAEHPAVCGruntzMgr@@@Z	90.1655	90.1655	4	47f90b4
 brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	97.6586	97.6586	3	c9fb2caffef0	0x77790	97.6586	
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	73.8058	73.8058	2	37b4f29bf34a	0x77df0	73.8252	
 brickzcellflags	?SetCell@CDDrawWorkerHost@@QAEXHHH@Z	100.0000	100.0000	2	ca91274c34f6	0x77dc0	100.0000	
-brickzload	?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z	84.7613	84.7613	15	39dc15225e89	0x810f0	84.7613	
+brickzload	?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z	86.3683	86.3683	16	58df4121dfdc	0x810f0	86.3683	
 buteglobals	??_GCButeTree@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b2b2a3648e76	0x16e9c0	100.0000	
 buteglobals	??_GCTypeCollRuntime@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b2b2a3648e76	0x16ea20	100.0000	
 buteglobals	?ButeTreeNopFree@@YAXPAX@Z	100.0000	100.0000	1	a24c4973a48e	0x16ea10	100.0000	
@@ -2091,7 +2091,7 @@ gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	2	5d0da2e1
 gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	74.9795	74.9795	9	630e441ae26f	0x597a0	75.8557	
 gruntcombat	?Lookup@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	2	ea580c50704e	0x5b7e0	100.0000	
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.5000	90.5000	2	9b3f2c7f8d7e	0x588f0	90.5000	
-gruntcombat	?PathScan@CGrunt@@QAEHXZ	89.1921	89.1921	6	247d35ddd426	0x57db0	89.1921	
+gruntcombat	?PathScan@CGrunt@@QAEHXZ	90.5849	90.5849	6	247d35ddd426	0x57db0	90.5849	
 gruntcombat	?ReapplyVoiceParams@CGrunt@@QAEXXZ	100.0000	100.0000	1	eef01da589dd	0x57d10	100.0000	
 gruntcombat	?RegisterGruntActions@@YAXXZ	99.4414	99.4414	1	2a4a49bd4c48	0x5be30	99.4414	
 gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	2	6c2cfd2090ff	0x57800	100.0000	
