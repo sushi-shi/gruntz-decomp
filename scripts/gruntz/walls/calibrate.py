@@ -44,7 +44,8 @@ from collections import Counter
 from difflib import SequenceMatcher
 
 from gruntz.walls.inventory import report_scores
-from gruntz.walls.semdiff import exclusive, features, pair_lines
+from gruntz.walls.semdiff import (ebp_is_frame, exclusive, features,
+                                  pair_lines)
 from gruntz.walls import framescan, jccscan, loopscan, residue, storescan
 
 SIEVES = ("framescan", "loopscan", "jccscan", "storescan", "residue")
@@ -66,9 +67,11 @@ def check(binding, base, tgt) -> dict:
 
     rb = storescan.store_runs(base, 3)
     rt = storescan.store_runs(tgt, 3)
-    gb, gt = features(base, name), features(tgt, name)
+    ebp = ebp_is_frame(base, tgt)
+    gb, gt = features(base, name, ebp), features(tgt, name, ebp)
 
-    rmb, rmt = residue.masked(base, name), residue.masked(tgt, name)
+    rmb = residue.masked(base, name, ebp)
+    rmt = residue.masked(tgt, name, ebp)
     resid, chunks = residue.residual_of(rmb, rmt)
     kind, note = residue.classify(chunks, rmb, rmt)
 

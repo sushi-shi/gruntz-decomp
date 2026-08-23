@@ -98,12 +98,35 @@ NORM = BUILD / "objdiff/compare-new"
 #: frame-layout accident, a member displacement is the class model.
 MEM = re.compile(r"\[(e[a-d]x|e[sd]i|ebx|ecx|ebp)(?:\+e[a-z]{2}\*\d)?"
                  r"([+-]0x[0-9a-f]+)?\]")
+#: the same operand with EBP as its base, and the two spellings that make EBP a
+#: FRAME POINTER. cl 5.0 at /O2 usually spends EBP as a general register, and
+#: then `[ebp+N]` IS a member displacement - but it does give a handful of
+#: functions an ebp frame, and there `[ebp-N]` is a stack slot the two sides do
+#: not agree on. Measured 2026-08-23 over the 595-row todo queue: 8 rows
+#: establish one and 3 address slots through it (`WarpTextureBlit` 65/67
+#: operands, `FillPolygon` 37/38, `CWwdSpatialMgr::ScrollTo` 4/4).
+EBP_MEM = re.compile(r"\[ebp(?:\+e[a-z]{2}(?:\*\d)?)?([+-]0x[0-9a-f]+)?\]")
+EBP_FRAME = re.compile(
+    r"^(?:mov\s+ebp,esp|lea\s+ebp,\[esp(?:[+-]0x[0-9a-f]+)?\])$")
 IMM = re.compile(r"(?<![\[+])\b0x[0-9a-f]+\b")
 FP = re.compile(r"^(fild|fistp?|fld|fstp?|fmul|fdiv|fadd|fsub|fcom|fchs|fabs"
                 r"|frndint|fxch|fsqrt|fnstsw)\w*")
 BYTES_ONLY = re.compile(r"^(?:[0-9a-f]{2} ?)+$")
 FRAME = re.compile(r"^(sub|add)\s+esp,")
 NOT_A_VALUE = re.compile(r"^(j\w+|call|loop|ret)$")
+
+
+def ebp_is_frame(*sides) -> bool:
+    """Whether EBP is a frame pointer, in which case its `[ebp+-N]` operands
+    are stack slots and not member displacements.
+
+    Take BOTH sides. cl gives one side an ebp frame and not the other
+    (`CGrunt::StepBrickLayerBehavior` is ours, retail's ebp is a general
+    register there), and masking only the side that has one is a mask that
+    manufactures a difference. If either side's ebp is a frame pointer, the
+    operand is not comparable on that row and both sides mask.
+    """
+    return any(EBP_FRAME.match(ln.asm) for lines in sides for ln in lines)
 
 
 class Line:
@@ -181,13 +204,19 @@ def pair_lines(token: str):
     return b, _decode(bb, brel, b.name), _decode(tb, trel, b.name)
 
 
-def features(lines: list[Line], self_name: str = "") -> dict[str, Counter]:
+def features(lines: list[Line], self_name: str = "",
+             ebp_frame: bool | None = None) -> dict[str, Counter]:
     """The five multisets, with the mechanical filters applied.
 
     Dropped here: the function's own jump/index table (self-annotated lines,
-    which decode as junk), byte-continuation lines, and the frame-size and
-    callee-cleanup immediates.
+    which decode as junk), byte-continuation lines, the frame-size and
+    callee-cleanup immediates, and - in the handful of functions cl gives an
+    ebp frame - the `[ebp+-N]` operands, which are stack slots there and not
+    member displacements. Pass `ebp_frame` from BOTH sides (`ebp_is_frame(base,
+    target)`); reading it off one side masks asymmetrically.
     """
+    if ebp_frame is None:
+        ebp_frame = ebp_is_frame(lines)
     disp, imm, mnem, fp, store = (Counter() for _ in range(5))
     for ln in lines:
         if self_name and ln.ref == self_name:
@@ -197,6 +226,8 @@ def features(lines: list[Line], self_name: str = "") -> dict[str, Counter]:
             continue
         if FRAME.match(asm):
             continue
+        if ebp_frame:
+            asm = EBP_MEM.sub("[esp]", asm)
         op = asm.split()[0]
         mnem[op] += 1
         m = FP.match(asm)
@@ -264,7 +295,8 @@ def _seq_report(label: str, rb: list, rt: list, ctx: int = 6) -> int:
 
 def adjudicate(token: str, top: int = 30, show_all: bool = False) -> int:
     b, lb, lt = pair_lines(token)
-    fb, ft = features(lb, b.name), features(lt, b.name)
+    ebp = ebp_is_frame(lb, lt)
+    fb, ft = features(lb, b.name, ebp), features(lt, b.name, ebp)
     exc = exclusive(fb, ft)
 
     print(f"{b.name}  0x{b.rva:06x}  [{b.unit}]")
@@ -294,7 +326,8 @@ def adjudicate(token: str, top: int = 30, show_all: bool = False) -> int:
 def screen(token: str) -> tuple[list, list]:
     """(exclusive keys, FP deltas) - the two sweep-visible signals."""
     b, lb, lt = pair_lines(token)
-    fb, ft = features(lb, b.name), features(lt, b.name)
+    ebp = ebp_is_frame(lb, lt)
+    fb, ft = features(lb, b.name, ebp), features(lt, b.name, ebp)
     fpd = [(k, fb["fp"][k], ft["fp"][k])
            for k in sorted(set(fb["fp"]) | set(ft["fp"]))
            if fb["fp"][k] != ft["fp"][k]]

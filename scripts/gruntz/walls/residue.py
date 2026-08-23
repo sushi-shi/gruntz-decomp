@@ -89,7 +89,7 @@ from difflib import SequenceMatcher
 
 from gruntz.walls import check_unit
 from gruntz.walls.framescan import ESP_DISP, FRAME_IMM, LOCAL_BRANCH, frame
-from gruntz.walls.semdiff import BYTES_ONLY, pair_lines
+from gruntz.walls.semdiff import BYTES_ONLY, EBP_MEM, ebp_is_frame, pair_lines
 
 CALLEE_SAVED = ("esi", "edi", "ebx", "ebp")
 REGMOV = re.compile(r"^mov\s+(e[a-z][a-z]),(e[a-z][a-z])$")
@@ -439,20 +439,32 @@ def mirror(asm: str) -> str:
     return asm
 
 
-def masked(lines, self_name: str = "") -> list[str]:
+def masked(lines, self_name: str = "",
+           ebp_frame: bool | None = None) -> list[str]:
     """framescan's mask (esp displacements, branch targets, the frame
     immediate) plus the relocated-call addend and the accumulator mirror.
 
     A function's own jump/index table decodes as junk instructions carrying
-    huge displacements and a relocation back to the function; every line that
-    names ITSELF is dropped, the same filter `walls semdiff` applies. Left in,
-    one table produced 500 lines of "residual" on a single row."""
+    huge displacements and a relocation back to the function; `semdiff._decode`
+    drops it by the offsets its relocations cover, and this filter is the older
+    referent-shaped form of the same rule.
+
+    Where cl gave the function an EBP FRAME, `[ebp+-N]` is a stack slot and not
+    a member displacement, so it masks like `[esp+N]` - otherwise a pure frame
+    shift reads as `displacement`, i.e. "possible layout bug". Eight rows of the
+    595-row todo queue establish one; three address slots through it. Pass
+    `ebp_frame` from BOTH sides: one side can have an ebp frame where the other
+    does not, and masking only that side manufactures a difference."""
     out = []
     zeros = zero_regs(lines)
+    if ebp_frame is None:
+        ebp_frame = ebp_is_frame(lines)
     for ln, live in zip(lines, zeros):
         if self_name and ln.ref == self_name:
             continue
         asm = ESP_DISP.sub("[esp+?]", spend_zero(ln.asm, live))
+        if ebp_frame:
+            asm = EBP_MEM.sub("[esp+?]", asm)
         if not asm or BYTES_ONLY.match(asm):
             continue
         if LOCAL_BRANCH.match(asm):
@@ -657,7 +669,9 @@ def scan_one(rva: str) -> dict:
     binding, base, target = pair_lines(rva)
     base_res, base_push = frame(base)
     tgt_res, tgt_push = frame(target)
-    mb, mt = masked(base, binding.name), masked(target, binding.name)
+    ebp = ebp_is_frame(base, target)
+    mb = masked(base, binding.name, ebp)
+    mt = masked(target, binding.name, ebp)
     residual, chunks = residual_of(mb, mt)
     kind, note = classify(chunks, mb, mt)
     sb, st = store_census(mb), store_census(mt)

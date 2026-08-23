@@ -83,7 +83,8 @@ from collections import Counter, defaultdict
 from gruntz.delink.coffx import Obj
 from gruntz.walls import check_unit
 from gruntz.walls.diagnose import _find_function, _locate
-from gruntz.walls.semdiff import NORM, _decode, exclusive, features
+from gruntz.walls.semdiff import (NORM, _decode, ebp_is_frame,
+                                  exclusive, features)
 
 #: `mov <sz> PTR [<base>(+idx*s)?(+0xNN)?],<src>` with base != esp - a stack
 #: slot is a frame accident, a member displacement is the class model.
@@ -274,7 +275,8 @@ def scan_one(rva: str, min_run: int) -> dict:
     rb, rt = store_runs(lb, min_run), store_runs(lt, min_run)
     hits = permuted(rb, rt)
     cb, ct = counts(lb), counts(lt)
-    fb, ft = features(lb, binding.name), features(lt, binding.name)
+    ebp = ebp_is_frame(lb, lt)
+    fb, ft = features(lb, binding.name, ebp), features(lt, binding.name, ebp)
     rec = {"hits": hits,
            "base_member_runs": len(member_runs(rb)),
            "tgt_member_runs": len(member_runs(rt)),
