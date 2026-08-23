@@ -78,4 +78,40 @@ entry prologue, and it has THREE early returns; copying that shape (`if (node ==
 return 1;` ahead of a `do/while`, which cl rotates to the same blocks as the `while`) closed
 FreeSamples. Prefer an exact neighbour in the same file as the model for the missing return.
 
+### The reverse direction also moves the /GX FRAME, and it is a `void` rule too
+
+`BuildLevelTitleString` 0x000e44e0 **95.7850 -> 100.00 EXACT** is the reverse reading on a
+`void` function with three entry guards and no body return at all. Its preview loader was
+written `if (Open() == 0) { g_previewImage = NULL; } else { ... }`; spelling the two failures
+as `return;` closed it.
+
+Two things this instance adds:
+
+* **The EH object packing follows the prologue.** The frame pass runs after register
+  assignment, so the shrink-wrap also permuted the two `/GX` objects: base packed
+  `[flag][CString][CFile]` where retail has `[CFile][flag][CString]`, and both unwind
+  funclets read the wrong `[ebp-N]`. `gruntz walls ehactions --shift` files that as
+  `per-object` slot-shift and correctly says no edit targets the funclet - the edit is the
+  parent's return count, and the funclets close with it (29 B and 11 B, both EXACT).
+* **`void` counts returns the same way.** Nothing has to be returned for the rule to bite;
+  a bare `return;` in the body is the whole fix, and the `f.Close()` before it is retail's
+  own order.
+
+**Census instrument for the reverse direction.** A shrink-wrapped function has a branch
+target strictly INSIDE its final pop run (the guards enter the epilogue below the sunk
+pops). Detecting that over every function in `build/objdiff/compare-new/{base,target}`
+turns "regalloc noise" into a three-row worklist: 92 base / 90 target, **89 in both**,
+3 base-only (`BuildLevelTitleString`, `CArray<PLAYLISTINFOSTRUCT*>::FreeExtra`, one `.text`
+COMDAT) and 1 target-only (`CFaderRadial::RenderFrame` 0x17fc60, 88.58 - the forward
+direction, still open). An 89/90 agreement means a side-only split epilogue is evidence,
+not a coin.
+
+**Screen out TU state before searching the source.** On BuildLevelTitleString, moving the
+function to the head and to the tail of its TU, inserting a static definition immediately
+above it, and declaration-count probes (typedef 0..12, class 0..8) are all byte-identical -
+so the decision is function-intrinsic. Local scope (the arrays inner, outer, after the
+guards, beside the `CFile`), guard shape (`&&` gate, `||` gate, brace-less returns), dead
+initializers and value hoists are byte-identical too. When the census says one side is the
+outlier, count the source's returns; do not sweep declarations.
+
 related: [tail-block-placement-cross-jump-wall.md](tail-block-placement-cross-jump-wall.md) (the wall this breaks), [trailing-error-block-is-a-crossjump-magnet.md](trailing-error-block-is-a-crossjump-magnet.md) (the half that is still a wall: merging guards with `||` feeds cl's cross-jump).
