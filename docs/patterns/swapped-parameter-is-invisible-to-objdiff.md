@@ -129,3 +129,23 @@ epilogue-derived fixed frame and the current push depth, then trace the value's
 definition. `CTriggerMgr::ClearCell` is the compact control: rebuilt and retail
 use different frame sizes, but after depth normalization both pass the rounded
 world coordinates as `(x, y)`.
+
+## Independent re-sieve, 2026-08-23: the class is DRAINED
+
+After the five fixes (FinishActiveAction, the two arrivalPhase/maskA pursuit
+calls, GruntScanTarget, GruntArrivalUpdate's TileSwitch) a second, independently
+written sieve was run over **all 4,426 paired functions** and found **0**
+remaining swapped-order call sites. Script: `scratchpad/argswap.py` - it walks
+each `call`'s argument run backwards, resolving every `push <reg>` through the
+last `mov <reg>,<memref>` that defined it, then flags calls where both sides
+push the same operand multiset in a different order.
+
+**The one methodological trap, learned by hitting it.** The first run flagged
+`CBattlezMapConfig::ValidateUnitPath` calling `PathToNearestGoal` with
+`[esp+0x18]`/`[esp+0x1c]` reversed. That is a FALSE POSITIVE: the two builds
+assign frame slots independently, so the same `[esp+N]` names a different
+variable on each side and their order carries no information. Only
+`this`-relative (`[esi+0xNN]`) and global operands are decidable across builds -
+which is exactly why FinishActiveAction was provable (`[esi+0x17c]` /
+`[esi+0x180]` mean the same member on both sides). The sieve now drops every
+esp-relative operand before comparing; with that filter the tree is clean.
