@@ -19,8 +19,6 @@ struct CSymTabNode : public CHashElement {
     }
 };
 
-void __stdcall UnpackTag(RezTypeTag tag, char* dst);
-
 class CSymParser;
 
 class CSymTab;

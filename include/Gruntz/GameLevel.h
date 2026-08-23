@@ -118,6 +118,11 @@ public:
 
     i32 ReadWwdHeaderName(const char* name, char* nameOut);
 
+    // A member: LoadWwd passes its own `this` in ECX (`mov ecx,ebp` with
+    // ebp = the prologue's `mov ebp,ecx`) at the sole call site, and the body
+    // never reads it - so the receiver is invisible in the callee's own bytes.
+    Bytef* InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
+
     virtual ~CGameLevel() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 

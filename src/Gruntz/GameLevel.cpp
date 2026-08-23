@@ -204,7 +204,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         }
 
         // Byte-forced view of packed WWD storage.
-        hdr = reinterpret_cast<WwdHeader*>(WwdFile_InflateMainBlock(source, buf, capacity));
+        hdr = reinterpret_cast<WwdHeader*>(InflateMainBlock(source, buf, capacity));
         if (hdr == NULL) {
             delete[] buf;
             return 0;
@@ -1633,7 +1633,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
 
 // @early-stop
 RVA(0x00160790, 0xd2)
-Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
+Bytef* CGameLevel::InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
     uLongf outLen;
 
     if (src == NULL) {

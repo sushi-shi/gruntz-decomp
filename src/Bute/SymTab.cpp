@@ -1263,7 +1263,7 @@ RezTypeTag CSymParser::PackTag(const char* s) {
 }
 
 RVA(0x0013b970, 0x72)
-void __stdcall UnpackTag(RezTypeTag tag, char* dst) {
+void CSymParser::UnpackTag(RezTypeTag tag, char* dst) {
     if (!dst) {
         return;
     }

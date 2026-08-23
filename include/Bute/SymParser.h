@@ -91,6 +91,8 @@ public:
 
     RezTypeTag PackTag(const char* s);
 
+    void UnpackTag(RezTypeTag tag, char* dst);
+
     i32 ReParse();
 
     CParseSource* PopParseSlot();

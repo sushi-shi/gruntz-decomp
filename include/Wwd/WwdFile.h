@@ -166,8 +166,6 @@ class CFileMemBase;
 
 extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen);
 
-Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
-
 class WwdFile {
 public:
     static i32 ValidateMainBlock(CString name);
