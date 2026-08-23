@@ -12,6 +12,9 @@
     gruntz walls framescan        stack-frame-size sieve: our `sub esp,N`
                                   against retail's, ranked by what survives
                                   masking the displacements a frame shift moves
+    gruntz walls residue          what the masked residual IS, once position
+                                  and register-name differences are cancelled
+                                  (arm-result temps, wrong constants/offsets)
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
                                   cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
@@ -52,6 +55,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "framescan": "gruntz.walls.framescan",
+         "residue": "gruntz.walls.residue",
          "global-refs": "gruntz.walls.global_refs",
          "ehactions": "gruntz.walls.ehactions",
          "semdiff": "gruntz.walls.semdiff",

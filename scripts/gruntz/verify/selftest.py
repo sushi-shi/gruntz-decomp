@@ -3280,6 +3280,94 @@ class SemDiffControls(unittest.TestCase):
         self.assertNotEqual(referent_runs(b), referent_runs(t))
 
 
+class ResidueClassifierControls(unittest.TestCase):
+    """`walls residue` names what a masked residual IS.  Its whole value is
+    that a scheduling coin and a wrong constant land in different buckets, so
+    a classifier nobody has seen put a KNOWN coin in a coin bucket AND a KNOWN
+    source bug in an actionable one is not a classifier."""
+
+    @staticmethod
+    def _lines(asms, ref=None):
+        from gruntz.walls.semdiff import Line
+        return [Line(i * 4, a, ref) for i, a in enumerate(asms)]
+
+    def _kind(self, base, target):
+        from gruntz.walls.residue import classify, masked, residual_of
+        mb, mt = masked(self._lines(base)), masked(self._lines(target))
+        return classify(residual_of(mb, mt)[1], mb)[0]
+
+    def test_a_pure_register_rotation_is_not_actionable(self):
+        self.assertEqual(self._kind(
+            ["mov ebx,DWORD PTR [esi+0x84]", "sub ebx,0x20"],
+            ["mov eax,DWORD PTR [esi+0x84]", "sub eax,0x20"]), "regname")
+
+    def test_a_moved_instruction_is_a_schedule_coin(self):
+        self.assertEqual(self._kind(
+            ["mov eax,DWORD PTR [esi]", "cmp eax,0x1", "push esi"],
+            ["cmp eax,0x1", "push esi", "mov eax,DWORD PTR [esi]"]), "schedule")
+
+    def test_a_relocated_call_addend_is_position_state(self):
+        """The rel32 of a RELOCATED call moves whenever anything above it
+        does; leaving it in read as an immediate difference on 8 rows."""
+        from gruntz.walls.residue import masked
+        self.assertEqual(masked(self._lines(["call 0xe4"], "?F@@YAXXZ")),
+                         masked(self._lines(["call 0xe0"], "?F@@YAXXZ")))
+
+    def test_the_accumulator_and_form_is_one_instruction(self):
+        """cl takes `and al,0xe0` for `and eax,0xffffffe0`; seven ctors were
+        mislabelled `immediate` before this mirror was normalized."""
+        self.assertEqual(self._kind(["and ecx,0xffffffe0"],
+                                    ["and al,0xe0"]), "regname")
+
+    def test_a_wrong_constant_is_flagged(self):
+        self.assertEqual(self._kind(["cmp eax,0x1e"],
+                                    ["cmp eax,0x9"]), "immediate")
+
+    def test_a_wrong_member_offset_is_flagged(self):
+        self.assertEqual(self._kind(["mov eax,DWORD PTR [esi+0x180]"],
+                                    ["mov eax,DWORD PTR [esi+0x17c]"]),
+                         "displacement")
+
+    def test_a_wrong_referent_is_flagged(self):
+        """Relocated operands are masked in the scored bytes, so a global
+        bound to the wrong symbol is invisible to the byte diff."""
+        from gruntz.walls.residue import classify, masked, residual_of
+        mb = masked(self._lines(["mov ebx,0x0"], "?g_a@@3HA"))
+        mt = masked(self._lines(["mov ebx,0x0"], "?g_b@@3HA"))
+        self.assertEqual(classify(residual_of(mb, mt)[1], mb)[0], "referent")
+
+    def test_a_missing_arm_temp_is_the_register_case(self):
+        """docs/patterns/arm-result-temp-controls-copies-and-shared-store.md:
+        retail's arm ends in `mov <callee-saved>,<scratch>` and the base is
+        exactly that many instructions short."""
+        self.assertEqual(self._kind(
+            ["mov edi,DWORD PTR [esi+0x80]"],
+            ["mov ecx,DWORD PTR [esi+0x80]", "mov edi,ecx"]), "arm-copy")
+
+    def test_a_shared_store_the_arms_should_own_is_the_memory_case(self):
+        from gruntz.walls.residue import store_census, masked
+        base = masked(self._lines(["mov DWORD PTR [esi+0x4c],ecx"]))
+        target = masked(self._lines(["mov DWORD PTR [esi+0x4c],edx",
+                                     "mov DWORD PTR [esi+0x4c],ecx"]))
+        sb, st = store_census(base), store_census(target)
+        self.assertEqual((sb["r+0x4c"], st["r+0x4c"]), (1, 2))
+
+    def test_the_store_census_keys_on_the_destination_only(self):
+        """`mov [esi+0x4c],ecx` and `mov [esi+0x4c],edx` are ONE store; keying
+        on the whole instruction would hide every per-arm duplicate."""
+        from gruntz.walls.residue import store_census, masked
+        c = store_census(masked(self._lines(["mov DWORD PTR [esi+0x4c],ecx",
+                                             "mov DWORD PTR [esi+0x4c],edx"])))
+        self.assertEqual(c["r+0x4c"], 2)
+        self.assertEqual(len(c), 1)
+
+    def test_a_stack_store_is_not_a_member_store(self):
+        from gruntz.walls.residue import store_census, masked
+        self.assertEqual(
+            store_census(masked(self._lines(["mov DWORD PTR [esp+0x10],ecx"]))),
+            {})
+
+
 class EhActionControls(unittest.TestCase):
     """`walls ehactions` reports structure; neither count nor action shape is
     sufficient by itself to call source cleanup defective."""
