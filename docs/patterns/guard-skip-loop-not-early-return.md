@@ -87,3 +87,30 @@ last term of an `||`/`&&` guard chain: retail's last term reads `je <far tail>`
 where ours reads `jne <near body>`, which says retail's guard falls through to a
 return the source states once and ours states twice. `gruntz walls jccscan` names
 these rows directly - a balanced single je/jne flip.
+
+### The check that stops this from being over-applied
+
+`retail jumps FAR where we jump NEAR` at ONE site is not enough. Confirm retail
+has **no inline epilogue of its own** for the neighbouring guards, because cl also
+picks *which* of several identical returns to keep inline, and that choice is
+placement, not a return count.
+
+`CTriggerMgr::ApplyTriggerA` 0x6dae0 is the trap. Two adjacent guards, both
+`return -1`:
+
+```cpp
+if (o->m_screenX != cell->m_lastTilePx.m_x) { return -1; }
+if (o->m_screenY != cell->m_lastTilePx.m_y) { return -1; }
+```
+
+The first reads `je <near>` for us and `jne <far 0x1d5>` for retail, which is the
+signature above - but retail then gives the SECOND guard its own inline
+`or eax,0xffffffff / pop.. / ret 0x10` at 0x9c. Retail duplicates too; it just
+duplicates the other one. Merging the two into `if (A || B) return -1;` gave both
+guards the far tail and cost **87.45 -> 86.86**. Reverted.
+
+So: look at the guards on BOTH sides of the flip before reaching for the lever.
+Retail holding an inline epilogue anywhere in the neighbourhood means the return
+count already agrees and only the placement differs, which is
+[identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md)'s
+wall.
