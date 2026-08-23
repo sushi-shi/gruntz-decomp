@@ -2280,9 +2280,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     CMapMgr* board = m_board;
     i32 bottom = (tl2->m_screenY >> TILE_SHIFT_PX) + 5;
     i32 top = (tl2->m_screenY >> TILE_SHIFT_PX) - 5;
-    RECT a;
     RECT box;
-    RECT bounds;
     box.left = left;
     box.top = top;
     box.right = right;
@@ -2291,11 +2289,14 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     // CMapMgr::Clip(&box) expanded in place: retail calls the out-of-line Clip only
     // for the trailing NULL argument, so this arm is a copy of its body.
     const RECT* src = &box;
+    RECT a, bounds;
+    i32 w = board->m_width;
+    i32 h = board->m_height;
     bounds.left = 0;
     bounds.top = 0;
-    bounds.right = board->m_width;
-    bounds.bottom = board->m_height;
-    if (src != NULL) {
+    bounds.right = w;
+    bounds.bottom = h;
+    if (src) {
         a = *src;
         a.right++;
         a.bottom++;
