@@ -893,10 +893,3 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     }
     return m_sound->ConfigureItem(vscale, vol, 0, 0);
 }
-
-// @early-stop
-// blocks B0-B18 byte-exact; retail keeps FOUR inline EH epilogue copies (two
-// 10i, two 9i rets) where our cl cross-jumps all exits onto one shared 8i
-// epilogue - the EH-epilogue cross-jump family from
-// docs/patterns/goto-fail-shares-one-exit-block.md (no source construct moves
-// it; same coin as CButeMgr::SetInt in the other direction).

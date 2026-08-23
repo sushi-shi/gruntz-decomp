@@ -99,7 +99,6 @@ i32 CSBI_ImageSetAni::Refresh(i32) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_redrawFrames > 0) {

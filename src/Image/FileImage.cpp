@@ -423,7 +423,6 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00144900, 0x227)
 i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     static_cast<void>(pal);

@@ -1493,7 +1493,6 @@ void CMultiStartDlg::OnSlotSelect3() {
     Drive();
 }
 
-// @early-stop
 RVA(0x000c5020, 0x95)
 void CMultiStartDlg::CommitLatencyOption() {
     if (g_multiState->m_isHost == 0) {

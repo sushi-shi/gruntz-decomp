@@ -930,7 +930,6 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-// @early-stop
 RVA(0x0015a8c0, 0x7d)
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     AnimWorkerObj* fp = LookupWorker(OwnerMgr()->m_workerCache->m_workers, key);

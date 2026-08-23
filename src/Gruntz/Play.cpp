@@ -4531,13 +4531,6 @@ void CPlay::PlayCueAt(
     }
 }
 
-// @early-stop
-// cl REASSOCIATES the two scroll offsets and there is no spelling that stops it:
-// retail computes y as (vr->top - planeCtx.top) + m_cursorY (0xd1adf sub / 0xd1aec
-// add) while cl always makes the this-relative m_cursorY the accumulator and emits
-// (m_cursorY - planeCtx.top) + vr->top.  Splitting the subtraction into its own
-// statement, a compound `+=`, and flat left-to-right order all fold back to the
-// same tree.  x already matches.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;

@@ -70,7 +70,6 @@
     m_mainPlane = NULL;                                                                            \
     m_mainIndex = -1
 
-// @early-stop
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {

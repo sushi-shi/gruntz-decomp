@@ -70,7 +70,6 @@ i32 CSBI_ImageSet::Refresh(i32) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::Render() {
     if (m_redrawFrames > 0) {

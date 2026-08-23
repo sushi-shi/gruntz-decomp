@@ -78,7 +78,6 @@ void CMenuPage::Clear() {
     m_items.RemoveAll();
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001833f0, 0x38)
@@ -264,9 +263,6 @@ i32 CMenuPage::NotifyAll(u32 dt) {
     return 1;
 }
 
-// @early-stop
-// LayoutOne proves the coordinate source shape; the leading dispatch leaves only a
-// commutative m_rect.top/m_offsetY load swap with identical calls, CFG and referents.
 RVA(0x00183b60, 0xe8)
 i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
     if (m_flags & 4) {

@@ -649,7 +649,6 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00057aa0, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     PickupType reason = m_entranceReason;

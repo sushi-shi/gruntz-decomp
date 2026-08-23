@@ -43,7 +43,6 @@ char g_idScratch[0x10];
 DATA(0x0024b6b0)
 char g_idListBuf[0x40];
 
-// @early-stop
 RVA(0x000c0b10, 0x72)
 i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state) {
     if (desc == NULL) {

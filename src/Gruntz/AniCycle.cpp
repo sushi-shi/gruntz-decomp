@@ -21,10 +21,6 @@ CActReg CActRegPool<CAniCycle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x0000f4e0, 0x1e, ??_GCAniCycle@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 
-// @early-stop
-// cl5 propagates the branch equality into the guarded re-read of the member it
-// just tested, so the load retail keeps is missing.
-// docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(1);

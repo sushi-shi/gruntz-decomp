@@ -671,7 +671,6 @@ i32 CSymTab::AddNodeSubEntry(CSymRec* rec, CParseSource* src) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     i32 ok = 1;
