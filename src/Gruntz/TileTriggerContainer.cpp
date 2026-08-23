@@ -384,10 +384,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    i32 player0,
-    i32 player1,
-    i32 player2,
-    i32 player3
+    RECT playerFlags
 ) {
     CTileActionEvent* m = new CTileActionEvent;
     if (m == NULL) {
@@ -397,13 +394,13 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
         m->m_tileX = tileX;
         m->m_tileY = tileY;
         m->m_cellKey = cellKey;
-        m->m_playerFlags[0] = player0;
-        m->m_playerFlags[1] = player1;
-        m->m_playerFlags[3] = player3;
+        m->m_playerFlags[0] = playerFlags.left;
+        m->m_playerFlags[1] = playerFlags.top;
+        m->m_playerFlags[3] = playerFlags.bottom;
         m->m_actionCode = actionCode;
         m->m_owner = this;
         m->m_live = 1;
-        m->m_playerFlags[2] = player2;
+        m->m_playerFlags[2] = playerFlags.right;
         m->SetActionCode(actionCode);
         m_list3.AddTail(m);
         return m;

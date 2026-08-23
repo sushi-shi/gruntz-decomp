@@ -91,16 +91,12 @@ public:
 
     void AddLogicFromRecord(TileCollisionKind tileType, TrigLogicId logicType, CGameObject* object);
 
-    CTileActionEvent* AddToList3(
-        BrickTileId actionCode,
-        i32 tileX,
-        i32 tileY,
-        i32 cellKey,
-        i32 player0,
-        i32 player1,
-        i32 player2,
-        i32 player3
-    );
+    // A brick's four per-player flags reach the event in the level record's
+    // extent rect, which the caller passes by value: retail's call site builds
+    // one 16-byte block (`lea edi,[obj+0x134]` / `sub esp,0x10` / four dword
+    // copies) rather than pushing four fields.
+    CTileActionEvent*
+    AddToList3(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, RECT playerFlags);
 
     CGiantRockLogic* AddToList1(
         i32 tileX,

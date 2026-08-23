@@ -5661,10 +5661,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_speedX,
                         obj->m_speedY,
                         obj->m_id,
-                        obj->m_extent.left,
-                        obj->m_extent.top,
-                        obj->m_extent.right,
-                        obj->m_extent.bottom
+                        obj->m_extent
                     )
                     == NULL) {
                     CString s;
