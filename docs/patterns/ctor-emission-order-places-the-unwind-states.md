@@ -35,7 +35,29 @@ Three shapes, all measured 2026-08-08:
 | head/tail zeroed BEFORE the vptr stamp | `m_list.m_head = NULL;` in the body | the ctor belongs to the member's own class, in ITS mem-init list (`CObjList() : m_head(NULL), m_tail(NULL) {}`) |
 | an extra state, then three field stores | `m_gameObject = owner; ...` in the body | the fields belong to a real base - `: CMovingLogic(owner), CWapX(owner)` (`CProjectile` 86.23 -> **99.78**) |
 
-A fourth shape has no member at all: **an extra state with a `call` right after it, at the end of
+## The same boundary is a field-OWNERSHIP oracle, with or without /GX states
+
+Phase 2 is the *base's* mem-init as well as the derived class's, so a scalar
+written BEFORE the vptr stamp that your model puts on the DERIVED class is
+evidence the field belongs to a BASE. This reads off the store order alone - no
+unwind states, no destructible members needed.
+
+`DSoundVoice::DSoundVoice` 0x136fe0 writes `+0xc, +0x10, +0x14` in one
+uninterrupted run and only then stamps `??_7DSoundVoice@@6B@`. Modelling the
+first two as base fields (`PureSoundElem`) and leaving `m_stopAndRewind` at
+`+0x14` on the derived class makes it a body statement, and no body order can
+put it back in that run: all six orders of the remaining three assignments
+plateau at 85.18, and the one order that does reproduce retail's *store* order
+still leaves the value's load three slots late in the schedule. Giving the base
+the third field and a third ctor argument closed the function 88.00 ->
+**100.00 EXACT**, with the body then in plain declaration order.
+
+Corroborate before moving a field: the empty dtor the ctor's unwind funclet
+jumps to stamps the vptr of the class it destroys (`mov [ecx],??_7Base@@6B@`),
+which names the base directly, and the module's vtable set says how many classes
+are in the chain at all.
+
+A fourth state-flow shape has no member at all: **an extra state with a `call` right after it, at the end of
 a `new`-expression's protected region, is the constructor BODY.** `new CChatBox` stores state 3
 after the last CString and then calls `Init()`; that only happens if `CChatBox::CChatBox()` calls
 `Init()` itself. Writing `p = new CChatBox; p->Init();` puts the call outside the region and
