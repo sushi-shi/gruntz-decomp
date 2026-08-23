@@ -36,7 +36,15 @@ the gate polarity and the null-return block, in opposite directions, and never l
 | AddToList1 | `if (gate == 0) { body }` then teardown | **right** | wrong (merged into the teardown's xor) | 77.41 |
 | AddToList3Switch 0x116b80 | teardown-first | wrong | **right** | **75.78** |
 | AddToList3Switch | body-first | **right** | wrong | 72.30 |
-| AddToList3 0x116a40 | body-first | **right** | wrong | 80.12 |
+| AddToList3 0x116a40 | body-first | **right** | wrong | **80.12** |
+| AddToList3 | teardown-first | wrong | right | 58.63 |
+
+The three rows do not agree on a winner, so the shape has to be chosen per function: AddToList1
+and AddToList3Switch want teardown-first, AddToList3 wants body-first and loses 21.5 points to the
+other cell. AddToList3's body ends in a `SetActionCode` call the other two do not have, which is
+the only structural difference between it and AddToList3Switch. Until 2026-08-23 the tree held
+AddToList1 at the losing cell despite this table naming the winner - re-measure the tree against
+a table before assuming the tree already applies it.
 
 An explicit `else` on the teardown is byte-identical to the trailing-statement form (measured on
 AddToList1). So is `delete m` versus a hand-written `m->m_live = 0; ::operator delete(m)`.
