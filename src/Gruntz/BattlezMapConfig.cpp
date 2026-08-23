@@ -1638,8 +1638,14 @@ i32 CGrunt::IsAtSavedScreenPos() {
 }
 
 RVA(0x00029af0, 0x3b)
-
-void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused) {
+void CBattlezMapConfig::TileSwitch(
+    CGrunt* g,
+    i32 col,
+    i32 row,
+    i32 burnRandA,
+    i32 burnRandB,
+    i32 unused
+) {
     if (burnRandA) {
         rand();
     }

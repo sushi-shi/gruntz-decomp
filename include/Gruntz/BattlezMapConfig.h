@@ -50,6 +50,11 @@ public:
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
     i32 ChooseIdleBehavior(CGrunt*);
+
+    // A member whose body never reads its receiver: `CBattlezMapConfig::Step`
+    // hands it `this` in ECX (`mov ecx,edi`, dead) at the sole call site.
+    void TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused);
+
     i32 ValidateUnitPath(CGrunt*);
 
     void ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);

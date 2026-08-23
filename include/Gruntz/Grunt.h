@@ -944,8 +944,6 @@ typedef i32 (CGrunt::*GruntActHandler)();
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
-void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused);
-
 // The grunt ACT codes. A CGrunt's state IS its act name: code resolves
 // m_objAux->m_actKey through g_typeColl and strcmp()s the result.
 // RegisterGruntActions (GruntCombat.cpp) binds all nineteen, "A".."S", each to
