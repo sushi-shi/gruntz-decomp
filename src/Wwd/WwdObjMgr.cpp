@@ -1284,7 +1284,14 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
     return 1;
 }
 
-// @early-stop
+static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
+    CWwdGameObject* found = NULL;
+    if (MapLookupById(byId, id, found) == 0) {
+        found = NULL;
+    }
+    return found;
+}
+
 RVA(0x0015b0e0, 0xec)
 i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag) {
     if (ar == NULL) {
@@ -1296,11 +1303,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
         if (objectId == 0) {
             return 0;
         }
-        CWwdGameObject* found = NULL;
-        CWwdGameObject* obj = NULL;
-        if (MapLookupById(m_registeredGameObjectsById, objectId, found)) {
-            obj = found;
-        }
+        CWwdGameObject* obj = LookupObjectById(m_registeredGameObjectsById, objectId);
         if (obj == NULL) {
             return 0;
         }
