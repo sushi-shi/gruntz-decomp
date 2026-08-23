@@ -25,6 +25,16 @@ of IMMEDIATES stored there. Two offsets that exchanged their constants is a
 live transposition bug the masked score barely sees, and that screen is how
 you rule it out (it found none in the 578-row queue of 2026-08-23).
 
+Read the two `--values` buckets differently. "Total multiset IDENTICAL" is the
+transposition question and is the one worth chasing. "Totals differ" is
+dominated by REGISTER-VS-IMMEDIATE substitution - one side materialises the
+constant in a register and stores that, so its immediate-store map simply
+lacks the entry. All 43 such rows in the 2026-08-23 queue were that (retail
+holds 0xc8 in EBP across `CBootyState::BuildBootyGruntIdleAnimation` and
+re-materialises the same EBP as -2 later; `CGrunt::RearmAttackAnim` stores
+EBX=1 where we store the immediate 1 at the very same offsets). Confirm a row
+against the disassembly before reading it as a value defect.
+
     gruntz walls storescan [--todo] [--unit U] [--min-run N] [--loose]
                            [--values] [--limit N] [--json]
 
