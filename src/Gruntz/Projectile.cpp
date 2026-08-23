@@ -439,8 +439,8 @@ void CProjectile::AdvanceMotion() {
     if (m_kind != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* plane = reg->m_tileGrid;
-        i32 tileX = m_targetX >> TILE_SHIFT_PX;
         i32 tileY = m_targetY >> TILE_SHIFT_PX;
+        i32 tileX = m_targetX >> TILE_SHIFT_PX;
         u32 flags = plane->CellFlagsAt(tileX, tileY);
         if ((flags & 0x900) == 0) {
             if (flags & 0x2) {
