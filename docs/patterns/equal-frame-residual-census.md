@@ -75,6 +75,23 @@ believing a referent row. `ImagePolyClipRect` 0x1461b0 is the standing example.
 the SECTION's content, and the section pools other constants, so the two sides
 hash differently for the same float. Two `CFader` rows.
 
+**7. A commutative operand pair.** `mov edx,[esp+N]; imul edx,[ebp+0x1c]` against
+`mov edx,[ebp+0x1c]; imul edx,[esp+N]` looks like a source term-order difference
+and is not: **cl 5.0 canonicalizes the operand order of a commutative binary op
+and the source spelling cannot reach it.** Measured on `imul`
+(`CMapMgr::ResetCells` 0x9f5d0 `m_height * m_width` -> `m_width * m_height`, and
+`CNetSession::Tick` 0xbf9e0 `seq * m_period` -> `m_period * seq`) and on `fmul`
+(`CMovingLogic::AdvanceMotion` 0x16ea90, three spellings: `x * k`, `k * x` and
+`x *= k` all emit `fld <k>; fmul <x>`). Every one of the three swaps was
+byte-identical. That retires most of the `operand` bucket: what differs is which
+value is ALREADY in a register, not which term the dev wrote first.
+
+A related shape that also is not what it looks like: a byte-splitting run where
+each side pairs a different `shr` amount with a different store slot
+(`SFManager_SelectBestDevice` 0x0f8970 — `shr eax,0x10 ... mov ds:g+9,al`
+against `shr eax,0x18 ... mov ds:g+0xa,al`). Follow each register through to its
+STORE before reading it as a transposition: both sides put byte N at slot N.
+
 ## Worked example: the memory case, twice, both a whole score
 
 `CSBI_ImageSetAni::Init` 0xe7980, flagged `missing-store [r+0x4c] base 1
