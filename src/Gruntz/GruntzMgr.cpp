@@ -1740,9 +1740,9 @@ void CGruntzMgr::RecomputeViewScale() {
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
     float fw = static_cast<float>(iw);
+    float fh = static_cast<float>(ih);
 
     view->m_rectA.w = static_cast<i32>((fw * 1.4f));
-    float fh = static_cast<float>(ih);
     view->m_rectA.h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
