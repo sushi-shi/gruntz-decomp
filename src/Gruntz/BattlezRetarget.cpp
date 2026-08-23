@@ -57,7 +57,7 @@ RVA(0x000358a0, 0x2d6)
 i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     GruntzPlayer* recA = NULL;
     CBattlezMapConfig* cfgB = NULL;
-    i32 cell = unit->m_arrivalCell.m_x;
+    i32 cell = unit->ArrivalCell().m_x;
     if (cell >= 0 && cell < 4) {
         recA = &m_ctx->m_options[cell];
         cfgB = &recA->m_battlezConfig;
@@ -118,9 +118,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         unit->m_arrivalCell = *none.Set(-1, -1);
         return 1;
     }
-    i32 saved = unit->m_arrivalCell.m_x;
-    static_cast<void>(saved);
-    if (unit->m_arrivalCell.m_y == 1) {
+    if (unit->ArrivalCell().m_y == 1) {
         return 1;
     }
     CGameObject* lvl = unit->m_object;

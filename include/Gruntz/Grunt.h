@@ -228,6 +228,12 @@ public:
         return m_lastTilePx;
     }
 
+    // Same shape; RetargetIdleUnit reads one half at each of its two sites and
+    // leaves the other half's store dead in the frame.
+    Coord ArrivalCell() {
+        return m_arrivalCell;
+    }
+
     i32 CreateHealthSprite();
     i32 CreateToySprite();
     i32 CreateStaminaSprite();
