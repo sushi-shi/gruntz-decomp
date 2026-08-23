@@ -424,6 +424,21 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
     return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
 }
 
+// @early-stop
+// One duplicated call: cl emits the vehicle preview's two LoadCursorSprites in
+// full where retail shares one (both arms `push` the argument and jump to a
+// common `mov ebp,<world>; mov ecx,ebp; call`). Ours differs by one instruction
+// - the true arm materialises world in EBP BEFORE its call while the false arm
+// loads the receiver straight into ECX and reloads EBP after - so the tail
+// matcher correctly declines. Not budget: `inline-model --gap` reports
+// LoadCursorSprites UNDEFINED in this obj, so /Ob1 excludes it at any budget.
+// Open, measured lead: retail reads m_pendingFxKind FIVE times (+0x2a8 at
+// 0x78a93, 0x78b09, the hitFlag preview, the final tail, the vehicle preview)
+// and this body reads it four - the hitFlag preview's else arm should read the
+// member, not `pfk`. Spelling it costs 8 points on its own (90.84 -> 82.54):
+// with both previews reading the member, cl cross-jumps three more arms into
+// shared tails, giving 12 LoadCursorSprites and 13 rets against retail's 14 and
+// 16. Needs a terminator lever at each of those three arms to compose.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
