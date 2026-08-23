@@ -366,7 +366,11 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
         return 0;
     }
 
-    (logicType == TRIGID_TIME_TRIGGER_23 ? m_list2 : m_list1).AddTail(obj);
+    if (logicType == TRIGID_TIME_TRIGGER_23) {
+        m_list2.AddTail(obj);
+    } else {
+        m_list1.AddTail(obj);
+    }
     if (logicType == TRIGID_TILE_TRIGGER_21
         && (tileType == TILEKIND_PYRAMID_LATCH_A || tileType == TILEKIND_PYRAMID_LATCH_B)) {
         m_latchedLeaf = obj;
