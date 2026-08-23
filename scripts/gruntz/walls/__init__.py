@@ -45,6 +45,13 @@
                                   sar<->shr or movsx<->movzx swap name a TYPE.
                                   The only wall class that is a CORRECTNESS
                                   difference (--control fires it on a positive)
+    gruntz walls offsetscan       MEMBER-OFFSET sieve: align the two streams on
+                                  a key that masks the registers, immediates and
+                                  displacements, then read the displacements
+                                  back where the alignment said EQUAL.  Same
+                                  instruction, same position, different field -
+                                  a WRONG MEMBER, the other correctness channel
+                                  beside signscan
     gruntz walls escapescan       ADDRESS-ESCAPE sieve (declined enregistration):
                                   retail materializing a frame address INTO a
                                   call we feed from a register says the source
@@ -150,6 +157,7 @@ _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "jccscan": "gruntz.walls.jccscan",
          "loopscan": "gruntz.walls.loopscan",
          "signscan": "gruntz.walls.signscan",
+         "offsetscan": "gruntz.walls.offsetscan",
          "escapescan": "gruntz.walls.escapescan",
          "reloadscan": "gruntz.walls.reloadscan",
          "valuetemp": "gruntz.walls.valuetemp",

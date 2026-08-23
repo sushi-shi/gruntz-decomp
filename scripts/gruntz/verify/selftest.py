@@ -4737,6 +4737,127 @@ class ArithmeticSignednessControls(unittest.TestCase):
         self.assertTrue(decisive(two, flip))
 
 
+class MemberOffsetControls(unittest.TestCase):
+    """`walls offsetscan` says the two sides name a different FIELD.  Every
+    control here is a measured false positive from building it: the sweep read
+    119 rows before the relocation and scaled-index exclusions, 152 before the
+    order-permutation suppression was widened from a positional window to the
+    aligned run, 53 before the base-register agreement rule and 37 after the
+    suppression stopped keying on the base register."""
+
+    @staticmethod
+    def _bad(ours, theirs, orefs=None, trefs=None):
+        """Both sides are PADDED with `nop`s: a mismatch within EDGE of an
+        aligned run's boundary is suppressed as an alignment slip, so a
+        fixture that starts at the boundary would measure the padding rule
+        rather than the reading under test."""
+        from gruntz.walls.offsetscan import EDGE, mismatches
+        pad = ["nop"] * (EDGE + 1)
+        shift = len(pad)
+        bump = lambda d: {k + shift: v for k, v in (d or {}).items()}
+        bad, _aligned, _total, swapped, _edged = mismatches(
+            _asm_lines(pad + ours + pad, bump(orefs)),
+            _asm_lines(pad + theirs + pad, bump(trefs)))
+        return bad, swapped
+
+    def test_the_same_instruction_reading_a_different_field_fires(self):
+        """The shape that built the sieve: CTriggerMgr::LoadTileArrivalFx read
+        the puddle's gauge award at +0x68 where retail reads +0x64."""
+        ours = ["mov ecx,DWORD PTR [ebx+0x68]", "push ecx", "call 0x0"]
+        retail = ["mov edx,DWORD PTR [ebx+0x64]", "push edx", "call 0x0"]
+        bad, _ = self._bad(ours, retail)
+        self.assertEqual([(m["ours_disp"], m["retail_disp"]) for m in bad],
+                         [(0x68, 0x64)])
+
+    def test_a_base_subobject_copy_of_the_same_pointer_fires(self):
+        """The other half of that row: CUserLogic::m_object at +0x10 against
+        CWapX::m_wwdObject at +0x38.  They hold the same pointer, so nothing
+        misbehaves and only the displacement shows it."""
+        bad, _ = self._bad(["mov ebx,DWORD PTR [ebx+0x10]"],
+                           ["mov ebx,DWORD PTR [ebx+0x38]"])
+        self.assertEqual(len(bad), 1)
+
+    def test_a_rotated_register_at_the_same_field_is_silent(self):
+        bad, _ = self._bad(["mov ecx,DWORD PTR [ebx+0x64]"],
+                           ["mov edx,DWORD PTR [ebx+0x64]"])
+        self.assertEqual(bad, [])
+
+    def test_two_accesses_in_the_opposite_order_are_suppressed(self):
+        """Both sides touch BOTH fields, so the aligner paired them crosswise:
+        a schedule question, storescan's channel, not a wrong member."""
+        ours = ["mov eax,DWORD PTR [ebx+0x5c]", "mov edx,DWORD PTR [ebx+0x60]"]
+        retail = ["mov eax,DWORD PTR [ebx+0x60]", "mov edx,DWORD PTR [ebx+0x5c]"]
+        bad, swapped = self._bad(ours, retail)
+        self.assertEqual(bad, [])
+        self.assertEqual(swapped, 2)
+
+    def test_the_suppression_ignores_the_base_register(self):
+        """The permutation partner is often reached through a register the
+        allocator rotated, so keying the suppression on (base, disp) asks a
+        question about allocation instead of about the field."""
+        ours = ["mov eax,DWORD PTR [ecx+0x5c]", "mov edx,DWORD PTR [ecx+0x60]"]
+        retail = ["mov eax,DWORD PTR [ecx+0x60]", "mov edx,DWORD PTR [eax+0x5c]"]
+        bad, _ = self._bad(ours, retail)
+        self.assertEqual(bad, [])
+
+    def test_different_base_registers_are_not_comparable(self):
+        bad, _ = self._bad(["mov ecx,DWORD PTR [esi+0x22c]"],
+                           ["mov ecx,DWORD PTR [eax+0x8]"])
+        self.assertEqual(bad, [])
+
+    def test_a_frame_slot_is_not_a_field(self):
+        bad, _ = self._bad(["mov eax,DWORD PTR [esp+0x10]"],
+                           ["mov eax,DWORD PTR [esp+0x18]"])
+        self.assertEqual(bad, [])
+
+    def test_ebp_is_a_field_without_a_frame_and_a_slot_with_one(self):
+        """/O2 omits the frame pointer in 669 of 671 retail bodies, so in a
+        frameless body `[ebp+N]` is a heap field."""
+        bad, _ = self._bad(["mov eax,DWORD PTR [ebp+0x10]"],
+                           ["mov eax,DWORD PTR [ebp+0x18]"])
+        self.assertEqual(len(bad), 1)
+        framed_ours = ["mov eax,DWORD PTR [ebp+0x10]"]
+        framed_retail = ["mov eax,DWORD PTR [ebp+0x18]"]
+        from gruntz.walls.offsetscan import EDGE, mismatches
+        prologue = ["push ebp", "mov ebp,esp"] + ["nop"] * (EDGE + 1)
+        bad, _a, _t, _s, _e = mismatches(
+            _asm_lines(prologue + framed_ours + ["nop"] * (EDGE + 1)),
+            _asm_lines(prologue + framed_retail + ["nop"] * (EDGE + 1)))
+        self.assertEqual(bad, [])
+
+    def test_a_relocated_operand_is_a_link_time_address(self):
+        """`mov cl,BYTE PTR [eax+<index table>]` - the displacement is the
+        table's address, which objdiff masks and the referent channel owns."""
+        bad, _ = self._bad(["mov cl,BYTE PTR [eax+0x126c]"],
+                           ["mov cl,BYTE PTR [eax+0x1348]"],
+                           orefs={0: "$L1"}, trefs={0: "$L1"})
+        self.assertEqual(bad, [])
+
+    def test_a_scaled_index_off_an_absolute_address_is_not_a_field(self):
+        bad, _ = self._bad(["mov eax,DWORD PTR [ecx*4+0x127c]"],
+                           ["mov eax,DWORD PTR [ecx*4+0x1358]"])
+        self.assertEqual(bad, [])
+
+    def test_an_indirect_jump_through_a_table_is_not_a_field(self):
+        bad, _ = self._bad(["jmp DWORD PTR [ecx+0x127c]"],
+                           ["jmp DWORD PTR [ecx+0x1358]"])
+        self.assertEqual(bad, [])
+
+    def test_a_clearing_run_reads_as_a_set_question_not_a_field_one(self):
+        """A run of literally identical stores carries no information about
+        which store pairs with which, so the alignment zips two lists.  The
+        real question is which FIELDS each side clears."""
+        from gruntz.walls.offsetscan import EDGE, kind, mismatches
+        pad = ["nop"] * (EDGE + 1)
+        ours = pad + [f"mov DWORD PTR [esi+{off:#x}],edi"
+                      for off in range(0x1b8, 0x1b8 + 6 * 4, 4)] + pad
+        retail = pad + [f"mov DWORD PTR [esi+{off:#x}],edi"
+                        for off in range(0x810, 0x810 + 6 * 4, 4)] + pad
+        bad, _a, _t, _s, _e = mismatches(_asm_lines(ours), _asm_lines(retail))
+        self.assertEqual(kind(bad), "run")
+        self.assertEqual(kind([]), "clean")
+
+
 class AddressEscapeControls(unittest.TestCase):
     """`walls escapescan` says our source is missing an `&`.  Every control
     here is a measured FALSE POSITIVE from building it: the census read 51
