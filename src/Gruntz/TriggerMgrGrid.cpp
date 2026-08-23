@@ -1276,9 +1276,12 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 1;
     }
 
-    if ((hit->m_lastTilePx.m_x != bx || hit->m_lastTilePx.m_y != by)
-        && (hit->m_commitPx.m_x != bx || hit->m_commitPx.m_y != by)) {
-        return 0;
+    Coord hitTile = hit->m_lastTilePx;
+    if (hitTile.m_x != bx || hitTile.m_y != by) {
+        Coord hitCommit = hit->m_commitPx;
+        if (hitCommit.m_x != bx || hitCommit.m_y != by) {
+            return 0;
+        }
     }
 
     // Retail holds each strcmp result in a `bool` before testing it (`sete cl /
