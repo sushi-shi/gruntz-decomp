@@ -282,9 +282,8 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 }
 
 // @early-stop
-// one register copy at the Unlock tail: retail re-uses esi (`mov esi,edi`) for
-// the m_surface deref, ours picks edx (and ecx/edx swap in the vtbl dispatch).
-// 200 generated variants and the fast permuter are flat; regalloc coin.
+// Register-rotation cursor phase at the Unlock tail; the streams are otherwise
+// identical (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {

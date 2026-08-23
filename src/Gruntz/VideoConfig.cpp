@@ -238,8 +238,8 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 }
 
 // @early-stop
-// Same one-scratch-register rotation as SaveVideoCheckboxes (ecx vs edx on the
-// g_gameReg re-read).
+// Register-rotation cursor phase on the g_gameReg re-read, as SaveVideoCheckboxes
+// (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
     if (g_gameReg == NULL) {

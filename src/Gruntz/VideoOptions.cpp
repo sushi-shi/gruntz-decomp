@@ -46,9 +46,8 @@ void DialogInit(HWND hDlg) {
 }
 
 // @early-stop
-// One scratch register: retail reuses ecx for the second g_gameReg re-read where cl
-// rotates to edx. Named locals for the results, one reused local, and the TU-state
-// probe all leave it unchanged.
+// Register-rotation cursor phase on the second g_gameReg re-read; the streams are
+// otherwise identical (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == NULL) {
