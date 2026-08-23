@@ -16,22 +16,32 @@ names — and naming what survives.
 
 ## The census
 
-| kind | rows | what it means |
-|---|---:|---|
-| `regname` | 149 | register rotation only |
-| `displacement` | 84 | a member offset differs |
-| `immediate` | 74 | a constant differs |
-| `selection` | 67 | the mnemonic multiset differs |
-| `schedule` | 36 | a pure permutation |
-| `operand` | 32 | same mnemonics, different operands |
-| `arm-copy` | 30 | retail has callee-saved `mov r,r` the base lacks |
-| `extra-copy` | 13 | the inverse |
-| `referent` | 15 | a relocation names another symbol |
-| `none` | 5 | nothing survives the mask |
+The first census (left column) was taken before four of the mirrors below were
+normalized; the right column is the same 505 rows after. Every row that moved
+moved from an actionable bucket into a coin bucket, and each move was
+adjudicated by hand against the retail bytes first.
 
-**185 of 505 (37%) are `regname` + `schedule` + `none`** — nothing a source edit
-reaches. Restricted to residual <= 4 the coin share is 72/117 (62%): the closer a
-row is, the more likely the remainder is a coin. Rank by KIND, not by residual.
+| kind | first | now | what it means |
+|---|---:|---:|---|
+| `regname` | 148 | 153 | register rotation only |
+| `displacement` | 84 | 75 | a member offset differs |
+| `selection` | 66 | 77 | the mnemonic multiset differs |
+| `immediate` | 75 | 72 | a constant differs |
+| `schedule` | 36 | 36 | a pure permutation |
+| `operand` | 32 | 32 | same mnemonics, different operands |
+| `arm-copy` | 30 | 30 | retail has callee-saved `mov r,r` the base lacks |
+| `none` | 6 | 15 | nothing survives the mask |
+| `extra-copy` | 13 | 13 | the inverse of `arm-copy` |
+| `referent` | 15 | **2** | one side names a symbol the other never names |
+
+**204 of 505 (40%) are `regname` + `schedule` + `none`** — nothing a source edit
+reaches. Restricted to residual <= 4 the coin share is 62%: the closer a row is,
+the more likely the remainder is a coin. Rank by KIND, not by residual.
+
+**The `referent` bucket is DRAINED**: 15 rows down to 2, and both survivors are
+the `.rdata` section-hash artifact of §6. Thirteen were false positives (§8, §9)
+and one was a real defect — the only wrong claim in the whole bucket, and it was
+in the MODEL rather than the C++ (§ below).
 
 **The arm-result-temp defect is 43 rows (30 + 13)** measured on the diff chunks,
 and the direct whole-stream screen (`--arm`) finds 78 rows whose member-store
@@ -40,8 +50,9 @@ both are steerable — see the worked examples below.
 
 ## The false positives, i.e. what a raw diff calls a difference and is not
 
-Each of these was measured mislabelling real rows; the tool normalizes the first
-four and cannot normalize the last two.
+Each of these was measured mislabelling real rows. The tool normalizes §1-4 and
+§8-11; §5-7 and §12-13 it cannot see, so apply them by hand before calling a row
+a bug.
 
 **1. A relocated call's addend.** `call 0xe4` vs `call 0xe0` against the same
 `|?GetAt@CStringArray@@...` referent is position state — anything inserted above
@@ -92,6 +103,58 @@ each side pairs a different `shr` amount with a different store slot
 against `shr eax,0x18 ... mov ds:g+0xa,al`). Follow each register through to its
 STORE before reading it as a transposition: both sides put byte N at slot N.
 
+**8. A `$E` dynamic-init helper, under two non-names.** `push 0x0|$anon_data_
+<sha>_0` against `push 0x0|FUN_004183b0` is ONE address that NEITHER side has a
+name for: objdiff names our obj's unnamed symbol by content hash, and the
+delinker, with no channel claiming the address, prints `FUN_<va>`. Every one is
+the `atexit` registration of a function-local static's destructor — which the
+label rules deliberately never name, because `_$E<n>`'s suffix is emission-order
+state. **This was ELEVEN of the fifteen `referent` rows** (`CBattlezDlgCustom::
+DoDataExchange`, five `CButeMgr` getters, both `CImage::RenderFrame*`,
+`CDDrawChildGroup::TickKillCues`, `CWarlord::NotifyFortUnderAttack`). Confirm by
+`gruntz sema rva <target addr>`: the row reads `src_dyninit <owner>` as a losing
+claim. Now normalized to `?unnamed`.
+
+**9. A referent COUNT difference on a symbol both sides name.** Retail reads
+`g_gameReg` twice back-to-back where cl keeps one copy
+(`CTriggerMgr::LoadGruntResurrectTuning` 0x7be60: `mov ecx,ds:g_gameReg; mov
+edx,ds:g_gameReg`), and retail reads `g_p01` five times inside the k-loop where
+cl hoists it (`CShadeTableCache::FlashTable` 0x14df40). That is CSE and
+rematerialization, not identity: **both sides NAME the symbol.** The test now
+compares symbol SETS over the whole stream, so only a symbol the other side
+never names anywhere is reported.
+
+**10. The forced zero displacement.** `[ebp+0x0]` addresses what `[ecx]`
+addresses — EBP as a ModRM base cannot encode without a displacement byte, and
+neither can a scaled index with no base (`lea edi,[ebp*8+0x0]`). Register-
+stripping erases which base register it was, so the forced zero read as a member
+offset. **About a quarter of the `displacement` bucket was this one encoding**
+(`CGrunt::BeginAttack`, three `CImage::Blit*`, `CKitchenSlime::LoadSprites`'s
+`lea ecx,[ecx+0x0]` 3-byte NOP, `CRezImage::DecodePcxData`, ...). Now folded in
+`reg_key`, where the register choice is already what is being erased.
+
+**11. `add r,-K` against `sub r,K`.** Same value, same three bytes, and cl picks
+between them on its own: measured going BOTH ways against retail in one tree
+(`CSpotLight::CSpotLight` 0xb1200 has `add eax,0xffffffe0` where retail has `sub
+eax,0x20`; `CStaticHazard::CStaticHazard` 0xfb7a0 has `sub ecx,0x7` twice where
+retail has `add ecx,0xfffffff9`). Bidirectional, so it is not even a source
+lever. Now mirrored.
+
+**12. A sub-object base pointer against a flat offset.** `mov ecx,[esi+0x38];
+add ecx,0x1a0; mov eax,[ecx+0x28]` against `mov eax,[esi+0x38]; lea ecx,[eax+
+0x1a0]; mov eax,[eax+0x1c8]` — 0x1a0 + 0x28 == 0x1c8, the SAME field. The tool
+cannot normalize this (register-stripping cannot prove the sum), so do the
+arithmetic: `CMenuSparkle::AdvanceAnim` 0xae2a0 and `CStaticHazard`'s
+`[eax+0x1cc]` vs `add eax,0x1a0; [eax+0x2c]` are both this.
+
+**13. cl folding a parameter inside the arm that tested it.** `CPlay::
+LoadCursorSprites` 0xd0120 stores `mov [esi+0x2f8],0x66` where retail stores the
+`frame` PARAMETER — because that arm is guarded by `cursor == CURSOR_FLAILING
+GRUNT`, and `CURSOR_FLAILINGGRUNT` is 0x66. The store is semantically identical;
+what differs is that retail's arms share one `m_levelId = frame; return 1;`
+tail, so `frame` is not a known constant there. Before reading a base-only
+constant as a wrong value, check whether it EQUALS the arm's own guard.
+
 ## Worked example: the memory case, twice, both a whole score
 
 `CSBI_ImageSetAni::Init` 0xe7980, flagged `missing-store [r+0x4c] base 1
@@ -112,6 +175,25 @@ function's body for a member-assigning ternary. Over the 62 memory-case rows in
 the todo queue only 3 carried one, so the population is small — but each is
 worth double digits.
 
+## Worked example: the one real defect, and it was in the MODEL
+
+`CButeMgr::Save` 0x171640 read `referent`: our obj calls
+`??1strstream@@UAE@XZ`, the delinked target calls `??1iostream@@UAE@XZ`. The C++
+was right — `strstream source(...)` IS a stack local there — and the LABEL was
+wrong. 0x169be0 is 0x20 bytes that write `??_7strstream@@6B@` (0x5f0394) into the
+virtual `ios` base and then tail-`jmp` the real `??1iostream` at 0x16c950, which
+is separately anchored HIGH; its scalar-deleting caller 0x169aa0 runs the same
+vbase teardown; and it is the exact structural twin of `??1istrstream` (0x1697c0,
+stamps 0x5f0374, tails `??1istream`) and `??1ostrstream` (0x1699c0, stamps
+0x5f0384, tails `??1ostream`), both already labelled with that very note.
+
+`config/retail/functions_static_libs.tsv` carried BOTH names on the row, and
+`gruntz.model.pick` breaks a same-channel tie alphabetically, so `??1iostream`
+won and the correct `??1strstream` sat as its alias. Dropping the wrong row is
+the whole fix. **The signature to reuse: a `referent` row whose two names are a
+DERIVED class and its BASE is a FID ambiguity, not a source bug — read
+`gruntz sema rva` for a losing claim on the same address before touching C++.**
+
 ## Reading it
 
     gruntz walls residue --todo                     the census
@@ -122,3 +204,9 @@ worth double digits.
 A row that lands in `regname`, `schedule` or `none` is PARKED: its source is not
 what differs. A row in `immediate`, `displacement` or `referent` gets the
 false-positive list above applied by hand before it is called a bug.
+
+The hit rate is the thing to plan around: **forty rows of the three actionable
+buckets were adjudicated against the retail bytes and ONE was a defect** — and
+that one was a label, not C++. The bucket's value is not that it finds many
+bugs; it is that a row it clears is a row nobody needs to open again, so every
+false positive removed from it is worth more than another pass over it.
