@@ -185,7 +185,11 @@ def jumps_an_epilogue(lines, addr, tgt) -> bool:
     it is stepping past a block cl merely placed there, which is layout.  Note
     the exit can be duplicated without the source asking for it - cl also
     clones a shared `goto` target - so this locates the question, it does not
-    answer it."""
+    answer it.
+
+    Only ever ask this of the NEARER of the two jumps.  A long forward branch
+    crosses most of the function and will clear a `ret` whatever it is doing,
+    so testing the far side reports a hit on every row."""
     if not (addr < tgt):
         return False
     return any(x.asm.startswith("ret") for x in lines if addr < x.addr < tgt)
@@ -211,9 +215,13 @@ def first_flip(base, target, self_name):
         if ob[k][0] != rb[k][0]:
             om, oa, ot = ob[k]
             rm, ra, rt = rb[k]
+            # Only the NEARER jump's span is a meaningful test: a long forward
+            # branch passes over most of the function and will find a `ret`
+            # whatever it is doing.
+            near_ours = abs(ot - oa) <= abs(rt - ra)
             return (k, ob[k], rb[k],
-                    jumps_an_epilogue(o, oa, ot),
-                    jumps_an_epilogue(t, ra, rt))
+                    near_ours and jumps_an_epilogue(o, oa, ot),
+                    (not near_ours) and jumps_an_epilogue(t, ra, rt))
     return None
 
 
