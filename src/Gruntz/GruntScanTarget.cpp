@@ -167,7 +167,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (pa <= pb
                         && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
                                != 0) {
-                        COMMIT_GRUNT_NEIGHBOR_COPY(best, bestTile);
+                        COMMIT_GRUNT_NEIGHBOR(best);
                         return 1;
                     }
                 }
@@ -279,7 +279,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
                         return 1;
                     }
-                    COMMIT_GRUNT_NEIGHBOR_COPY(sg, sgTile);
+                    COMMIT_GRUNT_NEIGHBOR(sg);
                     m_defenderState = AISTATE_ATTACK;
                     return 1;
                 }
@@ -310,7 +310,7 @@ i32 CGrunt::ScanNearestTarget() {
                         if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
                                 != 0
                             && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
-                            COMMIT_GRUNT_NEIGHBOR_COPY(sg, sgTile);
+                            COMMIT_GRUNT_NEIGHBOR(sg);
                             return 1;
                         }
                     }

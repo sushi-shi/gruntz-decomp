@@ -99,7 +99,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 }
                 if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                     && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
-                    COMMIT_GRUNT_NEIGHBOR_COPY(o, tile);
+                    COMMIT_GRUNT_NEIGHBOR(o);
                     return 1;
                 }
             }
@@ -202,7 +202,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (o->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, o)) {
                 goto tail;
             }
-            COMMIT_GRUNT_NEIGHBOR_COPY(o, tile);
+            COMMIT_GRUNT_NEIGHBOR(o);
             m_defenderState = AISTATE_ATTACK;
             return 1;
         }
@@ -231,7 +231,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             }
             if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
-                COMMIT_GRUNT_NEIGHBOR_COPY(o, tile);
+                COMMIT_GRUNT_NEIGHBOR(o);
                 m_defenderState = AISTATE_ATTACK;
             }
             if (GruntInRadius(o->m_tileOwnerHi, o->m_tileOwnerLo) == 0) {

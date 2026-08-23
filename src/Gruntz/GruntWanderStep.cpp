@@ -87,7 +87,7 @@ i32 CGrunt::WanderStep() {
             if (g != NULL) {
                 if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
                     && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                    COMMIT_GRUNT_NEIGHBOR_COPY(g, cp);
+                    COMMIT_GRUNT_NEIGHBOR(g);
                     m_neighborScanEnabled = 0;
                     RecycleGruntCoords(this);
                     m_defenderState = AISTATE_RETREAT;
@@ -157,7 +157,7 @@ i32 CGrunt::WanderStep() {
             if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
                 return 1;
             }
-            COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
+            COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = 0;
             RecycleGruntCoords(this);
             m_defenderState = AISTATE_RETREAT;
@@ -192,7 +192,7 @@ i32 CGrunt::WanderStep() {
             if (slot->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, slot)) {
                 goto ph1;
             }
-            COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
+            COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)

@@ -87,6 +87,6 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
         return 1;
     }
-    COMMIT_GRUNT_NEIGHBOR_COPY(occ, tile);
+    COMMIT_GRUNT_NEIGHBOR(occ);
     return 1;
 }

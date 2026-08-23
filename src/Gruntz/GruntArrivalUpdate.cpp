@@ -118,7 +118,7 @@ i32 CGrunt::UpdateArrival() {
                     i32 x = g->m_object->m_screenX;
                     if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
                         && RectContains(x, g->m_object->m_screenY) != 0) {
-                        COMMIT_GRUNT_NEIGHBOR_COPY(g, cp);
+                        COMMIT_GRUNT_NEIGHBOR(g);
                         break;
                     }
                 }
@@ -202,7 +202,7 @@ i32 CGrunt::UpdateArrival() {
                     if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
+                        COMMIT_GRUNT_NEIGHBOR(slot);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
                 }
@@ -230,7 +230,7 @@ i32 CGrunt::UpdateArrival() {
                     }
                     if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR_COPY(slot, cp);
+                        COMMIT_GRUNT_NEIGHBOR(slot);
                         break;
                     }
                 }

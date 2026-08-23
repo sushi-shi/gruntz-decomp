@@ -34,17 +34,18 @@
 #define PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, savedX, savedY)                                 \
     pixelX != savedX || pixelY != savedY
 
+// The two LastTilePx() calls are load-bearing, not style: each materialises a
+// by-value Coord temp whose read half cl folds back into a member re-load and
+// whose unread half's store is emitted dead, which is retail's 8-byte frame home
+// at every one of these sites.  A named `Coord c = target->m_lastTilePx;` copy is
+// eliminated by C2 instead, and the home disappears.
 #define COMMIT_GRUNT_NEIGHBOR(target)                                                              \
     CommitNeighbor(                                                                                \
         target->m_tileOwnerHi,                                                                     \
         target->m_tileOwnerLo,                                                                     \
-        target->m_lastTilePx.m_x,                                                                  \
-        target->m_lastTilePx.m_y                                                                   \
+        target->LastTilePx().m_x,                                                                  \
+        target->LastTilePx().m_y                                                                   \
     )
-
-#define COMMIT_GRUNT_NEIGHBOR_COPY(target, coord)                                                  \
-    Coord coord = target->m_lastTilePx;                                                            \
-    CommitNeighbor(target->m_tileOwnerHi, target->m_tileOwnerLo, coord.m_x, coord.m_y)
 
 #define COPY_LAST_TILE_TO_DEFENDER                                                                 \
     m_defenderPx.m_x = m_lastTilePx.m_x;                                                           \

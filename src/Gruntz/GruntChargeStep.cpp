@@ -106,7 +106,7 @@ i32 CGrunt::ChargeStep() {
                     CGameObject* gp = g->m_object;
                     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
-                        COMMIT_GRUNT_NEIGHBOR_COPY(g, cp);
+                        COMMIT_GRUNT_NEIGHBOR(g);
                         return 1;
                     }
                 }
@@ -183,7 +183,7 @@ i32 CGrunt::ChargeStep() {
             if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {
-                COMMIT_GRUNT_NEIGHBOR_COPY(t, cp);
+                COMMIT_GRUNT_NEIGHBOR(t);
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
@@ -208,7 +208,7 @@ i32 CGrunt::ChargeStep() {
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                COMMIT_GRUNT_NEIGHBOR_COPY(t, cp);
+                COMMIT_GRUNT_NEIGHBOR(t);
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;
