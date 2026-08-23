@@ -59,7 +59,14 @@
                                   positional sieves only see stamps their
                                   alignment paired and a wrong subobject offset
                                   moves two bytes. The third correctness
-                                  channel beside signscan and offsetscan
+                                  channel beside signscan and offsetscan.
+                                  `--slots` is the companion reading: which
+                                  vtable SLOT each `call [reg+N]` dispatches
+                                  through - the stamp says the object claims
+                                  the right class, the slot says the call
+                                  reaches the right method of it, and
+                                  offsetscan drops every call/jmp line by
+                                  construction
     gruntz walls aggscan          BY-VALUE AGGREGATE ARGUMENT sieve: cl 5.0
                                   hands a block wider than a register by
                                   opening a hole (`sub esp,N` + `mov reg,esp`

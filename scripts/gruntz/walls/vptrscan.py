@@ -60,7 +60,19 @@ extra `CGruntCoordList` in `CGrunt`'s ctor, an extra `CRgn` in
 `CDDrawWorkerHost::RebuildPlanes`, and a `CResolveNode` retail stamps in
 `~CWwdGameObject` that we do not.
 
+THE COMPANION READING, `--slots`. The stamp says the object claims the right
+class; the SLOT says the call reaches the right method of it. A virtual
+dispatch is `call DWORD PTR [reg+N]` and N is the slot index times four, so a
+wrong N calls a different virtual function - and `offsetscan` drops every
+`call`/`jmp` line by construction (it is excluding the switch table), so
+nothing reads it either. Measured 2026-08-23: 4433 dispatches ours against
+4434 retail over 44 distinct slot displacements, 28 rows whose multiset
+differs and ZERO of those at the same COUNT, so no site in the tree dispatches
+through a different slot than retail. The 22 rows whose slot SET also differs
+are leads inside a call-count divergence, not adjudicated defects.
+
     gruntz walls vptrscan [--all] [--json]
+    gruntz walls vptrscan --slots [--all]
     gruntz walls vptrscan --control    hermetic positives, negatives, and the
                                        backwards run over the live image
 """
@@ -332,6 +344,165 @@ def report(res, show_all: bool) -> None:
             print(f"    retail {[(hex(s[1]), s[3]) for s in r['retail']]}")
 
 
+#: a vtable slot is a pointer index, so its displacement is a multiple of 4,
+#: and no class in the image has a vtable anywhere near this long. Both bounds
+#: exist because this is a BYTE scan: `ff` occurs inside other instructions'
+#: operands, and an unfiltered sweep read `call [reg+83]` and `call
+#: [reg+0x90909090]` as slots and reported three same-count "defects" that were
+#: all misalignments.
+MAX_SLOT = 0x400
+
+
+def dispatches(payload: bytes, lo: int, hi: int, relocs: set, frame: set):
+    """[(offset, 'call'|'jmp', base, slot displacement)] in one function.
+
+    `FF /2` is `call r/m32` and `FF /4` is `jmp r/m32`; `mod == 3` is a
+    register operand (`call eax`, no slot), a disp32 carrying a RELOCATION is a
+    global or an import thunk rather than a vtable, and a frame-relative base
+    is a stack slot.
+    """
+    out = []
+    i = lo
+    while i < hi - 1:
+        if payload[i] != 0xFF:
+            i += 1
+            continue
+        modrm = payload[i + 1]
+        mod, reg, rm = modrm >> 6, (modrm >> 3) & 7, modrm & 7
+        if reg not in (2, 4) or mod == 3:
+            i += 1
+            continue
+        p, base, ok = i + 2, None, True
+        if rm == 4:
+            sib = payload[p] if p < hi else 0
+            p += 1
+            bs = sib & 7
+            base = None if (bs == 5 and mod == 0) else REGS[bs]
+        elif rm == 5 and mod == 0:
+            base = None
+        else:
+            base = REGS[rm]
+        disp = 0
+        if mod == 1:
+            disp = payload[p]
+            p += 1
+        elif mod == 2 or base is None:
+            if p + 4 > hi or p in relocs:
+                ok = False
+            else:
+                disp = int.from_bytes(payload[p:p + 4], "little")
+            p += 4
+        if ok and base is not None and base not in frame \
+                and disp % 4 == 0 and disp < MAX_SLOT:
+            out.append((i - lo, "call" if reg == 2 else "jmp", base, disp))
+        i = p
+    return out
+
+
+def _slots_obj(path: Path):
+    obj = Obj(path)
+    out, defined = {}, set()
+    for secnum in range(1, obj.nsec + 1):
+        if not (obj.section_table[secnum - 1]["characteristics"] & 0x20):
+            continue
+        payload = obj.section_payload(secnum)
+        if not payload:
+            continue
+        rel = set(obj.typed_relocations(secnum))
+        members = sorted((v, n) for v, n, _s in obj.section_members(secnum))
+        defined.update(n for _v, n in members)
+        offs = [v for v, _n in members]
+        for i, (v, name) in enumerate(members):
+            end = offs[i + 1] if i + 1 < len(offs) else len(payload)
+            d = dispatches(payload, v, end, rel, frame_bases(payload, v))
+            if d:
+                out[name] = d
+    return out, defined
+
+
+def slot_sweep(root: Path | None = None):
+    acc = {}
+    defs = {}
+    for side in ("base", "target"):
+        a, d = {}, {}
+        for path in sorted(((root or NORM) / side).glob("*.obj")):
+            unit = path.name.split(".")[0]
+            st, dd = _slots_obj(path)
+            d[unit] = dd
+            for fn, v in st.items():
+                a[(unit, fn)] = v
+        acc[side], defs[side] = a, d
+    both = {(u, n) for u, ns in defs["base"].items() for n in ns
+            if n in defs["target"].get(u, ())}
+    rows = []
+    for k in sorted(both):
+        o = Counter((s[1], s[3]) for s in acc["base"].get(k, ()))
+        r = Counter((s[1], s[3]) for s in acc["target"].get(k, ()))
+        if o == r:
+            continue
+        rows.append({"unit": k[0], "symbol": k[1], "ours": o, "retail": r,
+                     "same_count": sum(o.values()) == sum(r.values()),
+                     "ours_only": sorted(set(o) - set(r)),
+                     "retail_only": sorted(set(r) - set(o))})
+    return {"ours": acc["base"], "retail": acc["target"], "both": both,
+            "rows": rows}
+
+
+def slot_report(res, show_all: bool) -> None:
+    both = res["both"]
+    no = sum(len(v) for k, v in res["ours"].items() if k in both)
+    nr = sum(len(v) for k, v in res["retail"].items() if k in both)
+    hist = Counter(s[3] for k, v in res["ours"].items() if k in both
+                   for s in v)
+    print(f"indirect vtable dispatches : ours {no}, retail {nr}")
+    print(f"  distinct slot displacements: {len(hist)}, deepest "
+          f"+0x{max(hist):x} (slot {max(hist) // 4})")
+    adjudicated = [r for r in res["rows"] if r["same_count"]]
+    setdiff = [r for r in res["rows"] if not r["same_count"]
+               and (r["ours_only"] or r["retail_only"])]
+    print(f"rows whose slot multiset differs : {len(res['rows'])}")
+    print(f"  at the SAME COUNT - a slot MOVED : {len(adjudicated)}")
+    print(f"  a slot one side never uses, inside a call-COUNT divergence: "
+          f"{len(setdiff)}   (leads, not defects)")
+    for r in adjudicated:
+        print(f"\n  {r['unit']}/{r['symbol'][:60]}")
+        print(f"    ours   {sorted(r['ours'].elements())}")
+        print(f"    retail {sorted(r['retail'].elements())}")
+    if show_all:
+        for r in setdiff:
+            print(f"  {r['unit']}/{r['symbol'][:56]}  ours-only "
+                  f"{r['ours_only']} retail-only {r['retail_only']}")
+
+
+def _hermetic_slots() -> int:
+    """A moved slot, and the three shapes a byte scan must not read as one."""
+    mk = lambda hx: dispatches(bytes.fromhex(hx), 0, len(bytes.fromhex(hx)),
+                               set(), {"esp"})
+    bad = 0
+    cases = [
+        ("moved", "8b01ff502c", [0x2c],
+         "POSITIVE: `mov eax,[ecx] / call DWORD PTR [eax+0x2c]` is slot 11; "
+         "one byte says which virtual function runs"),
+        ("register", "ffd0", [],
+         "NEGATIVE: `call eax` has no slot"),
+        ("odd", "ff5053", [],
+         "NEGATIVE: `ff 50 53` decodes as `call [eax+0x53]`, and a slot is a "
+         "pointer index - the multiple-of-4 bound is what removes the byte "
+         "scan's misalignments"),
+        ("absolute", "ff15aabbccdd", [],
+         "NEGATIVE: `call DWORD PTR ds:0x...` is an import or a global, not a "
+         "dispatch off an object"),
+    ]
+    for tag, hx, want, why in cases:
+        got = [d[3] for d in mk(hx)]
+        ok = got == want
+        print(f"{'FIRES ' if got else 'SILENT'} slots-{tag:<9s} "
+              f"{'ok' if ok else f'got {got}, want {want}'}")
+        print(f"      {why}")
+        bad += 0 if ok else 1
+    return bad
+
+
 def _hermetic() -> int:
     """The two defect kinds and their negatives, on synthesized bytes.
 
@@ -478,7 +649,7 @@ def control() -> int:
     symmetric statement about two byte streams, and a sieve that answers
     differently in one direction is reading its own asymmetry.
     """
-    bad = _hermetic() + _injected()
+    bad = _hermetic() + _injected() + _hermetic_slots()
     res = sweep()
     fwd = (res["offset_defects"], res["vtable_defects"])
     back = compare(res["retail"], res["ours"], res["both"])[2:]
@@ -502,6 +673,17 @@ def control() -> int:
           "non-trivial: the wrong-subobject question needs stamps that are "
           "NOT all at +0")
     bad += 0 if split else 1
+
+    sl = slot_sweep()
+    moved = [r for r in sl["rows"] if r["same_count"]]
+    n = sum(len(v) for k, v in sl["ours"].items() if k in sl["both"])
+    depth = {s[3] for k, v in sl["ours"].items() if k in sl["both"] for s in v}
+    print(f"{'SILENT' if not moved else 'FIRES '} live-slots     "
+          f"{len(moved)} slot(s) moved at the same call count, over {n} "
+          f"dispatches in {len(depth)} distinct slots")
+    print("      the companion reading: the stamp says the object claims the "
+          "right class, the slot says the call reaches the right method of it")
+    bad += 0 if (n >= 1000 and len(depth) >= 10) else 1
     if bad:
         print("\na control changed verdict: the image moved or the detector "
               "did - read it before trusting the sweep")
@@ -513,12 +695,18 @@ def main(argv=None) -> int:
                                  description=__doc__.split("\n\n")[0])
     ap.add_argument("--all", action="store_true",
                     help="also list the rows that differ only in stamp COUNT")
+    ap.add_argument("--slots", action="store_true",
+                    help="the companion reading: which vtable SLOT each "
+                         "indirect dispatch calls")
     ap.add_argument("--control", action="store_true",
                     help="hermetic positives, negatives, and the backwards run")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     if args.control:
         return control()
+    if args.slots:
+        slot_report(slot_sweep(), args.all)
+        return 0
     res = sweep()
     if args.json:
         json.dump({"rows": res["rows"], "aligned": res["aligned"],

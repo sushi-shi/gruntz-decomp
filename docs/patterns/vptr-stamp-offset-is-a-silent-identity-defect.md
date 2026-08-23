@@ -64,3 +64,21 @@ with each paired stamp at the same offset naming the same vtable: an extra
 Re-run the sieve after any inheritance or member-layout change; it costs a second.
 A frame-relative stamp (`[esp+N]`, a stack-constructed object) is a slot number rather
 than a subobject offset and belongs to `framescan`.
+
+## The companion reading: `vptrscan --slots`
+
+The stamp says the object claims the right class; the SLOT says the call reaches the
+right method of it. A virtual dispatch is `call DWORD PTR [reg+N]` where N is the slot
+index times four, so a wrong N calls a different virtual function - and `offsetscan`
+drops every `call`/`jmp` line by construction (it is excluding the switch table), so
+nothing read that either. Same byte-level reading, same shape of answer: 4433
+dispatches ours against 4434 retail over 44 distinct slot displacements (deepest
++0xe8 = slot 58), 28 rows whose multiset differs and **zero of those at the same call
+COUNT**, so no site in the tree dispatches through a different slot than retail. The
+22 rows whose slot SET also differs are leads inside a call-count divergence rather
+than adjudicated defects.
+
+Two bounds the byte scan needs, both measured: a slot displacement is a pointer index,
+so it is a multiple of 4 and far below a vtable's length. Unfiltered, `ff` occurring
+inside another instruction's operand read `call [reg+83]` and `call [reg+0x90909090]`
+as slots and produced three same-count "defects" that were every one a misalignment.

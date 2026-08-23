@@ -191,19 +191,16 @@ LoadableClassId CWwdGameObject::GetClassId() {
 
 RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 // @early-stop
-// BROKEN 2026-08-17 from 71.54 by deleting WORKER_FREE's do{...}while(0)
-// wrapper: the wrapper's C1-only statement mass priced CGameObject::Unload out
-// of the ~CGameObject sub-object site's /Ob1 budget, cascading the whole tail
-// (docs/patterns/dowhile-macro-c1-mass-prices-out-the-inline-site.md).
-// Residue: one nested step short - retail also expands ~CResolveNode's body and
-// CALLS ??1CWapObj; ours does the exact inverse. NOT the budget deficit this
-// note used to assume: `walls inline-model --measure-cb ... --sites 2` reports
-// both sites rejected and ~CResolveNode NOT AN INLINE CANDIDATE at all, so the
-// open question is candidacy (what makes cl consider a base sub-object dtor
-// here), not how much budget the Unload expansion leaves. Writing
-// m_dirty.Reset()'s stores directly in ~CResolveNode does not flip it and dents
-// ~CWwdGameObjectF (99.71), so the member-call spelling stands;
-// ~WwdDirtyRect's user-declared empty dtor is retail-real (0x15b290).
+// Residue: one nested inlining step. Retail expands ~CResolveNode's body here -
+// `walls vptrscan` reads the ??_7CResolveNode@@6B@ stamp inside this function,
+// which no other channel does - and then CALLS ??1CWapObj; ours calls
+// ??1CResolveNode instead. `walls inline-model --gap 0x15bd10` reports
+// ??1CResolveNode a /Ob1 CANDIDATE whose site the budget declined, correcting
+// this note's earlier "not a candidate at all" - the earlier measurement was
+// taken under a TU state that no longer exists. Writing m_dirty.Reset()'s
+// stores directly in ~CResolveNode does not flip it, so the member-call
+// spelling stands; ~WwdDirtyRect's user-declared empty dtor is retail-real
+// (0x15b290).
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();

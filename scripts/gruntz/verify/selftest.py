@@ -5109,6 +5109,31 @@ class VptrStampControls(unittest.TestCase):
         # B8 imm32 : mov eax,imm32 - materialized, stored later
         self.assertIsNone(decode_store(bytes.fromhex("b8") + b"\0\0\0\0", 1))
 
+    @staticmethod
+    def _slots(hexbytes):
+        from gruntz.walls.vptrscan import dispatches
+        p = bytes.fromhex(hexbytes)
+        return [d[3] for d in dispatches(p, 0, len(p), set(), {"esp"})]
+
+    def test_an_indirect_dispatch_names_its_vtable_slot(self):
+        """The companion reading: `mov eax,[ecx] / call DWORD PTR [eax+0x2c]`
+        is slot 11, and one byte decides which virtual function runs.
+        offsetscan drops every call/jmp line by construction, so nothing else
+        reads it."""
+        self.assertEqual(self._slots("8b01ff502c"), [0x2c])
+
+    def test_a_register_call_and_an_absolute_call_have_no_slot(self):
+        self.assertEqual(self._slots("ffd0"), [])
+        self.assertEqual(self._slots("ff15aabbccdd"), [])
+
+    def test_a_slot_displacement_is_a_pointer_index(self):
+        """THE headline control for the byte scan: `ff` occurs inside other
+        instructions' operands, and unfiltered the sweep read `call [reg+83]`
+        and `call [reg+0x90909090]` as slots and reported three same-count
+        'defects' that were every one a misalignment."""
+        self.assertEqual(self._slots("ff5053"), [])
+        self.assertEqual(self._slots("ff9090909090"), [])
+
 
 class ByValueAggregateControls(unittest.TestCase):
     """`walls aggscan` says a callee's parameter is ONE object where we
