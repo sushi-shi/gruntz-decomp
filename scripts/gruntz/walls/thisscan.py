@@ -87,6 +87,11 @@ and `CGameLevel::InflateMainBlock` (retail hands it LoadWwd's `this` in EBP).
 Neither callee's bytes moved; both callers gained the load. `--inverse`,
 `--receivers` and `--arity` were all zero in the same sweep.
 
+The unfiltered populations are what say the filters are the tool: forward 243
+sites over 49 callees, inverse 232 over 50. A defect class does not run both
+ways in equal volume - that symmetry IS the register rotation, and 2-versus-0
+after the filters is the signal it was hiding.
+
 The 222 skipped rows are EH funclets and are not recoverable here: cl 5.0 emits
 them inside the parent's COMDAT with no symbol of their own, and only the
 delinker gives the target side `__ehunwind$<parent>$N` names, so there is
