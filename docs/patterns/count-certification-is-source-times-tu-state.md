@@ -31,3 +31,22 @@ rotation (call multiset, `ret` count, ordered relocation count, referent set) an
 write a branch or instruction count as a stated divergence rather than an
 agreement when the row is already below its bank. Measured 2026-08-23 on the first
 `recheck` sweep: 289 claims, 285 held, and 2 of the 4 breaks were this mechanism.
+
+**STALE has TWO causes, and the `cpp:` prefix is what tells them apart.** A row
+whose recorded fingerprint is a real per-function hash goes STALE only when that
+function's own extent changed. A row whose fingerprint starts with `cpp:` is the
+UNIT-LEVEL FALLBACK - clangd could not resolve that function, so the hash is the
+whole `.cpp` - and it goes STALE on *any* edit to the file, including a comment
+nowhere near the function. Do not reason about one from the other; the two rows
+below were measured under the same one-line comment inserted at line 1 of
+`GruntzCmdMgr.cpp`:
+
+```
+  triggermgr/PlaceObjectFull          f96c455cab0e  ->  f96c455cab0e   per-function, unmoved
+  gruntzcmdmgr/BuildRockBreakInGameText  cpp:8303dec3ac24 -> cpp:cd876c3a8779   fallback, moved
+```
+
+So "a comment above an `RVA()` pin cannot make a review STALE" is true for a
+per-function row and FALSE for a fallback row, and a proof on one is not a proof
+about the other. `fingerprints.real_edit` already encodes this - it calls a
+difference a genuine source edit only when BOTH sides are non-fallback.
