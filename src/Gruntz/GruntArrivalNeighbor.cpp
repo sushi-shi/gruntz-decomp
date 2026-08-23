@@ -36,10 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
-// regalloc: retail spills x/y into its `sub esp,0x8` frame and rematerialises them for
-// the push (an un-CSE'd second load of +0x17c) - a spill pair, not a source local.
-// docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x000f26f0, 0x106)
 i32 CGrunt::ResolveArrivalNeighbor() {
     switch (m_defenderState) {

@@ -816,14 +816,6 @@ CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
-// @early-stop
-// One frame slot, not register assignment: `sub esp,0x18` against retail's
-// `sub esp,0x14`. Every other displacement is literally equal - slots 0..3 are
-// written at the same `[esp+N]` at the same depth on both sides - and the only
-// divergent operand is the top slot, which holds gameMgr and then the MapLookup
-// out-parameter: index 5 here, index 4 in retail. So cl reserved six dwords and
-// uses five, leaving slot 4 a hole; retail reserved five. Replacing the named
-// `POINT pt` with a `CPoint` temporary was measured and the frame does not move.
 RVA(0x001122a0, 0x241)
 i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
