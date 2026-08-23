@@ -47,10 +47,17 @@
   then regalloc/scheduling (same calls and skeleton: instruction selection,
   lifetime, or allocation).
 - Per class, the proven levers:
-  * inline/call-set: `gruntz walls inline-model --gap` predicts the
-    budget-starved sites and quantifies the finish-the-caller lever
-    (cl 5.0-validated; `--measure-cb` titrates a callee with the real
-    compiler).
+  * inline/call-set: `gruntz walls inline-model --gap <rva>` FIRST screens
+    /Ob1 CANDIDACY, which decides whether the budget question applies at
+    all: `/O2` implies `/Ob1`, so a callee that is an UNDEFINED external in
+    our own base obj cannot be expanded at ANY budget, and a call-set delta
+    naming one is a DUPLICATED CALL SITE - a tail merge - not a starved
+    inline (PlaceObjectFull 0x78a50: `LoadCursorSprites` target 14 / base
+    15, not a candidate; the fix was the caller's block layout, 86.41 ->
+    90.84). Only for a callee this TU emits a COMDAT for does the budget
+    arithmetic mean anything, and there `--measure-cb` titrates it with the
+    real compiler. The verb refuses to invent `cb`: a guessed deficit
+    printed as model output is indistinguishable from a measured one.
   * front-end TU-state: the cl 5.0 IL tap (capture `/d1il`, feed `/d2il`;
     recipe and normalization in the tu-state-probe pattern's quantified
     section) - an inert-source A/B whose IL differs is C1 handle state, and
