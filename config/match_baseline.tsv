@@ -223,7 +223,7 @@ menustate	18	18
 movinglogic	5	1
 multi	105	88
 multihelpdlg	5	5
-multistartdlg	64	57
+multistartdlg	64	58
 namerecord	5	5
 netcmdslot	18	14
 netlobbydialogs	20	20
@@ -232,7 +232,7 @@ netmgrerror	2	2
 netsession	1	1
 netsessionmgr	31	24
 palettebmp	2	2
-pathhazard	26	23
+pathhazard	26	24
 play	105	79
 playassetload	17	16
 projectile	28	20
@@ -2824,7 +2824,7 @@ kitchenslime	?SerializeMove@CKitchenSlime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	95.1542	95.1542	27	b5ea8ff2e45d	0xb2ca0	95.1542	
 latencylist	?FillCombo@CLatencyList@@QAEHPAUHWND__@@H@Z	82.6316	82.6316	2	2e05e30811db	0x37ff0	82.6316	
 latencylist	?GetName@CKeyedNode@@QAE?AVCString@@XZ	100.0000	100.0000	1	48be84f74af2	0x38120	100.0000	
-latencylist	?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	9448f974d5e0	0x38220	100.0000	
+latencylist	?GetSelItemData@CLatencyList@@QAEHPAUHWND__@@HPAH1@Z	100.0000	100.0000	2	c5e68e610cf0	0x38220	100.0000	
 latencylist	?PopulateGenericOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	829d3ed82ede	0x37f00	100.0000	
 latencylist	?PopulateIpxOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	0961c5ba4c68	0x37b40	100.0000	
 latencylist	?PopulateModemOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	85d3b00c1359	0x37d20	100.0000	
@@ -3183,7 +3183,7 @@ multistartdlg	??1CKeyedList@@QAE@XZ	100.0000	100.0000	1	7b927a0d8463	0xc5280	100
 multistartdlg	??_GCMultiStartDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e06363042fb8	0xc1810	100.0000	
 multistartdlg	?AppendChatLine@CMultiStartDlg@@QAEXPAD@Z	100.0000	100.0000	2	cf03d87d37f6	0xc2ce0	100.0000	
 multistartdlg	?BuildSlotList@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	2	8e76fac73c82	0xc1e60	100.0000	
-multistartdlg	?CommitLatencyOption@CMultiStartDlg@@QAEXXZ	92.0750	92.0750	3	c933f9d1bb7e	0xc5020	92.0750	
+multistartdlg	?CommitLatencyOption@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	4	6e558dc87d02	0xc5020	100.0000	
 multistartdlg	?CommitWorldHost@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	3	a8ce902349ca	0xc3e30	100.0000	
 multistartdlg	?ConnectStep@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	408f743b560a	0xc2a20	100.0000	
 multistartdlg	?DestroyWindow@CMultiStartDlg@@UAEHXZ	100.0000	100.0000	1	575385378f3d	0xc5240	100.0000	
@@ -3377,7 +3377,7 @@ palettebmp	?Apply@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	c4424d847a4d
 palettebmp	?LoadBmpFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	3	325f87673fbc	0x177480	100.0000	
 pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	99.9248	99.9248	5	f88819aaaaaa	0xb35a0	99.9248	
 pathhazard	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	fffdf1f493f8	0xb49b0	100.0000	
-pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	94.3750	94.3750	4	25acb21baaaa	0xb4a90	94.3750	
+pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	5	46845370cb26	0xb4a90	100.0000	
 pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13280	100.0000	
 pathhazard	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13340	100.0000	
 pathhazard	??_GCPathHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13250	100.0000	
