@@ -95,9 +95,52 @@ divergence was two adjacent zero/`ebx` stores swapped; the source declared
 `i32 maxWidth = 0;` before `i32 y = rc.top;` and retail stores `y` first. Swapping the
 two declarations took `LayoutWrapped` to EXACT and `MeasureWrapped` 98.96 -> 99.00.
 
+## A second live instance, and the sieve that found it (2026-08-23)
+
+`CTileTriggerContainer::AddToList3` was declared `(BrickTileId, i32 tileX, i32 tileY,
+i32 cellKey, i32 player0, i32 player1, i32 player2, i32 player3)` and its one caller
+passed `obj->m_extent.left/top/right/bottom`. Retail's caller shows the forward-store
+shape through a `lea` rather than `mov eax,esp`, which is the same idiom:
+
+```asm
+lea  edi,[esi+0x134]        ; &obj->m_extent
+sub  esp,0x10
+mov  ebx,esp
+mov  ebp,[edi];    mov [ebx],ebp
+mov  ebp,[edi+0x4]; mov [ebx+0x4],ebp
+mov  ebp,[edi+0x8]; mov [ebx+0x8],ebp
+mov  edi,[edi+0xc]; mov [ebx+0xc],edi
+```
+
+`AddToList3(..., RECT playerFlags)` with `AddToList3(..., obj->m_extent)` reproduces
+that block byte for byte. `CPlay::ValidateLevelTiles` 0xd2dd0 90.3583 -> 90.4351;
+the callee's own body is unchanged (80.1184, `RENAMED in place`, high-water carried).
+
+The parameter names were the other half of the finding: they were `player0..player3`
+because the callee spreads them into `m_playerFlags[0..3]`, and nobody had connected
+that to the caller reading one rect. A brick's four per-player flags reach the trigger
+event in the level record's extent rect.
+
+FOUND WITHOUT THE CALLER-SETUP READING, by a whole-function displacement census (base
+register ignored) of a `walls offsetscan` row: our side touched +0x134/+0x138/+0x13c/
++0x140 and retail touched **none of them**, because retail reached all four through
+the `lea`. That is a cheap tree-wide screen for this pattern - a contiguous run of
+2-4 dword displacements one side uses and the other never does, with the LOW one
+appearing in a `lea` on the other side.
+
+COST, and it is intrinsic: the declaration loses three type handles, which moves C1's
+state for every TU that parses the header. Three untouched functions in two other TUs
+dipped in the same build (`CTriggerMgr::ScrollToActiveRecord` 100.00 -> 99.14,
+`CPlay::LoadScrollSpeedOptions` 98.75 -> 98.62, `CTriggerMgr::ApplyTriggerA` 87.45 ->
+87.44). Every banked MAX and hist survived - `bank` only raises `best` when the
+per-function fingerprint is unchanged - but expect the ledger to need an adjudicated
+re-bank when you apply this to a widely-included header.
+
 ## Where to look for more
 
 Any `(..., i32 x0, i32 top, i32 right, i32 bottom, ...)` or `(..., i32 l, i32 t,
 i32 r, i32 b)` signature in the tree is a candidate; check the caller's argument setup
 for the forward-store shape before retyping. The same reading applies to `Coord`/
 `POINT` pairs, where the aggregate form is `sub esp,0x8` plus two forward stores.
+The four values need not be spelled as a rect at either end - `AddToList3` reads them
+as per-player flags and still takes the rect.
