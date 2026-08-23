@@ -35,6 +35,12 @@ public:
 
     i32 RefreshAsset(const char* key);
 
+    LeafCue* FindCue(const char* key) {
+        LeafCue* found = NULL;
+        MapLookup(m_cues, key, found);
+        return found;
+    }
+
     void PlayCue(const char* key) {
         if (m_emitGate == 0) {
             LeafCue* found = NULL;
