@@ -52,6 +52,23 @@
                                   instruction, same position, different field -
                                   a WRONG MEMBER, the other correctness channel
                                   beside signscan
+    gruntz walls vptrscan         VPTR-STAMP census: which SUBOBJECT a ctor
+                                  stamps a vtable into, and WHICH vtable. Read
+                                  from the COFF bytes (a DIR32 in the imm32 of
+                                  a `C7 /0` decodes backwards), because the
+                                  positional sieves only see stamps their
+                                  alignment paired and a wrong subobject offset
+                                  moves two bytes. The third correctness
+                                  channel beside signscan and offsetscan
+    gruntz walls aggscan          BY-VALUE AGGREGATE ARGUMENT sieve: cl 5.0
+                                  hands a block wider than a register by
+                                  opening a hole (`sub esp,N` + `mov reg,esp`
+                                  + dword copies), so a hole retail opens and
+                                  we never do says the callee's parameter is
+                                  ONE object where we declared scalars. Keyed
+                                  on the CALLEE over the whole image, which
+                                  asks the signature question of every site at
+                                  once (framescan owns the frame reservation)
     gruntz walls escapescan       ADDRESS-ESCAPE sieve (declined enregistration):
                                   retail materializing a frame address INTO a
                                   call we feed from a register says the source
@@ -158,6 +175,8 @@ _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "loopscan": "gruntz.walls.loopscan",
          "signscan": "gruntz.walls.signscan",
          "offsetscan": "gruntz.walls.offsetscan",
+         "vptrscan": "gruntz.walls.vptrscan",
+         "aggscan": "gruntz.walls.aggscan",
          "escapescan": "gruntz.walls.escapescan",
          "reloadscan": "gruntz.walls.reloadscan",
          "valuetemp": "gruntz.walls.valuetemp",

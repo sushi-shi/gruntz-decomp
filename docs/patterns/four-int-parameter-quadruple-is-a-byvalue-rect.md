@@ -136,7 +136,7 @@ dipped in the same build (`CTriggerMgr::ScrollToActiveRecord` 100.00 -> 99.14,
 per-function fingerprint is unchanged - but expect the ledger to need an adjudicated
 re-bank when you apply this to a widely-included header.
 
-## Where to look for more
+## Where to look for more - and the answer, which is NOWHERE
 
 Any `(..., i32 x0, i32 top, i32 right, i32 bottom, ...)` or `(..., i32 l, i32 t,
 i32 r, i32 b)` signature in the tree is a candidate; check the caller's argument setup
@@ -144,3 +144,22 @@ for the forward-store shape before retyping. The same reading applies to `Coord`
 `POINT` pairs, where the aggregate form is `sub esp,0x8` plus two forward stores.
 The four values need not be spelled as a rect at either end - `AddToList3` reads them
 as per-player flags and still takes the rect.
+
+That search is now mechanical and it is **drained**. `gruntz walls aggscan`
+aggregates {callee -> hole sizes} over the whole image on both sides and asks the
+question of every call site at once; measured 2026-08-23 it reads 179 argument holes
+ours against 182 retail over 20 callees, with **zero callees retail hands a block and
+we never do, and zero the reverse**. Every named callee's hole-SIZE multiset matches
+exactly; the only two functions that differ (`CGrunt::StepGruntMovement`,
+`CStatusBarMgr::BuildTabzDialog`) differ in the COUNT of holes at one size, which is
+a tail-merge or inlining divergence rather than a signature. `AddToList3` was the last
+live instance. Re-run the sieve after any signature change; do not re-derive the
+screen by hand.
+
+Two attribution rules the sieve had to learn, both of which a hand screen will
+repeat: cl interleaves the copies of consecutive holes, so the `mov reg,esp` can sit
+22 bytes after its `sub esp,N` (a fixed byte window read one hole where the
+disassembly has four), and cl TAIL-MERGES the argument build, so several
+predecessors each fill a hole and `jmp` to one shared call - stopping at the first
+`call` byte named `CTriggerMgr::CellDispatch` for two blocks that jump to
+`CGrunt::PlaySound`.

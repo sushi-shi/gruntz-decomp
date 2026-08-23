@@ -5030,6 +5030,135 @@ class MemberOffsetControls(unittest.TestCase):
         self.assertEqual(kind([]), "clean")
 
 
+class VptrStampControls(unittest.TestCase):
+    """`walls vptrscan` says a constructor stamped a vtable into the WRONG
+    subobject, or stamped the wrong vtable.  Both defects move two bytes and
+    no other channel reads them - `offsetscan` suppressed the whole line until
+    2026-08-23 because the relocation made it look like a masked address."""
+
+    @staticmethod
+    def _stamp(disp, ref):
+        """One `mov DWORD PTR [esi+disp],OFFSET ref`, as the sweep records it:
+        (offset, displacement, base register, referent, frame?)."""
+        return (0, disp, "esi", ref, False)
+
+    @staticmethod
+    def _cmp(ours, retail):
+        from gruntz.walls.vptrscan import compare
+        key = ("u", "f")
+        rows, _aligned, off, sym = compare({key: ours}, {key: retail}, {key})
+        return rows, off, sym
+
+    def test_a_vptr_in_the_wrong_subobject_fires(self):
+        """An embedded polymorphic member's vptr one slot off: every virtual
+        call through it dispatches on whatever the neighbouring field holds."""
+        _rows, off, sym = self._cmp([self._stamp(0x70, "??_7CObject@@6B@")],
+                                    [self._stamp(0x74, "??_7CObject@@6B@")])
+        self.assertEqual((off, sym), (1, 0))
+
+    def test_the_wrong_vtable_at_the_right_offset_fires(self):
+        """The object's dynamic type is another class, so every slot resolves
+        elsewhere.  Read from the DISPLACEMENT-keyed alignment, because the
+        referent-keyed one cannot see a defect in its own key."""
+        _rows, off, sym = self._cmp([self._stamp(0, "??_7CObject@@6B@")],
+                                    [self._stamp(0, "??_7CWwdGridIter@@6B@")])
+        self.assertEqual((off, sym), (0, 1))
+
+    def test_identical_stamps_are_silent(self):
+        rows, off, sym = self._cmp([self._stamp(0x70, "??_7CObject@@6B@")],
+                                   [self._stamp(0x70, "??_7CObject@@6B@")])
+        self.assertEqual((rows, off, sym), ([], 0, 0))
+
+    def test_a_stamp_COUNT_divergence_withholds_rather_than_guesses(self):
+        """THE headline control.  cl inlines a member ctor on one side only,
+        so one side has an extra stamp - four live rows are exactly that.
+        Keying an alignment on a sequence that is not the same LENGTH re-pairs
+        the neighbours and invents defects: re-pointing ONE relocation in a
+        real object produced two wrong offsets that were not there."""
+        ours = [self._stamp(0, "??_7CMovingLogic@@6B@"),
+                self._stamp(0, "??_7CGruntCoordList@@6B@"),
+                self._stamp(0, "??_7CGrunt@@6B@")]
+        retail = [self._stamp(0, "??_7CMovingLogic@@6B@"),
+                  self._stamp(0, "??_7CGrunt@@6B@")]
+        rows, off, sym = self._cmp(ours, retail)
+        self.assertEqual((off, sym), (0, 0))
+        self.assertEqual(rows[0]["withheld"], ["offset", "vtable"])
+
+    def test_a_frame_relative_stamp_is_framescans_channel(self):
+        """A stack-constructed object's `[esp+N]` is a slot number, which is an
+        output of cl's allocator, not a subobject offset."""
+        _rows, off, sym = self._cmp([(0, 0x10, "esp", "??_7CFileMem@@6B@", True)],
+                                    [(0, 0x24, "esp", "??_7CFileMem@@6B@", True)])
+        self.assertEqual((off, sym), (0, 0))
+
+    def test_the_backwards_direction_gives_the_same_verdict(self):
+        ours = [self._stamp(0x70, "??_7CObject@@6B@")]
+        retail = [self._stamp(0x74, "??_7CObject@@6B@")]
+        self.assertEqual(self._cmp(ours, retail)[1:],
+                         self._cmp(retail, ours)[1:])
+
+    def test_the_backwards_decode_rejects_what_is_not_a_stamp(self):
+        """`C7 /0` with mod=11 is a register destination and any other `reg`
+        field is a different instruction; neither carries a member offset."""
+        from gruntz.walls.vptrscan import decode_store
+        # C7 46 70 imm32 : mov DWORD PTR [esi+0x70],imm32
+        self.assertEqual(decode_store(bytes.fromhex("c74670") + b"\0\0\0\0", 3),
+                         ("esi", None, 0x70))
+        # C7 C6 imm32 : mov esi,imm32 - a register destination
+        self.assertIsNone(decode_store(bytes.fromhex("c7c6") + b"\0\0\0\0", 2))
+        # B8 imm32 : mov eax,imm32 - materialized, stored later
+        self.assertIsNone(decode_store(bytes.fromhex("b8") + b"\0\0\0\0", 1))
+
+
+class ByValueAggregateControls(unittest.TestCase):
+    """`walls aggscan` says a callee's parameter is ONE object where we
+    declared scalars.  cl 5.0 hands an aggregate wider than a register by
+    opening a hole and copying into it, and four `push`es is a different
+    shape - which is how `AddToList3` was caught taking a level record's rect
+    as four `i32`."""
+
+    @staticmethod
+    def _holes(hexbytes, rel=None):
+        from gruntz.walls.aggscan import holes
+        payload = bytes.fromhex(hexbytes)
+        return holes(payload, 0, len(payload), rel or {})
+
+    #: sub esp,0x10 / mov ecx,esp / mov [ecx],0 / mov [ecx+4],eax
+    #: / mov [ecx+8],eax / mov [ecx+0xc],eax / call / ret
+    BLOCK = "83ec108bccc70100000000894104894108894 10ce800000000c3".replace(" ", "")
+
+    def test_a_by_value_block_fires(self):
+        self.assertEqual([n for _o, n, _r, _c in self._holes(self.BLOCK)], [16])
+
+    def test_four_pushes_of_four_scalars_are_silent(self):
+        """The whole signature question: this is the shape a wrong declaration
+        produces, and it must not read as a block."""
+        self.assertEqual(self._holes("6a006a006a006a00e800000000c3"), [])
+
+    def test_a_reservation_nothing_is_copied_into_is_the_frame(self):
+        """THE headline control.  framescan owns the prologue reservation.
+        Testing for the COPIES rather than for position is what let the sweep
+        keep six callees whose only block sits before the first call."""
+        self.assertEqual(self._holes("83ec108bcc33c0e800000000c3"), [])
+
+    def test_a_non_dword_reservation_is_a_byte_misalignment(self):
+        """`83 EC 02` occurs inside the displacement of
+        `mov DWORD PTR [ebx+0x2ec],0x1f401`.  cl never moves ESP by a
+        non-dword amount, so the filter costs nothing."""
+        self.assertEqual(self._holes("c783ec02000001f40100c3"), [])
+
+    def test_the_callee_is_read_through_an_unconditional_jmp(self):
+        """cl TAIL-MERGES the argument build: predecessors fill the hole and
+        jump to one shared call.  Stopping at the first `call` byte named
+        `CTriggerMgr::CellDispatch` for two blocks that jump to
+        `CGrunt::PlaySound`."""
+        from gruntz.walls.aggscan import callee
+        # jmp +5 over a junk `call` byte, landing on the real call
+        payload = bytes.fromhex("eb05") + b"\xe8\0\0\0\0" + b"\xe8\0\0\0\0\xc3"
+        self.assertEqual(callee(payload, 0, len(payload), {8: ("?Real@@YAXXZ", 20)}),
+                         "?Real@@YAXXZ")
+
+
 class AddressEscapeControls(unittest.TestCase):
     """`walls escapescan` says our source is missing an `&`.  Every control
     here is a measured FALSE POSITIVE from building it: the census read 51
