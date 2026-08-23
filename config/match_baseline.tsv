@@ -247,7 +247,7 @@ rockbreakeffectupdate	1	0
 rollingball	8	6
 savefrontbuffershot	2	2
 savegame	24	24
-savegamedialogs	10	9
+savegamedialogs	10	10
 savescreenshot	1	1
 sbi_image	5	3
 sbi_imageset	6	4
@@ -306,8 +306,8 @@ videooptions	3	2
 wapuncompress	1	1
 warlord	18	15
 waypoint	4	4
-winapicdrom	5	4
-winapimodule	1	0
+winapicdrom	5	5
+winapimodule	1	1
 winmain	1	1
 worldsoundset	36	33
 wormhole	26	23
@@ -3658,7 +3658,7 @@ savegame	?TempFileExists@@YAHPAUSaveSlot@@@Z	100.0000	100.0000	2	6fca3af43fb3	0x
 savegame	?TempFileExistsAt@CSaveGame@@QAEHH@Z	100.0000	100.0000	1	96ea394eb841	0xe56d0	100.0000	
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	1	897a38cdd821	0xe50f0	100.0000	
 savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	100.0000	100.0000	10	20332dd0bdb2	0xe52c0	100.0000	
-savegamedialogs	?BuildLevelTitleString@@YAXPAUHWND__@@PAVCSaveGame@@PAUSaveSlot@@@Z	95.7850	95.7850	3	cde6a0cd3be0	0xe44e0	95.7850	
+savegamedialogs	?BuildLevelTitleString@@YAXPAUHWND__@@PAVCSaveGame@@PAUSaveSlot@@@Z	100.0000	100.0000	4	7ed2e8607ac6	0xe44e0	100.0000	
 savegamedialogs	?DeleteSaveDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	0cacc52eeed5	0xe3a40	100.0000	
 savegamedialogs	?DrawSaveGameMenu@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	100.0000	100.0000	2	3643da48541f	0xe3f40	100.0000	
 savegamedialogs	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	a1bfb58c79ce	0xe3c60	100.0000	
@@ -4478,9 +4478,9 @@ waypoint	?SerializeMove@CWayPoint@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTyp
 winapicdrom	??1RegistryHelper@Utils@@QAE@XZ	100.0000	100.0000	1	cpp:42df66ce0d05	0x201f0	100.0000	
 winapicdrom	?CheckCdRomRegistry@@YADXZ	100.0000	100.0000	2	822c76fc2eb2	0x1fde0	100.0000	
 winapicdrom	?FileExistsCopy@@YAHPAD@Z	100.0000	100.0000	1	d930fdc86484	0x1fd70	100.0000	
-winapicdrom	?GetGruntzDriveLetter@@YADXZ	98.4234	98.4234	2	042814494641	0x1ffe0	98.4234	
+winapicdrom	?GetGruntzDriveLetter@@YADXZ	100.0000	100.0000	3	7d674d578577	0x1ffe0	100.0000	
 winapicdrom	?IsGruntzCDInAnyDrive@@YAHXZ	100.0000	100.0000	1	cd3aa3f5108b	0x1fd50	100.0000	
-winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	30	f6af41e9a9c2	0x118f60	99.9000	
+winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	100.0000	100.0000	31	174a68f532de	0x118f60	100.0000	
 winmain	_WinMain@16	100.0000	100.0000	24	32443b79b53a	0x11c860	100.0000	
 worldsoundset	??1CAmbientPosSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xb940	100.0000	
 worldsoundset	??1CAmbientSound@@UAE@XZ	100.0000	100.0000	1	cpp:b341d12591b9	0xb790	100.0000	
