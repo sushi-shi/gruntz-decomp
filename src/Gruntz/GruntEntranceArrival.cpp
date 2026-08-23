@@ -1479,10 +1479,7 @@ i32 CGrunt::StepArrivalCommitB() {
 // THEN arm as the fall-through; cl lays them adjacent.
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
-    i32 poseIdx = 0;
-
-    bool eq;
-    eq = ANIMATION_ACT_EQUALS("I");
+    bool eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1508,6 +1505,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         RESET_GRUNT_POWERED_STATE(this)
     }
 
+    i32 poseIdx = 0;
     if (m_entranceReason == PICKUP_BOMB) {
         SET_ANIMATION_ACT("M");
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
