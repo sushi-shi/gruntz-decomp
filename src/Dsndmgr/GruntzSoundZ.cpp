@@ -260,6 +260,10 @@ i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
 }
 
 // @early-stop
+// Register colour around the constant division: retail accumulates the magic-multiply
+// result in EDX and pays a closing `mov eax,edx`, cl accumulates in EAX and does not.
+// Retail is one instruction LONGER, so no spelling asks for it - four are flat
+// (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x001389c0, 0x47)
 i32 CGruntzSoundZ::GetXMidiVolume() {
     if (g_ailMidiDriver == NULL) {

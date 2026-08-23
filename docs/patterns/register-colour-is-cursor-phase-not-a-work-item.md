@@ -57,6 +57,14 @@ and only the cursor's entry phase differs, which is C1 handle state. Four inert 
 on `SaveVideoCheckboxes`: named locals for the results, one reused local, the
 TU-state probe, and inverting `if (x == NULL) return;` into `if (x != NULL) { ... }`.
 
+**Retail's colour can be one instruction WORSE, which is the strongest form of the
+argument.** `CGruntzSoundZ::GetXMidiVolume` 0x1389c0 (91.30) is a constant division
+whose two sides run the identical magic-multiply sequence; retail accumulates in EDX
+and therefore pays a closing `mov eax,edx` to return, while cl accumulates in EAX and
+needs no move. No source spelling asks a compiler for a redundant move - and four are
+byte-identical (a named result local, reusing the input local, the constant first, an
+explicit parenthesisation).
+
 **The TU-state lever does not reach it either.** Nineteen disposable probes on
 `Construct` - nine `typedef`s immediately above its `RVA()` pin and ten function
 prototypes above the TU's first project include, counts 1..16 - leave it at 95.42 to

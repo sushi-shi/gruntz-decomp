@@ -1301,6 +1301,9 @@ i32 CMulti::ShowMultiStartDlg() {
 RVA_COMPGEN(0x000b8960, 0x59, ??1CMultiStartDlg@@UAE@XZ)
 
 // @early-stop
+// Declined CSE in the loop tail: retail re-reads m_playerSelId for GetNext's
+// reference parameter where cl shares the guard's load. Flat across a local guard
+// copy and a local inside the arm.
 RVA(0x000b89e0, 0xc8)
 void FillPlayerList(HWND hList, CNetMgr* sess) {
     char buf[256];
