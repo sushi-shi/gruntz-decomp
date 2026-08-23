@@ -1432,10 +1432,12 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 
 // @early-stop
 // Retail folds the two arms into `cmp eax,4 / jne +1 / dec / dec`, i.e. neither arm
-// is a constant-foldable `count - N`. cl constant-propagates count==4 into whichever
-// arm it guards, so `idx -= 2` (95.77, and WRONG - it left idx == count for every
-// other plane count, which the bounds check then rejected), `idx = count - 2` (89.62)
-// and `idx--` (84.49 comparing idx, 89.74 comparing count) all become `mov eax,<k>`.
+// is a constant-foldable `count - N`. cl constant-propagates the guard's known value
+// into the arm it guards, so every decrement spelling collapses to `mov eax,<k>`.
+// Guarding on `idx` (the copy) reproduces retail's copy-then-compare-the-copy;
+// guarding on `count` does not, and re-reads the size into the compare instead.
+// `idx -= 2` is WRONG - it leaves idx == count for every other plane count, which
+// the bounds check then rejects.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008efe0, 0x54)
@@ -1447,7 +1449,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // it is the one below it. `cmp 4 / jne +1 / dec / dec` is the shared
             // tail cl folds the two arms into.
             i32 idx = view->m_planes.GetSize();
-            if (view->m_planes.GetSize() == LEVEL_EXTENDED_PLANE_COUNT) {
+            if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
                 idx--;
             }
             idx--;
