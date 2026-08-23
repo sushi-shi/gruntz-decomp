@@ -58,6 +58,7 @@ So cut at the lowest such base, then at the last `ret` before it.  Verified on
 real calls, i.e. it is entirely data.
 
     gruntz walls jccscan [--todo] [--unit U] [--below N] [--limit N] [--json]
+    gruntz walls jccscan --flips             rank by the first flip's jump distance
     gruntz walls jccscan <rva|name> ...      one row, every site listed
 """
 
@@ -163,6 +164,87 @@ def scan_one(rva: str) -> dict:
     return {"agree": rec is None, **(rec or {})}
 
 
+#: an intra-function branch, whose displacement objdiff masks in the DIFF but
+#: which is right here in the decode
+BRANCH = re.compile(r"^(j\w+) 0x([0-9a-f]+)$")
+
+
+def branch_seq(lines):
+    out = []
+    for x in lines:
+        m = BRANCH.match(x.asm)
+        if m and m.group(1) in CC:
+            out.append((m.group(1), x.addr, int(m.group(2), 16)))
+    return out
+
+
+def jumps_an_epilogue(lines, addr, tgt) -> bool:
+    """Does the span this branch jumps OVER contain a `ret`?
+
+    Over a `ret` the branch is skipping a duplicated EXIT; over anything else
+    it is stepping past a block cl merely placed there, which is layout.  Note
+    the exit can be duplicated without the source asking for it - cl also
+    clones a shared `goto` target - so this locates the question, it does not
+    answer it."""
+    if not (addr < tgt):
+        return False
+    return any(x.asm.startswith("ret") for x in lines if addr < x.addr < tgt)
+
+
+def first_flip(base, target, self_name):
+    """The first position where the two branch sequences disagree, with each
+    side's jump DISTANCE and whether that jump clears an epilogue.
+
+    The distance is the reading, not the mnemonic.  `retail jumps FAR where we
+    jump NEAR OVER A RET` says retail branched away to a shared tail while we
+    laid a duplicated epilogue inline - the steerable direction of
+    guard-skip-loop-not-early-return.md.  The reverse is the tail-merge wall.
+    A big distance gap with NO `ret` in the skipped span is neither; it is a
+    block cl placed between the branch and its target.
+
+    Not decided by this one site alone either way: cl also chooses WHICH of
+    several identical returns stays inline, so check the neighbouring guards
+    (see that pattern's over-application note, ApplyTriggerA 0x6dae0)."""
+    o, t = code_region(base, self_name), code_region(target, self_name)
+    ob, rb = branch_seq(o), branch_seq(t)
+    for k in range(min(len(ob), len(rb))):
+        if ob[k][0] != rb[k][0]:
+            om, oa, ot = ob[k]
+            rm, ra, rt = rb[k]
+            return (k, ob[k], rb[k],
+                    jumps_an_epilogue(o, oa, ot),
+                    jumps_an_epilogue(t, ra, rt))
+    return None
+
+
+def flips(token: str, ctx: int = 4) -> None:
+    binding, base, target = pair_lines(token)
+    o, t = code_region(base, binding.name), code_region(target, binding.name)
+    hit = first_flip(base, target, binding.name)
+    print(f"== {binding.unit}/{binding.name}")
+    if hit is None:
+        print("   branch sequences agree in mnemonic order")
+        return
+    k, (om, oa, ot), (rm, ra, rt), oep, rep = hit
+    od, rd = abs(ot - oa), abs(rt - ra)
+    lean = ("retail jumps FAR, we jump NEAR" if rd > od + 40 else
+            "we jump FAR, retail jumps NEAR" if od > rd + 40 else
+            "same distance - a plain arm order")
+    over = ("  ours clears a RET, so WE hold the duplicated exit - steerable"
+            " only if the source states that exit more than once" if oep else
+            "  retail clears a RET, so RETAIL holds the duplicated exit:"
+            " the tail-merge wall" if rep else
+            "  neither clears a RET: block placement, not an exit count")
+    print(f"   branch #{k}: ours {om} +0x{od:x}   retail {rm} +0x{rd:x}   ({lean})")
+    print(f"  {over}")
+    for nm, lines, addr in (("ours  ", o, oa), ("retail", t, ra)):
+        i = next(j for j, x in enumerate(lines) if x.addr == addr)
+        for j in range(max(0, i - ctx), min(len(lines), i + ctx)):
+            print(f"   {nm} {'>>' if j == i else '  '}{lines[j].addr:04x} "
+                  f"{lines[j].asm}")
+        print()
+
+
 def detail(token: str, limit: int = 12) -> None:
     binding, base, target = pair_lines(token)
     ours = codes(base, binding.name)
@@ -208,12 +290,16 @@ def main(argv=None) -> int:
     ap.add_argument("--todo", action="store_true")
     ap.add_argument("--below", type=float, default=100.0)
     ap.add_argument("--limit", type=int, default=40)
+    ap.add_argument("--flips", action="store_true",
+                    help="rank the BALANCED rows by the first flipped branch's "
+                         "jump distance: retail FAR against ours NEAR is the "
+                         "steerable direction")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
     if args.rows:
         for token in args.rows:
-            detail(token, args.limit)
+            (flips if args.flips else detail)(token, args.limit if not args.flips else 4)
         return 0
 
     from gruntz.walls.inventory import build
@@ -223,6 +309,15 @@ def main(argv=None) -> int:
         rec = {k: row[k] for k in ("rva", "unit", "symbol", "cur", "hist_max")}
         try:
             rec.update(scan_one(row["rva"]))
+            if args.flips and rec.get("balanced"):
+                b, base, target = pair_lines(row["rva"])
+                hit = first_flip(base, target, b.name)
+                if hit:
+                    k, (om, oa, ot), (rm, ra, rt), oep, rep = hit
+                    rec["flip"] = {"n": k, "ours": om, "retail": rm,
+                                   "ours_dist": abs(ot - oa),
+                                   "retail_dist": abs(rt - ra),
+                                   "ours_over_ret": oep, "retail_over_ret": rep}
         except BaseException as err:
             rec["error"] = str(err)[:110]
         out.append(rec)
@@ -234,6 +329,30 @@ def main(argv=None) -> int:
         return 0
 
     hits = [r for r in out if r.get("agree") is False]
+    if args.flips:
+        rank = [r for r in hits if r.get("flip")]
+        print(f"{len(rank)} balanced row(s) with a locatable first flip.")
+        print("  ret> = the side whose near jump clears a RET, i.e. holds the"
+              " DUPLICATED exit.")
+        print("  ours is a CANDIDATE for guard-skip-loop-not-early-return.md -"
+              " but only when the source really does state that exit twice.")
+        print("  It also reads `ours` when cl duplicated a shared `goto` target"
+              " the source states ONCE (StepArrivalDefenseLean 0xf8240), which is")
+        print("  not steerable. Read the source before editing.")
+        print("  retail is the tail-merge wall; '-' means neither, so the gap is"
+              " block placement, not an exit count.")
+        print(f"{'gap':>7} {'ret>':>6} {'rva':>10} {'cur':>6}  ours       retail"
+              "     unit/symbol")
+        for r in sorted(rank, key=lambda x: -(x["flip"]["retail_dist"]
+                                              - x["flip"]["ours_dist"]))[:args.limit]:
+            f = r["flip"]
+            who = ("ours" if f["ours_over_ret"] else
+                   "retail" if f["retail_over_ret"] else "-")
+            print(f"{f['retail_dist'] - f['ours_dist']:7d} {who:>6} {r['rva']:>10} "
+                  f"{r['cur']:6.2f}  {f['ours']:<4}+{f['ours_dist']:<5x} "
+                  f"{f['retail']:<4}+{f['retail_dist']:<5x} "
+                  f"{r['unit']}/{r['symbol'][:34]}")
+        return 0
     by = Counter(r["kind"] for r in hits)
     print(f"rows read: {sum(1 for r in out if 'error' not in r)}"
           f"   (errors {sum(1 for r in out if 'error' in r)})")
