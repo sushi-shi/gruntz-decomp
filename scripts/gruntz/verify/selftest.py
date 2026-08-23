@@ -1468,6 +1468,38 @@ class WallReviewControls(unittest.TestCase):
         self.assertEqual(rows[0]["review_status"], "open")
         self.assertEqual(rows[1]["review_status"], "")
 
+    def test_headroom_is_hist_minus_the_BANK_not_hist_minus_cur(self):
+        """THE distinction that decides whether a row is a question at all.
+
+        `cur` below the BANK is this exact source scoring lower than it
+        already has - TU composition, no action. The BANK below `hist` is a
+        source EDIT that gave the peak up. Read the wrong way,
+        `CGruntSelectedSprite::Update` (cur 84.85, bank 99.24, hist 99.24)
+        is the biggest opportunity in the queue; read the right way there is
+        nothing to do, and 20 of the 66 rows whose hist beats their cur are
+        that shape.
+        """
+        from types import SimpleNamespace
+        from gruntz.walls import inventory
+
+        names = {0x1000: "?TuNoise@C@@QAEHXZ", 0x2000: "?EditGaveItUp@C@@QAEHXZ"}
+        funcs = [SimpleNamespace(unit="u", name=n, rva=r, size=0x10)
+                 for r, n in names.items()]
+        scores = {("u", "?TuNoise@C@@QAEHXZ"): 84.85,
+                  ("u", "?EditGaveItUp@C@@QAEHXZ"): 70.12}
+        baseline = {0x1000: (99.24, 99.24, "h1"),     # bank == hist
+                    0x2000: (70.12, 77.52, "h2")}     # bank below hist
+        with mock.patch.object(inventory, "report_scores",
+                               return_value=("report", scores)), \
+             mock.patch.object(inventory, "baseline_rows", return_value=baseline), \
+             mock.patch("gruntz.model.resolve",
+                        return_value=SimpleNamespace(functions=funcs)):
+            rows = {r["symbol"]: r for r in inventory.build()}
+        self.assertEqual(rows["?TuNoise@C@@QAEHXZ"]["lost"], 0.0)
+        self.assertTrue(rows["?TuNoise@C@@QAEHXZ"]["regressed"])
+        self.assertAlmostEqual(rows["?EditGaveItUp@C@@QAEHXZ"]["lost"], 7.40, 2)
+        self.assertFalse(rows["?EditGaveItUp@C@@QAEHXZ"]["regressed"])
+
 
 class TierRunnerControls(unittest.TestCase):
     def test_a_crashing_gate_is_a_failure_not_a_skip(self):

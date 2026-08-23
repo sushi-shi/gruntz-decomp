@@ -16,6 +16,19 @@ the biggest structural question. cur < best is a REGRESSION flag, not a
 wall class; best == 100 with cur < 100 means the implementation already
 proved the body and the current dip is TU-state, not structure.
 
+HEADROOM IS `hist` MINUS THE BANK, NEVER `hist` MINUS `cur`, and the two
+readings disagree on most rows that look like the biggest prizes in the queue.
+`cur` below the BANK is this exact source scoring lower than it already has,
+which is TU composition and no action. The BANK below `hist` is a source EDIT
+that gave the peak up, so some earlier IMPLEMENTATION reached a mark nothing
+in the tree now reproduces - that, and only that, is a question. Measured
+2026-08-23 over the 578-row todo queue: 66 rows have hist above cur and 20 of
+them are the first kind. `CGruntSelectedSprite::Update` reads as the biggest
+opportunity in the whole queue at cur 84.85 against hist 99.24, and its bank
+is also 99.24 - that source already reached the peak and there is nothing to
+do. The `L` flag marks the 46 that are real; the deepest is
+`CDDrawSurfaceMgr::SnapshotChildren`, banked at 70.12 against a 77.52 peak.
+
 The report also scores the carved EH band (`__ehreg$*` / `__ehunwind$*`),
 which gruntz.verify.scores excludes from the gate because those funclets are
 not reconstruction targets. They are KEPT here (they are real sub-100 rows)
@@ -115,6 +128,17 @@ def build(
             "rva": f"0x{rva:06x}" if rva is not None else "",
             "unit": u, "symbol": sym, "cur": pct,
             "hist_max": hist, "size": f"0x{b.size:x}" if b else "",
+            "bank": bank,
+            # `hist` minus the BANK, not minus `cur`: the difference between
+            # the two is the difference between a question and a non-question.
+            # cur < bank is this source scoring lower than it already has,
+            # which is TU composition and no action; bank < hist is a source
+            # EDIT that gave the peak up, so some earlier implementation
+            # reached a mark nothing in the tree reproduces. Only the second
+            # is headroom.
+            "lost": (round(hist - bank, 4)
+                     if bank is not None and hist is not None
+                     and bank < hist - EPS else 0.0),
             "regressed": bank is not None and pct < bank - EPS,
             "proven": hist == 100.0,
             "review_status": review["status"] if review else "",
@@ -153,20 +177,30 @@ def main(argv=None) -> int:
     n_reg = sum(r["regressed"] for r in rows)
     n_prov = sum(r["proven"] for r in rows)
     n_eh = sum(1 for r in rows if is_eh_band(r["symbol"]))
+    lost = [r for r in rows if r["lost"]]
     queue = " todo" if a.todo else ""
     print(f"[walls] {len(rows)}{queue} function(s) below {a.below:g}%  "
           f"({n_prov} proven-at-100 dips, {n_reg} below their bank"
           + (f", {n_eh} EH-band funclets - scored, NOT reconstruction targets"
              if n_eh else "") + ")")
-    print(f"{'rva':>10}  {'hist':>6}  {'cur':>6}  {'size':>7}  unit/symbol")
+    print(f"        {len(lost)} row(s) carry LOST headroom (L): the bank sits "
+          f"below hist, so a source EDIT gave up a peak nothing in the tree "
+          f"reproduces.")
+    print(f"        A row whose hist is above its CUR but not above its BANK "
+          f"is not one of them - that source already reached hist and the "
+          f"dip is TU composition.")
+    print(f"{'rva':>10}  {'hist':>6}  {'bank':>6}  {'cur':>6}  {'size':>7}  "
+          f"unit/symbol")
     for r in rows[:a.limit]:
         hist = f"{r['hist_max']:6.2f}" if r["hist_max"] is not None else "     ?"
-        flag = " R" if r["regressed"] else ("  " if not r["proven"] else " P")
+        bank = f"{r['bank']:6.2f}" if r["bank"] is not None else "     ?"
+        flag = " L" if r["lost"] else (
+            " R" if r["regressed"] else ("  " if not r["proven"] else " P"))
         review = ""
         if a.todo and r["review_status"]:
             review = f" [{r['review_status']}/{r['review_class']}]"
-        print(f"{r['rva']:>10}  {hist}  {r['cur']:6.2f}  {r['size']:>7}"
-              f"{flag} {r['unit']}/{r['symbol'][:70]}{review}")
+        print(f"{r['rva']:>10}  {hist}  {bank}  {r['cur']:6.2f}  "
+              f"{r['size']:>7}{flag} {r['unit']}/{r['symbol'][:60]}{review}")
     if len(rows) > a.limit:
         print(f"  ... {len(rows) - a.limit} more (--limit)")
     return 0
