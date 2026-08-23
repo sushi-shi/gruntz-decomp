@@ -229,9 +229,8 @@ L_scanb:
                     return 1;
                 }
                 i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
-                dx = abs(dx);
                 i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
-                i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
+                i32 dist = abs(dx) + abs(dy);
                 if (dist < best) {
                     POINT pt;
                     pt.x = gx;
