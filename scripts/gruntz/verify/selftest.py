@@ -3881,6 +3881,68 @@ class LoopBodyControls(unittest.TestCase):
         self.assertEqual([(a["span"], b["span"]) for a, b in pairs], [(2, 2)])
 
 
+class ValueTempLivenessControls(unittest.TestCase):
+    """`walls valuetemp` finds an inlined accessor's by-value struct temp by the
+    DEAD stores it leaves, so its whole result rests on the liveness rule.  A
+    whole-function read SET gets that wrong in both directions, and both errors
+    are silent: an address-taken aggregate names only its BASE, so its interior
+    fields read as dead (a fabricated hit), while a slot overwritten before its
+    address is taken reads as live (a missed hit).  Only the EVENT ORDER on the
+    slot separates them, and both directions are controlled here."""
+
+    @staticmethod
+    def _ins(*asm):
+        """One instruction per 4 bytes; `temps` reads offsets only for order."""
+        out = []
+        for i, text in enumerate(asm):
+            mn, _, ops = text.partition(" ")
+            out.append((i * 4, mn, ops))
+        return out
+
+    def test_the_overwritten_temp_is_dead_even_though_the_slot_escapes(self):
+        """The known positive (CGrunt::RectContains).  Retail materialises the
+        by-value Coord, then overwrites BOTH halves with the real value and
+        takes the slot's address - so the temp is dead and the `lea` observes
+        only its successor."""
+        from gruntz.walls.valuetemp import temps
+        self.assertEqual(temps(self._ins(
+            "mov edx,DWORD PTR [ecx+0x180]", "mov DWORD PTR [esp+0x14],edx",
+            "mov edx,DWORD PTR [ecx+0x17c]", "mov DWORD PTR [esp+0x10],edx",
+            "mov eax,DWORD PTR [ecx+0x184]", "mov DWORD PTR [esp+0x10],eax",
+            "mov eax,DWORD PTR [ecx+0x188]", "mov DWORD PTR [esp+0x14],eax",
+            "lea edx,[esp+0x10]", "push edx")), {0x17c})
+
+    def test_an_address_taken_aggregates_interior_fields_are_not_dead(self):
+        """The known negative (CBattlezMapConfig::ScanRegion).  Two adjacent
+        RECTs are built and one is pushed by address; the second RECT's
+        right/bottom stores are fed by an adjacent member pair and are never
+        named again, which is exactly the temp's signature - but the `lea`
+        covering their object observes them."""
+        from gruntz.walls.valuetemp import temps
+        self.assertEqual(temps(self._ins(
+            "mov ecx,DWORD PTR [eax+0x10]", "mov edx,DWORD PTR [eax+0xc]",
+            "mov DWORD PTR [esp+0x64],ecx", "mov DWORD PTR [esp+0x60],edx",
+            "lea eax,[esp+0x58]", "push eax")), set())
+
+    def test_a_pair_nothing_ever_reads_is_dead(self):
+        """The second form the mechanism produces: no killing store, no read."""
+        from gruntz.walls.valuetemp import temps
+        self.assertEqual(temps(self._ins(
+            "mov eax,DWORD PTR [esi+0x38]", "mov DWORD PTR [esp+0x20],eax",
+            "mov ecx,DWORD PTR [esi+0x3c]", "mov DWORD PTR [esp+0x24],ecx",
+            "ret")), {0x38})
+
+    def test_a_push_between_the_store_and_its_read_is_not_a_second_slot(self):
+        """ESP tracking.  After a `push`, the SAME slot is spelled +4 higher;
+        an untracked scan reads that as a different slot and calls the store
+        dead."""
+        from gruntz.walls.valuetemp import temps
+        self.assertEqual(temps(self._ins(
+            "mov eax,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x10],eax",
+            "mov ecx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x14],ecx",
+            "push ebx", "mov edx,DWORD PTR [esp+0x14]")), set())
+
+
 class EhActionControls(unittest.TestCase):
     """`walls ehactions` reports structure; neither count nor action shape is
     sufficient by itself to call source cleanup defective."""

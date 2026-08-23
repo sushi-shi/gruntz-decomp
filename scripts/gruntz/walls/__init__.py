@@ -77,6 +77,9 @@
                                   as a unit or relative to each other
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
+    gruntz walls priors           BOTH prior-verdict stores for a worklist -
+                                  the comment above the RVA() pin AND the
+                                  review ledger row - screened before any A/B
 
 The easy matches are drained; what remains of the matching objective IS the
 walls. This package holds the instruments a matcher points at a classified
@@ -112,6 +115,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "semdiff": "gruntz.walls.semdiff",
          "semsweep": "gruntz.walls.semdiff",
          "stale-markers": "gruntz.walls.stale_markers",
+         "priors": "gruntz.walls.priors",
          "review": "gruntz.walls.reviews"}
 
 

@@ -15,10 +15,14 @@ two adjacent member offsets through one base register:
                 `LastTilePx().m_x`, NOT bound to a named local).
   base-only     the mirror: we copy a pair retail reads in place.
 
-DEAD is decided two ways, because the mechanism produces both: a store a later
-store to the same slot kills (the RectContains form), and a store nothing ever
-reads (the GetModeSize form). ESP IS TRACKED - a `push` between a store and its
-read renumbers the slot, so an untracked scan reports reads that are not reads.
+DEAD is decided by the EVENT ORDER on the slot: a store is dead when the next
+event on its slot is another store (the RectContains form, where the real value
+overwrites the temp) or nothing at all (the GetModeSize form). Two things make
+the order the only workable rule. ESP IS TRACKED - a `push` between a store and
+its read renumbers the slot. And an ADDRESS-TAKEN aggregate names only its BASE,
+so a per-dword read scan calls its interior fields dead; an `lea` therefore
+observes the whole object it points at, and it observes it AT ITS OWN INDEX -
+the RectContains temp escapes the same slot, just after its successor killed it.
 
 `--calibrate` is the negative control this sieve exists to have: it reports the
 rows on 100.00% functions, where the two sides ARE the same bytes and any row is
@@ -41,6 +45,15 @@ from gruntz.walls import check_unit, pairscan
 STORE = re.compile(r"^(?:DWORD PTR )?\[esp(?:\+0x([0-9a-f]+))?\],(e[a-z][a-z])$")
 LOAD = re.compile(r"^(e[a-z][a-z]),(?:DWORD PTR )?\[(e[a-z][a-z])\+0x([0-9a-f]+)\]$")
 ESPREF = re.compile(r"\[esp(?:\+0x([0-9a-f]+))?\]")
+LEA = re.compile(r"^e[a-z][a-z],\[esp(?:\+0x([0-9a-f]+))?\]$")
+# An address-taken frame object is live THROUGHOUT, and only its BASE appears in
+# the operand - so a per-dword read scan calls its interior fields dead. That is
+# the sieve's one false-positive class (CBattlezMapConfig::ScanRegion built two
+# adjacent RECTs, `lea`'d both and pushed one; the sieve read the second RECT's
+# right/bottom stores as a Coord temp). An address-take therefore covers a whole
+# object: up to the next address-taken base, capped at the widest aggregate this
+# codebase passes that way.
+WIDEST_AGGREGATE = 0x10          # RECT; Coord is 8
 # (unit, symbol, member offset, which sides must carry it). The first two took
 # the accessor and agree; ApplyTriggerA took it too but cl still gives its two
 # calls SEPARATE slots where retail shares one pair, so it stays target-only -
@@ -79,33 +92,61 @@ def _source_of(ins, i, reg):
     return None
 
 
+def _escape_slots(base: int, bases: list[int]) -> range:
+    """The dword slots one `lea`-taken frame address keeps live: up to the next
+    address-taken base, capped at the widest aggregate passed that way."""
+    nxt = next((b for b in bases if b > base), base + WIDEST_AGGREGATE)
+    return range(base, min(nxt, base + WIDEST_AGGREGATE), 4)
+
+
 def temps(ins):
-    """{member offset N} for each dead adjacent store pair fed by [b+N],[b+N+4]."""
+    """{member offset N} for each dead adjacent store pair fed by [b+N],[b+N+4].
+
+    Liveness is decided by the EVENT ORDER on each slot, not by whole-function
+    sets: a store is dead when the next event on its slot is another store (or
+    nothing). Order is what separates the two forms - the RectContains form
+    overwrites the slot before its address is taken, so the address-take never
+    observes the temp, while ScanRegion's `lea`+push comes straight after its
+    stores and observes them."""
     tr = _esp_trace(ins)
-    written: dict[int, tuple[int, str, int]] = {}
-    read: set[int] = set()
-    killed: set[int] = set()
+    events: dict[int, list[tuple[int, str]]] = {}
+    src_of: dict[int, tuple[str, int]] = {}
+    leas: list[tuple[int, int]] = []
     for i, (mn, ops, d) in enumerate(tr):
         m = STORE.match(ops) if mn == "mov" else None
         if m is not None:
             slot = (int(m.group(1), 16) if m.group(1) else 0) - d
-            if slot in written:
-                killed.add(slot)          # a later store kills the earlier one
-            else:
-                src = _source_of(ins, i, m.group(2))
-                if src:
-                    written[slot] = (i, src[0], src[1])
+            events.setdefault(slot, []).append((i, "w"))
+            src = _source_of(ins, i, m.group(2))
+            if src and slot not in src_of:
+                src_of[slot] = src
             continue
+        if mn == "lea" and (g := LEA.match(ops)):
+            leas.append((i, (int(g.group(1), 16) if g.group(1) else 0) - d))
         for g in ESPREF.finditer(ops):
-            read.add((int(g.group(1), 16) if g.group(1) else 0) - d)
-    dead = {k: v for k, v in written.items() if k in killed or k not in read}
+            events.setdefault((int(g.group(1), 16) if g.group(1) else 0) - d,
+                              []).append((i, "r"))
+    bases = sorted({b for _i, b in leas})
+    for i, base in leas:
+        for slot in _escape_slots(base, bases):
+            events.setdefault(slot, []).append((i, "r"))
+
+    dead: dict[int, tuple[str, int]] = {}
+    for slot, evs in events.items():
+        evs.sort()
+        first_store = next((n for n, (_i, k) in enumerate(evs) if k == "w"), None)
+        if first_store is None or slot not in src_of:
+            continue
+        after = evs[first_store + 1:]
+        if not after or after[0][1] == "w":
+            dead[slot] = src_of[slot]
     out = set()
-    for k, (_i, b, n) in dead.items():
+    for k, (b, n) in dead.items():
         hi = dead.get(k + 4)
-        if hi and hi[1] == b and hi[2] == n + 4:
+        if hi and hi[0] == b and hi[1] == n + 4:
             out.add(n)
         lo = dead.get(k - 4)
-        if lo and lo[1] == b and lo[2] == n - 4:
+        if lo and lo[0] == b and lo[1] == n - 4:
             out.add(n - 4)
     return out
 
