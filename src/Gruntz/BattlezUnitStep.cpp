@@ -258,10 +258,9 @@ Coord CGrunt::GetTilePos() {
 // @early-stop
 RVA(0x00031ca0, 0x2f2)
 i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
-    i32 tx = unit->m_arrivalCell.m_x;
-    i32 ty = unit->m_arrivalCell.m_y;
-    if (tx != -1 && ty != -1) {
-        CGrunt* target = m_triggerMgr->m_grid[tx * 15 + ty];
+    Coord cell = unit->m_arrivalCell;
+    if (cell.m_x != -1 && cell.m_y != -1) {
+        CGrunt* target = m_triggerMgr->m_grid[cell.m_x * 15 + cell.m_y];
         if (target != NULL) {
             CGameObject* lvl = target->m_object;
             if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
