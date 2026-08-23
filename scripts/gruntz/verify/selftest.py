@@ -3904,6 +3904,75 @@ class EhActionControls(unittest.TestCase):
                 got = ehactions._canonical_map("base", "u", "?P@@QAEXXZ")
         self.assertEqual(got, {0: (481, 0x0), 1: (481, 0xB)})
 
+    def test_the_census_separates_a_frame_shift_from_a_dtor_change(self):
+        """The band's biggest bucket is the SAME destructors at a different
+        frame slot - the parent's frame layout showing up a second time, not
+        an unwind question. It must not be reported as a structural row."""
+        from gruntz.walls.ehactions import census_verdict
+        b = ["[ebp-0x3c] -> ??1CString@@QAE@XZ"] * 3
+        t = ["[ebp-0x30] -> ??1CString@@QAE@XZ"] * 3
+        self.assertEqual(census_verdict(b, t), "slot-shift")
+        self.assertEqual(census_verdict(b, b), "equal")
+        self.assertEqual(
+            census_verdict(b, t[:2]), "count")
+        self.assertEqual(
+            census_verdict(b, ["[ebp-0x3c] -> ??1CString@@QAE@XZ",
+                               "[ebp-0x3c] -> ??1CString@@QAE@XZ",
+                               "[ebp-0x3c] -> ??1CPtrList@@UAE@XZ"]),
+            "dtor-identity")
+
+
+class RetailReceiverScreenControls(unittest.TestCase):
+    """`walls thisscan --retail` decides a dropped receiver from the retail
+    image alone. Two filters carry the whole screen and both are measured."""
+
+    def test_a_consumed_ecx_is_an_argument_not_a_receiver(self):
+        """cl routinely materialises a PUSHED argument through ECX. 273 of the
+        275 ECX definitions in the 2026-08-23 sweep were this."""
+        from gruntz.walls.thisscan import _retail_receiver
+        lines = [(0x10, "mov ecx,DWORD PTR [ebx+0x8]"),
+                 (0x13, "push ecx"),
+                 (0x14, "call 0x2000")]
+        self.assertTrue(_retail_receiver(lines, 0x14)["consumed"])
+        lines = [(0x10, "mov ecx,DWORD PTR [ebx+0x8]"),
+                 (0x13, "push eax"),
+                 (0x14, "call 0x2000")]
+        self.assertFalse(_retail_receiver(lines, 0x14)["consumed"])
+
+    def test_arithmetic_landing_in_ecx_is_not_an_object(self):
+        """`and ecx,0x3` reaches the call unconsumed and is still not a
+        receiver - measured on `?FileExists@@YAHPBD@Z`, the screen's only
+        other dead-ECX site image-wide."""
+        from gruntz.walls.thisscan import OBJECT_KINDS, _retail_receiver
+        lines = [(0x10, "and ecx,0x3"), (0x13, "call 0x2000")]
+        r = _retail_receiver(lines, 0x13)
+        self.assertFalse(r["consumed"])
+        self.assertNotIn(r["kind"], OBJECT_KINDS)
+        lines = [(0x10, "mov ecx,edi"), (0x12, "call 0x2000")]
+        self.assertIn(_retail_receiver(lines, 0x12)["kind"], OBJECT_KINDS)
+
+    def test_a_call_or_branch_ends_the_window(self):
+        """ECX is volatile across a call, and a definition on the other side
+        of a branch does not reach the site."""
+        from gruntz.walls.thisscan import _retail_receiver
+        for barrier in ("call 0x9000", "je 0x9000", "ret"):
+            lines = [(0x08, "mov ecx,esi"), (0x0a, barrier),
+                     (0x0f, "call 0x2000")]
+            self.assertIsNone(_retail_receiver(lines, 0x0F), barrier)
+
+    def test_a_recursive_call_is_not_an_asymmetry(self):
+        """Our obj relocates a self-call and names the function; the delinked
+        target resolves it inside its own section and leaves no relocation. So
+        the census read `n/0` on the caller's OWN name and every self-recursive
+        function looked asymmetric - ten of the thirteen inverse sites in the
+        whole-image sweep, all of them on rows scoring 100.00."""
+        from gruntz.walls.thisscan import _census
+        me = "?Parse@CButeMgr@@QAE_NXZ"
+        sites = [{"direct": True, "ref": me, "recv": {"kind": "regcopy"}},
+                 {"direct": True, "ref": "?Other@@YAXXZ", "recv": None}]
+        tot, _rec, _det = _census(sites, me)
+        self.assertEqual(dict(tot), {"?Other@@YAXXZ": 1})
+
 
 class MatchReferenceControls(unittest.TestCase):
     """`gruntz match --reference <bad path>` raised FileNotFoundError AFTER a

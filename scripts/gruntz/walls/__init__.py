@@ -27,7 +27,10 @@
                                   a free function has IDENTICAL callee bytes,
                                   so only a caller shows it - as a dead ECX
                                   load retail emits before the call and we do
-                                  not (--inverse for the mirror)
+                                  not (--inverse for the mirror). --retail is
+                                  the stronger form: our side carries no
+                                  information here, so retail's own call sites
+                                  decide the row with no score and no pairing
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
                                   cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
@@ -42,7 +45,12 @@
     gruntz walls ehactions <fn>   the /GX unwind ACTION sequence (object slot
                                   + dtor identity, in order) of one parent -
                                   a funclet COUNT delta is the ctor-inlining
-                                  boundary, a differing action is a defect
+                                  boundary, a differing action is a defect.
+                                  --census does the whole sub-100 EH band,
+                                  grouped by parent: the funclets pair BY
+                                  CONSTRUCTION through the normalizer's
+                                  canonical names, and most of the band is a
+                                  second readout of its parent's frame
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
 

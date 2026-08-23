@@ -19,6 +19,12 @@ reports, per call site, the callees retail gives a receiver and we do not.
     gruntz walls thisscan [--todo] [--unit U] [--below P] [--above P]
                           [--inverse] [--all-callees] [--receivers] [--arity]
                           [--limit N] [--json]
+    gruntz walls thisscan --retail [--probe RVA...]
+
+`--retail` is the STRONGER form and needs no score at all - read it first.
+The paired screen below is bounded by what the compare report can show; the
+retail screen is bounded only by the retail image, and it found the row the
+paired screen structurally could not (see RETAIL SCREEN, below).
 
 The default screen requires ALL FOUR of:
 
@@ -92,11 +98,93 @@ sites over 49 callees, inverse 232 over 50. A defect class does not run both
 ways in equal volume - that symmetry IS the register rotation, and 2-versus-0
 after the filters is the signal it was hiding.
 
-The 222 skipped rows are EH funclets and are not recoverable here: cl 5.0 emits
-them inside the parent's COMDAT with no symbol of their own, and only the
-delinker gives the target side `__ehunwind$<parent>$N` names, so there is
-nothing to pair them against. Their calls are destructors, which are members on
-both sides by construction.
+WHOLE-IMAGE CALIBRATION, 2026-08-23. Run over every paired report row rather
+than the sub-100 queue - 4427 rows, of which 3756 score 100.00:
+
+                        EXACT rows            sub-100 rows
+    forward   asym      0 callees / 0 sites   40 callees / 171 sites
+              hits      0                     0
+    inverse   asym      0 callees / 0 sites   63 callees / 232 sites
+              hits      0                     0
+    --receivers / --arity: 0 in all four cells
+
+The EXACT column is 0 BY CONSTRUCTION and the run proves the implementation
+matches the construction: a row at 100.00 is byte-identical to retail, so it
+cannot carry an asymmetry, and no caller-diff rule can ever flag it. That is a
+statement about THIS SIEVE, not about the code - a dropped receiver lives in an
+exact caller perfectly happily (`CBattlezMapConfig::TileSwitch`). Reach those
+with `--retail`.
+
+The calibration run also FOUND one detector bug, which is what it is for: ten
+of the thirteen inverse sites on exact rows were the caller calling ITSELF. Our
+obj spells a recursive call as a `call rel32` with a relocation naming the
+function; the delinked target resolves it inside its own section and leaves no
+relocation, so the census counted `n/0` on the caller's own name. `_census` now
+drops self-referent calls, and both EXACT cells are 0.
+
+RETAIL SCREEN (`--retail`) - the same question with our side deleted.
+
+A function we model FREE has NO receiver by construction, so the paired
+"ours-lacks" test carries no information: retail's own bytes decide the row
+alone. Dropping our side removes three limits at once - the screen no longer
+needs a compare report, no longer needs the caller to be paired or
+reconstructed, and no longer needs the caller to be sub-100. The evidence is
+one rule over the retail image: at EVERY rel32 call site of the callee (ILT
+jmp-thunks expanded one hop), a strict-window ECX definition exists that
+NOTHING consumes before the call, and it names an object (member / global /
+frame slot / `lea` local / register copy) rather than falling out of
+arithmetic.
+
+Measured over the whole free-modelled population, 2026-08-23:
+
+    free-modelled functions                          473
+    reachable by a direct retail call site           268
+    retail call sites to them                       1225
+    ... with any ECX definition in the window        275
+    ... of those, DEAD (nothing consumes it)           2
+    ... after the object-kind filter                   1     <- the hit
+
+The DEAD filter is the entire sieve: it removes 273 of 275. The noise floor is
+directly measurable rather than argued - 147 of the population are library/CRT
+free functions that CANNOT be members, they carry 537 call sites, and zero of
+those sites show a dead ECX. cl 5.0 does not write a register it will not read.
+
+The one hit is `CBattlezMapConfig::TileSwitch`, which the PAIRED screen cannot
+reach: it scored 100.00 EXACT as a free `__stdcall`, and its only caller,
+`CBattlezMapConfig::Step`, sits at 87% - far enough from retail that our side
+also has an ECX definition in the window, so the `ours-lacks` filter cancels
+the row. That is the paired screen's recall limit stated exactly.
+
+The INVERSE of the retail screen is the recall control, not a symmetry
+control: of 2854 member-modelled functions with a direct call site, 556 show
+NO receiver at any site under this same strict rule. Absence of a detected
+receiver therefore means nothing - which is why the forward screen demands
+PRESENCE at every site and never argues from a missing one.
+
+`--probe RVA...` runs the screen on named addresses whatever the model says -
+the calibration path. Both 2026-08-23 hits (`0x13b970`, `0x160790`) reproduce
+under it from the retail image alone.
+
+THE CLASS-LEVEL SOURCE SCREEN IS A CANDIDATE GENERATOR, NOT A SIEVE. Listing
+every free function whose FIRST parameter is a modelled class returns 115 rows
+image-wide, of which 29 have a direct retail call site and exactly ONE has the
+byte evidence. The other 114 are real free functions - object factories
+registered as function pointers (`CreateActionArea(CGameObject*)` and its
+forty siblings), MFC's `AfxCallWndProc`/`ConstructElements`, serializers. A
+leading class pointer is not a dropped receiver; the receiver-shaped ECX write
+at the call site is. Note also that neither 2026-08-23 hit had a leading class
+parameter at all - the receiver was simply ABSENT from the model - so the
+source screen cannot see the shape it was proposed to find.
+
+EH FUNCLETS PAIR BY CONSTRUCTION; the earlier claim here that they cannot was
+wrong on both counts. cl 5.0 does NOT emit them inside the parent's COMDAT and
+they are NOT unnamed: they get their own `.text` COMDAT, carrying cl's local
+labels (`$L42015`, `$L42016`, ... at an 11-byte stride), and the normalizer's
+`<unit>.symbols.tsv` records the canonical `__ehunwind$<parent>$<n>` name plus
+the (section, offset) for each. `gruntz walls ehactions --census` pairs them
+that way. The part that survives is the conclusion: a funclet's only transfer
+is a destructor tail-call, whose receiver both sides load, so the receiver
+sieve over the EH band is empty by construction.
 """
 
 from __future__ import annotations
@@ -276,11 +364,20 @@ def _shape(asm: str) -> str:
     return REGNAME.sub("r", asm.replace("ecx", "@", 1)).replace("@", "ecx", 1)
 
 
-def _census(cs):
-    """(calls, calls-with-a-receiver, receivers) per direct callee."""
+def _census(cs, self_name: str = ""):
+    """(calls, calls-with-a-receiver, receivers) per direct callee.
+
+    A RECURSIVE call is dropped. Our obj spells it as a `call rel32` carrying a
+    relocation that names the function, while the delinked target resolves the
+    same call inside its own section and leaves no relocation - so the two
+    sides count `n/0` on the caller's own name and every self-recursive
+    function reads as an asymmetry it does not have. Ten of the thirteen
+    inverse sites in the 2026-08-23 whole-image sweep were exactly this, all of
+    them on rows scoring 100.00.
+    """
     tot, rec, det = Counter(), Counter(), defaultdict(list)
     for c in cs:
-        if not c["direct"] or not c["ref"]:
+        if not c["direct"] or not c["ref"] or c["ref"] == self_name:
             continue
         tot[c["ref"]] += 1
         if c["recv"]:
@@ -296,8 +393,8 @@ def scan_one(token: str, unit: str | None = None, inverse: bool = False) -> dict
     ours = call_sites(lb, loose=not inverse)
     retail = call_sites(lt, loose=inverse)
     give, lack = ((retail, ours) if not inverse else (ours, retail))
-    tg, rg, dg = _census(give)
-    tl, rl, _dl = _census(lack)
+    tg, rg, dg = _census(give, binding.name)
+    tl, rl, _dl = _census(lack, binding.name)
 
     hits, asym = [], []
     for ref in sorted(tg):
@@ -416,7 +513,12 @@ def scan(rows, inverse: bool, progress=None) -> list[dict]:
                 rec.update(scan_one(row["rva"], inverse=inverse))
             except SystemExit:
                 rec.update(scan_one(row["symbol"], row["unit"], inverse))
-        except BaseException as err:      # an unpairable funclet, mostly
+        except BaseException as err:
+            # mostly an EH funclet: it has no rva in the Model and no
+            # `__ehunwind$` symbol in OUR coff, only cl's `$L<n>` label. It
+            # pairs through the normalizer's canonical map - see
+            # `walls ehactions --census` - and its receiver population is
+            # empty by construction, so this sieve does not chase it.
             rec["skipped"] = str(err)[:110]
         out.append(rec)
         if progress and n % 100 == 0:
@@ -429,8 +531,9 @@ def report_mismatch(rows, limit: int) -> None:
     hit = [r for r in ok if r["mismatch"]]
     sites = sum(len(r["mismatch"]) for r in hit)
     print(f"paired rows read: {len(ok)}   "
-          f"(skipped {len(rows) - len(ok)}: EH funclets, which cl emits "
-          "inside the parent COMDAT with no symbol of their own)")
+          f"(skipped {len(rows) - len(ok)}: EH funclets - pair them with "
+          "`walls ehactions --census`, whose receiver population is "
+          "empty by construction)")
     print(f"  callers passing a receiver from a DIFFERENT member/global : "
           f"{len(hit)}")
     print(f"  call SITES                                               : "
@@ -451,8 +554,9 @@ def report_arity(rows, limit: int) -> None:
     hit = [r for r in ok if r["arity"]]
     sites = sum(len(r["arity"]) for r in hit)
     print(f"paired rows read: {len(ok)}   "
-          f"(skipped {len(rows) - len(ok)}: EH funclets, which cl emits "
-          "inside the parent COMDAT with no symbol of their own)")
+          f"(skipped {len(rows) - len(ok)}: EH funclets - pair them with "
+          "`walls ehactions --census`, whose receiver population is "
+          "empty by construction)")
     print(f"  callers whose `__cdecl` cleanup differs from retail's : {len(hit)}")
     print(f"  call SITES                                            : {sites}")
     print("  cl merges the cleanup of adjacent calls and can defer one, so read "
@@ -479,8 +583,9 @@ def report(rows, limit: int, inverse: bool, all_callees: bool) -> None:
     callees = {h["callee"] for r in hit for h in r[key]}
     who = "WE pass" if inverse else "retail passes"
     print(f"paired rows read: {len(ok)}   "
-          f"(skipped {len(rows) - len(ok)}: EH funclets, which cl emits "
-          "inside the parent COMDAT with no symbol of their own)")
+          f"(skipped {len(rows) - len(ok)}: EH funclets - pair them with "
+          "`walls ehactions --census`, whose receiver population is "
+          "empty by construction)")
     print(f"  callers where {who} a receiver the other side lacks")
     print(f"    callers                                 : {len(hit):4d}")
     print(f"    call SITES                              : {sites:4d}")
@@ -511,9 +616,203 @@ def report(rows, limit: int, inverse: bool, all_callees: bool) -> None:
         print(f"  {n:3d}  {c}")
 
 
+# --------------------------------------------------------------------------
+# the RETAIL screen: the same question with our side deleted
+# --------------------------------------------------------------------------
+
+#: free by mangling. `@@YI` is free __FASTCALL - its first integer argument
+#: rides in ECX by ABI, so a `mov ecx,..` before the call is that argument.
+FREE_CONV = re.compile(r"@@Y[AGJ]")
+#: a STATIC member (`@@SA`/`@@SG`): a class member that takes no receiver, so
+#: it belongs in the free population as a control rather than a candidate.
+STATIC_MEMBER = re.compile(r"@[0-9A-Z_]*@@S[AG]")
+
+
+def _retail_lines(img, owner, cache):
+    if owner.rva not in cache:
+        from gruntz.tool import objdump
+        body = img.read(owner.rva, owner.size or 0x40)
+        out = []
+        for line in (objdump.disassemble(body, vma=owner.rva).splitlines()
+                     if body else ()):
+            if ":\t" not in line:
+                continue
+            head, rest = line.split(":\t", 1)
+            try:
+                addr = int(head.strip(), 16)
+            except ValueError:
+                continue
+            parts = rest.split("\t")
+            out.append((addr, " ".join(
+                (parts[-1] if len(parts) > 1 else parts[0]).split())))
+        cache[owner.rva] = out
+    return cache[owner.rva]
+
+
+def _retail_receiver(lines, site):
+    """The ECX definition reaching the retail call at `site`, strict rule."""
+    i = next((k for k, (a, _s) in enumerate(lines) if a == site), None)
+    if i is None:
+        return None
+    consumed = False
+    for steps, j in enumerate(range(i - 1, -1, -1)):
+        asm = lines[j][1]
+        if not asm or BYTES_ONLY.match(asm):
+            continue
+        op = asm.split()[0]
+        if op in ("call", "ret", "leave") or BRANCH.match(op):
+            return None
+        if writes_ecx(asm):
+            k = kind_of(asm)
+            return None if k == "pop" else {
+                "kind": k, "asm": asm, "consumed": consumed, "dist": steps}
+        if reads_ecx(asm):
+            consumed = True
+        if steps >= WINDOW:
+            return None
+    return None
+
+
+#: an ECX definition that NAMES an object. `and ecx,0x3` reaches the call with
+#: nothing consuming it and is still not a receiver - it is arithmetic that
+#: happened to land in ECX (measured on `?FileExists@@YAHPBD@Z`).
+OBJECT_KINDS = ("member", "global", "frame", "lea-local", "regcopy")
+
+
+def retail_screen(img, idx, rva, name, unit, cache):
+    """One callee: what retail hands it in ECX at every rel32 call site."""
+    entries = [rva] + img.thunks_to(rva)
+    sites = sorted({s for e in entries
+                    for s, op in img.call_index.get(e, ()) if op == 0xE8})
+    rec = {"rva": f"0x{rva:06x}", "unit": unit, "name": name,
+           "sites": len(sites), "recv": 0, "dead": 0, "named": 0,
+           "consumed": 0, "none": 0, "outside": 0, "kinds": Counter(),
+           "where": []}
+    for site in sites:
+        owner = idx.owner(site)
+        if owner is None or owner.rva == rva:
+            rec["outside"] += 1                 # a tail in nobody's extent
+            continue
+        r = _retail_receiver(_retail_lines(img, owner, cache), site)
+        if r is None:
+            rec["none"] += 1
+            continue
+        rec["recv"] += 1
+        rec["kinds"][r["kind"]] += 1
+        if r["consumed"]:
+            rec["consumed"] += 1
+            continue
+        rec["dead"] += 1
+        if r["kind"] not in OBJECT_KINDS:
+            continue
+        rec["named"] += 1
+        if len(rec["where"]) < 6:
+            rec["where"].append(f"0x{site:06x} in "
+                                f"{(owner.name or '')[:56]}   {r['asm']}")
+    rec["kinds"] = dict(rec["kinds"])
+    rec["hit"] = bool(sites and not rec["outside"]
+                      and rec["named"] == rec["sites"])
+    return rec
+
+
+def retail_main(probe, limit: int, as_json: bool) -> int:
+    from gruntz.model import resolve
+    from gruntz.sema.image import retail
+    from gruntz.sema.index import index
+    idx, img, cache = index(), retail(), {}
+    if probe:
+        for tok in probe:
+            rva = int(tok, 16)
+            b = idx.func(rva)
+            json.dump(retail_screen(img, idx, rva, b.name if b else "?",
+                                    b.unit if b else "?", cache),
+                      sys.stdout, indent=1)
+            print()
+        return 0
+
+    free, member, rows = [], [], []
+    for b in resolve().functions:
+        if not b.name or not b.name.startswith("?") or "@@YI" in b.name:
+            continue
+        if FREE_CONV.search(b.name) or STATIC_MEMBER.search(b.name):
+            free.append(b)
+        elif THISCALL.search(b.name):
+            member.append(b)
+    for b in free:
+        rows.append(retail_screen(img, idx, b.rva, b.name, b.unit, cache))
+    reach = [r for r in rows if r["sites"] and not r["outside"]]
+    hits = [r for r in reach if r["hit"]]
+    lib = [r for r in rows if not r["unit"]]
+    # a callee with no `call` site is NOT a blind spot when retail STORES its
+    # address: a __thiscall member cannot be a plain function pointer, so an
+    # address-taken callee is free by its own usage. What is left is reached by
+    # nothing at all, and has no witness of any kind.
+    taken = 0
+    for r in rows:
+        if r["sites"]:
+            continue
+        rva = int(r["rva"], 16)
+        if (any(t == rva for _s, t in img.refs_to_range(rva, rva + 1))
+                or img.thunks_to(rva)):
+            taken += 1
+    unreached = sum(1 for r in rows if not r["sites"])
+
+    if as_json:
+        json.dump(rows, sys.stdout)
+        return 0
+    print("RETAIL screen: what retail hands a FREE-modelled callee in ECX.")
+    print("Our side has no receiver by construction, so retail's bytes decide "
+          "the row\nalone - no compare report, no pairing, no score.\n")
+    print(f"  free-modelled functions            : {len(rows):5d}")
+    print(f"  reachable by a direct call site    : {len(reach):5d}")
+    print(f"  retail call sites to them          : "
+          f"{sum(r['sites'] for r in reach):5d}")
+    print(f"  ... with an ECX definition         : "
+          f"{sum(r['recv'] for r in reach):5d}")
+    print(f"  ... of those DEAD (nothing reads it): "
+          f"{sum(r['dead'] for r in reach):5d}")
+    print(f"  ... and NAMING an object           : "
+          f"{sum(r['named'] for r in reach):5d}")
+    print(f"  callees flagged at EVERY site      : {len(hits):5d}")
+    partial = [r for r in reach if r["named"] and not r["hit"]]
+    print(f"  ... at SOME sites only             : {len(partial):5d}   "
+          "read these by hand: the strict rule stops at a branch, so a "
+          "receiver\n                                              retail "
+          "materialises before a guard reads as absent")
+    for r in sorted(partial, key=lambda x: -x["named"] / x["sites"])[:limit]:
+        print(f"      {r['rva']} {r['named']}/{r['sites']} {r['unit']:18} "
+              f"{r['name'][:56]}")
+    print(f"\n  no direct call site                : {unreached:5d}")
+    print(f"  ... but ADDRESS-TAKEN in retail    : {taken:5d}   free by its "
+          "own usage - a member cannot be a plain function pointer")
+    print(f"  ... reached by nothing at all      : {unreached - taken:5d}   "
+          "undecidable: no witness exists")
+    print(f"\n  noise floor: {len(lib)} library/CRT free functions that CANNOT "
+          f"be members\n  carry {sum(r['sites'] for r in lib)} call sites and "
+          f"{sum(r['dead'] for r in lib)} dead-ECX site(s).\n")
+    for r in sorted(hits, key=lambda x: -x["sites"])[:limit]:
+        print(f"{r['rva']} {r['unit']:22} {r['name'][:66]}  "
+              f"sites={r['sites']}")
+        for w in r["where"]:
+            print(f"    {w}")
+    print(f"\nrecall control (NOT a symmetry control): of {len(member)} "
+          f"member-modelled functions,\n  the same strict rule finds NO "
+          "receiver at any site for a large minority -\n  absence of a "
+          "detected receiver is not evidence. Run --json and count if you "
+          "need\n  the number for a specific build.")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz walls thisscan",
                                  description=__doc__.split("\n\n")[0])
+    ap.add_argument("--retail", action="store_true",
+                    help="the score-free screen: retail's own call sites to "
+                         "every FREE-modelled callee. Needs no compare report "
+                         "and reaches callers the paired screen cannot")
+    ap.add_argument("--probe", nargs="+", metavar="RVA",
+                    help="run the retail screen on these addresses whatever "
+                         "the model says they are (calibration)")
     ap.add_argument("--unit", help="restrict to one unit of config/units.toml")
     ap.add_argument("--todo", action="store_true",
                     help="the campaign queue rather than every sub-100 row")
@@ -538,6 +837,8 @@ def main(argv=None) -> int:
     ap.add_argument("--one", help="a single rva or name")
     args = ap.parse_args(argv)
 
+    if args.retail or args.probe:
+        return retail_main(args.probe, args.limit, args.json)
     if args.one:
         json.dump(scan_one(args.one, inverse=args.inverse), sys.stdout, indent=1)
         print()
