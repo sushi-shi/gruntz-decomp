@@ -91,27 +91,25 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     CWwdGameObjectA* o = m_object;
     i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, v)
-    const char* name;
     // The WWD `Smarts` slot is per-logic; for a fortress flag it carries the
     // owning warlord (docs/domain: Smarts is the team number 0-3).
     switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
         case WARLORDZ_KING:
-            name = "GAME_FORTRESSFLAGZ_KING";
+            ApplyName("GAME_FORTRESSFLAGZ_KING");
             break;
         case WARLORDZ_NAPOLEAN:
-            name = "GAME_FORTRESSFLAGZ_NAPOLEAN";
+            ApplyName("GAME_FORTRESSFLAGZ_NAPOLEAN");
             break;
         case WARLORDZ_PATTON:
-            name = "GAME_FORTRESSFLAGZ_PATTON";
+            ApplyName("GAME_FORTRESSFLAGZ_PATTON");
             break;
         case WARLORDZ_VIKING:
-            name = "GAME_FORTRESSFLAGZ_VIKING";
+            ApplyName("GAME_FORTRESSFLAGZ_VIKING");
             break;
         default:
             SetObjectFlags(0x10000);
             return;
     }
-    ApplyName(name);
     SET_ANIMATION_ACT("A");
     SwitchGeometry("GAME_CYCLE100", 0);
     SetObjectFlags(3);
