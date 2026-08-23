@@ -15,12 +15,14 @@ two adjacent member offsets through one base register:
                 `LastTilePx().m_x`, NOT bound to a named local).
   base-only     the mirror: we copy a pair retail reads in place.
 
-The base register decides which of those remedies applies, so each row is tagged
-with it. A MEMBER base (`+0x17c`) is an accessor's return value. An `esp` base
-(`esp+0x4c`) is a stack aggregate copied into another frame slot - a local
-`CRect r = box;` or `Coord c = other;` one side writes and the other does not.
-The register NAME is never compared: the two sides put `this` in different
-registers, so only member-vs-frame is portable across a pair.
+ONLY A MEMBER PAIR IS COMPARABLE. A pair read from another FRAME slot is a local
+aggregate copy, and its source offset is a frame offset, which the two sides do
+not agree on: RouteToNearbyEnemy emits the identical eleven-instruction RECT
+copy on both sides, at [esp+0x6c] on ours and [esp+0x80] on retail's, and keying
+on that offset reported it as an asymmetry in BOTH directions at once. Those
+pairs are counted and never compared. The base REGISTER is not comparable
+either - the two sides put `this` in different registers - so a member pair is
+keyed on its member offset alone.
 
 DEAD is decided by the EVENT ORDER on the slot: a store is dead when the next
 event on its slot is another store (the RectContains form, where the real value
@@ -288,19 +290,24 @@ def _pairs(ins):
             if killed or (not after and slot not in escaped):
                 dead[slot] = (src[0], src[1], src[2], i)
                 break
-    out, prov = set(), {}
+    out, prov, esp = set(), {}, 0
     for k, (b, n, load_at, at) in dead.items():
-        # The base REGISTER is not comparable across sides - the two sides put
-        # `this` in different registers - but whether the source is a member or
-        # another frame slot is, and it decides the remedy: only a member pair
-        # is an accessor's return value. `esp` pairs are stack aggregate copies.
-        kind = "esp" if b == "esp" else "mem"
+        # A pair read from another FRAME SLOT is a local aggregate copy, and its
+        # source offset is a frame offset - which is NOT comparable across the
+        # two sides. CBattlezMapConfig::RouteToNearbyEnemy emits the identical
+        # eleven-instruction RECT copy on both sides at [esp+0x6c] and
+        # [esp+0x80], and keying on the offset read that as an asymmetry in both
+        # directions at once. They are counted, never compared.
         hi = dead.get(k + 4)
-        if hi and hi[0] == b and hi[1] == n + 4 and abs(hi[3] - at) <= PAIR_SPAN:
-            out.add((kind, n))
-            prov[(kind, n)] = "esp" if b == "esp" \
-                else _provenance(ins, tr, load_at, b)
-    return out, prov
+        if not (hi and hi[0] == b and hi[1] == n + 4
+                and abs(hi[3] - at) <= PAIR_SPAN):
+            continue
+        if b == "esp":
+            esp += 1
+            continue
+        out.add(("mem", n))
+        prov[("mem", n)] = _provenance(ins, tr, load_at, b)
+    return out, prov, esp
 
 
 def temps(ins):
@@ -317,6 +324,7 @@ def _sides(bobj, tobj, bf, tf, sym):
 def scan(unit_filter=None, fn_filter=None, calibrate=False):
     sc, live = pairscan.scores()
     agree = collections.Counter()
+    local = 0
     miss, extra = [], []
     for unit, (base, target) in sorted(
             pairscan.require_pairs({unit_filter} if unit_filter else None).items()):
@@ -335,7 +343,8 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
                 continue
             if calibrate != (pct >= 100.0):
                 continue
-            (b, bp), (t, tp) = _sides(bobj, tobj, bf, tf, sym)
+            (b, bp, be), (t, tp, te) = _sides(bobj, tobj, bf, tf, sym)
+            local += be + te
             if b == t:
                 for pair in t:
                     agree[tp.get(pair, "?")] += 1
@@ -344,7 +353,7 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
                 miss.append((pct, unit, sym, sorted(t - b), tp))
             if b - t:
                 extra.append((pct, unit, sym, sorted(b - t), bp))
-    return agree, miss, extra
+    return agree, local, miss, extra
 
 
 def _label(pairs, prov=None) -> str:
@@ -400,7 +409,7 @@ def main(argv=None) -> int:
         for u, sym, want, where in PROV_CONTROL:
             bobj, tobj = (Obj(p) for p in pairs[u])
             bf, tf = pairscan.functions(bobj), pairscan.functions(tobj)
-            (_b, bp), (_t, tp) = _sides(bobj, tobj, bf, tf, sym)
+            (_b, bp, _be), (_t, tp, _te) = _sides(bobj, tobj, bf, tf, sym)
             hit = ("mem", want)
             ok = bp.get(hit) == where and tp.get(hit) == where
             bad += not ok
@@ -412,13 +421,15 @@ def main(argv=None) -> int:
                               "measuring nothing; fix it before reading a sweep")
         return 1 if bad else 0
 
-    agree, miss, extra = scan(unit, a.fn, a.calibrate)
+    agree, local, miss, extra = scan(unit, a.fn, a.calibrate)
     if a.calibrate:
         print(f"CALIBRATION over 100.00% rows - every row below is a detector bug")
     hist = ", ".join(f"{n} {k}" for k, n in sorted(agree.items(),
                                                    key=lambda kv: -kv[1]))
     print(f"carrying the temp on BOTH sides at the same member: "
           f"{sum(agree.values())}" + (f"  ({hist})" if hist else ""))
+    print(f"local aggregate copies seen (frame offsets - counted, never "
+          f"compared): {local}")
     _show("TARGET-ONLY (retail takes the pair by value, we do not)", miss,
           a.only_global)
     _show("BASE-ONLY (we take it by value, retail does not)", extra,

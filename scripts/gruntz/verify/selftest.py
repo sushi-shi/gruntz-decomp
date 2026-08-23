@@ -3984,12 +3984,24 @@ class ValueTempLivenessControls(unittest.TestCase):
             "mov ebx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x24],ebx",
             "lea eax,[esp+0x20]", "push eax", "call 0x0")), set())
 
+    def test_a_local_aggregate_copy_is_counted_not_compared(self):
+        """A pair read from another FRAME slot is keyed on a frame offset, which
+        the two sides do not agree on.  The identical copy at two different
+        frame offsets read as an asymmetry in BOTH directions at once, so these
+        never enter the comparison."""
+        from gruntz.walls.valuetemp import _pairs
+        out, prov, local = _pairs(self._ins(
+            "mov ecx,DWORD PTR [esp+0x40]", "mov edx,DWORD PTR [esp+0x44]",
+            "mov DWORD PTR [esp+0x20],ecx", "mov DWORD PTR [esp+0x24],edx",
+            "ret"))
+        self.assertEqual((out, prov, local), (set(), {}, 1))
+
     def test_a_pointer_read_from_a_global_is_tagged_as_one(self):
         """The second mechanism the sieve reports: a load through a pointer read
         from a global blocks the dead-store elimination the same load through a
         pointer parameter allows, so the row has to say which it was."""
         from gruntz.walls.valuetemp import _pairs
-        _out, prov = _pairs(self._ins(
+        _out, prov, _local = _pairs(self._ins(
             "mov eax,ds:0x0", "mov esi,DWORD PTR [eax+0x4]",
             "mov ecx,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x20],ecx",
             "mov edx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x24],edx",
@@ -3998,7 +4010,7 @@ class ValueTempLivenessControls(unittest.TestCase):
 
     def test_a_pointer_taken_from_an_argument_is_not_a_global(self):
         from gruntz.walls.valuetemp import _pairs
-        _out, prov = _pairs(self._ins(
+        _out, prov, _local = _pairs(self._ins(
             "sub esp,0x10", "mov esi,DWORD PTR [esp+0x14]",
             "mov ecx,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x0],ecx",
             "mov edx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x4],edx",
