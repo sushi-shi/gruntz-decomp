@@ -319,9 +319,47 @@ def _hermetic() -> int:
     return bad + (0 if ok else 1)
 
 
+#: the rows this sieve was built on, kept as LIVE regression guards. Each was
+#: a real signature defect: a callee retail hands one block and our source
+#: declared as separate scalars. They must keep matching, in both columns.
+CONTROL = {
+    "?AddToList3@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId"
+    "@@HHHUtagRECT@@@Z": (16, 1,
+        "the level record's extent rect, which our source read as four i32 "
+        "named player0..3 - the second live instance of the pattern, and the "
+        "last one; a signature slip here puts the row back in retail's column"),
+    "?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z": (16, 2,
+        "a rect by value at both of its call sites"),
+    "?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z": (16, 4,
+        "four sites, so the row also proves the sweep is not finding one hole "
+        "and calling it a set"),
+}
+
+
+def _named_rows(res) -> int:
+    """The rows this sieve was built on, re-proven against today's image.
+
+    Each names an EXACT mangled callee and an exact site count, in BOTH
+    columns: a control that reads 0 against 0 passes while saying nothing, and
+    the first spelling of these did exactly that on a mistyped name.
+    """
+    bo, to = res["ours_by_callee"], res["retail_by_callee"]
+    bad = 0
+    for name, (size, count, why) in CONTROL.items():
+        o, r = bo.get(name, {}).get(size, 0), to.get(name, {}).get(size, 0)
+        ok = o == r == count
+        print(f"{'OK    ' if ok else 'BROKEN'} row "
+              f"{name.split('@@')[0][:46]:<48s} ours {o} retail {r} "
+              f"x {size}B  (want {count})")
+        print(f"      {why}")
+        bad += 0 if ok else 1
+    return bad
+
+
 def control() -> int:
     bad = _hermetic()
     res = sweep()
+    bad += _named_rows(res)
     bo, to = res["ours_by_callee"], res["retail_by_callee"]
     only_r = set(to) - set(bo) - set(SENTINELS)
     only_o = set(bo) - set(to) - set(SENTINELS)
