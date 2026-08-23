@@ -1,5 +1,6 @@
 # Retail keeps a dead global-read spill our MSVC5 DCE eliminates
 tags: cpp:local cpp:member | asm:mov asm:sub | topic:wall topic:regalloc
+variants: a-dead-stack-store-is-not-an-era-anomaly.md, dead-unreachable-recheck-block-dce.md
 
 symptoms: `sub esp,8` + a `mov [esp+N],reg` of a freshly-loaded global field
 that is NEVER read back; the load + spill repeat per branch; recompile omits both
@@ -31,3 +32,10 @@ the load, but it still lands in a register (no `[esp]` spill) and is a tooling
 hack, not the dev shape. Accept the plateau. Evidence: CChatBoxOwner::Configure
 (0x20530, ~69%) and ::HitTest (0x21140, ~38%, 4 dead width spills); logic + offsets
 exact, residual is purely the missing dead spills + their regalloc fallout.
+
+CORRECTED 2026-08-23: "our cl runs a stronger dead-store pass" is too strong and
+invites the RTM-provenance reflex. cl 5.0 SP3 DOES emit dead stack stores from
+ordinary source — `SaveScreenshot` writes `srcRect.right = 0;` and overwrites it two
+statements later, keeps the store, and is EXACT. The elimination is conditional, not
+unconditional; a both-sides census finds the shape in 18 base objs. Run that census
+before parking a row here — see [[a-dead-stack-store-is-not-an-era-anomaly]].
