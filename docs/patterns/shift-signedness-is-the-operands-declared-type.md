@@ -57,6 +57,29 @@ same seed, which in our tree means the seed leaving `GetRandomNumber`'s function
 static (12 game TUs share that one folded copy, so it is a cross-TU change, not a
 local one).
 
+## The whole-image census that closes the question
+
+Scanned over `GRUNTZ.EXE`'s `.text` (2026-08-23), so the reading rests on the image
+rather than on one row:
+
+| opcode pair | occurrences | adjacent to the shared `holdrand` |
+|---|---|---|
+| `shr r32,16` then `and r32,imm8` | 4 | 4 - all four in StartChipMachineCycle |
+| `sar r32,16` then `and r32,imm8` | 0 | - |
+| `sar eax,16` then `and eax,imm32` | 23 | 19 |
+| `shr eax,16` then `and eax,imm32` | 1 | 0 - it is the CRT's own `rand` at 0x11fee0 |
+
+So retail spells `>>16 & 1` on that seed with `shr` EVERY time it appears and `sar`
+NEVER, while `>>16 & 0x7fff` on the same seed is `sar` nineteen times.  Two different
+declared types over one shared static.
+
+Six cl 5.0 SP3 /O2 probes rule the peephole reading out: `sar` survives a single `& 1`
+mask, a `& 0x7fff & 1` pair folded to `& 1`, a `& 3`, a `& 0xff`, the assignment form
+and the plain-load form.  cl never rewrites the shift; only the operand's declared type
+does.  Separately, the `+1` after `cdq / idiv` that identifies `WapRand`'s `% range`
+arm occurs at exactly those four sites out of the nineteen, which confirms the helper
+is file-local to SBI_RectOnly and its shape is right.
+
 ## Reverse use
 
 Beyond the split: `shr` on a value you modelled as `int` is a signedness defect in the
