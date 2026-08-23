@@ -321,6 +321,13 @@ public:
     Coord m_reserved1dc;
     i32 m_entranceActive;
     i32 m_arrivalPending;
+    // These are the grunt's tile COLUMN and ROW, not an owner id - proven by
+    // use: passed as (col, row) to ApplyTriggerA/CellDispatch, packed as
+    // (col << 8) | row into BrickzCell::m_occupantId, and StepAttackFire hands
+    // the COLUMN to a time bomb's m_smarts, which LoadExplosionSprites takes as
+    // its third argument. Faithful to retail; the names are ours and invite a
+    // misreading. Rename to m_tileCol/m_tileRow when no lane holds Grunt.h
+    // (374 sites, 34 files).
     i32 m_tileOwnerHi;
     i32 m_tileOwnerLo;
     PickupType m_moveIcon;
