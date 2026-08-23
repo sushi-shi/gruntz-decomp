@@ -53,6 +53,20 @@ memory operands of the imul loads first). Detection is the same either way:
 base `lea r2,[r1+K]` keeping r1 alive against retail `mov r2,r1` + in-place
 `add/inc r1`.
 
+The binding order also decides WHICH callee-saved register the RECEIVER gets, so
+the shape reaches `this`-versus-derived-value rows that read as pure colour.
+`DSoundVoice::Tick` 0x137060 (directsoundmgr) is 43 instructions on both sides
+with the same frame and the same call/branch/ret/reloc quadruple, and its whole
+5.70% gap is retail holding `this` in ESI and the elapsed time in EDI while base
+does the reverse - visible as `mov esi,ecx` being instruction 2 in retail and
+instruction 4 in base. `i32 elapsed = now - m_rampStartTime;` defines a new
+call-crossing tuple that binds ESI ahead of `this`; `now -= m_rampStartTime;`
+keeps the parameter's own live range, which starts at entry and therefore loses
+the tie to the implicit `this` parameter. One build, 95.70 -> 100.00 EXACT. The
+detection here is not the prologue load but the ORDER of the two materialisation
+moves: both sides emit `push esi; <X>; push edi; <Y>` and only the contents of X
+and Y swap.
+
 The SNAPSHOT direction is the same tuple question read backwards. When a
 function walks a buffer and returns the number of bytes consumed, retail
 copies the incoming pointer out once and then advances the PARAMETER

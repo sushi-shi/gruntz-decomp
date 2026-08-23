@@ -45,7 +45,7 @@ free-list publish store read EAX where retail reads EDX, and the sieve reports
 exactly one site there with delta +2; deleting the local again closes the colour AND
 the function (99.99 -> 100.00). The colour moved because the IL tuple moved.
 
-**Why no colour-targeted edit exists.** `CAniAdvanceCursor::Construct` is the
+**Why no colour-targeted edit exists WITHIN ONE EXPRESSION.** `CAniAdvanceCursor::Construct` is the
 minimal case: THIRTEEN instructions, one basic block, no branches, no calls, six
 member assignments emitted in the source's own order - and its entire 4.58% gap is
 an EAX/EDX transposition (`src` in EAX and the constant 1 in EDX; retail the
@@ -57,13 +57,18 @@ and only the cursor's entry phase differs, which is C1 handle state. Four inert 
 on `SaveVideoCheckboxes`: named locals for the results, one reused local, the
 TU-state probe, and inverting `if (x == NULL) return;` into `if (x != NULL) { ... }`.
 
-**Retail's colour can be one instruction WORSE, which is the strongest form of the
-argument.** `CGruntzSoundZ::GetXMidiVolume` 0x1389c0 (91.30) is a constant division
-whose two sides run the identical magic-multiply sequence; retail accumulates in EDX
-and therefore pays a closing `mov eax,edx` to return, while cl accumulates in EAX and
-needs no move. No source spelling asks a compiler for a redundant move - and four are
-byte-identical (a named result local, reusing the input local, the constant first, an
-explicit parenthesisation).
+**"Retail's colour is one instruction WORSE" is NOT a proof of unreachability -
+CORRECTED 2026-08-23.** `CGruntzSoundZ::GetXMidiVolume` 0x1389c0 was this file's
+strongest example: a constant division running the identical magic-multiply
+sequence on both sides, where retail accumulates in EDX and pays a closing
+`mov eax,edx` to return while cl accumulates in EAX and needs no move, with five
+byte-identical A/Bs (a named result local, reusing the input local, the constant
+first, an explicit parenthesisation, an `else if` chain). It closed 91.30 ->
+**100.00 EXACT** by hoisting the clamp-and-scale into an `inline` helper
+(`MidiVolumeToPercent`) and calling it - see
+[[inline-helper-supplies-the-il-tuple-a-colour-row-needs]]. The tuple-count
+argument below is right; what was wrong was concluding that no SOURCE construct
+adds a tuple. An inlined call does, and the era devs wrote inlines.
 
 **The TU-state lever does not reach it either.** Nineteen disposable probes on
 `Construct` - nine `typedef`s immediately above its `RVA()` pin and ten function
