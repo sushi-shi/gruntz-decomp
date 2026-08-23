@@ -21,11 +21,25 @@ counts both still hold is a verdict the edit did not invalidate.
 
     gruntz walls recheck                 every review
     gruntz walls recheck <rva|name>...   selected rows
+    gruntz walls recheck --source        the SOURCE notes instead of the ledger
     gruntz walls recheck --broken        only rows with a failed count claim
     gruntz walls recheck --strict        exit 1 when any count claim is broken
 
+There are TWO stores of written verdicts, and `gruntz walls priors` already
+reads both: the review ledger and the `//` block above each `RVA()` pin.  Only
+the ledger was ever re-measured.  `--source` runs the SAME extractor and the
+SAME measurement over the source notes, because a note that says "the frame is
+retail's 0x7c" or "313 conditional branches and 1 ret on BOTH sides" is exactly
+as checkable, and exactly as unre-run, as a ledger row.  Measured on the first
+sweep, 2026-08-23: nine notes stated something the pair no longer holds, four of
+them describing a FRAME difference that later work had already closed - a reader
+would have gone hunting for a frame that already matches.
+
 `gate_findings` is the same sweep as the `review-claims` row of `gruntz verify
-check --tier normal`, so every build re-measures the ledger.  It belongs in a
+check --tier normal`, so every build re-measures BOTH stores.  Only a BROKEN
+claim - the two sides stopped agreeing - reaches the gate; a DRIFT, where they
+still agree but not at the stated number, is a retired RULER and is reported by
+the verb only.  It belongs in a
 tier because it is the drift the MAX gate cannot see: the MAX gate watches the
 SCORE, and the commit that broke `PlaceObjectFull`'s certification raised it.
 
@@ -95,7 +109,8 @@ _AGREE = re.compile(
 _DIVERGE = re.compile(
     r"\b(vs|versus|against|differ|differs|differing|while|whereas|short|only|"
     r"instead|prior|banked|historical|recorded|fell|falls|rose|raising|"
-    r"delta|deltas|because|though|although|but)\b",
+    r"delta|deltas|because|though|although|but|residue|residual|extra|missing|"
+    r"ahead|behind|costs?|gains?)\b",
     re.I,
 )
 # A clause measuring two SOURCE CANDIDATES against each other is not a claim
@@ -263,7 +278,116 @@ def sweep(wanted: set[int] | None = None) -> list[dict]:
     return out
 
 
+def _verdict(stated: int, base: int, target: int) -> str:
+    """HOLD / DRIFT / BROKEN - and DRIFT is the distinction that matters.
+
+    A note whose number no longer measures is not automatically a note whose
+    CLAIM has failed.  The claim is that the two sides AGREE; the number is how
+    the writer's instrument counted at the time, and several of these notes were
+    written against tools that are now retired - the `--branches --diff` that
+    said "20 branches" counted CONDITIONAL branches, where this counts every
+    branch, so the same function reads 22 with nothing whatever having changed.
+    Collapsing that into BROKEN buries the four rows where the two sides really
+    did stop agreeing under the ones where only the ruler changed.
+    """
+    if base != target:
+        return "BROKEN"
+    return "HOLD" if base == stated else "DRIFT"
+
+
+def source_sweep(wanted: set[int] | None = None) -> list[dict]:
+    """One record per SOURCE note that states a measurable count, in rva order.
+
+    Same `claims()` extractor and same `measure()` as the ledger sweep - the two
+    stores must not be able to answer differently about the same pair.  The note
+    text comes from `walls.priors.block_above`, so the blank-line tolerance and
+    the formatter-directive filter are shared too rather than re-derived.
+    """
+    from gruntz.walls import priors
+    from gruntz.walls.diagnose import _locate, named_functions
+
+    named = named_functions()
+    out: list[dict] = []
+    for rva, sites in sorted(priors._pin_sites().items()):
+        if wanted and rva not in wanted:
+            continue
+        for rel, line in sites:
+            note = " ".join(x.lstrip("/*").strip() for x in
+                            priors._comment_above(rel, line))
+            if not note.strip():
+                continue
+            stated, skipped = claims(note)
+            if not stated:
+                continue
+            rec = {"rva": rva, "site": (rel, line), "note": note,
+                   "stated": stated, "skipped": skipped, "binding": None,
+                   "verdicts": [], "wall": None, "error": None}
+            b, why = _locate(f"0x{rva:x}", named)
+            if b is None:
+                rec["error"] = ("unresolved", why)
+                out.append(rec)
+                continue
+            rec["binding"] = b
+            got = measure(b)
+            if isinstance(got, str):
+                rec["error"] = ("unmeasured", got)
+                out.append(rec)
+                continue
+            counts, wall = got
+            rec["wall"] = wall
+            rec["verdicts"] = [(_verdict(n, *counts[u]), u, n, *counts[u])
+                               for u, n, _s in stated]
+            out.append(rec)
+    return out
+
+
+def source_gate_findings() -> list[str]:
+    """Every count a SOURCE note certifies, re-measured against today's pair.
+
+    Only BROKEN reaches the gate.  A DRIFT - the two sides still agree, but not
+    at the number the note states - is a retired RULER, not a failed claim: the
+    `--branches --diff` several of these notes were written against counted
+    CONDITIONAL branches where the pair reader counts every branch, so the same
+    unchanged function reads 22 against a stated 20.  Failing a build on that
+    would bury the rows where the sides really did stop agreeing.  `gruntz walls
+    recheck --source` prints both classes.
+    """
+    out: list[str] = []
+    for rec in source_sweep():
+        rva = rec["rva"]
+        rel, line = rec["site"]
+        if rec["error"]:
+            why, detail = rec["error"]
+            out.append(f"0x{rva:06x}: source note at {rel}:{line} states "
+                       f"{len(rec['stated'])} count(s) but the pair is "
+                       f"{why} - {detail}")
+            continue
+        for verdict, unit, n, base, target in rec["verdicts"]:
+            if verdict != "BROKEN":
+                continue
+            fmt = (lambda v: f"{v:#x}") if unit == "bytes" else str
+            out.append(f"0x{rva:06x} {rec['binding'].name}: the note at "
+                       f"{rel}:{line} states both sides at {fmt(n)} {unit}, and "
+                       f"they now differ - base {fmt(base)} / target "
+                       f"{fmt(target)} - re-derive it "
+                       f"(`gruntz walls diagnose 0x{rva:x}`)")
+    return out
+
+
 def gate_findings() -> list[str]:
+    """BOTH written-verdict stores, re-measured: the ledger and the source notes.
+
+    `walls priors` has always read both stores; only one of them was ever
+    re-measured.  A note above an `RVA()` pin that says "the frame is retail's
+    0x7c" or "313 conditional branches and 1 ret on BOTH sides" is exactly as
+    checkable, and was exactly as unre-run, as a ledger row - and nine of them
+    were stating something the pair no longer held when the sweep was first
+    written, four describing a frame difference that later work had already
+    closed, which sends a reader hunting for a frame that already matches."""
+    return _ledger_gate_findings() + source_gate_findings()
+
+
+def _ledger_gate_findings() -> list[str]:
     """Every count a review certifies, re-measured against today's pair.
 
     This is the drift the MAX gate structurally CANNOT see.  The MAX gate
@@ -299,6 +423,53 @@ def gate_findings() -> list[str]:
     return out
 
 
+def _print_source(a, wanted: set[int]) -> int:
+    """The `--source` view: same verdict vocabulary as the ledger view."""
+    n_rows = n_claims = n_hold = n_drift = n_broken = 0
+    broken_rows: list[int] = []
+    drift_rows: list[int] = []
+    for rec in source_sweep(wanted):
+        rva = rec["rva"]
+        rel, line = rec["site"]
+        if rec["error"]:
+            why, detail = rec["error"]
+            print(f"  0x{rva:06x} {why.upper()} {detail}   {rel}:{line}")
+            broken_rows.append(rva)
+            continue
+        verdicts = rec["verdicts"]
+        n_rows += 1
+        n_claims += len(verdicts)
+        n_hold += sum(1 for v, *_ in verdicts if v == "HOLD")
+        n_drift += sum(1 for v, *_ in verdicts if v == "DRIFT")
+        n_broken += sum(1 for v, *_ in verdicts if v == "BROKEN")
+        row_broken = any(v != "HOLD" for v, *_ in verdicts)
+        if any(v == "BROKEN" for v, *_ in verdicts):
+            broken_rows.append(rva)
+        elif row_broken:
+            drift_rows.append(rva)
+        if a.broken and not row_broken:
+            continue
+        print(f"0x{rva:06x} {rec['wall']:8} {rec['binding'].name}  "
+              f"[{rec['binding'].unit}]   {rel}:{line}")
+        for verdict, unit, n, base, target in verdicts:
+            fmt = (lambda v: f"{v:#x}") if unit == "bytes" else str
+            print(f"    {verdict:6} {unit:9} note states both {fmt(n):>7}   "
+                  f"now base {fmt(base):>7}  target {fmt(target):>7}")
+        if a.skipped:
+            for s in rec["skipped"]:
+                print(f"    (skipped, mixed sentence) {s}")
+    print(f"\n[recheck] {n_rows} source note(s) state counts: {n_claims} claim(s), "
+          f"{n_hold} hold, {n_drift} drift (sides still agree, the stated number "
+          f"is from a retired instrument), {n_broken} broken")
+    if broken_rows:
+        print("[recheck] the two sides stopped agreeing: "
+              + " ".join(f"0x{r:06x}" for r in broken_rows))
+    if drift_rows:
+        print("[recheck] number drifted, claim intact: "
+              + " ".join(f"0x{r:06x}" for r in drift_rows))
+    return 1 if (a.strict and broken_rows) else 0
+
+
 def main(argv=None) -> int:
     import argparse
 
@@ -310,6 +481,8 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     ap.add_argument("target", nargs="*", help="hex rva, mangled name, or CClass::Member")
+    ap.add_argument("--source", action="store_true",
+                    help="re-run the SOURCE notes above each RVA() pin, not the ledger")
     ap.add_argument("--broken", action="store_true", help="only rows with a failed claim")
     ap.add_argument("--strict", action="store_true", help="exit 1 when any claim is broken")
     ap.add_argument("--skipped", action="store_true",
@@ -323,6 +496,9 @@ def main(argv=None) -> int:
             print(f"[recheck] {why}")
             return 2
         wanted.add(b.rva)
+
+    if a.source:
+        return _print_source(a, wanted)
 
     n_rows = n_claims = n_hold = n_broken = 0
     unparsed: list[int] = []

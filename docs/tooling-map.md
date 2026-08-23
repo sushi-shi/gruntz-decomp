@@ -61,7 +61,9 @@ blessing a baseline is always a separate manual verb (`board --update`,
 `review-claims` is the one gate whose module lives outside `gruntz.verify`: it
 IS `gruntz walls recheck`, registered so the tier label stays typeable and so
 there is one implementation rather than a forwarding copy. It re-measures every
-count a wall review certifies against today's normalized pair, which is the
+count a written verdict certifies against today's normalized pair — BOTH stores
+`gruntz walls priors` reads, the review ledger and the `//` block above each
+`RVA()` pin (`gruntz walls recheck --source`) — which is the
 drift the MAX gate structurally cannot see — the MAX gate watches the SCORE, and
 the commit that broke `PlaceObjectFull`'s `24 calls / 96 branches / 64 relocs`
 certification (trading one cross-jump for another) raised it.

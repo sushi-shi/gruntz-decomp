@@ -1017,6 +1017,105 @@ class ReviewCountClaimControls(unittest.TestCase):
         )
 
 
+class SourceClaimGateControls(unittest.TestCase):
+    """The SECOND written-verdict store: the `//` block above an `RVA()` pin.
+
+    `walls priors` has always read both stores and only the ledger was ever
+    re-measured, which is how nine notes came to state something the pair no
+    longer held - four of them a FRAME difference that later work had closed,
+    so a reader would have gone hunting for a frame that already matches.
+
+    The three-way verdict is the point of these controls.  BROKEN (the two
+    sides stopped agreeing) is a defect and reaches the gate; DRIFT (they still
+    agree, but not at the stated number) is a RETIRED RULER and must NOT, because
+    several of these notes were written against a tool that counted CONDITIONAL
+    branches where the pair reader counts every branch.  Collapsing the two
+    would fail builds on arithmetic nobody got wrong.
+    """
+
+    RVA = 0x078A50
+    SITE = ("src/Gruntz/TriggerMgr.cpp", 427)
+    NAME = "?PlaceObjectFull@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z"
+
+    def _run(self, note, counts):
+        import types as _types
+
+        from gruntz.walls import recheck
+        b = _types.SimpleNamespace(rva=self.RVA, unit="triggermgrplace",
+                                   name=self.NAME)
+        with mock.patch("gruntz.walls.priors._pin_sites",
+                        return_value={self.RVA: [self.SITE]}), \
+             mock.patch("gruntz.walls.priors._comment_above",
+                        return_value=[f"// {note}"]), \
+             mock.patch("gruntz.walls.diagnose.named_functions",
+                        return_value={}), \
+             mock.patch("gruntz.walls.diagnose._locate", return_value=(b, "")), \
+             mock.patch.object(recheck, "measure",
+                               return_value=(counts, "inline")):
+            return recheck.source_gate_findings(), recheck.source_sweep()
+
+    AGREE = "Block topology and branch sequence agree exactly, 4 rets on both sides."
+    HOLDING = {"calls": (24, 24), "branches": (96, 96), "returns": (4, 4),
+               "relocs": (64, 64), "insns": (300, 300), "bytes": (0x400, 0x400)}
+    SPLIT = dict(HOLDING, returns=(3, 4))
+    DRIFTED = dict(HOLDING, returns=(5, 5))
+
+    def test_a_note_whose_sides_still_agree_is_silent(self):
+        """NEGATIVE control: the claim measures exactly, so nothing is a finding."""
+        out, sweep = self._run(self.AGREE, self.HOLDING)
+        self.assertEqual(out, [])
+        self.assertEqual([v[0] for v in sweep[0]["verdicts"]], ["HOLD"])
+
+    def test_a_note_whose_sides_stopped_agreeing_reaches_the_gate(self):
+        """POSITIVE control carrying the property under test end to end."""
+        out, sweep = self._run(self.AGREE, self.SPLIT)
+        self.assertEqual([v[0] for v in sweep[0]["verdicts"]], ["BROKEN"])
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("states both sides at 4 returns", out[0])
+        self.assertIn("base 3 / target 4", out[0])
+        self.assertIn(f"{self.SITE[0]}:{self.SITE[1]}", out[0])
+
+    def test_a_retired_ruler_is_DRIFT_and_never_a_finding(self):
+        """NEGATIVE control for the distinction the gate is built on: the sides
+        agree at 5 where the note says 4, so the CLAIM holds and only the number
+        is from another instrument.  It must be visible in the sweep and absent
+        from the gate."""
+        out, sweep = self._run(self.AGREE, self.DRIFTED)
+        self.assertEqual([v[0] for v in sweep[0]["verdicts"]], ["DRIFT"])
+        self.assertEqual(out, [])
+
+    def test_a_residue_sentence_is_not_an_agreement(self):
+        """`residue is 2 insns: retail loads BOTH operands ...` states a
+        DIVERGENCE and happens to contain an agreement trigger.  Reading it as a
+        claim invented three failures on the first sweep."""
+        note = ("residue is 2 insns: retail loads BOTH operands of the second "
+                "difference where cl folds one into a single fsubr.")
+        out, sweep = self._run(note, self.HOLDING)
+        self.assertEqual(sweep, [])
+        self.assertEqual(out, [])
+
+    def test_an_unmeasurable_pair_is_not_a_pass(self):
+        """A note whose pair cannot be read has not been re-measured, and a gate
+        that stays silent about that reports a green it did not verify."""
+        import types as _types
+
+        from gruntz.walls import recheck
+        b = _types.SimpleNamespace(rva=self.RVA, unit="triggermgrplace",
+                                   name=self.NAME)
+        with mock.patch("gruntz.walls.priors._pin_sites",
+                        return_value={self.RVA: [self.SITE]}), \
+             mock.patch("gruntz.walls.priors._comment_above",
+                        return_value=[f"// {self.AGREE}"]), \
+             mock.patch("gruntz.walls.diagnose.named_functions",
+                        return_value={}), \
+             mock.patch("gruntz.walls.diagnose._locate", return_value=(b, "")), \
+             mock.patch.object(recheck, "measure",
+                               return_value="normalized pair missing"):
+            out = recheck.source_gate_findings()
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("unmeasured", out[0])
+
+
 class ReviewClaimGateControls(unittest.TestCase):
     """The `review-claims` tier row - the certifications re-measured on EVERY
     build.  It exists because the MAX gate structurally cannot see this class
@@ -1046,6 +1145,7 @@ class ReviewClaimGateControls(unittest.TestCase):
                         return_value={self.RVA: row}), \
              mock.patch("gruntz.walls.reviews.current", return_value={}), \
              mock.patch("gruntz.walls.diagnose._locate", return_value=located), \
+             mock.patch.object(recheck, "source_gate_findings", return_value=[]), \
              mock.patch.object(recheck, "measure", return_value=measured):
             return recheck.gate_findings()
 
