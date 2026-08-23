@@ -3006,11 +3006,6 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     }
 }
 
-// @early-stop
-// `lea edi,[esi+ecx*8+0x2c0]` against retail's `lea edi,[esi+ecx*8]` plus a 0x2c0
-// displacement on each store - same instruction count, the member offset just lands
-// in the other operand.  Spelling the writes `m_groupSlots[col]` moves it and costs
-// far more elsewhere (98.97 -> 91.22): the whole function's ebx/ebp assignment flips.
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* pA = &m_machineB;
@@ -3125,7 +3120,6 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_LEVER:
             if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
-                    CSbiHlRow* g = m_groupSlots;
                     i32 found = 0;
                     i32 r = 3;
                     i32 col;
@@ -3146,8 +3140,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         }
                     }
                     if (found) {
-                        g[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
-                        g[col].m_counter = 0x13;
+                        m_groupSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
+                        m_groupSlots[col].m_counter = 0x13;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
@@ -3168,8 +3162,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             }
                         }
                     } else {
-                        g[col].m_state = IDX(HLROW_RAMP_UP_LOW);
-                        g[col].m_counter = 0xa;
+                        m_groupSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
+                        m_groupSlots[col].m_counter = 0xa;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                             if (host->m_emitGate == 0) {
@@ -3190,7 +3184,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             }
                         }
                     }
-                    i64* rowClock = &g[col].m_last;
+                    i64* rowClock = &m_groupSlots[col].m_last;
                     rowClock[1] = g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltDelay", 0x64);
                     rowClock[0] = static_cast<u32>(g_frameTime);
                 }
