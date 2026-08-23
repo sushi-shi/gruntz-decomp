@@ -52,29 +52,51 @@ ESP_DISP = re.compile(r"\[esp([+-]0x[0-9a-f]+)?\]")
 LOCAL_BRANCH = re.compile(r"^(j\w+|call|loop)\s+0x[0-9a-f]+$")
 FRAME_IMM = re.compile(r"^(sub|add)\s+esp,")
 
-#: the prologue is over well inside this many instructions on every cl 5.0
-#: frame we have seen, including the /GX ones that push the EH record first.
-PROLOGUE = 24
+#: the prologue ends at the first transfer of control, `__chkstk` excepted.
+#: A fixed instruction window does not: it counted ARGUMENT pushes as
+#: callee-saves on 108 base / 107 target rows of the 595-row todo queue,
+#: asymmetrically on 9, and left an unconsumed `mov eax,N` able to be charged
+#: to a later `__chkstk` on 38/40 more. Neither is visible on an exact row -
+#: both sides mis-parse identically there, so the delta is 0 either way.
+TRANSFER = re.compile(r"^(?:call|j\w+|loop\w*|ret|leave|int3?)\b")
 
 
 def frame(lines) -> tuple[int, int]:
-    """(reserved bytes, saved-register pushes) read from the prologue."""
-    reserved = saved = pending = 0
-    for ln in lines[:PROLOGUE]:
+    """(reserved bytes, saved-register pushes) read from the prologue.
+
+    cl 5.0 saves ebx/ebp/esi/edi and each only once, so a SECOND push of one is
+    already an argument and ends the run; so does any transfer of control. The
+    `mov eax,N; call __chkstk` big-frame form is the one call that does not,
+    and its immediate must be the one directly before the call - an unrelated
+    `mov eax,N` earlier in the prologue is not a frame size.
+    """
+    reserved = saved = 0
+    seen: set[str] = set()
+    pending = None
+    for ln in lines:
         asm = ln.asm
         m = SUB_ESP.match(asm)
         if m:
             reserved += int(m.group(1), 0)
+            pending = None
             continue
         m = MOV_EAX.match(asm)
         if m:
             pending = int(m.group(1), 16)
             continue
-        if asm.startswith("call") and ln.ref and "chkstk" in ln.ref:
-            reserved += pending
-            continue
-        if PUSH_SAVED.match(asm):
+        if TRANSFER.match(asm):
+            if asm.startswith("call") and ln.ref and "chkstk" in ln.ref:
+                reserved += pending or 0
+                pending = None
+                continue
+            break
+        m = PUSH_SAVED.match(asm)
+        if m:
+            if m.group(1) in seen:
+                break
+            seen.add(m.group(1))
             saved += 1
+        pending = None
     return reserved, saved
 
 
