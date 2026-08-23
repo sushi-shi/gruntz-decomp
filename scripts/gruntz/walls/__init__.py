@@ -12,6 +12,10 @@
     gruntz walls framescan        stack-frame-size sieve: our `sub esp,N`
                                   against retail's, ranked by what survives
                                   masking the displacements a frame shift moves
+    gruntz walls loopscan         loop-BODY-SIZE sieve: an instruction inside
+                                  the loop on one side and outside it on the
+                                  other runs N times instead of once, and a
+                                  masked diff reads that as a schedule coin
     gruntz walls residue          what the masked residual IS, once position
                                   and register-name differences are cancelled
                                   (arm-result temps, wrong constants/offsets)
@@ -64,6 +68,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
          "eh-frame": "gruntz.walls.eh_frame",
          "framescan": "gruntz.walls.framescan",
+         "loopscan": "gruntz.walls.loopscan",
          "residue": "gruntz.walls.residue",
          "storescan": "gruntz.walls.storescan",
          "thisscan": "gruntz.walls.thisscan",

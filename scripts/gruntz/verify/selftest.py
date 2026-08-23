@@ -3734,6 +3734,109 @@ class ResidueClassifierControls(unittest.TestCase):
             R._SYMS = saved
 
 
+class LoopBodyControls(unittest.TestCase):
+    """`walls loopscan` measures the LOOP BOUNDARY, which is the one thing a
+    masked comparison cancels: masking address operands erases branch
+    displacements, so an instruction that moved across the boundary reads as a
+    schedule coin even though it now runs N times instead of once.  A sieve
+    nobody has seen separate that KNOWN hoist from a KNOWN coin is not a sieve,
+    so both directions are controlled here."""
+
+    @staticmethod
+    def _lines(asms, refs=None):
+        """One instruction per 4 bytes, so a branch operand `0xN` names the
+        instruction at index N/4."""
+        from gruntz.walls.semdiff import Line
+        refs = refs or {}
+        return [Line(i * 4, a, refs.get(i)) for i, a in enumerate(asms)]
+
+    def _spans(self, asms, refs=None):
+        from gruntz.walls.loopscan import loops
+        return [lp["span"] for lp in loops(self._lines(asms, refs))]
+
+    def test_a_backward_branch_closes_a_body_of_its_instruction_span(self):
+        self.assertEqual(self._spans(
+            ["mov eax,DWORD PTR [esi]", "inc eax", "jne 0x0"]), [2])
+
+    def test_a_forward_branch_is_not_a_loop(self):
+        self.assertEqual(self._spans(
+            ["jne 0x8", "inc eax", "mov eax,DWORD PTR [esi]"]), [])
+
+    def test_a_relocated_branch_leaves_the_function(self):
+        """A tail `jmp` into another symbol carries a relocation; its operand
+        is not an offset in this stream and must not close a body."""
+        self.assertEqual(self._spans(["inc eax", "jmp 0x0"],
+                                     {1: "?Other@@YAXXZ"}), [])
+
+    def test_the_boundary_moves_while_the_instruction_text_does_not(self):
+        """The headline control.  Both sides hold the IDENTICAL instructions
+        and differ only in the branch TARGET - precisely what masking cancels -
+        yet the load runs every iteration on one side and once on the other."""
+        from gruntz.walls.framescan import masked
+        from gruntz.walls.loopscan import loops, pair
+        body = ["mov eax,DWORD PTR [esi]", "add ebx,eax"]
+        inside = self._lines([*body, "jne 0x0"])
+        outside = self._lines([*body, "jne 0x4"])
+        self.assertEqual(masked(inside, ""), masked(outside, ""))
+        pairs, unpaired = pair(loops(inside), loops(outside))
+        self.assertEqual(unpaired, 0)
+        self.assertEqual([(a["span"], b["span"]) for a, b in pairs], [(2, 1)])
+
+    def test_the_findprocessbyname_shape_is_a_body_delta(self):
+        """The known positive: a struct re-zeroed inside the walk loop.  A
+        `rep stos` is ONE instruction carrying unbounded work, so a delta of
+        one is signal, and `extra` has to name it."""
+        from gruntz.walls.loopscan import extra, loops, pair
+        ref = {1: "?Step@@YAXXZ"}
+        ours = self._lines(["mov eax,DWORD PTR [esp+0x4]", "call 0x0",
+                            "rep stos DWORD PTR es:[edi],eax", "jne 0x0"], ref)
+        retail = self._lines(["mov eax,DWORD PTR [esp+0x4]", "call 0x0",
+                              "jne 0x0"], ref)
+        pairs, _ = pair(loops(ours), loops(retail))
+        a, b = pairs[0]
+        self.assertEqual((a["span"], b["span"]), (3, 2))
+        self.assertEqual(extra(a["mnem"], b["mnem"]), ["rep"])
+
+    def test_a_register_rotation_inside_the_body_is_not_a_hoist(self):
+        """The known negative.  `walls residue` calls this `regname`; it must
+        not reach this sieve at all, because the boundary did not move."""
+        from gruntz.walls.loopscan import loops, pair
+        ours = self._lines(["mov ebx,DWORD PTR [esi+0x84]", "sub ebx,0x20",
+                            "jne 0x0"])
+        retail = self._lines(["mov eax,DWORD PTR [esi+0x84]", "sub eax,0x20",
+                              "jne 0x0"])
+        pairs, _ = pair(loops(ours), loops(retail))
+        self.assertEqual([a["span"] - b["span"] for a, b in pairs], [0])
+
+    def test_a_reschedule_inside_the_body_is_not_a_hoist(self):
+        """The second known negative: the same instructions in a different
+        order.  Counting the span is what makes this inert."""
+        from gruntz.walls.loopscan import loops, pair
+        ours = self._lines(["mov eax,DWORD PTR [esi]", "cmp eax,0x1",
+                            "push esi", "jne 0x0"])
+        retail = self._lines(["cmp eax,0x1", "push esi",
+                              "mov eax,DWORD PTR [esi]", "jne 0x0"])
+        pairs, _ = pair(loops(ours), loops(retail))
+        self.assertEqual([a["span"] - b["span"] for a, b in pairs], [0])
+
+    def test_an_inlined_callee_does_not_shift_the_pairing(self):
+        """The alignment control.  When one side is missing a loop, a
+        positional zip reports the SURVIVING loop against the wrong
+        neighbour - a fabricated hit.  Pairing on the body's call referents
+        has to send the missing loop to `unpaired` instead."""
+        from gruntz.walls.loopscan import loops, pair
+        ours = self._lines(
+            ["mov eax,0x1", "call 0x0", "nop", "nop", "nop", "jne 0x0",
+             "call 0x0", "nop", "jne 0x18"],
+            {1: "?A@@YAXXZ", 6: "?B@@YAXXZ"})
+        retail = self._lines(["call 0x0", "nop", "jne 0x0"],
+                             {0: "?B@@YAXXZ"})
+        self.assertEqual([lp["span"] for lp in loops(ours)], [5, 2])
+        pairs, unpaired = pair(loops(ours), loops(retail))
+        self.assertEqual(unpaired, 1)
+        self.assertEqual([(a["span"], b["span"]) for a, b in pairs], [(2, 2)])
+
+
 class EhActionControls(unittest.TestCase):
     """`walls ehactions` reports structure; neither count nor action shape is
     sufficient by itself to call source cleanup defective."""
