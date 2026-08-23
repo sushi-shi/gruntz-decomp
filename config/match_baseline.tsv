@@ -125,7 +125,7 @@ gamelevel	96	79
 gamelevelmove	17	12
 gameobjectfactory	1	1
 gamesave	1	1
-gamestaterecordload	1	0
+gamestaterecordload	1	1
 gamewnd	17	17
 glyphstr	5	5
 goowellmgr	1	0
@@ -283,7 +283,7 @@ statemgrbz	7	6
 statereleaseresources	1	0
 statichazard	9	7
 statusbarspriteacts	7	7
-statusbartabbuilders	6	3
+statusbartabbuilders	6	4
 streamrecordloaders	2	2
 symtab	72	66
 terraintileloader	1	0
@@ -2008,7 +2008,7 @@ gamelevelmove	?ResolveRightX@CGameLevel@@AAEHPAUCGameObject@@HH@Z	100.0000	100.0
 gamelevelmove	?ResolveTopY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	100.0000	100.0000	5	c8b9bf78ba36	0x167d80	100.0000	
 gameobjectfactory	?RegisterGameObjectTypes@@YAXPAVCDDrawSurfaceMgr@@@Z	100.0000	100.0000	9	222c083e547f	0xa3b0	100.0000	
 gamesave	?SaveGame@@YAHPAVCGruntzMgr@@PAD@Z	100.0000	100.0000	3	fd688b17ce6c	0xd170	100.0000	
-gamestaterecordload	?LoadStateRecord@CGrunt@@QAEHPAVCFileMemBase@@@Z	96.4314	96.4314	17	ba2a0ee29f3e	0x555e0	96.4314	
+gamestaterecordload	?LoadStateRecord@CGrunt@@QAEHPAVCFileMemBase@@@Z	99.9970	99.9970	18	b75a8ecae7e1	0x555e0	99.9970	
 gamewnd	??0CGameWnd@@QAE@XZ	100.0000	100.0000	1	1829c3694430	0x13cf00	100.0000	
 gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUtagCREATESTRUCTA@@PAVCGameApp@@@Z	100.0000	100.0000	1	8f7a6a32c9ae	0x13cf20	100.0000	
 gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	1	1443a78bb248	0x13cfb0	100.0000	
@@ -2140,7 +2140,7 @@ gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	95.6149	95.6149	8	e63926616
 gruntentrancearrival	?UpdateGruntStatus@CGrunt@@QAEHXZ	100.0000	100.0000	20	9c307bef70c9	0x617c0	100.0000	
 gruntentrancemove	?Apply@CWapX@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	1	42b4c6794352	0x6b2e0	100.0000	
 gruntentrancemove	?AtChecked@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	2	81d1400e0522	0x6b270	100.0000	
-gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	99.1475	99.1475	5	910835290c76	0x67bd0	100.0000	
+gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	99.5161	99.5161	6	51c799adf07e	0x67bd0	100.0000	
 gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	89.2554	89.2554	9	8fc7ad170189	0x6a6d0	89.2642	
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	3	e69a8175178c	0x69fd0	100.0000	
 gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.7347	90.7143	1	b3bb2f011329	0x67b00	90.7347	
@@ -3672,7 +3672,7 @@ savescreenshot	?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@PAVCG
 sbi_image	?Refresh@CSBI_Image@@UAEHH@Z	100.0000	100.0000	1	5a3e4e512f95	0xe6db0	100.0000	
 sbi_image	?Render@CSBI_Image@@UAEHXZ	100.0000	74.0357	1	2717dd6d36a6	0xe6dd0	100.0000	
 sbi_image	?Reset@CSBI_Image@@UAEXXZ	100.0000	100.0000	2	4ca1bc6a97f7	0xe6d90	100.0000	
-sbi_image	?SerializeFields@CSBI_Image@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	89.7273	89.7273	4	1f7c41e88332	0xe6e40	89.7273	
+sbi_image	?SerializeFields@CSBI_Image@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	89.8485	89.8485	5	c3e3e4e35470	0xe6e40	89.8485	
 sbi_image	?SetupImage@CSBI_Image@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	100.0000	100.0000	5	06556c51b8db	0xe6c80	100.0000	
 sbi_imageset	?Notify@CSBI_ImageSet@@UAEXH@Z	100.0000	100.0000	1	54281bc5aa46	0xe74c0	100.0000	
 sbi_imageset	?Refresh@CSBI_ImageSet@@UAEHH@Z	100.0000	100.0000	1	07d01bc2ec75	0xe7420	100.0000	
@@ -4070,7 +4070,7 @@ statusbartabbuilders	?BuildResourceTabStatusBar@CSBI_GruntMachine@@QAEHPAVCStatu
 statusbartabbuilders	?Refresh@CSBI_GruntMachine@@UAEHH@Z	100.0000	100.0000	1	d7ecb21a8c97	0xe8c90	100.0000	
 statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	95.3077	2	2e30f99a812f	0xe8cb0	100.0000	
 statusbartabbuilders	?Reset@CSBI_GruntMachine@@UAEXXZ	100.0000	100.0000	1	ab73dab21f01	0xe8c70	100.0000	
-statusbartabbuilders	?SerializeFields@CSBI_GruntMachine@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	99.8940	99.8940	2	35f72a12aa11	0xe8e00	99.8940	
+statusbartabbuilders	?SerializeFields@CSBI_GruntMachine@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	3	6644b3422405	0xe8e00	100.0000	
 statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	3	cf4de0de8f26	0xe8dc0	100.0000	
 streamrecordloaders	?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	e8336c4d9140	0x9c650	100.0000	
 streamrecordloaders	?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	4	d9e5386c77f9	0x9cab0	100.0000	
