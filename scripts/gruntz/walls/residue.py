@@ -36,7 +36,7 @@ answers the same question directly over the WHOLE stream (every member store
 and every callee-saved register copy, not just the ones inside a diff chunk),
 which is the sensitive form.
 
-Twelve encoding mirrors are normalized away, because each was measured
+Thirteen encoding mirrors are normalized away, because each was measured
 mislabelling real rows: the addend of a RELOCATED call or jump (position
 state - the referent is compared separately), cl's 2-byte `and al,imm8`
 form of `and eax,0xffffff00|imm8` and its high-byte twin `and dh,imm8` for
@@ -50,7 +50,11 @@ memory operand (`a1` against `8b 0d`), a referent NEITHER side has a name
 for (`$anon_data_<sha>` against `FUN_<va>` - a `$E` dynamic-init helper),
 and a DATA reference canonicalized to the ABSOLUTE address its
 `symbol+addend` names, so a one-past-the-end array pointer that the two
-sides name against different symbols cancels. The referent test also
+sides name against different symbols cancels, and a register cl PROVED
+holds zero standing in for the immediate zero (`cmp eax,ebx` for
+`test eax,eax`, `push ebx` for `push 0x0`) - a dataflow fact, so an
+ordinary compare between two live values still reads as one. The
+referent test also
 compares symbol SETS over the whole stream, so a CSE'd second load of a
 global both sides name is not an identity row; and `subobject` runs the
 arithmetic that register-stripping structurally cannot, so a RECT written
@@ -235,7 +239,147 @@ LEA_NOP = "lea r,[r]"
 #: `mov r,ds:0x0` where the general `8b 0d <addr>` prints as
 #: `mov r,DWORD PTR ds:0x0`. cl takes the short form only when the value lands
 #: in EAX - a register choice, not a different access.
-ACCMEM = re.compile(r"^mov (r|ds:0x[0-9a-f]+),(ds:0x[0-9a-f]+|r)$")
+#: the operand may already wear the canonical `ds:ADDEND` by the time the key
+#: is built - the absolute-address fold rewrites it and moves the address into
+#: the referent - so this must recognize BOTH spellings.  Reading only the raw
+#: `ds:0x...` form silently retired the mirror when the two folds were merged.
+ACCMEM = re.compile(r"^mov (r|ds:(?:0x[0-9a-f]+|ADDEND)),"
+                    r"(ds:(?:0x[0-9a-f]+|ADDEND)|r)$")
+
+#: cl 5.0 materializes a zero ONCE into a callee-saved register when a function
+#: needs it repeatedly across calls, then spends it as a register everywhere an
+#: immediate would otherwise appear: `cmp eax,ebx` for `test eax,eax`,
+#: `mov [edi+0x4],ebx` for `mov DWORD PTR [edi+0x4],0x0`, `push ebx` for
+#: `push 0x0`.  Whether it bothers is register PRESSURE, and it was measured
+#: going both ways in one tree - `CStaticHazard::LoadAttributes` and
+#: `RunCustomWorldDialog` carry the immediate where retail carries the register,
+#: `CMulti::PollSession` and `CPlay::LoadPlayState` the reverse - so it is noise,
+#: not a source lever.
+#:
+#: The fold is only sound where the register PROVABLY holds zero, which is a
+#: dataflow fact, not a spelling: register-stripping turns a real `cmp esi,edi`
+#: between two live values into the same `cmp r,r` text.  `zero_regs` below
+#: tracks it per instruction and the canonicalization consults it, so an
+#: ordinary two-value compare still reads as the difference it is.
+ZERO_SET = re.compile(r"^(xor|sub)\s+(e[a-z][a-z]),(e[a-z][a-z])$")
+#: everything that WRITES its first operand; `cmp`/`test`/`push` and the jumps
+#: are deliberately absent, and a partial write (`mov al,`) clears the whole
+#: register because a zero in AL says nothing about EAX.
+WRITES_DST = re.compile(
+    r"^(?:mov|movzx|movsx|lea|add|adc|sub|sbb|and|or|xor|imul|shl|shr|sar|rol"
+    r"|ror|inc|dec|neg|not|pop|set[a-z]{1,3}|cmov[a-z]{1,3})\s+"
+    r"(e?(?:ax|cx|dx|bx|si|di|bp)|[abcd][lh])\b")
+SUBREG = {"ax": "eax", "cx": "ecx", "dx": "edx", "bx": "ebx", "si": "esi",
+          "di": "edi", "bp": "ebp", "al": "eax", "ah": "eax", "cl": "ecx",
+          "ch": "ecx", "dl": "edx", "dh": "edx", "bl": "ebx", "bh": "ebx"}
+#: a call returns in EAX and may clobber the other two scratch registers; the
+#: callee-saved four survive it, which is exactly why cl parks the zero there.
+CALL_CLOBBERS = ("eax", "ecx", "edx")
+#: `mul`/`div` write the EDX:EAX pair without naming it, `cdq` writes EDX.
+IMPLICIT_EDX_EAX = re.compile(r"^(?:mul|imul|div|idiv|cdq|cwd)\b")
+
+CMP_ZERO = re.compile(r"^cmp\s+(.+),(e[a-z][a-z])$")
+TEST_SELF = re.compile(r"^test\s+(e[a-z][a-z]),(e[a-z][a-z])$")
+STORE_ZERO = re.compile(r"^mov\s+(.*\[.+\]),(e[a-z][a-z])$")
+PUSH_ZERO = re.compile(r"^push\s+(e[a-z][a-z])$")
+
+
+BRANCH = re.compile(r"^(jmp|j[a-z]{1,3})\s+(0x[0-9a-f]+)$")
+UNCOND = re.compile(r"^(jmp|ret)\b")
+ALL_REGS = frozenset(("eax", "ecx", "edx", "ebx", "esi", "edi", "ebp"))
+SWEEP_CAP = 24
+
+
+def _transfer(asm: str, zeros: frozenset) -> frozenset:
+    if asm.startswith("call"):
+        return zeros.difference(CALL_CLOBBERS)
+    if IMPLICIT_EDX_EAX.match(asm):
+        return zeros.difference(("eax", "edx"))
+    m = WRITES_DST.match(asm)
+    if m:
+        dst = m.group(1)
+        zeros = zeros - {SUBREG.get(dst, dst)}
+    m = ZERO_SET.match(asm)
+    if m and m.group(2) == m.group(3):
+        zeros = zeros | {m.group(2)}
+    return zeros
+
+
+def zero_regs(lines):
+    """Per-instruction set of registers cl has proven to hold zero.
+
+    Returned parallel to `lines`: entry i is the set live BEFORE line i, which
+    is what a use on line i reads.
+
+    This is a real fixpoint over the function's own control flow, not a linear
+    walk.  A linear walk is WRONG here and was measured being wrong: an
+    early-return epilogue's `pop ebx` would retire a zero that the blocks after
+    it still hold, because they are not reached through that epilogue.  An
+    instruction with no known predecessor - a jump-table arm, whose target the
+    text does not name - starts from the empty set, so an unproven register is
+    never spent."""
+    by_addr = {ln.addr: i for i, ln in enumerate(lines) if ln.addr is not None}
+    succ = [[] for _ in lines]
+    preds = [[] for _ in lines]
+    for i, ln in enumerate(lines):
+        asm = ln.asm or ""
+        m = BRANCH.match(asm)
+        if m:
+            j = by_addr.get(int(m.group(2), 16))
+            if j is not None:
+                succ[i].append(j)
+        if not UNCOND.match(asm) and i + 1 < len(lines):
+            succ[i].append(i + 1)
+    for i, ss in enumerate(succ):
+        for j in ss:
+            preds[j].append(i)
+
+    # A must-analysis descends from the top element: start every OUT holding
+    # every register and let the intersections retire them.  Seeded at the
+    # empty set instead, the meet would keep it empty and prove nothing.
+    ins = [ALL_REGS for _ in lines]
+    outs = [ALL_REGS for _ in lines]
+    for _ in range(SWEEP_CAP):
+        changed = False
+        for i, ln in enumerate(lines):
+            if i == 0 or not preds[i]:
+                new_in = frozenset()
+            else:
+                new_in = frozenset.intersection(*(outs[p] for p in preds[i]))
+            new_out = _transfer(ln.asm or "", new_in)
+            if new_in != ins[i] or new_out != outs[i]:
+                ins[i], outs[i] = new_in, new_out
+                changed = True
+        if not changed:
+            return ins
+    # Not converged: the descent is monotone, so an unfinished run may still be
+    # holding a register a back edge would retire.  Prove nothing rather than
+    # spend a zero we have not established.
+    return [frozenset() for _ in lines]
+
+
+def spend_zero(asm: str, zeros) -> str:
+    """Rewrite a use of a proven-zero register as the immediate it stands in
+    for, so the two spellings of the same constant compare equal.
+
+    `test r,r` is folded unconditionally: it is cl's encoding of a compare
+    against an immediate zero, and naming it that way is what lets the
+    register-spelled compare meet it."""
+    m = TEST_SELF.match(asm)
+    if m and m.group(1) == m.group(2):
+        return f"cmp {m.group(1)},0x0"
+    if not zeros:
+        return asm
+    m = CMP_ZERO.match(asm)
+    if m and m.group(2) in zeros and m.group(1) != m.group(2):
+        return f"cmp {m.group(1)},0x0"
+    m = STORE_ZERO.match(asm)
+    if m and m.group(2) in zeros:
+        return f"mov {m.group(1)},0x0"
+    m = PUSH_ZERO.match(asm)
+    if m and m.group(1) in zeros:
+        return "push 0x0"
+    return asm
 
 
 def strip_regs(asm: str) -> str:
@@ -275,10 +419,11 @@ def masked(lines, self_name: str = "") -> list[str]:
     names ITSELF is dropped, the same filter `walls semdiff` applies. Left in,
     one table produced 500 lines of "residual" on a single row."""
     out = []
-    for ln in lines:
+    zeros = zero_regs(lines)
+    for ln, live in zip(lines, zeros):
         if self_name and ln.ref == self_name:
             continue
-        asm = ESP_DISP.sub("[esp+?]", ln.asm)
+        asm = ESP_DISP.sub("[esp+?]", spend_zero(ln.asm, live))
         if not asm or BYTES_ONLY.match(asm):
             continue
         if LOCAL_BRANCH.match(asm):
@@ -323,7 +468,7 @@ def reg_key(asm: str) -> str:
     key = strip_regs(head).replace("+0x0]", "]")
     key = LEA_ARITH.get(key, "nop" if key == LEA_NOP else key)
     if ACCMEM.match(key):
-        key = key.replace("ds:0x", "DWORD PTR ds:0x")
+        key = key.replace("ds:", "DWORD PTR ds:")
     return key + sep + ref
 
 

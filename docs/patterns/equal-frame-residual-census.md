@@ -23,24 +23,24 @@ current todo queue with every mirror below normalized - the §12 arithmetic and
 row that moved moved from an actionable bucket into a coin bucket, and each move
 was adjudicated by hand against the retail bytes first.
 
-| kind | first | +§8-11 | now | what it means |
-|---|---:|---:|---:|---|
-| `regname` | 148 | 153 | 159 | register rotation only |
-| `displacement` | 84 | 75 | 61 | a member offset differs |
-| `selection` | 66 | 77 | 90 | the mnemonic multiset differs |
-| `immediate` | 75 | 72 | **68** | a constant differs |
-| `schedule` | 36 | 36 | 39 | a pure permutation |
-| `operand` | 32 | 32 | 32 | same mnemonics, different operands |
-| `arm-copy` | 30 | 30 | 31 | retail has callee-saved `mov r,r` the base lacks |
-| `none` | 6 | 15 | 19 | nothing survives the mask |
-| `extra-copy` | 13 | 13 | 13 | the inverse of `arm-copy` |
-| `subobject` | - | - | 2 | one side splits an address, the other folds it |
-| `referent` | 15 | **2** | **2** | one side names a symbol the other never names |
+| kind | first | +§8-11 | +mirrors | +§20 | what it means |
+|---|---:|---:|---:|---:|---|
+| `regname` | 148 | 153 | 159 | 177 | register rotation only |
+| `displacement` | 84 | 75 | 61 | 61 | a member offset differs |
+| `selection` | 66 | 77 | 90 | 85 | the mnemonic multiset differs |
+| `immediate` | 75 | 72 | **68** | **68** | a constant differs |
+| `schedule` | 36 | 36 | 39 | 40 | a pure permutation |
+| `operand` | 32 | 32 | 32 | **14** | same mnemonics, different operands |
+| `arm-copy` | 30 | 30 | 31 | 31 | retail has callee-saved `mov r,r` the base lacks |
+| `none` | 6 | 15 | 19 | 21 | nothing survives the mask |
+| `extra-copy` | 13 | 13 | 13 | 13 | the inverse of `arm-copy` |
+| `subobject` | - | - | 2 | 2 | one side splits an address, the other folds it |
+| `referent` | 15 | **2** | **2** | 4 | one side names a symbol the other never names |
 
 (the `first` column was 505 rows and `now` is the larger todo queue, so read the
 columns as a shape, not a subtraction.)
 
-**217 of 516 (42%) are `regname` + `schedule` + `none`** - nothing a source edit
+**238 of 516 (46%) are `regname` + `schedule` + `none`** - nothing a source edit
 reaches. Restricted to residual <= 4 the coin share is 62%: the closer a row is,
 the more likely the remainder is a coin. Rank by KIND, not by residual.
 
@@ -50,6 +50,12 @@ bucket, and it was in the MODEL rather than the C++ (§ below). The two `.rdata`
 section-hash rows of §6 are now normalized too, and the two survivors are §14
 boundary pointers whose target symbol is an unclaimed file-local static.
 
+It reads 4 in the last column, and the two arrivals are the §20 fold working
+rather than failing: `CGruntPuddle`'s ctor and `CSingleFrameMessage`'s were
+classified on their zero-register noise, and with that gone the referent
+difference underneath is what the classifier now names. A row moving INTO a more
+actionable bucket after a mirror lands is the mirror uncovering it.
+
 **The arm-result-temp defect is 43 rows (30 + 13)** measured on the diff chunks,
 and the direct whole-stream screen (`--arm`) finds 78 rows whose member-store
 COUNT differs and 113 whose callee-saved copy count does. Both cases are real and
@@ -58,7 +64,7 @@ both are steerable — see the worked examples below.
 ## The false positives, i.e. what a raw diff calls a difference and is not
 
 Each of these was measured mislabelling real rows. The tool normalizes §1-4,
-§8-12 and §14-16 (§5 and §6 fall out of §14's arithmetic); §7, §13 and
+§8-12, §14-16 and §20 (§5 and §6 fall out of §14's arithmetic); §7, §13 and
 §17-19 it cannot see, so apply them by hand before calling a row a bug.
 
 **1. A relocated call's addend.** `call 0xe4` vs `call 0xe0` against the same
@@ -267,6 +273,32 @@ as wrong, check whether they SUM to the target's one.
 `add ebp,0x238` cursor where retail counts `ebx` 0, 0x238, ... and tests `cmp
 ebx,0x8e0` — 4 * 0x238 == 0x8e0. Same loop, one induction variable instead of
 two.
+
+**20. A zero parked in a register, spent where an immediate would go.** cl
+materializes `xor ebx,ebx` ONCE when a function needs a zero repeatedly across
+calls - a callee-saved register survives the call, an immediate would have to be
+re-encoded at every site - and then spends it: `cmp eax,ebx` for `test eax,eax`,
+`mov DWORD PTR [edi+0x4],ebx` for `mov DWORD PTR [edi+0x4],0x0`, `push ebx` for
+`push 0x0`. Whether it bothers is register PRESSURE, and it was measured going
+both ways in one tree - `CStaticHazard::LoadAttributes` 0xfc1a0 and
+`RunCustomWorldDialog` 0x3ad90 carry the immediate where retail carries the
+register, `CMulti::PollSession` 0xb95f0 and `CPlay::LoadPlayState` 0xd8060 the
+reverse - so it is noise, not a source lever. Folding it took `operand` from 32
+rows to 14 and `selection` from 90 to 85.
+
+The fold is a DATAFLOW fact and cannot be done on the text: register-stripping
+turns a real `cmp esi,edi` between two live values into the same `cmp r,r`. The
+tool proves the register zero with a fixpoint over the function's own control
+flow. A linear walk is wrong here and was measured being wrong - an early-return
+epilogue's `pop ebx` retires a zero that the blocks after it still hold, because
+they are not reached through that epilogue - and an instruction whose only
+predecessor is an indirect jump starts from the empty set, so a jump-table arm
+never inherits a zero the other arms happen to hold.
+
+`CStaticHazard::LoadAttributes` is the whole class in one byte: 264 of its 265
+instructions already agreed, including every OTHER use of retail's zero
+register, and the single survivor was the `!= NULL` after `HitTestCell`, where
+retail spends `cmp eax,ebx` and we emit `test eax,eax`. Residual 1 to 0.
 
 ## Worked example: the memory case, twice, both a whole score
 

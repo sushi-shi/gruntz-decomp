@@ -3508,6 +3508,59 @@ class ResidueClassifierControls(unittest.TestCase):
         mt = masked([Line(0, "mov eax,ds:0x0", g)])
         self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0], "regname")
 
+    def test_a_spent_zero_register_is_the_immediate(self):
+        """cl parks a zero in a callee-saved register when it needs one
+        repeatedly, then spends it where an immediate would go.  Measured both
+        ways in one tree, so it is noise: `CStaticHazard::LoadAttributes` and
+        `RunCustomWorldDialog` carry the immediate where retail carries the
+        register, `CMulti::PollSession` the reverse."""
+        from gruntz.walls.residue import classify, masked, residual_of
+        from gruntz.walls.semdiff import Line
+        base = [Line(0, "xor ebx,ebx", None), Line(2, "push ebx", None),
+                Line(3, "call 0x40", "?Hit@@YAHXZ"), Line(8, "test eax,eax", None)]
+        tgt = [Line(0, "xor ebx,ebx", None), Line(2, "push ebx", None),
+               Line(3, "call 0x40", "?Hit@@YAHXZ"), Line(8, "cmp eax,ebx", None)]
+        mb, mt = masked(base), masked(tgt)
+        self.assertEqual(residual_of(mb, mt)[0], 0)
+
+    def test_a_two_value_compare_is_not_a_spent_zero(self):
+        """The fold reads a dataflow fact, not a spelling.  Register-stripping
+        turns a real compare between two live values into the same `cmp r,r`
+        text, so an unproven register must never be spent."""
+        from gruntz.walls.residue import masked, residual_of
+        from gruntz.walls.semdiff import Line
+        base = [Line(0, "mov ebx,DWORD PTR [esi+0x8]", None),
+                Line(3, "test eax,eax", None)]
+        tgt = [Line(0, "mov ebx,DWORD PTR [esi+0x8]", None),
+               Line(3, "cmp eax,ebx", None)]
+        mb, mt = masked(base), masked(tgt)
+        self.assertGreater(residual_of(mb, mt)[0], 0)
+
+    def test_a_zero_retired_on_one_path_is_not_spent_on_another(self):
+        """A linear walk was WRONG here: an early-return epilogue's `pop ebx`
+        retires a zero the blocks after it still hold, because they are not
+        reached through that epilogue.  The meet is over real edges."""
+        from gruntz.walls.residue import zero_regs
+        from gruntz.walls.semdiff import Line
+        # 0: xor ebx,ebx / 2: jne 0x8 / 4: pop ebx / 5: ret / 8: cmp eax,ebx
+        fn = [Line(0, "xor ebx,ebx", None), Line(2, "jne 0x8", None),
+              Line(4, "pop ebx", None), Line(5, "ret", None),
+              Line(8, "cmp eax,ebx", None)]
+        z = zero_regs(fn)
+        self.assertIn("ebx", z[4])
+        self.assertNotIn("ebx", z[2 + 1])
+
+    def test_a_jump_table_arm_spends_nothing(self):
+        """An instruction whose only predecessor is an indirect jump has no
+        named edge, so it starts from the empty set rather than inheriting a
+        zero the table's other arms happen to hold."""
+        from gruntz.walls.residue import zero_regs
+        from gruntz.walls.semdiff import Line
+        fn = [Line(0, "xor ebx,ebx", None),
+              Line(2, "jmp DWORD PTR [eax*4+0x40]", None),
+              Line(9, "cmp ecx,ebx", None)]
+        self.assertEqual(zero_regs(fn)[2], frozenset())
+
     def test_a_wrong_referent_is_flagged(self):
         """Relocated operands are masked in the scored bytes, so a global
         bound to the wrong symbol is invisible to the byte diff."""
