@@ -81,3 +81,14 @@ loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
   with no `b` local) DOES flip the roles - but simultaneously recolours `m_buckets` from
   eax into ecx, so it trades one wrong byte for four. The pointer-from-a-member sub-family
   still has no lever.
+
+## Where the lever does NOT reach
+
+Both operands must be function-scope LOCALS. When one of them is a member load the
+declaration order has nothing to move, and the roles are fixed by the order the two
+values become live. `CRezImage::DecodeBmpData` 0x175e00 is the control: its single
+differing byte is `lea esi,[esi+edx+0x400]` against retail's `lea esi,[edx+esi+0x400]`,
+where the index is `ih->biSize` read straight from the header. Seven A/Bs are
+byte-identical at 99.62 - three operand orders in the address expression, a named
+local for the size, a parenthesised regrouping, and three declaration-order
+permutations of the function's own locals.

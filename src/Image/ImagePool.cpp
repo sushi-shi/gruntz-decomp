@@ -521,6 +521,10 @@ void CRezImage::Fill(i32 value) {
     }
 }
 
+// @early-stop
+// One SIB byte, `[esi+edx+0x400]` against retail's `[edx+esi+0x400]`. The
+// declaration-order lever does not reach it: the index is a MEMBER LOAD, not a
+// second local (docs/patterns/sib-base-index-follows-local-decl-order.md).
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
