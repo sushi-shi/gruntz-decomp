@@ -15,9 +15,14 @@ Coord tile = m_lastTilePx;   // keep the aggregate SOURCE: it is what lets cl
 i32 nextX;                   // coalesce next onto tile destructively (`add ebx,0x20`)
 i32 nextY;                   // ... and NO initializer: see the default-arm test
 switch (m_entranceCell.direction) {
+    case DIR_NORTH:     nextX = tile.m_x;        nextY = tile.m_y - 0x20; break;
     case DIR_NORTHEAST: nextX = tile.m_x + 0x20; nextY = tile.m_y - 0x20; break;
-    case DIR_SOUTHWEST: nextX = tile.m_x - 0x20;   // fall through
-    case DIR_SOUTH:     nextY = tile.m_y + 0x20; break;
+    // ... EVERY arm assigns BOTH scalars; the unchanged term CSEs onto the
+    // preloaded register and the N/S table entries land mid-block (retail
+    // N -> +0x4d, S -> +0x40). A fall-through spelling that skips the
+    // unchanged half leaves it UNWRITTEN on a LIVE arm - see
+    // switch-arm-uninitialized-output-is-a-runtime-defect.md (2026-08-24:
+    // that spelling shipped a real teleport/kill defect in our build).
 }
 m_lastTilePx.m_x = nextX;
 m_lastTilePx.m_y = nextY;
@@ -41,6 +46,15 @@ destination from frame slots NOTHING in the function ever writes, the destinatio
 genuinely undefined on that path — so it is declared WITHOUT an initializer and
 assigned only inside the arms. Initializing it before the switch instead makes cl home
 both halves in the PROLOGUE, which retail does not do.
+
+**Correction (2026-08-24):** the dating test constrains only the DEFAULT path —
+the LIVE arms must still each assign both scalars. The fall-through spelling this
+file originally showed (`case SW: nextX = ...; /*fall*/ case S: nextY = ...;`)
+left `nextX` unwritten on pure S/N, our cl homed it to a never-written stack
+slot, and due-N/S act-M claims read garbage at runtime (retail's regalloc kept
+the value in a register, masking the same source UB). Full per-arm assignment
+keeps the ja-arm evidence (still no prologue home) and kills the defect; it
+measures 70.03 against the fall-through form's 71.40, an adjudicated keep.
 
 Steerable. CGrunt::ClaimSwitchTile 0x52c70 70.59 -> 71.40, and the residue's shape is
 now one allocation swap (retail binds the destination to the callee-saved pool, we bind
