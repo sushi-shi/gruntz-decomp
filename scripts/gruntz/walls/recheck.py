@@ -1,4 +1,4 @@
-"""gruntz.walls recheck - re-run a review's COUNT certifications against today's pair.
+"""gruntz.walls recheck - re-run a review's certifications against today's pair.
 
 A review that says "base/retail agree on 24 calls, 96 branches and 64 relocs" is
 not prose: it is a checkable assertion about the normalized pair.  Nothing
@@ -11,10 +11,18 @@ This re-measures every count a review asserts and prints HOLD or BROKEN per
 claim.  It reads the same normalized base/target objs `gruntz walls diagnose`
 reads, so a BROKEN row is a live divergence, not a stale cache.
 
-    gruntz walls recheck                 every review that states counts
+The recorded wall CLASS is re-run too, through `diagnose.ladder` itself so the
+sweep and the single-row view cannot answer differently.  It is scored
+SEPARATELY from the counts and a disagreement is not a failure: the review names
+the CAUSE it traced, the ladder names the FIRST divergence, and on this ledger
+that vocabulary gap accounts for most disagreements (a regalloc cause whose
+branch delta is downstream reads `cfg` here).  A STALE review whose class AND
+counts both still hold is a verdict the edit did not invalidate.
+
+    gruntz walls recheck                 every review
     gruntz walls recheck <rva|name>...   selected rows
-    gruntz walls recheck --broken        only rows with a failed claim
-    gruntz walls recheck --strict        exit 1 when any claim is broken
+    gruntz walls recheck --broken        only rows with a failed count claim
+    gruntz walls recheck --strict        exit 1 when any count claim is broken
 
 Only AGREEMENT claims are extracted, and deliberately so.  "base 59/retail 43
 calls" states a known divergence whose direction depends on the writer's word
@@ -36,6 +44,7 @@ failure.  Unmatched quantities are reported as such rather than guessed.
 
 from __future__ import annotations
 
+from collections import Counter
 import re
 
 from gruntz.delink.coffx import Obj
@@ -163,10 +172,18 @@ def claims(evidence: str) -> tuple[list[tuple[str, int, str]], list[str]]:
     return uniq, skipped
 
 
-def measure(binding) -> dict[str, tuple[int, int]] | str:
-    """{unit: (base, target)} from the normalized pair, or an error string."""
+def measure(binding) -> tuple[dict[str, tuple[int, int]], str] | str:
+    """({unit: (base, target)}, wall class) from the pair, or an error string.
+
+    The wall class comes from `diagnose.ladder`, the same function that prints,
+    so the sweep and the single-row view can never answer differently."""
+    from collections import Counter
+
     from gruntz.tool import ToolError
-    from gruntz.walls.diagnose import NORM, _find_function, _jump_table_bytes, _skeleton
+    from gruntz.walls.diagnose import (
+        NORM, _call_targets, _find_function, _jump_table_bytes, _referents,
+        _skeleton, ladder,
+    )
 
     base_p = NORM / "base" / f"{binding.unit}.obj"
     tgt_p = next(
@@ -176,20 +193,27 @@ def measure(binding) -> dict[str, tuple[int, int]] | str:
     )
     if not base_p.is_file() or tgt_p is None:
         return f"normalized pair missing for {binding.unit}"
-    side = {}
+    side, extra = {}, {}
     for tag, path in (("base", base_p), ("target", tgt_p)):
         payload, rel, size = _find_function(Obj(path), binding.name)
         if payload is None:
             return f"{tag} obj does not define {binding.name}"
         try:
-            _m, calls, br, rets, insns, _asm = _skeleton(
+            mask, calls, br, rets, insns, asm = _skeleton(
                 payload, rel, data=_jump_table_bytes(rel, binding.name)
             )
         except ToolError as e:
             return str(e)
         side[tag] = {"calls": calls, "branches": br, "returns": rets,
                      "insns": insns, "relocs": len(rel), "bytes": size}
-    return {u: (side["base"][u], side["target"][u]) for u in side["base"]}
+        extra[tag] = (mask, _referents(rel),
+                      Counter(n for n, _a in _call_targets(rel, asm, binding.name)))
+    wall = ladder(extra["base"][0], extra["target"][0],
+                  extra["base"][1], extra["target"][1],
+                  extra["base"][2], extra["target"][2],
+                  (side["base"]["branches"], side["base"]["returns"],
+                   side["target"]["branches"], side["target"]["returns"]))
+    return {u: (side["base"][u], side["target"][u]) for u in side["base"]}, wall
 
 
 def main(argv=None) -> int:
@@ -223,31 +247,38 @@ def main(argv=None) -> int:
     n_rows = n_claims = n_hold = n_broken = 0
     unparsed: list[int] = []
     broken_rows: list[int] = []
+    n_class = Counter()
     for rva in sorted(rows):
         if wanted and rva not in wanted:
             continue
         row = rows[rva]
         stated, skipped = claims(row["evidence"])
-        if not stated:
-            unparsed.append(rva)
-            continue
-        n_rows += 1
         b, why = _locate(f"0x{rva:x}")
         if b is None:
             print(f"  0x{rva:06x} UNRESOLVED {why}")
             continue
         got = measure(b)
         if isinstance(got, str):
-            print(f"  0x{rva:06x} UNMEASURED {got}")
+            if stated:
+                print(f"  0x{rva:06x} UNMEASURED {got}")
             continue
+        counts, wall = got
+        # The CLASS is an assertion too, and it is the one a matcher acts on.
+        # It is scored separately: the review names the CAUSE it traced, this
+        # names the FIRST divergence, so a disagreement is a lead, not a defect.
+        same_class = wall == row["wall_class"]
+        n_class["same" if same_class else "differs"] += 1
         verdicts = []
         for unit, n, _s in stated:
-            base, target = got[unit]
+            base, target = counts[unit]
             ok = base == n == target
             n_claims += 1
             n_hold += ok
             n_broken += not ok
             verdicts.append((ok, unit, n, base, target))
+        n_rows += bool(stated)
+        if not stated:
+            unparsed.append(rva)
         row_broken = any(not ok for ok, *_ in verdicts)
         if row_broken:
             broken_rows.append(rva)
@@ -256,6 +287,10 @@ def main(argv=None) -> int:
         freshness = "current" if rva in fresh else "STALE"
         print(f"0x{rva:06x} {freshness:7} {row['status']:8} {row['wall_class']:8} "
               f"{b.name}  [{b.unit}]")
+        print(f"    {'HOLD  ' if same_class else 'DIFFERS'} class"
+              + ("" if same_class else
+                 f"     review says {row['wall_class']}, first divergence is "
+                 f"{wall}"))
         for ok, unit, n, base, target in verdicts:
             tag = "HOLD  " if ok else "BROKEN"
             fmt = (lambda v: f"{v:#x}") if unit == "bytes" else str
@@ -267,6 +302,10 @@ def main(argv=None) -> int:
 
     print(f"\n[recheck] {n_rows} review(s) state counts: {n_claims} claim(s), "
           f"{n_hold} hold, {n_broken} broken across {len(broken_rows)} row(s)")
+    print(f"[recheck] class: {n_class['same']} agree with today's first "
+          f"divergence, {n_class['differs']} differ (a differing class is a "
+          f"vocabulary gap as often as a stale verdict - the review names the "
+          f"CAUSE, this names the FIRST divergence)")
     if unparsed:
         print(f"[recheck] {len(unparsed)} review(s) state no measurable count: "
               + " ".join(f"0x{r:06x}" for r in unparsed))

@@ -124,6 +124,23 @@ def _referents(rel: dict) -> list[str]:
     return [spell(rel[o]) for o in sorted(rel)]
 
 
+def ladder(bmask, tmask, bref, tref, bcalls, tcalls, skeleton) -> str:
+    """The FIRST divergence class, as the docstring's ladder orders it.
+
+    Split out so a sweep can ask the same question of many rows without
+    re-implementing the order - a second copy of this would drift from the one
+    that prints, and the two answers would disagree silently."""
+    if bmask == tmask and bref != tref:
+        return "referent"
+    if bcalls != tcalls:
+        return "inline"
+    if skeleton[:2] != skeleton[2:]:
+        return "cfg"
+    if bmask != tmask:
+        return "regalloc"
+    return "none"
+
+
 def _locate(token: str):
     """The claimed function a token names: a hex rva, the mangled name, or the
     readable `CClass::Member` spelling every other view accepts."""
@@ -194,15 +211,15 @@ def diagnose(token: str, show_asm: bool = False) -> int:
     print(f"  target: {tsz:#x} B, {tins} insns, {tcall} calls, "
           f"{tbr} branches, {tret} rets, {len(trel)} relocs")
 
-    if bmask == tmask and bref != tref:
-        wall = "referent"
+    wall = ladder(bmask, tmask, bref, tref, bcalls, tcalls,
+                  (bbr, bret, tbr, tret))
+    if wall == "referent":
         print("  class: REFERENT - masked bytes identical; the relocation "
               "TARGETS differ:")
         for i, (x, y) in enumerate(zip(bref, tref)):
             if x != y:
                 print(f"    reloc[{i}]: base {x}  !=  target {y}")
-    elif bcalls != tcalls:
-        wall = "inline"
+    elif wall == "inline":
         print("  class: INLINE/CALL-SET - the call-target multisets differ:")
         for n in sorted(bcalls.keys() | tcalls.keys()):
             bn, tn = bcalls[n], tcalls[n]
@@ -216,13 +233,11 @@ def diagnose(token: str, show_asm: bool = False) -> int:
                 print(f"    base calls, target expanded/lacks:  {n}")
         print("  lever: gruntz walls inline-model --gap (budget deficit per "
               "starved site)")
-    elif (bbr, bret) != (tbr, tret):
-        wall = "cfg"
+    elif wall == "cfg":
         print(f"  class: CFG - branch/return skeleton differs "
               f"(base {bbr}/{bret}, target {tbr}/{tret}); a structural "
               f"reconstruction question (arm shape, tail merge, loop form)")
-    elif bmask != tmask:
-        wall = "regalloc"
+    elif wall == "regalloc":
         first = next((i for i, (x, y) in enumerate(zip(bmask, tmask))
                       if x != y), min(len(bmask), len(tmask)))
         print(f"  class: REGALLOC/SCHEDULING - same calls and skeleton, "
@@ -230,7 +245,6 @@ def diagnose(token: str, show_asm: bool = False) -> int:
               f"lifetime or allocation "
               f"(docs/relevations/cl5-callcrossing-ebx-*)")
     else:
-        wall = "none"
         print("  class: NONE - the normalized pair is identical; the score "
               "gap is outside this function (pairing, data, or unit-level)")
 
