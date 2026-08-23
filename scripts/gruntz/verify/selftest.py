@@ -5134,6 +5134,20 @@ class VptrStampControls(unittest.TestCase):
         self.assertEqual(self._slots("ff5053"), [])
         self.assertEqual(self._slots("ff9090909090"), [])
 
+    def test_the_two_sides_are_not_byte_symmetric(self):
+        """Why every differing row is re-read off a DECODED stream. These are
+        `CSymTab`'s destructor's own bytes at +0x9c: our base object has the
+        `call rel32` displacement zeroed by its relocation, the delinked target
+        resolves the SELF-call internally and leaves a negative one - and four
+        `ff` bytes decode as `call DWORD PTR [edi+0xe8]`. That row is
+        byte-identical to retail at 100.00 and still read as a retail-only
+        slot 58."""
+        #  mov ecx,edi / call <self> / push edi / call ??3@YAXPAX@Z
+        self.assertEqual(self._slots("8bcf e800000000 57 e800000000"
+                                     .replace(" ", "")), [])
+        self.assertEqual(self._slots("8bcf e85fffffff 57 e800000000"
+                                     .replace(" ", "")), [0xe8])
+
 
 class ByValueAggregateControls(unittest.TestCase):
     """`walls aggscan` says a callee's parameter is ONE object where we

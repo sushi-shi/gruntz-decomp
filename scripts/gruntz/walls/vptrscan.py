@@ -66,10 +66,17 @@ dispatch is `call DWORD PTR [reg+N]` and N is the slot index times four, so a
 wrong N calls a different virtual function - and `offsetscan` drops every
 `call`/`jmp` line by construction (it is excluding the switch table), so
 nothing reads it either. Measured 2026-08-23: 4433 dispatches ours against
-4434 retail over 44 distinct slot displacements, 28 rows whose multiset
-differs and ZERO of those at the same COUNT, so no site in the tree dispatches
-through a different slot than retail. The 22 rows whose slot SET also differs
-are leads inside a call-count divergence, not adjudicated defects.
+4434 retail over 44 distinct slot displacements (deepest +0xe8, slot 58) and
+FIVE rows whose multiset differs - none at the same call count, none using a
+slot the other side does not, every one a pure count divergence of the same
+slots. No site in the tree dispatches through a different slot than retail.
+The byte scan finds 28 of those rows and a real disassembly discards 23:
+our base object has every `call rel32` displacement zeroed by its relocation
+while the delinked target resolves a SELF-call internally, so retail carries
+four `ff` bytes that decode as `call DWORD PTR [edi+0xe8]` and we carry four
+zeros. `CSymTab`'s destructor is byte-identical to retail at 100.00 and still
+read as a retail-only slot 58 that way, which is why every differing row is
+re-read off a decoded stream before it is reported.
 
     gruntz walls vptrscan [--all] [--json]
     gruntz walls vptrscan --slots [--all]
@@ -384,6 +391,8 @@ def dispatches(payload: bytes, lo: int, hi: int, relocs: set, frame: set):
             base = REGS[rm]
         disp = 0
         if mod == 1:
+            if p >= hi:
+                break
             disp = payload[p]
             p += 1
         elif mod == 2 or base is None:
@@ -420,12 +429,45 @@ def _slots_obj(path: Path):
     return out, defined
 
 
+#: `call DWORD PTR [reg+0x2c]` / `jmp DWORD PTR [reg]`, off a DECODED stream
+DISPATCH = re.compile(r"^(call|jmp)\s+DWORD PTR \[(e[a-z]{2})"
+                      r"(?:\+e[a-z]{2}\*\d)?(?:\+(0x[0-9a-f]+))?\]$")
+
+
+def _decoded_slots(root: Path, side: str, unit: str, name: str):
+    """The same reading off a real disassembly, for ADJUDICATING a row.
+
+    The byte scan is right for a census and wrong for a verdict, because the
+    two sides are not byte-symmetric: our base object has every `call rel32`
+    displacement zeroed by its relocation, while the delinked target resolves
+    a SELF-call internally and leaves a real negative displacement - four
+    `ff` bytes that decode as `call DWORD PTR [edi+0xe8]`. `CSymTab`'s
+    destructor is byte-identical to retail at 100.00 and still produced a
+    retail-only slot 58 that way. So every differing row is re-read here.
+    """
+    from gruntz.walls.diagnose import _find_function
+    from gruntz.walls.semdiff import _decode
+    path = root / side / (f"{unit}.c.obj" if side == "target" else f"{unit}.obj")
+    if side == "target" and not path.exists():
+        path = root / side / f"{unit}.obj"
+    body, rel, _size = _find_function(Obj(path), name)
+    if body is None:
+        return None
+    frame = frame_bases(body, 0)
+    out = Counter()
+    for ln in _decode(body, rel, name):
+        m = DISPATCH.match(ln.asm)
+        if m and m.group(2) not in frame and not ln.ref:
+            out[(m.group(1), int(m.group(3), 16) if m.group(3) else 0)] += 1
+    return out
+
+
 def slot_sweep(root: Path | None = None):
-    acc = {}
-    defs = {}
+    root = root or NORM
+    acc, defs = {}, {}
     for side in ("base", "target"):
         a, d = {}, {}
-        for path in sorted(((root or NORM) / side).glob("*.obj")):
+        for path in sorted((root / side).glob("*.obj")):
             unit = path.name.split(".")[0]
             st, dd = _slots_obj(path)
             d[unit] = dd
@@ -440,10 +482,14 @@ def slot_sweep(root: Path | None = None):
         r = Counter((s[1], s[3]) for s in acc["target"].get(k, ()))
         if o == r:
             continue
-        rows.append({"unit": k[0], "symbol": k[1], "ours": o, "retail": r,
-                     "same_count": sum(o.values()) == sum(r.values()),
-                     "ours_only": sorted(set(o) - set(r)),
-                     "retail_only": sorted(set(r) - set(o))})
+        do = _decoded_slots(root, "base", *k)
+        dr = _decoded_slots(root, "target", *k)
+        if do is None or dr is None or do == dr:
+            continue
+        rows.append({"unit": k[0], "symbol": k[1], "ours": do, "retail": dr,
+                     "same_count": sum(do.values()) == sum(dr.values()),
+                     "ours_only": sorted(set(do) - set(dr)),
+                     "retail_only": sorted(set(dr) - set(do))})
     return {"ours": acc["base"], "retail": acc["target"], "both": both,
             "rows": rows}
 
@@ -460,7 +506,8 @@ def slot_report(res, show_all: bool) -> None:
     adjudicated = [r for r in res["rows"] if r["same_count"]]
     setdiff = [r for r in res["rows"] if not r["same_count"]
                and (r["ours_only"] or r["retail_only"])]
-    print(f"rows whose slot multiset differs : {len(res['rows'])}")
+    print(f"rows whose slot multiset differs, re-read off a real disassembly "
+          f": {len(res['rows'])}")
     print(f"  at the SAME COUNT - a slot MOVED : {len(adjudicated)}")
     print(f"  a slot one side never uses, inside a call-COUNT divergence: "
           f"{len(setdiff)}   (leads, not defects)")
@@ -469,9 +516,12 @@ def slot_report(res, show_all: bool) -> None:
         print(f"    ours   {sorted(r['ours'].elements())}")
         print(f"    retail {sorted(r['retail'].elements())}")
     if show_all:
-        for r in setdiff:
-            print(f"  {r['unit']}/{r['symbol'][:56]}  ours-only "
-                  f"{r['ours_only']} retail-only {r['retail_only']}")
+        for r in res["rows"]:
+            if r["same_count"]:
+                continue
+            print(f"  {r['unit']}/{r['symbol'][:56]}")
+            print(f"      ours   {sorted(r['ours'].elements())}")
+            print(f"      retail {sorted(r['retail'].elements())}")
 
 
 def _hermetic_slots() -> int:
