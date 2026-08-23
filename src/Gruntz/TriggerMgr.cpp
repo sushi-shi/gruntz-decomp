@@ -1378,7 +1378,6 @@ fail:
 }
 
 // @early-stop
-// @early-stop
 RVA(0x0007abc0, 0x4b6)
 i32 CTriggerMgr::Load(CFileMemBase* ar) {
     if (ar == NULL) {
