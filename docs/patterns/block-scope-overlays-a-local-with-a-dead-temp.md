@@ -93,6 +93,37 @@ and instruction count `1223 -> 1222`. The fuzzy score moved slightly down becaus
 whole-function register schedule changed; the exact stack-home identity, not that
 navigation metric, proves the scope.
 
+## The overlaid object does not have to be an aggregate
+
+`CGiantRockLogic::BuildRockBreakInGameText` @0x1122a0 **99.96 -> 100.00 EXACT**.
+Its whole body was already byte-identical under masking; the only residue was
+`sub esp,0x18` against retail's `0x14`. The entity is a four-byte ESCAPED SCALAR:
+a `LeafCue*` out-parameter passed by reference to an inlined map lookup at the
+very end of the function. At function scope it got a sixth frame word; retail
+reuses the dead outer loop counter's home for it. Nesting the tail — which the
+common `return 0` already implied — puts it in a scope disjoint from the loops:
+
+```cpp
+// NO - `found` is function-scope, so it cannot reuse the loop counter's home
+if (sreg->m_emitGate != 0) { return 0; }
+LeafCue* found = NULL;
+MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
+...
+return 0;
+
+// YES - sub esp,0x18 -> 0x14
+if (sreg->m_emitGate == 0) {
+    LeafCue* found = NULL;
+    MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
+    ...
+}
+return 0;
+```
+
+So the sieve is not "look for an aggregate": it is `walls framescan` d > 0, then
+**every address that escapes to a call** — `lea <reg>,[esp+N]` for an out-param
+counts exactly like a `RECT`.
+
 ## Not this
 
 * **Declaration ORDER is not the lever.** Swapping `RECT bounds; RECT r;` to `RECT r;
@@ -108,3 +139,8 @@ navigation metric, proves the scope.
   a uniform delta identifies the allocation problem, not which pair deserves braces.
 * A NEGATIVE uniform delta is the mirror (retail's frame is bigger, i.e. we over-merge or
   are missing a local) and the brace lever does not apply to it.
+* **A local already inside a macro's `do { } while (0)` is already scoped.** Bracing
+  `CGameLevel::ResolveFloorCollision`'s @0x15ede0 first `PROBE_TILE` result (its only
+  function-scope-looking name) was byte-flat at 96.54 - the macro body had given it a
+  scope already. Read the escaped addresses out of the disassembly before choosing what
+  to brace; a name at the top of the source is not necessarily a name at function scope.

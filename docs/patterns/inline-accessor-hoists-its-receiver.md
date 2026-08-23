@@ -60,13 +60,47 @@ unpacking the aggregate into two `int` formals throws the whole effect away: the
 two scalars are evaluated and coloured at the call site exactly as the flat form
 does. **Pass the aggregate, by reference, or the lever does not fire.**
 
-## Sieve
+## Sieve — and the confound that made it look big
 
-The signature is mechanical and cheap: align the normalized pair and look for a
-first divergence in which the TARGET side holds a relocated global load
-(`mov reg,ds:0x0`) that the BASE side also has, but LATER. 23 sub-100 rows match
-tree-wide; rank by the offset gap, because an equal-offset hit is some other
-divergence that happens to sit next to a global load.
+The signature is: align the pair and look for a first divergence in which the
+TARGET side holds a relocated global load (`mov reg,ds:0x0`) that the BASE side
+also has, but LATER.
+
+**Rank by the INSTRUCTION INDEX gap, never by the byte offset.** A byte-offset
+ranking is confounded by the encoding: `mov eax,moffs32` is the 5-byte `A1` form
+and `mov <other>,[disp32]` is 6 bytes, so every later reference in a function
+where retail happens to colour the global EAX and we do not reads as "retail is
+1 byte earlier" at every site — a position difference that does not exist.
+
+Re-derived on instruction index (2026-08-23, whole tree, 16 sub-100 rows whose
+FIRST divergence is a relocated global load):
+
+| class | rows | what it is |
+|---|---|---|
+| same slot, same symbol, different destination register | **13** | the register-rotation wall, not a hoist |
+| genuine hoist (target loads it 1-6 instructions earlier) | 3 | this pattern |
+
+The three real hoists are `CGruntPowerupSprite::Update` 0x080410 (+1, already
+banked 100.00), `CLightFxRender::BuildHighRollerzPalette` 0x0a2bb0 (+5) and
+`BuildGruntziclezPalette` (+6) — the parked palette family. So the sieve's live
+worklist is much smaller than the raw hit count suggests.
+
+## The pointer-receiver accessor is byte-INERT — do not spend a build on it
+
+Measured on three of the 13 colour rows, each with a disposable inline helper
+taking the receiver as a POINTER, exactly the `(ptr, i32, i32)` row of the table
+above:
+
+| row | base | with `inline T* H(Owner*, …)` | with a plain local |
+|---|---|---|---|
+| `CPlay::OnExit` 0x0cb400 | 94.79 | 94.79 | 94.79 |
+| `CTriggerMgr::LoadGruntResurrectTuning` 0x07be60 | 91.97 | 91.97 | — |
+| `CNetSession::Verify(i32)` 0x0c0290 | 89.53 | 89.53 | — |
+
+All three were byte-identical tree-wide (`OVERALL 95.3608`, exact 6574, unmoved
+to four decimals). **The inline call is not the lever; the aggregate-by-reference
+parameter is.** A row whose lookup takes no aggregate has nothing for this
+pattern to apply.
 
 ## When it does NOT apply
 
