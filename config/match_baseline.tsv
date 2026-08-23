@@ -1705,7 +1705,7 @@ fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	1	b
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFxModeDesc@@@Z	95.7887	95.7887	1	c57dcdde1d33	0x1804a0	95.7887	
 fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	2	300190d2a03b	0x17fa40	100.0000	
 fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	91.8740	91.8740	1	000e926fbbf9	0x1817e0	91.8740	
-fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	93.7255	93.7255	2	26976224942e	0x17fe00	93.7255	
+fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	96.5000	96.5000	3	ef406c4fab89	0x17fe00	96.5000	
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	1	471a472ee35d	0x181660	100.0000	
 fadereffects	?EndFade@CFaderLight@@UAEXXZ	100.0000	100.0000	1	da061837edfb	0x1816a0	100.0000	
 fadereffects	?FinishFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	803a40ccb768	0x17f990	100.0000	
