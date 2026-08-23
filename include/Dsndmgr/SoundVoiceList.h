@@ -23,9 +23,11 @@ template<class T> inline T* elemOf(DSoundLink* link) {
 }
 
 // The element base of every DSoundList: one link, the tag RemoveMatching filters
-// on, and the buffer it belongs to. The dtor is the vptr-restoring body at
-// 0x137330, and it stores ??_7PureSoundElem@@6B@ - so the class that owns
-// m_tag/m_buffer is this one, not a further-derived element type.
+// on, the buffer it belongs to, and whether retiring the element stops that
+// buffer. The dtor is the vptr-restoring body at 0x137330 and it stores
+// ??_7PureSoundElem@@6B@, so these four fields are this class's, not a
+// further-derived element type's; DSoundVoice's ctor writes +0xc, +0x10 and
+// +0x14 in one run BEFORE its own vptr stamp, which is the mem-init phase.
 struct PureSoundElem {
     virtual i32 Tick(i32 now) = 0;
     virtual i32 Stop() = 0;
@@ -33,8 +35,10 @@ struct PureSoundElem {
     DSoundLink m_link;
     u32 m_tag;
     DirectSoundMgr* m_buffer;
+    i32 m_stopAndRewind;
 
-    PureSoundElem(u32 tag, DirectSoundMgr* buffer) : m_tag(tag), m_buffer(buffer) {}
+    PureSoundElem(u32 tag, DirectSoundMgr* buffer, i32 stopAndRewind)
+        : m_tag(tag), m_buffer(buffer), m_stopAndRewind(stopAndRewind) {}
 
     // No class-level `operator delete`: retail's unwind funclet for a
     // `new`-cleanup on this class calls the GLOBAL ??3@YAXPAX@Z, and a

@@ -15,7 +15,6 @@ struct DSoundVoice : public PureSoundElem {
     virtual i32 Tick(i32 now) OVERRIDE;
     virtual i32 Stop() OVERRIDE;
 
-    i32 m_stopAndRewind;
     i32 m_rampEndVolume;
     i32 m_rampStartVolume;
     i32 m_rampDurationMs;

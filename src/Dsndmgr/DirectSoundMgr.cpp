@@ -1365,13 +1365,11 @@ void DSoundList::RemoveMatching(DirectSoundMgr* key, u32 tag) {
     }
 }
 
-// @early-stop
 RVA(0x00136fe0, 0x7b)
 DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp)
-    : PureSoundElem(SOUND_VOICE_TAG_RAMP, owner) {
-    m_rampStartVolume = pct;
+    : PureSoundElem(SOUND_VOICE_TAG_RAMP, owner, slot) {
     m_rampEndVolume = key;
-    m_stopAndRewind = slot;
+    m_rampStartVolume = pct;
     m_rampDurationMs = mode;
     m_rampStartTime = (stamp == -1) ? timeGetTime() : stamp;
 }
