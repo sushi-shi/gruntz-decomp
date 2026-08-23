@@ -396,9 +396,8 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
 
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
-    CWwdGameObjectA* o = m_object;
-    i32 sx = o->m_screenX;
-    i32 sy = o->m_screenY;
+    i32 sx = m_object->m_screenX;
+    i32 sy = m_object->m_screenY;
     SwitchGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CWwdGameObjectA* sl =
@@ -417,7 +416,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             (static_cast<CSpotLight*>(sl->m_animWorker->m_logic))->m_focus = m_object;
         }
     }
-    SET_DRAW_FILL_FRACTION(m_object, SHADE_ALPHA_16, 0x80);
+    CWwdGameObjectA* o = m_object;
+    SET_DRAW_FILL_FRACTION(o, SHADE_ALPHA_16, 0x80);
     CLEAR_OBJECT_AREA
 }
 
