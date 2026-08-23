@@ -135,3 +135,29 @@ Four false-positive classes, each observed on a flagged row:
 Related: `param-store-last-forces-callee-saved.md` (same "emitted order does not
 name the source order" mechanism, seen through the callee-saved push count) and
 `imm-store-floats-to-end-of-store-run.md` (the same scheduler, immediate stores).
+
+## The counter-case: when C2 emits the run verbatim, retail's order IS the source order
+
+The "declaration order is the fixed point" rule assumes C2 permutes whatever you
+feed it. It does not always. `CGrunt::LoadWandGruntItemConfig` 0x65a60 carried
+
+    m_stamina = 0;                  // +0x3f0
+    m_lowStaminaCued = 0;           // +0x460
+    m_attackClockLo = g_frameTime;  // +0x860
+    m_attackClockHi = 0;            // +0x864
+    m_attackDowntimeLo = downtime;  // +0x868
+    m_attackDowntimeHi = 0;         // +0x86c
+
+which is ascending declaration order, and C2 emitted 3f0, 460, 868, 860, 864, 86c
+- close to the source with one pair rotated. Retail emits 868, 86c, 860, 864, 460,
+3f0: the two i64 halves stay paired, but the DOWNTIME pair precedes the CLOCK
+pair and the two scalars come last, which is not the class's declaration order in
+either direction. Writing exactly that order emitted it verbatim, every store on
+retail's offset, mnemonic residue 17 -> 5.
+
+So the diagnostic is whether the run C2 gave you is a PERMUTATION of your source
+(scheduler at work - go to declaration order or the object copy) or a faithful
+echo of it (no scheduling happened - transcribe retail's order, it is the source
+order). Note the current fuzzy can DIP while the structure is corrected: this one
+went 96.31 -> 95.13 because the following `m_healthSprite` test stopped floating
+into the middle of the run.
