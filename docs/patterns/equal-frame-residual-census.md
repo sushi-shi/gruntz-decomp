@@ -238,8 +238,13 @@ BOTH ways against retail in one tree — `CTriggerMgr::Load` 0x7abc0 and
 OnRButtonDown` 0xceae0 carry the `add` where retail has the `lea`. The doubling
 form `lea esi,[esi+esi*1]` / `add esi,esi` is the same mirror (`CFecFile::
 ReadArchive` 0x17b5f0, `CStatusBarMgr::UpdateChipGrinderStatusBar` 0x1076a0).
-Only the dst == base form is mirrored: `lea ecx,[eax+0x240]` KEEPS eax, and
-`lea ecx,[ecx+0x0]` is cl's 3-byte NOP, so both are left alone.
+**Only the dst == base form is mirrored**, and that restriction matters more
+than it sounds: `lea ecx,[eax+0x10]` KEEPS eax, which `add ecx,0x10` cannot, so
+folding it would erase a real lifetime distinction under register stripping.
+`CBootyState::EnterState` 0x18d30 and `BuildResourceTabStatusBar` 0xe8a70 are
+exactly that shape and stay in the bucket; only rows where cl picked the same
+register on both sides fold (`CTriggerMgr::Load` 0x7abc0). `lea ecx,[ecx+0x0]`
+is cl's 3-byte NOP and is left alone too.
 
 **17. A jump table whose arms OVERLAP.** cl lets one case enter another arm's
 BODY: in `CRollingBall::Update` 0xb0140 the S arm's table entry points at
