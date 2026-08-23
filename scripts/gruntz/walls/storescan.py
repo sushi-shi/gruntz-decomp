@@ -20,6 +20,17 @@ where the two sides' member-store runs are PERMUTATIONS of each other:
     multisets eq  the five walls-semdiff multisets agree with no exclusive
                   key, i.e. the same fields get the same values
 
+ONLY A MEMBER RUN IS COMPARABLE (corrected 2026-08-23). Excluding the literal
+`esp` base was not enough: cl materialises a local aggregate's address into an
+ordinary register (`lea esi,[esp+0x20]`) and fills it through THAT, so the run's
+displacements are esp offsets in disguise - the same incomparable key
+`walls valuetemp` was corrected for, and the exact-row calibration structurally
+cannot see it, because an exact row has the SAME frame on both sides. Measured
+over the 595-row todo queue: 66 rows carry such a run and 21 of them disagree on
+how many, which ALSO shifted the positional pairing of every member run after
+it. Frame fills are now counted and never compared; their COUNT is comparable
+and is reported as its own line.
+
 `--values` runs the companion screen instead: per member offset, the multiset
 of IMMEDIATES stored there. Two offsets that exchanged their constants is a
 live transposition bug the masked score barely sees, and that screen is how
@@ -91,12 +102,74 @@ BRANCH = re.compile(r"^j\w+$")
 #: survive them; a longer gap is a different piece of code.
 SLACK = 6
 
+#: a register loaded with a FRAME ADDRESS. Excluding the literal `esp` base is
+#: not enough: cl materialises a local aggregate's address into an ordinary
+#: register and fills it through THAT, so `[esi+0x4]` after `lea esi,[esp+0x20]`
+#: is an esp displacement in disguise.
+FRAME_ADDR = re.compile(
+    r"^(?:lea|mov)\s+(e[a-z][a-z]),"
+    r"(?:esp|\[esp(?:\+e[a-z]{2}(?:\*\d)?)?(?:[+-]0x[0-9a-f]+)?\])$")
+#: instructions whose FIRST operand is the destination
+WRITES_DST = re.compile(
+    r"^(?:mov|lea|add|sub|and|or|xor|imul|movzx|movsx|sar|shl|shr|sal|rol|ror"
+    r"|neg|not|inc|dec|pop|xchg|adc|sbb|cmov\w*|set\w*)\b")
+#: a frame pointer stays a frame pointer under a constant bias
+BIAS = re.compile(r"^(?:add|sub)\s+(e[a-z][a-z]),0x[0-9a-f]+$")
+BIAS_LEA = re.compile(r"^lea\s+(e[a-z][a-z]),\[(e[a-z][a-z])[+-]0x[0-9a-f]+\]$")
+REG_COPY = re.compile(r"^mov\s+(e[a-z][a-z]),(e[a-z][a-z])$")
+CALL_CLOBBER = ("eax", "ecx", "edx")
+
+
+def frame_regs(lines) -> list[frozenset]:
+    """Per line, the registers holding a FRAME address at that point.
+
+    Straight-line and deliberately conservative in the direction that keeps a
+    run OUT of the comparison: a copy and a constant bias propagate the taint,
+    every other definition clears it, and a call clears the scratch registers.
+    Branches are ignored, so the taint can outlive its block - which costs
+    recall on a genuine member run and never costs correctness.
+    """
+    live: set[str] = set()
+    out: list[frozenset] = []
+    for ln in lines:
+        out.append(frozenset(live))
+        asm = ln.asm
+        if not asm or BYTES_ONLY.match(asm):
+            continue
+        m = FRAME_ADDR.match(asm)
+        if m:
+            live.add(m.group(1))
+            continue
+        mn = asm.split(None, 1)[0]
+        if mn == "call":
+            live -= set(CALL_CLOBBER)
+            continue
+        m = REG_COPY.match(asm)
+        if m:
+            (live.add if m.group(2) in live else live.discard)(m.group(1))
+            continue
+        m = BIAS.match(asm) or BIAS_LEA.match(asm)
+        if m:
+            src = m.group(m.lastindex)
+            (live.add if src in live else live.discard)(m.group(1))
+            continue
+        if WRITES_DST.match(asm) and "," in asm:
+            live.discard(asm.split(None, 1)[1].split(",")[0].strip())
+    return out
+
 
 def store_runs(lines, min_len: int = 3, slack: int = SLACK) -> list[dict]:
-    """Maximal straight-line member-store runs through one base register."""
+    """Maximal straight-line member-store runs through one base register.
+
+    Each run carries `frame`: True when its base register held a frame address,
+    i.e. the run fills a LOCAL AGGREGATE and its displacements are esp offsets.
+    Those are counted, never compared - the two sides do not agree on a frame
+    offset (the incomparable key `walls valuetemp` was corrected for).
+    """
     runs: list[dict] = []
     cur: dict | None = None
     gap = 0
+    fr = frame_regs(lines)
 
     def close():
         nonlocal cur
@@ -104,7 +177,7 @@ def store_runs(lines, min_len: int = 3, slack: int = SLACK) -> list[dict]:
             runs.append(cur)
         cur = None
 
-    for ln in lines:
+    for i, ln in enumerate(lines):
         asm = ln.asm
         if not asm or BYTES_ONLY.match(asm):
             continue
@@ -122,7 +195,8 @@ def store_runs(lines, min_len: int = 3, slack: int = SLACK) -> list[dict]:
         _size, base, idx, off, src = m.groups()
         if cur is None or cur["base"] != base or idx:
             close()
-            cur = {"base": base, "addr": ln.addr, "off": [], "src": []}
+            cur = {"base": base, "addr": ln.addr, "off": [], "src": [],
+                   "frame": base in fr[i]}
         cur["off"].append(off or "+0x0")
         cur["src"].append(src)
         gap = 0
@@ -130,16 +204,28 @@ def store_runs(lines, min_len: int = 3, slack: int = SLACK) -> list[dict]:
     return runs
 
 
+def member_runs(runs) -> list[dict]:
+    return [r for r in runs if not r.get("frame")]
+
+
+def frame_fills(runs) -> list[dict]:
+    return [r for r in runs if r.get("frame")]
+
+
 def permuted(base_runs, tgt_runs) -> list[dict]:
     """Runs that are permutations of each other but not equal.
 
-    Runs are paired POSITIONALLY. If the run counts differ the block structure
-    differs and this sieve does not apply to the row.
+    Only MEMBER runs take part. A run through a frame address is dropped first,
+    both because its displacements are not comparable and because dropping it
+    stops a one-sided local fill from shifting the POSITIONAL pairing of every
+    member run after it. Runs are paired positionally; if the member-run counts
+    differ the block structure differs and this sieve does not apply.
     """
-    if len(base_runs) != len(tgt_runs):
+    a_runs, b_runs = member_runs(base_runs), member_runs(tgt_runs)
+    if len(a_runs) != len(b_runs):
         return []
     out = []
-    for i, (a, b) in enumerate(zip(base_runs, tgt_runs)):
+    for i, (a, b) in enumerate(zip(a_runs, b_runs)):
         if a["off"] != b["off"] and sorted(a["off"]) == sorted(b["off"]):
             out.append({"i": i, "addr": a["addr"], "n": len(a["off"]),
                         "base_reg": a["base"], "tgt_reg": b["base"],
@@ -178,15 +264,22 @@ def _pair(token: str):
     tgt = Obj(tgt_path)
     bb, brel, _ = _find_function(base, binding.name)
     tb, trel, _ = _find_function(tgt, binding.name)
-    return (binding, (_decode(bb, brel), bb, brel), (_decode(tb, trel), tb, trel))
+    return (binding,
+            (_decode(bb, brel, binding.name), bb, brel),
+            (_decode(tb, trel, binding.name), tb, trel))
 
 
 def scan_one(rva: str, min_run: int) -> dict:
     binding, (lb, bb, brel), (lt, tb, trel) = _pair(rva)
-    hits = permuted(store_runs(lb, min_run), store_runs(lt, min_run))
+    rb, rt = store_runs(lb, min_run), store_runs(lt, min_run)
+    hits = permuted(rb, rt)
     cb, ct = counts(lb), counts(lt)
     fb, ft = features(lb, binding.name), features(lt, binding.name)
     rec = {"hits": hits,
+           "base_member_runs": len(member_runs(rb)),
+           "tgt_member_runs": len(member_runs(rt)),
+           "base_frame_fills": len(frame_fills(rb)),
+           "tgt_frame_fills": len(frame_fills(rt)),
            "base_bytes": len(bb), "tgt_bytes": len(tb),
            "base_relocs": len(brel), "tgt_relocs": len(trel),
            "base_insns": cb[0], "tgt_insns": ct[0],
@@ -209,16 +302,21 @@ IMM_STORE = re.compile(
 
 
 def imm_map(lines, self_name: str = "") -> dict[str, Counter]:
-    """member offset -> multiset of immediates stored there."""
+    """member offset -> multiset of immediates stored there.
+
+    A store through a FRAME address is skipped for the same reason its run is:
+    the key would be an esp displacement, which the two sides do not share.
+    """
     out: dict[str, Counter] = defaultdict(Counter)
-    for ln in lines:
+    fr = frame_regs(lines)
+    for i, ln in enumerate(lines):
         if self_name and ln.ref == self_name:
             continue
         m = IMM_STORE.match(ln.asm)
         if not m:
             continue
-        size, _base, idx, off, val = m.groups()
-        if idx:
+        size, base, idx, off, val = m.groups()
+        if idx or base in fr[i]:
             continue
         out[f"{size}{off or '+0x0'}"][int(val, 0)] += 1
     return out
@@ -263,11 +361,24 @@ def report(rows, limit: int, loose: bool) -> None:
     perm = [r for r in ok if r["hits"]]
     strict = [r for r in perm if r["counts_equal"]]
     gold = [r for r in strict if _gold(r)]
+    fill = [r for r in ok
+            if r["base_frame_fills"] != r["tgt_frame_fills"]]
     print(f"paired rows read: {len(ok)}   (errors {len(rows) - len(ok)})")
     print(f"  PERMUTED store run        : {len(perm):4d}")
     print(f"  ... and every count equal : {len(strict):4d}")
     print(f"  ... and multisets equal   : {len(gold):4d}"
           "   <== the pattern's shape")
+    print(f"  local aggregate FILLS seen: "
+          f"{sum(r['base_frame_fills'] for r in ok)}"
+          f"/{sum(r['tgt_frame_fills'] for r in ok)}"
+          f"   (frame offsets - counted, never compared)")
+    print(f"  ... rows whose fill COUNT differs (that IS comparable): "
+          f"{len(fill)}")
+    print()
+    for r in sorted(fill, key=lambda x: -x["cur"])[:limit]:
+        print(f"[fill  ] {r['rva']} {r['cur']:6.2f} base "
+              f"{r['base_frame_fills']} vs target {r['tgt_frame_fills']}  "
+              f"{r['unit']}/{r['symbol'][:52]}")
     print()
     for r in sorted(perm if loose else strict,
                     key=lambda x: -x["cur"])[:limit]:
