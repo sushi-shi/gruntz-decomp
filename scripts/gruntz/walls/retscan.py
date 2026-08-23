@@ -431,7 +431,8 @@ def tail_ret(img, idx, tmap, rva: int, size: int, depth: int = 3):
     return tail_ret(img, idx, tmap, b.rva, b.size, depth - 1)
 
 
-def scan(bindings, scores) -> tuple[list[dict], Counter, list[dict]]:
+def scan(bindings, scores, recall: list | None = None
+         ) -> tuple[list[dict], Counter, list[dict]]:
     from gruntz.sema.index import index
     img = retail()
     idx = index()
@@ -507,6 +508,19 @@ def scan(bindings, scores) -> tuple[list[dict], Counter, list[dict]]:
         stat["udt-bounded" if udt else "decidable"] += 1
         if not bad:
             stat["agree"] += 1
+            # THE MEMBERSHIP RULE'S COST, which the exact-row control cannot
+            # measure: an exact row cannot exhibit a MISSED disagreement, so
+            # that control bounds false POSITIVES only. Where more than one
+            # `ret` immediate decoded, ask whether the row would still agree
+            # under the strict single-value reading (the most common one).
+            if recall is not None and len(seen) > 1:
+                primary = Counter(rs).most_common(1)[0][0] if rs else None
+                if (primary < lower) if udt else (primary not in expect):
+                    recall.append({"rva": b.rva, "unit": b.unit or "",
+                                   "name": b.name, "sig": sig, "conv": conv,
+                                   "seen": sorted(seen), "primary": primary,
+                                   "expect": sorted(expect), "lower": lower,
+                                   "cur": scores.get((b.unit, b.name))})
             continue
         stat["DISAGREE"] += 1
         rows.append({"rva": b.rva, "unit": b.unit or "", "name": b.name,
@@ -757,6 +771,11 @@ def main(argv=None) -> int:
                          "cleanup (`add esp,N`), read one-sided")
     ap.add_argument("--virtual", action="store_true",
                     help="the vtable-slot census over the same names")
+    ap.add_argument("--recall", action="store_true",
+                    help="the MEMBERSHIP rule's cost - agreeing rows that "
+                         "would disagree under the strict single-`ret` "
+                         "reading. The exact-row control cannot see this: an "
+                         "exact row cannot exhibit a MISSED disagreement")
     ap.add_argument("--limit", type=int, default=40)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
@@ -785,6 +804,31 @@ def main(argv=None) -> int:
         if args.json:
             json.dump(out, sys.stdout)
         return 0
+    if args.recall:
+        pops = [("OUR DECLARATIONS (channel `src`)", ours)]
+        if args.all:
+            pops.append(("EVERY OTHER CLAIM (library labels)",
+                         [b for b in named if b.channel != "src"]))
+        for title, pop in pops:
+            got: list[dict] = []
+            _r, st, _b = scan(pop, scores, got)
+            print(f"\n{title}")
+            print(f"  rows decided                       "
+                  f"{st['decidable'] + st['udt-bounded']:5d}")
+            print(f"  ... more than one `ret` immediate  {st['multi-ret']:5d}"
+                  "   <- the only rows the rule can hide anything in")
+            print(f"  ... AGREEING only on a non-primary "
+                  f"immediate {len(got):5d}   <- the recall cost")
+            for r in got[:args.limit]:
+                want = ("/".join(f"0x{v:x}" for v in r["expect"])
+                        if r["expect"] else f">= 0x{r['lower']:x}")
+                print(f"  0x{r['rva']:08x} {r['unit'][:20]:20} {r['conv']:8} "
+                      f"expect {want}, decoded "
+                      f"{'/'.join(f'0x{v:x}' for v in r['seen'])}, "
+                      f"primary 0x{r['primary']:x}")
+                print(f"      {r['sig'][:150]}")
+        return 0
+
     rows, stat, blind = scan(ours, scores)
     out = {"src": {"stat": dict(stat), "rows": rows, "blind": blind}}
     if not args.json:
