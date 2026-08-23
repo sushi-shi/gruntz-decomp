@@ -3984,6 +3984,27 @@ class ValueTempLivenessControls(unittest.TestCase):
             "mov ebx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x24],ebx",
             "lea eax,[esp+0x20]", "push eax", "call 0x0")), set())
 
+    def test_a_pointer_read_from_a_global_is_tagged_as_one(self):
+        """The second mechanism the sieve reports: a load through a pointer read
+        from a global blocks the dead-store elimination the same load through a
+        pointer parameter allows, so the row has to say which it was."""
+        from gruntz.walls.valuetemp import _pairs
+        _out, prov = _pairs(self._ins(
+            "mov eax,ds:0x0", "mov esi,DWORD PTR [eax+0x4]",
+            "mov ecx,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x20],ecx",
+            "mov edx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x24],edx",
+            "ret"))
+        self.assertEqual(prov, {("mem", 0x8): "glob"})
+
+    def test_a_pointer_taken_from_an_argument_is_not_a_global(self):
+        from gruntz.walls.valuetemp import _pairs
+        _out, prov = _pairs(self._ins(
+            "sub esp,0x10", "mov esi,DWORD PTR [esp+0x14]",
+            "mov ecx,DWORD PTR [esi+0x8]", "mov DWORD PTR [esp+0x0],ecx",
+            "mov edx,DWORD PTR [esi+0xc]", "mov DWORD PTR [esp+0x4],edx",
+            "ret"))
+        self.assertEqual(prov, {("mem", 0x8): "param"})
+
     def test_the_gx_preamble_pushes_are_frame(self):
         """A /GX function pushes -1, the handler and the old fs:0 chain before
         anything else, and cl 5.0 gives it no ebp frame - so the callee-save

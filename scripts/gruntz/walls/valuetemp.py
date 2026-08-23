@@ -39,18 +39,27 @@ it keeps observing it, because the pointer outlives the `lea`.
 And a store is only dead against its OWN slot's later events - the RectContains
 temp escapes the same slot its successor already killed.
 
+Each row also carries where the POINTER came from, because that is a second cl
+5.0 fact: a load through a pointer read from a GLOBAL blocks the dead-store
+elimination the same load through a pointer PARAMETER allows. `--global` keeps
+only the rows whose pair reaches its member through a global.
+
 `--calibrate` is the negative control this sieve exists to have: it reports the
 rows on 100.00% functions, where the two sides ARE the same bytes and any row is
 a detector bug. A clean zero from a detector nobody has seen fire is not a
-result - `--control` re-proves it against the two rows the mechanism was
-established on.
+result - `--control` re-proves it against the rows both mechanisms were
+established on (the temp on RectContains/RectContainsGated, the global pointer
+on SaveScreenshot), and the header line's provenance histogram says how big each
+class is, so a `--global` zero is a measurement rather than an empty query.
 
-    gruntz walls valuetemp [--unit U] [--fn SUB] [--calibrate] [--control]
+    gruntz walls valuetemp [--unit U] [--fn SUB] [--global]
+                           [--calibrate] [--control]
 """
 
 from __future__ import annotations
 
 import argparse
+import collections
 import re
 import sys
 
@@ -61,6 +70,9 @@ STORE = re.compile(r"^(?:DWORD PTR )?\[esp(?:\+0x([0-9a-f]+))?\],(e[a-z][a-z])$"
 LOAD = re.compile(r"^(e[a-z][a-z]),(?:DWORD PTR )?\[(e[a-z][a-z])\+0x([0-9a-f]+)\]$")
 ESPREF = re.compile(r"\[esp(?:\+0x([0-9a-f]+))?\]")
 LEA = re.compile(r"^e[a-z][a-z],\[esp(?:\+0x([0-9a-f]+))?\]$")
+ABS_LOAD = re.compile(r"^(e[a-z][a-z]),(?:DWORD PTR )?ds:0x[0-9a-f]+$")
+FRAME_LOAD = re.compile(r"^(e[a-z][a-z]),(?:DWORD PTR )?\[esp(?:\+0x([0-9a-f]+))?\]$")
+REG_MOVE = re.compile(r"^(e[a-z][a-z]),(e[a-z][a-z])$")
 # An address-taken frame object is live THROUGHOUT, and only its BASE appears in
 # the operand - so a per-dword read scan calls its interior fields dead. That is
 # the sieve's one false-positive class (CBattlezMapConfig::ScanRegion built two
@@ -79,6 +91,13 @@ FS_INSTALL = "DWORD PTR fs:0x0,esp"      # the /GX registration node going live
 CONTROL = (("gruntsteps", "?RectContains@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("gruntsteps", "?RectContainsGated@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("triggermgrgrid", "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z", 0x17C, ""))
+# (unit, symbol, member offset, provenance). The PROVENANCE walker's own known
+# positive: SaveScreenshot reaches its pair through a pointer read from a global,
+# which is the alias fact that keeps the store alive. It is at 100.00%, so both
+# sides carry it and this controls the walker, not the asymmetry.
+PROV_CONTROL = (("savescreenshot",
+                 "?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@"
+                 "PAVCGruntzMgr@@HHPADH@Z", 0x8C, "glob"),)
 LOOKBACK = 40
 # One temp is emitted as one run, so its two dead stores are neighbours. Without
 # a bound, two unrelated dead stores at adjacent slots read as a pair.
@@ -152,16 +171,59 @@ def _esp_trace(ins):
 
 
 def _source_of(ins, i, reg):
-    """The member (base register, offset) `reg` held at index i, if a load set it."""
+    """(base register, offset, load index) for the member `reg` holds at i."""
     for j in range(i - 1, max(-1, i - LOOKBACK), -1):
         _off, mn, ops = ins[j]
         if mn == "mov":
             m = LOAD.match(ops)
             if m and m.group(1) == reg:
-                return m.group(2), int(m.group(3), 16)
+                return m.group(2), int(m.group(3), 16), j
         if ops.startswith(f"{reg},") or ops == reg:
             return None          # some other definition of reg
     return None
+
+
+def _provenance(ins, tr, i, reg, depth=4):
+    """Where the POINTER in `reg` at index i came from.
+
+    `glob`  it was loaded from a global (`mov reg,ds:0x0`, a DIR32 site).
+    `param` it traces back to an incoming argument or the entry `this`.
+    `local` it came out of the frame.
+
+    The distinction is a cl 5.0 alias-analysis fact: a load through a pointer
+    read from a GLOBAL blocks the dead-store elimination that the same load
+    through a pointer PARAMETER allows, so a `glob` pair is a store the source
+    can steer and a `param` pair is not."""
+    if depth <= 0:
+        return "?"
+    # the WHOLE prefix, not LOOKBACK: a receiver is loaded once in the prologue
+    # and used hundreds of instructions later
+    for j in range(i - 1, -1, -1):
+        _off, mn, ops = ins[j]
+        if mn == "call":
+            if reg in ("eax", "ecx", "edx"):
+                return "?"          # clobbered; the value is a call result
+            continue
+        if mn == "pop":
+            if ops == reg:
+                return "?"
+            continue
+        if mn in ("push", "cmp", "test") or not ops.startswith(f"{reg},"):
+            continue                # a read, not a definition
+        if ABS_LOAD.match(ops):
+            return "glob"
+        m = FRAME_LOAD.match(ops)
+        if m:
+            slot = (int(m.group(2), 16) if m.group(2) else 0) - tr[j][2]
+            return "param" if slot > 0 else "local"
+        m = LOAD.match(ops)
+        if m:
+            return _provenance(ins, tr, j, m.group(2), depth - 1)
+        m = REG_MOVE.match(ops)
+        if m and mn == "mov":
+            return _provenance(ins, tr, j, m.group(2), depth - 1)
+        return "?"
+    return "param" if reg in ("ecx", "edx") else "?"
 
 
 def _escape_slots(base: int, bases: list[int]) -> range:
@@ -171,8 +233,9 @@ def _escape_slots(base: int, bases: list[int]) -> range:
     return range(base, min(nxt, base + WIDEST_AGGREGATE), 4)
 
 
-def temps(ins):
-    """{member offset N} for each dead adjacent store pair fed by [b+N],[b+N+4].
+def _pairs(ins):
+    """({(base kind, member offset N)}, {pair: pointer provenance}) for each dead
+    adjacent store pair fed by [b+N],[b+N+4].
 
     A store is dead when the next event on its slot is another store - the
     RectContains form, where the real value overwrites the temp - or when the
@@ -213,7 +276,7 @@ def temps(ins):
             events.setdefault(slot, []).append((i, "r"))
             escaped.add(slot)
 
-    dead: dict[int, tuple[str, int, int]] = {}
+    dead: dict[int, tuple[str, int, int, int]] = {}
     for slot, evs in events.items():
         evs.sort()
         for pos, (i, kind) in enumerate(evs):
@@ -223,31 +286,37 @@ def temps(ins):
             after = evs[pos + 1:]
             killed = bool(after) and after[0][1] == "w"
             if killed or (not after and slot not in escaped):
-                dead[slot] = (*src, i)
+                dead[slot] = (src[0], src[1], src[2], i)
                 break
-    out = set()
-    for k, (b, n, at) in dead.items():
+    out, prov = set(), {}
+    for k, (b, n, load_at, at) in dead.items():
         # The base REGISTER is not comparable across sides - the two sides put
         # `this` in different registers - but whether the source is a member or
         # another frame slot is, and it decides the remedy: only a member pair
         # is an accessor's return value. `esp` pairs are stack aggregate copies.
         kind = "esp" if b == "esp" else "mem"
         hi = dead.get(k + 4)
-        if hi and hi[0] == b and hi[1] == n + 4 and abs(hi[2] - at) <= PAIR_SPAN:
+        if hi and hi[0] == b and hi[1] == n + 4 and abs(hi[3] - at) <= PAIR_SPAN:
             out.add((kind, n))
-    return out
+            prov[(kind, n)] = "esp" if b == "esp" \
+                else _provenance(ins, tr, load_at, b)
+    return out, prov
+
+
+def temps(ins):
+    return _pairs(ins)[0]
 
 
 def _sides(bobj, tobj, bf, tf, sym):
     bsec, bs, be = bf[sym]
     tsec, ts, te = tf[sym]
-    return (temps(pairscan.insns(bobj, bsec, bs, be)),
-            temps(pairscan.insns(tobj, tsec, ts, te)))
+    return (_pairs(pairscan.insns(bobj, bsec, bs, be)),
+            _pairs(pairscan.insns(tobj, tsec, ts, te)))
 
 
 def scan(unit_filter=None, fn_filter=None, calibrate=False):
     sc, live = pairscan.scores()
-    agree = 0
+    agree = collections.Counter()
     miss, extra = [], []
     for unit, (base, target) in sorted(
             pairscan.require_pairs({unit_filter} if unit_filter else None).items()):
@@ -266,25 +335,34 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
                 continue
             if calibrate != (pct >= 100.0):
                 continue
-            b, t = _sides(bobj, tobj, bf, tf, sym)
+            (b, bp), (t, tp) = _sides(bobj, tobj, bf, tf, sym)
             if b == t:
-                agree += 1 if t else 0
+                for pair in t:
+                    agree[tp.get(pair, "?")] += 1
                 continue
             if t - b:
-                miss.append((pct, unit, sym, sorted(t - b)))
+                miss.append((pct, unit, sym, sorted(t - b), tp))
             if b - t:
-                extra.append((pct, unit, sym, sorted(b - t)))
+                extra.append((pct, unit, sym, sorted(b - t), bp))
     return agree, miss, extra
 
 
-def _label(pairs) -> str:
-    return "/".join(f"{'esp' if k == 'esp' else ''}+{n:#x}" for k, n in pairs)
+def _label(pairs, prov=None) -> str:
+    out = []
+    for k, n in pairs:
+        where = (prov or {}).get((k, n))
+        out.append(f"{'esp' if k == 'esp' else ''}+{n:#x}"
+                   + (f"[{where}]" if where and where != "esp" else ""))
+    return "/".join(out)
 
 
-def _show(title, rows):
+def _show(title, rows, only_global=False):
+    if only_global:
+        rows = [r for r in rows
+                if any(r[4].get(pair) == "glob" for pair in r[3])]
     print(f"\n{title}: {len(rows)}")
-    for pct, unit, sym, offs in sorted(rows):
-        print(f"{pct:7.2f}  {unit:<22} {_label(offs):<22} {sym}")
+    for pct, unit, sym, offs, prov in sorted(rows):
+        print(f"{pct:7.2f}  {unit:<22} {_label(offs, prov):<30} {sym}")
 
 
 def main(argv=None) -> int:
@@ -295,6 +373,8 @@ def main(argv=None) -> int:
                     help="rows on 100%% functions - the detector-bug rate")
     ap.add_argument("--control", action="store_true",
                     help="re-prove the detector on the established rows")
+    ap.add_argument("--global", dest="only_global", action="store_true",
+                    help="only rows whose pointer came out of a global")
     a = ap.parse_args(argv)
     unit = check_unit(a.unit)
 
@@ -309,12 +389,24 @@ def main(argv=None) -> int:
                 bad += 1
                 continue
             b, t = _sides(bobj, tobj, bf, tf, sym)
+            b, t = b[0], t[0]
             hit = ("mem", want)
             ok = ((hit in b) == ("b" in sides)) and ((hit in t) == ("t" in sides))
             bad += not ok
             print(f"{'ok  ' if ok else 'FAIL'}  {u:<16} +{want:#x} on "
                   f"{sides or 'neither':<7}  "
                   f"base={_label(sorted(b))!r} target={_label(sorted(t))!r}  {sym}")
+        pairs = pairscan.require_pairs({u for u, _s, _o, _p in PROV_CONTROL})
+        for u, sym, want, where in PROV_CONTROL:
+            bobj, tobj = (Obj(p) for p in pairs[u])
+            bf, tf = pairscan.functions(bobj), pairscan.functions(tobj)
+            (_b, bp), (_t, tp) = _sides(bobj, tobj, bf, tf, sym)
+            hit = ("mem", want)
+            ok = bp.get(hit) == where and tp.get(hit) == where
+            bad += not ok
+            print(f"{'ok  ' if ok else 'FAIL'}  {u:<16} +{want:#x} pointer "
+                  f"from {where:<7}  base={bp.get(hit)!r} target={tp.get(hit)!r}"
+                  f"  {sym[:44]}")
         print("\nthe detector fires on every established row"
               if not bad else f"\n{bad} control(s) FAILED - the detector is "
                               "measuring nothing; fix it before reading a sweep")
@@ -323,9 +415,14 @@ def main(argv=None) -> int:
     agree, miss, extra = scan(unit, a.fn, a.calibrate)
     if a.calibrate:
         print(f"CALIBRATION over 100.00% rows - every row below is a detector bug")
-    print(f"carrying the temp on BOTH sides at the same member: {agree}")
-    _show("TARGET-ONLY (retail takes the pair by value, we do not)", miss)
-    _show("BASE-ONLY (we take it by value, retail does not)", extra)
+    hist = ", ".join(f"{n} {k}" for k, n in sorted(agree.items(),
+                                                   key=lambda kv: -kv[1]))
+    print(f"carrying the temp on BOTH sides at the same member: "
+          f"{sum(agree.values())}" + (f"  ({hist})" if hist else ""))
+    _show("TARGET-ONLY (retail takes the pair by value, we do not)", miss,
+          a.only_global)
+    _show("BASE-ONLY (we take it by value, retail does not)", extra,
+          a.only_global)
     return 0
 
 
