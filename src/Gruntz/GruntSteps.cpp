@@ -464,10 +464,8 @@ i32 CGrunt::IsDropReady(i32 a) {
         board->m_rows[newY][newX].m_occupantId = (ownerHi << 8) | ownerLo;
     }
 
-    m_lastTilePx.m_x = m_commitPx.m_x;
-    m_lastTilePx.m_y = m_commitPx.m_y;
-    m_commitPx.m_x = m_entrancePx.m_x;
-    m_commitPx.m_y = m_entrancePx.m_y;
+    m_lastTilePx = m_commitPx;
+    m_commitPx = m_entrancePx;
     m_tileMoveCommitted = 1;
 
     SetEntrancePos(a, 1);
