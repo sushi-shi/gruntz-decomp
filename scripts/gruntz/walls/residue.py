@@ -202,6 +202,26 @@ def canon_ref(asm: str, ref: str | None) -> tuple[str, str | None]:
         add = -add
     return asm[:m.start()] + "ADDEND" + asm[m.end():], f"@{rva + add:#x}"
 
+def ref_key(ref: str) -> str:
+    """One key per DATUM, so a referent that `canon_ref` folded to an absolute
+    address and one that kept its symbol name are not read as two identities.
+
+    canon_ref only fires on an operand carrying exactly one absolute token, and
+    that guard is deliberate - it is what keeps a wrong stored constant in the
+    `immediate` bucket.  But it makes the fold ASYMMETRIC: our accumulator load
+    `mov eax,ds:0x2bf674` has one token and becomes `@0x2bf674`, while retail's
+    `cmp DWORD PTR ds:0x0,0x0` has two and keeps `?g_logicTypesRegistered@@3HA`.
+    Same address, same datum, two spellings - and the referent bucket, whose
+    whole job is identity, reported it as an identity difference."""
+    if ref.startswith("@") or ref == "?unnamed":
+        return ref
+    syms = _syms()
+    rva = syms.get(ref)
+    if rva is None:
+        rva = syms.get(OBJDIFF_ORD.sub("$S", ref))
+    return f"@{rva:#x}" if rva is not None else ref
+
+
 #: `add eax,0xffffffe0` IS `sub eax,0x20` - same three bytes' worth of work,
 #: same value, and cl picks between them on its own (measured going BOTH ways
 #: against retail in one tree: CSpotLight's ctor has the add where retail has
@@ -588,13 +608,15 @@ def classify(chunks, base_m, tgt_m):
             if shift[1] >= 2:
                 return "subobject", note
         return "displacement", note
-    br = Counter(x.split("|", 1)[1] for x in exact_b.elements() if "|" in x)
-    tr = Counter(x.split("|", 1)[1] for x in exact_t.elements() if "|" in x)
+    br = Counter(ref_key(x.split("|", 1)[1])
+                 for x in exact_b.elements() if "|" in x)
+    tr = Counter(ref_key(x.split("|", 1)[1])
+                 for x in exact_t.elements() if "|" in x)
     # A COUNT difference on a symbol both sides reference is CSE or
     # rematerialization, not an identity question - only a symbol the other
     # side never names anywhere is a claim to check.
-    seen_b = {x.split("|", 1)[1] for x in base_m if "|" in x}
-    seen_t = {x.split("|", 1)[1] for x in tgt_m if "|" in x}
+    seen_b = {ref_key(x.split("|", 1)[1]) for x in base_m if "|" in x}
+    seen_t = {ref_key(x.split("|", 1)[1]) for x in tgt_m if "|" in x}
     only_br = sorted(r for r in (br - tr) if r not in seen_t)
     only_tr = sorted(r for r in (tr - br) if r not in seen_b)
     if only_br or only_tr:

@@ -3508,6 +3508,20 @@ class ResidueClassifierControls(unittest.TestCase):
         mt = masked([Line(0, "mov eax,ds:0x0", g)])
         self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0], "regname")
 
+    def test_one_datum_under_two_spellings_is_one_referent(self):
+        """`canon_ref` fires only on an operand carrying exactly one absolute
+        token, which makes the fold asymmetric: a one-token load becomes
+        `@<addr>` while a two-token compare keeps its symbol.  Same datum, and
+        the bucket whose whole job is identity must not call it two."""
+        from gruntz.walls.residue import ref_key
+        name = "?g_logicTypesRegistered@@3HA"
+        addr = ref_key(name)
+        if not addr.startswith("@"):
+            self.skipTest("model does not resolve the control symbol")
+        self.assertEqual(ref_key(addr), addr)
+        self.assertEqual(ref_key("?unnamed"), "?unnamed")
+        self.assertEqual(ref_key("?NotASymbol@@3HA"), "?NotASymbol@@3HA")
+
     def test_a_spent_zero_register_is_the_immediate(self):
         """cl parks a zero in a callee-saved register when it needs one
         repeatedly, then spends it where an immediate would go.  Measured both

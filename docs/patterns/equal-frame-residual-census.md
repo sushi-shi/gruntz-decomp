@@ -27,7 +27,7 @@ was adjudicated by hand against the retail bytes first.
 |---|---:|---:|---:|---:|---|
 | `regname` | 148 | 153 | 159 | 177 | register rotation only |
 | `displacement` | 84 | 75 | 61 | 61 | a member offset differs |
-| `selection` | 66 | 77 | 90 | 85 | the mnemonic multiset differs |
+| `selection` | 66 | 77 | 90 | 87 | the mnemonic multiset differs |
 | `immediate` | 75 | 72 | **68** | **68** | a constant differs |
 | `schedule` | 36 | 36 | 39 | 40 | a pure permutation |
 | `operand` | 32 | 32 | 32 | **14** | same mnemonics, different operands |
@@ -35,7 +35,7 @@ was adjudicated by hand against the retail bytes first.
 | `none` | 6 | 15 | 19 | 21 | nothing survives the mask |
 | `extra-copy` | 13 | 13 | 13 | 13 | the inverse of `arm-copy` |
 | `subobject` | - | - | 2 | 2 | one side splits an address, the other folds it |
-| `referent` | 15 | **2** | **2** | 4 | one side names a symbol the other never names |
+| `referent` | 15 | **2** | **2** | **2** | one side names a symbol the other never names |
 
 (the `first` column was 505 rows and `now` is the larger todo queue, so read the
 columns as a shape, not a subtraction.)
@@ -50,11 +50,15 @@ bucket, and it was in the MODEL rather than the C++ (§ below). The two `.rdata`
 section-hash rows of §6 are now normalized too, and the two survivors are §14
 boundary pointers whose target symbol is an unclaimed file-local static.
 
-It reads 4 in the last column, and the two arrivals are the §20 fold working
-rather than failing: `CGruntPuddle`'s ctor and `CSingleFrameMessage`'s were
-classified on their zero-register noise, and with that gone the referent
-difference underneath is what the classifier now names. A row moving INTO a more
-actionable bucket after a mirror lands is the mirror uncovering it.
+It briefly read 4 while §20 was landing, and chasing those two arrivals found a
+false positive in the bucket itself (§21): `canon_ref` folds a referent to an
+absolute address only when the operand carries exactly one absolute token, so
+our one-token `mov eax,ds:0x2bf674` became `@0x2bf674` while retail's two-token
+`cmp DWORD PTR ds:0x0,0x0` kept `?g_logicTypesRegistered@@3HA`. One datum, two
+spellings, reported as an identity difference by the bucket whose whole job is
+identity. Referents are now compared by ADDRESS, and both rows moved to
+`selection`, where their real difference - a load-and-compare against a direct
+memory compare - is what they are.
 
 **The arm-result-temp defect is 43 rows (30 + 13)** measured on the diff chunks,
 and the direct whole-stream screen (`--arm`) finds 78 rows whose member-store
@@ -64,8 +68,8 @@ both are steerable — see the worked examples below.
 ## The false positives, i.e. what a raw diff calls a difference and is not
 
 Each of these was measured mislabelling real rows. The tool normalizes §1-4,
-§8-12, §14-16 and §20 (§5 and §6 fall out of §14's arithmetic); §7, §13 and
-§17-19 it cannot see, so apply them by hand before calling a row a bug.
+§8-12, §14-16, §20 and §21 (§5 and §6 fall out of §14's arithmetic); §7, §13
+and §17-19 it cannot see, so apply them by hand before calling a row a bug.
 
 **1. A relocated call's addend.** `call 0xe4` vs `call 0xe0` against the same
 `|?GetAt@CStringArray@@...` referent is position state — anything inserted above
@@ -299,6 +303,17 @@ never inherits a zero the other arms happen to hold.
 instructions already agreed, including every OTHER use of retail's zero
 register, and the single survivor was the `!= NULL` after `HitTestCell`, where
 retail spends `cmp eax,ebx` and we emit `test eax,eax`. Residual 1 to 0.
+
+**21. One datum under two referent spellings.** `canon_ref` folds a DATA
+reference's addend into the referent as an absolute address, but only when the
+operand carries exactly ONE absolute token - a guard that exists so a constant
+stored THROUGH a relocated address stays in `immediate` instead of moving to
+`referent`. The guard makes the fold asymmetric between two spellings of the
+same access: `mov eax,ds:0x2bf674` has one token and becomes `@0x2bf674`, while
+`cmp DWORD PTR ds:0x0,0x0` has two and keeps `?g_logicTypesRegistered@@3HA`.
+0x2bf674 IS that symbol. Referents are compared by address for exactly this
+reason; a bucket that reports identity must not be sensitive to which
+instruction form reached the datum.
 
 ## Worked example: the memory case, twice, both a whole score
 
