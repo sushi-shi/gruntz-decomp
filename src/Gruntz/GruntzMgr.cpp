@@ -1721,12 +1721,13 @@ void CGruntzMgr::RecomputeViewScale() {
         return;
     }
     CGameLevel* view = m_world->m_level;
-    // Retail addresses the extent through a RECT pointer (`lea eax,[esi+0x10]`, then
-    // (0)/(4)/(8)/(0xc) off it) and converts each span to float only at its first use -
-    // `fsts` keeps the float in st(0) for the multiply instead of `fstps`+reload.
-    LevelCoordRect* ext = &view->m_planeCtx;
-    i32 iw = ext->right - ext->left + 1;
-    i32 ih = ext->bottom - ext->top + 1;
+    // The extent arrives as a whole-rect COPY: that is what materializes its address
+    // (`lea eax,[esi+0x10]`) and reads (0)/(4)/(8)/(0xc) off it, where a RECT* folds
+    // the displacements onto the CGameLevel. Each span converts to float only at its
+    // first use, so `fsts` keeps it in st(0) for the multiply instead of `fstps`+reload.
+    LevelCoordRect ext = view->m_planeCtx;
+    i32 iw = ext.right - ext.left + 1;
+    i32 ih = ext.bottom - ext.top + 1;
     float fw = static_cast<float>(iw);
 
     view->m_rectA.w = static_cast<i32>((fw * 1.4f));
