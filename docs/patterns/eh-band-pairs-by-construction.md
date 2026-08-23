@@ -95,7 +95,9 @@ the queue from the worklist and knowing why.
 
 A funclet score is a READOUT, never a target. If a parent's funclets are all
 `slot-shift`, its unwind model is already right and the row is telling you
-about the frame. If they are `count`, look for a missing out-of-line
-constructor call. Only `dtor-identity` with a destructor neither side can
-explain is a cleanup question - and check the byte-identical-dtor artifact
-first.
+about the frame - `--shift` says WHICH frame question, and the answer is
+usually not the frame's SIZE
+(eh-slot-shift-measures-the-parents-local-homing.md). If they are `count`,
+look for a missing out-of-line constructor call. Only `dtor-identity` with a
+destructor neither side can explain is a cleanup question - and check the
+byte-identical-dtor artifact first.
