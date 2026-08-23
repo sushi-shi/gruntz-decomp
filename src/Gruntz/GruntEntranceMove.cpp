@@ -274,10 +274,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 if (tm->m_recList.GetCount() != 1) {
                     focus = NULL;
                 } else {
-                    i32* vec = static_cast<i32*>(tm->m_recList.GetHead());
-                    i32 a = vec[0];
-                    i32 b = vec[1];
-                    focus = tm->m_grid[a * TM_GRID_COLS + b];
+                    Coord rec = *tm->HeadRec();
+                    focus = tm->m_grid[rec.m_x * TM_GRID_COLS + rec.m_y];
                 }
                 if (this == focus && m_tileOwnerHi == g_curPlayer) {
                     onScreen = 1;
