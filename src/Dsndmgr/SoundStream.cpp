@@ -326,13 +326,6 @@ i32 SoundStream::TickSubManagers(i32 time) {
     return 1;
 }
 
-// @early-stop
-// residue is which frame slot each header word lands in: retail puts the
-// loop-reused pair at the HIGH end (riff tag at +0x18) and the single-use WAVE
-// tag at +0x10, cl the reverse. Slot assignment follows first-USE order, not
-// declaration order (swapping the declarations changes nothing - measured); the
-// three words share ONE 0xc-byte slot group plus the recycled `src` argument
-// home, so splitting header and loop variables adds a fourth slot and is wrong.
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CParseSource* src,
@@ -344,16 +337,16 @@ i32 SoundStream::ParseWave(
     i32 gotData = 0;
     src->SetPos(0);
 
+    u32 riffTag;
     u32 chunkId;
     u32 chunkSize;
-    u32 waveTag;
-    src->Read(&chunkId, 4, -1);
+    src->Read(&riffTag, 4, -1);
     src->Read(&chunkSize, 4, -1);
-    src->Read(&waveTag, 4, -1);
-    if (chunkId != mmioFOURCC('R', 'I', 'F', 'F')) {
+    src->Read(&chunkId, 4, -1);
+    if (riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
-    if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
+    if (chunkId != mmioFOURCC('W', 'A', 'V', 'E')) {
         return 0;
     }
 
