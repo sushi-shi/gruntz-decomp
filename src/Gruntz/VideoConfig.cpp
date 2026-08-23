@@ -54,21 +54,21 @@ DATA(0x0022bdd4)
 i32 g_savedVoiceEnabled = 0;
 
 DATA(0x0022bdd8)
-HWND g_optHwndMusic = 0;
+HWND g_optHwndMusic = NULL;
 DATA(0x0022bddc)
-HWND g_optHwndVoice = 0;
+HWND g_optHwndVoice = NULL;
 DATA(0x0022bde0)
-HWND g_optHwndSpeech = 0;
+HWND g_optHwndSpeech = NULL;
 DATA(0x0022bde4)
-HWND g_optHwndEasy = 0;
+HWND g_optHwndEasy = NULL;
 DATA(0x0022bde8)
-HWND g_optHwndResSlider = 0;
+HWND g_optHwndResSlider = NULL;
 DATA(0x0022bdec)
-HWND g_optHwndMidiVolume = 0;
+HWND g_optHwndMidiVolume = NULL;
 DATA(0x0022bdf0)
-HWND g_optHwndSoundVolume = 0;
+HWND g_optHwndSoundVolume = NULL;
 DATA(0x0022bdf4)
-HWND g_optHwndVoiceVolume = 0;
+HWND g_optHwndVoiceVolume = NULL;
 
 RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {

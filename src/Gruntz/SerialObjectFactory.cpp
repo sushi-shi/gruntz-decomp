@@ -97,7 +97,7 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     }
     // Filter seeded with 0, NOT LOGIC_NONE(-1): retail pushes 0 here, the same
     // "no filter" idiom as CGameSave::Save's SnapshotChildren call.
-    return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, LOGIC_UNSET) != 0;
+    return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, LOGIC_UNSET) != LOGIC_UNSET;
 }
 
 // @early-stop

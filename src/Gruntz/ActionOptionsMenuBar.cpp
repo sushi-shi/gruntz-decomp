@@ -46,7 +46,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_ACTIONOPTIONZMENUBAR"
     );
-    m_frame = spr ? spr->GetAt(1) : 0;
+    m_frame = spr ? spr->GetAt(1) : NULL;
     if (!m_frame) {
         return 0;
     }

@@ -29,7 +29,7 @@ u32 CHashC::HashStr(const char* s) {
 RVA(0x0013c270, 0xca)
 CParseSource* CHashC::Walk(const char* name, i32 ci) {
     if (!name) {
-        return 0;
+        return NULL;
     }
     CHashElement* e = Lookup(HashStr(name));
     if (ci) {
@@ -40,7 +40,7 @@ CParseSource* CHashC::Walk(const char* name, i32 ci) {
             }
             e = FromLink(e->m_link.m_next);
         }
-        return 0;
+        return NULL;
     }
     while (e) {
         const char* key = e->m_parseSource->m_name;
@@ -49,7 +49,7 @@ CParseSource* CHashC::Walk(const char* name, i32 ci) {
         }
         e = FromLink(e->m_link.m_next);
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0013c340, 0xf)
@@ -71,7 +71,7 @@ CSymRec* CHashD::FindInt(u32 key) {
         }
         e = FromLink(e->m_link.m_next);
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0013c3b0, 0xf)
@@ -95,7 +95,7 @@ u32 CHashB::HashStr(const char* s) {
 RVA(0x0013c3f0, 0xca)
 CSymTab* CHashB::Walk(const char* name, i32 ci) {
     if (!name) {
-        return 0;
+        return NULL;
     }
     CHashElement* e = Lookup(HashStr(name));
     if (ci) {
@@ -106,7 +106,7 @@ CSymTab* CHashB::Walk(const char* name, i32 ci) {
             }
             e = FromLink(e->m_link.m_next);
         }
-        return 0;
+        return NULL;
     }
     while (e) {
         const char* key = e->m_symTab->m_name;
@@ -115,7 +115,7 @@ CSymTab* CHashB::Walk(const char* name, i32 ci) {
         }
         e = FromLink(e->m_link.m_next);
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0013c4c0, 0x1)

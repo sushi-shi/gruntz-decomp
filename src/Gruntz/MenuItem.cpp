@@ -51,7 +51,7 @@ i32 CMenuItem::Init(
         m_state = MENUSTATE_NORMAL;
     }
     if (!OnInit()) {
-        CObject* slot = 0;
+        CObject* slot = NULL;
 
         m_owner->m_imageRegistry->m_workersByName.Lookup(spriteKey, slot);
         m_sprite = slot;
@@ -266,14 +266,14 @@ CDDrawWorker* CMenuItem2::GetCurrentSprite() {
         case MENUSTATE_DISABLED:
             return m_spriteDisabled;
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00185970, 0x4d)
 CImage* CMenuItem2::GetCurrentFrame() {
     CDDrawWorker* s = GetCurrentSprite();
     if (!s) {
-        return 0;
+        return NULL;
     }
 
     CImage* f = s->GetAt(m_frameIdx);

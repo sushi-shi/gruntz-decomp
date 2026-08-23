@@ -153,8 +153,8 @@ void CFaderFlat::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
 
-    m_src->m_ddSurface->Unlock(0);
-    m_desc04->m_ddSurface->Unlock(0);
+    m_src->m_ddSurface->Unlock(NULL);
+    m_desc04->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x0017f950, 0x24)
@@ -260,7 +260,7 @@ RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
     u8* scratch = new u8[m_dstSurface->m_width];
     m_dstSurface->Clear(0);
-    m_srcSurface->Lock(0);
+    m_srcSurface->Lock(NULL);
     u8* base = static_cast<u8*>(m_dstSurface->Lock(0));
     if (m_table->m_data == NULL) {
         return;
@@ -279,8 +279,8 @@ void CFaderRadial::RenderFrame(i32 frame) {
         }
     }
 
-    m_srcSurface->m_ddSurface->Unlock(0);
-    m_dstSurface->m_ddSurface->Unlock(0);
+    m_srcSurface->m_ddSurface->Unlock(NULL);
+    m_dstSurface->m_ddSurface->Unlock(NULL);
     delete[] scratch;
 }
 RVA(0x0017fda0, 0x8)
@@ -478,10 +478,10 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
     if (m_srcBox != NULL) {
-        m_srcBox->m_ddSurface->Unlock(0);
+        m_srcBox->m_ddSurface->Unlock(NULL);
     }
     if (m_dstBox != NULL) {
-        m_dstBox->m_ddSurface->Unlock(0);
+        m_dstBox->m_ddSurface->Unlock(NULL);
     }
 }
 
@@ -609,12 +609,12 @@ void CFaderLight::RenderFrame(i32 frame) {
         m_dstBits = static_cast<u8*>(m_dstSurface->Lock(0));
     }
     i32 bpp = m_surface->m_bytesPerPixel;
-    u8* lut = 0;
+    u8* lut = NULL;
     if (m_table != NULL) {
         lut = m_table->m_data;
     }
     if (m_lightGate != 0) {
-        u8* ovlBits = 0;
+        u8* ovlBits = NULL;
         if (m_overlay != NULL) {
             ovlBits = static_cast<u8*>(m_overlay->Lock(0));
         }
@@ -808,7 +808,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             row++;
         }
         if (m_overlay != NULL) {
-            m_overlay->m_ddSurface->Unlock(0);
+            m_overlay->m_ddSurface->Unlock(NULL);
         }
     } else {
         i32 fr2 = frame * frame;
@@ -856,10 +856,10 @@ void CFaderLight::RenderFrame(i32 frame) {
     }
     m_previousFrame = frame;
     if (m_surface != NULL) {
-        m_surface->m_ddSurface->Unlock(0);
+        m_surface->m_ddSurface->Unlock(NULL);
     }
     if (m_dstSurface != NULL) {
-        m_dstSurface->m_ddSurface->Unlock(0);
+        m_dstSurface->m_ddSurface->Unlock(NULL);
     }
 }
 
@@ -1342,10 +1342,10 @@ void CFaderShape::RenderFrame(i32 frame) {
         }
     }
     m_previousFrame = frame;
-    m_surfA->m_ddSurface->Unlock(0);
-    m_surfB->m_ddSurface->Unlock(0);
+    m_surfA->m_ddSurface->Unlock(NULL);
+    m_surfB->m_ddSurface->Unlock(NULL);
     if (m_surfB != m_surfC) {
-        m_surfC->m_ddSurface->Unlock(0);
+        m_surfC->m_ddSurface->Unlock(NULL);
     }
 }
 

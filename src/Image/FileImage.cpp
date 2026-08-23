@@ -71,7 +71,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, BmpFileImage* img, i32, i3
         }
     }
 
-    if (CDDSurface::BlitSurf(info, width, height, BPP_UNSET, b) == 0) {
+    if (CDDSurface::BlitSurf(info, width, height, BPP_UNSET, b) == BPP_UNSET) {
         return 0;
     }
 
@@ -79,7 +79,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, BmpFileImage* img, i32, i3
     base.m_rec = img;
     u8* run = base.m_bytes + img->fh.bfOffBits;
     if (convert) {
-        if (Blit(run, srcFmt, pal, RASTER_ROWS_BOTTOM_UP) == 0) {
+        if (Blit(run, srcFmt, pal, RASTER_ROWS_BOTTOM_UP) == BPP_UNSET) {
             return 0;
         }
     } else {
@@ -93,7 +93,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, BmpFileImage* img, i32, i3
 RVA(0x00143e60, 0x15b)
 i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -133,7 +133,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, BmpFileImage* bmp, u32 size
             remap = 1;
         }
         if (!remap || palBpp != BPP_PALETTED_8 || HasPalette(pal) != 0) {
-            PALETTEENTRY* palette = 0;
+            PALETTEENTRY* palette = NULL;
             if (remap && bitcount == BPP_PALETTED_8) {
                 RGBQUAD* src = bmp->info.bmiColors;
                 for (i32 i = 0; i < 0x100; i++) {
@@ -155,7 +155,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, BmpFileImage* bmp, u32 size
             data.m_rec = bmp;
             u8* pixels = data.m_bytes + bmp->fh.bfOffBits;
             if (remap) {
-                if (Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP) == 0) {
+                if (Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP) == BPP_UNSET) {
                     return 0;
                 }
             } else if (BlitDirect(pixels, RASTER_ROWS_BOTTOM_UP) == 0) {
@@ -171,7 +171,7 @@ RVA(0x00144110, 0x156)
 i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
 
@@ -223,7 +223,7 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     m_descFlags = 7;
     m_width = width;
     m_height = height;
-    if (!CDDSurface::CreateFromDesc(a, 0)) {
+    if (!CDDSurface::CreateFromDesc(a, NULL)) {
         return 0;
     }
 
@@ -304,14 +304,14 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
 
     CFile file;
     if (mode != 0) {
-        if (!file.Open(path, 0x2001, 0)) {
-            m_ddSurface->Unlock(0);
+        if (!file.Open(path, 0x2001, NULL)) {
+            m_ddSurface->Unlock(NULL);
             return 0;
         }
         file.Seek(0, 2);
     } else {
-        if (!file.Open(path, 0x1001, 0)) {
-            m_ddSurface->Unlock(0);
+        if (!file.Open(path, 0x1001, NULL)) {
+            m_ddSurface->Unlock(NULL);
             return 0;
         }
     }
@@ -324,7 +324,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
         file.Write(buf + row * m_pitch, m_width);
     }
 
-    m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -383,16 +383,16 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         // NULL guard above already read).  The one caller that reaches this arm is
         // SaveScreenshot, which passes pal = 0, so opening `pal` could never write a
         // save-game preview and CSaveGame::Save failed after a COMPLETE snapshot.
-        if (file.Open(path, 0x2001, 0) == 0) {
-            this->m_ddSurface->Unlock(0);
+        if (file.Open(path, 0x2001, NULL) == 0) {
+            this->m_ddSurface->Unlock(NULL);
             delete[] line;
             return 0;
         }
         // modeNoTruncate: only the append open repositions to the end.
         file.Seek(0, 2);
     } else {
-        if (file.Open(path, 0x1001, 0) == 0) {
-            this->m_ddSurface->Unlock(0);
+        if (file.Open(path, 0x1001, NULL) == 0) {
+            this->m_ddSurface->Unlock(NULL);
             delete[] line;
             return 0;
         }
@@ -418,7 +418,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         file.Write(line, 3 * this->m_width);
     }
 
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     delete[] line;
     return 1;
 }
@@ -464,14 +464,14 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 
     CFile file;
     if (mode != 0) {
-        if (!file.Open(path, 0x2001, 0)) {
-            m_ddSurface->Unlock(0);
+        if (!file.Open(path, 0x2001, NULL)) {
+            m_ddSurface->Unlock(NULL);
             return 0;
         }
         file.Seek(0, 2);
     } else {
-        if (!file.Open(path, 0x1001, 0)) {
-            m_ddSurface->Unlock(0);
+        if (!file.Open(path, 0x1001, NULL)) {
+            m_ddSurface->Unlock(NULL);
             return 0;
         }
     }
@@ -489,7 +489,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
         }
     }
 
-    m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -537,7 +537,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
         }
     }
 
-    if (this->BlitSurf(info, width, height, BPP_UNSET, mode) == 0) {
+    if (this->BlitSurf(info, width, height, BPP_UNSET, mode) == BPP_UNSET) {
         return 0;
     }
 
@@ -581,7 +581,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     }
 
     if (convert) {
-        if (Blit(buf, srcFmt, palette, RASTER_ROWS_TOP_DOWN) == 0) {
+        if (Blit(buf, srcFmt, palette, RASTER_ROWS_TOP_DOWN) == BPP_UNSET) {
             delete[] buf;
             return 0;
         }
@@ -595,7 +595,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
 RVA(0x00144d80, 0x15b)
 i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -702,7 +702,7 @@ RVA(0x00145110, 0x156)
 i32 CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
 
@@ -974,7 +974,7 @@ i32 CDDSurface::DecodePcxData(
         return 0;
     }
 
-    u8* decoded = 0;
+    u8* decoded = NULL;
     if (!remap) {
         if (!DecodeRun8(p.m_bytes)) {
             return 0;
@@ -1009,7 +1009,7 @@ RVA(0x001459d0, 0x135)
 i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32 key) {
     CFile file;
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
 
@@ -1045,7 +1045,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
     p.m_dwords += 4;
 
     if (!(width & 3) && m_width == width && m_height == height) {
-        PALETTEENTRY* palette = 0;
+        PALETTEENTRY* palette = NULL;
         i32 remap = 0;
         i32 hasPal = pal->m_hasPalette;
         if (hasPal != 0) {
@@ -1071,7 +1071,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             return 0;
         }
 
-        u8* decoded = 0;
+        u8* decoded = NULL;
         if (!remap) {
             if (!DecodeRun8(p.m_bytes)) {
                 return 0;
@@ -1108,7 +1108,7 @@ RVA(0x00145cd0, 0x130)
 i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, u32 colorKey) {
     CFile file;
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
 

@@ -31,7 +31,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     } else {
         m_animSetName = "TOOBGRUNT";
     }
-    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);

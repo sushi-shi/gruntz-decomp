@@ -72,7 +72,7 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
     i32 rowIdx = g->m_tileOwnerHi;
     CGrunt** cell = &m_grid[rowIdx * TM_GRID_COLS];
     i32 ty = g->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    CGrunt* best = 0;
+    CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     i32 i = 15;
     do {
@@ -453,7 +453,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     i32 hitFlag = 0;
-    if (CellHitTest(x, y, 0, 0, TM_GRID_ROW_ALL)) {
+    if (CellHitTest(x, y, NULL, NULL, TM_GRID_ROW_ALL)) {
         hitFlag = 1;
     }
 
@@ -743,7 +743,7 @@ i32 CTriggerMgr::ResetGroup(
     if (m_groupFlag == 0) {
         return 0;
     }
-    CGrunt* hit = CellHitTest(x, y, 0, 0, TM_GRID_ROW_ALL);
+    CGrunt* hit = CellHitTest(x, y, NULL, NULL, TM_GRID_ROW_ALL);
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
         cell = NULL;
@@ -908,7 +908,7 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
             cellp->m_tileOwnerHi,
             cellp->m_tileOwnerLo
         )
-        == 0) {
+        == ACTIONOPTION_HIDDEN) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
@@ -1683,7 +1683,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                     continue;
                 }
                 CTileActionEvent* o = root->m_beginMarker->FindActionByCellKey(ty + (tx << 8));
-                if (o->Process(0)) {
+                if (o->Process(NULL)) {
                     root->m_beginMarker->DelFromList3(o);
                 }
                 continue;
@@ -1942,7 +1942,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                     radius,
                     0,
                     0,
-                    0
+                    NULL
                 )
                 != -1) {
                 ok = 1;
@@ -1962,7 +1962,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                         0,
                         0,
                         0,
-                        0
+                        NULL
                     )
                     != -1) {
                     ok = 1;
@@ -2041,7 +2041,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
             0,
             0,
             0,
-            0,
+            NULL,
             GRUNT_ENTRANCE_NONE
         )
         == 0) {
@@ -2371,7 +2371,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     while (pos != NULL) {
         Coord* src = static_cast<Coord*>(m_recList.GetNext(pos));
         CoordPoolNode* fhNode = g_coordPool.m_freeHead;
-        Coord* dst = 0;
+        Coord* dst = NULL;
         if (fhNode->m_next != NULL) {
             dst = &fhNode->m_coord;
             g_coordPool.m_freeHead = fhNode->m_next;

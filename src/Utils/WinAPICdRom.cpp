@@ -42,10 +42,10 @@ char CheckCdRomRegistry() {
     char letter;
     i32 i;
 
-    if (reg.Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
+    if (reg.Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
         valueSize = 0x1e;
         value[0] = 0;
-        if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
+        if (reg.GetValueString("CdRom Drive", value, &valueSize, NULL)
             && static_cast<i8>(value[0]) > 0x14) {
             letter = value[0];
             sprintf(drivePath, "%c:\\", letter);
@@ -86,10 +86,10 @@ char GetGruntzDriveLetter() {
         char drivePathScan[256];
         char letter;
 
-        if (reg.Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
+        if (reg.Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
             valueSize = 0x1e;
             value[0] = 0;
-            if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
+            if (reg.GetValueString("CdRom Drive", value, &valueSize, NULL)
                 && static_cast<i8>(value[0]) > 0x14) {
                 letter = value[0];
                 sprintf(drivePath, "%c:\\", letter);

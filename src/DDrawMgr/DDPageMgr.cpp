@@ -44,7 +44,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     m_borrowedDisplayResources = 0;
-    if (DirectDrawCreate(0, &m_directDraw, 0) != 0) {
+    if (DirectDrawCreate(NULL, &m_directDraw, NULL) != 0) {
         return 0;
     }
     ComOutRef<IDirectDraw2> ddOut;
@@ -65,7 +65,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_primaryDesc.dwSize = sizeof(DDSURFACEDESC);
     m_primaryDesc.dwFlags = DDSD_CAPS;
     m_primaryDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-    if (m_directDraw2->CreateSurface(&m_primaryDesc, &m_primaryRaw, 0) != 0) {
+    if (m_directDraw2->CreateSurface(&m_primaryDesc, &m_primaryRaw, NULL) != 0) {
         HandleError();
         return 0;
     }
@@ -81,7 +81,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 
     if (mode->bpp == BPP_PALETTED_8) {
         if (m_directDraw2
-                ->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0)
+                ->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, NULL)
             != 0) {
             HandleError();
             return 0;
@@ -118,7 +118,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017c2a0, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
-    CString cls(AfxRegisterWndClass(3, 0, 0, 0));
+    CString cls(AfxRegisterWndClass(3, NULL, NULL, NULL));
     if (m_videoWnd != NULL) {
         return 0;
     }
@@ -132,9 +132,9 @@ int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
             0,
             GetSystemMetrics(0),
             GetSystemMetrics(1),
-            0,
-            0,
-            0
+            NULL,
+            NULL,
+            NULL
         )) {
         return 0;
     }
@@ -160,7 +160,7 @@ i32 CMoviePlayer::InitMode(
     Snapshot(wnd);
     ColorDepth bpp = static_cast<ColorDepth>(desc.ddpfPixelFormat.dwRGBBitCount);
     if (bpp == BPP_PALETTED_8) {
-        if (m_directDraw2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
+        if (m_directDraw2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, NULL)) {
             HandleError();
             return 0;
         }
@@ -325,7 +325,7 @@ MoviePlaybackResult CMoviePlayer::Pump(i32 flags, i32 count) {
     m_loopCount = 1;
     MSG msg;
     for (;;) {
-        if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
+        if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_SYSKEYDOWN) {
                 continue;
             }
@@ -442,12 +442,12 @@ i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_bpp == BPP_PALETTED_8) {
         UploadPalette();
     }
-    i32 hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
+    i32 hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
     while (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (m_srcSurf->Restore() != 0) {
             goto afterLock;
         }
-        hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
+        hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
     }
     if (hr == 0) {
         SmackToBuffer(
@@ -492,7 +492,7 @@ i32 CMoviePlayer::CheckGrid() {
     m_srcDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
     m_srcDesc.dwHeight = m_smackHandle->Height;
     m_srcDesc.dwWidth = m_smackHandle->Width;
-    if (m_directDraw2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
+    if (m_directDraw2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, NULL) != 0) {
         return 0;
     }
     ComOutRef<IDirectDrawSurface> srcOut;
@@ -524,12 +524,12 @@ void CMoviePlayer::HandleError() {
         memset(&fx, 0, sizeof(fx));
         fx.dwSize = 0x64;
         fx.dwROP = 0x42;
-        HRESULT rc = m_primary->Blt(0, 0, 0, 0x1020000, &fx);
+        HRESULT rc = m_primary->Blt(NULL, NULL, NULL, 0x1020000, &fx);
         if (rc) {
             memset(&fx, 0, sizeof(fx));
             fx.dwSize = 0x64;
             fx.dwFillColor = 0;
-            m_primary->Blt(0, 0, 0, 0x1000400, &fx);
+            m_primary->Blt(NULL, NULL, NULL, 0x1000400, &fx);
         }
     }
     if (m_borrowedDisplayResources == 0) {
@@ -613,7 +613,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
                 }
             }
         } else {
-            hr = m_primary->Blt(&dst, m_srcSurf, &src, 0x1000000, 0);
+            hr = m_primary->Blt(&dst, m_srcSurf, &src, 0x1000000, NULL);
             if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                 return hr;
             }
@@ -918,7 +918,7 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
                         clip->m_origin,
                         clip->m_rect
                     )
-                    == 0) {
+                    == MOVIE_TILE) {
                     return MOVIE_RESULT_ERROR;
                 }
             } else {
@@ -930,7 +930,7 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
                         clip->m_origin,
                         clip->m_rect
                     )
-                    == 0) {
+                    == MOVIE_TILE) {
                     return MOVIE_RESULT_ERROR;
                 }
             }
@@ -945,13 +945,14 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
                 memset(&fx, 0, sizeof(fx));
                 fx.dwSize = sizeof(fx);
                 fx.dwROP = 0x42;
-                i32 hr =
-                    (static_cast<IDirectDrawSurface*>(m_primary))->Blt(0, 0, 0, 0x1020000, &fx);
+                i32 hr = (static_cast<IDirectDrawSurface*>(m_primary))
+                             ->Blt(NULL, NULL, NULL, 0x1020000, &fx);
                 if (hr != 0) {
                     memset(&fx, 0, sizeof(fx));
                     fx.dwSize = sizeof(fx);
                     fx.dwFillColor = 0;
-                    (static_cast<IDirectDrawSurface*>(m_primary))->Blt(0, 0, 0, 0x1000400, &fx);
+                    (static_cast<IDirectDrawSurface*>(m_primary))
+                        ->Blt(NULL, NULL, NULL, 0x1000400, &fx);
                 }
             }
             CloseSmacker();

@@ -38,7 +38,7 @@ DATA(0x002856f8)
 ClipVtx g_rasterEdgeR[4096];
 DATA(0x002a16f8)
 
-i16* g_warpTexBase = 0;
+i16* g_warpTexBase = NULL;
 DATA(0x002a16fc)
 i32 g_warpUStep = 0;
 DATA(0x002a1700)
@@ -48,13 +48,13 @@ ClipVtx g_rasterVtxA[100];
 DATA(0x002a21f8)
 ClipVtx g_rasterVtxB[100];
 DATA(0x002a2ce8)
-u8* g_rasterDestRow = 0;
+u8* g_rasterDestRow = NULL;
 DATA(0x002a2cf0)
 ClipVtx g_rasterEdgeL[4096];
 DATA(0x002becf0)
 i32 g_warpUMask = 0;
 DATA(0x002becf4)
-i16* g_rasterDestPtr = 0;
+i16* g_rasterDestPtr = NULL;
 DATA(0x002becf8)
 i32 g_rasterVtxCount = 0;
 DATA(0x002becfc)
@@ -695,8 +695,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         }
     }
 
-    src->m_ddSurface->Unlock(0);
-    dst->m_ddSurface->Unlock(0);
+    src->m_ddSurface->Unlock(NULL);
+    dst->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -790,7 +790,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             pDesc++;
         } while (--rowCount != 0);
     }
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
     return 1;
 }
 

@@ -143,7 +143,7 @@ namespace Utils {
             if (RegQueryValueExA(
                     m_valueKey,
                     szValueName,
-                    0,
+                    NULL,
                     &dwType,
                     (data.m_chars = szValueBuffer, data.m_bytes),
                     pValueBufferSize
@@ -160,7 +160,7 @@ namespace Utils {
         }
 
         *pValueBufferSize = 0;
-        return 0;
+        return NULL;
     }
 
     // @dead-code
@@ -179,7 +179,7 @@ namespace Utils {
             if (RegQueryValueExA(
                     m_valueKey,
                     szValueName,
-                    0,
+                    NULL,
                     &dwType,
                     static_cast<LPBYTE>(pBuffer),
                     pBufferSize
@@ -196,7 +196,7 @@ namespace Utils {
         }
 
         *pBufferSize = 0;
-        return 0;
+        return NULL;
     }
 
     RVA(0x001395d0, 0x50)
@@ -211,7 +211,7 @@ namespace Utils {
             if (RegQueryValueExA(
                     m_valueKey,
                     szValueName,
-                    0,
+                    NULL,
                     &dwType,
                     (data.m_dword = &dwData, data.m_bytes),
                     &cbData
@@ -247,7 +247,7 @@ namespace Utils {
                    "",
                    0,
                    KEY_ALL_ACCESS,
-                   0,
+                   NULL,
                    phKeyResult,
                    &dwDisposition
                )

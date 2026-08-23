@@ -84,7 +84,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
-    if (*e != 0) {
+    if (*e != NULL) {
         CActHandler* e2 = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
         (this->*(*e2))();
     }

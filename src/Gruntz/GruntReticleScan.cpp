@@ -208,7 +208,7 @@ i32 CGrunt::ArrivalReticleScan() {
                 saved.RemoveAll();
 
                 if (CoordCount() != 0) {
-                    Coord* previous = 0;
+                    Coord* previous = NULL;
                     POSITION pos = m_coordList.GetHeadPosition();
                     while (pos != NULL) {
                         POSITION trimPos = pos;

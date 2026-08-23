@@ -685,11 +685,11 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
         m_idleAnchor = g_frameTime;
         applied = 1;
-    } else if (AT(m_poseIdle, GRUNT_IDLE2) != 0) {
+    } else if (AT(m_poseIdle, GRUNT_IDLE2) != NULL) {
         if (cycle != 0) {
 
             i32 count = 1;
-            if (AT(m_poseIdle, GRUNT_IDLE3) != 0) {
+            if (AT(m_poseIdle, GRUNT_IDLE3) != NULL) {
                 count = 2;
             }
             i32 idx = GetRandom(1, count);

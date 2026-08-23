@@ -39,7 +39,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))))();
     }
 }

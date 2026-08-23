@@ -37,7 +37,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))))();
     }
 }

@@ -391,7 +391,7 @@ const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
 
 RVA(0x00015ac0, 0x60)
 CWnd* CBattlezDlg::GetCtrlA(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_TYPE0);
@@ -411,7 +411,7 @@ CWnd* CBattlezDlg::GetCtrlA(i32 index) {
 
 RVA(0x00015b40, 0x60)
 CWnd* CBattlezDlg::GetCtrlB(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_NAME0);
@@ -431,7 +431,7 @@ CWnd* CBattlezDlg::GetCtrlB(i32 index) {
 
 RVA(0x00015bc0, 0x60)
 CWnd* CBattlezDlg::GetCtrlC(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COMBO_C0);
@@ -451,7 +451,7 @@ CWnd* CBattlezDlg::GetCtrlC(i32 index) {
 
 RVA(0x00015c40, 0x60)
 CWnd* CBattlezDlg::GetCtrlD(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COLOR0);
@@ -884,11 +884,11 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 
 RVA(0x00016cd0, 0x98)
 void CBattlezDlg::ApplyColorSlot0() {
-    CBattlezDlgColors dlg(m_slots, 0, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 0, 0, NULL);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
-            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, 1);
         }
     }
 }
@@ -896,40 +896,40 @@ RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 
 RVA(0x00016dc0, 0x97)
 void CBattlezDlg::ApplyColorSlot1() {
-    CBattlezDlgColors dlg(m_slots, 1, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 1, 0, NULL);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
-            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, 1);
         }
     }
 }
 
 RVA(0x00016e90, 0x98)
 void CBattlezDlg::ApplyColorSlot2() {
-    CBattlezDlgColors dlg(m_slots, 2, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 2, 0, NULL);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
-            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, 1);
         }
     }
 }
 
 RVA(0x00016f60, 0x98)
 void CBattlezDlg::ApplyColorSlot3() {
-    CBattlezDlgColors dlg(m_slots, 3, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 3, 0, NULL);
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
-            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, 1);
         }
     }
 }
 
 RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
-    CBattlezDlgCustom dlg(0);
+    CBattlezDlgCustom dlg(NULL);
     if (dlg.DoModal() == 1) {
         if (dlg.m_customName.GetLength() != 0) {
             dlg.m_customName.MakeUpper();

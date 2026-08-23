@@ -123,7 +123,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
 RVA(0x000b2940, 0x102)
 void CKitchenSlime::FireActivation(i32 coord) {
     CActHandler* e = KSlimeLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = KSlimeLookup(coord);
         (this->*((*e2)))();
     }

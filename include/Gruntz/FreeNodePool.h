@@ -15,7 +15,7 @@ struct CoordPoolNode {
 
 class FreeNodePool {
 public:
-    FreeNodePool() : m_block(0), m_freeHead(0), m_count(0), m_linkOffset(0) {}
+    FreeNodePool() : m_block(NULL), m_freeHead(NULL), m_count(0), m_linkOffset(0) {}
 
     ~FreeNodePool() {
         if (m_block != NULL) {

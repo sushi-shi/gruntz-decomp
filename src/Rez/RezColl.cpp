@@ -89,13 +89,13 @@ void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;
     u32 idx = node->Hash();
     node->m_bucket = idx;
-    DSoundLink* biased = node ? &node->m_link : 0;
+    DSoundLink* biased = node ? &node->m_link : NULL;
     m_buckets[idx].m_chain.InsertHead(biased);
 }
 
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
-    DSoundLink* node = entry ? &entry->m_link : 0;
+    DSoundLink* node = entry ? &entry->m_link : NULL;
     m_buckets[entry->m_bucket].m_chain.Unlink(node);
 }
 

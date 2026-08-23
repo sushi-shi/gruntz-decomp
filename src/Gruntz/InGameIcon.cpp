@@ -128,7 +128,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SwitchGeometry("GAME_CYCLE100", 0);
 
     SetObjectFlags(2);
-    SetupSprite(0);
+    SetupSprite(NULL);
 
     m_glitterSprite = NULL;
     m_peekTimer.m_lo = 0;
@@ -477,7 +477,7 @@ i32 CInGameIcon::HandleInput() {
 
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id) != 0) {
+    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id) != NULL) {
         (this->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
     }
 }
@@ -495,7 +495,7 @@ void RegisterIconActions() {
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id) != 0) {
+    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id) != NULL) {
         (this->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
     }
 }
@@ -961,7 +961,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    if (*CActRegPool<CInGameText>::s_table.ResolveEntry(idx) != 0) {
+    if (*CActRegPool<CInGameText>::s_table.ResolveEntry(idx) != NULL) {
         CActHandler fn = *CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
         (this->*fn)();
     }

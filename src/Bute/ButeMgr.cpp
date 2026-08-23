@@ -769,7 +769,7 @@ CButeMgr::CButeMgr() {
     m_streamBase = 0;
     m_errCallback = NULL;
     m_lineNo = 0;
-    m_countLine = 1;
+    m_countLine = true;
     m_captureText = 0;
     m_writeMode = 0;
     m_encrypted = 0;
@@ -782,7 +782,7 @@ RVA(0x00170330, 0x34)
 void CButeMgr::Init() {
     m_pos = 0;
     m_lineNo = 0;
-    m_countLine = 1;
+    m_countLine = true;
     m_parseFailed = 0;
     m_tagName = "";
     m_str104 = "";
@@ -980,7 +980,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (!ScanToken(BUTETOK_INT)) {
                 return false;
             }
-            DWORD v = strtoul(m_token, 0, 10);
+            DWORD v = strtoul(m_token, NULL, 10);
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, v));
@@ -1238,7 +1238,7 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
     output << endl;
     output << endl;
     output << "[" << key << "]";
-    static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
+    static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, NULL);
 }
 
 // cl5 inlines endl's body (`_outs << '\n' << flush`) but stops before the
@@ -1269,7 +1269,7 @@ bool CButeMgr::ParseGroup() {
 
             CButeNode* grp = static_cast<CButeNode*>(Tree48()->Find(m_tagName));
             if (grp) {
-                grp->Walk(&ButeGroup_Apply, m_pText, 0);
+                grp->Walk(&ButeGroup_Apply, m_pText, NULL);
             }
         }
         if (!Parse()) {
@@ -1336,7 +1336,7 @@ bool CButeMgr::Save() {
     source.clear();
     m_stream = &source;
     ParseGroup();
-    m_tree74.Walk(&ButeTag_Apply, m_pText, 0);
+    m_tree74.Walk(&ButeTag_Apply, m_pText, NULL);
     m_pText->clear();
 
     if (m_encrypted) {

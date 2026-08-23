@@ -92,7 +92,7 @@ void CGruntzApp::ShowError() {
     while (ShowCursor(1) < 0)
         ;
 
-    DialogBoxParamA(m_hInstance, "ERROR", 0, CGruntzApp::ErrorDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "ERROR", NULL, CGruntzApp::ErrorDialogProc, 0);
 }
 
 RVA(0x00080c00, 0x48)

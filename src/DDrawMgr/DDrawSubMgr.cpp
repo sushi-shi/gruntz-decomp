@@ -128,7 +128,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
 // one also re-loads + re-emits delete's null check), and the generated AST tree.
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
-    CObject* val = 0;
+    CObject* val = NULL;
     m_workersByName.Lookup(key, val);
     CDDrawWorker* w = static_cast<CDDrawWorker*>(val);
     if (val != NULL) {
@@ -173,7 +173,7 @@ CDDrawWorkerA* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     m_workers.AddTail(static_cast<CObject*>(w));
     return w;
@@ -232,7 +232,7 @@ CDDrawWorkerList::CreateWorkerB30(i32 x, i32 y, const char* key, i32 frameIndex,
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     if (addHead & 1) {
         m_workers.AddHead(static_cast<CObject*>(w));
@@ -296,7 +296,7 @@ CDDrawWorkerList::CreateWorkerB2C(i32 x, i32 y, CDDrawWorker* src, i32 frameInde
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     if (addHead & 1) {
         m_workers.AddHead(static_cast<CObject*>(w));
@@ -313,7 +313,7 @@ CDDrawWorkerB* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 ad
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     if (addHead & 1) {
         m_workers.AddHead(static_cast<CObject*>(w));
@@ -537,15 +537,15 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
     if (m_emitGate != 0) {
-        return 0;
+        return NULL;
     }
     LeafCue* e = new LeafCue(CueCount(), m_ownerCtx);
     if (e == NULL) {
-        return 0;
+        return NULL;
     }
     if (e->Configure(src) == 0) {
         delete e;
-        return 0;
+        return NULL;
     }
     ADD_SOUND_CUE_ENTRY(e, key);
     return e;
@@ -556,15 +556,15 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
 RVA(0x00157e00, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
     if (m_emitGate != 0) {
-        return 0;
+        return NULL;
     }
     LeafCue* e = new LeafCue(CueCount(), m_ownerCtx);
     if (e == NULL) {
-        return 0;
+        return NULL;
     }
     if (e->LoadSoundB(src) == 0) {
         delete e;
-        return 0;
+        return NULL;
     }
     ADD_SOUND_CUE_ENTRY(e, key);
     return e;
@@ -575,10 +575,10 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
 RVA(0x00157e90, 0x23)
 LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
     if (m_emitGate != 0) {
-        return 0;
+        return NULL;
     }
     if (src == NULL) {
-        return 0;
+        return NULL;
     }
     return CreateEntry(src->m_name, src);
 }
@@ -680,13 +680,13 @@ i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2)
 RVA(0x00158210, 0xaa)
 LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
     if (m_emitGate != 0) {
-        return 0;
+        return NULL;
     }
     POSITION pos = m_cues.GetStartPosition();
     if (pos == NULL) {
-        return 0;
+        return NULL;
     }
-    LeafCue* val = 0;
+    LeafCue* val = NULL;
     CString key;
     MapGetNext(m_cues, pos, key, val);
     return val;
@@ -697,29 +697,29 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
 RVA(0x001582c0, 0xf6)
 LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
     if (target == NULL) {
-        return 0;
+        return NULL;
     }
     if (m_emitGate != 0) {
-        return 0;
+        return NULL;
     }
     POSITION pos = m_cues.GetStartPosition();
     if (pos == NULL) {
-        return 0;
+        return NULL;
     }
-    LeafCue* val = 0;
+    LeafCue* val = NULL;
     CString key;
     while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);
         if (val == target) {
             if (pos == NULL) {
-                return 0;
+                return NULL;
             }
             val = NULL;
             MapGetNext(m_cues, pos, key, val);
             return val;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x001583c0, 0xdc)
@@ -765,7 +765,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
     }
 
     WaveFormatX fmt;
-    if (cue->m_sound->GetFormat(&fmt, sizeof(fmt), 0) == 0) {
+    if (cue->m_sound->GetFormat(&fmt, sizeof(fmt), NULL) == 0) {
         return 0;
     }
     if (m_soundStream->SetPrimaryFormat(&fmt) == 0) {
@@ -785,7 +785,7 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
     if (target == NULL) {
         return key;
     }
-    LeafCue* val = 0;
+    LeafCue* val = NULL;
     POSITION pos = m_cues.GetStartPosition();
     while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);

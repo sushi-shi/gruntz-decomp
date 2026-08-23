@@ -170,6 +170,66 @@ class EnumDomainControls(unittest.TestCase):
         self.assertTrue(any("names a MEMBER" in f for f in fatal))
 
 
+class ConstantControls(unittest.TestCase):
+    def _scan(self, source, *, flags=None):
+        from gruntz.verify import constants
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "src").mkdir()
+            path = root / "src/Probe.cpp"
+            path.write_text(source)
+            entry = {"directory": str(root), "file": "src/Probe.cpp",
+                     "arguments": ["clang-cl", "/c", "src/Probe.cpp", "/TP"]}
+            patch = (mock.patch.object(constants, "_flags", return_value=flags)
+                     if flags is not None else mock.patch.object(
+                         constants, "_flags", wraps=constants._flags))
+            with patch:
+                return constants.scan_entries([entry], repo=root, jobs=1)
+
+    def test_typed_pointer_bool_and_enum_sites_are_proven(self):
+        source = ("#define NULL 0\n"
+                  "enum Kind { KIND_NONE = 0, KIND_ONE = 1 };\n"
+                  "bool BoolReturn() { return 0; }\n"
+                  "int* PtrReturn() { return 0; }\n"
+                  "void Takes(bool b, int* p);\n"
+                  "void Probe(Kind kind) { bool b = 1; int* p = 0; "
+                  "Takes(0, 0); if (p == 0) {} if (b == 0) {} "
+                  "if (kind == 0) {} }\n"
+                  "int Arithmetic(int n) { return n + 0; }\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        replacements = [s.replacement for s in sites if s.proven]
+        self.assertEqual(replacements.count("NULL"), 4)
+        self.assertEqual(replacements.count("false"), 3)
+        self.assertEqual(replacements.count("true"), 1)
+        self.assertEqual(replacements.count("KIND_NONE"), 1)
+        arithmetic = [s for s in sites
+                      if s.function.startswith("Arithmetic") and s.spelling == "0"]
+        self.assertEqual(len(arithmetic), 1)
+        self.assertFalse(arithmetic[0].proven)
+
+    def test_named_spellings_and_explicit_ingest_cast_pass(self):
+        source = ("enum Kind { KIND_NONE = 0 };\n"
+                  "#define NULL 0\n"
+                  "bool B() { return false; }\n"
+                  "int* P() { return NULL; }\n"
+                  "Kind K(int n) { return static_cast<Kind>(0); }\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        self.assertEqual([s for s in sites if s.proven], [])
+
+    def test_pointer_zero_without_visible_null_is_not_a_fix(self):
+        sites, errors = self._scan("int* P() { return 0; }\n")
+        self.assertEqual(errors, [])
+        self.assertEqual([s for s in sites if s.proven], [])
+        self.assertTrue(any("NULL is not visible" in s.reason for s in sites))
+
+    def test_consumer_rejects_missing_cl_driver_mode(self):
+        _sites, errors = self._scan("int F() { return 0; }\n", flags=["/TP"])
+        self.assertEqual(len(errors), 1)
+        self.assertIn("requires --driver-mode=cl", errors[0])
+
+
 class LabelStyleControls(unittest.TestCase):
     def _scan(self, text):
         from gruntz.verify import label_style
@@ -1806,7 +1866,8 @@ class TierRunnerExitControls(unittest.TestCase):
     def test_every_tier_label_is_runnable_as_a_verb(self):
         """A tier label nobody can type is a dead end at the exact moment the
         gate fails."""
-        from gruntz.verify import _ALIASES, _GATES, _QUERY_ONLY, tiers
+        from gruntz.verify import (_ALIASES, _GATES, _QUERY_ONLY, _STANDALONE,
+                                   tiers)
         for tier, rows in tiers.TIERS.items():
             for name, _fn in rows:
                 verb = _ALIASES.get(name, name)
@@ -1817,12 +1878,12 @@ class TierRunnerExitControls(unittest.TestCase):
         labels = {n for rows in tiers.TIERS.values() for n, _f in rows}
         in_a_tier = {_ALIASES.get(n, n) for n in labels}
         for gate in _GATES:
-            if gate in _QUERY_ONLY:
+            if gate in _QUERY_ONLY or gate in _STANDALONE:
                 continue
             self.assertIn(gate, in_a_tier,
                           f"{gate} is advertised as tier-run but no tier "
                           f"lists it (add it to a tier, or declare it in "
-                          f"_QUERY_ONLY)")
+                          f"_QUERY_ONLY or _STANDALONE)")
 
     def test_the_alias_verb_actually_dispatches(self):
         import contextlib

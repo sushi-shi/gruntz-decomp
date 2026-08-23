@@ -99,7 +99,7 @@ CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))))();
     }
 }

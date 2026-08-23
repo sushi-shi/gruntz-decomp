@@ -65,11 +65,11 @@ i32 SaveScreenshot(
     srcRect.bottom = mgr->GetModeSize().cy;
     dstRect.right = width;
     dstRect.bottom = height;
-    if (img->BltEx(&dstRect, src, &srcRect, 0x1000000, 0)) {
+    if (img->BltEx(&dstRect, src, &srcRect, 0x1000000, NULL)) {
         surf->RemoveItemA(img);
         return 0;
     }
-    i32 r = img->SaveFile(name, FMT_BMP, 0, saveFlag);
+    i32 r = img->SaveFile(name, FMT_BMP, NULL, saveFlag);
     surf->RemoveItemA(img);
     return r;
 }

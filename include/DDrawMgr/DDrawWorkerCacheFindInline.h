@@ -27,7 +27,7 @@
 // makes declining possible at all.
 // Ledger: docs/patterns/comdat-home-adjudicates-inline-spelling.md.
 inline CObject* CDDrawWorkerCache::Find(const char* key) {
-    CObject* found = 0;
+    CObject* found = NULL;
     ASSERT(key != NULL);
     m_workers.Lookup(key, found);
     return found;

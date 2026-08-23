@@ -188,7 +188,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawPtrCollections* mgr) {
         return 0;
     }
 
-    i32 hr = mgr->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, 0);
+    i32 hr = mgr->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xd5, hr);
         return 0;
@@ -198,7 +198,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawPtrCollections* mgr) {
     surfOut.m_asTyped = &m_ddSurface;
     hr = m_ddSurfaceBack->QueryInterface(IID_IDirectDrawSurface3, surfOut.m_asVoid);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(0, 0, hr);
+        CDDrawPtrCollections::GetErrorString(NULL, 0, hr);
         return 0;
     }
 
@@ -347,23 +347,23 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 
 RVA(0x0013e6d0, 0x88)
 void* CDDSurface::Lock(RECT* rect) {
-    i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, 1, 0);
+    i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, 1, NULL);
     if (hr == 0) {
         return m_lockBits;
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost() == 0) {
-            return 0;
+            return NULL;
         }
-        hr = m_ddSurface->Lock(0, &m_apiDesc, 1, 0);
+        hr = m_ddSurface->Lock(NULL, &m_apiDesc, 1, NULL);
         if (hr == 0) {
             return m_lockBits;
         }
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x203, hr);
-        return 0;
+        return NULL;
     }
     CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x209, hr);
-    return 0;
+    return NULL;
 }
 
 RVA(0x0013e760, 0x63)
@@ -375,7 +375,7 @@ i32 CDDSurface::Fill(u32 color) {
     }
     fx.m_words[0] = 0x64;
     fx.m_words[0x14] = static_cast<i32>(color);
-    i32 hr = this->BltEx(0, 0, 0, 0x1000400, &fx.m_fx);
+    i32 hr = this->BltEx(NULL, NULL, NULL, 0x1000400, &fx.m_fx);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(
             const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"),
@@ -395,7 +395,7 @@ i32 CDDSurface::Restore(RECT* dstRect, i32 fillColor) {
     memset(&fx, 0, sizeof(fx));
     fx.dwSize = sizeof(DDBLTFX);
     fx.dwFillColor = fillColor;
-    i32 hr = BltEx(dstRect, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
+    i32 hr = BltEx(dstRect, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
     if (hr) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x26d, hr);
     }
@@ -404,7 +404,7 @@ i32 CDDSurface::Restore(RECT* dstRect, i32 fillColor) {
 
 RVA(0x0013e850, 0x93)
 i32 CDDSurface::Flip(CDDSurface* target) {
-    IDirectDrawSurface* tsurf = 0;
+    IDirectDrawSurface* tsurf = NULL;
     if (target != NULL) {
         tsurf = target->m_ddSurface;
     }
@@ -443,7 +443,7 @@ void CDDSurface::ReloadImageCache() {
     }
     m_elements.SetSize(0, -1);
     g_imageCache.SetSize(0, -1);
-    i32 hr = m_ddSurface->EnumAttachedSurfaces(0, &EnumSurfacesCallback);
+    i32 hr = m_ddSurface->EnumAttachedSurfaces(NULL, &EnumSurfacesCallback);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2dd, hr);
     }
@@ -549,7 +549,7 @@ void CDDSurface::FlipVertical() {
     }
     u8* tmp = new u8[m_width];
     if (tmp == NULL) {
-        m_ddSurface->Unlock(0);
+        m_ddSurface->Unlock(NULL);
         return;
     }
 
@@ -596,7 +596,7 @@ void CDDSurface::FlipVertical() {
         } while (i < half);
     }
 
-    m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
     delete[] tmp;
 }
 
@@ -630,7 +630,7 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
             src += this->m_bytesPerRow;
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -645,7 +645,7 @@ void CDDSurface::Clear(i32 white) {
     fx.m_fx.dwSize = sizeof(fx.m_fx);
 
     fx.m_fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42;
-    i32 hr = this->m_ddSurface->Blt(0, 0, 0, 0x1020000, &fx.m_fx);
+    i32 hr = this->m_ddSurface->Blt(NULL, NULL, NULL, 0x1020000, &fx.m_fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);
@@ -667,10 +667,10 @@ RVA(0x0013ee60, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     LPRECT srcRect = &src->m_fullRect;
     LPRECT dstRect = &m_fullRect;
-    i32 hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, 0x1000000, 0);
+    i32 hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, 0x1000000, NULL);
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
-            hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, 0x1000000, 0);
+            hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, 0x1000000, NULL);
         } else {
             return static_cast<i32>(DDERR_SURFACELOST);
         }
@@ -687,7 +687,7 @@ i32 CDDSurface::BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, 
     if (src != NULL) {
         hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, flags, fx);
     } else {
-        hr = m_ddSurface->Blt(dstRect, 0, srcRect, flags, fx);
+        hr = m_ddSurface->Blt(dstRect, NULL, srcRect, flags, fx);
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
@@ -861,14 +861,14 @@ i32 CDDSurface::ShadeBlt(
     } else {
         goto reject;
     }
-    m_ddSurface->Unlock(0);
-    src->m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
+    src->m_ddSurface->Unlock(NULL);
     delete[] temp;
     return 1;
 reject:
     delete[] temp;
-    m_ddSurface->Unlock(0);
-    src->m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
+    src->m_ddSurface->Unlock(NULL);
     return 0;
 }
 
@@ -946,11 +946,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         }
     } else {
         delete[] scratch;
-        m_ddSurface->Unlock(0);
+        m_ddSurface->Unlock(NULL);
         return 0;
     }
 
-    m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
     delete[] scratch;
     return 1;
 }
@@ -1077,7 +1077,7 @@ void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
     for (i32 y = 0; y < m_height; y += src->m_height) {
         for (i32 x = 0; x < m_width; x += src->m_width) {
             RECT rect;
-            RECT* pRect = 0;
+            RECT* pRect = NULL;
             if (x + src->m_width >= m_width || y + src->m_height >= m_height) {
                 rect.left = 0;
                 rect.top = 0;
@@ -1184,7 +1184,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -1232,7 +1232,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -1269,7 +1269,7 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -1309,7 +1309,7 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -1388,7 +1388,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -1469,7 +1469,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(0);
+    this->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -1940,7 +1940,7 @@ RVA_COMPGEN(0x00141350, 0x53, ??1CDDSurface@@UAE@XZ)
 
 RVA(0x001413b0, 0xf)
 void CDDSurface::UnlockThunk() {
-    m_ddSurface->Unlock(0);
+    m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x001413c0, 0xb)

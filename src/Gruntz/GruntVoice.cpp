@@ -212,7 +212,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
 RVA(0x00119e40, 0x102)
 void CGruntVoice::FireActivation(i32 coord) {
     CActHandler* e = VActLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = VActLookup(coord);
         (this->*((*e2)))();
     }
@@ -232,7 +232,7 @@ void RegisterGruntVoiceActions() {
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }
@@ -317,7 +317,7 @@ i32 CGruntVoice::Update() {
         return 0;
     }
     if (m_owner == 0) {
-        CGameObject* out = 0;
+        CGameObject* out = NULL;
         i32 src = m_source;
         CGameObject* resolved;
         if (MapLookupById(g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById, src, out)
@@ -326,7 +326,7 @@ i32 CGruntVoice::Update() {
         } else if (out == NULL) {
             resolved = NULL;
         } else {
-            resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
+            resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
         }
         if (resolved == NULL) {
             goto stopped;
@@ -339,7 +339,7 @@ i32 CGruntVoice::Update() {
         m_object->m_screenX = logic->m_object->m_screenX;
         m_object->m_screenY = logic->m_object->m_screenY - 0x32;
     } else {
-        CGameObject* out = 0;
+        CGameObject* out = NULL;
         i32 src = m_source;
         CGameObject* resolved;
         if (MapLookupById(g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById, src, out)
@@ -348,7 +348,7 @@ i32 CGruntVoice::Update() {
         } else if (out == NULL) {
             resolved = NULL;
         } else {
-            resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
+            resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
         }
 
         if (resolved != NULL) {

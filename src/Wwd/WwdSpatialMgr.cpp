@@ -326,7 +326,7 @@ CGameObject* CWwdSpatialMgr::GetFirstObject() {
         return n->m_object;
     }
     m_curGrid = NULL;
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -334,7 +334,7 @@ CGameObject* CWwdSpatialMgr::GetFirstObject() {
 RVA(0x00168b60, 0x85)
 CGameObject* CWwdSpatialMgr::GetNextObject() {
     if (m_curGrid == NULL) {
-        return 0;
+        return NULL;
     }
     WwdRegion* n = m_iter.GetNext();
     if (n) {
@@ -355,5 +355,5 @@ CGameObject* CWwdSpatialMgr::GetNextObject() {
         }
     }
     m_curGrid = NULL;
-    return 0;
+    return NULL;
 }

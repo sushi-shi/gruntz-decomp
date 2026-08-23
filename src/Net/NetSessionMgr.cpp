@@ -283,7 +283,7 @@ i32 CNetSession::Poll(i32 delta) {
         i32 chan = m_localDesc->m_id;
         st = ep->Receive(&a, &chan, 1, g_lobbyRecvBuf, &len);
         if (st != 0) {
-            CNetMgr::ReportError(const_cast<char*>("c:\\proj\\incs\\netmgr.h"), 0x141, st, 0);
+            CNetMgr::ReportError(const_cast<char*>("c:\\proj\\incs\\netmgr.h"), 0x141, st, NULL);
         }
         if (st == 0) {
             avail--;
@@ -532,14 +532,14 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
 RVA(0x000bfff0, 0x5d)
 CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
     if (index < 0 || index >= NET_SLOT_COUNT) {
-        return 0;
+        return NULL;
     }
     CNetCmdSlot* slot = &m_slots[index];
     if (slot == NULL) {
-        return 0;
+        return NULL;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetAll();
-    return slot->Init(m_session, &m_mgr->m_options[index], state) ? slot : 0;
+    return slot->Init(m_session, &m_mgr->m_options[index], state) ? slot : NULL;
 }
 
 RVA(0x000c0070, 0x15)
@@ -556,7 +556,7 @@ CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
             return &m_slots[i];
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x000c00f0, 0xaf)
@@ -716,7 +716,7 @@ CNetCmdSlot* CNetSession::FindSlot(u32 key) {
             return p;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x000c04a0, 0x37)

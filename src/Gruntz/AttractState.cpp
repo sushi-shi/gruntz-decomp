@@ -240,7 +240,7 @@ i32 CAttract::OnPaint() {
         do {
         } while (ShowCursor(0) >= 0);
     }
-    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->m_backPair);
     return 1;
 }

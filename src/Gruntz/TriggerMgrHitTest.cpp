@@ -2236,13 +2236,13 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
         attr = plane->m_rowInts[iy][ix * 7 + 1];
     }
     if (attr == -1) {
-        return 0;
+        return NULL;
     }
     i32 row = (attr >> 8) & 0xff;
     i32 col = attr & 0xff;
     CGrunt* cell = m_grid[col + row * TM_GRID_COLS];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
-        return 0;
+        return NULL;
     }
 
     if (exact == 0) {
@@ -2255,7 +2255,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
         i32 ox = o->m_screenX - 7;
         i32 oy = o->m_screenY - 7;
         if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy) {
-            return 0;
+            return NULL;
         }
         *outRow = row;
         *outCol = col;
@@ -2263,7 +2263,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
     }
     CGameObject* o = cell->m_object;
     if (o->m_screenX != x || o->m_screenY != y) {
-        return 0;
+        return NULL;
     }
     *outRow = row;
     *outCol = col;
@@ -2342,5 +2342,5 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
             x++;
         } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
     }
-    return 0;
+    return NULL;
 }

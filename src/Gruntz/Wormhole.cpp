@@ -113,7 +113,7 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CG
 
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
-    if (*CActRegPool<CWormhole>::s_table.ResolveEntry(idx) != 0) {
+    if (*CActRegPool<CWormhole>::s_table.ResolveEntry(idx) != NULL) {
         CActHandler fn = *CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
         (this->*fn)();
     }
@@ -182,7 +182,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
         (this->*((*e2)))();
     }
@@ -383,7 +383,7 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }

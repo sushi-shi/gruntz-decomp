@@ -38,7 +38,7 @@ void CFaderMgr::FreeAll() {
 
 RVA(0x0017d9c0, 0x7a0)
 CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
-    CFader* fader = 0;
+    CFader* fader = NULL;
 
     switch (nFaderType) {
         case FADERKIND_SHAPE: {
@@ -47,7 +47,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
                 );
-                return 0;
+                return NULL;
             }
             CFaderShape* f = new CFaderShape;
             fader = f;
@@ -58,13 +58,13 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             } else {
                 if (f->ApplyInit(pInit) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             }
             break;
@@ -75,7 +75,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
                 );
-                return 0;
+                return NULL;
             }
             CFaderLight* f = new CFaderLight;
             fader = f;
@@ -86,13 +86,13 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             } else {
                 if (f->ApplyInit(pInit) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             }
             break;
@@ -103,7 +103,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
                 );
-                return 0;
+                return NULL;
             }
             CFaderSine* f = new CFaderSine;
             fader = f;
@@ -114,13 +114,13 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             } else {
                 if (f->ApplyInit(pInit) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             }
             break;
@@ -131,7 +131,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
                 );
-                return 0;
+                return NULL;
             }
             CFaderRadial* f = new CFaderRadial;
             fader = f;
@@ -142,13 +142,13 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             } else {
                 if (f->ApplyInit(pInit) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             }
             break;
@@ -159,7 +159,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
                 );
-                return 0;
+                return NULL;
             }
             CFaderFlat* f = new CFaderFlat;
             fader = f;
@@ -170,13 +170,13 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             } else {
                 if (f->ApplyInit(pInit) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             }
             break;
@@ -187,7 +187,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
                 );
-                return 0;
+                return NULL;
             }
             CFaderMesh* f = new CFaderMesh;
             fader = f;
@@ -198,13 +198,13 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             } else {
                 if (f->ApplyInit(pInit) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
-                    return 0;
+                    return NULL;
                 }
             }
             break;

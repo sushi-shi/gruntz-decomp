@@ -401,7 +401,7 @@ i32 CGrunt::LoadEntranceConfig() {
         SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
 
         CWwdGameObjectA* p = m_wwdObject;
-        CAniElement* found = 0;
+        CAniElement* found = NULL;
         CAniElement* cached = p->m_animCursor.m_animation;
         MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_GRUNTZ_ENTRANCEZ_DROP, found);
         if (cached == found) {
@@ -563,11 +563,11 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM);
         CAniElement* pose =
             LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM);
-        AT(m_poseIdle, GRUNT_IDLE3) = 0;
+        AT(m_poseIdle, GRUNT_IDLE3) = NULL;
         AT(m_poseIdle, GRUNT_IDLE1) = pose;
         AT(m_poseIdle, GRUNT_IDLE2) = pose;
-        AT(m_poseIdle, GRUNT_IDLE4) = 0;
-        AT(m_poseIdle, GRUNT_IDLE5) = 0;
+        AT(m_poseIdle, GRUNT_IDLE4) = NULL;
+        AT(m_poseIdle, GRUNT_IDLE5) = NULL;
 
         CGruntzMgr* g = g_gameReg;
         i32 y = m_object->m_screenY;
@@ -1219,7 +1219,7 @@ i32 CGrunt::FinishActiveAction() {
         i32 sortKey = m_object->m_screenY + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(m_object, sortKey)
 
-        CAniElement* found = 0;
+        CAniElement* found = NULL;
         CAniElement* cached = m_wwdObject->m_animCursor.m_animation;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,

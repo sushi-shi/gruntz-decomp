@@ -41,7 +41,7 @@ i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     if (hinst == NULL) {
         return 0;
     }
-    i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
+    i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, NULL);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0x32, hr);
         return 0;
@@ -84,7 +84,7 @@ void DirectInputMgr2::Shutdown() {
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = (i >= 0 && i < m_devices.GetSize())
                                ? static_cast<CInputDevBase*>(m_devices.GetAt(i))
-                               : 0;
+                               : NULL;
         if (d != NULL) {
             delete d;
         }
@@ -247,7 +247,7 @@ void DirectInputMgr2::FreeDeviceList() {
 RVA(0x001331e0, 0x7c)
 CDeviceListNode* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused) {
     if (devices == NULL) {
-        return 0;
+        return NULL;
     }
     CDeviceListNode* node = new CDeviceListNode;
     if (node->FillFrom(devices, n, unused) == 0) {
@@ -255,7 +255,7 @@ CDeviceListNode* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, 
             node->Clear();
             operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     m_deviceList.AddTail(node);
     return node;

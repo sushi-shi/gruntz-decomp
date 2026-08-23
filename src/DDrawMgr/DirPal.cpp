@@ -23,7 +23,7 @@ i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
         m_cacheA[i] = entries[i];
     }
     m_cacheB = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
-    i32 hr = dd->CreatePalette(flags, entries, &m_palette, 0);
+    i32 hr = dd->CreatePalette(flags, entries, &m_palette, NULL);
     if (hr == 0) {
         return 1;
     }
@@ -81,7 +81,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     Bmp256Info info;
     CFile file;
-    if (file.Open(filename, 0, 0) == 0) {
+    if (file.Open(filename, 0, NULL) == 0) {
         return 0;
     }
     if (file.Read(&hdr, sizeof(hdr)) != sizeof(hdr)) {
@@ -108,7 +108,7 @@ i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
     CFile file;
-    if (file.Open(filename, 0, 0) == 0) {
+    if (file.Open(filename, 0, NULL) == 0) {
         return 0;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
@@ -137,7 +137,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
     CFile file;
-    if (file.Open(filename, 0, 0) == 0) {
+    if (file.Open(filename, 0, NULL) == 0) {
         return 0;
     }
     if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
@@ -175,7 +175,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
     }
     if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
-        dd->WaitForVerticalBlank(1, 0);
+        dd->WaitForVerticalBlank(1, NULL);
     }
     return m_palette->SetEntries(0, start, count, data);
 }
@@ -245,7 +245,7 @@ void CDDPalette::Apply(i32 unused) {
     }
     if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
-        dd->WaitForVerticalBlank(1, 0);
+        dd->WaitForVerticalBlank(1, NULL);
     }
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, readback);
 }
@@ -524,7 +524,7 @@ void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 d
 
 RVA(0x001485b0, 0x162)
 i32 CDDPalette::CaptureSystemPalette() {
-    HDC hdc = CreateDCA("DISPLAY", 0, 0, 0);
+    HDC hdc = CreateDCA("DISPLAY", NULL, NULL, NULL);
     if (hdc) {
         i32 sizePal = GetDeviceCaps(hdc, SIZEPALETTE);
         i32 half = GetDeviceCaps(hdc, NUMRESERVED) / 2;
@@ -567,7 +567,7 @@ i32 CDDPalette::CaptureSystemPalette() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00148720, 0x9f)
 i32 BlackoutSystemPalette() {
-    HDC hdc = GetDC(0);
+    HDC hdc = GetDC(NULL);
     if (hdc != NULL) {
         LogPal256 lp;
         lp.palVersion = LOGICAL_PALETTE_VERSION;
@@ -584,10 +584,10 @@ i32 BlackoutSystemPalette() {
             HPALETTE old = pSelect(hdc, hpal, 0);
             RealizePalette(hdc);
             DeleteObject(pSelect(hdc, old, 0));
-            ReleaseDC(0, hdc);
+            ReleaseDC(NULL, hdc);
             return 1;
         }
-        ReleaseDC(0, hdc);
+        ReleaseDC(NULL, hdc);
     }
     return 0;
 }

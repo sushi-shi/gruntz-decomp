@@ -280,7 +280,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 tgt->Restore(&below, 0);
             }
             CMapStringToOb* map = &m_world->m_imageRegistry->m_workersByName;
-            CObject* found = 0;
+            CObject* found = NULL;
 
             map->Lookup("GAME_STATUSBAR_MAINBAR", found);
             if (found) {
@@ -875,7 +875,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x000ffde0, 0x5b1)
@@ -897,7 +897,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             SBICMD_DOCK_LEFT,
             TAB_CONTROLS,
             SbGeom(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9),
-            0,
+            NULL,
             -1
         )) {
         delete dockLeft;
@@ -916,7 +916,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             SBICMD_DOCK_RIGHT,
             TAB_CONTROLS,
             SbGeom(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
-            0,
+            NULL,
             -1
         )) {
         delete dockRight;
@@ -931,7 +931,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             SBICMD_HIDE,
             TAB_CONTROLS,
             SbGeom(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7),
-            0,
+            NULL,
             -1
         )) {
         delete hide;
@@ -4451,7 +4451,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE"
     );
-    CImage* frame = spr ? spr->GetAt(n) : 0;
+    CImage* frame = spr ? spr->GetAt(n) : NULL;
     m_sprite = frame;
     if (frame == NULL) {
 
@@ -4543,7 +4543,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
             arc->Read(&index, sizeof(index));
             if (strlen(name) != 0) {
                 i32 i = index;
-                CObject* out = 0;
+                CObject* out = NULL;
                 lvl->m_imageRegistry->m_workersByName.Lookup(name, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r = rec != NULL ? rec->GetAt(i) : NULL;

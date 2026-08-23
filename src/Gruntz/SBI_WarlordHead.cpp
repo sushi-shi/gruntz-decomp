@@ -28,7 +28,7 @@ i32 CSBI_WarlordHead::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    if (CSBI_ImageSet::SetupImage(owner, host, cmd, tab, rc, key, frame, extra) == 0) {
+    if (CSBI_ImageSet::SetupImage(owner, host, cmd, tab, rc, key, frame, extra) == SBICMD_NONE) {
         return 0;
     }
     SetState(0);
@@ -46,7 +46,7 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         return 0;
     }
     if (f->m_owned) {
-        f->m_owned->Select(show, 0);
+        f->m_owned->Select(show, NULL);
     }
     if (palDescr && f->m_owned) {
         f->m_owned->m_palDescr = palDescr;
@@ -57,7 +57,7 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         return 0;
     }
     if (f->m_owned) {
-        f->m_owned->Select(show, 0);
+        f->m_owned->Select(show, NULL);
     }
     if (palDescr && f->m_owned) {
         f->m_owned->m_palDescr = palDescr;

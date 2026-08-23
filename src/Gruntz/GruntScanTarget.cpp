@@ -47,7 +47,7 @@ i32 CGrunt::ScanNearestTarget() {
     i32 cx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 cy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
-    CGrunt* best = 0;
+    CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 row = 0; row < 4; row++) {
         if (row == ownerHi) {

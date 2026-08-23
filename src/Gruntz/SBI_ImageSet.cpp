@@ -114,7 +114,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
             if (strlen(buf)) {
                 CDDrawWorker* out;
 
-                CObject* outOb = 0;
+                CObject* outOb = NULL;
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
                 m_frameSet = out;

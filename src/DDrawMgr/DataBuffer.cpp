@@ -85,7 +85,7 @@ void CShadeTable::Free() {
 RVA(0x001503f0, 0xdc)
 i32 CShadeTable::SaveToFile(CString path) {
     CFile file;
-    if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, 0)) {
+    if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
     file.Write(&m_size, sizeof(m_size));

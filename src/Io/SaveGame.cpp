@@ -38,7 +38,7 @@ SaveSlot* g_slotState;
 DATA(0x0024c868)
 CRezImage* g_previewImage;
 DATA(0x0024c86c)
-CSaveGame* g_saveDlgSink = 0;
+CSaveGame* g_saveDlgSink = NULL;
 
 static const i32 SAVE_FILE_HEADER_BYTES = 0xa1c;
 static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
@@ -86,7 +86,7 @@ void CSaveGame::Init() {
 RVA(0x000e4d90, 0xcc)
 i32 CSaveGame::Load() {
     CFile file;
-    if (!file.Open(m_name, CFile::modeRead, 0)) {
+    if (!file.Open(m_name, CFile::modeRead, NULL)) {
         return 0;
     }
     file.Read(m_header, SAVE_FILE_HEADER_BYTES);
@@ -102,11 +102,11 @@ RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(char* path, i32 msgId) {
     CWaitCursorScope wait;
     CFile file;
-    if (!file.Open(m_name, CFile::modeCreate, 0)) {
+    if (!file.Open(m_name, CFile::modeCreate, NULL)) {
         return 0;
     }
     file.Close();
-    if (!file.Open(m_name, CFile::modeWrite, 0)) {
+    if (!file.Open(m_name, CFile::modeWrite, NULL)) {
         return 0;
     }
     ComputeAll();
@@ -284,7 +284,7 @@ i32 CSaveGame::Decode(u8* buf) {
 RVA(0x000e54b0, 0x1f)
 SaveSlot* CSaveGame::GetSlot(i32 i) {
     if (i < 0 || i >= SAVE_SLOT_COUNT) {
-        return 0;
+        return NULL;
     }
     return &m_slots[i];
 }
@@ -308,7 +308,7 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
         return 0;
     }
     CFile file;
-    if (file.Open(p->m_savePath, CFile::modeRead, 0)) {
+    if (file.Open(p->m_savePath, CFile::modeRead, NULL)) {
         file.Close();
         CFile::Remove(p->m_savePath);
     }
@@ -363,7 +363,7 @@ RVA(0x000e5700, 0x9e)
 int TempFileExists(SaveSlot* p) {
     if (p != NULL && (p->m_type & SAVESLOT_PRESENT)) {
         CFile file;
-        if (file.Open(p->m_savePath, CFile::modeRead, 0)) {
+        if (file.Open(p->m_savePath, CFile::modeRead, NULL)) {
             file.Close();
             return 1;
         }

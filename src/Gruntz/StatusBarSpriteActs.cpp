@@ -80,7 +80,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }

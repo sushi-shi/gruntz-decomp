@@ -61,19 +61,19 @@ public:
     virtual void Unload() OVERRIDE {
         if (m_animWorker) {
             delete m_animWorker;
-            m_animWorker = 0;
+            m_animWorker = NULL;
         }
         if (m_hitWorker) {
             delete m_hitWorker;
-            m_hitWorker = 0;
+            m_hitWorker = NULL;
         }
         if (m_attackWorker) {
             delete m_attackWorker;
-            m_attackWorker = 0;
+            m_attackWorker = NULL;
         }
         if (m_collideWorker) {
             delete m_collideWorker;
-            m_collideWorker = 0;
+            m_collideWorker = NULL;
         }
         m_shadow.Reset();
         m_screenX = COORD_UNSET;

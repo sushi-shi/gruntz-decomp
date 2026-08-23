@@ -129,7 +129,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     Utils::RegistryHelper* reg = new Utils::RegistryHelper;
     m_settings = reg;
-    if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
+    if (!m_settings
+             ->Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
         return 0;
     }
@@ -268,7 +269,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_gruntzWinApp.m_hInstance = m_owner->m_hInstance;
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
-    AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1);
+    AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, 1);
     m_strWorldFile.Empty();
 
     CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
@@ -327,7 +328,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SetColorDepth(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
-    if (!m_faderMgr->SetConfig(0, 0, 0)) {
+    if (!m_faderMgr->SetConfig(NULL, NULL, NULL)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40a);
         return 0;
     }
@@ -425,7 +426,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     m_logicPump = new CLightFxMgr;
-    if (!m_logicPump->Init(this, 0)) {
+    if (!m_logicPump->Init(this, NULL)) {
         if (m_logicPump) {
             m_logicPump->Reset();
             ::operator delete(m_logicPump);
@@ -526,15 +527,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             delete snk;
             stream->EndParse();
             g_buteMgr.Init();
-            g_buteMgr.m_tree.ClearRecursive(0);
+            g_buteMgr.m_tree.ClearRecursive(NULL);
             g_buteMgr.m_tree.m_root = NULL;
             g_buteMgr.m_tree.m_lookupPending = 0;
             g_buteMgr.m_tree.m_nodeCount = 0;
-            g_buteMgr.m_tree48.ClearRecursive(0);
+            g_buteMgr.m_tree48.ClearRecursive(NULL);
             g_buteMgr.m_tree48.m_root = NULL;
             g_buteMgr.m_tree48.m_lookupPending = 0;
             g_buteMgr.m_tree48.m_nodeCount = 0;
-            g_buteMgr.m_tree74.ClearRecursive(0);
+            g_buteMgr.m_tree74.ClearRecursive(NULL);
             g_buteMgr.m_tree74.m_root = NULL;
             g_buteMgr.m_tree74.m_lookupPending = 0;
             g_buteMgr.m_tree74.m_nodeCount = 0;

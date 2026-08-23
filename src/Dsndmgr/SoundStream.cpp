@@ -180,16 +180,16 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     i32 retireWhenIdle
 ) {
     if (m_initialized == 0) {
-        return 0;
+        return NULL;
     }
     if (bytes == 0) {
-        return 0;
+        return NULL;
     }
     if (fmt == NULL) {
-        return 0;
+        return NULL;
     }
     if (fmt->wFormatTag != 1) {
-        return 0;
+        return NULL;
     }
 
     WaveFormatX wf = *fmt;
@@ -203,17 +203,17 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     desc.dwSize = 0x14;
     desc.dwBufferBytes = bytes;
 
-    i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
+    i32 hr = m_device->CreateSoundBuffer(&desc, &out, NULL) != 0;
     if (hr != 0) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0xe8, hr);
-        return 0;
+        return NULL;
     }
     if (out == NULL) {
-        return 0;
+        return NULL;
     }
 
     StreamVoice* voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
-    m_voices.InsertHead(voice ? &voice->m_link : 0);
+    m_voices.InsertHead(voice ? &voice->m_link : NULL);
     voice->m_rateBase = fmt->nAvgBytesPerSec;
     voice->m_sampleRate = fmt->nAvgBytesPerSec;
     voice->m_sampleCount = bytes;
@@ -232,17 +232,17 @@ StreamVoice* SoundStream::OpenStream(
     i32 retireWhenIdle
 ) {
     if (src == NULL) {
-        return 0;
+        return NULL;
     }
     WaveFormatX wf;
     u32 dataOff;
     u32 dataLen;
     if (ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
-        return 0;
+        return NULL;
     }
     StreamVoice* voice = CreateStreamBuffer(&wf, bytes, dsFlags, stopWhenIdle, retireWhenIdle);
     if (voice == NULL) {
-        return 0;
+        return NULL;
     }
     StreamFeeder* feeder = &voice->m_feeder;
     feeder->m_windowStart = dataOff;
@@ -253,7 +253,7 @@ StreamVoice* SoundStream::OpenStream(
 
     if (feeder->FeederStart(this, &wf, bytes, format, voice, -1) == 0) {
         DestroyVoice(voice);
-        return 0;
+        return NULL;
     }
     return voice;
 }
@@ -266,7 +266,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
         m_voiceList.RemoveMatching(voice, SOUND_VOICE_TAG_ALL);
         voice->m_buffer->Release();
         voice->m_buffer = NULL;
-        m_voices.Unlink(voice ? &voice->m_link : 0);
+        m_voices.Unlink(voice ? &voice->m_link : NULL);
         if (voice) {
             delete voice;
         }
@@ -279,13 +279,13 @@ RVA(0x00137a30, 0x4b)
 StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags) {
     StreamVoice* voice = OpenStream(src, bytes, format, dsFlags, 0, 1);
     if (voice == NULL) {
-        return 0;
+        return NULL;
     }
     if (voice->m_feeder.Resume() != 0) {
         return voice;
     }
     DestroyVoice(voice);
-    return 0;
+    return NULL;
 }
 
 RVA(0x00137a80, 0x3d)

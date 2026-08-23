@@ -392,7 +392,7 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
             startRow++;
         } while (startRow <= last);
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0006bfd0, 0x106)
@@ -422,7 +422,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         }
     }
     CoordPoolNode* node = g_coordPool.m_freeHead;
-    Coord* slot = 0;
+    Coord* slot = NULL;
     if (node->m_next != NULL) {
         slot = &node->m_coord;
         slot->m_x = col;
@@ -573,7 +573,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                         g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x3f2, -1, 0, -1, -1);
                     }
                 } else if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x3f2, -1, 1, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x3f2, -1, 1, -1, -1);
                 }
             }
             return 1;
@@ -1347,7 +1347,7 @@ bad:
 
 RVA(0x0006e7e0, 0x5)
 CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
-    return 0;
+    return NULL;
 }
 
 // @early-stop
@@ -1406,7 +1406,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 
-    CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outCol, &y, 0);
+    CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outCol, &y, NULL);
     if (cell == NULL || span.m_outCol != g_curPlayer) {
         return;
     }

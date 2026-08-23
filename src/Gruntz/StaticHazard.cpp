@@ -159,7 +159,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
 RVA(0x000fbbf0, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {
     CActHandler* e = HaznLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = HaznLookup(coord);
         (this->*((*e2)))();
     }

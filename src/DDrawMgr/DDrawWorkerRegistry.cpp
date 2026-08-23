@@ -36,7 +36,7 @@ void CDDrawWorkerRegistry::Unload() {
 RVA(0x00154ae0, 0xfc)
 CImage*
 CDDrawWorkerRegistry::InsertFrameByKey(CParseSource* rec, const char* key, i32 index, i32 mode) {
-    CObject* worker = 0;
+    CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
 
@@ -45,7 +45,7 @@ CDDrawWorkerRegistry::InsertFrameByKey(CParseSource* rec, const char* key, i32 i
             if (worker != NULL) {
                 delete worker;
             }
-            return 0;
+            return NULL;
         }
         m_workersByName.SetAt(key, worker);
     }
@@ -54,7 +54,7 @@ CDDrawWorkerRegistry::InsertFrameByKey(CParseSource* rec, const char* key, i32 i
 
 RVA(0x00154be0, 0xfc)
 CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed) {
-    CObject* worker = 0;
+    CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
         worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
@@ -62,7 +62,7 @@ CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 in
             if (worker != NULL) {
                 delete worker;
             }
-            return 0;
+            return NULL;
         }
         m_workersByName.SetAt(key, worker);
     }
@@ -77,7 +77,7 @@ CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
     i32 index,
     u32 size
 ) {
-    CObject* worker = 0;
+    CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
         worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
@@ -85,7 +85,7 @@ CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
             if (worker != NULL) {
                 delete worker;
             }
-            return 0;
+            return NULL;
         }
         m_workersByName.SetAt(key, worker);
     }
@@ -100,7 +100,7 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameByKey(
     i32 index,
     i32 keyed
 ) {
-    CObject* worker = 0;
+    CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
         worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
@@ -108,7 +108,7 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameByKey(
             if (worker != NULL) {
                 delete worker;
             }
-            return 0;
+            return NULL;
         }
         m_workersByName.SetAt(key, worker);
     }
@@ -172,7 +172,7 @@ i32 CDDrawWorkerRegistry::InstallTree(CSymTab* dir, const char* sub, const char*
         e = dir->NextSub(e);
     }
     if (sub != NULL && *sub != 0) {
-        CObject* w = 0;
+        CObject* w = NULL;
         m_workersByName.Lookup(sub, w);
         if (w == NULL) {
             w = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
@@ -215,7 +215,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(CSymTab* dir, const char* sub, const cha
         e = dir->NextSub(e);
     }
     if (sub != NULL && *sub != 0) {
-        CObject* out = 0;
+        CObject* out = NULL;
         m_workersByName.Lookup(sub, out);
         if (out != NULL) {
 
@@ -242,7 +242,7 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
 
 RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown() {
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_workersByName.GetStartPosition();
     CString key;
     if (pos != NULL) {
@@ -262,7 +262,7 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
     match += str;
     i32 len = match.GetLength();
     CString key;
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_workersByName.GetStartPosition();
     i32 n = 0;
     while (pos != NULL) {
@@ -282,7 +282,7 @@ RVA(0x00155460, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
     POSITION pos = m_workersByName.GetStartPosition();
     i32 total = 0;
-    CObject* val = 0;
+    CObject* val = NULL;
     CString key;
     while (pos != NULL) {
         val = NULL;
@@ -302,7 +302,7 @@ RVA(0x00155550, 0xdc)
 i32 CDDrawWorkerRegistry::HasKeyEqual(const char* str) {
     i32 len = strlen(str);
     CString key;
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_workersByName.GetStartPosition();
     while (pos != NULL) {
         m_workersByName.GetNextAssoc(pos, key, val);
@@ -319,7 +319,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
         return 0;
     }
     CString key;
-    CObject* val = 0;
+    CObject* val = NULL;
     POSITION pos = m_workersByName.GetStartPosition();
     while (pos != NULL) {
         m_workersByName.GetNextAssoc(pos, key, val);

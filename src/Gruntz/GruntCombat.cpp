@@ -412,7 +412,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     CDDrawSubMgrLeafScan* slot =
         (static_cast<CDDrawSurfaceMgr*>(m_animWorker->m_ownerCtx))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
-        LeafCue* sout = 0;
+        LeafCue* sout = NULL;
         MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
         if (sout != NULL) {
 
@@ -837,7 +837,7 @@ i32 CGrunt::PathScan() {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
-                            Coord* fresh = 0;
+                            Coord* fresh = NULL;
                             CoordPoolNode* free = g_coordPool.m_freeHead;
                             if (free->m_next != NULL) {
                                 fresh = &free->m_coord;
@@ -1010,13 +1010,13 @@ i32 CGrunt::PathScan() {
                             return 1;
                         }
                     }
-                    grid->Clip(0);
+                    grid->Clip(NULL);
                     return 0;
                 }
             }
         }
     }
-    grid->Clip(0);
+    grid->Clip(NULL);
     return 0;
 }
 
@@ -1891,20 +1891,20 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
 RVA(0x0005b6f0, 0xb5)
 CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     if (m_neighborCell.m_x == -1) {
-        return 0;
+        return NULL;
     }
     if (m_neighborCell.m_y == -1) {
-        return 0;
+        return NULL;
     }
 
     CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
     if (n != NULL && n->m_entranceCommitted != 0) {
         if (validate != 0) {
             if (n->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, n)) {
-                return 0;
+                return NULL;
             }
             if (n->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, n)) {
-                return 0;
+                return NULL;
             }
         }
         if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
@@ -1919,7 +1919,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     }
 
     m_neighborValid = 0;
-    return 0;
+    return NULL;
 }
 
 RVA(0x0005b7e0, 0x23)
@@ -1970,7 +1970,7 @@ i32 CreateGrunt(CGameObject* owner) {
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
     CActHandler* e = CActRegPool<CGrunt>::s_table.ResolveEntry(id);
-    if (*e != 0) {
+    if (*e != NULL) {
         (this->*(*CActRegPool<CGrunt>::s_table.ResolveEntry(id)))();
     }
 }
@@ -2188,8 +2188,8 @@ void CGrunt::XferName(char*) {
             cellObj = ((grid->m_rowInts[ty]))[tx * 7 + 2];
         }
         if (cellObj != 0) {
-            CGameObject* found = 0;
-            CGameObject* result = 0;
+            CGameObject* found = NULL;
+            CGameObject* result = NULL;
             if (MapLookupById(
                     reg->m_world->m_childGroup->m_registeredGameObjectsById,
                     cellObj,
@@ -2998,7 +2998,8 @@ void CGrunt::AdvanceMotion() {
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
-                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_A, -1, 1, 0) == 0) {
+                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_A, -1, 1, 0)
+                                    == ARRIVAL_TAG_NONE) {
                                     m_arrivalPhase = ARRIVAL_TAG_NONE;
                                 }
                             }
@@ -3051,7 +3052,8 @@ void CGrunt::AdvanceMotion() {
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
-                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_B, -1, 1, 0) == 0) {
+                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_B, -1, 1, 0)
+                                    == ARRIVAL_TAG_NONE) {
                                     m_arrivalPhase = ARRIVAL_TAG_NONE;
                                 }
                             }

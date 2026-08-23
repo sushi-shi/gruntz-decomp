@@ -293,8 +293,8 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CDDrawWorker* found = 0;
-        CObject* foundOb = 0;
+        CDDrawWorker* found = NULL;
+        CObject* foundOb = NULL;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_imageRegistry->m_workersByName.Lookup(name, foundOb);
         found = static_cast<CDDrawWorker*>(foundOb);
@@ -707,7 +707,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
-        CObject* found = 0;
+        CObject* found = NULL;
         OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
         if (this->EnsureHitWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
@@ -716,7 +716,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
-        CObject* found = 0;
+        CObject* found = NULL;
         OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
         if (this->EnsureAttackWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
@@ -725,7 +725,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
 
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
-        CObject* found = 0;
+        CObject* found = NULL;
         OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
         if (this->EnsureBumpWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
             return 0;
@@ -920,7 +920,7 @@ void CDDrawWorker::Unload() {
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
-        return 0;
+        return NULL;
     }
 
     CImage* worker = new CImage(n, Owner());
@@ -928,7 +928,7 @@ CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
         if (worker) {
             delete worker;
         }
-        return 0;
+        return NULL;
     }
     ADD_FRAME_AT(static_cast<CObject*>(worker), n)
     return worker;
@@ -937,7 +937,7 @@ CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
 RVA(0x00151fb0, 0xa4)
 CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
-        return 0;
+        return NULL;
     }
 
     CImage* nf = new CImage(index, Owner());
@@ -946,7 +946,7 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
         if (nf != NULL) {
             delete nf;
         }
-        return 0;
+        return NULL;
     }
 
     ADD_FRAME_AT(static_cast<CObject*>(nf), index)
@@ -957,7 +957,7 @@ RVA(0x00152060, 0xab)
 CImage*
 CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
-        return 0;
+        return NULL;
     }
 
     CImage* nf = new CImage(index, Owner());
@@ -966,7 +966,7 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
         if (nf != NULL) {
             delete nf;
         }
-        return 0;
+        return NULL;
     }
 
     ADD_FRAME_AT(static_cast<CObject*>(nf), index)
@@ -976,7 +976,7 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
 RVA(0x00152110, 0xa9)
 CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
-        return 0;
+        return NULL;
     }
 
     CImage* nf = new CImage(index, Owner());
@@ -985,7 +985,7 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
         if (nf != NULL) {
             delete nf;
         }
-        return 0;
+        return NULL;
     }
 
     ADD_FRAME_AT(static_cast<CObject*>(nf), index)
@@ -1111,7 +1111,7 @@ i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->m_owned) {
-            frame->m_owned->Select(type, 0);
+            frame->m_owned->Select(type, NULL);
             count++;
         }
     }

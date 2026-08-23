@@ -193,7 +193,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // Byte-forced view of packed WWD storage.
     WwdHeader* source = hdr;
     char* block = reinterpret_cast<char*>(source);
-    Bytef* ehAlloc = 0;
+    Bytef* ehAlloc = NULL;
 
     u32* pflags = &source->flags;
 
@@ -301,7 +301,7 @@ RVA(0x0015d500, 0x127)
 i32 CGameLevel::LoadFromFile(const char* path) {
     CFile file;
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
 
@@ -395,7 +395,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
 RVA(0x0015d820, 0xa3)
 CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
     if (record == NULL) {
-        return 0;
+        return NULL;
     }
     CTileImageSet* set;
     switch (record->m_kind) {
@@ -409,14 +409,14 @@ CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
             set = new CImageSet3;
             break;
         default:
-            return 0;
+            return NULL;
     }
 
     if (set->Parse(record) == 0) {
         if (set != NULL) {
             delete set;
         }
-        return 0;
+        return NULL;
     }
     return set;
 }
@@ -430,7 +430,7 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
         if (plane) {
             delete plane;
         }
-        return 0;
+        return NULL;
     }
 
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
@@ -461,7 +461,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
         if (plane) {
             delete plane;
         }
-        return 0;
+        return NULL;
     }
 
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
@@ -498,7 +498,7 @@ RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
     CDDrawWorkerHost* p = (index >= 0 && index < m_planes.GetSize())
                               ? static_cast<CDDrawWorkerHost*>(m_planes[index])
-                              : 0;
+                              : NULL;
     if (p == NULL) {
         return 0;
     }
@@ -509,7 +509,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
         i32 last = m_planes.GetSize() - 1;
         CDDrawWorkerHost* lp = (last >= 0 && last < m_planes.GetSize())
                                    ? static_cast<CDDrawWorkerHost*>(m_planes[last])
-                                   : 0;
+                                   : NULL;
         if (lp != NULL) {
             RESET_MAIN_PLANE_SELECTION(i)
             m_mainIndex = last;
@@ -529,7 +529,7 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
             return 1;
         }
         CDDrawWorkerHost* el =
-            (from < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[from]) : 0;
+            (from < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[from]) : NULL;
         if (el != NULL) {
             m_planes.RemoveAt(from, 1);
             m_planes.InsertAt(to, static_cast<CObject*>(el), 1);
@@ -553,7 +553,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
     CObList* chain = &ctx->m_list;
 
     if ((m_flags & 1) && chain != NULL
-        && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != NULL) {
+        && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : NULL) != NULL) {
         (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
             ->Draw(visitor);
         POSITION pos = chain->GetHeadPosition();
@@ -563,7 +563,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
             do {
                 CDDrawWorkerHost* p = (i >= 0 && i < m_planes.GetSize())
                                           ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
-                                          : 0;
+                                          : NULL;
                 i32 zBound = p->m_zBound;
                 i32 blocked = 0;
                 while (pos != NULL && blocked == 0) {
@@ -579,7 +579,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
 
                 (i >= 0 && i < m_planes.GetSize()
                      ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
-                     : 0)
+                     : NULL)
                     ->Draw(visitor);
                 ++i;
             } while (i < m_planes.GetSize());
@@ -600,12 +600,12 @@ RVA(0x0015dde0, 0x5c)
 CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
         CDDrawWorkerHost* p =
-            (i >= 0 && i < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[i]) : 0;
+            (i >= 0 && i < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[i]) : NULL;
         if (_strcmpi(name, p->m_name) == 0) {
             return static_cast<CDDrawWorkerHost*>(p);
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0015de40, 0x164)
@@ -1588,7 +1588,7 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, 0) == 0) {
+    if (stream.Open(name, 0, NULL) == 0) {
         return 0;
     }
 
@@ -1616,7 +1616,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, 0) == 0) {
+    if (stream.Open(name, 0, NULL) == 0) {
         return 0;
     }
 
@@ -1638,23 +1638,23 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
     uLongf outLen;
 
     if (src == NULL) {
-        return 0;
+        return NULL;
     }
     if (dest == NULL) {
-        return 0;
+        return NULL;
     }
 
     if (src->headerSize > sizeof(*src)) {
-        return 0;
+        return NULL;
     }
     if ((src->flags & 0x2) == 0) {
-        return 0;
+        return NULL;
     }
     if (src->mainBlockLength == 0) {
-        return 0;
+        return NULL;
     }
     if (src->mainBlockLength > destLen + src->headerSize) {
-        return 0;
+        return NULL;
     }
 
     memcpy(dest, src, src->headerSize);
@@ -1668,10 +1668,10 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
             src->mainBlockLength
         )
         != 0) {
-        return 0;
+        return NULL;
     }
 
-    return outLen == src->mainBlockLength ? dest : 0;
+    return outLen == src->mainBlockLength ? dest : NULL;
 }
 
 // @dead-code

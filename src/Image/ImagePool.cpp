@@ -22,7 +22,7 @@
 #include <string.h>
 
 DATA(0x002bf6e0)
-HINSTANCE g_hResModule = 0;
+HINSTANCE g_hResModule = NULL;
 
 DATA(0x0021aabc)
 char g_bmpHeaderTemplate[4] = "BM";
@@ -51,7 +51,7 @@ void CImagePool::Free(CRezImage* node) {
     }
     if (node->m_paletteNode && node->m_paletteScalar) {
         RemovePalette(node->m_paletteNode);
-        B(0, 0, 0);
+        B(NULL, NULL, 0);
     }
     if (node->m_listPosition) {
         m_surfaces.RemoveAt(node->m_listPosition);
@@ -105,7 +105,7 @@ RVA(0x00174fe0, 0xfe)
 CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DecodeBmpHeader(hdc, width, height, bitCount, flag) == 0) {
+    if (node->DecodeBmpHeader(hdc, width, height, bitCount, flag) == BPP_UNSET) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -115,7 +115,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount,
             node->Free();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
@@ -134,7 +134,7 @@ CRezImage*
 CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == 0) {
+    if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == BPP_UNSET) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -144,7 +144,7 @@ CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, 
             node->Free();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
@@ -170,7 +170,7 @@ CRezImage* CImagePool::AddSurfaceOp(u8* buf, RezDecodeKind kind, i32 ctrl) {
             node->Free();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
@@ -199,7 +199,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
             node->Free();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
@@ -227,7 +227,7 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal)
             node->Free();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
@@ -249,7 +249,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
             node->Run();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_palettes.AddTail(node);
     node->m_listPosition = pos;
@@ -266,7 +266,7 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(u8* rgb, i32 flags) {
             node->Run();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_palettes.AddTail(node);
     node->m_listPosition = pos;
@@ -284,7 +284,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
             node->Run();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_palettes.AddTail(node);
     node->m_listPosition = pos;
@@ -301,7 +301,7 @@ CImagePaletteNode* CImagePool::AddImageDispatch(u8* buf, u32 size, RezDecodeKind
             node->Run();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     POSITION pos = m_palettes.AddTail(node);
     node->m_listPosition = pos;
@@ -329,7 +329,7 @@ RVA(0x00175780, 0x3f)
 void CImagePool::B(CRezImage* node, CImagePaletteNode* paletteNode, i32 b) {
     if (node->m_paletteNode && node->m_paletteScalar) {
         RemovePalette(node->m_paletteNode);
-        node->SetPalette(0, 0);
+        node->SetPalette(NULL, 0);
     }
     node->SetPalette(paletteNode, b);
 }
@@ -365,9 +365,9 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcoun
         for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             *pal++ = static_cast<u16>(i);
         }
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, PtrOut(&m_pixels), 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, PtrOut(&m_pixels), NULL, 0);
     } else {
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, PtrOut(&m_pixels), 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, PtrOut(&m_pixels), NULL, 0);
     }
     if (!m_dibSection) {
         return 0;
@@ -543,7 +543,7 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
 
-    if (!file.Open(name, 0, 0)) {
+    if (!file.Open(name, 0, NULL)) {
         return 0;
     }
     if (file.Read(&fh, sizeof(fh)) == 0) {
@@ -638,7 +638,7 @@ RVA(0x00176190, 0x126)
 i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
-    if (!file.Open(name, 0, 0)) {
+    if (!file.Open(name, 0, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -680,7 +680,7 @@ RVA(0x00176310, 0x126)
 i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
-    if (!file.Open(name, 0, 0)) {
+    if (!file.Open(name, 0, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -784,7 +784,7 @@ RVA(0x001766a0, 0x126)
 i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
-    if (!file.Open(name, 0, 0)) {
+    if (!file.Open(name, 0, NULL)) {
         return 0;
     }
     u32 len = file.GetLength();
@@ -978,7 +978,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     }
 
     CFile file;
-    if (file.Open(filename, 0x1001, 0) == 0) {
+    if (file.Open(filename, 0x1001, NULL) == 0) {
         return 0;
     }
     file.Write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
@@ -1102,7 +1102,7 @@ void CImagePaletteNode::Run() {
 
 RVA(0x001770a0, 0x3a)
 i32 DisplayUsesPalette() {
-    HDC ic = CreateICA("DISPLAY", 0, 0, 0);
+    HDC ic = CreateICA("DISPLAY", NULL, NULL, NULL);
     if (ic) {
         i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
         DeleteDC(ic);
@@ -1114,7 +1114,7 @@ i32 DisplayUsesPalette() {
 RVA(0x001770e0, 0x7c)
 void CImagePaletteNode::Tune() {
     ResetSystemPalette();
-    HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
+    HDC dc = CreateDCA("DISPLAY", NULL, NULL, NULL);
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
     i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
     i32 half = numReserved / 2;
@@ -1135,7 +1135,7 @@ RVA(0x00177160, 0x81)
 void ResetSystemPalette() {
 
     LogPal256 lp;
-    HDC hdc = GetDC(0);
+    HDC hdc = GetDC(NULL);
     lp.palVersion = LOGICAL_PALETTE_VERSION;
     lp.palNumEntries = 256;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -1150,7 +1150,7 @@ void ResetSystemPalette() {
         RealizePalette(hdc);
         DeleteObject(SelectPalette(hdc, old, FALSE));
     }
-    ReleaseDC(0, hdc);
+    ReleaseDC(NULL, hdc);
 }
 
 RVA(0x001771f0, 0xe2)
@@ -1158,7 +1158,7 @@ i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
     if (file.GetLength() != PALETTE_RGB_BYTE_COUNT) {
@@ -1175,7 +1175,7 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 
     PALETTEENTRY rgbq[PALETTE_ENTRY_COUNT];
 
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);

@@ -185,16 +185,16 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_rect = rect;
     m_remove = remove;
     if (m_rect.m_minX > grid->m_bounds.m_maxX) {
-        return 0;
+        return NULL;
     }
     if (m_rect.m_maxX < grid->m_bounds.m_minX) {
-        return 0;
+        return NULL;
     }
     if (m_rect.m_minY > grid->m_bounds.m_maxY) {
-        return 0;
+        return NULL;
     }
     if (m_rect.m_maxY < grid->m_bounds.m_minY) {
-        return 0;
+        return NULL;
     }
     if (m_rect.m_minX < grid->m_bounds.m_minX) {
         m_rect.m_minX = grid->m_bounds.m_minX;
@@ -232,7 +232,7 @@ WwdRegion* CWwdGridIter::GetNext() {
                 ++m_row;
             } else {
                 if (m_col >= m_colEnd) {
-                    return 0;
+                    return NULL;
                 }
                 m_rowBase += m_grid->m_cols;
                 m_cell = m_rowBase;

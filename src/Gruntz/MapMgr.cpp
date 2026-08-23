@@ -306,7 +306,7 @@ i32 CMapMgr::Search(
     seed->m_parent = NULL;
     Insert(seed);
     (&m_rows[y1][x1])->m_count++;
-    BrickzNode* node = 0;
+    BrickzNode* node = NULL;
     while (m_openList != NULL) {
         node = PopFront();
         BrickzCell* cell = &m_rows[node->m_row][node->m_col];
@@ -340,7 +340,7 @@ reached:
         CoordPoolNode* rec = g_coordPool.m_freeHead;
         i32 cellX = p->m_col;
         i32 cellY = p->m_row;
-        Coord* slot = 0;
+        Coord* slot = NULL;
         if (rec->m_next != NULL) {
             slot = &rec->m_coord;
             slot->m_x = cellX;
@@ -560,7 +560,7 @@ RVA(0x0009f500, 0x24)
 BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
     BrickzNode* p = m_openList;
     if (p == NULL) {
-        return 0;
+        return NULL;
     }
     do {
         if (p->m_col == key1 && p->m_row == key2) {
@@ -568,7 +568,7 @@ BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
         }
         p = p->m_openNext;
     } while (p != NULL);
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -583,7 +583,7 @@ BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
         }
         n = n->m_cellNext;
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0009f590, 0x2f)

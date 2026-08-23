@@ -174,7 +174,8 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
             }
             if (wParam == IDOK) {
                 (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->CloseTempFile(g_slotState);
-                (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->Save(0, SAVE_STRING_SAVING_GAME);
+                (static_cast<CSaveGame*>(g_gameReg->m_saveSink))
+                    ->Save(NULL, SAVE_STRING_SAVING_GAME);
                 EndDialog(hDlg, 1);
                 return 1;
             }
@@ -603,7 +604,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     CFile f;
-    if (f.Open(lev->m_savePath, CFile::typeBinary | CFile::modeRead, 0) == 0) {
+    if (f.Open(lev->m_savePath, CFile::typeBinary | CFile::modeRead, NULL) == 0) {
         g_previewImage = NULL;
     } else {
         f.Seek(-SAVE_PREVIEW_BYTES, CFile::end);

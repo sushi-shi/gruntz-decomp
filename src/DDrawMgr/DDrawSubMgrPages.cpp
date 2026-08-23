@@ -57,20 +57,20 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 
-    if (m_frontPair->SetGeometry(w, h, bpp) == 0) {
+    if (m_frontPair->SetGeometry(w, h, bpp) == BPP_UNSET) {
         if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
             OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE;
         }
         return 0;
     }
-    if (m_backPair->Create(w, h, bpp, 0) == 0) {
+    if (m_backPair->Create(w, h, bpp, 0) == BPP_UNSET) {
         if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
             OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE;
         }
         return 0;
     }
     if (!(flags & 1)) {
-        if (m_overlayPair->Create(w, h, bpp, 0) == 0) {
+        if (m_overlayPair->Create(w, h, bpp, 0) == BPP_UNSET) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
                 OwnerMgr()->m_lastError = WORLDERR_OVERLAY_SURFACE;
             }
@@ -143,7 +143,7 @@ void CDDrawSubMgrPages::BltDirtyChildrenEx() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00158b90, 0x28)
 void CDDrawSubMgrPages::FlipAndNotify() {
-    m_frontPair->m_surface->Flip(0);
+    m_frontPair->m_surface->Flip(NULL);
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->m_childGroup;
     CDDrawSubMgrPages* s = n->m_drawTarget;
@@ -232,12 +232,12 @@ void CDDrawSubMgrPages::UnloadOverlay() {
 RVA(0x00158d50, 0x61)
 void CDDrawSubMgrPages::ClearAllPages(u32 color) {
     m_backPair->m_surface->Fill(color);
-    m_frontPair->m_surface->Flip(0);
+    m_frontPair->m_surface->Flip(NULL);
     m_backPair->m_surface->Fill(color);
-    m_frontPair->m_surface->Flip(0);
+    m_frontPair->m_surface->Flip(NULL);
     if (OwnerMgr()->m_flags & 2) {
         m_backPair->m_surface->Fill(color);
-        m_frontPair->m_surface->Flip(0);
+        m_frontPair->m_surface->Flip(NULL);
     }
 }
 
@@ -263,7 +263,7 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
         }
     }
     if (ok && (OwnerMgr()->m_flags & 2)) {
-        m_frontPair->m_surface->Flip(0);
+        m_frontPair->m_surface->Flip(NULL);
         CDDrawSurfacePair* a = m_backPair;
         CDDrawSurfaceChildA* b = m_frontPair;
         if (b == NULL) {

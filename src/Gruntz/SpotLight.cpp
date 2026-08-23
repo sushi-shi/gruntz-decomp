@@ -122,7 +122,7 @@ CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CSpotLight>::s_table.ResolveEntry(id)))))();
     }
 }
@@ -148,7 +148,7 @@ i32 CSpotLight::Tick() {
             &m_object->m_area,
             &m_cellRow,
             &m_cellCol,
-            0
+            NULL
         );
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != 0 && m_cellRow != 0)) {
@@ -277,14 +277,14 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
             {
                 i32 id;
                 s->Read(&id, sizeof(id));
-                CGameObject* out = 0;
+                CGameObject* out = NULL;
                 CGameObject* resolved;
                 if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, id, out) == 0) {
                     resolved = NULL;
                 } else if (out == NULL) {
                     resolved = NULL;
                 } else {
-                    resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
+                    resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
                 }
                 m_focus = static_cast<CWwdGameObjectA*>(resolved);
                 if (m_focus == NULL && id != 0) {

@@ -302,7 +302,7 @@ static inline CActHandler* ProjActLookup(i32 coord) {
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
     CActHandler* e = ProjActLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*((*ProjActLookup(coord))))();
     }
 }
@@ -671,7 +671,7 @@ void CProjectile::ScanTargets(i32 impact) {
                 }
             }
 
-            Coord* slot = 0;
+            Coord* slot = NULL;
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
                 slot = &p->m_coord;
@@ -897,7 +897,7 @@ static inline CActHandler* TBombLookup(i32 coord) {
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
     CActHandler* e = TBombLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = TBombLookup(coord);
         (this->*((*e2)))();
     }

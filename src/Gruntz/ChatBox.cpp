@@ -81,7 +81,7 @@ CMenuPage* CChatBox::Find(const char* s) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00182c70, 0x38)

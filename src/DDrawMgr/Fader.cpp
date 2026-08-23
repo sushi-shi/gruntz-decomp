@@ -69,7 +69,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 frame = 1;
     while (frame <= count) {
         if (vsync && m_ptrColl) {
-            m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
+            m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
         }
         RenderFrame(frame);
         loops++;
@@ -110,7 +110,7 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
                 static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
             if (prev != frame && frame <= count && frame > 0) {
                 if (vsync && m_ptrColl) {
-                    m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
+                    m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
                 }
                 RenderFrame(frame);
                 loops++;
@@ -433,10 +433,15 @@ void CFaderMesh::RenderFrame(i32 frame) {
             dstRect.bottom = m_dstSurface->m_height - 1;
         }
 
-        m_dstSurface
-            ->BltEx(&dstRect, m_bltSrc, m_recOrderFlag != 0 ? &srcRect : &boundRect, 0x1000000, 0);
+        m_dstSurface->BltEx(
+            &dstRect,
+            m_bltSrc,
+            m_recOrderFlag != 0 ? &srcRect : &boundRect,
+            0x1000000,
+            NULL
+        );
     }
-    m_flipTarget->Flip(0);
+    m_flipTarget->Flip(NULL);
 }
 
 RVA(0x0017f120, 0x6)

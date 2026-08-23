@@ -238,7 +238,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
     CDDrawSurfaceChildA* child = m_drawTarget->m_frontPair;
 
     if (child->m_width != x || child->m_height != y) {
-        if (m_drawTarget->ResizePages(x, y, bpp) == 0) {
+        if (m_drawTarget->ResizePages(x, y, bpp) == BPP_UNSET) {
             return 0;
         }
         if (m_level != NULL) {
@@ -299,22 +299,22 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 
     CTime now = CTime::GetCurrentTime();
     header.m_version = 1;
-    header.m_month = now.GetLocalTm(0)->tm_mon + 1;
-    header.m_day = now.GetLocalTm(0)->tm_mday;
-    header.m_year = now.GetLocalTm(0)->tm_year + 0x76c;
+    header.m_month = now.GetLocalTm(NULL)->tm_mon + 1;
+    header.m_day = now.GetLocalTm(NULL)->tm_mday;
+    header.m_year = now.GetLocalTm(NULL)->tm_year + 0x76c;
     strcpy(header.m_name, name);
     i32 probe = m_childGroup->CountActive();
     header.m_objIdCounter = g_wwdObjIdCounter;
     header.m_childCount = probe;
     S.Write(&header, sizeof(header));
 
-    if (InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachProbe(&S, typeId) == 0) {
+    if (m_childGroup->ForEachProbe(&S, typeId) == LOGIC_UNSET) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, NULL) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_PRESAVE, typeId) == 0) {
@@ -323,16 +323,16 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (m_level->EditDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, NULL) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachSerialize(&S, typeId) == 0) {
+    if (m_childGroup->ForEachSerialize(&S, typeId) == LOGIC_UNSET) {
         return 0;
     }
     if (m_level->EditDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, NULL) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTSAVE, typeId) == 0) {
@@ -371,7 +371,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
     m_childGroup->ClearChildren();
-    if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == 0) {
+    if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == LOGIC_UNSET) {
         return 0;
     }
     if (InvokeCallbackInline(&S, SERIAL_PRELOAD, typeId, &header) == 0) {
@@ -386,7 +386,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == 0) {
+    if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == LOGIC_UNSET) {
         return 0;
     }
     if (m_level->EditDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0) == 0) {

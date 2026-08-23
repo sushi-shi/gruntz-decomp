@@ -44,7 +44,7 @@ i32 CSBI_Image::SetupImage(
         m_rect14 = rc;
         m_cmd = cmd;
         if (key != NULL) {
-            CObject* found = 0;
+            CObject* found = NULL;
             host->m_imageRegistry->m_workersByName.Lookup(key, found);
             CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
             CImage* val;
@@ -105,7 +105,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
                 i32 frameIndex = idx;
-                CObject* r_ob = 0;
+                CObject* r_ob = NULL;
                 mgr->m_imageRegistry->m_workersByName.Lookup(name, r_ob);
                 CDDrawWorker* r = static_cast<CDDrawWorker*>(r_ob);
                 if (r && DDRAW_WORKER_FRAME_IN_RANGE(r, frameIndex)) {

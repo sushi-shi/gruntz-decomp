@@ -31,7 +31,7 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
         case WM_INITDIALOG:
             g_registryHelper.Close();
             g_registryHelper
-                .Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0);
+                .Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL);
             LoadOptions(hWnd, &g_registryHelper);
 
             {

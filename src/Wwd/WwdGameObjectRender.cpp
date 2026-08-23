@@ -143,16 +143,16 @@ CWwdGameObject* CWwdGameObject::CreateObject(
 ) {
     CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CWapObj::NO_SEED);
     if (result == NULL) {
-        return 0;
+        return NULL;
     }
     if (result->Setup(x, y, sortKey, tmpl) == 0) {
         delete result;
-        return 0;
+        return NULL;
     }
     POSITION node = m_children.AddTail(static_cast<CObject*>(result));
     if (node == NULL) {
         delete result;
-        return 0;
+        return NULL;
     }
     result->m_posCache = node;
     if (result->m_flags & 0x200000) {
@@ -174,7 +174,7 @@ CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
     AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
     if (tmpl == NULL) {
-        return 0;
+        return NULL;
     }
     return CreateObject(id, x, y, sortKey, tmpl, stateFlags);
 }

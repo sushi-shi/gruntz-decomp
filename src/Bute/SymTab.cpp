@@ -195,11 +195,11 @@ char* CParseSource::BeginParse() {
         return m_buffer;
     }
     if (m_length == 0) {
-        return 0;
+        return NULL;
     }
     m_buffer = new char[m_length];
     if (m_buffer == NULL) {
-        return 0;
+        return NULL;
     }
     if (m_reader->Read(m_base, 0, m_length, m_buffer) != static_cast<i32>(m_length)) {
         delete[] m_buffer;
@@ -420,7 +420,7 @@ RVA(0x0013a000, 0x37)
 CParseSource* CSymTab::Insert(const char* key, RezTypeTag fourcc) {
     CSymRec* rec = m_symbols.FindInt(IDX(fourcc));
     if (!rec) {
-        return 0;
+        return NULL;
     }
     return rec->m_valTable.Walk(key, m_owner->m_caseSensitive == 0);
 }
@@ -505,7 +505,7 @@ i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
 RVA(0x0013a230, 0x29)
 CSymTab* CSymTab::FindSub(const char* name) {
     if (!name) {
-        return 0;
+        return NULL;
     }
     return m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
 }
@@ -514,7 +514,7 @@ RVA(0x0013a260, 0x11)
 CSymTab* CSymTab::FirstSub() {
     CHashElement* n = m_subTabs.First();
     if (!n) {
-        return 0;
+        return NULL;
     }
     return n->m_symTab;
 }
@@ -523,7 +523,7 @@ RVA(0x0013a280, 0x19)
 CSymTab* CSymTab::NextSub(CSymTab* rec) {
     CHashElement* n = rec->m_node20.Next();
     if (!n) {
-        return 0;
+        return NULL;
     }
     return n->m_symTab;
 }
@@ -539,7 +539,7 @@ RVA(0x0013a2b0, 0x11)
 CSymRec* CSymTab::FirstSym() {
     CHashElement* n = m_symbols.First();
     if (!n) {
-        return 0;
+        return NULL;
     }
     return n->m_symRec;
 }
@@ -548,7 +548,7 @@ RVA(0x0013a2d0, 0x19)
 CSymRec* CSymTab::NextSym(CSymRec* rec) {
     CHashElement* n = rec->m_symNode.Next();
     if (!n) {
-        return 0;
+        return NULL;
     }
     return n->m_symRec;
 }
@@ -557,7 +557,7 @@ RVA(0x0013a2f0, 0x19)
 CParseSource* CSymTab::NextSym2(CSymRec* rec) {
     CHashElement* n = rec->m_valTable.First();
     if (!n) {
-        return 0;
+        return NULL;
     }
     return n->m_parseSource;
 }
@@ -566,7 +566,7 @@ RVA(0x0013a310, 0x19)
 CParseSource* CSymTab::NextSym3(CParseSource* rec) {
     CHashElement* n = rec->m_node1c.Next();
     if (!n) {
-        return 0;
+        return NULL;
     }
     return n->m_parseSource;
 }
@@ -575,7 +575,7 @@ RVA(0x0013a330, 0xce)
 CSymTab* CSymTab::CreateSub(const char* name) {
 
     if (m_subTabs.Walk(name, m_owner->m_caseSensitive == 0) != NULL) {
-        return 0;
+        return NULL;
     }
     CSymTab* child = new CSymTab(
         m_owner,
@@ -588,7 +588,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
         m_owner->m_symbolBucketCount
     );
     if (!child) {
-        return 0;
+        return NULL;
     }
     m_subTabs.Insert(&child->m_node20);
 
@@ -605,7 +605,7 @@ RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* table, const char* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
     if (rec->m_valTable.Walk(name, m_owner->m_caseSensitive == 0) != NULL) {
-        return 0;
+        return NULL;
     }
     CParseSource* slot = m_owner->PopParseSlot();
     slot->Build(
@@ -613,16 +613,16 @@ CParseSource* CSymTab::AddNamedValue(void* table, const char* name, i32 key) {
         name,
         table,
         rec,
-        0,
+        NULL,
         0,
         0,
         m_owner->MakeTimestamp(),
         0,
-        0,
+        NULL,
         m_owner->m_activeNode
     );
     if (slot == NULL) {
-        return 0;
+        return NULL;
     }
     rec->m_valTable.Insert(&slot->m_node1c);
     u32 len = strlen(name);
@@ -645,12 +645,12 @@ CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRe
         // API-forced pointer-key boundary.
         reinterpret_cast<void*>(key),
         rec,
-        0,
+        NULL,
         0,
         0,
         m_owner->MakeTimestamp(),
         0,
-        0,
+        NULL,
         stream
     );
     rec->m_valTable.Insert(&slot->m_node1c);
@@ -822,7 +822,7 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
             rec = new CSymRec(key, this, m_owner->m_valueBucketCount);
         }
         if (rec == NULL) {
-            return 0;
+            return NULL;
         }
         m_symbols.Insert(&rec->m_symNode);
     }
@@ -961,7 +961,7 @@ i32 CSymParser::ParseBuffer(char* buf, i32 a, i32 b) {
         m_parseArmed = 1;
         CSymTab* node = new CSymTab(
             this,
-            0,
+            NULL,
             "",
             0,
             0,
@@ -992,7 +992,7 @@ i32 CSymParser::ParseBuffer(char* buf, i32 a, i32 b) {
         m_newArchive = true;
         CSymTab* node = new CSymTab(
             this,
-            0,
+            NULL,
             "",
             0,
             0,
@@ -1033,7 +1033,7 @@ i32 CSymParser::ParseBuffer(char* buf, i32 a, i32 b) {
     }
     CSymTab* node = new CSymTab(
         this,
-        0,
+        NULL,
         "",
         m_rootDataOffset,
         m_rootDataSize,
@@ -1190,10 +1190,10 @@ i32 CSymParser::ParseRecords(CRezItmBase* reader, CSymTab* node, char* path, i32
         CParseSource* entry = node->Insert(fname, extKey);
         CParseSource* source;
         if (entry == NULL) {
-            source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
+            source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, NULL);
         } else if (flag != 0) {
             node->AddNodeSubEntry(rec, entry);
-            source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
+            source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, NULL);
         } else {
             source = NULL;
         }
@@ -1410,7 +1410,7 @@ CParseSource* CSymTab::FindQualified(const char* name) {
         }
     }
     if (i == len) {
-        return 0;
+        return NULL;
     }
     const char* tail = name + i + 1;
     strcpy(leaf, tail);
@@ -1421,7 +1421,7 @@ CParseSource* CSymTab::FindQualified(const char* name) {
     path[i] = 0;
     CSymTab* scope = ResolvePath(path);
     if (!scope) {
-        return 0;
+        return NULL;
     }
     return scope->Find(leaf);
 }
@@ -1445,7 +1445,7 @@ CParseSource* CSymTab::ResolveQualified(const char* name, RezTypeTag fourcc) {
         }
     }
     if (i == len) {
-        return 0;
+        return NULL;
     }
     const char* tail = name + i + 1;
     strcpy(leaf, tail);
@@ -1456,7 +1456,7 @@ CParseSource* CSymTab::ResolveQualified(const char* name, RezTypeTag fourcc) {
     path[i] = 0;
     CSymTab* scope = ResolvePath(path);
     if (!scope) {
-        return 0;
+        return NULL;
     }
     return scope->Insert(leaf, fourcc);
 }
@@ -1501,7 +1501,7 @@ i32 CSymParser::Classify(char* name) {
 // @early-stop
 RVA(0x0013c0c0, 0x14b)
 CParseSource* CSymParser::PopParseSlot() {
-    CParseSource* rec = 0;
+    CParseSource* rec = NULL;
     CHashElement* e = m_hash.First();
     if (e != NULL) {
         rec = e->m_parseSource;
@@ -1509,13 +1509,13 @@ CParseSource* CSymParser::PopParseSlot() {
     if (rec == NULL) {
         CSlotNode* node = new CSlotNode;
         if (node == NULL) {
-            return 0;
+            return NULL;
         }
         CParseSource* arr = new CParseSource[m_parseSlotBlockCount];
         node->m_buffer = arr;
         if (arr == NULL) {
             ::operator delete(node);
-            return 0;
+            return NULL;
         }
         for (i32 j = 0; static_cast<u32>(j) < static_cast<u32>(m_parseSlotBlockCount); j++) {
             node->m_buffer[j].m_node1c.m_parseSource = &node->m_buffer[j];

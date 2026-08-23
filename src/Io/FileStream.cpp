@@ -6,9 +6,9 @@
 
 RVA(0x000bd3e0, 0x34)
 void CFileLog::ReopenSharedFile(char* path) {
-    g_gruntzLogFile.Open(path, 0x1000, 0);
+    g_gruntzLogFile.Open(path, 0x1000, NULL);
     g_gruntzLogFile.Close();
-    g_gruntzLogFile.Open(path, 1, 0);
+    g_gruntzLogFile.Open(path, 1, NULL);
 }
 
 RVA(0x000bd430, 0xa)

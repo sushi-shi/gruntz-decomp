@@ -43,7 +43,7 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj)
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))))();
     }
 }

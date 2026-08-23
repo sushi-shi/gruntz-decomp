@@ -224,7 +224,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             }
         }
     }
-    m_surface->m_ddSurface->Unlock(0);
+    m_surface->m_ddSurface->Unlock(NULL);
     return 1;
 }
 
@@ -261,7 +261,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     dstRect->top = dt;
     dstRect->right = m_surface->m_width * s + dl;
     dstRect->bottom = m_surface->m_height * s + dt;
-    if (ctx->m_surface->BltEx(dstRect, m_surface, 0, 0x1000000, 0) != 0) {
+    if (ctx->m_surface->BltEx(dstRect, m_surface, NULL, 0x1000000, NULL) != 0) {
         return 0;
     }
 
@@ -357,7 +357,7 @@ void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
         ro += step;
     }
 
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x000a3c90, 0xe8)

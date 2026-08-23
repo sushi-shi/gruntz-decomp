@@ -164,7 +164,7 @@ i32 CGameApp::Init(
         strcpy(gi.szCmdLine, szCmdLine);
     }
 
-    return InitInstance(&gi, 0, 0);
+    return InitInstance(&gi, NULL, NULL);
 }
 
 RVA(0x0013d8c0, 0x42)
@@ -190,7 +190,7 @@ i32 CGameApp::RunMessageLoop() {
     }
 
     for (;;) {
-        if (PeekMessageA(&msg, 0, 0, 0, 1)) {
+        if (PeekMessageA(&msg, NULL, 0, 0, 1)) {
             do {
                 if (msg.message == WM_QUIT) {
                     return 1;
@@ -200,7 +200,7 @@ i32 CGameApp::RunMessageLoop() {
                 }
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);
-            } while (PeekMessageA(&msg, 0, 0, 0, 1));
+            } while (PeekMessageA(&msg, NULL, 0, 0, 1));
         }
         OnIdle();
     }
@@ -213,7 +213,7 @@ void CGameApp::InitializeDefaultWindowClass() {
 
     HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
     if (m_gameInfo.windowClassFlags & 1) {
-        hCursor = LoadCursorA(0, IDC_ARROW);
+        hCursor = LoadCursorA(NULL, IDC_ARROW);
     }
 
     m_wc.style = 8;
@@ -234,7 +234,7 @@ void CGameApp::InitializeDefaultCreateStruct() {
 
     memset(&m_createStruct, 0, sizeof(m_createStruct));
 
-    HMENU hMenu = 0;
+    HMENU hMenu = NULL;
     if (m_gameInfo.windowClassFlags & 1) {
         hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
     }

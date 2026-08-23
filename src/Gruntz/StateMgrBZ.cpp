@@ -56,7 +56,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
         case INPUTDEV_JOYSTICK1: {
             CInputDevice* d = (src->m_devices.GetSize() > 0)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
-                                  : 0;
+                                  : NULL;
             m_joystick = d;
             m_device = d;
             break;
@@ -64,7 +64,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
         case INPUTDEV_JOYSTICK2: {
             CInputDevice* d = (src->m_devices.GetSize() > 1)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(1))
-                                  : 0;
+                                  : NULL;
             m_joystick = d;
             m_device = d;
             break;
@@ -72,7 +72,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
         case INPUTDEV_JOYSTICK3: {
             CInputDevice* d = (src->m_devices.GetSize() > 2)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(2))
-                                  : 0;
+                                  : NULL;
             m_joystick = d;
             m_device = d;
             break;
@@ -80,7 +80,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
         case INPUTDEV_JOYSTICK4: {
             CInputDevice* d = (src->m_devices.GetSize() > 3)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(3))
-                                  : 0;
+                                  : NULL;
             m_joystick = d;
             m_device = d;
             break;
@@ -89,25 +89,25 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             CInputDevice* d = (src->m_devices.GetSize() > 0)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
-                                  : 0;
+                                  : NULL;
             m_joystick = d;
-            m_deviceList = src->AddControllerArr(m_keyboard, d, 0, 0, 0, 0, 0);
+            m_deviceList = src->AddControllerArr(m_keyboard, d, NULL, NULL, NULL, NULL, 0);
             break;
         }
         case INPUTDEV_KEYBOARD_JOYSTICK1_MOUSE: {
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             CInputDevice* d = (src->m_devices.GetSize() > 0)
                                   ? static_cast<CInputDevice*>(src->m_devices.GetAt(0))
-                                  : 0;
+                                  : NULL;
             m_joystick = d;
             m_mouse = static_cast<CInputDevice*>(src->m_deviceB);
-            m_deviceList = src->AddControllerArr(m_keyboard, d, m_mouse, 0, 0, 0, 0);
+            m_deviceList = src->AddControllerArr(m_keyboard, d, m_mouse, NULL, NULL, NULL, 0);
             break;
         }
         case INPUTDEV_KEYBOARD_MOUSE:
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             m_mouse = static_cast<CInputDevice*>(src->m_deviceB);
-            m_deviceList = src->AddControllerArr(m_keyboard, m_mouse, 0, 0, 0, 0, 0);
+            m_deviceList = src->AddControllerArr(m_keyboard, m_mouse, NULL, NULL, NULL, NULL, 0);
             break;
         case INPUTDEV_NONE:
             m_keyboard = NULL;

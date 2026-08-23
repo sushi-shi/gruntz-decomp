@@ -28,7 +28,7 @@ RVA(0x0011c860, 0x327)
 i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
     char szModulePath[0xFE];
 
-    if (GetModuleFileNameA(0, szModulePath, 0xFE) > 0
+    if (GetModuleFileNameA(NULL, szModulePath, 0xFE) > 0
         && FindProcessByName(szModulePath, 2, NULL) != 0) {
 
         HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
@@ -44,7 +44,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     {
-        DWORD dwSize = GetFileVersionInfoSizeA(szModulePath, 0);
+        DWORD dwSize = GetFileVersionInfoSizeA(szModulePath, NULL);
         u8* pInfo = new u8[dwSize];
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
         char* pValue;
@@ -66,7 +66,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         delete[] pInfo;
     }
 
-    if (StartUpPrompt(0) == 0) {
+    if (StartUpPrompt(NULL) == 0) {
         return 0;
     }
 
@@ -111,7 +111,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (bAdvanced != 0) {
         i32 nDlgResult =
-            DialogBoxParamA(g_appResHandle, "CONFIG_ADVANCED", 0, &AdvancedOptionsDialogProc, 0);
+            DialogBoxParamA(g_appResHandle, "CONFIG_ADVANCED", NULL, &AdvancedOptionsDialogProc, 0);
         if (nDlgResult == 0) {
             if (g_pApp != NULL) {
                 delete g_pApp;

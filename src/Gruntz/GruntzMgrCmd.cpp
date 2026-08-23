@@ -1087,7 +1087,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 this,
                 g_gameReg->GetModeSize().cx,
                 g_gameReg->GetModeSize().cy,
-                0,
+                NULL,
                 0
             );
             return 1;

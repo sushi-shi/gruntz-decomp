@@ -199,7 +199,7 @@ i32 CGruntzWnd::OnPaint() {
     CGruntzMgr* mgr = GameMgr();
     if (mgr && mgr->IsLobbyHostReady()) {
         if (m_hwnd) {
-            ValidateRect(m_hwnd, 0);
+            ValidateRect(m_hwnd, NULL);
         }
         return 1;
     }

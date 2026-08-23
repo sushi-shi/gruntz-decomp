@@ -69,11 +69,11 @@ DWORD g_sfVer = 0;
 DATA(0x0024e0a4)
 u16 g_sfDeviceCount = 0;
 DATA(0x0024e0a8)
-HMODULE g_sfDll = 0;
+HMODULE g_sfDll = NULL;
 DATA(0x0024e0ac)
-SfManagerFactory* g_sfManagerFactory = 0;
+SfManagerFactory* g_sfManagerFactory = NULL;
 DATA(0x0024e0b0)
-SFMANL101API* g_sfDevice = 0;
+SFMANL101API* g_sfDevice = NULL;
 DATA(0x0024e0b8)
 i32 g_sfReady = 0;
 DATA(0x0024e0c0)

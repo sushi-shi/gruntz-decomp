@@ -117,7 +117,7 @@ i32 CDDrawWorkerHost::Read(
 
     if (m_flags & 0x10) {
 
-        CDDrawWorker* set = (m_frameSets.GetSize() > 0) ? FrameSetAt(0) : 0;
+        CDDrawWorker* set = (m_frameSets.GetSize() > 0) ? FrameSetAt(0) : NULL;
         for (i32 f = 0; f < set->m_items.GetSize(); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
@@ -696,7 +696,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     AnimWorkerObj* tmpl;
     {
-        CObject* foundOb = 0;
+        CObject* foundOb = NULL;
         OwnerMgr()->m_workerCache->m_workers.Lookup(static_cast<const char*>(logic), foundOb);
         tmpl = static_cast<AnimWorkerObj*>(foundOb);
     }

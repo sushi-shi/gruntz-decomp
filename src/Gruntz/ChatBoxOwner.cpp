@@ -80,7 +80,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
         char* input = const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
-        static_cast<CMulti*>(g_gameReg->m_curState)->BroadcastChatLine(input, 1, 1, 0);
+        static_cast<CMulti*>(g_gameReg->m_curState)->BroadcastChatLine(input, 1, 1, NULL);
     } else {
         if (_strcmpi(m_fontConfig->GetInputText().Left(17), "Enable Cheatzfile") == 0) {
             CString args = m_fontConfig->GetInputText();
@@ -228,7 +228,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         frame->RenderFrame(target, self->m_originX + 0xf0, self->m_originY + 0x20, 0);
     }
 
-    HDC hdc = 0;
+    HDC hdc = NULL;
     host->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return 1;

@@ -43,7 +43,7 @@ CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }
@@ -68,9 +68,14 @@ i32 CExitTrigger::AdvanceAnim() {
         i32 hitPlayer;
         i32 hitRow;
         CWwdGameObjectA* obj = m_object;
-        CGrunt* hit =
-            g_gameReg->m_cmdGrid
-                ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &hitPlayer, &hitRow, 0);
+        CGrunt* hit = g_gameReg->m_cmdGrid->FindGruntAt(
+            obj->m_screenX,
+            obj->m_screenY,
+            &obj->m_area,
+            &hitPlayer,
+            &hitRow,
+            NULL
+        );
         if (hit != NULL) {
             i32 owningPlayer = m_object->m_smarts;
             if (hitPlayer == owningPlayer) {

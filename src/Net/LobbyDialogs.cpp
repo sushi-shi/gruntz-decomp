@@ -77,7 +77,7 @@ namespace NetLobby {
     void InitializeHostWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateHostWaitDialog(hWnd, ctx);
-            SetTimer(hWnd, 1, 0x1f4, 0);
+            SetTimer(hWnd, 1, 0x1f4, NULL);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
@@ -120,7 +120,7 @@ namespace NetLobby {
     void InitializeJoinWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateJoinWaitDialog(hWnd, ctx);
-            SetTimer(hWnd, 1, 0x1f4, 0);
+            SetTimer(hWnd, 1, 0x1f4, NULL);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
@@ -170,7 +170,7 @@ namespace NetLobby {
     void InitializeLobbyDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateLobbyDialog(hWnd, ctx);
-            SetTimer(hWnd, 1, 0x1f4, 0);
+            SetTimer(hWnd, 1, 0x1f4, NULL);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
@@ -232,7 +232,7 @@ namespace NetLobby {
     void InitializeSessionWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateSessionWaitDialog(hWnd, ctx);
-            SetTimer(hWnd, 1, 0x2ee, 0);
+            SetTimer(hWnd, 1, 0x2ee, NULL);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
@@ -309,7 +309,7 @@ namespace NetLobby {
                 SetDlgItemTextA(hWnd, 0x44b, static_cast<LPCTSTR>(banner));
             }
             UpdateDropWaitDialog(hWnd, ctx);
-            SetTimer(hWnd, 1, 0x2ee, 0);
+            SetTimer(hWnd, 1, 0x2ee, NULL);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }
@@ -412,7 +412,7 @@ namespace NetLobby {
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }
             UpdateDropInDialog(hWnd, ctx);
-            SetTimer(hWnd, 1, 0x2ee, 0);
+            SetTimer(hWnd, 1, 0x2ee, NULL);
             g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
         }
     }

@@ -89,8 +89,8 @@ i32 CUserLogic::SerializeMove(
             m_logicObject = pObj;
             m_object = static_cast<CWwdGameObjectA*>(pObj);
             m_objAux = (pObj)->m_animWorker;
-            m_deferredCallback = 0;
-            m_gatedCallback = 0;
+            m_deferredCallback = NULL;
+            m_gatedCallback = NULL;
             m_gatedActKey = IDX(ACT_NONE);
 
             break;

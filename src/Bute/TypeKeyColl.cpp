@@ -165,7 +165,7 @@ void* zPTree::Find(const char* key) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
-        return 0;
+        return NULL;
     }
     CButeTreeNode* root = m_root;
     m_descentCursor = root;
@@ -174,7 +174,7 @@ void* zPTree::Find(const char* key) {
     i32 bitmax = static_cast<i32>(strlen(key)) * 8 + 7;
     m_keyBitLength = bitmax;
     if (root == NULL) {
-        return 0;
+        return NULL;
     }
     i32 b = root->m_bit;
     while (b <= bitmax) {
@@ -185,20 +185,20 @@ void* zPTree::Find(const char* key) {
         CButeTreeNode* child = *slot;
         m_candidateLeaf = child;
         if (child == NULL) {
-            return 0;
+            return NULL;
         }
         if (child->m_bit <= b) {
             if (strcmp(key, child->m_key) == 0) {
                 m_lookupPending = 0;
                 return m_candidateLeaf->m_value;
             }
-            return 0;
+            return NULL;
         }
         m_descentCursor = child;
         b = child->m_bit;
     }
     m_candidateLeaf = m_descentCursor;
-    return 0;
+    return NULL;
 }
 
 RVA(0x0016d2a0, 0x26)
@@ -486,7 +486,7 @@ zErrHandling::zErrHandling(CVariantSlot* errSink)
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
 
-    m_errSink->Add(this, 0);
+    m_errSink->Add(this, NULL);
 }
 
 // @early-stop
@@ -499,7 +499,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
             m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
-            return 0;
+            return NULL;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
         i32 shift = m_lo - idx;
@@ -516,7 +516,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
-        return 0;
+        return NULL;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
     char* fill = p + oldbytes;
@@ -534,7 +534,7 @@ void* zPTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
-        return 0;
+        return NULL;
     }
     m_lookupPending = 0;
     m_keyBitLength -= 7;
@@ -542,7 +542,7 @@ void* zPTree::Insert(const char* key, void* value) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
-        return 0;
+        return NULL;
     }
 
     i32 critbit;
@@ -557,7 +557,7 @@ void* zPTree::Insert(const char* key, void* value) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
-        return 0;
+        return NULL;
     }
     node->m_value = static_cast<char*>(value);
     node->m_bit = critbit;
@@ -567,7 +567,7 @@ void* zPTree::Insert(const char* key, void* value) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
-        return 0;
+        return NULL;
     }
     strcpy(keybuf, key);
 
@@ -691,7 +691,7 @@ zPtrColl::~zPtrColl() {}
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 
-    : zErrHandling(&g_symTabErrorSlot), zPtrColl(n, teardown), m_root(0), m_lookupPending(0) {}
+    : zErrHandling(&g_symTabErrorSlot), zPtrColl(n, teardown), m_root(NULL), m_lookupPending(0) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {
@@ -837,7 +837,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     *q = 0;
 
     MessageBeep(0);
-    MessageBoxA(0, msg, "C++ Tools error handler", MB_TASKMODAL | MB_ICONHAND);
+    MessageBoxA(NULL, msg, "C++ Tools error handler", MB_TASKMODAL | MB_ICONHAND);
     FatalAppExitA(0, "The error handler terminated the application");
     exit(1);
 }
@@ -847,7 +847,7 @@ RVA(0x0016e360, 0x11a)
 VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
     int count = g_recCount23;
     if (val != NULL && count >= 0x20) {
-        return 0;
+        return NULL;
     }
     int idx;
     if (count != 0) {
@@ -860,7 +860,7 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
     }
     if (idx == -1) {
         if (val == NULL) {
-            return 0;
+            return NULL;
         }
         if (g_recCount23 != 0) {
             memcpy(
@@ -875,7 +875,7 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
         g_recs23[m_searchIndex].m_key = nk.m_word;
         g_recCount23 = g_recCount23 + 1;
         g_recs23[m_searchIndex].m_value = 0;
-        return 0;
+        return NULL;
     }
     VariantCallback old = g_recs23[idx].m_callback;
     if (val != NULL) {

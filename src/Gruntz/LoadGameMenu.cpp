@@ -13,7 +13,7 @@
 #include <Io/SaveGame.h>
 
 DATA(0x00245ca4)
-CSaveGame* g_dlgLoadSink = 0;
+CSaveGame* g_dlgLoadSink = NULL;
 
 RVA(0x0009dff0, 0x8c)
 BOOL CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {

@@ -93,7 +93,7 @@ i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_stateBank) {
         return 0;
     }
-    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     return 1;
 }
 
@@ -206,7 +206,7 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (s == NULL) {
         return 0;
     }
-    HDC hdc = 0;
+    HDC hdc = NULL;
     s->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return 0;
@@ -372,7 +372,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
         return 0;
     }
     if (doFlip != 0) {
-        menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     }
     return 1;
 }
@@ -451,7 +451,7 @@ i32 CState::ShadeScreen(i32 pct) {
         g_skipNextScreenEffect = 0;
         return v;
     }
-    return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, 0);
+    return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, NULL);
 }
 
 RVA(0x000fafa0, 0x3b)

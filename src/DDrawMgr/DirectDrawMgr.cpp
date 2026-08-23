@@ -33,7 +33,7 @@ DATA(0x00283ec4)
 i32 g_ddThirdEnabled = 0;
 
 DATA(0x00283edc)
-i32 (*g_restoreHandler)() = 0;
+i32 (*g_restoreHandler)() = NULL;
 DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
@@ -337,7 +337,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     if (dd != NULL) {
         m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate(driverGuid, &m_directDraw1, 0);
+        i32 chr = DirectDrawCreate(driverGuid, &m_directDraw1, NULL);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == DDRAWERR_NONE) {
@@ -349,7 +349,7 @@ i32 CDDrawPtrCollections::CreateDevice(
         devOut.m_asTyped = &m_device;
         chr = m_directDraw1->QueryInterface(IID_IDirectDraw2, devOut.m_asVoid);
         if (chr != 0) {
-            CDDrawPtrCollections::GetErrorString(0, 0, chr);
+            CDDrawPtrCollections::GetErrorString(NULL, 0, chr);
             if (m_lastError == DDRAWERR_NONE) {
                 m_lastError = DDRAWERR_QUERY_INTERFACE;
             }
@@ -487,7 +487,7 @@ CDDSurface* CDDrawPtrCollections::CreateSurfaceFromDesc(const DDSURFACEDESC* des
     CDDSurface* item = new CDDSurface;
     if (!item->CreateFromDesc(this, desc)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -504,7 +504,7 @@ CDDSurface* CDDrawPtrCollections::LoadSurfaceFromPid(
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->ResolveEx(this, hdr, type, size, ctrl, trans)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -526,7 +526,7 @@ CDDSurface* CDDrawPtrCollections::CreateKeyedSurface(
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->LoadKeyed(this, width, height, bitDepth, caps, key)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -539,7 +539,7 @@ CDDSurface* CDDrawPtrCollections::CreateFileSurfaceFromDesc(const DDSURFACEDESC*
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->CreateFromDesc(this, desc)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -550,7 +550,7 @@ CDDSurface* CDDrawPtrCollections::LoadFileSurface(char* path, i32 caps, i32 colo
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->LoadByExt(this, path, caps, colorKey)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -596,7 +596,7 @@ CDDSurface* CDDrawPtrCollections::CreateBlit7Surface(i32 a, i32 b, i32 c) {
     CPoolItemA88* item = new CPoolItemA88;
     if (!item->Blit7(this, a, b, c)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -613,7 +613,7 @@ CDDSurface* CDDrawPtrCollections::CreateBlit7SurfaceFromDesc(const DDSURFACEDESC
     CPoolItemA88* item = new CPoolItemA88;
     if (!item->CreateFromDesc(this, desc)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -626,7 +626,7 @@ CDDSurface* CDDrawPtrCollections::CreatePaletteSurface(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (!item->Setup(this, a, b, c)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     m_palBpp = item->m_bitDepth;
@@ -644,7 +644,7 @@ CDDSurface* CDDrawPtrCollections::CreatePaletteSurfaceFromDesc(const DDSURFACEDE
     CPoolItemAB8* item = new CPoolItemAB8;
     if (!item->CreateFromDesc(this, desc)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     m_palBpp = item->m_bitDepth;
@@ -656,7 +656,7 @@ CDDSurface* CDDrawPtrCollections::Create24BitPaletteSurface(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (!item->Setup(this, 0x18, 0x21, a)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     m_palBpp = item->m_bitDepth;
@@ -670,7 +670,7 @@ CDDSurface* CDDrawPtrCollections::CreateBlit47Surface(i32 a, i32 b, i32 c, i32 d
     CPoolItemAE8* item = new CPoolItemAE8;
     if (!item->Blit47(this, a, b, c, d, e, f)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -687,7 +687,7 @@ CDDSurface* CDDrawPtrCollections::CreateBlit47SurfaceFromDesc(const DDSURFACEDES
     CPoolItemAE8* item = new CPoolItemAE8;
     if (!item->CreateFromDesc(this, desc)) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -741,7 +741,7 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteFromFile(char* path, i32 flags) {
             item->Destroy();
             ::operator delete(item);
         }
-        return 0;
+        return NULL;
     }
     AddItemB(item);
     return item;
@@ -755,7 +755,7 @@ CDDPalette* CDDrawPtrCollections::CreateRgbPalette(u8* rgb, i32 flags) {
             item->Destroy();
             ::operator delete(item);
         }
-        return 0;
+        return NULL;
     }
     AddItemB(item);
     return item;
@@ -770,7 +770,7 @@ CDDPalette* CDDrawPtrCollections::CreatePaletteFromEntries(PALETTEENTRY* entries
             item->Destroy();
             ::operator delete(item);
         }
-        return 0;
+        return NULL;
     }
     AddItemB(item);
     return item;
@@ -784,7 +784,7 @@ CDDPalette* CDDrawPtrCollections::CreatePaletteFromTrailingData(void* a, u32 b, 
             item->Destroy();
             ::operator delete(item);
         }
-        return 0;
+        return NULL;
     }
     AddItemB(item);
     return item;
@@ -795,13 +795,13 @@ CDDPalette* CDDrawPtrCollections::CreatePaletteFromTrailingData(void* a, u32 b, 
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadTrailingRgbPalette(const char* path, i32 z) {
     CFile file;
-    if (!file.Open(path, 0, 0)) {
-        return 0;
+    if (!file.Open(path, 0, NULL)) {
+        return NULL;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
     u8 buf[PALETTE_RGB_BYTE_COUNT];
     if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
-        return 0;
+        return NULL;
     }
     return CreateRgbPalette(buf, z);
 }
@@ -815,7 +815,7 @@ void CDDrawPtrCollections::SetupCaps() {
     g_modeArray.SetSize(0, -1);
     DdModeEnumFn modeCb;
     modeCb.m_body = DdEnumModesCallback;
-    i32 hr = m_device->EnumDisplayModes(0, 0, 0, modeCb.m_sdk);
+    i32 hr = m_device->EnumDisplayModes(0, NULL, NULL, modeCb.m_sdk);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
@@ -969,13 +969,13 @@ CDDSurface* CDDrawPtrCollections::CreatePoolItem(CDDSurface* srcSurface, i32 cap
     i32 hr = srcSurface->m_ddSurface->GetAttachedSurface(&want, &attached);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
-        return 0;
+        return NULL;
     }
 
     CDDSurface* item = new CDDSurface;
     if (item->Refresh(attached) == 0) {
         delete item;
-        return 0;
+        return NULL;
     }
     AddItemA(item);
     return item;
@@ -1068,7 +1068,7 @@ IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
         DDrawLogLine(
             const_cast<char*>("CDirectDrawMgr::GetGDISurface() - Cannot get the GDI surface!\r\n")
         );
-        return 0;
+        return NULL;
     }
     return surf;
 }
@@ -1140,7 +1140,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i3
 RVA(0x00143a30, 0xe9)
 i32 CDDrawPtrCollections::LoadDisplayPaletteFromFile(const char* path, i32 z) {
     CFile file;
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);

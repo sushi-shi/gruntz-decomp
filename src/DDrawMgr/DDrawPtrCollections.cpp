@@ -21,7 +21,7 @@ i32 CFileImageSurface::LoadKeyed(
     i32 key
 ) {
 
-    if (CDDSurface::BlitSurf(surf, width, height, bitDepth, caps | 0x40) == 0) {
+    if (CDDSurface::BlitSurf(surf, width, height, bitDepth, caps | 0x40) == BPP_UNSET) {
         return 0;
     }
     if (key != -1) {
@@ -143,7 +143,7 @@ i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 caps, i32 flags, i32 bac
     m_surfaceCaps = caps | 0x200;
     m_descFlags = flags;
     m_backBufferCount = backBufferCount;
-    if (!CDDSurface::CreateFromDesc(info, 0)) {
+    if (!CDDSurface::CreateFromDesc(info, NULL)) {
         return 0;
     }
     InstallColorFormat();

@@ -62,7 +62,7 @@ void CSpriteRefTable::Clear() {
 RVA(0x000e2360, 0x15)
 CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
     if (static_cast<u32>(colorId) >= TINT_COUNT) {
-        return 0;
+        return NULL;
     }
     return m_toolRefs[colorId];
 }
@@ -70,7 +70,7 @@ CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
 RVA(0x000e2390, 0x15)
 CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
     if (static_cast<u32>(colorId) >= TINT_COUNT) {
-        return 0;
+        return NULL;
     }
     return m_toyRefs[colorId];
 }
@@ -78,11 +78,11 @@ CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
 RVA(0x000e23c0, 0x2d)
 CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     if (static_cast<u32>(i) >= 0x11) {
-        return 0;
+        return NULL;
     }
     CSpriteRef* node = bAlt ? m_toyRefs[i] : m_toolRefs[i];
     if (!node) {
-        return 0;
+        return NULL;
     }
     return node->m_alphaKey;
 }
@@ -283,24 +283,24 @@ RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     CAniRecordBase2* rec = LookupWorker(m_spriteMgrHolder->m_workerMap->m_map1, szName);
     if (!rec) {
-        return 0;
+        return NULL;
     }
 
     PALETTEENTRY* entries = rec->m_buf->m_cacheA;
     if (!entries) {
-        return 0;
+        return NULL;
     }
     CShadeTable* alpha = m_factory->AlphaTable(entries);
     if (!alpha) {
-        return 0;
+        return NULL;
     }
     CSpriteRef* node = new CSpriteRef;
-    if (node->Build(m_factory, alpha, kind) == 0) {
+    if (node->Build(m_factory, alpha, kind) == TINT_ORANGE) {
         if (node) {
             node->Free();
             ::operator delete(node);
         }
-        return 0;
+        return NULL;
     }
     return node;
 }
@@ -346,5 +346,5 @@ i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_workerMap->LoadPaletteFromSource(pal, 0, 0) != NULL;
+    return m_spriteMgrHolder->m_workerMap->LoadPaletteFromSource(pal, NULL, 0) != NULL;
 }

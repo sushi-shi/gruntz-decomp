@@ -55,7 +55,7 @@
 #include <string.h>
 
 DATA(0x00245574)
-CFixedPtrArray32* g_actorList = 0;
+CFixedPtrArray32* g_actorList = NULL;
 DATA(0x00251608)
 i32 g_versionMajor = 0;
 DATA(0x0025160c)
@@ -277,7 +277,7 @@ void CMenuState::StopMusicChain() {
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::LeaveState(GameStateId) {
     m_world->m_drawTarget->TransExit();
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_activateCueDurationMs)

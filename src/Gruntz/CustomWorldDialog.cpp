@@ -49,11 +49,11 @@ CString g_selectedCustomWorldName;
 DATA(0x0022c268)
 CDDrawSurfaceMgr* g_customWorldSurfaceMgr = NULL;
 DATA(0x0022c26c)
-HWND g_customWorldParent = 0;
+HWND g_customWorldParent = NULL;
 DATA(0x0022c270)
-HINSTANCE g_customWorldInst = 0;
+HINSTANCE g_customWorldInst = NULL;
 DATA(0x0022c274)
-HWND g_customLevelList = 0;
+HWND g_customLevelList = NULL;
 
 DATA(0x0020cf90)
 char g_dotDot[] = "..";

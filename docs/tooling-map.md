@@ -41,6 +41,7 @@ all read).
 | `gruntz verify bank` | `gruntz.verify.verbs` | MANUAL: update `config/match_baseline.tsv` + the README score block |
 | `gruntz verify fingerprints` | `gruntz.verify.fingerprints` | refresh the per-function source-fingerprint cache |
 | `gruntz verify selftest` | `gruntz.verify.selftest` | the NEGATIVE controls: feed every gate a known violation, assert it fails |
+| `gruntz verify constants` | `gruntz.verify.constants` | AST-backed bare numeric census; `--gate` fails on proven pointer/bool/enum spellings and writes the derived TSV under `build/gen/` |
 
 `gruntz verify <gate>` runs one gate directly. The tiers
 (`gruntz.verify.tiers`) are:

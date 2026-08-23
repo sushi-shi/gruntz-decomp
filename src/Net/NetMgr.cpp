@@ -53,9 +53,9 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     if (guid == NULL) {
         return 0;
     }
-    i32 hr = DirectPlayCreate(guid, &m_releaseIface, 0);
+    i32 hr = DirectPlayCreate(guid, &m_releaseIface, NULL);
     if (hr != 0 || m_releaseIface == NULL) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x41, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x41, hr, NULL);
         return 0;
     }
 
@@ -64,7 +64,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 
     hr = m_releaseIface->QueryInterface(IID_IDirectPlay4A, PtrOut(&m_directPlay));
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, NULL);
         Destroy();
         return 0;
     }
@@ -106,13 +106,13 @@ i32 CNetMgr::Init(void* lobbyIface, NetGuid appGuid) {
     IDirectPlay2* opened = NULL;
     i32 hr = lobby->Connect(0, &opened, NULL);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x78, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x78, hr, NULL);
         Destroy();
         return 0;
     }
     hr = opened->QueryInterface(IID_IDirectPlay4A, PtrOut(&m_directPlay));
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x81, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x81, hr, NULL);
         Destroy();
         return 0;
     }
@@ -160,7 +160,7 @@ i32 CNetMgr::EnumServiceProviders(i32 validated) {
     g_spEnumValidated = validated;
     i32 hr = DirectPlayEnumerate(&EnumProviderCb, this);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xda, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xda, hr, NULL);
         return hr;
     }
     return 0;
@@ -175,10 +175,10 @@ EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* l
     }
 
     if (g_spEnumValidated == 0) {
-        IDirectPlay* dp = 0;
-        i32 hr = DirectPlayCreate(lpGuid, &dp, 0);
+        IDirectPlay* dp = NULL;
+        i32 hr = DirectPlayCreate(lpGuid, &dp, NULL);
         if (hr != 0) {
-            CNetMgr::ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xfe, hr, 0);
+            CNetMgr::ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xfe, hr, NULL);
             return 1;
         }
         if (dp == NULL) {
@@ -197,7 +197,7 @@ InterfaceObject* CNetMgr::AddGroupNode(GUID* guid, const char* name) {
 
     if (guid == NULL || name == NULL) {
         delete node;
-        return 0;
+        return NULL;
     }
 
     node->m_guid = guid;
@@ -238,7 +238,7 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
 
     m_groupSelId = m_groups.GetHeadPosition();
     InterfaceObject* obj =
-        m_groupSelId != NULL ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : 0;
+        m_groupSelId != NULL ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : NULL;
 
     while (obj != NULL) {
         if (((flag & 1) && obj->IsTcpIpProvider()) || ((flag & 2) && obj->IsIpxProvider())) {
@@ -328,7 +328,7 @@ i32 CNetMgr::EnumPlayersInto(u32 dwTimeout, u32 dwFlags) {
     IDirectPlay4Z* com = m_directPlay;
     i32 hr = com->EnumPlayers(&desc, dwTimeout, &NetEnumPlayerCb, this, dwFlags);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, NULL);
         return hr;
     }
     return 0;
@@ -355,14 +355,14 @@ NetEnumPlayerCb(CNetSessionDesc* lpThisSD, u32* lpdwTimeout, DWORD dwFlags, CNet
 RVA(0x001786d0, 0x77)
 CNetPlayerListNode* CNetMgr::AddPlayerNode(CNetSessionDesc* playerDesc) {
     if (playerDesc == NULL) {
-        return 0;
+        return NULL;
     }
 
     CNetPlayerListNode* node = new CNetPlayerListNode();
 
     if (node->Init(playerDesc) == 0) {
         delete node;
-        return 0;
+        return NULL;
     }
 
     node->m_listPosition = static_cast<__POSITION*>(m_players.AddTail(static_cast<CObject*>(node)));
@@ -400,7 +400,7 @@ void CNetMgr::PopulatePlayerList(HWND hList) {
 
     m_playerSelId = m_players.GetHeadPosition();
     CNetPlayerListNode* payload =
-        m_playerSelId != NULL ? static_cast<CNetPlayerListNode*>(m_players.GetNext(m_playerSelId)) : 0;
+        m_playerSelId != NULL ? static_cast<CNetPlayerListNode*>(m_players.GetNext(m_playerSelId)) : NULL;
 
     while (payload != NULL) {
         MsgParam name;
@@ -488,26 +488,26 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
     IDirectPlay4Z* iface = m_directPlay;
     i32 hr = iface->EnumGroups(&buf, 2);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x29e, hr, 0);
-        return 0;
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x29e, hr, NULL);
+        return NULL;
     }
 
     i32 size = 0;
     iface = m_directPlay;
-    iface->GetPlayerData2(0, &size);
+    iface->GetPlayerData2(NULL, &size);
     if (size == 0) {
-        return 0;
+        return NULL;
     }
     u8* blob = new u8[size];
     if (blob == NULL) {
-        return 0;
+        return NULL;
     }
     iface = m_directPlay;
     hr = iface->GetPlayerData2(blob, &size);
     if (hr != 0) {
         delete[] blob;
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, 0);
-        return 0;
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, NULL);
+        return NULL;
     }
     // byte-forced: the session description is variable length - the record and
     // then the strings it points into - so bytes are the allocation unit.
@@ -520,14 +520,14 @@ RVA(0x001789e0, 0x59)
 CNetSessionNode*
 CNetMgr::EnumPlayersCb(CNetPlayerListNode* a, const char* b, const char* c, i32 d) {
     if (a == NULL) {
-        return 0;
+        return NULL;
     }
 
     IDirectPlay4Z* iface = m_directPlay;
     i32 hr = iface->EnumGroups(&a->m_desc, 1);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, 0);
-        return 0;
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, NULL);
+        return NULL;
     }
     return CreatePlayer(const_cast<char*>(b), c, d);
 }
@@ -539,9 +539,9 @@ i32 CNetMgr::EnumGroupsAll() {
     ClearSessionList();
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroupsCb(0, &NetEnumCb, this, 0);
+    i32 hr = iface->EnumGroupsCb(NULL, &NetEnumCb, this, 0);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x30a, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x30a, hr, NULL);
         return hr;
     }
     return 0;
@@ -563,7 +563,7 @@ i32 CNetMgr::EnumGroupsRange(CNetPlayerListNode* rec, i32 flags) {
     IDirectPlay4Z* iface = m_directPlay;
     i32 hr = iface->EnumGroupsCb(&desc, &NetEnumCb, this, flags);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x327, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x327, hr, NULL);
         return hr;
     }
     return 0;
@@ -603,7 +603,7 @@ CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* 
 
 
 
-            ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, 0);
+            ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, NULL);
         } else {
             __POSITION* pos =
                 static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
@@ -611,14 +611,14 @@ CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* 
 
             if (pos == NULL) {
                 delete node;
-                return 0;
+                return NULL;
             }
             node->m_listPosition = pos;
             return node;
         }
     }
     delete node;
-    return 0;
+    return NULL;
 }
 
 RVA(0x00178c70, 0x3d)
@@ -654,10 +654,10 @@ CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
     desc.lpszLongNameA = const_cast<char*>(b);
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->CreatePlayer(&id, &desc, c, 0, 0, 0);
+    i32 hr = iface->CreatePlayer(&id, &desc, c, NULL, 0, 0);
     if (hr != 0) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
-        return 0;
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, NULL);
+        return NULL;
     }
     return AddSessionNode(id, a, b, 0);
 }
@@ -688,7 +688,7 @@ void CNetMgr::PopulateSessionList(HWND hList) {
 
     m_sessionSelId = m_sessions.GetHeadPosition();
     CNetSessionNode* payload =
-        m_sessionSelId != NULL ? static_cast<CNetSessionNode*>(m_sessions.GetNext(m_sessionSelId)) : 0;
+        m_sessionSelId != NULL ? static_cast<CNetSessionNode*>(m_sessions.GetNext(m_sessionSelId)) : NULL;
 
     while (payload != NULL) {
         MsgParam name;
@@ -750,7 +750,7 @@ CNetSessionNode* CNetMgr::FindPlayerById(i32 id) {
             return entry;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00178eb0, 0x3f)
@@ -760,7 +760,7 @@ CNetSessionNode* CNetMgr::GetPlayerData(i32 id) {
     data = NULL;
     size = 4;
     i32 hr = m_directPlay->GetData2(id, &data, &size, 1);
-    return hr ? 0 : data;
+    return hr ? NULL : data;
 }
 
 RVA(0x00178ef0, 0x5c)
@@ -769,7 +769,7 @@ i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* 
     i32 idb = b ? b->m_id : 0;
     i32 hr = m_directPlay->SetData5(ida, idb, c, data, size);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, NULL);
     }
     return hr;
 }
@@ -790,7 +790,7 @@ i32 CNetMgr::SendEx(
 ) {
     i32 hr = m_directPlay->SendEx(idFrom, idTo, flags, lpData, size, pri, timeout, ctx, lpMsgId);
     if (hr && hr != static_cast<i32>(0x8000000a)) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, NULL);
     }
     return hr;
 }
@@ -799,7 +799,7 @@ RVA(0x00178fc0, 0x44)
 i32 CNetMgr::SetData(i32 a, i32 b, i32 c, void* data, i32 size) {
     i32 hr = m_directPlay->SetData5(a, b, c, data, size);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, NULL);
     }
     return hr;
 }
@@ -818,7 +818,7 @@ i32 CNetMgr::Receive(
     i32 idTo = to ? to->m_id : 0;
     i32 hr = m_directPlay->Receive(&idFrom, &idTo, flags, lpData, lpSize);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4b7, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4b7, hr, NULL);
     }
     return hr;
 }
@@ -828,7 +828,7 @@ i32 CNetMgr::SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size) {
     i32 ida = a ? a->m_id : 0;
     i32 hr = m_directPlay->SetData5(ida, 0, c, data, size);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, NULL);
     }
     return hr;
 }
@@ -862,7 +862,7 @@ i32 CNetMgr::EnumSessions(CNetCaps* caps, void* ctx) {
     caps->m_dwSize = sizeof(*caps);
     i32 hr = m_directPlay->Enum2(caps, ctx);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, NULL);
         return 0;
     }
     return 1;
@@ -887,7 +887,7 @@ i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags) {
     i32 id = a->m_id;
     i32 hr = dp->GetGroupData(id, caps, flags);
     if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x553, hr, 0);
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x553, hr, NULL);
         return 0;
     }
     return 1;
@@ -927,7 +927,7 @@ RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
     m_groupSelId = m_groups.GetHeadPosition();
     InterfaceObject* item =
-        m_groupSelId != NULL ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : 0;
+        m_groupSelId != NULL ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : NULL;
     while (item) {
         switch (kind) {
             case NETPROVIDER_FIND_TCPIP:
@@ -955,7 +955,7 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
             item = NULL;
         }
     }
-    return 0;
+    return NULL;
 }
 
 

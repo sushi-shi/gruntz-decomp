@@ -95,14 +95,14 @@ static GruntDirectionCell s_gruntDirSpare[3];
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     list->m_walkCursor = list->m_list.GetHeadPosition();
     if (list->m_walkCursor == NULL) {
-        return 0;
+        return NULL;
     }
     return list->NextChild(list->m_walkCursor);
 }
 
 static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
     if (list->m_walkCursor == NULL) {
-        return 0;
+        return NULL;
     }
     return list->NextChild(list->m_walkCursor);
 }
@@ -188,7 +188,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur->m_animWorker->m_notify == &CreateGruntCreationPoint && cur->m_smarts == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = 0;
+            Coord* slot = NULL;
             if (p->m_next != NULL) {
                 slot = &p->m_coord;
                 g_coordPool.m_freeHead = p->m_next;
@@ -212,7 +212,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur3->m_animWorker->m_notify == &CreateWayPoint && cur3->m_smarts == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = 0;
+            Coord* slot = NULL;
             if (p->m_next != NULL) {
                 slot = &p->m_coord;
                 g_coordPool.m_freeHead = p->m_next;
@@ -400,7 +400,7 @@ i32 CBattlezMapConfig::StepBoard() {
     }
 
     i32 forced = 0;
-    CGrunt* forcedUnit = 0;
+    CGrunt* forcedUnit = NULL;
     if (m_repickTimer - m_repickLastFire > m_resourceCreationTime) {
         i32 r = rand() % 15;
         CGrunt* u = m_triggerMgr->m_grid[m_ownerId * 15 + r];
@@ -552,7 +552,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         return 1;
     }
     Coord** cands = MfcPtrArrayData<Coord>(m_candArray);
-    Coord* cand = 0;
+    Coord* cand = NULL;
     i32 i = 0;
     BrickzCell tileRec;
     for (;;) {
@@ -600,7 +600,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
             0,
             0,
             0,
-            0
+            NULL
         );
     } else {
         cell = m_ctx->m_cmdGrid->PlaceObject(
@@ -616,7 +616,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
             0,
             0,
             0,
-            0
+            NULL
         );
     }
     if (cell == -1) {
@@ -2113,7 +2113,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
     rect.top = cy - halfH;
     rect.right = cx + halfW;
     rect.bottom = cy + halfH;
-    CGrunt* best = 0;
+    CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
         if (band == m_ownerId) {
@@ -2177,7 +2177,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
         }
         cell = (cell + 1) % 15;
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0002ade0, 0x7)
@@ -3562,7 +3562,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     box.right = right + 7;
     box.bottom = bottom + 7;
 
-    CGrunt* best = 0;
+    CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
         if (band == m_ownerId) {
@@ -4549,7 +4549,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         0,
         0,
         0,
-        0
+        NULL
     );
     if (cell == -1) {
         return 0;
@@ -4802,7 +4802,7 @@ RVA(0x00031250, 0x33)
 CGameObject* CDDrawChildGroup::Drain() {
     for (;;) {
         if (m_scanCursor == NULL) {
-            return 0;
+            return NULL;
         }
         CGameObject* data = NextChild(m_scanCursor);
         if (data->GetClassId() == CLASSID_SERIALREF) {

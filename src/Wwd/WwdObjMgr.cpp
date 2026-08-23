@@ -101,7 +101,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
         if (result != NULL) {
             delete result;
         }
-        return 0;
+        return NULL;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
@@ -142,7 +142,7 @@ CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl,
         if (result != NULL) {
             delete result;
         }
-        return 0;
+        return NULL;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
@@ -179,7 +179,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
         if (result != NULL) {
             delete result;
         }
-        return 0;
+        return NULL;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
@@ -199,7 +199,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
 ) {
     AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
     if (!tmpl) {
-        return 0;
+        return NULL;
     }
 
     return CreateSpriteObject(id, x, y, sortKey, tmpl, stateFlags);
@@ -259,7 +259,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
         if (result != NULL) {
             delete result;
         }
-        return 0;
+        return NULL;
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
@@ -281,7 +281,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 ) {
     AnimWorkerObj* val = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
     if (val == NULL) {
-        return 0;
+        return NULL;
     }
     return CreateContainerObject(id, x, y, sortKey, val, stateFlags);
 }
@@ -892,7 +892,7 @@ CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
             return obj;
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -907,7 +907,7 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
             return obj;
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -925,7 +925,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -943,7 +943,7 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
             return obj;
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -959,7 +959,7 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
             return obj;
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -974,7 +974,7 @@ CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
             return obj;
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
@@ -989,14 +989,14 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
             return obj;
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015aa20, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
-    CWwdGameObject* found = 0;
+    CWwdGameObject* found = NULL;
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
@@ -1310,7 +1310,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
         }
         // Release-dead TRACE (`1 ? (void)0 : ::AfxTrace`). Only "one CString
         // temporary lived here" is byte-proven; the arm itself is gone.
-        if ((flag & 1) != 0) {
+        if ((flag & 1) != LOGIC_UNSET) {
             TRACE("%s\n", static_cast<LPCTSTR>(CString(obj->m_name)));
         }
         if (obj->Play(ar, SERIAL_LOAD, flag, obj) == 0) {

@@ -329,7 +329,7 @@ GruntRec* CNetCmdSlot::FindCmd(i32 seq) {
             return cmd;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x000c12e0, 0x2c)

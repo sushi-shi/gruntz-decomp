@@ -1,0 +1,406 @@
+"""gruntz.verify.constants - AST-backed bare numeric constant census.
+
+This is deliberately a standalone audit rather than a default build tier: it
+parses every project translation unit.  The report is derived under build/gen
+and separates all genuinely numeric source spellings from the small set whose
+context proves a semantic replacement:
+
+  * integer zero implicitly converted to a pointer -> NULL
+  * integer zero/one converted to, or compared with, bool -> false/true
+  * integer equality against an enum with one uniquely named value -> member
+
+Everything else remains a review row.  In particular, the scanner never calls
+an integer status, index, serialized width, mask, table payload, or arithmetic
+identity a boolean merely because its value is zero or one.
+
+    gruntz verify constants             # census + derived TSV
+    gruntz verify constants -v          # print every proven replacement
+    gruntz verify constants --gate      # nonzero while proven sites remain
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import multiprocessing
+import re
+from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+from gruntz.core.paths import BUILD, REPO
+
+
+CDB = BUILD / "clangd/compile_commands.json"
+REPORT = BUILD / "gen/bare_constants.tsv"
+_NUMBER = re.compile(rb"(?:0[xX][0-9A-Fa-f]+|[0-9]+)(?:[uUlL]*)(?![A-Za-z0-9_.])")
+_SUFFIX = re.compile(r"[uUlL]+$")
+
+
+@dataclass(frozen=True)
+class Site:
+    file: str
+    line: int
+    column: int
+    offset: int
+    function: str
+    scope: str
+    spelling: str
+    value: int | None
+    classification: str
+    replacement: str
+    context_type: str
+    reason: str
+
+    @property
+    def proven(self) -> bool:
+        return self.classification in {"null-pointer", "boolean", "enum"}
+
+
+def _flags(entry: dict) -> list[str]:
+    args = list(entry.get("arguments") or entry["command"].split())
+    src = entry["file"]
+    out = ["--driver-mode=cl"]
+    for arg in args[1:]:
+        if arg == "/c" or arg == src or arg.endswith(src):
+            continue
+        out.append(arg)
+    return out
+
+
+def _require_cl_mode(args: list[str]) -> None:
+    if "--driver-mode=cl" not in args:
+        raise RuntimeError("constant audit requires --driver-mode=cl; without "
+                           "it libclang silently misreads /imsvc and returns "
+                           "a false-low census")
+
+
+def _source_path(entry: dict, repo: Path) -> Path:
+    path = Path(entry["file"])
+    if not path.is_absolute():
+        path = Path(entry.get("directory") or repo) / path
+    return path.resolve()
+
+
+def _raw_number(path: Path, offset: int, cache: dict[Path, bytes]):
+    raw = cache.setdefault(path, path.read_bytes())
+    if offset < 0 or offset >= len(raw):
+        return None
+    if offset and (chr(raw[offset - 1]).isalnum() or raw[offset - 1] in b"_."):
+        return None
+    match = _NUMBER.match(raw, offset)
+    if match is None:
+        return None
+    spelling = match.group().decode("ascii")
+    body = _SUFFIX.sub("", spelling)
+    try:
+        value = int(body, 0)
+    except ValueError:
+        value = None
+    return spelling, value
+
+
+def _scope(cidx, stack) -> tuple[str, str]:
+    function_kinds = {
+        cidx.CursorKind.FUNCTION_DECL,
+        cidx.CursorKind.CXX_METHOD,
+        cidx.CursorKind.CONSTRUCTOR,
+        cidx.CursorKind.DESTRUCTOR,
+        cidx.CursorKind.CONVERSION_FUNCTION,
+        cidx.CursorKind.FUNCTION_TEMPLATE,
+    }
+    function = next((node for node in reversed(stack)
+                     if node.kind in function_kinds), None)
+    if any(node.kind == cidx.CursorKind.ENUM_DECL for node in stack):
+        return "named-enum-definition", function.spelling if function else ""
+    if function is not None:
+        return "function-body", function.displayname or function.spelling
+    if any(node.kind == cidx.CursorKind.VAR_DECL for node in stack):
+        return "data-initializer-or-extent", ""
+    if any(node.kind == cidx.CursorKind.FIELD_DECL for node in stack):
+        return "field-or-class-extent", ""
+    return "other-declaration", ""
+
+
+def _explicit_cast_ancestor(cidx, stack) -> bool:
+    kinds = {
+        cidx.CursorKind.CSTYLE_CAST_EXPR,
+        cidx.CursorKind.CXX_STATIC_CAST_EXPR,
+        cidx.CursorKind.CXX_REINTERPRET_CAST_EXPR,
+        cidx.CursorKind.CXX_CONST_CAST_EXPR,
+        cidx.CursorKind.CXX_DYNAMIC_CAST_EXPR,
+        cidx.CursorKind.CXX_FUNCTIONAL_CAST_EXPR,
+    }
+    return any(node.kind in kinds for node in stack[-4:])
+
+
+def _enum_values(cidx, root) -> dict[str, dict[int, set[str]]]:
+    out: dict[str, dict[int, set[str]]] = {}
+    for node in root.walk_preorder():
+        if node.kind != cidx.CursorKind.ENUM_CONSTANT_DECL:
+            continue
+        parent = node.semantic_parent
+        if parent is None or not parent.spelling:
+            continue
+        out.setdefault(parent.spelling, {}).setdefault(node.enum_value, set()).add(
+            node.spelling)
+    return out
+
+
+def _binary_enum_context(cidx, literal, stack, enum_values):
+    if not stack or stack[-1].kind != cidx.CursorKind.BINARY_OPERATOR:
+        return None
+    binary = stack[-1]
+    tokens = list(binary.get_tokens())
+    if not any(tok.spelling in ("==", "!=") for tok in tokens):
+        return None
+    siblings = list(binary.get_children())
+    for sibling in siblings:
+        if sibling.location.file == literal.location.file \
+                and sibling.location.offset == literal.location.offset:
+            continue
+        for node in sibling.walk_preorder():
+            ty = node.type.get_canonical()
+            if ty.kind == cidx.TypeKind.ENUM:
+                return ty.spelling, enum_values.get(ty.spelling, {})
+    return None
+
+
+def _binary_bool_context(cidx, literal, stack):
+    if not stack or stack[-1].kind != cidx.CursorKind.BINARY_OPERATOR:
+        return None
+    binary = stack[-1]
+    tokens = list(binary.get_tokens())
+    if not any(tok.spelling in ("==", "!=") for tok in tokens):
+        return None
+    for sibling in binary.get_children():
+        if sibling.location.file == literal.location.file \
+                and sibling.location.offset == literal.location.offset:
+            continue
+        for node in sibling.walk_preorder():
+            if node.type.get_canonical().kind == cidx.TypeKind.BOOL:
+                return node.type.spelling or "bool"
+    return None
+
+
+def _classify(cidx, literal, stack, value, enum_values, null_available):
+    if _explicit_cast_ancestor(cidx, stack):
+        return "numeric", "", "", "explicit conversion is an ingest boundary"
+
+    parent = stack[-1] if stack else None
+    if parent is not None and parent.kind == cidx.CursorKind.UNEXPOSED_EXPR:
+        ty = parent.type.get_canonical()
+        if value == 0 and ty.kind in (cidx.TypeKind.POINTER,
+                                      cidx.TypeKind.MEMBERPOINTER):
+            if not null_available:
+                return ("numeric", "", parent.type.spelling,
+                        "pointer context, but NULL is not visible in this TU")
+            return ("null-pointer", "NULL", parent.type.spelling,
+                    "implicit conversion to pointer")
+        if value in (0, 1) and ty.kind == cidx.TypeKind.BOOL:
+            return ("boolean", "true" if value else "false", "bool",
+                    "implicit conversion to bool")
+
+    bool_type = _binary_bool_context(cidx, literal, stack)
+    if value in (0, 1) and bool_type:
+        return ("boolean", "true" if value else "false", bool_type,
+                "equality with a bool operand")
+
+    enum_context = _binary_enum_context(cidx, literal, stack, enum_values)
+    if enum_context is not None and value is not None:
+        enum_type, values = enum_context
+        names = values.get(value, set())
+        if len(names) == 1:
+            name = next(iter(names))
+            return ("enum", name, enum_type,
+                    f"equality with {enum_type}; value has one enumerator")
+        if len(names) > 1:
+            return ("numeric", "", enum_type,
+                    f"{enum_type} value has aliases: {', '.join(sorted(names))}")
+
+    return "numeric", "", "", "no uniquely typed semantic replacement"
+
+
+def _scan_entry(payload):
+    entry, repo_text = payload
+    repo = Path(repo_text)
+    import clang.cindex as cidx
+
+    path = _source_path(entry, repo)
+    args = _flags(entry)
+    try:
+        _require_cl_mode(args)
+    except RuntimeError as exc:
+        return [], f"{path}: {exc}"
+    try:
+        tu = cidx.Index.create().parse(
+            str(path), args=args,
+            options=cidx.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
+    except cidx.TranslationUnitLoadError as exc:
+        return [], f"{path}: libclang could not load TU: {exc}"
+    errors = [d for d in tu.diagnostics if d.severity >= cidx.Diagnostic.Error]
+    if errors:
+        return [], f"{path}: parse error: {errors[0]}"
+
+    enum_values = _enum_values(cidx, tu.cursor)
+    null_available = any(
+        node.kind == cidx.CursorKind.MACRO_DEFINITION and node.spelling == "NULL"
+        for node in tu.cursor.get_children())
+    cache: dict[Path, bytes] = {}
+    sites: list[Site] = []
+
+    def walk(node, stack=()):
+        if node.kind == cidx.CursorKind.INTEGER_LITERAL and node.location.file:
+            source = Path(node.location.file.name).resolve()
+            try:
+                rel = source.relative_to(repo)
+            except ValueError:
+                rel = None
+            if rel is not None and rel.parts[0] in ("src", "include"):
+                raw = _raw_number(source, node.location.offset, cache)
+                if raw is not None:
+                    spelling, value = raw
+                    site_null_available = null_available
+                    if source.suffix.lower() in (".h", ".hpp", ".inl"):
+                        site_null_available = bool(
+                            re.search(rb"\bNULL\b", cache[source]))
+                    if stack and stack[-1].kind == cidx.CursorKind.UNARY_OPERATOR:
+                        unary = "".join(tok.spelling
+                                        for tok in stack[-1].get_tokens())
+                        if unary.startswith("-") and value is not None:
+                            value = -value
+                            spelling = "-" + spelling
+                    scope, function = _scope(cidx, stack)
+                    cls, repl, context, reason = _classify(
+                        cidx, node, stack, value, enum_values,
+                        site_null_available)
+                    sites.append(Site(
+                        str(rel), node.location.line, node.location.column,
+                        node.location.offset, function, scope, spelling, value,
+                        cls, repl, context, reason))
+        for child in node.get_children():
+            walk(child, stack + (node,))
+
+    walk(tu.cursor)
+    return sites, None
+
+
+def scan_entries(entries: list[dict], *, repo: Path = REPO, jobs: int = 1):
+    payloads = [(entry, str(repo.resolve())) for entry in entries]
+    rows: dict[tuple[str, int], Site] = {}
+    errors: list[str] = []
+    if jobs <= 1:
+        results = map(_scan_entry, payloads)
+    else:
+        pool = ProcessPoolExecutor(max_workers=jobs)
+        results = pool.map(_scan_entry, payloads)
+    try:
+        for sites, error in results:
+            if error:
+                errors.append(error)
+                continue
+            for site in sites:
+                key = (site.file, site.offset)
+                old = rows.get(key)
+                unavailable = "NULL is not visible" in site.reason
+                old_unavailable = old is not None and "NULL is not visible" in old.reason
+                if old is None or unavailable or (site.proven and not old.proven
+                                                   and not old_unavailable):
+                    rows[key] = site
+    finally:
+        if jobs > 1:
+            pool.shutdown()
+    return sorted(rows.values(), key=lambda x: (x.file, x.offset)), errors
+
+
+def scan(*, cdb: Path = CDB, repo: Path = REPO, jobs: int = 1):
+    if not cdb.is_file():
+        raise FileNotFoundError(f"{cdb}: no compile database; run gruntz configure")
+    entries = json.loads(cdb.read_text())
+    entries = [entry for entry in entries
+               if Path(entry["file"]).suffix == ".cpp"
+               and str(entry["file"]).replace("\\", "/").startswith("src/")]
+    if not entries:
+        raise RuntimeError(f"{cdb}: no project C++ translation units")
+    return scan_entries(entries, repo=repo, jobs=jobs)
+
+
+def write_report(path: Path, sites: list[Site]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields = list(asdict(sites[0]).keys()) if sites else [
+        "file", "line", "column", "offset", "function", "scope",
+        "spelling", "value", "classification", "replacement",
+        "context_type", "reason"]
+    lines = ["\t".join(fields)]
+    for site in sites:
+        row = asdict(site)
+        lines.append("\t".join("" if row[name] is None else str(row[name])
+                               for name in fields))
+    path.write_text("\n".join(lines) + "\n")
+
+
+def findings(sites: list[Site]) -> list[str]:
+    return [f"{site.file}:{site.line}:{site.column}: {site.spelling} -> "
+            f"{site.replacement} ({site.reason})"
+            for site in sites if site.proven]
+
+
+def summary(sites: list[Site]) -> str:
+    scopes = Counter(site.scope for site in sites)
+    classes = Counter(site.classification for site in sites)
+    values = Counter(site.value for site in sites
+                     if site.scope == "function-body")
+    return (f"{len(sites)} bare numeric spelling(s): "
+            f"{scopes['function-body']} function-body, "
+            f"{scopes['data-initializer-or-extent']} data/extent, "
+            f"{scopes['named-enum-definition']} named-enum, "
+            f"{scopes['field-or-class-extent']} field/class; "
+            f"function 0/1/-1={values[0]}/{values[1]}/{values[-1]}; "
+            f"proven replacements={sum(site.proven for site in sites)} "
+            f"(NULL {classes['null-pointer']}, bool {classes['boolean']}, "
+            f"enum {classes['enum']})")
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(prog="gruntz verify constants",
+                                     description=__doc__)
+    parser.add_argument("--gate", action="store_true",
+                        help="fail while any compiler-proven replacement remains")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="print every compiler-proven replacement")
+    parser.add_argument("--no-report", action="store_true",
+                        help="do not write build/gen/bare_constants.tsv")
+    parser.add_argument("--jobs", type=int,
+                        default=min(4, multiprocessing.cpu_count()),
+                        help="parallel libclang workers (default: up to 4)")
+    args = parser.parse_args(argv)
+    try:
+        sites, errors = scan(jobs=max(1, args.jobs))
+    except (FileNotFoundError, RuntimeError) as exc:
+        print(f"[constants] FATAL: {exc}")
+        return 2
+    if errors:
+        for error in errors[:20]:
+            print(f"   {error}")
+        if len(errors) > 20:
+            print(f"   ... and {len(errors) - 20} more")
+        print(f"[constants] FATAL: {len(errors)} translation unit(s) did not parse")
+        return 2
+    if not args.no_report:
+        write_report(REPORT, sites)
+    bad = findings(sites)
+    if args.verbose:
+        for finding in bad:
+            print(f"   {finding}")
+    print(f"[constants] {summary(sites)}")
+    if not args.no_report:
+        print(f"[constants] report: {REPORT.relative_to(REPO)}")
+    if args.gate and bad:
+        print(f"[constants] FAIL: {len(bad)} compiler-proven replacement(s) remain")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

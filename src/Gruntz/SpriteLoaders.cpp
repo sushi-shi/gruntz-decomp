@@ -125,8 +125,8 @@ i32 CTimer::Tick(i32 dt) {
         }
         i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
-            CGameObject* obj = 0;
-            CGameObject* hit = 0;
+            CGameObject* obj = NULL;
+            CGameObject* hit = NULL;
             if (MapLookupById(
                     g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                     key,
@@ -144,8 +144,8 @@ i32 CTimer::Tick(i32 dt) {
     if (static_cast<u32>(v) < 0xea60) {
         i32 key = g_gameReg->m_options[0].m_warlordObjectId;
         if (key != 0) {
-            CGameObject* obj = 0;
-            CGameObject* hit = 0;
+            CGameObject* obj = NULL;
+            CGameObject* hit = NULL;
             if (MapLookupById(
                     g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                     key,

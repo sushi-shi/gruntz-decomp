@@ -97,7 +97,7 @@ CNetChannelStatPacket g_chanStat423;
 DATA(0x00246fd8)
 CNetChannelStatPacket g_chanStat422;
 DATA(0x00248ce0)
-HWND g_sharedFlag = 0;
+HWND g_sharedFlag = NULL;
 DATA(0x00248ce4)
 i32 g_playerLeftFlag;
 DATA(0x00248ce8)
@@ -400,7 +400,7 @@ void CMulti::OnExit() {
 
 RVA(0x000b6330, 0x89)
 i32 CMulti::EnterState(GameStateId arg) {
-    if (CPlay::EnterState(arg) == 0) {
+    if (CPlay::EnterState(arg) == GAMESTATE_NONE) {
         return 0;
     }
     m_mgr->RefreshGameClock();
@@ -721,7 +721,7 @@ void CMulti::PumpB() {
         }
         StepGridWalk(g_frameDelta);
         DrawCursorSaveUnder(h);
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
         return;
     }
     StepInputA();
@@ -785,7 +785,7 @@ void CMulti::PumpB() {
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
     }
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
@@ -865,7 +865,7 @@ i32 CMulti::StartTitle() {
     SetServiceName(hostName);
     ApplyDynSetting(player->GroupName());
 
-    if ((m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer()) == 0) {
+    if ((m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer()) == false) {
         return 0;
     }
     return 1;
@@ -924,7 +924,7 @@ RVA(0x000b78b0, 0x17f)
 InterfaceObject* CMulti::SetupServices() {
     if (Peer()->EnumServiceProviders(0) != 0) {
         ReportNetError(0);
-        return 0;
+        return NULL;
     }
 
     if (g_hostServicesMode != 0) {
@@ -1114,7 +1114,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
 
             if (g_groupEnumMgr != NULL) {
                 g_groupEnumMgr->m_playerSel = NULL;
-                SetTimer(hDlg, 1, 0x9c4, 0);
+                SetTimer(hDlg, 1, 0x9c4, NULL);
                 SendMessageA(hDlg, WM_TIMER, 0, 0);
                 return 1;
             }
@@ -1136,7 +1136,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                     if (io && io->IsTcpIpProvider()) {
                         t = 0x1388;
                     }
-                    SetTimer(hDlg, 1, t, 0);
+                    SetTimer(hDlg, 1, t, NULL);
                     return 0;
                 }
                 EndDialog(hDlg, 1);
@@ -1171,7 +1171,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 if (io && io->IsTcpIpProvider()) {
                     t = 0x1388;
                 }
-                SetTimer(hDlg, 1, t, 0);
+                SetTimer(hDlg, 1, t, NULL);
             }
             return 1;
     }
@@ -1251,7 +1251,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 
 RVA(0x000b86c0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
-    CMultiStartDlg dlg(m_mgr, 0);
+    CMultiStartDlg dlg(m_mgr, NULL);
     i32 r = m_mgr->ExitModalUI(&dlg, 0);
     g_sharedFlag = NULL;
     if (r != 1) {
@@ -1262,7 +1262,7 @@ i32 CMulti::ShowMultiStartDlg() {
             }
             rec->m_liveGate = 0;
             ChannelSlots_Set(IDX(rec->m_colorIndex), 1);
-            BroadcastChannelTable(0);
+            BroadcastChannelTable(NULL);
         }
         if (m_isHost == 0 && m_removedByHost == 0) {
             SendStatFlag(NETMSG_PLAYER_LEFT, 1);
@@ -1315,7 +1315,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
     CNetPlayerListNode* player =
         sess->m_playerSelId != NULL
             ? static_cast<CNetPlayerListNode*>(sess->m_players.GetNext(sess->m_playerSelId))
-            : 0;
+            : NULL;
     while (player) {
 
         MsgParam name;
@@ -1362,22 +1362,22 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(4, buf, 0, "");
     if (enumResult == NULL) {
         g_connectRptMgr->ReportNetError(0);
-        return 0;
+        return NULL;
     }
 
     CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Host"), "", 0);
     m_localPlayer = node;
     if (node == NULL) {
         ReportNetError(0);
-        return 0;
+        return NULL;
     }
 
     m_hostIndex = node->m_id;
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
     ColorTint chField = static_cast<ColorTint>(ch0->m_colorIndex);
 
-    i32 failed = (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0);
-    return failed ? 0 : enumResult;
+    i32 failed = (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == TINT_ORANGE);
+    return failed ? NULL : enumResult;
 }
 
 // @early-stop
@@ -1644,7 +1644,7 @@ i32 CMulti::PollSession() {
         hr = dp->Receive(&sender, &idTo, 1, g_recvBuffer, &size);
 
         if (hr) {
-            CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
+            CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, NULL);
         } else {
             count--;
             if (sender != LocalPlayer()->m_id) {
@@ -1811,7 +1811,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             }
             ChannelSlots_Set(chan->m_kind, 0);
             RegisterChannelRec(chan);
-            BroadcastChannelTable(0);
+            BroadcastChannelTable(NULL);
             SaveConfig(pd);
             g_playerLeftFlag = 1;
             break;
@@ -1830,13 +1830,13 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == NULL) {
                 return 0;
             }
-            if (player->SwapChannel(static_cast<ColorTint>(chan->m_colorIndex)) == 0) {
+            if (player->SwapChannel(static_cast<ColorTint>(chan->m_colorIndex)) == TINT_ORANGE) {
                 ColorTint colour = static_cast<ColorTint>(player->m_colorIndex);
                 chan->m_colorIndex = static_cast<u8>(IDX(colour));
                 SendStatTo(pd, NETMSG_COLOR_REJECTED, 1);
             }
             ParseOneChannel(chan);
-            BroadcastChannelTable(0);
+            BroadcastChannelTable(NULL);
             g_playerLeftFlag = 1;
             break;
         }
@@ -2071,7 +2071,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
         Peer()->RemovePlayerObj(blob);
     }
     if (m_isHost != 0 && m_connected == 0) {
-        BroadcastChannelTable(0);
+        BroadcastChannelTable(NULL);
         g_playerLeftFlag = 1;
     }
     return 1;
@@ -2080,7 +2080,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 RVA(0x000ba590, 0x63)
 void CMulti::AckDropPlayer(i32 id) {
     if (m_allPlayersReady == 0) {
-        RecordDropPlayer2(0, id);
+        RecordDropPlayer2(NULL, id);
         CNetCmdSlot* slot = Session()->FindCmdSlot(id);
         if (slot != NULL) {
             slot->Touch();
@@ -2237,7 +2237,7 @@ i32 CMulti::RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32
         return 0;
     }
 
-    GruntzPlayer* ch = 0;
+    GruntzPlayer* ch = NULL;
     if (idx >= 0 && idx <= 4) {
         ch = &NetGameMgr()->m_options[idx];
         if (ch != NULL && ch->m_liveGate != 0) {
@@ -2562,7 +2562,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
     if (RemoveChannel(idx) == 0) {
         return 0;
     }
-    BroadcastChannelTable(0);
+    BroadcastChannelTable(NULL);
     g_playerLeftFlag = 1;
     return 1;
 }
@@ -3021,7 +3021,7 @@ i32 CMulti::SetupTcpIpConfig() {
     m_hostIndex = LocalPlayer()->m_id;
     ColorTint chField = static_cast<ColorTint>(ch0->m_colorIndex);
 
-    if (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0) {
+    if (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == TINT_ORANGE) {
         return 0;
     }
     return 1;
@@ -3093,7 +3093,8 @@ i32 CMulti::OpenHostChannel(
         return 0;
     }
     m_hostIndex = m_localPlayer->m_id;
-    return RegisterChannelFrom(name, static_cast<ColorTint>(channelId), -1, m_hostIndex) != 0;
+    return RegisterChannelFrom(name, static_cast<ColorTint>(channelId), -1, m_hostIndex)
+           != TINT_ORANGE;
 }
 
 RVA(0x000bca50, 0x155)
@@ -3169,7 +3170,7 @@ i32 CMulti::AutoTuneCmdDelay() {
         resend = (base <= 8 ? 0x14 : 0x1e);
     }
     m_drainReload = resend;
-    return SaveConfig(0);
+    return SaveConfig(NULL);
 }
 
 RVA(0x000bccd0, 0x141)
@@ -3333,7 +3334,7 @@ i32 CMulti::OnChar(i32 key, i32 flag) {
                     CString text = line.Right(n - 9);
                     char buf[0x100];
                     strcpy(buf, text);
-                    BroadcastChatLine(buf, 1, 1, 0);
+                    BroadcastChatLine(buf, 1, 1, NULL);
                     Mgr()->m_chatLog->m_inputText.Empty();
                 }
             }

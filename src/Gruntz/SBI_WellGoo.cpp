@@ -74,12 +74,12 @@ i32 CSBI_WellGoo::Setup(
     found = NULL;
     m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    SetFrame((set != NULL) ? set->GetAt(4) : 0);
+    SetFrame((set != NULL) ? set->GetAt(4) : NULL);
     if (m_frame == NULL) {
         goto fail;
     }
     if (m_frame->m_owned != NULL) {
-        m_frame->m_owned->Select(SHADE_PAL_16, 0);
+        m_frame->m_owned->Select(SHADE_PAL_16, NULL);
     }
     f = m_frame;
     if (node != NULL && f->m_owned != NULL) {
@@ -93,12 +93,12 @@ i32 CSBI_WellGoo::Setup(
     found = NULL;
     m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    m_baseFrame = (set != NULL) ? set->GetAt(2) : 0;
+    m_baseFrame = (set != NULL) ? set->GetAt(2) : NULL;
     if (m_baseFrame == NULL) {
         goto fail;
     }
     if (m_baseFrame->m_owned != NULL) {
-        m_baseFrame->m_owned->Select(SHADE_PAL_16, 0);
+        m_baseFrame->m_owned->Select(SHADE_PAL_16, NULL);
     }
     f = m_baseFrame;
     if (node != NULL && f->m_owned != NULL) {
@@ -108,12 +108,12 @@ i32 CSBI_WellGoo::Setup(
     found = NULL;
     m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
-    m_fgFrame = (set != NULL) ? set->GetAt(3) : 0;
+    m_fgFrame = (set != NULL) ? set->GetAt(3) : NULL;
     if (m_fgFrame == NULL) {
         goto fail;
     }
     if (m_fgFrame->m_owned != NULL) {
-        m_fgFrame->m_owned->Select(SHADE_PAL_16, 0);
+        m_fgFrame->m_owned->Select(SHADE_PAL_16, NULL);
     }
     f = m_fgFrame;
     if (node != NULL && f->m_owned != NULL) {
@@ -157,7 +157,7 @@ i32 CSBI_WellGoo::Render() {
 
     m_srcRect.right++;
     m_srcRect.bottom++;
-    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
+    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, NULL);
     m_srcRect.right--;
     m_srcRect.bottom--;
 
@@ -224,7 +224,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 frameIndex = idx;
-                CObject* found = 0;
+                CObject* found = NULL;
                 mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != NULL) {
@@ -240,7 +240,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 frameIndex = idx;
-                CObject* found = 0;
+                CObject* found = NULL;
                 mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != NULL) {
@@ -266,21 +266,21 @@ i32 CSBI_WellGoo::SerializeFields(
             }
             CImage* fr = m_frame;
             if (fr->m_owned != NULL) {
-                fr->m_owned->Select(SHADE_PAL_16, 0);
+                fr->m_owned->Select(SHADE_PAL_16, NULL);
             }
             if (node != NULL && m_frame->m_owned != NULL) {
                 m_frame->m_owned->m_palDescr = node;
             }
             fr = m_baseFrame;
             if (fr->m_owned != NULL) {
-                fr->m_owned->Select(SHADE_PAL_16, 0);
+                fr->m_owned->Select(SHADE_PAL_16, NULL);
             }
             if (node != NULL && m_baseFrame->m_owned != NULL) {
                 m_baseFrame->m_owned->m_palDescr = node;
             }
             fr = m_fgFrame;
             if (fr->m_owned != NULL) {
-                fr->m_owned->Select(SHADE_PAL_16, 0);
+                fr->m_owned->Select(SHADE_PAL_16, NULL);
             }
             if (node != NULL && m_fgFrame->m_owned != NULL) {
                 m_fgFrame->m_owned->m_palDescr = node;

@@ -319,7 +319,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     }
 #undef REGION_INIT
 
-    g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
     i32 code = g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> TILE_SHIFT_PX]
                                                [(m_lastTilePx.m_x >> TILE_SHIFT_PX) * 7 + 4];
@@ -425,7 +425,7 @@ i32 CGrunt::IsDropReady(i32 a) {
     }
 
     if (m_coordList.GetCount() != 0) {
-        Coord* coord = 0;
+        Coord* coord = NULL;
         CoordPoolNode* node = g_coordPool.m_freeHead;
         i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;

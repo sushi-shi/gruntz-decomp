@@ -514,17 +514,17 @@ DSoundCloneInst::~DSoundCloneInst() {
 RVA(0x00135c20, 0xf6)
 DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
     if (m_owner->m_initialized == 0) {
-        return 0;
+        return NULL;
     }
     DSoundBaseSub* clone = new DSoundBaseSub(m_buffer, m_owner, this);
     if (clone == NULL) {
-        return 0;
+        return NULL;
     }
     IDirectSound* dev = m_owner->m_device;
     i32 hr = dev->DuplicateSoundBuffer(m_buffer, &clone->m_buffer) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
-        return 0;
+        return NULL;
     }
     ((&m_cloneList))->InsertHead(&clone->m_cloneNode);
     clone->m_playKey = a;
@@ -550,11 +550,11 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
 RVA(0x00135d70, 0x92)
 DirectSoundMgr* DSoundCloneInst::GetItem() {
     if (!m_owner->m_initialized) {
-        return 0;
+        return NULL;
     }
     CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head);
     if (node) {
-        while (1) {
+        while (true) {
             if (node->m_inst->m_playKey && node->m_inst->IsPlaying() == 0) {
                 break;
             }
@@ -887,7 +887,7 @@ SoundDevice::SoundDevice() {
 
     m_initialized = 0;
     BuildVolumeTable();
-    m_reacquireProc = 0;
+    m_reacquireProc = NULL;
     m_primaryBuffer = NULL;
     m_coopLevel = 0;
     m_bufferFlags = 0;
@@ -906,7 +906,7 @@ SoundDevice::~SoundDevice() {
 
 RVA(0x00136550, 0x8c)
 i32 SoundDevice::Create(HWND hwnd, u32 level, u32 flags) {
-    i32 created = DirectSoundCreate(0, &m_device, 0) != 0;
+    i32 created = DirectSoundCreate(NULL, &m_device, NULL) != 0;
     if (created) {
         return 0;
     }
@@ -925,7 +925,7 @@ i32 SoundDevice::Create(HWND hwnd, u32 level, u32 flags) {
 
 RVA(0x001365e0, 0xf)
 i32 SoundDevice::ReacquireViaCallback() {
-    if (m_reacquireProc != 0) {
+    if (m_reacquireProc != NULL) {
         return (this->*m_reacquireProc)();
     }
     return 0;
@@ -1012,7 +1012,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     desc.dwBufferBytes = bytes;
     desc.lpwfxFormat = WaveFormatSdk(&wf);
 
-    hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
+    hr = m_device->CreateSoundBuffer(&desc, &out, NULL) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
         result = NULL;
@@ -1030,7 +1030,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
         // 4 higher here than in the copy block above. m_freq is the buffer's base
         // playback rate - see docs/patterns/early-arg-push-reaims-an-esp-displacement.md
         voice->m_freq = wf.nSamplesPerSec;
-        m_bufferList.InsertHead(voice ? &voice->m_link : 0);
+        m_bufferList.InsertHead(voice ? &voice->m_link : NULL);
         voice->m_rateBase = fmt->nAvgBytesPerSec;
         voice->m_sampleRate = fmt->nAvgBytesPerSec;
         voice->m_sampleCount = bytes;
@@ -1044,18 +1044,18 @@ done:
 RVA(0x00136860, 0xa9)
 DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
-        return 0;
+        return NULL;
     }
     FILE* fp = fopen(path, "rb");
     if (fp == NULL) {
-        return 0;
+        return NULL;
     }
     u32 size = _filelength(fp->_file);
     u8* buf = new u8[size];
     if (fread(buf, size, 1, fp) != 1) {
         fclose(fp);
         delete[] buf;
-        return 0;
+        return NULL;
     }
     fclose(fp);
     RecordBytes<RiffWaveHeader> riff;
@@ -1068,10 +1068,10 @@ DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
 RVA(0x00136910, 0x119)
 DSoundCloneInst* SoundDevice::Acquire(RiffWaveHeader* riff, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
-        return 0;
+        return NULL;
     }
     if (riff == NULL) {
-        return 0;
+        return NULL;
     }
 
     u8* data;
@@ -1081,7 +1081,7 @@ DSoundCloneInst* SoundDevice::Acquire(RiffWaveHeader* riff, u32 flags, u32 loadO
     data = NULL;
     size = 0;
     if (ParseWaveChunks(riff, &fmt, &data, &size) == 0) {
-        return 0;
+        return NULL;
     }
 
     i32 cvt = 0;
@@ -1100,11 +1100,11 @@ DSoundCloneInst* SoundDevice::Acquire(RiffWaveHeader* riff, u32 flags, u32 loadO
 
     DSoundCloneInst* wrapper = CreateBuffer(fmt, size, flags);
     if (wrapper == NULL) {
-        return 0;
+        return NULL;
     }
     if (wrapper->LockConvert(data, size, cvt) == 0) {
         RemoveBuffer(wrapper);
-        return 0;
+        return NULL;
     }
     return wrapper;
 }
@@ -1114,22 +1114,22 @@ DSoundCloneInst* SoundDevice::Acquire(RiffWaveHeader* riff, u32 flags, u32 loadO
 RVA(0x00136a30, 0x76)
 DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
-        return 0;
+        return NULL;
     }
 
     HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
-        return 0;
+        return NULL;
     }
     HINSTANCE mod2 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HGLOBAL hRes = LoadResource(mod2, hRsrc);
     if (!hRes) {
-        return 0;
+        return NULL;
     }
     RiffWaveHeader* data = static_cast<RiffWaveHeader*>(LockResource(hRes));
     if (!data) {
-        return 0;
+        return NULL;
     }
     return Acquire(data, flags, loadOpts);
 }
@@ -1259,7 +1259,7 @@ void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
             node->m_buffer->Release();
             node->m_buffer = NULL;
         }
-        m_bufferList.Unlink(node ? &node->m_link : 0);
+        m_bufferList.Unlink(node ? &node->m_link : NULL);
         if (node) {
             delete node;
         }
@@ -1299,7 +1299,7 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
         DSoundLink* n = e->m_link.m_next;
         DSoundVoice* next = elemOf<DSoundVoice>(n);
         if (e->Tick(time) == 0) {
-            m_voiceList.Unlink(e ? &e->m_link : 0);
+            m_voiceList.Unlink(e ? &e->m_link : NULL);
             if (e) {
                 PureSoundElem* pure = e;
                 delete pure;
@@ -1323,7 +1323,7 @@ i32 SoundDevice::FreeSamples() {
         DSoundLink* n = node->m_link.m_next;
         DSoundElem* next = elemOf<DSoundElem>(n);
         node->Stop();
-        m_voiceList.Unlink(node ? &node->m_link : 0);
+        m_voiceList.Unlink(node ? &node->m_link : NULL);
         if (node) {
 
             PureSoundElem* pure = node;
@@ -1355,7 +1355,7 @@ void DSoundList::RemoveMatching(DirectSoundMgr* key, u32 tag) {
         }
         if (e->m_key == key) {
 
-            Unlink(e ? &e->m_link : 0);
+            Unlink(e ? &e->m_link : NULL);
             if (e) {
                 PureSoundElem* pure = e;
                 delete pure;
@@ -1495,7 +1495,7 @@ i32 SoundDevice::CreatePrimaryBuffer() {
         memset(&desc, 0, sizeof(desc));
         desc.dwSize = sizeof(DSBUFFERDESC);
         desc.dwFlags = m_bufferFlags | DSBCAPS_PRIMARYBUFFER;
-        i32 hr = m_device->CreateSoundBuffer(&desc, &m_primaryBuffer, 0) != 0;
+        i32 hr = m_device->CreateSoundBuffer(&desc, &m_primaryBuffer, NULL) != 0;
         if (hr) {
             DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x6ab, hr);
             return 0;
@@ -1509,10 +1509,10 @@ i32 SoundDevice::CreatePrimaryBuffer() {
 RVA(0x00137300, 0x23)
 IDirectSoundBuffer* SoundDevice::GetPrimary() {
     if (m_initialized == 0) {
-        return 0;
+        return NULL;
     }
     if (CreatePrimaryBuffer() == 0) {
-        return 0;
+        return NULL;
     }
     return m_primaryBuffer;
 }

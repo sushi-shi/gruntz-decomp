@@ -38,7 +38,7 @@ void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
     }
     POSITION pos = m_animations.GetStartPosition();
     CString key;
-    CAniElement* val = 0;
+    CAniElement* val = NULL;
     while (pos != NULL) {
         MapGetNext(m_animations, pos, key, val);
         if (target == val) {
@@ -93,12 +93,12 @@ RVA(0x001528d0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, CParseSource* entry) {
     CAniElement* el = new CAniElement;
     if (el == NULL) {
-        return 0;
+        return NULL;
     }
     if (el->Configure(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
 
         delete el;
-        return 0;
+        return NULL;
     }
     ADD_ANIMATION_ENTRY(el, key);
     return el;
@@ -110,12 +110,12 @@ RVA(0x001529b0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, const char* entry) {
     CAniElement* el = new CAniElement;
     if (el == NULL) {
-        return 0;
+        return NULL;
     }
     if (el->LoadFile(OwnerMgr()->m_soundRegistry, entry, 0) == 0) {
 
         delete el;
-        return 0;
+        return NULL;
     }
     ADD_ANIMATION_ENTRY(el, key);
     return el;

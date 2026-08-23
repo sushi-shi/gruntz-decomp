@@ -35,7 +35,7 @@ i32 CAniPlayer::Start(
     i32 b3,
     i32 b4
 ) {
-    if (CSBI_ImageSetAni::Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == 0) {
+    if (CSBI_ImageSetAni::Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == SBICMD_NONE) {
         return 0;
     }
     m_window64 = static_cast<u32>(m_interval);

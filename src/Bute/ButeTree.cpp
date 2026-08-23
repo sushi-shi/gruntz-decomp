@@ -13,7 +13,7 @@ void zPTree::Walk(
     void* ctx,
     CButeTreeNode* node
 ) {
-    while (1) {
+    while (true) {
         if (node == NULL) {
             node = m_root;
             if (node == NULL) {
@@ -42,7 +42,7 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0x16);
-        return 0;
+        return NULL;
     }
 
     i32 nbits = static_cast<i32>((strlen(key) * 8));
@@ -93,7 +93,7 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
-        return 0;
+        return NULL;
     }
     nn->m_bit = critbit;
     nn->m_value = static_cast<char*>(value);
@@ -103,7 +103,7 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
-        return 0;
+        return NULL;
     }
     strcpy(kb, key);
 

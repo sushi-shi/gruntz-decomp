@@ -108,7 +108,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CRollingBall>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))))();
     }
 }
@@ -160,7 +160,7 @@ i32 CRollingBall::Update() {
         i32 hitA;
         i32 hitB;
         if (g_gameReg->m_cmdGrid
-                ->FindGruntAt(lg2->m_screenX, lg2->m_screenY, &lg2->m_area, &hitA, &hitB, 0)) {
+                ->FindGruntAt(lg2->m_screenX, lg2->m_screenY, &lg2->m_area, &hitA, &hitB, NULL)) {
             g_gameReg->m_cmdGrid->CellDispatch(hitA, hitB, DEATH_SQUASH, -1);
         }
     }
@@ -168,8 +168,8 @@ i32 CRollingBall::Update() {
     CWwdGameObjectA* cur = m_object;
     if (cur->m_screenX == m_target.m_x && cur->m_screenY == m_target.m_y) {
 
-        g_gameReg->m_cmdGrid->WireTileSwitchLogic(0, m_target.m_x, m_target.m_y);
-        g_gameReg->m_cmdGrid->ApplySwitch(0, m_target.m_x, m_target.m_y);
+        g_gameReg->m_cmdGrid->WireTileSwitchLogic(NULL, m_target.m_x, m_target.m_y);
+        g_gameReg->m_cmdGrid->ApplySwitch(NULL, m_target.m_x, m_target.m_y);
 
         i32 tx = m_target.m_x >> TILE_SHIFT_PX;
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;

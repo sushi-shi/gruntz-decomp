@@ -31,7 +31,8 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
 
     m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, "ARIAL");
     if (!m_arialFont) {
-        m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, 0);
+        m_arialFont =
+            CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, NULL);
     }
 
     CString arial("ARIAL");
@@ -74,7 +75,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             0,
             0,
             0,
-            0
+            NULL
         );
     }
 
@@ -112,7 +113,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
             0,
             0,
             0,
-            0
+            NULL
         );
     }
 
@@ -336,7 +337,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         MeasureLabel(hdc, rect);
         return 1;
     }
-    HGDIOBJ prev = 0;
+    HGDIOBJ prev = NULL;
     if (m_arialFont) {
         prev = SelectObject(hdc, m_arialFont);
     }
@@ -427,7 +428,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     RECT cur = *rect;
     RECT work = *rect;
     for (i32 i = 0; i < n; i++) {
-        HGDIOBJ savedFont = 0;
+        HGDIOBJ savedFont = NULL;
         if (m_arialFont) {
             savedFont = SelectObject(hdc, m_arialFont);
         }
@@ -536,7 +537,7 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
     if (rect == NULL) {
         return 0;
     }
-    HGDIOBJ prev = 0;
+    HGDIOBJ prev = NULL;
     if (m_arialFont) {
         prev = SelectObject(hdc, m_arialFont);
     }
@@ -570,7 +571,7 @@ i32 CFontConfig::Draw3DText(
     if (strSrc == NULL) {
         return 0;
     }
-    HGDIOBJ selPrev = 0;
+    HGDIOBJ selPrev = NULL;
     RECT rc = *dst;
     // Retail tests each font for NULL in its own arm and lets cl tail-merge the
     // shared SelectObject; selecting the handle first collapses the two tests.

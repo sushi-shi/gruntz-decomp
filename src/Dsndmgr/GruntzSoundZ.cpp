@@ -32,7 +32,7 @@ i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
         m_enabled = 0;
     } else {
         AIL_startup();
-        if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == NULL) {
+        if (AIL_midiOutOpen(&g_ailMidiDriver, NULL, -1) != 0 || g_ailMidiDriver == NULL) {
             m_enabled = 0;
         }
     }
@@ -61,7 +61,7 @@ void CGruntzSoundZ::StopAndFlush() {
     if (pos != static_cast<POSITION>(0)) {
         do {
             CString key;
-            CObject* val = 0;
+            CObject* val = NULL;
             m_map.GetNextAssoc(pos, key, val);
             if (val != NULL) {
                 delete static_cast<CGruntzSoundInnerZ*>(val);
@@ -75,14 +75,14 @@ void CGruntzSoundZ::StopAndFlush() {
 RVA(0x001385e0, 0x85)
 CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2(const char* path, const char* name) {
     if (m_enabled == 0) {
-        return 0;
+        return NULL;
     }
     CGruntzSoundInnerZ* inner = new CGruntzSoundInnerZ();
     if (inner->Load(path, name) == 0) {
         if (inner != NULL) {
             delete inner;
         }
-        return 0;
+        return NULL;
     }
     Insert(inner);
     return inner;
@@ -91,14 +91,14 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2(const char* path, const char* nam
 RVA(0x00138670, 0x8a)
 CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank(const void* buf, u32 len, const char* name) {
     if (m_enabled == 0) {
-        return 0;
+        return NULL;
     }
     CGruntzSoundInnerZ* inner = new CGruntzSoundInnerZ();
     if (inner->DecodeBuf(buf, len, name) == 0) {
         if (inner != NULL) {
             delete inner;
         }
-        return 0;
+        return NULL;
     }
     Insert(inner);
     return inner;
@@ -121,16 +121,16 @@ void CGruntzSoundZ::Insert(CGruntzSoundInnerZ* inner) {
 RVA(0x00138730, 0x41)
 CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
     if (m_ownerWnd == NULL) {
-        return 0;
+        return NULL;
     }
     if (key == NULL) {
-        return 0;
+        return NULL;
     }
     if (*key == 0) {
-        return 0;
+        return NULL;
     }
-    CObject* result = 0;
-    return m_map.Lookup(key, result) ? static_cast<CGruntzSoundInnerZ*>(result) : 0;
+    CObject* result = NULL;
+    return m_map.Lookup(key, result) ? static_cast<CGruntzSoundInnerZ*>(result) : NULL;
 }
 
 // @dead-code
@@ -297,7 +297,7 @@ i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
         return LoadSpecial(path, name);
     }
     CFile file;
-    if (!file.Open(path, 0, 0)) {
+    if (!file.Open(path, 0, NULL)) {
         return 0;
     }
     u32 length = file.GetLength();

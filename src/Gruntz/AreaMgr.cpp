@@ -208,7 +208,7 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0009a290, 0x138)
@@ -228,7 +228,7 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
             return e;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0009a420, 0x1c)

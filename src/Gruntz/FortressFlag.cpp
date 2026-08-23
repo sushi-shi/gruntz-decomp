@@ -124,7 +124,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }
@@ -270,7 +270,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 RVA(0x00046d30, 0x102)
 void CParticlez::FireActivation(i32 coord) {
     CActHandler* e = PartLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = PartLookup(coord);
         (this->*((*e2)))();
     }
@@ -306,7 +306,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
         (this->*((*e2)))();
     }

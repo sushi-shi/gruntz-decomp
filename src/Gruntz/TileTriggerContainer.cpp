@@ -77,7 +77,7 @@ i32 DrawPageDebugText(
         return 0;
     }
 
-    HDC hdc = 0;
+    HDC hdc = NULL;
     surf->m_ddSurface->GetDC(&hdc);
     g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
     surf->m_ddSurface->ReleaseDC(hdc);
@@ -118,7 +118,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     i32 damageParam,
     i32 checkpointType
 ) {
-    CTileTriggerSwitchLogic* obj = 0;
+    CTileTriggerSwitchLogic* obj = NULL;
     switch (tag) {
         case TRIGID_SWITCH_1:
         case TRIGID_SWITCH_2:
@@ -142,7 +142,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
             break;
     }
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
 
     RECT local[6];
@@ -154,10 +154,10 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     local[5] = switchRectB;
 
     if (obj->BuildSmall(this, tag, col, row, key, local, isMatch, damageParam, checkpointType)
-        == 0) {
+        == TRIGID_ANY) {
 
         delete obj;
-        return 0;
+        return NULL;
     }
     m_base.AddTail(obj);
     return obj;
@@ -321,7 +321,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    CTileTriggerLogic* obj = 0;
+    CTileTriggerLogic* obj = NULL;
     switch (logicType) {
         case TRIGID_TILE_TRIGGER_21:
         case TRIGID_TILE_TRIGGER_24:
@@ -338,7 +338,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             break;
     }
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
 
     RECT local[6];
@@ -361,9 +361,9 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             leadInSpan,
             dutyOffSpan
         )
-        == 0) {
+        == TRIGID_ANY) {
         delete obj;
-        return 0;
+        return NULL;
     }
 
     if (logicType == TRIGID_TIME_TRIGGER_23) {
@@ -391,7 +391,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
 ) {
     CTileActionEvent* m = new CTileActionEvent;
     if (m == NULL) {
-        return 0;
+        return NULL;
     }
     if (m->m_live == 0) {
         m->m_tileX = tileX;
@@ -409,7 +409,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
         return m;
     }
     delete m;
-    return 0;
+    return NULL;
 }
 
 RVA(0x00116b80, 0x120)
@@ -422,7 +422,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
 ) {
     CTileActionEvent* m = new CTileActionEvent;
     if (m == NULL) {
-        return 0;
+        return NULL;
     }
     i32 a = 0, b = 0, c = 0, d = 0;
     switch (static_cast<PlayerSlot>(playerSlot)) {
@@ -444,7 +444,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     }
     if (m->m_live != 0) {
         delete m;
-        return 0;
+        return NULL;
     }
     m->m_tileX = tileX;
     m->m_tileY = tileY;
@@ -528,7 +528,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::FindChild(i32 k1, TrigLogicId k2
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00116f20, 0x51)
@@ -557,7 +557,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindInLists12(i32 a, TrigLogicId b) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00116fa0, 0xc7)
@@ -632,7 +632,7 @@ CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
             return data;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00117200, 0x53)
@@ -876,10 +876,10 @@ void* CTileTriggerContainer::LoadElement(
     i32 pObj
 ) {
     if (reader == NULL) {
-        return 0;
+        return NULL;
     }
     if (kind != SERIAL_LOAD) {
-        return 0;
+        return NULL;
     }
     // Ingest: the archive stores the logic tag as a raw dword.
     TrigLogicId id;
@@ -888,7 +888,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_SWITCH_1: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -897,7 +897,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_SWITCH_2: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -906,7 +906,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_MULTI_SWITCH_3: {
             CTileTriggerSwitchLogic* obj = new CTileMultiTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -915,7 +915,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_EXCLUSIVE_SWITCH_4: {
             CTileTriggerSwitchLogic* obj = new CTileExclusiveTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -924,7 +924,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_SWITCH_5: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -933,7 +933,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_SECRET_SWITCH_6: {
             CTileTriggerSwitchLogic* obj = new CTileSecretTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -942,7 +942,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_TIME_SWITCH_7: {
             CTileTriggerSwitchLogic* obj = new CTileTimeTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -951,7 +951,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_CHECKPOINT_SWITCH_8: {
             CTileTriggerSwitchLogic* obj = new CCheckpointTriggerSwitchLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeId = id;
@@ -960,7 +960,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_TILE_TRIGGER_21: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
@@ -998,7 +998,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_GIANT_ROCK_22: {
             CGiantRockLogic* obj = new CGiantRockLogic;
             if (obj->ApplyByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
@@ -1007,7 +1007,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_TIME_TRIGGER_23: {
             CTileTriggerLogic* obj = new CTileTimeTriggerLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
@@ -1016,7 +1016,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_TILE_TRIGGER_24: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
@@ -1025,7 +1025,7 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_SECRET_TRIGGER_25: {
             CTileTriggerLogic* obj = new CTileSecretTriggerLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
@@ -1034,14 +1034,14 @@ void* CTileTriggerContainer::LoadElement(
         case TRIGID_COVERED_POWERUP_26: {
             CTileTriggerLogic* obj = new CCoveredPowerupLogic;
             if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
+                return NULL;
             }
             obj->m_owner = this;
             obj->m_typeTag = id;
             return obj;
         }
         default:
-            return 0;
+            return NULL;
     }
 }
 
@@ -1081,7 +1081,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 // @early-stop

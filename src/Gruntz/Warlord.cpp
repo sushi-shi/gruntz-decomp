@@ -157,7 +157,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
             return;
     }
 
-    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, NULL);
 
     m_idleAnims[0] = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
@@ -537,7 +537,7 @@ fail:
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
 
-    if (*CActRegPool<CWarlord>::s_table.ResolveEntry(key) != 0) {
+    if (*CActRegPool<CWarlord>::s_table.ResolveEntry(key) != NULL) {
         CActHandler h = *CActRegPool<CWarlord>::s_table.ResolveEntry(key);
         (this->*h)();
     }

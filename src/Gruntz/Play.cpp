@@ -173,13 +173,13 @@ GZ_ENUM_END(ToolCursorId)
     } while (0)
 
 static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = 0;
+    CObject* ob = NULL;
     map.Lookup(name, ob);
     return static_cast<CDDrawWorker*>(ob);
 }
 
 static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* ob = 0;
+    CObject* ob = NULL;
     host->m_imageRegistry->m_workersByName.Lookup(name, ob);
     return static_cast<CDDrawWorker*>(ob);
 }
@@ -534,7 +534,7 @@ i32 CPlay::Render() {
                 m_cueTiming.m_start.m_hi = 0;
             }
             if (m_cueToggle != 0) {
-                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, 0);
+                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
         }
 
@@ -548,7 +548,7 @@ i32 CPlay::Render() {
         m_frameMarker->Draw(back, 1);
         StepGridWalk(static_cast<i32>(g_frameDelta));
         DrawCursorSaveUnder(back);
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
@@ -562,7 +562,7 @@ i32 CPlay::Render() {
         if (m_levelId == IDX(CURSOR_FLAILINGGRUNT)) {
             if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
                 >= m_bootyTiming.m_interval.m_v) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x33e, -1, 1, -1, -1);
                 m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
                 m_bootyTiming.m_interval.m_hi = 0;
                 m_bootyTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
@@ -751,7 +751,7 @@ i32 CPlay::Render() {
                 m_cueTiming.m_start.m_hi = 0;
             }
             if (m_cueToggle != 0) {
-                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, 0);
+                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
         }
 
@@ -760,7 +760,7 @@ i32 CPlay::Render() {
         if (m_worldReady != 0) {
             view->DrawBox(&m_hudRect, 0xff);
         }
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
         {
             CGameLevel* lvl = m_world->m_level;
@@ -821,8 +821,8 @@ i32 CPlay::Render() {
                     m_world->m_drawTarget->m_overlayPair
                 );
                 m_guts->LoadMainStatusBarSprite();
-                back->m_surface->ShadeRect(0x32, 0);
-                PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0);
+                back->m_surface->ShadeRect(0x32, NULL);
+                PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_frameMarker->Draw(back, 1);
             }
             if (m_ambientInitDone == 0) {
@@ -858,13 +858,13 @@ i32 CPlay::Render() {
             );
             m_guts->LoadMainStatusBarSprite();
             if (m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
-                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);
+                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
             m_frameMarker->Draw(back, 1);
         }
         StepGridWalk(static_cast<i32>(g_frameDelta));
         DrawCursorSaveUnder(back);
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     }
     return 1;
 }
@@ -1015,7 +1015,7 @@ i32 CPlay::ProfileInputFrame() {
 
     DrawDebugStats();
     g_profAccB = static_cast<i32>(tg());
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     g_profAccB = static_cast<i32>((tg() - static_cast<u32>(g_profAccB)));
     g_profAccA = static_cast<i32>(tg());
     {
@@ -1062,7 +1062,7 @@ i32 CPlay::ProfileDeltaFrame() {
         updates
     );
     DrawDebugStats();
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
 
     CGameLevel* lvl = m_world->m_level;
     if (lvl->m_mainPlane != NULL) {
@@ -1162,7 +1162,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     i32 modeFlag = (Update() == GAMESTATE_MULTI) ? 1 : 0;
-    CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : 0;
+    CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : NULL;
     self->m_initialFramePending = 1;
     self->m_levelIndex = level;
     {
@@ -1437,7 +1437,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!LoadGruntSoundNamespaces(0)) {
+    if (!LoadGruntSoundNamespaces(NULL)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1466,7 +1466,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!BuildAnizKeyTable(0)) {
+    if (!BuildAnizKeyTable(NULL)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1641,7 +1641,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         gameReg = g_gameReg;
         if (gameReg->m_loadingSaveGame == 0) {
             CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontPair->m_surface;
-            mapHost->ShadeRect(0x32, 0);
+            mapHost->ShadeRect(0x32, NULL);
             gameReg = g_gameReg;
         }
 
@@ -1922,7 +1922,7 @@ i32 CPlay::RestoreDisplay() {
                 m_world->m_drawTarget->m_overlayPair
             );
         }
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
     }
     return 1;
 }
@@ -2921,7 +2921,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                 }
             }
             if (a == 0) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x340, -1, 1, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x340, -1, 1, -1, -1);
             }
             m_dragInhibit1 = 0;
             m_guts->CommitSlot(a);
@@ -3161,7 +3161,7 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
     if (m_guts->m_position == STATUSBAR_HIDDEN && m_guts->HitTestLayer(x, y)) {
         CDDrawSubMgrLeafScan* set = m_mgr->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
-            LeafCue* e = 0;
+            LeafCue* e = NULL;
             MapLookup(set->m_cues, "GAME_TABHIGHLIGHT1", e);
             if (e != NULL) {
                 e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -3518,7 +3518,7 @@ void CPlay::DrawDebugStatsFull() {
     }
 
     CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
-    HDC hdc = 0;
+    HDC hdc = NULL;
     host->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return;
@@ -3618,7 +3618,7 @@ void CPlay::DrawDebugStats() {
     }
 
     CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
-    HDC hdc = 0;
+    HDC hdc = NULL;
     host->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return;
@@ -3705,7 +3705,7 @@ void CPlay::DrawCustomLevelBanner() {
     if (host == NULL) {
         return;
     }
-    HDC hdc = 0;
+    HDC hdc = NULL;
     host->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return;
@@ -3850,7 +3850,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         this->m_cursorOffset.m_y = 0;
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
-        g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
+        g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x33e, -1, 1, -1, -1);
         this->m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
         this->m_bootyTiming.m_interval.m_hi = 0;
         this->m_bootyTiming.m_start.m_lo = g_frameTime;
@@ -4155,7 +4155,7 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 
     i32 r = half->BltFast(0, 0, target, dst, 0x10);
     if (r != 0) {
-        CDDrawPtrCollections::GetErrorString(0, 0, r);
+        CDDrawPtrCollections::GetErrorString(NULL, 0, r);
     }
 
     if (m_drewThisFrame != 0) {
@@ -4331,7 +4331,7 @@ i32 CPlay::StepInputA() {
 
     i32 r = probeTarget->BltFast(dst->left, dst->top, half, src, 0x10);
     if (r != 0) {
-        CDDrawPtrCollections::GetErrorString(0, 0, r);
+        CDDrawPtrCollections::GetErrorString(NULL, 0, r);
     }
     return 1;
 }
@@ -4596,7 +4596,7 @@ i32 CPlay::ExecCommand(
                 0,
                 0,
                 0,
-                0
+                NULL
             );
             if (r == -1) {
                 if (m_world->m_soundRegistry->m_emitGate == 0) {
@@ -5649,7 +5649,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateGruntCreationPoint) {
             if (obj->m_smarts == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
-                Coord* slot = 0;
+                Coord* slot = NULL;
                 if (cell->m_next != NULL) {
                     slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
@@ -5749,7 +5749,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateWarpStonePad) {
             if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
-                Coord* slot = 0;
+                Coord* slot = NULL;
                 if (cell->m_next != NULL) {
                     slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
@@ -6139,7 +6139,7 @@ i32 CPlay::ResetPlayState() {
                     reg = g_gameReg;
                 }
             }
-            (static_cast<CSaveGame*>(reg->m_saveSink))->Save(0, 0x81a6);
+            (static_cast<CSaveGame*>(reg->m_saveSink))->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->m_world->m_level;
         ResetGoals(g->m_header.startX, g->m_header.startY);
@@ -6680,11 +6680,11 @@ i32 CPlay::LoadLoadingBarSprite() {
     }
 
     m_revealCapStart =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 1) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1) : 0;
+        DDRAW_WORKER_CONTAINS_FRAME(spr, 1) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1) : NULL;
     m_revealCapMid =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 2) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 2) : 0;
+        DDRAW_WORKER_CONTAINS_FRAME(spr, 2) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 2) : NULL;
     m_revealCapEnd =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 3) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 3) : 0;
+        DDRAW_WORKER_CONTAINS_FRAME(spr, 3) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 3) : NULL;
     m_revealFrame = 1;
     return 1;
 }
@@ -6942,7 +6942,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 n;
         ar->Read(&n, sizeof(n));
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
-            Coord* node = 0;
+            Coord* node = NULL;
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
@@ -6982,7 +6982,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             i32 n;
             ar->Read(&n, sizeof(n));
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
-                Coord* node = 0;
+                Coord* node = NULL;
                 CoordPoolNode* head = g_coordPool.m_freeHead;
                 CoordPoolNode* next = head->m_next;
                 if (next) {

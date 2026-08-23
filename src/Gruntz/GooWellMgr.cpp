@@ -64,7 +64,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
     m_teleportWanted = 0;
 
     i32 count = 0;
-    GruntzPlayer* pslot = 0;
+    GruntzPlayer* pslot = NULL;
     for (i32 k = 0; k < 4; k++) {
         pslot = &g_gameReg->m_options[k];
         if (pslot->m_joined && !pslot->m_doneFlag && !pslot->m_clearedRound) {
@@ -127,7 +127,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         GruntzPlayer* slot = &g_gameReg->m_options[i];
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                             slot->m_clearedRound = 1;
-                            CGameObject* out = 0;
+                            CGameObject* out = NULL;
                             if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                                     slot->m_warlordObjectId,
@@ -149,7 +149,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                         if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag
                             && !lastSlot->m_clearedRound) {
-                            CGameObject* out = 0;
+                            CGameObject* out = NULL;
                             if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
                                     lastSlot->m_warlordObjectId,

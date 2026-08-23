@@ -70,11 +70,11 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
 ) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
     if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
         delete obj;
-        return 0;
+        return NULL;
     }
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
@@ -94,11 +94,11 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
 ) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
     if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
         delete obj;
-        return 0;
+        return NULL;
     }
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
@@ -116,11 +116,11 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
 ) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
     if (obj->InitFromKey(m_world, key, level, m_volume, pos, scaleB) == 0) {
         delete obj;
-        return 0;
+        return NULL;
     }
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
@@ -140,11 +140,11 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
 ) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
     if (obj->InitFromSound(mgr, level, m_volume, pos, scaleB) == 0) {
         delete obj;
-        return 0;
+        return NULL;
     }
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
@@ -165,18 +165,18 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
     i32 unused
 ) {
     if (static_cast<u32>(intervalHiA) < static_cast<u32>(intervalLoA)) {
-        return 0;
+        return NULL;
     }
     if (static_cast<u32>(intervalHiB) < static_cast<u32>(intervalLoB)) {
-        return 0;
+        return NULL;
     }
     CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
     if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
         delete obj;
-        return 0;
+        return NULL;
     }
     obj->InitCycleTiming(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
     obj->m_listNode = m_list.AddTail(obj);
@@ -200,11 +200,11 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandom(
 ) {
     CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == NULL) {
-        return 0;
+        return NULL;
     }
     if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
         delete obj;
-        return 0;
+        return NULL;
     }
     obj->InitCycleTiming(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
     obj->m_listNode = m_list.AddTail(obj);

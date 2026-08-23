@@ -83,11 +83,11 @@ i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
 
     CFile file;
-    if (!file.Open(szFileName, 0, 0)) {
+    if (!file.Open(szFileName, 0, NULL)) {
         return 0;
     }
 
-    CArchive ar(&file, 1, 0x1000, 0);
+    CArchive ar(&file, 1, 0x1000, NULL);
 
     ar >> m_count;
     AllocateMemory(m_count);
@@ -117,11 +117,11 @@ i32 Font::LoadFont(CString szFileName) {
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
-    if (!file.Open(szFileName, 0x1001, 0)) {
+    if (!file.Open(szFileName, 0x1001, NULL)) {
         return 0;
     }
 
-    CArchive ar(&file, 0, 0x1000, 0);
+    CArchive ar(&file, 0, 0x1000, NULL);
 
     ar << m_count;
 
@@ -371,7 +371,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         firstCol = 0;
     }
 
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x0017a460, 0x7ec)

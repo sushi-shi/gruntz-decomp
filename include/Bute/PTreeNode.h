@@ -34,7 +34,7 @@ public:
     void ClearRecursive(CButeTreeNode* node);
 
     void Reset() {
-        ClearRecursive(0);
+        ClearRecursive(NULL);
         m_root = NULL;
         m_lookupPending = 0;
         m_nodeCount = 0;
@@ -47,7 +47,7 @@ public:
     void ResetCopy();
 
     virtual ~zPTree() OVERRIDE {
-        ClearRecursive(0);
+        ClearRecursive(NULL);
     }
 
     void* Find(const char* key);

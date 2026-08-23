@@ -98,7 +98,7 @@ i32 CGruntCreationPoint::SerializeMove(
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
-    if (*e != 0) {
+    if (*e != NULL) {
         CActHandler* e2 = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
         (this->*(*e2))();
     }

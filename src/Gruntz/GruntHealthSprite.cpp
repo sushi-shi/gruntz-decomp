@@ -43,7 +43,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
 
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) != 0) {
+    if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) != NULL) {
         (this->*(*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))))();
     }
 }

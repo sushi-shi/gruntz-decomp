@@ -16,7 +16,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const GUID* deviceGuid, HWND hwnd) 
         return 0;
     }
     m_hwnd = hwnd;
-    i32 hr = di->CreateDevice(*deviceGuid, &m_device, 0);
+    i32 hr = di->CreateDevice(*deviceGuid, &m_device, NULL);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -52,16 +52,16 @@ void CInputDevRoot::ReleaseDevices() {
 RVA(0x00134d90, 0x60)
 DeviceState* CInputDevRoot::ReadState() {
     if (m_stateBuffer == NULL) {
-        return 0;
+        return NULL;
     }
     i32 hr = m_device2->GetDeviceState(m_stateBufferSize, m_stateBuffer);
     if (hr != 0) {
         if (hr != static_cast<i32>(DIERR_INPUTLOST) && hr != static_cast<i32>(DIERR_NOTACQUIRED)) {
             DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x84, hr);
-            return 0;
+            return NULL;
         }
         if (Acquire() == 0) {
-            return 0;
+            return NULL;
         }
     }
     return m_stateBuffer;
@@ -75,7 +75,7 @@ DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
     i32 hr = m_device2->GetDeviceInfo(&m_deviceInfo);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xa6, hr);
-        return 0;
+        return NULL;
     }
     return &m_deviceInfo;
 }
@@ -92,7 +92,7 @@ DIDEVCAPS* CInputDevRoot::GetCapabilities() {
     i32 hr = m_device2->GetCapabilities(&m_caps);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xc7, hr);
-        return 0;
+        return NULL;
     }
     return &m_caps;
 }
@@ -107,7 +107,7 @@ DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
     i32 hr = m_device2->GetProperty(rguid, &m_prop);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xe8, hr);
-        return 0;
+        return NULL;
     }
     return &m_prop;
 }

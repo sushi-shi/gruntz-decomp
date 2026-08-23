@@ -264,7 +264,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     for (i32 b = 0; b < count; ++b) {
         i32* mem = new i32[0xb];
-        i32* item = 0;
+        i32* item = NULL;
         if (mem != NULL) {
             memset(mem, 0, 0xb * 4);
             item = mem;

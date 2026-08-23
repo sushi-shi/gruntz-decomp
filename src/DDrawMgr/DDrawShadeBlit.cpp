@@ -178,7 +178,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
         return 0;
     }
     i32 r = BuildRle(bits, surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
     return r;
 }
 
@@ -187,7 +187,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
 RVA(0x00148fc0, 0x104)
 i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     CFile file;
-    if (!file.Open(name, 0x8000, 0)) {
+    if (!file.Open(name, 0x8000, NULL)) {
         return 0;
     }
     RecordBytes<PidHeader> fileData;
@@ -278,7 +278,7 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     }
 
     CFile file;
-    if (file.Open(name, 0x9001, 0) == 0) {
+    if (file.Open(name, 0x9001, NULL) == 0) {
         return 0;
     }
     file.Write(&desc, sizeof(desc));
@@ -678,7 +678,7 @@ void CDDrawShadeBlit::BlitCopyForward(
         }
     }
 
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x00149d00, 0x4f8)
@@ -875,7 +875,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
         }
     }
 
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x0014a200, 0x1570)
@@ -1445,7 +1445,7 @@ void CDDrawShadeBlit::BlitShadedForward(
         }
     }
 
-    src->m_ddSurface->Unlock(0);
+    src->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x0014b770, 0x1280)
@@ -1935,7 +1935,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
         }
     }
 
-    surf->m_ddSurface->Unlock(0);
+    surf->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x0014c9f0, 0x5d0)

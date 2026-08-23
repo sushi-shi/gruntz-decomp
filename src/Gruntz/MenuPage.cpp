@@ -109,9 +109,9 @@ CMenuItem* CMenuPage::AddItem(
         if (item) {
             delete item;
         }
-        return 0;
+        return NULL;
     }
-    return Append(item) ? item : 0;
+    return Append(item) ? item : NULL;
 }
 
 RVA(0x001835a0, 0x14b)
@@ -129,11 +129,11 @@ CMenuItem* CMenuPage::AddSubItem(
         if (item) {
             delete item;
         }
-        return 0;
+        return NULL;
     }
     item->SetCommandParam(cmdParam);
     item->SetSecondaryCommandId(tag);
-    return Append(item) ? item : 0;
+    return Append(item) ? item : NULL;
 }
 
 // @dead-code
@@ -152,10 +152,10 @@ CMenuItem2* CMenuPage::AddItem2(
         if (item) {
             delete item;
         }
-        return 0;
+        return NULL;
     }
     item->SetFrame(frame);
-    return Append(item) ? item : 0;
+    return Append(item) ? item : NULL;
 }
 
 // @dead-code
@@ -176,12 +176,12 @@ CMenuItem2* CMenuPage::AddSubItem2(
         if (item) {
             delete item;
         }
-        return 0;
+        return NULL;
     }
     item->SetFrame(frame);
     item->SetCommandParam(cmdParam);
     item->SetSecondaryCommandId(parentCtx);
-    return Append(item) ? item : 0;
+    return Append(item) ? item : NULL;
 }
 RVA(0x00183990, 0x38)
 i32 CMenuPage::ReleaseAll() {
@@ -310,7 +310,7 @@ i32 CMenuPage::FocusNext() {
     if (!pos) {
         return 0;
     }
-    CMenuItem* found = 0;
+    CMenuItem* found = NULL;
     POSITION node = pos;
 
     PrevItem(node);
@@ -369,7 +369,7 @@ i32 CMenuPage::FocusPrev() {
     if (!pos) {
         return 0;
     }
-    CMenuItem* found = 0;
+    CMenuItem* found = NULL;
     POSITION node = pos;
 
     NextItem(node);
@@ -513,7 +513,7 @@ i32 CMenuPage::MoveFocusRightColumn() {
         return 0;
     }
     i32 n = m_rowsPerCol;
-    CMenuItem* found = 0;
+    CMenuItem* found = NULL;
     if (n >= 0) {
         n++;
         do {
@@ -552,7 +552,7 @@ i32 CMenuPage::MoveFocusLeftColumn() {
         return 0;
     }
     i32 n = m_rowsPerCol;
-    CMenuItem* found = 0;
+    CMenuItem* found = NULL;
     if (n >= 0) {
         n++;
         do {
@@ -612,13 +612,13 @@ CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00184150, 0xe0)
 CMenuItem* CMenuPage::FindByName(const char* s) {
     if (!s) {
-        return 0;
+        return NULL;
     }
     CString key(s);
     POSITION node = m_items.GetHeadPosition();
@@ -631,7 +631,7 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00184230, 0xd2)

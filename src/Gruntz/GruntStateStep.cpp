@@ -252,7 +252,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 }
             }
             if (dist2 <= 0xa) {
-                m_board->Clip(0);
+                m_board->Clip(NULL);
             }
             g->m_dwell = 0;
             goto tail;

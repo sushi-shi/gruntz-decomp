@@ -189,7 +189,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     QuestLevel progress;
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_MAIN, s_MENU_MAINMENU_TITLE, 0, 0) == 0) {
+    if (page->Configure(menu, s_MAIN, s_MENU_MAINMENU_TITLE, NULL, 0) == 0) {
         delete page;
         return 0;
     }
@@ -198,15 +198,15 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_MULTIPLAYER, s_MENU_MAINMENU_MULTIPLAYER, 0, s_MULTIPLAYER, 0);
-    page->AddItem("OPTIONZ", s_MENU_MAINMENU_OPTIONZ, 0x80e2, 0, 0);
+    page->AddItem("OPTIONZ", s_MENU_MAINMENU_OPTIONZ, 0x80e2, NULL, 0);
     it = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, 0);
     if (g_cdPromptResult != 0) {
         it->Disable(MENUSTATE_DISABLED);
     }
     // Retail pushes 0x5f11b0 here (`a137c: push 0x6111b0`), which is HelpState's
     // own `g_titleBuf` - there is no private "HELP" datum in this TU.
-    page->AddItem(g_titleBuf, s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
-    page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, 0, 0);
+    page->AddItem(g_titleBuf, s_MENU_MAINMENU_HELP, 0x8035, NULL, 0);
+    page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, NULL, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -216,11 +216,11 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    page->AddItem(s_QUICKSTART, s_MENU_SINGLEPLAYER_QUICKSTART, 0x8174, 0, 0);
+    page->AddItem(s_QUICKSTART, s_MENU_SINGLEPLAYER_QUICKSTART, 0x8174, NULL, 0);
     page->AddItem(s_QUESTZ, s_MENU_SINGLEPLAYER_QUESTZ, 0, s_QUESTZ, 0);
-    page->AddItem(s_BATTLEZ, s_MENU_SINGLEPLAYER_BATTLEZ, 0x80e1, 0, 0);
-    page->AddItem(s_LOADGAME, s_MENU_SINGLEPLAYER_LOADGAME, 0x80ce, 0, 0);
-    page->AddItem(s_CUSTOMLEVELZ, s_MENU_SINGLEPLAYER_CUSTOMLEVELZ, 0x8042, 0, 0);
+    page->AddItem(s_BATTLEZ, s_MENU_SINGLEPLAYER_BATTLEZ, 0x80e1, NULL, 0);
+    page->AddItem(s_LOADGAME, s_MENU_SINGLEPLAYER_LOADGAME, 0x80ce, NULL, 0);
+    page->AddItem(s_CUSTOMLEVELZ, s_MENU_SINGLEPLAYER_CUSTOMLEVELZ, 0x8042, NULL, 0);
     page->AddItem("BACK", s_MENU_SINGLEPLAYER_BACK, 0, s_MAIN, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
@@ -231,11 +231,11 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    it = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, 0, 0);
+    it = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, NULL, 0);
     if (g_cdPromptResult != 0) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, 0, 0);
+    page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, NULL, 0);
     page->AddItem("BACK", s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
@@ -246,13 +246,13 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, 0, 0);
-    page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, 0, 0);
-    it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, 0, 0);
+    page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, NULL, 0);
+    page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, NULL, 0);
+    it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, NULL, 0);
     if (g_gameReg->m_saveSink->CheckMagic() == 0) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddItem("CREDITZ", s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
+    page->AddItem("CREDITZ", s_MENU_MOVIEZ_CREDITZ, 0x8021, NULL, 0);
     page->AddItem("BACK", s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
@@ -374,7 +374,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     page->AddSubItem(
@@ -383,7 +383,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     page->AddSubItem(
@@ -392,7 +392,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     page->AddSubItem(
@@ -401,7 +401,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_TRAINING_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     page->AddItem("BACK", s_MENU_AREAS_BACK, 0, s_QUESTZ, 0);
@@ -420,7 +420,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     it = page->AddSubItem(
@@ -429,7 +429,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE1_END) {
@@ -441,7 +441,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE2_END) {
@@ -453,7 +453,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA1_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE3_END) {
@@ -475,7 +475,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE4_END) {
@@ -487,7 +487,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE1_END) {
@@ -499,7 +499,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE2_END) {
@@ -511,7 +511,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA2_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE3_END) {
@@ -533,7 +533,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE4_END) {
@@ -545,7 +545,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE1_END) {
@@ -557,7 +557,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE2_END) {
@@ -569,7 +569,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA3_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE3_END) {
@@ -591,7 +591,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE4_END) {
@@ -603,7 +603,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE1_END) {
@@ -615,7 +615,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE2_END) {
@@ -627,7 +627,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA4_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE3_END) {
@@ -649,7 +649,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE4_END) {
@@ -661,7 +661,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE1_END) {
@@ -673,7 +673,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE2_END) {
@@ -685,7 +685,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA5_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE3_END) {
@@ -707,7 +707,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE4_END) {
@@ -719,7 +719,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE1_END) {
@@ -731,7 +731,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE2_END) {
@@ -743,7 +743,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA6_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE3_END) {
@@ -765,7 +765,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE4_END) {
@@ -777,7 +777,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE1_END) {
@@ -789,7 +789,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE2_END) {
@@ -801,7 +801,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA7_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE3_END) {
@@ -823,7 +823,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE1),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE4_END) {
@@ -835,7 +835,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE2),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE1_END) {
@@ -847,7 +847,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE3),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE2_END) {
@@ -859,7 +859,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         IDX(CMD_LOAD_WORLD),
         IDX(QUESTLEVEL_AREA8_STAGE4),
         0,
-        0,
+        NULL,
         0
     );
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE3_END) {

@@ -13,7 +13,7 @@
 #include <string.h>
 
 DATA(0x002bf84c)
-char* g_monoBuffer = 0;
+char* g_monoBuffer = NULL;
 DATA(0x002bf850)
 CRangeSet g_debugChannels = {0};
 DATA(0x002bf8d4)
@@ -23,7 +23,7 @@ i32 g_monoCol = 0;
 DATA(0x002bf8dc)
 DebugPrintMode g_debugPrintMode = DEBUG_PRINT_DISABLED;
 DATA(0x002bf8e0)
-FILE* g_debugLogFile = 0;
+FILE* g_debugLogFile = NULL;
 
 RVA_DYNINIT(0x00184b60, 0xa, g_debugConfig)
 RVA_DYNINIT(0x00184b70, 0xa, g_debugConfig)

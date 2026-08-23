@@ -1280,7 +1280,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             m_soundStarted = 1;
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_emitGate == 0) {
-                LeafCue* res = 0;
+                LeafCue* res = NULL;
                 MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
                 if (res != NULL) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -1291,7 +1291,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
 
     if (m_soundStarted != 0) {
         CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-        LeafCue* res = 0;
+        LeafCue* res = NULL;
         MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
         if (res == NULL) {
             return 1;
@@ -1339,7 +1339,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(0, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
+                        ->SpawnVoiceDriver(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
                     m_walkStarted = 1;
                 } else {
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
@@ -1350,7 +1350,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     m_stepIndex++;
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                         m_stepIndex = 4;
                         return 1;
@@ -1460,7 +1460,7 @@ i32 CBootyState::Render() {
             m_activation = BOOTYSEQ_GLITTER;
             CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
-                LeafCue* cue = 0;
+                LeafCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_WARP", cue);
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -1476,7 +1476,7 @@ i32 CBootyState::Render() {
             m_activation = BOOTYSEQ_LETTERS;
             CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
-                LeafCue* cue = 0;
+                LeafCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_BOOM", cue);
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -1703,7 +1703,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 m_initOnce = 1;
                 CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
                 if (ss->m_emitGate == 0) {
-                    LeafCue* res = 0;
+                    LeafCue* res = NULL;
                     MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
                     if (res != NULL) {
                         res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);

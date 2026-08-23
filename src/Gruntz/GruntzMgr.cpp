@@ -151,7 +151,7 @@ DATA(0x002455e8)
 i32 g_monologoShown;
 
 DATA(0x0024556c)
-CGruntzMgr* g_gameReg = 0;
+CGruntzMgr* g_gameReg = NULL;
 
 DATA(0x002455a4)
 u32 g_gruntDestruction;
@@ -167,9 +167,9 @@ DATA(0x002455f4)
 i32 g_debugDisplayFlags;
 
 DATA(0x00245570)
-DirectInputMgr2* g_inputMgr = 0;
+DirectInputMgr2* g_inputMgr = NULL;
 DATA(0x00245578)
-StateMgrBZ* g_spawnConfig = 0;
+StateMgrBZ* g_spawnConfig = NULL;
 
 DATA(0x0020fa70)
 i32 g_localVersion = 1;
@@ -291,7 +291,7 @@ RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
-        m_world->SetRestoreHandler(0);
+        m_world->SetRestoreHandler(NULL);
     }
     FreeFontsMemory();
     if (m_settings) {
@@ -481,7 +481,7 @@ void CGruntzMgr::UpdateScoreHud() {
         g_gameReg->m_saveSink->SetMaxLevel(
             static_cast<QuestLevel>((sub->m_levelIndex % IDX(QUESTLEVEL_TRAINING_LAST)) + 1)
         );
-        g_gameReg->m_saveSink->Save(0, 0x81a6);
+        g_gameReg->m_saveSink->Save(NULL, 0x81a6);
     }
     m_scoreHud->SetCount(sub->m_levelIndex);
     m_scoreHud->m_isCustomLevel = 0;
@@ -709,7 +709,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     }
     m_curState = next;
     PopTopIfMatches(next);
-    if (m_curState->EnterState(oldId) == 0 && m_curState->RestoreDisplay() == 0) {
+    if (m_curState->EnterState(oldId) == GAMESTATE_NONE && m_curState->RestoreDisplay() == 0) {
         return 0;
     }
     m_owner->m_running = 1;
@@ -898,16 +898,16 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     }
 
     CDDrawSubMgrLeafScan* snd = w->m_soundRegistry;
-    w->m_imageRegistry->SumSizesEqual(0, 1);
-    snd->SumField(0);
+    w->m_imageRegistry->SumSizesEqual(NULL, 1);
+    snd->SumField(NULL);
     w->m_ptrColl->GetCapsChecked();
     w->m_ptrColl->GetCapsChecked();
-    w->m_imageRegistry->SumSizesEqual(0, 1);
+    w->m_imageRegistry->SumSizesEqual(NULL, 1);
     w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
     w->m_imageRegistry->SumSizesEqual("GAME", 1);
     w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
     w->m_imageRegistry->SumSizesEqual("ACTION", 1);
-    w->m_soundRegistry->SumField(0);
+    w->m_soundRegistry->SumField(NULL);
     w->m_soundRegistry->SumField("GRUNTZ");
     w->m_soundRegistry->SumField("GAME");
     w->m_soundRegistry->SumField("LEVEL");
@@ -1126,8 +1126,8 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                 return 1;
             }
             if (wParam == IDOK) {
-                i32 valX = GetDlgItemInt(hDlg, 0x40e, 0, 0);
-                i32 valY = GetDlgItemInt(hDlg, 0x40f, 0, 0);
+                i32 valX = GetDlgItemInt(hDlg, 0x40e, NULL, 0);
+                i32 valY = GetDlgItemInt(hDlg, 0x40f, NULL, 0);
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
@@ -1153,7 +1153,7 @@ void CGruntzMgr::OnCheckpointReached() {
     if (m_isCheckpointPrompts == 0) {
         return;
     }
-    CCheckpointDlg dlg(0);
+    CCheckpointDlg dlg(NULL);
     if (ExitModalUI(&dlg, 0) == 1) {
         SendMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_QUICK_SAVE_PROMPT), 0);
     }
@@ -1182,7 +1182,7 @@ BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 return 1;
             }
             if (wParam == IDOK) {
-                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, NULL, 0));
                 return 1;
             }
             break;
@@ -1212,7 +1212,7 @@ BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM
                 return 1;
             }
             if (wParam == IDOK) {
-                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, NULL, 0));
                 return 1;
             }
             break;
@@ -1331,7 +1331,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
         m_lobby = NULL;
     }
 
-    i32 hr = DirectPlayLobbyCreate(0, &m_lobby, 0, 0, 0);
+    i32 hr = DirectPlayLobbyCreate(NULL, &m_lobby, NULL, NULL, 0);
     if (hr) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, m_gameWnd->m_hwnd);
         return 0;
@@ -1349,7 +1349,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     }
 
     DWORD dwSize = 0;
-    hr = m_lobby->GetConnectionSettings(0, 0, &dwSize);
+    hr = m_lobby->GetConnectionSettings(0, NULL, &dwSize);
     if (hr != 0 && hr != static_cast<i32>(DPERR_BUFFERTOOSMALL)) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
@@ -1452,8 +1452,9 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             }
             idx--;
             i32 count = view->m_planes.GetSize();
-            CDDrawWorkerHost* layer =
-                (idx < 0 || idx >= count) ? 0 : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
+            CDDrawWorkerHost* layer = (idx < 0 || idx >= count)
+                                          ? NULL
+                                          : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1489,7 +1490,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
         if (view) {
             CDDrawWorkerHost* layer = (view->m_planes.GetSize() > 0)
                                           ? static_cast<CDDrawWorkerHost*>(view->m_planes[0])
-                                          : 0;
+                                          : NULL;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1541,7 +1542,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
     memset(&si, 0, sizeof(si));
     PROCESS_INFORMATION pi;
     si.cb = sizeof(si);
-    return CreateProcessA(0, cmdline, 0, 0, FALSE, 0, 0, 0, &si, &pi);
+    return CreateProcessA(NULL, cmdline, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 }
 
 // @dead-code
@@ -1569,7 +1570,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
         && st != GAMESTATE_DEMO) {
         return 0;
     }
-    CString name = RunCustomWorldDialog(m_gameWnd->m_hwnd, 0);
+    CString name = RunCustomWorldDialog(m_gameWnd->m_hwnd, NULL);
     if (name.GetLength() == 0) {
         return 0;
     }
@@ -1679,7 +1680,7 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32) {
     if (m_musicEnabled == 0) {
         return;
     }
-    if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) == 0) {
+    if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) == false) {
         return;
     }
     m_sound->StopAll();
@@ -1829,7 +1830,7 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
         dsound = m_world->m_soundStream->m_device;
     }
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
-        if (player.Open(m_strMoviePath, arg, MOVIE_TILE, m_isInterlaced != 0, 0, 0)) {
+        if (player.Open(m_strMoviePath, arg, MOVIE_TILE, m_isInterlaced != 0, NULL, NULL)) {
             m_modalBusy = 1;
             player.Pump(1, 1);
             m_modalBusy = 0;
@@ -1851,7 +1852,7 @@ CFecFile::CFecFile() {
     m_readOpen = 0;
     m_writeOpen = 0;
     m_nextIndex = 0;
-    srand(time(0));
+    srand(time(NULL));
 }
 
 RVA(0x0008ff30, 0x20c)
@@ -2054,12 +2055,12 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
     char regBuf[0x100];
     Utils::RegistryHelper reg;
 
-    if (!reg.Open("Monolith Productions", "Portal", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
+    if (!reg.Open("Monolith Productions", "Portal", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
         return 0;
     }
     regBuf[0] = 0;
     bufSize = 0xde;
-    if (!reg.GetValueString("filedir", regBuf, &bufSize, 0)) {
+    if (!reg.GetValueString("filedir", regBuf, &bufSize, NULL)) {
         return 0;
     }
     i32 len = strlen(regBuf);
@@ -2091,7 +2092,7 @@ i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
     if (path[0] == 0) {
         return 0;
     }
-    if (!LaunchProcessInDir(path, 0)) {
+    if (!LaunchProcessInDir(path, NULL)) {
         return 0;
     }
     if (quitAfter) {
@@ -2120,14 +2121,14 @@ i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
     if (dir && *dir == 0) {
         dir = NULL;
     }
-    return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
+    return CreateProcessA(NULL, cmdline, NULL, NULL, 0, 0, NULL, dir, &si, &pi);
 }
 
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
     CPtrArray* st = &m_stateStack;
     if (st->GetSize() <= 0) {
-        return 0;
+        return NULL;
     }
     return static_cast<CState*>(st->GetAt(st->GetSize() - 1));
 }
@@ -2240,7 +2241,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
 
     CDDrawWorker* rec;
     {
-        CObject* out = 0;
+        CObject* out = NULL;
         m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MONOLITH", out);
         rec = static_cast<CDDrawWorker*>(out);
     }
@@ -2307,7 +2308,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CObject* found = 0;
+    CObject* found = NULL;
     m_world->m_imageRegistry->m_workersByName.Lookup("GAME_DEVHEADS", found);
     CDDrawWorker* out = static_cast<CDDrawWorker*>(found);
     if (out == NULL) {
@@ -2335,7 +2336,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CObject* out = 0;
+        CObject* out = NULL;
         m_world->m_imageRegistry->m_workersByName.Lookup(key, out);
         CDDrawWorker* row = static_cast<CDDrawWorker*>(out);
         if (row) {
@@ -2393,7 +2394,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
         CDDrawWorker* set;
         {
-            CObject* found = 0;
+            CObject* found = NULL;
             m_world->m_imageRegistry->m_workersByName.Lookup("Gruntz", found);
             set = static_cast<CDDrawWorker*>(found);
         }
@@ -2446,7 +2447,7 @@ void CGruntzMgr::CheatEclipseToggle() {
 
         CDDrawWorker* set;
         {
-            CObject* found = 0;
+            CObject* found = NULL;
             m_world->m_imageRegistry->m_workersByName.Lookup("Gruntz", found);
             set = static_cast<CDDrawWorker*>(found);
         }
@@ -2793,12 +2794,12 @@ i32 CGruntzMgr::ResetWorldState() {
     CWaitCursorScope waitCursor;
 
     if (m_colorDepth == BPP_PALETTED_8) {
-        if (LoadWorldMode(BPP_RGB_16) == 0) {
+        if (LoadWorldMode(BPP_RGB_16) == BPP_UNSET) {
             ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x443);
             return 0;
         }
     } else {
-        if (LoadWorldMode(BPP_PALETTED_8) == 0) {
+        if (LoadWorldMode(BPP_PALETTED_8) == BPP_UNSET) {
             ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x444);
             return 0;
         }
@@ -3023,7 +3024,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_cueSink) {
         m_cueSink->PauseAllVoices();
     }
-    FillSaveInfo(m_saveInfoRec, 0);
+    FillSaveInfo(m_saveInfoRec, NULL);
 
     if (g_gameReg->m_saveSink->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
         EnterModalUI("ERROR - Cannot Save Game.");
@@ -3087,7 +3088,7 @@ CState* CGruntzMgr::FindStateById(GameStateId id) {
             return s;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00092990, 0x8)
@@ -3157,18 +3158,18 @@ BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
                 return 1;
             }
             if (wParam == IDOK) {
-                g_debugGruntPlayer = GetDlgItemInt(hDlg, 0x4db, 0, 0);
-                g_debugGruntTool = GetDlgItemInt(hDlg, 0x4da, 0, 0);
-                g_debugGruntToy = GetDlgItemInt(hDlg, 0x4dc, 0, 0);
-                g_debugGruntAiType = GetDlgItemInt(hDlg, 0x4dd, 0, 0);
-                g_debugGruntColumn = GetDlgItemInt(hDlg, 0x4de, 0, 0);
-                g_debugGruntRow = GetDlgItemInt(hDlg, 0x4df, 0, 0);
-                g_debugGruntColor = GetDlgItemInt(hDlg, 0x4e0, 0, 0);
-                g_debugGruntRadius = GetDlgItemInt(hDlg, 0x4e9, 0, 0);
-                g_debugGruntMoveLeft = GetDlgItemInt(hDlg, 0x4e3, 0, 0);
-                g_debugGruntMoveRight = GetDlgItemInt(hDlg, 0x4e4, 0, 0);
-                g_debugGruntMoveTop = GetDlgItemInt(hDlg, 0x4e5, 0, 0);
-                g_debugGruntMoveBottom = GetDlgItemInt(hDlg, 0x4e6, 0, 0);
+                g_debugGruntPlayer = GetDlgItemInt(hDlg, 0x4db, NULL, 0);
+                g_debugGruntTool = GetDlgItemInt(hDlg, 0x4da, NULL, 0);
+                g_debugGruntToy = GetDlgItemInt(hDlg, 0x4dc, NULL, 0);
+                g_debugGruntAiType = GetDlgItemInt(hDlg, 0x4dd, NULL, 0);
+                g_debugGruntColumn = GetDlgItemInt(hDlg, 0x4de, NULL, 0);
+                g_debugGruntRow = GetDlgItemInt(hDlg, 0x4df, NULL, 0);
+                g_debugGruntColor = GetDlgItemInt(hDlg, 0x4e0, NULL, 0);
+                g_debugGruntRadius = GetDlgItemInt(hDlg, 0x4e9, NULL, 0);
+                g_debugGruntMoveLeft = GetDlgItemInt(hDlg, 0x4e3, NULL, 0);
+                g_debugGruntMoveRight = GetDlgItemInt(hDlg, 0x4e4, NULL, 0);
+                g_debugGruntMoveTop = GetDlgItemInt(hDlg, 0x4e5, NULL, 0);
+                g_debugGruntMoveBottom = GetDlgItemInt(hDlg, 0x4e6, NULL, 0);
                 EndDialog(hDlg, 1);
                 return 1;
             }
@@ -3241,7 +3242,7 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
             return slot;
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x00092ec0, 0x24)
@@ -3258,7 +3259,7 @@ void CGruntzMgr::ClearOptionsSlots() {
 
 RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::SaveGameAs() {
-    CBattlezDlg dlg(this, 0);
+    CBattlezDlg dlg(this, NULL);
     GameStateId st = m_curState->Update();
     if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY
         && st != GAMESTATE_DEMO) {
@@ -3499,7 +3500,7 @@ RVA(0x00093be0, 0x107)
 i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     CFile file;
     char hdr[0x5f4];
-    if (file.Open(path, 0, 0)) {
+    if (file.Open(path, 0, NULL)) {
         if (file.GetLength() < 0x5f4) {
             file.Close();
             return 0;

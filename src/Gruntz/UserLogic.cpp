@@ -40,15 +40,15 @@ void CUserLogic::FireActivation(i32) {}
 
 RVA(0x00008b90, 0x40)
 void CUserLogic::FinalizeStep(char*) {
-    if (m_deferredCallback == 0) {
+    if (m_deferredCallback == NULL) {
         return;
     }
-    if (m_gatedCallback != 0 && m_objAux->ActKey() == m_gatedActKey) {
+    if (m_gatedCallback != NULL && m_objAux->ActKey() == m_gatedActKey) {
         (this->*m_gatedCallback)();
-        m_gatedCallback = 0;
+        m_gatedCallback = NULL;
     }
     (this->*m_deferredCallback)();
-    m_deferredCallback = 0;
+    m_deferredCallback = NULL;
     m_gatedActKey = IDX(ACT_NONE);
 }
 

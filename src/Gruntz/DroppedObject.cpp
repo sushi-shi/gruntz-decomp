@@ -256,7 +256,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
 
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)))) != 0) {
+    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)))) != NULL) {
         (this->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
     }
 }
@@ -408,7 +408,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
 RVA(0x000c6bd0, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
     CActHandler* e = DropLookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = DropLookup(coord);
         (this->*((*e2)))();
     }
@@ -534,7 +534,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)))) != 0) {
+    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)))) != NULL) {
         (this->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
     }
 }

@@ -43,7 +43,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
 
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) != 0) {
+    if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) != NULL) {
         (this->*(*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))))();
     }
 }

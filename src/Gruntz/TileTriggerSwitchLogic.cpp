@@ -347,7 +347,7 @@ done:
 RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
-    CTileTriggerTransition* trans = 0;
+    CTileTriggerTransition* trans = NULL;
 
     TileCollisionKind srcId = PbResolveCell(world->m_level, m_tileX, m_tileY);
 

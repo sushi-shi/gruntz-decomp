@@ -493,17 +493,17 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId) {
 RVA(0x0011bee0, 0x230)
 CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (voiceId < 0) {
-        return 0;
+        return NULL;
     }
     if (voiceId == 0) {
-        return 0;
+        return NULL;
     }
     if (voiceId >= m_voiceLists.GetSize()) {
-        return 0;
+        return NULL;
     }
     CSpawnList* list = static_cast<CSpawnList*>(m_voiceLists[voiceId]);
     if (list == NULL) {
-        return 0;
+        return NULL;
     }
 
     i32 pick = which;
@@ -558,7 +558,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
         }
     }
     if (entry == NULL) {
-        return 0;
+        return NULL;
     }
     return m_owner->m_symParser->ResolveQualified(
         static_cast<LPCTSTR>(entry->GetName()),
@@ -569,7 +569,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
 RVA(0x0011c1a0, 0x46)
 BOOL CGruntSpawnConfig::BuildVoiceList() {
     m_voiceLists.SetSize(0, -1);
-    m_voiceLists.SetAtGrow(0, 0);
+    m_voiceLists.SetAtGrow(0, NULL);
     for (i32 i = 1; i < 0x4b0; i++) {
         m_voiceLists.SetAtGrow(i, BuildVoiceSoundList(i));
     }
@@ -580,10 +580,10 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 RVA(0x0011c210, 0x29d)
 CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
     if (n <= 0) {
-        return 0;
+        return NULL;
     }
     if (n >= 0x4b0) {
-        return 0;
+        return NULL;
     }
 
     CSpawnList* list = NULL;

@@ -230,7 +230,7 @@ DATA(0x002455b0)
 i32 g_traitorMode;
 
 static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
-    CAniElement* out = 0;
+    CAniElement* out = NULL;
     MapLookup(map, key, out);
     return out;
 }
@@ -476,7 +476,7 @@ void CGrunt::OnObjectRemoved() {
         m_coordList.RemoveAll();
     }
 
-    while (1) {
+    while (true) {
         i32 n = PayloadCount();
         i32* head = (n == 0) ? NULL : static_cast<i32*>(m_payloads.GetHead());
         if (head == NULL) {
@@ -789,7 +789,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                         CAniRecordView* elem =
                             desc->m_records.GetSize() > 0
                                 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                : 0;
+                                : NULL;
                         i32 frame = elem->m_param;
                         const char* nm = EntranceCell()->AttackName().GetBuffer(0);
                         ApplyLookupSprite(nm, frame);
@@ -816,7 +816,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
             CAniRecordView* elem = desc->m_records.GetSize() > 0
                                        ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                       : 0;
+                                       : NULL;
             i32 frame = elem->m_param;
             i32 row = rec.row;
             i32 column = rec.column;
@@ -3128,9 +3128,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     {
         CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
         if (kind == PICKUP_TOOB) {
-            play->BuildGruntTypeNameTable(PICKUP_TOOB, 1, 1, 0);
+            play->BuildGruntTypeNameTable(PICKUP_TOOB, 1, 1, NULL);
         } else {
-            play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
+            play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, NULL);
         }
     }
     m_entranceReason = kind;

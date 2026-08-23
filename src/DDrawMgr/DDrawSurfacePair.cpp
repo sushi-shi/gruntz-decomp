@@ -278,7 +278,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
         }
     }
 
-    m_surface->m_ddSurface->Unlock(0);
+    m_surface->m_ddSurface->Unlock(NULL);
 }
 
 // @early-stop
@@ -328,7 +328,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
         down += m_surface->m_pitch;
     }
 
-    m_surface->m_ddSurface->Unlock(0);
+    m_surface->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x00164250, 0x12b)
@@ -388,7 +388,7 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
     if (!w) {
         return;
     }
-    HDC hdc = 0;
+    HDC hdc = NULL;
     w->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return;
@@ -405,7 +405,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
     if (!w) {
         return;
     }
-    HDC hdc = 0;
+    HDC hdc = NULL;
     w->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return;
@@ -441,7 +441,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
         emulationOnly.m_word = DDCREATE_EMULATIONONLY;
         hr = pool->CreateDevice(mgr->m_hWnd, emulationOnly.m_addr, w, h, bpp, mode);
     } else {
-        hr = pool->CreateDevice(mgr->m_hWnd, 0, w, h, bpp, mode);
+        hr = pool->CreateDevice(mgr->m_hWnd, NULL, w, h, bpp, mode);
     }
     if (hr == 0) {
         DDrawDeviceError err = pool->m_lastError;
@@ -539,7 +539,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     }
     pool->RemoveItemA(m_surface);
     m_surface = NULL;
-    if (pool->ConfigureSurface(w, h, bpp, 0, 0) != 0) {
+    if (pool->ConfigureSurface(w, h, bpp, 0, 0) != BPP_UNSET) {
         return 0;
     }
     i32 amode = 1;
@@ -885,7 +885,7 @@ CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 fl
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     m_workers[key] = static_cast<CObject*>(w);
     return w;
@@ -990,7 +990,7 @@ i32 CAniElement::Configure(CDDrawSubMgrLeafScan* ctx, CParseSource* entry, i32 f
 RVA(0x00165620, 0x101)
 i32 CAniElement::LoadFile(CDDrawSubMgrLeafScan* ctx, const char* filename, i32 unused) {
     CFile fr;
-    if (fr.Open(filename, 0, 0) == 0) {
+    if (fr.Open(filename, 0, NULL) == 0) {
         return 0;
     }
     u32 size = fr.GetLength();
@@ -1040,7 +1040,7 @@ CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, 
     source.m_chars = src->BeginParse();
     u8* data = source.m_bytes;
     if (data == NULL) {
-        return 0;
+        return NULL;
     }
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
@@ -1048,7 +1048,7 @@ CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, 
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     src->EndParse();
     char buf[0x50];
@@ -1068,7 +1068,7 @@ CAniRecordBase2* CDDrawWorkerMapSmall::CreateWorkerFromData(u8* data, const char
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     m_map1[key] = static_cast<CObject*>(w);
     return w;
@@ -1082,7 +1082,7 @@ CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i32 flag
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
     m_map1[key] = static_cast<CObject*>(w);
     return w;
@@ -1092,11 +1092,11 @@ RVA(0x00165a90, 0xf4)
 CAniRecordBase2*
 CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags) {
     if (src->GetEntryTag() != IMGTAG_XCP) {
-        return 0;
+        return NULL;
     }
     char* data = src->BeginParse();
     if (data == NULL) {
-        return 0;
+        return NULL;
     }
 
     i32 length = static_cast<i32>(src->m_length);
@@ -1105,7 +1105,7 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32
         if (w != NULL) {
             delete w;
         }
-        return 0;
+        return NULL;
     }
 
     AddrWord<char> keyArg;
@@ -1205,7 +1205,7 @@ i32 CFileMem::Open() {
 
     if (WantRead()) {
         CFile* io = &m_file;
-        if (!io->Open(m_name, 0, 0)) {
+        if (!io->Open(m_name, 0, NULL)) {
             return 0;
         }
         m_length = io->GetLength();
@@ -1214,7 +1214,7 @@ i32 CFileMem::Open() {
     }
 
     CFile* out = &m_file;
-    if (!out->Open(m_name, 0x1001, 0)) {
+    if (!out->Open(m_name, 0x1001, NULL)) {
         return 0;
     }
     m_length = 0;
@@ -1271,7 +1271,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         char* base = static_cast<char*>(s->Lock(0));
         if (base != NULL) {
             base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
-            s->m_ddSurface->Unlock(0);
+            s->m_ddSurface->Unlock(NULL);
         }
     }
     {
@@ -1282,7 +1282,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         char* base = static_cast<char*>(s->Lock(0));
         if (base != NULL) {
             base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
-            s->m_ddSurface->Unlock(0);
+            s->m_ddSurface->Unlock(NULL);
         }
     }
 }

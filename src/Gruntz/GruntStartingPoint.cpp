@@ -44,7 +44,7 @@ static inline CActHandler* R4Lookup(i32 coord) {
 RVA(0x0003e1a0, 0x102)
 void CGruntStartingPoint::FireActivation(i32 coord) {
     CActHandler* e = R4Lookup(coord);
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         CActHandler* e2 = R4Lookup(coord);
         (this->*((*e2)))();
     }

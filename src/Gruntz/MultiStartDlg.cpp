@@ -371,7 +371,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         {
             CWnd* w = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
-            g_sharedFlag = (w == NULL) ? 0 : w->m_hWnd;
+            g_sharedFlag = (w == NULL) ? NULL : w->m_hWnd;
         }
         g_multiState->m_netGate->m_sessionSel = NULL;
         g_multiState->PollSession();
@@ -416,7 +416,7 @@ const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
 
 RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_TYPE0);
@@ -436,7 +436,7 @@ CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
 
 RVA(0x000c26c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_CTRL_A0);
@@ -456,7 +456,7 @@ CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
 
 RVA(0x000c2740, 0x60)
 CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_NAME0);
@@ -476,7 +476,7 @@ CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
 
 RVA(0x000c27c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COMBO_C0);
@@ -496,7 +496,7 @@ CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
 
 RVA(0x000c2840, 0x60)
 CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
-    CWnd* result = 0;
+    CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(index)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COLOR0);
@@ -646,7 +646,7 @@ void CMultiStartDlg::OnTimer(u32 nIDEvent) {
 RVA(0x000c2cb0, 0x1f)
 i32 CMultiStartDlg::OnInitDialog() {
     CDialog::OnInitDialog();
-    ::SetTimer(m_hWnd, MULTI_START_WATCHDOG_TIMER, 0x32, 0);
+    ::SetTimer(m_hWnd, MULTI_START_WATCHDOG_TIMER, 0x32, NULL);
     return 1;
 }
 
@@ -986,11 +986,11 @@ void CMultiStartDlg::OnColorSlot0() {
             || m_host->m_options[0].m_slotKey != mp->m_hostIndex)) {
         return;
     }
-    CBattlezDlgColors dlg(m_host, 0, 1, 0);
+    CBattlezDlgColors dlg(m_host, 0, 1, NULL);
     if (dlg.DoModal() == 1) {
         if (SelectColor(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
-            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, 1);
         }
     }
 }
@@ -1003,11 +1003,11 @@ void CMultiStartDlg::OnColorSlot1() {
             || m_host->m_options[1].m_slotKey != mp->m_hostIndex)) {
         return;
     }
-    CBattlezDlgColors dlg(m_host, 1, 1, 0);
+    CBattlezDlgColors dlg(m_host, 1, 1, NULL);
     if (dlg.DoModal() == 1) {
         if (SelectColor(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
-            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, 1);
         }
     }
 }
@@ -1020,11 +1020,11 @@ void CMultiStartDlg::OnColorSlot2() {
             || m_host->m_options[2].m_slotKey != mp->m_hostIndex)) {
         return;
     }
-    CBattlezDlgColors dlg(m_host, 2, 1, 0);
+    CBattlezDlgColors dlg(m_host, 2, 1, NULL);
     if (dlg.DoModal() == 1) {
         if (SelectColor(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
-            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, 1);
         }
     }
 }
@@ -1037,11 +1037,11 @@ void CMultiStartDlg::OnColorSlot3() {
             || m_host->m_options[3].m_slotKey != mp->m_hostIndex)) {
         return;
     }
-    CBattlezDlgColors dlg(m_host, 3, 1, 0);
+    CBattlezDlgColors dlg(m_host, 3, 1, NULL);
     if (dlg.DoModal() == 1) {
         if (SelectColor(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
-            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(0, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, 1);
         }
     }
 }
@@ -1051,7 +1051,7 @@ void CMultiStartDlg::OnCustomWorld() {
     if (g_multiState->m_isHost == 0) {
         return;
     }
-    CBattlezDlgCustom dlg(0);
+    CBattlezDlgCustom dlg(NULL);
     if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
 
         CWnd* item = GetDlgItem(IDX(IDC_MULTI_WORLD));
@@ -1066,7 +1066,7 @@ void CMultiStartDlg::OnCustomWorld() {
         g_multiState->m_customLevel = 1;
         g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
         g_multiState->m_builtInLevelName = "";
-        g_multiState->SaveConfig(0);
+        g_multiState->SaveConfig(NULL);
     }
 }
 
@@ -1085,7 +1085,7 @@ void CMultiStartDlg::CommitWorldHost() {
                 g_multiState->m_customLevel = 0;
                 g_multiState->m_customLevelName = "";
                 g_multiState->m_builtInLevelName = static_cast<LPCTSTR>(name);
-                g_multiState->SaveConfig(0);
+                g_multiState->SaveConfig(NULL);
             }
         }
     }
@@ -1105,7 +1105,7 @@ void CMultiStartDlg::OnChatSend() {
         a += b;
         AppendChatLine(const_cast<char*>(static_cast<const char*>(a)));
         input->SetWindowTextA("");
-        g_multiState->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(a)), 0, 0, 0);
+        g_multiState->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(a)), 0, 0, NULL);
     }
 }
 
@@ -1113,7 +1113,7 @@ RVA(0x000c40b0, 0x42)
 void CMultiStartDlg::Drive() {
     CMulti* netMgr = g_multiState;
     if (netMgr->m_isHost != 0) {
-        netMgr->BroadcastChannelTable(0);
+        netMgr->BroadcastChannelTable(NULL);
         UpdatePlayers(1);
     } else {
         g_multiState->BroadcastOneChannel(m_host->FindOptionsSlot(netMgr->m_hostIndex));
@@ -1230,13 +1230,13 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
         ok->EnableWindow(f18 & f1c);
     }
     HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
-    ::InvalidateRect(color0, 0, 1);
+    ::InvalidateRect(color0, NULL, 1);
     HWND color1 = this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd;
-    ::InvalidateRect(color1, 0, 1);
+    ::InvalidateRect(color1, NULL, 1);
     HWND color2 = this->GetDlgItem(CTRL_PLAYER_COLOR2)->m_hWnd;
-    ::InvalidateRect(color2, 0, 1);
+    ::InvalidateRect(color2, NULL, 1);
     HWND color3 = this->GetDlgItem(CTRL_PLAYER_COLOR3)->m_hWnd;
-    ::InvalidateRect(color3, 0, 1);
+    ::InvalidateRect(color3, NULL, 1);
     return 1;
 }
 
@@ -1506,7 +1506,7 @@ void CMultiStartDlg::CommitLatencyOption() {
         g_multiState->m_commandDelay = lo;
         g_multiState->m_drainReload = hi;
         g_multiState->m_autoCommandDelay = 0;
-        g_multiState->SaveConfig(0);
+        g_multiState->SaveConfig(NULL);
     } else {
         g_multiState->m_autoCommandDelay = 1;
     }
@@ -1529,7 +1529,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         slot->m_readyFlag = 0;
     }
     if (g_multiState->m_isHost) {
-        g_multiState->BroadcastChannelTable(0);
+        g_multiState->BroadcastChannelTable(NULL);
         UpdatePlayers(1);
         EnableControls();
         UpdateColorItems();

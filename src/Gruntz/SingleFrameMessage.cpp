@@ -55,7 +55,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
-    if ((*e) != 0) {
+    if ((*e) != NULL) {
         (this->*(*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))))();
     }
 }

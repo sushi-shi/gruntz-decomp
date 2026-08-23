@@ -143,7 +143,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 // them (zero-emission-statements-cross-the-ob1-cb-exemption.md).
 RVA(0x0009cab0, 0x23)
 CObject* CDDrawWorkerCache::Find(const char* key) {
-    CObject* found = 0;
+    CObject* found = NULL;
     ASSERT(key != NULL);
     m_workers.Lookup(key, found);
     return found;

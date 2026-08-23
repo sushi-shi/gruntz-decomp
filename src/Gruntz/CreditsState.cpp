@@ -204,7 +204,7 @@ i32 CCreditsState::Render() {
     DrawScrollingCredits();
 
     CDDrawSubMgrPages* v4 = m_world->m_drawTarget;
-    v4->m_frontPair->m_surface->Flip(0);
+    v4->m_frontPair->m_surface->Flip(NULL);
     v4->m_backPair->BltSelf(v4->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
@@ -302,7 +302,7 @@ i32 CCreditsState::InitAttractTitle() {
     }
     m_stateBank = saved;
     CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
-    tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
+    tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, 1);
     return 1;
@@ -347,7 +347,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
     }
 
-    HDC hdc = 0;
+    HDC hdc = NULL;
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc != NULL) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
@@ -365,7 +365,7 @@ i32 CCreditsState::DrawScrollingCredits() {
             SetTextColor(hdc, oldColor2);
         }
         if (g_clipRegionEnabled != 0) {
-            SelectClipRgn(hdc, 0);
+            SelectClipRgn(hdc, NULL);
         }
         SetBkMode(hdc, oldBk);
         prov->m_ddSurface->ReleaseDC(hdc);
@@ -396,7 +396,7 @@ i32 CCreditsState::SetupTitle() {
     }
     m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX));
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
-    HDC hdc = 0;
+    HDC hdc = NULL;
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc) {
         i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x450);

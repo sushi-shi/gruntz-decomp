@@ -758,7 +758,7 @@ i32 CPlay::BuildGruntNamespaceList(CMulti* arg) {
 RVA(0x000dd340, 0x189)
 i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
     for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
-        if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 0, 0, 0)) {
+        if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 0, 0, NULL)) {
             return 0;
         }
     }

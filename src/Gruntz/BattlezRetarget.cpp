@@ -55,8 +55,8 @@
 // @early-stop
 RVA(0x000358a0, 0x2d6)
 i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
-    GruntzPlayer* recA = 0;
-    CBattlezMapConfig* cfgB = 0;
+    GruntzPlayer* recA = NULL;
+    CBattlezMapConfig* cfgB = NULL;
     i32 cell = unit->m_arrivalCell.m_x;
     if (cell >= 0 && cell < 4) {
         recA = &m_ctx->m_options[cell];

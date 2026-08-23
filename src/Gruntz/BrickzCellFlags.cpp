@@ -239,14 +239,14 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
             if ((nf & 0x100) == 0) {
                 continue;
             }
-            BrickzCell* up = 0;
-            BrickzCell* down = 0;
-            BrickzCell* right = 0;
-            BrickzCell* left = 0;
-            BrickzCell* ur = 0;
-            BrickzCell* ul = 0;
-            BrickzCell* dr = 0;
-            BrickzCell* dl = 0;
+            BrickzCell* up = NULL;
+            BrickzCell* down = NULL;
+            BrickzCell* right = NULL;
+            BrickzCell* left = NULL;
+            BrickzCell* ur = NULL;
+            BrickzCell* ul = NULL;
+            BrickzCell* dr = NULL;
+            BrickzCell* dl = NULL;
             if (r > 0) {
                 up = nc - m_width;
             }

@@ -59,6 +59,7 @@ _SUBS = ("status", "check", "bank", "fingerprints", "selftest")
 #: question, they do not return findings.
 _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "casts": "gruntz.verify.casts",
+          "constants": "gruntz.verify.constants",
           "enum-domains": "gruntz.verify.enum_domains",
           "label-style": "gruntz.verify.label_style",
           "include-order": "gruntz.verify.include_order",
@@ -86,6 +87,10 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
 #: consumes. Neither returns findings, so neither can fail a build.
 _QUERY_ONLY = ("layout", "library-data-refs", "vtable-scan")
 
+#: Audits that are deliberately explicit because they parse the whole source
+#: tree and are not part of a normal build tier.
+_STANDALONE = ("constants",)
+
 #: tier label -> verb, where the two spellings differ. gruntz.verify.tiers
 #: labels the bans row `vtable-bans` (so do docs/tooling-map.md and every
 #: printed tier line), while the module and the verb are `bans`; without this
@@ -97,9 +102,12 @@ def _usage(stream=None) -> None:
     import sys
     out = stream or sys.stdout
     print(__doc__.strip(), file=out)
-    gates = sorted(g for g in _GATES if g not in _QUERY_ONLY)
+    gates = sorted(g for g in _GATES
+                   if g not in _QUERY_ONLY and g not in _STANDALONE)
     print("\ngates (each also run by `check --tier`): " + ", ".join(gates),
           file=out)
+    print("standalone audits (no tier runs these): "
+          + ", ".join(sorted(_STANDALONE)), file=out)
     print("read-only oracles (no tier runs these): "
           + ", ".join(sorted(_QUERY_ONLY)), file=out)
 

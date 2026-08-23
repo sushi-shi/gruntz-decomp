@@ -30,7 +30,7 @@
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 DATA(0x002bf224)
-PALETTEENTRY* g_pal = 0;
+PALETTEENTRY* g_pal = NULL;
 
 DATA(0x001efb40)
 const float g_one = 1.0f;
@@ -116,11 +116,11 @@ CShadeTable*
 CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     i32 total = nA + nB;
     if (!t->Set(total << 8, 0)) {
-        return 0;
+        return NULL;
     }
 
     i32 oldSize = m_arr.m_nSize;
@@ -256,10 +256,10 @@ CShadeTable*
 CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(steps << 8, 0)) {
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -302,10 +302,10 @@ RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(steps << 8, 0)) {
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -347,10 +347,10 @@ RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x10000, 0)) {
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -377,10 +377,10 @@ RVA(0x0014ec00, 0x10f)
 CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x200, 0)) {
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -433,10 +433,10 @@ RVA(0x0014ede0, 0x10f)
 CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x200, 0)) {
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -475,12 +475,12 @@ RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x20000, 0)) {
         t->Reset();
         ::operator delete(t);
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -513,12 +513,12 @@ RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x20000, 0)) {
         t->Reset();
         ::operator delete(t);
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -567,12 +567,12 @@ RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x20000, 0)) {
         t->Reset();
         ::operator delete(t);
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -612,12 +612,12 @@ RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
-        return 0;
+        return NULL;
     }
     if (!t->Set(0x200, 0)) {
         t->Reset();
         ::operator delete(t);
-        return 0;
+        return NULL;
     }
 
     CShadeTableArray& arr = m_arr;
@@ -687,7 +687,7 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
     m_arr.m_pData[oldSize] = t;
     if (!t->LoadFromFile(name, 0)) {
         FindRemove(t);
-        return 0;
+        return NULL;
     }
     return t;
 }
@@ -743,7 +743,7 @@ CShadeTable* CShadeTableCache::AddFromBuffer(u8* data, i32 size) {
     m_arr.m_pData[oldSize] = t;
     if (!t->LoadFromMem(data, size, 0)) {
         FindRemove(t);
-        return 0;
+        return NULL;
     }
     return t;
 }
@@ -773,7 +773,7 @@ CShadeTable* CShadeTableCache::FindByKey(i32 key) {
             return m_arr[i];
         }
     }
-    return 0;
+    return NULL;
 }
 
 RVA(0x0014fb80, 0x68)

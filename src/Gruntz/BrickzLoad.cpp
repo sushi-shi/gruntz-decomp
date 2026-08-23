@@ -98,7 +98,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     if (grid == NULL) {
         return 0;
     }
-    AllocGrid(width, height, 0);
+    AllocGrid(width, height, NULL);
     m_reserved90 = 0;
 
     i32 total = g_buteMgr.GetInt("Brickz", "Brown");
@@ -436,7 +436,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             for (i32 xo = -1; xo < 2; xo++) {
                 for (i32 yo = -1; yo < 2; yo++) {
 
-                    Coord* elem = 0;
+                    Coord* elem = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
                         elem = &g_coordPool.m_freeHead->m_coord;
                         elem->m_x = tileX + xo;
