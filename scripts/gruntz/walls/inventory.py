@@ -29,6 +29,13 @@ is also 99.24 - that source already reached the peak and there is nothing to
 do. The `L` flag marks the 46 that are real; the deepest is
 `CDDrawSurfaceMgr::SnapshotChildren`, banked at 70.12 against a 77.52 peak.
 
+An `L` row is a question, not a promise, so read `walls priors` before working
+one: some of these peaks were given up DELIBERATELY, because the shape that
+scored them is refuted by retail's own bytes. `CSBI_ImageSet::SetupImage`
+(bank 68.31, hist 74.63) is exactly that - the 74.63 spelling tested `owner`
+before `host`, and retail tests `[esp+0xc]`, the second parameter, first.
+Recovering that number would mean re-introducing a wrong guard order.
+
 The report also scores the carved EH band (`__ehreg$*` / `__ehunwind$*`),
 which gruntz.verify.scores excludes from the gate because those funclets are
 not reconstruction targets. They are KEPT here (they are real sub-100 rows)
@@ -189,6 +196,9 @@ def main(argv=None) -> int:
     print(f"        A row whose hist is above its CUR but not above its BANK "
           f"is not one of them - that source already reached hist and the "
           f"dip is TU composition.")
+    print(f"        Read `walls priors` before working an L row: some peaks "
+          f"were given up deliberately, because the shape that scored them is "
+          f"refuted by retail's bytes.")
     print(f"{'rva':>10}  {'hist':>6}  {'bank':>6}  {'cur':>6}  {'size':>7}  "
           f"unit/symbol")
     for r in rows[:a.limit]:
