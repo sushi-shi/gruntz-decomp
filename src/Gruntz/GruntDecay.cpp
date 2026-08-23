@@ -77,6 +77,15 @@ i32 CGrunt::LoadGruntDecayConfig() {
 }
 
 // @early-stop
+// Retail RECOMPUTES `now - m_idleTimer` in the clamp block - it keeps `now` in
+// eax:ecx across the guard and subtracts again - where cl CSEs the guard's
+// difference; that recompute and the two extra callee-saved registers it needs
+// are the whole size delta.  Measured and REJECTED, so nobody re-runs them:
+// re-reading g_frameTime at both sites instead of naming `now` does not defeat
+// the CSE at all, and folding the clamp into one expression
+// (`now - m_idleTimer < 0 ? 0 : (u32)(now - m_idleTimer)`) buys back a PARTIAL
+// recompute - the low half only, since the sign test still reads the guard's
+// high half - at the cost of an extra branch.  Both lose ground.
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
     i64 now = static_cast<i64>(g_frameTime);
