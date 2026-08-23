@@ -51,3 +51,39 @@ This is the mirror of identical-return-epilogue-tailmerge (where the recompile
 *tail-merges* and that's a wall): here the recompile *duplicates* and the C
 spelling controls it. Use it whenever a guard sits BEFORE a loop and returns a
 running accumulator — gate the loop, don't early-return.
+
+## It is not about the loop, and not about an accumulator (2026-08-23)
+
+The loop and the accumulator are incidental. What the lever needs is only that
+**the source names the same return value twice** and the two sites can be reduced
+to one. `CDDrawSurfacePair::SetGeom` (0x164250) had no loop and returns a literal:
+
+```cpp
+if (m_width != w || m_height != h || m_bpp != bpp) {
+    ... ;
+    if (formatOk) { <7 stores>; return 1; }     // <- return #1
+    return 0;
+}
+return 1;                                        // <- return #2
+```
+
+cl declined to merge the two `return 1`s, so it laid the guard's own
+`mov eax,1 / pop ebx / ret 0xc` inline at 0x25 and jumped the body past it -
+three `jne 0x2d`. Retail has one `return 1` at the tail and therefore the textbook
+`||` lowering, `jne BODY / jne BODY / je TAIL`. Negating the inner check into an
+early `return 0` and letting the stores fall through to the single trailing
+`return 1`:
+
+```cpp
+    if (!formatOk) { return 0; }
+    <7 stores>;
+}
+return 1;
+```
+
+**78.53 -> 84.03**, and the first 0x3e bytes became identical to retail apart from
+the tail displacement. So the detection signature is the branch POLARITY of the
+last term of an `||`/`&&` guard chain: retail's last term reads `je <far tail>`
+where ours reads `jne <near body>`, which says retail's guard falls through to a
+return the source states once and ours states twice. `gruntz walls jccscan` names
+these rows directly - a balanced single je/jne flip.

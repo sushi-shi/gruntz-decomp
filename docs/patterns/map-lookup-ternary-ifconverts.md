@@ -76,3 +76,30 @@ if/else) vs **93.75** for `if (Lookup(k,found) == 0 || found == 0)`. Keep the `|
 `CInGameIcon::Reposition` @0x098a90 repeats it with the pointer DEREFERENCED afterwards
 (92.83 / 93.26 vs **97.43** for the `&&` chain), so "only null-tested" is not the
 discriminator. Measure both spellings on this shape rather than assuming.
+
+Two more sites, both directions measured 2026-08-23, and neither agrees with the
+other:
+
+| function | spelling | fuzzy |
+|---|---|---|
+| `CGrunt::StepEntranceRelatchB` 0x65c20 | `found=0; if (Lookup(..)==0) found=0;` (the re-assign) | **98.22** |
+| | `obj=0; if (Lookup(..)) obj=found;` (statement form) | 90.86 |
+| | `obj = Lookup(..) ? found : 0` (ternary) | 96.82 — if-converts |
+| | `if (Lookup(..)==0 \|\| found==0) { ... }` | 79.97 |
+| `CDDrawChildGroup::Deserialize` 0x15b0e0 | statement form (in tree) | **96.17** |
+| | explicit `if/else`, both arms assigning | 91.44 — if-converts |
+
+The `Deserialize` result is the one to remember: the explicit `if`/`else` is NOT a
+safe fallback when the statement form is not reaching retail. It if-converts just
+like the ternary (`mov ecx,[esp+0x2c] / neg esi / sbb esi,esi / and esi,ecx`),
+while the statement form keeps the branch. Retail wants the branch WITH the zero
+materialised INSIDE the miss arm (`jne 0x71 / xor esi,esi / jmp 0x75`), which is
+what cl emits when the destination register is live across the call with another
+value — a register-pressure fact, not a spelling. No spelling reached it.
+
+`StepEntranceRelatchB` says the same thing from the other side: the redundant
+`found = NULL` re-assign that this pattern would normally call the bug is the
+best-scoring form there by 1.4 points, because `found`'s address has escaped to
+the out-param and cl must keep memory coherent either way. **Check the tree's
+current spelling and its bank before applying the fix; on a site where the doc's
+preferred form is already beaten, it stays beaten.**

@@ -72,6 +72,43 @@ restructure correct code chasing the optimizer's epilogue placement (orchestrati
 §2a). Sibling of [eh-state-numbering-base](eh-state-numbering-base.md) and the
 register-pinning entropy walls.
 
+## WHY retail sometimes declines the merge: one exit does not need the `xor`
+
+The merge is not a coin. cl merges two `return 0` blocks when they are *identical*,
+and a `return 0` reached on an edge where a register provably already holds 0 does
+not need `xor eax,eax` — so it is NOT identical to a `return 0` that does, and
+there is nothing to merge.
+
+`CLatencyList::FillCombo` 0x37ff0 is the compact case. Two guards both `return 0`:
+
+```cpp
+if (m_list.GetCount() <= 0) { return 0; }          // eax = a count, may be negative
+HWND combo = GetDlgItem(hDlg, ctrlId);
+if (combo != NULL) { ... }
+return 0;                                           // eax = GetDlgItem's NULL
+```
+
+Retail gives the FIRST its own `xor eax,eax / jmp <epilogue>` at 0x27 and lets the
+SECOND branch straight to the epilogue (`je 0xd2`) with GetDlgItem's zero still in
+eax. Ours jumps both to one shared `xor eax,eax` at 0xd0 — and it HAS to emit the
+`xor` there, because the block now also serves the count path where eax holds a
+possibly-negative count. Materialising the zero is what made the two blocks
+identical, which is what allowed the merge.
+
+So the reverse-audit reading is: **retail duplicating an epilogue says the two
+exits differ in whether the return value is already live**, and it follows the
+value flow, not the guard spelling. The guard spelling is byte-neutral —
+`CGameObject::ResolveLinkedObject` 0x151b90 compiles
+`if (ok) { m_carrier = found; return 1; } m_carrier = NULL; return 1;` and
+`if (!ok) { m_carrier = NULL; return 1; } m_carrier = found; return 1;` to the
+same bytes (85.88 both ways, verified instruction-for-instruction). Do not spend
+an A/B on the polarity. Same signature, same verdict, on `CSBI_MenuItem::SetupImage`
+0xe80e0 and `CWwdGameObject::CreateObject` 0x166640.
+
+The OTHER direction — ours duplicates, retail shares — IS steerable, and the lever
+is in [guard-skip-loop-not-early-return](guard-skip-loop-not-early-return.md):
+state the return once in the source (SetGeom 0x164250, 78.53 -> 84.03).
+
 ## See also
 
 The companion STEERABLE finding from the same TU: an engine helper whose disasm
