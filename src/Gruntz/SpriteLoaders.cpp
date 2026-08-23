@@ -108,8 +108,12 @@ i32 CTimer::Tick(i32 dt) {
 
     if (v == 0) {
 
-        m_unusedStamp.m_v = 0;
-        m_accum.m_v = 0;
+        // Halves, not the i64: cl5 batches a RUN of 64-bit stores as all-lo-then-
+        // all-hi.  Retail pairs them, as the ctor above does.
+        m_unusedStamp.m_lo = 0;
+        m_unusedStamp.m_hi = 0;
+        m_accum.m_lo = 0;
+        m_accum.m_hi = 0;
         m_running = 0;
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
