@@ -220,9 +220,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
         case PICKUP_GOOBER:
             if (cue == WWDDRAW_TOOL_APPLIES || cue == WWDDRAW_NO_ANIMATION) {
-                // Retail primes the gauge id before the scan, so a puddle-less
-                // arrival still credits the default Grunt.
-                i32 gruntType = 25;
+                // Retail primes the award with CTriggerMgr::PlacePuddle's own
+                // default, so a puddle-less arrival still credits 25.
+                i32 gaugePoints = 25;
                 i32 removed = 0;
                 POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL && removed == 0) {
@@ -230,22 +230,22 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
                     if (puddle->m_tileX == tileX && puddle->m_tileY == tileY) {
                         if (cue == WWDDRAW_NO_ANIMATION) {
-                            puddle->m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                            puddle->m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                             puddle->SetBute("B");
                             puddle->m_placed = 1;
                             puddle->m_pending = 0;
-                            puddle->m_value = puddle->m_object->m_animCursor.m_animation;
-                            puddle->m_object->ApplyLookupGeometry(g_puddleSpriteKey, 0);
+                            puddle->m_value = puddle->m_wwdObject->m_animCursor.m_animation;
+                            puddle->m_wwdObject->ApplyLookupGeometry(g_puddleSpriteKey, 0);
                             return 1;
                         }
-                        gruntType = puddle->m_gruntType;
-                        puddle->m_object->m_flags |= 0x10000;
+                        gaugePoints = puddle->m_gaugePoints;
+                        puddle->m_wwdObject->m_flags |= 0x10000;
                         m_baseList.RemoveAt(current);
                         removed = 1;
                     }
                 }
                 if (removed != 0 && ownerHi == g_curPlayer) {
-                    static_cast<CPlay*>(g_gameReg->m_curState)->m_guts->AdvanceGauge(gruntType);
+                    static_cast<CPlay*>(g_gameReg->m_curState)->m_guts->AdvanceGauge(gaugePoints);
                 }
             }
             return 1;
