@@ -21,11 +21,23 @@ build/objdiff/compare-new) and reports two numbers:
 Ranked by residual, the top of the list is the hit list; the tail is a frame
 delta riding on top of an unrelated reconstruction difference.
 
-The inverse sign is worth reading too: a NEGATIVE delta means retail has a
-slot we folded away - a variable we merged into an expression, or an
-aggregate we scalarised.
+THE INVERSE SIGN IS THE PRODUCTIVE ONE, AND `--folded` RANKS IT. A NEGATIVE
+delta means retail has a slot we folded away - a variable we merged into an
+expression, an aggregate we scalarised, or a by-value temp we named. That
+direction closed three rows on 2026-08-23 and the default ranking hides every
+one of them, because ranking by RESIDUAL puts frame-equal rows near 100% at the
+head and the whole `residual<=4` hit list is empty in both signed buckets:
 
-    gruntz walls framescan [--todo] [--unit U] [--limit N] [--all] [--json]
+    CTriggerMgr::ToggleRegionA   0x7d450  0 vs 0x8  85.71 -> 100.00 EXACT
+    CStatusBarMgr::UpdateFalling 0x107590 0 vs 0x10 89.65 ->  97.91
+    PolyIsConvexCW               0x145e30 0xc vs 0x10 85.70 -> 93.23
+
+Each was the SAME question - which source entity owns the bytes retail reserved
+and we did not - with three different answers: an unnamed by-value accessor
+temp, a RECT whose field-assignment order decides whether cl keeps the local,
+and six named coordinates that push the deltas past cl's x87 stack budget.
+
+    gruntz walls framescan [--todo] [--unit U] [--limit N] [--all] [--folded] [--json]
 
 Cost: one objdump decode per side per row (~4 min for the full ~580-row todo
 queue), so it is a sweep tool, not an inner-loop one. `walls diagnose` and
@@ -143,7 +155,8 @@ def scan(rows: list[dict], progress=None) -> list[dict]:
     return out
 
 
-def report(rows: list[dict], limit: int, show_all: bool) -> None:
+def report(rows: list[dict], limit: int, show_all: bool,
+           folded: bool = False) -> None:
     ok = [r for r in rows if "base_frame" in r]
     delta = lambda r: r["base_frame"] - r["tgt_frame"]           # noqa: E731
     larger = [r for r in ok if delta(r) > 0]
@@ -158,10 +171,19 @@ def report(rows: list[dict], limit: int, show_all: bool) -> None:
     print(f"  frame EQUAL               : {len(equal):4d}  "
           f"(residual<=4: {len([r for r in equal if r['residual'] <= 4])})")
     print()
-    shown = ok if show_all else larger + smaller
+    if folded:
+        # retail reserved bytes we did not: rank by how many, then by how much
+        # of the function is still open. Residual is NOT the key here - a
+        # missing local perturbs every [esp+N] below it, so these rows are
+        # large-residual by construction.
+        shown = smaller
+        key = lambda x: (delta(x), x["cur"])                     # noqa: E731
+    else:
+        shown = ok if show_all else larger + smaller
+        key = lambda x: x["residual"]                            # noqa: E731
     print(f"{'rva':>10} {'cur':>7} {'base':>6} {'tgt':>6} {'d':>5} "
           f"{'resid':>6} {'push':>5}  unit/symbol")
-    for r in sorted(shown, key=lambda x: x["residual"])[:limit]:
+    for r in sorted(shown, key=key)[:limit]:
         print(f"{r['rva']:>10} {r['cur']:7.2f} {r['base_frame']:6d} "
               f"{r['tgt_frame']:6d} {delta(r):5d} {r['residual']:6d} "
               f"{r['base_push']}/{r['tgt_push']:<3}  "
@@ -178,6 +200,9 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=60)
     ap.add_argument("--all", action="store_true",
                     help="list the equal-frame rows too")
+    ap.add_argument("--folded", action="store_true",
+                    help="only rows where RETAIL reserved more than we did, "
+                         "ranked by that delta: a local we folded away")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
@@ -187,7 +212,7 @@ def main(argv=None) -> int:
     if args.json:
         json.dump(scanned, sys.stdout)
         return 0
-    report(scanned, args.limit, args.all)
+    report(scanned, args.limit, args.all, args.folded)
     return 0
 
 
