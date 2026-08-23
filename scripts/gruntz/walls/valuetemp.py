@@ -70,6 +70,7 @@ LEA = re.compile(r"^e[a-z][a-z],\[esp(?:\+0x([0-9a-f]+))?\]$")
 # codebase passes that way.
 WIDEST_AGGREGATE = 0x10          # RECT; Coord is 8
 SAVE_REGS = ("ebx", "ebp", "esi", "edi")
+FS_INSTALL = "DWORD PTR fs:0x0,esp"      # the /GX registration node going live
 # (unit, symbol, member offset, which sides must carry it - "" = NEITHER). The
 # first two took the accessor and agree. ApplyTriggerA is the NEGATIVE: it read
 # target-only while esp tracking ignored callee-popped arguments, and under a
@@ -94,20 +95,22 @@ def _frame_level(ins) -> int:
     interleaves `mov`s and non-esp `lea`s among them - so the run cannot be cut
     at the first non-push. What ends it is an ARGUMENT push, and cl 5.0 saves
     only ebx/ebp/esi/edi and each only once, so the first push that is not a
-    fresh one of those is the boundary. A /GX function is the exception: its
-    prologue pushes -1, the handler and the old fs:0 chain, and it is
-    recognisable by `mov ebp,esp`."""
-    ebp_frame = any(mn == "mov" and ops == "ebp,esp" for _o, mn, ops in ins[:4])
-    d, saved = 0, set()
+    fresh one of those is the boundary. A /GX function is the exception: it
+    pushes -1, the handler and the old fs:0 chain FIRST, and cl 5.0 does not
+    give it an ebp frame - the registration install is what ends its preamble."""
+    eh = any(mn == "mov" and ops == FS_INSTALL for _o, mn, ops in ins[:12])
+    d, saved, installed = 0, set(), not eh
     for _off, mn, ops in ins:
         if mn == "push":
-            if not ebp_frame:
+            if installed:
                 if ops not in SAVE_REGS or ops in saved:
                     break
                 saved.add(ops)
             d += 4
         elif mn == "sub" and ops.startswith("esp,0x"):
             d += int(ops.split("0x", 1)[1], 16)
+        elif mn == "mov" and ops == FS_INSTALL:
+            installed = True
         elif mn in ("call", "ret") or mn.startswith("j") \
                 or (mn == "lea" and "[esp" in ops):
             break

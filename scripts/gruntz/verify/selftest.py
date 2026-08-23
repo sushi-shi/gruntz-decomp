@@ -3971,6 +3971,17 @@ class ValueTempLivenessControls(unittest.TestCase):
             "sub esp,0x10", "push ebx", "push 0x1", "push 0x2",
             "call 0x0")), 0x14)
 
+    def test_the_gx_preamble_pushes_are_frame(self):
+        """A /GX function pushes -1, the handler and the old fs:0 chain before
+        anything else, and cl 5.0 gives it no ebp frame - so the callee-save
+        rule alone cuts its prologue at the first instruction and reports a
+        level of zero.  The registration install ends the preamble."""
+        from gruntz.walls.valuetemp import _frame_level
+        self.assertEqual(_frame_level(self._ins(
+            "push 0xffffffff", "push 0x0", "mov eax,fs:0x0", "push eax",
+            "mov DWORD PTR fs:0x0,esp", "sub esp,0x5c", "push ebx", "push ebp",
+            "push esi", "mov esi,ecx", "je 0x0")), 0x74)
+
 
 class EhActionControls(unittest.TestCase):
     """`walls ehactions` reports structure; neither count nor action shape is
