@@ -1,46 +1,52 @@
-# A dead stack store in retail is NOT an era anomaly — cl 5.0 SP3 emits them too
+# A dead stack store in retail is NOT an era anomaly — two cl 5.0 SP3 mechanisms produce them
 
-tags: cpp:local cpp:struct cpp:member | asm:mov | topic:wall topic:tooling
+tags: cpp:local cpp:struct cpp:member cpp:temporary | asm:mov | topic:codegen-idiom topic:wall
 symptoms: retail writes an aggregate's fields from members and overwrites them a few
 instructions later with no read in between, the base emits nothing there, and the row's
 whole residue is exactly those extra loads + stores; the reflex is to call it the
 RTM-provenance family
-confidence: 8/10
+confidence: 10/10
+variants: dead-second-field-load-is-a-struct-copy.md
 
 Retail keeping a provably dead store looks like the era-compiler family, so lanes park it.
-Run the both-sides census first: cl 5.0 SP3 emits dead stack stores routinely, and a
-100%-matching function proves it from ordinary source. `SaveScreenshot` writes
-`srcRect.right = 0;` and overwrites it two statements later; cl keeps the zero store and
-the row is EXACT. So the question is never "can the compiler do this" — it is "which
-source shape does it".
+cl 5.0 SP3 emits them from ordinary source, by two mechanisms that are both steerable.
+Neither is a liveness rule: **a plain local's dead field store IS eliminated**, whether the
+store group is fully dead, half dead, killed field-wise or killed by an aggregate assign.
+
+**1. The unread half of a by-value struct return.** An inlined accessor returning a
+two-field struct materialises a frame temp. The half whose field is READ gets folded into
+its consumer (cl re-loads the source member instead), and the UNREAD half's store is
+emitted and left dead. Two calls therefore leave two dead stores, high slot first, in
+whatever slots the temp is later given.
 
 ```cpp
-// SaveScreenshot 100.0000 - cl KEEPS the dead .right/.bottom zero stores.
-// .left/.top keep their zeros and stay live, so the store group is only PARTLY dead.
-srcRect.left = 0;  srcRect.top = 0;  srcRect.right = 0;  srcRect.bottom = 0;
-srcRect.right  = mgr->GetModeSize().cx;
-srcRect.bottom = mgr->GetModeSize().cy;
+Coord LastTilePx() { return m_lastTilePx; }   // in the class, like the real EntrancePx
+
+i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;   // call 1: .m_y's store is dead
+i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;   // call 2: .m_x's store is dead
 ```
 ```asm
-; CGrunt::RectContains 0x51850 - the four instructions no spelling reproduces
-mov  edx,[ecx+0x180]      ; m_lastTilePx.m_y
-mov  [esp+0x14],edx       ; -> r1.top       DEAD, overwritten at +0x52
-mov  edx,[ecx+0x17c]      ; m_lastTilePx.m_x
-mov  [esp+0x10],edx       ; -> r1.left      DEAD, overwritten at +0x6d
+mov  edx,[ecx+0x180]      ; m_y, for call 1's unread half
+...
+mov  [esp+0x14],edx       ; temp+4 = m_y     DEAD, later r1.top
+mov  edx,[ecx+0x17c]      ; m_x, for call 2's unread half
+mov  [esp+0x10],edx       ; temp+0 = m_x     DEAD, later r1.left
+mov  edx,[ecx+0x180]      ; m_y again, this one feeds dy
 ```
 
-WALL, bounded and characterized. The census (scan base AND target objs for
-`mov <reg>,K(%esp)` twice to one slot with no intervening read) reports 56 base hits in
-18 objs against a similar target set, mostly the same functions — so the mechanism is
-shared. What is NOT reproduced is a store group that is **fully** dead: seven spellings all
-compile byte-identically to the plain member read (plain `Coord at = m_lastTilePx;`; a
-by-value `Coord LastTilePx()` inline modelled on the real `EntrancePx` COMDAT; direct
-stores into the address-taken `RECT r1` killed by an aggregate assign; the same killed
-field-wise; immediate-zero stores killed by an aggregate assign; immediate-zero stores
-killed field-wise; `Coord at; Copy(&at, m_lastTilePx);` through a real `inline` free
-function — cl inlines it and still eliminates the copy, so an address-take does NOT block
-the elimination). The open discriminator is the SaveScreenshot one: part of the store group
-must stay live. Affects `CGrunt::RectContains` 0x51850 (83.02, residue is exactly these 4
-instructions: same call, branch and `ret` counts) and `CGrunt::RectContainsGated` 0x51a20
-(82.53, same 4); `CTriggerMgr::ApplyTriggerB` 0x6e120 has the same pair spilled at
-`[esp+0x20]/[esp+0x24]`.
+**2. A load through a pointer read from a GLOBAL blocks the elimination.** cl 5.0
+disambiguates a stack local against a load through a POINTER PARAMETER and deletes the
+earlier store; through a pointer whose value came out of a global it does not, so every
+field store issued before that load survives. This is what keeps `SaveScreenshot`'s
+`srcRect.right = 0;` alive: `mgr = g_gameReg`.
+
+STEERABLE both ways. `CGrunt::RectContains` 0x51850 83.02 -> **100.00 EXACT** and
+`CGrunt::RectContainsGated` 0x51a20 82.53 -> **100.00 EXACT** on mechanism 1 (plus reading
+the tile delta before normalising the arguments, which is what puts x in esi and y in ebp).
+Controls, all with the local's address escaping to a real call: one rect / two rects,
+killed field-wise / by aggregate assign, zeros / member values — dead stores ELIMINATED in
+every case (so "a partially-live store group is retained whole" is REFUTED: `r.left=0;
+r.top=0; r.right=0; r.bottom=0; r.right=w; r.bottom=h;` keeps four stores, not six).
+Same source with the killing value loaded through a pointer from a global — RETAINED, one
+rect and two. Corrects [[dead-global-read-spill-dce]] and this file's own earlier claim
+that a fully dead store group is simply unreachable.
