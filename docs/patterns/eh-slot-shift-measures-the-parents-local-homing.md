@@ -50,6 +50,29 @@ calibration set exactly (its signs are target-minus-base, `--shift` reports base
 An independent instrument landing on the same four magnitudes is the reason to trust the other
 twenty-four rows of the table.
 
+## Worked example: what the delta hands the parent, and what it does not
+
+`CPlay::ValidateLevelTiles` (0xd2dd0) is the group's biggest row block (22) and its
+`uniform -0xc against a frame that grew +0x8` sends you to the prologue, where the parent's
+real difference is visible without touching the funclets:
+
+    retail   sub esp,0x34 ... four `mov [slot],eax` zeroes (counts[4], contiguous)
+             ... jne <past the list==NULL guard> ... mov eax,[eax+0x4]
+             mov DWORD PTR [esp+0x10],0x0        <- validCount, SUNK past BOTH guards
+             mov ebp,0x1                         <- ok = 1
+    ours     sub esp,0x3c ... four `mov [slot],eax` zeroes
+             mov DWORD PTR [esp+0x38],0x0        <- a FIFTH contiguous zeroed dword
+             mov DWORD PTR [esp+0x10],0x0        <- and both immediates BEFORE the guard
+
+So the parent zero-initializes five contiguous dwords where retail zeroes four, and retail
+sinks its remaining zero past two early returns. That is a local-count question, exactly what
+the `uniform`-but-not-frame-size classification predicted.
+
+DISPROVEN LEVER, do not retry: moving `i32 validCount = 0;` below both guards, to the
+declaration position retail's sinking suggests, is codegen-INERT here - byte length 0x1e58 and
+2406 instructions before and after, first divergence still at +0x17. cl 5.0 re-hoists it. The
+fifth zeroed dword is the thing to explain, not the store's position.
+
 ## Do not
 
 Do not add padding or a local to move a displacement. Do not open funclet tickets. The rows
