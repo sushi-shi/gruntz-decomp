@@ -889,10 +889,21 @@ commit:
 // @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
+    // Every arm assigns BOTH coordinates: retail 0x52c7f keeps the tile pair in
+    // ebx/edi across the switch and pure N/S land mid-block past the x-step
+    // (N at 0x52cbd, S at 0x52cb0) with x intact - cl CSEs the unchanged
+    // tile.m_x term onto the preloaded register.  The earlier fall-through
+    // spelling assigned only nextY in the N/S arms, and OUR cl homed nextX to a
+    // never-written stack slot: a due-north/south claim read garbage, sending
+    // m_lastTilePx off-map or spuriously killing the grunt.
     Coord tile = m_lastTilePx;
     i32 nextX;
     i32 nextY;
     switch (m_entranceCell.direction) {
+        case DIR_NORTH:
+            nextX = tile.m_x;
+            nextY = tile.m_y - 0x20;
+            break;
         case DIR_NORTHEAST:
             nextX = tile.m_x + 0x20;
             nextY = tile.m_y - 0x20;
@@ -905,10 +916,12 @@ i32 CGrunt::ClaimSwitchTile() {
             nextX = tile.m_x + 0x20;
             nextY = tile.m_y + 0x20;
             break;
+        case DIR_SOUTH:
+            nextX = tile.m_x;
+            nextY = tile.m_y + 0x20;
+            break;
         case DIR_SOUTHWEST:
             nextX = tile.m_x - 0x20;
-            // fall through
-        case DIR_SOUTH:
             nextY = tile.m_y + 0x20;
             break;
         case DIR_WEST:
@@ -917,8 +930,6 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
         case DIR_NORTHWEST:
             nextX = tile.m_x - 0x20;
-            // fall through
-        case DIR_NORTH:
             nextY = tile.m_y - 0x20;
             break;
     }

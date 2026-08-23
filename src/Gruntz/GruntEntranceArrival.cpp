@@ -488,9 +488,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     i32 t0 = AT(m_poseToy, GRUNT_TOY1)->m_total;
     i32 t1 = AT(m_poseToy, GRUNT_TOY2)->m_total;
-    i64 elapsed = m_toyClock - static_cast<i64>(g_frameTime);
-    i32 cap = static_cast<i32>(elapsed);
-    if (elapsed < 0) {
+    // Retail 0x62568: (m_toyDuration - now) + m_toyClock - the toy-time REMAINING
+    // until the deadline, not the elapsed time (which is always <= 0 here).
+    i64 remaining = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
+    i32 cap = static_cast<i32>(remaining);
+    if (remaining < 0) {
         cap = 0;
     }
     i32 d0 = 0;
