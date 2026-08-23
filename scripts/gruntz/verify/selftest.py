@@ -899,6 +899,96 @@ class PriorsBlockControls(unittest.TestCase):
                                       "CImage::Render"))
 
 
+class ReviewCountClaimControls(unittest.TestCase):
+    """`walls recheck` re-measures the COUNT certifications a review states.  A
+    review that says "base/retail agree on 24 calls" is an assertion and nothing
+    re-ran it: `PlaceObjectFull` carried exactly that while the base had drifted
+    to 25.  Every sentence here is taken verbatim from
+    config/codex_wall_reviews.tsv, and the negatives are the two the first pass
+    got wrong in each direction."""
+
+    @staticmethod
+    def _units(evidence):
+        from gruntz.walls.recheck import claims
+        stated, _skipped = claims(evidence)
+        return {(u, n) for u, n, _s in stated}
+
+    def test_the_known_positive_is_read_through_its_semicolon(self):
+        """POSITIVE control carrying the property under test: the certification
+        that actually drifted.  Its agreement and its divergence share ONE
+        sentence, so splitting on `.` alone reads the `vs` and throws the whole
+        assertion away - which is how it escaped the first pass."""
+        self.assertEqual(
+            self._units(
+                "Base/retail now agree at 24 calls, 96 branches, and 64 relocs; "
+                "base has 15 vs retail 16 returns because the grouped preview "
+                "keeps world in EBP on one arm."
+            ),
+            {("calls", 24), ("branches", 96), ("relocs", 64)},
+        )
+
+    def test_a_connective_is_not_a_unit_qualifier(self):
+        """NEGATIVE control from 0x065e80: `returns 2/2 and relocs 249/249`
+        otherwise reads as "relocs 2" and invents a failure out of a hold."""
+        self.assertEqual(
+            self._units("stores 90/90, returns 2/2 and relocs 249/249 exact."),
+            {("returns", 2), ("relocs", 249)},
+        )
+
+    def test_the_unit_may_precede_the_pair(self):
+        """0x0f42f0 writes it the other way round."""
+        self.assertEqual(
+            self._units("Calls 31/31 and ordered relocs 312/312."),
+            {("calls", 31), ("relocs", 312)},
+        )
+
+    def test_a_two_spelling_measurement_is_not_a_certification(self):
+        """NEGATIVE control from 0x163db0, whose own review states retail has 3
+        returns to the base's 2: here `both` is two SOURCE spellings compared
+        against each other, not base against retail."""
+        self.assertEqual(
+            self._units(
+                "An explicit forward null-success goto and the exact authored "
+                "shape suggested by retail both compile byte-identically at "
+                "77.50 with 30 instructions, 3 branches and 2 returns."
+            ),
+            set(),
+        )
+
+    def test_a_rejected_frontier_is_not_a_certification(self):
+        """NEGATIVE control from 0x13f020: a candidate that was REJECTED."""
+        self.assertEqual(
+            self._units(
+                "Best structural frontier had 320/319 instructions, 32/32 "
+                "branches and 21/21 relocs but emitted bank arithmetic before "
+                "both Locks, so it was rejected."
+            ),
+            set(),
+        )
+
+    def test_a_disposable_probe_is_not_a_certification(self):
+        """NEGATIVE control from 0x17a460: measured under `inline_depth(0)`,
+        which the committed tree does not carry."""
+        self.assertEqual(
+            self._units(
+                "Disposable inline_depth(0) at those expressions proves 59/59 "
+                "calls, 43/43 branches, 65/65 relocs."
+            ),
+            set(),
+        )
+
+    def test_a_one_sided_count_is_never_read_as_agreement(self):
+        """0x02a570 states its branch delta; asserting it back would test the
+        parser's word order, not the tree."""
+        self.assertEqual(
+            self._units(
+                "Retail homes coordList at entry and reloads it on both sides "
+                "of RemoveAll, requiring the sole merge jump (38 vs 37 branches)."
+            ),
+            set(),
+        )
+
+
 class StoreScanFrameControls(unittest.TestCase):
     """`walls storescan` compares member-store ORDER, so its key has to be a
     MEMBER offset.  Excluding the literal `esp` base was not enough: cl builds

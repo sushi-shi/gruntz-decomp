@@ -110,6 +110,11 @@
                                   construction
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
+    gruntz walls recheck          re-measure the COUNT certifications a review
+                                  states ("base/retail agree on 24 calls, 96
+                                  branches, 64 relocs") against today's pair -
+                                  a review that certifies counts is an
+                                  assertion, and nothing re-ran it
     gruntz walls priors           BOTH prior-verdict stores for a worklist -
                                   the comment above the RVA() pin AND the
                                   review ledger row - screened before any A/B
@@ -153,6 +158,7 @@ _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "semsweep": "gruntz.walls.semdiff",
          "stale-markers": "gruntz.walls.stale_markers",
          "priors": "gruntz.walls.priors",
+         "recheck": "gruntz.walls.recheck",
          "review": "gruntz.walls.reviews"}
 
 
