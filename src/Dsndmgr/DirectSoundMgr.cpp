@@ -309,7 +309,7 @@ i32 DirectSoundMgr::CloneAndPlay(i32 key, i32 mode, i32 slot) {
     if (owner->m_initialized == 0) {
         return 0;
     }
-    owner->m_voiceList.RemoveMatching(this, 1);
+    owner->m_voiceList.RemoveMatching(this, SOUND_VOICE_TAG_RAMP);
 
     if (mode == 0) {
         SetVolumeByIndex(key);
@@ -1315,13 +1315,13 @@ i32 SoundDevice::FreeSamples() {
     if (m_initialized == 0) {
         return 0;
     }
-    DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);
+    PureSoundElem* node = elemOf<PureSoundElem>(m_voiceList.m_head);
     if (node == NULL) {
         return 1;
     }
     do {
         DSoundLink* n = node->m_link.m_next;
-        DSoundElem* next = elemOf<DSoundElem>(n);
+        PureSoundElem* next = elemOf<PureSoundElem>(n);
         node->Stop();
         m_voiceList.Unlink(node ? &node->m_link : NULL);
         if (node) {
@@ -1345,15 +1345,15 @@ i32 SoundDeviceReturnFalse() {
 
 RVA(0x00136f60, 0x74)
 void DSoundList::RemoveMatching(DirectSoundMgr* key, u32 tag) {
-    DSoundElem* e = elemOf<DSoundElem>(m_head);
+    PureSoundElem* e = elemOf<PureSoundElem>(m_head);
     while (e) {
         DSoundLink* node = &e->m_link;
         DSoundLink* n = e->m_link.m_next;
-        DSoundElem* next = elemOf<DSoundElem>(n);
+        PureSoundElem* next = elemOf<PureSoundElem>(n);
         if (tag != SOUND_VOICE_TAG_ALL && e->m_tag != tag) {
             continue;
         }
-        if (e->m_key == key) {
+        if (e->m_buffer == key) {
 
             Unlink(e ? &e->m_link : NULL);
             if (e) {
@@ -1367,30 +1367,28 @@ void DSoundList::RemoveMatching(DirectSoundMgr* key, u32 tag) {
 
 // @early-stop
 RVA(0x00136fe0, 0x7b)
-DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp) {
-    m_live = 1;
-    m_buffer = owner;
-    m_stopAndRewind = slot;
-    m_rampEndVolume = key;
+DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp)
+    : PureSoundElem(SOUND_VOICE_TAG_RAMP, owner) {
     m_rampStartVolume = pct;
+    m_rampEndVolume = key;
+    m_stopAndRewind = slot;
     m_rampDurationMs = mode;
     m_rampStartTime = (stamp == -1) ? timeGetTime() : stamp;
 }
 
-// @early-stop
 RVA(0x00137060, 0x6b)
 i32 DSoundVoice::Tick(i32 now) {
     i32 done = 0;
-    i32 elapsed = now - m_rampStartTime;
-    if (static_cast<u32>(elapsed) >= static_cast<u32>(m_rampDurationMs)) {
-        elapsed = m_rampDurationMs;
+    now -= m_rampStartTime;
+    if (static_cast<u32>(now) >= static_cast<u32>(m_rampDurationMs)) {
+        now = m_rampDurationMs;
         done = 1;
     }
     if (m_buffer->IsPlaying() == 0) {
         done = 1;
     } else {
         i32 vol =
-            (m_rampEndVolume - m_rampStartVolume) * elapsed / m_rampDurationMs + m_rampStartVolume;
+            (m_rampEndVolume - m_rampStartVolume) * now / m_rampDurationMs + m_rampStartVolume;
         m_buffer->SetVolumeByIndex(vol);
     }
     if (done && m_stopAndRewind != 0) {

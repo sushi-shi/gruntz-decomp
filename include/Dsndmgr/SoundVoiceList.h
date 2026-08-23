@@ -6,6 +6,7 @@
 #include <Enums.h>
 
 GZ_ENUM_CONST_BEGIN(SoundVoiceTag)
+    SOUND_VOICE_TAG_RAMP = 1,
     SOUND_VOICE_TAG_ALL = 0xffff
 GZ_ENUM_CONST_END(SoundVoiceTag)
 
@@ -21,9 +22,19 @@ template<class T> inline T* elemOf(DSoundLink* link) {
     return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
 }
 
+// The element base of every DSoundList: one link, the tag RemoveMatching filters
+// on, and the buffer it belongs to. The dtor is the vptr-restoring body at
+// 0x137330, and it stores ??_7PureSoundElem@@6B@ - so the class that owns
+// m_tag/m_buffer is this one, not a further-derived element type.
 struct PureSoundElem {
     virtual i32 Tick(i32 now) = 0;
     virtual i32 Stop() = 0;
+
+    DSoundLink m_link;
+    u32 m_tag;
+    DirectSoundMgr* m_buffer;
+
+    PureSoundElem(u32 tag, DirectSoundMgr* buffer) : m_tag(tag), m_buffer(buffer) {}
 
     // No class-level `operator delete`: retail's unwind funclet for a
     // `new`-cleanup on this class calls the GLOBAL ??3@YAXPAX@Z, and a
@@ -31,13 +42,6 @@ struct PureSoundElem {
     // ??3PureSoundElem@@SAXPAX@Z and has the funclet call that instead.
     RVA(0x00137330, 0x7)
     ~PureSoundElem() {}
-};
-
-struct DSoundElem : public PureSoundElem {
-
-    DSoundLink m_link;
-    u32 m_tag;
-    DirectSoundMgr* m_key;
 };
 
 // The shared list head: retail carries exactly one copy of each operation below

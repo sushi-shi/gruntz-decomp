@@ -7,14 +7,14 @@
 
 class DirectSoundMgr;
 
+// Tag 1 identifies a volume-ramp voice: DirectSoundMgr::CloneAndPlay cancels the
+// buffer's outstanding ramp with RemoveMatching(this, VOICE_TAG_RAMP) before
+// constructing the replacement.
 struct DSoundVoice : public PureSoundElem {
 
     virtual i32 Tick(i32 now) OVERRIDE;
     virtual i32 Stop() OVERRIDE;
 
-    DSoundLink m_link;
-    i32 m_live;
-    DirectSoundMgr* m_buffer;
     i32 m_stopAndRewind;
     i32 m_rampEndVolume;
     i32 m_rampStartVolume;
