@@ -325,7 +325,7 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
     sc, live = pairscan.scores()
     agree = collections.Counter()
     local = 0
-    miss, extra = [], []
+    miss, extra, counts = [], [], []
     for unit, (base, target) in sorted(
             pairscan.require_pairs({unit_filter} if unit_filter else None).items()):
         if live and unit not in live:
@@ -345,6 +345,8 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
                 continue
             (b, bp, be), (t, tp, te) = _sides(bobj, tobj, bf, tf, sym)
             local += be + te
+            if be != te:
+                counts.append((pct, unit, sym, be, te))
             if b == t:
                 for pair in t:
                     agree[tp.get(pair, "?")] += 1
@@ -353,7 +355,7 @@ def scan(unit_filter=None, fn_filter=None, calibrate=False):
                 miss.append((pct, unit, sym, sorted(t - b), tp))
             if b - t:
                 extra.append((pct, unit, sym, sorted(b - t), bp))
-    return agree, local, miss, extra
+    return agree, local, miss, extra, counts
 
 
 def _label(pairs, prov=None) -> str:
@@ -421,7 +423,7 @@ def main(argv=None) -> int:
                               "measuring nothing; fix it before reading a sweep")
         return 1 if bad else 0
 
-    agree, local, miss, extra = scan(unit, a.fn, a.calibrate)
+    agree, local, miss, extra, counts = scan(unit, a.fn, a.calibrate)
     if a.calibrate:
         print(f"CALIBRATION over 100.00% rows - every row below is a detector bug")
     hist = ", ".join(f"{n} {k}" for k, n in sorted(agree.items(),
@@ -434,6 +436,11 @@ def main(argv=None) -> int:
           a.only_global)
     _show("BASE-ONLY (we take it by value, retail does not)", extra,
           a.only_global)
+    if not a.only_global:
+        print(f"\nLOCAL AGGREGATE COPY COUNT differs (frame offsets are not "
+              f"comparable, the COUNT is): {len(counts)}")
+        for pct, u, sym, be, te in sorted(counts):
+            print(f"{pct:7.2f}  {u:<22} base {be} vs target {te:<10} {sym}")
     return 0
 
 
