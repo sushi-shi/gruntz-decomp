@@ -792,6 +792,35 @@ class JccScanControls(unittest.TestCase):
         self.assertEqual(dict(codes(lines)), {"je": 1, "jne": 1})
 
 
+class DiagnosePriorClassControls(unittest.TestCase):
+    """`walls diagnose` names the FIRST divergence; a review names the CAUSE.
+    On 8 of the queue's 53 review-only rows those disagree - the review traced
+    a branch delta to register allocation, which diagnose can only ever read as
+    CFG (`CGruntPuddle`'s own review says so: "the automatic CFG label is
+    downstream codegen").  Nothing told the matcher, so diagnose says it."""
+
+    @staticmethod
+    def _row(cls):
+        return {"status": "bounded", "wall_class": cls, "evidence": "x"}
+
+    def test_a_disagreeing_review_is_surfaced_with_both_labels(self):
+        from gruntz.walls.diagnose import prior_class_note
+        note = prior_class_note(self._row("regalloc"), False, "cfg")
+        self.assertIn("bounded/regalloc", note)
+        self.assertIn("not cfg", note)
+        self.assertIn("STALE", note)
+
+    def test_an_agreeing_review_is_still_pointed_at(self):
+        from gruntz.walls.diagnose import prior_class_note
+        note = prior_class_note(self._row("cfg"), True, "cfg")
+        self.assertIn("agrees", note)
+        self.assertIn("current", note)
+
+    def test_no_review_prints_nothing(self):
+        from gruntz.walls.diagnose import prior_class_note
+        self.assertIsNone(prior_class_note(None, False, "cfg"))
+
+
 class PriorsBlockControls(unittest.TestCase):
     """`walls priors` reads the verdict block above a pin.  Reading only the
     CONTIGUOUS block made one blank line hide a whole verdict, so a row with a

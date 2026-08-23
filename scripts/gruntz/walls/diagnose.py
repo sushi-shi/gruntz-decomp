@@ -21,6 +21,17 @@ The ladder (CLAUDE.md): the FIRST divergence class decides the wall.
              a TU-state probe (docs/patterns/tu-state-probe-family-*) as a
              disposable A/B only.
 
+A `prior:` line follows the class when `config/codex_wall_reviews.tsv` already
+holds a verdict for the row.  The two labels answer DIFFERENT questions and it
+matters when they disagree: this tool names the FIRST divergence, so any branch
+or return delta reads `cfg`, while a reviewer names the CAUSE they traced it to.
+On 8 of the queue's 53 review-only rows that cause is register allocation with
+the branch delta downstream of it - `CGruntPuddle`'s review says it outright
+("the automatic CFG label is downstream codegen").  Without the line a matcher
+reads "CFG - a structural reconstruction question" and hunts a source shape the
+review already disproved.  The class above is still what the bytes say; the
+`prior:` line only says who else has looked.
+
 Inputs, read-only: the Model (locate the function), the compare out-dir's
 NORMALIZED base/target objs (delink.coffx topology), tool.objdump for the
 instruction skeleton. No retail-image reads here: the pair IS the evidence
@@ -223,6 +234,8 @@ def diagnose(token: str, show_asm: bool = False) -> int:
         print("  class: NONE - the normalized pair is identical; the score "
               "gap is outside this function (pairing, data, or unit-level)")
 
+    _prior_class(b.rva, wall)
+
     if wall in ("cfg", "regalloc", "inline"):
         _duplicate_tail_probe(basm, tasm, wall)
 
@@ -232,6 +245,39 @@ def diagnose(token: str, show_asm: bool = False) -> int:
         print("  --- target ---")
         print("\n".join("  " + ln for ln in tasm.splitlines()[:60]))
     return 0
+
+
+def prior_class_note(row, fresh: bool, wall: str) -> str | None:
+    """The line to print when a review already classified this row.
+
+    The two labels answer DIFFERENT questions.  This function names the FIRST
+    divergence, so any branch or return delta reads CFG; a reviewer names the
+    CAUSE they traced it to, and on 8 of the queue's review-only rows that
+    cause is register allocation with the branch delta downstream of it.  A
+    matcher who sees only "CFG - a structural reconstruction question" goes
+    hunting for a source shape those reviews already disproved.
+    """
+    if row is None:
+        return None
+    state = "current" if fresh else "STALE, body edited since"
+    if row["wall_class"] == wall:
+        return (f"  prior: review agrees ({row['status']}/{row['wall_class']}, "
+                f"{state}) - gruntz walls priors")
+    return (f"  prior: a review classified this {row['status']}/"
+            f"{row['wall_class']}, not {wall} ({state}). This tool names the "
+            f"FIRST divergence; the review names the CAUSE - read it before "
+            f"treating the label above as the lead: gruntz walls priors")
+
+
+def _prior_class(rva: int, wall: str) -> None:
+    try:
+        from gruntz.walls.reviews import current as _cur, load as _load
+        row, fresh = _load().get(rva), rva in set(_cur())
+    except Exception:
+        return
+    note = prior_class_note(row, fresh, wall)
+    if note:
+        print(note)
 
 
 def _insn_text(asm: str) -> list[str]:
