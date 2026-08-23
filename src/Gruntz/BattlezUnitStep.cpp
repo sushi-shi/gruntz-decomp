@@ -366,8 +366,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     }
     band = unit->m_targetTeam;
     CBattlezMapConfig* bundle = &m_ctx->m_options[band].m_battlezConfig;
-    i32 rx = bundle->m_marker.m_x;
-    i32 ry = bundle->m_marker.m_y;
+    Coord marker = bundle->m_marker;
     if (unit->CoordCount() == 0) {
         switch (unit->m_defenderState) {
             case AISTATE_SEEK: {
@@ -375,31 +374,27 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 unit->m_routeMaskC = g_spawnState;
                 i32 gx = unit->m_defenderPx.m_x;
                 if (gx == -1) {
-                    i32 x, y;
+                    Coord goal;
 
                     if (bundle->m_attackWaypoints.GetSize() != 0) {
                         Coord out;
-                        Coord* r = PickSpawnCoord(&out, unit, band);
-                        x = r->m_x;
-                        y = r->m_y;
+                        goal = *PickSpawnCoord(&out, unit, band);
                     } else {
-                        x = rx;
-                        y = ry;
+                        goal = marker;
                     }
-                    unit->m_defenderPx.m_x = x;
-                    unit->m_defenderPx.m_y = y;
+                    unit->m_defenderPx = goal;
                     unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
                     return 1;
                 }
                 i32 gy = unit->m_defenderPx.m_y;
                 Coord c1;
                 (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
-                i32 dxA = abs(rx - (c1.m_x >> TILE_SHIFT_PX));
+                i32 dxA = abs(marker.m_x - (c1.m_x >> TILE_SHIFT_PX));
                 (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
-                i32 dyA = abs(ry - (c1.m_y >> TILE_SHIFT_PX));
+                i32 dyA = abs(marker.m_y - (c1.m_y >> TILE_SHIFT_PX));
                 i32 distA = dxA * dxA + dyA * dyA;
-                i32 dxB = abs(rx - gx);
-                i32 dyB = abs(ry - gy);
+                i32 dxB = abs(marker.m_x - gx);
+                i32 dyB = abs(marker.m_y - gy);
                 i32 distB = dxB * dxB + dyB * dyB;
                 if (distA > distB) {
                     unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
@@ -513,7 +508,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                         }
                     }
                 }
-                if (unit->TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
+                if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     unit->m_routeMaskA = g_spawnCfg;
                     unit->m_routeMaskC = g_spawnState;
                     unit->m_dwell = 0;
