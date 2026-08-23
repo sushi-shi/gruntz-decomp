@@ -58,3 +58,34 @@ matches, i.e. retail's own quirks — model them as-is.
 - The no-default switch over a closed enum domain (dir 1..8) is faithful:
   retail's own out-of-range path reads uninitialized slots too. Do not invent a
   default arm for it.
+
+## The class has BOTH outcomes: read the DEFAULT block before deciding
+
+An unassigned switch output is only a defect if retail assigns it. Two rows in
+`GruntSteps.cpp` sit in this class and resolve **opposite ways**; the decider is
+retail's shared default block, never the arms.
+
+**Defect — `ClaimSwitchTile` 0x52c70.** Retail keeps `x`/`y` live in ebx/edi
+across the whole switch, each arm only ADDS a delta, and six blocks serve eight
+jump-table entries because N and S enter MID-BLOCK (`0x52c9b` = `add edi,-32`
+alone). The default reloads BOTH (`0x52cc2`). Nothing is ever undefined, so our
+fall-through spelling that left `nextX` unassigned WAS a live uninitialized read.
+
+**Faithful — `StepCompassMove` 0x51c00, the `voice` cell.** Retail's arms build
+the 12-byte `GruntDirectionCell` into `[esp+0x44/0x48/0x4c]` (24 writes across
+the arms) and the shared default at `0x51e15` restores only the move pair:
+```
+051e15: mov edi,DWORD PTR [esp+0x38]   ; moveY = saved y
+051e19: mov esi,DWORD PTR [esp+0x34]   ; moveX = saved x
+051e1d: (join)
+```
+It never writes the voice slots, yet `0x52745` loads all three and passes them
+by value to `CGrunt::PlaySound` (set-facing) at `0x52765`. Retail reads
+uninitialized stack there. Our source matches; **initialising it would diverge**.
+
+**Recipe.** Find the switch's default target (the `ja`/`jae` guard above the
+`jmp DWORD PTR [reg*4+table]`). List what that block writes. Every output the
+arms write but the default does not is either (a) undefined in retail too -
+faithful, leave it - or (b) held live in a register across the switch, in which
+case decode the table: BLOCK COUNT BELOW ARM COUNT means mid-block entries and
+the value is never undefined.
