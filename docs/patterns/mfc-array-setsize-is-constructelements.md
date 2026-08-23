@@ -99,3 +99,18 @@ Measured 2026-08-08 (`ShadeTableCache.cpp`, `FaderMgr.cpp`):
 `CShadeTableArray::Serialize` 0x14fe90 83.83 -> **100.00 EXACT**,
 `CFaderArray::Serialize` 0x17e2a0 83.83 -> **100.00 EXACT**,
 `CShadeTableCache::HueRampTable` 0x14e830 99.29 -> **100.00 EXACT**.
+
+The first five hold: all are `best = cur = hist = 100.0000` in the ledger today.
+**HueRampTable does not, and it is not a lost fix** - `best = cur = hist =
+97.4468`, i.e. the ledger has never seen it at 100. Its source already carries
+this pattern's mechanism (its own `@early-stop` note says so), and what remains
+is an x87 scheduling choice that moves with TU state. So the 100.00 here was a
+point-in-time measurement under a TU composition the tree no longer has, not a
+spelling the tree is missing.
+
+**Reading a score claim in a pattern doc:** ask whether the doc names a SOURCE
+SHAPE the tree lacks or only a NUMBER. `allocate-check-then-body-is-the-then-
+block.md` named teardown-first the winner for `AddToList1` at 80.00 while the
+tree held the 77.41 body-first spelling - that was a real unapplied lever and
+taking it was free score. This line names no shape the tree lacks, so it is
+closed. A number without a shape is not a target.
