@@ -3629,10 +3629,10 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
         RECT rc;
         i32 x = m_rect10.left;
         rc.left = l + x;
-        rc.right = x + rr;
         i32 y = m_rect10.top;
         rc.top = t + y;
         rc.bottom = y + b;
+        rc.right = x + rr;
         n->m_rect14 = rc;
     }
     NotifyAllSlots();
