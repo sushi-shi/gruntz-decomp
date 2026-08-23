@@ -3587,6 +3587,85 @@ class ResidueClassifierControls(unittest.TestCase):
             store_census(masked(self._lines(["mov DWORD PTR [esp+0x10],ecx"]))),
             {})
 
+    def test_a_lea_of_its_own_base_is_the_same_addition(self):
+        """`lea ecx,[ecx+0x240]` IS `add ecx,0x240` - LEA does not write flags,
+        which is the only reason cl picks between them, and it was measured
+        going BOTH ways against retail in one tree (CTriggerMgr::Load carries
+        the lea where retail has the add; CBootyState::EnterState the add where
+        retail has the lea). Ten rows of the immediate bucket were this."""
+        self.assertEqual(self._kind(["lea ecx,[ecx+0x240]"],
+                                    ["add ecx,0x240"]), "none")
+        self.assertEqual(self._kind(["lea edx,[edx-0x132]"],
+                                    ["sub edx,0x132"]), "none")
+        self.assertEqual(self._kind(["lea esi,[esi+esi*1]"],
+                                    ["add esi,esi"]), "none")
+
+    def test_a_lea_into_a_different_register_is_not_an_addition(self):
+        """`lea ecx,[eax+0x240]` KEEPS eax; only the dst == base form is the
+        mirror, and the 3-byte `lea ecx,[ecx+0x0]` NOP is not an `add` at all."""
+        from gruntz.walls.residue import masked
+        self.assertNotEqual(self._kind(["lea ecx,[eax+0x240]"],
+                                       ["add ecx,0x240"]), "none")
+        self.assertEqual(masked(self._lines(["lea ecx,[ecx+0x0]"])),
+                         ["lea ecx,[ecx+0x0]"])
+
+    def test_the_high_byte_accumulator_form_is_one_instruction(self):
+        """`and dh,0xef` masks bits 8..15 and touches nothing else, so it IS
+        `and edx,0xffffefff`. CGruntzMapMgr::LoadAttributes read `immediate`
+        on this mirror alone."""
+        self.assertEqual(self._kind(["and edx,0xffffefff"],
+                                    ["and dh,0xef"]), "none")
+
+    def test_the_high_byte_mirror_still_sees_a_real_mask(self):
+        """`and edx,0xf` clears bits 4..31; `and dh,0xf` clears only 12..15."""
+        self.assertEqual(self._kind(["and edx,0xf"],
+                                    ["and dh,0xf"]), "immediate")
+
+    def test_a_one_past_the_end_pointer_is_one_address_under_two_names(self):
+        """A loop's end sentinel `&g_lut16[0x100]` is an address the delinker
+        resolves against whatever symbol STARTS there, while cl names it
+        against the array: `cmp esi,0x200|g_lut16` against `cmp esi,0x0|g_rUp`,
+        and 0x283ca0 + 0x200 == 0x283ea0. Seven `immediate` rows were this."""
+        import gruntz.walls.residue as R
+        saved, R._SYMS = R._SYMS, {"?g_lut16@@3PAGA": 0x283ca0,
+                                   "?g_rUp@@3HA": 0x283ea0}
+        try:
+            from gruntz.walls.semdiff import Line
+            mb = R.masked([Line(0, "cmp esi,0x200", "?g_lut16@@3PAGA")])
+            mt = R.masked([Line(0, "cmp esi,0x0", "?g_rUp@@3HA")])
+            self.assertEqual(mb, mt)
+        finally:
+            R._SYMS = saved
+
+    def test_a_constant_stored_through_a_relocated_address_is_not_an_addend(self):
+        """`mov DWORD PTR ds:g_x,0x55` carries TWO absolute tokens and only one
+        of them is the relocation's addend, so the fold declines - which is
+        what keeps a genuinely wrong stored constant in `immediate`."""
+        import gruntz.walls.residue as R
+        saved, R._SYMS = R._SYMS, {"?g_x@@3HA": 0x1000}
+        try:
+            from gruntz.walls.semdiff import Line
+            mb = R.masked([Line(0, "mov DWORD PTR ds:0x0,0x55", "?g_x@@3HA")])
+            mt = R.masked([Line(0, "mov DWORD PTR ds:0x0,0x66", "?g_x@@3HA")])
+            self.assertEqual(R.classify(R.residual_of(mb, mt)[1], mb, mt)[0],
+                             "immediate")
+        finally:
+            R._SYMS = saved
+
+    def test_the_objdiff_content_hash_is_not_an_identity(self):
+        """`_kMsToSeconds$Sdata_rdata_<sha>_0` names the SECTION's content, and
+        the section pools other constants, so ONE float hashes differently on
+        the two sides - the two standing CFader `referent` rows."""
+        import gruntz.walls.residue as R
+        saved, R._SYMS = R._SYMS, {}
+        try:
+            a = "_k$Sdata_rdata_%s_0" % ("a" * 64)
+            b = "_k$Sdata_rdata_%s_0" % ("b" * 64)
+            self.assertEqual(R.masked(self._lines(["fld DWORD PTR ds:0x0"], a)),
+                             R.masked(self._lines(["fld DWORD PTR ds:0x0"], b)))
+        finally:
+            R._SYMS = saved
+
 
 class EhActionControls(unittest.TestCase):
     """`walls ehactions` reports structure; neither count nor action shape is

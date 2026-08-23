@@ -36,16 +36,21 @@ answers the same question directly over the WHOLE stream (every member store
 and every callee-saved register copy, not just the ones inside a diff chunk),
 which is the sensitive form.
 
-Nine encoding mirrors are normalized away, because each was measured
+Twelve encoding mirrors are normalized away, because each was measured
 mislabelling real rows: the addend of a RELOCATED call or jump (position
 state - the referent is compared separately), cl's 2-byte `and al,imm8`
-form of `and eax,0xffffff00|imm8`, `add r,-K` against `sub r,K`, the forced
-zero displacement of an EBP-based or base-less memory operand, a
-referent NEITHER side has a name for (`$anon_data_<sha>` against `FUN_<va>`
-- a `$E` dynamic-init helper), the three-operand `lea` standing in for
-`inc`/`dec`/`add r,r` when the destination is not the source, cl's 3-byte
-`lea r,[r+0x0]` alignment pad against a `nop`, and the accumulator form of
-an absolute memory operand (`a1` against `8b 0d`). The referent test also
+form of `and eax,0xffffff00|imm8` and its high-byte twin `and dh,imm8` for
+`and edx,0xffff<imm8>ff`, `add r,-K` against `sub r,K`, `lea r,[r+K]`
+against `add r,K` when the destination IS the base, `lea r,[r+r*1]`
+against `add r,r`, the three-operand `lea` standing in for `inc`/`dec`
+when the destination is not the source, cl's 3-byte `lea r,[r+0x0]`
+alignment pad against a `nop`, the forced zero displacement of an
+EBP-based or base-less memory operand, the accumulator form of an absolute
+memory operand (`a1` against `8b 0d`), a referent NEITHER side has a name
+for (`$anon_data_<sha>` against `FUN_<va>` - a `$E` dynamic-init helper),
+and a DATA reference canonicalized to the ABSOLUTE address its
+`symbol+addend` names, so a one-past-the-end array pointer that the two
+sides name against different symbols cancels. The referent test also
 compares symbol SETS over the whole stream, so a CSE'd second load of a
 global both sides name is not an identity row; and `subobject` runs the
 arithmetic that register-stripping structurally cannot, so a RECT written
@@ -88,6 +93,110 @@ REG = re.compile(r"\b(eax|ecx|edx|ebx|esi|edi|ebp|al|cl|dl|bl|ah|ch|dh|bh"
 #: mirror mislabelled seven ctors as an immediate difference.
 ACC8 = re.compile(r"^(and|or|xor)\s+([abcd])l,0x([0-9a-f]{1,2})$")
 ACC8_HIGH = {"and": "ffffff", "or": "000000", "xor": "000000"}
+
+#: the same 2-byte form on a HIGH byte register: `and dh,0xef` masks bits
+#: 8..15 and touches nothing else, so it IS `and edx,0xffffefff`.
+#: `CGruntzMapMgr::LoadAttributes` read `immediate` on this mirror alone -
+#: our `and edx,0xffffefff` against retail's `and dh,0xef`, one instruction.
+ACC8H = re.compile(r"^(and|or|xor)\s+([abcd])h,0x([0-9a-f]{1,2})$")
+ACC8H_WRAP = {"and": ("ffff", "ff"), "or": ("0000", "00"),
+              "xor": ("0000", "00")}
+
+#: `lea ecx,[ecx+0x240]` IS `add ecx,0x240` when the destination IS the base:
+#: cl picks between them on its own (LEA does not write flags), and it was
+#: measured going BOTH ways against retail in one tree - the base carries the
+#: `lea` on CTriggerMgr::Load and CTriggerMgr::RemoveCellRecord where retail
+#: has the `add`, and the `add` on CBootyState::MoveLettersByDir and
+#: CBootyState::EnterState where retail has the `lea`. Bidirectional, so it is
+#: not a source lever, only noise in the immediate bucket. The zero
+#: displacement is left alone: `lea ecx,[ecx+0x0]` is cl's 3-byte NOP.
+LEA_ADD = re.compile(r"^lea\s+(e[a-z][a-z]),\[(e[a-z][a-z])([+-])0x([0-9a-f]+)\]$")
+
+#: and the doubling form: `lea esi,[esi+esi*1]` IS `add esi,esi`.
+LEA_DBL = re.compile(r"^lea\s+(e[a-z][a-z]),\[(e[a-z][a-z])\+(e[a-z][a-z])\*1\]$")
+
+#: A DATA reference is `symbol + addend`, and BOTH halves are the reference:
+#: the addend is not a program constant. A one-past-the-end array pointer
+#: (`&g_lut16[0x100]`, the end sentinel of a `for (p = a; p != a + N; p++)`)
+#: therefore names an address the delinker resolves against whatever symbol
+#: STARTS there, while cl names it against the array - `cmp esi,0x200|g_lut16`
+#: against `cmp esi,0x0|g_rUp`, and 0x283ca0 + 0x200 == 0x283ea0 exactly.
+#: Seven rows of the `immediate` bucket were this one shape, and census
+#: section 5's negative-addend twin (`&g_rasterVtxA[n-1]` resolved against the
+#: array that CONTAINS it) is the same arithmetic. Canonicalizing the pair to
+#: the absolute address it names can only cancel references that ARE the same
+#: address, so it cannot hide a wrong claim.
+ABS_TOKEN = re.compile(r"(?P<sign>[+-])?0x(?P<hex>[0-9a-f]+)")
+
+#: objdiff disambiguates a symbol it had to name from section CONTENT, so the
+#: same datum wears `$Sdata_bss_<sha>_0` in the base and a different `<sha>` in
+#: the target whenever the section pools anything else - census section 6, the
+#: two CFader `_kMsToSeconds` rows, which are ONE float under two section
+#: hashes. The content hash is objdiff bookkeeping, not identity, so it is
+#: dropped; the trailing ordinal is KEPT, because that is what distinguishes
+#: two anonymous symbols of the same section.
+OBJDIFF_TAG = re.compile(r"\$S\w*_[0-9a-f]{32,}_(\d+)$")
+OBJDIFF_ORD = re.compile(r"\$S_\d+$")
+
+_SYMS: dict[str, int] | None = None
+
+
+def _syms() -> dict[str, int]:
+    """{claimed symbol -> rva}, loaded once and fail-soft: with no Model the
+    canonicalization simply does not fire and every row reads as before.
+
+    A name claimed at MORE than one address is dropped, not picked between,
+    and so is an undecorated `<id>$S` whose identifier ALSO appears under
+    other claim names: `_s_gruntDirCenter$S` is one of 106 per-TU copies of
+    the GruntDirStatics device, so resolving it would state an address no
+    evidence supports (measured: it answers 0x2449e0 for a reference that
+    the base's own arithmetic puts at 0x22aef0, a different copy)."""
+    global _SYMS
+    if _SYMS is None:
+        try:
+            from gruntz.model import resolve
+            seen: dict[str, int] = {}
+            for b in resolve().claimed():
+                if seen.get(b.name, b.rva) != b.rva:
+                    seen[b.name] = -1
+                else:
+                    seen[b.name] = b.rva
+            for name in [k for k in seen if k.endswith("$S")]:
+                ident = name[:-2].lstrip("_")
+                if not ident:
+                    continue
+                if sum(1 for k in seen if ident in k) > 1:
+                    seen[name] = -1
+            _SYMS = {k: v for k, v in seen.items() if v >= 0}
+        except BaseException:
+            _SYMS = {}
+    return _SYMS
+
+
+def canon_ref(asm: str, ref: str | None) -> tuple[str, str | None]:
+    """Fold a DATA reference's addend into the referent as an ABSOLUTE address.
+
+    Fires only when the operand carries EXACTLY ONE absolute token, so which
+    one is the relocation's addend is not a guess: `mov DWORD PTR ds:0x0,0x5`
+    (a constant stored THROUGH a relocated address) has two and is left alone,
+    which is what keeps a genuinely wrong stored constant in the `immediate`
+    bucket instead of moving it to `referent`."""
+    if not ref:
+        return asm, ref
+    syms = _syms()
+    rva = syms.get(ref)
+    if rva is None:
+        rva = syms.get(OBJDIFF_ORD.sub("$S", ref))
+    if rva is None:
+        return asm, ref
+    hits = list(ABS_TOKEN.finditer(asm))
+    if len(hits) != 1:
+        return asm, ref
+    m = hits[0]
+    add = int(m.group("hex"), 16)
+    if m.group("sign") == "-":
+        add = -add
+    return asm[:m.start()] + "ADDEND" + asm[m.end():], f"@{rva + add:#x}"
 
 #: `add eax,0xffffffe0` IS `sub eax,0x20` - same three bytes' worth of work,
 #: same value, and cl picks between them on its own (measured going BOTH ways
@@ -138,10 +247,22 @@ def mirror(asm: str) -> str:
     if m:
         return (f"{m.group(1)} e{m.group(2)}x,"
                 f"0x{ACC8_HIGH[m.group(1)]}{int(m.group(3), 16):02x}")
+    m = ACC8H.match(asm)
+    if m:
+        hi, lo = ACC8H_WRAP[m.group(1)]
+        return (f"{m.group(1)} e{m.group(2)}x,"
+                f"0x{hi}{int(m.group(3), 16):02x}{lo}")
     m = ADDNEG.match(asm)
     if m and int(m.group(3), 16) >= 0x80000000:
         flip = "sub" if m.group(1) == "add" else "add"
         return f"{flip} {m.group(2)},0x{0x100000000 - int(m.group(3), 16):x}"
+    m = LEA_ADD.match(asm)
+    if m and m.group(1) == m.group(2) and int(m.group(4), 16):
+        op = "add" if m.group(3) == "+" else "sub"
+        return mirror(f"{op} {m.group(1)},0x{m.group(4)}")
+    m = LEA_DBL.match(asm)
+    if m and m.group(1) == m.group(2) == m.group(3):
+        return f"add {m.group(1)},{m.group(1)}"
     return asm
 
 
@@ -165,7 +286,10 @@ def masked(lines, self_name: str = "") -> list[str]:
         if FRAME_IMM.match(asm):
             asm = "FRAME"
         ref = "?unnamed" if ln.ref and UNNAMED.match(ln.ref) else ln.ref
-        out.append(mirror(asm) + (f"|{ref}" if ref else ""))
+        if ref:
+            ref = OBJDIFF_TAG.sub(r"$S_\1", ref)
+        asm, ref = canon_ref(mirror(asm), ref)
+        out.append(asm + (f"|{ref}" if ref else ""))
     return out
 
 

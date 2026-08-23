@@ -17,35 +17,38 @@ names — and naming what survives.
 ## The census
 
 The first census (left column) was taken before four of the mirrors below were
-normalized; the right column is after §14-16 and the §12 arithmetic. Every row
-that moved moved from an actionable bucket into a coin bucket, and each move was
-adjudicated by hand against the retail bytes first.
+normalized; the middle column is the same rows after; the right column is the
+current todo queue with every mirror below normalized - the §12 arithmetic and
+§14-16 landed in two separate lanes and only the right column has both. Every
+row that moved moved from an actionable bucket into a coin bucket, and each move
+was adjudicated by hand against the retail bytes first.
 
-| kind | first | now | what it means |
-|---|---:|---:|---|
-| `regname` | 148 | 172 | register rotation only |
-| `displacement` | 84 | 91 | a member offset differs |
-| `selection` | 66 | 109 | the mnemonic multiset differs |
-| `immediate` | 75 | 99 | a constant differs |
-| `schedule` | 36 | 36 | a pure permutation |
-| `operand` | 32 | 17 | same mnemonics, different operands |
-| `arm-copy` | 30 | 37 | retail has callee-saved `mov r,r` the base lacks |
-| `none` | 6 | 18 | nothing survives the mask |
-| `extra-copy` | 13 | 14 | the inverse of `arm-copy` |
-| `subobject` | - | 3 | one side splits an address, the other folds it |
-| `referent` | 15 | **2** | one side names a symbol the other never names |
+| kind | first | +§8-11 | now | what it means |
+|---|---:|---:|---:|---|
+| `regname` | 148 | 153 | RN | register rotation only |
+| `displacement` | 84 | 75 | DI | a member offset differs |
+| `selection` | 66 | 77 | SE | the mnemonic multiset differs |
+| `immediate` | 75 | 72 | IM | a constant differs |
+| `schedule` | 36 | 36 | SC | a pure permutation |
+| `operand` | 32 | 32 | OP | same mnemonics, different operands |
+| `arm-copy` | 30 | 30 | AC | retail has callee-saved `mov r,r` the base lacks |
+| `none` | 6 | 15 | NO | nothing survives the mask |
+| `extra-copy` | 13 | 13 | EC | the inverse of `arm-copy` |
+| `subobject` | - | - | SO | one side splits an address, the other folds it |
+| `referent` | 15 | **2** | RE | one side names a symbol the other never names |
 
-(the `first` column was 505 rows; `now` is the 598-row todo queue after §14-16,
-so read the two columns as a shape, not a subtraction.)
+(the `first` column was 505 rows and `now` is the larger todo queue, so read the
+columns as a shape, not a subtraction.)
 
-**204 of 505 (40%) are `regname` + `schedule` + `none`** — nothing a source edit
+**COINS of TOTAL (COINPCT) are `regname` + `schedule` + `none`** - nothing a source edit
 reaches. Restricted to residual <= 4 the coin share is 62%: the closer a row is,
 the more likely the remainder is a coin. Rank by KIND, not by residual.
 
-**The `referent` bucket is DRAINED**: 15 rows down to 2, and both survivors are
-the `.rdata` section-hash artifact of §6. Thirteen were false positives (§8, §9)
-and one was a real defect — the only wrong claim in the whole bucket, and it was
-in the MODEL rather than the C++ (§ below).
+**The `referent` bucket is DRAINED**: 15 rows down to 2. Thirteen were false
+positives (§8, §9) and one was a real defect — the only wrong claim in the whole
+bucket, and it was in the MODEL rather than the C++ (§ below). The two `.rdata`
+section-hash rows of §6 are now normalized too, and the two survivors are §14
+boundary pointers whose target symbol is an unclaimed file-local static.
 
 **The arm-result-temp defect is 43 rows (30 + 13)** measured on the diff chunks,
 and the direct whole-stream screen (`--arm`) finds 78 rows whose member-store
@@ -55,8 +58,8 @@ both are steerable — see the worked examples below.
 ## The false positives, i.e. what a raw diff calls a difference and is not
 
 Each of these was measured mislabelling real rows. The tool normalizes §1-4,
-§8-11, §12 and §14-16; §5-7 and §13 it cannot see, so apply them by hand before
-calling a row a bug.
+§8-12 and §14-16 (§5 and §6 fall out of §14's arithmetic); §7, §13 and
+§17-19 it cannot see, so apply them by hand before calling a row a bug.
 
 **1. A relocated call's addend.** `call 0xe4` vs `call 0xe0` against the same
 `|?GetAt@CStringArray@@...` referent is position state — anything inserted above
@@ -202,6 +205,64 @@ what differs is that retail's arms share one `m_levelId = frame; return 1;`
 tail, so `frame` is not a known constant there. Before reading a base-only
 constant as a wrong value, check whether it EQUALS the arm's own guard.
 
+**14. A one-past-the-end array pointer, i.e. §5 in the FORWARD direction.** A
+loop's end sentinel `&g_lut16[0x100]` is an ADDRESS, and the delinker resolves
+an address against whatever symbol STARTS there while cl names it against the
+array it came from: `cmp esi,0x200|g_lut16` against `cmp esi,0x0|g_rUp`, and
+0x283ca0 + 0x200 == 0x283ea0 exactly. The immediate the two sides "differ" on
+is the relocation's ADDEND, which is half of the reference, not a program
+constant. **Seven rows of the `immediate` bucket were this one shape**
+(`CDDSurface::Blit168` 0x13fbb0, `DecodeRun` 0x143cf0, `Decode` 0x144b30,
+`DecodePcxData` 0x1457a0, `CBootyState::ShowLevelCompleteMessage` 0x1c9d0,
+`LoadGameAssetNamespaces` 0x18830, `BuildBootyWalkingGruntz` 0x1b450) and every
+one sat at 99.5-99.98% — one instruction from exact, with nothing in the C++ to
+fix. Now normalized: a DATA reference whose symbol the Model can resolve is
+canonicalized to the absolute address `symbol + addend` names, so §5's negative
+addend folds by the same arithmetic. Two names for one address can only cancel
+references that ARE the same address, so the fold cannot hide a wrong claim.
+Two survivors remain, where retail's side names an unclaimed file-local static.
+
+**15. cl's accumulator encoding on a HIGH byte register.** §2's twin: `and
+dh,0xef` masks bits 8..15 and touches nothing else, so it IS `and edx,
+0xffffefff`. `CGruntzMapMgr::LoadAttributes` 0x810f0 read `immediate` on this
+one instruction. (`and edx,0xf` is NOT `and dh,0xf` — the byte form is only a
+mirror of the 32-bit mask that leaves the OTHER three bytes alone.)
+
+**16. `lea r,[r+K]` against `add r,K`.** §11's twin, and the same argument
+holds: identical value, and the only thing that distinguishes them is that LEA
+does not write flags, which is cl's choice and not the source's. Measured going
+BOTH ways against retail in one tree — `CTriggerMgr::Load` 0x7abc0 and
+`RemoveCellRecord` 0x78260 carry the `lea` where retail has the `add`, while
+`CBootyState::EnterState` 0x18d30, `MoveLettersByDir` 0x19b90,
+`CSBI_GruntMachine::BuildResourceTabStatusBar` 0xe8a70 and `CPlay::
+OnRButtonDown` 0xceae0 carry the `add` where retail has the `lea`. The doubling
+form `lea esi,[esi+esi*1]` / `add esi,esi` is the same mirror (`CFecFile::
+ReadArchive` 0x17b5f0, `CStatusBarMgr::UpdateChipGrinderStatusBar` 0x1076a0).
+Only the dst == base form is mirrored: `lea ecx,[eax+0x240]` KEEPS eax, and
+`lea ecx,[ecx+0x0]` is cl's 3-byte NOP, so both are left alone.
+
+**17. A jump table whose arms OVERLAP.** cl lets one case enter another arm's
+BODY: in `CRollingBall::Update` 0xb0140 the S arm's table entry points at
+0xb05fa, the second instruction of the SW arm (`add [esi+0x78],-0x10; add
+[esi+0x7c],+0x10`), so eight logical directions live in six code blocks. The
+base emits each arm separately and therefore materializes the constants more
+times than retail does — read as an `immediate` count difference. Verified
+against the table itself (36-byte index at 0xb0ca4, 15 dwords at 0xb0c68): our
+`MovingDeathTileSetAId` case labels and their (dx, dy) pairs match retail arm
+for arm. The signature: the surviving constants are the SAME values, only the
+COUNT differs, and the function has an indirect `jmp`.
+
+**18. Constant re-association across an induction variable.** `CStatusBarMgr::
+LoadTabSprites` 0x102250 has `add eax,0x12c` and `add eax,0xf` where retail has
+`add eax,0x13b` — and 0x12c + 0xf == 0x13b. Before reading two base constants
+as wrong, check whether they SUM to the target's one.
+
+**19. Loop strength reduction turning a trip count into a byte bound.**
+`CMultiStartDlg::DoDataExchange` 0xc20a0 counts `ebx` 0..4 with a separate
+`add ebp,0x238` cursor where retail counts `ebx` 0, 0x238, ... and tests `cmp
+ebx,0x8e0` — 4 * 0x238 == 0x8e0. Same loop, one induction variable instead of
+two.
+
 ## Worked example: the memory case, twice, both a whole score
 
 `CSBI_ImageSetAni::Init` 0xe7980, flagged `missing-store [r+0x4c] base 1
@@ -274,20 +335,34 @@ gets the false-positive list above applied by hand before it is called a bug.
 
 The hit rate is the thing to plan around: **sixty-five rows of the three
 actionable buckets have been adjudicated against the retail bytes and TWO were
-defects** — one a label, one a calling convention, and neither a wrong member
-offset. The bucket's value is not that it finds many bugs; it is that a row it
-clears is a row nobody needs to open again, so every false positive removed from
-it is worth more than another pass over it.
+defects** - one a label, one a calling convention, and neither a wrong member
+offset. A second full pass over the `immediate` bucket alone (25 further rows
+read against the disassembly, 2026-08-23) found no semantic defect at all and
+six more false-positive classes, §14-§19. The bucket's value is not that it
+finds many bugs; it is that a row it clears is a row nobody needs to open again,
+so every false positive removed from it is worth more than another pass over it.
 
 What the `displacement` bucket is actually made of, after §10, §12 and §14-16
 have been taken out, is three recurring shapes that no source edit reaches:
 
-* a **rematerialization count** — both sides read the same member set and only
+* a **rematerialization count** - both sides read the same member set and only
   which copy stays in a register differs (`CEyeCandy`'s ctor, `CreateDemoMover`,
   `CUFO`'s ctor before it was fixed, `FillPlayerList`, `BoxesOverlap`,
   `LoadVehicleGruntSprites`, `CGrunt::LoadGruntDecayConfig2`, which recomputes a
   64-bit subtraction retail keeps and cl CSEs);
-* a **cross-jump merge degree** — one side shares an exit the other duplicates,
+* a **cross-jump merge degree** - one side shares an exit the other duplicates,
   which renumbers every branch displacement (`CSBI_WellGoo::Setup`);
 * a **spill-slot renumbering** from one extra 4-byte local
   (`CAniAdvanceCursor::Deserialize`, `CImage::RenderImage`).
+
+**What `immediate` rows still look actionable, after §14-§19.** The residue that
+survives is dominated by two shapes that are NOT constants: §12's sub-object
+base pointer (`mov r,[r+0x40]` against `add r,0x40; mov r,[r]` - retail names
+the sub-object with a pointer local where we spell the flat member), and the
+`/GX` EH state variable, whose `mov DWORD PTR [esp+K],<small int>` run shifts by
+one whenever the set or order of destructible temporaries differs
+(`CGruntzMgr::ChangeState` 0x8fab0, `CStatusBarMgr::BuildTabzDialog` 0x10a340,
+`CDDrawSurfaceMgr::SnapshotChildren` 0x156020 and `RestoreChildren` 0x156530,
+`CGruntzMgr::TransitionState` 0x8b960). Neither is a wrong value: the first is a
+type/locals question and the second is an EH-object-set question, and both are
+better read from `walls diagnose` than from the constant census.
