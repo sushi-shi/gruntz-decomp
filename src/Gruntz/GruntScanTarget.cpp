@@ -257,7 +257,7 @@ i32 CGrunt::ScanNearestTarget() {
                 PRIO(pa, m_entranceReason);
                 i32 pb;
                 PRIO(pb, sg->m_entranceReason);
-                if (pb >= pa && sg->m_entranceCommitted != 0
+                if (pa <= pb && sg->m_entranceCommitted != 0
                     && this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) != 0) {
                     if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                         StepArrivalDrop(
