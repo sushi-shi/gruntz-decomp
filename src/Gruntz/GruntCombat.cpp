@@ -841,8 +841,7 @@ i32 CGrunt::PathScan() {
                             CoordPoolNode* free = g_coordPool.m_freeHead;
                             if (free->m_next != NULL) {
                                 fresh = &free->m_coord;
-                                fresh->m_x = src->m_x;
-                                fresh->m_y = src->m_y;
+                                *fresh = *src;
                                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                             }
                             s.AddTail(fresh);

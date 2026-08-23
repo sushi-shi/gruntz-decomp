@@ -2036,8 +2036,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     Coord* copy = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
                         copy = &g_coordPool.m_freeHead->m_coord;
-                        copy->m_x = remaining->m_coord->m_x;
-                        copy->m_y = remaining->m_coord->m_y;
+                        *copy = *remaining->m_coord;
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
                     list.AddTail(copy);

@@ -257,8 +257,7 @@ common: {
     if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
         return 1;
     }
-    m_arrivalCell.m_x = head->m_x;
-    m_arrivalCell.m_y = head->m_y;
+    m_arrivalCell = *head;
     if (CoordCount() != 0) {
         RECYCLE_GRUNT_COORDS_EXPANDED(this)
     }

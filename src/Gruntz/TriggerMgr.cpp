@@ -2376,8 +2376,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
             dst = &fhNode->m_coord;
             g_coordPool.m_freeHead = fhNode->m_next;
         }
-        dst->m_x = src->m_x;
-        dst->m_y = src->m_y;
+        *dst = *src;
         sel->AddTail(dst);
     }
     m_selSentinel = -1;
