@@ -60,7 +60,7 @@ brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	68	49
+butemgr	68	50
 butetail	3	3
 butetree	2	1
 bzkinddispatch	1	1
@@ -703,7 +703,7 @@ butemgr	??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z	100.0000	100.0000	1	cp
 butemgr	??1CButeNode@@UAE@XZ	100.0000	100.0000	1	a083b63ba5ec	0x174d70	100.0000	
 butemgr	??1CButeValue@@QAE@XZ	100.0000	100.0000	1	cpp:4a31d4474beb	0x172160	100.0000	
 butemgr	??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x171550	100.0000	
-butemgr	??_Dstrstream@@QAEXXZ	100.0000	99.3750	1	cpp:4a31d4474beb	0x171a40	100.0000	
+butemgr	??_Dstrstream@@QAEXXZ	100.0000	100.0000	1	cpp:4a31d4474beb	0x171a40	100.0000	
 butemgr	??_GCBSecStream@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x174d30	100.0000	
 butemgr	??_GCButeNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x174d50	100.0000	
 butemgr	??_GCString@@QAEPAXI@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x173700	100.0000	
@@ -741,7 +741,7 @@ butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	1	f25151331eea	0x1711b
 butemgr	?PeekState2@CButeMgr@@QAEFFD@Z	100.0000	100.0000	1	28c9f0692d87	0x170430	100.0000	
 butemgr	?PeekState@CButeMgr@@QAEFFD@Z	100.0000	100.0000	1	879cc63c44f3	0x170400	100.0000	
 butemgr	?ReportError@CButeMgr@@QAAXPBDZZ	100.0000	100.0000	1	9e4b72ca60f9	0x1706c0	100.0000	
-butemgr	?Save@CButeMgr@@QAE_NXZ	93.3732	93.3732	2	9c0c5c6ab513	0x171640	93.3913	
+butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	2	9c0c5c6ab513	0x171640	93.3913	
 butemgr	?ScanState@CButeMgr@@QAEXFD@Z	100.0000	100.0000	1	9f129ac52f58	0x170460	100.0000	
 butemgr	?ScanToken@CButeMgr@@QAE_NW4ButeToken@@@Z	100.0000	100.0000	1	f8dd61db5b85	0x170710	100.0000	
 butemgr	?SetDouble@CButeMgr@@QAEXPBD0N@Z	100.0000	95.0255	1	7a241ee0252a	0x172ce0	100.0000	
@@ -2634,7 +2634,7 @@ hash	?Walk@CHashB@@QAEPAVCSymTab@@PBDH@Z	100.0000	100.0000	3	3bdd5a215d4d	0x13c3
 hash	?Walk@CHashC@@QAEPAUCParseSource@@PBDH@Z	100.0000	100.0000	9	910ee61e59d1	0x13c270	100.0000	
 heapdiag	?ClearTopmostStyle@@YAXPAX@Z	100.0000	100.0000	1	3b7f1a1e01c6	0x118990	100.0000	
 heapdiag	?FileExists@@YAHPBD@Z	100.0000	100.0000	1	f621848b9726	0x1189c0	100.0000	
-heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	97.6234	97.6234	3	117605d7a32e	0x118ce0	97.6234	
+heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	95.8961	95.8961	4	da9e1ba45691	0x118ce0	97.6234	
 heapdiag	?HeapCheckDump@@YAHH@Z	100.0000	100.0000	1	567034d25bd3	0x118a30	100.0000	
 heapdiag	?HeapStats@@YAHXZ	100.0000	100.0000	1	237f51b4e446	0x118bf0	100.0000	
 heapdiag	?ReportHeapStatus@@YAXH@Z	100.0000	100.0000	1	48ed71963746	0x118b50	100.0000	
