@@ -706,6 +706,50 @@ class LinkTierControls(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 # walls sieves                                                                #
 # --------------------------------------------------------------------------- #
+class JccScanControls(unittest.TestCase):
+    """The condition-code sieve. Its whole false-positive population is the
+    jump-table payload past the last `ret`, so that exclusion gets a negative
+    control, and each of the three verdicts gets a demonstrated case."""
+
+    @staticmethod
+    def _lines(asms):
+        from types import SimpleNamespace
+        return [SimpleNamespace(addr=i * 4, asm=a, ref=None)
+                for i, a in enumerate(asms)]
+
+    def test_jump_table_payload_past_the_last_ret_is_not_a_branch(self):
+        from gruntz.walls.jccscan import codes
+        body = ["cmp eax,0x4", "je 0x20", "ret 0x8",
+                # everything below is table/padding objdump decodes as code
+                "js 0x40", "jo 0x44", "jp 0x48"]
+        self.assertEqual(dict(codes(self._lines(body))), {"je": 1})
+
+    def test_a_signedness_transposition_is_reported_as_SIGNED(self):
+        from gruntz.walls.jccscan import classify, codes
+        ours = codes(self._lines(["cmp eax,ecx", "jl 0x10", "ret"]))
+        retail = codes(self._lines(["cmp eax,ecx", "jb 0x10", "ret"]))
+        rec = classify(ours, retail)
+        self.assertEqual(rec["kind"], "SIGNED")
+        self.assertEqual(rec["signed"], [("jl", "jb")])
+
+    def test_equality_against_ordered_is_reported_as_OPERATOR(self):
+        from gruntz.walls.jccscan import classify, codes
+        ours = codes(self._lines(["je 0x8", "je 0xc", "ret"]))
+        retail = codes(self._lines(["jl 0x8", "jle 0xc", "ret"]))
+        self.assertEqual(classify(ours, retail)["kind"], "OPERATOR")
+
+    def test_a_transposed_je_jne_count_is_reported_as_POLARITY(self):
+        from gruntz.walls.jccscan import classify, codes
+        ours = codes(self._lines(["je 0x8", "je 0xc", "ret"]))
+        retail = codes(self._lines(["jne 0x8", "jne 0xc", "ret"]))
+        self.assertEqual(classify(ours, retail)["kind"], "POLARITY")
+
+    def test_equal_multisets_report_nothing_rather_than_a_clean_bill(self):
+        from gruntz.walls.jccscan import classify, codes
+        same = codes(self._lines(["je 0x8", "jl 0xc", "ret"]))
+        self.assertIsNone(classify(same, same))
+
+
 class PairscanControls(unittest.TestCase):
     def test_rep_movsd_folds_and_movsx_does_not_count(self):
         from gruntz.walls.aggregate_copies import REP_MOVS
