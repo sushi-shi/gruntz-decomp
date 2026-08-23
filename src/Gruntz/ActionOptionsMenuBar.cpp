@@ -336,9 +336,10 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
+        CImage* frame = m_frame;
         i32 zero = 0;
-        if (m_frame) {
-            mgr->m_imageRegistry->AnyValueMatches(m_frame, tmp, &zero);
+        if (frame) {
+            mgr->m_imageRegistry->AnyValueMatches(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
@@ -347,21 +348,22 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
+        CImage* frame = m_buttonFrame[0];
         i32 zero = 0;
-        if (m_buttonFrame[0]) {
-            mgr->m_imageRegistry->AnyValueMatches(m_buttonFrame[0], tmp, &zero);
+        if (frame) {
+            mgr->m_imageRegistry->AnyValueMatches(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
     }
 
     g_serialCounter++;
+    memset(tmp, 0, sizeof(tmp));
     {
+        CImage* frame = m_buttonFrame[1];
         i32 zero = 0;
-        CImage* v20 = m_buttonFrame[1];
-        memset(tmp, 0, sizeof(tmp));
-        if (v20) {
-            mgr->m_imageRegistry->AnyValueMatches(v20, tmp, &zero);
+        if (frame) {
+            mgr->m_imageRegistry->AnyValueMatches(frame, tmp, &zero);
         }
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&zero, sizeof(zero));
