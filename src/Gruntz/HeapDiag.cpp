@@ -194,8 +194,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
 
     if (pFirst(hSnap, &pe)) {
         do {
-            MODULEENTRY32 me;
-            memset(&me, 0, sizeof(me));
+            MODULEENTRY32 me = {0};
             if (Utils::WinAPI::LegacyFindModule(
                     pe.th32ProcessID,
                     pe.th32ModuleID,
