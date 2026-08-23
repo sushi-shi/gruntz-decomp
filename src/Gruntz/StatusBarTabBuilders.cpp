@@ -165,14 +165,8 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     m_redrawFrames = 2;
 }
 
-// @early-stop
-// Retail overlays the cached g_gameReg->m_world onto the LOAD arm's index slot,
-// which a named function-scope local cannot express; the whole residue is that
-// one dword of frame. `sub esp,0x8c` against retail's `sub esp,0x88` with zero
-// exclusive semdiff keys - every displacement, store, immediate, mnemonic and
-// referent is equal, so the extra dword is addressed by nothing. Measured and
-// rejected: sharing ONE function-scope `idx` between the SAVE and LOAD arms
-// instead of a per-arm `v` and `idx` leaves the frame at 0x8c and costs 0.04.
+// Each LOAD group scopes its own `idx`: cl 5.0 then overlays that home onto the
+// `reg` spill, which is dead once the first group has hoisted it into ESI.
 RVA(0x000e8e00, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(
     CFileMemBase* s,
@@ -234,7 +228,6 @@ i32 CSBI_GruntMachine::SerializeFields(
 
         case SERIAL_LOAD: {
             CObject* out;
-            i32 idx;
 
             g_serialCounter++;
             s->Read(buf, SERIAL_NAME_LEN);
@@ -247,63 +240,73 @@ i32 CSBI_GruntMachine::SerializeFields(
             }
             s->Read(&m_frameIdxA, sizeof(m_frameIdxA));
 
-            g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            s->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 i = idx;
-                out = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r;
-                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+            {
+                i32 idx;
+                g_serialCounter++;
+                s->Read(buf, SERIAL_NAME_LEN);
+                s->Read(&idx, sizeof(idx));
+                if (strlen(buf) != 0) {
+                    i32 i = idx;
+                    out = NULL;
+                    reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
+                    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
+                    CImage* r;
+                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    } else {
+                        r = NULL;
+                    }
+                    m_frameA = r;
                 } else {
-                    r = NULL;
+                    m_frameA = NULL;
                 }
-                m_frameA = r;
-            } else {
-                m_frameA = NULL;
             }
             s->Read(&m_frameIdxB, sizeof(m_frameIdxB));
 
-            g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            s->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 i = idx;
-                out = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r;
-                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+            {
+                i32 idx;
+                g_serialCounter++;
+                s->Read(buf, SERIAL_NAME_LEN);
+                s->Read(&idx, sizeof(idx));
+                if (strlen(buf) != 0) {
+                    i32 i = idx;
+                    out = NULL;
+                    reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
+                    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
+                    CImage* r;
+                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    } else {
+                        r = NULL;
+                    }
+                    m_frameB = r;
                 } else {
-                    r = NULL;
+                    m_frameB = NULL;
                 }
-                m_frameB = r;
-            } else {
-                m_frameB = NULL;
             }
 
-            g_serialCounter++;
-            s->Read(buf, SERIAL_NAME_LEN);
-            s->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 i = idx;
-                out = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
-                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r;
-                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+            {
+                i32 idx;
+                g_serialCounter++;
+                s->Read(buf, SERIAL_NAME_LEN);
+                s->Read(&idx, sizeof(idx));
+                if (strlen(buf) != 0) {
+                    i32 i = idx;
+                    out = NULL;
+                    reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
+                    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
+                    CImage* r;
+                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
+                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    } else {
+                        r = NULL;
+                    }
+                    m_standaloneFrame = r;
                 } else {
-                    r = NULL;
+                    m_standaloneFrame = NULL;
                 }
-                m_standaloneFrame = r;
-            } else {
-                m_standaloneFrame = NULL;
             }
+
             break;
         }
     }
