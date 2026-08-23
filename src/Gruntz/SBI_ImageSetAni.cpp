@@ -63,12 +63,20 @@ i32 CSBI_ImageSetAni::Init(
     m_step = b4;
 
     if (b0 == -1) {
-        m_frameStart = (b4 >= 0) ? tbl->m_minIndex : tbl->m_maxIndex;
+        if (b4 >= 0) {
+            m_frameStart = tbl->m_minIndex;
+        } else {
+            m_frameStart = tbl->m_maxIndex;
+        }
     } else {
         m_frameStart = b0;
     }
     if (b1 == -1) {
-        m_frameEnd = (b4 >= 0) ? tbl->m_maxIndex : tbl->m_minIndex;
+        if (b4 >= 0) {
+            m_frameEnd = tbl->m_maxIndex;
+        } else {
+            m_frameEnd = tbl->m_minIndex;
+        }
     } else {
         m_frameEnd = b1;
     }
