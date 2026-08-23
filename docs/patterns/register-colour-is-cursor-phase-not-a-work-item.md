@@ -57,6 +57,13 @@ and only the cursor's entry phase differs, which is C1 handle state. Four inert 
 on `SaveVideoCheckboxes`: named locals for the results, one reused local, the
 TU-state probe, and inverting `if (x == NULL) return;` into `if (x != NULL) { ... }`.
 
+**The TU-state lever does not reach it either.** Nineteen disposable probes on
+`Construct` - nine `typedef`s immediately above its `RVA()` pin and ten function
+prototypes above the TU's first project include, counts 1..16 - leave it at 95.42 to
+four decimals every time, and leave `CAniAdvanceCursor::Deserialize` in the same TU
+at 95.77 every time. Declaration-count steering
+([[declaration-count-window-steers-regalloc]]) is not a way round a colour row.
+
 **Detector control.** The same sieve over the 6,596 EXACT functions reports 2 sites,
 both in one `grunt` row whose fuzzy rounds to 100.00 - i.e. no false positives from
 truly exact rows, and no PURE rows at all.
