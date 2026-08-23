@@ -18,6 +18,16 @@ GZ_ENUM_CONST_BEGIN(VolumeScale)
     MIDI_VOLUME_MAX = 127
 GZ_ENUM_CONST_END(VolumeScale)
 
+inline i32 MidiVolumeToPercent(i32 v) {
+    if (v <= 0) {
+        return 0;
+    }
+    if (v >= MIDI_VOLUME_MAX) {
+        return VOLUME_PCT_MAX;
+    }
+    return v * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
+}
+
 // DirectSound's playback-rate limits, as clamped by
 // DirectSoundMgr::SetFrequencyPercent. It computes a rate from a percentage
 // offset and then pins it strictly INSIDE the range - `>= MAX` becomes MAX - 1
