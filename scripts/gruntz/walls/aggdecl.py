@@ -60,7 +60,18 @@ agree on frame offsets. That is walls.storescan's rule and the taint tracking
 is shared with it in spirit - a register that received a frame address is a
 frame base however it is spelled.
 
-    gruntz walls aggdecl [--todo] [--unit U] [--fn F] [--calibrate]
+`--reads` runs the READ side of the same question, and it is the more
+productive half. A whole-object copy loads BOTH halves before anything is
+tested; `a.m_x != X || a.m_y != Y` short-circuits, so cl tests the first half
+straight out of memory (`cmp [obj+K],r`) and only touches the second on the
+fall-through. Three kinds: PAIR (both halves in registers, no conditional
+branch between), SPLIT (a branch separates the touches), MEMOP (a half is
+consumed as a memory operand and never loaded). CTriggerMgr::ApplyTriggerB
+0x6e120 is the worked positive: one `Coord` copy per compared pair took it
+87.70 -> 88.73 and made the whole region instruction-for-instruction retail's.
+Calibration on the 100% rows: 1515 comparable keys, 1515 agree, zero rows.
+
+    gruntz walls aggdecl [--todo] [--reads] [--unit U] [--fn F] [--calibrate]
                          [--control] [--explain UNIT SYM DISP]
 """
 
@@ -96,6 +107,14 @@ WINDOW = 8
 #: how far a cursor bump may sit from the pair and still explain it
 WALK_SPAN = 8
 AGGREGATE = ("COPYF", "COPYM", "ARG", "WALK")
+
+#: `--reads`: the READ side of the same question. A whole-object copy loads
+#: BOTH halves before anything is tested; `a.m_x != X || a.m_y != Y` short-
+#: circuits, so cl tests the first half straight out of memory and only
+#: touches the second on the fall-through. CTriggerMgr::ApplyTriggerB 0x6e120
+#: is the worked positive (87.70 -> 88.73).
+COND_JUMP = re.compile(r"^j(?!mp$)[a-z]+$")
+READ_WINDOW = 10
 
 
 def _analyse(ins):
@@ -262,6 +281,55 @@ def classify(ins, window: int = WINDOW):
     return out
 
 
+def classify_reads(ins, window: int = READ_WINDOW):
+    """{(root, K): [kind]} for each consecutive dword pair that is READ.
+
+    PAIR   both halves land in registers with no conditional branch between
+           them - a whole-object copy
+    SPLIT  a conditional branch separates the two touches - `||` short-circuit
+    MEMOP  a half is consumed as a memory operand (`cmp [obj+K],r`) and never
+           loaded, which only a field-wise test produces
+    """
+    taints, unfolds = _analyse(ins)
+    touches = []
+    for i, (_off, mn, ops) in enumerate(ins):
+        for operand in [o.strip() for o in ops.split(",")]:
+            mem = _split_mem(operand)
+            if mem is None:
+                continue
+            base, disp = mem
+            if base not in REG32 or _base_regs(base) & taints[i] \
+                    or base.startswith("esp"):
+                continue
+            parts = [o.strip() for o in ops.split(",")]
+            loaded = (mn == "mov" and len(parts) == 2
+                      and parts[0] in REG32 and parts[1] == operand)
+            if mn == "mov" and not loaded:
+                continue          # a STORE, which classify() owns
+            root, at = unfolds[i][base]
+            touches.append((i, root, at + disp, loaded))
+    first = {}
+    for i, root, disp, loaded in touches:
+        first.setdefault((root, disp), (i, loaded))
+    out = defaultdict(list)
+    for (root, disp), (ia, load_a) in first.items():
+        hi = first.get((root, disp + 4))
+        if hi is None:
+            continue
+        ib, load_b = hi
+        lo_i, hi_i = (ia, ib) if ia < ib else (ib, ia)
+        if hi_i - lo_i > window:
+            continue
+        if not (load_a and load_b):
+            kind = "MEMOP"
+        elif any(COND_JUMP.match(ins[j][1]) for j in range(lo_i + 1, hi_i)):
+            kind = "SPLIT"
+        else:
+            kind = "PAIR"
+        out[(root, disp)].append((kind, hi_i - lo_i - 1, "asc", lo_i))
+    return out
+
+
 def keyed(cl):
     """{unfolded member displacement: [kind, ...]} - the base ROOT is not
     comparable across the two sides, the unfolded displacement is."""
@@ -271,12 +339,14 @@ def keyed(cl):
     return out
 
 
-def sides(bobj, tobj, bf, tf, sym):
-    return (keyed(classify(pairscan.insns(bobj, *bf[sym]))),
-            keyed(classify(pairscan.insns(tobj, *tf[sym]))))
+def sides(bobj, tobj, bf, tf, sym, reads=False):
+    fn = classify_reads if reads else classify
+    return (keyed(fn(pairscan.insns(bobj, *bf[sym]))),
+            keyed(fn(pairscan.insns(tobj, *tf[sym]))))
 
 
-def scan(unit_filter=None, fn_filter=None, todo=False, calibrate=False):
+def scan(unit_filter=None, fn_filter=None, todo=False, calibrate=False,
+         reads=False):
     from gruntz.walls import inventory
     pairscan.require_pairs({unit_filter} if unit_filter else None)
     rows = inventory.build(unit_filter, 100.0, todo=todo)
@@ -307,15 +377,16 @@ def scan(unit_filter=None, fn_filter=None, todo=False, calibrate=False):
                 unpaired += 1
                 continue
             n_fn += 1
-            bk, tk = sides(bobj, tobj, bf, tf, sym)
+            bk, tk = sides(bobj, tobj, bf, tf, sym, reads)
             for disp in set(bk) | set(tk):
                 b, t = sorted(bk.get(disp, [])), sorted(tk.get(disp, []))
                 n_keys += 1
                 tally[(tuple(b), tuple(t))] += 1
                 if not b or not t:
                     continue
-                agg_b = any(k in AGGREGATE for k in b)
-                agg_t = any(k in AGGREGATE for k in t)
+                whole = ("PAIR",) if reads else AGGREGATE
+                agg_b = any(k in whole for k in b)
+                agg_t = any(k in whole for k in t)
                 if agg_b and not agg_t:
                     over.append((pct, unit, sym, rva, disp, b, t))
                 if agg_t and not agg_b:
@@ -368,6 +439,23 @@ mov ecx,DWORD PTR [esp+0x10]
 mov DWORD PTR [esi+0x10],eax
 mov DWORD PTR [esi+0x14],ecx
 """
+#: ApplyTriggerB 0x6e120: the pair-load retail emits, and the `||` we had
+FIXTURE_PAIR_READ = """
+mov eax,DWORD PTR [ebp+0x17c]
+mov ecx,DWORD PTR [ebp+0x180]
+cmp eax,edx
+jne 0x100
+cmp ecx,DWORD PTR [esp+0x24]
+je 0x200
+"""
+FIXTURE_SPLIT_READ = """
+cmp DWORD PTR [ebp+0x17c],eax
+jne 0x100
+mov ecx,DWORD PTR [ebp+0x180]
+mov edx,DWORD PTR [esp+0x34]
+cmp ecx,edx
+je 0x200
+"""
 #: TrackAssignedEnemy: `lea ebx,[edi+0x60]` makes `[eax+0x8]` member 0x68
 FIXTURE_FOLD = """
 lea ebx,[edi+0x60]
@@ -391,6 +479,13 @@ def control() -> bool:
     ]
     for name, text, disp, want in cases:
         got = keyed(classify(_parse(text))).get(disp)
+        good = got == want
+        ok &= good
+        print(f"  {'OK  ' if good else 'FAIL'} {name:24s} +0x{disp:x} -> {got}")
+    for name, text, disp, want in (
+            ("pair read (retail)", FIXTURE_PAIR_READ, 0x17c, ["PAIR"]),
+            ("split read (ours)", FIXTURE_SPLIT_READ, 0x17c, ["MEMOP"])):
+        got = keyed(classify_reads(_parse(text))).get(disp)
         good = got == want
         ok &= good
         print(f"  {'OK  ' if good else 'FAIL'} {name:24s} +0x{disp:x} -> {got}")
@@ -432,6 +527,9 @@ def main(argv=None) -> int:
         prog="gruntz walls aggdecl", description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--todo", action="store_true")
+    ap.add_argument("--reads", action="store_true",
+                    help="the READ side: does each side load BOTH halves "
+                         "before testing either")
     ap.add_argument("--unit")
     ap.add_argument("--fn", help="substring of the mangled name")
     ap.add_argument("--calibrate", action="store_true",
@@ -448,11 +546,13 @@ def main(argv=None) -> int:
         return explain(a.explain[0], a.explain[1], int(a.explain[2], 0))
     unit = check_unit(a.unit)
     over, under, tally, n_fn, n_keys, unpaired = scan(
-        unit, a.fn, a.todo, a.calibrate)
+        unit, a.fn, a.todo, a.calibrate, a.reads)
     print(f"functions screened: {n_fn}   member pair-keys: {n_keys}"
           f"   unpaired symbols: {unpaired}")
-    for title, rows in (("OVER-AGGREGATED (we copy, retail does not)", over),
-                        ("UNDER-AGGREGATED (retail copies, we do not)", under)):
+    what = "read the pair whole" if a.reads else "copy"
+    for title, rows in ((f"OVER-AGGREGATED (we {what}, retail does not)", over),
+                        (f"UNDER-AGGREGATED (retail {what}s, we do not)"
+                         .replace("wholes", "whole"), under)):
         print(f"\n{title}: {len(rows)}")
         for pct, u, sym, rva, disp, b, t in sorted(rows)[:a.limit or None]:
             print(f"  {rva or '':8s} {u:22s} {pct:6.2f} +0x{disp:x}"
