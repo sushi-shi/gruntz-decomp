@@ -21,8 +21,11 @@
                                   stack-argument bytes. The stack complement of
                                   thisscan, which owns ECX: a dropped RECEIVER
                                   is invisible here and a dropped ARGUMENT is
-                                  invisible there. --virtual runs the
-                                  vtable-slot census over the same names
+                                  invisible there. --cdecl is the half `ret 0`
+                                  cannot do - our declared __cdecl argument
+                                  bytes against RETAIL's caller cleanup, still
+                                  one-sided. --virtual runs the vtable-slot
+                                  census over the same names
     gruntz walls valuetemp        by-value struct temp sieve: retail's inlined
                                   accessor returns a pair BY VALUE and leaves the
                                   UNREAD half's store dead in the frame

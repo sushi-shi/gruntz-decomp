@@ -11,7 +11,8 @@ arguments (`__stdcall` / `__thiscall`). Our declaration states the same two fact
 mangled name. The comparison needs only the retail image - no compare report, no pairing, no
 score - so it reaches every function, including the ones already at 100.00.
 
-    gruntz walls retscan [--all] [--blind]
+    gruntz walls retscan [--all] [--blind]     # the callee's own `ret`
+    gruntz walls retscan --cdecl [--all]       # retail's caller cleanup
 
 This is the STACK complement of `walls thisscan`, which owns ECX. A dropped RECEIVER is
 invisible here by construction (`this` rides in ECX and is not part of `ret N`, which is
@@ -46,6 +47,28 @@ A body whose only exit is an INDIRECT tail jump (`jmp DWORD PTR [eax+0x40]`, a v
 dispatch) states no immediate at all and is the one honest blind spot. A DIRECT tail `jmp` is
 not: a tail jump is only legal between functions with the same stack-argument bytes, so the
 target's `ret` is the caller's.
+
+## The other half: `ret 0` says nothing about a `__cdecl` arity
+
+A `__cdecl` callee pops nothing, so a trailing argument it never reads is invisible in its own
+bytes exactly as a receiver is. `--cdecl` reads RETAIL's caller cleanup instead - still
+one-sided, so it needs no reconstructed, paired or scoring caller, which is what separates it
+from `walls thisscan --arity`. Four reader rules, each forced by a false hit:
+
+* ONE `add esp,N` is the whole cleanup; a SECOND is the caller releasing its own storage
+  (`call DiscardDebugOutput / add esp,0x4 / add esp,0x100` reads as 0x104 if summed).
+* cl 5.0 spells a two-argument cleanup as two `pop ecx` and is free to put an instruction
+  BETWEEN them (`pop ecx / test eax,eax / pop ecx`), so the run accumulates across non-esp
+  instructions. `DestructElements`, `ConstructElements`, `FindPopupMenuFromID`,
+  `AfxDynamicDownCast` and `AfxTimeToFileTime` all read as popping 4 of 8 when it was cut.
+* `pop esi` / `pop edi` / `pop ebp` is the EPILOGUE, never an argument - walking past them
+  reaches the caller's frame release (`BuildColorChannelTables()` takes nothing and its
+  caller's `add esp,0x6c` sits three instructions later).
+* a zero-argument callee has nothing to check; skip it rather than screen it.
+
+The cleanup may sit one or two instructions after the call
+(`call MakeButeSectionKey / mov eax,[esi+0x5a4] / add esp,0xc`), so the window is four. 130 of
+our `__cdecl` declarations and 36 library labels decidable, ZERO disagreements.
 
 ## The control, and the result
 

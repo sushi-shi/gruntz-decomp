@@ -1,6 +1,7 @@
 """gruntz.walls.retscan - the one-sided calling-convention sieve.
 
     gruntz walls retscan [--all] [--blind] [--limit N] [--json]
+    gruntz walls retscan --cdecl [--all]
     gruntz walls retscan --virtual [--limit N]
 
 A callee's own `ret` states its convention and its stack-argument byte count,
@@ -76,6 +77,41 @@ position rule survives both, so a row agrees when the expected value is
 PRESENT among the immediates decoded - a spurious decode can add a value but
 never remove the true one.  That trades recall on the 60 non-singleton rows
 for freedom from false positives.
+
+`--cdecl` IS THE HALF `ret 0` CANNOT DO.  For a `__cdecl` callee `ret` states
+the convention and NOTHING about the arity - the callee pops nothing, so a
+trailing argument it never reads is invisible in its own bytes exactly as a
+receiver is.  The caller's `add esp,N` is the only witness, and reading it
+from RETAIL alone keeps the screen one-sided: it needs no reconstructed,
+paired or scoring caller, which is what separates it from
+`walls thisscan --arity`.
+
+Four reader rules, each forced by a false hit:
+
+  * ONE `add esp,N` is the whole cleanup.  A SECOND is the caller releasing
+    its own storage - `call DiscardDebugOutput / add esp,0x4 / add esp,0x100`
+    reads as popping 0x104 if the two are summed.
+  * cl 5.0 spells a two-argument cleanup as two `pop ecx` AND is free to put
+    an instruction between them (`pop ecx / test eax,eax / pop ecx`), so the
+    run accumulates across non-esp instructions.  Five MFC rows
+    (`DestructElements`, `ConstructElements`, `FindPopupMenuFromID`,
+    `AfxDynamicDownCast`, `AfxTimeToFileTime`) read as popping 4 of 8 when it
+    was cut at the first one.
+  * `pop esi` / `pop edi` / `pop ebp` is the EPILOGUE, never an argument.
+    Walking past them reaches the caller's frame release -
+    `BuildColorChannelTables()` takes nothing and its caller's `add esp,0x6c`
+    sits three instructions later.
+  * a zero-argument callee has nothing to check, and any nearby `add esp` is
+    the caller's business, so those rows are skipped rather than screened.
+
+The cleanup may legitimately sit one or two instructions after the call
+(`call MakeButeSectionKey / mov eax,[esi+0x5a4] / add esp,0xc`), so the
+window is four; a site whose cleanup cl merged with a neighbour's shows up as
+sites disagreeing and is parked.
+
+2026-08-23: 130 of our `__cdecl` declarations and 36 config/retail labels
+decidable, ZERO disagreements.  Blind: 107 with no direct retail call site,
+87 with no arguments, 7 varargs (a vararg site's cleanup is its own).
 
 `--virtual` is the vtable-slot census, kept here because it asks the same
 one-sided question of the same names.  Its FORWARD direction - a body a
@@ -504,6 +540,141 @@ def report(title, rows, stat, limit, scores):
         print(f"      {r['sig'][:150]}")
 
 
+#: the caller-side cleanup of a `__cdecl` call. cl 5.0 spells `add esp,4` as
+#: `pop ecx`, and merges the cleanup of adjacent calls into one `add`.
+CLEANUP = re.compile(r"^add\s+esp,(0x[0-9a-f]+)$")
+CALL_AT = re.compile(r"^call\s+0x[0-9a-f]+$")
+#: the cleanup run ends here: a transfer, the next call's arguments, or a
+#: callee-saved restore. `pop esi`/`pop edi`/`pop ebp` is the EPILOGUE - only
+#: `pop ecx` is cl's spelling of `add esp,4`, and walking past the others
+#: reaches the caller's own frame release (`BuildColorChannelTables()` takes
+#: nothing and its caller's `add esp,0x6c` sits three instructions later).
+CLEANUP_STOP = re.compile(
+    r"^(call|jmp|j\w+|ret|leave|push|int3|nop|pop\s+(?!ecx))\b")
+#: how far past the call a cleanup may sit. Three of the five first-run
+#: false hits had one instruction between the call and its `add esp,N`
+#: (`call MakeButeSectionKey / mov eax,[esi+0x5a4] / add esp,0xc`).
+CLEANUP_WINDOW = 4
+
+
+def cdecl_cleanups(img, tmap, rva: int):
+    """[(site, bytes the CALLER pops)] over retail's direct calls to `rva`.
+
+    A `__cdecl` callee pops nothing, so `ret` says its convention and NOTHING
+    about its arity: a trailing argument it never reads is invisible in its
+    own bytes exactly as a receiver is. The caller's `add esp,N` is the only
+    witness, and reading it from RETAIL alone keeps the screen one-sided -
+    it does not need the caller reconstructed, paired, or scoring.
+    """
+    entries = [rva] + img.thunks_to(rva)
+    sites = sorted({s for e in entries
+                    for s, op in img.call_index.get(e, ()) if op == 0xE8})
+    keys = None
+    out = []
+    for site in sites:
+        if site not in tmap or not CALL_AT.match(tmap[site]):
+            continue                    # the 0xE8 scan hit an immediate, or
+        if keys is None:                # the sweep is not synced here
+            keys = sorted(tmap)
+        i = __import__("bisect").bisect_right(keys, site)
+        popped = 0
+        for k in keys[i:i + CLEANUP_WINDOW]:
+            asm = tmap[k]
+            if CLEANUP_STOP.match(asm):
+                break
+            m = CLEANUP.match(asm)
+            if m:
+                # ONE `add esp,N` is the whole cleanup. A SECOND one is the
+                # caller releasing its own storage, not more arguments:
+                # `call DiscardDebugOutput / add esp,0x4 / add esp,0x100`
+                # reads as popping 0x104 if the two are summed.
+                popped += int(m.group(1), 16)
+                break
+            if asm == "pop ecx":
+                # cl 5.0 spells a two-argument cleanup as two `pop ecx`, and
+                # is free to put an instruction BETWEEN them
+                # (`pop ecx / test eax,eax / pop ecx`), so the run is
+                # accumulated across non-esp instructions rather than cut at
+                # the first one. Five MFC rows read as popping 4 of 8 when it
+                # was cut.
+                popped += 4
+        if popped:
+            out.append((site, popped))
+    return out, len(sites)
+
+
+def cdecl_screen(bindings, limit: int, as_json: bool, label: str) -> list[dict]:
+    """Our declared `__cdecl` argument bytes against retail's caller cleanup."""
+    from gruntz.sema.index import index
+    img = retail()
+    idx = index()
+    tmap = text_lines(img)
+    dm = demangle([b.name for b in bindings])
+    stat, rows = Counter(), []
+    for b in bindings:
+        sig = dm.get(b.name)
+        if not sig:
+            continue
+        start = declarator(sig)
+        if start is None or CONV.search(sig, start).group(1) != "cdecl":
+            continue
+        stat["cdecl"] += 1
+        known, udt, why = stack_bytes(sig)
+        if why in ("no-params", "varargs"):
+            stat["blind:" + why] += 1     # a vararg site's cleanup is its own
+            continue
+        if not known and not udt:
+            # nothing to check: a zero-argument `__cdecl` call needs no
+            # cleanup, so any nearby `add esp` belongs to the caller
+            stat["blind:no-arguments"] += 1
+            continue
+        cleanups, nsites = cdecl_cleanups(img, tmap, b.rva)
+        if not nsites:
+            stat["blind:no-call-site"] += 1
+            continue
+        if not cleanups:
+            stat["blind:no-adjacent-cleanup"] += 1
+            continue
+        seen = {c for _s, c in cleanups}
+        if len(seen) != 1:
+            # cl merges the cleanup of ADJACENT calls into one `add esp,N`,
+            # so a site can legitimately pop more than its own arguments.
+            stat["blind:merged-cleanup"] += 1
+            continue
+        actual = seen.pop()
+        expect = {known}
+        if hidden_return_pointer(sig):
+            expect.add(known + 4)         # the caller pops the hidden pointer
+        lower = known + 4 * udt
+        bad = (actual < lower) if udt else (actual not in expect)
+        stat["udt-bounded" if udt else "decidable"] += 1
+        if not bad:
+            stat["agree"] += 1
+            continue
+        stat["DISAGREE"] += 1
+        rows.append({"rva": b.rva, "unit": b.unit or "", "name": b.name,
+                     "sig": sig, "expect": sorted(expect), "lower": lower,
+                     "udt": udt, "actual": actual, "sites": len(cleanups),
+                     "all_sites": nsites})
+    if as_json:
+        return rows
+    print(f"\n{label}")
+    for k in ("cdecl", "decidable", "udt-bounded", "agree", "DISAGREE"):
+        if k in stat:
+            print(f"    {k:24} {stat[k]:5d}")
+    for k in sorted(stat):
+        if k.startswith("blind:"):
+            print(f"    {k:24} {stat[k]:5d}")
+    for r in rows[:limit]:
+        want = (f"expect esp+{'/'.join(f'0x{v:x}' for v in r['expect'])}"
+                if r["expect"] and not r["udt"]
+                else f"expect esp+>=0x{r['lower']:x}")
+        print(f"  0x{r['rva']:08x} {r['unit'][:20]:20} {want}, retail pops "
+              f"0x{r['actual']:x} at {r['sites']}/{r['all_sites']} site(s)")
+        print(f"      {r['sig'][:150]}")
+    return rows
+
+
 def report_blind(blind, limit: int) -> None:
     """The rows the screen could not decide, so the census is a SET rather
     than a percentage. Read them by hand: they are where a defect hides."""
@@ -580,6 +751,10 @@ def main(argv=None) -> int:
                          "mismatch is a wrong CLAIM rather than a defect")
     ap.add_argument("--blind", action="store_true",
                     help="list the rows the screen cannot decide, by reason")
+    ap.add_argument("--cdecl", action="store_true",
+                    help="the arity screen `ret 0` cannot do: our declared "
+                         "__cdecl argument bytes against RETAIL's caller "
+                         "cleanup (`add esp,N`), read one-sided")
     ap.add_argument("--virtual", action="store_true",
                     help="the vtable-slot census over the same names")
     ap.add_argument("--limit", type=int, default=40)
@@ -597,6 +772,19 @@ def main(argv=None) -> int:
     named = [b for b in model.functions
              if b.name and b.name.startswith("?") and b.size]
     ours = [b for b in named if b.channel == "src"]
+    if args.cdecl:
+        out = {"src": cdecl_screen(
+            ours, args.limit, args.json,
+            "OUR `__cdecl` DECLARATIONS - `ret 0` states the convention and "
+            "nothing\nabout the arity, so the witness is retail's own caller "
+            "cleanup:")}
+        if args.all:
+            out["other"] = cdecl_screen(
+                [b for b in named if b.channel != "src"], args.limit,
+                args.json, "EVERY OTHER `__cdecl` CLAIM (library labels):")
+        if args.json:
+            json.dump(out, sys.stdout)
+        return 0
     rows, stat, blind = scan(ours, scores)
     out = {"src": {"stat": dict(stat), "rows": rows, "blind": blind}}
     if not args.json:
