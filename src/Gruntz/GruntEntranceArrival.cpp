@@ -526,13 +526,13 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
 
-    if (sel != 0) {
+    if (sel == 0) {
         if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 0xb, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(this, 0xa, -1, -1, -1);
         }
     } else {
         if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 0xa, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(this, 0xb, -1, -1, -1);
         }
     }
     return 0;

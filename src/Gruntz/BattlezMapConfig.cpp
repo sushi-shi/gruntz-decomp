@@ -1847,10 +1847,10 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 goto returnZero;
             }
             if (hi && unit->m_defenderState != AISTATE_RETURN) {
-                if (rand() % 5 == 0) {
-                    EnterDefenderMode(unit, 0x16);
-                } else {
+                if (rand() % 5) {
                     EnterDefenderMode(unit, 0x12);
+                } else {
+                    EnterDefenderMode(unit, 0x16);
                 }
             }
             if (lo2) {
