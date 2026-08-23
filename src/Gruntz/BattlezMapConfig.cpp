@@ -4466,8 +4466,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         // Retail loads BOTH fields and spills m_y to a slot it never reads - the
         // extra 4 bytes of frame (0xc vs our 0x8).  A struct copy is what keeps
         // the second load alive.
-        Coord sc = src->m_arrivalCell;
-        if (sc.m_x != m_ownerId) {
+        if (src->ArrivalCell().m_x != m_ownerId) {
             return 0;
         }
     }

@@ -128,8 +128,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
     }
 inflight: {
 
-    Coord arrivalCell = g->m_arrivalCell;
-    CGrunt* cur = m_triggerMgr->m_grid[15 * arrivalCell.m_x + arrivalCell.m_y];
+    CGrunt* cur = m_triggerMgr->m_grid[15 * g->ArrivalCell().m_x + g->ArrivalCell().m_y];
     i32 W = m_board->m_width;
     i32 H = m_board->m_height;
     Coord c0;
@@ -258,9 +257,9 @@ Coord CGrunt::GetTilePos() {
 // @early-stop
 RVA(0x00031ca0, 0x2f2)
 i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
-    Coord cell = unit->m_arrivalCell;
-    if (cell.m_x != -1 && cell.m_y != -1) {
-        CGrunt* target = m_triggerMgr->m_grid[cell.m_x * 15 + cell.m_y];
+    if (unit->ArrivalCell().m_x != -1 && unit->ArrivalCell().m_y != -1) {
+        CGrunt* target =
+            m_triggerMgr->m_grid[unit->ArrivalCell().m_x * 15 + unit->ArrivalCell().m_y];
         if (target != NULL) {
             CGameObject* lvl = target->m_object;
             if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {

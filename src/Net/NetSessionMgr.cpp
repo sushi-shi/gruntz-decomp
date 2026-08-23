@@ -759,10 +759,10 @@ i32 CNetSession::Checksum() {
         do {
             CGrunt* grunt = static_cast<CGrunt*>(m_session->m_mgr->m_cmdGrid->m_grid[idx]);
             if (grunt != NULL) {
-                Coord tile = grunt->m_lastTilePx;
                 sum += IDX(grunt->m_entranceCell.direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
-                       + grunt->m_object->m_screenX + tile.m_x + tile.m_y;
+                       + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
+                       + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->m_entranceReason;
                 PickupType effective = carried;
