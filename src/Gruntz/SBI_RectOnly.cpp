@@ -3956,10 +3956,6 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 }
 
 // @early-stop
-// Retail homes `a` in eax at entry (a speculative load above the pool branch) and
-// keeps the pool head in edx; cl loads `a` lazily inside the branch. 7 body
-// spellings and an inline-helper formal-binding A/B all emit the identical lazy
-// shape - C1 handle-state, not source.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
