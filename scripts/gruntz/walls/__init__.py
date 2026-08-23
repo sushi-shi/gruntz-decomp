@@ -22,6 +22,14 @@
                                   three shapes that look identical and are not
                                   an aggregate; `--control` re-proves the
                                   detector on all four fixtures
+    gruntz walls uninitscan       CONDITIONALLY-UNINITIALIZED LOCAL sieve, via
+                                  clang-cl over the clangd database: cl 5.0 has
+                                  no flow-sensitive C4701 and is silent on the
+                                  whole class. A hit inside a function already
+                                  at 100% is FAITHFUL - the bytes are retail's,
+                                  so the hole is retail's; the rest is the
+                                  worklist. Blind to aggregate members, which
+                                  `--control` re-proves
     gruntz walls framescan        stack-frame-size sieve: our `sub esp,N`
                                   against retail's, ranked by what survives
                                   masking the displacements a frame shift moves
@@ -193,6 +201,7 @@ _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "vptrscan": "gruntz.walls.vptrscan",
          "aggscan": "gruntz.walls.aggscan",
          "aggdecl": "gruntz.walls.aggdecl",
+         "uninitscan": "gruntz.walls.uninitscan",
          "escapescan": "gruntz.walls.escapescan",
          "reloadscan": "gruntz.walls.reloadscan",
          "valuetemp": "gruntz.walls.valuetemp",
