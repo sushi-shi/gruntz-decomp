@@ -184,14 +184,14 @@ RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
 
-    if (hdr->headerSize > sizeof(*hdr)) {
+    WwdHeader* source = hdr;
+    if (source->headerSize > sizeof(*source)) {
         return 0;
     }
 
-    m_header = *hdr;
+    m_header = *source;
 
     // Byte-forced view of packed WWD storage.
-    WwdHeader* source = hdr;
     char* block = reinterpret_cast<char*>(source);
     Bytef* ehAlloc = NULL;
 
