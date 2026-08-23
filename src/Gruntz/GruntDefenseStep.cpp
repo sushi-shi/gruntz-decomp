@@ -183,15 +183,9 @@ i32 CGrunt::StepArrivalDefense() {
                 {
                     Coord sp;
                     occ->GetScreenPos(&sp);
-                    if (TileSwitch(
-                            sp.m_x >> TILE_SHIFT_PX,
-                            sp.m_y >> TILE_SHIFT_PX,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        )
-                        == 0) {
+                    sp.m_y >>= TILE_SHIFT_PX;
+                    sp.m_x >>= TILE_SHIFT_PX;
+                    if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) == 0) {
                         goto L_f318a;
                     }
                     SET_GRUNT_ARRIVAL_TARGET(occ);
