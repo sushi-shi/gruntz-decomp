@@ -363,19 +363,18 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 return 0;
             }
         }
-        if (w > 0 && h > 0
-            && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24
-                || bpp == BPP_RGB_32)) {
-            m_srcRect.left = 0;
-            m_srcRect.top = 0;
-            m_width = w;
-            m_height = h;
-            m_bpp = bpp;
-            m_srcRect.right = w;
-            m_srcRect.bottom = h;
-            return 1;
+        if (w <= 0 || h <= 0
+            || (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24
+                && bpp != BPP_RGB_32)) {
+            return 0;
         }
-        return 0;
+        m_srcRect.left = 0;
+        m_srcRect.top = 0;
+        m_width = w;
+        m_height = h;
+        m_bpp = bpp;
+        m_srcRect.right = w;
+        m_srcRect.bottom = h;
     }
     return 1;
 }
