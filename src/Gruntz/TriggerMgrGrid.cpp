@@ -1382,12 +1382,11 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
     }
     bool isI = (strcmp(*typeRec, "I") == 0);
     if (isI) {
-        Coord t = cell->m_moveTile;
         this->LoadTileArrivalFx(
             col,
             row,
-            t.m_x,
-            t.m_y,
+            cell->MoveTile().m_x,
+            cell->MoveTile().m_y,
             cell->m_entranceReason,
             WWDDRAW_NO_ANIMATION
         );

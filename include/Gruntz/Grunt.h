@@ -234,6 +234,13 @@ public:
         return m_arrivalCell;
     }
 
+    // Same shape; ClearCell reads one half at each of its two argument
+    // positions and leaves both unread halves stored dead at [esp+0x10] and
+    // [esp+0x14].
+    Coord MoveTile() {
+        return m_moveTile;
+    }
+
     i32 CreateHealthSprite();
     i32 CreateToySprite();
     i32 CreateStaminaSprite();
