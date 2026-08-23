@@ -1056,9 +1056,6 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
 }
 
 // @early-stop
-// regalloc: retail spills x/y into its `sub esp,0x8` frame and never reloads them - a
-// spill pair, not a source local (both values also stay in ecx/edx and every use reads
-// them there). docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 idx = row * TM_GRID_COLS + col;
@@ -1072,12 +1069,9 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     if (cell->m_arrivalPending == 0) {
         this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
-    Coord pt;
-    pt.m_x = cell->m_lastTilePx.m_x;
-    pt.m_y = cell->m_lastTilePx.m_y;
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
-    i32 rowIdx = pt.m_y >> TILE_SHIFT_PX;
-    i32 cellCol = pt.m_x >> TILE_SHIFT_PX;
+    i32 rowIdx = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
+    i32 cellCol = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
     tg->m_rows[rowIdx][cellCol].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
     tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
     m_grid[idx] = NULL;
@@ -1590,8 +1584,8 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         PickupType alt = ArrivalPickup(cell);
         if (alt == PICKUP_WAND) {
             g_gameReg->m_cmdGrid->ResetGroup(
-                cell->m_lastTilePx.m_x,
-                cell->m_lastTilePx.m_y,
+                cell->LastTilePx().m_x,
+                cell->LastTilePx().m_y,
                 0,
                 0,
                 0,
@@ -2672,9 +2666,6 @@ void CTriggerMgr::DestroyAllAnims() {
     }
 }
 
-// @early-stop
-// same regalloc spill pair as NotifyCell - retail spills x/y and pushes them from the
-// registers. docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
@@ -2697,10 +2688,15 @@ i32 CTriggerMgr::ToggleRegionA() {
         } else {
             PickupType v = ArrivalPickup(cell);
             if (v == PICKUP_WAND) {
-                Coord pt;
-                pt.Set(cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
-                g_gameReg->m_cmdGrid
-                    ->ResetGroup(pt.m_x, pt.m_y, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+                g_gameReg->m_cmdGrid->ResetGroup(
+                    cell->LastTilePx().m_x,
+                    cell->LastTilePx().m_y,
+                    0,
+                    0,
+                    0,
+                    TARGET_SELECTION_GRUNT,
+                    1
+                );
             } else {
                 m_pendingFxKind = IDX(v) + kPendingFxIdBase;
                 (static_cast<CPlay*>(g_gameReg->m_curState))
