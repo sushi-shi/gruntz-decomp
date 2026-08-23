@@ -19,6 +19,11 @@
                                   sides store the same fields in a different
                                   ORDER, so the source transcribed C2's output
                                   (--values screens for a swapped CONSTANT)
+    gruntz walls thisscan         dropped-receiver sieve: a member modelled as
+                                  a free function has IDENTICAL callee bytes,
+                                  so only a caller shows it - as a dead ECX
+                                  load retail emits before the call and we do
+                                  not (--inverse for the mirror)
     gruntz walls eh-frame         /GX frame-presence + unwind-state sieve,
                                   cause-tagged (inline/merge/state-flow/object)
     gruntz walls global-refs      global read-COUNT sieve (the cached-global
@@ -61,6 +66,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "framescan": "gruntz.walls.framescan",
          "residue": "gruntz.walls.residue",
          "storescan": "gruntz.walls.storescan",
+         "thisscan": "gruntz.walls.thisscan",
          "global-refs": "gruntz.walls.global_refs",
          "ehactions": "gruntz.walls.ehactions",
          "semdiff": "gruntz.walls.semdiff",
