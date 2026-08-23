@@ -244,30 +244,25 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
     i32 chosen;
-    if (a > b) {
-        chosen = 1;
-        if (c == id) {
-            chosen = 0;
-            if (b != 0 && m_streams[1] != NULL) {
-                (static_cast<DirectSoundMgr*>(m_streams[1]))
-                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
-            }
-        } else if (a != 0 && m_streams[0] != NULL) {
-            (static_cast<DirectSoundMgr*>(m_streams[0]))
-                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
-        }
-    } else {
+    if (a <= b) {
         chosen = 0;
         if (d == id) {
             chosen = 1;
             if (a != 0 && m_streams[0] != NULL) {
-                (static_cast<DirectSoundMgr*>(m_streams[0]))
-                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
-
         } else if (b != 0 && id != 0) {
-            (static_cast<DirectSoundMgr*>(m_streams[1]))
-                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        }
+    } else {
+        chosen = 1;
+        if (c == id) {
+            chosen = 0;
+            if (b != 0 && m_streams[1] != NULL) {
+                m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            }
+        } else if (a != 0 && m_streams[0] != NULL) {
+            m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (m_streams[chosen] == NULL) {
@@ -286,7 +281,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     if (stream->Configure(vol, 0, 0, 0) == 0) {
         goto streamFailed;
     }
-    if (m_voices[chosen]->Setup(id, stream, priority, 0) == 0) {
+    if (m_voices[chosen]->Setup(id, m_streams[chosen], priority, 0) == 0) {
         return 0;
     }
     return 1;
@@ -343,29 +338,25 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
     i32 chosen;
-    if (a > b) {
-        chosen = 1;
-        if (c == objId) {
-            chosen = 0;
-            if (b != 0 && m_streams[1] != NULL) {
-                (static_cast<DirectSoundMgr*>(m_streams[1]))
-                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
-            }
-        } else if (a != 0 && m_streams[0] != NULL) {
-            (static_cast<DirectSoundMgr*>(m_streams[0]))
-                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
-        }
-    } else {
+    if (a <= b) {
         chosen = 0;
         if (d == objId) {
             chosen = 1;
             if (a != 0 && m_streams[0] != NULL) {
-                (static_cast<DirectSoundMgr*>(m_streams[0]))
-                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
             }
         } else if (b != 0 && m_streams[1] != NULL) {
-            (static_cast<DirectSoundMgr*>(m_streams[1]))
-                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        }
+    } else {
+        chosen = 1;
+        if (c == objId) {
+            chosen = 0;
+            if (b != 0 && m_streams[1] != NULL) {
+                m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            }
+        } else if (a != 0 && m_streams[0] != NULL) {
+            m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (m_streams[chosen] == NULL) {
@@ -384,7 +375,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     if (stream->Configure(vol, 0, 0, 0) == 0) {
         goto streamFailed;
     }
-    if (m_voices[chosen]->Setup(objId, stream, priority, 1) == 0) {
+    if (m_voices[chosen]->Setup(objId, m_streams[chosen], priority, 1) == 0) {
         return 0;
     }
     return 1;
