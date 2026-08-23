@@ -491,9 +491,6 @@ void CGrunt::SnapToLastTile(i32 a) {
 }
 
 // @early-stop
-// retail stores m_lastTilePx into r1.left/r1.top before the reach-rect copy
-// (two loads + two stores we do not emit); every spelling of a dead field
-// store is eliminated by cl, so the source of those four is still unknown.
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
     x >>= TILE_SHIFT_PX;
@@ -534,6 +531,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     return 0;
 }
 
+// @early-stop
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     x >>= TILE_SHIFT_PX;
