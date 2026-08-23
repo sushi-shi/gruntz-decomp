@@ -87,6 +87,32 @@ the link kept one copy under whichever name came first
 class from a funclet referent - the unwind action can only report the name the
 LINK kept. The fifth is `CGruntzMgr::ChangeState`, the documented negative
 control above.
+
+SLOT-SHIFT (`--shift`) - the largest group, and it holds NO work of its own.
+
+A funclet is two instructions. When the destructors and their order already
+agree, the frame displacement N is the row's whole remaining content, and N is
+not authored anywhere: the parent's allocator chose it. So no source edit
+targets a funclet, and all 155 rows close exactly when their 28 parents close.
+
+That is not the same as the rows being uninformative. `--shift` reads each
+parent's per-action delta and its own `sub esp,N`, and asks whether the shift
+is ONE number or MANY - which is a different question about the parent:
+
+    uniform      14 parents   the objects moved as a unit
+    per-object   14 parents   they moved by DIFFERENT amounts, so their
+                              relative homing differs - a local's storage or
+                              lifetime, not a frame size
+
+and, across the 14 uniform parents, only TWO have a shift equal to the
+frame-size delta (`CGruntSpawnConfig::BuildVoiceSoundList` +0x4 against frame
+-0x4, `CNetSession::BuildGruntzCrcInfo` +0x8 against -0x8). The other twelve
+shift by an amount the prologue does not explain -
+`CPlay::ValidateLevelTiles` moves its object -0xc while the frame grows only
++0x8, and `CButeMgr::SetInt` / `SetVector` / `CBattlezDlg::DoDataExchange` /
+`zBitVec::zBitVec` move by +0x4 with the frame size IDENTICAL. So 26 of the 28
+parents are being told "a local sits somewhere else", not "the frame is a
+different size", which is the useful thing a free readout can say.
 """
 
 from __future__ import annotations
@@ -278,6 +304,134 @@ def census_verdict(base: list[str], target: list[str]) -> str:
     return "equal"
 
 
+#: the frame displacement inside an action's slot spelling: `[ebp-0x158]`,
+#: `*[ebp-0x86b8]+0x124`, `*[ebp+0x10]+0x31c`
+FRAME_DISP = re.compile(r"\[(?:esp|ebp)([+-]0x[0-9a-f]+)?\]")
+
+
+def _disp(slot: str):
+    """The ebp/esp displacement of one action's object slot, or None."""
+    m = FRAME_DISP.search(slot)
+    if m is None:
+        return None
+    return int(m.group(1), 16) if m.group(1) else 0
+
+
+def frame_size(obj: Obj, name: str):
+    """The parent's own `sub esp,N` prologue allocation, or None.
+
+    A funclet states no frame of its own, so a slot-shift row's whole content
+    is a displacement the PARENT chose. Reading the parent's prologue beside
+    it says whether the shift is the frame growing (one number for the whole
+    parent) or the locals being homed in a different order (a per-object
+    number), which are different questions about the parent.
+    """
+    from gruntz.walls.diagnose import _find_function
+    try:
+        body, _rel, _ = _find_function(obj, name)
+    except BaseException:
+        return None
+    for line in objdump.disassemble(body[:0x60], vma=0).splitlines():
+        if ":\t" not in line:
+            continue
+        parts = line.split(":\t", 1)[1].split("\t")
+        asm = " ".join((parts[-1] if len(parts) > 1 else parts[0]).split())
+        m = re.match(r"^sub\s+esp,(0x[0-9a-f]+)$", asm)
+        if m:
+            return int(m.group(1), 16)
+    return None
+
+
+def shift_report(limit: int, as_json: bool) -> int:
+    """Per slot-shift parent: is the displacement delta ONE number or many?
+
+    A funclet is `lea ecx,[ebp-N] / jmp <dtor>`. When the destructors and
+    their order already agree, N is the row's ENTIRE remaining content, and N
+    is not authored anywhere - it is the parent's frame allocation. So no edit
+    targets the funclet; the only question a slot-shift row can answer is
+    which question to ask of its PARENT:
+
+      uniform    every action shifts by the same delta -> the frame BASE moved
+                 (our prologue allocates a different number of bytes). One
+                 scalar fact about the parent; `walls framescan` owns it.
+      per-object the deltas differ -> the objects are homed in a different
+                 ORDER or with different padding between them. A local's
+                 storage/lifetime question in the parent, not a frame size.
+
+    Either way the row closes when the parent closes and never before.
+    """
+    import json
+    from collections import Counter, defaultdict
+    from gruntz.walls.inventory import build
+    rows = [r for r in build(None, 100.0, False)
+            if r["symbol"].startswith(("__ehunwind$", "__ehreg$"))]
+    parents = defaultdict(list)
+    for r in rows:
+        m = BAND_ROW.match(r["symbol"])
+        parents[(r["unit"], m.group("parent"))].append(r)
+
+    out, tally, tally_rows = [], Counter(), Counter()
+    for (unit, parent), rs in sorted(parents.items()):
+        try:
+            acts = {side: [action(body, rel) for _i, body, rel in
+                           funclets(_cached_obj(side, unit), side, unit, parent)]
+                    for side in ("base", "target")}
+        except BaseException:
+            continue
+        if census_verdict(acts["base"], acts["target"]) != "slot-shift":
+            continue
+        deltas, unreadable = [], 0
+        for b, t in zip(_slots(acts["base"]), _slots(acts["target"])):
+            db, dt = _disp(b), _disp(t)
+            if (db is None or dt is None
+                    or FRAME_DISP.sub("[F]", b) != FRAME_DISP.sub("[F]", t)):
+                unreadable += 1     # the slot differs in more than a number
+                continue
+            if db != dt:
+                deltas.append(db - dt)
+        uniq = sorted(set(deltas))
+        fb = frame_size(_cached_obj("base", unit), parent)
+        ft = frame_size(_cached_obj("target", unit), parent)
+        rec = {"unit": unit, "parent": parent, "rows": len(rs),
+               "worst": min(x["cur"] for x in rs), "n": len(acts["base"]),
+               "deltas": uniq, "unreadable": unreadable,
+               "dtors": sorted(set(_dtors(acts["base"]))),
+               "frame_base": fb, "frame_target": ft}
+        rec["kind"] = ("unreadable" if unreadable and not uniq
+                       else "uniform" if len(uniq) == 1 else "per-object")
+        if (rec["kind"] == "uniform" and fb is not None and ft is not None
+                and uniq[0] == ft - fb):
+            rec["kind"] = "frame-base"      # the shift IS the prologue delta
+        tally[rec["kind"]] += 1
+        tally_rows[rec["kind"]] += len(rs)
+        out.append(rec)
+
+    if as_json:
+        json.dump(out, __import__("sys").stdout)
+        return 0
+    print(f"slot-shift parents: {len(out)}   "
+          f"rows: {sum(r['rows'] for r in out)}")
+    print("  A funclet is `lea ecx,[ebp-N] / jmp <dtor>`. With the destructors "
+          "and their\n  order already equal, N is the row's whole remaining "
+          "content - and N is the\n  PARENT's frame allocation, authored "
+          "nowhere. No edit targets the funclet.\n")
+    for k, n in tally.most_common():
+        print(f"  {n:3d} parents {tally_rows[k]:4d} rows  {k}")
+    print()
+    for rec in sorted(out, key=lambda r: -r["rows"])[:limit]:
+        fb, ft = rec["frame_base"], rec["frame_target"]
+        frame = ("frame ?" if fb is None or ft is None else
+                 f"frame 0x{fb:x}/0x{ft:x} d={fb - ft:+#x}")
+        print(f"  {rec['kind']:<10} rows={rec['rows']:<3} n={rec['n']:<3} "
+              f"worst={rec['worst']:6.2f}  delta="
+              f"{','.join(f'{d:+#x}' for d in rec['deltas'][:6])}"
+              + (f" (+{len(rec['deltas']) - 6} more)"
+                 if len(rec["deltas"]) > 6 else "")
+              + f"  {frame}  {rec['unit']}/{rec['parent'][:52]}")
+        print(f"       dtors: {', '.join(d[:52] for d in rec['dtors'][:4])}")
+    return 0
+
+
 def census(limit: int, as_json: bool) -> int:
     from collections import Counter, defaultdict
     from gruntz.walls.inventory import build
@@ -431,9 +585,15 @@ def main(argv=None) -> int:
     ap.add_argument("--census", action="store_true",
                     help="the whole sub-100 EH band, grouped by parent and "
                          "classified: slot-shift / count / dtor-identity")
+    ap.add_argument("--shift", action="store_true",
+                    help="the slot-shift group only: is each parent's "
+                         "displacement delta one number (the frame base moved) "
+                         "or many (the locals are homed differently)?")
     ap.add_argument("--limit", type=int, default=60)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
+    if args.shift:
+        return shift_report(args.limit, args.json)
     if args.census:
         return census(args.limit, args.json)
     if not args.token:

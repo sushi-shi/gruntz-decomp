@@ -16,6 +16,13 @@
                                   the loop on one side and outside it on the
                                   other runs N times instead of once, and a
                                   masked diff reads that as a schedule coin
+    gruntz walls retscan          one-sided calling-convention sieve: retail's
+                                  own `ret N` against our mangled name's
+                                  stack-argument bytes. The stack complement of
+                                  thisscan, which owns ECX: a dropped RECEIVER
+                                  is invisible here and a dropped ARGUMENT is
+                                  invisible there. --virtual runs the
+                                  vtable-slot census over the same names
     gruntz walls valuetemp        by-value struct temp sieve: retail's inlined
                                   accessor returns a pair BY VALUE and leaves the
                                   UNREAD half's store dead in the frame
@@ -54,7 +61,11 @@
                                   grouped by parent: the funclets pair BY
                                   CONSTRUCTION through the normalizer's
                                   canonical names, and most of the band is a
-                                  second readout of its parent's frame
+                                  second readout of its parent's frame.
+                                  --census classifies the band; --shift reads
+                                  the slot-shift group's displacement deltas
+                                  and says whether each parent's objects moved
+                                  as a unit or relative to each other
     gruntz walls stale-markers    @early-stop markers sitting on 100% bodies
     gruntz walls review           Codex's source-hash-scoped personal reviews
 
@@ -83,6 +94,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "loopscan": "gruntz.walls.loopscan",
          "valuetemp": "gruntz.walls.valuetemp",
          "residue": "gruntz.walls.residue",
+         "retscan": "gruntz.walls.retscan",
          "storescan": "gruntz.walls.storescan",
          "thisscan": "gruntz.walls.thisscan",
          "global-refs": "gruntz.walls.global_refs",
