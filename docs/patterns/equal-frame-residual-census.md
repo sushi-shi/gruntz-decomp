@@ -60,6 +60,35 @@ identity. Referents are now compared by ADDRESS, and both rows moved to
 `selection`, where their real difference - a load-and-compare against a direct
 memory compare - is what they are.
 
+**The coin classification was AUDITED, and it holds.** `regname` is the biggest
+bucket and the campaign parks all 177 rows on the tool's word, so the word was
+checked: every row was re-read with `walls semdiff`, which is order-sensitive and
+compares referent SEQUENCES rather than the multiset the classifier uses. Fifteen
+rows flagged. All fifteen resolve, and none is a defect:
+
+* **six are pure MOVES** - delete-and-insert of the SAME symbol, i.e. one global
+  read scheduled at a different point (`LoadScrollSpeedOptions`,
+  `LoadGruntDecayConfig`, `AnnounceVersion`, `ApplyGameOptions`, and both
+  `CLightFxRender` palette builders on `g_rDown`);
+* **seven are already catalogued** - `BuildBootyWalkingGruntz` is §8's `$E`
+  helper under two non-names plus §14's one-past-the-end addend, and the six
+  ctors (`CTeleporter`, `CSecretTeleporterTrigger`, `CSecretLevelTrigger`,
+  `CInGameText`, `CExitTrigger`, `CVoiceTrigger`) are §2's accumulator mirror;
+* **one needed reading by hand**: `CMulti::PumpA` reports 39 referents against
+  38, which looks like a count difference and is not. Both sides reference
+  `g_frameTicks` exactly twice, load and store. cl hoists the NEXT global's load
+  into the middle of the increment (`mov edx,g_frameTicks; mov eax,g_timer32;
+  inc edx; cmp eax,ebp; mov g_frameTicks,edx`) where retail completes the `++`
+  first and loads afterwards. Interleaving, not identity.
+
+So a `regname` row is a coin in the strong sense: same instructions, same
+symbols, same values. What this audit does NOT prove is store PAIRING - register
+stripping erases which value reaches which field - and that question has its own
+sieve: `walls storescan --values` over the same queue returns 2 transposition
+candidates in 595 rows, and both are a base-pointer shift (every offset moves by
+one constant, 0x2c0 and 4) rather than a swap. Check the SUM before believing a
+storescan row.
+
 **The arm-result-temp defect is 43 rows (30 + 13)** measured on the diff chunks,
 and the direct whole-stream screen (`--arm`) finds 78 rows whose member-store
 COUNT differs and 113 whose callee-saved copy count does. Both cases are real and
