@@ -547,8 +547,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     return 0;
 }
 
-// @early-stop
-
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
@@ -606,18 +604,20 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     CFile f;
     if (f.Open(lev->m_savePath, CFile::typeBinary | CFile::modeRead, NULL) == 0) {
         g_previewImage = NULL;
-    } else {
-        f.Seek(-SAVE_PREVIEW_BYTES, CFile::end);
-        if (f.Read(readBuf, sizeof(readBuf)) != sizeof(readBuf)) {
-            g_previewImage = NULL;
-            f.Close();
-        } else {
-            f.Close();
-            g_previewImage =
-                g_previewMgr->AddSurfaceOp(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP, 0);
-            SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
-        }
+        return;
     }
+
+    f.Seek(-SAVE_PREVIEW_BYTES, CFile::end);
+    if (f.Read(readBuf, sizeof(readBuf)) != sizeof(readBuf)) {
+        g_previewImage = NULL;
+        f.Close();
+        return;
+    }
+
+    f.Close();
+    g_previewImage =
+        g_previewMgr->AddSurfaceOp(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP, 0);
+    SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 
 RVA(0x000e4850, 0x29)
