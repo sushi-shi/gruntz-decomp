@@ -3825,11 +3825,16 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     TryActivate();
 }
 // @early-stop
-// Four WapRand expansions shift the LCG seed with `sar` where retail uses `shr`;
-// GetRandomNumber's `long holdrand` is right (CGruntzMgr::RandRange keeps retail's
-// `sar eax,0x10; and eax,0x7fff`), so the flip comes from whatever spelling of the
-// range==0 arm lets cl drop the sign - `GetRandomNumber() & 1` does not. The rest is
-// register rotation around the SetRect call.
+// The four `range == 0` WapRand expansions shift the LCG seed with `sar` where retail
+// uses `shr`, against the same `holdrand` relocation as the four `% range` arms, which
+// are `sar` on both sides. NO spelling of the arm can produce that: cl 5.0 takes the
+// shift's signedness from the shifted operand's declared type only, and 16 measured
+// spellings (result casts, an unsigned return type, an unsigned intermediate, `& 1u`,
+// `% 2u`, the macro form, a mask discarding every sign bit) all keep `sar` - see
+// docs/patterns/shift-signedness-is-the-operands-declared-type.md. So retail's coin
+// site reads the seed through an UNSIGNED lvalue, which needs the seed to leave
+// GetRandomNumber's function-local static that 12 game TUs share. The rest is register
+// rotation around the SetRect call.
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
