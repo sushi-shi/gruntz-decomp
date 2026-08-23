@@ -318,11 +318,11 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     } else {
         m_srcBox = cfg->m_targetSurface;
     }
-    if (cfg->m_sourceSurface == NULL) {
-        m_dstBox = m_timerB;
-    } else {
-        m_dstBox = cfg->m_sourceSurface;
+    CDDSurface* dst = cfg->m_sourceSurface;
+    if (dst == NULL) {
+        dst = m_timerB;
     }
+    m_dstBox = dst;
     if (!m_srcBox) {
         goto fail;
     }
