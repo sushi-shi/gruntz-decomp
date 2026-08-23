@@ -178,10 +178,9 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, char* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = COMMAND_SUBMIT_SCHEDULED;
-
-        m_owner->m_mgr->m_cmdSubMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
+        m_owner->m_mgr->m_cmdSubMgr->EnqueueCommand(0, obj);
     }
     return 1;
 }
