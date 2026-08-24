@@ -23,11 +23,11 @@ CActReg CActRegPool<CSingleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA(0x000104a0, 0x47)
 i32 CSingleAnimation::SerializeMove(
     CFileMemBase* ar,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)

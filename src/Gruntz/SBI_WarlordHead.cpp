@@ -111,7 +111,7 @@ i32 CSBI_WarlordHead::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
     if (s == NULL) {
         return 0;
@@ -127,7 +127,7 @@ i32 CSBI_WarlordHead::SerializeFields(
             s->Write(&m_direction, sizeof(m_direction));
             break;
     }
-    return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj) != 0;
+    return CSBI_ImageSet::SerializeFields(s, mode, typeId, payload) != 0;
 }
 
 RVA_COMPGEN(0x001049d0, 0x1e, ??_GCSBI_WarlordHead@@UAEPAXI@Z)

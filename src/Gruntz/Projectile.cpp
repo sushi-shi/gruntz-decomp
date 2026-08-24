@@ -705,7 +705,7 @@ i32 CProjectile::SerializeMove(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == NULL) {
@@ -821,7 +821,7 @@ i32 CProjectile::SerializeMove(
         }
     }
 
-    i32 ok = CMovingLogic::SerializeMove(s, mode, typeId, pObj);
+    i32 ok = CMovingLogic::SerializeMove(s, mode, typeId, object);
     if (ok == 0) {
         return ok;
     }
@@ -833,7 +833,7 @@ i32 CProjectile::SerializeMove(
         case SERIAL_LOAD: {
             s->Read(buf, SERIAL_NAME_LEN);
             s->Read(m_blob, 0x10);
-            CGameObject* obj = pObj;
+            CGameObject* obj = object;
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
             m_animWorker = obj->m_animWorker;
@@ -863,7 +863,7 @@ i32 CBoomerang::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     if (g_gameReg->m_world == NULL) {
         return 0;
@@ -890,7 +890,7 @@ i32 CBoomerang::SerializeMove(
             ar->Write(&m_launched, sizeof(m_launched));
             break;
     }
-    return CProjectile::SerializeMove(ar, mode, typeId, pObj) ? 1 : 0;
+    return CProjectile::SerializeMove(ar, mode, typeId, object) ? 1 : 0;
 }
 
 static inline CActHandler* TBombLookup(i32 coord) {
@@ -1000,7 +1000,7 @@ i32 CTimeBomb::SerializeMove(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     if (g_gameReg->m_world == NULL) {
         return 0;
@@ -1015,7 +1015,7 @@ i32 CTimeBomb::SerializeMove(
             sa->Write(&m_fastPhase, sizeof(m_fastPhase));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, object)
 }
 
 RVA(0x000e2190, 0x83)

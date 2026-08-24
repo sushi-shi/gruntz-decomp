@@ -188,7 +188,12 @@ i32 CSBI_MenuItem::Blit() {
 }
 
 RVA(0x000e8520, 0x152)
-i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
+i32 CSBI_MenuItem::SerializeFields(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -198,7 +203,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
     }
 
     char tmp[SERIAL_NAME_LEN];
-    switch (kind) {
+    switch (mode) {
         case SERIAL_LOAD:
             ar->Read(&m_state, sizeof(m_state));
             g_serialCounter++;
@@ -220,14 +225,19 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
             break;
     }
 
-    return CSBI_Image::SerializeFields(ar, kind, a, b) != 0;
+    return CSBI_Image::SerializeFields(ar, mode, typeId, payload) != 0;
 }
 
 RVA(0x0010bfa0, 0x1)
 void CStatusBarItem::Reset() {}
 
 RVA(0x0010bfc0, 0xe8)
-i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
+i32 CStatusBarItem::SerializeFields(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -235,7 +245,7 @@ i32 CStatusBarItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicType
     if (mgr == NULL) {
         return 0;
     }
-    switch (kind) {
+    switch (mode) {
         case SERIAL_LOAD:
             ar->Read(&m_enabled, sizeof(m_enabled));
             ar->Read(&m_kind, sizeof(m_kind));

@@ -6693,11 +6693,11 @@ i32 CPlay::LoadLoadingBarSprite() {
 }
 
 RVA(0x000d7520, 0x3b9)
-i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }
-    if (!HeaderSerialize(ar, mode, typeId, pObj)) {
+    if (!HeaderSerialize(ar, mode, typeId, payload)) {
         return 0;
     }
     switch (mode) {
@@ -6736,15 +6736,15 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
     i32* p;
     p = &m_syncTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_guts->Sync(ar, mode, typeId, pObj)) {
+    if (!m_guts->Sync(ar, mode, typeId, payload)) {
         return 0;
     }
-    if (!m_frameMarker->HandleEvent(ar, mode, typeId, pObj)) {
+    if (!m_frameMarker->HandleEvent(ar, mode, typeId, payload)) {
         return 0;
     }
     p = &m_cueTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_beginMarker->Serialize(ar, mode, typeId, pObj)) {
+    if (!m_beginMarker->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
     p = &m_region0Timing.m_start.m_lo;

@@ -27,7 +27,7 @@ public:
     );
     i32 TickToggle(i32 param);
     i32 RenderCel();
-    i32 Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     union {
         i64 m_start64;

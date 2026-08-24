@@ -233,7 +233,7 @@ i32 CMovingLogic::SerializeMove(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     if (arc == NULL) {
         return 0;
@@ -271,5 +271,5 @@ i32 CMovingLogic::SerializeMove(
             break;
         }
     }
-    return CUserLogic::SerializeMove(arc, mode, typeId, pObj) != 0;
+    return CUserLogic::SerializeMove(arc, mode, typeId, object) != 0;
 }

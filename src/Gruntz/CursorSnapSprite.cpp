@@ -14,11 +14,11 @@
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(
     CFileMemBase* ar,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)

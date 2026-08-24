@@ -45,7 +45,7 @@ public:
     CString GetName() {
         return m_name;
     }
-    i32 Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 Deactivate();
     CString GetDefaultName(i32);
 

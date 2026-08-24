@@ -3980,9 +3980,9 @@ insert:
 // Retail serializes every {i64 last; i64 interval} pair through one inlined
 // helper: the base address is hoisted into a register before the mode test and
 // the second field reached with `add reg,8`.
-static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
-    if (op != SERIAL_SAVE) {
-        if (op == SERIAL_LOAD) {
+static inline void SyncClockPair(CFileMemBase* s, SerialMode mode, i64* pair) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             s->Read(pair, sizeof(*pair));
             s->Read(pair + 1, sizeof(*pair));
         }
@@ -3995,16 +3995,17 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
 // @early-stop
 // Nothing is missing: `--branches --diff` reports the same branch and ret counts, and
 // the only reloc delta is the __except_list/fs:0 typing artifact. Retail spills `this`
-// to [esp+0x10] and re-reads typeId/pObj from their parameter homes at every SerializeFields
-// site, which leaves ebp for the loop counters; cl instead enregisters pObj in ebp and
+// to [esp+0x10] and re-reads typeId/payload from their parameter homes at every
+// SerializeFields site, which leaves ebp for the loop counters; cl instead enregisters
+// payload in ebp and
 // spills the counters. Reusing one counter variable across the loops is byte-neutral
 // (measured), so the allocation choice is not decl-scope-driven.
 RVA(0x001084d0, 0x96c)
-i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
+i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (s == NULL) {
         return 0;
     }
-    switch (op) {
+    switch (mode) {
         case SERIAL_SAVE:
             if (Serialize(s) == 0) {
                 return 0;
@@ -4026,14 +4027,14 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 
 
     if (m_retabNotify != NULL) {
         i32 tmp = 1;
-        if (op == SERIAL_SAVE) {
+        if (mode == SERIAL_SAVE) {
             s->Write(&tmp, sizeof(tmp));
         }
     } else {
         i32 tmp = 0;
-        if (op == SERIAL_SAVE) {
+        if (mode == SERIAL_SAVE) {
             s->Write(&tmp, sizeof(tmp));
-        } else if (op == SERIAL_LOAD) {
+        } else if (mode == SERIAL_LOAD) {
             s->Read(&tmp, sizeof(tmp));
             if (tmp != 0) {
                 CWarpStoneFly* c = new CWarpStoneFly();
@@ -4044,21 +4045,21 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 
     }
 
     if (m_retabNotify != NULL) {
-        if (m_retabNotify->Sync(s, op, typeId, pObj) == 0) {
+        if (m_retabNotify->Sync(s, mode, typeId, payload) == 0) {
             return 0;
         }
     }
 
-    SyncClockPair(s, op, &m_beltClock.m_last);
-    SyncClockPair(s, op, &m_fallClock.m_last);
-    SyncClockPair(s, op, &m_machineB.m_last);
-    SyncClockPair(s, op, &m_machineA.m_last);
-    SyncClockPair(s, op, &m_destructWarnClock.m_last);
+    SyncClockPair(s, mode, &m_beltClock.m_last);
+    SyncClockPair(s, mode, &m_fallClock.m_last);
+    SyncClockPair(s, mode, &m_machineB.m_last);
+    SyncClockPair(s, mode, &m_machineA.m_last);
+    SyncClockPair(s, mode, &m_destructWarnClock.m_last);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
-        SyncClockPair(s, op, &p->m_startTime);
+        SyncClockPair(s, mode, &p->m_startTime);
         p++;
         n--;
     } while (n != 0);
@@ -4066,7 +4067,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 
     n = 3;
     CSbiHlRow* r = m_groupSlots;
     do {
-        SyncClockPair(s, op, &r->m_last);
+        SyncClockPair(s, mode, &r->m_last);
         r++;
         n--;
     } while (n != 0);
@@ -4076,22 +4077,22 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 
     do {
         n = 4;
         do {
-            SyncClockPair(s, op, &g->m_last);
+            SyncClockPair(s, mode, &g->m_last);
             g++;
             n--;
         } while (n != 0);
         outer--;
     } while (outer != 0);
 
-    SyncClockPair(s, op, &m_reserved2a0.m_last);
-    SyncClockPair(s, op, &m_reserved2b0.m_last);
-    if (op == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
+    SyncClockPair(s, mode, &m_reserved2a0.m_last);
+    SyncClockPair(s, mode, &m_reserved2b0.m_last);
+    if (mode == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }
 
 #define SER(field)                                                                                 \
     if (field) {                                                                                   \
-        if ((field)->SerializeFields(s, op, typeId, pObj) == 0)                                    \
+        if ((field)->SerializeFields(s, mode, typeId, payload) == 0)                               \
             return 0;                                                                              \
     }
 
@@ -4507,7 +4508,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
 }
 
 RVA(0x00109e00, 0x245)
-i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (arc == NULL) {
         return 0;
     }

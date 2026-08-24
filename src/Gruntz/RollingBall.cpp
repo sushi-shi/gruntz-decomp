@@ -558,13 +558,18 @@ i32 CRollingBall::Update() {
 }
 
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
+i32 CRollingBall::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
 
     // Retail walks one pointer over the two adjacent i64 clocks (lea + add 8),
     // so it stays live across the call in a callee-saved register.
     i64* explode = &m_explodeStart;
-    switch (tag) {
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(explode, sizeof(*explode));
             explode++;
@@ -577,7 +582,7 @@ i32 CRollingBall::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c,
             break;
     }
 
-    switch (tag) {
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_moveSpeed, sizeof(m_moveSpeed));
             ar->Write(&m_subX, sizeof(m_subX));

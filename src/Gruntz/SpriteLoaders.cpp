@@ -258,11 +258,11 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 
 // @early-stop
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj) {
+i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }
-    switch (kind) {
+    switch (mode) {
         case SERIAL_SAVE: {
             i32 r = Serialize(ar);
             if (!r) {
@@ -279,9 +279,9 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i
         }
     }
 
-    SerBandPair(ar, kind, &m_baseTime);
+    SerBandPair(ar, mode, &m_baseTime);
 
-    SerBandPair(ar, kind, &m_startStamp);
+    SerBandPair(ar, mode, &m_startStamp);
     return 1;
 }
 

@@ -93,7 +93,7 @@ i32 CGruntToySprite::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     switch (mode) {
         case SERIAL_SAVE:
@@ -105,5 +105,5 @@ i32 CGruntToySprite::SerializeMove(
             ar->Read(&m_lastLayer, sizeof(m_lastLayer));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
 }

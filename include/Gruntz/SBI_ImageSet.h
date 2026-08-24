@@ -17,7 +17,7 @@ public:
     CSBI_ImageSet();
     virtual ~CSBI_ImageSet() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj)
+    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload)
         OVERRIDE;
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;

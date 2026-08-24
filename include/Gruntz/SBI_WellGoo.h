@@ -32,7 +32,7 @@ public:
 
     virtual ~CSBI_WellGoo() OVERRIDE;
 
-    virtual i32 SerializeFields(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj)
+    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload)
         OVERRIDE;
     virtual i32 Setup(
         CStatusBarMgr* owner,

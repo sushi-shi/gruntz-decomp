@@ -259,11 +259,11 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
 }
 
 RVA(0x000dace0, 0x239)
-i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i32 pObj) {
+i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     char tmp[SERIAL_NAME_LEN];
 
-    if (kind != SERIAL_SAVE) {
-        if (kind == SERIAL_LOAD) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
 
             ar->Read(&m_playerIndex, sizeof(m_playerIndex));
             ar->Read(&m_colorIndex, sizeof(m_colorIndex));
@@ -303,7 +303,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId typeI
         ar->Write(&m_comboSel, sizeof(m_comboSel));
     }
     return (static_cast<CBattlezMapConfig*>(&m_battlezConfig))
-               ->SerializeState(ar, kind, typeId, pObj)
+               ->SerializeState(ar, mode, typeId, payload)
            != 0;
 }
 

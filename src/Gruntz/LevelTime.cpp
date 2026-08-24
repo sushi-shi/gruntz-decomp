@@ -11,7 +11,7 @@ i32 CLevelTime::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
 }

@@ -58,7 +58,7 @@ public:
 
     void EnqueueCommand(i32 flag, CGruntzCommand* cmd);
 
-    i32 Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 IsActive(CFileMemBase* enable);
 

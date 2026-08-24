@@ -105,7 +105,12 @@ void CSBI_ImageSet::Notify(i32 id) {
 }
 
 RVA(0x000e74f0, 0x152)
-i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CSBI_ImageSet::SerializeFields(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (s == NULL) {
         return 0;
     }
@@ -141,5 +146,5 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
             break;
     }
 
-    return CSBI_Image::SerializeFields(s, mode, typeId, pObj) != 0;
+    return CSBI_Image::SerializeFields(s, mode, typeId, payload) != 0;
 }

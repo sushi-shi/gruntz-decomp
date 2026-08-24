@@ -64,31 +64,31 @@ CButeTree g_buteTree(&ButeTreeNopFree, 0);
 
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeMove(
-    CFileMemBase* arc,
+    CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
-    if (arc == NULL) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
         case SERIAL_LOAD: {
 
             i32 len;
-            arc->Read(&len, sizeof(len));
+            ar->Read(&len, sizeof(len));
             char* buf = new char[len];
-            arc->Read(buf, len);
+            ar->Read(buf, len);
             istrstream accum(buf, len);
             accum >> m_actBits;
             delete[] buf;
-            arc->Read(&m_gatedActKey, sizeof(m_gatedActKey));
-            arc->Read(&m_reserved2c, sizeof(m_reserved2c));
-            arc->Read(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
-            arc->Read(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
-            m_logicObject = pObj;
-            m_object = static_cast<CWwdGameObjectA*>(pObj);
-            m_objAux = (pObj)->m_animWorker;
+            ar->Read(&m_gatedActKey, sizeof(m_gatedActKey));
+            ar->Read(&m_reserved2c, sizeof(m_reserved2c));
+            ar->Read(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
+            ar->Read(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
+            m_logicObject = object;
+            m_object = static_cast<CWwdGameObjectA*>(object);
+            m_objAux = object->m_animWorker;
             m_deferredCallback = NULL;
             m_gatedCallback = NULL;
             m_gatedActKey = IDX(ACT_NONE);
@@ -101,12 +101,12 @@ i32 CUserLogic::SerializeMove(
             ostrstream accum(buf, 0x100);
             accum << m_actBits;
             i32 len = accum.pcount();
-            arc->Write(&len, sizeof(len));
-            arc->Write(accum.str(), len);
-            arc->Write(&m_gatedActKey, sizeof(m_gatedActKey));
-            arc->Write(&m_reserved2c, sizeof(m_reserved2c));
-            arc->Write(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
-            arc->Write(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
+            ar->Write(&len, sizeof(len));
+            ar->Write(accum.str(), len);
+            ar->Write(&m_gatedActKey, sizeof(m_gatedActKey));
+            ar->Write(&m_reserved2c, sizeof(m_reserved2c));
+            ar->Write(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
+            ar->Write(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
 
             break;
         }

@@ -590,7 +590,12 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
 }
 
 RVA(0x00024890, 0x18d)
-i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CGruntzCmdMgr::Serialize(
+    CFileMemBase* stream,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (!stream) {
         return 0;
     }
@@ -614,12 +619,12 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
             CGruntzCommand* cmd;
             if (tag == COMMAND_RECORD_SINGLE) {
                 cmd = CGruntzSingleCommand::Allocate();
-                if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, pObj)) {
+                if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, payload)) {
                     return 0;
                 }
             } else if (tag == COMMAND_RECORD_MULTI) {
                 cmd = CGruntzMultiCommand::Allocate();
-                if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, pObj)) {
+                if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, payload)) {
                     return 0;
                 }
             } else {
@@ -642,7 +647,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
         CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
         i32 tagWord = cmd->GetTag() & 0xff;
         stream->Write(&tagWord, sizeof(tagWord));
-        if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, pObj)) {
+        if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, payload)) {
             return 0;
         }
     }

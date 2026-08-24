@@ -432,8 +432,13 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 }
 
 RVA(0x000b4c40, 0x4b)
-i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameObject* d) {
-    if (!CPathHazard::SerializeMove(ar, mode, c, d)) {
+i32 CUFO::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    if (!CPathHazard::SerializeMove(ar, mode, typeId, object)) {
         return 0;
     }
     if (mode == SERIAL_POSTLOAD) {
@@ -450,11 +455,16 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameO
 }
 
 RVA(0x000b4cb0, 0x56)
-i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CPathHazard::SerializeMove(stream, tag, c, d)) {
+i32 CRainCloud::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    if (!CPathHazard::SerializeMove(ar, mode, typeId, object)) {
         return 0;
     }
-    if (tag == SERIAL_POSTLOAD) {
+    if (mode == SERIAL_POSTLOAD) {
         CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, x);
@@ -462,37 +472,37 @@ i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId 
     return 1;
 }
 
-static inline void SerQuadPair(CFileMemBase* s, SerialMode tag, CHazardTimer* p) {
-    if (tag != SERIAL_SAVE) {
-        if (tag == SERIAL_LOAD) {
-            s->Read(&p->m_deadline, sizeof(p->m_deadline));
-            s->Read(&p->m_window, sizeof(p->m_window));
+static inline void SerQuadPair(CFileMemBase* ar, SerialMode mode, CHazardTimer* timer) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
+            ar->Read(&timer->m_deadline, sizeof(timer->m_deadline));
+            ar->Read(&timer->m_window, sizeof(timer->m_window));
         }
     } else {
-        s->Write(&p->m_deadline, sizeof(p->m_deadline));
-        s->Write(&p->m_window, sizeof(p->m_window));
+        ar->Write(&timer->m_deadline, sizeof(timer->m_deadline));
+        ar->Write(&timer->m_window, sizeof(timer->m_window));
     }
 }
 
 RVA(0x000b4d30, 0x287)
 i32 CPathHazard::SerializeMove(
     CFileMemBase* stream,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
 ) {
     CFileMemBase* s = stream;
     SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(
         stream,
         static_cast<CFileMemBase*>(stream),
-        tag,
-        c,
-        d
+        mode,
+        typeId,
+        object
     )
-    SerQuadPair(s, tag, &m_leg);
-    SerQuadPair(s, tag, &m_strike);
-    if (tag != SERIAL_SAVE) {
-        if (tag == SERIAL_LOAD) {
+    SerQuadPair(s, mode, &m_leg);
+    SerQuadPair(s, mode, &m_strike);
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));
             s->Read(&m_posX, sizeof(m_posX));
             s->Read(&m_posY, sizeof(m_posY));

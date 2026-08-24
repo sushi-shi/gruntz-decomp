@@ -1203,15 +1203,15 @@ i32 CGrunt::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     if (ar == NULL) {
         return 0;
     }
 
-    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)
 
-    if (CWapX::Chain(ar, mode, typeId, pObj) == 0) {
+    if (CWapX::Chain(ar, mode, typeId, object) == 0) {
         return 0;
     }
     switch (mode) {
@@ -1231,7 +1231,7 @@ i32 CGrunt::SerializeMove(
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
-    m_entranceCell.Serialize(ar, mode, typeId, pObj);
+    m_entranceCell.Serialize(ar, mode, typeId, object);
     SerializeClockPair(ar, mode, &m_toyClock);
     SerializeClockPair(ar, mode, &m_idleAnchor);
     SerializeClockPair(ar, mode, &m_idleTimer);
@@ -1240,12 +1240,12 @@ i32 CGrunt::SerializeMove(
     SerializeClockPair(ar, mode, &m_attackClock64);
     SerializeClockPair(ar, mode, &m_combatClock64);
     SerializeClockPair(ar, mode, &m_hudRetireClock64);
-    m_wingzTiming.Serialize(ar, mode, typeId, pObj);
-    m_conversionTiming.Serialize(ar, mode, typeId, pObj);
-    m_shimmerTiming.Serialize(ar, mode, typeId, pObj);
-    m_arrivalVoiceTiming.Serialize(ar, mode, typeId, pObj);
-    m_arrivalRerollTiming.Serialize(ar, mode, typeId, pObj);
-    m_holdTiming.Serialize(ar, mode, typeId, pObj);
+    m_wingzTiming.Serialize(ar, mode, typeId, object);
+    m_conversionTiming.Serialize(ar, mode, typeId, object);
+    m_shimmerTiming.Serialize(ar, mode, typeId, object);
+    m_arrivalVoiceTiming.Serialize(ar, mode, typeId, object);
+    m_arrivalRerollTiming.Serialize(ar, mode, typeId, object);
+    m_holdTiming.Serialize(ar, mode, typeId, object);
     return 1;
 }
 

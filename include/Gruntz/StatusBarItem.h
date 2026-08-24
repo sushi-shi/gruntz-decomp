@@ -21,7 +21,7 @@ public:
     CStatusBarItem();
     virtual ~CStatusBarItem();
 
-    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b);
+    virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     virtual i32 Setup(
         CStatusBarMgr* owner,

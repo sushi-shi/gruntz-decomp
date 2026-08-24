@@ -18,7 +18,7 @@ public:
 
     virtual void Reset() OVERRIDE;
 
-    virtual i32 Visit(CFileMemBase* ar, SerialMode b, LogicTypeId c, i32 d) OVERRIDE;
+    virtual i32 Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) OVERRIDE;
 
     i32 LoadAttributes(i32 width, i32 height);
 

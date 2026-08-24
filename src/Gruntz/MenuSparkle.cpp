@@ -58,13 +58,13 @@ i32 CMenuSparkle::SerializeMove(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     if (arc == NULL) {
         return 0;
     }
 
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(static_cast<CFileMemBase*>(arc), mode, typeId, object)
     if (mode != SERIAL_SAVE) {
         if (mode != SERIAL_LOAD) {
             return 1;

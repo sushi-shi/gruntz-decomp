@@ -81,12 +81,12 @@ i32 CAniPlayer::RenderCel() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5c90, 0x87)
-i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (arc == NULL) {
         return 0;
     }
 
-    if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)
+    if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, typeId, payload)
         == 0) {
         return 0;
     }

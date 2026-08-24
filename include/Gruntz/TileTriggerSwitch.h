@@ -16,9 +16,9 @@ class CTileTriggerSwitch : public CUserLogic, public CWapX {
 public:
     RVA(0x00011050, 0x47)
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {
-        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
+        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
     }
 
 public:

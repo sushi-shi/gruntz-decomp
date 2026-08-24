@@ -647,11 +647,16 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
 }
 
 RVA(0x00117280, 0x2ec)
-i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
+i32 CTileTriggerContainer::Serialize(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (s == NULL) {
         return 0;
     }
-    switch (op) {
+    switch (mode) {
         case SERIAL_SAVE: {
             POSITION pos;
             i32 cnt = m_base.GetCount();
@@ -660,7 +665,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             while (pos != NULL) {
                 CTileTriggerSwitchLogic* e0 =
                     static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
-                if (SerializeApplyA(s, SERIAL_SAVE, typeId, pObj, e0) == 0) {
+                if (SerializeApplyA(s, SERIAL_SAVE, typeId, payload, e0) == 0) {
                     return 0;
                 }
             }
@@ -669,7 +674,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             pos = m_list1.GetHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* e1 = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
-                if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e1) == 0) {
+                if (SerializeApplyB(s, SERIAL_SAVE, typeId, payload, e1) == 0) {
                     return 0;
                 }
             }
@@ -678,7 +683,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             pos = m_list2.GetHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* e2 = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
-                if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e2) == 0) {
+                if (SerializeApplyB(s, SERIAL_SAVE, typeId, payload, e2) == 0) {
                     return 0;
                 }
             }
@@ -687,7 +692,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             pos = m_list3.GetHeadPosition();
             while (pos != NULL) {
                 CTileActionEvent* e3 = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
-                if (e3->Serialize(s, SERIAL_SAVE, typeId, pObj) == 0) {
+                if (e3->Serialize(s, SERIAL_SAVE, typeId, payload) == 0) {
                     return 0;
                 }
             }
@@ -703,7 +708,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
                 CTileTriggerSwitchLogic* e = static_cast<CTileTriggerSwitchLogic*>(
-                    LoadElement(s, SERIAL_LOAD, typeId, pObj)
+                    LoadElement(s, SERIAL_LOAD, typeId, payload)
                 );
                 if (e == NULL) {
                     return 0;
@@ -713,7 +718,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
                 CTileTriggerLogic* e =
-                    static_cast<CTileTriggerLogic*>(LoadElement(s, SERIAL_LOAD, typeId, pObj));
+                    static_cast<CTileTriggerLogic*>(LoadElement(s, SERIAL_LOAD, typeId, payload));
                 if (e == NULL) {
                     return 0;
                 }
@@ -722,7 +727,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
                 CTileTriggerLogic* e =
-                    static_cast<CTileTriggerLogic*>(LoadElement(s, SERIAL_LOAD, typeId, pObj));
+                    static_cast<CTileTriggerLogic*>(LoadElement(s, SERIAL_LOAD, typeId, payload));
                 if (e == NULL) {
                     return 0;
                 }
@@ -731,7 +736,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             s->Read(&n, sizeof(n));
             for (i = 0; i < n; i++) {
                 CTileActionEvent* m = new CTileActionEvent;
-                if (m->Serialize(s, SERIAL_LOAD, typeId, pObj) == 0) {
+                if (m->Serialize(s, SERIAL_LOAD, typeId, payload) == 0) {
                     return 0;
                 }
                 m->m_owner = this;
@@ -752,7 +757,7 @@ i32 CTileTriggerContainer::SerializeApplyA(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj,
+    i32 payload,
     CTileTriggerSwitchLogic* o
 ) {
     if (o == NULL) {
@@ -764,43 +769,43 @@ i32 CTileTriggerContainer::SerializeApplyA(
     switch (tag) {
         case TRIGID_SWITCH_1:
 
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_SWITCH_2:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_MULTI_SWITCH_3:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_EXCLUSIVE_SWITCH_4:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_SWITCH_5:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_SECRET_SWITCH_6:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_TIME_SWITCH_7:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_CHECKPOINT_SWITCH_8:
 
-            if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
+            if (o->ValidateByType(s, mode, typeId, payload) == 0) {
                 return 0;
             }
             break;
@@ -815,7 +820,7 @@ i32 CTileTriggerContainer::SerializeApplyB(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj,
+    i32 payload,
     CTileTriggerLogic* o
 ) {
     if (o == NULL) {
@@ -826,32 +831,32 @@ i32 CTileTriggerContainer::SerializeApplyB(
 
     switch (tag) {
         case TRIGID_GIANT_ROCK_22:
-            if ((static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, pObj)) {
+            if ((static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_TILE_TRIGGER_21:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_TIME_TRIGGER_23:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_TILE_TRIGGER_24:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_SECRET_TRIGGER_25:
-            if (o->ValidateByType(s, mode, typeId, pObj)) {
+            if (o->ValidateByType(s, mode, typeId, payload)) {
                 break;
             }
             return 0;
         case TRIGID_COVERED_POWERUP_26:
-            if (o->ValidateByType(s, mode, typeId, pObj) == 0) {
+            if (o->ValidateByType(s, mode, typeId, payload) == 0) {
                 return 0;
             }
             break;
@@ -867,14 +872,14 @@ i32 CTileTriggerContainer::SerializeApplyB(
 RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::LoadElement(
     CFileMemBase* reader,
-    SerialMode kind,
+    SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
     if (reader == NULL) {
         return NULL;
     }
-    if (kind != SERIAL_LOAD) {
+    if (mode != SERIAL_LOAD) {
         return NULL;
     }
     // Ingest: the archive stores the logic tag as a raw dword.
@@ -883,7 +888,7 @@ void* CTileTriggerContainer::LoadElement(
     switch (id) {
         case TRIGID_SWITCH_1: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -892,7 +897,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_SWITCH_2: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -901,7 +906,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_MULTI_SWITCH_3: {
             CTileTriggerSwitchLogic* obj = new CTileMultiTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -910,7 +915,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_EXCLUSIVE_SWITCH_4: {
             CTileTriggerSwitchLogic* obj = new CTileExclusiveTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -919,7 +924,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_SWITCH_5: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -928,7 +933,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_SECRET_SWITCH_6: {
             CTileTriggerSwitchLogic* obj = new CTileSecretTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -937,7 +942,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_TIME_SWITCH_7: {
             CTileTriggerSwitchLogic* obj = new CTileTimeTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -946,7 +951,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_CHECKPOINT_SWITCH_8: {
             CTileTriggerSwitchLogic* obj = new CCheckpointTriggerSwitchLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -955,7 +960,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_TILE_TRIGGER_21: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -993,7 +998,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_GIANT_ROCK_22: {
             CGiantRockLogic* obj = new CGiantRockLogic;
-            if (obj->ApplyByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ApplyByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -1002,7 +1007,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_TIME_TRIGGER_23: {
             CTileTriggerLogic* obj = new CTileTimeTriggerLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -1011,7 +1016,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_TILE_TRIGGER_24: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -1020,7 +1025,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_SECRET_TRIGGER_25: {
             CTileTriggerLogic* obj = new CTileSecretTriggerLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;
@@ -1029,7 +1034,7 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_COVERED_POWERUP_26: {
             CTileTriggerLogic* obj = new CCoveredPowerupLogic;
-            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, payload) == 0) {
                 return NULL;
             }
             obj->m_owner = this;

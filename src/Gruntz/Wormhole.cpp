@@ -91,9 +91,14 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 }
 
 RVA(0x0003fed0, 0xa9)
-i32 CWormhole::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
-    if (tag == SERIAL_POSTLOAD) {
+i32 CWormhole::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    if (mode == SERIAL_POSTLOAD) {
 
         i32 kind = m_object->m_smarts;
         CShadeTable* color;
@@ -261,9 +266,14 @@ i32 CGruntPuddle::Remove() {
 }
 
 RVA(0x00040e50, 0x170)
-i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
-    switch (tag) {
+i32 CGruntPuddle::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_tileX, sizeof(m_tileX));
             ar->Write(&m_tileY, sizeof(m_tileY));
@@ -350,13 +360,18 @@ i32 CTeleporter::ReapplyConfig() {
 }
 
 RVA(0x00041350, 0xee)
-i32 CTeleporter::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
+i32 CTeleporter::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     // one cursor over the adjacent m_armClock/m_interval pair - retail hoists it
     // above the arms and advances it, rather than re-lea'ing each member.
     i64* clocks = &m_armClock;
-    if (tag != SERIAL_SAVE) {
-        if (tag == SERIAL_LOAD) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             ar->Read(clocks, sizeof(*clocks));
             ar->Read(clocks + 1, sizeof(*clocks));
         }
@@ -364,7 +379,7 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
         ar->Write(clocks, sizeof(*clocks));
         ar->Write(clocks + 1, sizeof(*clocks));
     }
-    switch (tag) {
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_armed, sizeof(m_armed));
             ar->Write(&m_tickHandled, sizeof(m_tickHandled));

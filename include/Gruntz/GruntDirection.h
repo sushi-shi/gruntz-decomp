@@ -55,7 +55,7 @@ GZ_ENUM_FORWARD(LogicTypeId);
 // the cell (retail's three-load-then-three-store block is the implicit
 // memberwise operator=, not field-by-field stores).
 struct CTriRecord {
-    i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 
     i32 row;
     i32 column;

@@ -223,14 +223,14 @@ i32 CKitchenSlime::Tick() {
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::SerializeMove(
     CFileMemBase* stream,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
 ) {
     CFileMemBase* s = stream;
 
-    if (tag != SERIAL_SAVE) {
-        if (tag == SERIAL_LOAD) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));
             s->Read(&m_posX, sizeof(m_posX));
             s->Read(&m_posY, sizeof(m_posY));
@@ -248,7 +248,7 @@ i32 CKitchenSlime::SerializeMove(
         s->Write(&m_tilePosition, sizeof(m_tilePosition));
         s->Write(&m_stepMag, sizeof(m_stepMag));
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN(stream, tag, c, d)
+    SERIALIZE_USER_LOGIC_AND_CHAIN(stream, mode, typeId, object)
 }
 
 // @early-stop

@@ -24,9 +24,10 @@ public:
         return LOGIC_BEHINDCANDYANI;
     }
     RVA(0x00010050, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {
-        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
+        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
     }
 };
 

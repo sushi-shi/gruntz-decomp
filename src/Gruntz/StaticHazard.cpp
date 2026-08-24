@@ -299,7 +299,7 @@ i32 CStaticHazard::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     CFileMemBase* arc = ar;
     switch (mode) {
@@ -320,5 +320,5 @@ i32 CStaticHazard::SerializeMove(
             arc->Read(&m_tileRow, sizeof(m_tileRow));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(ar, arc, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(ar, arc, mode, typeId, object)
 }

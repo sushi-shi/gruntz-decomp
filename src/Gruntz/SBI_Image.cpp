@@ -89,7 +89,12 @@ i32 CSBI_Image::Render() {
 // frame slots (0x10 and 0x18), which one shared variable cannot produce. Residue is
 // the ar/this register pair, swapped against retail, and the `this` spill that costs.
 RVA(0x000e6e40, 0x17c)
-i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) {
+i32 CSBI_Image::SerializeFields(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -101,7 +106,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
     char name[SERIAL_NAME_LEN];
     i32 idx;
     i32 v;
-    switch (kind) {
+    switch (mode) {
         case SERIAL_LOAD:
 
             g_serialCounter++;
@@ -134,5 +139,5 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
             break;
     }
 
-    return CStatusBarItem::SerializeFields(ar, kind, a, b) != 0;
+    return CStatusBarItem::SerializeFields(ar, mode, typeId, payload) != 0;
 }

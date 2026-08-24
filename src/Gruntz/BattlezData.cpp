@@ -392,7 +392,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 // reuse ebp as the last loop counter; cl keeps `this` in ebp and counts in ebx, so the
 // whole frame sits 4 bytes higher.
 RVA(0x000fd3f0, 0x425)
-i32 CBattlezData::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
+i32 CBattlezData::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
     i32* p;
     i32 i;
     i32 r;
@@ -400,8 +400,8 @@ i32 CBattlezData::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, 
     if (s == NULL) {
         return 0;
     }
-    if (op != SERIAL_SAVE) {
-        if (op == SERIAL_LOAD) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             s->Read(&m_count, sizeof(m_count));
             s->Read(&m_isCustomLevel, sizeof(m_isCustomLevel));
             s->Read(&m_allDone, sizeof(m_allDone));

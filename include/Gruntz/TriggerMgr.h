@@ -169,7 +169,7 @@ public:
 
     void ReinitGroup(i32 col, i32 row);
 
-    i32 Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId unusedC, i32 unusedD);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId unusedTypeId, i32 unusedPayload);
 
     i32 ScanGroup(CFileMemBase* ar);
 

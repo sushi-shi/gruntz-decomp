@@ -229,7 +229,7 @@ public:
 
     void VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx);
 
-    i32 EditDispatch(CFileMemBase* sink, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 EditDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 SaveName(CFileMemBase* sink);
     i32 LoadName(CFileMemBase* sink);

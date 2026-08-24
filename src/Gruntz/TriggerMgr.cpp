@@ -1243,13 +1243,13 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
 }
 
 RVA(0x0007a5e0, 0x121)
-i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) {
+i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (ar == NULL) {
         return 0;
     }
 
-    if (kind != SERIAL_SAVE) {
-        if (kind == SERIAL_LOAD) {
+    if (mode != SERIAL_SAVE) {
+        if (mode == SERIAL_LOAD) {
             if (this->Load(ar) == 0) {
                 return 0;
             }
@@ -1260,9 +1260,9 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) 
         }
     }
 
-    SerBandPair(ar, kind, &m_timerBase);
-    SerBandPair(ar, kind, &m_gooTimerBaseLo);
-    SerBandPair(ar, kind, &m_resourceTimerBaseLo);
+    SerBandPair(ar, mode, &m_timerBase);
+    SerBandPair(ar, mode, &m_gooTimerBaseLo);
+    SerBandPair(ar, mode, &m_resourceTimerBaseLo);
     return 1;
 }
 

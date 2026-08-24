@@ -276,9 +276,9 @@ public:
 
     i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
 
-    i32 SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    i32 HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 SavePlayState(CFileMemBase* ar);
     i32 LoadPlayState(CFileMemBase* ar);
 

@@ -69,12 +69,12 @@ CActReg CActRegPool<CGruntCreationPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA(0x0003e7a0, 0xd7)
 i32 CGruntCreationPoint::SerializeMove(
     CFileMemBase* ar,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
-    if (tag != SERIAL_SAVE && tag == SERIAL_POSTLOAD) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             if (g_gameReg->m_options[m_object->m_smarts].m_liveGate != 0) {

@@ -238,11 +238,22 @@ int CSpotLight::Update() {
 
 // @early-stop
 RVA(0x000b2050, 0x295)
-i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(arc, static_cast<CFileMemBase*>(arc), mode, c, d)
+i32 CSpotLight::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(
+        ar,
+        static_cast<CFileMemBase*>(ar),
+        mode,
+        typeId,
+        object
+    )
     CGruntzMgr* reg = g_gameReg;
     CDDrawSurfaceMgr* world = reg->m_world;
-    CFileMemBase* s = static_cast<CFileMemBase*>(arc);
+    CFileMemBase* s = static_cast<CFileMemBase*>(ar);
     switch (mode) {
         case SERIAL_SAVE:
             s->Write(&m_angularVelocity, sizeof(m_angularVelocity));

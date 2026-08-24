@@ -77,10 +77,10 @@ i32 CExitTrigger::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     CFileMemBase* arc = ar;
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(ar, arc, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(ar, arc, mode, typeId, object)
 
     CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {

@@ -75,7 +75,7 @@ public:
     i32 ValidateTiles(char* errOut);
     void ResolveColorKey();
 
-    i32 SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicTypeId typeId, i32 pObj);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 CanSave(CFileMemBase* s);
     i32 Save(CFileMemBase* s);
     i32 Load(CFileMemBase* s);

@@ -195,7 +195,7 @@ public:
 
     void ResetGroupA();
 
-    i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
+    i32 Sync(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 GetActiveValue();
     i32 LoadStatzTabToggleSprite(i32 idx, StatusSampleMode value);

@@ -353,12 +353,17 @@ i32 CObjectDropper::Update() {
 }
 
 RVA(0x000c6680, 0x1b4)
-i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
+i32 CObjectDropper::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
 
-    SerBandPair(ar, tag, &m_dropTiming);
+    SerBandPair(ar, mode, &m_dropTiming);
 
-    switch (tag) {
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_speed, sizeof(m_speed));
             ar->Write(&m_posX, sizeof(m_posX));
@@ -506,9 +511,14 @@ i32 CDroppedObject::AdvanceAnimation() {
 }
 
 RVA(0x000c73a0, 0xb5)
-i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
-    switch (tag) {
+i32 CDroppedObject::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_timePerTile, sizeof(m_timePerTile));
             ar->Write(&m_fallY, sizeof(m_fallY));
@@ -567,10 +577,10 @@ RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
-    LogicTypeId c,
-    CGameObject* d
+    LogicTypeId typeId,
+    CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, c, d)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;

@@ -1138,8 +1138,13 @@ CUserLogic::CUserLogic(CGameObject* obj) {
 }
 
 RVA(0x00058ee0, 0x5c)
-i32 CPairRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    switch (tag) {
+i32 CPairRecord::Serialize(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_start, sizeof(m_start));
             ar->Write(&m_duration, sizeof(m_duration));

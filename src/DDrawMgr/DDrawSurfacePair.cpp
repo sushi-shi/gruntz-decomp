@@ -615,8 +615,13 @@ i32 CResolveNode::Init(
 // into retail's slot; the rest is the coupled coloring. Tail rows past the last
 // ret are the delinker jump-table artifact.
 RVA(0x00164830, 0xec)
-i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, CGameObject* d) {
-    if (a == NULL) {
+i32 AnimWorkerObj::Dispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
@@ -628,13 +633,13 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, CGa
             break;
         case SERIAL_SAVE:
 
-            if (Save(a) == 0) {
+            if (Save(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
 
-            if (Load(a) == 0) {
+            if (Load(ar) == 0) {
                 return 0;
             }
             break;
@@ -651,7 +656,7 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, CGa
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove(a, mode, c, d) == 0) {
+        if (m_logic->SerializeMove(ar, mode, typeId, object) == 0) {
             return 0;
         }
     }

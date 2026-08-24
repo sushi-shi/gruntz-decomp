@@ -214,7 +214,7 @@ public:
     );
     void UpdateScoreHud();
 
-    i32 BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 pObj);
+    i32 BroadcastCmd(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     void RecomputeViewScale();
 
     i32 MakeRezPath();

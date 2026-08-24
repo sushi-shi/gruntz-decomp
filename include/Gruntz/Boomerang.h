@@ -13,7 +13,7 @@ public:
     CBoomerang(CGameObject* owner);
 
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
     RVA(0x000129b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

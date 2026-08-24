@@ -10,8 +10,8 @@
 class CWarpStonePad : public CUserLogic, public CWapX {
     RVA(0x00010f20, 0x47)
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
-        OVERRIDE{SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)}
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
+        OVERRIDE{SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)}
 
     RVA(0x00010f00, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

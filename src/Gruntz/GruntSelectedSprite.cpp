@@ -78,7 +78,7 @@ i32 CGruntSelectedSprite::SerializeMove(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
 
@@ -89,5 +89,5 @@ i32 CGruntSelectedSprite::SerializeMove(
     } else {
         sa->Write(&m_cell, sizeof(m_cell));
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, object)
 }

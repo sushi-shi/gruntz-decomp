@@ -117,8 +117,13 @@ void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
 }
 
 RVA(0x0003c8f0, 0x76)
-i32 CTriRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    switch (tag) {
+i32 CTriRecord::Serialize(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&row, sizeof(row));
             ar->Write(&column, sizeof(column));

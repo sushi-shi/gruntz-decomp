@@ -18,9 +18,10 @@ public:
         return LOGIC_VOICETRIGGER;
     }
     RVA(0x000134e0, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {
-        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
+        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
     }
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();

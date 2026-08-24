@@ -181,7 +181,7 @@ i32 CSBI_ImageSetAni::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
     if (s == NULL) {
         return 0;
@@ -208,5 +208,5 @@ i32 CSBI_ImageSetAni::SerializeFields(
             s->Write(&m_frameStart, sizeof(m_frameStart));
             break;
     }
-    return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj) != 0;
+    return CSBI_ImageSet::SerializeFields(s, mode, typeId, payload) != 0;
 }

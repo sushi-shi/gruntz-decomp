@@ -1612,22 +1612,22 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
 
 RVA(0x00113860, 0x3b)
 i32 CTileTriggerSwitchLogic::ValidateByType(
-    CFileMemBase* s,
+    CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
-    if (s == NULL) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (!SaveState(s)) {
+            if (!SaveState(ar)) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (!LoadState(s)) {
+            if (!LoadState(ar)) {
                 return 0;
             }
             break;
@@ -1686,22 +1686,22 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
 
 RVA(0x00113a90, 0x3b)
 i32 CTileTriggerLogic::ValidateByType(
-    CFileMemBase* archive,
+    CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
-    if (archive == NULL) {
+    if (ar == NULL) {
         return 0;
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (Serialize(archive) == 0) {
+            if (Serialize(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (Deserialize(archive) == 0) {
+            if (Deserialize(ar) == 0) {
                 return 0;
             }
             break;
@@ -1767,25 +1767,25 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
 
 RVA(0x00113d40, 0x6f)
 i32 CGiantRockLogic::ApplyByType(
-    CFileMemBase* archive,
+    CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
-    if (archive == NULL) {
+    if (ar == NULL) {
         return 0;
     }
-    if (ValidateByType(archive, mode, typeId, pObj) == 0) {
+    if (ValidateByType(ar, mode, typeId, payload) == 0) {
         return 0;
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (SerializeMatrix(archive) == 0) {
+            if (SerializeMatrix(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (DeserializeMatrix(archive) == 0) {
+            if (DeserializeMatrix(ar) == 0) {
                 return 0;
             }
             break;
@@ -1832,7 +1832,12 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
 }
 
 RVA(0x00113f10, 0x3b)
-i32 CTileActionEvent::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CTileActionEvent::Serialize(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -1852,42 +1857,42 @@ i32 CTileActionEvent::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId t
 }
 
 RVA(0x00113f60, 0xa2)
-i32 CTileActionEvent::SerializeFields(CFileMemBase* a) {
-    if (a == NULL) {
+i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
+    if (ar == NULL) {
         return 0;
     }
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    a->Write(&m_actionCode, sizeof(m_actionCode));
-    a->Write(&m_tileX, sizeof(m_tileX));
-    a->Write(&m_tileY, sizeof(m_tileY));
-    a->Write(&m_cellKey, sizeof(m_cellKey));
-    a->Write(&m_live, sizeof(m_live));
-    a->Write(&m_playerFlags[0], sizeof(m_playerFlags[0]));
-    a->Write(&m_playerFlags[1], sizeof(m_playerFlags[1]));
-    a->Write(&m_playerFlags[2], sizeof(m_playerFlags[2]));
-    a->Write(&m_playerFlags[3], sizeof(m_playerFlags[3]));
+    ar->Write(&m_actionCode, sizeof(m_actionCode));
+    ar->Write(&m_tileX, sizeof(m_tileX));
+    ar->Write(&m_tileY, sizeof(m_tileY));
+    ar->Write(&m_cellKey, sizeof(m_cellKey));
+    ar->Write(&m_live, sizeof(m_live));
+    ar->Write(&m_playerFlags[0], sizeof(m_playerFlags[0]));
+    ar->Write(&m_playerFlags[1], sizeof(m_playerFlags[1]));
+    ar->Write(&m_playerFlags[2], sizeof(m_playerFlags[2]));
+    ar->Write(&m_playerFlags[3], sizeof(m_playerFlags[3]));
     return 1;
 }
 
 RVA(0x00114040, 0xa2)
-i32 CTileActionEvent::DeserializeFields(CFileMemBase* a) {
-    if (a == NULL) {
+i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
+    if (ar == NULL) {
         return 0;
     }
     if (g_gameReg->m_world == NULL) {
         return 0;
     }
-    a->Read(&m_actionCode, sizeof(m_actionCode));
-    a->Read(&m_tileX, sizeof(m_tileX));
-    a->Read(&m_tileY, sizeof(m_tileY));
-    a->Read(&m_cellKey, sizeof(m_cellKey));
-    a->Read(&m_live, sizeof(m_live));
-    a->Read(&m_playerFlags[0], sizeof(m_playerFlags[0]));
-    a->Read(&m_playerFlags[1], sizeof(m_playerFlags[1]));
-    a->Read(&m_playerFlags[2], sizeof(m_playerFlags[2]));
-    a->Read(&m_playerFlags[3], sizeof(m_playerFlags[3]));
+    ar->Read(&m_actionCode, sizeof(m_actionCode));
+    ar->Read(&m_tileX, sizeof(m_tileX));
+    ar->Read(&m_tileY, sizeof(m_tileY));
+    ar->Read(&m_cellKey, sizeof(m_cellKey));
+    ar->Read(&m_live, sizeof(m_live));
+    ar->Read(&m_playerFlags[0], sizeof(m_playerFlags[0]));
+    ar->Read(&m_playerFlags[1], sizeof(m_playerFlags[1]));
+    ar->Read(&m_playerFlags[2], sizeof(m_playerFlags[2]));
+    ar->Read(&m_playerFlags[3], sizeof(m_playerFlags[3]));
     return 1;
 }
 

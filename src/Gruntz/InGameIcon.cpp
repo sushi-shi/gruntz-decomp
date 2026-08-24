@@ -553,9 +553,9 @@ i32 CToyPeek::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
 
     SerBandPair(ar, mode, &m_startClock);
     return 1;
@@ -1038,12 +1038,17 @@ i32 CInGameText::Update() {
 }
 
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, CGameObject* b) {
+i32 CInGameText::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
     if (ar == NULL) {
         return 0;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, a, b)
-    switch (tag) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
             ar->Write(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));

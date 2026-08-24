@@ -3366,7 +3366,7 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
 }
 
 RVA(0x00093460, 0x15c)
-i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 pObj) {
+i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }
@@ -3388,30 +3388,30 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
     i32 i;
     GruntzPlayer* slot;
     for (i = 0, slot = m_options; i < 4; i++) {
-        if (slot == NULL || slot->Serialize(ar, cmd, typeId, pObj) == 0) {
+        if (slot == NULL || slot->Serialize(ar, cmd, typeId, payload) == 0) {
             return 0;
         }
         slot++;
     }
 
-    if (m_cmdGrid->Serialize(ar, cmd, typeId, pObj) == 0) {
+    if (m_cmdGrid->Serialize(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
-    if (PickPlayOrPausedState()->SyncState(ar, cmd, typeId, pObj) == 0) {
+    if (PickPlayOrPausedState()->SyncState(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
-    if (m_cmdSubMgr->Serialize(ar, cmd, typeId, pObj) == 0) {
-        return 0;
-    }
-
-    if (m_tileGrid->Visit(ar, cmd, typeId, pObj) == 0) {
+    if (m_cmdSubMgr->Serialize(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
 
-    if (MapSerializeCurve(ar, cmd, typeId, pObj) == 0) {
+    if (m_tileGrid->Visit(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
-    return m_scoreHud->Serialize(ar, cmd, typeId, pObj) != 0;
+
+    if (MapSerializeCurve(ar, cmd, typeId, payload) == 0) {
+        return 0;
+    }
+    return m_scoreHud->Serialize(ar, cmd, typeId, payload) != 0;
 }
 
 RVA(0x00093620, 0x254)

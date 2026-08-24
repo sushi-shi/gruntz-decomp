@@ -18,7 +18,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
     if (s == NULL) {
         return 0;
@@ -132,5 +132,5 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
         }
     }
 
-    return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
+    return CStatusBarItem::SerializeFields(s, mode, typeId, payload) != 0 ? 1 : 0;
 }

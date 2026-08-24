@@ -1807,7 +1807,7 @@ void CGameLevel::NotifyAllPlanes() {
 }
 
 RVA(0x00160f70, 0x120)
-i32 CGameLevel::EditDispatch(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+i32 CGameLevel::EditDispatch(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (s == NULL) {
         return 0;
     }
@@ -1840,7 +1840,7 @@ tail:
     if (m_mainPlane == NULL) {
         return 0;
     }
-    return m_mainPlane->SerializeDispatch(s, mode, typeId, pObj) != 0 ? 1 : 0;
+    return m_mainPlane->SerializeDispatch(s, mode, typeId, payload) != 0 ? 1 : 0;
 }
 
 // @dead-code

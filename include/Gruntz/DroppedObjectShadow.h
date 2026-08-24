@@ -21,7 +21,7 @@ public:
     CDroppedObjectShadow() {}
     CDroppedObjectShadow(CGameObject* obj);
 
-    i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, i32 d);
+    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();

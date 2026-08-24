@@ -47,7 +47,7 @@ public:
     i32 VerifyBlockLinksB();
     i32 VerifyBlockLinks();
 
-    i32 ValidateByType(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    i32 ValidateByType(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 SaveState(CFileMemBase* s);
 
     i32 LoadState(CFileMemBase* s);

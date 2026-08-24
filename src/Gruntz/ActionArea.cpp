@@ -127,13 +127,18 @@ i32 CActionArea::ApplyColor(i32 owner) {
 }
 
 RVA(0x00008600, 0xcd)
-i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
+i32 CActionArea::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
     if (ar == NULL) {
         return 0;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, c, d)
-    SerBandPair(ar, tag, &m_timing);
-    switch (tag) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SerBandPair(ar, mode, &m_timing);
+    switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_phase, sizeof(m_phase));
             break;

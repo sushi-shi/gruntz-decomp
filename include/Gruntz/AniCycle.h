@@ -19,9 +19,10 @@ public:
         return LOGIC_ANICYCLE;
     }
     RVA(0x0000f470, 0x47)
-    virtual i32 SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {
-        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
+        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
     }
 
     virtual void FireActivation(i32 id) OVERRIDE;

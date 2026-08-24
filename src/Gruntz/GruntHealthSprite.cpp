@@ -106,7 +106,7 @@ i32 CGruntHealthSprite::SerializeMove(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* pObj
+    CGameObject* object
 ) {
     switch (mode) {
         case SERIAL_SAVE:
@@ -120,5 +120,5 @@ i32 CGruntHealthSprite::SerializeMove(
             ar->Read(&m_yOffset, sizeof(m_yOffset));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, pObj)
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
 }

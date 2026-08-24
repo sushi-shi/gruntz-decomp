@@ -2551,17 +2551,17 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
 }
 
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, SerialMode kindArg, LogicTypeId, i32) {
-    CFileMemBase* obj = objArg;
-    SerialMode kind = kindArg;
-    switch (kind) {
+i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, LogicTypeId, i32) {
+    CFileMemBase* ar = arArg;
+    SerialMode mode = modeArg;
+    switch (mode) {
         case SERIAL_SAVE:
-            if (this->Serialize(obj) == 0) {
+            if (this->Serialize(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (this->Deserialize(obj) == 0) {
+            if (this->Deserialize(ar) == 0) {
                 return 0;
             }
             break;
@@ -2570,14 +2570,14 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, SerialMode kindArg, 
     // retail materialises this+0x78 once, ahead of the dispatch, and reaches
     // the second timer as +8 off that cursor rather than off `this`.
     Clock64* p = m_routeTimers;
-    switch (kind) {
+    switch (mode) {
         case SERIAL_SAVE:
-            obj->Write(&p[0], sizeof(Clock64));
-            obj->Write(&p[1], sizeof(Clock64));
+            ar->Write(&p[0], sizeof(Clock64));
+            ar->Write(&p[1], sizeof(Clock64));
             break;
         case SERIAL_LOAD:
-            obj->Read(&p[0], sizeof(Clock64));
-            obj->Read(&p[1], sizeof(Clock64));
+            ar->Read(&p[0], sizeof(Clock64));
+            ar->Read(&p[1], sizeof(Clock64));
             break;
     }
     return 1;

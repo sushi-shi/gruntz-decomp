@@ -21,7 +21,7 @@ public:
     i32 Tick(u32 dt);
     i32 Draw();
 
-    i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
+    i32 Sync(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     WarpStoneFragment m_arrivalMode;
     i32 m_targetX;

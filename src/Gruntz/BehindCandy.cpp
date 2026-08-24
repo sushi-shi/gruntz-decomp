@@ -9,8 +9,13 @@
 #include <stddef.h>
 
 RVA(0x0000fb90, 0x47)
-i32 CBehindCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, tag, c, d)
+i32 CBehindCandy::SerializeMove(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
+    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x0000fc00, 0x1e, ??_GCBehindCandy@@UAEPAXI@Z)

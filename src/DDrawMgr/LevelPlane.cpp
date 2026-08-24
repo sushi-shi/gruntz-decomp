@@ -1037,15 +1037,15 @@ void CDDrawWorkerHost::ResolveColorKey() {
 }
 
 RVA(0x00163710, 0x60)
-i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicTypeId, i32) {
-    if (!s) {
+i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
+    if (!ar) {
         return 0;
     }
-    switch (kind) {
+    switch (mode) {
         case SERIAL_PRESAVE:
             return 1;
         case SERIAL_SAVE:
-            if (!Save(s)) {
+            if (!Save(ar)) {
                 return 0;
             }
             break;
@@ -1054,7 +1054,7 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
         case SERIAL_PRELOAD:
             return 1;
         case SERIAL_LOAD:
-            if (!Load(s)) {
+            if (!Load(ar)) {
                 return 0;
             }
             break;

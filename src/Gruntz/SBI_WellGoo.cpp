@@ -171,7 +171,7 @@ i32 CSBI_WellGoo::SerializeFields(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
-    i32 pObj
+    i32 payload
 ) {
     if (arc == NULL) {
         return 0;
@@ -181,7 +181,7 @@ i32 CSBI_WellGoo::SerializeFields(
         return 0;
     }
 
-    if (CSBI_Image::SerializeFields(arc, mode, typeId, pObj) == 0) {
+    if (CSBI_Image::SerializeFields(arc, mode, typeId, payload) == 0) {
         return 0;
     }
     switch (mode) {

@@ -51,7 +51,7 @@ public:
 
     virtual ~CGruntzCommand() {}
 
-    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) = 0;
+    virtual i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) = 0;
 
     virtual i32 Save(CFileMemBase* s) = 0;
     virtual i32 Load(CFileMemBase* s) = 0;
@@ -93,7 +93,8 @@ extern const u16 g_cmdBitTable[16];
 
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
-    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload)
+        OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
@@ -110,7 +111,8 @@ public:
 
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
-    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload)
+        OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
