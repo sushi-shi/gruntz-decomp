@@ -110,7 +110,7 @@ spelling the tree is missing.
 
 **Reading a score claim in a pattern doc:** ask whether the doc names a SOURCE
 SHAPE the tree lacks or only a NUMBER. `allocate-check-then-body-is-the-then-
-block.md` named teardown-first the winner for `AddToList1` at 80.00 while the
+block.md` named teardown-first the winner for `AddGiantRockLogic` at 80.00 while the
 tree held the 77.41 body-first spelling - that was a real unapplied lever and
 taking it was free score. This line names no shape the tree lacks, so it is
 closed. A number without a shape is not a target.

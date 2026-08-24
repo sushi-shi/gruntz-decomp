@@ -1161,7 +1161,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    CWapX::Apply(found, 0);
+    CWapX::ApplyAnimation(found, 0);
     i32 frame =
         static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->AtChecked(0))->m_param;
     ApplyLookupSprite("GRUNTZ_EXITZ", frame);

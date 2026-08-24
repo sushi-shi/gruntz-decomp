@@ -94,13 +94,13 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
 
             if (cellType == TILEKIND_COVERED_POWERUP) {
-                CTileTriggerLogic* found = state->m_beginMarker->FindInLists12(
+                CTileTriggerLogic* found = state->m_beginMarker->FindLogic(
                     (tileX << 8) + tileY,
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
                     found->ApplyMove(TILEKIND_COVERED_POWERUP);
-                    state->m_beginMarker->DelFromList1(found);
+                    state->m_beginMarker->RemoveIdleLogic(found);
                     return 1;
                 }
                 // Retail re-reads the cell off the plane rather than reusing the
@@ -157,13 +157,13 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
 
             if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B) {
-                CTileTriggerLogic* found = state->m_beginMarker->FindInLists12(
+                CTileTriggerLogic* found = state->m_beginMarker->FindLogic(
                     (tileX << 8) + tileY,
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
                     found->ApplyMove(cellType);
-                    state->m_beginMarker->DelFromList1(found);
+                    state->m_beginMarker->RemoveIdleLogic(found);
                 } else if (cellType == TILEKIND_GAUNTLET_ROCK_A) {
                     CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
                     SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5a);
@@ -186,7 +186,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     return 0;
                 }
                 rock->BuildRockBreakInGameText();
-                state->m_beginMarker->DelFromList1(rock);
+                state->m_beginMarker->RemoveIdleLogic(rock);
                 return 1;
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
@@ -194,7 +194,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 CTileActionEvent* event =
                     state->m_beginMarker->FindActionByCellKey((tileX << 8) + tileY);
                 if (event->Process(unit) != 0) {
-                    state->m_beginMarker->DelFromList3(event);
+                    state->m_beginMarker->RemoveActionEvent(event);
                 }
                 return 1;
             } else {
@@ -581,7 +581,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         actionCode = BRICKTILE_BROWN_1;
                         break;
                 }
-                if (state->m_beginMarker->AddToList3Switch(
+                if (state->m_beginMarker->AddSwitchActionEvent(
                         actionCode,
                         tileX,
                         tileY,

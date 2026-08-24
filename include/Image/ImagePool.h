@@ -27,24 +27,25 @@ public:
         Clear();
     }
 
-    i32 SetHandles(HINSTANCE resModule, HWND src, i32 c);
+    i32 Configure(HINSTANCE resourceModule, HWND sourceWindow, i32 reserved);
     void Clear();
-    void Free(CRezImage* node);
-    void RemovePalette(CImagePaletteNode* node);
+    void RemoveSurface(CRezImage* image);
+    void RemovePalette(CImagePaletteNode* palette);
     void ClearSurfaces();
     void ClearPalettes();
-    CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);
-    CImagePaletteNode* AddPaletteRGB(u8* rgb, i32 flags);
-    CImagePaletteNode* AddImageFile(char* path, i32 arg);
-    CImagePaletteNode* AddImageDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl);
-    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount, i32 flag);
-    void B(CRezImage* node, CImagePaletteNode* paletteNode, i32 b);
+    CImagePaletteNode* CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flags);
+    CImagePaletteNode* CreatePaletteFromRgb(u8* rgb, i32 flags);
+    CImagePaletteNode* LoadPaletteFromFile(char* path, i32 flags);
+    CImagePaletteNode* LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags);
+    i32 ResizeSurface(CRezImage* image, i32 width, i32 height, ColorDepth bitDepth, i32 flags);
+    void SetImagePalette(CRezImage* image, CImagePaletteNode* palette, i32 scalar);
 
-    CRezImage* AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag);
-    CRezImage* AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, i32 flag);
-    CRezImage* AddSurfaceOp(u8* buf, RezDecodeKind kind, i32 ctrl);
-    CRezImage* AddSurfaceRez(char* name, i32 ctrl);
-    CRezImage* AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal);
+    CRezImage* CreateSurface(i32 width, i32 height, ColorDepth bitDepth, i32 flags);
+    CRezImage*
+    CreateSurfaceFromPixels(u8* pixels, i32 width, i32 height, ColorDepth bitDepth, i32 flags);
+    CRezImage* LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 flags);
+    CRezImage* LoadSurfaceFromResource(char* resourceName, i32 flags);
+    CRezImage* ConvertSurface(CRezImage* source, CImagePaletteNode* palette);
 
     HINSTANCE m_resourceModuleHandle;
     HWND m_sourceHwnd;

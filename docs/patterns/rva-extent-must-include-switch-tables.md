@@ -128,7 +128,7 @@ What the base-side test missed, measured on the same tree after its 43-function 
   `CStatusBarMgr::UpdateStatusBarTabHighlight` (3 tables, +158) and
   `CGruntzMgr::HandleCommand` (3 tables, +1551, 71.16 → 94.70).
 * **functions emitting no table at all**, where the short claim was *inflating* the score:
-  `CAniAdvanceCursor::Find` and `SerializeApplyA` both went DOWN at the correct extent. That
+  `CAniAdvanceCursor::Find` and `SerializeSwitchLogic` both went DOWN at the correct extent. That
   is the claim telling the truth, not the extension being wrong — see
   switch-empty-arms-dedup-before-jumptable.md, which took both to 100 EXACT.
 

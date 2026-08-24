@@ -97,7 +97,7 @@ two declarations took `LayoutWrapped` to EXACT and `MeasureWrapped` 98.96 -> 99.
 
 ## A second live instance, and the sieve that found it (2026-08-23)
 
-`CTileTriggerContainer::AddToList3` was declared `(BrickTileId, i32 tileX, i32 tileY,
+`CTileTriggerContainer::AddActionEvent` was declared `(BrickTileId, i32 tileX, i32 tileY,
 i32 cellKey, i32 player0, i32 player1, i32 player2, i32 player3)` and its one caller
 passed `obj->m_extent.left/top/right/bottom`. Retail's caller shows the forward-store
 shape through a `lea` rather than `mov eax,esp`, which is the same idiom:
@@ -112,7 +112,7 @@ mov  ebp,[edi+0x8]; mov [ebx+0x8],ebp
 mov  edi,[edi+0xc]; mov [ebx+0xc],edi
 ```
 
-`AddToList3(..., RECT playerFlags)` with `AddToList3(..., obj->m_extent)` reproduces
+`AddActionEvent(..., RECT playerFlags)` with `AddActionEvent(..., obj->m_extent)` reproduces
 that block byte for byte. `CPlay::ValidateLevelTiles` 0xd2dd0 90.3583 -> 90.4351;
 the callee's own body is unchanged (80.1184, `RENAMED in place`, high-water carried).
 
@@ -142,7 +142,7 @@ Any `(..., i32 x0, i32 top, i32 right, i32 bottom, ...)` or `(..., i32 l, i32 t,
 i32 r, i32 b)` signature in the tree is a candidate; check the caller's argument setup
 for the forward-store shape before retyping. The same reading applies to `Coord`/
 `POINT` pairs, where the aggregate form is `sub esp,0x8` plus two forward stores.
-The four values need not be spelled as a rect at either end - `AddToList3` reads them
+The four values need not be spelled as a rect at either end - `AddActionEvent` reads them
 as per-player flags and still takes the rect.
 
 That search is now mechanical and it is **drained**. `gruntz walls aggscan`
@@ -152,7 +152,7 @@ ours against 182 retail over 20 callees, with **zero callees retail hands a bloc
 we never do, and zero the reverse**. Every named callee's hole-SIZE multiset matches
 exactly; the only two functions that differ (`CGrunt::StepGruntMovement`,
 `CStatusBarMgr::BuildTabzDialog`) differ in the COUNT of holes at one size, which is
-a tail-merge or inlining divergence rather than a signature. `AddToList3` was the last
+a tail-merge or inlining divergence rather than a signature. `AddActionEvent` was the last
 live instance. Re-run the sieve after any signature change; do not re-derive the
 screen by hand.
 

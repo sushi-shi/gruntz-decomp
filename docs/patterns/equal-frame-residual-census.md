@@ -388,7 +388,7 @@ if/else, so the idiom is the class's own. Converting both blocks: **96.43 ->
 
 `CTileTriggerContainer::AddLogic` 0x116610, flagged `[r] base 1 target 2`. The
 receiver itself was the ternary —
-`(logicType == TRIGID_TIME_TRIGGER_23 ? m_list2 : m_list1).AddTail(obj)` — so cl
+`(logicType == TRIGID_TIME_TRIGGER_23 ? m_timedLogics : m_idleLogics).AddTail(obj)` — so cl
 inlines `AddTail` once after the merge. An if/else over two statements (which is
 what a dev writes for a container anyway): **83.86 -> 97.84**.
 

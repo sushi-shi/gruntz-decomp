@@ -57,14 +57,14 @@ The five surface factories and the three palette factories all ended
 
 | function | before → after |
 |---|---|
-| `CImagePool::AddPaletteEntries` @0x1754f0 | 99.02 → **100.00 EXACT** |
-| `CImagePool::AddPaletteRGB` @0x175570 | 99.02 → **100.00 EXACT** |
-| `CImagePool::AddImageDispatch` @0x175680 | 99.11 → **100.00 EXACT** |
-| `CImagePool::AddSurfaceBmp` @0x174fe0 | 96.07 → **100.00 EXACT** |
-| `CImagePool::AddSurfaceBlit` @0x1750e0 | 96.15 → **100.00 EXACT** |
-| `CImagePool::AddSurfaceOp` @0x1751f0 | 95.98 → **100.00 EXACT** |
-| `CImagePool::AddSurfaceRez` @0x1752f0 | 95.98 → **100.00 EXACT** |
-| `CImagePool::AddSurfaceConvert` @0x1753f0 | 95.88 → **100.00 EXACT** |
+| `CImagePool::CreatePaletteFromEntries` @0x1754f0 | 99.02 → **100.00 EXACT** |
+| `CImagePool::CreatePaletteFromRgb` @0x175570 | 99.02 → **100.00 EXACT** |
+| `CImagePool::LoadPaletteFromData` @0x175680 | 99.11 → **100.00 EXACT** |
+| `CImagePool::CreateSurface` @0x174fe0 | 96.07 → **100.00 EXACT** |
+| `CImagePool::CreateSurfaceFromPixels` @0x1750e0 | 96.15 → **100.00 EXACT** |
+| `CImagePool::LoadSurfaceFromData` @0x1751f0 | 95.98 → **100.00 EXACT** |
+| `CImagePool::LoadSurfaceFromResource` @0x1752f0 | 95.98 → **100.00 EXACT** |
+| `CImagePool::ConvertSurface` @0x1753f0 | 95.88 → **100.00 EXACT** |
 
 The palette trio had `this` in ebx where retail has edi; the surface five had the node
 in ebx and the zero constant in edi where retail has them the other way round. Both
@@ -77,7 +77,7 @@ The tail-call form, same file: `CRezImage::DecodeResData` @0x175e00
 (`return DecodeBlit(...)` → `i32 r = DecodeBlit(...); return r;`) **96.73 → 99.62**,
 its `buf`/`bitcount` two-register role swap gone in one edit.
 
-The sibling `CImagePool::AddImageFile` @0x1755f0 was ALWAYS 100 with the un-split
+The sibling `CImagePool::LoadPaletteFromFile` @0x1755f0 was ALWAYS 100 with the un-split
 spelling — its extra leading `g_hResModule = m_resourceModuleHandle;` already gives
 `this` an early use, which pins the same set. That asymmetry inside one file is the
 tell: **when one member of a copy-paste family matches and the rest do not, look for the

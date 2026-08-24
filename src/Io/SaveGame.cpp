@@ -99,7 +99,7 @@ i32 CSaveGame::Load() {
 }
 
 RVA(0x000e4ea0, 0x18c)
-i32 CSaveGame::Save(char* path, i32 msgId) {
+i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     CWaitCursorScope wait;
     CFile file;
     if (!file.Open(m_name, CFile::modeCreate, NULL)) {
@@ -114,11 +114,11 @@ i32 CSaveGame::Save(char* path, i32 msgId) {
     file.Write(m_slots, sizeof(m_slots));
     file.Close();
     Verify();
-    if (path != NULL) {
+    if (screenshotPath != NULL) {
         CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
         g_gameReg->m_world->m_drawTarget->TransEnter();
-        state->LoadSBITextEdges(msgId);
-        if (!SaveGame(g_gameReg, path)) {
+        state->LoadSBITextEdges(messageId);
+        if (!SaveGame(g_gameReg, screenshotPath)) {
             return 0;
         }
         if (!ChainForward(
@@ -126,7 +126,7 @@ i32 CSaveGame::Save(char* path, i32 msgId) {
                 g_gameReg,
                 SCREEN_HALF_W_PX,
                 SCREEN_HALF_H_PX,
-                path,
+                screenshotPath,
                 1
             )) {
             return 0;

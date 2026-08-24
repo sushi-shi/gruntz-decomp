@@ -84,7 +84,7 @@ public:
 
     void RecordMove();
 
-    i32 Classify(i32 arg);
+    i32 Classify(i32 unusedFrameDelta);
 
     i32 ApplyMove(TileCollisionKind verb);
 

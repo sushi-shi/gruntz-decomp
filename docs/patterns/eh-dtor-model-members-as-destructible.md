@@ -12,11 +12,11 @@ exactly the members already constructed. The retail shape is:
 ```asm
 push -1 / push <handler> / mov fs:0,esp        ; /GX frame
 ...
-mov [esp+0x10],3                                ; (most-derived body / DtorBase) trylevel 3
-call <DtorBase>
-mov [esp+0x10],2 ; lea ecx,[esi+0x54]; call ~CObList   ; m_list3
-mov [esp+0x10],1 ; lea ecx,[esi+0x38]; call ~CObList   ; m_list2
-mov [esp+0x10],0 ; lea ecx,[esi+0x1c]; call ~CObList   ; m_list1
+mov [esp+0x10],3                                ; (most-derived body / Shutdown) trylevel 3
+call <Shutdown>
+mov [esp+0x10],2 ; lea ecx,[esi+0x54]; call ~CObList   ; m_actionEvents
+mov [esp+0x10],1 ; lea ecx,[esi+0x38]; call ~CObList   ; m_timedLogics
+mov [esp+0x10],0 ; lea ecx,[esi+0x1c]; call ~CObList   ; m_idleLogics
 mov [esp+0x10],-1; mov ecx,esi;       call ~CObList   ; m_base
 ```
 
@@ -35,11 +35,11 @@ public:
 class CTileTriggerContainer {
 public:
     ~CTileTriggerContainer();           // 0xc8640  (mangles ??1...@@QAE@XZ)
-    TtcObList m_base, m_list1, m_list2, m_list3;  // declared in teardown-reverse order
+    TtcObList m_base, m_idleLogics, m_timedLogics, m_actionEvents;  // declared in teardown-reverse order
 };
 CTileTriggerContainer::~CTileTriggerContainer() {
-    DtorBase();                          // the most-derived body (trylevel 3)
-    // m_list3 / m_list2 / m_list1 / m_base auto-destroyed here, reverse decl order,
+    Shutdown();                          // the most-derived body (trylevel 3)
+    // m_actionEvents / m_timedLogics / m_idleLogics / m_base auto-destroyed here, reverse decl order,
     // each at its own trylevel — the compiler emits the whole /GX machinery.
 }
 ```

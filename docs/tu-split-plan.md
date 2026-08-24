@@ -50,7 +50,7 @@ units, packed back to back with a 0x2e6 gap after:
 0x06b260   5B  gruntentrancemove      CGrunt::StepAttackAction
 0x06b270  27B  ddrawsurfacepair       CAniElement::AtChecked
 0x06b2a0  35B  ddrawsubmgrleaf        CDDrawSubMgrLeaf::LookupValue
-0x06b2e0  57B  gruntentrancearrival   CWapX::Apply
+0x06b2e0  57B  gruntentrancearrival   CWapX::ApplyAnimation
 0x06b330  42B  gamelevel              CGameLevel::PointInBounds
 ```
 

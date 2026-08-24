@@ -28,10 +28,10 @@ DATA(0x0021aabc)
 char g_bmpHeaderTemplate[4] = "BM";
 
 RVA(0x00174e90, 0x1c)
-i32 CImagePool::SetHandles(HINSTANCE resModule, HWND src, i32 c) {
-    m_resourceModuleHandle = resModule;
-    m_sourceHwnd = src;
-    m_reserved08 = c;
+i32 CImagePool::Configure(HINSTANCE resourceModule, HWND sourceWindow, i32 reserved) {
+    m_resourceModuleHandle = resourceModule;
+    m_sourceHwnd = sourceWindow;
+    m_reserved08 = reserved;
     return 1;
 }
 
@@ -45,31 +45,31 @@ void CImagePool::Clear() {
 }
 
 RVA(0x00174ed0, 0x5d)
-void CImagePool::Free(CRezImage* node) {
-    if (!node) {
+void CImagePool::RemoveSurface(CRezImage* image) {
+    if (!image) {
         return;
     }
-    if (node->m_paletteNode && node->m_paletteScalar) {
-        RemovePalette(node->m_paletteNode);
-        B(NULL, NULL, 0);
+    if (image->m_paletteNode && image->m_paletteScalar) {
+        RemovePalette(image->m_paletteNode);
+        SetImagePalette(NULL, NULL, 0);
     }
-    if (node->m_listPosition) {
-        m_surfaces.RemoveAt(node->m_listPosition);
+    if (image->m_listPosition) {
+        m_surfaces.RemoveAt(image->m_listPosition);
     }
-    node->Free();
-    ::operator delete(node);
+    image->Free();
+    ::operator delete(image);
 }
 
 RVA(0x00174f30, 0x30)
-void CImagePool::RemovePalette(CImagePaletteNode* node) {
-    if (!node) {
+void CImagePool::RemovePalette(CImagePaletteNode* palette) {
+    if (!palette) {
         return;
     }
-    if (node->m_listPosition) {
-        m_palettes.RemoveAt(node->m_listPosition);
+    if (palette->m_listPosition) {
+        m_palettes.RemoveAt(palette->m_listPosition);
     }
-    node->Run();
-    ::operator delete(node);
+    palette->Destroy();
+    ::operator delete(palette);
 }
 
 RVA(0x00174f60, 0x37)
@@ -91,7 +91,7 @@ void CImagePool::ClearPalettes() {
     while (pos) {
         CImagePaletteNode* item = static_cast<CImagePaletteNode*>(m_palettes.GetNext(pos));
         if (item) {
-            item->Run();
+            item->Destroy();
             ::operator delete(item);
         }
     }
@@ -102,10 +102,10 @@ void CImagePool::ClearPalettes() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174fe0, 0xfe)
-CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag) {
+CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth, i32 flags) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DecodeBmpHeader(hdc, width, height, bitCount, flag) == BPP_UNSET) {
+    if (node->DecodeBmpHeader(hdc, width, height, bitDepth, flags) == BPP_UNSET) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -130,11 +130,16 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount,
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001750e0, 0x103)
-CRezImage*
-CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, i32 flag) {
+CRezImage* CImagePool::CreateSurfaceFromPixels(
+    u8* pixels,
+    i32 width,
+    i32 height,
+    ColorDepth bitDepth,
+    i32 flags
+) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == BPP_UNSET) {
+    if (node->DecodeBlit(pixels, hdc, width, height, bitDepth, flags) == BPP_UNSET) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -157,10 +162,10 @@ CImagePool::AddSurfaceBlit(u8* src, i32 width, i32 height, ColorDepth bitCount, 
 }
 
 RVA(0x001751f0, 0xf9)
-CRezImage* CImagePool::AddSurfaceOp(u8* buf, RezDecodeKind kind, i32 ctrl) {
+CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 flags) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DispatchDecode(buf, kind, hdc, ctrl) == 0) {
+    if (node->DispatchDecode(data, format, hdc, flags) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -185,11 +190,11 @@ CRezImage* CImagePool::AddSurfaceOp(u8* buf, RezDecodeKind kind, i32 ctrl) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001752f0, 0xfc)
-CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
+CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
     CRezImage* node = new CRezImage();
-    if (node->LoadFromRez(name, hdc, ctrl) == 0) {
+    if (node->LoadFromRez(resourceName, hdc, flags) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -214,10 +219,10 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001753f0, 0xf4)
-CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal) {
+CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* palette) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->Convert8To16(hdc, src, pal) == 0) {
+    if (node->Convert8To16(hdc, source, palette) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = NULL;
@@ -242,11 +247,11 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, CImagePaletteNode* pal)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001754f0, 0x7b)
-CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
+CImagePaletteNode* CImagePool::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->Build(entries, flags) == 0) {
+    if (node->CreateFromEntries(entries, flags) == 0) {
         if (node) {
-            node->Run();
+            node->Destroy();
             ::operator delete(node);
         }
         return NULL;
@@ -259,11 +264,11 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175570, 0x7b)
-CImagePaletteNode* CImagePool::AddPaletteRGB(u8* rgb, i32 flags) {
+CImagePaletteNode* CImagePool::CreatePaletteFromRgb(u8* rgb, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->ProcessPal(rgb, flags) == 0) {
+    if (node->CreateFromRgb(rgb, flags) == 0) {
         if (node) {
-            node->Run();
+            node->Destroy();
             ::operator delete(node);
         }
         return NULL;
@@ -276,12 +281,12 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(u8* rgb, i32 flags) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001755f0, 0x82)
-CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
+CImagePaletteNode* CImagePool::LoadPaletteFromFile(char* path, i32 flags) {
     g_hResModule = m_resourceModuleHandle;
     CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->LoadByExtension(path, arg) == 0) {
+    if (node->LoadFromFile(path, flags) == 0) {
         if (node) {
-            node->Run();
+            node->Destroy();
             ::operator delete(node);
         }
         return NULL;
@@ -294,11 +299,12 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175680, 0x85)
-CImagePaletteNode* CImagePool::AddImageDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl) {
+CImagePaletteNode*
+CImagePool::LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
+    if (node->LoadFromData(data, dataSize, format, flags) == 0) {
         if (node) {
-            node->Run();
+            node->Destroy();
             ::operator delete(node);
         }
         return NULL;
@@ -311,12 +317,18 @@ CImagePaletteNode* CImagePool::AddImageDispatch(u8* buf, u32 size, RezDecodeKind
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175710, 0x69)
-i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
-    if (img == NULL) {
+i32 CImagePool::ResizeSurface(
+    CRezImage* image,
+    i32 width,
+    i32 height,
+    ColorDepth bitDepth,
+    i32 flags
+) {
+    if (image == NULL) {
         return 0;
     }
     HDC dc = GetDC(m_sourceHwnd);
-    i32 result = img->EnsureSize(dc, w, h, bitCount, flag);
+    i32 result = image->EnsureSize(dc, width, height, bitDepth, flags);
     if (m_selectedPalette) {
         SelectPalette(dc, m_selectedPalette, FALSE);
         m_selectedPalette = NULL;
@@ -326,12 +338,12 @@ i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount,
 }
 
 RVA(0x00175780, 0x3f)
-void CImagePool::B(CRezImage* node, CImagePaletteNode* paletteNode, i32 b) {
-    if (node->m_paletteNode && node->m_paletteScalar) {
-        RemovePalette(node->m_paletteNode);
-        node->SetPalette(NULL, 0);
+void CImagePool::SetImagePalette(CRezImage* image, CImagePaletteNode* palette, i32 scalar) {
+    if (image->m_paletteNode && image->m_paletteScalar) {
+        RemovePalette(image->m_paletteNode);
+        image->SetPalette(NULL, 0);
     }
-    node->SetPalette(paletteNode, b);
+    image->SetPalette(palette, scalar);
 }
 
 RVA(0x001757c0, 0x16f)
@@ -446,7 +458,7 @@ i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal) {
     if (pal == NULL) {
         return 0;
     }
-    PALETTEENTRY* palette = pal->m_pal.palPalEntry;
+    PALETTEENTRY* palette = pal->m_logicalPalette.palPalEntry;
     if (palette == NULL) {
         return 0;
     }
@@ -961,7 +973,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     info.bmiHeader.biCompression = 0;
     info.bmiHeader.biSizeImage = 0;
 
-    PALETTEENTRY* pal = paletteObj->m_pal.palPalEntry;
+    PALETTEENTRY* pal = paletteObj->m_logicalPalette.palPalEntry;
     if (pal == NULL) {
         return 0;
     }
@@ -1015,24 +1027,24 @@ void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
 }
 
 RVA(0x00176df0, 0x71)
-i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
+i32 CImagePaletteNode::CreateFromEntries(PALETTEENTRY* entries, i32 flags) {
     m_flags = flags;
-    m_pal.palNumEntries = 0x100;
-    m_pal.palVersion = LOGICAL_PALETTE_VERSION;
+    m_logicalPalette.palNumEntries = 0x100;
+    m_logicalPalette.palVersion = LOGICAL_PALETTE_VERSION;
     for (i32 i = 0; i < 0x100; i++) {
-        m_pal.palPalEntry[i] = src[i];
-        m_pal.palPalEntry[i].peFlags = 0;
+        m_logicalPalette.palPalEntry[i] = entries[i];
+        m_logicalPalette.palPalEntry[i].peFlags = 0;
     }
     if (DisplayUsesPalette() && !(flags & 1)) {
-        Tune();
-        m_systemTuned = true;
+        ReserveSystemColors();
+        m_reservedSystemColors = true;
     }
-    m_palette = CreatePalette(&m_pal);
+    m_palette = CreatePalette(&m_logicalPalette);
     return m_palette != NULL;
 }
 
 RVA(0x00176e70, 0x4e)
-i32 CImagePaletteNode::ProcessPal(u8* rgb, i32 flags) {
+i32 CImagePaletteNode::CreateFromRgb(u8* rgb, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     u8* s = rgb;
 
@@ -1041,27 +1053,27 @@ i32 CImagePaletteNode::ProcessPal(u8* rgb, i32 flags) {
         pal[i].peGreen = *s++;
         pal[i].peBlue = *s++;
     }
-    return Build(pal, flags);
+    return CreateFromEntries(pal, flags);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176ec0, 0x64)
-i32 CImagePaletteNode::ProcessPalQuad(u8* bgr, i32 flags) {
+i32 CImagePaletteNode::CreateFromBgrx(u8* bgrx, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        u8* s = bgr + i * 4;
+        u8* s = bgrx + i * 4;
         pal[i].peRed = s[2];
         pal[i].peGreen = s[1];
         pal[i].peBlue = s[0];
     }
-    return Build(pal, flags);
+    return CreateFromEntries(pal, flags);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176f30, 0x51)
-i32 CImagePaletteNode::ProcessPalBGR(u8* bgr, i32 flags) {
+i32 CImagePaletteNode::CreateFromBgr(u8* bgr, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         u8* s = bgr + i * 3;
@@ -1069,34 +1081,34 @@ i32 CImagePaletteNode::ProcessPalBGR(u8* bgr, i32 flags) {
         pal[i].peGreen = s[1];
         pal[i].peBlue = s[0];
     }
-    return Build(pal, flags);
+    return CreateFromEntries(pal, flags);
 }
 
 RVA(0x00176f90, 0xa4)
-i32 CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadFromFile(char* path, i32 flags) {
     char* ext = strrchr(path, '.');
 
     if (ext && _strcmpi(ext, ".BMP") == 0) {
-        return LoadBmpFile(path, arg);
+        return LoadBmpFile(path, flags);
     } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        return LoadPcxFile(path, arg);
+        return LoadPcxFile(path, flags);
     } else if (ext && _strcmpi(ext, ".PAL") == 0) {
-        return LoadPalFile(path, arg);
+        return LoadPalFile(path, flags);
     }
 
-    return Apply(path, arg);
+    return LoadFromResource(path, flags);
 }
 
 RVA(0x00177040, 0x23)
-i32 CImagePaletteNode::ParseDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl) {
-    if (type == DECODE_PCX) {
-        return ParsePaletteTail(buf, size, ctrl);
+i32 CImagePaletteNode::LoadFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags) {
+    if (format == DECODE_PCX) {
+        return CreateFromTrailingRgb(data, dataSize, flags);
     }
     return 0;
 }
 
 RVA(0x00177070, 0x22)
-void CImagePaletteNode::Run() {
+void CImagePaletteNode::Destroy() {
     if (m_palette) {
         DeleteObject(m_palette);
         m_palette = NULL;
@@ -1116,21 +1128,21 @@ i32 DisplayUsesPalette() {
 }
 
 RVA(0x001770e0, 0x7c)
-void CImagePaletteNode::Tune() {
+void CImagePaletteNode::ReserveSystemColors() {
     ResetSystemPalette();
     HDC dc = CreateDCA("DISPLAY", NULL, NULL, NULL);
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
     i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
     i32 half = numReserved / 2;
-    GetSystemPaletteEntries(dc, 0, half, m_pal.palPalEntry);
+    GetSystemPaletteEntries(dc, 0, half, m_logicalPalette.palPalEntry);
     GetSystemPaletteEntries(
         dc,
         sizePal - half,
         half,
-        &m_pal.palPalEntry[m_pal.palNumEntries - half]
+        &m_logicalPalette.palPalEntry[m_logicalPalette.palNumEntries - half]
     );
     for (i32 i = half; i < sizePal - half; i++) {
-        m_pal.palPalEntry[i].peFlags = 1;
+        m_logicalPalette.palPalEntry[i].peFlags = 1;
     }
     DeleteDC(dc);
 }
@@ -1158,7 +1170,7 @@ void ResetSystemPalette() {
 }
 
 RVA(0x001771f0, 0xe2)
-i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadPalFile(char* path, i32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
@@ -1169,11 +1181,11 @@ i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
         return 0;
     }
     file.Read(rgb, PALETTE_RGB_BYTE_COUNT);
-    return ProcessPal(rgb, arg);
+    return CreateFromRgb(rgb, flags);
 }
 
 RVA(0x001772e0, 0x117)
-i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadPcxFile(char* path, i32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
@@ -1189,16 +1201,16 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 
     u8* src = rgb;
     COPY_RGB_PALETTE(rgbq, src, i, PALETTE_ENTRY_COUNT)
-    return Build(rgbq, arg);
+    return CreateFromEntries(rgbq, flags);
 }
 
 RVA(0x00177400, 0x76)
-i32 CImagePaletteNode::ParsePaletteTail(u8* buf, u32 size, i32 ctrl) {
+i32 CImagePaletteNode::CreateFromTrailingRgb(u8* data, u32 dataSize, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
-    if (size < PALETTE_RGB_BYTE_COUNT) {
+    if (dataSize < PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
-    u8* s = buf + size - PALETTE_RGB_BYTE_COUNT;
+    u8* s = data + dataSize - PALETTE_RGB_BYTE_COUNT;
     COPY_RGB_PALETTE(pal, s, i, PALETTE_ENTRY_COUNT)
-    return Build(pal, ctrl);
+    return CreateFromEntries(pal, flags);
 }

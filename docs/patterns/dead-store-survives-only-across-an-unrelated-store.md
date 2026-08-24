@@ -16,7 +16,7 @@ shows moving (a global-load-then-store such as `m_startClock = g_frameTime`). A 
 constant `0` does NOT block it — cl groups the zero stores and DSEs through them; the blocking
 store must carry a *loaded* value.
 
-`CTileTriggerContainer::AddToList1` 0x116cf0:
+`CTileTriggerContainer::AddGiantRockLogic` 0x116cf0:
 
 ```cpp
 // the recompile DSEs m_dutyOffSpan = 0

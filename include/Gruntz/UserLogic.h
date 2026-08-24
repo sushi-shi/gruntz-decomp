@@ -286,7 +286,7 @@ public:
 
     i32 Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj);
 
-    void Apply(class CAniElement* a, i32 b);
+    void ApplyAnimation(class CAniElement* animation, i32 advanceNow);
 
     CGameObject* m_gameObject;
     CWwdGameObjectA* m_wwdObject;

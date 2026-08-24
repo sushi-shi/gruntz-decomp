@@ -82,7 +82,7 @@ converted. Converting only ONE of the two blocks scores 90.89 - a dip that is a
 BASE, not a falsification.
 
 `CTileTriggerContainer::AddLogic` 0x116610 is the receiver form of it:
-`(logicType == TRIGID_TIME_TRIGGER_23 ? m_list2 : m_list1).AddTail(obj)` selects
+`(logicType == TRIGID_TIME_TRIGGER_23 ? m_timedLogics : m_idleLogics).AddTail(obj)` selects
 the container, so the inlined `AddTail` lands once after the merge. Two
 statements under an if/else: 83.86 -> 97.84.
 

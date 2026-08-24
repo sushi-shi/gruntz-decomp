@@ -14,7 +14,7 @@ frame wall.
 ```cpp
 // retail:  push ecx ... mov edi,[esp+0x10] ... pop ecx (x4 epilogues)
 CTileTriggerLogic* child;          // NO initializer
-POSITION pos = m_owner->m_list1.GetHeadPosition();
+POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
 while (pos != 0) { ... child = ...; ... }
 ```
 ```asm

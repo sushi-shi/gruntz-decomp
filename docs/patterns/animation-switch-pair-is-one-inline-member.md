@@ -78,7 +78,7 @@ To EXACT: `CGruntPuddle::Place` 93.560, `CWarlord::RaiseBattleAlert` 95.095,
 the cache is guarded, branched, reached through `m_object`, or routed via a local
 `CAniAdvanceCursor*` - and stay written out.
 
-Corroboration that CWapX is the right owner: `CWapX::Apply(CAniElement*, i32)` at 0x6b2e0
+Corroboration that CWapX is the right owner: `CWapX::ApplyAnimation(CAniElement*, i32)` at 0x6b2e0
 is a REAL retail out-of-line method whose body is this same pair plus an optional
 `Advance` - the devs kept this exact pair on this exact class.
 

@@ -129,7 +129,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             g_previewMgr = new CImagePool;
 
-            if (g_previewMgr->SetHandles(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
+            if (g_previewMgr->Configure(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
                 break;
             }
             BuildLevelTitleString(hDlg, g_gameReg->m_saveSink, g_slotState);
@@ -141,7 +141,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             if (g_previewMgr != NULL) {
                 if (g_previewImage != NULL) {
-                    g_previewMgr->Free(g_previewImage);
+                    g_previewMgr->RemoveSurface(g_previewImage);
                 }
                 delete g_previewMgr;
                 g_previewMgr = NULL;
@@ -616,7 +616,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
 
     f.Close();
     g_previewImage =
-        g_previewMgr->AddSurfaceOp(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP, 0);
+        g_previewMgr->LoadSurfaceFromData(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP, 0);
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 

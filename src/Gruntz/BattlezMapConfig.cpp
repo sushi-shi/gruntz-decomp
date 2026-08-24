@@ -1745,7 +1745,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 rx = pt.m_x;
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
             i32 ry = pt2.m_y;
-            CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, TRIGID_ANY);
+            CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic((rx << 8) + ry, TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->m_defenderState = AISTATE_SEEK;
                 if (unit->CoordCount() != 0) {
@@ -2993,7 +2993,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         i32 keyHi = g->m_object->m_screenX >> TILE_SHIFT_PX;
         g->GetScreenTile(&tp);
         i32 key = (keyHi << 8) + tp.m_y;
-        CTileTriggerSwitchLogic* r = m_cellQuery->FindChild(key, TRIGID_ANY);
+        CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
         if (r->m_typeId == TRIGID_SWITCH_2) {
             g->m_defenderState = AISTATE_SEEK;
             ARR_RECYCLE(g);
@@ -4598,7 +4598,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     if (tile->m_typeCode == TILEKIND_PYRAMID_LATCH_A) {
         cell = m_cellQuery->m_latchedLeaf;
     } else {
-        cell = m_cellQuery->FindInLists12((col << 8) + row, TRIGID_ANY);
+        cell = m_cellQuery->FindLogic((col << 8) + row, TRIGID_ANY);
     }
     if (cell != NULL) {
 
@@ -4608,7 +4608,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             if (node == 0) {
                 break;
             }
-            CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, TRIGID_ANY);
+            CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic(node, TRIGID_ANY);
             if (rec != NULL) {
                 i32 cx = rec->m_tileX;
                 i32 cy = rec->m_tileY;
@@ -4623,7 +4623,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             if (node == 0) {
                 break;
             }
-            CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, TRIGID_ANY);
+            CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic(node, TRIGID_ANY);
             if (rec != NULL) {
                 i32 cx = rec->m_tileX;
                 i32 cy = rec->m_tileY;

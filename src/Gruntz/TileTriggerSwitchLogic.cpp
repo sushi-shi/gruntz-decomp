@@ -725,7 +725,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_list1.GetHeadPosition();
+    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
     i32 found = 0;
 
     CTileTriggerLogic* child;
@@ -733,7 +733,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         if (found != 0) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
+        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = 1;
         }
@@ -748,7 +748,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         if (key == 0) {
             return 1;
         }
-        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, TRIGID_MULTI_SWITCH_3);
+        CTileTriggerSwitchLogic* c = m_owner->FindSwitchLogic(key, TRIGID_MULTI_SWITCH_3);
         if (c == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKSB_KEY_MISS));
             return 0;
@@ -776,7 +776,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             return 1;
         }
         i32 key = m_block[i];
-        CTileTriggerSwitchLogic* node = m_owner->FindChild(key, TRIGID_EXCLUSIVE_SWITCH_4);
+        CTileTriggerSwitchLogic* node = m_owner->FindSwitchLogic(key, TRIGID_EXCLUSIVE_SWITCH_4);
         if (node == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
@@ -784,10 +784,10 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         if (m_cellKey != node->m_cellKey && node->m_linkGate != 0) {
             node->SwitchUp();
             i32 any = 0;
-            POSITION pos = m_owner->m_list1.GetHeadPosition();
+            POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* o =
-                    static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
+                    static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
                 if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
@@ -992,7 +992,7 @@ i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
 RVA(0x00112880, 0x12)
 void CTileTriggerLogic::RecordMove() {
     m_startClock = g_frameTime;
-    m_owner->MoveList1ToList2(this);
+    m_owner->ActivateTimedLogic(this);
 }
 
 // @early-stop
@@ -1019,7 +1019,7 @@ i32 CTileSecretTriggerLogic::Tick() {
 
 // @early-stop
 RVA(0x00112970, 0xad)
-i32 CTileTriggerLogic::Classify(i32 arg) {
+i32 CTileTriggerLogic::Classify(i32 unusedFrameDelta) {
     u32 elapsed = g_frameTime - m_startClock;
     if (elapsed <= m_leadInSpan) {
         goto ret1;
@@ -1148,7 +1148,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         return 0;
     }
 
-    POSITION pos = m_owner->m_list1.GetHeadPosition();
+    POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
     i32 found = 0;
 
     CTileTriggerLogic* child;
@@ -1156,7 +1156,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         if (found != 0) {
             break;
         }
-        child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
+        child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
             found = 1;
         }
@@ -1171,7 +1171,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         if (key == 0) {
             return 1;
         }
-        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, TRIGID_CHECKPOINT_SWITCH_8);
+        CTileTriggerSwitchLogic* c = m_owner->FindSwitchLogic(key, TRIGID_CHECKPOINT_SWITCH_8);
         if (c == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKS_KEY_MISS));
             return 0;

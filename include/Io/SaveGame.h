@@ -62,7 +62,7 @@ public:
     void Reset();
     void Init();
     i32 Load();
-    i32 Save(char* path, i32 b);
+    i32 Save(char* screenshotPath, i32 messageId);
     i32 ComputeAll();
     i32 Verify();
     i32 InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* mgr);

@@ -316,7 +316,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
 
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
     m_beginMarker = cmd;
-    if (cmd->GetFlag74() == 0) {
+    if (cmd->Initialize() == 0) {
         if (m_beginMarker == NULL) {
             return 0;
         }
@@ -691,7 +691,7 @@ i32 CMulti::PumpA() {
         win->TickVolumeRamps(now);
         win->TickStreams(now);
     }
-    m_beginMarker->FilterList2(g_frameDelta);
+    m_beginMarker->UpdateTimedLogics(g_frameDelta);
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))->UpdateDiagonals(Mgr());
     if (ready == 0) {
         PumpB();

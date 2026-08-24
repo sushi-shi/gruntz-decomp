@@ -55,7 +55,7 @@ IR, so the fold does not fire and the `add` stays a real `add`.
 ## Evidence
 
 `CTriggerMgr::ApplySwitch` @0x6d300 builds `((sx>>5)*0x100) + (sy>>5)` as the
-`CTileTriggerContainer::FindChild` key in **five** separate switch arms. Measured over
+`CTileTriggerContainer::FindSwitchLogic` key in **five** separate switch arms. Measured over
 the same reconstruction, all five sites changed together:
 
 | spelling | fuzzy |

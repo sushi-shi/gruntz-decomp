@@ -20,33 +20,33 @@ struct CGameObject;
 class CTileTriggerContainer {
 public:
     CTileTriggerContainer() {
-        m_built = 0;
+        m_initialized = 0;
     }
 
     // Retail loads `this` into ecx at both call sites (`mov ecx,edi`), so these
     // are __thiscall members that ignore the receiver, not free functions.
-    i32 SerializeApplyA(
-        CFileMemBase* s,
+    i32 SerializeSwitchLogic(
+        CFileMemBase* archive,
         SerialMode mode,
         LogicTypeId typeId,
         i32 payload,
-        CTileTriggerSwitchLogic* o
+        CTileTriggerSwitchLogic* logic
     );
-    i32 SerializeApplyB(
-        CFileMemBase* s,
+    i32 SerializeTriggerLogic(
+        CFileMemBase* archive,
         SerialMode mode,
         LogicTypeId typeId,
         i32 payload,
-        CTileTriggerLogic* o
+        CTileTriggerLogic* logic
     );
 
-    i32 DelFromList1(CTileTriggerLogic* elem);
+    i32 RemoveIdleLogic(CTileTriggerLogic* logic);
 
-    CTileTriggerLogic* FindInLists12(i32 a, TrigLogicId b);
-    i32 FilterList2(i32 arg);
-    i32 MoveList1ToList2(CTileTriggerLogic* data);
+    CTileTriggerLogic* FindLogic(i32 cellKey, TrigLogicId logicType);
+    i32 UpdateTimedLogics(i32 unusedFrameDelta);
+    i32 ActivateTimedLogic(CTileTriggerLogic* logic);
 
-    i32 DelFromList3(CTileActionEvent* evt);
+    i32 RemoveActionEvent(CTileActionEvent* evt);
 
     // Inline, like the ctor above: retail's out-of-line copy is a COMDAT emitted by
     // play.obj - 0xc8640 is interleaved between CPlay::LoadGameAssetNamespaces
@@ -55,7 +55,7 @@ public:
     // CPtrList member dtors plus the /GX unwind states around them.
     RVA(0x000c8640, 0x70)
     ~CTileTriggerContainer() {
-        DtorBase();
+        Shutdown();
     }
 
     CTileTriggerLogic* AddLogic(
@@ -96,9 +96,9 @@ public:
     // one 16-byte block (`lea edi,[obj+0x134]` / `sub esp,0x10` / four dword
     // copies) rather than pushing four fields.
     CTileActionEvent*
-    AddToList3(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, RECT playerFlags);
+    AddActionEvent(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, RECT playerFlags);
 
-    CGiantRockLogic* AddToList1(
+    CGiantRockLogic* AddGiantRockLogic(
         i32 tileX,
         i32 tileY,
         i32 cellKey,
@@ -109,22 +109,22 @@ public:
     );
 
     CTileActionEvent*
-    AddToList3Switch(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
+    AddSwitchActionEvent(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
 
-    i32 GetFlag74();
-    i32 RemoveByKeys(i32 k1, TrigLogicId k2);
+    i32 Initialize();
+    i32 RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType);
 
-    CTileTriggerSwitchLogic* FindChild(i32 k1, TrigLogicId k2);
+    CTileTriggerSwitchLogic* FindSwitchLogic(i32 cellKey, TrigLogicId logicType);
 
     CTileActionEvent* FindActionByCellKey(i32 cellKey);
 
-    CGiantRockLogic* ScanNeighborhood(i32 x, i32 y);
+    CGiantRockLogic* ScanNeighborhood(i32 tileX, i32 tileY);
 
     CTileTriggerSwitchLogic* AddSwitchLogic(
-        TrigLogicId tag,
-        i32 col,
-        i32 row,
-        i32 key,
+        TrigLogicId logicType,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
 
         RECT extent,
         RECT area,
@@ -137,29 +137,29 @@ public:
         i32 checkpointType
     );
 
-    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 Serialize(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     // Heterogeneous factory: switch arms return CTileTriggerSwitchLogic-family
-    // objects for m_base; trigger arms return the incompatible CTileTriggerLogic
-    // family for m_list1/m_list2. Their vtable slot zero signatures differ, so
+    // objects for m_switchLogics; trigger arms return the incompatible CTileTriggerLogic
+    // family for m_idleLogics/m_timedLogics. Their vtable slot zero signatures differ, so
     // there is no common polymorphic base to substitute for this void* seam.
-    void* LoadElement(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    void* LoadLogic(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    i32 LoadFlag74(CFileMemBase* s);
-    i32 TransferFlag74(CFileMemBase* s);
+    i32 LoadInitialized(CFileMemBase* archive);
+    i32 SaveInitialized(CFileMemBase* archive);
 
     void RemoveAll();
 
     i32 SetCell(i32 tileX, i32 tileY, i32 playerSlot);
 
-    void DtorBase();
+    void Shutdown();
 
-    CPtrList m_base;
-    CPtrList m_list1;
-    CPtrList m_list2;
-    CPtrList m_list3;
+    CPtrList m_switchLogics;
+    CPtrList m_idleLogics;
+    CPtrList m_timedLogics;
+    CPtrList m_actionEvents;
     CTileTriggerLogic* m_latchedLeaf;
-    i32 m_built;
+    i32 m_initialized;
 };
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

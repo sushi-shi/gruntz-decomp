@@ -59,8 +59,8 @@ The fold is on body equality, so the same failure hits two shapes with nothing e
   which way is readable off the branch polarity: the arm that `jne`s forward into the shared
   `mov eax,1` with its zero exit falling through locally (reusing the call's eax) is
   `if (v) break; return 0;`, while the arm sitting immediately ABOVE that shared tail inverts to
-  `je <shared xor eax,eax>` and is `if (!v) return 0; break;`. `SerializeApplyA` 57.31 → 100 EXACT
-  and `SerializeApplyB` 63.26 → 100 EXACT (both had notes saying cl5 folds every spelling back).
+  `je <shared xor eax,eax>` and is `if (!v) return 0; break;`. `SerializeSwitchLogic` 57.31 → 100 EXACT
+  and `SerializeTriggerLogic` 63.26 → 100 EXACT (both had notes saying cl5 folds every spelling back).
 
 **Count the entries against the distinct targets before you write anything.** More entries than
 targets is the whole signal — it tells you how many labels the source had AND that they

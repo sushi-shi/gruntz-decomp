@@ -73,11 +73,11 @@ three-addressing-mode loop — and only the indexed spelling lets it.
 
 | function | before | after |
 |---|---|---|
-| `ProcessPal` 0x176e70 (stride 3, RGB) | 99.86% (`lea edx,[esp+2]`) | **100% EXACT** |
-| `ProcessPalBGR` 0x176f30 (stride 3, BGR) | 95.6% (anchor bias) | anchor fixed by lever 1, prologue order by lever 2 |
-| `ProcessPalQuad` 0x176ec0 (stride 4, BGR) | 62.7% (clean 1-IV, retail is 3-mode) | 3-mode split reproduced exactly by levers 1+2 |
+| `CreateFromRgb` 0x176e70 (stride 3, RGB) | 99.86% (`lea edx,[esp+2]`) | **100% EXACT** |
+| `CreateFromBgr` 0x176f30 (stride 3, BGR) | 95.6% (anchor bias) | anchor fixed by lever 1, prologue order by lever 2 |
+| `CreateFromBgrx` 0x176ec0 (stride 4, BGR) | 62.7% (clean 1-IV, retail is 3-mode) | 3-mode split reproduced exactly by levers 1+2 |
 
-Both `ProcessPalBGR` and `ProcessPalQuad` had been filed as
+Both `CreateFromBgr` and `CreateFromBgrx` had been filed as
 "stride-4 strength-reduction wall / not source-steerable (pal[i] indexing tried)".
 The reason `pal[i]` alone looked like it failed is that lever 2 was missing: with a
 hoisted `s`, indexing fixes the anchor but leaves the `inc eax` / `lea edx`

@@ -1683,7 +1683,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                         return 0;
                     }
                     gr->BuildRockBreakInGameText();
-                    root->m_beginMarker->DelFromList1(gr);
+                    root->m_beginMarker->RemoveIdleLogic(gr);
                     continue;
                 }
                 if (type != TILEKIND_GAUNTLET_BRICK_A && type != TILEKIND_GAUNTLET_BRICK_B
@@ -1692,16 +1692,16 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 }
                 CTileActionEvent* o = root->m_beginMarker->FindActionByCellKey(ty + (tx << 8));
                 if (o->Process(NULL)) {
-                    root->m_beginMarker->DelFromList3(o);
+                    root->m_beginMarker->RemoveActionEvent(o);
                 }
                 continue;
             }
 
             CTileTriggerLogic* lo =
-                root->m_beginMarker->FindInLists12(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
+                root->m_beginMarker->FindLogic(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
             if (lo != NULL) {
                 lo->ApplyMove(type);
-                root->m_beginMarker->DelFromList1(lo);
+                root->m_beginMarker->RemoveIdleLogic(lo);
             } else {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* wg = reg->m_world->m_level->m_mainPlane;

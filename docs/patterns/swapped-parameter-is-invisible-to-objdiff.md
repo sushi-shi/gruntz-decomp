@@ -165,7 +165,7 @@ or roles whose observed event fingerprints are identical.
 The first generic run produced three apparent migrations, and all three were
 detector defects rather than source defects:
 
-- `AddToList3Switch` linearized a cdecl `delete` cleanup immediately before the
+- `AddSwitchActionEvent` linearized a cdecl `delete` cleanup immediately before the
   shared epilogue. Summing both `add esp,N` instructions overstated the base
   frame by four bytes and renamed `playerSlot` as `cellKey`. Frame inference now
   reconciles the epilogue release against the forward /GX frame candidate.

@@ -9,7 +9,7 @@
 #include <Io/FileStream.h>
 
 RVA(0x00177480, 0x169)
-i32 CImagePaletteNode::LoadBmpFile(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadBmpFile(char* path, i32 flags) {
     CFile f;
     if (f.Open(path, 0, NULL) == 0) {
         return 0;
@@ -35,16 +35,16 @@ i32 CImagePaletteNode::LoadBmpFile(char* path, i32 arg) {
         out.m_bytes[i + 2] = raw[i + 0];
         out.m_bytes[i + 3] = 0;
     }
-    return Build(out.m_entries, arg);
+    return CreateFromEntries(out.m_entries, flags);
 }
 
 RVA(0x001775f0, 0x62)
-i32 CImagePaletteNode::Apply(char* path, i32 arg) {
+i32 CImagePaletteNode::LoadFromResource(char* resourceName, i32 flags) {
     HINSTANCE mod = g_hResModule;
     if (!mod) {
         return 0;
     }
-    HRSRC hRsrc = FindResourceA(mod, path, "PALETTE");
+    HRSRC hRsrc = FindResourceA(mod, resourceName, "PALETTE");
     if (!hRsrc) {
         return 0;
     }
@@ -56,5 +56,5 @@ i32 CImagePaletteNode::Apply(char* path, i32 arg) {
     if (!data) {
         return 0;
     }
-    return ProcessPal(data, arg);
+    return CreateFromRgb(data, flags);
 }

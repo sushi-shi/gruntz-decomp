@@ -31,9 +31,9 @@ mov ecx,[ecx+8]    ; data
 cmp ecx,edx
 ```
 WALL: logic + body identical, only the loop's register rotation differs.  Evidence:
-CTileTriggerContainer DelFromList1 69%, DelFromList3 82%, MoveList1ToList2 51%,
-FilterList2 84% — all the same head→esi-direct vs head→eax-twin-copy shape; the
-sibling FindInLists12 (no in-loop call, node need not survive) reaches 100%.
+CTileTriggerContainer RemoveIdleLogic 69%, RemoveActionEvent 82%, ActivateTimedLogic 51%,
+UpdateTimedLogics 84% — all the same head→esi-direct vs head→eax-twin-copy shape; the
+sibling FindLogic (no in-loop call, node need not survive) reaches 100%.
 
 ## SUPERSEDED for the member-cursor case (2026-07-28)
 

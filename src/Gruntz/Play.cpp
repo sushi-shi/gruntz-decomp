@@ -295,7 +295,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         CTileTriggerContainer* r78 = new CTileTriggerContainer;
         m_beginMarker = r78;
-        if (m_beginMarker->GetFlag74() == 0) {
+        if (m_beginMarker->Initialize() == 0) {
             if (m_beginMarker == NULL) {
                 return 0;
             }
@@ -521,7 +521,7 @@ i32 CPlay::Render() {
             stream->TickVolumeRamps(t);
             stream->TickStreams(t);
         }
-        m_beginMarker->FilterList2(g_frameDelta);
+        m_beginMarker->UpdateTimedLogics(g_frameDelta);
         m_guts->LoadMainStatusBarSprite();
 
         {
@@ -642,7 +642,7 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_overlayPair
             );
         }
-        m_beginMarker->FilterList2(g_frameDelta);
+        m_beginMarker->UpdateTimedLogics(g_frameDelta);
         m_guts->LoadMainStatusBarSprite();
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
@@ -5205,7 +5205,7 @@ i32 CPlay::ValidateLevelTiles() {
                 while (found == 0 && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
                     while (found == 0 && row < obj->m_speedY + 2) {
-                        hit = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        hit = m_beginMarker->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = 1;
                         }
@@ -5240,7 +5240,7 @@ i32 CPlay::ValidateLevelTiles() {
                 || type == TILEKIND_COVERED_POWERUP || type == TILEKIND_REVEALED_POWERUP) {
 
                 CTileTriggerLogic* r =
-                    m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                    m_beginMarker->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
                     CString s;
                     s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
@@ -5515,7 +5515,7 @@ i32 CPlay::ValidateLevelTiles() {
                 while (found == 0 && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
                     while (found == 0 && row < obj->m_speedY + 2) {
-                        hit = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        hit = m_beginMarker->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = 1;
                         }
@@ -5549,7 +5549,7 @@ i32 CPlay::ValidateLevelTiles() {
                        || type == TILEKIND_COVERED_POWERUP) {
 
                 CTileTriggerLogic* r =
-                    m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                    m_beginMarker->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
                     CString s;
                     s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
@@ -5685,7 +5685,7 @@ i32 CPlay::ValidateLevelTiles() {
             CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
             i32 tile = pl->m_tileGrid[pl->m_rowOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
-                if (m_beginMarker->AddToList3(
+                if (m_beginMarker->AddActionEvent(
                         static_cast<BrickTileId>(tile),
                         obj->m_speedX,
                         obj->m_speedY,
@@ -5832,7 +5832,7 @@ i32 CPlay::ScanBuildTiles() {
             buf[6] = p->m_switchRect.left;
             buf[7] = p->m_switchRect.top;
             buf[8] = p->m_switchRect.right;
-            if (m_beginMarker->AddToList1(
+            if (m_beginMarker->AddGiantRockLogic(
                     p->m_speedX,
                     p->m_speedY,
                     p->m_id,

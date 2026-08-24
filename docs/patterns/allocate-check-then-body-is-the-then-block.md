@@ -20,7 +20,7 @@ directly, and it is worth transcribing arm-by-arm instead of assuming a shape:
 ## Do NOT read row 2 off the base
 
 **Row 2 is what OUR build collapses row-1 source into**, not an independent source shape.
-`CTileTriggerContainer::AddToList3` / `AddToList3Switch` / `AddToList1` (0x116a40 / 0x116b80 /
+`CTileTriggerContainer::AddActionEvent` / `AddSwitchActionEvent` / `AddGiantRockLogic` (0x116a40 / 0x116b80 /
 0x116cf0) all branch `jne <body>` in RETAIL — row 1, a real early return. An earlier revision of
 this file claimed they took row 2, which would have had a matcher rewrite three already-correct
 guards into the shape cl produces by itself.
@@ -32,23 +32,23 @@ the gate polarity and the null-return block, in opposite directions, and never l
 
 | function | shape | gate polarity | null-return block | fuzzy |
 |---|---|---|---|---|
-| AddToList1 0x116cf0 | `if (gate != 0) { teardown }` then body | wrong | **right** (own `xor eax,eax; jmp`) | **80.00** |
-| AddToList1 | `if (gate == 0) { body }` then teardown | **right** | wrong (merged into the teardown's xor) | 77.41 |
-| AddToList3Switch 0x116b80 | teardown-first | wrong | **right** | **75.78** |
-| AddToList3Switch | body-first | **right** | wrong | 72.30 |
-| AddToList3 0x116a40 | body-first | **right** | wrong | **80.12** |
-| AddToList3 | teardown-first | wrong | right | 58.63 |
+| AddGiantRockLogic 0x116cf0 | `if (gate != 0) { teardown }` then body | wrong | **right** (own `xor eax,eax; jmp`) | **80.00** |
+| AddGiantRockLogic | `if (gate == 0) { body }` then teardown | **right** | wrong (merged into the teardown's xor) | 77.41 |
+| AddSwitchActionEvent 0x116b80 | teardown-first | wrong | **right** | **75.78** |
+| AddSwitchActionEvent | body-first | **right** | wrong | 72.30 |
+| AddActionEvent 0x116a40 | body-first | **right** | wrong | **80.12** |
+| AddActionEvent | teardown-first | wrong | right | 58.63 |
 
-The three rows do not agree on a winner, so the shape has to be chosen per function: AddToList1
-and AddToList3Switch want teardown-first, AddToList3 wants body-first and loses 21.5 points to the
-other cell. AddToList3's body ends in a `SetActionCode` call the other two do not have, which is
-the only structural difference between it and AddToList3Switch. Until 2026-08-23 the tree held
-AddToList1 at the losing cell despite this table naming the winner - re-measure the tree against
+The three rows do not agree on a winner, so the shape has to be chosen per function: AddGiantRockLogic
+and AddSwitchActionEvent want teardown-first, AddActionEvent wants body-first and loses 21.5 points to the
+other cell. AddActionEvent's body ends in a `SetActionCode` call the other two do not have, which is
+the only structural difference between it and AddSwitchActionEvent. Until 2026-08-23 the tree held
+AddGiantRockLogic at the losing cell despite this table naming the winner - re-measure the tree against
 a table before assuming the tree already applies it.
 
 An explicit `else` on the teardown is byte-identical to the trailing-statement form (measured on
-AddToList1). So is `delete m` versus a hand-written `m->m_live = 0; ::operator delete(m)`.
-On AddToList3Switch, a forward `goto occupied` over the initialization body is byte-identical to
+AddGiantRockLogic). So is `delete m` versus a hand-written `m->m_live = 0; ::operator delete(m)`.
+On AddSwitchActionEvent, a forward `goto occupied` over the initialization body is byte-identical to
 the teardown-first form, while making the allocation-null exit `return m` instead of literal zero
 is byte-identical to the body-first form and still loses one branch. Neither source-level identity
 distinction prevents cl's exit merge.

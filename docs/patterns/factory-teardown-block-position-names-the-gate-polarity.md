@@ -22,17 +22,17 @@ polarity straight off, with no ambiguity:
   mov  DWORD PTR [esi],??_7CTileTriggerSwitchLogic@@6B@
   call ??3@YAXPAX@Z
 
-; positive gate (CTileTriggerContainer::AddToList3 0x116a40)
+; positive gate (CTileTriggerContainer::AddActionEvent 0x116a40)
   mov  eax,DWORD PTR [esi+0x10]
   test eax,eax
   jne  <teardown at the end>
   <body falls through>
 ```
-STEERABLE. Used to fix `CTileTriggerContainer::AddToList1` 0x116cf0 and
-`::AddToList3Switch` 0x116b80, which retail lays out with the teardown last;
+STEERABLE. Used to fix `CTileTriggerContainer::AddGiantRockLogic` 0x116cf0 and
+`::AddSwitchActionEvent` 0x116b80, which retail lays out with the teardown last;
 both were written with the negative early return and emitted the teardown
 inline. Caution: the correction is not free - it moves the null-allocation
 return from its own `xor eax,eax`+`jmp` into the shared epilogue (our teardown
-lands before the epilogue, retail's after), so AddToList3Switch fell 75.78 ->
+lands before the epilogue, retail's after), so AddSwitchActionEvent fell 75.78 ->
 72.30 while gaining the correct arm order. The remaining flip in all three
 `AddToList*` is that epilogue placement, not the gate.

@@ -1314,11 +1314,11 @@ CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
 }
 
 RVA(0x0006b2e0, 0x39)
-void CWapX::Apply(CAniElement* a, i32 b) {
+void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceNow) {
     m_value = m_wwdObject->m_animCursor.m_animation;
     CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
-    anim->Setup(a);
-    if (b != 0) {
+    anim->Setup(animation);
+    if (advanceNow != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));
     }
 }

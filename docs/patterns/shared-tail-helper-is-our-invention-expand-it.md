@@ -40,7 +40,7 @@ function it took the score from 71.27 to **0.00**.
 
 ## Evidence
 
-`CTileTriggerContainer::LoadElement` (0x00117800), twelve arms behind two such
+`CTileTriggerContainer::LoadLogic` (0x00117800), twelve arms behind two such
 helpers (`RegSwitchTail`, `RegLogicTail`): retail has four
 `ValidateByType@CTileTriggerSwitchLogic` calls where we had twelve
 `call Reg*Tail`. Expanding both and deleting them: **71.27 → 89.75** in one

@@ -34,7 +34,7 @@ Tried and REJECTED (all still emit one `sar`, cl5 /O2 CSEs it every time):
 - the shift applied to the member read directly (`p->m_screenY >> 5`), no local at all.
 
 The same asymmetry shows up as retail DUPLICATING an epilogue where our build cross-jumps
-(three `return 0` tails kept apart in `AddToList3`, one `xor eax,eax` shared in ours). One
+(three `return 0` tails kept apart in `AddActionEvent`, one `xor eax,eax` shared in ours). One
 of these is steerable by source structure and one is not - see
 `allocate-check-then-body-is-the-then-block.md` for the branch-polarity half, which IS
 steerable. The shift half is not, with the spellings above.

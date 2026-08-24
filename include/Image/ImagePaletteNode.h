@@ -10,30 +10,30 @@
 
 struct CImagePaletteNode {
     HPALETTE m_palette;
-    LOGPALETTE m_pal;
+    LOGPALETTE m_logicalPalette;
     char m_padEntries[0x408 - (4 + 4 + 4)];
     i32 m_flags;
-    i32 m_systemTuned;
+    i32 m_reservedSystemColors;
     POSITION m_listPosition;
 
     CImagePaletteNode() {
         m_palette = NULL;
-        m_systemTuned = false;
+        m_reservedSystemColors = false;
         m_listPosition = NULL;
     }
-    i32 Build(PALETTEENTRY* entries, i32 flags);
-    void Tune();
-    i32 ProcessPal(u8* rgb, i32 flags);
-    i32 ProcessPalQuad(u8* bgr, i32 flags);
-    i32 ProcessPalBGR(u8* bgr, i32 flags);
-    i32 ParseDispatch(u8* buf, u32 size, RezDecodeKind type, i32 ctrl);
-    i32 ParsePaletteTail(u8* buf, u32 size, i32 ctrl);
-    void Run();
-    i32 LoadByExtension(char* path, i32 arg);
-    i32 LoadPalFile(char* path, i32 arg);
-    i32 LoadPcxFile(char* path, i32 arg);
-    i32 LoadBmpFile(char* path, i32 arg);
-    i32 Apply(char* path, i32 arg);
+    i32 CreateFromEntries(PALETTEENTRY* entries, i32 flags);
+    void ReserveSystemColors();
+    i32 CreateFromRgb(u8* rgb, i32 flags);
+    i32 CreateFromBgrx(u8* bgrx, i32 flags);
+    i32 CreateFromBgr(u8* bgr, i32 flags);
+    i32 LoadFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags);
+    i32 CreateFromTrailingRgb(u8* data, u32 dataSize, i32 flags);
+    void Destroy();
+    i32 LoadFromFile(char* path, i32 flags);
+    i32 LoadPalFile(char* path, i32 flags);
+    i32 LoadPcxFile(char* path, i32 flags);
+    i32 LoadBmpFile(char* path, i32 flags);
+    i32 LoadFromResource(char* resourceName, i32 flags);
 };
 
 #endif // SRC_IMAGE_IMAGEPALETTENODE_H
