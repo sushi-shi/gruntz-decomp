@@ -29,9 +29,9 @@
 #include <stddef.h>
 
 RVA(0x00013fb0, 0xd5)
-i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
+i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
-    if (CState::LoadGameAssetNamespaces(a, b, mode) == 0) {
+    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
         return 0;
     }
 
@@ -60,7 +60,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
         } while (ShowCursor(0) >= 0);
     }
 
-    if (static_cast<GameStateId>(mode) == GAMESTATE_PLAY) {
+    if (static_cast<GameStateId>(prevStateId) == GAMESTATE_PLAY) {
         m_activeFlag = 0;
         m_host = NULL;
     } else {

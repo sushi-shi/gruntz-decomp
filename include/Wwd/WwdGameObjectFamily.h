@@ -83,10 +83,14 @@ public:
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl);
 
     virtual void Render(CDDrawSurfacePair* ctx) = 0;
-    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) = 0;
-    virtual void BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) = 0;
+    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) = 0;
     virtual void
-    BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) = 0;
+    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) = 0;
+    virtual void BltDirtyRegions(
+        CDDrawSurfacePair* dst,
+        CDDrawSurfacePair* src,
+        CDDrawSurfacePair* restoreSrc
+    ) = 0;
 
     virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self);
 
@@ -247,9 +251,11 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE;
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
-    virtual void BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) OVERRIDE;
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
+    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
+    virtual void
+    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
+    virtual void
+    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
     virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self)
         OVERRIDE;
@@ -297,9 +303,11 @@ public:
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
-    virtual void BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) OVERRIDE;
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
+    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
+    virtual void
+    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
+    virtual void
+    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
 
     void Clear();
@@ -331,9 +339,11 @@ public:
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
-    virtual void BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) OVERRIDE;
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
+    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
+    virtual void
+    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
+    virtual void
+    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
 
     virtual i32 SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl);
@@ -356,9 +366,11 @@ public:
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
-    virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
-    virtual void BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) OVERRIDE;
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
+    virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
+    virtual void
+    BltDirtyEx(CDrawSubWorker* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc) OVERRIDE;
+    virtual void
+    BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
 
     virtual i32 SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl, i32 flag);

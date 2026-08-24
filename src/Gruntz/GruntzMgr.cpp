@@ -795,81 +795,81 @@ i32 CGruntzMgr::GoToPrevLevel() {
 }
 
 RVA(0x0008d9d0, 0x1e)
-i32 CGruntzMgr::ForwardCharToState(i32 a, i32 b) {
+i32 CGruntzMgr::ForwardCharToState(i32 charCode, i32 keyData) {
     if (m_curState) {
-        return m_curState->OnChar(a, b);
+        return m_curState->OnChar(charCode, keyData);
     }
     return 0;
 }
 
 RVA(0x0008da00, 0x1e)
-i32 CGruntzMgr::ForwardKeyDownToState(i32 a, i32 b) {
+i32 CGruntzMgr::ForwardKeyDownToState(i32 virtualKey, i32 keyData) {
     if (m_curState) {
-        return m_curState->OnKeyDown(a, b);
+        return m_curState->OnKeyDown(virtualKey, keyData);
     }
     return 0;
 }
 
 RVA(0x0008da30, 0x1e)
-i32 CGruntzMgr::ForwardKeyUpToState(i32 a, i32 b) {
+i32 CGruntzMgr::ForwardKeyUpToState(i32 virtualKey, i32 keyData) {
     if (m_curState) {
-        return m_curState->OnKeyUp(a, b);
+        return m_curState->OnKeyUp(virtualKey, keyData);
     }
     return 0;
 }
 
 RVA(0x0008da60, 0x23)
-i32 CGruntzMgr::ForwardLButtonDownToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnLButtonDown(a, b, c);
+        return m_curState->OnLButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 RVA(0x0008daa0, 0x23)
-i32 CGruntzMgr::ForwardLButtonUpToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnLButtonUp(a, b, c);
+        return m_curState->OnLButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 RVA(0x0008dae0, 0x23)
-i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnLButtonDblClk(a, b, c);
+        return m_curState->OnLButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 RVA(0x0008db20, 0x23)
-i32 CGruntzMgr::ForwardRButtonDownToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnRButtonDown(a, b, c);
+        return m_curState->OnRButtonDown(keyFlags, x, y);
     }
     return 0;
 }
 
 RVA(0x0008db60, 0x23)
-i32 CGruntzMgr::ForwardRButtonUpToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnRButtonUp(a, b, c);
+        return m_curState->OnRButtonUp(keyFlags, x, y);
     }
     return 0;
 }
 
 RVA(0x0008dba0, 0x23)
-i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnRButtonDblClk(a, b, c);
+        return m_curState->OnRButtonDblClk(keyFlags, x, y);
     }
     return 0;
 }
 
 RVA(0x0008dbe0, 0x23)
-i32 CGruntzMgr::ForwardMouseMoveToState(i32 a, i32 b, i32 c) {
+i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
-        return m_curState->OnMouseMove(a, b, c);
+        return m_curState->OnMouseMove(keyFlags, x, y);
     }
     return 0;
 }

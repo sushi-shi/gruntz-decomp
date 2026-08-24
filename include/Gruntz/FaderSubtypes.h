@@ -32,7 +32,7 @@ class CFaderMesh : public CFader {
 public:
     virtual ~CFaderMesh() OVERRIDE;
     CFaderMesh();
-    virtual void RenderFrame(i32 f) OVERRIDE;
+    virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);
@@ -70,7 +70,7 @@ public:
     }
     CFaderSine();
     virtual ~CFaderSine() OVERRIDE;
-    virtual void RenderFrame(i32 f) OVERRIDE;
+    virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);
@@ -96,7 +96,7 @@ class CFaderFlat : public CFader {
 public:
     virtual ~CFaderFlat() OVERRIDE;
     CFaderFlat();
-    virtual void RenderFrame(i32 f) OVERRIDE;
+    virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);
@@ -117,7 +117,7 @@ public:
     virtual void EndFade() OVERRIDE;
     virtual ~CFaderLight() OVERRIDE;
     CFaderLight();
-    virtual void RenderFrame(i32 f) OVERRIDE;
+    virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);
@@ -148,7 +148,7 @@ class CFaderRadial : public CFader {
 public:
     virtual ~CFaderRadial() OVERRIDE;
     CFaderRadial();
-    virtual void RenderFrame(i32 f) OVERRIDE;
+    virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);
@@ -170,7 +170,7 @@ class CFaderShape : public CFader {
 public:
     CFaderShape();
     virtual ~CFaderShape() OVERRIDE;
-    virtual void RenderFrame(i32 f) OVERRIDE;
+    virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
     i32 ApplyInit(CFxModeDesc* src);

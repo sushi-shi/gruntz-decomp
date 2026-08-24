@@ -41,10 +41,10 @@ public:
     virtual i32 OnMove(i32 x, i32 y);
     virtual i32 OnSize(WPARAM type, i32 cx, i32 cy);
     virtual i32 OnPaint();
-    virtual i32 OnChar(WPARAM wParam, LPARAM lParam);
-    virtual i32 OnKeyDown(WPARAM wParam, LPARAM lParam);
+    virtual i32 OnChar(WPARAM charCode, LPARAM keyData);
+    virtual i32 OnKeyDown(WPARAM virtualKey, LPARAM keyData);
     RVA(0x00094c80, 0x5)
-    virtual i32 OnKeyUp(WPARAM, LPARAM) {
+    virtual i32 OnKeyUp(WPARAM virtualKey, LPARAM keyData) {
         return 0;
     }
     virtual i32 OnSysKeyDown(WPARAM wParam, LPARAM lParam);
@@ -52,31 +52,31 @@ public:
 
     virtual i32 QuitMessageLoop();
     RVA(0x00094ca0, 0x5)
-    virtual i32 OnLButtonDown(WPARAM, i32, i32) {
+    virtual i32 OnLButtonDown(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x00094cc0, 0x5)
-    virtual i32 OnRButtonDown(WPARAM, i32, i32) {
+    virtual i32 OnRButtonDown(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x00094ce0, 0x5)
-    virtual i32 OnLButtonUp(WPARAM, i32, i32) {
+    virtual i32 OnLButtonUp(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x00094d00, 0x5)
-    virtual i32 OnRButtonUp(WPARAM, i32, i32) {
+    virtual i32 OnRButtonUp(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x00094d20, 0x5)
-    virtual i32 OnMouseMove(WPARAM, i32, i32) {
+    virtual i32 OnMouseMove(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x00094d40, 0x5)
-    virtual i32 OnLButtonDblClk(WPARAM, i32, i32) {
+    virtual i32 OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x00094d60, 0x5)
-    virtual i32 OnRButtonDblClk(WPARAM, i32, i32) {
+    virtual i32 OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
     virtual i32 OnCommand(WPARAM wParam, LPARAM lParam);

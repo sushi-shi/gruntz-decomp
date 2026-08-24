@@ -28,7 +28,7 @@ public:
 
     virtual i32 SetPosition(i32 x, i32 y) OVERRIDE;
 
-    virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
+    virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 
     i32 m_refCount;
 
@@ -64,28 +64,27 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
+    virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
     CDDrawWorkerA() {}
     CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_pixelValue = 0;
     }
-    virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
+    virtual i32 PlacePixel(i32 x, i32 y, i32 pixelValue);
 };
 
 struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerB() OVERRIDE;
 
-    virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
+    virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
     CDDrawWorkerB() {}
     CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_frameValue = 0;
     }
-    virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
-    virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex);
+    virtual i32 PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex);
+    virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex);
+    virtual i32 PlaceFrame(i32 x, i32 y, CImage* frame);
 
-    virtual i32 PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex);
-
-    i32 Helper(const char* key, i32 idx);
+    i32 ResolveFrame(const char* workerName, i32 frameIndex);
 };
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

@@ -61,7 +61,7 @@ i32 CImage::Create(char* path, i32 keyed) {
 }
 
 RVA(0x00152f20, 0x86)
-i32 CImage::Resolve(CParseSource* src, i32 arg) {
+i32 CImage::Resolve(CParseSource* src, i32 keyed) {
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
 
     RecordBytes<PidHeader> blob;
@@ -71,7 +71,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
         static_cast<PidHeader*>(blob.m_rec),
         index,
         src->m_length,
-        arg
+        keyed
     );
     src->EndParse();
     return result;
@@ -247,7 +247,7 @@ void CImage::FlipVertical(void*) {
 }
 
 RVA(0x00153380, 0xeb)
-i32 CImage::Reload(CParseSource* src, i32 arg) {
+i32 CImage::Reload(CParseSource* src, i32 keyed) {
 
     CDDSurface* surf = m_surface;
     if (surf == NULL) {
@@ -262,7 +262,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     surf = m_surface;
     if (surf->m_ddSurface->Restore() != 0) {
         this->Unload();
-        return this->Resolve(src, arg);
+        return this->Resolve(src, keyed);
     }
 
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)

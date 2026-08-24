@@ -83,93 +83,93 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 RVA(0x000948a0, 0x21)
-i32 CGruntzWnd::OnChar(WPARAM wParam, LPARAM lParam) {
+i32 CGruntzWnd::OnChar(WPARAM charCode, LPARAM keyData) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardCharToState(wParam, lParam);
+    return mgr->ForwardCharToState(charCode, keyData);
 }
 
 RVA(0x000948e0, 0x21)
-i32 CGruntzWnd::OnKeyDown(WPARAM wParam, LPARAM lParam) {
+i32 CGruntzWnd::OnKeyDown(WPARAM virtualKey, LPARAM keyData) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardKeyDownToState(wParam, lParam);
+    return mgr->ForwardKeyDownToState(virtualKey, keyData);
 }
 
 RVA(0x00094920, 0x21)
-i32 CGruntzWnd::OnKeyUp(WPARAM wParam, LPARAM lParam) {
+i32 CGruntzWnd::OnKeyUp(WPARAM virtualKey, LPARAM keyData) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardKeyUpToState(wParam, lParam);
+    return mgr->ForwardKeyUpToState(virtualKey, keyData);
 }
 
 RVA(0x00094960, 0x26)
-i32 CGruntzWnd::OnLButtonDown(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnLButtonDown(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardLButtonDownToState(keys, x, y);
+    return mgr->ForwardLButtonDownToState(keyFlags, x, y);
 }
 
 RVA(0x000949a0, 0x26)
-i32 CGruntzWnd::OnLButtonUp(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnLButtonUp(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardLButtonUpToState(keys, x, y);
+    return mgr->ForwardLButtonUpToState(keyFlags, x, y);
 }
 
 RVA(0x000949e0, 0x26)
-i32 CGruntzWnd::OnMouseMove(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnMouseMove(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardMouseMoveToState(keys, x, y);
+    return mgr->ForwardMouseMoveToState(keyFlags, x, y);
 }
 
 RVA(0x00094a20, 0x26)
-i32 CGruntzWnd::OnRButtonDown(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnRButtonDown(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardRButtonDownToState(keys, x, y);
+    return mgr->ForwardRButtonDownToState(keyFlags, x, y);
 }
 
 RVA(0x00094a60, 0x26)
-i32 CGruntzWnd::OnRButtonUp(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnRButtonUp(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardRButtonUpToState(keys, x, y);
+    return mgr->ForwardRButtonUpToState(keyFlags, x, y);
 }
 
 RVA(0x00094aa0, 0x26)
-i32 CGruntzWnd::OnLButtonDblClk(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardLButtonDblClkToState(keys, x, y);
+    return mgr->ForwardLButtonDblClkToState(keyFlags, x, y);
 }
 
 RVA(0x00094ae0, 0x26)
-i32 CGruntzWnd::OnRButtonDblClk(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
     }
-    return mgr->ForwardRButtonDblClkToState(keys, x, y);
+    return mgr->ForwardRButtonDblClkToState(keyFlags, x, y);
 }
 
 RVA(0x00094b20, 0x49)

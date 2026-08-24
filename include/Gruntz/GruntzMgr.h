@@ -120,16 +120,16 @@ public:
     i32 CheckDisplayBoundsA();
     i32 CheckDisplayBoundsB();
 
-    i32 ForwardCharToState(i32 a, i32 b);
-    i32 ForwardKeyDownToState(i32 a, i32 b);
-    i32 ForwardKeyUpToState(i32 a, i32 b);
-    i32 ForwardLButtonDownToState(i32 a, i32 b, i32 c);
-    i32 ForwardLButtonUpToState(i32 a, i32 b, i32 c);
-    i32 ForwardLButtonDblClkToState(i32 a, i32 b, i32 c);
-    i32 ForwardRButtonDownToState(i32 a, i32 b, i32 c);
-    i32 ForwardRButtonUpToState(i32 a, i32 b, i32 c);
-    i32 ForwardRButtonDblClkToState(i32 a, i32 b, i32 c);
-    i32 ForwardMouseMoveToState(i32 a, i32 b, i32 c);
+    i32 ForwardCharToState(i32 charCode, i32 keyData);
+    i32 ForwardKeyDownToState(i32 virtualKey, i32 keyData);
+    i32 ForwardKeyUpToState(i32 virtualKey, i32 keyData);
+    i32 ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y);
+    i32 ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y);
+    i32 ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y);
+    i32 ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y);
+    i32 ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y);
+    i32 ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y);
+    i32 ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y);
 
     CState* TopState();
     void PushState(CState* s);

@@ -50,13 +50,13 @@ public:
 
     virtual i32 CreateBlankSurface(i32 width, i32 height, i32 keyed);
     virtual i32 LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed);
-    virtual i32 Resolve(CParseSource* src, i32 arg);
+    virtual i32 Resolve(CParseSource* src, i32 keyed);
     virtual i32 Create(char* path, i32 keyed);
-    virtual i32 Reload(CParseSource* src, i32 arg);
+    virtual i32 Reload(CParseSource* src, i32 keyed);
     virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);
-    virtual void FlipVertical(void* a);
-    virtual void FlipHorizontal(void* a);
-    virtual void FlipBoth(void* a);
+    virtual void FlipVertical(void* unused);
+    virtual void FlipHorizontal(void* unused);
+    virtual void FlipBoth(void* unused);
 
     i32 BuildShadeBlitter(PidHeader* desc, u32 size);
     i32 CopyFrom(CImage* other);
@@ -103,9 +103,9 @@ RVA(0x000d5e00, 0x3)
 inline void CImage::FlipHorizontal(void*) {}
 
 RVA(0x000d5e20, 0x1b)
-inline void CImage::FlipBoth(void* arg) {
-    FlipVertical(arg);
-    FlipHorizontal(arg);
+inline void CImage::FlipBoth(void* unused) {
+    FlipVertical(unused);
+    FlipHorizontal(unused);
 }
 
 struct _DDBLTFX;

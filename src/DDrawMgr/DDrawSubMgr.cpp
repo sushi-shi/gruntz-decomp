@@ -167,9 +167,9 @@ i32 CDDrawWorkerList::IsReady() {
 }
 
 RVA(0x00156fd0, 0x8b)
-CDDrawWorkerA* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
+CDDrawWorkerA* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
     CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
-    if (w->PlaceFrameValue(x, y, frame) == 0) {
+    if (w->PlacePixel(x, y, pixelValue) == 0) {
         if (w != NULL) {
             delete w;
         }
@@ -209,8 +209,8 @@ CDDrawWorkerA::~CDDrawWorkerA() {
 }
 
 RVA(0x00157110, 0x20)
-i32 CDDrawWorkerA::PlaceFrameValue(i32 x, i32 y, i32 frame) {
-    m_pixelValue = static_cast<char>(frame);
+i32 CDDrawWorkerA::PlacePixel(i32 x, i32 y, i32 pixelValue) {
+    m_pixelValue = static_cast<char>(pixelValue);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
@@ -225,10 +225,15 @@ void CDDrawWorkerA::Unload() {
 }
 
 RVA(0x00157150, 0xa5)
-CDDrawWorkerB*
-CDDrawWorkerList::CreateWorkerB30(i32 x, i32 y, const char* key, i32 frameIndex, i32 addHead) {
+CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(
+    i32 x,
+    i32 y,
+    const char* workerName,
+    i32 frameIndex,
+    i32 addHead
+) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->PlaceBound(x, y, key, frameIndex) == 0) {
+    if (w->PlaceFrame(x, y, workerName, frameIndex) == 0) {
         if (w != NULL) {
             delete w;
         }
@@ -260,21 +265,21 @@ CDDrawWorkerB::~CDDrawWorkerB() {
 }
 
 RVA(0x00157280, 0x30)
-i32 CDDrawWorkerB::PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex) {
-    Helper(key, frameIndex);
+i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
+    ResolveFrame(workerName, frameIndex);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001572b0, 0x38)
-i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
-    CImage* frame = src->GetAt(frameIndex);
+i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
+    CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001572f0, 0x20)
-i32 CDDrawWorkerB::PlaceFrameValue(i32 x, i32 y, i32 frame) {
-    m_frameValue = frame;
+i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CImage* frame) {
+    m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
@@ -289,10 +294,15 @@ void CDDrawWorkerBase::Unload() {
 }
 
 RVA(0x00157330, 0xa5)
-CDDrawWorkerB*
-CDDrawWorkerList::CreateWorkerB2C(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex, i32 addHead) {
+CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(
+    i32 x,
+    i32 y,
+    CDDrawWorker* source,
+    i32 frameIndex,
+    i32 addHead
+) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->PlaceFrame(x, y, src, frameIndex) == 0) {
+    if (w->PlaceFrame(x, y, source, frameIndex) == 0) {
         if (w != NULL) {
             delete w;
         }
@@ -307,9 +317,9 @@ CDDrawWorkerList::CreateWorkerB2C(i32 x, i32 y, CDDrawWorker* src, i32 frameInde
 }
 
 RVA(0x001573e0, 0xa0)
-CDDrawWorkerB* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
+CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->PlaceFrameValue(x, y, frame) == 0) {
+    if (w->PlaceFrame(x, y, frame) == 0) {
         if (w != NULL) {
             delete w;
         }

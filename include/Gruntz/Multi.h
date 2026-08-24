@@ -83,7 +83,7 @@ public:
     virtual i32 Render() OVERRIDE;
     virtual i32 EnterState(GameStateId) OVERRIDE;
     virtual i32 LeaveState(GameStateId) OVERRIDE;
-    virtual i32 OnChar(i32, i32) OVERRIDE;
+    virtual i32 OnChar(i32 charCode, i32 keyData) OVERRIDE;
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 UnusedPlayQuery() OVERRIDE;
     virtual i32 GetFrame() OVERRIDE;

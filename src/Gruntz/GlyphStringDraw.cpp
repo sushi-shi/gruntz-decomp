@@ -2,7 +2,6 @@
 
 #include <Gruntz/GlyphStringDraw.h>
 
-#include <AddrWord.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -43,11 +42,9 @@ i32 DrawGlyphString(
     }
     for (i32 i = 0; i < len; i++) {
         i32 c = static_cast<signed char>(str[i]);
-        AddrWord<CImage> g;
-        g.m_addr = font->GetAt(c);
-        i32 glyph = g.m_word;
+        CImage* glyph = font->GetAt(c);
         if (glyph) {
-            ctx->m_workerList->CreateWorkerB28(x, y, glyph, 0);
+            ctx->m_workerList->CreateFrameWorker(x, y, glyph, 0);
         }
         x += advance;
     }

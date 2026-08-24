@@ -13,7 +13,7 @@ public:
     CFader();
     virtual ~CFader();
 
-    virtual void RenderFrame(i32 f) = 0;
+    virtual void RenderFrame(i32 frame) = 0;
     virtual i32 GetFrameCount() = 0;
     virtual void BeginFade();
     virtual void EndFade();

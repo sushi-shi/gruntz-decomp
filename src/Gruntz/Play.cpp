@@ -507,7 +507,7 @@ i32 CPlay::Render() {
 
         m_world->m_childGroup->TickKillCues(0);
         m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->PruneWorkers(
+        m_world->m_workerList->RenderAndPruneWorkers(
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
@@ -637,7 +637,7 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_childGroup
             );
-            m_world->m_workerList->PruneWorkers(
+            m_world->m_workerList->RenderAndPruneWorkers(
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );
@@ -816,7 +816,7 @@ i32 CPlay::Render() {
                     m_world->m_drawTarget->m_backPair,
                     m_world->m_childGroup
                 );
-                m_world->m_workerList->PruneWorkers(
+                m_world->m_workerList->RenderAndPruneWorkers(
                     m_world->m_drawTarget->m_backPair,
                     m_world->m_drawTarget->m_overlayPair
                 );
@@ -852,7 +852,7 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_childGroup
             );
-            m_world->m_workerList->PruneWorkers(
+            m_world->m_workerList->RenderAndPruneWorkers(
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );
@@ -989,7 +989,7 @@ i32 CPlay::ProfileInputFrame() {
     drawMs = static_cast<i32>(tg() - static_cast<u32>(drawMs));
 
     i32 fixedMs = static_cast<i32>(tg());
-    m_world->m_workerList->PruneWorkers(
+    m_world->m_workerList->RenderAndPruneWorkers(
         m_world->m_drawTarget->m_backPair,
         m_world->m_drawTarget->m_overlayPair
     );
@@ -1049,7 +1049,7 @@ i32 CPlay::ProfileDeltaFrame() {
     );
     u32 t2 = tg();
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->PruneWorkers(
+    m_world->m_workerList->RenderAndPruneWorkers(
         m_world->m_drawTarget->m_backPair,
         m_world->m_drawTarget->m_overlayPair
     );
@@ -1872,7 +1872,7 @@ i32 CPlay::InputVirtual() {
         NotifyVisibleEntities();
     } else {
         m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->PruneWorkers(
+        m_world->m_workerList->RenderAndPruneWorkers(
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
@@ -1917,7 +1917,7 @@ i32 CPlay::RestoreDisplay() {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_childGroup
             );
-            m_world->m_workerList->PruneWorkers(
+            m_world->m_workerList->RenderAndPruneWorkers(
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );
@@ -1928,7 +1928,7 @@ i32 CPlay::RestoreDisplay() {
 }
 
 RVA(0x000cbaf0, 0x16f)
-i32 CPlay::OnChar(i32 key, i32 flag) {
+i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -1954,22 +1954,22 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
 
     if (m_mgr->m_frameGate == 0) {
         if (m_hitTest->m_inputActive != 0) {
-            m_mgr->m_chatLog->TypeChar(key, flag);
+            m_mgr->m_chatLog->TypeChar(charCode, keyData);
             return 1;
         }
-        if (key == ']') {
+        if (charCode == ']') {
             m_guts->DockStatusBarRight();
             return 1;
         }
-        if (key == '[') {
+        if (charCode == '[') {
             m_guts->RefreshA();
             return 1;
         }
-        if (key == '-') {
+        if (charCode == '-') {
             m_guts->HideRect();
             return 1;
         }
-        if (key == '=' || key == '+') {
+        if (charCode == '=' || charCode == '+') {
             m_guts->RefreshState();
 
             if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
@@ -2848,7 +2848,7 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 // [esp+0x40],cl` / `mov ecx,[esp+0x40]`), but a named local gets its own dword and
 // puts the frame back to 0x24.
 RVA(0x000cdb10, 0x80c)
-i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
+i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 xr;
     i32 sx;
     i32 sy;
@@ -2877,14 +2877,14 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
     }
 
     if (m_overlayDrag != 0 || g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-        return m_guts->UpdateStatusBarTabHighlight(a, x, y);
+        return m_guts->UpdateStatusBarTabHighlight(eventArg, x, y);
     }
 
     xr = x;
     if (m_mgr->m_frameGate == 0) {
         if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
             && m_guts->m_activeTab != TAB_GAME) {
-            if (m_lightFx->BeginMinimapPan(a, xr, y)) {
+            if (m_lightFx->BeginMinimapPan(eventArg, xr, y)) {
                 return 1;
             }
         }
@@ -2896,10 +2896,10 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
 
         if (m_dragInhibit1 != 0 && m_playerCommandPending == 0) {
             // The "placed" flag IS the parameter reused: retail writes 0/1 into the
-            // incoming `a` slot at [esp+0x34] (0xcdc90 / 0xcdd1d) and reads it back
+            // incoming `eventArg` slot at [esp+0x34] (0xcdc90 / 0xcdd1d) and reads it back
             // for both the voice-cue guard and CommitSlot.  A separate local costs
             // the extra dword that made the frame 0x24 instead of retail's 0x20.
-            a = 0;
+            eventArg = 0;
             RECT* gr = &m_guts->m_rect10;
             if (CGameLevel::PointInRect(gr, xr, y)) {
 
@@ -2920,15 +2920,15 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                             0,
                             0
                         );
-                        a = 1;
+                        eventArg = 1;
                     }
                 }
             }
-            if (a == 0) {
+            if (eventArg == 0) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x340, -1, 1, -1, -1);
             }
             m_dragInhibit1 = 0;
-            m_guts->CommitSlot(a);
+            m_guts->CommitSlot(eventArg);
             SetCursorFrame(0);
             return 1;
         }
@@ -2957,10 +2957,10 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                 LevelCoordRect* vr2 = &ds->m_mainPlane->m_viewRect;
                 i32 wx = vr2->left - ds->m_planeCtx.left + xr;
                 i32 wy = vr2->top - ds->m_planeCtx.top + y;
-                if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &a, &y, g_curPlayer) != NULL) {
+                if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer) != NULL) {
                     m_mgr->m_cmdSubMgr->EnqueueSingle(
                         1,
-                        static_cast<char>(a),
+                        static_cast<char>(eventArg),
                         static_cast<char>(y),
                         static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                         0,
@@ -2979,13 +2979,13 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                 box.bottom = wy + 0xf;
 
                 RECT span = {0, 0, 0, 0};
-                CGrunt* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, &span, &a, &y, &box);
+                CGrunt* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
                 if (p == NULL || g_curPlayer != p->m_playerIndex) {
                     goto waypoint_cancel;
                 }
                 m_mgr->m_cmdSubMgr->EnqueueSingle(
                     1,
-                    static_cast<char>(a),
+                    static_cast<char>(eventArg),
                     static_cast<char>(y),
                     static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                     0,
@@ -3036,7 +3036,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
         RECT* gr = &m_guts->m_rect10;
         if (CGameLevel::PointInRect(gr, xr, y)) {
             FlushPendingOps();
-            return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
+            return m_guts->UpdateStatusBarTabHighlight(eventArg, xr, y);
         }
         if (m_hitTest->HitTest(xr, y)) {
             return 1;
@@ -3100,12 +3100,13 @@ drag_box: {
         return 1;
     }
 
-    // ScreenToCell reuses the dead input homes: a becomes playerIndex and x becomes unitIndex.
+    // ScreenToCell reuses the dead input homes: eventArg becomes playerIndex and x becomes
+    // unitIndex.
     CGrunt* picked =
-        static_cast<CGrunt*>(m_mgr->m_cmdGrid->ScreenToCell(xr, y, &a, &x, TM_ALL_PLAYERS));
+        static_cast<CGrunt*>(m_mgr->m_cmdGrid->ScreenToCell(xr, y, &eventArg, &x, TM_ALL_PLAYERS));
     if (picked != NULL) {
-        m_mgr->m_cmdGrid->ResetCell(a, x, g_spawnConfig->m_edgeKeys & 0x20, 0);
-        if (a == g_curPlayer) {
+        m_mgr->m_cmdGrid->ResetCell(eventArg, x, g_spawnConfig->m_edgeKeys & 0x20, 0);
+        if (eventArg == g_curPlayer) {
             if (g_spawnConfig->m_edgeKeys & 0x20) {
                 goto ret1;
             }
@@ -3130,11 +3131,11 @@ ret1:
 }
 
 RVA(0x000ce530, 0xe3)
-i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
+i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed == 0) {
         if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
             && m_guts->m_activeTab != TAB_GAME) {
-            m_lightFx->EndMinimapPan(a, x, y);
+            m_lightFx->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != 0) {
             m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
@@ -3144,7 +3145,7 @@ i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
         if (m_guts->m_position != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->m_level->m_planeCtx;
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
-                return m_guts->OnPointerRelease(a, x, y);
+                return m_guts->OnPointerRelease(keyFlags, x, y);
             }
         }
     }
@@ -3153,15 +3154,15 @@ i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
 
 // @early-stop
 RVA(0x000ce660, 0x362)
-i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
+i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != 0 || m_guts == NULL) {
         return 1;
     }
     if (m_overlayDrag != 0 || g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-        return m_guts->ClickHilite(msg, x, y);
+        return m_guts->ClickHilite(keyFlags, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
-        return this->OnLButtonDown(msg, x, y);
+        return this->OnLButtonDown(keyFlags, x, y);
     }
 
     if (m_guts->m_position == STATUSBAR_HIDDEN && m_guts->HitTestLayer(x, y)) {
@@ -3193,7 +3194,7 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
     // [esi+4], [esi+8], [esi+0xc]) and compares against the REGISTER.
     RECT rc = m_world->m_level->m_planeCtx;
     if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
-        return m_guts->ClickHilite(msg, x, y);
+        return m_guts->ClickHilite(keyFlags, x, y);
     }
 
     {
@@ -3255,8 +3256,8 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
 }
 
 RVA(0x000ceab0, 0x17)
-i32 CPlay::OnRButtonDblClk(i32 a, i32 b, i32 c) {
-    return OnRButtonDown(a, b, c);
+i32 CPlay::OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
+    return OnRButtonDown(keyFlags, x, y);
 }
 
 // @early-stop
@@ -3272,7 +3273,7 @@ i32 CPlay::OnRButtonDblClk(i32 a, i32 b, i32 c) {
 // Retail forms `&m_viewRect` here (0xcec8d `add ecx,0x40`), but a `RECT*` local is
 // NOT its source: re-measured against the build, it moves this function away.
 RVA(0x000ceae0, 0x268)
-i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
+i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -3305,7 +3306,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         return 1;
     }
     if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-        && m_guts->m_activeTab != TAB_GAME && m_lightFx->IssueMinimapCommand(a, x, y)) {
+        && m_guts->m_activeTab != TAB_GAME && m_lightFx->IssueMinimapCommand(keyFlags, x, y)) {
         return 1;
     }
 
@@ -3447,7 +3448,7 @@ i32 CPlay::DrawWorldPresent() {
     }
     m_world->m_childGroup->TickKillCues(1);
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->PruneWorkers(
+    m_world->m_workerList->RenderAndPruneWorkers(
         m_world->m_drawTarget->m_backPair,
         m_world->m_drawTarget->m_overlayPair
     );
@@ -4203,7 +4204,7 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 // form; the other three |= sites in this function pick the memory form in retail too.
 // (The drag-rect clamp above WAS a source shape - see the comment there.)
 RVA(0x000d0db0, 0x347)
-i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
+i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 
     LevelCoordRect box;
     if (m_inGame != 0) {
@@ -4214,7 +4215,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
     if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
         && m_guts->m_activeTab != TAB_GAME) {
-        m_lightFx->ContinueMinimapPan(a, x, y);
+        m_lightFx->ContinueMinimapPan(keyFlags, x, y);
     }
 
     if (m_dragSnapActive != 0) {
@@ -4226,7 +4227,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
 
     if (m_overlayDrag != 0) {
-        return m_guts->ClickToggle(a, x, y);
+        return m_guts->ClickToggle(keyFlags, x, y);
     }
 
     box = m_world->m_level->m_planeCtx;
@@ -4289,7 +4290,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     m_dragInProgress = 1;
-    m_guts->ClickToggle(a, x, y);
+    m_guts->ClickToggle(keyFlags, x, y);
     if (m_worldReady != 0) {
 
         m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
@@ -6557,7 +6558,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_childGroup
             );
-            m_world->m_workerList->PruneWorkers(
+            m_world->m_workerList->RenderAndPruneWorkers(
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );
@@ -6572,7 +6573,7 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_childGroup
             );
-            m_world->m_workerList->PruneWorkers(
+            m_world->m_workerList->RenderAndPruneWorkers(
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );

@@ -88,17 +88,17 @@ public:
     virtual i32 InputVirtual() OVERRIDE;
     virtual i32 EnterState(GameStateId) OVERRIDE;
     virtual i32 LeaveState(GameStateId) OVERRIDE;
-    virtual i32 OnChar(i32, i32) OVERRIDE;
-    virtual i32 OnKeyDown(i32, i32) OVERRIDE;
-    virtual i32 OnKeyUp(i32, i32) OVERRIDE;
-    virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
-    virtual i32 OnLButtonUp(i32, i32, i32) OVERRIDE;
-    virtual i32 OnLButtonDblClk(i32, i32, i32) OVERRIDE;
-    virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
-    virtual i32 OnRButtonUp(i32, i32, i32) OVERRIDE;
-    virtual i32 OnRButtonDblClk(i32, i32, i32) OVERRIDE;
+    virtual i32 OnChar(i32 charCode, i32 keyData) OVERRIDE;
+    virtual i32 OnKeyDown(i32 virtualKey, i32 keyData) OVERRIDE;
+    virtual i32 OnKeyUp(i32 virtualKey, i32 keyData) OVERRIDE;
+    virtual i32 OnLButtonDown(i32 eventArg, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnLButtonUp(i32 keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnRButtonDown(i32 keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnRButtonUp(i32 keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) OVERRIDE;
     RVA(0x0008c970, 0x1c)
-    virtual i32 OnMouseMove(i32, i32 cursorX, i32 cursorY) OVERRIDE {
+    virtual i32 OnMouseMove(i32 keyFlags, i32 cursorX, i32 cursorY) OVERRIDE {
         m_cursorX = cursorX;
         m_cursorY = cursorY;
         return 1;
@@ -122,7 +122,7 @@ public:
 
     virtual i32 LoadByMode(i32 level, i32 unused);
 
-    virtual i32 HandleDragMove(i32 a, i32 x, i32 y);
+    virtual i32 HandleDragMove(i32 keyFlags, i32 x, i32 y);
     virtual void OnExit();
     virtual void FreeListTeardown();
     virtual void ModeCleanup();

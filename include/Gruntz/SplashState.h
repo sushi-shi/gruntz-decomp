@@ -14,7 +14,7 @@ public:
 
     virtual ~CSplashState() OVERRIDE;
 
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
 
     virtual GameStateId Update() OVERRIDE;

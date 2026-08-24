@@ -21,9 +21,10 @@
 
 // @early-stop
 RVA(0x001660f0, 0xd1)
-void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
+void CWwdGameObjectC::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {
-        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= a->m_width || m_screenY >= a->m_height) {
+        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->m_width
+            || m_screenY >= dst->m_height) {
             m_dirty.m_armed = -1;
             return;
         }
@@ -35,7 +36,7 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
         }
     }
 
-    a->m_surface->PutPixel(m_screenX, m_screenY, m_dotColor);
+    dst->m_surface->PutPixel(m_screenX, m_screenY, m_dotColor);
     m_dirty.m_lastX = m_screenX;
     m_dirty.m_lastY = m_screenY;
     m_dirty.m_w = 1;
@@ -44,54 +45,28 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
 }
 
 RVA(0x001661d0, 0xc2)
-void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
     if (m_shadow.m_armed != -1) {
-        u8 pixel = b->m_surface->GetPixel(m_shadow.m_lastX, m_shadow.m_lastY);
-        a->m_surface->PutPixel(m_shadow.m_lastX, m_shadow.m_lastY, pixel);
+        u8 pixel = src->m_surface->GetPixel(m_shadow.m_lastX, m_shadow.m_lastY);
+        dst->m_surface->PutPixel(m_shadow.m_lastX, m_shadow.m_lastY, pixel);
         m_dirty.m_armed = -1;
     }
 }
 
 RVA(0x001662a0, 0x1fa)
-void CWwdGameObjectC::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
-        i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
-        if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
-            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
-        } else {
-            i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
-            i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;
-            i32 pos[2];
-            i32 size[2];
-            size[1] = dy;
-            size[0] = dx;
-            pos[1] = top;
-            pos[0] = left;
-            a->BlitDirtyRect(b, pos, size);
-        }
-    } else if (m_dirty.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
-    } else if (m_shadow.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
-    }
-}
-
-RVA(0x001664a0, 0x133)
-void CWwdGameObjectC::BltDirtyRegions(
-    CDDrawSurfacePair* a,
-    CDDrawSurfacePair* b,
-    CDDrawSurfacePair* c
+void CWwdGameObjectC::BltDirtyEx(
+    CDrawSubWorker* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
         i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
         i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
-            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
         } else {
             i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
             i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;
@@ -101,12 +76,42 @@ void CWwdGameObjectC::BltDirtyRegions(
             size[0] = dx;
             pos[1] = top;
             pos[0] = left;
-            a->BlitDirtyRect(b, pos, size);
+            dst->BlitDirtyRect(src, pos, size);
         }
     } else if (m_dirty.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
     } else if (m_shadow.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+    }
+}
+
+RVA(0x001664a0, 0x133)
+void CWwdGameObjectC::BltDirtyRegions(
+    CDDrawSurfacePair* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
+) {
+    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+        i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
+        i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
+        if (dx > 0x20 || dy > 0x20) {
+            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        } else {
+            i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
+            i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;
+            i32 pos[2];
+            i32 size[2];
+            size[1] = dy;
+            size[0] = dx;
+            pos[1] = top;
+            pos[0] = left;
+            dst->BlitDirtyRect(src, pos, size);
+        }
+    } else if (m_dirty.m_armed != -1) {
+        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+    } else if (m_shadow.m_armed != -1) {
+        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
     }
 }
 
@@ -236,27 +241,31 @@ void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
     }
 }
 RVA(0x001668e0, 0x2d)
-void CWwdGameObject::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CWwdGameObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirty(a, b);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirty(dst, src);
     }
 }
 RVA(0x00166910, 0x34)
-void CWwdGameObject::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
+void CWwdGameObject::BltDirtyEx(
+    CDrawSubWorker* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
+) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyEx(a, b, c);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyEx(dst, src, restoreSrc);
     }
 }
 RVA(0x00166950, 0x34)
 void CWwdGameObject::BltDirtyRegions(
-    CDDrawSurfacePair* a,
-    CDDrawSurfacePair* b,
-    CDDrawSurfacePair* c
+    CDDrawSurfacePair* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
 ) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
-        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyRegions(a, b, c);
+        static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyRegions(dst, src, restoreSrc);
     }
 }

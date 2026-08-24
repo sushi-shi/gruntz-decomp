@@ -108,46 +108,21 @@ i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
 }
 
 RVA(0x00150660, 0x49)
-void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
     if (m_dirty.m_armed != -1) {
         RECT* r = &m_dirty.m_rect;
-        a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
+        dst->m_surface->BltFast(r->left, r->top, src->m_surface, r, 0x10);
         m_dirty.m_armed = -1;
     }
 }
 
 RVA(0x001506b0, 0x1ec)
-void CWwdGameObjectA::BltDirtyEx(CDrawSubWorker* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        RECT ir;
-        if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
-            UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
-
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
-            a->BlitDirtyRect(b, pos, size);
-        } else {
-            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
-            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
-        }
-    } else if (m_dirty.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
-    } else if (m_shadow.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
-    }
-}
-
-RVA(0x001508a0, 0x117)
-void CWwdGameObjectA::BltDirtyRegions(
-    CDDrawSurfacePair* a,
-    CDDrawSurfacePair* b,
-    CDDrawSurfacePair* c
+void CWwdGameObjectA::BltDirtyEx(
+    CDrawSubWorker* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
         RECT ir;
@@ -160,15 +135,44 @@ void CWwdGameObjectA::BltDirtyRegions(
             pos[1] = ir.top;
             size[0] = ir.right - ir.left + 1;
             size[1] = ir.bottom - ir.top + 1;
-            a->BlitDirtyRect(b, pos, size);
+            dst->BlitDirtyRect(src, pos, size);
         } else {
-            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
-            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
         }
     } else if (m_dirty.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
     } else if (m_shadow.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+    }
+}
+
+RVA(0x001508a0, 0x117)
+void CWwdGameObjectA::BltDirtyRegions(
+    CDDrawSurfacePair* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
+) {
+    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
+            UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
+            i32 pos[2];
+            i32 size[2];
+
+            pos[0] = ir.left;
+            pos[1] = ir.top;
+            size[0] = ir.right - ir.left + 1;
+            size[1] = ir.bottom - ir.top + 1;
+            dst->BlitDirtyRect(src, pos, size);
+        } else {
+            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        }
+    } else if (m_dirty.m_armed != -1) {
+        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+    } else if (m_shadow.m_armed != -1) {
+        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
     }
 }
 

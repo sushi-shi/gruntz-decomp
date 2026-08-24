@@ -54,14 +54,18 @@ void CDDrawWorkerList::Unload() {
 }
 
 RVA(0x00163bf0, 0x6d)
-void CDDrawWorkerList::PruneWorkers(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CDDrawWorkerList::RenderAndPruneWorkers(
+    CDDrawSurfacePair* backBuffer,
+    CDDrawSurfacePair* overlay
+) {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
         CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
-        child->RenderFrame(a, b);
+        child->RenderFrame(backBuffer, overlay);
         child->m_refCount--;
-        if ((b->m_surface != NULL && (b->m_flags & 0x20000) == 0) || child->m_refCount <= 0) {
+        if ((overlay->m_surface != NULL && (overlay->m_flags & 0x20000) == 0)
+            || child->m_refCount <= 0) {
             m_workers.RemoveAt(cur);
             if (child) {
                 delete child;
@@ -1275,13 +1279,13 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 }
 
 RVA(0x00165fa0, 0x93)
-void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     {
 
         char c = m_pixelValue;
         i32 y = m_screenY;
         i32 x = m_screenX;
-        CDDSurface* s = b->m_surface;
+        CDDSurface* s = overlay->m_surface;
         char* base = static_cast<char*>(s->Lock(0));
         if (base != NULL) {
             base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
@@ -1292,7 +1296,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         char c = m_pixelValue;
         i32 y = m_screenY;
         i32 x = m_screenX;
-        CDDSurface* s = a->m_surface;
+        CDDSurface* s = backBuffer->m_surface;
         char* base = static_cast<char*>(s->Lock(0));
         if (base != NULL) {
             base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
@@ -1308,17 +1312,17 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 RVA(0x00166040, 0x66)
-i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
-    CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, key);
-    CImage* v = p != NULL ? p->GetAt(idx) : NULL;
+i32 CDDrawWorkerB::ResolveFrame(const char* workerName, i32 frameIndex) {
+    CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, workerName);
+    CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;
     return v != NULL;
 }
 
 RVA(0x001660b0, 0x33)
-void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    m_frame->RenderImage(this, a);
-    if (b->m_surface != NULL && (b->m_flags & 0x20000) == 0) {
-        m_frame->RenderImage(this, b);
+void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+    m_frame->RenderImage(this, backBuffer);
+    if (overlay->m_surface != NULL && (overlay->m_flags & 0x20000) == 0) {
+        m_frame->RenderImage(this, overlay);
     }
 }

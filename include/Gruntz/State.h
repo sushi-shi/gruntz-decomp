@@ -59,44 +59,44 @@ public:
     virtual i32 LeaveState(GameStateId);
 
     RVA(0x0008c550, 0x5)
-    virtual i32 OnChar(i32, i32) {
+    virtual i32 OnChar(i32 charCode, i32 keyData) {
         return 0;
     }
     RVA(0x0008c570, 0x5)
-    virtual i32 OnKeyDown(i32, i32) {
+    virtual i32 OnKeyDown(i32 virtualKey, i32 keyData) {
         return 0;
     }
     RVA(0x0008c590, 0x5)
-    virtual i32 OnKeyUp(i32, i32) {
+    virtual i32 OnKeyUp(i32 virtualKey, i32 keyData) {
         return 0;
     }
     RVA(0x0008c5b0, 0x5)
-    virtual i32 OnLButtonDown(i32, i32, i32) {
+    virtual i32 OnLButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x0008c5d0, 0x5)
-    virtual i32 OnLButtonUp(i32, i32, i32) {
+    virtual i32 OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x0008c5f0, 0x5)
-    virtual i32 OnLButtonDblClk(i32, i32, i32) {
+    virtual i32 OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x0008c610, 0x5)
-    virtual i32 OnRButtonDown(i32, i32, i32) {
+    virtual i32 OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x0008c630, 0x5)
-    virtual i32 OnRButtonUp(i32, i32, i32) {
+    virtual i32 OnRButtonUp(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
     RVA(0x0008c650, 0x5)
-    virtual i32 OnRButtonDblClk(i32, i32, i32) {
+    virtual i32 OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
 
     RVA(0x0008c670, 0x5)
-    virtual i32 OnMouseMove(i32, i32, i32) {
+    virtual i32 OnMouseMove(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
 

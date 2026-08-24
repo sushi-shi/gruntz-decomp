@@ -32,12 +32,12 @@
 #include <ddraw.h>
 
 RVA(0x000f9780, 0x8c)
-i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
+i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (CAssetRootStorage::s_value.GetLength() == 0) {
         return 0;
     }
 
-    if (!CState::LoadGameAssetNamespaces(a, b, c)) {
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
     SetCursor(NULL);

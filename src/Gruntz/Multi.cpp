@@ -710,7 +710,7 @@ void CMulti::PumpB() {
     if (m_roundComplete == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
         m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->PruneWorkers(
+        m_world->m_workerList->RenderAndPruneWorkers(
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
@@ -746,7 +746,7 @@ void CMulti::PumpB() {
         NotifyVisibleEntities();
     } else {
         m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->PruneWorkers(
+        m_world->m_workerList->RenderAndPruneWorkers(
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
@@ -3327,10 +3327,10 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
 }
 
 RVA(0x000bd210, 0x14d)
-i32 CMulti::OnChar(i32 key, i32 flag) {
+i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     if (m_hitTest && m_hitTest->m_inputActive) {
         if (m_connected) {
-            if (Mgr()->m_chatLog->TypeChar(key, flag)) {
+            if (Mgr()->m_chatLog->TypeChar(charCode, keyData)) {
                 CString line = Mgr()->m_chatLog->GetInputText();
                 i32 n = line.GetLength();
                 if (n > 9) {
@@ -3344,7 +3344,7 @@ i32 CMulti::OnChar(i32 key, i32 flag) {
         }
         return 1;
     }
-    return CPlay::OnChar(key, flag);
+    return CPlay::OnChar(charCode, keyData);
 }
 RVA(0x000bd3c0, 0x9)
 void CMulti::TickStateMgrs() {

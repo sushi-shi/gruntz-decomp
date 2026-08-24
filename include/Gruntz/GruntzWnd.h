@@ -19,17 +19,17 @@ public:
     virtual i32 HandleWindowCommand(i32, i32, i32) OVERRIDE;
     virtual i32 OnClose() OVERRIDE;
     virtual i32 OnPaint() OVERRIDE;
-    virtual i32 OnChar(WPARAM, LPARAM) OVERRIDE;
-    virtual i32 OnKeyDown(WPARAM, LPARAM) OVERRIDE;
-    virtual i32 OnKeyUp(WPARAM, LPARAM) OVERRIDE;
+    virtual i32 OnChar(WPARAM charCode, LPARAM keyData) OVERRIDE;
+    virtual i32 OnKeyDown(WPARAM virtualKey, LPARAM keyData) OVERRIDE;
+    virtual i32 OnKeyUp(WPARAM virtualKey, LPARAM keyData) OVERRIDE;
     virtual i32 OnActivateApp(WPARAM, LPARAM) OVERRIDE;
-    virtual i32 OnLButtonDown(WPARAM, i32, i32) OVERRIDE;
-    virtual i32 OnRButtonDown(WPARAM, i32, i32) OVERRIDE;
-    virtual i32 OnLButtonUp(WPARAM, i32, i32) OVERRIDE;
-    virtual i32 OnRButtonUp(WPARAM, i32, i32) OVERRIDE;
-    virtual i32 OnMouseMove(WPARAM, i32, i32) OVERRIDE;
-    virtual i32 OnLButtonDblClk(WPARAM, i32, i32) OVERRIDE;
-    virtual i32 OnRButtonDblClk(WPARAM, i32, i32) OVERRIDE;
+    virtual i32 OnLButtonDown(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnRButtonDown(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnLButtonUp(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnRButtonUp(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnMouseMove(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
+    virtual i32 OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
 
     i32 UnusedWindowQuery();
 
