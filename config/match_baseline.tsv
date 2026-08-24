@@ -597,7 +597,7 @@ battlezspawncheck	?CheckQueuedSpawnTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	89.
 battlezspecialanim	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.2548	94.2548	3	001b781c9590	0x34460	94.2548	
 battlezspecialanim	?RecycleCoords@CGrunt@@QAEXXZ	100.0000	100.0000	3	56800e198b1b	0x343f0	100.0000	
 battlezspecialanim	?Report@zErrHandling@@QAEXPADH@Z	100.0000	100.0000	2	f8f0fb8e94d8	0x34960	100.0000	
-battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	83.0501	83.0501	12	0fae10bb0e40	0x32060	83.0501	
+battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	83.0501	83.0501	13	0bdb805a790b	0x32060	83.0501	
 battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	85.7000	85.7000	1	f89bca6b4e27	0x31c70	85.7000	
 battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.0918	88.0867	9	f8f59b5528f5	0x31610	88.0918	
 battlezunitstep	?TrackAssignedEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	96.2511	96.2511	12	470c955774d1	0x31ca0	96.2511	
@@ -679,7 +679,7 @@ bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.9925	95.9925
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	23	5be633df004a	0xf9160	100.0000	
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	2	84fad4ef8ae9	0x853f0	100.0000	
 brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	100.0000	100.0000	1	8c0b48d24e73	0x82250	100.0000	
-brickz	?SearchEdge@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	83.1343	83.1343	3	fcbe1453ac5d	0x81e10	83.1343	
+brickz	?SearchEdge@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	86.3731	86.3731	4	fd7955e1e712	0x81e10	86.3731	
 brickz	?UpdateDiagonals@CMapMgr@@QAEHPAVCGruntzMgr@@@Z	90.1655	90.1655	4	47f90b4c014a	0x82030	90.1655	
 brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	97.6586	97.6586	3	c9fb2caffef0	0x77790	97.6586	
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	73.8058	73.8058	2	37b4f29bf34a	0x77df0	73.8252	
