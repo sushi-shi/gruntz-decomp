@@ -513,7 +513,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         cue->m_lastPlayTime = g_killCueClock;
-        cue->m_sound->ConfigureItem(newpos, 0, 0, 0);
+        cue->m_sound->AcquireAndPlay(newpos, 0, 0, 0);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
@@ -543,7 +543,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         cue->m_lastPlayTime = g_killCueClock;
-        cue->m_sound->ConfigureItem(item, 0, 0, 0);
+        cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
         return;
     }
 }

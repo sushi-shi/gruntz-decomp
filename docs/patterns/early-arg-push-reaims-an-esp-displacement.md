@@ -48,7 +48,7 @@ cmp  DWORD PTR [esp+0x10],ebx   ; E+0x10  again, at depth 0
 ```
 
 Steerable, and a correctness oracle rather than a scoring one. Misreading exactly this
-put `wFormatTag|nChannels` (0x00010001 = 65537) into `DirectSoundMgr::m_freq`, so every
+put `wFormatTag|nChannels` (0x00010001 = 65537) into `SoundBuffer::m_freq`, so every
 `SetFrequencyOffsetPercent(0)` retuned each buffer to 65537 Hz — all game audio played
 ~3x fast, and `CreateBuffer` still scored 65.56% either way. Screen for it wherever a
 struct is copied to a local and a field of that local is read back **after** an

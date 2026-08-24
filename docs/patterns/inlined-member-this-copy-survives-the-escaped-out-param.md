@@ -42,7 +42,7 @@ MapLookup(host->m_cues, "GAME_MINORCHEAT", cue);
 if (cue != NULL && g_sndEnabled) {
     if (g_killCueClock - cue->m_lastPlayTime >= cue->m_replayDelay) {
         cue->m_lastPlayTime = g_killCueClock;
-        cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+        cue->m_sound->AcquireAndPlay(g_sndCueTag, 0, 0, 0);
     }
 }
 
@@ -132,13 +132,13 @@ out of the gate so the loads sit between them:
 
 ```cpp
 // NO
-if (cue != NULL && g_sndEnabled != 0) { ... ConfigureItem(g_sndCueTag, 0, 0, 0); }
+if (cue != NULL && g_sndEnabled != 0) { ... AcquireAndPlay(g_sndCueTag, 0, 0, 0); }
 
 // YES
 if (cue != NULL) {
     i32 gate = g_sndEnabled;
     i32 item = g_sndCueTag;
-    if (gate != 0) { ... ConfigureItem(item, 0, 0, 0); }
+    if (gate != 0) { ... AcquireAndPlay(item, 0, 0, 0); }
 }
 ```
 

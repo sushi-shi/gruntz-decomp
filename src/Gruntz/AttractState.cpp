@@ -74,7 +74,7 @@ RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
     CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
     if (reg->m_soundStream) {
-        reg->m_soundStream->Stop();
+        reg->m_soundStream->StopAllStreams();
     }
     menuRoot()->m_soundRegistry->RemoveKeysEqual("ATTRACT", "_");
 
@@ -129,7 +129,7 @@ i32 CAttract::LeaveState(GameStateId arg) {
     if (!m_host->m_sound->IsPlaying()) {
         return 1;
     }
-    m_host->m_sound->CloneAndPlay(0, 0x1f4, 1);
+    m_host->m_sound->RampVolumeTo(0, 0x1f4, 1);
     if (!m_host->m_sound->IsPlaying()) {
         return 1;
     }

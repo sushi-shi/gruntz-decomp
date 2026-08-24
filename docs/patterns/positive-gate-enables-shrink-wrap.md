@@ -118,7 +118,7 @@ miss handler is INLINE at the top *and* the pushes are still shrink-wrapped — 
 are separable and cl5 will not give you the shrink-wrap from either gate spelling. Those are real
 walls; the layout lever is not the fix.
 
-**Apply it in PROPORTION.** `DirectSoundMgr::Play` has base 5 rets / retail 4 — merging *all*
+**Apply it in PROPORTION.** `SoundBuffer::Play` has base 5 rets / retail 4 — merging *all*
 exits (95.5 -> 93.8) over-applied it. Merge as many as retail merges, no more.
 
 ## Third form: `goto fail` — the shared-exit spelling for many-early-return functions
@@ -173,7 +173,7 @@ it reconstructs this function's original guard shape.
 
 **Correction — `SoundDevice::CreateBuffer` needs a common result, but not one working pointer.**
 The row above was again only an intermediate improvement. A single pointer initialized to zero
-and reused for the successful `DSoundCloneInst` makes cl coalesce both roles into esi: every
+and reused for the successful `SoundSample` makes cl coalesce both roles into esi: every
 failure arm becomes `xor esi,esi`, and the `bytes` argument is repeatedly reloaded. Retail has
 `xor eax,eax` in every failure arm, keeps the successful voice in esi, and holds `bytes` in ebp.
 Use an uninitialized common `result`, assign it in each failure arm, and keep the allocated voice
@@ -434,7 +434,7 @@ for the EH prologue the base does not have.
 
 ## The inverse is REAL: a measured counter-instance (2026-08-01)
 
-The rule above is not symmetric and must not be applied blind. `SoundDevice::FreeSamples`
+The rule above is not symmetric and must not be applied blind. `SoundDevice::ClearVolumeRamps`
 @0x136ed0 is the counter-instance: **retail does NOT shrink-wrap and we DO**, from the early-
 return form on both sides.
 
@@ -467,7 +467,7 @@ The positive form *costs* 5 points. And retail's own polarity is the early retur
 (`jne body`, the `return 0` as the fallthrough), so both sides already agree on the gate — the
 gate was never the variable.
 
-**The screen.** Its sibling `DSoundCloneInst::GetItem` @0x135d70 needs the OPPOSITE shrink-wrap
+**The screen.** Its sibling `SoundSample::AcquireInstance` @0x135d70 needs the OPPOSITE shrink-wrap
 decision (retail saves only `edi` at entry and defers `push esi`/`push ebx` past the guard,
 where cl pushes all three up front) from the *same* guard shape, and all four of its guard
 spellings tie at 90.31.
@@ -479,14 +479,14 @@ not the source's". That is **falsified**. All four spellings vary only the *gate
 is not what cl 5.0 counts: the shrink-wrap decision is made on the number of **early returns in
 the whole source flow graph**
 ([`shrink-wrapped-prologue-needs-one-tail-return.md`](shrink-wrapped-prologue-needs-one-tail-return.md)).
-FreeSamples had exactly one, so cl shrink-wrapped; retail's had two, so it did not. Adding the
+ClearVolumeRamps had exactly one, so cl shrink-wrapped; retail's had two, so it did not. Adding the
 second one - `if (node == NULL) return 1;` ahead of a `do/while`, the shape its already-EXACT
-TU twin `SoundDevice::PurgeVoiceList` @0x136e20 uses - took it **77.41 -> 100.00 EXACT** with
+TU twin `SoundDevice::TickVolumeRamps` @0x136e20 uses - took it **77.41 -> 100.00 EXACT** with
 the gate left exactly as it was.
 
 So the honest reading of the matrix is narrower: it refutes the *positive-gate* lever on this
 function, not source-reachability. When retail's early exit pops everything, stop editing the
-gate and go count returns instead. The `GetItem` observation stands as written (it later closed
+gate and go count returns instead. The `AcquireInstance` observation stands as written (it later closed
 at 100.00 EXACT via the forward direction of that same return-count rule).
 
 So before reaching for the positive form, check that retail's exit actually lands **below** a

@@ -14,7 +14,7 @@
 
 class CLightFx;
 
-class DirectSoundMgr;
+class SoundBuffer;
 
 class CProjectile : public CMovingLogic, public CWapX {
 public:
@@ -72,7 +72,7 @@ public:
     };
     CAniElement* m_frames[7];
     CWwdGameObjectA* m_shadow;
-    DirectSoundMgr* m_sound;
+    SoundBuffer* m_sound;
     CPtrList m_hitList;
     i32 m_sourcePxX, m_sourcePxY;
 };

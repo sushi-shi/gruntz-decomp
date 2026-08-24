@@ -41,8 +41,8 @@ compiler never saw:
 | function | was | commit's intent | cause | now |
 |---|---|---|---|---|
 | `StreamFeeder::FillBuffer` | 100 -> 86.66 | type audio buffers `void*`->`u8*` | `= NULL` seeds on Lock out-pointers | **100 EXACT** |
-| `DirectSoundMgr::LockConvert` | 100 -> 90.09 | same | same | **100 EXACT** |
-| `DirectSoundMgr::LoadFromFile` | 100 -> 97.73 | same | same | **100 EXACT** |
+| `SoundBuffer::LockConvert` | 100 -> 90.09 | same | same | **100 EXACT** |
+| `SoundBuffer::LoadFromFile` | 100 -> 97.73 | same | same | **100 EXACT** |
 | `CDDrawWorkerMapSmall::LoadSizedPaletteFromSource` | 100 -> 91.28 | "model parse source length directly" | deleted a union pun's frame slot | **100 EXACT** |
 
 The first three shared ONE cause: the typing pass seeded every

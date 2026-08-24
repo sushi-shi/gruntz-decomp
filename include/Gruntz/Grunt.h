@@ -51,9 +51,9 @@ class FreeNodePool;
 
 class CDDrawSubMgrLeaf;
 
-class DSoundCloneInst;
+class SoundSample;
 
-class DirectSoundMgr;
+class SoundBuffer;
 
 typedef struct tagRECT CCueRect;
 
@@ -528,8 +528,8 @@ public:
     i32 m_reserved418;
     u32 m_timePerTile;
     i32 m_tileClaimed;
-    DirectSoundMgr* m_struckSlotSound;
-    DirectSoundMgr* m_struckVoiceSound;
+    SoundBuffer* m_struckSlotSound;
+    SoundBuffer* m_struckVoiceSound;
     i32 m_reserved42c;
     i32 m_reserved430;
     i32 m_startingItemId;

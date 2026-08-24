@@ -42,9 +42,9 @@ written BEFORE the vptr stamp that your model puts on the DERIVED class is
 evidence the field belongs to a BASE. This reads off the store order alone - no
 unwind states, no destructible members needed.
 
-`DSoundVoice::DSoundVoice` 0x136fe0 writes `+0xc, +0x10, +0x14` in one
-uninterrupted run and only then stamps `??_7DSoundVoice@@6B@`. Modelling the
-first two as base fields (`PureSoundElem`) and leaving `m_stopAndRewind` at
+`SoundVolumeRamp::SoundVolumeRamp` 0x136fe0 writes `+0xc, +0x10, +0x14` in one
+uninterrupted run and only then stamps `??_7SoundVolumeRamp@@6B@`. Modelling the
+first two as base fields (`SoundTask`) and leaving `m_stopAndRewind` at
 `+0x14` on the derived class makes it a body statement, and no body order can
 put it back in that run: all six orders of the remaining three assignments
 plateau at 85.18, and the one order that does reproduce retail's *store* order

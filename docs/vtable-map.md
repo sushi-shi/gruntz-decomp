@@ -42,7 +42,7 @@ unmatched TUs or are foreign/library), so the ctor does a manual `*(void**)this 
 &g_xVtbl` / `m_vptr = &g_xVtbl` with `g_xVtbl` an `extern` annotated `DATA(rva)`
 (reloc-masked). 36 of the 75 strong non-RTTI starts are already annotated:
 DinMgr2 `g_deviceConfig{A,B,C}`, the whole Dsndmgr family
-(`g_{DirectSoundMgr,DirectSoundClone,SoundDevice,StreamVoice,SoundStream,StreamFeeder,Pure}Vtbl`),
+(`g_{SoundBuffer,DirectSoundClone,SoundDevice,StreamVoice,SoundStream,StreamFeeder,Pure}Vtbl`),
 WAP `z`-container/worker vtables (`g_{severusWorkerBase,ddrawWorkerA,albusWorker,
 siriusWorker,remusNode,wwdObj,catalog,leafScan}Vtbl`), `g_fileImageVtbl`,
 `g_fileMemBaseVtbl`, `g_zDArrayDtorVtbl`, `g_menuItemVtbl`, `g_faderSineVtbl`, etc.
@@ -108,7 +108,7 @@ shared base once, then the derived classes), not one-off:
   aggregate into `engine_label_stubs` (0/519 oracle); graduate each to its own
   unit first, then convert.
 - **EH / special singletons**: Dsndmgr (`SoundDevice`/`SoundStream`/
-  `DirectSoundMgr`/`StreamVoice`/`StreamFeeder` — `/GX` EH frames, non-RTTI),
+  `SoundBuffer`/`StreamVoice`/`StreamFeeder` — `/GX` EH frames, non-RTTI),
   CBoomerang (sunk-store wall), CImage/CFileImage, CRemusNode (PMF-vtable +
   CObject base), CDDrawSurface{Mgr,Pair}/CDDrawSubMgrAni (CObject restamps),
   CMulti/CPlay/CState (43/43/26-slot vtables), ZVec/EngStr.

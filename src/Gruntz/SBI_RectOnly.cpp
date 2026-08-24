@@ -10,7 +10,7 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Enums.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -364,7 +364,7 @@ static __inline void HiCueTimed() {
                 if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                     >= static_cast<u32>(p->m_replayDelay)) {
                     p->m_lastPlayTime = g_killCueClock;
-                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                 }
             }
         }
@@ -718,7 +718,7 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                         >= static_cast<u32>(p->m_replayDelay)) {
                         p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                     }
                 }
             }
@@ -785,9 +785,9 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
                 LeafCue* found = NULL;
                 MapLookup(*map, "GAME_DESTRUCT", found);
                 if (found) {
-                    DSoundCloneInst* f = found->m_sound;
+                    SoundSample* f = found->m_sound;
                     if (f) {
-                        DirectSoundMgr* obj = f->GetItem();
+                        SoundBuffer* obj = f->AcquireInstance();
                         m_destructButton = obj;
                         if (obj) {
                             obj->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
@@ -2559,7 +2559,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                             >= static_cast<u32>(p->m_replayDelay)) {
                             p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                         }
                     }
                 }
@@ -2592,7 +2592,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                             >= static_cast<u32>(p->m_replayDelay)) {
                             p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                         }
                     }
                 }
@@ -2689,7 +2689,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                             if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                 >= static_cast<u32>(p->m_replayDelay)) {
                                 p->m_lastPlayTime = g_killCueClock;
-                                p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                             }
                         }
                     }
@@ -2794,7 +2794,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                         >= static_cast<u32>(p->m_replayDelay)) {
                         p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                     }
                 }
             }
@@ -2967,7 +2967,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                         >= static_cast<u32>(p->m_replayDelay)) {
                                         p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                     }
                                 }
                             }
@@ -2991,7 +2991,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                         >= static_cast<u32>(p->m_replayDelay)) {
                                         p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                     }
                                 }
                             }
@@ -3090,7 +3090,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                         >= static_cast<u32>(p->m_replayDelay)) {
                                         p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                     }
                                 }
                             }
@@ -3156,7 +3156,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                             >= static_cast<u32>(p->m_replayDelay)) {
                                             p->m_lastPlayTime = g_killCueClock;
-                                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                         }
                                     }
                                 }
@@ -3178,7 +3178,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                             >= static_cast<u32>(p->m_replayDelay)) {
                                             p->m_lastPlayTime = g_killCueClock;
-                                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                         }
                                     }
                                 }
@@ -3446,7 +3446,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                                 if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                     >= static_cast<u32>(p->m_replayDelay)) {
                                     p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -3482,7 +3482,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                                 if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                     >= static_cast<u32>(p->m_replayDelay)) {
                                     p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -3569,7 +3569,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                                 if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                     >= static_cast<u32>(p->m_replayDelay)) {
                                     p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -3667,7 +3667,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                                 if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                                     >= static_cast<u32>(p->m_replayDelay)) {
                                     p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -4497,7 +4497,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
             i32 item = g_sndCueTag;
             if (gate != 0 && g_killCueClock - fly->m_lastPlayTime >= fly->m_replayDelay) {
                 fly->m_lastPlayTime = g_killCueClock;
-                fly->m_sound->ConfigureItem(item, 0, 0, 0);
+                fly->m_sound->AcquireAndPlay(item, 0, 0, 0);
             }
         }
     }
@@ -5085,7 +5085,7 @@ i32 CStatusBarMgr::HlClickGroup0(StatusBarHighlightRow row) {
                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                             >= static_cast<u32>(p->m_replayDelay)) {
                             p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                         }
                     }
                 }
@@ -5120,7 +5120,7 @@ i32 CStatusBarMgr::HlClickGroup1(StatusBarHighlightRow row) {
                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                             >= static_cast<u32>(p->m_replayDelay)) {
                             p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                         }
                     }
                 }
@@ -5155,7 +5155,7 @@ i32 CStatusBarMgr::HlClickGroup2(StatusBarHighlightRow row) {
                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                             >= static_cast<u32>(p->m_replayDelay)) {
                             p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                         }
                     }
                 }
@@ -5201,7 +5201,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                         >= static_cast<u32>(p->m_replayDelay)) {
                         p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                     }
                 }
             }
@@ -5231,7 +5231,7 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                         if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                             >= static_cast<u32>(p->m_replayDelay)) {
                             p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                         }
                     }
                 }

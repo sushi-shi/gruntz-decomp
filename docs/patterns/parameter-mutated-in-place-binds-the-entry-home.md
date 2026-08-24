@@ -55,7 +55,7 @@ base `lea r2,[r1+K]` keeping r1 alive against retail `mov r2,r1` + in-place
 
 The binding order also decides WHICH callee-saved register the RECEIVER gets, so
 the shape reaches `this`-versus-derived-value rows that read as pure colour.
-`DSoundVoice::Tick` 0x137060 (directsoundmgr) is 43 instructions on both sides
+`SoundVolumeRamp::Tick` 0x137060 (directsoundmgr) is 43 instructions on both sides
 with the same frame and the same call/branch/ret/reloc quadruple, and its whole
 5.70% gap is retail holding `this` in ESI and the elapsed time in EDI while base
 does the reverse - visible as `mov esi,ecx` being instruction 2 in retail and

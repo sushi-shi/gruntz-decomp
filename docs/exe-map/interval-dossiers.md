@@ -75,8 +75,8 @@ Seam fns:
   reference the DSNDMGR string from `0x1351d0` through `0x137260`
   (`CreatePrimaryBuffer`), spanning both the directsoundmgr AND sounddevice
   units (`0x1366f0`, `0x1371a0` are sounddevice fns with DSNDMGR asserts) →
-  `SoundDevice` + `DirectSoundMgr` + `DSoundCloneInst`/`DSoundBaseSub` +
-  `DSoundVoice`/`DSoundList` are ONE file.
+  `SoundDevice` + `SoundBuffer` + `SoundSample`/`SoundBufferInstance` +
+  `SoundVolumeRamp`/`IntrusiveList` are ONE file.
 - **`C:\Proj\Dsndmgr\DSndMgSR.cpp`** = `[0x137330 .. 0x13848b]`. Assert at
   `0x137859` inside `?CreateStreamBuffer@SoundStream` (fn @`0x137780`) →
   `SoundStream` + `StreamVoice` + `StreamFeeder`/`StreamVoiceFeeder` are the
@@ -98,15 +98,15 @@ Seam fns:
   a `pow()`-based volume↔percent curve sitting between
   `SoundDevice::VolumeToAttenuation` and `BuildVolumeTable`; the "GruntCmd" name
   is a misattribution (rename: volume-percent curve).
-- `0x00135d70` — `?GetItem@CSoundCueMgr@@QAEPAVCStatusBarItem2@@XZ` —
+- `0x00135d70` — `?AcquireInstance@CSoundCueMgr@@QAEPAVCStatusBarItem2@@XZ` —
   statusbarmgrgetitem -> DSNDMGR.CPP — body walks the DSound voice list calling
-  `DirectSoundMgr::IsPlaying`; `CStatusBarItem2` is a wrong view.
-- `0x001360d0` — `?ConfigureItem@CSoundCueMgr@@QAEHHHHH@Z` — spriteresource ->
+  `SoundBuffer::IsPlaying`; `CStatusBarItem2` is a wrong view.
+- `0x001360d0` — `?AcquireAndPlay@CSoundCueMgr@@QAEHHHHH@Z` — spriteresource ->
   DSNDMGR.CPP — same placeholder `CSoundCueMgr` family, mid-DSNDMGR span.
 - `0x00136a30` — `?LoadWave@WaveHost_136a30@ResLoaders@@QAEHPBDHH@Z` —
   resourceloaders -> DSNDMGR.CPP — wave loader sandwiched between
   `SoundDevice::Acquire*`/`Reload*`.
-- `0x00136ce0` — `?LoadWave@WaveHost2_136ce0@ResLoaders@@QAEHPAVDirectSoundMgr@@PBDH@Z`
+- `0x00136ce0` — `?LoadWave@WaveHost2_136ce0@ResLoaders@@QAEHPAVSoundBuffer@@PBDH@Z`
   — resourceloaders -> DSNDMGR.CPP — same.
 - `0x00136fe0` — `SoundTick_Ctor` (unowned) -> DSNDMGR.CPP — position.
 - `0x00137330` — `??1CAbstract137330@@UAE@XZ` — directsoundmgr -> DSndMgSR.cpp —
@@ -115,10 +115,10 @@ Seam fns:
   DSndMgSR.cpp — body is pure stream machinery (walks `StreamVoice` list,
   pumps `StreamFeeder::Tick`/`TickPump`); a `SoundDevice` method the devs
   defined in the stream file (its RVA is mid-stream-span).
-- `0x00138120` — `?SetDSoundReportModes@@YAXHHHH@Z` — directsoundmgr ->
+- `0x00138120` — `?ConfigureSoundErrorReporting@@YAXHHHH@Z` — directsoundmgr ->
   DSndMgSR.cpp tail — positioned AFTER the StreamFeeder block, so cannot be
   DSNDMGR.CPP; either DSndMgSR's tail or a small third reporting TU (weak).
-- `0x00138150` — `?GetErrorString@DirectSoundMgr@@SAXPADHH@Z` — directsoundmgr
+- `0x00138150` — `?GetErrorString@SoundBuffer@@SAXPADHH@Z` — directsoundmgr
   -> DSndMgSR.cpp tail — same as above (827-B error-string table; weak).
 
 ## 3. `0x0218e0-0x022a3a` fontconfig + drawtext — ONE TU (strong)

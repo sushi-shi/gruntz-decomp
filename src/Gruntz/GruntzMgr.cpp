@@ -1259,7 +1259,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         if (m_world) {
             CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
             if (sub && sub->m_soundStream) {
-                sub->m_soundStream->Stop();
+                sub->m_soundStream->StopAllStreams();
             }
         }
         CGruntzSoundZ* snd = m_sound;
@@ -1706,7 +1706,7 @@ void CGruntzMgr::UnloadSoundChain() {
         if (sub) {
             SoundStream* obj = sub->m_soundStream;
             if (obj) {
-                obj->Stop();
+                obj->StopAllStreams();
             }
         }
     }
@@ -2440,7 +2440,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                                 if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                                     >= static_cast<u32>(cue->m_replayDelay)) {
                                     cue->m_lastPlayTime = g_killCueClock;
-                                    cue->m_sound->ConfigureItem(tag, 0, 0, 0);
+                                    cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                                 }
                             }
                         }
@@ -2492,7 +2492,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                                 if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                                     >= static_cast<u32>(cue->m_replayDelay)) {
                                     cue->m_lastPlayTime = g_killCueClock;
-                                    cue->m_sound->ConfigureItem(tag, 0, 0, 0);
+                                    cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                                 }
                             }
                         }
@@ -2957,7 +2957,7 @@ void CGruntzMgr::SetRunState(i32 v) {
     }
     SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
     if (sub) {
-        sub->Stop();
+        sub->StopAllStreams();
     }
 
     i32 run = m_soundEnabled;

@@ -8,6 +8,6 @@
 #include <Gruntz/Sprite.h>
 #include <Ints.h>
 
-class DSoundCloneInst;
+class SoundSample;
 
 #endif // GRUNTZ_DDRAWMGR_ANIADVANCE_H

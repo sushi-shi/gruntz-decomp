@@ -594,7 +594,7 @@ TWO original files (__FILE__-anchored; wave1-E split at 0x134cb0): DinMgr2.cpp
 ### directsoundmgr
 The two original Dsndmgr TUs (docs/exe-map/interval-dossiers.md, split @0x137330):
 directsoundmgr == C:\Proj\Dsndmgr\DSNDMGR.CPP (absorbed sounddevice, dsoundvoice,
-gruntcmdpercent, statusbarmgrgetitem + the DSoundList::RemoveMatching /
+gruntcmdpercent, statusbarmgrgetitem + the SoundTaskList::RemoveMatching /
 WAVE-resource seam re-homes); soundstream == C:\Proj\Dsndmgr\DSndMgSR.cpp
 (absorbed streamfeeder, streamvoice, soundstreamfree, soundstreamteardown +
 TickSubManagers + the error-reporting tail).

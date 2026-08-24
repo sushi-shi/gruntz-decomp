@@ -45,7 +45,7 @@ push   ebx
 Steerable. Nested `if`/`else` with a single tail return; a result variable also
 works (`int r = 0; … r = call(); return r;`) but only if it is declared where the
 guard does not need a zero register. Sieve: leading-push count base vs target
-(33 candidates found tree-wide). `DSoundCloneInst::GetItem` 0x135d70 90.31 ->
+(33 candidates found tree-wide). `SoundSample::AcquireInstance` 0x135d70 90.31 ->
 100.00 EXACT, `CGrunt::UpdateGruntStatus` 0x617c0 94.63 -> 100.00 EXACT,
 `CDDrawWorkerHost::DeactivateDistantObjects` 0x163370 87.88 -> 100.00 EXACT,
 `CPlay::StepGridWalk` 0xd0a60 66.67 -> 100.00 EXACT (that one was filed as a
@@ -71,12 +71,12 @@ test eax,eax / jne L1 / xor eax,eax / pop edi / pop esi / pop ebp / pop ebx / re
 The push ORDER is the cheap tell: sunk saves come out in first-definition order and read
 *reversed* against the canonical `ebx, ebp, esi, edi` an entry prologue emits.
 
-`SoundDevice::FreeSamples` 0x136ed0 **77.41 -> 100.00 EXACT** - body already byte-identical,
+`SoundDevice::ClearVolumeRamps` 0x136ed0 **77.41 -> 100.00 EXACT** - body already byte-identical,
 the entire residue was the prologue placement. Its guard-walk-delete twin
-`SoundDevice::PurgeVoiceList` 0x136e20 sits three lines up already EXACT with the canonical
+`SoundDevice::TickVolumeRamps` 0x136e20 sits three lines up already EXACT with the canonical
 entry prologue, and it has THREE early returns; copying that shape (`if (node == NULL)
 return 1;` ahead of a `do/while`, which cl rotates to the same blocks as the `while`) closed
-FreeSamples. Prefer an exact neighbour in the same file as the model for the missing return.
+ClearVolumeRamps. Prefer an exact neighbour in the same file as the model for the missing return.
 
 ### The reverse direction also moves the /GX FRAME, and it is a `void` rule too
 
@@ -100,7 +100,7 @@ Two things this instance adds:
 **Census instrument, and it has TWO forms.** A shrink-wrapped function's epilogue comes
 out either MERGED - the guard's exit branches strictly INSIDE the final pop run, below the
 sunk pops - or TAIL-DUPLICATED, with the guard given its own shorter pop run and `ret` and
-no branch into the tail at all. They are the same decision. `FreeSamples`, `GetItem`,
+no branch into the tail at all. They are the same decision. `ClearVolumeRamps`, `AcquireInstance`,
 `UpdateGruntStatus`, `DeactivateDistantObjects` and `StepGridWalk` above are ALL the
 duplicated form, so a census written only for the merged form does not see any of them.
 

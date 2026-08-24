@@ -10,7 +10,7 @@ confidence: 10/10
 `insn_seq --seq` difflibs the two ordered `(mnemonic, symbol)` lists. difflib
 must produce an *alignment*, so when we call the WRONG FUNCTION at a site it has
 no choice but to pair our extra `A` against retail's extra `B` somewhere and
-report a move. The story it tells ("Retune/PurgeVoiceList sit ahead of
+report a move. The story it tells ("Retune/TickVolumeRamps sit ahead of
 VisitVisible in retail, after it here") is then true *and* useless: reordering
 the source cannot fix a callee that does not exist in retail's list at all.
 

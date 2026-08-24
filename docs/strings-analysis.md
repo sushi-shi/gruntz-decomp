@@ -49,7 +49,7 @@ zlith-style runtime (lowercase `z`) and the WAP wrapper bases:
 This is the LithTech/WAP32 ("zlith") runtime substrate. `zPtrColl` / `zPTree` /
 `zDArray` are the engine's own container library, distinct from MFC's CArray/CObArray.
 Manager classes by name (from error strings, not RTTI): `DirectDrawMgr`,
-`DirectInputMgr2`, `DirectSoundMgr`, `SFManager`, `RezSync`, `ButeMgr` (attribute
+`DirectInputMgr2`, `SoundBuffer`, `SFManager`, `RezSync`, `ButeMgr` (attribute
 manager). `CDirectDrawMgr::GetGDISurface()` appears verbatim.
 
 ### (b) C-prefixed game / MFC classes (full list, 198)

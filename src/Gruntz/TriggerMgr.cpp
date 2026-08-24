@@ -3,7 +3,7 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/PixelShift.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezMapConfig.h>
@@ -1745,7 +1745,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                         u32 now = g_killCueClock;
                         if (now - e->m_lastPlayTime >= e->m_replayDelay) {
                             e->m_lastPlayTime = now;
-                            e->m_sound->ConfigureItem(tag, 0, 0, 0);
+                            e->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                         }
                     }
                 }
@@ -2111,7 +2111,7 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                             && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                                    >= static_cast<u32>(cue->m_replayDelay)) {
                             cue->m_lastPlayTime = g_killCueClock;
-                            cue->m_sound->ConfigureItem(tag, 0, 0, 0);
+                            cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                         }
                     }
                 }
@@ -2647,12 +2647,12 @@ void CTriggerMgr::DestroyAllAnims() {
         }
     }
 
-    DirectSoundMgr* ch0 = m_rollingballLoop;
+    SoundBuffer* ch0 = m_rollingballLoop;
     if (ch0 != NULL) {
         ch0->StopAndRewind();
         m_rollingballLoop = NULL;
     }
-    DirectSoundMgr* ch1 = m_teleportLoop;
+    SoundBuffer* ch1 = m_teleportLoop;
     if (ch1 != NULL) {
         ch1->StopAndRewind();
         m_teleportLoop = NULL;
@@ -2661,7 +2661,7 @@ void CTriggerMgr::DestroyAllAnims() {
     if (state != NULL) {
         CStatusBarMgr* sub = (static_cast<CPlay*>(state))->m_guts;
         if (sub != NULL) {
-            DirectSoundMgr* ch2 = sub->m_destructButton;
+            SoundBuffer* ch2 = sub->m_destructButton;
             if (ch2 != NULL) {
                 ch2->StopAndRewind();
                 sub->m_destructButton = NULL;

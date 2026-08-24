@@ -7,7 +7,7 @@
 //
 // timeGetTime is declared in <Mfc.h> only: no pure-Win32 unit calls it, and a
 // second copy would make one hand-rolled import into two. A Win32 unit that
-// needs the timer includes <mmsystem.h>, as GruntzWnd.cpp, DirectSoundMgr.cpp
+// needs the timer includes <mmsystem.h>, as GruntzWnd.cpp, SoundBuffer.cpp
 // and SoundStream.cpp do.
 
 #define WIN32_LEAN_AND_MEAN

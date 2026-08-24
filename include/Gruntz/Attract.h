@@ -10,7 +10,7 @@
 
 class CSymParser;
 
-class DirectSoundMgr;
+class SoundBuffer;
 
 class CGruntzMgr;
 

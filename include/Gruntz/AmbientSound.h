@@ -11,7 +11,7 @@ GZ_ENUM_CONST_END(AmbientSoundActState)
 
 #include <Mfc.h>
 
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -75,9 +75,9 @@ public:
         RECT* box,
         i32 scaleB
     );
-    i32 InitFromSound(DirectSoundMgr* mgr, i32 level, i32 master, RECT* box, i32 scaleB);
+    i32 InitFromSound(SoundBuffer* mgr, i32 level, i32 master, RECT* box, i32 scaleB);
 
-    DirectSoundMgr* m_voice;
+    SoundBuffer* m_voice;
     i32 m_level;
     i32 m_scaleA;
     i32 m_scaleB;
@@ -103,7 +103,7 @@ public:
         AmbientPoint* pos,
         i32 scaleB
     );
-    i32 InitFromSound(DirectSoundMgr* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB);
+    i32 InitFromSound(SoundBuffer* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB);
 
     AmbientPoint m_position;
 };

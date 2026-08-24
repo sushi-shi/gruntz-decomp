@@ -3,14 +3,14 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/IntrusiveList.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
 struct BucketHead;
 
-struct BucketHead : DSoundList {
+struct BucketHead : IntrusiveList {
 
     BucketHead() {}
 

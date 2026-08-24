@@ -15,12 +15,12 @@ different `c3`s, the model has CONFLATED several classes into one — split it.
 
 ```cpp
 // The shared, ops-carrying head (ONE copy of every operation in the image).
-struct DSoundList { DSoundLink* m_head; DSoundLink* m_tail; /* Insert*/Unlink */ };
+struct IntrusiveList { IntrusiveLink* m_head; IntrusiveLink* m_tail; /* Insert*/Unlink */ };
 
 // One trivial typed wrapper per element type - each gets its own `ret` COMDAT.
-struct DSoundBufferList : public DSoundList { ~DSoundBufferList() {} };
-struct DSoundVoiceList  : public DSoundList { ~DSoundVoiceList()  {} };
-struct DSoundCloneList  : public DSoundList { ~DSoundCloneList()  {} };
+struct SoundSampleList : public IntrusiveList { ~SoundSampleList() {} };
+struct SoundTaskList  : public IntrusiveList { ~SoundTaskList()  {} };
+struct SoundBufferInstanceList  : public IntrusiveList { ~SoundBufferInstanceList()  {} };
 ```
 ```asm
 ; ??0SoundDevice ctor: two 8-byte zero-init members, two EH states
@@ -53,11 +53,11 @@ one nearest the retail address.
 
 ## Evidence
 
-`DSoundList` was modelling THREE retail classes at once. `??0/??1SoundDevice`'s
+`IntrusiveList` was modelling THREE retail classes at once. `??0/??1SoundDevice`'s
 funclets destroy `this+0x4` through 0x1364e0 and `this+0xc` through 0x1364f0;
-`??0/??1DSoundCloneInst`'s destroy `this+0x58` through 0x135ba0. Three separate
+`??0/??1SoundSample`'s destroy `this+0x58` through 0x135ba0. Three separate
 1-byte COMDATs, so three classes — while `InsertHead` 0x1390e0 / `Unlink` 0x1391e0
-exist in exactly ONE copy each, shared by DirectSoundMgr, SoundDevice,
+exist in exactly ONE copy each, shared by SoundBuffer, SoundDevice,
 SoundStream, CSymParser, CHashBase and CWwdGrid, which puts the operations on a
 common base and the destructor on the typed wrapper. Splitting the type and
 pinning the three dtors took all four `directsoundmgr` groups to

@@ -6,7 +6,7 @@
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
@@ -128,7 +128,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
                     u32 replayDelay = static_cast<u32>(spr->m_replayDelay);
                     if (elapsed >= replayDelay) {
                         spr->m_lastPlayTime = now;
-                        spr->m_sound->ConfigureItem(cueTag, 0, 0, 0);
+                        spr->m_sound->AcquireAndPlay(cueTag, 0, 0, 0);
                     }
                 }
             }
@@ -168,7 +168,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
                     u32 replayDelay = static_cast<u32>(spr->m_replayDelay);
                     if (elapsed >= replayDelay) {
                         spr->m_lastPlayTime = now;
-                        spr->m_sound->ConfigureItem(cueTag, 0, 0, 0);
+                        spr->m_sound->AcquireAndPlay(cueTag, 0, 0, 0);
                     }
                 }
             }
@@ -884,7 +884,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
                 if (static_cast<u32>((kc - out->m_lastPlayTime))
                     >= static_cast<u32>(out->m_replayDelay)) {
                     out->m_lastPlayTime = kc;
-                    out->m_sound->ConfigureItem(tag, 0, 0, 0);
+                    out->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                 }
             }
         }
@@ -1916,7 +1916,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     if (g_killCueClock - static_cast<u32>(cue->m_lastPlayTime)
         >= static_cast<u32>(cue->m_replayDelay)) {
         cue->m_lastPlayTime = g_killCueClock;
-        return cue->m_sound->ConfigureItem(item, 0, 0, 0);
+        return cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
     }
     return 0;
 }

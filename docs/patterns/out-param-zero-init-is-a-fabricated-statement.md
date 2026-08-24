@@ -38,8 +38,8 @@ DWORD audioBytes2;
 ```
 
 STEERABLE, measured 2026-08-21:
-`DirectSoundMgr::LockConvert` 0x135f40 90.09 -> **100.00 EXACT**,
-`DirectSoundMgr::LoadFromFile` 0x135e10 97.73 -> **100.00 EXACT**,
+`SoundBuffer::LockConvert` 0x135f40 90.09 -> **100.00 EXACT**,
+`SoundBuffer::LoadFromFile` 0x135e10 97.73 -> **100.00 EXACT**,
 `StreamFeeder::FillBuffer` 0x137f30 86.66 -> **100.00 EXACT**,
 `WinMain` 0x11c860 99.59 -> **100.00 EXACT** (the whole `winmain` unit to
 100%) - there the local is `char* pValue` feeding `VerQueryValueA`.

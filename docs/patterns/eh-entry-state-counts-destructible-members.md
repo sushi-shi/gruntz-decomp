@@ -15,21 +15,21 @@ the code drops to before each teardown call: the members are numbered in DECLARA
 last one you already model.
 
 ```cpp
-// Two independent dtors said DSoundList owns a do-nothing destructor:
-struct DSoundList {
-    DSoundLink* m_head;
-    DSoundLink* m_tail;
-    ~DSoundList() {} // no teardown code anywhere - it exists ONLY in the state count
+// Two independent dtors said IntrusiveList owns a do-nothing destructor:
+struct IntrusiveList {
+    IntrusiveLink* m_head;
+    IntrusiveLink* m_tail;
+    ~IntrusiveList() {} // no teardown code anywhere - it exists ONLY in the state count
 };
 ```
 ```asm
-; ~DSoundCloneInst 0x135bb0 - base DSoundBaseSub(0) + m_cloneList(1) => entry 1
+; ~SoundSample 0x135bb0 - base SoundBufferInstance(0) + m_cloneList(1) => entry 1
     mov    DWORD PTR [esp+0x10],0x1     ; retail; without the list dtor cl emits 0x0
     ...
     mov    DWORD PTR [esp+0x10],0xffffffff  ; -1, then the base dtor
     call   0x136260
 ```
-STEERABLE. Adding `~DSoundList(){}` flipped `??1DSoundCloneInst` (0x135bb0, entry 0→1) and
+STEERABLE. Adding `~IntrusiveList(){}` flipped `??1SoundSample` (0x135bb0, entry 0→1) and
 `??1CSymParser` (0x13abc0, entry 1→2) to EXACT in one build. The same read cracked
 `??1GruntzPlayer` (0x083260): entry 2 with only `CString m_name` + `CBattlezMapConfig m_038`
 modelled proved a third sub-object declared after m_038 — the +0x22c `PlayerLatency`

@@ -248,7 +248,7 @@ variable — the index itself proves a length ≥ 2 the extent does not carry.
 The detector was motivated by a false `g_panTable[1]` claim at `0x253c48`, but
 that finding was initially accepted for the wrong reason. The address is not an
 independent retail symbol: it is `g_volumeTable + 100`. `BuildVolumeTable` writes
-indices 0..100, `SetPanByIndex` reads `g_volumeTable[100 - abs(idx)]`, and the
+indices 0..100, `SetPanPercent` reads `g_volumeTable[100 - abs(idx)]`, and the
 next independently used datum begins at `0x253c4c`. The correct model is one
 `g_volumeTable[101]`; removing the interior census fence and the fake claim keeps
 both functions byte-exact. This is the integration control for the response to

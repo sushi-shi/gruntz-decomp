@@ -64,7 +64,7 @@ public:
     virtual void Cleanup();
 
     void FreeContext();
-    i32 PlayDefaultSound();
+    i32 EnsureSoundInitialized();
     i32 SetDimensions(i32 x, i32 y, ColorDepth bpp);
 
     void SetRestoreHandler(SurfaceRestoreFn handler);

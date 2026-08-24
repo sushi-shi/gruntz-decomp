@@ -85,7 +85,7 @@ tooling; the classification above is what it encoded, and
 (2026-07-28) over 1309 sub-100% functions found 105 same-count 1-4-flip hits,
 of which 6 SIGNEDNESS and 53 pure je/jne polarity. Four signedness fixes and
 one polarity fix landed straight away (`CRezDirNode::Load` 98.97 -> 100 EXACT,
-`DirectSoundMgr::Play` 95.52 -> 100 EXACT), and the POLARITY half resolved into
+`SoundBuffer::Play` 95.52 -> 100 EXACT), and the POLARITY half resolved into
 two new families — [if-body-owns-the-fallthrough](if-body-owns-the-fallthrough.md)
 and [literal-comparison-form-survives-o2](literal-comparison-form-survives-o2.md).
 

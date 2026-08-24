@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -12,7 +12,7 @@
 
 struct AmbSoundRecord {
     char m_pad00[0x10];
-    DirectSoundMgr* m_mgr;
+    SoundBuffer* m_mgr;
 };
 
 class CRandomAmbientSound : public CAmbientSound {

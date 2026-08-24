@@ -8,8 +8,8 @@
 // Both directions are written out in GruntzSoundZ, which is what fixes the
 // pair - percent to MIDI is `volume * MIDI_VOLUME_MAX / VOLUME_PCT_MAX` with a
 // `>= VOLUME_PCT_MAX -> MIDI_VOLUME_MAX` clamp, and MIDI to percent is the
-// exact inverse with the clamp the other way round. DirectSoundMgr carries the
-// same 100 as a double (c_volScale) for the attenuation curve.
+// exact inverse with the clamp the other way round. SoundBuffer carries the
+// same 100 as a double (c_volumePercentScale) for the attenuation curve.
 //
 // Spelled 100/0x64 and 127/0x7f interchangeably before this header.
 //
@@ -18,18 +18,18 @@ GZ_ENUM_CONST_BEGIN(VolumeScale)
     MIDI_VOLUME_MAX = 127
 GZ_ENUM_CONST_END(VolumeScale)
 
-inline i32 MidiVolumeToPercent(i32 v) {
-    if (v <= 0) {
+inline i32 MidiVolumeToPercent(i32 midiVolume) {
+    if (midiVolume <= 0) {
         return 0;
     }
-    if (v >= MIDI_VOLUME_MAX) {
+    if (midiVolume >= MIDI_VOLUME_MAX) {
         return VOLUME_PCT_MAX;
     }
-    return v * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
+    return midiVolume * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
 }
 
 // DirectSound's playback-rate limits, as clamped by
-// DirectSoundMgr::SetFrequencyPercent. It computes a rate from a percentage
+// SoundBuffer::SetFrequencyOffsetPercent. It computes a rate from a percentage
 // offset and then pins it strictly INSIDE the range - `>= MAX` becomes MAX - 1
 // and `<= MIN` becomes MIN + 1 - which is why the constants are the bounds
 // themselves rather than the values assigned.

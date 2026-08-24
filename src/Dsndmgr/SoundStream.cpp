@@ -16,110 +16,118 @@
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
 DATA(0x00253c4c)
-i32 g_ssLogEnabled;
+i32 g_dsoundDebugLog;
 DATA(0x00253c50)
-i32 g_ssMsgBoxEnabled;
+i32 g_dsoundErrorDialogs;
 DATA(0x00253c54)
-i32 g_ssBeepEnabled;
+i32 g_dsoundErrorBeeps;
 DATA(0x00253c58)
-i32 g_ssThirdEnabled;
+i32 g_dsoundFormatErrors;
 
 RVA(0x00137340, 0x33)
-i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
-    if (src == NULL) {
+i32 StreamFeeder::SeedWindow(CParseSource* source, u32 offset, u32 bytes) {
+    if (source == NULL) {
         return 0;
     }
-    m_source = src;
-    m_windowLength = len;
-    m_windowStart = off;
-    m_sourceOffset = off;
-    m_windowEnd = off + len;
-    TickPump(-1);
+    m_source = source;
+    m_windowLength = bytes;
+    m_windowStart = offset;
+    m_sourceOffset = offset;
+    m_windowEnd = offset + bytes;
+    PrimeBuffer(-1);
     return 1;
 }
 
 RVA(0x00137380, 0x10e)
-i32 StreamVoiceFeeder::Feed(u8* dst1, u32 n1, u32* got1, u8* dst2, u32 n2, u32* got2) {
-    if (dst1 != NULL && n1 > 0) {
-        u32 want = n1;
-        if (m_sourceOffset + n1 > m_windowEnd) {
-            want = m_windowEnd - m_sourceOffset;
+i32 StreamVoiceFeeder::Feed(
+    u8* dst1,
+    u32 bytes1,
+    u32* filled1,
+    u8* dst2,
+    u32 bytes2,
+    u32* filled2
+) {
+    if (dst1 != NULL && bytes1 > 0) {
+        u32 requestedBytes = bytes1;
+        if (m_sourceOffset + bytes1 > m_windowEnd) {
+            requestedBytes = m_windowEnd - m_sourceOffset;
         }
-        *got1 = m_source->Read(dst1, want, m_sourceOffset);
-        m_sourceOffset += *got1;
-        while (*got1 < n1 && m_loop != 0) {
+        *filled1 = m_source->Read(dst1, requestedBytes, m_sourceOffset);
+        m_sourceOffset += *filled1;
+        while (*filled1 < bytes1 && m_looping != 0) {
             m_sourceOffset = m_windowStart;
-            want = n1;
-            if (m_windowStart + n1 > m_windowEnd) {
-                want = m_windowEnd - m_windowStart;
+            requestedBytes = bytes1;
+            if (m_windowStart + bytes1 > m_windowEnd) {
+                requestedBytes = m_windowEnd - m_windowStart;
             }
-            *got1 = m_source->Read(dst1, want, m_sourceOffset);
-            m_sourceOffset += *got1;
+            *filled1 = m_source->Read(dst1, requestedBytes, m_sourceOffset);
+            m_sourceOffset += *filled1;
         }
     }
-    if (dst2 != NULL && n2 > 0) {
-        u32 want = n2;
-        if (m_sourceOffset + n2 > m_windowEnd) {
-            want = m_windowEnd - m_sourceOffset;
+    if (dst2 != NULL && bytes2 > 0) {
+        u32 requestedBytes = bytes2;
+        if (m_sourceOffset + bytes2 > m_windowEnd) {
+            requestedBytes = m_windowEnd - m_sourceOffset;
         }
-        *got2 = m_source->Read(dst2, want, m_sourceOffset);
-        m_sourceOffset += *got2;
-        while (*got2 < n2 && m_loop != 0) {
+        *filled2 = m_source->Read(dst2, requestedBytes, m_sourceOffset);
+        m_sourceOffset += *filled2;
+        while (*filled2 < bytes2 && m_looping != 0) {
             m_sourceOffset = m_windowStart;
-            want = n2;
-            if (m_windowStart + n2 > m_windowEnd) {
-                want = m_windowEnd - m_windowStart;
+            requestedBytes = bytes2;
+            if (m_windowStart + bytes2 > m_windowEnd) {
+                requestedBytes = m_windowEnd - m_windowStart;
             }
-            *got2 = m_source->Read(dst2, want, m_sourceOffset);
-            m_sourceOffset += *got2;
+            *filled2 = m_source->Read(dst2, requestedBytes, m_sourceOffset);
+            m_sourceOffset += *filled2;
         }
     }
     return 1;
 }
 
 RVA(0x00137490, 0x14)
-i32 StreamVoiceFeeder::FeedData() {
+i32 StreamVoiceFeeder::ResetSource() {
     m_sourceOffset = m_windowStart;
     m_windowEnd = m_windowStart + m_windowLength;
     return 1;
 }
 
 RVA(0x001374b0, 0x1)
-void StreamVoiceFeeder::OnDrain() {}
+void StreamVoiceFeeder::OnReset() {}
 
 RVA(0x001374c0, 0x5d)
-i32 StreamVoice::SetSource(CParseSource* src) {
-    if (src == NULL) {
+i32 StreamVoice::SetSource(CParseSource* source) {
+    if (source == NULL) {
         return 0;
     }
-    WaveFormatX wf;
-    u32 dataOff;
-    u32 dataLen;
+    WaveFormatX format;
+    u32 dataOffset;
+    u32 dataBytes;
 
-    if ((static_cast<SoundStream*>(m_owner))->ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
+    if ((static_cast<SoundStream*>(m_owner))->ParseWave(source, &format, &dataOffset, &dataBytes)
+        == 0) {
         return 0;
     }
-    m_feeder.SeedWindow(src, dataOff, dataLen);
+    m_feeder.SeedWindow(source, dataOffset, dataBytes);
     return 1;
 }
 
 RVA(0x00137520, 0x6e)
-i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
+i32 StreamVoice::Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
 
     i32 ok = 1;
-    if (SetVolumeByIndex(vol) == 0) {
+    if (SetVolumePercent(volumePct) == 0) {
         ok = 0;
     }
-    if (SetPanByIndex(pan) == 0) {
+    if (SetPanPercent(panPct) == 0) {
         ok = 0;
     }
-    if (SetFrequencyOffsetPercent(freq) == 0) {
+    if (SetFrequencyOffsetPercent(frequencyOffsetPct) == 0) {
         ok = 0;
     }
-    m_feeder.m_loop = loop;
+    m_feeder.m_looping = looping;
     if (m_feeder.Resume() == 0) {
         ok = 0;
     }
@@ -127,24 +135,29 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
 }
 
 RVA(0x00137590, 0x18)
-u32 StreamVoice::ComputeRatio() {
+u32 StreamVoice::GetDurationMs() {
     return m_feeder.m_windowLength * 1000 / m_sampleRate;
 }
 
 RVA(0x001375b0, 0x77)
-StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b)
-    : DSoundCloneInst(buf, owner) {
+StreamVoice::StreamVoice(
+    IDirectSoundBuffer* buffer,
+    SoundStream* owner,
+    i32 reprimeWhenIdle,
+    i32 destroyWhenIdle
+)
+    : SoundSample(buffer, owner) {
 
-    m_stopWhenIdle = a;
-    m_retireWhenIdle = b;
-    m_active = 0;
+    m_reprimeWhenIdle = reprimeWhenIdle;
+    m_destroyWhenIdle = destroyWhenIdle;
+    m_wasPlaying = 0;
 }
 
 RVA_COMPGEN(0x00137630, 0x1e, ??_GStreamVoice@@UAEPAXI@Z)
 
 RVA(0x00137650, 0x64)
 StreamVoice::~StreamVoice() {
-    m_feeder.FeederReset(0);
+    m_feeder.Reset(0);
 }
 
 RVA_COMPGEN(0x001376c0, 0x5, ??1StreamVoiceFeeder@@QAE@XZ)
@@ -158,100 +171,101 @@ RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
 RVA(0x00137720, 0x14)
-i32 SoundStream::PlaySoundDefaulted(HWND hWnd, i32 flag) {
-    return Create(hWnd, flag, 0);
+i32 SoundStream::InitializeDevice(HWND hwnd, i32 cooperativeLevel) {
+    return SoundDevice::Initialize(hwnd, cooperativeLevel, 0);
 }
 
 RVA(0x00137740, 0x3e)
-void SoundStream::Free() {
-    for (StreamVoice* p = elemOf<StreamVoice>(m_voices.m_head); p != NULL;
-         p = elemOf<StreamVoice>(m_voices.m_head)) {
-        DestroyVoice(p);
+void SoundStream::ShutdownStreams() {
+    for (StreamVoice* voice = ElementFromLink<StreamVoice>(m_voices.m_head); voice != NULL;
+         voice = ElementFromLink<StreamVoice>(m_voices.m_head)) {
+        DestroyVoice(voice);
     }
     Shutdown();
 }
 
 RVA(0x00137780, 0x171)
-StreamVoice* SoundStream::CreateStreamBuffer(
-    WaveFormatX* fmt,
-    u32 bytes,
+StreamVoice* SoundStream::CreateStreamVoice(
+    WaveFormatX* format,
+    u32 bufferBytes,
     i32 dsFlags,
-    i32 stopWhenIdle,
-    i32 retireWhenIdle
+    i32 reprimeWhenIdle,
+    i32 destroyWhenIdle
 ) {
     if (m_initialized == 0) {
         return NULL;
     }
-    if (bytes == 0) {
+    if (bufferBytes == 0) {
         return NULL;
     }
-    if (fmt == NULL) {
+    if (format == NULL) {
         return NULL;
     }
-    if (fmt->wFormatTag != 1) {
+    if (format->wFormatTag != 1) {
         return NULL;
     }
 
-    WaveFormatX wf = *fmt;
-    IDirectSoundBuffer* out;
-    DSBUFFERDESC desc;
-    memset(&desc, 0, sizeof(DSBUFFERDESC));
-    desc.dwFlags = dsFlags;
-    desc.lpwfxFormat = WaveFormatSdk(&wf);
+    WaveFormatX bufferFormat = *format;
+    IDirectSoundBuffer* directSoundBuffer;
+    DSBUFFERDESC bufferDesc;
+    memset(&bufferDesc, 0, sizeof(DSBUFFERDESC));
+    bufferDesc.dwFlags = dsFlags;
+    bufferDesc.lpwfxFormat = WaveFormatSdk(&bufferFormat);
 
-    wf.cbSize = 0;
-    desc.dwSize = 0x14;
-    desc.dwBufferBytes = bytes;
+    bufferFormat.cbSize = 0;
+    bufferDesc.dwSize = 0x14;
+    bufferDesc.dwBufferBytes = bufferBytes;
 
-    i32 hr = m_device->CreateSoundBuffer(&desc, &out, NULL) != 0;
+    i32 hr = m_device->CreateSoundBuffer(&bufferDesc, &directSoundBuffer, NULL) != 0;
     if (hr != 0) {
-        DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0xe8, hr);
+        SoundBuffer::ReportError(DSNDMGSR_FILE, 0xe8, hr);
         return NULL;
     }
-    if (out == NULL) {
+    if (directSoundBuffer == NULL) {
         return NULL;
     }
 
-    StreamVoice* voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
+    StreamVoice* voice = new StreamVoice(directSoundBuffer, this, reprimeWhenIdle, destroyWhenIdle);
     m_voices.InsertHead(voice ? &voice->m_link : NULL);
-    voice->m_rateBase = fmt->nAvgBytesPerSec;
-    voice->m_sampleRate = fmt->nAvgBytesPerSec;
-    voice->m_sampleCount = bytes;
-    voice->ComputeDuration();
+    voice->m_baseSampleRate = format->nAvgBytesPerSec;
+    voice->m_sampleRate = format->nAvgBytesPerSec;
+    voice->m_sampleCount = bufferBytes;
+    voice->UpdateDuration();
     return voice;
 }
 
 // @early-stop
 RVA(0x00137900, 0xc6)
 StreamVoice* SoundStream::OpenStream(
-    CParseSource* src,
-    i32 bytes,
-    i32 format,
+    CParseSource* source,
+    i32 bufferBytes,
+    i32 refillThresholdBytes,
     i32 dsFlags,
-    i32 stopWhenIdle,
-    i32 retireWhenIdle
+    i32 reprimeWhenIdle,
+    i32 destroyWhenIdle
 ) {
-    if (src == NULL) {
+    if (source == NULL) {
         return NULL;
     }
-    WaveFormatX wf;
-    u32 dataOff;
-    u32 dataLen;
-    if (ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
+    WaveFormatX format;
+    u32 dataOffset;
+    u32 dataBytes;
+    if (ParseWave(source, &format, &dataOffset, &dataBytes) == 0) {
         return NULL;
     }
-    StreamVoice* voice = CreateStreamBuffer(&wf, bytes, dsFlags, stopWhenIdle, retireWhenIdle);
+    StreamVoice* voice =
+        CreateStreamVoice(&format, bufferBytes, dsFlags, reprimeWhenIdle, destroyWhenIdle);
     if (voice == NULL) {
         return NULL;
     }
     StreamFeeder* feeder = &voice->m_feeder;
-    feeder->m_windowStart = dataOff;
-    feeder->m_windowLength = dataLen;
-    feeder->m_source = src;
-    feeder->m_loop = 0;
+    feeder->m_windowStart = dataOffset;
+    feeder->m_windowLength = dataBytes;
+    feeder->m_source = source;
+    feeder->m_looping = 0;
     feeder->m_sourceOffset = 0;
 
-    if (feeder->FeederStart(this, &wf, bytes, format, voice, -1) == 0) {
+    if (feeder->Initialize(this, &format, bufferBytes, refillThresholdBytes, voice, -1) == 0) {
         DestroyVoice(voice);
         return NULL;
     }
@@ -261,9 +275,9 @@ StreamVoice* SoundStream::OpenStream(
 RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoice* voice) {
     if (m_initialized) {
-        voice->m_feeder.FeederReset(0);
+        voice->m_feeder.Reset(0);
 
-        m_voiceList.RemoveMatching(voice, SOUND_VOICE_TAG_ALL);
+        m_volumeRamps.RemoveMatching(voice, SOUND_TASK_TAG_ALL);
         voice->m_buffer->Release();
         voice->m_buffer = NULL;
         m_voices.Unlink(voice ? &voice->m_link : NULL);
@@ -276,8 +290,13 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00137a30, 0x4b)
-StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags) {
-    StreamVoice* voice = OpenStream(src, bytes, format, dsFlags, 0, 1);
+StreamVoice* SoundStream::PlayStream(
+    CParseSource* source,
+    i32 bufferBytes,
+    i32 refillThresholdBytes,
+    i32 dsFlags
+) {
+    StreamVoice* voice = OpenStream(source, bufferBytes, refillThresholdBytes, dsFlags, 0, 1);
     if (voice == NULL) {
         return NULL;
     }
@@ -289,60 +308,60 @@ StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i
 }
 
 RVA(0x00137a80, 0x3d)
-void SoundStream::Stop() {
-    StreamVoice* node = elemOf<StreamVoice>(m_voices.m_head);
+void SoundStream::StopAllStreams() {
+    StreamVoice* node = ElementFromLink<StreamVoice>(m_voices.m_head);
     while (node != NULL) {
         node->m_feeder.Pause();
-        node = elemOf<StreamVoice>(node->m_link.m_next);
+        node = ElementFromLink<StreamVoice>(node->m_link.m_next);
     }
-    StopAll();
+    StopAllBuffers();
 }
 
 RVA(0x00137ac0, 0xa2)
-i32 SoundStream::TickSubManagers(i32 time) {
-    if (time == -1) {
-        time = static_cast<i32>(timeGetTime());
+i32 SoundStream::TickStreams(i32 timestampMs) {
+    if (timestampMs == -1) {
+        timestampMs = static_cast<i32>(timeGetTime());
     }
-    DSoundLink* head = m_voices.m_head;
-    StreamVoice* o = elemOf<StreamVoice>(head);
-    while (o) {
-        StreamVoice* next = elemOf<StreamVoice>(o->m_link.m_next);
-        o->m_feeder.Tick(time);
-        i32 r = o->m_feeder.m_buffer->IsPlaying();
-        if (r == 0 && o->m_active != 0) {
-            if (o->m_stopWhenIdle != 0) {
-                o->m_feeder.TickPump(-1);
+    IntrusiveLink* head = m_voices.m_head;
+    StreamVoice* voice = ElementFromLink<StreamVoice>(head);
+    while (voice) {
+        StreamVoice* next = ElementFromLink<StreamVoice>(voice->m_link.m_next);
+        voice->m_feeder.Tick(timestampMs);
+        i32 isPlaying = voice->m_feeder.m_buffer->IsPlaying();
+        if (isPlaying == 0 && voice->m_wasPlaying != 0) {
+            if (voice->m_reprimeWhenIdle != 0) {
+                voice->m_feeder.PrimeBuffer(-1);
             }
-            if (o->m_retireWhenIdle != 0) {
-                DestroyVoice(o);
-                o = NULL;
+            if (voice->m_destroyWhenIdle != 0) {
+                DestroyVoice(voice);
+                voice = NULL;
             }
         }
-        if (o) {
-            o->m_active = r;
+        if (voice) {
+            voice->m_wasPlaying = isPlaying;
         }
-        o = next;
+        voice = next;
     }
     return 1;
 }
 
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
-    CParseSource* src,
-    WaveFormatX* fmtBuf,
-    u32* outDataOff,
-    u32* outDataLen
+    CParseSource* source,
+    WaveFormatX* outFormat,
+    u32* outDataOffset,
+    u32* outDataBytes
 ) {
-    i32 gotFmt = 0;
-    i32 gotData = 0;
-    src->SetPos(0);
+    i32 foundFormat = 0;
+    i32 foundData = 0;
+    source->SetPos(0);
 
     u32 riffTag;
     u32 chunkId;
     u32 chunkSize;
-    src->Read(&riffTag, 4, -1);
-    src->Read(&chunkSize, 4, -1);
-    src->Read(&chunkId, 4, -1);
+    source->Read(&riffTag, 4, -1);
+    source->Read(&chunkSize, 4, -1);
+    source->Read(&chunkId, 4, -1);
     if (riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
@@ -350,33 +369,33 @@ i32 SoundStream::ParseWave(
         return 0;
     }
 
-    u32 end = src->m_cursor + chunkSize - 4;
-    if (end > src->m_length) {
-        end = src->m_length;
+    u32 riffEnd = source->m_cursor + chunkSize - 4;
+    if (riffEnd > source->m_length) {
+        riffEnd = source->m_length;
     }
-    while (src->m_cursor < end) {
-        src->Read(&chunkId, 4, -1);
-        src->Read(&chunkSize, 4, -1);
+    while (source->m_cursor < riffEnd) {
+        source->Read(&chunkId, 4, -1);
+        source->Read(&chunkSize, 4, -1);
         if (chunkId == mmioFOURCC('f', 'm', 't', ' ')) {
-            i32 next = src->m_cursor + chunkSize;
+            i32 nextChunk = source->m_cursor + chunkSize;
 
-            u32 n = 0x12;
-            if (chunkSize < n) {
-                n = chunkSize;
+            u32 formatBytes = 0x12;
+            if (chunkSize < formatBytes) {
+                formatBytes = chunkSize;
             }
-            src->Read(fmtBuf, static_cast<i32>(n), -1);
-            src->SetPos(next);
-            gotFmt = 1;
+            source->Read(outFormat, static_cast<i32>(formatBytes), -1);
+            source->SetPos(nextChunk);
+            foundFormat = 1;
         } else if (chunkId == mmioFOURCC('d', 'a', 't', 'a')) {
-            *outDataOff = src->m_cursor;
-            *outDataLen = chunkSize;
-            gotData = 1;
+            *outDataOffset = source->m_cursor;
+            *outDataBytes = chunkSize;
+            foundData = 1;
         }
-        if (gotFmt && gotData) {
+        if (foundFormat && foundData) {
             return 1;
         }
-        if ((src->m_cursor & 1) == 1) {
-            src->SetPos(src->m_cursor + 1);
+        if ((source->m_cursor & 1) == 1) {
+            source->SetPos(source->m_cursor + 1);
         }
     }
     return 0;
@@ -386,215 +405,225 @@ RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
 
     m_buffer = NULL;
-    m_armed = 0;
-    m_bufferCursor = 0;
-    m_drained = 0;
+    m_initialized = 0;
+    m_writeCursor = 0;
+    m_playing = 0;
     m_lastTickMs = 0;
 }
 
 RVA(0x00137cf0, 0x20)
 StreamFeeder::~StreamFeeder() {
-    if (m_armed != 0) {
-        FeederReset(1);
+    if (m_initialized != 0) {
+        Reset(1);
     }
     m_buffer = NULL;
 }
 
 // @early-stop
 RVA(0x00137d10, 0xab)
-i32 StreamFeeder::FeederStart(
+i32 StreamFeeder::Initialize(
     SoundDevice* owner,
-    WaveFormatX* fmt,
-    u32 len,
-    u32 format,
-    DirectSoundMgr* buf,
-    i32 tickArg
+    WaveFormatX* format,
+    u32 bufferBytes,
+    u32 refillThresholdBytes,
+    SoundBuffer* buffer,
+    i32 initialTickMs
 ) {
-    m_format = format;
+    m_refillThresholdBytes = refillThresholdBytes;
     m_owner = owner;
-    m_bufferLength = len;
-    m_drained = 0;
-    if (fmt->wBitsPerSample > 8) {
+    m_bufferBytes = bufferBytes;
+    m_playing = 0;
+    if (format->wBitsPerSample > 8) {
         m_silenceByte = 0;
     } else {
         m_silenceByte = 0x80;
     }
-    if (buf == NULL) {
-        m_buffer = owner->CreateBuffer(fmt, len, DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLDEFAULT);
+    if (buffer == NULL) {
+        m_buffer = owner->CreateSample(
+            format,
+            bufferBytes,
+            DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLDEFAULT
+        );
     } else {
-        m_buffer = buf;
+        m_buffer = buffer;
     }
     if (m_buffer == NULL) {
         return 0;
     }
-    m_armed = 1;
-    if (FeedData() == 0) {
-        FeederReset(1);
+    m_initialized = 1;
+    if (ResetSource() == 0) {
+        Reset(1);
         return 0;
     }
-    if (TickPump(tickArg) == 0) {
-        FeederReset(1);
+    if (PrimeBuffer(initialTickMs) == 0) {
+        Reset(1);
         return 0;
     }
     return 1;
 }
 
 RVA(0x00137dc0, 0x43)
-void StreamFeeder::FeederReset(i32 doStop) {
-    if (m_armed != 0) {
-        if (m_drained != 0) {
+void StreamFeeder::Reset(i32 destroyBuffer) {
+    if (m_initialized != 0) {
+        if (m_playing != 0) {
             Pause();
         }
-        OnDrain();
-        if (doStop != 0) {
+        OnReset();
+        if (destroyBuffer != 0) {
 
-            m_owner->RemoveBuffer(m_buffer);
+            m_owner->DestroyBuffer(m_buffer);
         }
         m_buffer = NULL;
-        m_armed = 0;
+        m_initialized = 0;
     }
 }
 
 RVA(0x00137e10, 0x6)
-i32 StreamFeeder::FeedData() {
+i32 StreamFeeder::ResetSource() {
     return 1;
 }
 
 RVA(0x00137e20, 0x1)
-void StreamFeeder::OnDrain() {}
+void StreamFeeder::OnReset() {}
 
 RVA(0x00137e30, 0x98)
-i32 StreamFeeder::Tick(i32 timestamp) {
-    if (!m_drained) {
+i32 StreamFeeder::Tick(i32 timestampMs) {
+    if (!m_playing) {
         return 1;
     }
-    i32 t = (timestamp == -1) ? static_cast<i32>(timeGetTime()) : timestamp;
-    if (static_cast<u32>(t) <= static_cast<u32>((m_lastTickMs + 0x64))) {
+    i32 currentTimeMs = (timestampMs == -1) ? static_cast<i32>(timeGetTime()) : timestampMs;
+    if (static_cast<u32>(currentTimeMs) <= static_cast<u32>((m_lastTickMs + 0x64))) {
         return 1;
     }
-    m_lastTickMs = t;
-    DWORD hi, lo;
-    if (!m_buffer->GetCurrentPosition(&hi, &lo)) {
+    m_lastTickMs = currentTimeMs;
+    DWORD playCursor, writeCursor;
+    if (!m_buffer->GetCurrentPosition(&playCursor, &writeCursor)) {
         return 0;
     }
-    i32 v;
-    if (static_cast<u32>(hi) >= static_cast<u32>(m_bufferCursor)) {
-        if (hi == m_bufferCursor) {
-            v = m_bufferLength;
+    i32 consumedBytes;
+    if (static_cast<u32>(playCursor) >= static_cast<u32>(m_writeCursor)) {
+        if (playCursor == m_writeCursor) {
+            consumedBytes = m_bufferBytes;
         } else {
-            v = hi - m_bufferCursor;
+            consumedBytes = playCursor - m_writeCursor;
         }
     } else {
-        v = m_bufferLength + hi - m_bufferCursor;
+        consumedBytes = m_bufferBytes + playCursor - m_writeCursor;
     }
-    if (static_cast<u32>(v) < static_cast<u32>(m_format)) {
+    if (static_cast<u32>(consumedBytes) < static_cast<u32>(m_refillThresholdBytes)) {
         return 1;
     }
-    return FillBuffer(m_bufferCursor, v) != 0;
+    return FillBuffer(m_writeCursor, consumedBytes) != 0;
 }
 
 RVA(0x00137ed0, 0x30)
 i32 StreamFeeder::Resume() {
-    if (m_drained != 0) {
+    if (m_playing != 0) {
         return 1;
     }
     m_buffer->SetLooping(1);
-    i32 r = m_buffer->Play();
-    if (r != 0) {
-        m_drained = 1;
+    i32 result = m_buffer->Play();
+    if (result != 0) {
+        m_playing = 1;
     }
-    return r;
+    return result;
 }
 
 RVA(0x00137f00, 0x26)
 i32 StreamFeeder::Pause() {
-    if (m_drained == 0) {
+    if (m_playing == 0) {
         return 1;
     }
-    i32 r = m_buffer->StopAndRewind();
-    if (r != 0) {
-        m_drained = 0;
+    i32 result = m_buffer->StopAndRewind();
+    if (result != 0) {
+        m_playing = 0;
     }
-    return r;
+    return result;
 }
 
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
-    u8* lock1;
-    DWORD n1;
-    u8* lock2;
-    DWORD n2;
-    if (m_buffer->Lock(writePos, bytes, &lock1, &n1, &lock2, &n2, 0) == 0) {
+    u8* audioPtr1;
+    DWORD audioBytes1;
+    u8* audioPtr2;
+    DWORD audioBytes2;
+    if (m_buffer->Lock(writePos, bytes, &audioPtr1, &audioBytes1, &audioPtr2, &audioBytes2, 0)
+        == 0) {
         return 0;
     }
-    u32 got1 = 0;
-    u32 got2 = 0;
-    if (m_pendingBytes == 0) {
-        if (Feed(lock1, n1, &got1, lock2, n2, &got2) == 0) {
-            m_buffer->Unlock(lock1, n1, lock2, n2);
+    u32 filled1 = 0;
+    u32 filled2 = 0;
+    if (m_silenceBytes == 0) {
+        if (Feed(audioPtr1, audioBytes1, &filled1, audioPtr2, audioBytes2, &filled2) == 0) {
+            m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2);
             return 0;
         }
     } else {
-        got1 = 0;
-        got2 = 0;
+        filled1 = 0;
+        filled2 = 0;
     }
-    if (got1 < n1) {
-        m_pendingBytes += n1 - got1;
+    if (filled1 < audioBytes1) {
+        m_silenceBytes += audioBytes1 - filled1;
 
-        memset(lock1 + got1, m_silenceByte, n1 - got1);
+        memset(audioPtr1 + filled1, m_silenceByte, audioBytes1 - filled1);
     }
-    if (got2 < n2) {
-        m_pendingBytes += n2 - got2;
-        memset(lock2 + got2, m_silenceByte, n2 - got2);
+    if (filled2 < audioBytes2) {
+        m_silenceBytes += audioBytes2 - filled2;
+        memset(audioPtr2 + filled2, m_silenceByte, audioBytes2 - filled2);
     }
-    if (m_pendingBytes >= m_bufferLength) {
+    if (m_silenceBytes >= m_bufferBytes) {
         Pause();
     }
 
-    if (n2 == 0) {
-        m_bufferCursor = writePos + n1;
+    if (audioBytes2 == 0) {
+        m_writeCursor = writePos + audioBytes1;
     } else {
-        m_bufferCursor = n2;
+        m_writeCursor = audioBytes2;
     }
-    if (m_bufferCursor >= m_bufferLength) {
-        m_bufferCursor = 0;
+    if (m_writeCursor >= m_bufferBytes) {
+        m_writeCursor = 0;
     }
-    m_buffer->Unlock(lock1, n1, lock2, n2);
+    m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2);
     return 1;
 }
 
 RVA(0x001380d0, 0x4e)
-i32 StreamFeeder::TickPump(i32 now) {
-    i32 t = (now == -1) ? static_cast<i32>(timeGetTime()) : now;
-    m_lastTickMs = t;
-    m_bufferCursor = 0;
+i32 StreamFeeder::PrimeBuffer(i32 timestampMs) {
+    i32 currentTimeMs = (timestampMs == -1) ? static_cast<i32>(timeGetTime()) : timestampMs;
+    m_lastTickMs = currentTimeMs;
+    m_writeCursor = 0;
     if (!m_buffer->SetCurrentPosition(0)) {
         return 0;
     }
-    m_pendingBytes = 0;
-    return FillBuffer(m_bufferCursor, m_bufferLength) != 0;
+    m_silenceBytes = 0;
+    return FillBuffer(m_writeCursor, m_bufferBytes) != 0;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138120, 0x27)
-void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
-    g_ssLogEnabled = log;
-    g_ssMsgBoxEnabled = msgBox;
-    g_ssBeepEnabled = beep;
-    g_ssThirdEnabled = third;
+void ConfigureSoundErrorReporting(
+    i32 debugLog,
+    i32 errorDialogs,
+    i32 errorBeeps,
+    i32 formatErrors
+) {
+    g_dsoundDebugLog = debugLog;
+    g_dsoundErrorDialogs = errorDialogs;
+    g_dsoundErrorBeeps = errorBeeps;
+    g_dsoundFormatErrors = formatErrors;
 }
 
 RVA(0x00138150, 0x33b)
-void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
+void SoundBuffer::ReportError(char* file, i32 line, i32 hr) {
     char szCode[64];
     char szMsg[256];
     char szLine[512];
 
-    if (g_ssBeepEnabled) {
+    if (g_dsoundErrorBeeps) {
         MessageBeep(MB_ICONEXCLAMATION);
     }
-    if (!g_ssLogEnabled && !g_ssMsgBoxEnabled && !g_ssThirdEnabled) {
+    if (!g_dsoundDebugLog && !g_dsoundErrorDialogs && !g_dsoundFormatErrors) {
         return;
     }
 
@@ -665,7 +694,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
             break;
     }
 
-    if (g_ssLogEnabled) {
+    if (g_dsoundDebugLog) {
         if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
@@ -673,7 +702,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
         }
         OutputDebugStringA(szLine);
     }
-    if (g_ssMsgBoxEnabled) {
+    if (g_dsoundErrorDialogs) {
         if (file == NULL || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {

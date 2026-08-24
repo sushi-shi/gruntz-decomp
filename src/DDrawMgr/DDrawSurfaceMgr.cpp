@@ -122,11 +122,11 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         return 0;
     }
 
-    i32 mode = 1;
+    i32 cooperativeLevel = 1;
     if (flags & 0x80) {
-        mode = 2;
+        cooperativeLevel = 2;
     }
-    if (!m_soundStream->PlaySoundDefaulted(hWnd, mode)) {
+    if (!m_soundStream->InitializeDevice(hWnd, cooperativeLevel)) {
         delete m_soundStream;
         m_soundStream = NULL;
         if (flags & 8) {
@@ -259,21 +259,21 @@ void CDDrawSurfaceMgr::FreeContext() {
 
         SoundStream* inner = m_soundRegistry->m_soundStream;
         if (inner != NULL) {
-            inner->Stop();
+            inner->StopAllStreams();
         }
         m_soundRegistry->ClearMap();
     }
     if (m_soundStream != NULL) {
-        m_soundStream->Free();
+        m_soundStream->ShutdownStreams();
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00155ff0, 0x22)
-i32 CDDrawSurfaceMgr::PlayDefaultSound() {
+i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
     if (m_soundStream != NULL && m_soundStream->m_initialized == 0) {
-        return m_soundStream->PlaySoundDefaulted(m_hWnd, 1);
+        return m_soundStream->InitializeDevice(m_hWnd, 1);
     }
     return 1;
 }

@@ -124,7 +124,7 @@ void CCreditsState::ReleaseResources() {
     if (m_world) {
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream) {
-            reg->m_soundStream->Stop();
+            reg->m_soundStream->StopAllStreams();
         }
         m_world->m_soundRegistry->RemoveKeysEqual("CREDITZ", "_");
         m_world->m_imageRegistry->RemoveKeysEqual("CREDITZ", "_");

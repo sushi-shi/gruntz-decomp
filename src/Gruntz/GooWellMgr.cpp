@@ -2,7 +2,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameModeId.h>
@@ -32,7 +32,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             if (!m_rollingballLoop) {
                 LeafCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("LEVEL_ROLLINGBALL");
                 if (out && out->m_sound) {
-                    m_rollingballLoop = static_cast<DirectSoundMgr*>(out->m_sound->GetItem());
+                    m_rollingballLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_rollingballLoop) {
                         m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                     }
@@ -47,7 +47,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             if (!m_teleportLoop) {
                 LeafCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("GAME_TELEPORTLOOP");
                 if (out && out->m_sound) {
-                    m_teleportLoop = static_cast<DirectSoundMgr*>(out->m_sound->GetItem());
+                    m_teleportLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_teleportLoop) {
                         m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                     }

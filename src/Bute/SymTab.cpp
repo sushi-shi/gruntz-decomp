@@ -43,7 +43,7 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
     return 0;
 }
 
-static inline CSlotNode* HeadSlotNode(DSoundList& list) {
+static inline CSlotNode* HeadSlotNode(IntrusiveList& list) {
     return static_cast<CSlotNode*>(list.m_head);
 }
 

@@ -34,7 +34,7 @@ CreateStreamBuffer (0x137780) — body exact, 47.1%. Defer to the final sweep wh
 StreamVoice ctor (0x1375b0) is modelled and a `new T`-with-real-allocator path can emit the
 retail frame.
 
-UPDATE (2026-07-16, matcher-1): with `StreamVoice : DSoundCloneInst` real (ctor
+UPDATE (2026-07-16, matcher-1): with `StreamVoice : SoundSample` real (ctor
 0x1375b0 at 100), plain `new StreamVoice(...)` (no class operator new — retail's
 `::operator new` IS RezAlloc/0x1b9b46) now emits the retail /GX frame + prologue
 (`mov eax,fs:0; push -1; push handler; push eax; mov fs:0,esp; sub esp,0x28` —

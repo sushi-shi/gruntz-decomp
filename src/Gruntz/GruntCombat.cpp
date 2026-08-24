@@ -13,7 +13,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCacheFindInline.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
@@ -681,7 +681,7 @@ i32 CGrunt::TryPowerupAtTile() {
 
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
-    DirectSoundMgr*& sample = m_struckSlotSound;
+    SoundBuffer*& sample = m_struckSlotSound;
     if (sample != NULL) {
         return;
     }
@@ -697,7 +697,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (entry->m_sound == NULL) {
         return;
     }
-    sample = static_cast<DirectSoundMgr*>(entry->m_sound->GetItem());
+    sample = static_cast<SoundBuffer*>(entry->m_sound->AcquireInstance());
     if (sample == NULL) {
         return;
     }
@@ -706,7 +706,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
 
 RVA(0x00057c10, 0x1e)
 void CGrunt::StopStruckSlotSound() {
-    DirectSoundMgr* p = m_struckSlotSound;
+    SoundBuffer* p = m_struckSlotSound;
     if (p) {
         p->StopAndRewind();
         m_struckSlotSound = NULL;
@@ -715,7 +715,7 @@ void CGrunt::StopStruckSlotSound() {
 
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
-    DirectSoundMgr*& sample = m_struckVoiceSound;
+    SoundBuffer*& sample = m_struckVoiceSound;
     if (sample != NULL) {
         return;
     }
@@ -727,7 +727,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (entry->m_sound == NULL) {
         return;
     }
-    sample = static_cast<DirectSoundMgr*>(entry->m_sound->GetItem());
+    sample = static_cast<SoundBuffer*>(entry->m_sound->AcquireInstance());
     if (sample == NULL) {
         return;
     }
@@ -736,7 +736,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
 
 RVA(0x00057ce0, 0x1e)
 void CGrunt::StopStruckVoiceSound() {
-    DirectSoundMgr* p = m_struckVoiceSound;
+    SoundBuffer* p = m_struckVoiceSound;
     if (p) {
         p->StopAndRewind();
         m_struckVoiceSound = NULL;
@@ -750,11 +750,11 @@ void CGrunt::ReapplyVoiceParams() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    DirectSoundMgr* a = m_struckSlotSound;
+    SoundBuffer* a = m_struckSlotSound;
     if (a != NULL) {
         a->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
-    DirectSoundMgr* b = m_struckVoiceSound;
+    SoundBuffer* b = m_struckVoiceSound;
     if (b != NULL) {
         b->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
@@ -1533,7 +1533,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 if (static_cast<u32>((clk - cue->m_lastPlayTime))
                     >= static_cast<u32>(cue->m_replayDelay)) {
                     cue->m_lastPlayTime = clk;
-                    cue->m_sound->ConfigureItem(item, 0, 0, 0);
+                    cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
                 }
             }
         }

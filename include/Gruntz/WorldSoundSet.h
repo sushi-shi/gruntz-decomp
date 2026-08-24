@@ -33,11 +33,11 @@ public:
     CAmbientSound*
     CreateAmbientFromKey(const char* key, i32 level, RECT* box, i32 scaleB, i32 unused);
     CAmbientSound*
-    CreateAmbientFromSound(DirectSoundMgr* mgr, i32 level, RECT* box, i32 scaleB, i32 unused);
+    CreateAmbientFromSound(SoundBuffer* mgr, i32 level, RECT* box, i32 scaleB, i32 unused);
     CAmbientPosSound*
     CreatePositionedFromKey(const char* key, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
     CAmbientPosSound* CreatePositionedFromSound(
-        DirectSoundMgr* mgr,
+        SoundBuffer* mgr,
         i32 level,
         AmbientPoint* pos,
         i32 scaleB,
@@ -45,7 +45,7 @@ public:
     );
 
     CRandomAmbientSound* CreateRandom(
-        DirectSoundMgr* mgr,
+        SoundBuffer* mgr,
         i32 level,
         RECT* box,
         i32 scaleB,

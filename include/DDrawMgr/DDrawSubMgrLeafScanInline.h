@@ -6,7 +6,7 @@
 
 inline void PurgeVoices(CDDrawSubMgrLeafScan* registry) {
     if (registry->m_soundStream != NULL) {
-        registry->m_soundStream->PurgeVoiceList(-1);
+        registry->m_soundStream->TickVolumeRamps(-1);
     }
 }
 

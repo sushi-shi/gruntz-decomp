@@ -1034,12 +1034,12 @@ flags = "cpp"
 
 [[unit]]
 unit = "directsoundmgr"
-source = "src/Dsndmgr/DirectSoundMgr.cpp"
+source = "src/Dsndmgr/SoundBuffer.cpp"
 flags = "cpp"
 
 [[unit]]
 unit = "soundvoicelist"
-source = "src/Dsndmgr/SoundVoiceList.cpp"
+source = "src/Dsndmgr/IntrusiveList.cpp"
 flags = "cpp"
 
 [[unit]]

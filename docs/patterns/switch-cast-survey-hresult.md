@@ -18,7 +18,7 @@ which reads like 74 removable casts, replaceable by one at the switch.
 ## Why it is not
 
 1. **The parameter type is right.** Retail's mangling for the DirectSound one is
-   `?GetErrorString@DirectSoundMgr@@SAXPADHH@Z` — `PAD`, `H`, `H`. `hr` is `int`.
+   `?GetErrorString@SoundBuffer@@SAXPADHH@Z` — `PAD`, `H`, `H`. `hr` is `int`.
    Widening it would change the mangled name and break the RVA binding.
 2. **The constants are a MIX.** Some are `>INT_MAX` literals (`0x80004001`); others come
    from `MAKE_HRESULT`, which expands to a **signed negative** value.

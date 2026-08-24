@@ -51,7 +51,7 @@ decision, however many TUs repeat it.
   funclet calls the GLOBAL `??3@YAXPAX@Z`. A forwarder cannot produce that: cl
   inlines it at the call sites but emits `??3CSymTab@@SAXPAX@Z` for the funclet to
   call. So a funclet naming the global REFUTES the class-level operator.
-  (CSymRec, CSymTab, PureSoundElem.)
+  (CSymRec, CSymTab, SoundTask.)
 
 * **18x an empty destructor that still needs an ADDRESS.** `~WwdRegion() {}` /
   `~WwdDirtyRect() {}` are inlined away at every call site - retail's `~CGameObject`

@@ -34,7 +34,7 @@ class CWarlord;
 struct CGameObject;
 
 class CDDrawSurfaceMgr;
-class DirectSoundMgr;
+class SoundBuffer;
 struct CTmOverlay;
 class CWwdGameObjectA;
 class CActionOptionsMenuBar;
@@ -339,8 +339,8 @@ public:
     i32 m_selSentinel;
     FinishLevelReason m_finishReasonFrame;
 
-    DirectSoundMgr* m_rollingballLoop;
-    DirectSoundMgr* m_teleportLoop;
+    SoundBuffer* m_rollingballLoop;
+    SoundBuffer* m_teleportLoop;
     i32 m_rollingballWanted;
     i32 m_teleportWanted;
     i32 m_groupFlag;

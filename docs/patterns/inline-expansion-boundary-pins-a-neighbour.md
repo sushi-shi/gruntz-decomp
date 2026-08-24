@@ -56,7 +56,7 @@ three include `Rez/RezList.h` transitively, and the other two edits in that buil
 
 What matters is only that the access sits inside an expansion. A free function taking the
 containing object by reference works exactly like a member; `SymTab.cpp` already carried
-`HeadSlotNode(DSoundList&)` and `PeekI32(const char*)` in that style before this work.
+`HeadSlotNode(IntrusiveList&)` and `PeekI32(const char*)` in that style before this work.
 Prefer the narrowest home that still expands: `.cpp`-local first, the owner's header only
 when several TUs genuinely need it (that is the CWapX case, which has 40-75 sites each).
 
@@ -99,7 +99,7 @@ already live in the caller). A helper whose whole body is a store to the object 
 is ALREADY holding in a register adds no access to pin: cl folds it before scheduling and
 emits the same bytes.
 
-`DSoundVoice::DSoundVoice` 0x136fe0 is the control. Its residue is one free store - retail
+`SoundVolumeRamp::SoundVolumeRamp` 0x136fe0 is the control. Its residue is one free store - retail
 emits `m_live = 1` first, cl sinks it four slots to pair with the leaf vptr stamp - and the
 rest of the store sequence already matches retail exactly. BOTH boundary spellings came out
 **byte-identical at 88.00**: wrapping the statement that should come second

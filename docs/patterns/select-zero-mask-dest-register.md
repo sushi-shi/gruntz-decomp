@@ -18,7 +18,7 @@ from source: none of an inline ternary, an explicit `(cond ? -1 : 0) & (i32)valu
 // retail picks eax, our cl picks edx for the masked result — both byte-exact otherwise:
 Unlink(e ? node : 0);                         // node = &e->m_link (already in ecx)
 // equivalent, same edx pick:
-Unlink((DSoundLink*)((e ? -1 : 0) & (i32)node));
+Unlink((IntrusiveLink*)((e ? -1 : 0) & (i32)node));
 ```
 ```asm
 ; retail (what you SEE):           ; our cl:
@@ -30,5 +30,5 @@ push eax                           push edx
 ```
 Distinct from `branchless-mask-and-explicit-vs-fused-test.md` (which is about whether the AND
 *materializes* vs fuses into a `test`); here the AND materializes in BOTH, only the register
-differs. WALL — bank the 99.3% and move on. Evidence: DSoundList::RemoveMatching @0x136f60
-(src/Dsndmgr/SoundVoiceList.cpp); the other 3 list helpers (InsertHead/InsertTail/Unlink) are 100%.
+differs. WALL — bank the 99.3% and move on. Evidence: SoundTaskList::RemoveMatching @0x136f60
+(src/Dsndmgr/IntrusiveList.cpp); the other 3 list helpers (InsertHead/InsertTail/Unlink) are 100%.

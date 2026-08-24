@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
+#include <Dsndmgr/IntrusiveList.h>
 #include <Dsndmgr/SoundDevice.h>
-#include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/ParseSource.h>
 
@@ -15,41 +15,43 @@ public:
     SoundStream();
     virtual ~SoundStream() OVERRIDE;
 
-    StreamVoice* CreateStreamBuffer(
-        WaveFormatX* fmt,
-        u32 bytes,
+    StreamVoice* CreateStreamVoice(
+        WaveFormatX* format,
+        u32 bufferBytes,
         i32 dsFlags,
-        i32 stopWhenIdle,
-        i32 retireWhenIdle
+        i32 reprimeWhenIdle,
+        i32 destroyWhenIdle
     );
 
     StreamVoice* OpenStream(
         CParseSource* src,
-        i32 bytes,
-        i32 format,
+        i32 bufferBytes,
+        i32 refillThresholdBytes,
         i32 dsFlags,
-        i32 stopWhenIdle,
-        i32 retireWhenIdle
+        i32 reprimeWhenIdle,
+        i32 destroyWhenIdle
     );
-    StreamVoice* PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags);
+    StreamVoice*
+    PlayStream(CParseSource* source, i32 bufferBytes, i32 refillThresholdBytes, i32 dsFlags);
 
     void DestroyVoice(StreamVoice* voice);
 
-    void Free();
+    void ShutdownStreams();
 
-    void Stop();
+    void StopAllStreams();
 
-    i32 PlaySoundDefaulted(HWND hWnd, i32 flag);
+    i32 InitializeDevice(HWND hwnd, i32 cooperativeLevel);
 
-    i32 TickSubManagers(i32 time);
-    i32 ParseWave(CParseSource* src, WaveFormatX* fmtBuf, u32* outDataOff, u32* outDataLen);
+    i32 TickStreams(i32 timestampMs);
+    i32
+    ParseWave(CParseSource* source, WaveFormatX* outFormat, u32* outDataOffset, u32* outDataBytes);
 
-    DSoundList m_voices;
+    IntrusiveList m_voices;
 };
 
-extern i32 g_ssLogEnabled;
-extern i32 g_ssMsgBoxEnabled;
-extern i32 g_ssBeepEnabled;
-extern i32 g_ssThirdEnabled;
+extern i32 g_dsoundDebugLog;
+extern i32 g_dsoundErrorDialogs;
+extern i32 g_dsoundErrorBeeps;
+extern i32 g_dsoundFormatErrors;
 
 #endif // DSNDMGR_SOUNDSTREAM_H

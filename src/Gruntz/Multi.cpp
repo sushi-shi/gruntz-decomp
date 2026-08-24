@@ -606,8 +606,8 @@ i32 CMulti::Render() {
     SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
-        win->PurgeVoiceList(now);
-        win->TickSubManagers(now);
+        win->TickVolumeRamps(now);
+        win->TickStreams(now);
     }
     ActiveWait(2);
     return 1;
@@ -688,8 +688,8 @@ i32 CMulti::PumpA() {
     SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
-        win->PurgeVoiceList(now);
-        win->TickSubManagers(now);
+        win->TickVolumeRamps(now);
+        win->TickStreams(now);
     }
     m_beginMarker->FilterList2(g_frameDelta);
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))->UpdateDiagonals(Mgr());
@@ -1288,7 +1288,7 @@ i32 CMulti::ShowMultiStartDlg() {
                     if (static_cast<u32>((clk - rec->m_lastPlayTime))
                         >= static_cast<u32>(rec->m_replayDelay)) {
                         rec->m_lastPlayTime = clk;
-                        rec->m_sound->ConfigureItem(cue, 0, 0, 0);
+                        rec->m_sound->AcquireAndPlay(cue, 0, 0, 0);
                     }
                 }
             }
@@ -2138,7 +2138,7 @@ i32 CMulti::LoadMenuSelectSprite(MenuSelectEvent* ev) {
                     u32 now = g_killCueClock;
                     if (static_cast<u32>((now - e->m_lastPlayTime)) >= e->m_replayDelay) {
                         e->m_lastPlayTime = now;
-                        e->m_sound->ConfigureItem(tag, 0, 0, 0);
+                        e->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                     }
                 }
             }

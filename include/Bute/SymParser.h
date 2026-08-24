@@ -24,15 +24,15 @@ struct CParserObjList : public CObjList {
 
 struct CParseSource;
 
-struct CSlotNode : public DSoundLink {
+struct CSlotNode : public IntrusiveLink {
     CParseSource* m_buffer;
 };
 
 // CSymParser::m_nodes (this+0x88). Its own empty destructor COMDAT - the lone
 // `c3` at 0x13abb0, fenced by nop fill on both sides and reached from the unwind
 // funclets of ??0CSymParser(char*,i32,i32) and ~CSymParser - so it is a distinct
-// class from DSoundList, whose own `~DSoundList()` lives elsewhere.
-struct CSlotNodeList : public DSoundList {
+// class from IntrusiveList, whose own `~IntrusiveList()` lives elsewhere.
+struct CSlotNodeList : public IntrusiveList {
     RVA(0x0013abb0, 0x1)
     ~CSlotNodeList() {}
 };

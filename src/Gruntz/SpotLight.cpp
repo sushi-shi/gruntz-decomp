@@ -6,7 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
@@ -175,7 +175,7 @@ i32 CSpotLight::Tick() {
                             u32 clk = g_killCueClock;
                             if (clk - cue->m_lastPlayTime >= static_cast<u32>(cue->m_replayDelay)) {
                                 cue->m_lastPlayTime = clk;
-                                cue->m_sound->ConfigureItem(item, 0, 0, 0);
+                                cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
                             }
                         }
                     }

@@ -33,7 +33,7 @@ class CSBI_WellGoo;
 class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine;
-class DirectSoundMgr;
+class SoundBuffer;
 GZ_ENUM_BEGIN(SbiSlotState)
     SLOT_ARMED = 0,
     // Entered when the slot is activated; the progress animation runs from
@@ -361,7 +361,7 @@ public:
     i32 m_observerTabAvailable;
     i32 m_battlezPct[38];
     i32 m_barFrameGate;
-    DirectSoundMgr* m_destructButton;
+    SoundBuffer* m_destructButton;
 
     CSBI_WarlordHead* m_warlordHead[4];
     i32 m_tabCycle;

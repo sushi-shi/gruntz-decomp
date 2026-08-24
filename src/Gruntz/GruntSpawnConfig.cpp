@@ -154,20 +154,20 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         if (d == who->m_object->m_objectId) {
             chosen = 1;
             if (a != 0 && m_streams[0] != NULL) {
-                m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
             }
         } else if (b != 0 && m_streams[1] != NULL) {
-            m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
         }
     } else {
         chosen = 1;
         if (c == who->m_object->m_objectId) {
             chosen = 0;
             if (b != 0 && m_streams[1] != NULL) {
-                m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
             }
         } else if (a != 0 && m_streams[0] != NULL) {
-            m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (m_streams[chosen] == NULL) {
@@ -249,20 +249,20 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         if (d == id) {
             chosen = 1;
             if (a != 0 && m_streams[0] != NULL) {
-                m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
             }
         } else if (b != 0 && id != 0) {
-            m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
         }
     } else {
         chosen = 1;
         if (c == id) {
             chosen = 0;
             if (b != 0 && m_streams[1] != NULL) {
-                m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
             }
         } else if (a != 0 && m_streams[0] != NULL) {
-            m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (m_streams[chosen] == NULL) {
@@ -343,20 +343,20 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
         if (d == objId) {
             chosen = 1;
             if (a != 0 && m_streams[0] != NULL) {
-                m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
             }
         } else if (b != 0 && m_streams[1] != NULL) {
-            m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
         }
     } else {
         chosen = 1;
         if (c == objId) {
             chosen = 0;
             if (b != 0 && m_streams[1] != NULL) {
-                m_streams[1]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+                m_streams[1]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
             }
         } else if (a != 0 && m_streams[0] != NULL) {
-            m_streams[0]->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            m_streams[0]->SetVolumePercent(g_gameReg->m_voiceVolume / 2);
         }
     }
     if (m_streams[chosen] == NULL) {

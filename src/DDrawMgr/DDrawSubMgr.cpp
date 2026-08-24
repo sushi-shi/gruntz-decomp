@@ -23,7 +23,7 @@
 #include <DDrawMgr/DDrawWorkerNode.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
@@ -782,7 +782,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
         return 0;
     }
     if (startPrimary != 0) {
-        if (m_soundStream->StartPrimary() == 0) {
+        if (m_soundStream->StartPrimaryBuffer() == 0) {
             return 0;
         }
     }
@@ -821,7 +821,7 @@ i32 LeafCue::LoadSoundA(RiffWaveHeader* riff) {
     if (!dev) {
         return 0;
     }
-    m_sound = dev->Acquire(riff, 0x100ea, 0);
+    m_sound = dev->LoadSample(riff, 0x100ea, 0);
     return m_sound != NULL;
 }
 
@@ -831,7 +831,7 @@ i32 LeafCue::LoadSoundB(char* src) {
     if (!dev) {
         return 0;
     }
-    m_sound = dev->AcquireFile(src, 0x100ea, 0);
+    m_sound = dev->LoadSampleFile(src, 0x100ea, 0);
     return m_sound != NULL;
 }
 
@@ -848,7 +848,7 @@ i32 LeafCue::Configure(CParseSource* src) {
     } else {
         RecordBytes<RiffWaveHeader> riff;
         riff.m_chars = blob;
-        m_sound = dev->Acquire(riff.m_rec, 0x100ea, 0);
+        m_sound = dev->LoadSample(riff.m_rec, 0x100ea, 0);
         ok = m_sound != NULL;
     }
     src->EndParse();
@@ -860,7 +860,7 @@ void LeafCue::Unload() {
     if (m_sound != NULL) {
         SoundDevice* dev = OwnerMgr()->m_soundStream;
         if (dev != NULL) {
-            dev->RemoveBuffer(m_sound);
+            dev->DestroyBuffer(m_sound);
             m_sound = NULL;
         }
     }
@@ -901,5 +901,5 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (g_sndCueTag != SND_CUE_NEUTRAL) {
         vscale = static_cast<i32>(vscale * (g_sndCueTag * g_sndPanScale));
     }
-    return m_sound->ConfigureItem(vscale, vol, 0, 0);
+    return m_sound->AcquireAndPlay(vscale, vol, 0, 0);
 }

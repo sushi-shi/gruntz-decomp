@@ -106,7 +106,7 @@ sections, and they are era-authentic. They are still a trap in a shared header:
 
 * A big SDK header belongs in the `.cpp` that calls into it, never in a
   platform prelude or a widely-included project header. `GruntzWnd.cpp`,
-  `DirectSoundMgr.cpp` and `SoundStream.cpp` already carry `<mmsystem.h>` that
+  `SoundBuffer.cpp` and `SoundStream.cpp` already carry `<mmsystem.h>` that
   way and cost nothing.
 * When the declaration is needed by a HEADER whose closure contains a large TU,
   and the measurement above reproduces, transcribe the single SDK line with the

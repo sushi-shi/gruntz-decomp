@@ -69,7 +69,7 @@ Probe (`cl 5.0 /O2 /MT /GX`), one TU, `u32 s` filled by an out-param call:
 | `if ((s & 1) == 1) { return 1; } return 0;` | `mov eax,[esp+4]` · **`and al,1`** · `dec al` · `neg al` · `sbb eax,eax` · `inc eax` |
 | `return (u8)s & 2) == 2;` | **`mov cl,[esp+4]`** (byte load — wrong) · `and cl,2` |
 
-Flipped `DirectSoundMgr::IsPlaying` (0x1353f0), `IsLooping` (0x135440) and
+Flipped `SoundBuffer::IsPlaying` (0x1353f0), `IsLooping` (0x135440) and
 `IsInHardware` (0x135490) from 99.85–99.88% to **100% EXACT** in one edit each
 (2026-07-28). All three had been parked as an "unsteerable partial-register
 tiebreak" wall.

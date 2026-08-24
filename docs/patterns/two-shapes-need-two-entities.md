@@ -84,7 +84,7 @@ A ctor cannot be overloaded by name, so the two entities are separated by a tag 
 and which one carries the tag is load-bearing:
 
 ```cpp
-struct WwdGridNode : DSoundLink {
+struct WwdGridNode : IntrusiveLink {
     WwdGridNode();                        // OUT-OF-LINE, pinned at 0x15b2a0
     enum ENoSeed { NO_SEED };
     WwdGridNode(ENoSeed) {}               // inline sibling: the tag lives HERE

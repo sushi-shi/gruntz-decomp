@@ -18,7 +18,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
@@ -338,7 +338,7 @@ RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     SoundStream* r = m_world->m_soundRegistry->m_soundStream;
     if (r) {
-        r->Stop();
+        r->StopAllStreams();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
     m_world->m_soundRegistry->RemoveKeysEqual("GRUNTZ_WANDGRUNT", "_");
@@ -381,7 +381,7 @@ RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId) {
     LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->CloneAndPlay(0, 0x1f4, 1);
+        found->m_sound->RampVolumeTo(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
             PurgeVoices(m_world->m_soundRegistry);
         }
@@ -1077,7 +1077,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                         && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
                                >= static_cast<u32>(cue->m_replayDelay)) {
                         cue->m_lastPlayTime = g_killCueClock;
-                        cue->m_sound->ConfigureItem(item, 0, 0, 0);
+                        cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
                     }
                 }
             }
@@ -1442,8 +1442,8 @@ i32 CBootyState::Render() {
     SoundStream* snd = m_world->m_soundStream;
     if (snd != NULL) {
         i32 now = static_cast<i32>(timeGetTime());
-        snd->PurgeVoiceList(now);
-        snd->TickSubManagers(now);
+        snd->TickVolumeRamps(now);
+        snd->TickStreams(now);
     }
 
     i64 elapsed = static_cast<i64>(g_frameTime) - m_frameStamp64;
@@ -1791,7 +1791,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (rec2->m_count == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
             SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
             if (sub != NULL) {
-                sub->Stop();
+                sub->StopAllStreams();
             }
             g_gameReg->ChangeState(3);
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
@@ -2204,7 +2204,7 @@ void CMultiBootyState::ReleaseResources() {
 
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream) {
-        reg->m_soundStream->Stop();
+        reg->m_soundStream->StopAllStreams();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
 
@@ -2238,7 +2238,7 @@ RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId) {
     LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->CloneAndPlay(0, 0x1f4, 1);
+        found->m_sound->RampVolumeTo(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
             PurgeVoices(m_world->m_soundRegistry);
         }

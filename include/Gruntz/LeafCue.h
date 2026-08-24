@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-class DSoundCloneInst;
+class SoundSample;
 struct CParseSource;
 struct RiffWaveHeader;
 
@@ -33,7 +33,7 @@ struct LeafCue : public CWapObj {
 
     i32 TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2);
 
-    DSoundCloneInst* m_sound;
+    SoundSample* m_sound;
     i32 m_lastPlayTime;
     i32 m_replayDelay;
 };

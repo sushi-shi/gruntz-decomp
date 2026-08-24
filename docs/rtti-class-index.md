@@ -183,7 +183,7 @@ ButeMgr) are likewise name-only.
 | CDirectDrawMgr | manager | C:\Proj\DDrawMgr\DDRAWMGR.CPP | name | strings | src/ (header removed; layout in src/) |
 | DirPal | manager | C:\Proj\DDrawMgr\DIRPAL.CPP | name | srcpath | src/ (header removed; layout in src/) |
 | DirSurf | manager | C:\Proj\DDrawMgr\DIRSURF.CPP | name | srcpath | src/ (header removed; layout in src/) |
-| DirectSoundMgr | manager | C:\Proj\Dsndmgr\DSNDMGR.CPP | name | strings | src/ (header removed; layout in src/) |
+| SoundBuffer | manager | C:\Proj\Dsndmgr\DSNDMGR.CPP | name | strings | src/ (header removed; layout in src/) |
 | DSndMgSR | manager | C:\Proj\Dsndmgr\DSndMgSR.cpp | name | srcpath | src/ (header removed; layout in src/) |
 | SFManager | manager | C:\Proj\Dsndmgr | name | strings | src/ (header removed; layout in src/) |
 | PLAYLISTINFOSTRUCT | struct | C:\Proj\Dsndmgr | name (held in CArray) | rtti(template)+strings | src/ (header removed; layout in src/) |
@@ -318,7 +318,7 @@ COM interface structs: `IUnknown` `.?AUIUnknown@@`, `IStream` `.?AUIStream@@`,
 - Library link-artifacts (MFC/CRT/COM/AFX, not targets): **96**.
 - **Total distinct RTTI names: 231** (123 + 10 + 2 + 96 = 231).
 
-> The named engine MANAGERS (CDirectDrawMgr, DirectSoundMgr, DirectInputMgr2,
+> The named engine MANAGERS (CDirectDrawMgr, SoundBuffer, DirectInputMgr2,
 > RezSync, CRezDir, ButeMgr, DirPal, DirSurf, InputDevice, DSndMgSR, SFManager,
 > PLAYLISTINFOSTRUCT) are scaffolded under `managers/` but are NOT counted in the
 > 231 RTTI total because most have no `.?AV…@@` entry (they are mined from strings/

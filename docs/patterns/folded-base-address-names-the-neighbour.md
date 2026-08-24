@@ -42,7 +42,7 @@ next buffer's base and all six `Decode*` functions report it.
 `i <= 100` loop relocates the terminal compare as `g_volumeTable + 0x190`.
 An unsupported census fence at that address caused the delinker to invent a
 neighbouring `g_panTable` identity and capped the otherwise-identical function
-at 99.6667%. `SetPanByIndex` then appeared to index backward from that supposed
+at 99.6667%. `SetPanPercent` then appeared to index backward from that supposed
 object. Reconstructing the full data use showed one `g_volumeTable[101]` instead:
 the pan code reads `g_volumeTable[100 - abs(idx)]`, the next real datum begins at
 `0x253c4c`, and both functions are exact without a site oracle. A folded address

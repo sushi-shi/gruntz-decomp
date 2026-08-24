@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/IntrusiveList.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezTypeTag.h>
@@ -23,7 +23,7 @@ struct CHashSlot {
     ~CHashSlot();
 
     char m_pad00[0x8];
-    DSoundList m_chain;
+    IntrusiveList m_chain;
 };
 
 class CHashElement {
@@ -34,7 +34,7 @@ public:
 
     CHashElement* Prev();
 
-    DSoundLink m_link;
+    IntrusiveLink m_link;
     CHashBase* m_owner;
     u32 m_bucket;
     union {
@@ -62,8 +62,8 @@ public:
 
     void Insert(CHashElement* node);
 
-    static CHashElement* FromLink(DSoundLink* link) {
-        return elemOf<CHashElement>(link);
+    static CHashElement* FromLink(IntrusiveLink* link) {
+        return ElementFromLink<CHashElement>(link);
     }
 
     u32 m_count;

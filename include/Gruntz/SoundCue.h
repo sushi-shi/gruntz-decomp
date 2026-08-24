@@ -10,7 +10,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Ints.h>
 
-class DSoundCloneInst;
+class SoundSample;
 
 class CDDrawWorker;
 

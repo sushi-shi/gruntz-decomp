@@ -7,7 +7,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/SoundState.h>
@@ -282,7 +282,7 @@ static __inline i32 PlayChatCue(CDDrawSubMgrLeafScan* roster, const char* key) {
                 u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
                 if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
                     t->m_lastPlayTime = clock;
-                    return t->m_sound->ConfigureItem(delta, 0, 0, 0);
+                    return t->m_sound->AcquireAndPlay(delta, 0, 0, 0);
                 }
             }
         }

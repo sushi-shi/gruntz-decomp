@@ -337,7 +337,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
                     u32 now = g_killCueClock;
                     if (static_cast<u32>((now - cue->m_lastPlayTime)) >= cue->m_replayDelay) {
                         cue->m_lastPlayTime = now;
-                        cue->m_sound->ConfigureItem(tag, 0, 0, 0);
+                        cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                     }
                 }
             }

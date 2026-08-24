@@ -1,11 +1,11 @@
 #include <rva.h>
 
-#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/IntrusiveList.h>
 
 #include <stddef.h>
 
 RVA(0x001390e0, 0x25)
-void DSoundList::InsertHead(DSoundLink* node) {
+void IntrusiveList::InsertHead(IntrusiveLink* node) {
     node->m_next = m_head;
     node->m_prev = NULL;
     if (m_head) {
@@ -17,7 +17,7 @@ void DSoundList::InsertHead(DSoundLink* node) {
 }
 
 RVA(0x00139110, 0x27)
-void DSoundList::InsertTail(DSoundLink* node) {
+void IntrusiveList::InsertTail(IntrusiveLink* node) {
     node->m_next = NULL;
     node->m_prev = m_tail;
     if (m_tail) {
@@ -31,7 +31,7 @@ void DSoundList::InsertTail(DSoundLink* node) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139140, 0x41)
-void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
+void IntrusiveList::InsertAfter(IntrusiveLink* after, IntrusiveLink* node) {
     if (after == NULL) {
         InsertHead(node);
     }
@@ -48,7 +48,7 @@ void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00139190, 0x44)
-void DSoundList::InsertBefore(DSoundLink* before, DSoundLink* node) {
+void IntrusiveList::InsertBefore(IntrusiveLink* before, IntrusiveLink* node) {
     if (before == NULL) {
         InsertTail(node);
     }
@@ -63,7 +63,7 @@ void DSoundList::InsertBefore(DSoundLink* before, DSoundLink* node) {
 }
 
 RVA(0x001391e0, 0x30)
-void DSoundList::Unlink(DSoundLink* node) {
+void IntrusiveList::Unlink(IntrusiveLink* node) {
     if (node->m_prev) {
         node->m_prev->m_next = node->m_next;
     } else {

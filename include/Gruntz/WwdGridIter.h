@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/IntrusiveList.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
@@ -24,7 +24,7 @@ struct WwdRect {
     };
 };
 
-struct WwdGridNode : DSoundLink {
+struct WwdGridNode : IntrusiveLink {
     WwdGridNode();
 
     // Retail's 0x15b2b0 seeds this base's two fields INLINE, so WwdRegion cannot

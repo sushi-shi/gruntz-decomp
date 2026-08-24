@@ -9,7 +9,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
@@ -1040,7 +1040,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         goto fail;
     }
 
-    m_sound = static_cast<DirectSoundMgr*>(entry->m_sound->GetItem());
+    m_sound = static_cast<SoundBuffer*>(entry->m_sound->AcquireInstance());
     if (m_sound != NULL) {
         m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
         return 1;

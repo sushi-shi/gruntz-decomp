@@ -89,7 +89,7 @@ not object construction. For `RezAlloc` plus placement-new in /GX functions, see
 EH frame or lower the score.
 
 Evidence: real `new` improved or held historical MAX for `CFaderMgr`,
-`DirectSoundMgr` clone construction, `TriggerMgrEh`, and draw-pool items.
+`SoundBuffer` clone construction, `TriggerMgrEh`, and draw-pool items.
 Retain evidence-backed constructor ownership even when unrelated current scores
 move; investigate only a MAX-gate failure or structural contradiction. Attempted
 conversions in `DirectInputMgr2::AddController`, `CButeValueNode`,

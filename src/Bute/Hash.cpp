@@ -4,7 +4,7 @@
 
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/IntrusiveList.h>
 #include <Enums.h>
 #include <Gruntz/ParseSource.h>
 

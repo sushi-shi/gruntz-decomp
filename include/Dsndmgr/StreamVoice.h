@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/WaveFormatX.h>
 #include <Gruntz/ParseSource.h>
@@ -12,19 +12,24 @@ struct IDirectSoundBuffer;
 
 class SoundStream;
 
-struct StreamVoice : public DSoundCloneInst {
+struct StreamVoice : public SoundSample {
 
-    StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b);
+    StreamVoice(
+        IDirectSoundBuffer* buffer,
+        SoundStream* owner,
+        i32 reprimeWhenIdle,
+        i32 destroyWhenIdle
+    );
 
     virtual ~StreamVoice() OVERRIDE;
 
-    i32 SetSource(CParseSource* src);
-    i32 Configure(i32 vol, i32 pan, i32 freq, i32 loop);
-    u32 ComputeRatio();
+    i32 SetSource(CParseSource* source);
+    i32 Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping);
+    u32 GetDurationMs();
 
-    i32 m_stopWhenIdle;
-    i32 m_retireWhenIdle;
-    i32 m_active;
+    i32 m_reprimeWhenIdle;
+    i32 m_destroyWhenIdle;
+    i32 m_wasPlaying;
 
     StreamVoiceFeeder m_feeder;
 };

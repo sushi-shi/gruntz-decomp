@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Bute/Hash.h>
-#include <Dsndmgr/SoundVoiceList.h>
+#include <Dsndmgr/IntrusiveList.h>
 #include <Enums.h>
 #include <Ints.h>
 
@@ -89,13 +89,13 @@ void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;
     u32 idx = node->Hash();
     node->m_bucket = idx;
-    DSoundLink* biased = node ? &node->m_link : NULL;
+    IntrusiveLink* biased = node ? &node->m_link : NULL;
     m_buckets[idx].m_chain.InsertHead(biased);
 }
 
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
-    DSoundLink* node = entry ? &entry->m_link : NULL;
+    IntrusiveLink* node = entry ? &entry->m_link : NULL;
     m_buckets[entry->m_bucket].m_chain.Unlink(node);
 }
 
@@ -118,7 +118,7 @@ CHashElement* CHashBase::First() {
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
     u32 i = m_count - 1;
-    DSoundLink** t = &m_buckets[i].m_chain.m_tail;
+    IntrusiveLink** t = &m_buckets[i].m_chain.m_tail;
     CHashElement* e;
     for (;;) {
         e = FromLink(*t);

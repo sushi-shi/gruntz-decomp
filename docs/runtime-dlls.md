@@ -77,7 +77,7 @@ a small but high-confidence **label seed** (verified):
 | creator | manager / TU | caller function(s) (v0.76 RVA) |
 |---|---|---|
 | `DirectDrawCreate` | `CDirectDrawMgr` / `DDrawMgr.cpp` | `0x141dc0`, `0x17c040` |
-| `DirectSoundCreate` (DSOUND `#1`) | `DirectSoundMgr` / `Dsndmgr.cpp` | `0x136550` |
+| `DirectSoundCreate` (DSOUND `#1`) | `SoundBuffer` / `Dsndmgr.cpp` | `0x136550` |
 | `DirectInputCreateA` | `DirectInputMgr2` / `DinMgr2.cpp` | `0x132ce0` |
 | DirectPlay (DPLAYX `#1`/`#2`/`#4`) | `CNetMgr` / `NetMgr.cpp` | `0x178280`, `0x1780b0`, `0x1782d0`, `0x8eca0` |
 

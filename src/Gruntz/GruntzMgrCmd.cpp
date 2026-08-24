@@ -1048,7 +1048,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_world) {
                 SoundStream* p = m_world->m_soundRegistry->m_soundStream;
                 if (p) {
-                    p->Stop();
+                    p->StopAllStreams();
                 }
             }
             m_soundEnabled ^= 1;

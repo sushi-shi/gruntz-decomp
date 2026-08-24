@@ -16,7 +16,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
@@ -167,7 +167,7 @@ void CMenuState::ReleaseResources() {
 
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream) {
-            reg->m_soundStream->Stop();
+            reg->m_soundStream->StopAllStreams();
         }
         m_world->m_workerList->ClearWorkers();
     }
@@ -265,7 +265,7 @@ void CMenuState::StopMusicChain() {
     if (!mus->m_sound->IsPlaying()) {
         return;
     }
-    m_menuMusicCue->m_sound->CloneAndPlay(0, 0x1f4, 1);
+    m_menuMusicCue->m_sound->RampVolumeTo(0, 0x1f4, 1);
     if (!m_menuMusicCue->m_sound->IsPlaying()) {
         return;
     }

@@ -8,7 +8,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
@@ -151,7 +151,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
                     if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
                         >= static_cast<u32>(p->m_replayDelay)) {
                         p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
                     }
                 }
             }

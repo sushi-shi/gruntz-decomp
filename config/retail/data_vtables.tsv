@@ -140,12 +140,12 @@ rva	size	name	kind	note
 0x1ef658	0x18	??_7CDeviceConfigC@@6B@	primary	
 0x1ef670	0x10	??_7CInputDevRoot@@6B@	primary	
 0x1ef680	0x18	??_7CInputDevBase@@6B@	primary	
-0x1ef6b8	0x4	??_7DirectSoundMgr@@6B@	primary	
-0x1ef6bc	0x4	??_7DSoundCloneInst@@6B@	primary	
-0x1ef6c0	0x4	??_7DSoundBaseSub@@6B@	primary	
+0x1ef6b8	0x4	??_7SoundBuffer@@6B@	primary	
+0x1ef6bc	0x4	??_7SoundSample@@6B@	primary	
+0x1ef6c0	0x4	??_7SoundBufferInstance@@6B@	primary	
 0x1ef6c4	0x4	??_7SoundDevice@@6B@	primary	
-0x1ef6c8	0x8	??_7PureSoundElem@@6B@	primary	
-0x1ef6d0	0x8	??_7DSoundVoice@@6B@	primary	
+0x1ef6c8	0x8	??_7SoundTask@@6B@	primary	
+0x1ef6d0	0x8	??_7SoundVolumeRamp@@6B@	primary	
 0x1ef6d8	0x4	??_7StreamVoice@@6B@	primary	
 0x1ef6e0	0xc	??_7StreamVoiceFeeder@@6B@	primary	
 0x1ef6ec	0x4	??_7SoundStream@@6B@	primary	

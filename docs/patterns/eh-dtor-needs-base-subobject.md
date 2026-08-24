@@ -16,7 +16,7 @@ whole prologue/epilogue + trylevel machinery is missing, capping the function ~5
 //   struct Base { virtual ~Base(); };          // ~Base == the trailing base-dtor call
 //   struct Derived : Base { ~Derived() { ...clone loop... } };
 // What we write while the class is only partially modeled (transitional manual stamp):
-DirectSoundMgr::~DirectSoundMgr() {
+SoundBuffer::~SoundBuffer() {
     *(void**)this = (void*)g_DirectSoundCloneVtbl; // manual vptr stamp
     while (m_58_head != 0) RemoveClone(m_58_head->m_inst);
     BaseDtor();                                    // base-subobject dtor, modeled as extern
@@ -34,12 +34,12 @@ WALL: the clone-loop body + vptr stamp + BaseDtor call are byte-exact; only the 
 frame is missing. Converting the class to a real polymorphic base hierarchy WOULD
 emit the frame but re-shapes the ctor + emits a `??_7`/`??_G` and risks regressing
 every already-exact sibling method — defer to the final sweep when the whole class
-(its base + all virtuals) is modeled. Evidence: `DirectSoundMgr::~DirectSoundMgr`
+(its base + all virtuals) is modeled. Evidence: `SoundBuffer::~SoundBuffer`
 (0x135bb0) 54.45%, body otherwise exact; sibling ctor 0x1351d0 is frameless + 100%
 (no base-dtor → no frame), confirming the base subobject is the frame's only cause.
 
 RESOLVED (2026-07-16, matcher-1 / Fable lane): the prescription above works — twice.
-(1) `StreamVoice : DSoundCloneInst` (real base insertion + `Cleanup()` renamed to the
+(1) `StreamVoice : SoundSample` (real base insertion + `Cleanup()` renamed to the
 real non-virtual `~StreamFeeder`): ctor 0x1375b0 34%→100, dtor 0x137650 45%→100,
 member dtor 0x137cf0 91%→100 — the /GX frame, the 1→0→-1 trylevel machine and both
 vptr stamps all fall out of the language. (2) The DinMgr2 device chain: the

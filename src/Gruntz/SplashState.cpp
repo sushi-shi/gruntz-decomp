@@ -59,7 +59,7 @@ RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream != NULL) {
-        reg->m_soundStream->Stop();
+        reg->m_soundStream->StopAllStreams();
     }
     m_world->m_soundRegistry->ClearMap();
     CState::ReleaseResources();

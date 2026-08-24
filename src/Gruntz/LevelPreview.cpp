@@ -11,7 +11,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/ErrorStringId.h>
@@ -69,7 +69,7 @@ RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
     CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream != NULL) {
-        reg->m_soundStream->Stop();
+        reg->m_soundStream->StopAllStreams();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("PREVIEW", "_");
     CState::ReleaseResources();
@@ -190,7 +190,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
                     && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
                            >= static_cast<u32>(p->m_replayDelay)) {
                     p->m_lastPlayTime = g_killCueClock;
-                    p->m_sound->ConfigureItem(tag, 0, 0, 0);
+                    p->m_sound->AcquireAndPlay(tag, 0, 0, 0);
                 }
             }
         }

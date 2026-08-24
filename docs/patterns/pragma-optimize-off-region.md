@@ -56,7 +56,7 @@ already matching. clang (the label pass) ignores the pragma; only cl acts on it.
 
 ## Measured
 
-`src/Dsndmgr/DirectSoundMgr.cpp`, both functions carried `@early-stop` notes:
+`src/Dsndmgr/SoundBuffer.cpp`, both functions carried `@early-stop` notes:
 `ConvertVolumeToPercent` (0x135110) **33.96 -> 100.00 EXACT** from the pragma alone;
 `VolumeToAttenuation` (0x1350b0) **58.11 -> 90.30** from the pragma, then **100.00
 EXACT** once its `double t = ...` local was inlined into the one expression (under

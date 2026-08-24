@@ -518,8 +518,8 @@ i32 CPlay::Render() {
         SoundStream* stream = m_world->m_soundStream;
         if (stream != NULL) {
             u32 t = timeGetTime();
-            stream->PurgeVoiceList(t);
-            stream->TickSubManagers(t);
+            stream->TickVolumeRamps(t);
+            stream->TickStreams(t);
         }
         m_beginMarker->FilterList2(g_frameDelta);
         m_guts->LoadMainStatusBarSprite();
@@ -626,8 +626,8 @@ i32 CPlay::Render() {
             SoundStream* stream = m_world->m_soundStream;
             if (stream != NULL) {
                 u32 t = timeGetTime();
-                stream->PurgeVoiceList(t);
-                stream->TickSubManagers(t);
+                stream->TickVolumeRamps(t);
+                stream->TickStreams(t);
             }
         }
         if (m_region1Gate != 0) {
@@ -805,8 +805,8 @@ i32 CPlay::Render() {
         SoundStream* stream = m_world->m_soundStream;
         if (stream != NULL) {
             u32 t = timeGetTime();
-            stream->PurgeVoiceList(t);
-            stream->TickSubManagers(t);
+            stream->TickVolumeRamps(t);
+            stream->TickStreams(t);
         }
         if (m_paused != 0) {
 
@@ -1116,7 +1116,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     SoundStream* grid = self->m_world->m_soundRegistry->m_soundStream;
     if (grid != NULL) {
-        grid->Stop();
+        grid->StopAllStreams();
     }
     self->m_mgr->m_sound->StopAndFlush();
     self->m_mgr->m_inputState->Teardown();
@@ -1732,7 +1732,7 @@ void CPlay::FreeListTeardown() {
 
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream != NULL) {
-            reg->m_soundStream->Stop();
+            reg->m_soundStream->StopAllStreams();
         }
     }
     m_mgr->m_sound->StopAndFlush();
@@ -1802,7 +1802,7 @@ void CPlay::ModeCleanup() {
 
             CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
             if (reg->m_soundStream) {
-                reg->m_soundStream->Stop();
+                reg->m_soundStream->StopAllStreams();
             }
         }
         m_world->m_soundRegistry->ClearMap();
@@ -3670,7 +3670,7 @@ i32 CPlay::CompleteLevel() {
 
         CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream) {
-            reg->m_soundStream->Stop();
+            reg->m_soundStream->StopAllStreams();
         }
         m_mgr->m_sound->StopAndFlush();
         m_mgr->m_inputState->Teardown();

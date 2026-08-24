@@ -529,8 +529,8 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - ddrawsurfacepair (`cpp`) — src/DDrawMgr/DDrawSurfacePair.cpp
 - directinputmgr2 (`cpp`) — src/DinMgr2/DinMgr2.cpp
 - inputdevice (`cpp`) — src/DinMgr2/InputDevice.cpp
-- directsoundmgr (`cpp`) — src/Dsndmgr/DirectSoundMgr.cpp
-- soundvoicelist (`cpp`) — src/Dsndmgr/SoundVoiceList.cpp
+- directsoundmgr (`cpp`) — src/Dsndmgr/SoundBuffer.cpp
+- soundvoicelist (`cpp`) — src/Dsndmgr/IntrusiveList.cpp
 - soundstream (`cpp`) — src/Dsndmgr/SoundStream.cpp
 - gruntzsoundz (`cpp`) — src/Dsndmgr/GruntzSoundZ.cpp
 - winapimodule (`cpp`) — src/Utils/WinAPIModule.cpp
