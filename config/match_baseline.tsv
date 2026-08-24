@@ -975,7 +975,7 @@ ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAEHHHHPAUtagPALETTEENTRY@@@Z	98.5
 ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	82.0527	82.0527	3	167fecdab256	0x14c9f0	82.0527	
 ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.9116	70.2165	2	0a7803dfaec3	0x14d950	73.5610	
 ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	71.8430	68.0032	4	c5a58b16ffd6	0x14d5e0	74.5449	
-ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	74.7932	73.8633	4	4868d0ddc486	0x14cfc0	74.7932	
+ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	75.0324	75.0324	5	2c8fcdd1e727	0x14cfc0	75.0324	
 ddrawshadeblit	?DecodeFrame@CDDrawShadeBlit@@QAEHVCString@@UCImageFrameRebuildDesc@@@Z	100.0000	100.0000	2	489b42034f96	0x149250	100.0000	
 ddrawshadeblit	?Decompress@CDDrawShadeBlit@@QAEHPAE@Z	100.0000	100.0000	2	828ea18ec9f6	0x1494b0	100.0000	
 ddrawshadeblit	?EncodeRle16@CDDrawShadeBlit@@QAEPAEPBE@Z	91.9592	91.0068	2	dbe3a7af344a	0x1495d0	91.9592	
@@ -1253,7 +1253,7 @@ ddsurface	?EnumSurfacesCallback@@YGJPAUIDirectDrawSurface@@PAU_DDSURFACEDESC@@PA
 ddsurface	?Fill@CDDSurface@@QAEHI@Z	100.0000	100.0000	3	740c9e6a45c9	0x13e760	100.0000	
 ddsurface	?FillPalette@CDDSurface@@QAEXI@Z	100.0000	100.0000	2	cac24505c282	0x13eb40	100.0000	
 ddsurface	?Flip@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	2	d1893067097f	0x13e850	100.0000	
-ddsurface	?FlipVertical@CDDSurface@@QAEXXZ	70.5526	70.5526	2	b02e14f905bc	0x13ebb0	70.5526	
+ddsurface	?FlipVertical@CDDSurface@@QAEXXZ	80.3772	80.3772	3	6b3c24c6de24	0x13ebb0	80.3772	
 ddsurface	?FreeSurfaces@CDDSurface@@UAEXXZ	100.0000	100.0000	1	30fe32c4682c	0x13e4d0	100.0000	
 ddsurface	?GetColorKey@CDDSurface@@QAEHXZ	100.0000	100.0000	1	9c1a3bcdd664	0x13fa60	100.0000	
 ddsurface	?GetElementAt@CDDSurface@@QAEPAV1@H@Z	100.0000	100.0000	2	52baf001c9c9	0x13ea70	100.0000	
@@ -1278,8 +1278,8 @@ ddsurface	?SetColorKeyRange@CDDSurface@@QAEHIII@Z	100.0000	100.0000	1	b7668948ad
 ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	0x13eae0	100.0000	
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80	100.0000	
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	1	482a2140b13f	0x13e690	100.0000	
-ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	70.1442	70.1442	9	fce4d1f39f2c	0x13f020	71.6803	
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	76.9909	76.9909	3	a6133da3180b	0x13f460	80.3591	
+ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	73.4295	73.4295	10	991abf6fe25b	0x13f020	73.4295	
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	79.0000	79.0000	4	3459d5fd643f	0x13f460	80.3591	
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	1	e6919eb7da93	0x141080	100.0000	
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	2	8beac4edd973	0x13f990	100.0000	
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	2	105fbc1335b9	0x1413b0	100.0000	
