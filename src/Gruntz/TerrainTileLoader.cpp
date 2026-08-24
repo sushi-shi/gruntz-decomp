@@ -32,14 +32,14 @@
 
 RVA(0x00075e90, 0x1400)
 i32 CTriggerMgr::LoadTileArrivalFx(
-    i32 ownerHi,
-    i32 ownerLo,
+    i32 playerIndex,
+    i32 unitIndex,
     i32 tileX,
     i32 tileY,
     PickupType reason,
     WwdAniDrawValue cue
 ) {
-    CGrunt* unit = m_grid[ownerHi * TM_GRID_COLS + ownerLo];
+    CGrunt* unit = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
 
@@ -57,7 +57,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     }
 
     TileCollisionKind cellType;
-    i32 cell = grid->m_mainPlane->m_tileGrid[grid->m_mainPlane->m_colOffsets[cy] + cx];
+    i32 cell = grid->m_mainPlane->m_tileGrid[grid->m_mainPlane->m_rowOffsets[cy] + cx];
     if (cell == UNINIT_FILL || cell == -1) {
         cellType = TILEKIND_PASSABLE;
     } else {
@@ -109,7 +109,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 CGruntzMgr* reg = g_gameReg;
                 i32 uncovered =
                     m_world->m_level->m_mainPlane
-                        ->m_tileGrid[m_world->m_level->m_mainPlane->m_colOffsets[tileY] + tileX]
+                        ->m_tileGrid[m_world->m_level->m_mainPlane->m_rowOffsets[tileY] + tileX]
                     + 1;
                 reg->m_world->m_level->m_mainPlane->SetCell(tileX, tileY, uncovered);
                 reg->m_tileGrid->ComputeCellFlags(tileX, tileY, uncovered);
@@ -118,7 +118,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_REVEALED_POWERUP) {
                 i32 recovered =
                     m_world->m_level->m_mainPlane
-                        ->m_tileGrid[m_world->m_level->m_mainPlane->m_colOffsets[tileY] + tileX]
+                        ->m_tileGrid[m_world->m_level->m_mainPlane->m_rowOffsets[tileY] + tileX]
                     - 1;
                 CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
                 SET_WORKER_HOST_CELL(dst, tileX, tileY, recovered);
@@ -244,7 +244,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         removed = 1;
                     }
                 }
-                if (removed != 0 && ownerHi == g_curPlayer) {
+                if (removed != 0 && playerIndex == g_curPlayer) {
                     static_cast<CPlay*>(g_gameReg->m_curState)->m_guts->AdvanceGauge(gaugePoints);
                 }
             }
@@ -256,8 +256,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     i32 topY = tileY - radius;
                     i32 bottomY = tileY + radius;
                     for (i32 scanX = tileX - radius; scanX <= tileX + radius; scanX++) {
-                        if (state->m_beginMarker->SetCell(scanX, topY, ownerHi) != 0
-                            && ownerHi == g_curPlayer) {
+                        if (state->m_beginMarker->SetCell(scanX, topY, playerIndex) != 0
+                            && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = topY * 0x20 + 0x10;
                             CWwdGameObjectA* light =
@@ -292,9 +292,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = ownerHi;
+                                    icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
-                                    if (ownerHi == g_curPlayer) {
+                                    if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = topY * 0x20 + 0x10;
                                         CWwdGameObjectA* light =
@@ -330,8 +330,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             }
                         }
 
-                        if (state->m_beginMarker->SetCell(scanX, bottomY, ownerHi) != 0
-                            && ownerHi == g_curPlayer) {
+                        if (state->m_beginMarker->SetCell(scanX, bottomY, playerIndex) != 0
+                            && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = bottomY * 0x20 + 0x10;
                             CWwdGameObjectA* light =
@@ -365,9 +365,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = ownerHi;
+                                    icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
-                                    if (ownerHi == g_curPlayer) {
+                                    if (playerIndex == g_curPlayer) {
                                         i32 fxX = scanX * 0x20 + 0x10;
                                         i32 fxY = bottomY * 0x20 + 0x10;
                                         CWwdGameObjectA* light =
@@ -407,8 +407,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     i32 leftX = tileX - radius;
                     i32 rightX = tileX + radius;
                     for (i32 scanY = topY + 1; scanY < bottomY; scanY++) {
-                        if (state->m_beginMarker->SetCell(leftX, scanY, ownerHi) != 0
-                            && g_curPlayer == ownerHi) {
+                        if (state->m_beginMarker->SetCell(leftX, scanY, playerIndex) != 0
+                            && g_curPlayer == playerIndex) {
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
                             CWwdGameObjectA* light =
@@ -443,9 +443,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = ownerHi;
+                                    icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
-                                    if (ownerHi == g_curPlayer) {
+                                    if (playerIndex == g_curPlayer) {
                                         i32 fxX = leftX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
                                         CWwdGameObjectA* light =
@@ -481,8 +481,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             }
                         }
 
-                        if (state->m_beginMarker->SetCell(rightX, scanY, ownerHi) != 0
-                            && ownerHi == g_curPlayer) {
+                        if (state->m_beginMarker->SetCell(rightX, scanY, playerIndex) != 0
+                            && playerIndex == g_curPlayer) {
                             i32 fxX = rightX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
                             CWwdGameObjectA* light =
@@ -516,9 +516,9 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
-                                    icon->m_object->m_score = ownerHi;
+                                    icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
-                                    if (ownerHi == g_curPlayer) {
+                                    if (playerIndex == g_curPlayer) {
                                         i32 fxX = rightX * 0x20 + 0x10;
                                         i32 fxY = scanY * 0x20 + 0x10;
                                         CWwdGameObjectA* light =
@@ -581,8 +581,13 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         actionCode = BRICKTILE_BROWN_1;
                         break;
                 }
-                if (state->m_beginMarker
-                        ->AddToList3Switch(actionCode, tileX, tileY, (tileX << 8) + tileY, ownerHi)
+                if (state->m_beginMarker->AddToList3Switch(
+                        actionCode,
+                        tileX,
+                        tileY,
+                        (tileX << 8) + tileY,
+                        playerIndex
+                    )
                     == NULL) {
                     return 0;
                 }
@@ -596,7 +601,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event =
                     state->m_beginMarker->FindActionByCellKey((tileX << 8) + tileY);
-                if (event->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(ownerHi))
+                if (event
+                        ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
                     == 0) {
                     return 0;
                 }

@@ -65,25 +65,25 @@ i32 CExitTrigger::AdvanceAnim() {
         span.m_span = &trig->m_area;
         g_gameReg->m_cmdGrid->HitTestApply(trig->m_screenX, trig->m_screenY, span);
     } else if (m_resolved != 0) {
-        i32 hitPlayer;
-        i32 hitRow;
+        i32 hitPlayerIndex;
+        i32 hitUnitIndex;
         CWwdGameObjectA* obj = m_object;
         CGrunt* hit = g_gameReg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
             &obj->m_area,
-            &hitPlayer,
-            &hitRow,
+            &hitPlayerIndex,
+            &hitUnitIndex,
             NULL
         );
         if (hit != NULL) {
             i32 owningPlayer = m_object->m_smarts;
-            if (hitPlayer == owningPlayer) {
+            if (hitPlayerIndex == owningPlayer) {
                 goto done;
             }
             m_resolved = 0;
             GruntzPlayer* loser = &g_gameReg->m_options[owningPlayer];
-            GruntzPlayer* winner = &g_gameReg->m_options[hitPlayer];
+            GruntzPlayer* winner = &g_gameReg->m_options[hitPlayerIndex];
             if (loser != NULL) {
                 g_gameReg->m_chatLog->AddItem(
                     static_cast<const char*>(
@@ -95,14 +95,14 @@ i32 CExitTrigger::AdvanceAnim() {
                 );
                 loser->m_clearedRound = 1;
             }
-            g_gameReg->m_scoreHud->MarkFlag(hitPlayer, owningPlayer);
-            g_gameReg->m_cmdGrid->ClearRowAndRefresh(owningPlayer);
-            g_gameReg->m_cmdGrid->CellDispatch(hitPlayer, hitRow, DEATH_EXIT, -1);
+            g_gameReg->m_scoreHud->MarkFlag(hitPlayerIndex, owningPlayer);
+            g_gameReg->m_cmdGrid->StartPlayerDefeatSequence(owningPlayer);
+            g_gameReg->m_cmdGrid->StartUnitDeath(hitPlayerIndex, hitUnitIndex, DEATH_EXIT, -1);
             if (m_warlordLogic != NULL) {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = NULL;
             }
-            GruntzPlayer* claimed = &g_gameReg->m_options[hitPlayer];
+            GruntzPlayer* claimed = &g_gameReg->m_options[hitPlayerIndex];
             if (claimed != NULL) {
                 CGameObject* found = NULL;
                 CGameObject* warlordObj = NULL;
@@ -124,13 +124,13 @@ i32 CExitTrigger::AdvanceAnim() {
                 CGameObject* cur = grp->NextChild(pos);
                 if (cur->m_animWorker->m_notify == CreateGruntCreationPoint
                     && cur->m_smarts == owningPlayer) {
-                    cur->m_smarts = hitPlayer;
+                    cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[hitPlayer].m_colorIndex),
+                        IDX(g_gameReg->m_options[hitPlayerIndex].m_colorIndex),
                         0
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
-                    if (hitPlayer == g_curPlayer) {
+                    if (hitPlayerIndex == g_curPlayer) {
                         CoordPoolNode* head = g_coordPool.m_freeHead;
                         Coord* mark = NULL;
                         if (head->m_next != NULL) {
@@ -147,9 +147,9 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
                 if (cur->m_animWorker->m_notify == CreateFortressFlag
                     && cur->m_smarts == owningPlayer) {
-                    cur->m_smarts = hitPlayer;
+                    cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[hitPlayer].m_colorIndex),
+                        IDX(g_gameReg->m_options[hitPlayerIndex].m_colorIndex),
                         0
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
@@ -208,7 +208,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     }
                 }
             }
-            g_gameReg->m_cmdGrid->ClearRow(m_object->m_smarts);
+            g_gameReg->m_cmdGrid->StartPlayerVictorySequence(m_object->m_smarts);
         }
     }
 

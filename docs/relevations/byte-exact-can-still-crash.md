@@ -154,7 +154,7 @@ extent from its stack slot (`mov eax,[esp+0x40]`); we now do too. `DrawWrapped`
 **Tree-wide screen, mechanical:** disassemble the linked candidate, find every `mov ecx,esp`
 followed within a few instructions by a `call`, and flag any site with **≥ 2 pushes** before
 the consuming call. **Zero real hits remain.** The 7 residual matches are benign —
-`CGruntzMgr::BuildLevelRezPath(int,int,int,int,CString)`, where the class parameter is the
+`CGruntzMgr::ResolveLevelChecksum(int,int,int,int,CString)`, where the class parameter is the
 callee's *last* declared parameter, so the temp legitimately sits highest.
 
 ---

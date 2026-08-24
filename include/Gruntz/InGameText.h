@@ -28,8 +28,8 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 Update();
 
-    i32 m_cachedAreaId;
-    i32 m_cachedSubId;
+    i32 m_cachedPlayerIndex;
+    i32 m_cachedUnitIndex;
 };
 
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

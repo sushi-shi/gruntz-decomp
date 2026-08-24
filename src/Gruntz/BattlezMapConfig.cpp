@@ -111,7 +111,7 @@ static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
 RVA(0x00024dc0, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
     : m_routeClockLo(0), m_routeClockHi(0), m_routeWindowLo(0), m_routeWindowHi(0) {
-    m_ownerId = 0;
+    m_playerIndex = 0;
     m_reserved01c = 1;
     m_reserved020 = 0x40;
     m_reserved024 = 0x40;
@@ -158,7 +158,7 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 // residual. The rest is the g_diffScale multiply, which retail folds into
 // `fmul m32` while cl preloads it with fld/fmulp.
 RVA(0x00025020, 0x984)
-i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
+i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficulty) {
 
     m_gruntCreationTime = 0;
     m_spawnTimer = 0;
@@ -167,7 +167,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     m_repickLastFire = 0;
     m_repickTimer = 0;
     m_ctx = mgr;
-    m_ownerId = id;
+    m_playerIndex = playerIndex;
     m_triggerMgr = mgr->m_cmdGrid;
     m_board = mgr->m_tileGrid;
     m_play = static_cast<CPlay*>(mgr->m_curState);
@@ -186,7 +186,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != NULL;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur->m_animWorker->m_notify == &CreateGruntCreationPoint && cur->m_smarts == id) {
+        if (cur->m_animWorker->m_notify == &CreateGruntCreationPoint
+            && cur->m_smarts == playerIndex) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             Coord* slot = NULL;
             if (p->m_next != NULL) {
@@ -201,7 +202,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != NULL;
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur2->m_animWorker->m_notify == &CreateExitTrigger && cur2->m_smarts == id) {
+        if (cur2->m_animWorker->m_notify == &CreateExitTrigger && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenX / 32;
             m_marker.m_y = cur2->m_screenY / 32;
             break;
@@ -210,7 +211,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
     for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != NULL;
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur3->m_animWorker->m_notify == &CreateWayPoint && cur3->m_smarts == id) {
+        if (cur3->m_animWorker->m_notify == &CreateWayPoint && cur3->m_smarts == playerIndex) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             Coord* slot = NULL;
             if (p->m_next != NULL) {
@@ -224,7 +225,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
         }
     }
 
-    switch (static_cast<BattlezDifficulty>(diff)) {
+    switch (static_cast<BattlezDifficulty>(difficulty)) {
         case BZDIFF_EASY: {
             g_buteMgr.GetIntDef("Battlez", "EasyDifficulty", 100);
             g_diffTier = 20;
@@ -329,8 +330,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
 
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
-    if (g_gameReg->m_options[m_ownerId].m_humanControlled == 0
-        && g_gameReg->m_options[m_ownerId].m_liveGate != 0) {
+    if (g_gameReg->m_options[m_playerIndex].m_humanControlled == 0
+        && g_gameReg->m_options[m_playerIndex].m_liveGate != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             this->StepRowSpawn(0);
         }
@@ -382,17 +383,17 @@ i32 CBattlezMapConfig::StepBoard() {
     }
 
     i32 mn = BATTLEZ_QUEUE_POSITION_UNSET;
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * BATTLEZ_UNIT_SLOT_COUNT];
+    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * BATTLEZ_UNIT_SLOT_COUNT];
     for (i32 s = BATTLEZ_UNIT_SLOT_COUNT; s != 0; s--) {
-        CGrunt* u = *row;
+        CGrunt* u = *units;
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition < mn) {
             mn = u->m_defenderQueuePosition;
         }
-        row++;
+        units++;
     }
     if (mn != 0 && mn != BATTLEZ_QUEUE_POSITION_UNSET) {
         for (i32 k = 0; k < BATTLEZ_UNIT_SLOT_COUNT; k++) {
-            CGrunt* u = m_triggerMgr->m_grid[m_ownerId * BATTLEZ_UNIT_SLOT_COUNT + k];
+            CGrunt* u = m_triggerMgr->m_units[m_playerIndex * BATTLEZ_UNIT_SLOT_COUNT + k];
             if (u != NULL && u->m_defenderState == AISTATE_RETURN) {
                 u->m_defenderQueuePosition -= mn;
             }
@@ -403,7 +404,7 @@ i32 CBattlezMapConfig::StepBoard() {
     CGrunt* forcedUnit = NULL;
     if (m_repickTimer - m_repickLastFire > m_resourceCreationTime) {
         i32 r = rand() % 15;
-        CGrunt* u = m_triggerMgr->m_grid[m_ownerId * 15 + r];
+        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * 15 + r];
         forcedUnit = u;
         forced = 0;
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition == 0) {
@@ -414,13 +415,13 @@ i32 CBattlezMapConfig::StepBoard() {
         // still unknown inside it and the `unit = forcedUnit` override survives.
         if (!forced && rand() % 10 != 0) {
             i32 r2 = rand() % 15;
-            CGrunt* u2 = m_triggerMgr->m_grid[m_ownerId * 15 + r2];
+            CGrunt* u2 = m_triggerMgr->m_units[m_playerIndex * 15 + r2];
             if (u2 != NULL) {
                 ChooseIdleBehavior(u2);
             }
         } else {
             for (i32 b = 0; b < 15; b++) {
-                CGrunt* unit = m_triggerMgr->m_grid[m_ownerId * 15 + b];
+                CGrunt* unit = m_triggerMgr->m_units[m_playerIndex * 15 + b];
                 if (forced) {
                     unit = forcedUnit;
                 }
@@ -509,7 +510,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 // row-mate, floored at 0 (retail `dec eax; jns; xor eax,eax`), then
                 // an immediate return - the row step and the clocks are skipped.
                 for (i32 c = 0; c < 15; c++) {
-                    CGrunt* mate = m_triggerMgr->m_grid[m_ownerId * 15 + c];
+                    CGrunt* mate = m_triggerMgr->m_units[m_playerIndex * 15 + c];
                     if (mate != NULL && mate->m_defenderState == AISTATE_RETURN) {
                         i32 q = unit->m_defenderQueuePosition - 1;
                         if (q < 0) {
@@ -537,14 +538,14 @@ i32 CBattlezMapConfig::StepBoard() {
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     i32 occupied = 0;
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
-    for (i32 c = 15; c != 0; c--) {
-        if (*row != NULL) {
+    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
+    for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
+        if (*units != NULL) {
             occupied++;
         }
-        row++;
+        units++;
     }
-    if (occupied >= m_ctx->m_options[m_ownerId].m_comboSel) {
+    if (occupied >= m_ctx->m_options[m_playerIndex].m_comboSel) {
         return 1;
     }
     i32 n = m_candArray.GetSize();
@@ -565,7 +566,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
             usable = 1;
             if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
-                if (tileRec.m_occupantIdBytes[1] == m_ownerId) {
+                if (tileRec.m_occupantIdBytes[1] == m_playerIndex) {
                     usable = 0;
                 }
                 if (allowReserved == 0) {
@@ -588,7 +589,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     i32 cell;
     if (allowReserved != 0) {
         cell = m_ctx->m_cmdGrid->PlaceObject(
-            m_ownerId,
+            m_playerIndex,
             screen.m_x,
             screen.m_y,
             0x186a0,
@@ -604,7 +605,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         );
     } else {
         cell = m_ctx->m_cmdGrid->PlaceObject(
-            m_ownerId,
+            m_playerIndex,
             screen.m_x,
             screen.m_y,
             0x186a0,
@@ -623,14 +624,14 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         return 0;
     }
 
-    CGrunt* unit = m_ctx->m_cmdGrid->m_grid[cell + m_ownerId * TM_GRID_COLS];
+    CGrunt* unit = m_ctx->m_cmdGrid->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
     if (unit == NULL) {
         return 0;
     }
 
     i32 roll = rand() % 100;
     i32 freeCount = 0;
-    CGrunt** r2 = &m_triggerMgr->m_grid[m_ownerId * 15];
+    CGrunt** r2 = &m_triggerMgr->m_units[m_playerIndex * 15];
     for (i32 k = 15; k != 0; k--) {
         CGrunt* g = *r2;
         if (g != NULL && g->m_battleState == BZTASK_UNASSIGNED) {
@@ -639,7 +640,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         r2++;
     }
     i32 budget = static_cast<i32>(
-        (static_cast<double>(m_ctx->m_options[m_ownerId].m_comboSel)
+        (static_cast<double>(m_ctx->m_options[m_playerIndex].m_comboSel)
          * static_cast<double>(m_gruntRatio) * g_diffScale)
     );
     if (roll >= m_defenderChance || freeCount >= budget) {
@@ -676,7 +677,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
     i32 cell;
     Coord scratch;
     for (i32 i = 0; i < 15; i++) {
-        unit = m_triggerMgr->m_grid[m_ownerId * 15 + i];
+        unit = m_triggerMgr->m_units[m_playerIndex * 15 + i];
         if (unit != NULL) {
             if (unit->IsHoldPending()) {
                 return 1;
@@ -1039,11 +1040,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                                                     if (!eq) {
                                                         for (i32 j = 0; j < 4; j++) {
-                                                            if (j != m_ownerId) {
+                                                            if (j != m_playerIndex) {
                                                                 for (i32 k = 0; k < 15; k++) {
                                                                     CGrunt* other =
                                                                         m_triggerMgr
-                                                                            ->m_grid[j * 15 + k];
+                                                                            ->m_units[j * 15 + k];
                                                                     if (other != NULL) {
                                                                         if (unit->RectContains(
                                                                                 other->m_object
@@ -1164,11 +1165,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             spell.bottom =
                                                                 (py >> TILE_SHIFT_PX) + r;
                                                             for (i32 j2 = 0; j2 < 4; j2++) {
-                                                                if (j2 != m_ownerId) {
+                                                                if (j2 != m_playerIndex) {
                                                                     for (i32 k2 = 0; k2 < 15;
                                                                          k2++) {
                                                                         CGrunt* o =
-                                                                            m_triggerMgr->m_grid
+                                                                            m_triggerMgr->m_units
                                                                                 [j2 * 15 + k2];
                                                                         if (o != NULL) {
                                                                             POINT pt;
@@ -1527,7 +1528,7 @@ rowHitB: {
 spellHit: {
     i32 hx = unit->m_lastTilePx.m_x;
     i32 hy = unit->m_lastTilePx.m_y;
-    m_triggerMgr->ApplyTriggerA(unit->m_tileOwnerHi, unit->m_tileOwnerLo, hx, hy);
+    m_triggerMgr->ApplyTriggerA(unit->m_playerIndex, unit->m_unitIndex, hx, hy);
     return 1;
 }
 
@@ -1771,8 +1772,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 i32 tA2 = m_board->CellFlagsAt(ax, ay);
                 if (!(tA2 & 0x2)) {
                     m_triggerMgr->ApplyTriggerA(
-                        unit->m_tileOwnerHi,
-                        unit->m_tileOwnerLo,
+                        unit->m_playerIndex,
+                        unit->m_unitIndex,
                         ax * 0x20 + 0x10,
                         ay * 0x20 + 0x10
                     );
@@ -1787,8 +1788,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         i32 sA = scratchA.m_flags;
         if ((sA & 0x8000) && prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
             m_triggerMgr->ApplyTriggerA(
-                unit->m_tileOwnerHi,
-                unit->m_tileOwnerLo,
+                unit->m_playerIndex,
+                unit->m_unitIndex,
                 cx * 0x20 + 0x10,
                 cy * 0x20 + 0x10
             );
@@ -1913,8 +1914,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                     != 0) {
                     m_triggerMgr->ApplyTriggerA(
-                        unit->m_tileOwnerHi,
-                        unit->m_tileOwnerLo,
+                        unit->m_playerIndex,
+                        unit->m_unitIndex,
                         ox * 0x20 + 0x10,
                         oy * 0x20 + 0x10
                     );
@@ -2122,11 +2123,11 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
-        if (band == m_ownerId) {
+        if (band == m_playerIndex) {
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];
+            CGrunt* u = m_triggerMgr->m_units[band * 15 + i];
             if (u == NULL) {
                 continue;
             }
@@ -2171,13 +2172,13 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
 RVA(0x0002ad40, 0x71)
 CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
-    if (band == m_ownerId) {
+    if (band == m_playerIndex) {
         band++;
     }
     band = band % 4;
     i32 cell = rand() % 15;
     for (i32 i = 0; i < 15; i++) {
-        CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];
+        CGrunt* u = m_triggerMgr->m_units[band * 15 + i];
         if (u != NULL && u->m_entranceDropActive == 0) {
             return u;
         }
@@ -2236,16 +2237,16 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
             if (actor->m_vehiclePickupType == PICKUP_SCROLL) {
                 CGameObject* tl = actor->m_object;
                 m_triggerMgr->ApplyTriggerB(
-                    actor->m_tileOwnerHi,
-                    actor->m_tileOwnerLo,
+                    actor->m_playerIndex,
+                    actor->m_unitIndex,
                     tl->m_screenX,
                     tl->m_screenY
                 );
             } else {
                 CGameObject* ul2 = other->m_object;
                 m_triggerMgr->ApplyTriggerB(
-                    actor->m_tileOwnerHi,
-                    actor->m_tileOwnerLo,
+                    actor->m_playerIndex,
+                    actor->m_unitIndex,
                     ul2->m_screenX,
                     ul2->m_screenY
                 );
@@ -2255,7 +2256,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     }
     CGameObject* ul3 = other->m_object;
     (static_cast<CGrunt*>(actor))
-        ->CommitNeighbor(other->m_tileOwnerHi, other->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
+        ->CommitNeighbor(other->m_playerIndex, other->m_unitIndex, ul3->m_screenX, ul3->m_screenY);
     PickupType prim = ArrivalPickup(actor);
     if (prim != PICKUP_TIMEBOMB) {
         return 1;
@@ -2338,7 +2339,7 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
         return 0;
     }
     ar->Write(&m_active, sizeof(m_active));
-    ar->Write(&m_ownerId, sizeof(m_ownerId));
+    ar->Write(&m_playerIndex, sizeof(m_playerIndex));
     ar->Write(&m_reserved01c, sizeof(m_reserved01c));
     ar->Write(&m_reserved020, sizeof(m_reserved020));
     ar->Write(&m_reserved024, sizeof(m_reserved024));
@@ -2428,7 +2429,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
         return 0;
     }
     ar->Read(&m_active, sizeof(m_active));
-    ar->Read(&m_ownerId, sizeof(m_ownerId));
+    ar->Read(&m_playerIndex, sizeof(m_playerIndex));
     ar->Read(&m_reserved01c, sizeof(m_reserved01c));
     ar->Read(&m_reserved020, sizeof(m_reserved020));
     ar->Read(&m_reserved024, sizeof(m_reserved024));
@@ -2595,7 +2596,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
     m_claimTimer = 0;
     unit->m_defenderState = AISTATE_RETURN;
     unit->m_defenderPickupType = static_cast<PickupType>(value);
-    CGrunt** units = m_triggerMgr->m_grid + m_ownerId * 15;
+    CGrunt** units = m_triggerMgr->m_units + m_playerIndex * 15;
     i32 count = 0;
     for (i32 k = 0; k < 15; k++) {
         CGrunt* p = units[k];
@@ -3004,8 +3005,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if ((maskFlags & 0x8000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
         m_triggerMgr->ApplyTriggerA(
-            g->m_tileOwnerHi,
-            g->m_tileOwnerLo,
+            g->m_playerIndex,
+            g->m_unitIndex,
             (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
             (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
         );
@@ -3016,8 +3017,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if ((maskFlags & 0x4000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
         if (m_board->m_rows[fcy][fcx].m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
             m_triggerMgr->ApplyTriggerA(
-                g->m_tileOwnerHi,
-                g->m_tileOwnerLo,
+                g->m_playerIndex,
+                g->m_unitIndex,
                 (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
             );
@@ -3044,8 +3045,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (ArrivalPickupOf(g, er) == PICKUP_BOMB || ArrivalPickupOf(g, er) == PICKUP_TIMEBOMB) {
             if (ArrivalPickupOf(g, er) == PICKUP_BOMB) {
                 m_triggerMgr->ApplyTriggerA(
-                    g->m_tileOwnerHi,
-                    g->m_tileOwnerLo,
+                    g->m_playerIndex,
+                    g->m_unitIndex,
                     (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -3063,7 +3064,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                             DECLARE_TILE_CENTER_PIXEL_PAIR(hitX, hitY, col, row)
                             if (g->RectContains(hitX, hitY) != 0) {
                                 m_triggerMgr
-                                    ->ApplyTriggerA(g->m_tileOwnerHi, g->m_tileOwnerLo, hitX, hitY);
+                                    ->ApplyTriggerA(g->m_playerIndex, g->m_unitIndex, hitX, hitY);
                             }
                             return 1;
                         }
@@ -3078,14 +3079,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (t == PICKUP_SPY) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
             if (r != NULL) {
-                if (r->m_playerFlags[m_ownerId] != 0) {
+                if (r->m_playerFlags[m_playerIndex] != 0) {
                     ARR_RECYCLE(g);
                     ResolveTileClaim(g, fcx, fcy, 1);
                     return 1;
                 }
                 m_triggerMgr->ApplyTriggerA(
-                    g->m_tileOwnerHi,
-                    g->m_tileOwnerLo,
+                    g->m_playerIndex,
+                    g->m_unitIndex,
                     (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -3110,7 +3111,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
                 if (r != NULL) {
                     BrickTileId k = static_cast<BrickTileId>(r->m_actionCode);
-                    if (r->m_playerFlags[m_ownerId] != 0) {
+                    if (r->m_playerFlags[m_playerIndex] != 0) {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
                             ResolveTileClaim(g, fcx, fcy, 0);
@@ -3118,14 +3119,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     } else {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
-                            m_play->m_beginMarker->SetCell(fcx, fcy, m_ownerId);
+                            m_play->m_beginMarker->SetCell(fcx, fcy, m_playerIndex);
                         }
                     }
                 }
             }
             m_triggerMgr->ApplyTriggerA(
-                g->m_tileOwnerHi,
-                g->m_tileOwnerLo,
+                g->m_playerIndex,
+                g->m_unitIndex,
                 (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
             );
@@ -3153,8 +3154,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (ArrivalPickupOf(g, er2) != PICKUP_WINGZ) {
             if (ArrivalPickupOf(g, er2) == PICKUP_SHOVEL) {
                 m_triggerMgr->ApplyTriggerA(
-                    g->m_tileOwnerHi,
-                    g->m_tileOwnerLo,
+                    g->m_playerIndex,
+                    g->m_unitIndex,
                     (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -3241,7 +3242,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if (word & 0x4000) {
             CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
             if (requireUnoccupied != 0) {
-                if (cell != NULL && cell->m_playerFlags[m_ownerId] == 0) {
+                if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
                     CPtrList list2(10);
                     CGameObject* lvl = unit->m_object;
                     if ((m_board)->SearchEdge(
@@ -3273,7 +3274,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 }
             } else if (cell != NULL) {
                 BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
-                i32 occ = cell->m_playerFlags[m_ownerId];
+                i32 occ = cell->m_playerFlags[m_playerIndex];
                 // TWO separate ifs, not if/else-if: retail re-tests `occ`
                 // (`test eax,eax; jne ladder` / `test eax,eax; mov edx,1; je done`)
                 // and keeps two distinct `special = 1` stores.
@@ -3560,11 +3561,11 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
-        if (band == m_ownerId) {
+        if (band == m_playerIndex) {
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];
+            CGrunt* u = m_triggerMgr->m_units[band * 15 + i];
             if (u == NULL) {
                 continue;
             }
@@ -3822,7 +3823,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     // as the fall-through, which a `break` on `scanned >= 15` inverts.
     i32 r = rand() % 15;
     for (i32 scanned = 0; scanned < 15; scanned++) {
-        CGrunt* cand = m_triggerMgr->m_grid[m_ownerId * 15 + r];
+        CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * 15 + r];
         if (cand != NULL) {
             CGameObject* lvl = cand->m_object;
             if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, cand) && cand->m_entranceCommitted != 0
@@ -4100,20 +4101,20 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
         if (mode == PICKUP_BRICK) {
 
-            CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
+            CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
             i32 nIdle = 0;
-            for (i32 s = 15; s != 0; s--) {
-                CGrunt* u = *row;
+            for (i32 s = TM_UNITS_PER_PLAYER; s != 0; s--) {
+                CGrunt* u = *units;
                 if (u != NULL && u->m_battleState == BZTASK_CARRY_BRICK) {
                     nIdle++;
                 }
-                row++;
+                units++;
             }
             if (nIdle >= 2) {
                 return 1;
             }
             for (i32 b = 0; b < 15; b++) {
-                CGrunt* u = m_triggerMgr->m_grid[m_ownerId * 15 + b];
+                CGrunt* u = m_triggerMgr->m_units[m_playerIndex * 15 + b];
                 if (u == NULL) {
                     continue;
                 }
@@ -4392,7 +4393,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;
-    CGrunt** units = m_triggerMgr->m_grid + m_ownerId * 15;
+    CGrunt** units = m_triggerMgr->m_units + m_playerIndex * 15;
     for (;;) {
         CGrunt* unit = *units;
         if (unit != NULL && unit != selfUnit && unit->m_battleState != BZTASK_SEEK_SWITCH) {
@@ -4444,10 +4445,10 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (m_active == 0) {
         return 0;
     }
-    if (cellX == m_ownerId) {
+    if (cellX == m_playerIndex) {
         return 1;
     }
-    CGrunt* src = m_triggerMgr->m_grid[cellX * 15 + cellY];
+    CGrunt* src = m_triggerMgr->m_units[cellX * 15 + cellY];
     if (src == NULL) {
         return 0;
     }
@@ -4458,12 +4459,12 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         // Retail loads BOTH fields and spills m_y to a slot it never reads - the
         // extra 4 bytes of frame (0xc vs our 0x8).  A struct copy is what keeps
         // the second load alive.
-        if (src->ArrivalCell().m_x != m_ownerId) {
+        if (src->ArrivalCell().m_x != m_playerIndex) {
             return 0;
         }
     }
     for (i32 i = 0; i < 15; i++) {
-        CGrunt* u = m_triggerMgr->m_grid[m_ownerId * 15 + i];
+        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * 15 + i];
         if (u == NULL) {
             continue;
         }
@@ -4520,23 +4521,23 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     i32 occupied = 0;
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
-    for (i32 c = 15; c != 0; c--) {
-        if (*row != NULL) {
+    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
+    for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
+        if (*units != NULL) {
             occupied++;
         }
-        row++;
+        units++;
     }
-    if (occupied >= m_ctx->m_options[m_ownerId].m_comboSel) {
+    if (occupied >= m_ctx->m_options[m_playerIndex].m_comboSel) {
         return 0;
     }
     i32 cell = m_triggerMgr->PlaceObject(
-        m_ownerId,
+        m_playerIndex,
         (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
         (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
-        IDX(m_ctx->m_options[m_ownerId].m_colorIndex),
+        IDX(m_ctx->m_options[m_playerIndex].m_colorIndex),
         0,
         0,
         0x11,
@@ -4548,7 +4549,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = m_ctx->m_cmdGrid->m_grid[cell + m_ownerId * TM_GRID_COLS];
+    CGrunt* unit = m_ctx->m_cmdGrid->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
     if (unit == NULL) {
         return 0;
     }
@@ -4720,11 +4721,11 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
         for (i32 k = 0; k < count; k++) {
             Coord** arr = MfcPtrArrayData<Coord>(*coords);
             CTriggerMgr* grid = m_triggerMgr;
-            i32 cell = m_ownerId;
+            i32 cell = m_playerIndex;
             Coord cand = *arr[r];
             i32 ok = 1;
             for (i32 j = 0; j < 15; j++) {
-                CGrunt* u = grid->m_grid[cell * 15 + j];
+                CGrunt* u = grid->m_units[cell * 15 + j];
                 if (u != NULL && u->CoordCount() != 0) {
                     Coord node = *(u->CoordTail()->m_coord);
                     if (node.m_x == cand.m_x && node.m_y == cand.m_y) {

@@ -45,7 +45,7 @@ RVA(0x000ec670, 0x298)
 i32 CGrunt::ResolveArrivalReposition() {
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     m_defenderPx = m_lastTilePx;
-    if (occ != NULL && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
+    if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
             CGameObject* oh = occ->m_object;
             if (TileSwitch(
@@ -58,12 +58,8 @@ i32 CGrunt::ResolveArrivalReposition() {
                 )
                 != 0) {
                 CGameObject* oh2 = occ->m_object;
-                if (m_tileMgr->ApplyTriggerA(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        oh2->m_screenX,
-                        oh2->m_screenY
-                    )
+                if (m_tileMgr
+                        ->ApplyTriggerA(m_playerIndex, m_unitIndex, oh2->m_screenX, oh2->m_screenY)
                     == -1) {
                     m_dwell = 0;
                     if (m_blockedVoicePending != 0) {

@@ -29,10 +29,10 @@ sitting in a census hole between levelrezpath (ends 0x0941b3) and gruntzwnd:
   treats `0x00` as padding.)
 * `.data`: levelrezpath's four literals run LEVEL%i 0x21110c, TRAINING%i
   0x211118, AREA%i_WORLDZ 0x211128, GAME_MULTI 0x211138 — reverse of their use
-  in BuildLevelRezPath. `c:\foo.log` 0x211148 and `wb` 0x211158 continue that
+  in ResolveLevelChecksum. `c:\foo.log` 0x211148 and `wb` 0x211158 continue that
   run and stop exactly at gruntzwnd's first `.data`, its `??_R0?AVCGameWnd@@@8`
   at 0x211160. A function's strings follow its own `.text`, so the pair belongs
-  to a levelrezpath function emitted AFTER BuildLevelRezPath.
+  to a levelrezpath function emitted AFTER ResolveLevelChecksum.
 * Corroboration: `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` at 0x094340
   closes the obj — template instantiations are emitted last.
 

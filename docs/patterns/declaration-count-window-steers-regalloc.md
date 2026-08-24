@@ -80,7 +80,7 @@ flip it but neither is used by the TU), `CImage::BlitShadeNorm` 0x154270 (99.85,
 
 ## Where the count is NOT the knob (measured, 50 islands each, dead flat)
 
-`CPlay::StepScroll` 0xd1ac0 (88.03), `CTriggerMgr::NotifyCell` 0x79fb0 (85.89),
+`CPlay::StepScroll` 0xd1ac0 (88.03), `CTriggerMgr::UnregisterUnit` 0x79fb0 (85.89),
 `CTriggerMgr::ToggleRegionA` 0x7d450 (79.13), `CGrunt::ResolveArrivalNeighbor` 0xf26f0
 (86.61) - 50/50 island cells identical to the baseline, so their residue is intra-function
 and no amount of TU state reaches it. `CDDrawChildGroup::SumWeighted` 0x15aaf0 moves only

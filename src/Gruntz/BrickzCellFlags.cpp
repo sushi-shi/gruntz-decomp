@@ -33,7 +33,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     } else if (y >= level->m_mainPlane->m_gridH) {
         cy = level->m_mainPlane->m_gridH - 1;
     }
-    i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
+    i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_rowOffsets[cy] + cx];
     TileCollisionKind typeCode;
     if (id == UNINIT_FILL || id == -1) {
         typeCode = TILEKIND_PASSABLE;
@@ -303,9 +303,9 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     i32 bestDist = INT_MAX;
     i32 tileX = w->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 tileY = w->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    CGrunt** rowPtr = m_grid;
+    CGrunt** rowPtr = m_units;
     for (i32 i = 0; i < 4; i++) {
-        if (i != w->m_tileOwnerHi) {
+        if (i != w->m_playerIndex) {
             CGrunt** colPtr = rowPtr;
             i32 j = 15;
             do {

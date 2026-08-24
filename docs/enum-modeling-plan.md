@@ -216,7 +216,7 @@ Findings the type system produced (each evidenced, not guessed):
 
 - **`g_areaPageSize` is not a page size** — it is the per-world death cause for
   pit tiles. Renamed `g_areaPitDeath`; sibling → `g_areaHazardDeath`.
-- **`GruntDeathType` slot 13 = `DEATH_EXIT`** — the only value `CellDispatch`
+- **`GruntDeathType` slot 13 = `DEATH_EXIT`** — the only value `StartUnitDeath`
   routes to `BuildGruntExitAnimation()`.
 - Death causes cross-check against the game: RainCloud→`DEATH_ELECTROCUTE`,
   RollingBall→`DEATH_SQUASH`, KitchenSlime→`DEATH_MELT`, SpotLight→`DEATH_KAROKE`.

@@ -439,7 +439,7 @@ i32 CMulti::LeaveState(GameStateId arg) {
         ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, 1);
         if (m_mgr && m_mgr->m_cmdGrid) {
-            m_mgr->m_cmdGrid->ClearGridRange(TM_GRID_ROW_ALL);
+            m_mgr->m_cmdGrid->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
         }
     }
     return 1;
@@ -1450,7 +1450,7 @@ i32 CMulti::VerifyCustomLevel(CNetPlayerListNode* h, CNetSessionNode* playerTok)
     if (m_customLevelVerificationPending != 0) {
         i32 cfgId = m_customLevel;
 
-        i32 token = (g_gameReg)->BuildLevelRezPath(
+        i32 token = (g_gameReg)->ResolveLevelChecksum(
             0,
             0,
             cfgId,

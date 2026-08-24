@@ -20,8 +20,15 @@ public:
         return LOGIC_BOOMERANG;
     }
     virtual void AdvanceMotion() OVERRIDE;
-    virtual i32 LoadProjectileSprites(PickupType kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1)
-        OVERRIDE;
+    virtual i32 LoadProjectileSprites(
+        PickupType kind,
+        i32 sourcePlayerIndex,
+        i32 sourceUnitIndex,
+        i32 targetPxX,
+        i32 targetPxY,
+        i32 sourcePxX,
+        i32 sourcePxY
+    ) OVERRIDE;
 
     i32 m_launchX, m_launchY;
     double m_dirX, m_dirY;

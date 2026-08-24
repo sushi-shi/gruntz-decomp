@@ -2535,7 +2535,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
     }
 
     i32 slot = idx + 15 * g_curPlayer;
-    if (g_gameReg->m_cmdGrid->m_grid[slot] == NULL) {
+    if (g_gameReg->m_cmdGrid->m_units[slot] == NULL) {
         return 0;
     }
 
@@ -2844,21 +2844,22 @@ void CStatusBarMgr::SetGauge(i32 value) {
 
 // @early-stop
 // One scheduling slot: retail emits `mov ecx,edi` (the LoadCameraSprite receiver)
-// after the first m_recordPosition store, cl before it. 5 spellings measured.
+// after the first m_cameraTargetUnit store, cl before it. 5 spellings measured.
 RVA(0x00105800, 0x9e)
-i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
-    i32 col = g_curPlayer;
-    if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) != 0) {
+i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
+    i32 playerIndex = g_curPlayer;
+    if (g_gameReg->m_cmdGrid->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
 
-        CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
+        CGrunt* entry =
+            g_gameReg->m_cmdGrid->m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
                 ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
-            if (commit != 0) {
+            if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_cmdGrid;
-                if (obj->RecordListHas(col, row)) {
-                    obj->m_recordPosition.m_x = col;
-                    obj->m_recordPosition.m_y = row;
+                if (obj->RecordListHas(playerIndex, unitIndex)) {
+                    obj->m_cameraTargetUnit.m_x = playerIndex;
+                    obj->m_cameraTargetUnit.m_y = unitIndex;
                     obj->m_armed = 1;
                     obj->LoadCameraSprite();
                 }

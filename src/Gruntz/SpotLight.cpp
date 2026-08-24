@@ -58,13 +58,13 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SetObjectFlags(2);
 
     i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 cx = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 centerY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     // Both converted coordinates stay live in x87 registers: retail `fst`s
     // m_center.y / m_position.x (keeping them on the stack), copies the y one
     // with `fld st(1)` for m_position.y, and reuses st(2)/st(3) for the m_offset
     // subtraction.  Re-reading the members instead costs the two-dword copy.
     m_center.x = static_cast<double>(ax);
-    double cy = static_cast<double>(cx);
+    double cy = static_cast<double>(centerY);
     m_center.y = cy;
     i32 nx;
     if (m_object->m_smarts == 0) {
@@ -73,7 +73,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
         nx = ax - m_object->m_smarts * 32;
     }
     m_object->m_screenX = nx;
-    m_object->m_screenY = cx;
+    m_object->m_screenY = centerY;
     double px = static_cast<double>(nx);
     m_position.x = px;
     m_position.y = cy;
@@ -104,8 +104,8 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     d->m_drawFillArg = looked;
     m_focus = NULL;
     CLEAR_OBJECT_AREA
-    m_cellRow = -1;
-    m_cellCol = -1;
+    m_targetPlayerIndex = -1;
+    m_targetUnitIndex = -1;
     m_storyMode = 0;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_storyMode = 1;
@@ -146,18 +146,19 @@ i32 CSpotLight::Tick() {
             m_object->m_screenX,
             m_object->m_screenY,
             &m_object->m_area,
-            &m_cellRow,
-            &m_cellCol,
+            &m_targetPlayerIndex,
+            &m_targetUnitIndex,
             NULL
         );
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
-            && !(m_storyMode != 0 && m_cellRow != 0)) {
+            && !(m_storyMode != 0 && m_targetPlayerIndex != 0)) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("B");
             m_object->m_screenX = tgt->m_object->m_screenX;
             m_object->m_screenY = tgt->m_object->m_screenY;
             if (m_object->m_score == 1) {
-                g_gameReg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_MELT, -1);
+                g_gameReg->m_cmdGrid
+                    ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
@@ -182,7 +183,8 @@ i32 CSpotLight::Tick() {
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);
-                g_gameReg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_KAROKE, -1);
+                g_gameReg->m_cmdGrid
+                    ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_KAROKE, -1);
                 return 0;
             }
         }
@@ -227,7 +229,7 @@ int CSpotLight::Update() {
         m_position.y = m_center.y + m_position.y;
         m_angle = newAngle;
     }
-    if (g_gameReg->m_cmdGrid->m_grid[m_cellCol + m_cellRow * 15] == NULL) {
+    if (g_gameReg->m_cmdGrid->m_units[m_targetUnitIndex + m_targetPlayerIndex * 15] == NULL) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
     }
@@ -259,8 +261,8 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
                 }
                 s->Write(&id, sizeof(id));
             }
-            s->Write(&m_cellRow, sizeof(m_cellRow));
-            s->Write(&m_cellCol, sizeof(m_cellCol));
+            s->Write(&m_targetPlayerIndex, sizeof(m_targetPlayerIndex));
+            s->Write(&m_targetUnitIndex, sizeof(m_targetUnitIndex));
             s->Write(&m_storyMode, sizeof(m_storyMode));
             break;
         case SERIAL_LOAD:
@@ -290,8 +292,8 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
                     return 0;
                 }
             }
-            s->Read(&m_cellRow, sizeof(m_cellRow));
-            s->Read(&m_cellCol, sizeof(m_cellCol));
+            s->Read(&m_targetPlayerIndex, sizeof(m_targetPlayerIndex));
+            s->Read(&m_targetUnitIndex, sizeof(m_targetUnitIndex));
             s->Read(&m_storyMode, sizeof(m_storyMode));
             break;
         case SERIAL_POSTLOAD: {

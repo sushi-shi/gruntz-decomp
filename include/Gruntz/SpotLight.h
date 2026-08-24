@@ -35,8 +35,8 @@ public:
     double m_angle;
     CWwdGameObjectA* m_focus;
 
-    i32 m_cellRow;
-    i32 m_cellCol;
+    i32 m_targetPlayerIndex;
+    i32 m_targetUnitIndex;
     i32 m_storyMode;
 };
 

@@ -42,7 +42,7 @@ static const i32 TILE_CLEAR = -1;
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
         i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
+        i32 idx_ = pl_->m_rowOffsets[qy_] + col_;                                                  \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
         if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \

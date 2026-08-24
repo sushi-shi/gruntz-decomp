@@ -75,6 +75,6 @@ differently is UNRESOLVED and is the remaining `DrawWrapped` headroom. The tree-
 disassemble the linked candidate, find every `mov ecx,esp` followed within a few instructions
 by a `call`, and flag any site with >= 2 `push` before the consuming call (the only legitimate
 multi-push case is a callee whose class parameter is its LAST declared parameter, e.g.
-`CGruntzMgr::BuildLevelRezPath(int,int,int,int,CString)`). Five real sites existed, all in
+`CGruntzMgr::ResolveLevelChecksum(int,int,int,int,CString)`). Five real sites existed, all in
 `FontRenderer::DrawWrapped`; fixing them took it 73.27 -> 74.29 and removed a guaranteed
 runtime crash on every centered wrapped-text draw.

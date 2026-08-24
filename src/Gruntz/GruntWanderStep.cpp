@@ -94,7 +94,7 @@ i32 CGrunt::WanderStep() {
                     return 1;
                 }
                 if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                    if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
+                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
                         Coord c[2];
                         g->GetScreenTile(c);
                         if (TileSwitch(c[0].m_x, c[0].m_y, 0, m_arrivalFlags, 1, 0) != 0) {
@@ -118,7 +118,8 @@ i32 CGrunt::WanderStep() {
             goto timeout;
 
         case AISTATE_CHASE: {
-            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            CGrunt* slot =
+                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* active = m_tileMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
                 Coord none;
@@ -127,7 +128,7 @@ i32 CGrunt::WanderStep() {
                 return 1;
             }
             if (slot == NULL || slot->m_entranceCommitted == 0
-                || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
+                || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -169,8 +170,9 @@ i32 CGrunt::WanderStep() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            CGrunt* slot = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (slot == NULL || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
+            CGrunt* slot =
+                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            if (slot == NULL || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0
                 || slot->m_entranceCommitted == 0) {
                 goto ph1;
             }
@@ -225,8 +227,9 @@ i32 CGrunt::WanderStep() {
             i32 px = rand() % 4 + baseTileX - 2;
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
-                CGrunt* entry = g_gameReg->m_cmdGrid
-                                    ->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                CGrunt* entry =
+                    g_gameReg->m_cmdGrid
+                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 if (entry != NULL) {
                     CGameObject* e10 = entry->m_object;
                     CRect rc(

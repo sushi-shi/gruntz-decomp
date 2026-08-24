@@ -246,11 +246,16 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
     if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
-        i32 a, b;
-        if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
+        i32 playerIndex, unitIndex;
+        if (g_gameReg->m_cmdGrid
+                ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 0)
             != NULL) {
-            g_gameReg->m_cmdGrid
-                ->CellDispatch(a, b, static_cast<GruntDeathType>(m_object->m_smarts), -1);
+            g_gameReg->m_cmdGrid->StartUnitDeath(
+                playerIndex,
+                unitIndex,
+                static_cast<GruntDeathType>(m_object->m_smarts),
+                -1
+            );
         }
         CWwdGameObjectA* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, o->m_health)

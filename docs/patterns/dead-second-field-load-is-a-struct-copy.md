@@ -43,11 +43,11 @@ slot is for, so the frame-size mismatch and the missing load are ONE finding.
 // NO - the m_y read is dead and cl deletes it
 i32 sx = src->m_arrivalCell.m_x;
 i32 sy = src->m_arrivalCell.m_y;
-if (sx != m_ownerId) { return 0; }
+if (sx != m_playerIndex) { return 0; }
 
 // YES
 Coord sc = src->m_arrivalCell;
-if (sc.m_x != m_ownerId) { return 0; }
+if (sc.m_x != m_playerIndex) { return 0; }
 ```
 
 ## Evidence

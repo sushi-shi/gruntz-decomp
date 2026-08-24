@@ -96,8 +96,8 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             if (g->TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
-            g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
-            g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
+            g->m_arrivalCell.m_x = nb->m_playerIndex;
+            g->m_arrivalCell.m_y = nb->m_unitIndex;
             g->m_defenderState = AISTATE_ATTACK;
             g->m_dwell = 0;
             AcceptAlways(g);
@@ -128,7 +128,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
     }
 inflight: {
 
-    CGrunt* cur = m_triggerMgr->m_grid[15 * g->ArrivalCell().m_x + g->ArrivalCell().m_y];
+    CGrunt* cur = m_triggerMgr->m_units[15 * g->ArrivalCell().m_x + g->ArrivalCell().m_y];
     i32 W = m_board->m_width;
     i32 H = m_board->m_height;
     Coord c0;
@@ -147,8 +147,8 @@ inflight: {
         if (g->CoordCount() != 0) {
             MOVE_RECYCLE(g);
         }
-        g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
-        g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
+        g->m_arrivalCell.m_x = nb->m_playerIndex;
+        g->m_arrivalCell.m_y = nb->m_unitIndex;
         g->m_defenderState = AISTATE_ATTACK;
         g->m_dwell = 0;
         {
@@ -259,7 +259,7 @@ RVA(0x00031ca0, 0x2f2)
 i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     if (unit->ArrivalCell().m_x != -1 && unit->ArrivalCell().m_y != -1) {
         CGrunt* target =
-            m_triggerMgr->m_grid[unit->ArrivalCell().m_x * 15 + unit->ArrivalCell().m_y];
+            m_triggerMgr->m_units[unit->ArrivalCell().m_x * 15 + unit->ArrivalCell().m_y];
         if (target != NULL) {
             CGameObject* lvl = target->m_object;
             if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
@@ -332,7 +332,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     i32 band = unit->m_targetTeam;
     if (band == -1) {
         band = rand() % 4;
-        if (band == m_ownerId) {
+        if (band == m_playerIndex) {
             band++;
         }
         band = band % 4;

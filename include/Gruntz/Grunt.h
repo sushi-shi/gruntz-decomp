@@ -199,7 +199,7 @@ public:
         return LOGIC_GRUNT;
     }
 
-    virtual void XferName(char* name) OVERRIDE;
+    virtual void StepBehavior(char* animationActName) OVERRIDE;
 
     virtual void FireActivation(i32 id) OVERRIDE;
 
@@ -257,7 +257,7 @@ public:
 
     void RecycleCoords();
     i32 RectContainsGated(i32 x, i32 y);
-    i32 CommitNeighbor(i32 a, i32 b, i32 c, i32 d);
+    i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
 
     i32 ChargeStep();
@@ -269,7 +269,7 @@ public:
 
     i32 StepArrivalCommit();
 
-    i32 RunMoveConfig(i32 a, i32 b);
+    i32 RunMoveConfig(i32 tileX, i32 tileY);
 
     i32 BuildGruntExitAnimation();
 
@@ -285,7 +285,7 @@ public:
     i32 LoadGruntDecayConfig2();
     i32 LoadWandGruntItemConfig();
 
-    i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot);
+    i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
 
     i32
     LoadPickupSprites(PickupType type, i32 forced, i32 helpCueId, i32 pickupParam, i32 countStats);
@@ -296,10 +296,10 @@ public:
 
     i32 LoadTypeTableClearMove(PickupType typeId);
 
-    void PlayMoveSoundAtTile(i32 tx, i32 ty);
+    void FaceTowardTile(i32 tileX, i32 tileY);
     void SnapToLastTile(i32 a);
     i32 ClaimSwitchTile();
-    i32 SetArrivalTarget(i32 a, i32 b, i32 c, i32 d);
+    i32 SetArrivalTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     void ConsiderArrival(i32 a);
     void SelectMoveIcon(i32 a);
     i32 TryPowerupAtTile();
@@ -341,19 +341,15 @@ public:
     Coord m_reserved1dc;
     i32 m_entranceActive;
     i32 m_arrivalPending;
-    // These are the grunt's tile COLUMN and ROW, not an owner id - proven by
-    // use: passed as (col, row) to ApplyTriggerA/CellDispatch, packed as
-    // (col << 8) | row into BrickzCell::m_occupantId, and StepAttackFire hands
-    // the COLUMN to a time bomb's m_smarts, which LoadExplosionSprites takes as
-    // its third argument. Faithful to retail; the names are ours and invite a
-    // misreading. Rename to m_tileCol/m_tileRow when no lane holds Grunt.h
-    // (374 sites, 34 files).
-    i32 m_tileOwnerHi;
-    i32 m_tileOwnerLo;
+    // Registry identity: the player row and the unit's slot within that row.
+    // BrickzCell::m_occupantId packs these as (player << 8) | unit.
+    i32 m_playerIndex;
+    i32 m_unitIndex;
     PickupType m_moveIcon;
     i32 m_savedMoveIcon;
     i32 m_entranceCommitted;
-    Coord m_neighborCell;
+    i32 m_neighborPlayerIndex;
+    i32 m_neighborUnitIndex;
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
@@ -498,7 +494,7 @@ public:
     i32 m_entranceDropActive;
     i32 m_deathAnimStarted;
     i32 m_cellRemovalNotified;
-    i32 m_killerSlot;
+    i32 m_killerPlayerIndex;
     i32 m_moveVariantOverride;
     i32 m_powerupDuration;
     i32 m_moveKind;
@@ -806,7 +802,7 @@ public:
     i32 BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
 
-    void SetEntrancePos(i32 a, i32 b);
+    void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
 
     void EnsureStruckSlot(const char* key);
     i32 UpdateEntranceAnim();
@@ -836,19 +832,25 @@ public:
     i32 ResetGeometry();
     i32 StepAttackAction();
 
-    void PlayMoveSound(i32 x, i32 y);
-    void PlaySound(i32 range, GruntDirectionCell rec);
+    void FaceTowardPixel(i32 x, i32 y);
+    void SetFacing(i32 unusedRange, GruntDirectionCell facing);
     void OnStruck(i32 wasHit);
     i32 ResolveArrivalNeighbor();
     i32 RearmEntranceDrop();
 
-    i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e);
+    i32 HandleCombatContact(
+        i32 otherPxX,
+        i32 otherPxY,
+        i32 isAttacker,
+        i32 otherPlayerIndex,
+        i32 otherUnitIndex
+    );
 
     i32 LoadGruntCombatAnimations(
         PickupType attackKind,
         i32 struckPose,
-        i32 srcRow,
-        i32 srcCol,
+        i32 srcPlayerIndex,
+        i32 srcUnitIndex,
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
@@ -871,13 +873,13 @@ public:
 
     i32 IsDropReady(i32 a = 0);
 
-    i32 BeginAttack(i32 a, i32 b);
+    i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 
-    i32 RearmAttackAnim(i32 col, i32 row);
+    i32 RearmAttackAnim(i32 targetPlayerIndex, i32 targetUnitIndex);
 
     i32 RearmAttackAnim2();
 
-    i32 GruntInRadius(i32 col, i32 row);
+    i32 GruntInRadius(i32 playerIndex, i32 unitIndex);
 
     i32 StepPeerTracking();
 
@@ -915,8 +917,8 @@ public:
     i32 StepCombatReaction(
         PickupType attackKind,
         i32 struckPose,
-        i32 srcRow,
-        i32 srcCol,
+        i32 srcPlayerIndex,
+        i32 srcUnitIndex,
         i32 srcPxX,
         i32 srcPxY,
         i32 fromProjectile,
@@ -929,8 +931,8 @@ public:
 
     i32 Place(
         class CTriggerMgr* board,
-        i32 col,
-        i32 row,
+        i32 playerIndex,
+        i32 unitIndex,
         PickupType moveIcon,
         PickupType typeKind,
         i32 vehicleKind,
@@ -973,11 +975,11 @@ bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 // credits text (REZ STATEZ\CREDITZ\CREDITZ), which printed the act by NAME -
 // [s=IDLE] [s=ATTACK] [s=ATTACKIDLE] [s=MOVINGTOY] [s=DEATH] - before the names
 // were shortened to single letters:
-//   "A" IDLE       the default act and the log's most common state; PlaySound
+//   "A" IDLE       the default act and the log's most common state; SetFacing
 //                  gives it the _IDLE1 pose and ResolveArrivalReposition
 //                  already reads it as "not idle".
 //   "C" DEATH      BuildGruntDeathAnimation latches it with SORTKEY_GRUNT_DEATH.
-//   "E" ATTACKIDLE the only act PlaySound gives m_poseAttackIdle.
+//   "E" ATTACKIDLE the only act SetFacing gives m_poseAttackIdle.
 //   "F" ATTACK     latched by RearmAttackAnim/RearmAttackAnim2; its step is
 //                  StepAttackAction.
 // MOVINGTOY is one of the remaining letters; which is not yet proven.

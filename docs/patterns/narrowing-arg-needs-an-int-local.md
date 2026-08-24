@@ -30,15 +30,24 @@ already doing, so it keeps the narrow load.
 
 ```cpp
 // NO - narrow loads, and the value is not available as an int for any other use
-EnqueueSingle(1, cell->m_tileOwnerHi, cell->m_tileOwnerLo, 10,
-              hit->m_tileOwnerHi, hit->m_tileOwnerLo, 0, 0);
+EnqueueSingle(1, cell->m_playerIndex, cell->m_unitIndex, 10,
+              hit->m_playerIndex, hit->m_unitIndex, 0, 0);
 
 // YES - one dword load per value, exactly retail's encoding
-i32 hitHi  = hit->m_tileOwnerHi;
-i32 hitLo  = hit->m_tileOwnerLo;
-i32 cellLo = cell->m_tileOwnerLo;      // declaration order = load order
-i32 cellHi = cell->m_tileOwnerHi;
-EnqueueSingle(1, cellHi, cellLo, 10, hitHi, hitLo, 0, 0);
+i32 hitPlayerIndex  = hit->m_playerIndex;
+i32 hitUnitIndex    = hit->m_unitIndex;
+i32 cellUnitIndex   = cell->m_unitIndex;      // declaration order = load order
+i32 cellPlayerIndex = cell->m_playerIndex;
+EnqueueSingle(
+    1,
+    cellPlayerIndex,
+    cellUnitIndex,
+    10,
+    hitPlayerIndex,
+    hitUnitIndex,
+    0,
+    0
+);
 ```
 
 The locals' DECLARATION order is the load order, so if the diff has the two loads

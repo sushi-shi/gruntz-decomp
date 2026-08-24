@@ -71,7 +71,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
+    CGrunt* e = g_gameReg->m_cmdGrid->m_units[m_cell.m_x * 15 + m_cell.m_y];
     if (e != NULL) {
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;

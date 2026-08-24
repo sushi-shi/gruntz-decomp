@@ -526,16 +526,16 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
-    i32 tileY = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 tileX = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
+    i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 cell;
-        if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
-            BrickzCell* row = grid->m_rows[tileX];
-            cell = row[tileY].m_objectId;
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+            BrickzCell* row = grid->m_rows[tileY];
+            cell = row[tileX].m_objectId;
         } else {
             cell = 0;
         }
@@ -604,15 +604,15 @@ i32 CInGameIcon::PeekCycle() {
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenY >> TILE_SHIFT_PX;
-    i32 tileY = owner->m_screenX >> TILE_SHIFT_PX;
-    if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
+    i32 tileX = owner->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
+    if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
 
-        i32 cellInt = tileY * 8 - tileY;
-        i32* cell0 = grid->m_rowInts[tileX];
+        i32 cellInt = tileX * 8 - tileX;
+        i32* cell0 = grid->m_rowInts[tileY];
         cell0[cellInt + 2] = 0;
-        i32* cell1 = grid->m_rowInts[tileX];
+        i32* cell1 = grid->m_rowInts[tileY];
         cell1[cellInt] &= ~0x40000;
     }
 }
@@ -625,7 +625,7 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 // downstream carries a different register in every operand.
 RVA(0x000986b0, 0x30c)
 
-i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
+i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     CWwdGameObjectA* obj;
     CWwdGameObjectA* o;
     CWwdGameObjectA* r;
@@ -643,7 +643,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     i32 ok;
     PickupType pickup;
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_gameMode == GAMEMODE_SINGLE && tileOwnerHi != g_curPlayer
+    if (reg->m_gameMode == GAMEMODE_SINGLE && playerIndex != g_curPlayer
         && static_cast<PickupType>(m_object->m_smarts) != PICKUP_TOYBOX) {
         goto fail;
     }
@@ -654,13 +654,13 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         param = obj->m_points;
         matchActive = 0;
         flag = 1;
-        if (obj->m_score == tileOwnerHi) {
+        if (obj->m_score == playerIndex) {
             matchActive = 1;
             flag = 0;
         }
         sub = obj->m_faceDirection;
-        idx = tileOwnerHi * 15 + tileOwnerLo;
-        cell = reg->m_cmdGrid->m_grid[idx];
+        idx = playerIndex * 15 + unitIndex;
+        cell = reg->m_cmdGrid->m_units[idx];
         if (cell == NULL || cell->m_entranceCommitted == 0) {
             ok = 0;
         } else if (matchActive) {
@@ -688,8 +688,8 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
 
     sub = obj->m_faceDirection;
     cmd = static_cast<PickupType>(obj->m_smarts);
-    idx = tileOwnerHi * 15 + tileOwnerLo;
-    cell = reg->m_cmdGrid->m_grid[idx];
+    idx = playerIndex * 15 + unitIndex;
+    cell = reg->m_cmdGrid->m_units[idx];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         ok = 0;
     } else {
@@ -698,7 +698,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     reg = g_gameReg;
     if (ok != 0) {
         if (cmd == PICKUP_WARPSTONE) {
-            placed = reg->m_cmdGrid->m_grid[idx];
+            placed = reg->m_cmdGrid->m_units[idx];
             if (placed != NULL) {
                 placed->m_warpstoneAnchorIndex = m_object->m_health;
                 reg = g_gameReg;
@@ -955,8 +955,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO)
-    m_cachedAreaId = -1;
-    m_cachedSubId = -1;
+    m_cachedPlayerIndex = -1;
+    m_cachedUnitIndex = -1;
 }
 
 RVA(0x00099460, 0x102)
@@ -979,16 +979,18 @@ RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
-    i32 areaId;
-    i32 subId;
-    CGrunt* found = g_gameReg->m_cmdGrid
-                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+    i32 playerIndex;
+    i32 unitIndex;
+    CGrunt* found =
+        g_gameReg->m_cmdGrid
+            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 1);
 
     if (found != NULL) {
-        if (areaId != g_curPlayer) {
+        if (playerIndex != g_curPlayer) {
             return 0;
         }
-        if (m_cachedSubId != -1 && areaId == m_cachedAreaId && subId == m_cachedSubId) {
+        if (m_cachedUnitIndex != -1 && playerIndex == m_cachedPlayerIndex
+            && unitIndex == m_cachedUnitIndex) {
             return 0;
         }
 
@@ -1025,12 +1027,12 @@ i32 CInGameText::Update() {
             }
         }
 
-        m_cachedAreaId = areaId;
-        m_cachedSubId = subId;
+        m_cachedPlayerIndex = playerIndex;
+        m_cachedUnitIndex = unitIndex;
         Hide();
         return 0;
     }
-    m_cachedSubId = -1;
+    m_cachedUnitIndex = -1;
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 0;
 }
@@ -1043,12 +1045,12 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, tag, a, b)
     switch (tag) {
         case SERIAL_SAVE:
-            ar->Write(&m_cachedAreaId, sizeof(m_cachedAreaId));
-            ar->Write(&m_cachedSubId, sizeof(m_cachedSubId));
+            ar->Write(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
+            ar->Write(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cachedAreaId, sizeof(m_cachedAreaId));
-            ar->Read(&m_cachedSubId, sizeof(m_cachedSubId));
+            ar->Read(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));
+            ar->Read(&m_cachedUnitIndex, sizeof(m_cachedUnitIndex));
             break;
     }
     return 1;

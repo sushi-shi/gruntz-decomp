@@ -52,7 +52,7 @@ struct WwdHeader {
     u32 tileDescriptionsOffset;
     u32 mainBlockLength;
     // Stored and never verified: retail returns it from
-    // CGruntzMgr::BuildLevelRezPath as the level's multiplayer identity token.
+    // CGruntzMgr::ResolveLevelChecksum as the level's multiplayer identity token.
     u32 checksum;
     u32 reserved2f0;
     // The remaining four slots are all proven unread, like tileDirectory.

@@ -17,7 +17,7 @@ same source. Recognize it and stop; do not restructure the source to chase it.
   `mov edx,[esp+0x4]` parameter read. Base merges that `return 1` with the function's
   final one, so the merged tail pops `esi`, so `push esi` must dominate the entry
   block, so the parameter reads shift to `[esp+0x8]`.
-- `CGrunt::PlaySound` 0x0004ac10 (66.76). Blocks B0..B32 are byte-exact. The `idle:`
+- `CGrunt::SetFacing` 0x0004ac10 (66.76). Blocks B0..B32 are byte-exact. The `idle:`
   label has exactly two `goto` predecessors on BOTH sides; retail emits it at 0x4af33
   (after all seven strcmp arms), the base inverts the fourth arm's branch
   (`je <skip>` where retail has `jne <idle>`) and lays `idle:` inline as its
@@ -32,9 +32,9 @@ same source. Recognize it and stop; do not restructure the source to chase it.
 
 - the retired permuter on 0x151b90 and 0x18e40: 9 and 6 candidates,
   no improvement (these functions have too few atomic mutation sites to search).
-- Nesting the following test into the arm's `else` (PlaySound arm K) — byte-identical.
+- Nesting the following test into the arm's `else` (SetFacing arm K) — byte-identical.
 - Reordering the label bodies / moving the far label past the function's natural end
-  (`XferName` 0x0005d210, the `combatTimeoutTail` arm): cl produced a byte-identical
+  (`StepBehavior` 0x0005d210, the `combatTimeoutTail` arm): cl produced a byte-identical
   object, because the arm's exit is a BACKWARD jump to the join and cl rotates it back
   inline regardless of where the label sits in source.
 

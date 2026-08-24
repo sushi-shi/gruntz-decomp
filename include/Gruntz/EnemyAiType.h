@@ -9,7 +9,7 @@
 // editor's AppendixC pages (01-DumbChaserz.html ... 16-ScrollGrunt.html).
 //
 // The 16-way dispatch is the per-frame grunt tick, RVA 0x0005d210 in Grunt.cpp
-// (still carrying the placeholder name XferName), switching on
+// (`CGrunt::StepBehavior`), switching on
 // CGrunt::m_arrivalState. The chain that proves m_arrivalState is this field:
 // CLevelTileValidation and CPlay pass the WWD object's m_points to
 // CTriggerMgr::PlaceObject as `aiType`, PlaceObject forwards it to CGrunt::Place

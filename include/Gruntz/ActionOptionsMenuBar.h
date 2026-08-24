@@ -33,8 +33,8 @@ public:
         ActionOptionButtonState secondaryState,
         i32 x,
         i32 y,
-        i32 gx,
-        i32 gy
+        i32 playerIndex,
+        i32 unitIndex
     );
     void Clear();
     i32 Activate(i32 a);
@@ -48,8 +48,8 @@ public:
 
     int Deserialize(CFileMemBase* s);
 
-    i32 m_gridX;
-    i32 m_gridY;
+    i32 m_playerIndex;
+    i32 m_unitIndex;
     i32 m_screenX;
     i32 m_screenY;
     CImage* m_frame;

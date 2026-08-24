@@ -50,13 +50,13 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
-            occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            occ = m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ == NULL) {
                 goto seek;
             }
             // the CHASE-and-shout arm is the FALL-THROUGH: forward gotos would
             // hoist it above the scroll arm, which retail emits first.
-            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0
+            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->m_entranceCommitted != 0) {
                 if (m_neighborValid != 0) {
                     return 1;
@@ -71,8 +71,8 @@ i32 CGrunt::StepArrivalDefense() {
                     && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
                         g_gameReg->m_cmdGrid->ApplyTriggerB(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
+                            m_playerIndex,
+                            m_unitIndex,
                             occ->m_object->m_screenX,
                             occ->m_object->m_screenY
                         );
@@ -97,7 +97,7 @@ i32 CGrunt::StepArrivalDefense() {
             return 1;
 
         case AISTATE_CHASE: {
-            occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            occ = m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
                 Coord none;
@@ -111,7 +111,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ->m_entranceCommitted == 0) {
                 goto seek;
             }
-            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
             if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
@@ -136,8 +136,8 @@ i32 CGrunt::StepArrivalDefense() {
             }
             if (m_vehiclePickupType == PICKUP_SCROLL) {
                 g_gameReg->m_cmdGrid->ApplyTriggerB(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
+                    m_playerIndex,
+                    m_unitIndex,
                     occ->m_object->m_screenX,
                     occ->m_object->m_screenY
                 );
@@ -160,8 +160,8 @@ i32 CGrunt::StepArrivalDefense() {
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
                     g_gameReg->m_cmdGrid->ApplyTriggerB(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
+                        m_playerIndex,
+                        m_unitIndex,
                         occ->m_object->m_screenX,
                         occ->m_object->m_screenY
                     );
@@ -177,7 +177,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+                if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                     goto L_f318a;
                 }
                 {

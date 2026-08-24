@@ -15,7 +15,7 @@ macro expansion:
 ```cpp
 #define COMMIT_GRUNT_NEIGHBOR_COPY(target, coord)                                                  \
     Coord coord = target->m_lastTilePx;                                                            \
-    CommitNeighbor(target->m_tileOwnerHi, target->m_tileOwnerLo, coord.m_x, coord.m_y)
+    CommitNeighbor(target->m_playerIndex, target->m_unitIndex, coord.m_x, coord.m_y)
 ```
 
 The direct-field form is valid only for callers that originally had no copy.

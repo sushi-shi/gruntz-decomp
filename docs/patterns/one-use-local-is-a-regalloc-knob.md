@@ -30,7 +30,7 @@ So a one-use local is a knob **in both directions**, and you must try both:
 - **ADD a local** to free the register earlier
   (`CGruntzSoundZ* snd = m_sound; if (snd->m_pCurrent) snd->m_pCurrent->SetVolume(0, ms);`)
 - **DELETE a local** so the value becomes a cache-parked temp instead
-  (`g_gameReg->m_cmdGrid->m_grid[...]` rather than `CGruntzMgr* reg = g_gameReg;`)
+  (`g_gameReg->m_cmdGrid->m_units[...]` rather than `CGruntzMgr* reg = g_gameReg;`)
 
 The same knob also selects *how many* registers a pointer chain consumes: with the
 middle link bound to a local, cl chases the chain in ONE register

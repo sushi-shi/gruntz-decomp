@@ -161,5 +161,5 @@ repeat: cl interleaves the copies of consecutive holes, so the `mov reg,esp` can
 22 bytes after its `sub esp,N` (a fixed byte window read one hole where the
 disassembly has four), and cl TAIL-MERGES the argument build, so several
 predecessors each fill a hole and `jmp` to one shared call - stopping at the first
-`call` byte named `CTriggerMgr::CellDispatch` for two blocks that jump to
-`CGrunt::PlaySound`.
+`call` byte named `CTriggerMgr::StartUnitDeath` for two blocks that jump to
+`CGrunt::SetFacing`.

@@ -241,8 +241,8 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
 
     i32 time = g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperTimePerTile", 1000);
     m_scrollMode = 0;
-    m_lastDropTileX = -1;
-    m_lastDropTileY = -1;
+    m_lastDropPlayerIndex = -1;
+    m_lastDropUnitIndex = -1;
     m_speed = g_objDropDiv / static_cast<double>(static_cast<u32>(time));
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_scrollMode = 1;
@@ -278,14 +278,19 @@ i32 CObjectDropper::Update() {
             box.right = o->m_screenX + o->m_layer->m_anchorX - 7;
             box.top = o->m_screenY - o->m_layer->m_anchorY + 7;
             box.bottom = o->m_screenY + o->m_layer->m_anchorY - 7;
-            i32 tx;
-            i32 ty;
-            CGrunt* found =
-                g_gameReg->m_cmdGrid
-                    ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &tx, &ty, &box);
+            i32 playerIndex;
+            i32 unitIndex;
+            CGrunt* found = g_gameReg->m_cmdGrid->FindGruntAt(
+                o->m_screenX,
+                o->m_screenY,
+                &o->m_area,
+                &playerIndex,
+                &unitIndex,
+                &box
+            );
             if (found != NULL) {
-                if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
-                    if (m_scrollMode == 0 || tx == 0) {
+                if (m_lastDropPlayerIndex != playerIndex || m_lastDropUnitIndex != unitIndex) {
+                    if (m_scrollMode == 0 || playerIndex == 0) {
                         CGameObject* fo = found->m_object;
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
@@ -296,8 +301,8 @@ i32 CObjectDropper::Update() {
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
-                            m_lastDropTileX = tx;
-                            m_lastDropTileY = ty;
+                            m_lastDropPlayerIndex = playerIndex;
+                            m_lastDropUnitIndex = unitIndex;
                             m_dropInterval =
                                 g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperDelay", 1000);
                             m_lastDropTime = g_frameTime;
@@ -315,30 +320,30 @@ i32 CObjectDropper::Update() {
         m_posX += drift;
         if (m_posX >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW)) {
             m_posX = 0.0;
-            m_lastDropTileX = -1;
-            m_lastDropTileY = -1;
+            m_lastDropPlayerIndex = -1;
+            m_lastDropUnitIndex = -1;
         }
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
             m_posX = static_cast<double>((g_gameReg->m_world->m_level->m_mainPlane->m_wrapW - 1));
-            m_lastDropTileX = -1;
-            m_lastDropTileY = -1;
+            m_lastDropPlayerIndex = -1;
+            m_lastDropUnitIndex = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
         if (m_posY > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapH)) {
             m_posY = 0.0;
-            m_lastDropTileX = -1;
-            m_lastDropTileY = -1;
+            m_lastDropPlayerIndex = -1;
+            m_lastDropUnitIndex = -1;
         }
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
             m_posY = static_cast<double>((g_gameReg->m_world->m_level->m_mainPlane->m_wrapH - 1));
-            m_lastDropTileX = -1;
-            m_lastDropTileY = -1;
+            m_lastDropPlayerIndex = -1;
+            m_lastDropUnitIndex = -1;
         }
     }
 
@@ -360,8 +365,8 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
             ar->Write(&m_posY, sizeof(m_posY));
             ar->Write(&m_travelDx, sizeof(m_travelDx));
             ar->Write(&m_travelDy, sizeof(m_travelDy));
-            ar->Write(&m_lastDropTileX, sizeof(m_lastDropTileX));
-            ar->Write(&m_lastDropTileY, sizeof(m_lastDropTileY));
+            ar->Write(&m_lastDropPlayerIndex, sizeof(m_lastDropPlayerIndex));
+            ar->Write(&m_lastDropUnitIndex, sizeof(m_lastDropUnitIndex));
             ar->Write(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_LOAD:
@@ -370,8 +375,8 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
             ar->Read(&m_posY, sizeof(m_posY));
             ar->Read(&m_travelDx, sizeof(m_travelDx));
             ar->Read(&m_travelDy, sizeof(m_travelDy));
-            ar->Read(&m_lastDropTileX, sizeof(m_lastDropTileX));
-            ar->Read(&m_lastDropTileY, sizeof(m_lastDropTileY));
+            ar->Read(&m_lastDropPlayerIndex, sizeof(m_lastDropPlayerIndex));
+            ar->Read(&m_lastDropUnitIndex, sizeof(m_lastDropUnitIndex));
             ar->Read(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_POSTLOAD: {

@@ -56,14 +56,13 @@ i32 CGrunt::StepPeerTracking() {
     CGameObject* a = p->m_object;
     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p) && RectContainsGated(a->m_screenX, a->m_screenY)) {
         CGameObject* b = p->m_object;
-        g_gameReg->m_cmdGrid
-            ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, b->m_screenX, b->m_screenY);
+        g_gameReg->m_cmdGrid->ApplyTriggerB(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
         return 1;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
-    if (GruntInRadius(p->m_tileOwnerHi, p->m_tileOwnerLo)) {
+    if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
         CGameObject* b = p->m_object;
         TileSwitch(
             b->m_screenX >> TILE_SHIFT_PX,

@@ -296,9 +296,9 @@ i32 CMapMgr::Search(
     seed->m_col = x1;
     seed->m_row = y1;
     seed->m_gCost = 0;
-    i32 dx = abs(m_goal.m_y - y1);
-    i32 dxx = abs(m_goal.m_x - x1);
-    i32 h = (dx + dxx) * 2;
+    i32 deltaY = abs(m_goal.m_y - y1);
+    i32 deltaX = abs(m_goal.m_x - x1);
+    i32 h = (deltaY + deltaX) * 2;
     seed->m_hCost = h;
     seed->m_fCost = h;
     seed->m_openNext = NULL;

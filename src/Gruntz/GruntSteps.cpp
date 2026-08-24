@@ -334,7 +334,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     return 1;
 }
 RVA(0x000511b0, 0x246)
-void CGrunt::PlayMoveSound(i32 x, i32 y) {
+void CGrunt::FaceTowardPixel(i32 x, i32 y) {
     CWwdGameObjectA* h = m_object;
     i32 dy = y - h->m_screenY;
     i32 dx = x - h->m_screenX;
@@ -342,9 +342,9 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
 
     if (dx == 0) {
         if (y > h->m_screenY) {
-            PlaySound(1000, g_gruntMoveDirSouth);
+            SetFacing(1000, g_gruntMoveDirSouth);
         } else if (y < h->m_screenY) {
-            PlaySound(1000, g_gruntMoveDirNorth);
+            SetFacing(1000, g_gruntMoveDirNorth);
         }
         return;
     }
@@ -352,33 +352,33 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
     float ratio = static_cast<float>(dy) / dx;
     if (ratio > 2.0f || ratio < -2.0f) {
         if (y > h->m_screenY) {
-            PlaySound(1000, g_gruntMoveDirSouth);
+            SetFacing(1000, g_gruntMoveDirSouth);
         } else {
-            PlaySound(1000, g_gruntMoveDirNorth);
+            SetFacing(1000, g_gruntMoveDirNorth);
         }
         return;
     }
     if (ratio <= g_slopePosHalf && ratio >= g_slopeNegHalf) {
         if (x > cx) {
-            PlaySound(1000, g_gruntMoveDirEast);
+            SetFacing(1000, g_gruntMoveDirEast);
         } else {
-            PlaySound(1000, g_gruntMoveDirWest);
+            SetFacing(1000, g_gruntMoveDirWest);
         }
         return;
     }
     if (ratio > g_slopePosHalf) {
         if (x > cx) {
-            PlaySound(1000, g_gruntMoveDirSouthEast);
+            SetFacing(1000, g_gruntMoveDirSouthEast);
         } else {
-            PlaySound(1000, g_gruntMoveDirNorthWest);
+            SetFacing(1000, g_gruntMoveDirNorthWest);
         }
         return;
     }
     if (ratio < g_slopeNegHalf) {
         if (x > cx) {
-            PlaySound(1000, g_gruntMoveDirNorthEast);
+            SetFacing(1000, g_gruntMoveDirNorthEast);
         } else {
-            PlaySound(1000, g_gruntMoveDirSouthWest);
+            SetFacing(1000, g_gruntMoveDirSouthWest);
         }
     }
 }
@@ -392,8 +392,8 @@ i32 CGrunt::CanShowStamina() {
 }
 
 RVA(0x000514e0, 0x1e)
-void CGrunt::PlayMoveSoundAtTile(i32 tx, i32 ty) {
-    PlayMoveSound(tx * 0x20 + 0x10, ty * 0x20 + 0x10);
+void CGrunt::FaceTowardTile(i32 tileX, i32 tileY) {
+    FaceTowardPixel(tileX * 0x20 + 0x10, tileY * 0x20 + 0x10);
 }
 
 // @early-stop
@@ -458,10 +458,10 @@ i32 CGrunt::IsDropReady(i32 a) {
     }
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        i32 ownerLo = m_tileOwnerLo;
-        i32 ownerHi = m_tileOwnerHi;
+        i32 unitIndex = m_unitIndex;
+        i32 playerIndex = m_playerIndex;
         board->m_rows[newY][newX].m_flags |= BRICKZ_CELL_OCCUPIED;
-        board->m_rows[newY][newX].m_occupantId = (ownerHi << 8) | ownerLo;
+        board->m_rows[newY][newX].m_occupantId = (playerIndex << 8) | unitIndex;
     }
 
     m_lastTilePx = m_commitPx;
@@ -697,7 +697,8 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = board->m_rowInts[mty][mtx * 7 + 1];
             }
-            m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_tileOwnerHi);
+            m_tileMgr
+                ->StartUnitDeath((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_playerIndex);
         }
         goto commit;
     }
@@ -861,7 +862,7 @@ i32 CGrunt::StepCompassMove() {
 
 commit:
     m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-    PlaySound(0x3e8, voice);
+    SetFacing(0x3e8, voice);
     m_commitPx = m_lastTilePx;
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
@@ -874,7 +875,7 @@ commit:
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> TILE_SHIFT_PX;
         i32 ny = moveY >> TILE_SHIFT_PX;
-        i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+        i32 owner = (m_playerIndex << 8) | m_unitIndex;
         b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
         b->m_rowInts[ny][nx * 7 + 1] = owner;
     }
@@ -952,7 +953,7 @@ i32 CGrunt::ClaimSwitchTile() {
     gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
     CGruntzMapMgr* nb = g_gameReg->m_tileGrid;
-    i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+    i32 owner = (m_playerIndex << 8) | m_unitIndex;
     nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
     nb->m_rowInts[ty][tx * 7 + 1] = owner;
 
@@ -964,14 +965,19 @@ i32 CGrunt::ClaimSwitchTile() {
 }
 
 RVA(0x00052ed0, 0x42)
-i32 CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
+i32 CGrunt::SetArrivalTarget(
+    i32 targetPlayerIndex,
+    i32 targetUnitIndex,
+    i32 targetPxX,
+    i32 targetPxY
+) {
     Coord cell;
-    cell.m_x = a;
-    cell.m_y = b;
+    cell.m_x = targetPlayerIndex;
+    cell.m_y = targetUnitIndex;
     m_arrivalCell = cell;
     m_arrivalActive = 1;
-    m_defenderPx.m_x = (c & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_defenderPx.m_y = (d & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_defenderPx.m_x = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_defenderPx.m_y = (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
     return 1;
 }
 
@@ -1018,8 +1024,8 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
             g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1028,7 +1034,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         if (m_entranceReason != PICKUP_BOMB) {
             goto applyTail;
         }
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+        m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
         return 1;
     }
     eq = ANIMATION_ACT_EQUALS("G");
@@ -1122,7 +1128,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     eq = (strcmp(*rec, "M") == 0);
                 }
                 if (eq) {
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+                    m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                     return 1;
                 }
                 goto applyTail;
@@ -1511,12 +1517,12 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_reserved1dc, sizeof(m_reserved1dc));
     ar->Write(&m_entranceActive, sizeof(m_entranceActive));
     ar->Write(&m_arrivalPending, sizeof(m_arrivalPending));
-    ar->Write(&m_tileOwnerHi, sizeof(m_tileOwnerHi));
-    ar->Write(&m_tileOwnerLo, sizeof(m_tileOwnerLo));
+    ar->Write(&m_playerIndex, sizeof(m_playerIndex));
+    ar->Write(&m_unitIndex, sizeof(m_unitIndex));
     ar->Write(&m_moveIcon, sizeof(m_moveIcon));
     ar->Write(&m_savedMoveIcon, sizeof(m_savedMoveIcon));
     ar->Write(&m_entranceCommitted, sizeof(m_entranceCommitted));
-    ar->Write(&m_neighborCell, sizeof(m_neighborCell));
+    ar->Write(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
     ar->Write(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Write(&m_reserved210, sizeof(m_reserved210));
     ar->Write(&m_struckPose, sizeof(m_struckPose));
@@ -1575,7 +1581,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
     ar->Write(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
     ar->Write(&m_pendingTrigger, sizeof(m_pendingTrigger));
-    ar->Write(&m_killerSlot, sizeof(m_killerSlot));
+    ar->Write(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
     ar->Write(&m_tileClaimed, sizeof(m_tileClaimed));
     ar->Write(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Write(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));

@@ -153,14 +153,19 @@ i32 CPathHazard::Tick() {
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
-        i32 outA, outB;
-        CGrunt* ent =
-            reg->m_cmdGrid
-                ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
+        i32 playerIndex, unitIndex;
+        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
+            obj->m_screenX,
+            obj->m_screenY,
+            &obj->m_area,
+            &playerIndex,
+            &unitIndex,
+            &rect
+        );
         if (ent != NULL && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || outA == 0) {
-                if (this->HitTest(outA, outB) == 0) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || playerIndex == 0) {
+                if (this->HitTest(playerIndex, unitIndex) == 0) {
                     return 0;
                 }
             }
@@ -274,14 +279,19 @@ i32 CPathHazard::SiblingTick() {
     if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_SINGLE) {
 
     } else {
-        i32 outA, outB;
-        CGrunt* ent =
-            reg->m_cmdGrid
-                ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
+        i32 playerIndex, unitIndex;
+        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
+            obj->m_screenX,
+            obj->m_screenY,
+            &obj->m_area,
+            &playerIndex,
+            &unitIndex,
+            &rect
+        );
         if (ent != NULL && ent->m_gruntKind != GRUNT_INVULNERABLE) {
 
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || outA == 0) {
-                if (this->HitTest(outA, outB) == 0) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || playerIndex == 0) {
+                if (this->HitTest(playerIndex, unitIndex) == 0) {
                     return 0;
                 }
             }
@@ -302,12 +312,12 @@ i32 CPathHazard::SiblingTick() {
 }
 
 RVA(0x000b4640, 0x104)
-i32 CRainCloud::HitTest(i32 a, i32 b) {
+i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strikeArmed = 1;
     m_strike.m_window =
         static_cast<i64>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0));
     m_strike.m_deadline = static_cast<i64>(g_frameTime);
-    g_gameReg->m_cmdGrid->CellDispatch(a, b, DEATH_ELECTROCUTE, -1);
+    g_gameReg->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;

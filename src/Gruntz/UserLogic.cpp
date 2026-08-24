@@ -33,7 +33,7 @@ void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
 }
 
 RVA(0x00008b50, 0x3)
-void CUserLogic::XferName(char* name) {}
+void CUserLogic::StepBehavior(char* animationActName) {}
 
 RVA(0x00008b70, 0x3)
 void CUserLogic::FireActivation(i32) {}

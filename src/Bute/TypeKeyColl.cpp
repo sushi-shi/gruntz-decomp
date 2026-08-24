@@ -952,7 +952,7 @@ RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CUserLogic* ar) {
     CString* entry = TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
-    ar->XferName(entry->GetBuffer(0));
+    ar->StepBehavior(entry->GetBuffer(0));
     ar->FireActivation(ar->m_objAux->ActKey());
 
     entry = TypeResolve(ar->m_objAux->ActKey());

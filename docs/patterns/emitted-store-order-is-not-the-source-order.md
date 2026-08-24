@@ -83,7 +83,7 @@ five-instruction EDI/EDX rotation elsewhere in the body. Applied at the four
 coord-pool clone sites the same way, `RepathAroundBlockedTiles` went
 72.97 -> 73.68 and `PhaseStep` 83.37 -> 83.79.
 
-The counter-case is worth knowing: `CTriggerMgr::NotifyCell`'s `Coord pt` is a
+The counter-case is worth knowing: `CTriggerMgr::UnregisterUnit`'s `Coord pt` is a
 reconstruction of a retail SPILL PAIR, not a source local
 (`dead-eight-byte-coord-temp-is-unreproduced.md`), and copy-initialising it
 costs 5 points. Convert a run to an object copy only where the object is real.

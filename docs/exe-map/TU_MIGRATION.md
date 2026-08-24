@@ -100,7 +100,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x085500` | `?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ` | rezsync | `0x85500` ? |
 | `0x0860b0` | `?UpdateScoreHud@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x860b0` ? |
 | `0x0861e0` | `?AccrueScoreTime@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x861e0` ? |
-| `0x093d40` | `?BuildLevelRezPath@CGruntzMgr@@QAEHHHHHVCString@@@Z` | levelrezpath | `0x93d40` ? |
+| `0x093d40` | `?ResolveLevelChecksum@CGruntzMgr@@QAEHHHHHVCString@@@Z` | levelrezpath | `0x93d40` ? |
 | `0x094340` | `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` | arrayserialize | `0x94340` ? |
 | `0x094640` | `??0CGruntzWnd@@QAE@XZ` | gruntzwnd | `0x94640` ? |
 | `0x09b770` | `_CreateLevelTime` | statedispatch | `0x9b770` ? |

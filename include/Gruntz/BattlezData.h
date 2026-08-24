@@ -36,13 +36,13 @@ public:
     ~CBattlezData();
     void Init();
     void SetCount(i32 count);
-    void MarkFlag(i32 y, i32 x);
+    void MarkFlag(i32 winnerPlayerIndex, i32 loserPlayerIndex);
     void ClearFlags();
-    i32 SumFlags(i32 y);
-    i32 GetFlag(i32 x, i32 y);
-    void BumpWin(i32 y, i32 x);
+    i32 SumFlags(i32 validatedPlayerIndex);
+    i32 GetFlag(i32 winnerPlayerIndex, i32 loserPlayerIndex);
+    void BumpWin(i32 winnerPlayerIndex, i32 loserPlayerIndex);
     void ClearWins();
-    i32 SumWinRow(i32 y);
+    i32 SumWinRow(i32 playerIndex);
     i32 InBounds(i32 unused);
     i32 AllRecordsInBounds();
     float GroupRatio();

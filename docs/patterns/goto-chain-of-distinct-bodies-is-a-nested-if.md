@@ -50,5 +50,5 @@ Companion in the same function: three loads and three stores through ONE base re
 `operator=`, i.e. `m_entranceCell = rec;` — field-by-field assignment splits the base
 register per store.
 
-Measured on `CGrunt::PlaySound` @0x4ac10: **66.95% -> 93.37%**, skeleton 70/70 blocks with
+Measured on `CGrunt::SetFacing` @0x4ac10: **66.95% -> 93.37%**, skeleton 70/70 blocks with
 every edge `==` (it was 46 `!!` rows before). The struct assignment is worth the last 0.05.

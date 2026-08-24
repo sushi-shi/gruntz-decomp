@@ -220,10 +220,16 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == NULL) {
         return 0;
     }
-    i32 fc = slot->m_pathHi;
-    i32 f8 = slot->m_pathLo;
-    const char* name = (fc == 0 && f8 == 0) ? "" : slot->m_levelName;
-    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
+    i32 isBattlez = slot->m_isBattlez;
+    i32 isCustom = slot->m_isCustom;
+    const char* name = (isBattlez == 0 && isCustom == 0) ? "" : slot->m_levelName;
+    i32 r = g_gameReg->ResolveLevelChecksum(
+        isBattlez == 0,
+        isBattlez,
+        isCustom,
+        slot->m_levelId,
+        CString(name)
+    );
     if (r == 0) {
         g_gameReg->EnterModalUI(
             "The level that this game was saved on does not exist!\n\nThis "
@@ -246,11 +252,12 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == NULL) {
         return 0;
     }
-    i32 fc = slot->m_pathHi;
-    i32 f8 = slot->m_pathLo;
-    const char* name = (fc == 0 && f8 == 0) ? "" : slot->m_levelName;
+    i32 isBattlez = slot->m_isBattlez;
+    i32 isCustom = slot->m_isCustom;
+    const char* name = (isBattlez == 0 && isCustom == 0) ? "" : slot->m_levelName;
 
-    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
+    return g_gameReg
+        ->ResolveLevelChecksum(isBattlez == 0, isBattlez, isCustom, slot->m_levelId, CString(name));
 }
 
 RVA(0x000e5410, 0x3d)

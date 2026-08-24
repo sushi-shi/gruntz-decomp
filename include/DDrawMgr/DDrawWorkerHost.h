@@ -87,7 +87,7 @@ public:
     void WrapCoord(LONG* px, LONG* py);
 
     void SnapToTileCenter(struct Coord* out, i32 x, i32 y);
-    i32 GetTileHandle(i32 row, i32 col);
+    i32 GetTileHandle(i32 tileX, i32 tileY);
 
     CDDrawWorker* FrameSetAt(u32 index) {
 
@@ -99,7 +99,7 @@ public:
     float m_scaleX;
     float m_scaleY;
     i32* m_tileGrid;
-    i32* m_colOffsets;
+    i32* m_rowOffsets;
     i32 m_gridW;
     i32 m_gridH;
     i32 m_wrapW;
@@ -170,6 +170,6 @@ public:
     }                                                                                              \
     plane->RecomputePlaneCoords()
 
-#define SET_WORKER_HOST_CELL(plane, x, y, id) (plane)->m_tileGrid[(plane)->m_colOffsets[y] + x] = id
+#define SET_WORKER_HOST_CELL(plane, x, y, id) (plane)->m_tileGrid[(plane)->m_rowOffsets[y] + x] = id
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

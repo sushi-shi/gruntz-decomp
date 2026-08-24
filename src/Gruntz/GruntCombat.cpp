@@ -1154,37 +1154,43 @@ i32 CPairRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGam
 
 // @early-stop
 RVA(0x00059230, 0x450)
-i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
-    if (mode == 0) {
+i32 CGrunt::HandleCombatContact(
+    i32 otherPxX,
+    i32 otherPxY,
+    i32 isAttacker,
+    i32 otherPlayerIndex,
+    i32 otherUnitIndex
+) {
+    if (isAttacker == 0) {
         switch (m_arrivalState) {
             // Retail's dense range starts at 0 with its own jump-table entry:
             // an empty AI_NONE arm, distinct from the default (slot 8).
             case AI_NONE:
                 break;
             case AI_SMARTCHASER:
-                m_arrivalCell.m_x = d;
-                m_arrivalCell.m_y = e;
+                m_arrivalCell.m_x = otherPlayerIndex;
+                m_arrivalCell.m_y = otherUnitIndex;
                 break;
             case AI_DUMBCHASER:
             case AI_DEFENDER:
-                m_arrivalCell.m_x = d;
-                m_arrivalCell.m_y = e;
+                m_arrivalCell.m_x = otherPlayerIndex;
+                m_arrivalCell.m_y = otherUnitIndex;
                 m_defenderState = AISTATE_ATTACK;
                 break;
             case AI_POSTGUARD:
-                m_arrivalCell.m_x = d;
-                m_arrivalCell.m_y = e;
+                m_arrivalCell.m_x = otherPlayerIndex;
+                m_arrivalCell.m_y = otherUnitIndex;
                 m_defenderState = AISTATE_ATTACK;
                 break;
             case AI_HITANDRUNNER:
             case AI_OBJECTGUARD:
-                m_arrivalCell.m_x = d;
-                m_arrivalCell.m_y = e;
+                m_arrivalCell.m_x = otherPlayerIndex;
+                m_arrivalCell.m_y = otherUnitIndex;
                 m_defenderState = AISTATE_ATTACK;
                 break;
             case AI_BATTLEZ_PATH:
-                m_arrivalCell.m_x = d;
-                m_arrivalCell.m_y = e;
+                m_arrivalCell.m_x = otherPlayerIndex;
+                m_arrivalCell.m_y = otherUnitIndex;
                 break;
             default:
                 break;
@@ -1193,7 +1199,8 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         i32 phase = m_arrivalPhase;
         if ((phase == ARRIVAL_TAG_TRIGGER_B || phase == ARRIVAL_TAG_TRIGGER_A)
             && m_arrivalActive != 0) {
-            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            CGrunt* occ =
+                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 sx = inner->m_screenX;
@@ -1205,12 +1212,12 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                     if (RectContainsGated(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_tileMgr->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, sx, sy);
+                    applied = m_tileMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, sx, sy);
                 } else {
                     if (RectContains(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, sx, sy);
+                    applied = m_tileMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, sx, sy);
                 }
                 // The outer test is redundant with the inner one; retail emits both.
                 if (applied == 0 || applied == 1) {
@@ -1221,7 +1228,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             }
         }
     } else {
-        PlayMoveSound(a, b);
+        FaceTowardPixel(otherPxX, otherPxY);
 
         // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
         // out of line at the first and expanded it at the other two.
@@ -1281,8 +1288,8 @@ RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
     i32 struckPose,
-    i32 srcRow,
-    i32 srcCol,
+    i32 srcPlayerIndex,
+    i32 srcUnitIndex,
     i32 srcPxX,
     i32 srcPxY,
     i32 fromProjectile,
@@ -1293,12 +1300,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     if (attackerGruntKind == GRUNT_CONVERSION) {
-        CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
+        CGrunt* enemy = m_tileMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
         if (enemy != NULL
             && m_tileMgr->SpawnGrunt(
-                   this->m_tileOwnerHi,
-                   this->m_tileOwnerLo,
-                   srcRow,
+                   this->m_playerIndex,
+                   this->m_unitIndex,
+                   srcPlayerIndex,
                    IDX(enemy->m_moveIcon)
                ) != 0) {
             i32 h = enemy->m_health + 0x19;
@@ -1321,7 +1328,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE
-        && this->m_tileOwnerHi == g_curPlayer) {
+        && this->m_playerIndex == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
     }
@@ -1331,13 +1338,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
     } else if (this->m_gruntKind == GRUNT_REACTIVEARMOR) {
         hit = static_cast<i32>((static_cast<float>(hit) * g_quarterScale));
         if (fromProjectile == 0) {
-            CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
+            CGrunt* enemy = m_tileMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
             if (enemy != NULL && enemy->m_entranceCommitted != 0) {
                 i32 nh = enemy->m_health - hit * 3;
                 nh = (nh < 0) ? 0 : nh;
                 enemy->m_health = nh;
                 if (nh <= 0) {
-                    m_tileMgr->CellDispatch(srcRow, srcCol, DEATH_NORMAL, -1);
+                    m_tileMgr->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_NORMAL, -1);
                 }
             }
         }
@@ -1347,12 +1354,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
     nh = (nh < 0) ? 0 : nh;
     this->m_health = nh;
     if (this->m_entranceReason == PICKUP_BOMB) {
-        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, DEATH_NORMAL, srcRow);
+        m_tileMgr
+            ->StartUnitDeath(this->m_playerIndex, this->m_unitIndex, DEATH_NORMAL, srcPlayerIndex);
         return 0;
     }
     if (nh <= 0) {
         this->m_entranceCommitted = 0;
-        this->m_killerSlot = srcRow;
+        this->m_killerPlayerIndex = srcPlayerIndex;
     }
 
     LeafCue* cue = NULL;
@@ -1534,7 +1542,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_health > 0) {
             return 1;
         }
-        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, DEATH_BURN, srcRow);
+        m_tileMgr
+            ->StartUnitDeath(this->m_playerIndex, this->m_unitIndex, DEATH_BURN, srcPlayerIndex);
         return 0;
     }
 
@@ -1722,7 +1731,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         CMapMgr* newGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         newGrid->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
-        newGrid->m_rows[nyt][nxt].m_occupantId = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
+        newGrid->m_rows[nyt][nxt].m_occupantId = (this->m_playerIndex << 8) | this->m_unitIndex;
 
         if (m_coordList.GetCount() != 0) {
             Coord* node = NULL;
@@ -1758,8 +1767,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
 // @early-stop
 RVA(0x0005b050, 0x40b)
-i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
-    if (a == m_tileOwnerHi && g_traitorMode == 0) {
+i32 CGrunt::CommitNeighbor(
+    i32 targetPlayerIndex,
+    i32 targetUnitIndex,
+    i32 targetPxX,
+    i32 targetPxY
+) {
+    if (targetPlayerIndex == m_playerIndex && g_traitorMode == 0) {
         return 0;
     }
     PickupType reason = m_entranceReason;
@@ -1780,7 +1794,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     ArmGruntCombatTimeout(this);
     m_neighborScanEnabled = 1;
 
-    CGrunt* nb = m_tileMgr->m_grid[a * TM_GRID_COLS + b];
+    CGrunt* nb = m_tileMgr->m_units[targetPlayerIndex * TM_UNITS_PER_PLAYER + targetUnitIndex];
     if (nb == NULL || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
         return 0;
     }
@@ -1800,15 +1814,15 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         flag = IDX(v);
     }
     if (flag != 0) {
-        RunMoveConfig(c >> TILE_SHIFT_PX, d >> TILE_SHIFT_PX);
+        RunMoveConfig(targetPxX >> TILE_SHIFT_PX, targetPxY >> TILE_SHIFT_PX);
         return 1;
     }
 
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1842,18 +1856,24 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_poweredUp = 1;
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
-    ArrivalRecycle(c, d, 1, a, b);
-    m_neighborCell.m_x = a;
-    m_neighborCell.m_y = b;
-    m_attackTargetPx.m_x = c;
-    m_attackTargetPx.m_y = d;
+    HandleCombatContact(targetPxX, targetPxY, 1, targetPlayerIndex, targetUnitIndex);
+    m_neighborPlayerIndex = targetPlayerIndex;
+    m_neighborUnitIndex = targetUnitIndex;
+    m_attackTargetPx.m_x = targetPxX;
+    m_attackTargetPx.m_y = targetPxY;
     if (m_stamina < STAMINA_FULL || m_entranceActive != 0) {
         m_neighborValid = 1;
         return 1;
     }
     m_neighborValid = 0;
-    nb->ArrivalRecycle(m_object->m_screenX, m_object->m_screenY, 0, m_tileOwnerHi, m_tileOwnerLo);
-    RearmAttackAnim(a, b);
+    nb->HandleCombatContact(
+        m_object->m_screenX,
+        m_object->m_screenY,
+        0,
+        m_playerIndex,
+        m_unitIndex
+    );
+    RearmAttackAnim(targetPlayerIndex, targetUnitIndex);
     return 1;
 }
 
@@ -1863,7 +1883,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 // needs an extra `xor eax,eax` before the sete; and the GetNameRecord loop's
 // ebx/ebp are swapped.  Branch sequence and block topology are identical.
 RVA(0x0005b570, 0x12b)
-i32 CGrunt::BeginAttack(i32 a, i32 b) {
+i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != 0) {
 
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
@@ -1872,15 +1892,15 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
         if (!eq) {
             if (m_stamina >= STAMINA_FULL) {
 
-                PlayMoveSound(a, b);
+                FaceTowardPixel(targetPxX, targetPxY);
                 m_poweredUp = 1;
                 m_combatActive = 1;
                 CreateHealthSprite();
 
                 ArmGruntCombatTimeout(this);
                 m_neighborScanEnabled = 1;
-                m_attackTargetPx.m_x = a;
-                m_attackTargetPx.m_y = b;
+                m_attackTargetPx.m_x = targetPxX;
+                m_attackTargetPx.m_y = targetPxY;
                 RearmAttackAnim2();
                 return 1;
             }
@@ -1891,14 +1911,15 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
 
 RVA(0x0005b6f0, 0xb5)
 CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
-    if (m_neighborCell.m_x == -1) {
+    if (m_neighborPlayerIndex == -1) {
         return NULL;
     }
-    if (m_neighborCell.m_y == -1) {
+    if (m_neighborUnitIndex == -1) {
         return NULL;
     }
 
-    CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
+    CGrunt* n =
+        m_tileMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
     if (n != NULL && n->m_entranceCommitted != 0) {
         if (validate != 0) {
             if (n->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, n)) {
@@ -1910,8 +1931,8 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         }
         if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
             CommitNeighbor(
-                m_neighborCell.m_x,
-                m_neighborCell.m_y,
+                m_neighborPlayerIndex,
+                m_neighborUnitIndex,
                 n->m_object->m_screenX,
                 n->m_object->m_screenY
             );
@@ -2111,7 +2132,7 @@ const double s_fpZero = 0.0;
 // form. Store multiset and offsets are equal to retail's; only their ORDER differs
 // (retail sinks the combat-timeout else-arm to 0x5e58f, past the kind dispatch).
 RVA(0x0005d210, 0x1554)
-void CGrunt::XferName(char*) {
+void CGrunt::StepBehavior(char*) {
     if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
         m_struckCount = 0;
     }
@@ -2208,7 +2229,7 @@ void CGrunt::XferName(char*) {
             } else {
 
                 CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_animWorker->m_logic);
-                icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
+                icon->PlaceAt(m_playerIndex, m_unitIndex);
             }
         }
 
@@ -2230,17 +2251,13 @@ void CGrunt::XferName(char*) {
             flags = bd->CellFlagsAt(tx, ty);
         }
         if (flags & 0x100000) {
-            reg2->m_options[0]
-                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[0].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x200000) {
-            reg2->m_options[1]
-                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[1].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x400000) {
-            reg2->m_options[2]
-                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[2].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x800000) {
-            reg2->m_options[3]
-                .m_battlezConfig.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+            reg2->m_options[3].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         }
 
         if (onWingzTile != 0) {
@@ -2297,7 +2314,7 @@ void CGrunt::XferName(char*) {
             } else if (cy >= level->m_mainPlane->m_gridH) {
                 cy = level->m_mainPlane->m_gridH - 1;
             }
-            i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
+            i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_rowOffsets[cy] + cx];
             TileCollisionKind kind;
             if (raw == UNINIT_FILL || raw == -1) {
                 kind = TILEKIND_PASSABLE;
@@ -2320,7 +2337,7 @@ void CGrunt::XferName(char*) {
                     break;
                 case TILEKIND_SPIKES:
                     // Unrecovered: a tile COLUMN into a death-cause slot is not a
-                    // real conversion, and gate=0 keeps it from CellDispatch - but
+                    // real conversion, and gate=0 keeps it from StartUnitDeath - but
                     // dropping the store changes .text, so the assignment is real.
                     hazard = static_cast<GruntDeathType>(cx);
                     gate = 0;
@@ -2351,7 +2368,7 @@ void CGrunt::XferName(char*) {
                     break;
             }
             if (gate != 0) {
-                m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, hazard, -1);
+                m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, hazard, -1);
                 return;
             }
         }
@@ -2398,7 +2415,7 @@ void CGrunt::XferName(char*) {
                 m_health = hp;
                 if (hp <= 0) {
                     ConsiderArrival(1);
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+                    m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                     return;
                 }
             }
@@ -2679,7 +2696,7 @@ kindDispatch:
             m_health = hp;
             if (hp <= 0) {
                 ConsiderArrival(1);
-                m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+                m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 return;
             }
             m_convertTimeLo =
@@ -2786,8 +2803,8 @@ kindDispatch:
 
     if (m_pendingTrigger != 0 && m_stamina >= STAMINA_FULL) {
         m_tileMgr->ApplyTriggerA(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_pendingTriggerPx.m_x,
             m_pendingTriggerPx.m_y
         );
@@ -2990,7 +3007,8 @@ void CGrunt::AdvanceMotion() {
                 if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
                     if (m_arrivalActive != 0) {
                         CGrunt* other =
-                            m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                            m_tileMgr->m_units
+                                [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
                             i32 otherPxY = other->m_object->m_screenY;
@@ -3029,14 +3047,14 @@ void CGrunt::AdvanceMotion() {
                             }
                             result =
                                 m_tileMgr
-                                    ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, targetX, targetY);
+                                    ->ApplyTriggerA(m_playerIndex, m_unitIndex, targetX, targetY);
                         } else {
                             result = 0;
                         }
                     } else {
                         result = m_tileMgr->ApplyTriggerA(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
+                            m_playerIndex,
+                            m_unitIndex,
                             m_arrivalTargetPx.m_x,
                             m_arrivalTargetPx.m_y
                         );
@@ -3044,7 +3062,8 @@ void CGrunt::AdvanceMotion() {
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
                     if (m_arrivalActive != 0) {
                         CGrunt* other =
-                            m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                            m_tileMgr->m_units
+                                [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
                             i32 otherPxY = other->m_object->m_screenY;
@@ -3074,14 +3093,14 @@ void CGrunt::AdvanceMotion() {
                             }
                             result =
                                 m_tileMgr
-                                    ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, targetX, targetY);
+                                    ->ApplyTriggerB(m_playerIndex, m_unitIndex, targetX, targetY);
                         } else {
                             result = 0;
                         }
                     } else {
                         result = m_tileMgr->ApplyTriggerB(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
+                            m_playerIndex,
+                            m_unitIndex,
                             m_arrivalTargetPx.m_x,
                             m_arrivalTargetPx.m_y
                         );
@@ -3121,7 +3140,7 @@ void CGrunt::AdvanceMotion() {
             if (ClaimSwitchTile() != 0) {
                 return;
             }
-            m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+            m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
             return;
         }
         Coord entrance = EntrancePx();

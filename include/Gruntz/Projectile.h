@@ -32,8 +32,15 @@ public:
     CProjectile(CGameObject* owner);
     virtual ~CProjectile() OVERRIDE;
 
-    virtual i32
-    LoadProjectileSprites(PickupType kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1);
+    virtual i32 LoadProjectileSprites(
+        PickupType kind,
+        i32 sourcePlayerIndex,
+        i32 sourceUnitIndex,
+        i32 targetPxX,
+        i32 targetPxY,
+        i32 sourcePxX,
+        i32 sourcePxY
+    );
 
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterType();
@@ -44,8 +51,8 @@ public:
     virtual void AdvanceMotion() OVERRIDE;
 
     PickupType m_kind;
-    i32 m_srcRow, m_srcCol;
-    i32 m_targetX, m_targetY;
+    i32 m_sourcePlayerIndex, m_sourceUnitIndex;
+    i32 m_targetPxX, m_targetPxY;
     double m_flightDist;
     i32 m_timePerTile;
     double m_velScale;
@@ -67,7 +74,7 @@ public:
     CWwdGameObjectA* m_shadow;
     DirectSoundMgr* m_sound;
     CPtrList m_hitList;
-    i32 m_targetId, m_ownerId;
+    i32 m_sourcePxX, m_sourcePxY;
 };
 
 extern const double g_projPhase1;

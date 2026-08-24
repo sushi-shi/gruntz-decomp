@@ -101,7 +101,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 col = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_colOffsets[qy] + col;
+            i32 idx = pl->m_rowOffsets[qy] + col;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
@@ -183,7 +183,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 col = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_colOffsets[qy] + col;
+            i32 idx = pl->m_rowOffsets[qy] + col;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
@@ -265,7 +265,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 c = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_colOffsets[qy] + c;
+            i32 idx = pl->m_rowOffsets[qy] + c;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
@@ -347,7 +347,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 c = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_colOffsets[qy] + c;
+            i32 idx = pl->m_rowOffsets[qy] + c;
             i32 subY = cy - (qy << pl->m_shiftY);
             i32 tile = pl->m_tileGrid[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {

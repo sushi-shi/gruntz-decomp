@@ -141,7 +141,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
 
 L_ed006b:
-    if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+    if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
         m_blockedVoicePending = 0;
         goto L_scanb;
     }
@@ -220,8 +220,8 @@ L_scanb:
                     )
                     != 0) {
                     m_tileMgr->ApplyTriggerA(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
+                        m_playerIndex,
+                        m_unitIndex,
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
@@ -250,8 +250,8 @@ L_scanb:
             dy = abs(dy);
             if (dx <= 1 && dy <= 1) {
                 m_tileMgr->ApplyTriggerA(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
+                    m_playerIndex,
+                    m_unitIndex,
                     (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -269,8 +269,8 @@ L_scanb:
             return 1;
         }
         m_tileMgr->ApplyTriggerA(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             (col << TILE_SHIFT_PX) + TILE_HALF_PX,
             (row << TILE_SHIFT_PX) + TILE_HALF_PX
         );

@@ -128,12 +128,12 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_reserved1dc, sizeof(m_reserved1dc));
     ar->Read(&m_entranceActive, sizeof(m_entranceActive));
     ar->Read(&m_arrivalPending, sizeof(m_arrivalPending));
-    ar->Read(&m_tileOwnerHi, sizeof(m_tileOwnerHi));
-    ar->Read(&m_tileOwnerLo, sizeof(m_tileOwnerLo));
+    ar->Read(&m_playerIndex, sizeof(m_playerIndex));
+    ar->Read(&m_unitIndex, sizeof(m_unitIndex));
     ar->Read(&m_moveIcon, sizeof(m_moveIcon));
     ar->Read(&m_savedMoveIcon, sizeof(m_savedMoveIcon));
     ar->Read(&m_entranceCommitted, sizeof(m_entranceCommitted));
-    ar->Read(&m_neighborCell, sizeof(m_neighborCell));
+    ar->Read(&m_neighborPlayerIndex, sizeof(m_neighborPlayerIndex) + sizeof(m_neighborUnitIndex));
     ar->Read(&m_attackTargetPx, sizeof(m_attackTargetPx));
     ar->Read(&m_reserved210, sizeof(m_reserved210));
     ar->Read(&m_struckPose, sizeof(m_struckPose));
@@ -192,7 +192,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_unusedBattleCell, sizeof(m_unusedBattleCell));
     ar->Read(&m_cellRemovalNotified, sizeof(m_cellRemovalNotified));
     ar->Read(&m_pendingTrigger, sizeof(m_pendingTrigger));
-    ar->Read(&m_killerSlot, sizeof(m_killerSlot));
+    ar->Read(&m_killerPlayerIndex, sizeof(m_killerPlayerIndex));
     ar->Read(&m_tileClaimed, sizeof(m_tileClaimed));
     ar->Read(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Read(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));

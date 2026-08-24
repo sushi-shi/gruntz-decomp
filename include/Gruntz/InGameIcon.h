@@ -56,7 +56,7 @@ public:
 
     i32 RefreshCell();
     i32 PeekCycle();
-    i32 PlaceAt(i32 idx, i32 gridBase);
+    i32 PlaceAt(i32 playerIndex, i32 unitIndex);
     i32 Reposition();
 
     LeafCue* m_cue;

@@ -974,7 +974,7 @@ void* CTileTriggerContainer::LoadElement(
             } else if (y >= level->m_mainPlane->m_gridH) {
                 y = level->m_mainPlane->m_gridH - 1;
             }
-            i32 cell = level->m_mainPlane->m_colOffsets[y] + x;
+            i32 cell = level->m_mainPlane->m_rowOffsets[y] + x;
             i32 tile = level->m_mainPlane->m_tileGrid[cell];
             TileCollisionKind tileKind;
             if (tile == UNINIT_FILL || tile == -1) {

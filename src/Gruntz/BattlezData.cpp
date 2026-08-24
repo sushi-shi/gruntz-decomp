@@ -84,9 +84,10 @@ void CBattlezData::SetCount(i32 count) {
 }
 
 RVA(0x000fcb50, 0x2b)
-void CBattlezData::MarkFlag(i32 y, i32 x) {
-    if (y >= 0 && y <= BZ_PLAYER_COUNT && x >= 0 && x <= BZ_PLAYER_COUNT) {
-        m_flags[y][x] = 1;
+void CBattlezData::MarkFlag(i32 winnerPlayerIndex, i32 loserPlayerIndex) {
+    if (winnerPlayerIndex >= 0 && winnerPlayerIndex <= BZ_PLAYER_COUNT && loserPlayerIndex >= 0
+        && loserPlayerIndex <= BZ_PLAYER_COUNT) {
+        m_flags[winnerPlayerIndex][loserPlayerIndex] = 1;
     }
 }
 
@@ -98,8 +99,8 @@ void CBattlezData::ClearFlags() {
 }
 
 RVA(0x000fcbc0, 0x3a)
-i32 CBattlezData::SumFlags(i32 y) {
-    if (y < 0 || y > BZ_PLAYER_COUNT) {
+i32 CBattlezData::SumFlags(i32 validatedPlayerIndex) {
+    if (validatedPlayerIndex < 0 || validatedPlayerIndex > BZ_PLAYER_COUNT) {
         return 0;
     }
     i32 sum = 0;
@@ -113,17 +114,19 @@ i32 CBattlezData::SumFlags(i32 y) {
 }
 
 RVA(0x000fcc10, 0x2f)
-i32 CBattlezData::GetFlag(i32 x, i32 y) {
-    if (x >= 0 && x <= BZ_PLAYER_COUNT && y >= 0 && y <= BZ_PLAYER_COUNT) {
-        return m_flags[x][y];
+i32 CBattlezData::GetFlag(i32 winnerPlayerIndex, i32 loserPlayerIndex) {
+    if (winnerPlayerIndex >= 0 && winnerPlayerIndex <= BZ_PLAYER_COUNT && loserPlayerIndex >= 0
+        && loserPlayerIndex <= BZ_PLAYER_COUNT) {
+        return m_flags[winnerPlayerIndex][loserPlayerIndex];
     }
     return 0;
 }
 
 RVA(0x000fcc50, 0x2a)
-void CBattlezData::BumpWin(i32 y, i32 x) {
-    if (y >= 0 && y <= BZ_PLAYER_COUNT && x >= 0 && x <= BZ_PLAYER_COUNT && y != x) {
-        m_wins[y][x]++;
+void CBattlezData::BumpWin(i32 winnerPlayerIndex, i32 loserPlayerIndex) {
+    if (winnerPlayerIndex >= 0 && winnerPlayerIndex <= BZ_PLAYER_COUNT && loserPlayerIndex >= 0
+        && loserPlayerIndex <= BZ_PLAYER_COUNT && winnerPlayerIndex != loserPlayerIndex) {
+        m_wins[winnerPlayerIndex][loserPlayerIndex]++;
     }
 }
 
@@ -135,9 +138,9 @@ void CBattlezData::ClearWins() {
 }
 
 RVA(0x000fccb0, 0x21)
-i32 CBattlezData::SumWinRow(i32 y) {
+i32 CBattlezData::SumWinRow(i32 playerIndex) {
     i32 sum = 0;
-    i32* p = m_wins[y];
+    i32* p = m_wins[playerIndex];
     for (i32 c = 0; c < BZ_PLAYER_COUNT; c++) {
         sum += *p++;
     }

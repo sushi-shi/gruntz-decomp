@@ -2225,7 +2225,7 @@ GruntDirectionCell __stdcall TmDeflectStep(
 // `if` (48.22), and inlining `g_gameReg->m_tileGrid` at all three uses (identical).
 // TU-state devices do not reach this unit at all (see TmDeflectStep above).
 RVA(0x00075af0, 0x111)
-CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
+CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
     i32 ix = x >> TILE_SHIFT_PX;
     i32 iy = y >> TILE_SHIFT_PX;
     CMapMgr* plane = g_gameReg->m_tileGrid;
@@ -2238,9 +2238,9 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
     if (attr == -1) {
         return NULL;
     }
-    i32 row = (attr >> 8) & 0xff;
-    i32 col = attr & 0xff;
-    CGrunt* cell = m_grid[col + row * TM_GRID_COLS];
+    i32 playerIndex = (attr >> 8) & 0xff;
+    i32 unitIndex = attr & 0xff;
+    CGrunt* cell = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         return NULL;
     }
@@ -2257,22 +2257,22 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
         if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy) {
             return NULL;
         }
-        *outRow = row;
-        *outCol = col;
+        *outPlayerIndex = playerIndex;
+        *outUnitIndex = unitIndex;
         return cell;
     }
     CGameObject* o = cell->m_object;
     if (o->m_screenX != x || o->m_screenY != y) {
         return NULL;
     }
-    *outRow = row;
-    *outCol = col;
+    *outPlayerIndex = playerIndex;
+    *outUnitIndex = unitIndex;
     return cell;
 }
 
 // @early-stop
 // Three source-order defects were found and fixed here (the frame was 4 B short
-// because of them): the row/col decode must extract `row` from `ah` BEFORE `col`
+// because of them): the owner-id decode must extract `playerIndex` from `ah` BEFORE `unitIndex`
 // masks `eax` (otherwise cl copies `val` to a scratch first), `sx + 0xe` / `sy + 0xe`
 // must be named locals so both are live before the first compare, and `x` must be
 // declared BEFORE `xEnd` - retail loads `span->left` before `span->right` and
@@ -2281,7 +2281,14 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
 // them, and the naming propagates. `RECT rc` declared first is byte-identical;
 // declaring `trow` before `tcol` is worse (88.46).
 RVA(0x00075c60, 0x1ba)
-CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
+CGrunt* CTriggerMgr::FindGruntAt(
+    i32 px,
+    i32 py,
+    RECT* span,
+    i32* outPlayerIndex,
+    i32* outUnitIndex,
+    RECT* src
+) {
     i32 tcol = px >> TILE_SHIFT_PX;
     i32 trow = py >> TILE_SHIFT_PX;
     RECT rc;
@@ -2320,9 +2327,9 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 if (val == -1) {
                     continue;
                 }
-                i32 row = (val >> 8) & 0xff;
-                i32 col = val & 0xff;
-                CGrunt* g = m_grid[col + row * TM_GRID_COLS];
+                i32 playerIndex = (val >> 8) & 0xff;
+                i32 unitIndex = val & 0xff;
+                CGrunt* g = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
                 if (!g) {
                     continue;
                 }
@@ -2334,8 +2341,8 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 i32 sx2 = sx + 0xe;
                 i32 sy2 = sy + 0xe;
                 if (rc.left <= sx2 && rc.right >= sx && rc.top <= sy2 && rc.bottom >= sy) {
-                    *outCol = row;
-                    *outRow = col;
+                    *outPlayerIndex = playerIndex;
+                    *outUnitIndex = unitIndex;
                     return g;
                 }
             }

@@ -74,7 +74,7 @@ related:
 ## Corollary: a named cursor can hoist a member read ACROSS AN INTERVENING CALL
 
 The sharpest form of this is when a call sits between the member read and the loop.
-`CGrunt** row = &m_triggerMgr->m_grid[band * 15];` followed by `i32 cell = rand() % 15;`
+`CGrunt** row = &m_triggerMgr->m_units[band * 15];` followed by `i32 cell = rand() % 15;`
 lets LICM lift the `m_triggerMgr` load and the whole `lea` chain ABOVE the `rand()` call,
 because the address is loop-invariant and the local is named. Retail reads the member
 AFTER the call - cl5 must assume a call clobbers memory - and builds the base in the
@@ -83,7 +83,7 @@ loop's own preheader. Indexing inside the loop restores it:
 ```cpp
 i32 cell = rand() % 15;
 for (i32 i = 0; i < 15; i++) {
-    CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];   // not `*row++`
+    CGrunt* u = m_triggerMgr->m_units[band * 15 + i];   // not `*row++`
 ```
 
 Strength reduction rebuilds the identical cursor, so the loop body is unchanged; only the

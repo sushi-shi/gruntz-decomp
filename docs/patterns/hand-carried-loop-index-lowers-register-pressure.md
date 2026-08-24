@@ -12,7 +12,7 @@ is "retail spends more instructions than we do":
 
 plus retail carrying a `push ecx` / `sub esp,N` the base does not have, a `this`
 (or another loop-invariant) spilled to that new slot and reloaded inside the loop,
-and the base coming out **SHORTER than retail** — `ClearGridRange` was 154 B against
+and the base coming out **SHORTER than retail** — `RemovePlayerUnitsImmediately` was 154 B against
 retail's 179, `CreateRange` 244 against 254.
 
 **Cause.** The reconstruction hand-rotated the loop, or hand-carried the address
@@ -20,7 +20,7 @@ arithmetic:
 
 ```cpp
 i32 n = last - row + 1;                 // hand-rotated downcount
-CGrunt** cell = &m_grid[row * COLS];    // hand-carried cursor
+CGrunt** cell = &m_units[row * COLS];    // hand-carried cursor
 i32 g2 = row * COLS;                    // hand-carried offset accumulator
 do { ... cell++; g2 += COLS; n--; } while (n != 0);
 ```
@@ -35,7 +35,7 @@ instruction selection — the narrowed `or byte [m+2],1` instead of retail's
 register read-modify-write, no spill of `this`, no extra frame slot.
 
 The three-instruction RMW is therefore a **consequence of the loop shape, not a
-spelling**. Measured on `ClearGridRange`: all five RMW spellings — `p->f |= K`, a
+spelling**. Measured on `RemovePlayerUnitsImmediately`: all five RMW spellings — `p->f |= K`, a
 named temp, temp-plus-or, self-or, and a cached object pointer — compile to the
 identical single `or byte ptr [eax+0xa],0x1`. So
 [rmw-split-means-a-named-temp](rmw-split-means-a-named-temp.md) does not reach this
@@ -46,13 +46,13 @@ comparison, and the *full index expression* at each use:
 
 ```cpp
 for (i32 r = row; r <= last; r++) {
-    CGrunt** cell = &m_grid[r * TM_GRID_COLS];
-    for (i32 col = 0; col < TM_GRID_COLS; col++) {
+    CGrunt** cell = &m_units[r * TM_UNITS_PER_PLAYER];
+    for (i32 col = 0; col < TM_UNITS_PER_PLAYER; col++) {
         CGrunt* c = cell[col];
         if (c != NULL) {
             c->m_wwdObject->m_flags |= 0x10000;
             cell[col] = NULL;
-            m_cellFlag[r * TM_GRID_COLS + col] = 0;
+            m_unitExited[r * TM_UNITS_PER_PLAYER + col] = 0;
         }
     }
     ...
@@ -69,7 +69,7 @@ extra frame slot / `push ecx` and a reloaded loop-invariant. The clean signal is
 that retail's extra bytes are all *spill traffic and wider instruction forms*, not
 extra statements.
 
-**Results.** `CTriggerMgr::ClearGridRange` 0x6bd40 66.97 -> **100.00 EXACT** (the
+**Results.** `CTriggerMgr::RemovePlayerUnitsImmediately` 0x6bd40 66.97 -> **100.00 EXACT** (the
 downcount `do/while` plus the `g2` accumulator; 64-cell forest, 12 cells exact —
 every exact cell had the plain `for` AND the `r * COLS + col` index, none had the
 accumulator). `CDDrawPtrCollections::CreateRange` 0x142630 84.02 -> **100.00 EXACT**

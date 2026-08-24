@@ -68,7 +68,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                 return 1;
             }
             i32 r = rand() % 4;
-            if (r == m_ownerId) {
+            if (r == m_playerIndex) {
                 r++;
             }
             i32 band = r % 4;

@@ -287,10 +287,10 @@ the same storage width and relocation address.
 SEVENTEENTH FIRING (2026-07-23, aligned direction-object recovery): replacing
 the fake 0x10-stride `DirDesc[9]` overlay and eight provisional
 `CGruntVoiceRec` globals with nine real 0xc-byte `GruntDirectionCell` objects
-changed `Grunt.h`, the classifier signature, `CGrunt::PlaySound`'s by-value
+changed `Grunt.h`, the classifier signature, `CGrunt::SetFacing`'s by-value
 parameter type, and every direction-global relocation name. The nine newly
 exposed compiler-generated initializer helpers are all exact; the classifier
-held 96.2060, `PlaySound` held 61.9547, and the direction data is exact.
+held 96.2060, `SetFacing` held 61.9547, and the direction data is exact.
 `CGrunt::StepCompassMove` moved 35.2959→32.9266. It directly changed its
 global and callee relocation identities, so it is not a clean unrelated-body
 control, but the value exactly revisits the lower color seen in earlier

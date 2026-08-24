@@ -80,8 +80,8 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     StatusBarTab tab,
     RECT g,
     const char* key,
-    i32 unitRow,
-    i32 unitCol,
+    i32 playerIndex,
+    i32 unitIndex,
     i32 selMode
 ) {
     CDDrawSurfaceMgr* h;
@@ -151,8 +151,8 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (val == NULL) {
         goto fail;
     }
-    m_unitRow = unitRow;
-    m_unitCol = unitCol;
+    m_playerIndex = playerIndex;
+    m_unitIndex = unitIndex;
     m_timerValue = -1;
     m_overrideValue = -1;
     m_abilityValue = -1;

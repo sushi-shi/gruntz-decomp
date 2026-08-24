@@ -108,12 +108,14 @@ i32 CGrunt::UpdateGruntStatus() {
     if (m_stamina >= STAMINA_FULL) {
         if (m_neighborValid != 0) {
             m_neighborValid = 0;
-            CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
+            CGrunt* n =
+                m_tileMgr
+                    ->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
             if (n != NULL && n->m_entranceCommitted != 0) {
                 if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
                     CommitNeighbor(
-                        m_neighborCell.m_x,
-                        m_neighborCell.m_y,
+                        m_neighborPlayerIndex,
+                        m_neighborUnitIndex,
                         n->m_object->m_screenX,
                         n->m_object->m_screenY
                     );
@@ -142,13 +144,13 @@ i32 CGrunt::UpdateGruntStatus() {
 // 0 instead, shared by the two i64 high-dword stores. 9 arm/timer spellings and 13
 // graded declaration counts measured, all 88.50.
 RVA(0x00061940, 0x200)
-i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
+i32 CGrunt::RearmAttackAnim(i32 targetPlayerIndex, i32 targetUnitIndex) {
     if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
 
-    m_neighborCell.m_x = col;
-    m_neighborCell.m_y = row;
+    m_neighborPlayerIndex = targetPlayerIndex;
+    m_neighborUnitIndex = targetUnitIndex;
     SET_ANIMATION_ACT("F");
 
     m_combatActive = 1;
@@ -258,8 +260,8 @@ i32 CGrunt::StepAttackFire() {
                 CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
+                        m_playerIndex,
+                        m_unitIndex,
                         m_attackTargetPx.m_x,
                         m_attackTargetPx.m_y,
                         m_object->m_screenX,
@@ -283,8 +285,8 @@ i32 CGrunt::StepAttackFire() {
                 CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
+                        m_playerIndex,
+                        m_unitIndex,
                         m_attackTargetPx.m_x,
                         m_attackTargetPx.m_y,
                         m_object->m_screenX,
@@ -302,19 +304,20 @@ i32 CGrunt::StepAttackFire() {
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_damage = 0;
                 spr->m_animWorker->m_notify(spr);
-                spr->m_smarts = m_tileOwnerHi;
+                spr->m_smarts = m_playerIndex;
                 break;
             }
             default: {
 
                 CGrunt* tgt =
-                    m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
+                    m_tileMgr->m_units
+                        [m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
                 if (tgt != NULL) {
                     tgt->StepCombatReaction(
                         m_entranceReason,
                         m_struckPose,
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
+                        m_playerIndex,
+                        m_unitIndex,
                         m_object->m_screenX,
                         m_object->m_screenY,
                         0,
@@ -322,11 +325,11 @@ i32 CGrunt::StepAttackFire() {
                     );
                     PickupType t = ArrivalPickup(tgt);
                     if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
-                        m_tileMgr->CellDispatch(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
+                        m_tileMgr->StartUnitDeath(
+                            m_playerIndex,
+                            m_unitIndex,
                             DEATH_EXPLODE,
-                            m_neighborCell.m_x
+                            m_neighborPlayerIndex
                         );
                         return 0;
                     }
@@ -388,7 +391,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopStruckSlotSound();
         if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != 0) {
-            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            CGrunt* occ =
+                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 innerY = inner->m_screenY;
@@ -396,7 +400,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
-                    m_tileMgr->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, innerX, innerY);
+                    m_tileMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, innerX, innerY);
                 }
             }
         }
@@ -697,7 +701,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             i32 idx = GetRandom(1, count);
             if (cue != 0) {
                 g_gameReg->Rand();
-                i32 focused = (m_tileOwnerHi == g_curPlayer);
+                i32 focused = (m_playerIndex == g_curPlayer);
                 if (focused && idx > 0x5a) {
                     CGruntzMgr* g = g_gameReg;
                     if (CGameLevel::PointInBounds(
@@ -817,15 +821,15 @@ i32 CGrunt::ResolveEntranceArrival() {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->m_gameMode;
         if (mode != GAMEMODE_SINGLE) {
-            GruntzPlayer* slot = &g->m_options[m_tileOwnerHi];
+            GruntzPlayer* slot = &g->m_options[m_playerIndex];
             if (slot != NULL && slot->m_humanControlled != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == GAMEMODE_MULTIPLAYER
-                    && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
-                    m_tileMgr->GridAction6(m_tileOwnerHi, m_tileOwnerLo);
+                    && g_curPlayer == m_playerIndex && m_arrived == 0) {
+                    m_tileMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
                     m_arrivalNotified = 1;
                     goto tail;
                 }
-                if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_tileOwnerHi && m_arrived == 0
+                if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex && m_arrived == 0
                     && m_tileClaimed != 1) {
                     m_arrivalRerollLo = 0;
                     m_arrivalRerollWindowLo = 0;
@@ -907,8 +911,8 @@ i32 CGrunt::StepEntranceReinit() {
     if (eq) {
 
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1181,7 +1185,7 @@ i32 CGrunt::StepWarpExit() {
             }
         }
         if (m_cellRemovalNotified == 0) {
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 1);
         }
         SetObjectFlags(0x10000);
     }
@@ -1193,8 +1197,8 @@ RVA(0x000646b0, 0x9c8)
 i32 CGrunt::StepCombatReaction(
     PickupType attackKind,
     i32 struckPose,
-    i32 srcRow,
-    i32 srcCol,
+    i32 srcPlayerIndex,
+    i32 srcUnitIndex,
     i32 srcPxX,
     i32 srcPxY,
     i32 fromProjectile,
@@ -1225,8 +1229,8 @@ i32 CGrunt::StepCombatReaction(
             g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1248,7 +1252,8 @@ i32 CGrunt::StepCombatReaction(
                 }
                 eq = ANIMATION_ACT_EQUALS("Q");
                 if (eq) {
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
+                    m_tileMgr
+                        ->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
                     return 0;
                 }
                 eq = ANIMATION_ACT_EQUALS("J");
@@ -1329,8 +1334,8 @@ tail:
     if (LoadGruntCombatAnimations(
             attackKind,
             struckPose,
-            srcRow,
-            srcCol,
+            srcPlayerIndex,
+            srcUnitIndex,
             srcPxX,
             srcPxY,
             fromProjectile,
@@ -1357,7 +1362,8 @@ tail:
         ne = (strcmp(*rec, "O") != 0);
         if (ne) {
             SET_ANIMATION_ACT("H");
-            CGrunt* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
+            CGrunt* cellObj =
+                m_tileMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
             if (cellObj != NULL) {
                 CGameObject* oh = cellObj->m_object;
                 i32 cx = oh->m_screenX;
@@ -1369,7 +1375,7 @@ tail:
                               m_lastTilePx.m_y >> TILE_SHIFT_PX
                           )
                           & 0x80)) {
-                        CommitNeighbor(srcRow, srcCol, cx, cy);
+                        CommitNeighbor(srcPlayerIndex, srcUnitIndex, cx, cy);
                     }
                 }
             }
@@ -1412,7 +1418,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, m_killerSlot);
+        m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
         return 0;
     }
     m_entranceActive = 0;
@@ -1452,7 +1458,7 @@ i32 CGrunt::StepArrivalCommitB() {
     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, m_killerSlot);
+        m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
         return 0;
     }
     CGruntzMgr* g = g_gameReg;
@@ -1480,12 +1486,12 @@ i32 CGrunt::StepArrivalCommitB() {
 // `rand() % 100 < 80` ELSE arm to the end of the function (0x6596f) and keeps the
 // THEN arm as the fall-through; cl lays them adjacent.
 RVA(0x00065630, 0x34b)
-i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
+i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     bool eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1500,9 +1506,9 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         }
     }
 
-    PlayMoveSoundAtTile(a, b);
-    m_moveTile.m_x = a;
-    m_moveTile.m_y = b;
+    FaceTowardTile(tileX, tileY);
+    m_moveTile.m_x = tileX;
+    m_moveTile.m_y = tileY;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         RESET_GRUNT_POWERED_STATE(this)
     }
@@ -1594,13 +1600,13 @@ i32 CGrunt::LoadWandGruntItemConfig() {
                 i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
-                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+                    m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 }
             }
         }
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1628,8 +1634,8 @@ i32 CGrunt::StepEntranceRelatchB() {
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
         m_tileMgr->LoadTileArrivalFx(
-            m_tileOwnerHi,
-            m_tileOwnerLo,
+            m_playerIndex,
+            m_unitIndex,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
@@ -1692,6 +1698,6 @@ i32 CGrunt::StepEntranceRelatchB() {
         return 0;
     }
     CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_animWorker->m_logic);
-    icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
+    icon->PlaceAt(m_playerIndex, m_unitIndex);
     return 0;
 }

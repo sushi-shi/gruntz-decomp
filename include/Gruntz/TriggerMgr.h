@@ -19,15 +19,14 @@
 #include <Gruntz/WarpStoneFragment.h>
 #include <Wwd/WwdAniDrawValue.h>
 
-// Grid extents, used only as array dimensions and in index arithmetic.
+// Player/unit registry extents, used only as array dimensions and index strides.
 GZ_ENUM_CONST_BEGIN(TmGridDim)
-    TM_GRID_COLS = 15,
-    TM_GRID_ROWS = 4,
-    // Not a row: the "every player" selector three of the row-ranged walks
-    // accept in place of one. Each opens with the same two lines - if the
-    // argument is this, sweep rows 0..3; otherwise sweep just that row - so it
-    // sits one past the last row rather than inside the range.
-    TM_GRID_ROW_ALL = 5
+    TM_UNITS_PER_PLAYER = 15,
+    TM_PLAYER_COUNT = 4,
+    // Not a player index: the "every player" selector accepted by three
+    // player-ranged walks. It is the same value as PLAYER_SLOT_ALL; 4 is not
+    // accepted by these retail branches.
+    TM_ALL_PLAYERS = 5
 GZ_ENUM_CONST_END(TmGridDim)
 
 class CGrunt;
@@ -63,11 +62,11 @@ public:
 
     void ResetAll();
 
-    i32 RecordListHas(i32 x, i32 y);
+    i32 RecordListHas(i32 playerIndex, i32 unitIndex);
 
-    i32 ClearRow(i32 row);
+    i32 StartPlayerVictorySequence(i32 playerIndex);
 
-    i32 SelectionListFind(i32 key, i32 y);
+    i32 SelectionListFind(i32 playerIndex, i32 unitIndex);
 
     void StopPendingFx();
 
@@ -75,36 +74,43 @@ public:
 
     void ClearRecords();
 
-    i32 DispatchCellForObject(CGrunt* obj, i32 startRow, GruntDeathType kind, i32 arg);
+    i32 StartUnitDeathForObject(
+        CGrunt* unit,
+        i32 playerSelector,
+        GruntDeathType deathType,
+        i32 deathParam
+    );
 
-    i32 CellDispatch(i32 row, i32 col, GruntDeathType kind, i32 arg);
+    i32 StartUnitDeath(i32 playerIndex, i32 unitIndex, GruntDeathType deathType, i32 deathParam);
 
-    void NotifyCell(i32 row, i32 col, i32 z);
+    void UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel);
 
-    CGrunt* CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow);
+    CGrunt*
+    CellHitTest(i32 px, i32 py, i32* outPlayerIndex, i32* outUnitIndex, i32 startPlayerIndex);
 
-    CGrunt* ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow);
+    CGrunt*
+    ScreenToCell(i32 sx, i32 sy, i32* outPlayerIndex, i32* outUnitIndex, i32 startPlayerIndex);
 
     void Cleanup();
 
-    i32 NearestCellDist(i32 skipRow, i32 px, i32 py);
+    i32 NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 py);
 
     void DestroyAllAnims();
 
-    i32 ClearGridRange(i32 startRow);
+    i32 RemovePlayerUnitsImmediately(i32 playerSelector);
 
-    i32 ClearRowAndRefresh(i32 startRow);
+    i32 StartPlayerDefeatSequence(i32 playerSelector);
 
-    CGrunt* FindNearestInRow(CGrunt* g);
+    CGrunt* FindNearestUnitForPlayer(CGrunt* g);
 
-    i32 RemoveCellRecord(i32 x, i32 y, i32 fromSelection);
+    i32 RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection);
 
     i32 SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118);
 
     i32 PlacePuddle(CGameObject* sprite, i32 color);
 
     i32 PlaceObject(
-        i32 row,
+        i32 playerIndex,
         i32 x,
         i32 y,
         i32 z,
@@ -119,34 +125,35 @@ public:
         RECT* span
     );
 
-    i32 ResetCell(i32 col, i32 row, i32 force, i32 keep);
+    i32 ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep);
 
     i32 LoadCameraSprite();
 
     i32 ApplySwitch(CGrunt* g, i32 sx, i32 sy);
 
-    i32 ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY);
-    i32 ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY);
+    i32 ApplyTriggerA(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
+    i32 ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
 
-    i32 ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrivalPhase);
+    i32 ClearCell(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY, i32 arrivalPhase);
 
     union HitSpanArg {
         RECT* m_span;
-        i32 m_outCol;
+        i32 m_outPlayerIndex;
     };
     void HitTestApply(i32 x, i32 y, HitSpanArg span);
 
-    CGrunt* HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact);
+    CGrunt* HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact);
 
-    CGrunt* FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src);
+    CGrunt*
+    FindGruntAt(i32 px, i32 py, RECT* span, i32* outPlayerIndex, i32* outUnitIndex, RECT* src);
 
     void ReportRecordsA(i32 tag, i32 gx, i32 gy);
     void ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag);
 
     i32 PlaceObjectFull(i32 x, i32 y);
 
-    void GridAction6(i32 hi, i32 lo);
-    void GridAction7(i32 hi, i32 lo);
+    void EnqueueGuardBegin(i32 playerIndex, i32 unitIndex);
+    void EnqueueGuardEnd(i32 playerIndex, i32 unitIndex);
 
     i32 ResetGroup(
         i32 x,
@@ -168,11 +175,11 @@ public:
 
     i32 TriggerCell(i32 x, i32 y);
 
-    i32 SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon);
+    i32 SpawnGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
 
     void ResetSpawnState();
 
-    i32 CycleMoveIcons(i32 skipRow, i32 enable);
+    i32 CycleMoveIcons(i32 skipPlayerIndex, i32 enable);
 
     i32 RebuildSelectionList(i32 idx);
 
@@ -196,8 +203,8 @@ public:
     i32 CenterOnGroup(i32 doSelect);
 
     i32 LoadTileArrivalFx(
-        i32 ownerHi,
-        i32 ownerLo,
+        i32 playerIndex,
+        i32 unitIndex,
         i32 tileX,
         i32 tileY,
         PickupType reason,
@@ -214,15 +221,15 @@ public:
 
     // No retail ctor symbol: cl inlines this at the one `new CTriggerMgr`, in
     // CGruntzMgr::Run.  The member set and the three non-zero defaults are read
-    // off those bytes.  m_armed, m_recordPosition, m_reserved274,
+    // off those bytes.  m_armed, m_cameraTargetUnit, m_reserved274,
     // m_groupInitialized, m_phase, m_pendingFx, m_pendingFxKind and
     // m_finishReasonFrame are deliberately NOT initialized here; SetLevel runs
     // immediately after and supplies m_armed/m_pendingFx.  The embedded
     // CPtrList/CByteArray members construct themselves.
     CTriggerMgr() {
-        memset(m_grid, 0, sizeof(m_grid));
-        memset(m_rowCount, 0, sizeof(m_rowCount));
-        memset(m_cellFlag, 0, sizeof(m_cellFlag));
+        memset(m_units, 0, sizeof(m_units));
+        memset(m_unitCountByPlayer, 0, sizeof(m_unitCountByPlayer));
+        memset(m_unitExited, 0, sizeof(m_unitExited));
         memset(m_gruntzExitedByPlayer, 0, sizeof(m_gruntzExitedByPlayer));
         memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
         m_world = NULL;
@@ -261,17 +268,18 @@ public:
     i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
 
     CPtrList m_baseList;
-    CGrunt* m_grid[0x3c];
-    i32 m_rowCount[4];
-    i32 m_cellFlag[0x3c];
+    CGrunt* m_units[TM_PLAYER_COUNT * TM_UNITS_PER_PLAYER];
+    i32 m_unitCountByPlayer[TM_PLAYER_COUNT];
+    i32 m_unitExited[TM_PLAYER_COUNT * TM_UNITS_PER_PLAYER];
 
-    i32 m_gruntzExitedByPlayer[4];
-    i32 m_gruntzLostByPlayer[4];
+    i32 m_gruntzExitedByPlayer[TM_PLAYER_COUNT];
+    i32 m_gruntzLostByPlayer[TM_PLAYER_COUNT];
 
     CDDrawSurfaceMgr* m_world;
 
     i32 m_armed;
-    Coord m_recordPosition;
+    // A registry identity pair: m_x is playerIndex and m_y is unitIndex.
+    Coord m_cameraTargetUnit;
     CWwdGameObjectA* m_goal;
 
     CPtrList m_recList;

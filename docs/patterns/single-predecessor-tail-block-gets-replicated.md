@@ -42,7 +42,7 @@ Find the other place in the function that spells the SAME statements and make it
 
 ```cpp
 label_4cb2a:
-    PlaySound(0x3e8, rec);
+    SetFacing(0x3e8, rec);
     goto label_dropRet0;        // was: SetEntrancePos(1, 1); return 0;
 ...
 label_dropRet0:

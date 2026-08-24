@@ -35,8 +35,8 @@ public:
     double m_posY;
     i32 m_travelDx;
     i32 m_travelDy;
-    i32 m_lastDropTileX;
-    i32 m_lastDropTileY;
+    i32 m_lastDropPlayerIndex;
+    i32 m_lastDropUnitIndex;
     i32 m_scrollMode;
     char m_pad84[0x88 - 0x84];
     union {

@@ -58,8 +58,8 @@ public:
         StatusBarTab tab,
         RECT g,
         const char* key,
-        i32 unitRow,
-        i32 unitCol,
+        i32 playerIndex,
+        i32 unitIndex,
         i32 selMode
     );
 
@@ -77,8 +77,8 @@ public:
     CImage* m_selectKey;
     CImage* m_selectGlyph;
     i32 m_selectValue;
-    i32 m_unitRow;
-    i32 m_unitCol;
+    i32 m_playerIndex;
+    i32 m_unitIndex;
     CDDrawWorker* m_timerGlyphMap;
     CImage* m_timerGlyph;
     i32 m_timerValue;

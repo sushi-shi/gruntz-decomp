@@ -123,7 +123,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
 
     if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS
-        || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+        || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
         m_blockedVoicePending = 0;
         goto L_ed153;
     }
@@ -213,8 +213,8 @@ L_ed153:
             dr = abs(dr);
             if (dc <= 1 && dr <= 1) {
                 m_tileMgr->ApplyTriggerA(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
+                    m_playerIndex,
+                    m_unitIndex,
                     (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
@@ -235,8 +235,8 @@ L_ed153:
         if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
             || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
             m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
+                m_playerIndex,
+                m_unitIndex,
                 (col << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (row << TILE_SHIFT_PX) + TILE_HALF_PX
             );

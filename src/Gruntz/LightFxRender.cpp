@@ -165,7 +165,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 
             if (tile != -1) {
 
-                CGrunt* desc = m_cmdGrid->m_grid[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
+                CGrunt* desc = m_cmdGrid->m_units[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
                 if (desc == NULL) {
                     continue;
                 }
@@ -175,7 +175,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 }
 
                 if (static_cast<i64>(g_frameTime) - desc->m_combatClock64 >= desc->m_combatTimeout64
-                    || desc->m_tileOwnerHi != g_curPlayer) {
+                    || desc->m_playerIndex != g_curPlayer) {
                     CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(IDX(desc->m_moveIcon));
                     if (node == NULL) {
                         *dst = 0;

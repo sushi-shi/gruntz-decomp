@@ -67,7 +67,7 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
+    CGrunt* e = g_gameReg->m_cmdGrid->m_units[m_cell.m_x * 15 + m_cell.m_y];
     if (e == NULL) {
         return 0;
     }

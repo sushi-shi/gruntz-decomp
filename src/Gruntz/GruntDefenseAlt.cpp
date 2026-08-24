@@ -170,7 +170,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         }
 
         case AISTATE_CHASE: {
-            CGrunt* o = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            CGrunt* o =
+                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
                 Coord none;
@@ -184,7 +185,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (o->m_entranceCommitted == 0) {
                 goto resetState;
             }
-            if (GruntInRadius(o->m_tileOwnerHi, o->m_tileOwnerLo) == 0) {
+            if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
                 goto resetState;
             }
             if (GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
@@ -238,11 +239,11 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 COMMIT_GRUNT_NEIGHBOR(o);
                 m_defenderState = AISTATE_ATTACK;
             }
-            if (GruntInRadius(o->m_tileOwnerHi, o->m_tileOwnerLo) == 0) {
+            if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
                 goto tail;
             }
-            m_arrivalCell.m_x = o->m_tileOwnerHi;
-            m_arrivalCell.m_y = o->m_tileOwnerLo;
+            m_arrivalCell.m_x = o->m_playerIndex;
+            m_arrivalCell.m_y = o->m_unitIndex;
             m_defenderState = AISTATE_CHASE;
             {
                 CWwdGameObjectA* h = m_object;

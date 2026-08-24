@@ -275,7 +275,7 @@ accessors - are excluded; the linker pools those).
   `??0CUserLogic@@QAE@PAUCGameObject@@@Z`, which is exactly what a TU containing
   `CreateGrunt` emits) - so the band is one compiland. That it is *the* file
   called `Grunt_Combat.cpp` is inference from content, not proof; the adjoining
-  `0x0005d210`-`0x0005fe6e` (the 17-way AI tick + `FinalizeStep` +
+  `0x0005d210`-`0x0005fe6e` (`StepBehavior`, the 17-way AI tick, + `FinalizeStep` +
   `AdvanceMotion`) is contiguous with it and could belong to either side.
 - **Grunt_State.cpp** - **undetermined.** The file has >=922 lines and contains a
   per-grunt trace that prints act name, goal position, a `tg` flag and a random

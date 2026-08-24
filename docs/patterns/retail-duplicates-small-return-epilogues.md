@@ -143,7 +143,7 @@ cannot be the discriminator):
   source-identical, and retail's two copies are byte-identical to each other.
 * `CGrunt::StepGruntMovement` 0x4c170 - the duplicated unit is not a return at
   all. Retail emits SEVEN `sub esp,0xc` + three-store by-value pushes of the
-  12-byte `GruntDirectionCell` feeding only THREE `PlaySound` calls (three of
+  12-byte `GruntDirectionCell` feeding only THREE `SetFacing` calls (three of
   the seven `jmp` into a shared call); we emit four blocks for our four source
   sites. Retail additionally spills the direction record's second field into a
   per-arm slot at all eight direction arms (`mov [esp+0x2c],ebp`), which is its

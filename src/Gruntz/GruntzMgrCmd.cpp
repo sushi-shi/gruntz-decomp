@@ -78,12 +78,12 @@
         CGrunt* _cell =                                                                            \
             m_cmdGrid->m_recList.GetCount() != 1                                                   \
                 ? 0                                                                                \
-                : m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];   \
+                : m_cmdGrid->m_units[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];  \
         if (!_cell)                                                                                \
             return 0;                                                                              \
-        if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
+        if (_cell->m_playerIndex != g_curPlayer)                                                   \
             return 0;                                                                              \
-        CGrunt* _c2 = m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15];         \
+        CGrunt* _c2 = m_cmdGrid->m_units[_cell->m_unitIndex + _cell->m_playerIndex * 15];          \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -98,10 +98,10 @@
         CGrunt* _cell =                                                                            \
             m_cmdGrid->m_recList.GetCount() != 1                                                   \
                 ? 0                                                                                \
-                : m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];   \
+                : m_cmdGrid->m_units[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];  \
         if (!_cell)                                                                                \
             return 0;                                                                              \
-        if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
+        if (_cell->m_playerIndex != g_curPlayer)                                                   \
             return 0;                                                                              \
         if (!_cell->LoadGruntAbilityTuning(N))                                                     \
             return 0;                                                                              \
@@ -372,7 +372,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
-                        m_cmdGrid->ClearRowAndRefresh(5);
+                        m_cmdGrid->StartPlayerDefeatSequence(5);
                         i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
                         if (_key) {
                             _dr = NULL;

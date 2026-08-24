@@ -105,7 +105,7 @@ i32 CGrunt::StepDiggerBehavior() {
         return 1;
     }
 
-    if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+    if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
         m_blockedVoicePending = 0;
         goto L_tailc;
     }
@@ -193,8 +193,8 @@ L_tailc:
                 dr = abs(dr);
                 if (dc <= 1 && dr <= 1) {
                     m_tileMgr->ApplyTriggerA(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
+                        m_playerIndex,
+                        m_unitIndex,
                         (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
@@ -215,8 +215,8 @@ L_tailc:
         BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
             m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
+                m_playerIndex,
+                m_unitIndex,
                 (col << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (row << TILE_SHIFT_PX) + TILE_HALF_PX
             );

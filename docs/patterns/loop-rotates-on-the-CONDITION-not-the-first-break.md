@@ -97,17 +97,17 @@ own rotation *back into the C++*, entry guard and all, which is why it read as a
 "guard + counted loop" and not as a rotation question at all.
 
 ```cpp
-// NO - the `if (m_grid[...] != NULL)` IS cl's peeled guard, and `free < 15` is now the
+// NO - the `if (m_units[...] != NULL)` IS cl's peeled guard, and `free < 15` is now the
 //      condition, so cl rotates THAT: base `test; je / mov; add; inc; test; je; cmp; jl`
 i32 free = 0;
-if (m_grid[row * TM_GRID_COLS] != NULL) {
-    CGrunt** p = &m_grid[row * TM_GRID_COLS];
+if (m_units[row * TM_UNITS_PER_PLAYER] != NULL) {
+    CGrunt** p = &m_units[row * TM_UNITS_PER_PLAYER];
     while (free < 15) { p++; free++; if (*p == NULL) break; }
 }
 
 // YES - the pointer test is the condition (cl re-peels it itself), the bound is the break
 i32 free = 0;
-CGrunt** p = &m_grid[row * TM_GRID_COLS];
+CGrunt** p = &m_units[row * TM_UNITS_PER_PLAYER];
 while (*p != NULL) { if (free >= 15) break; p++; free++; }
 ```
 

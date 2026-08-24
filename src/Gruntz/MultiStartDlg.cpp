@@ -1404,7 +1404,7 @@ void CMultiStartDlg::OnOK() {
     }
     g_multiState->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
     i32 custom = g_multiState->m_customLevel;
-    i32 token = g_gameReg->BuildLevelRezPath(
+    i32 token = g_gameReg->ResolveLevelChecksum(
         0,
         0,
         custom,

@@ -69,7 +69,7 @@ To EXACT: `CGruntPuddle::Place` 93.560, `CWarlord::RaiseBattleAlert` 95.095,
 -> **100.000**. Largest partials: `CProjectile::AdvanceMotion` 88.536 -> 93.387,
 `CGrunt::ResetEntranceAnimation` 88.505 -> 92.242, `CGrunt::UpdateArrival` 92.509 ->
 95.475, `CGrunt::UpdateEntranceAnim` 94.346 -> 96.816, `CRollingBall::CRollingBall`
-77.007 -> 79.313, `CGrunt::PlaySound` 93.374 -> 95.397, `CGrunt::LoadFreezeSpellAssets`
+77.007 -> 79.313, `CGrunt::SetFacing` 93.374 -> 95.397, `CGrunt::LoadFreezeSpellAssets`
 87.381 -> 89.127, `CEyeCandyAni::CEyeCandyAni` 96.601 -> 98.105, `CGrunt::SetupTubeAnim`
 97.396 -> 98.825, `CObjectDropper::CObjectDropper` 96.445 -> 97.274,
 `CPathHazard::CPathHazard` 98.947 -> 99.925, `CStaticHazard::LoadAttributes` 98.913 ->

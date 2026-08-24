@@ -342,9 +342,9 @@ CGrunt::CGrunt(CGameObject* owner)
     SetObjectFlags(0x2000100);
     m_wwdObject->m_collMask |= 0x103f;
     m_wwdObject->m_attackTypeMask = 1;
-    m_tileOwnerHi = -1;
-    m_tileOwnerLo = -1;
-    m_neighborCell.m_x = -1;
+    m_playerIndex = -1;
+    m_unitIndex = -1;
+    m_neighborPlayerIndex = -1;
     m_warpstoneAnchorIndex = 0;
     m_entranceReason = PICKUP_NONE;
     m_vehiclePickupType = PICKUP_NONE;
@@ -352,7 +352,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_gruntKind = GRUNT_NORMAL;
     m_toolId = PICKUP_NONE;
     m_animSetName = "NORMALGRUNT";
-    m_neighborCell.m_y = -1;
+    m_neighborUnitIndex = -1;
     m_entranceCommitted = 1;
     m_healthSprite = NULL;
     m_staminaSprite = NULL;
@@ -633,14 +633,14 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
         return &g_gruntMoveDirCenter;
     }
-    i32 dy = static_cast<i32>((other->m_positionX - m_positionX));
+    i32 horizontalDelta = static_cast<i32>((other->m_positionX - m_positionX));
     double otherY = other->m_positionY;
-    i32 dx = static_cast<i32>((m_positionY - otherY));
-    if (dy == 0) {
-        if (dx > 0) {
+    i32 verticalDelta = static_cast<i32>((m_positionY - otherY));
+    if (horizontalDelta == 0) {
+        if (verticalDelta > 0) {
             return &g_gruntMoveDirNorth;
         }
-        if (dx < 0) {
+        if (verticalDelta < 0) {
             return &g_gruntMoveDirSouth;
         }
         return &g_gruntMoveDirCenter;
@@ -653,9 +653,9 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
                 ? 1
                 : 0;
     }
-    double ratio = static_cast<double>(dx) / static_cast<double>(dy);
+    double ratio = static_cast<double>(verticalDelta) / static_cast<double>(horizontalDelta);
 
-    if (dx >= 0 && dy > 0) {
+    if (verticalDelta >= 0 && horizontalDelta > 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthEast;
         }
@@ -667,7 +667,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirNorth;
     }
-    if (dx >= 0 && dy < 0) {
+    if (verticalDelta >= 0 && horizontalDelta < 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthWest;
         }
@@ -679,7 +679,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirWest;
     }
-    if (dx <= 0 && dy > 0) {
+    if (verticalDelta <= 0 && horizontalDelta > 0) {
         if (onCell) {
             return &g_gruntMoveDirSouthEast;
         }
@@ -762,9 +762,9 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 // the same ecx/edx swap plus a store scheduled before rather than after the
 // receiver `lea`.
 RVA(0x0004ac10, 0x402)
-void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
-    static_cast<void>(range);
-    if (SameCellTag(&m_entranceCell, &rec)) {
+void CGrunt::SetFacing(i32 unusedRange, GruntDirectionCell facing) {
+    static_cast<void>(unusedRange);
+    if (SameCellTag(&m_entranceCell, &facing)) {
         return;
     }
 
@@ -804,7 +804,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                     }
                 }
 
-                m_entranceCell = rec;
+                m_entranceCell = facing;
                 SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE2));
                 ResetEntranceAnimation(1, 0, 0);
                 return;
@@ -818,8 +818,8 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                                        ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                        : NULL;
             i32 frame = elem->m_param;
-            i32 row = rec.row;
-            i32 column = rec.column;
+            i32 row = facing.row;
+            i32 column = facing.column;
             i32 index = 3 * row + column;
 
             const char* nm = m_cells[index].IdleName().GetBuffer(0);
@@ -832,8 +832,8 @@ walk:
 
     SwitchAnimation(m_poseWalk);
     {
-        i32 row = rec.row;
-        i32 column = rec.column;
+        i32 row = facing.row;
+        i32 column = facing.column;
         i32 index = 3 * row + column;
 
         const char* nm = m_cells[index].WalkName().GetBuffer(0);
@@ -841,7 +841,7 @@ walk:
     }
 
 store:
-    m_entranceCell = rec;
+    m_entranceCell = facing;
 }
 
 // @early-stop
@@ -856,7 +856,7 @@ i32 CGrunt::CommitArrival() {
     }
 
     if (m_tileClaimed != 0 && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-        m_tileMgr->GridAction7(m_tileOwnerHi, m_tileOwnerLo);
+        m_tileMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
     } else if (m_tileClaimed != 0) {
         m_arrivalReroll64 = 0;
         m_arrivalRerollWindow64 = 0;
@@ -988,7 +988,7 @@ i32 CGrunt::StepArrivalDrop(
             SetEntrancePos(1, 1);
             if (m_object->m_screenX == m_lastTilePx.m_x
                 && m_lastTilePx.m_y == m_object->m_screenY) {
-                PlayMoveSoundAtTile(tileX, tileY);
+                FaceTowardTile(tileX, tileY);
             }
             return 0;
         }
@@ -1125,7 +1125,7 @@ i32 CGrunt::StepArrivalDrop(
     if (0 != nudged) {
         if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
             && m_entranceReason == PICKUP_GAUNTLETZ) {
-            m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, pxX, pxY);
+            m_tileMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, pxX, pxY);
             SetEntrancePos(1, 1);
             return 1;
         }
@@ -1237,7 +1237,7 @@ reProbe:
     }
     SetEntrancePos(1, 1);
     if (IsGruntAtSavedScreenPos(this) != 0) {
-        PlayMoveSoundAtTile(walkX, walkY);
+        FaceTowardTile(walkX, walkY);
     }
     if (m_arrivalPending == 0) {
         return 0;
@@ -1273,7 +1273,7 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
     if (m_arrivalState == AI_BATTLEZ_PATH) {
-        CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_battlezConfig;
+        CBattlezMapConfig* slot = &g_gameReg->m_options[m_playerIndex].m_battlezConfig;
         if (slot != NULL && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;
@@ -1340,7 +1340,7 @@ i32 CGrunt::StepGruntMovement() {
     rec.column = recColumn;
     rec.direction = recDirection;
 
-    SET_TILE_CENTER_PIXEL_PAIR(tgtPxY, tgtPxX, coordY, coordX)
+    SET_TILE_CENTER_PIXEL_PAIR_Y_FIRST(tgtPxY, tgtPxX, coordY, coordX)
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> TILE_SHIFT_PX;
     tgtTileY = tgtPxY >> TILE_SHIFT_PX;
@@ -1407,7 +1407,7 @@ i32 CGrunt::StepGruntMovement() {
                 m_coordList.AddHead(node);
             }
             if (PathScan() == 0) {
-                PlaySound(0x3e8, rec);
+                SetFacing(0x3e8, rec);
                 SetEntrancePos(1, 0);
                 return 0;
             }
@@ -1466,7 +1466,7 @@ i32 CGrunt::StepGruntMovement() {
                 rec.direction = recDirection;
                 CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
                 if (bd->m_rowInts[cy][cx * 7] & 0x20000000) {
-                    PlaySound(0x3e8, rec);
+                    SetFacing(0x3e8, rec);
                     SetEntrancePos(1, 0);
                     return 0;
                 }
@@ -1488,7 +1488,7 @@ i32 CGrunt::StepGruntMovement() {
         } else {
             owner = -1;
         }
-        m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_tileOwnerHi);
+        m_tileMgr->StartUnitDeath((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_playerIndex);
     }
 
 label_4c6e4:
@@ -1662,7 +1662,7 @@ label_4c92b: {
 }
 
 label_4cb2a:
-    PlaySound(0x3e8, rec);
+    SetFacing(0x3e8, rec);
     SetEntrancePos(1, 1);
     return 0;
 
@@ -1670,7 +1670,7 @@ label_4cb4b:
     m_reserved210 = 0;
     m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     m_coordRetryCount = 0;
-    PlaySound(0x3e8, rec);
+    SetFacing(0x3e8, rec);
     {
         m_commitPx = m_lastTilePx;
         i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -1684,13 +1684,13 @@ label_4cb4b:
         tgtTileY = tgtPxY >> TILE_SHIFT_PX;
         CGruntzMapMgr* bd2 = g_gameReg->m_tileGrid;
         bd2->m_rows[tgtTileY][tgtTileX].m_flags |= BRICKZ_CELL_OCCUPIED;
-        bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+        bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_playerIndex << 8) | m_unitIndex;
 
         // Retail 0x4cc52: `mov eax,[esp+0x3c]` / `mov ecx,[esp+0x40]` with esp 8 below
         // the frame base (the two `push`es of the 1.0 double at 0x4cbea/0x4cbf2), i.e.
         // frame slots 0x34/0x38 - the SAME slots read at 0x4cbca/0x4cbdc and shifted by
         // TILE_SHIFT_PX to index m_rows just above, so they are tgtPxX/tgtPxY.  `rec`
-        // lives at 0x3c..0x44 (the by-value GruntDirectionCell pushed to PlaySound).
+        // lives at 0x3c..0x44 (the by-value GruntDirectionCell pushed to SetFacing).
         m_lastTilePx.m_x = tgtPxX;
         m_lastTilePx.m_y = tgtPxY;
         ComputeFacing(1.0);
@@ -1734,14 +1734,14 @@ label_ret1:
 }
 
 RVA(0x0004d060, 0x98)
-void CGrunt::SetEntrancePos(i32 a, i32 b) {
+void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
     m_reserved210 = 0;
     m_entrancePx = m_lastTilePx;
-    if (a) {
+    if (clearArrivalState) {
         m_arrivalPhase = 0;
         m_arrivalActive = 0;
     }
-    if (b && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
+    if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
         RECYCLE_GRUNT_COORDS_EXPANDED(this)
     }
 }
@@ -1765,7 +1765,7 @@ i32 CGrunt::CreateHealthSprite() {
 
     AnimWorkerObj* inner = m_healthSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_health)) {
+    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_health)) {
         reg->SetObjectFlags(0x10000);
         m_healthSprite = NULL;
         return 0;
@@ -1774,9 +1774,9 @@ i32 CGrunt::CreateHealthSprite() {
 }
 
 // @early-stop
-// 2-arg sibling of the SetHealthGlyph family: retail pushes m_tileOwnerLo,
-// THEN computes reg=inner->m_logic, THEN loads m_tileOwnerHi into the register
-// inner has just vacated; cl loads m_tileOwnerHi into edx up front and pushes
+// 2-arg sibling of the SetHealthGlyph family: retail pushes m_unitIndex,
+// THEN computes reg=inner->m_logic, THEN loads m_playerIndex into the register
+// inner has just vacated; cl loads m_playerIndex into edx up front and pushes
 // both arguments together. Refuted in an isolated harness that reproduces this
 // body byte-for-byte: ten tail spellings (inner/reg folded, either argument as
 // a local, the call result as a local, a positive gate, the failure arm's
@@ -1799,7 +1799,7 @@ i32 CGrunt::CreateToySprite() {
     m_toySprite->m_animWorker->m_notify(m_toySprite);
 
     CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_animWorker->m_logic);
-    if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
+    if (!reg->SetCell(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(0x10000);
         m_toySprite = NULL;
         return 0;
@@ -1826,7 +1826,7 @@ i32 CGrunt::CreateStaminaSprite() {
 
     AnimWorkerObj* inner = m_staminaSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_stamina)) {
+    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_stamina)) {
         reg->SetObjectFlags(0x10000);
         m_staminaSprite = NULL;
         return 0;
@@ -1859,7 +1859,7 @@ i32 CGrunt::CreateToyTimeSprite() {
 
     AnimWorkerObj* inner = m_toyTimeSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_toyTime)) {
+    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_toyTime)) {
         reg->SetObjectFlags(0x10000);
         m_toyTimeSprite = NULL;
         return 0;
@@ -1888,7 +1888,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     AnimWorkerObj* inner = m_wingzTimeSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime)) {
+    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_wingzTime)) {
         reg->SetObjectFlags(0x10000);
         m_wingzTimeSprite = NULL;
         return 0;
@@ -1897,7 +1897,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 }
 
 // @early-stop
-// four bytes: ecx and edx are swapped for the a / m_tileOwnerLo argument pair.
+// four bytes: ecx and edx are swapped for the a / m_unitIndex argument pair.
 RVA(0x0004d650, 0xa1)
 i32 CGrunt::CreatePowerupSprite(i32 a) {
     if (m_powerupSprite) {
@@ -1916,7 +1916,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
 
     AnimWorkerObj* inner = m_powerupSprite->m_animWorker;
     CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->m_logic);
-    if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo, a)) {
+    if (!reg->SetCell(m_playerIndex, m_unitIndex, a)) {
         reg->SetObjectFlags(0x10000);
         m_powerupSprite = NULL;
         return 0;
@@ -1926,7 +1926,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
 
 // @early-stop
 // Same wall as CreateToySprite and its sole residue: retail loads
-// m_tileOwnerHi into eax after reg=inner->m_logic has freed it, we take edx.
+// m_playerIndex into eax after reg=inner->m_logic has freed it, we take edx.
 RVA(0x0004d730, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {
@@ -1945,7 +1945,7 @@ i32 CGrunt::CreateSelectedSprite() {
 
     CGruntSelectedSprite* reg =
         static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_animWorker->m_logic);
-    if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
+    if (!reg->SetCell(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(0x10000);
         m_selectedSprite = NULL;
         return 0;
@@ -1956,8 +1956,8 @@ i32 CGrunt::CreateSelectedSprite() {
 RVA(0x0004d800, 0x440)
 i32 CGrunt::Place(
     class CTriggerMgr* board,
-    i32 col,
-    i32 row,
+    i32 playerIndex,
+    i32 unitIndex,
     PickupType moveIcon,
     PickupType typeKind,
     i32 vehicleKind,
@@ -1996,9 +1996,9 @@ i32 CGrunt::Place(
     m_helpCueId = 0;
     m_arrivalState = kind;
     m_brickPickupType = PICKUP_BROWNBRICK;
-    m_tileOwnerHi = col;
+    m_playerIndex = playerIndex;
     m_defenderQueuePosition = defenderQueuePosition;
-    m_tileOwnerLo = row;
+    m_unitIndex = unitIndex;
     m_arrivalCell.m_x = -1;
     m_arrivalCell.m_y = -1;
     m_defenderPickupType = static_cast<PickupType>(defenderPickupType);
@@ -2024,7 +2024,7 @@ i32 CGrunt::Place(
     m_deathType = DEATH_NONE;
     m_pendingTrigger = 0;
     m_cellRemovalNotified = 0;
-    m_killerSlot = -1;
+    m_killerPlayerIndex = -1;
     m_passableMask = 0;
     m_savedMoveIcon = -1;
     m_lowStaminaCued = 0;
@@ -2061,7 +2061,7 @@ i32 CGrunt::Place(
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     plane->m_rowInts[ty][tx * 7] |= 0x20000000;
-    plane->m_rowInts[ty][tx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+    plane->m_rowInts[ty][tx * 7 + 1] = (m_playerIndex << 8) | m_unitIndex;
     m_entranceActive = 0;
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
@@ -3059,25 +3059,25 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_RANDOMCOLORZ: {
-            m_tileMgr->CycleMoveIcons(m_tileOwnerHi, 1);
+            m_tileMgr->CycleMoveIcons(m_playerIndex, 1);
             return 1;
         }
         case PICKUP_SCREENSHAKE: {
-            if (m_tileOwnerHi == g_curPlayer) {
+            if (m_playerIndex == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetMonitorCurse(1);
             return 1;
         }
         case PICKUP_BLACKSCREEN: {
-            if (m_tileOwnerHi == g_curPlayer) {
+            if (m_playerIndex == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetDarknessCurse(1);
             return 1;
         }
         case PICKUP_MINICAM: {
-            if (m_tileOwnerHi == g_curPlayer) {
+            if (m_playerIndex == g_curPlayer) {
                 return 1;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(1);
@@ -3213,7 +3213,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         UpdateArrival(defer, 1);
     }
     if (m_arrived != 0) {
-        if (m_tileOwnerHi == g_curPlayer) {
+        if (m_playerIndex == g_curPlayer) {
             m_tileMgr->StopPendingFx();
         }
     }

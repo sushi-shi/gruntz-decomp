@@ -22,7 +22,7 @@ class CPlay;
 
 class CBattlezMapConfig {
 public:
-    i32 LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff);
+    i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficulty);
 
     CBattlezMapConfig();
     ~CBattlezMapConfig();
@@ -90,7 +90,7 @@ public:
     CPlay* m_play;
     CTileTriggerContainer* m_cellQuery;
 
-    i32 m_ownerId;
+    i32 m_playerIndex;
     i32 m_reserved01c;
     i32 m_reserved020;
     i32 m_reserved024;

@@ -47,12 +47,8 @@ struct SaveSlot {
         char m_serial[0x40];
     };
     char m_levelName[0x83];
+    i32 m_isCustom;
     union {
-        i32 m_pathLo;
-        i32 m_isCustom;
-    };
-    union {
-        i32 m_pathHi;
         i32 m_isWon;
         i32 m_isBattlez;
     };

@@ -51,7 +51,7 @@ public:
     virtual i32 BeginLeg();
 
     RVA(0x00013230, 0x8)
-    virtual i32 HitTest(i32, i32) {
+    virtual i32 HitTest(i32 playerIndex, i32 unitIndex) {
         return 1;
     }
 

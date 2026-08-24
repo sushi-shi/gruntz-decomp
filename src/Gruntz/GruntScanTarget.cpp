@@ -42,19 +42,23 @@
 // EBX; cl rotates them the other way here, and the swap colours the whole body.
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
-    i32 ownerHi = m_tileOwnerHi;
+    i32 playerIndex = m_playerIndex;
     COPY_LAST_TILE_TO_DEFENDER
     i32 cx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 cy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
-    for (i32 row = 0; row < 4; row++) {
-        if (row == ownerHi) {
+    for (i32 candidatePlayerIndex = 0; candidatePlayerIndex < TM_PLAYER_COUNT;
+         candidatePlayerIndex++) {
+        if (candidatePlayerIndex == playerIndex) {
             continue;
         }
-        for (i32 col = 0; col < 15; col++) {
-            CGrunt* cand = g_gameReg->m_cmdGrid->m_grid[row * TM_GRID_COLS + col];
+        for (i32 candidateUnitIndex = 0; candidateUnitIndex < TM_UNITS_PER_PLAYER;
+             candidateUnitIndex++) {
+            CGrunt* cand =
+                g_gameReg->m_cmdGrid
+                    ->m_units[candidatePlayerIndex * TM_UNITS_PER_PLAYER + candidateUnitIndex];
             if (cand != NULL && cand->m_entranceCommitted != 0
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
@@ -185,7 +189,7 @@ i32 CGrunt::ScanNearestTarget() {
                     i32 pathPb;
                     PRIO(pathPb, best->m_entranceReason);
                     if (pathPa <= pathPb
-                        && this->GruntInRadius(best->m_tileOwnerHi, best->m_tileOwnerLo) != 0) {
+                        && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
                         Coord cc;
                         best->GetScreenPos(&cc);
                         if (this->TileSwitch(
@@ -245,7 +249,8 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
         }
         case AISTATE_CHASE: {
-            CGrunt* sg = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            CGrunt* sg =
+                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (best != NULL && best != sg) {
                 Coord none;
                 m_arrivalCell = *none.Set(-1, -1);
@@ -258,7 +263,7 @@ i32 CGrunt::ScanNearestTarget() {
                 i32 pb;
                 PRIO(pb, sg->m_entranceReason);
                 if (pa <= pb && sg->m_entranceCommitted != 0
-                    && this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) != 0) {
+                    && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
                     if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                         StepArrivalDrop(
                             sg->m_lastTilePx.m_x,
@@ -295,13 +300,13 @@ i32 CGrunt::ScanNearestTarget() {
             }
             {
                 CGrunt* sg =
-                    m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                    m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 if (sg != NULL) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);
                     i32 pb;
                     PRIO(pb, sg->m_entranceReason);
-                    if (pa <= pb && this->GruntInRadius(sg->m_tileOwnerHi, sg->m_tileOwnerLo) != 0
+                    if (pa <= pb && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0
                         && sg->m_entranceCommitted != 0) {
                         if (m_neighborValid != 0 || m_combatActive != 0
                             || m_stamina < STAMINA_FULL) {

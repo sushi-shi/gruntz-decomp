@@ -41,8 +41,8 @@
 // eliminated by C2 instead, and the home disappears.
 #define COMMIT_GRUNT_NEIGHBOR(target)                                                              \
     CommitNeighbor(                                                                                \
-        target->m_tileOwnerHi,                                                                     \
-        target->m_tileOwnerLo,                                                                     \
+        target->m_playerIndex,                                                                     \
+        target->m_unitIndex,                                                                       \
         target->LastTilePx().m_x,                                                                  \
         target->LastTilePx().m_y                                                                   \
     )
@@ -57,12 +57,12 @@
 
 #define SET_GRUNT_ARRIVAL_TARGET(target)                                                           \
     SetEntrancePos(1, 1);                                                                          \
-    m_arrivalCell.m_x = target->m_tileOwnerHi;                                                     \
-    m_arrivalCell.m_y = target->m_tileOwnerLo
+    m_arrivalCell.m_x = target->m_playerIndex;                                                     \
+    m_arrivalCell.m_y = target->m_unitIndex
 
 #define BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL                                                      \
     m_entranceActive = 1;                                                                          \
-    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
+    m_tileMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
 #define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
     CGrunt* grunt = m_tileMgr->FindNearestEnemy(this);                                             \

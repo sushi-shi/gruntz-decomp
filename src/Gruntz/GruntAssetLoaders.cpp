@@ -88,7 +88,7 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
 
 // @early-stop
 RVA(0x00060150, 0xdd0)
-i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
+i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
     if (m_deathAnimStarted != 0) {
         return 0;
     }
@@ -112,7 +112,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         RESET_GRUNT_POWERED_STATE(this)
     }
-    m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
+    m_tileMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
     SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
 
@@ -122,9 +122,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
     }
 
-    if (killerSlot != -1) {
-        m_killerSlot = killerSlot;
-        g_gameReg->m_scoreHud->BumpWin(killerSlot, m_tileOwnerHi);
+    if (killerPlayerIndex != -1) {
+        m_killerPlayerIndex = killerPlayerIndex;
+        g_gameReg->m_scoreHud->BumpWin(killerPlayerIndex, m_playerIndex);
     }
 
     switch (deathType) {
@@ -142,7 +142,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             goto finalize;
 
         case DEATH_DROP:
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             SetObjectFlags(0x10000);
             goto tail;
 
@@ -153,7 +153,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             SwitchGeometryDirect(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
 
@@ -222,7 +222,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             SwitchGeometryDirect(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
         }
@@ -252,7 +252,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             SwitchGeometryDirect(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
         }
@@ -347,7 +347,7 @@ pathA:
     goto tail;
 
 finalize:
-    m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+    m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
 
 tail:
 

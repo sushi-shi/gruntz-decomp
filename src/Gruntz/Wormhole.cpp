@@ -456,9 +456,10 @@ i32 CTeleporter::Update() {
         }
     }
 
-    i32 outA;
-    i32 outB;
-    CGrunt* found = mgr->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
+    i32 playerIndex;
+    i32 unitIndex;
+    CGrunt* found =
+        mgr->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (found == NULL) {
         return 0;
     }
@@ -508,10 +509,10 @@ i32 CTeleporter::Update() {
         current = NULL;
     } else {
         Coord* rec = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->HeadRec();
-        current =
-            (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_grid[rec->m_x * TM_GRID_COLS + rec->m_y];
+        current = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
+                      ->m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
-    if (found == current && outB == g_curPlayer) {
+    if (found == current && playerIndex == g_curPlayer) {
         CGameObject* g = found->m_object;
         (static_cast<CPlay*>(mgr->m_curState))->ResetGoals(g->m_screenX, g->m_screenY);
     }

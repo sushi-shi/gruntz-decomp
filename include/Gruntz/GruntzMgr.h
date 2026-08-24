@@ -189,7 +189,7 @@ public:
     }
     i32 AdvanceOptionsCycle();
     i32 SyncOptionsState();
-    void SetCellHeight(i32 r, i32 c, i32 v);
+    void SetCellHeight(i32 x, i32 y, i32 value);
     i32 PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused);
     i32 SwitchToNextState();
 
@@ -205,7 +205,13 @@ public:
 
     RECT* GetRect(RECT* out);
 
-    i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name);
+    i32 ResolveLevelChecksum(
+        i32 useDirectLevelReference,
+        i32 isBattlez,
+        i32 isCustom,
+        i32 levelId,
+        CString levelName
+    );
     void UpdateScoreHud();
 
     i32 BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 pObj);

@@ -36,12 +36,12 @@ The block-scoped copies still share ONE stack slot (disjoint scopes), so the fra
 size is unchanged - this costs nothing and is what the frame offsets already say.
 
 Corollary for reading the target: **a local that shares a slot with another local
-proves the two are in disjoint scopes.** In `CGruntzMgr::BuildLevelRezPath`
+proves the two are in disjoint scopes.** In `CGruntzMgr::ResolveLevelChecksum`
 (0x00093d40) `scratch` sits at `[esp+0x18]`, the same slot as the `CFile`, so
 `scratch` lives inside the `isEmpty != 0` arm; and the 0x20-wide union
 (`buf` lands at `[esp+0x38]`) sizes it at `char scratch[32]`.
 
-CGruntzMgr::BuildLevelRezPath 0x93d40: 78.67 -> 97.86.
+CGruntzMgr::ResolveLevelChecksum 0x93d40: 78.67 -> 97.86.
 
 ## Negative result: a REGISTER-resident pointer local is not enough (2026-08-11)
 

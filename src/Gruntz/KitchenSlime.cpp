@@ -144,18 +144,18 @@ i32 CKitchenSlime::Tick() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
         CGameObject* lvl = Level();
-        i32 outX, outY;
+        i32 playerIndex, unitIndex;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_cmdGrid->FindGruntAt(
             lvl->m_screenX,
             lvl->m_screenY,
             &lvl->m_area,
-            &outY,
-            &outX,
+            &playerIndex,
+            &unitIndex,
             static_cast<RECT*>(0)
         ));
         if (ent && ent->m_gruntKind != GRUNT_INVULNERABLE) {
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
-                ->CellDispatch(outY, outX, DEATH_MELT, -1);
+                ->StartUnitDeath(playerIndex, unitIndex, DEATH_MELT, -1);
         }
     }
 

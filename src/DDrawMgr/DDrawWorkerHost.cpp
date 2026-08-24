@@ -9,7 +9,7 @@
 
 RVA(0x00163a90, 0x17)
 i32 CDDrawWorkerHost::IsLoaded() {
-    if (m_tileGrid != NULL && m_colOffsets != NULL) {
+    if (m_tileGrid != NULL && m_rowOffsets != NULL) {
         return 1;
     }
     return 0;
@@ -37,8 +37,8 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         delete[] m_tileGrid;
         m_tileGrid = NULL;
     }
-    if (m_colOffsets != NULL) {
-        delete[] m_colOffsets;
-        m_colOffsets = NULL;
+    if (m_rowOffsets != NULL) {
+        delete[] m_rowOffsets;
+        m_rowOffsets = NULL;
     }
 }

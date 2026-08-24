@@ -95,8 +95,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 nb->GetScreenTile(&p);
                 if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
                     g->m_defenderState = AISTATE_ATTACK;
-                    g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
-                    g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
+                    g->m_arrivalCell.m_x = nb->m_playerIndex;
+                    g->m_arrivalCell.m_y = nb->m_unitIndex;
                     g->m_dwell = 0;
                 }
             }
@@ -108,9 +108,10 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     }
 
     {
-        i32 col = g->m_arrivalCell.m_x;
-        i32 row = g->m_arrivalCell.m_y;
-        CGrunt* cur = m_triggerMgr->m_grid[15 * col + row];
+        i32 targetPlayerIndex = g->m_arrivalCell.m_x;
+        i32 targetUnitIndex = g->m_arrivalCell.m_y;
+        CGrunt* cur =
+            m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * targetPlayerIndex + targetUnitIndex];
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {

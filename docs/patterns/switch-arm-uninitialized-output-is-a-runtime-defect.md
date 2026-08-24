@@ -25,7 +25,7 @@ case DIR_SOUTH:     nextY = tile.m_y + 0x20;  break;
 OUR cl homed `nextX` to a stack slot no path writes, so a due-south claim read
 garbage. Depending on the residue that slot held, the claim either failed
 spuriously (out-of-bounds `CellFlagsAt` -> the act-M caller kills the grunt via
-`CellDispatch(DEATH_NORMAL)`) or committed `m_lastTilePx.m_x = garbage` and the
+`StartUnitDeath(DEATH_NORMAL)`) or committed `m_lastTilePx.m_x = garbage` and the
 grunt walked off-map. Retail compiled the same VALUES but kept them in
 registers, so retail never misbehaved: **identical-looking source, divergent
 runtime, and objdiff cannot see it** (the read of the uninit slot is a
@@ -80,7 +80,7 @@ the arms) and the shared default at `0x51e15` restores only the move pair:
 051e1d: (join)
 ```
 It never writes the voice slots, yet `0x52745` loads all three and passes them
-by value to `CGrunt::PlaySound` (set-facing) at `0x52765`. Retail reads
+by value to `CGrunt::SetFacing` at `0x52765`. Retail reads
 uninitialized stack there. Our source matches; **initialising it would diverge**.
 
 **Recipe.** Find the switch's default target (the `ja`/`jae` guard above the

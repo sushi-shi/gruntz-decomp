@@ -44,7 +44,7 @@ Three of this file's own rows closed on it, in one commit:
 |---|---|---|---|
 | `CTriggerMgr::ToggleRegionA` | 0x7d450 | 85.71 | **100.00 EXACT** |
 | `CTriggerMgr::TriggerCell` | 0x7b1b0 | 91.19 | 99.95 |
-| `CTriggerMgr::NotifyCell` | 0x79fb0 | 86.48 | 94.19 |
+| `CTriggerMgr::UnregisterUnit` | 0x79fb0 | 86.48 | 94.19 |
 
 ## What is still true, and it is the useful half
 
@@ -53,7 +53,7 @@ each picked because the function reads `p->m_lastTilePx.m_x/.m_y` through a poin
 measured on the same instrument and **every one was flat or worse**: `ChargeStep` 0xef6b0,
 `UpdateArrival` 0xf0130, `StepArrivalDefenseAlt` 0xf1c70, `StepArrivalDefenseLean`
 0xf8240, `ScanNearestTarget` 0xf42f0, `WanderStep` 0xed9f0, `GruntInRadius` 0x67b00,
-`TmDeflectStep` 0x6f2f0, `FindNearestInRow` 0x77f80, `FindNearestEnemy` 0x77df0.
+`TmDeflectStep` 0x6f2f0, `FindNearestUnitForPlayer` 0x77f80, `FindNearestEnemy` 0x77df0.
 `StepArrivalDefense` 0xf2b20 and `ClaimSwitchTile` 0x52c70 likewise did not move, and on
 `ClaimSwitchTile` the receiver is `this`, where the temp CSEs with the other member reads
 and never reaches a home.
@@ -83,7 +83,7 @@ out-of-line call taking `&p` (emits a `call` retail lacks), a user-declared dest
 copy ctor additionally does not build - it makes `Coord` non-POD and `GruntWanderStep.cpp`
 then fails C2362, which is weak evidence retail's `Coord` was a POD.
 
-TU declaration count is dead flat here: 50 island cells per function on `NotifyCell`,
+TU declaration count is dead flat here: 50 island cells per function on `UnregisterUnit`,
 `ToggleRegionA` and `ResolveArrivalNeighbor` were 50/50 identical, and a 16-cell sweep
 above `TriggerMgr.cpp`'s first include moved none of the unit's 21 sub-100 functions. That
 remains correct and is the reason the axis was mis-read as "unreachable" rather than

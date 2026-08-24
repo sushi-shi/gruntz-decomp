@@ -59,8 +59,8 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             s->Write(&m_selectValue, sizeof(m_selectValue));
             GS_SUBREC(m_timerGlyph);
             s->Write(&m_timerValue, sizeof(m_timerValue));
-            s->Write(&m_unitRow, sizeof(m_unitRow));
-            s->Write(&m_unitCol, sizeof(m_unitCol));
+            s->Write(&m_playerIndex, sizeof(m_playerIndex));
+            s->Write(&m_unitIndex, sizeof(m_unitIndex));
 #undef GS_SUBREC
 
             g_serialCounter++;
@@ -122,8 +122,8 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             s->Read(&m_selectValue, sizeof(m_selectValue));
             GS_IDXREF(m_timerGlyph);
             s->Read(&m_timerValue, sizeof(m_timerValue));
-            s->Read(&m_unitRow, sizeof(m_unitRow));
-            s->Read(&m_unitCol, sizeof(m_unitCol));
+            s->Read(&m_playerIndex, sizeof(m_playerIndex));
+            s->Read(&m_unitIndex, sizeof(m_unitIndex));
             GS_NAMEREF(m_glyphMap);
             GS_NAMEREF(m_timerGlyphMap);
 #undef GS_IDXREF

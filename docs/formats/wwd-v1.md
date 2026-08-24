@@ -97,7 +97,7 @@ Read by `CGameLevel::LoadWwd` @0x15d280, `CGameLevel::ReadWwdHeaderName`
 | 0x2e0 | 4 | **`planesOffset`** | **P** | `mov esi,[edx+0x2e0]; add esi,ebx` @0x15d368. **0x5f4 in all 63** — the plane headers immediately follow |
 | 0x2e4 | 4 | **`tileDescriptionsOffset`** | **P** | `mov eax,[edx+0x2e4]` @0x15d3a4; zero means "no attribute table" and skips the block |
 | 0x2e8 | 4 | **`mainBlockLength`** | **P** | `mov ecx,[ebx+0x2e8]` @0x15d2d3 sizes the inflate buffer; 0x160790 uses it as the zlib source bound and asserts the inflated size equals it |
-| 0x2ec | 4 | **`checksum`** | **P** *(stored)* | `mov eax,[edx+0x2ec]; mov [ebp+0xac],eax` @0x15d362. **Retail never verifies it** — it is stored, then returned by `CGruntzMgr::BuildLevelRezPath` @0x93d40 as the level's multiplayer identity token. Algorithm: [below](#checksum) |
+| 0x2ec | 4 | **`checksum`** | **P** *(stored)* | `mov eax,[edx+0x2ec]; mov [ebp+0xac],eax` @0x15d362. **Retail never verifies it** — it is stored, then returned by `CGruntzMgr::ResolveLevelChecksum` @0x93d40 as the level's multiplayer identity token. Algorithm: [below](#checksum) |
 | 0x2f0 | 4 | **`reserved2f0`** | **U** | never loaded; 0 in all 63 |
 | 0x2f4 | 0x80 | **`launchApp`** | **U** | never read. Three distinct, incl. `"C:\PROJ\GRUNTZ\DEBUG\GRUNTZ.EXE"` |
 | 0x374 | 0x80 | **`imageDirectory[0]`** | **U** | never read. `"AREA<n>\IMAGEZ"`, 8 distinct |
@@ -166,7 +166,7 @@ matches retail's use; prefer it.
 
 `tilesHigh * tilesWide` little-endian u32s at `tilesOffset`, row-major with
 `tilesWide` per row. `CDDrawWorkerHost::Read` copies them verbatim into
-`m_tileGrid` and builds `m_colOffsets[r] = r * tilesWide`.
+`m_tileGrid` and builds `m_rowOffsets[r] = r * tilesWide`.
 
 A handle splits into two 16-bit halves, and retail's own diagnostics name them.
 `CDDrawWorkerHost::ValidateTiles` @0x163510 formats
@@ -367,7 +367,7 @@ this document describes the file side. Both statements stand.
 
 ## Checksum
 
-`CGruntzMgr::BuildLevelRezPath` @0x93d40 reads the field and returns it as a
+`CGruntzMgr::ResolveLevelChecksum` @0x93d40 reads the field and returns it as a
 level identity token; nothing in `GRUNTZ.EXE` recomputes it. So the algorithm is
 recoverable only from the corpus, and this is a corpus result — **I**, not P.
 

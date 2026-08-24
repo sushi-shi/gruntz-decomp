@@ -77,10 +77,10 @@ they overturned two conclusions that pure code reading had reached:
   carry the right `m_type`, name and `SlotN.sav` path. `TempFileExists` had everything it needed.
 
 The decoder also locates the `CTriggerMgr` grid record by its own invariant — 60 object ids
-followed by `m_rowCount[4]` where `rowCount[r]` equals the number of non-zero ids in row `r`
+followed by `m_unitCountByPlayer[4]` where `rowCount[r]` equals the number of non-zero ids in row `r`
 (the neighbouring offsets pass a weaker sum-only test, so check per row) — and resolves each id
 through the `WwdSnapshot` table. That turns a register dump into a named cell: the
-`ClearGridRange` fault at row 1 col 0 resolves to a `Grunt` record with `logicTypeId` 0x3e8 that
+`RemovePlayerUnitsImmediately` fault at row 1 col 0 resolves to a `Grunt` record with `logicTypeId` 0x3e8 that
 IS present in the object table, which rules out type confusion and leaves only "created but
 never chained".
 
@@ -94,8 +94,8 @@ duplicate object id, `m_animWorker == NULL`, factory declined), `Deserialize` (i
 
 ### Worked narrowing: from a register dump to three named guards
 
-The `ClearGridRange` fault register set (`eax=0`, `ecx`, `esi`, `edi`) reconstructs the loop
-induction exactly — `edi = row*15 + 0x47`, `esi = this + 0x20c + 4*row`, `ecx = &m_grid[row*15
+The `RemovePlayerUnitsImmediately` fault register set (`eax=0`, `ecx`, `esi`, `edi`) reconstructs the loop
+induction exactly — `edi = row*15 + 0x47`, `esi = this + 0x20c + 4*row`, `ecx = &m_units[row*15
 + col]` — giving **row 1, col 0**. `savegame_dump` resolves that cell to object id 178, and the
 table order (which is the `LoadObjects`/`Deserialize` order, since `ForEachProbe` and
 `ForEachSerialize` walk the same `m_map48`) puts the five grid grunts at indices 132..136.
@@ -155,7 +155,7 @@ clears its worker cache) after the latch is set leaves the three workers permane
 table (`RegisterGameObjectTypes` @0xa3b0 is 100.00% EXACT, and the three Logic* workers are
 not in it anyway; they are created lazily only by `BuildLogicTypeTable`).
 
-And it explains the crash *shape*: `CTriggerMgr::Load` fills `m_grid` from object ids during
+And it explains the crash *shape*: `CTriggerMgr::Load` fills `m_units` from object ids during
 `BroadcastCmd(SERIAL_LOAD)`, which `RestoreChildren` invokes **before**
 `m_childGroup->Deserialize`, and it is `Deserialize` that finally runs `CWapX::Chain` and
 assigns `m_wwdObject`. So between those two calls the grid legitimately holds grunts whose
@@ -163,6 +163,6 @@ assigns `m_wwdObject`. So between those two calls the grid legitimately holds gr
 nothing in the 0x150 band either (its inlined copy in `SerialObjectFactory` stores 0x268..0x8cc
 only). If anything in that window returns 0, `CGruntzMgr`'s `CMD_LOAD_SAVED_GAME` arm merely
 `ReportError`s and leaves the half-built grid in place, and the next
-`CPlay::FreeListTeardown` / `LeaveState` faults in `ClearGridRange+0x5d` on
+`CPlay::FreeListTeardown` / `LeaveState` faults in `RemovePlayerUnitsImmediately+0x5d` on
 `c->m_wwdObject->m_flags |= 0x10000`. **The fault site is the failure path, not the bug** —
 adding a NULL guard there would hide it and move away from retail, which has no such guard.

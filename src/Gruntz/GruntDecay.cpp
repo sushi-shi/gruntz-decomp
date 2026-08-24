@@ -19,13 +19,13 @@ i32 CGrunt::LoadGruntDecayConfig() {
                 m_object->m_screenX,
                 m_object->m_screenY,
                 1,
-                m_tileOwnerHi
+                m_playerIndex
             );
         } else {
             m_tileMgr->SpawnPuddle(
                 m_object->m_screenX,
                 m_object->m_screenY,
-                m_tileOwnerHi,
+                m_playerIndex,
                 IDX(m_moveIcon),
                 m_deathType != DEATH_MELT,
                 0x19
@@ -44,7 +44,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
         || mode == DEATH_SHATTER) {
         SET_ANIMATION_ACT("R");
         if (m_cellRemovalNotified == 0) {
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
         i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
@@ -70,7 +70,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
         return 0;
     }
     if (m_cellRemovalNotified == 0) {
-        m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+        m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
     }
     SetObjectFlags(0x10000);
     return 0;
@@ -93,7 +93,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
         Hide();
         m_wwdObject->m_frameSet->SetAllTypes(SHADE_COPY);
         if (m_cellRemovalNotified == 0) {
-            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
         SetObjectFlags(0x10000);
         return 0;

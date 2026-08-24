@@ -88,7 +88,7 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
         }
     }
     mp = m_mainPlane;
-    i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
+    i32 tile = mp->m_tileGrid[mp->m_rowOffsets[y] + x];
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }

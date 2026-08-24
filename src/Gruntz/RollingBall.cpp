@@ -157,11 +157,17 @@ i32 CRollingBall::Update() {
             g_gameReg->m_cmdGrid->m_rollingballWanted = 1;
         }
         CWwdGameObjectA* lg2 = m_object;
-        i32 hitA;
-        i32 hitB;
-        if (g_gameReg->m_cmdGrid
-                ->FindGruntAt(lg2->m_screenX, lg2->m_screenY, &lg2->m_area, &hitA, &hitB, NULL)) {
-            g_gameReg->m_cmdGrid->CellDispatch(hitA, hitB, DEATH_SQUASH, -1);
+        i32 playerIndex;
+        i32 unitIndex;
+        if (g_gameReg->m_cmdGrid->FindGruntAt(
+                lg2->m_screenX,
+                lg2->m_screenY,
+                &lg2->m_area,
+                &playerIndex,
+                &unitIndex,
+                NULL
+            )) {
+            g_gameReg->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, -1);
         }
     }
 
@@ -185,26 +191,26 @@ i32 CRollingBall::Update() {
             CString explosion;
 
             CGameLevel* lvl = g_gameReg->m_world->m_level;
-            i32 col = m_target.m_y >> TILE_SHIFT_PX;
-            i32 row = m_target.m_x >> TILE_SHIFT_PX;
-            if (row < 0) {
-                row = 0;
+            i32 tileY = m_target.m_y >> TILE_SHIFT_PX;
+            i32 tileX = m_target.m_x >> TILE_SHIFT_PX;
+            if (tileX < 0) {
+                tileX = 0;
             } else {
                 i32 w = lvl->m_mainPlane->m_gridW;
-                if (row >= w) {
-                    row = w - 1;
+                if (tileX >= w) {
+                    tileX = w - 1;
                 }
             }
-            if (col < 0) {
-                col = 0;
+            if (tileY < 0) {
+                tileY = 0;
             } else {
                 i32 h = lvl->m_mainPlane->m_gridH;
-                if (col >= h) {
-                    col = h - 1;
+                if (tileY >= h) {
+                    tileY = h - 1;
                 }
             }
             CDDrawWorkerHost* pl = lvl->m_mainPlane;
-            i32 raw = pl->m_tileGrid[pl->m_colOffsets[col] + row];
+            i32 raw = pl->m_tileGrid[pl->m_rowOffsets[tileY] + tileX];
             // A TileCollisionKind: the devirtualised CTileImageSet::GetCollisionAt(0, 0).
             i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
@@ -398,26 +404,26 @@ i32 CRollingBall::Update() {
         i32 oldDir = dirObj->m_direction;
         if ((terrain & 0x80) != 0) {
             CGameLevel* lvl2 = g_gameReg->m_world->m_level;
-            i32 col2 = ty;
-            i32 row2 = tx;
-            if (row2 < 0) {
-                row2 = 0;
+            i32 tileY2 = ty;
+            i32 tileX2 = tx;
+            if (tileX2 < 0) {
+                tileX2 = 0;
             } else {
                 i32 w = lvl2->m_mainPlane->m_gridW;
-                if (row2 >= w) {
-                    row2 = w - 1;
+                if (tileX2 >= w) {
+                    tileX2 = w - 1;
                 }
             }
-            if (col2 < 0) {
-                col2 = 0;
+            if (tileY2 < 0) {
+                tileY2 = 0;
             } else {
                 i32 h = lvl2->m_mainPlane->m_gridH;
-                if (col2 >= h) {
-                    col2 = h - 1;
+                if (tileY2 >= h) {
+                    tileY2 = h - 1;
                 }
             }
             CDDrawWorkerHost* pl2 = lvl2->m_mainPlane;
-            i32 raw2 = pl2->m_tileGrid[pl2->m_colOffsets[col2] + row2];
+            i32 raw2 = pl2->m_tileGrid[pl2->m_rowOffsets[tileY2] + tileX2];
             i32 act2;
             if (raw2 != UNINIT_FILL && raw2 != -1) {
                 act2 = VtblResolve(static_cast<CTileImageSet*>(lvl2->m_imageSets[raw2 & 0xffff]));

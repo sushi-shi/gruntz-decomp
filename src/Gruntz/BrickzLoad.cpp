@@ -114,9 +114,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     total += g_buteMgr.GetInt("Brickz", "Black");
 
     BrickzCell* cell = m_cellPool;
-    for (u32 col = 0; col < m_height; col++) {
-        for (u32 row = 0; row < m_width; row++, cell++) {
-            i32 tileId = grid->m_tileGrid[grid->m_colOffsets[col] + row];
+    for (u32 tileY = 0; tileY < m_height; tileY++) {
+        for (u32 tileX = 0; tileX < m_width; tileX++, cell++) {
+            i32 tileId = grid->m_tileGrid[grid->m_rowOffsets[tileY] + tileX];
             if (tileId != -1) {
                 tileId &= 0xffff;
             }
@@ -129,10 +129,10 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 BridgeTileId bridgeTile = static_cast<BridgeTileId>(tileId);
                 if (bridgeTile == BRIDGETILE_WATER_UP_ALT) {
                     tileId = IDX(BRIDGETILE_WATER_UP);
-                    SET_WORKER_HOST_CELL(grid, row, col, IDX(BRIDGETILE_WATER_UP));
+                    SET_WORKER_HOST_CELL(grid, tileX, tileY, IDX(BRIDGETILE_WATER_UP));
                 } else if (bridgeTile == BRIDGETILE_DEATH_UP_ALT) {
                     tileId = IDX(BRIDGETILE_DEATH_UP);
-                    SET_WORKER_HOST_CELL(grid, row, col, IDX(BRIDGETILE_DEATH_UP));
+                    SET_WORKER_HOST_CELL(grid, tileX, tileY, IDX(BRIDGETILE_DEATH_UP));
                 }
             }
 
@@ -174,10 +174,10 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     default:
                         break;
                 }
-                SET_WORKER_HOST_CELL(grid, row, col, tileId);
+                SET_WORKER_HOST_CELL(grid, tileX, tileY, tileId);
             }
 
-            TileCollisionKind typeCode = m_attrMgr->m_level->LookupTile(row, col);
+            TileCollisionKind typeCode = m_attrMgr->m_level->LookupTile(tileX, tileY);
             i32 oldFlags = cell->m_flags;
             i32 keep = oldFlags & 0x1bf40000;
             i32 edgeBit = oldFlags & 0x20000000;
@@ -360,15 +360,21 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
 
             if ((cell->m_flags & 0x100) != 0) {
                 i32 colCount = m_width;
-                for (i32 r = static_cast<i32>(row) - 1; r <= static_cast<i32>(row) + 1; r++) {
-                    if (r <= 0 || static_cast<u32>(r) >= static_cast<u32>(m_width)) {
+                for (i32 neighborTileX = static_cast<i32>(tileX) - 1;
+                     neighborTileX <= static_cast<i32>(tileX) + 1;
+                     neighborTileX++) {
+                    if (neighborTileX <= 0
+                        || static_cast<u32>(neighborTileX) >= static_cast<u32>(m_width)) {
                         continue;
                     }
-                    for (i32 c = static_cast<i32>(col) - 1; c <= static_cast<i32>(col) + 1; c++) {
-                        if (c < 0 || static_cast<u32>(c) >= static_cast<u32>(m_height)) {
+                    for (i32 neighborTileY = static_cast<i32>(tileY) - 1;
+                         neighborTileY <= static_cast<i32>(tileY) + 1;
+                         neighborTileY++) {
+                        if (neighborTileY < 0
+                            || static_cast<u32>(neighborTileY) >= static_cast<u32>(m_height)) {
                             continue;
                         }
-                        BrickzCell* nc = &m_rows[c][r];
+                        BrickzCell* nc = &m_rows[neighborTileY][neighborTileX];
                         i32 nf = nc->m_flags & ~0x1000;
                         nc->m_flags = nf;
                         if ((nf & 0x100) == 0) {
@@ -382,16 +388,16 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                         BrickzCell* ul = NULL;
                         BrickzCell* dr = NULL;
                         BrickzCell* dl = NULL;
-                        if (c > 0) {
+                        if (neighborTileY > 0) {
                             up = nc - colCount;
                         }
-                        if (static_cast<u32>(c) < static_cast<u32>(m_height - 1)) {
+                        if (static_cast<u32>(neighborTileY) < static_cast<u32>(m_height - 1)) {
                             down = nc + colCount;
                         }
-                        if (static_cast<u32>(r) < static_cast<u32>(colCount - 1)) {
+                        if (static_cast<u32>(neighborTileX) < static_cast<u32>(colCount - 1)) {
                             right = nc + 1;
                         }
-                        if (r > 0) {
+                        if (neighborTileX > 0) {
                             left = nc - 1;
                         }
                         if (up != NULL && right != NULL) {

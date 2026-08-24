@@ -23,7 +23,7 @@ GZ_ENUM_BEGIN(GruntDeathType)
     DEATH_KAROKE = 10,
     DEATH_EXPLODE = 11,
     DEATH_DRAIN = 12,
-    // The only slot CTriggerMgr::CellDispatch routes to
+    // The only slot CTriggerMgr::StartUnitDeath routes to
     // BuildGruntExitAnimation() instead of the death-animation loader.
     DEATH_EXIT = 13,
     DEATH_FALL2 = 14,

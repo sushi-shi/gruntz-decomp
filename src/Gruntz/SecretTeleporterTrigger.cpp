@@ -161,10 +161,10 @@ void CSecretLevelTrigger::RegisterActs() {
 
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
-    i32 outA, outB;
+    i32 playerIndex, unitIndex;
     CWwdGameObjectA* spr = m_object;
-    CGrunt* hit =
-        g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+    CGrunt* hit = g_gameReg->m_cmdGrid
+                      ->HitTestCell(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         spr = m_object;
         i32 ok = 1;
@@ -178,7 +178,7 @@ i32 CSecretLevelTrigger::Tick() {
             ok = 0;
         }
         if (ok) {
-            g_gameReg->m_cmdGrid->CellDispatch(outB, outA, DEATH_DRAIN, -1);
+            g_gameReg->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);
         }
         SetObjectFlags(0x10000);
     }
@@ -187,9 +187,10 @@ i32 CSecretLevelTrigger::Tick() {
 
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
-    i32 loc0, loc4;
+    i32 playerIndex, unitIndex;
     CWwdGameObjectA* o = m_object;
-    CGrunt* hit = g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
+    CGrunt* hit =
+        g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         o = m_object;
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(

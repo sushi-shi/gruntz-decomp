@@ -68,7 +68,7 @@ public:
         return LOGIC_NONE;
     }
 
-    virtual void XferName(char* name);
+    virtual void StepBehavior(char* animationActName);
 
     virtual void FireActivation(i32 id);
 

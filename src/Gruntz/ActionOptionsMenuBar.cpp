@@ -88,8 +88,8 @@ i32 CActionOptionsMenuBar::Init(
     ActionOptionButtonState secondaryState,
     i32 x,
     i32 y,
-    i32 gx,
-    i32 gy
+    i32 playerIndex,
+    i32 unitIndex
 ) {
     if (m_active) {
         return 0;
@@ -109,8 +109,8 @@ i32 CActionOptionsMenuBar::Init(
     } else {
         yy = y + 0x34;
     }
-    m_gridX = gx;
-    m_gridY = gy;
+    m_playerIndex = playerIndex;
+    m_unitIndex = unitIndex;
     m_screenX = x;
     m_screenY = yy;
     m_buttonState[0] = primaryState;
@@ -137,7 +137,8 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 
 RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
-    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[m_gridY + m_gridX * TM_GRID_COLS];
+    CGrunt* grunt =
+        g_gameReg->m_cmdGrid->m_units[m_unitIndex + m_playerIndex * TM_UNITS_PER_PLAYER];
     if (grunt == NULL) {
         m_buttonIcon[1] = PICKUP_NONE;
         m_buttonIcon[0] = PICKUP_NONE;
@@ -216,8 +217,8 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
-    i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
-    CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[cell];
+    i32 registryIndex = m_unitIndex + m_playerIndex * TM_UNITS_PER_PLAYER;
+    CGrunt* unit = g_gameReg->m_cmdGrid->m_units[registryIndex];
     if (unit == NULL) {
         return 1;
     }

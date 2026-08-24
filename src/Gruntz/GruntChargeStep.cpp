@@ -111,7 +111,7 @@ i32 CGrunt::ChargeStep() {
                     }
                 }
                 if (static_cast<u32>(m_dwell) > 500) {
-                    if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
                         return 1;
                     }
                     if (TileSwitch(
@@ -163,7 +163,8 @@ i32 CGrunt::ChargeStep() {
         }
         case AISTATE_CHASE: {
 
-            CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
+            CGrunt* t =
+                m_tileMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
             CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
                 Coord none;
@@ -172,7 +173,7 @@ i32 CGrunt::ChargeStep() {
                 return 1;
             }
             if (t == NULL || t->m_entranceCommitted == 0
-                || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
+                || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -192,8 +193,9 @@ i32 CGrunt::ChargeStep() {
         case AISTATE_ATTACK: {
 
             if (m_poweredUp != 0) {
-                CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
-                if (t == NULL || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
+                CGrunt* t =
+                    m_tileMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
+                if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;

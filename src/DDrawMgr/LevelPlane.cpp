@@ -49,7 +49,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 f
     : CWapObj(mapData, field04, flags, CWapObj::NO_SEED) {
 
     m_tileGrid = NULL;
-    m_colOffsets = NULL;
+    m_rowOffsets = NULL;
     m_scroll = NULL;
     m_scaleX = 1.0f;
     m_scaleY = 1.0f;
@@ -147,9 +147,9 @@ i32 CDDrawWorkerHost::Read(
         cell++;
     }
 
-    m_colOffsets = new i32[m_gridH];
+    m_rowOffsets = new i32[m_gridH];
     for (i32 c = 0; c < m_gridH; c++) {
-        m_colOffsets[c] = c * m_gridW;
+        m_rowOffsets[c] = c * m_gridW;
     }
 
     i32 originY = pd->scrollY;
@@ -226,9 +226,9 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
     m_tileGrid = new i32[m_gridW * m_gridH];
-    m_colOffsets = new i32[m_gridH];
+    m_rowOffsets = new i32[m_gridH];
     for (i32 i = 0; i < m_gridH; i++) {
-        m_colOffsets[i] = i * m_gridW;
+        m_rowOffsets[i] = i * m_gridW;
     }
     SET_SCROLL_POSITION_ZERO(this);
     return 1;
@@ -245,9 +245,9 @@ void CDDrawWorkerHost::Unload() {
         delete[] m_tileGrid;
         m_tileGrid = NULL;
     }
-    if (m_colOffsets != NULL) {
-        delete[] m_colOffsets;
-        m_colOffsets = NULL;
+    if (m_rowOffsets != NULL) {
+        delete[] m_rowOffsets;
+        m_rowOffsets = NULL;
     }
 }
 
@@ -452,7 +452,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
 
     y = m_bounds50.top;
     x = m_bounds50.left;
-    rowBase = m_colOffsets[rowT];
+    rowBase = m_rowOffsets[rowT];
     corner.left = m_tilePxW - leftW;
     corner.top = m_tilePxH - topH;
     corner.right = m_tilePxW;
@@ -482,7 +482,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
         row = 0;
     }
     for (i32 r = nRows; r > 0; r--) {
-        rowBase = m_colOffsets[row];
+        rowBase = m_rowOffsets[row];
         x = m_bounds50.left;
         DRAW_CELL(m_tileGrid[rowBase + colL], x, y, &leftSrc);
         x += leftW;
@@ -506,7 +506,7 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
 
     RECT botSrc = {0, 0, m_tilePxW, botH};
     x = m_bounds50.left;
-    rowBase = m_colOffsets[row];
+    rowBase = m_rowOffsets[row];
     corner.left = m_tilePxW - leftW;
     corner.top = 0;
     corner.right = m_tilePxW;
@@ -963,7 +963,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     i32 result = 1;
     for (i32 row = 0; row < m_gridH; row++) {
         for (i32 col = 0; col < m_gridW; col++) {
-            i32 handle = m_tileGrid[m_colOffsets[row] + col];
+            i32 handle = m_tileGrid[m_rowOffsets[row] + col];
             if (handle == TILE_CLEAR || static_cast<u32>(handle) == UNINIT_FILL) {
                 continue;
             }

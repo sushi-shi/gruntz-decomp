@@ -49,7 +49,7 @@ struct BrickzNode {
 // m_occupantId:
 //
 //   CGrunt::StepArrivalDrop  sets it on the destination cell and writes
-//     m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo in the next
+//     m_occupantId = (m_playerIndex << 8) | m_unitIndex in the next
 //     instruction, having just cleared it (`m_flagBytes[3] &= 0xdf`) and set
 //     m_occupantId = -1 on the cell it left.
 //   CGrunt::Place            does the same pair when a grunt is spawned.

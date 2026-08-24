@@ -125,10 +125,10 @@ i32 CSBI_StatzTabGruntBar::Render() {
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
-    i32 row = m_unitRow;
-    i32 col = m_unitCol;
+    i32 playerIndex = m_playerIndex;
+    i32 unitIndex = m_unitIndex;
     CTriggerMgr* table = g_gameReg->m_cmdGrid;
-    CGrunt* unit = table->m_grid[col + TM_GRID_COLS * row];
+    CGrunt* unit = table->m_units[unitIndex + TM_UNITS_PER_PLAYER * playerIndex];
 
     i32 statusVal;
     i32 abilityVal;
@@ -174,7 +174,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
 
         if (m_selectKey != NULL) {
-            selectVal = table->SelectionListFind(row, col);
+            selectVal = table->SelectionListFind(playerIndex, unitIndex);
         }
 
         timerVal = m_timerValue;

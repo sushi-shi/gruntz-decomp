@@ -125,7 +125,7 @@ state0: {
     if (m_dwell <= static_cast<u32>(DWELL_REPATH_MS)) {
         goto common;
     }
-    if (GruntInRadius(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
+    if (GruntInRadius(nb->m_playerIndex, nb->m_unitIndex) == 0) {
         goto s0_reset;
     }
     if (TileSwitch(
@@ -239,8 +239,8 @@ common: {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
             g_gameReg->m_cmdGrid->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
+                m_playerIndex,
+                m_unitIndex,
                 (bx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (by << TILE_SHIFT_PX) + TILE_HALF_PX
             );

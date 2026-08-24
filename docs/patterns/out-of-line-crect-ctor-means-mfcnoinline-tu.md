@@ -39,11 +39,11 @@ Measured 2026-08-07 on the CGrunt/Battlez family. Adding the include alone:
 | unit | function | before | after |
 |---|---|---|---|
 | gruntcombat | `CGrunt::PathScan` @0x57db0 | 69.71 | **85.16** |
-| grunt | `CGrunt::XferName` @0x5d210 | 78.68 | 80.00 |
+| grunt | `CGrunt::StepBehavior` @0x5d210 | 78.68 | 80.00 |
 | grunt | `CGrunt::StepGruntMovement` @0x4c170 | 64.91 | 65.74 |
 | grunttilescan | `CBattlezMapConfig::ScanRegion` @0x32ce0 | 67.47 | 69.56 |
 
-`CGrunt::LoadAnimNameTable` (100% EXACT, same TU as XferName) stayed EXACT — the
+`CGrunt::LoadAnimNameTable` (100% EXACT, same TU as StepBehavior) stayed EXACT — the
 switch only changes TUs that actually instantiate an MFC inline body.
 
 Overall project fuzzy rose 86.28 -> 86.40 across nine units (`grunt`, `gruntcombat`,

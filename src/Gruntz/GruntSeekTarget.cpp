@@ -45,7 +45,8 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
-        && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x] == NULL) {
+        && g_gameReg->m_cmdGrid->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
+               == NULL) {
         RECYCLE_GRUNT_COORDS(this)
         this->m_arrivalCell.m_x = 0;
     }
@@ -58,7 +59,7 @@ i32 CGrunt::SeekTarget() {
         reason = IDX(this->m_toolId);
     }
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
+        CGrunt* slot = g_gameReg->m_cmdGrid->m_units[0 * TM_UNITS_PER_PLAYER + reason];
         if (slot == NULL || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS(this)
@@ -142,7 +143,7 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
-        if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+        if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
             this->m_blockedVoicePending = 0;
             return 1;
         }
@@ -188,7 +189,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = INT_MAX;
             i32 bestIdx = -1;
-            CGrunt** slots = g_gameReg->m_cmdGrid->m_grid;
+            CGrunt** slots = g_gameReg->m_cmdGrid->m_units;
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -250,7 +251,8 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGameObject* base =
-            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x]->m_object;
+            g_gameReg->m_cmdGrid->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
+                ->m_object;
         TileSwitch(
             base->m_screenX >> TILE_SHIFT_PX,
             base->m_screenY >> TILE_SHIFT_PX,

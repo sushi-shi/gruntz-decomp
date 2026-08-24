@@ -22,15 +22,21 @@
 // distinct-locals.md).
 RVA(0x00093d40, 0x473)
 
-i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name) {
-    if (lo != 0) {
+i32 CGruntzMgr::ResolveLevelChecksum(
+    i32 useDirectLevelReference,
+    i32 isBattlez,
+    i32 isCustom,
+    i32 levelId,
+    CString levelName
+) {
+    if (isCustom != 0) {
         WwdHeader buf;
         CFile file;
         CString path;
-        if (isEmpty == 0 && hi == 0) {
-            path = "custom\\" + name;
+        if (useDirectLevelReference == 0 && isBattlez == 0) {
+            path = "custom\\" + levelName;
         } else {
-            path = name;
+            path = levelName;
         }
         if (file.Open(path, 0, NULL)) {
             if (file.GetLength() < 0x5f4) {
@@ -44,14 +50,14 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         return 0;
     }
 
-    if (isEmpty == 0) {
-        if (hi != 0) {
+    if (useDirectLevelReference == 0) {
+        if (isBattlez != 0) {
             WwdHeader buf;
             CSymTab* node = m_symParser->ResolvePath("GAME_BATTLEZ");
             if (node == NULL) {
                 return 0;
             }
-            CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
+            CParseSource* sub = node->Insert(levelName, REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
@@ -68,7 +74,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             if (node == NULL) {
                 return 0;
             }
-            CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
+            CParseSource* sub = node->Insert(levelName, REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
@@ -85,15 +91,15 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         // wide (buf lands at [esp+0x38]) - so it is a 32-byte buffer local to this arm.
         WwdHeader buf;
         char scratch[32];
-        sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
+        sprintf(scratch, "AREA%i_WORLDZ", ((levelId - 1) % 0x24) / 4 + 1);
         CSymTab* node = m_symParser->ResolvePath(scratch);
         if (node == NULL) {
             return 0;
         }
-        if (id > 0x24) {
-            sprintf(scratch, "TRAINING%i", id % 0x24);
+        if (levelId > 0x24) {
+            sprintf(scratch, "TRAINING%i", levelId % 0x24);
         } else {
-            sprintf(scratch, "LEVEL%i", id);
+            sprintf(scratch, "LEVEL%i", levelId);
         }
         CParseSource* sub = node->Insert(scratch, REZ_TAG_WWD);
         if (sub == NULL) {

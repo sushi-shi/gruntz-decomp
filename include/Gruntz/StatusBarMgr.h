@@ -248,7 +248,7 @@ public:
     i32 SetFallRect(i32 a, i32 b, i32 c);
     void ExitMode();
     i32 ActivateSlot(i32 idx);
-    i32 PlaceCursorTarget(i32 row, i32 commit);
+    i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 
     i32 SetState(StatusBarDock state);
     i32 RefreshState();

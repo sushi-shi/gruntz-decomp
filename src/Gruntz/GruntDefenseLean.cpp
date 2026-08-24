@@ -51,8 +51,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
-            occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-            if (occ != NULL && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0
+            occ = m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->m_entranceCommitted != 0) {
                 if (m_combatActive != 0) {
                     return 1;
@@ -95,7 +95,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             return 1;
 
         case AISTATE_CHASE: {
-            occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+            occ = m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_tileMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
                 Coord none;
@@ -109,7 +109,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (occ->m_entranceCommitted == 0) {
                 goto seek;
             }
-            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
             if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
@@ -146,13 +146,9 @@ i32 CGrunt::StepArrivalDefenseLean() {
         case AISTATE_SEEK:
             occ = m_tileMgr->FindNearestEnemy(this);
             if (rand() % 0x64 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= STAMINA_FULL
-                && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
-                m_tileMgr->ApplyTriggerA(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
-                    m_lastTilePx.m_x,
-                    m_lastTilePx.m_y
-                );
+                && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
+                m_tileMgr
+                    ->ApplyTriggerA(m_playerIndex, m_unitIndex, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 return 1;
             }
             if (m_resetApplied != 0) {

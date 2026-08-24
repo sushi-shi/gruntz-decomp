@@ -504,7 +504,7 @@ i32 CCheckpointTrigger::Act() {
 
     i32 ownerCol = (owner >> 8) & 0xff;
     owner &= 0xff;
-    CGrunt* g = g_gameReg->m_cmdGrid->m_grid[ownerCol * TM_GRID_COLS + owner];
+    CGrunt* g = g_gameReg->m_cmdGrid->m_units[ownerCol * TM_UNITS_PER_PLAYER + owner];
     if (g == NULL) {
         return 0;
     }

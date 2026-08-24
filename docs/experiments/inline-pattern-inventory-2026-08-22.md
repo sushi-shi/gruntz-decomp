@@ -124,7 +124,7 @@ RVA     current  function                                         inlinees
 047090  100.000  CParticlez::Update                               AC
 047a10   89.743  CGrunt::CGrunt                                   SK
 048360  100.000  CGrunt::OnObjectRemoved                          FP
-04ac10   95.397  CGrunt::PlaySound                                A0
+04ac10   95.397  CGrunt::SetFacing                                A0
 04b240  100.000  CGrunt::ClearAllSprites                          HS
 04b370   32.303  CGrunt::StepArrivalDrop                          AD,FP,CR
 04d060  100.000  CGrunt::SetEntrancePos                           FP
@@ -140,7 +140,7 @@ RVA     current  function                                         inlinees
 057db0   89.192  CGrunt::PathScan                                 CR
 05b050   95.351  CGrunt::CommitNeighbor                           SP
 05b6f0  100.000  CGrunt::FindGridNeighbor                         AD
-05d210   86.831  CGrunt::XferName                                 HS,RP
+05d210   86.831  CGrunt::StepBehavior                             HS,RP
 05ecd0   96.369  CGrunt::FinalizeStep                             SK
 05f310   91.850  CGrunt::AdvanceMotion                            AD,TC,SK
 060150   91.287  CGrunt::LoadGruntDeathAnimations                 HS,RP

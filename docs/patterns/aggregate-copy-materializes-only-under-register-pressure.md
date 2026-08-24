@@ -28,7 +28,7 @@ Source, identical on both sides:
 
 ```cpp
 Coord cp = g->m_lastTilePx;
-CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
+CommitNeighbor(g->m_playerIndex, g->m_unitIndex, cp.m_x, cp.m_y);
 ```
 
 Nothing reads `cp` afterwards, so the stores look like a source difference: a

@@ -6,13 +6,13 @@
 // What CTriggerMgr::CombatCue does to every grunt in its radius. Each value is
 // named by its own arm, with no inference:
 //
-//   1  CellDispatch(..., DEATH_DROP)     unless the grunt is invulnerable
+//   1  StartUnitDeath(..., DEATH_DROP)     unless the grunt is invulnerable
 //   2  TryTeleportToCell at a random offset, then a GAME_LIGHTING_FLASH
 //   3  m_health = 100 - healed to full
 //   4  StepArrivalCommit - freezes the affected Grunt in place
 //   5  gives a random toy: rand() % 9 + PICKUP_TOYZ_FIRST
-//   6  CellDispatch(..., DEATH_EXPLODE)
-//   7  CellDispatch(..., DEATH_SQUASH)
+//   6  StartUnitDeath(..., DEATH_EXPLODE)
+//   7  StartUnitDeath(..., DEATH_SQUASH)
 //
 // The three DEATH_* tiers all guard on m_gruntKind != GRUNT_INVULNERABLE; the
 // beneficial/status ones do not, which is the shape that tells the two halves

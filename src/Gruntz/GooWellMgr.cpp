@@ -137,7 +137,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                                         ->ResolveDeathAnimation();
                                 }
                             }
-                            ClearRowAndRefresh(i);
+                            StartPlayerDefeatSequence(i);
                         }
                     } else {
                         if (g_curPlayer == i) {
@@ -159,7 +159,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                                         ->RaiseBattleAlert();
                                 }
                             }
-                            ClearRow(i);
+                            StartPlayerVictorySequence(i);
                         }
                     }
                 }
@@ -172,13 +172,13 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             m_overlay->Activate(off);
         }
         if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
-            if (obj->m_winLoseBanner != 0 && m_rowCount[g_curPlayer] == 0) {
+            if (obj->m_winLoseBanner != 0 && m_unitCountByPlayer[g_curPlayer] == 0) {
                 LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
         }
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            if (m_rowCount[g_curPlayer] != 0) {
+            if (m_unitCountByPlayer[g_curPlayer] != 0) {
                 goto done;
             }
             if (obj->m_winLoseBanner != 0) {

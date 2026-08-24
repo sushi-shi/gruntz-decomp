@@ -15,10 +15,10 @@ accessor call per field, at the use site.
 ```cpp
 // NO - byte-identical to the raw member copy; C2 deletes the home
 Coord c = target->LastTilePx();
-CommitNeighbor(target->m_tileOwnerHi, target->m_tileOwnerLo, c.m_x, c.m_y);
+CommitNeighbor(target->m_playerIndex, target->m_unitIndex, c.m_x, c.m_y);
 
 // YES - two temps share one 8-byte slot, both stores dead, both reads folded
-CommitNeighbor(target->m_tileOwnerHi, target->m_tileOwnerLo,
+CommitNeighbor(target->m_playerIndex, target->m_unitIndex,
                target->LastTilePx().m_x, target->LastTilePx().m_y);
 ```
 ```asm

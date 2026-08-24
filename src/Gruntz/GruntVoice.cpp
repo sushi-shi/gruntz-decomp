@@ -247,16 +247,16 @@ void CVoiceTrigger::RegisterActs() {
 
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
-    i32 outA, outB;
+    i32 playerIndex, unitIndex;
     CGrunt* hit = g_gameReg->m_cmdGrid->FindGruntAt(
         m_object->m_screenX,
         m_object->m_screenY,
         &m_object->m_extent,
-        &outA,
-        &outB,
+        &playerIndex,
+        &unitIndex,
         &m_object->m_area
     );
-    if (hit && outA == g_curPlayer) {
+    if (hit && playerIndex == g_curPlayer) {
         CGameObject* hs = hit->m_object;
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;

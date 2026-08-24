@@ -123,7 +123,7 @@ i32 CGrunt::UpdateArrival() {
                     }
                 }
                 if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
-                    if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
+                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
                         Coord c[2];
                         g->GetScreenPos(c);
                         if (TileSwitch(
@@ -184,11 +184,12 @@ i32 CGrunt::UpdateArrival() {
             break;
         case AISTATE_CHASE: {
             CGrunt* slot =
-                m_tileMgr->m_grid[this->m_arrivalCell.m_x * TM_GRID_COLS + this->m_arrivalCell.m_y];
+                m_tileMgr->m_units
+                    [this->m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_y];
             CGrunt* found = m_tileMgr->FindNearestEnemy(this);
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->m_entranceCommitted == 0
-                    || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
+                    || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
                     this->m_defenderState = AISTATE_SEEK;
                 } else {
                     StepArrivalDrop(
@@ -216,13 +217,13 @@ i32 CGrunt::UpdateArrival() {
         case AISTATE_ATTACK: {
             if (m_poweredUp != 0) {
                 CGrunt* slot =
-                    m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                    m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 // The null test is the FIRST term of the &&-chain and is repeated after
                 // the block: retail jump-threads the leading `slot == NULL` straight to
                 // the SEEK store (0xf056c) and threads the in-block failures PAST the
                 // repeat (0xf03ce vs 0xf03d6). Hoisting it to its own early `break`
                 // loses the second copy.
-                if (slot != NULL && GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) != 0
+                if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
                     && slot->m_entranceCommitted != 0) {
                     // 0x21c (m_neighborValid) is tested first here too - see above.
                     if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
@@ -269,8 +270,8 @@ i32 CGrunt::UpdateArrival() {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
             g_gameReg->m_cmdGrid->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
+                m_playerIndex,
+                m_unitIndex,
                 cell->m_x * 0x20 + 0x10,
                 cell->m_y * 0x20 + 0x10
             );

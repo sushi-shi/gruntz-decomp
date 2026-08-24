@@ -43,7 +43,7 @@ The whole wall reproduces in a self-contained probe with no repo headers
 (`scratch`-only, compiled directly with cl):
 
 ```cpp
-struct CDDrawWorkerHost { char p0[0x20]; int* m_tileGrid; int* m_colOffsets; };
+struct CDDrawWorkerHost { char p0[0x20]; int* m_tileGrid; int* m_rowOffsets; };
 struct CTileGrid { void ComputeCellFlags(int x, int y, int v); };
 struct CLevel { char p0[0x5c]; CDDrawWorkerHost* m_mainPlane; };
 struct CWorld { char p0[0x24]; CLevel* m_level; };
@@ -57,9 +57,9 @@ int CSw::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     int tileX = m_tileX;
-    int v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] + 1;
+    int v = layer->m_tileGrid[tileX + layer->m_rowOffsets[tileY]] + 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[tileX + layer2->m_colOffsets[tileY]] = v;
+    layer2->m_tileGrid[tileX + layer2->m_rowOffsets[tileY]] = v;
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 1;
     return 1;
