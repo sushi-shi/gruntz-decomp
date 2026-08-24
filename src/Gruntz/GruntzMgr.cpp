@@ -983,7 +983,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                     if (st->m_guts != NULL) {
                         st->m_guts->m_barFrameGate = m_modeSize.cy;
                         if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
-                            st->m_guts->RefreshA();
+                            st->m_guts->DockStatusBarLeft();
                             st->m_guts->DockStatusBarRight();
                             EnterModalUI(
                                 "This map is too small to be displayed under your "
@@ -994,7 +994,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                         }
                         if (st->m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                             st->m_guts->DockStatusBarRight();
-                            st->m_guts->RefreshA();
+                            st->m_guts->DockStatusBarLeft();
                         }
                     }
                     EnterModalUI(
@@ -1024,11 +1024,11 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         if (st->m_guts != NULL) {
             st->m_guts->m_barFrameGate = h;
             if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
-                st->m_guts->RefreshA();
+                st->m_guts->DockStatusBarLeft();
                 st->m_guts->DockStatusBarRight();
             } else if (st->m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 st->m_guts->DockStatusBarRight();
-                st->m_guts->RefreshA();
+                st->m_guts->DockStatusBarLeft();
             }
         }
     }

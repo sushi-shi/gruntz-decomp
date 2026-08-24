@@ -684,7 +684,7 @@ i32 CMulti::PumpA() {
     m_world->m_childGroup->TickKillCues(0);
     m_world->m_childGroup->CollideBroadcast();
     Mgr()->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
-    m_guts->LoadDestructButtonSprite(g_frameDelta);
+    m_guts->UpdateStatusBar(g_frameDelta);
     SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();

@@ -3,7 +3,7 @@
 
 #include <Enums.h>
 
-// Runtime kind written by each CStatusBarItem-derived constructor. ClickToggle
+// Runtime kind written by each CStatusBarItem-derived constructor. HandlePointerDrag
 // uses it to accept only CSBI_MenuItem instances.
 GZ_ENUM_BEGIN(StatusBarItemKind)
     SBI_KIND_BASE = 0,

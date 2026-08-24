@@ -94,7 +94,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_position = STATUSBAR_DOCK_RIGHT;
     i32 vx = g_gameReg->m_modeSize.cx;
     i32 vy = g_gameReg->m_modeSize.cy;
-    SetRect(&m_rect10, vx - 0xa0, 0, vx, SCREEN_H_PX);
+    SetRect(&m_barRect, vx - 0xa0, 0, vx, SCREEN_H_PX);
     m_redrawFrames = 0;
     m_barX = vx - 0x45;
     m_barY = vy - 0x30;
@@ -152,7 +152,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     if ((static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
             ->GetValueDword("StatusBar Position", 0)
         == 1) {
-        RefreshA();
+        DockStatusBarLeft();
     }
     return 1;
 }
@@ -162,8 +162,8 @@ void CStatusBarMgr::Teardown() {
     (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
         ->SetValueDword("StatusBar Position", IDX(m_position));
     ResetWidgets(0);
-    for (i32 i = 0; i < m_ptrPool.GetSize(); i++) {
-        Coord* p = static_cast<Coord*>(m_ptrPool.GetData()[i]);
+    for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
+        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
         if (p) {
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
@@ -171,7 +171,7 @@ void CStatusBarMgr::Teardown() {
         }
     }
 
-    m_ptrPool.SetSize(0, -1);
+    m_rewardQueue.SetSize(0, -1);
 }
 
 RVA(0x000fe3e0, 0x55)
@@ -198,10 +198,10 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
 }
 
 RVA(0x000fe460, 0x83)
-i32 CStatusBarMgr::RefreshA() {
+i32 CStatusBarMgr::DockStatusBarLeft() {
     if (m_hlBusy == 0 && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(1);
-        SetRect(&m_rect10, 0, 0, 0xa0, SCREEN_H_PX);
+        SetRect(&m_barRect, 0, 0, 0xa0, SCREEN_H_PX);
         SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
@@ -224,7 +224,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     ResetWidgets(1);
 
     tagSIZE screenSize = g_gameReg->m_modeSize;
-    SetRect(&m_rect10, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
+    SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
@@ -239,7 +239,7 @@ RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
     if (m_hlBusy == 0 && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(1);
-        SetRect(&m_rect10, -1, -1, -1, -1);
+        SetRect(&m_barRect, -1, -1, -1, -1);
         SetState(STATUSBAR_HIDDEN);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     }
@@ -247,7 +247,7 @@ i32 CStatusBarMgr::HideRect() {
 }
 
 RVA(0x000fe670, 0x2b)
-i32 CStatusBarMgr::RefreshState() {
+i32 CStatusBarMgr::RestoreStatusBar() {
     if (m_hlBusy != 0) {
         return 1;
     }
@@ -255,7 +255,7 @@ i32 CStatusBarMgr::RefreshState() {
         return 1;
     }
     if (m_restorePosition == STATUSBAR_DOCK_LEFT) {
-        return RefreshA();
+        return DockStatusBarLeft();
     }
     return DockStatusBarRight();
 }
@@ -273,9 +273,9 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
 
                 RECT below;
-                below.left = m_rect10.left;
-                below.top = m_rect10.bottom;
-                below.right = m_rect10.right;
+                below.left = m_barRect.left;
+                below.top = m_barRect.bottom;
+                below.right = m_barRect.right;
                 below.bottom = v;
                 tgt->Restore(&below, 0);
             }
@@ -291,8 +291,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
                     entry->RenderFrame(
                         l1->m_backPair,
-                        entry->m_anchorX + m_rect10.left,
-                        entry->m_anchorY + m_rect10.top,
+                        entry->m_anchorX + m_barRect.left,
+                        entry->m_anchorY + m_barRect.top,
                         0
                     );
                 }
@@ -323,7 +323,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     while (k) {
         CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
         if (p) {
-            p->SetSubtype();
+            p->RequestRedraw();
             p->Render();
         }
     }
@@ -437,7 +437,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_DOCK_LEFT:
                     HiCueFind();
-                    RefreshA();
+                    DockStatusBarLeft();
                     return 1;
                 case SBICMD_DOCK_RIGHT:
                     HiCueFind();
@@ -696,12 +696,12 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
 
 // @early-stop
 RVA(0x000ff850, 0x121)
-i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
+i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == NULL) {
         return 1;
     }
-    r->Click1c(a, x, y);
+    r->OnDoubleClick(keyFlags, x, y);
     SbiCommandId cmd = r->m_cmd;
     if (r->m_tab == TAB_STATZ && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
@@ -727,7 +727,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
         return 1;
     }
 
-    return UpdateStatusBarTabHighlight(a, x, y);
+    return UpdateStatusBarTabHighlight(keyFlags, x, y);
 }
 
 RVA(0x000ff9d0, 0x8)
@@ -736,13 +736,13 @@ i32 CStatusBarMgr::OnPointerRelease(i32, i32, i32) {
 }
 
 RVA(0x000ff9f0, 0xe4)
-i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
+i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == NULL) {
         ClearTabSprites(TAB_ALL);
         return 1;
     }
-    r->Click24(btn, x, y);
+    r->OnPointerDrag(keyFlags, x, y);
     if (r->m_kind != SBI_KIND_MENU_ITEM) {
         ClearTabSprites(TAB_ALL);
         return 1;
@@ -775,7 +775,7 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
 // @early-stop
 // Sub-point scheduling residue only; probe-inert (C1 state).
 RVA(0x000ffb20, 0x13a)
-i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
+i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != DESTRUCT_WARNING_INACTIVE && m_modeArmed == 0) {
             if (m_destructButton == NULL) {
@@ -802,13 +802,13 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
             }
         }
     }
-    RefreshAll();
+    UpdateStatusSystems();
 
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (cur) {
-            cur->Refresh(arg);
+            cur->Refresh(deltaMs);
         }
     }
     CPtrList& tab = m_tabLists[IDX(m_activeTab)];
@@ -816,18 +816,18 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     while (m) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(m));
         if (cur) {
-            cur->Refresh(arg);
+            cur->Refresh(deltaMs);
         }
     }
     POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
         if (cur) {
-            cur->Refresh(arg);
+            cur->Refresh(deltaMs);
         }
     }
     if (m_retabNotify) {
-        m_retabNotify->Tick(arg);
+        m_retabNotify->Tick(deltaMs);
         Deactivate();
     }
     return 1;
@@ -841,7 +841,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
         if (r) {
             i32 hit = r->m_enabled;
             if (hit) {
-                hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+                hit = CGameLevel::PointInRect(&r->m_rect, x, y);
             }
             if (hit) {
                 return r;
@@ -855,7 +855,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
         if (r) {
             i32 hit = r->m_enabled;
             if (hit) {
-                hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+                hit = CGameLevel::PointInRect(&r->m_rect, x, y);
             }
             if (hit) {
                 return r;
@@ -868,7 +868,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
         if (r) {
             i32 hit = r->m_enabled;
             if (hit) {
-                hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+                hit = CGameLevel::PointInRect(&r->m_rect, x, y);
             }
             if (hit) {
                 return r;
@@ -886,8 +886,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_world == NULL) {
         return 0;
     }
-    i32 bx = m_rect10.left;
-    i32 by = m_rect10.top;
+    i32 bx = m_barRect.left;
+    i32 by = m_barRect.top;
     CDDrawSurfaceMgr* code = m_world;
 
     CSBI_RectOnly* dockLeft = new CSBI_RectOnly;
@@ -1016,7 +1016,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             multiTab->SetFrame(f->GetAt(IDX(MENUITEM_DISABLED)));
         }
         multiTab->SetEnabled(0);
-        multiTab->SetSubtype();
+        multiTab->RequestRedraw();
     }
 
     CSBI_MenuItem* gameTab = new CSBI_MenuItem;
@@ -1066,7 +1066,7 @@ i32 CStatusBarItem::OnPointerMove(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100550, 0x5)
-i32 CStatusBarItem::Click1c(i32, i32, i32) {
+i32 CStatusBarItem::OnDoubleClick(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100570, 0x5)
@@ -1074,12 +1074,12 @@ i32 CStatusBarItem::UnusedPointerAction(i32, i32, i32) {
     return 0;
 }
 RVA(0x00100590, 0x5)
-i32 CStatusBarItem::Click24(i32, i32, i32) {
+i32 CStatusBarItem::OnPointerDrag(i32, i32, i32) {
     return 0;
 }
 
 RVA(0x001005b0, 0x8)
-void CStatusBarItem::SetSubtype() {
+void CStatusBarItem::RequestRedraw() {
     m_redrawFrames = 2;
 }
 
@@ -1106,7 +1106,7 @@ i32 CStatusBarItem::Setup(
     m_owner = owner;
     m_host = host;
     m_tab = tab;
-    m_rect14 = rc;
+    m_rect = rc;
     m_cmd = cmd;
     return 1;
 }
@@ -1239,7 +1239,7 @@ i32 CStatusBarMgr::Deactivate() {
     while (n) {
         CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(m_tabLists[0].GetNext(n));
         if (cur) {
-            cur->SetSubtype();
+            cur->RequestRedraw();
         }
     }
 
@@ -1248,7 +1248,7 @@ i32 CStatusBarMgr::Deactivate() {
     while (m) {
         CSBI_ImageSet* cur = static_cast<CSBI_ImageSet*>(tab.GetNext(m));
         if (cur) {
-            cur->SetSubtype();
+            cur->RequestRedraw();
         }
     }
 
@@ -1470,8 +1470,8 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
-    i32 bx = m_rect10.left;
-    i32 by = m_rect10.top;
+    i32 bx = m_barRect.left;
+    i32 by = m_barRect.top;
 
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
@@ -1700,7 +1700,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, i32 flag) {
 RVA(0x00102180, 0x5f)
 void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
     if (m_position == STATUSBAR_HIDDEN) {
-        RefreshState();
+        RestoreStatusBar();
     }
     if (show && m_activeTab != TAB_GAME) {
         SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
@@ -1708,7 +1708,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
         Deactivate();
-        m_tabSprite5->SetSubtype();
+        m_tabSprite5->RequestRedraw();
     }
     m_hitTestDisabled = 1;
 }
@@ -1718,7 +1718,7 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         Deactivate();
-        m_tabSprite5->SetSubtype();
+        m_tabSprite5->RequestRedraw();
     }
     m_hitTestDisabled = 0;
 }
@@ -1727,8 +1727,8 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_world;
-    i32 bx = m_rect10.left;
-    i32 by = m_rect10.top;
+    i32 bx = m_barRect.left;
+    i32 by = m_barRect.top;
 
     CSBI_Image* it;
     CSBI_ImageSet* imgSet;
@@ -2609,11 +2609,11 @@ i32 CStatusBarMgr::BuildSideTabs() {
     for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
         RECT rc;
         if (m_position == STATUSBAR_DOCK_RIGHT) {
-            rc.left = m_rect10.left - 0x1c;
-            rc.right = m_rect10.left;
+            rc.left = m_barRect.left - 0x1c;
+            rc.right = m_barRect.left;
         } else {
-            rc.left = m_rect10.right;
-            rc.right = m_rect10.right + 0x1c;
+            rc.left = m_barRect.right;
+            rc.right = m_barRect.right + 0x1c;
         }
         rc.top = strid - 0x11;
         rc.bottom = strid;
@@ -2648,7 +2648,7 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
         for (i32 i = 0; i < 15; i++) {
             if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
                 CSBI_SideTab* p = m_hitRects[i];
-                i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect14, x, y) : 0;
+                i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect, x, y) : 0;
                 if (hit) {
                     return i;
                 }
@@ -2731,11 +2731,11 @@ noChange:;
     }
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->SetSubtype();
+            m_gaugeNotify->RequestRedraw();
             i32 fill = m_gauge;
             CSBI_WellGoo* sink = m_gaugeSink;
             sink->m_fillScale = fill;
-            sink->SetSubtype();
+            sink->RequestRedraw();
         }
     }
 }
@@ -2765,7 +2765,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     }
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_hlBusy == 0) {
         if (m_position == STATUSBAR_HIDDEN) {
-            RefreshState();
+            RestoreStatusBar();
         }
         if (m_activeTab != TAB_GRUNTZ) {
             SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
@@ -2871,7 +2871,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
 }
 
 RVA(0x001058d0, 0x34)
-void CStatusBarMgr::RefreshAll() {
+void CStatusBarMgr::UpdateStatusSystems() {
     UpdateGruntOvenStatusBar();
     TickGauge();
     UpdateRezConveyorStatusBar();
@@ -3327,13 +3327,13 @@ void CStatusBarMgr::ClearHlCell(i32 group, StatusBarHighlightRow row) {
 RVA(0x00106a00, 0xbf)
 void CStatusBarMgr::NotifyAllSlots() {
     if (m_notify0) {
-        m_notify0->SetSubtype();
+        m_notify0->RequestRedraw();
     }
     if (m_notify2) {
-        m_notify2->SetSubtype();
+        m_notify2->RequestRedraw();
     }
     if (m_notify3) {
-        m_notify3->SetSubtype();
+        m_notify3->RequestRedraw();
     }
     if (m_extraNotify0 && m_extraNotifyArg0) {
         m_extraNotify0->Notify(m_extraNotifyArg0);
@@ -3356,7 +3356,7 @@ void CStatusBarMgr::NotifyAllSlots() {
     }
 
     if (m_notify1) {
-        m_notify1->SetSubtype();
+        m_notify1->RequestRedraw();
     }
     if (m_extraNotify1) {
         m_extraNotify1->Notify(m_extraNotifyArg1);
@@ -3587,13 +3587,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     if (w) {
         if (rectFlag) {
             RECT rc;
-            i32 x = m_rect10.left;
-            i32 y = m_rect10.top;
+            i32 x = m_barRect.left;
+            i32 y = m_barRect.top;
             rc.left = m_itemRect.left + x;
             rc.top = m_itemRect.top + y;
             rc.right = m_itemRect.right + x;
             rc.bottom = m_itemRect.bottom + y;
-            w->m_rect14 = rc;
+            w->m_rect = rc;
         }
         if (refreshFlag) {
             NotifyAllSlots();
@@ -3624,13 +3624,13 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     if (n) {
 
         RECT rc;
-        i32 x = m_rect10.left;
+        i32 x = m_barRect.left;
         rc.left = l + x;
-        i32 y = m_rect10.top;
+        i32 y = m_barRect.top;
         rc.top = t + y;
         rc.bottom = y + b;
         rc.right = x + rr;
-        n->m_rect14 = rc;
+        n->m_rect = rc;
     }
     NotifyAllSlots();
     return 1;
@@ -3687,13 +3687,13 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             CSBI_ImageSet* w = m_extraNotify1;
             if (w) {
                 RECT rc;
-                i32 sy = m_rect10.top;
+                i32 sy = m_barRect.top;
                 rc.bottom = sy + m_fallRect.bottom;
                 rc.top = sy + m_fallRect.top;
-                i32 sx = m_rect10.left;
+                i32 sx = m_barRect.left;
                 rc.left = m_fallRect.left + sx;
                 rc.right = m_fallRect.right + sx;
-                w->m_rect14 = rc;
+                w->m_rect = rc;
             }
             clock[1] = delay;
             clock[0] = g_frameTime;
@@ -3724,7 +3724,7 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     }
 
     i32 cx = x;
-    RECT rc = r->m_rect14;
+    RECT rc = r->m_rect;
     i32 lo = rc.left + 0x1b;
     i32 xHi = rc.right;
     if (x < lo) {
@@ -3732,8 +3732,8 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     } else if (x > xHi - 0x1a) {
         cx = xHi - 0x1a;
     }
-    i32 localX = cx - m_rect10.left;
-    i32 localY = 0x1b3 - m_rect10.top;
+    i32 localX = cx - m_barRect.left;
+    i32 localY = 0x1b3 - m_barRect.top;
     UpdateFallingItemStatusBar(item, localX, localY);
     EnterHlRow(1, item);
     return 1;
@@ -3770,7 +3770,7 @@ RVA(0x00107ae0, 0x1aa)
 void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     BuildGameTabPauseButton();
     if (m_position == STATUSBAR_HIDDEN) {
-        RefreshState();
+        RestoreStatusBar();
     }
     if (m_activeTab != TAB_GAME) {
         ClearTabGroup();
@@ -3793,15 +3793,15 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
 
-    for (i32 j = 0; j < m_ptrPool.GetSize(); j++) {
-        Coord* p = static_cast<Coord*>(m_ptrPool.GetData()[j]);
+    for (i32 j = 0; j < m_rewardQueue.GetSize(); j++) {
+        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[j]);
         if (p) {
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    m_ptrPool.SetSize(0, -1);
+    m_rewardQueue.SetSize(0, -1);
     i64* clock = &m_reserved2b0.m_last;
     clock[0] = 0;
     clock[1] = 0;
@@ -3830,13 +3830,13 @@ RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        if (m_ptrPool.GetSize() > 0) {
-            Coord* p = static_cast<Coord*>(m_ptrPool.GetData()[0]);
+        if (m_rewardQueue.GetSize() > 0) {
+            Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
             result = static_cast<PickupType>(p->m_x);
             CoordPoolNode* node = g_coordPool.NodeOf(p);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
-            m_ptrPool.RemoveAt(0, 1);
+            m_rewardQueue.RemoveAt(0, 1);
         } else {
             result = PICKUP_NONE;
             if (m_extraNotify0) {
@@ -3928,13 +3928,13 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
         RECT rc;
-        i32 x = m_rect10.left;
-        i32 y = m_rect10.top;
+        i32 x = m_barRect.left;
+        i32 y = m_barRect.top;
         rc.left = m_itemRect.left + x;
         rc.top = m_itemRect.top + y;
         rc.right = m_itemRect.right + x;
         rc.bottom = m_itemRect.bottom + y;
-        m_extraNotify0->m_rect14 = rc;
+        m_extraNotify0->m_rect = rc;
     }
     NotifyAllSlots();
     i32 c = m_rezTick;
@@ -3948,32 +3948,32 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 
 // @early-stop
 RVA(0x00108410, 0x8e)
-i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
+i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
     Coord* node = NULL;
     if (head->m_next != NULL) {
         node = &head->m_coord;
-        node->m_x = a;
-        node->m_y = b;
+        node->m_x = pickupValue;
+        node->m_y = score;
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
-    i32 n = m_ptrPool.GetSize();
+    i32 n = m_rewardQueue.GetSize();
     i32 i = 0;
     if (i < n) {
-        Coord** t = MfcPtrArrayData<Coord>(m_ptrPool);
+        Coord** t = MfcPtrArrayData<Coord>(m_rewardQueue);
         while (i < n) {
             Coord* e = *t;
-            if (e != NULL && b < e->m_y) {
+            if (e != NULL && score < e->m_y) {
                 goto insert;
             }
             i++;
             t++;
         }
     }
-    m_ptrPool.Add(node);
+    m_rewardQueue.Add(node);
     return 1;
 insert:
-    m_ptrPool.InsertAt(i, node, 1);
+    m_rewardQueue.InsertAt(i, node, 1);
     return 1;
 }
 
@@ -4019,7 +4019,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
         case SERIAL_POSTLOAD:
             (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
             if (m_position == STATUSBAR_DOCK_RIGHT) {
-                RefreshA();
+                DockStatusBarLeft();
                 DockStatusBarRight();
             }
             break;
@@ -4201,7 +4201,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&tmp, sizeof(tmp));
     }
 
-    s->Write(&m_rect10.left, sizeof(m_rect10));
+    s->Write(&m_barRect.left, sizeof(m_barRect));
     s->Write(&m_redrawFrames, sizeof(m_redrawFrames));
     s->Write(&m_barX, sizeof(m_barX));
     s->Write(&m_barY, sizeof(m_barY));
@@ -4264,10 +4264,10 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         } while (--cnt);
     }
 
-    i32 ptrCount = m_ptrPool.GetSize();
+    i32 ptrCount = m_rewardQueue.GetSize();
     s->Write(&ptrCount, sizeof(ptrCount));
     for (u32 n = 0; n < static_cast<u32>(ptrCount); n++) {
-        s->Write(m_ptrPool.GetData()[n], 8);
+        s->Write(m_rewardQueue.GetData()[n], 8);
     }
     return 1;
 }
@@ -4307,7 +4307,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         return 0;
     }
 
-    s->Read(&m_rect10.left, sizeof(m_rect10));
+    s->Read(&m_barRect.left, sizeof(m_barRect));
     s->Read(&m_redrawFrames, sizeof(m_redrawFrames));
     s->Read(&m_barX, sizeof(m_barX));
     s->Read(&m_barY, sizeof(m_barY));
@@ -4368,19 +4368,19 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         nb += 4;
     } while (--seq);
 
-    for (i32 t = 0; t < m_ptrPool.GetSize(); t++) {
-        Coord* pp = static_cast<Coord*>(m_ptrPool.GetData()[t]);
+    for (i32 t = 0; t < m_rewardQueue.GetSize(); t++) {
+        Coord* pp = static_cast<Coord*>(m_rewardQueue.GetData()[t]);
         if (pp) {
             CoordPoolNode* node = g_coordPool.NodeOf(pp);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    m_ptrPool.SetSize(0, -1);
+    m_rewardQueue.SetSize(0, -1);
 
     i32 cnt;
     s->Read(&cnt, sizeof(cnt));
-    m_ptrPool.SetSize(cnt, -1);
+    m_rewardQueue.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         CoordPoolNode* head = g_coordPool.m_freeHead;
         Coord* node = NULL;
@@ -4389,7 +4389,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
             g_coordPool.m_freeHead = head->m_next;
         }
         s->Read(node, 8);
-        m_ptrPool.GetData()[n] = node;
+        m_rewardQueue.GetData()[n] = node;
     }
     return 1;
 }
@@ -4406,7 +4406,7 @@ i32 CStatusBarMgr::FindReadySlot() {
 }
 
 RVA(0x00109ad0, 0xa9)
-i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, WarpStoneFragment fragment) {
+i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     if (m_retabNotify) {
         return 0;
     }
@@ -4415,7 +4415,7 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, WarpStoneFragment fragment) {
     if (o == NULL) {
         return 0;
     }
-    return o->Init(this, a, b, fragment);
+    return o->Init(this, srcX, srcY, fragment);
 }
 
 RVA(0x00109bb0, 0xb)
@@ -4472,9 +4472,9 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_rect10.left + cx;
+    i32 tx = base->m_barRect.left + cx;
     m_targetX = tx;
-    i32 ty = base->m_rect10.top + dy;
+    i32 ty = base->m_barRect.top + dy;
     m_targetY = ty;
 
     i32 deltaX = tx - srcX;
@@ -4972,7 +4972,7 @@ void CStatusBarMgr::ExitMode() {
     m_hlBusy = 0;
     if (handle == 0 && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         if (m_position == STATUSBAR_HIDDEN) {
-            RefreshState();
+            RestoreStatusBar();
         }
         if (m_activeTab != TAB_GAME) {
             SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
@@ -5043,7 +5043,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
         return;
     }
     if (m_position == STATUSBAR_HIDDEN) {
-        RefreshState();
+        RestoreStatusBar();
     }
     if (m_activeTab != TAB_MULTIPLAYER) {
         SetTabState(SBICMD_TAB_MULTIPLAYER, MENUITEM_SELECTED);
@@ -5271,8 +5271,8 @@ i32 CStatusBarMgr::GetActiveValue() {
     if (m_rezActive == 0) {
         return m_extraNotifyArg0;
     }
-    if (m_ptrPool.GetSize() > 0 && m_ptrPool.GetSize() > m_rezTick) {
-        return *static_cast<i32*>(m_ptrPool.GetAt(m_rezTick));
+    if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
+        return *static_cast<i32*>(m_rewardQueue.GetAt(m_rezTick));
     }
     return 0;
 }

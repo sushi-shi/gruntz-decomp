@@ -887,7 +887,7 @@ void CPlay::DrawWorldFrame() {
 
         (g_gameReg)->AdvanceOptionsCycle();
     }
-    m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+    m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
 }
 
 // @early-stop
@@ -943,7 +943,7 @@ i32 CPlay::DrawWorldFrames() {
             if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
                 (g_gameReg)->AdvanceOptionsCycle();
             }
-            m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+            m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
             i++;
         } while (i < steps);
     }
@@ -978,7 +978,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 updateMs = static_cast<i32>(tg());
     m_world->m_childGroup->TickKillCues(1);
     m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
-    m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+    m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
     updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
 
     i32 hitTestMs = static_cast<i32>(tg());
@@ -1962,7 +1962,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
             return 1;
         }
         if (charCode == '[') {
-            m_guts->RefreshA();
+            m_guts->DockStatusBarLeft();
             return 1;
         }
         if (charCode == '-') {
@@ -1970,7 +1970,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
             return 1;
         }
         if (charCode == '=' || charCode == '+') {
-            m_guts->RefreshState();
+            m_guts->RestoreStatusBar();
 
             if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
@@ -2327,7 +2327,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         if (lv->m_position == STATUSBAR_HIDDEN) {
-            lv->RefreshState();
+            lv->RestoreStatusBar();
         }
         if (lv->m_activeTab != TAB_GRUNTZ) {
             lv->SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
@@ -2352,7 +2352,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         if (lv->m_position == STATUSBAR_HIDDEN) {
-            lv->RefreshState();
+            lv->RestoreStatusBar();
         }
         if (lv->m_activeTab != TAB_RESOURCE) {
             lv->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
@@ -2373,7 +2373,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         if (lv->m_position == STATUSBAR_HIDDEN) {
-            lv->RefreshState();
+            lv->RestoreStatusBar();
         }
         if (lv->m_activeTab != TAB_STATZ) {
             lv->SetTabState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
@@ -2406,7 +2406,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         if (lv->m_position == STATUSBAR_HIDDEN) {
-            lv->RefreshState();
+            lv->RestoreStatusBar();
         }
         if (lv->m_activeTab != TAB_GAME) {
             lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
@@ -2900,7 +2900,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             // for both the voice-cue guard and CommitSlot.  A separate local costs
             // the extra dword that made the frame 0x24 instead of retail's 0x20.
             eventArg = 0;
-            RECT* gr = &m_guts->m_rect10;
+            RECT* gr = &m_guts->m_barRect;
             if (CGameLevel::PointInRect(gr, xr, y)) {
 
             } else {
@@ -2935,7 +2935,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         if (m_dragInhibit2 != 0 && m_playerCommandPending == 0) {
             {
-                RECT* gr = &m_guts->m_rect10;
+                RECT* gr = &m_guts->m_barRect;
                 if (CGameLevel::PointInRect(gr, xr, y)) {
                     // No narrowing: retail loads the WHOLE dword (`mov eax,[esi+0x2f4]`),
                     // and SetFallRect takes an i32.  Casting to char clipped the held
@@ -3033,7 +3033,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             goto drag_box;
         }
 
-        RECT* gr = &m_guts->m_rect10;
+        RECT* gr = &m_guts->m_barRect;
         if (CGameLevel::PointInRect(gr, xr, y)) {
             FlushPendingOps();
             return m_guts->UpdateStatusBarTabHighlight(eventArg, xr, y);
@@ -3159,7 +3159,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     if (m_overlayDrag != 0 || g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-        return m_guts->ClickHilite(keyFlags, x, y);
+        return m_guts->HandleDoubleClick(keyFlags, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
         return this->OnLButtonDown(keyFlags, x, y);
@@ -3174,7 +3174,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
                 e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
         }
-        m_guts->RefreshState();
+        m_guts->RestoreStatusBar();
         if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
             m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         } else {
@@ -3194,7 +3194,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     // [esi+4], [esi+8], [esi+0xc]) and compares against the REGISTER.
     RECT rc = m_world->m_level->m_planeCtx;
     if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
-        return m_guts->ClickHilite(keyFlags, x, y);
+        return m_guts->HandleDoubleClick(keyFlags, x, y);
     }
 
     {
@@ -3310,7 +3310,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    if (CGameLevel::PointInRect(&m_guts->m_rect10, x, y)) {
+    if (CGameLevel::PointInRect(&m_guts->m_barRect, x, y)) {
         return 1;
     }
     i32 idx = m_guts->HitTest(x, y);
@@ -4227,7 +4227,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     }
 
     if (m_overlayDrag != 0) {
-        return m_guts->ClickToggle(keyFlags, x, y);
+        return m_guts->HandlePointerDrag(keyFlags, x, y);
     }
 
     box = m_world->m_level->m_planeCtx;
@@ -4290,7 +4290,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     m_dragInProgress = 1;
-    m_guts->ClickToggle(keyFlags, x, y);
+    m_guts->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != 0) {
 
         m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
@@ -5651,7 +5651,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateInGameIcon) {
             if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
 
-                m_guts->InsertPtr(obj->m_points, obj->m_score);
+                m_guts->QueuePickupReward(obj->m_points, obj->m_score);
             }
         } else if (who == CreateGruntCreationPoint) {
             if (obj->m_smarts == g_curPlayer) {
@@ -5833,7 +5833,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_guts->InsertPtr(p->m_points, p->m_score);
+                m_guts->QueuePickupReward(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
         } else if (vf == CreateCoveredPowerup) {
@@ -5897,7 +5897,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_guts->InsertPtr(p->m_points, p->m_score);
+                m_guts->QueuePickupReward(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
         }
@@ -6210,7 +6210,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     if (arg == 0) {
         CStatusBarMgr* g = m_guts;
         if (g->m_position == STATUSBAR_HIDDEN) {
-            g->RefreshState();
+            g->RestoreStatusBar();
         }
         if (g->m_activeTab != TAB_GAME) {
             g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
@@ -6544,7 +6544,7 @@ RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
     (g_gameReg)->CheckSavedMode();
     m_guts->Deactivate();
-    m_guts->LoadDestructButtonSprite(0);
+    m_guts->UpdateStatusBar(0);
     m_mgr->RefreshGameClock();
 
     if (m_initialFramePending != 0) {

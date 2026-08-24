@@ -50,7 +50,7 @@ public:
             m_gooSrc = NULL;
         }
     }
-    virtual i32 Refresh(i32 a) OVERRIDE;
+    virtual i32 Refresh(i32 deltaMs) OVERRIDE;
     virtual i32 Render() OVERRIDE;
 
     CDDSurface* m_gooSrc;

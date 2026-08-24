@@ -46,7 +46,7 @@ i32 CSBI_ImageSetAni::Init(
     }
     INITIALIZE_STATUS_BAR_ITEM(owner, tab, host)
 
-    m_rect14 = rc;
+    m_rect = rc;
     m_cmd = cmd;
     if (key == NULL) {
         return 0;
@@ -108,8 +108,8 @@ i32 CSBI_ImageSetAni::Render() {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 surfaceCtx,
-                cel->m_anchorX + m_rect14.left,
-                cel->m_anchorY + m_rect14.top,
+                cel->m_anchorX + m_rect.left,
+                cel->m_anchorY + m_rect.top,
                 0
             );
         }

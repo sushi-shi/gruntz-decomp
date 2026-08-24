@@ -978,7 +978,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     CStatusBarMgr* sbi = lvl->m_guts;
     if (sbi->m_hlBusy == 0) {
         if (sbi->m_position == STATUSBAR_HIDDEN) {
-            sbi->RefreshState();
+            sbi->RestoreStatusBar();
         }
         if (sbi->m_activeTab != TAB_GAME) {
             sbi->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
@@ -986,7 +986,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         sbi->SetTab(GAME_TAB_MENU, 1);
         sbi->Deactivate();
     }
-    if (lvl->m_guts->EnsureSub(outR, outC, fragment) != 0) {
+    if (lvl->m_guts->StartWarpStoneFly(outR, outC, fragment) != 0) {
         lvl->m_guts->m_hlBusy = 1;
     } else {
         m_byteArr.Add(static_cast<u8>(IDX(fragment)));

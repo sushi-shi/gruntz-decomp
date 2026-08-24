@@ -54,7 +54,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_host = host;
     m_tab = tab;
     m_owner = parent;
-    m_rect14 = rc;
+    m_rect = rc;
     m_redrawFrames = 0;
     m_cmd = cmd;
 
@@ -84,7 +84,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
             frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
         }
         m_topFrame = frame;
-        m_drawPosition.m_x = parent->m_rect10.left - (rc.right - rc.left) / 2;
+        m_drawPosition.m_x = parent->m_barRect.left - (rc.right - rc.left) / 2;
         m_bottomFrameDy = 1;
     } else {
         CDDrawWorker* worker;
@@ -103,7 +103,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
             frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
         }
         m_topFrame = frame;
-        m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_rect10.right;
+        m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_barRect.right;
         m_bottomFrameDy = -1;
     }
     m_drawPosition.m_y = colIndex * 0x12 + 0xd1;

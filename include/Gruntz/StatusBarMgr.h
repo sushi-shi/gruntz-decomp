@@ -152,7 +152,7 @@ public:
     i32 BuildGameMenu();
 
     void UpdateDestructButton(i32 arg);
-    i32 EnsureSub(i32 a, i32 b, WarpStoneFragment fragment);
+    i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
     void ResetCounters();
     void ResetSlots();
     void ArmSlot(i32 idx);
@@ -161,7 +161,7 @@ public:
     void DrainGauge(i32 delta);
     void SetGaugeTarget(i32 value);
     void SetGauge(i32 value);
-    void RefreshAll();
+    void UpdateStatusSystems();
     void Reset();
     void ToggleStat(i32 idx);
     void SetHudRectA(i32 y0, SbiMachineState x0, i32 z);
@@ -180,7 +180,7 @@ public:
     i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world);
     i32 LoadMainStatusBarSprite();
     i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
-    i32 LoadDestructButtonSprite(i32);
+    i32 UpdateStatusBar(i32 deltaMs);
     void BuildGameTabResumeButton(i32);
     void BuildGameTabPauseButton();
 
@@ -232,10 +232,10 @@ public:
         i32 frame,
         i32 extra
     );
-    i32 ClickHilite(i32 x, i32 y, i32 z);
+    i32 HandleDoubleClick(i32 keyFlags, i32 x, i32 y);
 
-    i32 OnPointerRelease(i32 button, i32 x, i32 y);
-    i32 ClickToggle(i32 btn, i32 x, i32 y);
+    i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
+    i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
     CStatusBarItem* HitTestRects(i32 x, i32 y);
     void ResetWidgets(i32 keepLists);
     void ClearTabGroup();
@@ -251,13 +251,13 @@ public:
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);
 
     i32 SetState(StatusBarDock state);
-    i32 RefreshState();
+    i32 RestoreStatusBar();
     i32 SetSpritePos(i32 x, i32 y);
     i32 HitTestLayer(i32 x, i32 y);
-    i32 InsertPtr(i32 a, i32 b);
+    i32 QueuePickupReward(i32 pickupValue, i32 score);
     void ReportTab(i32 tab);
 
-    i32 RefreshA();
+    i32 DockStatusBarLeft();
     i32 HideRect();
 
     void AdvanceTab(i32 reverse);
@@ -271,7 +271,7 @@ public:
 
     CDDrawSurfaceMgr* m_world;
 
-    RECT m_rect10;
+    RECT m_barRect;
     i32 m_redrawFrames;
     i32 m_barX;
     i32 m_barY;
@@ -346,7 +346,7 @@ public:
     i32 m_rezActive;
     i32 m_rezTick;
 
-    CPtrArray m_ptrPool;
+    CPtrArray m_rewardQueue;
     i32 m_reserved544;
 
     i32 m_hlBusy;
@@ -374,7 +374,7 @@ public:
 //   0xc8046  m_reserved2a0 / m_reserved2b0, scheduled into the argument pushes of
 //            `??_H(m_groupSlots, 0x18, 3)`
 //   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_hlGrid,0x18,12)`
-//   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_ptrPool)`
+//   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_rewardQueue)`
 //   0xc8106  m_destructWarnClock, straight AFTER it
 // Body assignments land after every member ctor instead - measured, all six sat past
 // `??0CPtrArray` at base+0x218. Mem-initializers put them back where retail has them

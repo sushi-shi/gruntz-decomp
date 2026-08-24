@@ -43,7 +43,7 @@ i32 CSBI_ImageSet::SetupImage(
     }
     INITIALIZE_STATUS_BAR_ITEM(owner, obj, host)
 
-    m_rect14 = rect;
+    m_rect = rect;
     m_cmd = cmd;
     if (key == NULL) {
         return 0;
@@ -88,8 +88,8 @@ i32 CSBI_ImageSet::Render() {
         CImage* cel = tbl->GetAt(idx);
         SetFrame(cel);
         if (cel != NULL) {
-            i32 y = cel->m_anchorY + m_rect14.top;
-            i32 x = cel->m_anchorX + m_rect14.left;
+            i32 y = cel->m_anchorY + m_rect.top;
+            i32 x = cel->m_anchorX + m_rect.left;
             cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }

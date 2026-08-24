@@ -67,7 +67,7 @@ i32 CSBI_MenuItem::SetupImage(
         m_kind = SBI_KIND_MENU_ITEM;
         SetFrame(NULL);
 
-        m_rect14 = rc;
+        m_rect = rc;
         m_redrawFrames = 0;
         m_cmd = cmd;
         m_state = MENUITEM_NORMAL;
@@ -113,8 +113,8 @@ i32 CSBI_MenuItem::Render() {
         m_redrawFrames--;
         CImage* f = m_frame;
         if (f) {
-            i32 y = m_rect14.top + f->m_anchorY;
-            i32 x = m_rect14.left + f->m_anchorX;
+            i32 y = m_rect.top + f->m_anchorY;
+            i32 x = m_rect.left + f->m_anchorX;
             f->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }
@@ -161,7 +161,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
     CImage* frame = r->GetAt(IDX(state));
     SetFrame(frame);
     m_state = state;
-    SetSubtype();
+    RequestRedraw();
     return 1;
 }
 
@@ -251,7 +251,7 @@ i32 CStatusBarItem::SerializeFields(
             ar->Read(&m_kind, sizeof(m_kind));
             ar->Read(&m_cmd, sizeof(m_cmd));
             ar->Read(&m_tab, sizeof(m_tab));
-            ar->Read(&m_rect14, sizeof(m_rect14));
+            ar->Read(&m_rect, sizeof(m_rect));
             ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
             break;
         case SERIAL_SAVE:
@@ -259,7 +259,7 @@ i32 CStatusBarItem::SerializeFields(
             ar->Write(&m_kind, sizeof(m_kind));
             ar->Write(&m_cmd, sizeof(m_cmd));
             ar->Write(&m_tab, sizeof(m_tab));
-            ar->Write(&m_rect14, sizeof(m_rect14));
+            ar->Write(&m_rect, sizeof(m_rect));
             ar->Write(&m_redrawFrames, sizeof(m_redrawFrames));
             break;
     }

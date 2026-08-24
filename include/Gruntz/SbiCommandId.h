@@ -15,7 +15,7 @@
 //   0x1f6 -> CMD_QUICK_SAVE_PROMPT   0x325 -> CMD_MAIN_MENU
 //   0x1f7 -> CMD_CONFIG_SETTINGS     0x327 -> CMD_MAIN_MENU
 //
-// The three dock commands name themselves - their arms call RefreshA(),
+// The three dock commands name themselves - their arms call DockStatusBarLeft(),
 // DockStatusBarRight() and HideRect(), which are the three StatusBarDock states.
 //
 // SBICMD_DESTRUCT is retail's own word: its arm reads the bute key

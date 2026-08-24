@@ -33,14 +33,14 @@ public:
         i32 unusedFrame
     );
     virtual void Reset();
-    virtual i32 Refresh(i32 a);
+    virtual i32 Refresh(i32 deltaMs);
     virtual i32 Render();
 
-    virtual i32 OnPointerMove(i32, i32, i32);
-    virtual i32 Click1c(i32 a, i32 b, i32 c);
+    virtual i32 OnPointerMove(i32 keyFlags, i32 x, i32 y);
+    virtual i32 OnDoubleClick(i32 keyFlags, i32 x, i32 y);
     virtual i32 UnusedPointerAction(i32, i32, i32);
-    virtual i32 Click24(i32 a, i32 b, i32 c);
-    virtual void SetSubtype();
+    virtual i32 OnPointerDrag(i32 keyFlags, i32 x, i32 y);
+    virtual void RequestRedraw();
 
     void SetEnabled(i32 on) {
         m_enabled = on;
@@ -51,7 +51,7 @@ public:
     SbiCommandId m_cmd;
     StatusBarTab m_tab;
 
-    RECT m_rect14;
+    RECT m_rect;
     class CDDrawSurfaceMgr* m_host;
     i32 m_redrawFrames;
     class CStatusBarMgr* m_owner;

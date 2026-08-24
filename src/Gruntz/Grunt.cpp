@@ -3048,7 +3048,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             CStatusBarMgr* sb = play->m_guts;
             if (sb->m_hlBusy == 0) {
                 if (sb->m_position == STATUSBAR_HIDDEN) {
-                    sb->RefreshState();
+                    sb->RestoreStatusBar();
                 }
                 if (sb->m_activeTab != TAB_RESOURCE) {
                     sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);

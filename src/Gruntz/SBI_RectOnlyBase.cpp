@@ -21,7 +21,7 @@ i32 CSBI_RectOnly::Setup(
     m_owner = owner;
     m_host = host;
     m_tab = tab;
-    m_rect14 = rc;
+    m_rect = rc;
     m_cmd = cmd;
     SetEnabled(1);
     return 1;

@@ -41,7 +41,7 @@ i32 CSBI_Image::SetupImage(
         m_host = host;
         m_redrawFrames = 0;
         SetEnabled(0);
-        m_rect14 = rc;
+        m_rect = rc;
         m_cmd = cmd;
         if (key != NULL) {
             CObject* found = NULL;
@@ -76,8 +76,8 @@ i32 CSBI_Image::Render() {
         m_redrawFrames--;
         CImage* cel = m_frame;
         if (cel != NULL) {
-            i32 y = m_rect14.top + cel->m_anchorY;
-            i32 x = m_rect14.left + cel->m_anchorX;
+            i32 y = m_rect.top + cel->m_anchorY;
+            i32 x = m_rect.left + cel->m_anchorX;
             cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }
