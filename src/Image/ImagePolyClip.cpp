@@ -17,7 +17,7 @@
 #include <string.h>
 
 DATA(0x001efb10)
-const float g_c10 = 0.0f;
+const float g_rasterZero = 0.0f;
 // Degrees -> radians, NEGATED: ImageRotateBlit rotates clockwise.
 DATA(0x001efb14)
 const float g_degToRadNeg = -0.01745329238474369f;
@@ -26,9 +26,9 @@ const float g_rasterScale = 16384.0f;
 DATA(0x001efb1c)
 const float g_rasterScaleNeg = -16384.0f;
 DATA(0x001efb20)
-const float g_c20 = 0.5f;
+const float g_wallHalf = 0.5f;
 DATA(0x001efb24)
-const float g_c24 = -3.1415927f;
+const float g_negativePi = -3.1415927f;
 
 DATA(0x002856f0)
 i32 g_warpU = 0;
@@ -97,8 +97,8 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         float dx2 = x2 - x0;
         float dy2 = y2 - y0;
         float cross = dx1 * dy2 - dx2 * dy1;
-        if (cross != g_c10) {
-            if (cross > g_c10) {
+        if (cross != g_rasterZero) {
+            if (cross > g_rasterZero) {
                 sign = POLYGON_WINDING_COUNTERCLOCKWISE;
             } else {
                 sign = POLYGON_WINDING_CLOCKWISE;
@@ -322,7 +322,7 @@ i32 RotateRasterize(
         clip1 = 0.0f;
         clip2 = static_cast<float>(dst->m_width);
         clip0 = static_cast<float>(dst->m_height);
-        bound0 = g_c10;
+        bound0 = g_rasterZero;
     } else {
         bound0 = static_cast<float>(clipFlag);
         clip0 = static_cast<float>(clipB);
@@ -800,7 +800,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
 
 // @early-stop
 // Residue is x87 stack scheduling in the quad-store block: retail loads
-// `halfWidth` and the two `g_c10` constants up front, after `fcos`, where cl
+// `halfWidth` and the two `g_rasterZero` constants up front, after `fcos`, where cl
 // hoists the `fild` ahead of `fsqrt`.  Frame, both loops and the whole block
 // skeleton agree.
 RVA(0x001471d0, 0x1b4)
@@ -817,8 +817,8 @@ i32 ProjectWallQuad(
     i32 dx = x1 - x0;
     i32 dy = y1 - y0;
     // atan2's arguments are (dx, dy), not (dy, dx): retail's `fpatan` takes the
-    // FIRST-loaded operand as the numerator, and it loads dx first.  g_c24 is
-    // -pi, so `ang - g_c24` is the angle turned half a revolution - it belongs
+    // FIRST-loaded operand as the numerator, and it loads dx first.  g_negativePi is
+    // -pi, so `ang - g_negativePi` is the angle turned half a revolution - it belongs
     // to the angle, NOT to the length under the sqrt.
     //
     // fabs takes the FLOAT conversion, not the double one: retail `fild`s each
@@ -829,7 +829,7 @@ i32 ProjectWallQuad(
     double ang = atan2(static_cast<double>(dx), static_cast<double>(dy));
     float adx = static_cast<float>(fabs(static_cast<float>(dx)));
     float ady = static_cast<float>(fabs(static_cast<float>(dy)));
-    float turn = static_cast<float>(ang - g_c24);
+    float turn = static_cast<float>(ang - g_negativePi);
     float len = static_cast<float>(sqrt(ady * ady + adx * adx));
     double s = sin(turn);
     double c = cos(turn);
@@ -842,16 +842,16 @@ i32 ProjectWallQuad(
     // cannot produce.  The rotate/translate loops index the array directly -
     // a `ClipVtx* v = &g_rasterVtxB[i]` cursor costs an extra `lea` per
     // iteration and moves the induction base off retail's +4 bias.
-    float xLeft = -(hw * g_c20);
+    float xLeft = -(hw * g_wallHalf);
     float xRight = xLeft + hw;
     g_rasterVtxB[0].x = xLeft;
     g_rasterVtxB[0].y = len;
     g_rasterVtxB[1].x = xRight;
     g_rasterVtxB[1].y = len;
     g_rasterVtxB[2].x = xRight;
-    g_rasterVtxB[2].y = g_c10;
+    g_rasterVtxB[2].y = g_rasterZero;
     g_rasterVtxB[3].x = xLeft;
-    g_rasterVtxB[3].y = g_c10;
+    g_rasterVtxB[3].y = g_rasterZero;
 
     for (i32 i = 0; i < 4; i++) {
         float bx = g_rasterVtxB[i].x;

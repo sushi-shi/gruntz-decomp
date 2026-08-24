@@ -328,7 +328,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SetColorDepth(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
-    if (!m_faderMgr->SetConfig(NULL, NULL, NULL)) {
+    if (!m_faderMgr->SetDefaults(NULL, NULL, NULL)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40a);
         return 0;
     }

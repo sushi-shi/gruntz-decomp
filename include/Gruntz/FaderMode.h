@@ -11,11 +11,11 @@
 // with increasing col; mode 2 lands it at `col + stride`, leading the edge, so
 // it advances the other way.
 //
-// The split is self-describing: its arm renders m_span / 2 + frame and
-// m_span / 2 - frame - stride by setting m_mode to 1, rendering, setting it to
+// The split is self-describing: its arm renders m_targetWidth / 2 + frame and
+// m_targetWidth / 2 - frame - stride by setting m_mode to 1, rendering, setting it to
 // 2, rendering, then restoring 3 - it literally runs both sweeps from the
 // centre. Corroborated by the guard in the initialiser, where only modes 1 and 2
-// require m_span >= m_halfWidth * pi: a split halves the distance each side
+// require m_targetWidth >= m_halfWidth * pi: a split halves the distance each side
 // has to cover.
 GZ_ENUM_BEGIN(FaderMode)
 // Not a mode: CFaderShape::ApplyInit rejects it, which is what makes 0 the

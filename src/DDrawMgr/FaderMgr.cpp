@@ -22,10 +22,10 @@ CFaderMgr::~CFaderMgr() {
 }
 
 RVA(0x0017d980, 0x1f)
-i32 CFaderMgr::SetConfig(CDDSurface* a, CDDSurface* b, CDDrawPtrCollections* pool) {
-    m_timerArgA = a;
-    m_timerArgB = b;
-    m_sharedPtrColl = pool;
+i32 CFaderMgr::SetDefaults(CDDSurface* primary, CDDSurface* secondary, CDDrawPtrCollections* pool) {
+    m_primarySurface = primary;
+    m_secondarySurface = secondary;
+    m_surfacePool = pool;
     m_active = true;
     return 1;
 }
@@ -51,8 +51,8 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             }
             CFaderShape* f = new CFaderShape;
             fader = f;
-            f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedPtrColl);
+            f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
+            f->SetSurfacePool(m_surfacePool);
             if (pInit == NULL) {
                 CFxModeT1 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -79,8 +79,8 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             }
             CFaderLight* f = new CFaderLight;
             fader = f;
-            f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedPtrColl);
+            f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
+            f->SetSurfacePool(m_surfacePool);
             if (pInit == NULL) {
                 CFxModeT2 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -107,8 +107,8 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             }
             CFaderSine* f = new CFaderSine;
             fader = f;
-            f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedPtrColl);
+            f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
+            f->SetSurfacePool(m_surfacePool);
             if (pInit == NULL) {
                 CFxModeT3 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -135,8 +135,8 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             }
             CFaderRadial* f = new CFaderRadial;
             fader = f;
-            f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedPtrColl);
+            f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
+            f->SetSurfacePool(m_surfacePool);
             if (pInit == NULL) {
                 CFxModeT4 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -163,8 +163,8 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             }
             CFaderFlat* f = new CFaderFlat;
             fader = f;
-            f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedPtrColl);
+            f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
+            f->SetSurfacePool(m_surfacePool);
             if (pInit == NULL) {
                 CFxModeT5 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -191,8 +191,8 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             }
             CFaderMesh* f = new CFaderMesh;
             fader = f;
-            f->SetTimers(m_timerArgA, m_timerArgB);
-            f->Set2c(m_sharedPtrColl);
+            f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
+            f->SetSurfacePool(m_surfacePool);
             if (pInit == NULL) {
                 CFxModeT6 init;
                 if (f->ApplyInit(&init) == 0) {

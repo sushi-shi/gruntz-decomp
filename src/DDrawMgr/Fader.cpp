@@ -28,13 +28,13 @@ static const float kMsToSeconds = 0.001f;
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
     m_table = NULL;
-    m_flag = 1;
+    m_ownsTable = 1;
 }
 
 RVA_COMPGEN(0x0017e480, 0x1e, ??_GCFader@@UAEPAXI@Z)
 RVA(0x0017e4a0, 0x69)
 CFader::~CFader() {
-    if (m_table && m_flag) {
+    if (m_table && m_ownsTable) {
         m_cache.FindRemove(m_table);
         m_table = NULL;
     }
@@ -130,13 +130,13 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
 }
 
 RVA(0x0017e760, 0x11)
-void CFader::SetTimers(CDDSurface* a, CDDSurface* b) {
-    m_timerA = a;
-    m_timerB = b;
+void CFader::SetDefaultSurfaces(CDDSurface* primary, CDDSurface* secondary) {
+    m_primarySurface = primary;
+    m_secondarySurface = secondary;
 }
 
 RVA(0x0017e780, 0xa)
-void CFader::Set2c(CDDrawPtrCollections* pool) {
+void CFader::SetSurfacePool(CDDrawPtrCollections* pool) {
     m_ptrColl = pool;
 }
 
@@ -194,7 +194,7 @@ CFxModeT4::CFxModeT4() {
     m_sourceSurface = NULL;
     m_palette = NULL;
     m_shadeTable = NULL;
-    m_param0c = 1;
+    m_unusedOption = 1;
 }
 
 RVA(0x0017e8e0, 0x27)
@@ -202,7 +202,7 @@ CFxModeT5::CFxModeT5() {
     m_type = FXMODE_FLAT;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
-    m_param0c = 0;
+    m_unusedOption = 0;
     m_splitPercent = 0;
     m_durationPercent = 0x19;
 }
@@ -214,7 +214,7 @@ CFxModeT6::CFxModeT6() {
     m_sourceSurface = NULL;
     m_flipTarget = NULL;
     m_reverseOrder = 0;
-    m_param18 = 0;
+    m_unusedOption = 0;
     m_cols = 0;
     m_rows = 0;
 }
@@ -232,22 +232,22 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
 
     if (cfg->m_targetSurface == NULL) {
-        m_dstSurface = m_timerA;
+        m_dstSurface = m_primarySurface;
     } else {
         m_dstSurface = cfg->m_targetSurface;
     }
     if (cfg->m_sourceSurface == NULL) {
-        m_bltSrc = m_timerB;
+        m_sourceSurface = m_secondarySurface;
     } else {
-        m_bltSrc = cfg->m_sourceSurface;
+        m_sourceSurface = cfg->m_sourceSurface;
     }
     if (cfg->m_flipTarget == NULL) {
         return 0;
     }
-    m_primeSrc = cfg->m_primeSource;
+    m_primeSurface = cfg->m_primeSource;
     m_flipTarget = cfg->m_flipTarget;
-    m_desc18 = cfg->m_param18;
-    m_recOrderFlag = cfg->m_reverseOrder;
+    m_unusedOption = cfg->m_unusedOption;
+    m_reverseOrder = cfg->m_reverseOrder;
     m_cols = cfg->m_cols;
     m_rows = cfg->m_rows;
 
@@ -256,8 +256,8 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
     i32 halfW = m_dstSurface->m_width / 2;
     i32 halfH = m_dstSurface->m_height / 2;
-    i32 cellW = m_bltSrc->m_width / m_cols;
-    i32 cellH = m_bltSrc->m_height / m_rows;
+    i32 cellW = m_sourceSurface->m_width / m_cols;
+    i32 cellH = m_sourceSurface->m_height / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((cellW * cellW + cellH * cellH))));
     if (m_rows <= 0) {
         return 1;
@@ -306,7 +306,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 pt64.bottom = cellH;
                 OffsetRect(&pt64, x, y);
 
-                if (m_recOrderFlag) {
+                if (m_reverseOrder) {
                     elem.m_startRect = pt64;
                     elem.m_endRect = pt48;
                 } else {
@@ -388,8 +388,8 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 // identifier-rename forest (400 depth-2 cells, all flat).
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
-    if (m_primeSrc != NULL) {
-        m_dstSurface->Blt(m_primeSrc);
+    if (m_primeSurface != NULL) {
+        m_dstSurface->Blt(m_primeSurface);
     } else {
         m_dstSurface->Clear(0);
     }
@@ -435,8 +435,8 @@ void CFaderMesh::RenderFrame(i32 frame) {
 
         m_dstSurface->BltEx(
             &dstRect,
-            m_bltSrc,
-            m_recOrderFlag != 0 ? &srcRect : &boundRect,
+            m_sourceSurface,
+            m_reverseOrder != 0 ? &srcRect : &boundRect,
             0x1000000,
             NULL
         );

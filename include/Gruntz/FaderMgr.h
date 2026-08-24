@@ -111,7 +111,11 @@ class CFaderMgr {
 public:
     CFaderMgr();
     ~CFaderMgr();
-    i32 SetConfig(class CDDSurface* src, class CDDSurface* dst, class CDDrawPtrCollections* pool);
+    i32 SetDefaults(
+        class CDDSurface* primary,
+        class CDDSurface* secondary,
+        class CDDrawPtrCollections* pool
+    );
     void FreeAll();
     CFader* Add(FaderKind nFaderType, class CFxModeDesc* pInit);
 
@@ -121,13 +125,13 @@ public:
     void SetTraceEnabled(i32 enabled);
     void Trace(CString s);
 
-    class CDDSurface* m_timerArgA;
-    class CDDSurface* m_timerArgB;
+    class CDDSurface* m_primarySurface;
+    class CDDSurface* m_secondarySurface;
     i32 m_active;
     i32 m_traceEnabled;
     CFaderArray m_arr;
 
-    class CDDrawPtrCollections* m_sharedPtrColl;
+    class CDDrawPtrCollections* m_surfacePool;
 };
 
 #endif // GRUNTZ_GRUNTZ_CFADERMGR_H

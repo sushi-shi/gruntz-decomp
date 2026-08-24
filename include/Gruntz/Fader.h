@@ -19,8 +19,8 @@ public:
     virtual void EndFade();
 
     void Wait(i32 delay);
-    void SetTimers(CDDSurface* src, CDDSurface* dst);
-    void Set2c(class CDDrawPtrCollections* pool);
+    void SetDefaultSurfaces(CDDSurface* primary, CDDSurface* secondary);
+    void SetSurfacePool(class CDDrawPtrCollections* pool);
 
     void RunFadeStepped(i32 step, i32 lead, i32 vsync);
 
@@ -29,11 +29,11 @@ public:
     CShadeTableCache m_cache;
     CShadeTable* m_table;
     i32 m_previousFrame;
-    CDDSurface* m_timerA;
-    CDDSurface* m_timerB;
+    CDDSurface* m_primarySurface;
+    CDDSurface* m_secondarySurface;
 
     class CDDrawPtrCollections* m_ptrColl;
-    i32 m_flag;
+    i32 m_ownsTable;
     i32 m_measuredFps;
 };
 

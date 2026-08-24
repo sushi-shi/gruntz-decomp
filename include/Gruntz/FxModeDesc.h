@@ -36,7 +36,7 @@ public:
 class CFxModeT4 : public CFxModeDesc {
 public:
     CFxModeT4();
-    i32 m_param0c;
+    i32 m_unusedOption;
     class CDDPalette* m_palette;
     class CShadeTable* m_shadeTable;
 };
@@ -44,7 +44,7 @@ public:
 class CFxModeT5 : public CFxModeDesc {
 public:
     CFxModeT5();
-    i32 m_param0c;
+    i32 m_unusedOption;
     i32 m_durationPercent;
     i32 m_splitPercent;
 };
@@ -55,7 +55,7 @@ public:
     class CDDSurface* m_primeSource;
     class CDDSurface* m_flipTarget;
     i32 m_reverseOrder;
-    i32 m_param18;
+    i32 m_unusedOption;
     i32 m_cols;
     i32 m_rows;
 };
