@@ -16,9 +16,9 @@ vtable references its `??_G`, NOT by the byte pattern:
 | ----------- | --------- | ---------------- | ------------------------------ | --------- |
 | 0x5ef7f0 base | 0x141330 | 0x141350         | CDDSurface (UNIFIED)           | image |
 | 0x5efa58 a58  | 0x142340 | 0x142360         | CFileImageSurface / CPoolItemA | image |
-| 0x5efa88 a88  | 0x142800 | 0x142820         | CPoolItemA88                   | ddrawptrcollections |
-| 0x5efab8 ab8  | 0x142a20 | 0x142a40         | CPoolItemAB8                   | ddrawptrcollections |
-| 0x5efae8 ae8  | 0x142d20 | 0x142d40         | CPoolItemAE8                   | ddrawptrcollections |
+| 0x5efa88 a88  | 0x142800 | 0x142820         | CDDrawOverlaySurface                   | ddrawptrcollections |
+| 0x5efab8 ab8  | 0x142a20 | 0x142a40         | CDDrawPrimarySurface                   | ddrawptrcollections |
+| 0x5efae8 ae8  | 0x142d20 | 0x142d40         | CDDrawZBufferSurface                   | ddrawptrcollections |
 
 All FIVE non-deleting dtors are **byte-identical** because the derived vptr stamp
 (`mov [esi],&<derived vtable>`) folds as a dead store — the inlined base
@@ -71,7 +71,7 @@ must agree.
 
 The base (0x5ef7f0) was modeled under THREE names — `CDDSurface` (<DDrawMgr/
 DDSurface.h>, the widely-included surface-op view), `CFileImage` (<Image/Image.h>,
-the fuller BMP/PCX/PID-loader view), `CPoolItemBase` (DDrawPtrCollections.cpp, the
+the fuller BMP/PCX/PID-loader view), `CPoolItemBase` (DDrawDeviceManager.cpp, the
 pool view). Same physical class; RTTI-less so no ground-truth name, but EVERY method
 references `C:\Proj\DDrawMgr\DIRSURF.CPP`, so it is one DDrawMgr class from DIRSURF.CPP
 and `CDDSurface` (= DirectDraw Surface = DIRSURF) is the evidenced name. The three
@@ -85,7 +85,7 @@ views are now UNIFIED into one `class CDDSurface` in <DDrawMgr/DDSurface.h>:
 - Name-preserving field merge (semantic wins): m_pos (pool POSITION @+0x04), m_8/m_c
   (held surfaces), m_lockBits (was m_34), m_dontOwn (was m_7c), m_bitDepth (was m_a8).
 - Image.h drops CFileImage (keeps CRezImage + the sibling helpers); all Image-module
-  bodies are now `CDDSurface::`. DDrawPtrCollections.cpp drops the local CPoolItemBase;
+  bodies are now `CDDSurface::`. DDrawDeviceManager.cpp drops the local CPoolItemBase;
   CPoolItemA/A88/AB8/AE8 derive from `CDDSurface`.
 - The dtor split: the image TU keeps the out-of-line `~CDDSurface` @0x141350 (its kept
   COMDAT); the ddraw TU defines `~CDDSurface` inline (before the derived classes) so

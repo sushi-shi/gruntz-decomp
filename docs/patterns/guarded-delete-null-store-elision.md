@@ -46,7 +46,7 @@ Both residual shapes close simultaneously (order AND regalloc).
 ## Evidence
 
 `CDDrawSurfaceMgr::Cleanup_155e20` (0x155e20, 209 B, 11 children incl. a slot-0-dtor
-SoundStream and a non-virtual-dtor `delete m_ptrColl` → `call ??1; push; call ??3`):
+SoundStream and a non-virtual-dtor `delete m_deviceManager` → `call ??1; push; call ??3`):
 shape-1 spelling was parked `@early-stop` at ~96% as a regalloc wall; shape-2 hit
 95.8% (10 store/load swaps); the `if (p) { delete p; p = 0; }` spelling → **100.0%
 EXACT** (view-burndown session 2026-07-05). Refutes the former

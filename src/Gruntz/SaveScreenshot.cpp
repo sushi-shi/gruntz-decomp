@@ -2,7 +2,7 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
@@ -37,22 +37,22 @@ i32 SaveScreenshot(
         return 0;
     }
     if (name == NULL) {
-        i32 cnt = bute->GetValueDword("Screen Dump Count", 0) + 1;
-        bute->SetValueDword("Screen Dump Count", cnt);
-        wsprintfA(nameBuf, "Gruntz%04i.BMP", cnt);
+        i32 screenshotCount = bute->GetValueDword("Screen Dump Count", 0) + 1;
+        bute->SetValueDword("Screen Dump Count", screenshotCount);
+        wsprintfA(nameBuf, "Gruntz%04i.BMP", screenshotCount);
         name = nameBuf;
     }
 
-    CDDrawPtrCollections* surf = owner->m_world->m_ptrColl;
-    if (surf == NULL) {
+    CDDrawDeviceManager* manager = owner->m_world->m_deviceManager;
+    if (manager == NULL) {
         return 0;
     }
-    CDDSurface* img = surf->MakeAndAddB(width, height, BPP_RGB_16, 0, -1);
-    if (img == NULL) {
+    CDDSurface* image = manager->CreateOffscreenSurface(width, height, BPP_RGB_16, 0, -1);
+    if (image == NULL) {
         return 0;
     }
 
-    CGruntzMgr* mgr = g_gameReg;
+    CGruntzMgr* gameManager = g_gameReg;
     srcRect.left = 0;
     srcRect.top = 0;
     srcRect.right = 0;
@@ -61,15 +61,15 @@ i32 SaveScreenshot(
     dstRect.top = 0;
     dstRect.right = 0;
     dstRect.bottom = 0;
-    srcRect.right = mgr->GetModeSize().cx;
-    srcRect.bottom = mgr->GetModeSize().cy;
+    srcRect.right = gameManager->GetModeSize().cx;
+    srcRect.bottom = gameManager->GetModeSize().cy;
     dstRect.right = width;
     dstRect.bottom = height;
-    if (img->BltEx(&dstRect, src, &srcRect, 0x1000000, NULL)) {
-        surf->RemoveItemA(img);
+    if (image->BltEx(&dstRect, src, &srcRect, 0x1000000, NULL)) {
+        manager->RemoveSurface(image);
         return 0;
     }
-    i32 r = img->SaveFile(name, FMT_BMP, NULL, saveFlag);
-    surf->RemoveItemA(img);
-    return r;
+    i32 result = image->SaveFile(name, FMT_BMP, NULL, saveFlag);
+    manager->RemoveSurface(image);
+    return result;
 }

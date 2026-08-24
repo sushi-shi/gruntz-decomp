@@ -6,7 +6,7 @@
 
 #include <DDrawMgr/AniRecordBase2.h>
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -110,7 +110,7 @@ RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
 i32 CAniRecordBase2::LoadPaletteFromFile(char* path, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->LoadPaletteFromFile(path, 0x44);
+    CDDPalette* buf = OwnerMgr()->m_deviceManager->LoadPaletteFromFile(path, 0x44);
     m_buf = buf;
     if (buf == NULL) {
         return 0;
@@ -124,7 +124,7 @@ i32 CAniRecordBase2::LoadPaletteFromFile(char* path, i32 flag) {
 
 RVA(0x00168ee0, 0x40)
 i32 CAniRecordBase2::CreatePaletteFromRgb(u8* data, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreateRgbPalette(data, 0x44);
+    CDDPalette* buf = OwnerMgr()->m_deviceManager->CreateRgbPalette(data, 0x44);
     m_buf = buf;
     if (buf == NULL) {
         return 0;
@@ -138,7 +138,7 @@ i32 CAniRecordBase2::CreatePaletteFromRgb(u8* data, i32 flag) {
 
 RVA(0x00168f20, 0x40)
 i32 CAniRecordBase2::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromEntries(entries, 0x44);
+    CDDPalette* buf = OwnerMgr()->m_deviceManager->CreatePaletteFromEntries(entries, 0x44);
     m_buf = buf;
     if (buf == NULL) {
         return 0;
@@ -152,7 +152,7 @@ i32 CAniRecordBase2::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
 
 RVA(0x00168f60, 0x45)
 i32 CAniRecordBase2::CreatePaletteFromTrailingData(void* data, i32 size, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromTrailingData(data, size, 0x44);
+    CDDPalette* buf = OwnerMgr()->m_deviceManager->CreatePaletteFromTrailingData(data, size, 0x44);
     m_buf = buf;
     if (buf == NULL) {
         return 0;
@@ -168,7 +168,7 @@ RVA(0x00168fb0, 0x1f)
 void CAniRecordBase2::Unload() {
     CDDPalette* buf = m_buf;
     if (buf != NULL) {
-        OwnerMgr()->m_ptrColl->RemoveItemB(buf);
+        OwnerMgr()->m_deviceManager->RemovePalette(buf);
         m_buf = NULL;
     }
 }

@@ -114,7 +114,7 @@ public:
     i32 SetDefaults(
         class CDDSurface* primary,
         class CDDSurface* secondary,
-        class CDDrawPtrCollections* pool
+        class CDDrawDeviceManager* manager
     );
     void FreeAll();
     CFader* Add(FaderKind nFaderType, class CFxModeDesc* pInit);
@@ -131,7 +131,7 @@ public:
     i32 m_traceEnabled;
     CFaderArray m_arr;
 
-    class CDDrawPtrCollections* m_surfacePool;
+    class CDDrawDeviceManager* m_deviceManager;
 };
 
 #endif // GRUNTZ_GRUNTZ_CFADERMGR_H

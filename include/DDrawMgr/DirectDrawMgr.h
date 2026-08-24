@@ -6,7 +6,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDSurface.h>
 
 struct IDirectDraw;
@@ -15,8 +15,9 @@ struct IDirectDrawPalette;
 
 void __cdecl DDrawLogLine(char* fmt, ...);
 
-struct CDdModePair {
-    i32 a, b;
+struct DisplayResolution {
+    i32 m_width;
+    i32 m_height;
 };
 
 struct CDDPalette {
@@ -100,9 +101,9 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused);
 #include <stdio.h>
 
 extern i32 (*g_restoreHandler)();
-class CDDrawPtrCollections;
+class CDDrawDeviceManager;
 
-extern CDDrawPtrCollections* g_DirectDrawMgr;
+extern CDDrawDeviceManager* g_DirectDrawMgr;
 
 void BuildColorChannelTables();
 i32 __stdcall CreateDirectDrawVia(

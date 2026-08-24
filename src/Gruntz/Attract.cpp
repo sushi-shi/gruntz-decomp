@@ -146,7 +146,7 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == NULL) {
+    if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
     CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
@@ -186,7 +186,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == NULL) {
+    if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
     CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
@@ -254,7 +254,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == NULL) {
+    if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
     CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
@@ -295,7 +295,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     if (mgr == NULL) {
         return 0;
     }
-    if (m_world->m_ptrColl == NULL) {
+    if (m_world->m_deviceManager == NULL) {
         return 0;
     }
     CDDSurface* chanA = m_world->m_drawTarget->m_frontPair->m_surface;
@@ -341,7 +341,7 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_ptrColl == NULL) {
+    if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
     CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;

@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/FaderMgr.h>
@@ -72,15 +72,15 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     if (m_scratchSurface0 == NULL && m_scratchSurface1 == NULL) {
-        CDDrawPtrCollections* coll = m_world->m_ptrColl;
-        if (coll == NULL) {
+        CDDrawDeviceManager* manager = m_world->m_deviceManager;
+        if (manager == NULL) {
             return 0;
         }
-        m_scratchSurface0 = coll->MakeAndAddB(0x40, 0x40, BPP_RGB_16, 0, -1);
+        m_scratchSurface0 = manager->CreateOffscreenSurface(0x40, 0x40, BPP_RGB_16, 0, -1);
         if (m_scratchSurface0 == NULL) {
             return 0;
         }
-        m_scratchSurface1 = coll->MakeAndAddB(0x40, 0x40, BPP_RGB_16, 0, -1);
+        m_scratchSurface1 = manager->CreateOffscreenSurface(0x40, 0x40, BPP_RGB_16, 0, -1);
         if (m_scratchSurface1 == NULL) {
             return 0;
         }

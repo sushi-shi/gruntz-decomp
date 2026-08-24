@@ -164,9 +164,9 @@ rva	size	name	kind	note
 0x1ef7d0	0x20	??_7CRezFile@@6B@	primary	
 0x1ef7f0	0x24	??_7CDDSurface@@6B@	primary	
 0x1efa58	0x30	??_7CFileImageSurface@@6B@	primary	
-0x1efa88	0x2c	??_7CPoolItemA88@@6B@	primary	
-0x1efab8	0x2c	??_7CPoolItemAB8@@6B@	primary	
-0x1efae8	0x28	??_7CPoolItemAE8@@6B@	primary	
+0x1efa88	0x2c	??_7CDDrawOverlaySurface@@6B@	primary	
+0x1efab8	0x2c	??_7CDDrawPrimarySurface@@6B@	primary	
+0x1efae8	0x28	??_7CDDrawZBufferSurface@@6B@	primary	
 0x1efb28	0x14	??_7CShadeTableArray@@6B@	primary	
 0x1efb80	0x28	??_7AnimWorkerObj@@6B@	primary	
 0x1efba8	0x14	??_7CAniElement@@6B@	primary	

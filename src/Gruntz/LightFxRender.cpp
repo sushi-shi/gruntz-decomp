@@ -4,7 +4,7 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
@@ -101,7 +101,7 @@ void CLightFxRender::Reset() {
 RVA(0x000a33a0, 0x23)
 void CLightFxRender::FreeSurface() {
     if (m_world != NULL && m_surface != NULL) {
-        m_world->m_ptrColl->RemoveItemA(m_surface);
+        m_world->m_deviceManager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
 }
@@ -120,7 +120,7 @@ i32 CLightFxRender::AllocSurface() {
 
     SIZE
     dims = GridSize(info);
-    m_surface = mgr->m_ptrColl->MakeAndAddB(dims.cx, dims.cy, BPP_UNSET, 0, -1);
+    m_surface = mgr->m_deviceManager->CreateOffscreenSurface(dims.cx, dims.cy, BPP_UNSET, 0, -1);
     if (m_surface == NULL) {
         return 0;
     }

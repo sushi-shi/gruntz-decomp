@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -35,7 +35,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_imageRegistry = NULL;
     m_workerCache = NULL;
     m_workerMap = NULL;
-    m_ptrColl = NULL;
+    m_deviceManager = NULL;
     m_soundStream = NULL;
     m_level = NULL;
     m_soundRegistry = NULL;
@@ -67,7 +67,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_level = new CGameLevel(this, 0, 0);
     m_soundRegistry = new CDDrawSubMgrLeafScan(this);
     m_animRegistry = new CDDrawSubMgrLeaf(this);
-    m_ptrColl = new CDDrawPtrCollections();
+    m_deviceManager = new CDDrawDeviceManager();
     m_soundStream = new SoundStream();
 
     if (!m_childGroup->IsReady()) {
@@ -191,9 +191,9 @@ void CDDrawSurfaceMgr::Cleanup() {
         delete m_animRegistry;
         m_animRegistry = NULL;
     }
-    if (m_ptrColl) {
-        delete m_ptrColl;
-        m_ptrColl = NULL;
+    if (m_deviceManager) {
+        delete m_deviceManager;
+        m_deviceManager = NULL;
     }
     m_callback = NULL;
 }

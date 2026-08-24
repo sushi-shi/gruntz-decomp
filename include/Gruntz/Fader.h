@@ -20,7 +20,7 @@ public:
 
     void Wait(i32 delay);
     void SetDefaultSurfaces(CDDSurface* primary, CDDSurface* secondary);
-    void SetSurfacePool(class CDDrawPtrCollections* pool);
+    void SetDeviceManager(class CDDrawDeviceManager* manager);
 
     void RunFadeStepped(i32 step, i32 lead, i32 vsync);
 
@@ -32,7 +32,7 @@ public:
     CDDSurface* m_primarySurface;
     CDDSurface* m_secondarySurface;
 
-    class CDDrawPtrCollections* m_ptrColl;
+    class CDDrawDeviceManager* m_deviceManager;
     i32 m_ownsTable;
     i32 m_measuredFps;
 };

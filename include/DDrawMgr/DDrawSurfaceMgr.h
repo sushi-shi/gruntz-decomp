@@ -38,7 +38,7 @@ class CDDrawWorkerCache;
 class CDDrawWorkerMapSmall;
 class CDDrawSubMgrLeafScan;
 class CDDrawSubMgrLeaf;
-class CDDrawPtrCollections;
+class CDDrawDeviceManager;
 class SoundStream;
 
 class CDDrawSurfaceMgr;
@@ -85,7 +85,7 @@ public:
 
     CDDrawWorkerCache* m_workerCache;
     CDDrawWorkerMapSmall* m_workerMap;
-    CDDrawPtrCollections* m_ptrColl;
+    CDDrawDeviceManager* m_deviceManager;
     SoundStream* m_soundStream;
 
     class CGameLevel* m_level;

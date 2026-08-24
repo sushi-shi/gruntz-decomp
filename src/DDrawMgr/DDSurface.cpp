@@ -5,7 +5,7 @@
 #include <ComOutRef.h>
 #include <DDrawMgr/ClutTable.h>
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelShift.h>
@@ -86,16 +86,16 @@ static inline void ClutStore16(u32 byteOffset, u16 v) {
 }
 
 RVA(0x0013e0a0, 0x27)
-i32 CDDSurface::CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+i32 CDDSurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc) {
     if (desc != NULL) {
         memcpy(m_descWords, desc, sizeof(DDSURFACEDESC));
     }
-    return BlitIntoDesc(h);
+    return BlitIntoDesc(manager);
 }
 
 RVA(0x0013e0d0, 0x66)
 i32 CDDSurface::BlitSurf(
-    CDDrawPtrCollections* surf,
+    CDDrawDeviceManager* manager,
     i32 width,
     i32 height,
     ColorDepth bitDepth,
@@ -110,17 +110,17 @@ i32 CDDSurface::BlitSurf(
     this->m_height = height;
     this->m_descSize = sizeof(DDSURFACEDESC);
     this->m_descFlags = 7;
-    if (bitDepth != BPP_UNSET && bitDepth != surf->m_palBpp) {
+    if (bitDepth != BPP_UNSET && bitDepth != manager->m_displayColorDepth) {
         this->m_descFlags = 0x1007;
         this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
         this->m_srcBitDepth = bitDepth;
     }
-    return this->BlitIntoDesc(surf);
+    return this->BlitIntoDesc(manager);
 }
 
 RVA(0x0013e140, 0x1a0)
-i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
-    m_ddSurface = surf;
+i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
+    m_ddSurface = surface;
     i32 i;
     i32* d = m_descWords;
     for (i = 0x1b; i != 0; i--) {
@@ -129,7 +129,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_descSize = sizeof(DDSURFACEDESC);
     i32 hr = m_ddSurface->GetSurfaceDesc(&m_apiDesc);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x7e, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x7e, hr);
     }
 
     ColorDepth bits = m_srcBitDepth;
@@ -183,14 +183,14 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
 }
 
 RVA(0x0013e2e0, 0x1f0)
-i32 CDDSurface::BlitIntoDesc(CDDrawPtrCollections* mgr) {
-    if (mgr->m_device == NULL) {
+i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
+    if (manager->m_device == NULL) {
         return 0;
     }
 
-    i32 hr = mgr->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
+    i32 hr = manager->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, NULL);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xd5, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0xd5, hr);
         return 0;
     }
 
@@ -198,7 +198,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawPtrCollections* mgr) {
     surfOut.m_asTyped = &m_ddSurface;
     hr = m_ddSurfaceBack->QueryInterface(IID_IDirectDrawSurface3, surfOut.m_asVoid);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(NULL, 0, hr);
+        CDDrawDeviceManager::ReportError(NULL, 0, hr);
         return 0;
     }
 
@@ -209,7 +209,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawPtrCollections* mgr) {
     m_descSize = sizeof(DDSURFACEDESC);
     hr = m_ddSurface->GetSurfaceDesc(&m_apiDesc);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xeb, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0xeb, hr);
     }
 
     ColorDepth bits = m_srcBitDepth;
@@ -285,28 +285,28 @@ void CDDSurface::FreeSurfaces() {
 
 RVA(0x0013e550, 0x71)
 i32 CDDSurface::Resolve(
-    CDDrawPtrCollections* pal,
-    void* buf,
-    FileImageFormat type,
-    u32 size,
+    CDDrawDeviceManager* manager,
+    void* data,
+    FileImageFormat format,
+    u32 dataSize,
     u32 colorKey
 ) {
-    if (size == 0) {
+    if (dataSize == 0) {
         return 0;
     }
-    switch (type) {
+    switch (format) {
         case FMT_PID:
-            if (!DecodePid(pal, static_cast<PidHeader*>(buf), size, colorKey)) {
+            if (!DecodePid(manager, static_cast<PidHeader*>(data), dataSize, colorKey)) {
                 return 0;
             }
             break;
         case FMT_PCX:
-            if (!DecodePcx(pal, static_cast<PcxHeader*>(buf), size)) {
+            if (!DecodePcx(manager, static_cast<PcxHeader*>(data), dataSize)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmp(pal, static_cast<BmpFileImage*>(buf), size)) {
+            if (!DecodeBmp(manager, static_cast<BmpFileImage*>(data), dataSize)) {
                 return 0;
             }
             break;
@@ -317,18 +317,18 @@ i32 CDDSurface::Resolve(
 }
 
 RVA(0x0013e5d0, 0xb1)
-i32 CDDSurface::MakeImageKey(CDDrawPtrCollections* pal, char* name, u32 colorKey) {
-    char* ext = strrchr(name, '.');
+i32 CDDSurface::MakeImageKey(CDDrawDeviceManager* manager, char* path, u32 colorKey) {
+    char* ext = strrchr(path, '.');
     if (ext && _strcmpi(ext, ".BMP") == 0) {
-        if (!LoadBmp(pal, name)) {
+        if (!LoadBmp(manager, path)) {
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        if (!LoadPcx(pal, name)) {
+        if (!LoadPcx(manager, path)) {
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PID") == 0) {
-        if (!LoadPid(pal, name, colorKey)) {
+        if (!LoadPid(manager, path, colorKey)) {
             return 0;
         }
     }
@@ -336,12 +336,12 @@ i32 CDDSurface::MakeImageKey(CDDrawPtrCollections* pal, char* name, u32 colorKey
 }
 
 RVA(0x0013e690, 0x35)
-i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
-    i32 hr = m_ddSurface->SetPalette(pal->m_palette);
+i32 CDDSurface::SetPalette(CDDPalette* palette, i32 unused) {
+    i32 hr = m_ddSurface->SetPalette(palette->m_palette);
     if (hr == 0) {
         return 1;
     }
-    CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x1d2, hr);
+    CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x1d2, hr);
     return 0;
 }
 
@@ -359,10 +359,10 @@ void* CDDSurface::Lock(RECT* rect) {
         if (hr == 0) {
             return m_lockBits;
         }
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x203, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x203, hr);
         return NULL;
     }
-    CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x209, hr);
+    CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x209, hr);
     return NULL;
 }
 
@@ -377,7 +377,7 @@ i32 CDDSurface::Fill(u32 color) {
     fx.m_words[0x14] = static_cast<i32>(color);
     i32 hr = this->BltEx(NULL, NULL, NULL, 0x1000400, &fx.m_fx);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(
+        CDDrawDeviceManager::ReportError(
             const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"),
             0x22c,
             hr
@@ -397,7 +397,7 @@ i32 CDDSurface::Restore(RECT* dstRect, i32 fillColor) {
     fx.dwFillColor = fillColor;
     i32 hr = BltEx(dstRect, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
     if (hr) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x26d, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x26d, hr);
     }
     return hr == 0;
 }
@@ -420,10 +420,10 @@ i32 CDDSurface::Flip(CDDSurface* target) {
         if (hr == 0) {
             return 0;
         }
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2ae, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x2ae, hr);
         return hr;
     }
-    CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2b4, hr);
+    CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x2b4, hr);
     return hr;
 }
 
@@ -445,7 +445,7 @@ void CDDSurface::ReloadImageCache() {
     g_imageCache.SetSize(0, -1);
     i32 hr = m_ddSurface->EnumAttachedSurfaces(NULL, &EnumSurfacesCallback);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2dd, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x2dd, hr);
     }
     u32 j = 0;
     if (static_cast<u32>(g_imageCache.GetSize()) > 0) {
@@ -490,7 +490,7 @@ RVA(0x0013eaa0, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, DDCOLORKEY* key) {
     i32 hr = m_ddSurface->SetColorKey(flags, key);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x353, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x353, hr);
         return hr;
     }
     return 0;
@@ -680,7 +680,7 @@ i32 CDDSurface::Blt(CDDSurface* src) {
         }
     }
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x48c, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x48c, hr);
     }
     return hr;
 }
@@ -701,7 +701,7 @@ i32 CDDSurface::BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, 
         }
     }
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x4b0, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x4b0, hr);
     }
     return hr;
 }
@@ -717,7 +717,7 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans)
         }
     }
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x4da, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x4da, hr);
     }
     return hr;
 }
@@ -1116,7 +1116,7 @@ i32 CDDSurface::GetColorKey() {
         if (hr == 0) {
             return key.dwColorSpaceLowValue;
         }
-        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x695, hr);
+        CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x695, hr);
     }
     return -1;
 }

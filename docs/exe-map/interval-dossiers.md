@@ -714,13 +714,13 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   unoptimized, i.e. `#pragma optimize("", off)` islands in the source (VC5
   supports it). Modeled that way; craters accepted if the pragma is refused.
 * **H (DDRAWMGR.CPP, anchored).** The `C:\Proj\DDrawMgr\DDRAWMGR.CPP` string is
-  referenced from directdrawmgr fns (CreateDevice/Init/SetupCaps/CreatePoolItem/
+  referenced from directdrawmgr fns (CreateDevice/Init/EnumerateDisplayModes/WrapAttachedSurface/
   GetDisplayMode) AND ddrawptrcollections fns (ComputeColorMasks@0x143b20,
   ConfigureSurface@0x143c20); `C:\Proj\DDrawMgr\ddrawmgr.h` from CreateDevice.
   The directdrawmgr init frag @0x141c70 + ClearModeArray atexit companion
   @0x141c80 ($E at the static's source position - the mode array is defined
   mid-file). ONE-OBJ cell proof: 0x21a9f8 is shared by CreateDevice/Init/
-  SetupCaps/CreatePoolItem/GetDisplayMode (directdrawmgr) AND ComputeColorMasks
+  EnumerateDisplayModes/WrapAttachedSurface/GetDisplayMode (directdrawmgr) AND ComputeColorMasks
   (ddrawptrcollections). Head attribution: GetErrorString's private string
   table 0x21a378-0x21a9e4 directly precedes the mode-array band and follows
   G's - so the SetDDrawReportModes/GetErrorString pair @0x1413d0/0x141400 is
@@ -742,8 +742,8 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   `#pragma optimize` islands (see G).
 * **The `0x148840-0x148cd8` pocket** (outside this band; TU_MIGRATION row
   "WOVEN 0.29" = one obj): the leftover second cores of image (LoadKeyed/
-  ResolveEx/UpdateOverlay) + ddrawptrcollections (the CPoolItem* virtuals) +
-  fileimageloadbyext (LoadByExt). Consolidated into DDrawPtrCollections.cpp as
+  ResolveEx/UpdateOverlay) + ddrawptrcollections (the specialized surface virtuals) +
+  fileimageloadbyext (LoadByExt). Consolidated into DDrawDeviceManager.cpp as
   the pocket's holding unit so no unit spans two blocks; its original file is
   a fourth DDrawMgr surface file (unnamed - no anchor), unresolved here.
 

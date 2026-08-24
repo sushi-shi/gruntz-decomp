@@ -999,7 +999,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "ddrawptrcollections"
-source = "src/DDrawMgr/DDrawPtrCollections.cpp"
+source = "src/DDrawMgr/DDrawDeviceManager.cpp"
 flags = "cpp"
 
 [[unit]]

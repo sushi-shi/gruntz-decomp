@@ -3,7 +3,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
@@ -68,8 +68,8 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 loops = 0;
     i32 frame = 1;
     while (frame <= count) {
-        if (vsync && m_ptrColl) {
-            m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+        if (vsync && m_deviceManager) {
+            m_deviceManager->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
         }
         RenderFrame(frame);
         loops++;
@@ -109,8 +109,8 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
             frame =
                 static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
             if (prev != frame && frame <= count && frame > 0) {
-                if (vsync && m_ptrColl) {
-                    m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+                if (vsync && m_deviceManager) {
+                    m_deviceManager->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
                 }
                 RenderFrame(frame);
                 loops++;
@@ -136,8 +136,8 @@ void CFader::SetDefaultSurfaces(CDDSurface* primary, CDDSurface* secondary) {
 }
 
 RVA(0x0017e780, 0xa)
-void CFader::SetSurfacePool(CDDrawPtrCollections* pool) {
-    m_ptrColl = pool;
+void CFader::SetDeviceManager(CDDrawDeviceManager* manager) {
+    m_deviceManager = manager;
 }
 
 RVA(0x0017e790, 0x1)

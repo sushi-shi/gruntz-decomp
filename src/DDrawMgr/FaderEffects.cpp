@@ -3,7 +3,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
@@ -1041,7 +1041,8 @@ i32 CFaderLight::GetFrameCount() {
 RVA(0x00181660, 0x40)
 void CFaderLight::BeginFade() {
     if (m_spanCount > 0 && m_clearMode != 0) {
-        CDDSurface* h = m_ptrColl->MakeAndAddB(m_width, m_height, BPP_UNSET, 0, -1);
+        CDDSurface* h =
+            m_deviceManager->CreateOffscreenSurface(m_width, m_height, BPP_UNSET, 0, -1);
         m_overlay = h;
         h->Blt(m_targetSurface);
     }
@@ -1050,7 +1051,7 @@ void CFaderLight::BeginFade() {
 RVA(0x001816a0, 0x1c)
 void CFaderLight::EndFade() {
     if (m_overlay) {
-        m_ptrColl->RemoveItemA(m_overlay);
+        m_deviceManager->RemoveSurface(m_overlay);
         m_overlay = NULL;
     }
 }

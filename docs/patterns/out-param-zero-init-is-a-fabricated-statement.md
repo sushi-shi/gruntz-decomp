@@ -50,7 +50,7 @@ The tell is whether the callee's contract leaves the sink untouched on some
 path. Where it does, retail zeroes it too. A tree-wide scan for the shape
 found 11 sites; **five of them are already EXACT with the `= NULL` and must
 keep it**: `CNetMgr::Init`, `EnumProviderCb`, `EnumSurfacesCallback`,
-`CDDrawPtrCollections::CreatePoolItem` and `::GetGDISurface` all pass the
+`CDDrawDeviceManager::WrapAttachedSurface` and `::GetGDISurface` all pass the
 address to a DirectX/DirectPlay enumeration or attachment API that can return
 without writing. The related
 [typed-map-walk-helper-hides-the-key-out-param](typed-map-walk-helper-hides-the-key-out-param.md)

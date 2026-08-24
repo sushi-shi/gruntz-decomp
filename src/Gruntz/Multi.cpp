@@ -5,7 +5,7 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -832,7 +832,7 @@ i32 CMulti::StartTitle() {
 
     m_world->m_drawTarget->PresentBackPage();
 
-    m_world->m_ptrColl->m_device->FlipToGDISurface();
+    m_world->m_deviceManager->m_device->FlipToGDISurface();
     m_stateBank = saved;
     while (ShowCursor(1) < 0) {
     }

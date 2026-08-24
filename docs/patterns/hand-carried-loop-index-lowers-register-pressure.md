@@ -13,7 +13,7 @@ is "retail spends more instructions than we do":
 plus retail carrying a `push ecx` / `sub esp,N` the base does not have, a `this`
 (or another loop-invariant) spilled to that new slot and reloaded inside the loop,
 and the base coming out **SHORTER than retail** — `RemovePlayerUnitsImmediately` was 154 B against
-retail's 179, `CreateRange` 244 against 254.
+retail's 179, `LoadNumberedSurfaces` 244 against 254.
 
 **Cause.** The reconstruction hand-rotated the loop, or hand-carried the address
 arithmetic:
@@ -72,7 +72,7 @@ extra statements.
 **Results.** `CTriggerMgr::RemovePlayerUnitsImmediately` 0x6bd40 66.97 -> **100.00 EXACT** (the
 downcount `do/while` plus the `g2` accumulator; 64-cell forest, 12 cells exact —
 every exact cell had the plain `for` AND the `r * COLS + col` index, none had the
-accumulator). `CDDrawPtrCollections::CreateRange` 0x142630 84.02 -> **100.00 EXACT**
+accumulator). `CDDrawDeviceManager::LoadNumberedSurfaces` 0x142630 84.02 -> **100.00 EXACT**
 (the `p` cursor; 181-cell forest, 12 exact, every one of them `out[n]`). Both had
 been filed as regalloc walls — the first as "our narrowed `or` vs retail's dword
 RMW is downstream of allocation", the second as "retail keeps `p` in a stack slot

@@ -14,7 +14,7 @@
 #include <ddraw.h>
 
 struct CDDPalette;
-class CDDrawPtrCollections;
+class CDDrawDeviceManager;
 class CFileImagePal;
 struct PcxHeader;
 struct BmpFileImage;
@@ -76,8 +76,8 @@ GZ_ENUM_BEGIN(DDSurfacePoolKind)
     POOLKIND_PLAIN = 0,
     POOLKIND_MODE = 1,
     POOLKIND_FILEIMAGE = 2,
-    POOLKIND_BLIT7 = 3,
-    POOLKIND_BLIT47 = 4
+    POOLKIND_OVERLAY = 3,
+    POOLKIND_ZBUFFER = 4
 GZ_ENUM_END(DDSurfacePoolKind)
 
 class CDDSurface {
@@ -85,22 +85,22 @@ public:
     CDDSurface();
 
     virtual ~CDDSurface();
-    virtual i32 Refresh(IDirectDrawSurface* surf);
+    virtual i32 Refresh(IDirectDrawSurface* surface);
 
-    virtual i32 CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc);
+    virtual i32 CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc);
     virtual i32
-    BlitSurf(CDDrawPtrCollections* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps);
+    BlitSurf(CDDrawDeviceManager* manager, i32 width, i32 height, ColorDepth bitDepth, i32 caps);
     virtual void FreeSurfaces();
     virtual i32 IsValid();
 
     virtual DDSurfacePoolKind GetPoolKind();
     virtual i32 RestoreLost();
-    virtual i32 BlitIntoDesc(CDDrawPtrCollections* mgr);
+    virtual i32 BlitIntoDesc(CDDrawDeviceManager* manager);
 
     void* Lock(RECT* rect);
     u8 GetPixel(i32 x, i32 y);
     void PutPixel(i32 x, i32 y, u8 color);
-    i32 SetPalette(CDDPalette* pal, i32 unused);
+    i32 SetPalette(CDDPalette* palette, i32 unused);
     i32 Restore(RECT* dstRect, i32 fillColor);
     i32 Flip(CDDSurface* target);
 
@@ -136,27 +136,33 @@ public:
     i32 SaveTga(const char* path, CFileImagePal* pal, i32 mode);
 
     i32 Resolve(
-        class CDDrawPtrCollections* pal,
-        void* buf,
-        FileImageFormat type,
-        u32 size,
+        class CDDrawDeviceManager* manager,
+        void* data,
+        FileImageFormat format,
+        u32 dataSize,
         u32 colorKey
     );
 
-    i32 DecodeBmp(class CDDrawPtrCollections* pal, BmpFileImage* buf, u32 size);
-    i32 DecodePcx(class CDDrawPtrCollections* pal, struct PcxHeader* hdr, u32 size);
-    i32 DecodePid(class CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u32 colorKey);
-    i32 DecodePcxData(class CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 caps, u32 key);
+    i32 DecodeBmp(class CDDrawDeviceManager* manager, BmpFileImage* image, u32 dataSize);
+    i32 DecodePcx(class CDDrawDeviceManager* manager, struct PcxHeader* image, u32 dataSize);
+    i32 DecodePid(class CDDrawDeviceManager* manager, PidHeader* image, u32 dataSize, u32 colorKey);
+    i32 DecodePcxData(
+        class CDDrawDeviceManager* manager,
+        PidHeader* image,
+        i32 dataSize,
+        i32 surfaceCaps,
+        u32 colorKey
+    );
 
-    i32 LoadBmp(class CDDrawPtrCollections* pal, char* path);
-    i32 LoadPcx(class CDDrawPtrCollections* pal, char* path);
-    i32 LoadPid(class CDDrawPtrCollections* pal, char* path, u32 colorKey);
+    i32 LoadBmp(class CDDrawDeviceManager* manager, char* path);
+    i32 LoadPcx(class CDDrawDeviceManager* manager, char* path);
+    i32 LoadPid(class CDDrawDeviceManager* manager, char* path, u32 colorKey);
 
-    i32 MakeImageKey(class CDDrawPtrCollections* pal, char* name, u32 colorKey);
-    i32 DecodePcxEx(class CDDrawPtrCollections* pal, char* path, i32 caps, u32 key);
+    i32 MakeImageKey(class CDDrawDeviceManager* manager, char* path, u32 colorKey);
+    i32 DecodePcxEx(class CDDrawDeviceManager* manager, char* path, i32 surfaceCaps, u32 colorKey);
 
-    i32 DecodeRun(CDDrawPtrCollections* info, BmpFileImage* src, i32 a, i32 b);
-    i32 Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode);
+    i32 DecodeRun(CDDrawDeviceManager* manager, BmpFileImage* image, i32 dataSize, i32 surfaceCaps);
+    i32 Decode(CDDrawDeviceManager* manager, PcxHeader* image, i32 dataSize, i32 surfaceCaps);
 
     void FlipVertical();
 
@@ -192,9 +198,9 @@ public:
     i32 StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey);
 
     void DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip);
-    i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode);
-    i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);
-    i32 Load(CDDrawPtrCollections* a, char* name, i32 c);
+    i32 LoadFile2(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps);
+    i32 LoadFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps);
+    i32 Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfaceCaps);
 
     i32 Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, RasterRowOrder rowOrder);
     i32 BlitDirect(u8* src, RasterRowOrder rowOrder);

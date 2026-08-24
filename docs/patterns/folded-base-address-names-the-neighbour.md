@@ -8,7 +8,7 @@
 every function that walks the same array:
 
 ```
--- fileimage  ?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAXI@Z
+-- fileimage  ?DecodeBmp@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAXI@Z
      _s_palBmp$S27851   base 5 target 4
      _s_palPcx$S27852   base 0 target 1
 ```

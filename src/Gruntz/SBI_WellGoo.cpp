@@ -4,7 +4,7 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -61,7 +61,8 @@ i32 CSBI_WellGoo::Setup(
     if (key == NULL) {
         goto fail;
     }
-    m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, BPP_RGB_16, 0, -1);
+    m_gooSrc =
+        g_gameReg->m_world->m_deviceManager->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
     if (m_gooSrc == NULL) {
         goto fail;
     }
@@ -255,7 +256,8 @@ i32 CSBI_WellGoo::SerializeFields(
         }
         case SERIAL_POSTLOAD: {
 
-            m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, BPP_RGB_16, 0, -1);
+            m_gooSrc = g_gameReg->m_world->m_deviceManager
+                           ->CreateOffscreenSurface(0x14, 5, BPP_RGB_16, 0, -1);
             if (m_gooSrc == NULL) {
                 return 0;
             }
@@ -295,7 +297,7 @@ RVA_COMPGEN(0x00104b80, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != NULL) {
-        m_host->m_ptrColl->RemoveItemA(m_gooSrc);
+        m_host->m_deviceManager->RemoveSurface(m_gooSrc);
         m_gooSrc = NULL;
     }
 }

@@ -44,7 +44,7 @@ see [pointer-chain-hoist-intermediate-local](pointer-chain-hoist-intermediate-lo
 | `CGruntzMgr::MuteMusicIfActive` 0x0915d0 | **add** `MidiManager* midi` for the second read | 99.62 → **100** |
 | `CGruntzMgr::RestoreMusicVolumeIfActive` 0x091620 | same | 99.62 → **100** |
 | `CGruntzMgr::SetSoundEnabled` 0x092340 | **add** `i32 soundEnabled = m_soundEnabled;` for the global store (buys the 5-byte `a3` accumulator form) | 99.62 → **100** |
-| `CGruntzMgr::ExitModalUI` 0x0903f0 | **add** `CDDrawPtrCollections* pc` (middle link) — fixed **three** vtable-call scratch registers at once | 99.57 → **100** |
+| `CGruntzMgr::ExitModalUI` 0x0903f0 | **add** `CDDrawDeviceManager* deviceManager` (middle link) — fixed **three** vtable-call scratch registers at once | 99.57 → **100** |
 | `CGruntzMgr::EnterModalUI` 0x08ef10 | same one-line edit | ~93 → **100** (had been filed an esi/edi wall) |
 | `CGruntHealthSprite::HealthUpdate` 0x07f180 | **delete** `CGruntzMgr* reg = g_gameReg;` | 99.64 → **100** (had been filed a zero-register-pinning wall) |
 | `CGrunt::StepArrivalCommitA` 0x065300 | **delete** `CGruntzMgr* g = g_gameReg;` (also fixed the tx/ty emission order) | 99.70 → **100** |

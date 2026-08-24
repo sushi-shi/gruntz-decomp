@@ -22,10 +22,14 @@ CFaderMgr::~CFaderMgr() {
 }
 
 RVA(0x0017d980, 0x1f)
-i32 CFaderMgr::SetDefaults(CDDSurface* primary, CDDSurface* secondary, CDDrawPtrCollections* pool) {
+i32 CFaderMgr::SetDefaults(
+    CDDSurface* primary,
+    CDDSurface* secondary,
+    CDDrawDeviceManager* manager
+) {
     m_primarySurface = primary;
     m_secondarySurface = secondary;
-    m_surfacePool = pool;
+    m_deviceManager = manager;
     m_active = true;
     return 1;
 }
@@ -52,7 +56,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             CFaderShape* f = new CFaderShape;
             fader = f;
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
-            f->SetSurfacePool(m_surfacePool);
+            f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
                 CFxModeT1 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -80,7 +84,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             CFaderLight* f = new CFaderLight;
             fader = f;
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
-            f->SetSurfacePool(m_surfacePool);
+            f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
                 CFxModeT2 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -108,7 +112,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             CFaderSine* f = new CFaderSine;
             fader = f;
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
-            f->SetSurfacePool(m_surfacePool);
+            f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
                 CFxModeT3 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -136,7 +140,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             CFaderRadial* f = new CFaderRadial;
             fader = f;
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
-            f->SetSurfacePool(m_surfacePool);
+            f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
                 CFxModeT4 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -164,7 +168,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             CFaderFlat* f = new CFaderFlat;
             fader = f;
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
-            f->SetSurfacePool(m_surfacePool);
+            f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
                 CFxModeT5 init;
                 if (f->ApplyInit(&init) == 0) {
@@ -192,7 +196,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             CFaderMesh* f = new CFaderMesh;
             fader = f;
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
-            f->SetSurfacePool(m_surfacePool);
+            f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
                 CFxModeT6 init;
                 if (f->ApplyInit(&init) == 0) {

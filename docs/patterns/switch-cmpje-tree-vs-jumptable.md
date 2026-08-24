@@ -13,4 +13,4 @@ table and you get a chain, that is usually the fold, and it IS steerable — see
 [[empty-switch-arms-fold-into-default-and-kill-the-jump-table]]. If a tree-lowered sibling
 matched at 100% and yours is at ~96% with a real jump table, that's the table, not a bug.
 
-WALL once it's a jump table (see jumptable-data-overlap). Evidence: DirectInputMgr2::GetErrorString (cmp/je tree) 100% vs CDirectDrawMgr::GetErrorString (jump table) 96%.
+WALL once it's a jump table (see jumptable-data-overlap). Evidence: DirectInputMgr2::GetErrorString (cmp/je tree) 100% vs CDDrawDeviceManager::ReportError (jump table) 96%.

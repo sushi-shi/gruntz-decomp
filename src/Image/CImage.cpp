@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -40,7 +40,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_ownerCtx->m_ptrColl->LoadFileSurface(path, capArg, flagsArg);
+    CDDSurface* item = m_ownerCtx->m_deviceManager->LoadFileSurface(path, capArg, flagsArg);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -110,7 +110,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
 
     CDDSurface* item =
-        m_ownerCtx->m_ptrColl->LoadSurfaceFromPid(desc, mode, size, capArg, flagsArg);
+        m_ownerCtx->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, capArg, flagsArg);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -137,7 +137,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
         capArg = 0x800;
     }
     CDDSurface* item =
-        m_ownerCtx->m_ptrColl->CreateKeyedSurface(width, height, BPP_UNSET, capArg, flagsArg);
+        m_ownerCtx->m_deviceManager->CreateKeyedSurface(width, height, BPP_UNSET, capArg, flagsArg);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -187,7 +187,7 @@ void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
-        m_ownerCtx->m_ptrColl->RemoveItemA(m_surface);
+        m_ownerCtx->m_deviceManager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -271,7 +271,7 @@ i32 CImage::Reload(CParseSource* src, i32 keyed) {
     }
 
     return m_surface->Resolve(
-        m_ownerCtx->m_ptrColl,
+        m_ownerCtx->m_deviceManager,
         resolved,
         index,
         static_cast<u32>(src->m_length),

@@ -27,7 +27,7 @@ i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
     if (hr == 0) {
         return 1;
     }
-    CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x4b, hr);
+    CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x4b, hr);
     return 0;
 }
 
@@ -227,7 +227,7 @@ void CDDPalette::GetEntries() {
     }
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheB);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x265, hr);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x265, hr);
     }
 }
 
@@ -259,7 +259,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
     }
     i32 hr = m_palette->SetEntries(flags, start, count, m_cacheA + start);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x2a3, hr);
     }
     return hr;
 }
@@ -270,7 +270,7 @@ RVA(0x00147d50, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x2c0, hr);
     }
     PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -309,7 +309,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     }
     i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
     if (err) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x311, err);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x311, err);
     }
     m_firstColorIndex = start;
     m_colorCount = count;
@@ -339,7 +339,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
     }
     i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
     if (err) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x34b, err);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x34b, err);
     }
     m_firstColorIndex = start;
     m_colorCount = count;
@@ -482,7 +482,7 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
     }
     i32 hr = m_palette->SetEntries(0, start, count, m_cacheA + start);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x406, hr);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x406, hr);
     }
 }
 
@@ -492,7 +492,7 @@ RVA(0x001483e0, 0x1c9)
 void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x41f, hr);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x41f, hr);
     }
     PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -556,7 +556,7 @@ i32 CDDPalette::CaptureSystemPalette() {
                 if (rc == 0) {
                     return 1;
                 }
-                CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
+                CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x495, rc);
             }
         }
     }
@@ -599,7 +599,7 @@ void CDDPalette::DumpEntries() {
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, entries);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x4e4, hr);
+        CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x4e4, hr);
         return;
     }
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {

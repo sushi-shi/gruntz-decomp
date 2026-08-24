@@ -9,7 +9,7 @@
 #include <Crypto/FecCrypt.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -911,8 +911,8 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     CDDrawSubMgrLeafScan* snd = w->m_soundRegistry;
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
     snd->SumField(NULL);
-    w->m_ptrColl->GetCapsChecked();
-    w->m_ptrColl->GetCapsChecked();
+    w->m_deviceManager->GetCapsChecked();
+    w->m_deviceManager->GetCapsChecked();
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
     w->m_imageRegistry->SumSizesEqual("GRUNTZ", 1);
     w->m_imageRegistry->SumSizesEqual("GAME", 1);
@@ -925,10 +925,10 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
 }
 
 RVA(0x0008dd80, 0x31)
-i32 CDDrawPtrCollections::GetCapsChecked() {
+i32 CDDrawDeviceManager::GetCapsChecked() {
     i32 hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(
+        CDDrawDeviceManager::ReportError(
             const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"),
             0x135,
             hr
@@ -1049,10 +1049,10 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
         return 1;
     }
-    CDdModePair pt;
-    pt = m_world->m_ptrColl->FindFwd(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
-    i32 x = pt.a;
-    i32 y = pt.b;
+    DisplayResolution pt;
+    pt = m_world->m_deviceManager->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+    i32 x = pt.m_width;
+    i32 y = pt.m_height;
     if (x > 0x514 || x == -1 || y == -1) {
         return 1;
     }
@@ -1071,10 +1071,11 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
         return 1;
     }
-    CDdModePair pt;
-    pt = m_world->m_ptrColl->FindBack(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
-    i32 x = pt.a;
-    i32 y = pt.b;
+    DisplayResolution pt;
+    pt = m_world->m_deviceManager
+             ->FindPreviousResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+    i32 x = pt.m_width;
+    i32 y = pt.m_height;
     if (x == -1 || y == -1 || x < SCREEN_HALF_W_PX || y < 0xc8) {
         return 1;
     }
@@ -1396,8 +1397,8 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 
-        CDDrawPtrCollections* pc = m_world->m_ptrColl;
-        pc->m_device->FlipToGDISurface();
+        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        deviceManager->m_device->FlipToGDISurface();
     }
     i32 wasShown = ShowCursor(1);
     while (ShowCursor(1) < 0) {
@@ -1422,8 +1423,8 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 
-        CDDrawPtrCollections* pc = m_world->m_ptrColl;
-        pc->m_device->FlipToGDISurface();
+        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        deviceManager->m_device->FlipToGDISurface();
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;
@@ -1826,7 +1827,7 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
     IDirectSound* dsound = NULL;
 
     CDDSurface* front = m_world->m_drawTarget->m_frontPair->m_surface;
-    IDirectDraw2* dd2 = m_world->m_ptrColl->m_device;
+    IDirectDraw2* dd2 = m_world->m_deviceManager->m_device;
 
     if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
         CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
@@ -1975,8 +1976,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
             flag = 0;
         }
 
-        CDDrawPtrCollections* pc = m_world->m_ptrColl;
-        pc->m_device->FlipToGDISurface();
+        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        deviceManager->m_device->FlipToGDISurface();
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;
@@ -2028,8 +2029,8 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
             notify = 0;
         }
 
-        CDDrawPtrCollections* pc = m_world->m_ptrColl;
-        pc->m_device->FlipToGDISurface();
+        CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
+        deviceManager->m_device->FlipToGDISurface();
     }
 
     int(WINAPI * show)(BOOL) = ShowCursor;

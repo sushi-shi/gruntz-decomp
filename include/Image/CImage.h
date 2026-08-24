@@ -11,7 +11,7 @@
 
 struct CParseSource;
 
-class CDDrawPtrCollections;
+class CDDrawDeviceManager;
 
 class CString;
 class CResolveNode;

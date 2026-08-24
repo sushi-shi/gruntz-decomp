@@ -10,7 +10,7 @@
 #include <Image/RezDecodeKind.h>
 #include <Io/FileStream.h>
 
-class CDDrawPtrCollections;
+class CDDrawDeviceManager;
 
 struct CImagePaletteNode;
 
@@ -102,21 +102,21 @@ public:
     virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
 
     virtual i32 ResolveEx(
-        CDDrawPtrCollections* surf,
-        void* buf,
-        FileImageFormat type,
-        u32 size,
-        i32 ctrl,
-        i32 trans
+        CDDrawDeviceManager* manager,
+        void* data,
+        FileImageFormat format,
+        u32 dataSize,
+        i32 surfaceCaps,
+        i32 colorKey
     );
-    virtual i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key);
+    virtual i32 LoadByExt(CDDrawDeviceManager* manager, char* path, i32 surfaceCaps, i32 colorKey);
     virtual i32 LoadKeyed(
-        CDDrawPtrCollections* surf,
+        CDDrawDeviceManager* manager,
         i32 width,
         i32 height,
         ColorDepth bitDepth,
         i32 caps,
-        i32 key
+        i32 colorKey
     );
 };
 

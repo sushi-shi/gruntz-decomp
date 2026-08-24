@@ -9,7 +9,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

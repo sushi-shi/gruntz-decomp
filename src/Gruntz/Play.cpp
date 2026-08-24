@@ -4178,7 +4178,7 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 
     i32 r = half->BltFast(0, 0, target, dst, 0x10);
     if (r != 0) {
-        CDDrawPtrCollections::GetErrorString(NULL, 0, r);
+        CDDrawDeviceManager::ReportError(NULL, 0, r);
     }
 
     if (m_drewThisFrame != 0) {
@@ -4354,7 +4354,7 @@ i32 CPlay::StepInputA() {
 
     i32 r = probeTarget->BltFast(dst->left, dst->top, half, src, 0x10);
     if (r != 0) {
-        CDDrawPtrCollections::GetErrorString(NULL, 0, r);
+        CDDrawDeviceManager::ReportError(NULL, 0, r);
     }
     return 1;
 }

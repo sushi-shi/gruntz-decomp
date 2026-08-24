@@ -522,7 +522,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - leafcueplay (`cpp-rtti`) — src/Gruntz/LeafCuePlay.cpp
 - queuedrainhost (`cpp-rtti`) — src/Gruntz/QueueDrainHost.cpp
 - wwdobjmgr (`cpp`) — src/Wwd/WwdObjMgr.cpp
-- ddrawptrcollections (`cpp`) — src/DDrawMgr/DDrawPtrCollections.cpp
+- ddrawptrcollections (`cpp`) — src/DDrawMgr/DDrawDeviceManager.cpp
 - directdrawmgr (`cpp`) — src/DDrawMgr/DirectDrawMgr.cpp
 - ddsurface (`cpp`) — src/DDrawMgr/DDSurface.cpp
 - ddpalette (`cpp`) — src/DDrawMgr/DirPal.cpp

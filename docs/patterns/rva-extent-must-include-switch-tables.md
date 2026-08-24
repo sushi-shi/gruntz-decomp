@@ -65,7 +65,7 @@ next function symbol in that section), and `RVA()` is sometimes **indented** ins
 | 92.55 | `CGameLevel::EditDispatch` |
 | 94.77 | `StateMgrBZ::Build` |
 | 95.05 | `CTileTriggerContainer::AddSwitchLogic` |
-| 96.26 | `CDDrawPtrCollections::GetErrorString` |
+| 96.26 | `CDDrawDeviceManager::ReportError` |
 | 97.50 | `CBootyState::FormatHudText` |
 | 94.88 | `CGameApp::GameWindowProc` (the one that surfaced it) |
 

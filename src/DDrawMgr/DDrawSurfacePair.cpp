@@ -9,7 +9,7 @@
 #include <DDrawMgr/AniRecord.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
@@ -118,7 +118,8 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     rect->bottom = h;
     if (kind == 1) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface = mgr->m_ptrColl->CreatePoolItem(mgr->m_drawTarget->m_frontPair->m_surface, 4);
+        m_surface =
+            mgr->m_deviceManager->WrapAttachedSurface(mgr->m_drawTarget->m_frontPair->m_surface, 4);
         if (m_surface == NULL) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
                 OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE_COPY;
@@ -128,9 +129,9 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     }
     if (m_id != 1) {
         if (m_flags & 0x10000) {
-            m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, BPP_UNSET, 0, -1);
+            m_surface = OwnerMgr()->m_deviceManager->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
         } else {
-            m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
+            m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
         }
         if (m_surface == NULL) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
@@ -171,8 +172,8 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
 RVA(0x00163e20, 0x2d)
 void CDDrawSurfacePair::Unload() {
     if (m_surface != NULL && m_ownsSurface != 0) {
-        CDDrawPtrCollections* pool = OwnerMgr()->m_ptrColl;
-        pool->RemoveItemA(m_surface);
+        CDDrawDeviceManager* manager = OwnerMgr()->m_deviceManager;
+        manager->RemoveSurface(m_surface);
         m_surface = NULL;
     }
     m_width = 0;
@@ -181,14 +182,14 @@ void CDDrawSurfacePair::Unload() {
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
-    i32 r = m_surface->Resolve(OwnerMgr()->m_ptrColl, buf, type, src->m_length, 0);
+    i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->m_length, 0);
     src->EndParse();
     return r;
 }
 
 RVA(0x00163ee0, 0x19)
 i32 CDDrawSurfacePair::ResolveImageName(char* name) {
-    return m_surface->MakeImageKey(OwnerMgr()->m_ptrColl, name, 0);
+    return m_surface->MakeImageKey(OwnerMgr()->m_deviceManager, name, 0);
 }
 
 RVA(0x00163f00, 0x40)
@@ -346,21 +347,23 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 sysmem = 0;
             }
         }
-        OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
+        OwnerMgr()->m_deviceManager->RemoveSurface(m_surface);
         m_surface = NULL;
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
-            m_surface =
-                mgr->m_ptrColl->CreatePoolItem(mgr->m_drawTarget->m_frontPair->m_surface, 4);
+            m_surface = mgr->m_deviceManager->WrapAttachedSurface(
+                mgr->m_drawTarget->m_frontPair->m_surface,
+                4
+            );
             if (m_surface == NULL) {
                 return 0;
             }
         }
         if (m_id != 1) {
             if (sysmem != 0) {
-                m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
+                m_surface = OwnerMgr()->m_deviceManager->CreateOffscreenSurface(w, h, bpp, 0, -1);
             } else {
-                m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, bpp, 0, -1);
+                m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, bpp, 0, -1);
             }
             if (m_surface == NULL) {
                 return 0;
@@ -426,27 +429,28 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // `default:` arm all produce the same sunk layout (over-merge placement family).
 RVA(0x001644a0, 0x1b0)
 i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
-    CDDrawSurfaceMgr* mgr = OwnerMgr();
+    CDDrawSurfaceMgr* surfaceManager = OwnerMgr();
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    CDDrawPtrCollections* pool = mgr->m_ptrColl;
+    CDDrawDeviceManager* deviceManager = surfaceManager->m_deviceManager;
     i32 mode = 0x11;
     if (w <= 0x140) {
         mode = 0x51;
     }
     i32 hr;
-    if (mgr->m_flags & 0x10) {
+    if (surfaceManager->m_flags & 0x10) {
 
         // DirectDrawCreate takes its two emulation selectors AS the lpGUID.
         AddrWord<GUID> emulationOnly;
         emulationOnly.m_word = DDCREATE_EMULATIONONLY;
-        hr = pool->CreateDevice(mgr->m_hWnd, emulationOnly.m_addr, w, h, bpp, mode);
+        hr = deviceManager
+                 ->CreateDevice(surfaceManager->m_hWnd, emulationOnly.m_addr, w, h, bpp, mode);
     } else {
-        hr = pool->CreateDevice(mgr->m_hWnd, NULL, w, h, bpp, mode);
+        hr = deviceManager->CreateDevice(surfaceManager->m_hWnd, NULL, w, h, bpp, mode);
     }
     if (hr == 0) {
-        DDrawDeviceError err = pool->m_lastError;
+        DDrawDeviceError err = deviceManager->m_lastError;
         if (err != DDRAWERR_NONE) {
             switch (err) {
                 case DDRAWERR_CREATE: {
@@ -497,7 +501,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (m2->m_flags & 2) {
         amode = 2;
     }
-    CDDSurface* surf = pool->Create24BitPaletteSurface(amode);
+    CDDSurface* surf = deviceManager->Create24BitPrimarySurface(amode);
     m_surface = surf;
     if (surf != NULL && surf->IsValid()) {
         return 1;
@@ -535,20 +539,20 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
-    CDDrawPtrCollections* pool = OwnerMgr()->m_ptrColl;
-    if (pool == NULL) {
+    CDDrawDeviceManager* manager = OwnerMgr()->m_deviceManager;
+    if (manager == NULL) {
         return 0;
     }
-    pool->RemoveItemA(m_surface);
+    manager->RemoveSurface(m_surface);
     m_surface = NULL;
-    if (pool->ConfigureSurface(w, h, bpp, 0, 0) != BPP_UNSET) {
+    if (manager->ConfigureSurface(w, h, bpp, 0, 0) != BPP_UNSET) {
         return 0;
     }
     i32 amode = 1;
     if (OwnerMgr()->m_flags & 2) {
         amode = 2;
     }
-    m_surface = pool->Create24BitPaletteSurface(amode);
+    m_surface = manager->Create24BitPrimarySurface(amode);
     if (m_surface == NULL) {
         return 0;
     }
