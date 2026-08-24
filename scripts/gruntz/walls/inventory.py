@@ -178,6 +178,7 @@ def main(argv=None) -> int:
     from gruntz.walls import check_unit
     check_unit(a.unit)
     rows = build(a.unit, a.below, a.todo)
+    excluded = build(a.unit, a.below, False) if a.todo else []
     if a.json:
         print(json.dumps(rows, indent=2))
         return 0
@@ -190,6 +191,24 @@ def main(argv=None) -> int:
           f"({n_prov} proven-at-100 dips, {n_reg} below their bank"
           + (f", {n_eh} EH-band funclets - scored, NOT reconstruction targets"
              if n_eh else "") + ")")
+    if a.todo:
+        # The queue is NOT the complete sub-100 set: say what it dropped, so no
+        # reader mistakes it for one. A terminal review is reviewer progress,
+        # NOT proof a reconstruction is correct - a "closed" row has since been
+        # taken to 100.00 EXACT by a later lane.
+        shown = {r["rva"] for r in rows}
+        gone = [r for r in excluded if r["rva"] not in shown
+                and not is_eh_band(r["symbol"])]
+        from gruntz.walls.reviews import TERMINAL_STATUSES, current as _cur
+        _rv = _cur()
+        n_term = sum(1 for r in gone if r["rva"]
+                     and (_rv.get(int(r["rva"], 16)) or {}).get("status")
+                     in TERMINAL_STATUSES)
+        n_p100 = sum(1 for r in gone if r["proven"])
+        if gone:
+            print(f"        EXCLUDED from this queue: {len(gone)} sub-100 row(s) "
+                  f"- {n_term} carry a terminal review, {n_p100} already reached "
+                  f"100 once. Neither is proof; `--below 100` lists them.")
     print(f"        {len(lost)} row(s) carry LOST headroom (L): the bank sits "
           f"below hist, so a source EDIT gave up a peak nothing in the tree "
           f"reproduces.")
