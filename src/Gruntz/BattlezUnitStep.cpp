@@ -547,5 +547,4 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     unit->m_routeMaskA = g_spawnCfg;
     unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
     return 1;
-    return 1;
 }

@@ -29,20 +29,20 @@ i32 CMapMgr::SearchEdge(
     i32 savedB0 = cellB->m_flags;
     i32 savedA4 = cellA->m_occupantId;
     i32 savedA0 = cellA->m_flags;
-    i32 bBit29 = (static_cast<u32>(savedB0) >> 29) & 1;
+    i32 wasOccupied = (static_cast<u32>(savedB0) >> 29) & 1;
     i32 savedB4 = cellB->m_occupantId;
-    if (bBit29 != 0) {
-        cellB->m_flags = savedB0 & 0xdfffffff;
+    if (wasOccupied != 0) {
+        cellB->m_flags = savedB0 & BRICKZ_CELL_UNOCCUPIED_MASK;
     }
 
     m_rows[yA][xA].m_occupantId = -1;
     m_rows[yB][xB].m_occupantId = -1;
-    m_edgeMask = maskA & 0x20000000;
+    m_edgeMask = maskA & BRICKZ_CELL_OCCUPIED;
     if (clearFlag != 0) {
         m_rows[yA][xA].m_flags = 0;
         m_rows[yB][xB].m_flags = 0;
     }
-    i32 ret = CMapMgr::Search(xA, yA, xB, yB, list, maskA, 0x2000, maskC);
+    i32 ret = CMapMgr::Search(xA, yA, xB, yB, list, maskA, BRICKZ_CELL_ROUTE_MASKB, maskC);
     m_edgeMask = 0;
     m_rows[yA][xA].m_occupantId = savedA4;
     m_rows[yB][xB].m_occupantId = savedB4;
@@ -50,8 +50,9 @@ i32 CMapMgr::SearchEdge(
         m_rows[yA][xA].m_flags = savedA0;
         m_rows[yB][xB].m_flags = savedB0;
     }
-    if (bBit29 != 0) {
-        m_rows[yB][xB].m_flags |= 0x20000000;
+    if (wasOccupied != 0) {
+        BrickzCell* c = &m_rows[yB][xB];
+        c->m_flags |= BRICKZ_CELL_OCCUPIED;
     }
     return ret;
 }

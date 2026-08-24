@@ -126,4 +126,32 @@ blocks differ in exactly one byte, the `jne` displacement (`75 74` at 0x1645bc v
 `75 5a` at 0x1645d6), and cl's cross-jumper compares encoded bytes - so it declined
 there and accepted in our layout. Nothing in the C++ reaches that.
 
+## The unmerged unit is not always an EPILOGUE (2026-08-24)
+
+Two rows widen the signature past `ret` blocks, in functions with NO /GX frame
+(so the same-EH-state merge predicate in
+[first-function-epilogue-merge-oracle.md](first-function-epilogue-merge-oracle.md)
+cannot be the discriminator):
+
+* `CBattlezMapConfig::AdvanceToEnemyBase` 0x32060 - retail keeps TWO copies of a
+  twelve-instruction tail that is four member stores (`m_defenderState=7`,
+  `m_routeMaskA=g_spawnCfg`, `m_routeMaskC=0x248`) plus `mov eax,1` and the
+  epilogue; we cross-jump them. The accounting closes exactly: base 591 insns /
+  65 branches against target 603 / 66, and 603-591 = the twelve, 66-65 = the
+  `jmp` we emit instead. The two source sites are the `dist<=0x10` arm of the
+  BATTLEZ_ROUTE_TARGET switch case and the bottom-of-function path; they are
+  source-identical, and retail's two copies are byte-identical to each other.
+* `CGrunt::StepGruntMovement` 0x4c170 - the duplicated unit is not a return at
+  all. Retail emits SEVEN `sub esp,0xc` + three-store by-value pushes of the
+  12-byte `GruntDirectionCell` feeding only THREE `PlaySound` calls (three of
+  the seven `jmp` into a shared call); we emit four blocks for our four source
+  sites. Retail additionally spills the direction record's second field into a
+  per-arm slot at all eight direction arms (`mov [esp+0x2c],ebp`), which is its
+  whole extra frame dword (0x38 vs our 0x30).
+
+A `goto` to one shared block is NOT the fix: cl 5.0 rejects it outright here
+(C2362 across the arm's initializations) and, per
+`single-predecessor-tail-block-gets-replicated.md`, a two-predecessor block does
+not replicate anyway. Treat both as the same era residue - recognize and stop.
+
 Recognize the rest and stop - the code is already correct.

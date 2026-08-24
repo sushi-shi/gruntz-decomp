@@ -30,3 +30,31 @@ and    BYTE PTR [ecx+0x3],0xdf        ; disp8 off the cell
 STEERABLE. `CGrunt::LoadEntranceConfig` 0x67f80 87.00 -> 89.03 and
 `CGrunt::FinishActiveAction` 0x6a6d0 88.96 -> 89.11 (four sites); retail
 0x68110 and 0x6b0d2. Thirteen more `m_flagBytes[3] &=`/`|=` sites exist tree-wide.
+
+## The DWORD `|=` behaves the same way
+
+The field width is not the variable - a whole-dword `m_flags |= BIT` on the
+same 2-D row array splits identically when it is written as one subscript
+expression, and folds to a memory-RMW off a named cell pointer:
+
+```asm
+; base, subscript spelling: dead lea + indexed load + register or + store
+lea    ecx,[eax+esi*1]
+mov    eax,DWORD PTR [eax+esi*1]
+or     eax,0x20000000
+mov    DWORD PTR [ecx],eax
+; retail (and base once the cell pointer is named)
+add    eax,esi
+or     DWORD PTR [eax],0x20000000
+```
+
+`CMapMgr::SearchEdge` 0x81e10 83.13 -> 86.37 on the one site (the restore of
+`BRICKZ_CELL_OCCUPIED` at the tail).
+
+## Per SITE, never tree-wide
+
+Retail also emits the split form. `CTriggerMgr::LoadTileArrivalFx` 0x75e90 has
+four `m_rows[y][x].m_flags &= ~0x40000` sites and retail spells every one of
+them `lea eax,[ecx+edx*1] / mov ecx,[ecx+edx*1] / and ecx,imm / mov [eax],ecx`,
+which the plain subscript already reproduces. Read the retail site before
+naming a pointer; converting a matching site regresses it.
