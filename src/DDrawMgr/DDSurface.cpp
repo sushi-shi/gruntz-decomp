@@ -560,9 +560,10 @@ void CDDSurface::FlipVertical() {
     if (half > 0) {
         do {
 
-            u8* top = buf + i * m_pitch;
+            i32 topOff = i * m_pitch;
             i32 j = 0;
             if (width > 0) {
+                u8* top = buf + topOff;
                 do {
                     tmp[j] = *top;
                     ++top;
@@ -571,9 +572,11 @@ void CDDSurface::FlipVertical() {
             }
 
             i32 botRow = height - i - 1;
-            u8* topDst = buf + i * m_pitch;
-            u8* botSrc = buf + botRow * m_pitch;
+            i32 dstOff = i * m_pitch;
+            i32 srcOff = botRow * m_pitch;
             if (width > 0) {
+                u8* topDst = buf + dstOff;
+                u8* botSrc = buf + srcOff;
                 i32 k = width;
                 do {
                     *topDst = *botSrc;
@@ -583,9 +586,10 @@ void CDDSurface::FlipVertical() {
                 } while (k != 0);
             }
 
-            u8* botDst = buf + botRow * m_pitch;
+            i32 botOff = botRow * m_pitch;
             i32 m = 0;
             if (width > 0) {
+                u8* botDst = buf + botOff;
                 do {
                     ++botDst;
                     botDst[-1] = tmp[m];
@@ -789,12 +793,12 @@ i32 CDDSurface::ShadeBlt(
     if (redDown == PIXEL16_RED_DOWN && g_gDown == redDown && g_bDown == redDown
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        i32 rows = height;
-        if (rows > 0) {
+        if (height > 0) {
+            i32 rows = height;
             do {
                 memcpy(temp, dstPtr, width * 2);
-                i32 n = width;
-                if (n > 0) {
+                if (width > 0) {
+                    i32 n = width;
                     u16* t = temp;
                     do {
                         u32 tp = *t;
@@ -825,12 +829,12 @@ i32 CDDSurface::ShadeBlt(
     } else if (redDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN && g_bDown == redDown
                && g_rUp == RGB565_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        i32 rows = height;
-        if (rows > 0) {
+        if (height > 0) {
+            i32 rows = height;
             do {
                 memcpy(temp, dstPtr, width * 2);
-                i32 n = width;
-                if (n > 0) {
+                if (width > 0) {
+                    i32 n = width;
                     u16* t = temp;
                     do {
                         u32 tp = *t;
@@ -909,18 +913,21 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
         for (; height > 0; height--) {
             memcpy(scratch, srcPix, width * 2);
-            u16* rd = scratch;
-            for (i32 x = width; x > 0; x--) {
-                u32 p = *rd++;
-                u32 blue = p & 0x1f;
-                u32 hi = p >> 5;
-                u32 green = hi & 0x1f;
-                u32 red = hi & 0xffffffe0;
-                *srcPix++ = static_cast<u16>(
-                    (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
-                     | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
-                     | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
-                );
+            if (width > 0) {
+                u16* rd = scratch;
+                i32 x = width;
+                do {
+                    u32 p = *rd++;
+                    u32 blue = p & 0x1f;
+                    u32 hi = p >> 5;
+                    u32 green = hi & 0x1f;
+                    u32 red = hi & 0xffffffe0;
+                    *srcPix++ = static_cast<u16>(
+                        (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
+                         | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
+                         | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
+                    );
+                } while (--x != 0);
             }
             srcPix += stride;
         }
@@ -929,18 +936,21 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                && g_gUp == PIXEL16_GREEN_UP) {
         for (; height > 0; height--) {
             memcpy(scratch, srcPix, width * 2);
-            u16* rd = scratch;
-            for (i32 x = width; x > 0; x--) {
-                u32 p = *rd++;
-                u32 blue = p & 0x1f;
-                u32 hi = p >> 6;
-                u32 green = hi & 0x1f;
-                u32 red = hi & 0xffffffe0;
-                *srcPix++ = static_cast<u16>(
-                    (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
-                     | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
-                     | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
-                );
+            if (width > 0) {
+                u16* rd = scratch;
+                i32 x = width;
+                do {
+                    u32 p = *rd++;
+                    u32 blue = p & 0x1f;
+                    u32 hi = p >> 6;
+                    u32 green = hi & 0x1f;
+                    u32 red = hi & 0xffffffe0;
+                    *srcPix++ = static_cast<u16>(
+                        (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
+                         | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
+                         | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
+                    );
+                } while (--x != 0);
             }
             srcPix += stride;
         }
