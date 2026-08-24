@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-extern const char g_dot[];
+extern const char g_singleDot[];
 
 #endif // GRUNTZ_DSNDMGR_SOUNDBANKLOAD_H

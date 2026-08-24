@@ -150,7 +150,7 @@ rva	size	name	kind	note
 0x1ef6e0	0xc	??_7StreamVoiceFeeder@@6B@	primary	
 0x1ef6ec	0x4	??_7SoundStream@@6B@	primary	
 0x1ef6f0	0xc	??_7StreamFeeder@@6B@	primary	
-0x1ef700	0x40	??_7CGruntzSoundInnerZ@@6B@	primary	
+0x1ef700	0x40	??_7MidiSequence@@6B@	primary	
 0x1ef740	0x4	??_7CParseSlotHashNode@@6B@	primary	
 0x1ef744	0x4	??_7CSymRecNode@@6B@	primary	
 0x1ef748	0x4	??_7CSymTabNode@@6B@	primary	

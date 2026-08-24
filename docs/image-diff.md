@@ -371,7 +371,7 @@ symbol.  That mislabeled `g_levelMsgRectsB[0].top` (integer value 92) as the str
 `"\\"` and `g_sndCueTag` (100) as `"d"`.  Paired non-literal symbols now win over
 content sniffing; compiler `??_C@` literals still compare by text.  This correction
 also exposed two previously hidden CRT identity differences: retail's
-`___lc_lctostr` and `___init_numeric` reach named `g_dot`, while our link reaches a
+`___lc_lctostr` and `___init_numeric` reach named `g_singleDot`, while our link reaches a
 pooled `"."` literal.  The honest wrong-region count therefore rises **34 -> 36**.
 The selftest uses the `RECT` field as a negative control.
 

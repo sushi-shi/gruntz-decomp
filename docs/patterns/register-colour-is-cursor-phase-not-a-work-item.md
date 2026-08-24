@@ -58,7 +58,7 @@ on `SaveVideoCheckboxes`: named locals for the results, one reused local, the
 TU-state probe, and inverting `if (x == NULL) return;` into `if (x != NULL) { ... }`.
 
 **"Retail's colour is one instruction WORSE" is NOT a proof of unreachability -
-CORRECTED 2026-08-23.** `CGruntzSoundZ::GetXMidiVolume` 0x1389c0 was this file's
+CORRECTED 2026-08-23.** `MidiManager::GetMasterVolume` 0x1389c0 was this file's
 strongest example: a constant division running the identical magic-multiply
 sequence on both sides, where retail accumulates in EDX and pays a closing
 `mov eax,edx` to return while cl accumulates in EAX and needs no move, with five

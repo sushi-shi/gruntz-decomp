@@ -13,7 +13,7 @@
 
 class CGameApp;
 class CTileTriggerContainer;
-class CGruntzSoundZ;
+class MidiManager;
 class CFontConfig;
 class CChatBoxOwner;
 class CWorldSoundSet;

@@ -260,11 +260,11 @@ addresses for unclaimed slack before the next pin finds 30,078 B, but almost all
 either genuine zero padding (retail's `.rdata` carries incremental-link zero filler
 between contributions — e.g. 44 zero bytes between `??_7CBattlezDlg@@6B@` and the next
 vtable) or library data we have not pinned at all (the MFC message-map block at
-`0x1eb068`, 13,628 B; the CRT export-name pool after `?g_dot@@3PBDB`, 3,386 B).
+`0x1eb068`, 13,628 B; the CRT export-name pool after `?g_singleDot@@3PBDB`, 3,386 B).
 
 `--undersized N` prints the ranked list (149 of 909 pinned addresses, 29,506 B). Most of
 it is library data we never pinned — the MFC message-map block at `0x1eb068` (13,628 B),
-the CRT export-name pool after `?g_dot@@3PBDB` (3,386 B), MFC/CRT `.rdata` behind
+the CRT export-name pool after `?g_singleDot@@3PBDB` (3,386 B), MFC/CRT `.rdata` behind
 `??_7CMenuItem2@@6B@` (5,612 B, which is simply the unpinned tail of the group). The rows
 that matter are the ones where **the slack is more of the same datum**.
 

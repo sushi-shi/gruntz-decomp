@@ -8,7 +8,7 @@ confidence: 9/10
 
 The 2026-08-22 full-queue semsweep (599 todo rows) flagged ~45 rows with
 exclusive keys. Adjudicating each against the retail bytes reduced them to a
-handful of real defects (the fort-recolor player index, the CGruntzSoundZ
+handful of real defects (the fort-recolor player index, the MidiManager
 ctor, the Toolhelp32 clears, Run's two error arms) plus FIVE recurring
 instruction-form families that are semantically equal. Check these families
 BEFORE reading an exclusive as a missing statement:
@@ -53,7 +53,7 @@ BEFORE reading an exclusive as a missing statement:
 What survived as REAL after the families: a register-dataflow index bug
 (AdvanceAnim recoloring by the LOSER's m_options entry - invisible to every
 multiset, visible only by reading the [esp+N] slot discipline across the
-push), a missing ctor (CGruntzSoundZ - store exclusives at a `new` site fed
+push), a missing ctor (MidiManager - store exclusives at a `new` site fed
 by zero registers), sized-clear idioms (Toolhelp32 memset past dwSize), and
 a branchless-vs-two-arm merge (Run's 0x41c/0x41d). The screen is the sweep;
 the adjudication is the retail dataflow read.

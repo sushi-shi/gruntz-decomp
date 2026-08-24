@@ -1049,7 +1049,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "gruntzsoundz"
-source = "src/Dsndmgr/GruntzSoundZ.cpp"
+source = "src/Dsndmgr/MidiManager.cpp"
 flags = "cpp"
 
 [[unit]]

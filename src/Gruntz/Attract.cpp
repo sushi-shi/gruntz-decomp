@@ -141,14 +141,14 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
         return 0;
     }
 
-    m_gameMgr->StopBankIfActive();
+    m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
         m_resChain->m_drawTarget->m_frontPair->m_surface->Fill(0);
     } else {
         f->RunFade(dur, lead, 0);
     }
-    m_gameMgr->StopBank0IfActive();
+    m_gameMgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -185,14 +185,14 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
         return 0;
     }
 
-    m_gameMgr->StopBankIfActive();
+    m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
         m_resChain->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(dur, lead, 0);
     }
-    m_gameMgr->StopBank0IfActive();
+    m_gameMgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -252,14 +252,14 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
         return 0;
     }
 
-    m_gameMgr->StopBankIfActive();
+    m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
         m_resChain->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(dur, lead, 0);
     }
-    m_gameMgr->StopBank0IfActive();
+    m_gameMgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -335,14 +335,14 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
         return 0;
     }
 
-    m_gameMgr->StopBankIfActive();
+    m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
         m_resChain->m_drawTarget->m_frontPair->m_surface->Fill(0);
     } else {
         f->RunFade(dur, lead, 0);
     }
-    m_gameMgr->StopBank0IfActive();
+    m_gameMgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }

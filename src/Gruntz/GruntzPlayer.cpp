@@ -20,7 +20,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>

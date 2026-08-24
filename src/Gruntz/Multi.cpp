@@ -12,7 +12,7 @@
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
@@ -633,16 +633,16 @@ i32 CMulti::PumpA() {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != 0) {
-                Mgr()->m_sound->PlayByName(name, 1);
+                Mgr()->m_midi->PlaySequence(name, 1);
             } else {
 
-                CGruntzSoundZ* snd = Mgr()->m_sound;
-                CGruntzSoundInnerZ* p = snd->FindBank(name);
-                if (p) {
-                    snd->m_pCurrent = p;
+                MidiManager* midi = Mgr()->m_midi;
+                MidiSequence* sequence = midi->FindSequence(name);
+                if (sequence) {
+                    midi->m_currentSequence = sequence;
                 }
-                if (Mgr()->m_sound->m_pCurrent) {
-                    Mgr()->m_sound->m_pCurrent->SetLoop(1);
+                if (Mgr()->m_midi->m_currentSequence) {
+                    Mgr()->m_midi->m_currentSequence->SetLooping(1);
                 }
             }
             m_ambientInitDone = 1;
@@ -2698,7 +2698,7 @@ i32 CMulti::WaitForOtherPlayers() {
             if (g_gameReg->m_musicEnabled != 0) {
                 char buf[0x40];
                 wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-                NetGameMgr()->m_sound->PlayByName(buf, 1);
+                NetGameMgr()->m_midi->PlaySequence(buf, 1);
             }
             return 1;
         }

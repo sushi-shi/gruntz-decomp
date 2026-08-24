@@ -575,7 +575,7 @@ i32 CDDrawPtrCollections::CreateRange(
         sprintf(buf, "%s%i", baseName, i);
         if (suffix != NULL) {
             if (suffix[0] != '.') {
-                strcat(buf, g_dot);
+                strcat(buf, g_singleDot);
             }
             strcat(buf, suffix);
         }

@@ -8,20 +8,20 @@
 A two-step member deref is one register in your build and two in retail:
 
 ```
-base:    mov ecx,[esi+0x48]      ; m_sound
-         mov ecx,[ecx+0x1c]      ; ->m_pCurrent   (same reg reused)
-target:  mov eax,[esi+0x48]      ; m_sound        (base kept separate)
-         mov ecx,[eax+0x1c]      ; ->m_pCurrent
+base:    mov ecx,[esi+0x48]      ; m_midi
+         mov ecx,[ecx+0x1c]      ; ->m_currentSequence   (same reg reused)
+target:  mov eax,[esi+0x48]      ; m_midi        (base kept separate)
+         mov ecx,[eax+0x1c]      ; ->m_currentSequence
 ```
 
 Everything else matches. The identical source expression in a SIBLING function may
 already match retail's two-register form (it did here: `CGruntzMgr::StopMusic`
-@0x8f6a0 with the same `m_sound->m_pCurrent ? ... : 0` ternary is byte-exact), which
+@0x8f6a0 with the same `m_midi->m_currentSequence ? ... : 0` ternary is byte-exact), which
 is what makes this look like an unsteerable context-dependent coin flip.
 
 ## Cause
 
-When the base subexpression is written inline (`m_sound->m_pCurrent`), cl5 treats it
+When the base subexpression is written inline (`m_midi->m_currentSequence`), cl5 treats it
 as a dead-on-arrival temp and is free to reuse its register for the loaded field.
 Whether it does depends on local pressure. Reading the base through a NAMED LOCAL
 gives it its own live range, so the base lands in its own register.
@@ -33,14 +33,14 @@ local must die where retail's register dies:
 
 ```cpp
 // before - cl collapses ecx <- ecx
-if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) && stopBank) {
-    m_sound->StopAll();
+if ((m_midi->m_currentSequence ? m_midi->m_currentSequence->IsPlaying() : 0) && pauseMusic) {
+    m_midi->PauseCurrent();
 }
 
 // after - matches retail (base in eax, field in ecx)
-CGruntzSoundZ* snd = m_sound;
-if ((snd->m_pCurrent ? snd->m_pCurrent->IsBusy() : 0) && stopBank) {
-    m_sound->StopAll();          // retail RELOADS here - do NOT use snd
+MidiManager* midi = m_midi;
+if ((midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0) && pauseMusic) {
+    m_midi->PauseCurrent();          // retail RELOADS here - do NOT use snd
 }
 ```
 

@@ -25,8 +25,8 @@
 #include <Io/SaveGame.h>
 #include <Rez/FrameClock.h>
 
-class CGruntzSoundZ;
-class CGruntzSoundInnerZ;
+class MidiManager;
+class MidiSequence;
 class CBattlezData;
 class CChatBoxOwner;
 class CFontConfig;
@@ -385,7 +385,7 @@ public:
     i32 m_lastScrollTimeY;
     i32 m_stepCountdown;
     i32 m_focusPlayerIndex;
-    CGruntzSoundInnerZ* m_savedZonedSound;
+    MidiSequence* m_savedMusicSequence;
     // retail `new CPlay` is push 0x520 (CGruntzMgr::TransitionState @0x8b960);
     // the ctor never touches this tail word.
     i32 m_reserved51c;
@@ -489,7 +489,7 @@ inline CPlay::CPlay() {
     m_snapshotActive = 0;
     m_ambientInitDone = 1;
     m_stepCountdown = 0;
-    m_savedZonedSound = NULL;
+    m_savedMusicSequence = NULL;
     m_worldReady = 0;
     m_dragSnapActive = 0;
     m_playerCommandPending = 0;

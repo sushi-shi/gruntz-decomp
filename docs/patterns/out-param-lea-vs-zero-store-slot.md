@@ -37,7 +37,7 @@ All three sites this entry named are now EXACT:
 | `CGrunt::EnsureStruckSlot` 0x57b70 | 88.22 | **100.00** | `CDDrawSurfaceMgr* world = g_gameReg->m_world;` - a NAMED local |
 
 The two in-tree EXACT controls the old entry cited (`CDDrawChildGroup::AttachSprite`
-0x159830, `CGruntzSoundZ::FindBank` 0x138730) are still EXACT with the caller-owned
+0x159830, `MidiManager::FindSequence` 0x138730) are still EXACT with the caller-owned
 spelling. They prove the tie exists, not that it is unbreakable: both orders cost the same
 5 Pentium issue slots (`mov [esp+disp8],imm32` carries both a displacement and an immediate,
 so it is unpairable either way), and which side of the tie cl lands on is decided by which

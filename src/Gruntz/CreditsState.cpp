@@ -16,7 +16,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
@@ -85,23 +85,23 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     }
     m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
 
-    CSymTab* midiz = SymTab2c()->ResolvePath("MIDIZ");
-    if (midiz) {
-        CParseSource* e = midiz->Insert("PLAY", REZ_TAG_XMI);
-        if (e) {
-            char* val = e->BeginParse();
-            if (val) {
-                m_mgr->m_sound->CreateBank(val, e->m_length, "CREDITZ");
+    CSymTab* midiTable = SymTab2c()->ResolvePath("MIDIZ");
+    if (midiTable) {
+        CParseSource* creditsEntry = midiTable->Insert("PLAY", REZ_TAG_XMI);
+        if (creditsEntry) {
+            char* creditsData = creditsEntry->BeginParse();
+            if (creditsData) {
+                m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->m_length, "CREDITZ");
             }
         }
     }
 
-    if (midiz) {
-        CParseSource* e2 = midiz->Insert("MONOLITH", REZ_TAG_XMI);
-        if (e2) {
-            char* val = e2->BeginParse();
-            if (val) {
-                m_mgr->m_sound->CreateBank(val, e2->m_length, "MONOLITH");
+    if (midiTable) {
+        CParseSource* monolithEntry = midiTable->Insert("MONOLITH", REZ_TAG_XMI);
+        if (monolithEntry) {
+            char* monolithData = monolithEntry->BeginParse();
+            if (monolithData) {
+                m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->m_length, "MONOLITH");
             }
         }
     }
@@ -157,8 +157,8 @@ i32 CCreditsState::EnterState(GameStateId) {
 
 RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId unused) {
-    owner()->m_sound->IsPlaying();
-    owner()->m_sound->StopAndFlush();
+    owner()->m_midi->EndCurrent();
+    owner()->m_midi->ClearSequences();
     m_stateBank = stateMgr()->ResolvePath("STATEZ_ATTRACT");
     RunTitleSeq("TITLE", 0, 0, 1, 0);
     return 1;
@@ -208,13 +208,13 @@ i32 CCreditsState::Render() {
     v4->m_backPair->BltSelf(v4->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
-        owner()->m_sound->PlayByName("CREDITZ", 1);
+        owner()->m_midi->PlaySequence("CREDITZ", 1);
         m_musicStarted = 1;
     }
 
     if (m_fxEnabled) {
-        CGruntzSoundInnerZ* s = owner()->m_sound->FindBank("MONOLITH");
-        if (s && !s->IsBusy()) {
+        MidiSequence* monolithSequence = owner()->m_midi->FindSequence("MONOLITH");
+        if (monolithSequence && !monolithSequence->IsPlaying()) {
             LoadCreditzAssets();
         }
     }
@@ -462,27 +462,28 @@ void CCreditsState::LoadCreditzAssets() {
     if (rising) {
         m_flashTimer = 0;
         m_fadeCountdown = 3000;
-        CGruntzSoundInnerZ* cred = m_mgr->m_sound->FindBank("CREDITZ");
-        if (cred != NULL && cred->IsBusy() != 0) {
-            cred->StopAll();
+        MidiSequence* creditsSequence = m_mgr->m_midi->FindSequence("CREDITZ");
+        if (creditsSequence != NULL && creditsSequence->IsPlaying() != 0) {
+            creditsSequence->Pause();
         }
-        CGruntzSoundInnerZ* mono = m_mgr->m_sound->FindBank("MONOLITH");
-        if (mono != NULL) {
-            g_gameReg->m_sound->m_pCurrent = mono;
-            g_gameReg->m_sound->Restart(0);
+        MidiSequence* monolithSequence = m_mgr->m_midi->FindSequence("MONOLITH");
+        if (monolithSequence != NULL) {
+            g_gameReg->m_midi->m_currentSequence = monolithSequence;
+            g_gameReg->m_midi->RestartCurrent(0);
         }
     } else {
         m_fadeCountdown = 0;
-        CGruntzSoundInnerZ* current = m_mgr->m_sound->m_pCurrent;
-        CGruntzSoundInnerZ* mono = g_gameReg->m_sound->FindBank("MONOLITH");
-        if (current == mono && mono != NULL && mono->IsBusy() != 0) {
-            mono->Stop();
+        MidiSequence* currentSequence = m_mgr->m_midi->m_currentSequence;
+        MidiSequence* monolithSequence = g_gameReg->m_midi->FindSequence("MONOLITH");
+        if (currentSequence == monolithSequence && monolithSequence != NULL
+            && monolithSequence->IsPlaying() != 0) {
+            monolithSequence->End();
         }
-        CGruntzSoundInnerZ* cred = m_mgr->m_sound->FindBank("CREDITZ");
-        if (cred != NULL && current != cred) {
-            m_mgr->m_sound->m_pCurrent = cred;
-            if (cred->IsBusy() == 0) {
-                cred->StopBank(0);
+        MidiSequence* creditsSequence = m_mgr->m_midi->FindSequence("CREDITZ");
+        if (creditsSequence != NULL && currentSequence != creditsSequence) {
+            m_mgr->m_midi->m_currentSequence = creditsSequence;
+            if (creditsSequence->IsPlaying() == 0) {
+                creditsSequence->Resume(0);
             }
         }
     }

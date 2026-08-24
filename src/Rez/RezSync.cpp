@@ -16,7 +16,7 @@
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/CheatMgr.h>
@@ -191,11 +191,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_savedModeSize.cx = SCREEN_W_PX;
         m_savedModeSize.cy = SCREEN_H_PX;
     }
-    i32 vMusVol = m_settings->GetValueDword("Music Volume", 0x64);
-    i32 vSndVol = m_settings->GetValueDword("Sound Volume", 0x3c);
+    i32 musicVolume = m_settings->GetValueDword("Music Volume", 0x64);
+    i32 soundVolume = m_settings->GetValueDword("Sound Volume", 0x3c);
     i32 vVoiVol = m_settings->GetValueDword("Voice Volume", 0x50);
     i32 vScroll = m_settings->GetValueDword("Scroll Speed", 0x14);
-    m_soundVolume = vSndVol;
+    m_soundVolume = soundVolume;
     m_voiceVolume = vVoiVol;
 
     m_scrollSpeed = vScroll;
@@ -310,11 +310,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_symParser = new CSymParser;
     {
-        CString fn = GetRezPath();
+        CString resourcePath = GetRezPath();
 
-        i32 ok =
-            m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(fn)), 1, 0) != 0;
-        if (!ok) {
+        i32 parsed = m_symParser->ParseBuffer(
+                         const_cast<char*>(static_cast<const char*>(resourcePath)),
+                         1,
+                         0
+                     )
+                     != 0;
+        if (!parsed) {
             ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
             return 0;
         }
@@ -345,16 +349,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         }
     }
 
-    m_sound = new CGruntzSoundZ;
+    m_midi = new MidiManager;
     g_ailMidiDriver = NULL;
-    if (!m_sound->Init(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
+    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40c);
         return 0;
     }
     if (g_disableAudio == 0 && g_disableMusic == 0) {
-        m_sound->SetXMidiVolume(vMusVol);
+        m_midi->SetMasterVolume(musicVolume);
     } else {
-        m_sound->m_enabled = 0;
+        m_midi->m_midiAvailable = 0;
     }
 
     if (m_inputState) {
@@ -362,7 +366,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_inputState = NULL;
     }
     m_inputState = new CWorldSoundSet;
-    if (!m_inputState->Init(world->m_soundRegistry, vSndVol)) {
+    if (!m_inputState->Init(world->m_soundRegistry, soundVolume)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40d);
         return 0;
     }
@@ -378,7 +382,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_inputState->Stop();
         }
     }
-    SetSoundVolume(vSndVol);
+    SetSoundVolume(soundVolume);
 
     SetVoiceVolume(vVoiVol);
     m_scrollSpeed = vScroll;

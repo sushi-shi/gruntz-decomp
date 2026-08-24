@@ -20,7 +20,7 @@ GZ_ENUM_FORWARD(MovieId);
 
 class CDialog;
 
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -112,7 +112,7 @@ public:
     virtual i32 PerFrameTick() OVERRIDE;
 
     void RefreshGameClock();
-    void AdvanceFrame(i32 doDraw, i32 unused);
+    void HandleAppActivation(i32 active, i32 unused);
     i32 CheckPlayState();
     i32 RestoreVideoMode(i32 save);
     i32 SetVideoMode(i32 w, i32 h, i32 flag);
@@ -166,13 +166,13 @@ public:
     i32 LoadWorldMode(ColorDepth mode);
     void OnWorldModeLoaded(ColorDepth mode);
     i32 ResetWorldState();
-    void StopBankIfActive();
-    void StopBank0IfActive();
+    void PauseMusicIfEnabled();
+    void ResumeMusicIfEnabled();
 
     i32 SetAssetRoot(char* path);
 
-    void MuteMusicIfActive(i32 ms);
-    void RestoreMusicVolumeIfActive(i32 ms);
+    void MuteMusicIfActive(i32 durationMs);
+    void RestoreMusicVolumeIfActive(i32 durationMs);
 
     i32 RegisterSetSkillDebugCmd();
 
@@ -181,7 +181,7 @@ public:
     i32 SetVoiceVolume(i32 v);
     void SetSoundVolume(i32 v);
 
-    void UnloadSoundChain();
+    void StopAudioPlayback();
     void ClearOptionsSlots();
     RVA(0x000928c0, 0x23)
     CString GetWorldFileName() {
@@ -198,7 +198,7 @@ public:
     void EnterModalUI(const char* msg);
 
     i32 ExitModalUI(class CDialog* dlg, i32 notify);
-    i32 FinishLevel(i32 full, i32 stopBank);
+    i32 FinishLevel(i32 pauseGame, i32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
     i32 SaveState(CFileMemBase* ar);
     i32 LoadState(CFileMemBase* ar);
@@ -226,7 +226,7 @@ public:
     void SetGameClock(i32 now, i32 delta, i32 abs);
     void ResetClockGlobals();
     i32 TickStateMgrs();
-    void SetRunState(i32 v);
+    void SetSoundEnabled(i32 enabled);
     i32 CheckSavedMode();
     i32 IsLobbyHostReady();
     void OnMusicMuteBegin();
@@ -241,7 +241,7 @@ public:
 
     virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) OVERRIDE;
 
-    void SetSoundLevelState(i32 loaded);
+    void SetMusicEnabled(i32 enabled);
     i32 RunLoadGameDialog();
     i32 Quicksave();
 
@@ -308,7 +308,7 @@ public:
     CFaderMgr* m_faderMgr;
     CCheatMgr* m_cheatMgr;
 
-    CGruntzSoundZ* m_sound;
+    MidiManager* m_midi;
     i32 m_reserved4c;
     CShadeTableCache* m_shadeCache;
 

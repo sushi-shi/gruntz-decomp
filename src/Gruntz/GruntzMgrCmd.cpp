@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/ErrorStringId.h>
@@ -273,8 +273,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         ShowToggleMessage("Elapsed Time Display", g_debugDisplayFlags & 0x80);
                         return 1;
                     case CHEAT_MONOLITH: {
-                        CPlay* _g = PickPlayOrPausedState();
-                        if (!_g) {
+                        CPlay* playState = PickPlayOrPausedState();
+                        if (!playState) {
                             return 1;
                         }
                         if (!LoadMonologoSprite()) {
@@ -286,12 +286,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 1;
                         }
                         if (g_monologoShown) {
-                            m_sound->PlayByName("MONOLITH", 1);
+                            m_midi->PlaySequence("MONOLITH", 1);
                             return 1;
                         }
-                        char buf[128];
-                        wsprintfA(buf, "AMBIENT%d", _g->GetAmbientId());
-                        m_sound->PlayByName(buf, 1);
+                        char sequenceName[128];
+                        wsprintfA(sequenceName, "AMBIENT%d", playState->GetAmbientId());
+                        m_midi->PlaySequence(sequenceName, 1);
                         return 1;
                     }
                     case CHEAT_NO_OP:
@@ -1029,32 +1029,32 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 return 1;
             }
             m_musicEnabled ^= 1;
-            i32 v = m_musicEnabled;
-            i32 pl = CheckPlayState();
-            if (!pl) {
+            i32 enabled = m_musicEnabled;
+            i32 isPlayState = CheckPlayState();
+            if (!isPlayState) {
                 if (m_curState->Update() != GAMESTATE_CREDITS_OVER_CURRENT
                     && m_curState->Update() != GAMESTATE_MENU) {
                     return 1;
                 }
             }
-            if (v) {
-                m_sound->Restart(1);
+            if (enabled) {
+                m_midi->RestartCurrent(1);
             } else {
-                m_sound->StopAll();
+                m_midi->PauseCurrent();
             }
             return 1;
         }
         case CMD_TOGGLE_SOUND: {
             if (m_world) {
-                SoundStream* p = m_world->m_soundRegistry->m_soundStream;
-                if (p) {
-                    p->StopAllStreams();
+                SoundStream* soundStream = m_world->m_soundRegistry->m_soundStream;
+                if (soundStream) {
+                    soundStream->StopAllStreams();
                 }
             }
             m_soundEnabled ^= 1;
             g_sndEnabled = m_soundEnabled;
-            i32 v = m_soundEnabled;
-            if (v != 0) {
+            i32 soundEnabled = m_soundEnabled;
+            if (soundEnabled != 0) {
                 m_inputState->Resume();
             } else {
                 m_inputState->Stop();

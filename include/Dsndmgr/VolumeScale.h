@@ -5,7 +5,7 @@
 
 // The two volume scales the sound code converts between.
 //
-// Both directions are written out in GruntzSoundZ, which is what fixes the
+// Both directions are written out in MidiManager, which is what fixes the
 // pair - percent to MIDI is `volume * MIDI_VOLUME_MAX / VOLUME_PCT_MAX` with a
 // `>= VOLUME_PCT_MAX -> MIDI_VOLUME_MAX` clamp, and MIDI to percent is the
 // exact inverse with the clamp the other way round. SoundBuffer carries the

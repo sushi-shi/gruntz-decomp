@@ -532,7 +532,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - directsoundmgr (`cpp`) — src/Dsndmgr/SoundBuffer.cpp
 - soundvoicelist (`cpp`) — src/Dsndmgr/IntrusiveList.cpp
 - soundstream (`cpp`) — src/Dsndmgr/SoundStream.cpp
-- gruntzsoundz (`cpp`) — src/Dsndmgr/GruntzSoundZ.cpp
+- gruntzsoundz (`cpp`) — src/Dsndmgr/MidiManager.cpp
 - winapimodule (`cpp`) — src/Utils/WinAPIModule.cpp
 - winapicdrom (`cpp`) — src/Utils/WinAPICdRom.cpp
 - chatbox (`cpp-rtti`) — src/Gruntz/ChatBox.cpp

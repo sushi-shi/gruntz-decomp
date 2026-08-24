@@ -31,7 +31,7 @@ inline i32 MidiVolumeToPercent(i32 v) {
     return v * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
 }
 
-i32 CGruntzSoundZ::GetXMidiVolume() {
+i32 MidiManager::GetMasterVolume() {
     if (g_ailMidiDriver == NULL) { return VOLUME_PCT_MAX; }
     return MidiVolumeToPercent(AIL_XMIDI_master_volume(g_ailMidiDriver));
 }
@@ -47,7 +47,7 @@ mov  eax,edx        ; the "redundant" move the hand-expanded form never emits
 ; base before: the same six instructions with EAX and EDX/ECX transposed
 ```
 
-Steerable. `CGruntzSoundZ::GetXMidiVolume` 0x1389c0 91.30 -> **100.00 EXACT** in
+Steerable. `MidiManager::GetMasterVolume` 0x1389c0 91.30 -> **100.00 EXACT** in
 one build, after five in-function A/Bs and eighteen declaration-count probes were
 byte-flat. The inverse conversion (percent -> MIDI) occurs verbatim twice in the
 same TU and is what licensed the helper; both of those sites are already 100.00 so

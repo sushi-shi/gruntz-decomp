@@ -20,7 +20,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>
@@ -576,19 +576,19 @@ i32 CPlay::Render() {
         if (m_ambientInitDone == 0) {
             if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
                 >= m_ambientTiming.m_interval.m_v) {
-                i32 id = GetAmbientId();
-                char buf[0x40];
-                wsprintfA(buf, "AMBIENT%d", id);
+                i32 ambientId = GetAmbientId();
+                char sequenceName[0x40];
+                wsprintfA(sequenceName, "AMBIENT%d", ambientId);
                 if (g_gameReg->m_musicEnabled != 0) {
-                    m_mgr->m_sound->PlayByName(buf, 1);
+                    m_mgr->m_midi->PlaySequence(sequenceName, 1);
                 } else {
-                    CGruntzSoundZ* snd = m_mgr->m_sound;
-                    CGruntzSoundInnerZ* found = snd->FindBank(buf);
-                    if (found != NULL) {
-                        snd->m_pCurrent = found;
+                    MidiManager* midi = m_mgr->m_midi;
+                    MidiSequence* sequence = midi->FindSequence(sequenceName);
+                    if (sequence != NULL) {
+                        midi->m_currentSequence = sequence;
                     }
-                    if (m_mgr->m_sound->m_pCurrent != NULL) {
-                        m_mgr->m_sound->m_pCurrent->SetLoop(1);
+                    if (m_mgr->m_midi->m_currentSequence != NULL) {
+                        m_mgr->m_midi->m_currentSequence->SetLooping(1);
                     }
                 }
                 m_ambientInitDone = 1;
@@ -828,19 +828,19 @@ i32 CPlay::Render() {
             if (m_ambientInitDone == 0) {
                 if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
                     >= m_ambientTiming.m_interval.m_v) {
-                    i32 id = GetAmbientId();
-                    char buf[0x40];
-                    wsprintfA(buf, "AMBIENT%d", id);
+                    i32 ambientId = GetAmbientId();
+                    char sequenceName[0x40];
+                    wsprintfA(sequenceName, "AMBIENT%d", ambientId);
                     if (g_gameReg->m_musicEnabled != 0) {
-                        m_mgr->m_sound->PlayByName(buf, 1);
+                        m_mgr->m_midi->PlaySequence(sequenceName, 1);
                     } else {
-                        CGruntzSoundZ* snd = m_mgr->m_sound;
-                        CGruntzSoundInnerZ* found = snd->FindBank(buf);
-                        if (found != NULL) {
-                            snd->m_pCurrent = found;
+                        MidiManager* midi = m_mgr->m_midi;
+                        MidiSequence* sequence = midi->FindSequence(sequenceName);
+                        if (sequence != NULL) {
+                            midi->m_currentSequence = sequence;
                         }
-                        if (m_mgr->m_sound->m_pCurrent != NULL) {
-                            m_mgr->m_sound->m_pCurrent->SetLoop(1);
+                        if (m_mgr->m_midi->m_currentSequence != NULL) {
+                            m_mgr->m_midi->m_currentSequence->SetLooping(1);
                         }
                     }
                     m_ambientInitDone = 1;
@@ -1118,7 +1118,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (grid != NULL) {
         grid->StopAllStreams();
     }
-    self->m_mgr->m_sound->StopAndFlush();
+    self->m_mgr->m_midi->ClearSequences();
     self->m_mgr->m_inputState->Teardown();
     self->m_mgr->m_cueSink->PauseAllVoices();
     self->m_mgr->m_cueSink->ClearSprites();
@@ -1735,7 +1735,7 @@ void CPlay::FreeListTeardown() {
             reg->m_soundStream->StopAllStreams();
         }
     }
-    m_mgr->m_sound->StopAndFlush();
+    m_mgr->m_midi->ClearSequences();
     m_mgr->m_inputState->Teardown();
     m_mgr->m_cueSink->ClearSprites();
     g_gameReg->m_cmdGrid->DestroyAllAnims();
@@ -1808,7 +1808,7 @@ void CPlay::ModeCleanup() {
         m_world->m_soundRegistry->ClearMap();
     }
     if (m_mgr) {
-        m_mgr->m_sound->StopAndFlush();
+        m_mgr->m_midi->ClearSequences();
 
         m_mgr->m_inputState->Teardown();
     }
@@ -2308,7 +2308,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'M' && (g_spawnConfig->m_edgeKeys & 0x20)) {
-        g_gameReg->SetSoundLevelState(g_gameReg->m_musicEnabled == 0);
+        g_gameReg->SetMusicEnabled(g_gameReg->m_musicEnabled == 0);
         return 1;
     }
 
@@ -2340,7 +2340,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == 'S') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
-            g_gameReg->SetRunState(g_gameReg->m_soundEnabled == 0);
+            g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == 0);
             return 1;
         }
         if (level->m_hitTestDisabled != 0) {
@@ -3672,7 +3672,7 @@ i32 CPlay::CompleteLevel() {
         if (reg->m_soundStream) {
             reg->m_soundStream->StopAllStreams();
         }
-        m_mgr->m_sound->StopAndFlush();
+        m_mgr->m_midi->ClearSequences();
         m_mgr->m_inputState->Teardown();
         m_mgr->m_cueSink->ClearSprites();
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -6097,30 +6097,30 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 // EMITTED order, makes cl hoist those three instructions into the predecessor.
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
-    char buf[0x40];
+    char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_ambientTiming.m_interval.m_lo = AMBIENT_INTRO_INTERVAL_MS;
         m_ambientTiming.m_interval.m_hi = 0;
         m_ambientTiming.m_start.m_lo = g_frameTime;
         m_ambientTiming.m_start.m_hi = 0;
-        wsprintfA(buf, "INTRO%d", GetAmbientId());
+        wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != 0) {
-            m_mgr->m_sound->PlayByName(buf, 0);
+            m_mgr->m_midi->PlaySequence(sequenceName, 0);
         }
         m_ambientInitDone = 0;
     } else {
-        wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        CGruntzSoundZ* snd = m_mgr->m_sound;
-        CGruntzSoundInnerZ* h = snd->FindBank(buf);
-        if (h != NULL) {
-            snd->m_pCurrent = h;
+        wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
+        MidiManager* midi = m_mgr->m_midi;
+        MidiSequence* sequence = midi->FindSequence(sequenceName);
+        if (sequence != NULL) {
+            midi->m_currentSequence = sequence;
         }
-        if (m_mgr->m_sound->m_pCurrent != NULL) {
-            m_mgr->m_sound->m_pCurrent->SetLoop(1);
+        if (m_mgr->m_midi->m_currentSequence != NULL) {
+            m_mgr->m_midi->m_currentSequence->SetLooping(1);
         }
-        CGruntzMgr* reg = g_gameReg;
-        if (reg->m_musicEnabled != 0 && reg->m_gameMode == GAMEMODE_REPLAY) {
-            m_mgr->m_sound->PlayByName(buf, 1);
+        CGruntzMgr* gameManager = g_gameReg;
+        if (gameManager->m_musicEnabled != 0 && gameManager->m_gameMode == GAMEMODE_REPLAY) {
+            m_mgr->m_midi->PlaySequence(sequenceName, 1);
         }
         m_ambientTiming.m_start.m_lo = 0;
         m_ambientTiming.m_interval.m_lo = 0;
@@ -6714,20 +6714,22 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
             break;
         case SERIAL_POSTLOAD: {
             if (m_gridHasSprite) {
-                CGruntzMgr* w = m_mgr;
-                i32 id = g_curPlayer;
-                CShadeTable* spr =
-                    w->m_spriteFactory->GetSel(IDX(w->m_options[id].m_colorIndex), 0);
-                if (spr == NULL) {
-                    spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                CGruntzMgr* gameManager = m_mgr;
+                i32 playerIndex = g_curPlayer;
+                CShadeTable* shadeTable = gameManager->m_spriteFactory->GetSel(
+                    IDX(gameManager->m_options[playerIndex].m_colorIndex),
+                    0
+                );
+                if (shadeTable == NULL) {
+                    shadeTable = g_gameReg->m_spriteFactory->GetSel(1, 0);
                 }
                 m_grid->SetAllTypes(SHADE_PAL_16);
-                m_grid->SetAllFormats(spr);
+                m_grid->SetAllFormats(shadeTable);
             }
-            char buf[0x40];
-            wsprintfA(buf, "AMBIENT%d", GetAmbientId());
+            char sequenceName[0x40];
+            wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled) {
-                m_mgr->m_sound->PlayByName(buf, 1);
+                m_mgr->m_midi->PlaySequence(sequenceName, 1);
             }
             m_ambientInitDone = 1;
             break;
@@ -7130,26 +7132,26 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
 RVA(0x000d88f0, 0x44)
 void CPlay::RegionEnter() {
-    if (m_savedZonedSound == NULL) {
-        CGruntzMgr* w = m_mgr;
-        m_savedZonedSound = w->m_sound->m_pCurrent;
-        w->m_sound->StopAll();
+    if (m_savedMusicSequence == NULL) {
+        CGruntzMgr* gameManager = m_mgr;
+        m_savedMusicSequence = gameManager->m_midi->m_currentSequence;
+        gameManager->m_midi->PauseCurrent();
     }
     if (g_gameReg->m_musicEnabled != 0) {
-        m_mgr->m_sound->PlayByName("CURSE", 0);
+        m_mgr->m_midi->PlaySequence("CURSE", 0);
     }
 }
 
 RVA(0x000d8960, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0 && m_region3Gate == 0
-        && m_savedZonedSound != NULL) {
-        m_mgr->m_sound->IsPlaying();
-        m_mgr->m_sound->m_pCurrent = m_savedZonedSound;
+        && m_savedMusicSequence != NULL) {
+        m_mgr->m_midi->EndCurrent();
+        m_mgr->m_midi->m_currentSequence = m_savedMusicSequence;
         if (g_gameReg->m_musicEnabled != 0) {
-            m_mgr->m_sound->Restart(1);
+            m_mgr->m_midi->RestartCurrent(1);
         }
-        m_savedZonedSound = NULL;
+        m_savedMusicSequence = NULL;
     }
 }
 

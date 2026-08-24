@@ -18,7 +18,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>
@@ -274,7 +274,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
 
 RVA(0x000dba30, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {
-    m_mgr->m_sound->StopAndFlush();
+    m_mgr->m_midi->ClearSequences();
 
     CSymTab* levelSet = m_levelBank->ResolvePath("MIDIZ");
     if (levelSet) {
@@ -282,28 +282,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "AMBIENT0");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "AMBIENT0");
             }
         }
         e = levelSet->Insert("AMBIENT1", REZ_TAG_XMI);
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "AMBIENT1");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "AMBIENT1");
             }
         }
         e = levelSet->Insert("INTRO0", REZ_TAG_XMI);
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "INTRO0");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "INTRO0");
             }
         }
         e = levelSet->Insert("INTRO1", REZ_TAG_XMI);
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "INTRO1");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "INTRO1");
             }
         }
     }
@@ -314,21 +314,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "POWERUP");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "POWERUP");
             }
         }
         e = gameSet->Insert("CURSE", REZ_TAG_XMI);
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "CURSE");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "CURSE");
             }
         }
         e = gameSet->Insert("MONOLITH", REZ_TAG_XMI);
         if (e) {
             char* res = e->BeginParse();
             if (res) {
-                m_mgr->m_sound->CreateBank(res, e->m_length, "MONOLITH");
+                m_mgr->m_midi->LoadBuffer(res, e->m_length, "MONOLITH");
             }
         }
     }

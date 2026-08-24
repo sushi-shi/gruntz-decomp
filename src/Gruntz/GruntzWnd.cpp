@@ -2,7 +2,7 @@
 
 #include <Gruntz/GruntzWnd.h>
 
-#include <Dsndmgr/GruntzSoundZ.h>
+#include <Dsndmgr/MidiManager.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Net/NetLobby.h>
@@ -68,10 +68,10 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (mgr == NULL) {
                 return 1;
             }
-            if (mgr->m_sound == NULL) {
+            if (mgr->m_midi == NULL) {
                 return 1;
             }
-            EmptyMsgHook(wParam, lParam);
+            IgnoreMciNotification(wParam, lParam);
             if (wParam != MCI_NOTIFY_SUCCESSFUL) {
                 return 1;
             }
@@ -176,7 +176,7 @@ RVA(0x00094b20, 0x49)
 i32 CGruntzWnd::OnActivateApp(WPARAM wParam, LPARAM lParam) {
     CGruntzMgr* mgr = GameMgr();
     if (mgr) {
-        mgr->AdvanceFrame(wParam, lParam);
+        mgr->HandleAppActivation(wParam, lParam);
     }
     if (!wParam) {
         while (ShowCursor(TRUE) < 0) {
@@ -189,7 +189,7 @@ RVA(0x00094b90, 0x1b)
 i32 CGruntzWnd::OnClose() {
     CGruntzMgr* mgr = GameMgr();
     if (mgr) {
-        mgr->UnloadSoundChain();
+        mgr->StopAudioPlayback();
     }
     return CGameWnd::OnClose();
 }

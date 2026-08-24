@@ -199,7 +199,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 EnableWindow(g_optHwndVoice, 0);
                 EnableWindow(g_optHwndVoiceVolume, 0);
             }
-            if (g_disableMusic != 0 || g_gameReg->m_sound->m_enabled == 0) {
+            if (g_disableMusic != 0 || g_gameReg->m_midi->m_midiAvailable == 0) {
                 EnableWindow(g_optHwndSpeech, 0);
                 EnableWindow(g_optHwndMidiVolume, 0);
             }
@@ -219,7 +219,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     g_savedSoundEnabled = g_gameReg->m_soundEnabled;
     g_savedVoiceVolume = g_gameReg->m_voiceVolume;
     g_savedVoiceEnabled = g_gameReg->m_isVoiceEnabled;
-    g_savedMidiVolume = g_gameReg->m_sound->GetXMidiVolume();
+    g_savedMidiVolume = g_gameReg->m_midi->GetMasterVolume();
     g_savedMusicEnabled = g_gameReg->m_musicEnabled;
     g_savedScrollSpeed = g_gameReg->m_scrollSpeed;
     g_unusedMusicEnabledSnapshot = g_gameReg->m_musicEnabled;
@@ -233,7 +233,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
     ConfigureDialogScrollBar(hDlg, 0x476, g_gameReg->m_voiceVolume, 0x50);
     CheckDlgButton(hDlg, 0x471, g_gameReg->m_musicEnabled);
-    ConfigureDialogScrollBar(hDlg, 0x472, g_gameReg->m_sound->GetXMidiVolume(), 0x64);
+    ConfigureDialogScrollBar(hDlg, 0x472, g_gameReg->m_midi->GetMasterVolume(), 0x64);
     ConfigureDialogScrollBar(hDlg, 0x478, g_gameReg->m_scrollSpeed, 0x64);
 }
 
@@ -253,7 +253,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
-            g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
+            g_gameReg->SetSoundEnabled(IsDlgButtonChecked(hDlg, 0x46d));
             i32 mv = GetDialogScrollPosition(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
                 g_gameReg->SetSoundVolume(mv);
@@ -264,11 +264,11 @@ void ReadMenuOptionsDialog(HWND hDlg) {
                 g_gameReg->SetVoiceVolume(sv);
             }
         }
-        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
-            g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
+        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_midi->m_midiAvailable != 0) {
+            g_gameReg->SetMusicEnabled(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = GetDialogScrollPosition(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
-                g_gameReg->m_sound->SetXMidiVolume(pv);
+                g_gameReg->m_midi->SetMasterVolume(pv);
             }
         }
     }
@@ -288,14 +288,14 @@ void ApplyGameOptions() {
     g_videoResolutionMode = g_savedResolutionMode;
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
-            g_gameReg->SetRunState(g_savedSoundEnabled);
+            g_gameReg->SetSoundEnabled(g_savedSoundEnabled);
             g_gameReg->SetSoundVolume(g_savedSoundVolume);
             g_gameReg->m_isVoiceEnabled = g_savedVoiceEnabled;
             g_gameReg->SetVoiceVolume(g_savedVoiceVolume);
         }
-        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_sound->m_enabled != 0) {
-            g_gameReg->SetSoundLevelState(g_savedMusicEnabled);
-            g_gameReg->m_sound->SetXMidiVolume(g_savedMidiVolume);
+        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_midi->m_midiAvailable != 0) {
+            g_gameReg->SetMusicEnabled(g_savedMusicEnabled);
+            g_gameReg->m_midi->SetMasterVolume(g_savedMidiVolume);
         }
     }
     g_gameReg->m_scrollSpeed = g_savedScrollSpeed;
@@ -305,7 +305,7 @@ RVA(0x00036d00, 0x40)
 void OnToggleMusicOption(HWND hWnd) {
     if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x46d);
-        g_gameReg->SetRunState(state);
+        g_gameReg->SetSoundEnabled(state);
         EnableWindow(GetDlgItem(hWnd, 0x470), state);
     }
 }
@@ -323,7 +323,7 @@ RVA(0x00036da0, 0x40)
 void OnToggleSpeechOption(HWND hWnd) {
     if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x471);
-        g_gameReg->SetSoundLevelState(state);
+        g_gameReg->SetMusicEnabled(state);
         EnableWindow(GetDlgItem(hWnd, 0x472), state);
     }
 }
@@ -481,7 +481,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     si.nPos = newpos;
     SetScrollInfo(hCtrl, SB_CTL, &si, TRUE);
     if (hCtrl == GetDlgItem(hDlg, 0x472)) {
-        g_gameReg->m_sound->SetXMidiVolume(newpos);
+        g_gameReg->m_midi->SetMasterVolume(newpos);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x478)) {

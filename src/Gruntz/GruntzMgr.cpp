@@ -208,7 +208,7 @@ CGruntzMgr::CGruntzMgr() {
     m_reserved3c = NULL;
     m_faderMgr = NULL;
     m_cheatMgr = NULL;
-    m_sound = NULL;
+    m_midi = NULL;
     m_reserved4c = 0;
     m_shadeCache = NULL;
     m_reserved64 = 0;
@@ -305,8 +305,8 @@ void CGruntzMgr::Close() {
         m_settings->SetValueDword("High Detail", m_isHighDetail);
         m_settings->SetValueDword("Effects", m_isEffectsEnabled);
         m_settings->SetValueDword("Disable Joystick", g_disableJoystick);
-        if (m_sound) {
-            m_settings->SetValueDword("Music Volume", m_sound->GetXMidiVolume());
+        if (m_midi) {
+            m_settings->SetValueDword("Music Volume", m_midi->GetMasterVolume());
         }
         if (m_cueSink) {
             m_settings->SetValueDword("Voice Volume", m_cueSink->m_voiceVolume);
@@ -382,9 +382,9 @@ void CGruntzMgr::Close() {
         delete m_cheatMgr;
         m_cheatMgr = NULL;
     }
-    if (m_sound) {
-        delete m_sound;
-        m_sound = NULL;
+    if (m_midi) {
+        delete m_midi;
+        m_midi = NULL;
     }
     if (m_inputState) {
         delete m_inputState;
@@ -457,7 +457,7 @@ RVA_COMPGEN(0x00085ed0, 0x4a, ??1CWorldSoundSet@@QAE@XZ)
 
 RVA_COMPGEN(0x00085fc0, 0x57, ??1DirectInputMgr2@@QAE@XZ)
 
-RVA_COMPGEN(0x00086040, 0x49, ??1CGruntzSoundZ@@QAE@XZ)
+RVA_COMPGEN(0x00086040, 0x49, ??1MidiManager@@QAE@XZ)
 
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::UpdateScoreHud() {
@@ -1232,18 +1232,18 @@ BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM
 }
 
 RVA(0x0008e980, 0x11e)
-i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
+i32 CGruntzMgr::FinishLevel(i32 pauseGame, i32 pauseMusic) {
     if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
 
-        i32 done = 0;
-        CNetCmdSlot* s = static_cast<CMulti*>(m_curState)->m_session->m_slots;
-        for (i32 d = 4; d != 0; d--) {
-            if (s != NULL && s->m_state == NETSLOT_ACTIVE) {
-                done++;
+        i32 activePlayers = 0;
+        CNetCmdSlot* slot = static_cast<CMulti*>(m_curState)->m_session->m_slots;
+        for (i32 remainingSlots = 4; remainingSlots != 0; remainingSlots--) {
+            if (slot != NULL && slot->m_state == NETSLOT_ACTIVE) {
+                activePlayers++;
             }
-            s++;
+            slot++;
         }
-        if (done > 0) {
+        if (activePlayers > 0) {
             m_frameGate = 1;
 
             (static_cast<CMulti*>(m_curState))->OnPauseChannel();
@@ -1252,7 +1252,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
     }
 
-    if (full) {
+    if (pauseGame) {
         if (m_inputState) {
             m_inputState->Stop();
         }
@@ -1262,19 +1262,19 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
                 sub->m_soundStream->StopAllStreams();
             }
         }
-        CGruntzSoundZ* snd = m_sound;
-        if ((snd->m_pCurrent ? snd->m_pCurrent->IsBusy() : 0) && stopBank) {
-            m_sound->StopAll();
+        MidiManager* midi = m_midi;
+        if ((midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0) && pauseMusic) {
+            m_midi->PauseCurrent();
         }
         m_curState->PauseGame();
     }
-    if (full) {
+    if (pauseGame) {
         return 1;
     }
 
     if (m_musicEnabled) {
         if (CheckPlayState()) {
-            m_sound->StopBank(1);
+            m_midi->ResumeCurrent(1);
         }
     }
     if (m_soundEnabled) {
@@ -1669,12 +1669,12 @@ void CGruntzMgr::RefreshGameClock() {
 }
 
 RVA(0x0008f6a0, 0x7d)
-void CGruntzMgr::AdvanceFrame(i32 doDraw, i32) {
+void CGruntzMgr::HandleAppActivation(i32 active, i32 unused) {
     if (IsActive() == 0) {
         return;
     }
 
-    if (doDraw) {
+    if (active) {
         RefreshGameClock();
         if (m_frameGate != 0) {
             return;
@@ -1686,33 +1686,33 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32) {
             && (m_curState == NULL || m_curState->Update() != GAMESTATE_CREDITS)) {
             return;
         }
-        m_sound->StopBank(1);
+        m_midi->ResumeCurrent(1);
         return;
     }
 
     if (m_musicEnabled == 0) {
         return;
     }
-    if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) == false) {
+    if ((m_midi->m_currentSequence ? m_midi->m_currentSequence->IsPlaying() : 0) == false) {
         return;
     }
-    m_sound->StopAll();
+    m_midi->PauseCurrent();
 }
 
 RVA(0x0008f740, 0x46)
-void CGruntzMgr::UnloadSoundChain() {
+void CGruntzMgr::StopAudioPlayback() {
     if (m_world) {
-        CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
-        if (sub) {
-            SoundStream* obj = sub->m_soundStream;
-            if (obj) {
-                obj->StopAllStreams();
+        CDDrawSubMgrLeafScan* soundRegistry = m_world->m_soundRegistry;
+        if (soundRegistry) {
+            SoundStream* soundStream = soundRegistry->m_soundStream;
+            if (soundStream) {
+                soundStream->StopAllStreams();
             }
         }
     }
-    CGruntzSoundZ* snd = m_sound;
-    if (snd && (snd->m_pCurrent ? snd->m_pCurrent->IsBusy() : 0)) {
-        m_sound->IsPlaying();
+    MidiManager* midi = m_midi;
+    if (midi && (midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0)) {
+        m_midi->EndCurrent();
     }
 }
 
@@ -2543,52 +2543,52 @@ void CGruntzMgr::OnMusicFadeStep(i32 value) {}
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000915d0, 0x3f)
-void CGruntzMgr::MuteMusicIfActive(i32 ms) {
-    if (m_sound == NULL) {
+void CGruntzMgr::MuteMusicIfActive(i32 durationMs) {
+    if (m_midi == NULL) {
         return;
     }
     if (m_musicEnabled == 0) {
         return;
     }
-    i32 ok;
-    if (m_sound->m_pCurrent != NULL) {
-        ok = m_sound->m_pCurrent->IsBusy();
+    i32 isPlaying;
+    if (m_midi->m_currentSequence != NULL) {
+        isPlaying = m_midi->m_currentSequence->IsPlaying();
     } else {
-        ok = 0;
+        isPlaying = 0;
     }
-    if (ok == 0) {
+    if (isPlaying == 0) {
         return;
     }
 
-    CGruntzSoundZ* snd = m_sound;
-    if (snd->m_pCurrent) {
-        snd->m_pCurrent->SetVolume(0, ms);
+    MidiManager* midi = m_midi;
+    if (midi->m_currentSequence) {
+        midi->m_currentSequence->SetVolumePercent(0, durationMs);
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091620, 0x3f)
-void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
-    if (m_sound == NULL) {
+void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
+    if (m_midi == NULL) {
         return;
     }
     if (m_musicEnabled == 0) {
         return;
     }
-    i32 ok;
-    if (m_sound->m_pCurrent != NULL) {
-        ok = m_sound->m_pCurrent->IsBusy();
+    i32 isPlaying;
+    if (m_midi->m_currentSequence != NULL) {
+        isPlaying = m_midi->m_currentSequence->IsPlaying();
     } else {
-        ok = 0;
+        isPlaying = 0;
     }
-    if (ok == 0) {
+    if (isPlaying == 0) {
         return;
     }
 
-    CGruntzSoundZ* snd = m_sound;
-    if (snd->m_pCurrent) {
-        snd->m_pCurrent->SetVolume(kSoundVolumeMax, ms);
+    MidiManager* midi = m_midi;
+    if (midi->m_currentSequence) {
+        midi->m_currentSequence->SetVolumePercent(kSoundVolumeMax, durationMs);
     }
 }
 
@@ -2827,16 +2827,16 @@ i32 CGruntzMgr::ResetWorldState() {
 }
 
 RVA(0x00092000, 0x16)
-void CGruntzMgr::StopBankIfActive() {
-    if (m_sound && m_musicEnabled) {
-        m_sound->StopAll();
+void CGruntzMgr::PauseMusicIfEnabled() {
+    if (m_midi && m_musicEnabled) {
+        m_midi->PauseCurrent();
     }
 }
 
 RVA(0x00092030, 0x18)
-void CGruntzMgr::StopBank0IfActive() {
-    if (m_sound && m_musicEnabled) {
-        m_sound->StopBank(0);
+void CGruntzMgr::ResumeMusicIfEnabled() {
+    if (m_midi && m_musicEnabled) {
+        m_midi->ResumeCurrent(0);
     }
 }
 
@@ -2947,21 +2947,21 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
 }
 
 RVA(0x00092340, 0x49)
-void CGruntzMgr::SetRunState(i32 v) {
-    if (v == m_soundEnabled) {
+void CGruntzMgr::SetSoundEnabled(i32 enabled) {
+    if (enabled == m_soundEnabled) {
         return;
     }
-    m_soundEnabled = v;
+    m_soundEnabled = enabled;
     if (m_world == NULL) {
         return;
     }
-    SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
-    if (sub) {
-        sub->StopAllStreams();
+    SoundStream* soundStream = m_world->m_soundRegistry->m_soundStream;
+    if (soundStream) {
+        soundStream->StopAllStreams();
     }
 
-    i32 run = m_soundEnabled;
-    g_sndEnabled = run;
+    i32 soundEnabled = m_soundEnabled;
+    g_sndEnabled = soundEnabled;
     if (m_soundEnabled) {
         m_inputState->Resume();
     } else {
@@ -2970,29 +2970,29 @@ void CGruntzMgr::SetRunState(i32 v) {
 }
 
 RVA(0x000923b0, 0x47)
-void CGruntzMgr::SetSoundLevelState(i32 loaded) {
-    if (loaded == m_musicEnabled) {
+void CGruntzMgr::SetMusicEnabled(i32 enabled) {
+    if (enabled == m_musicEnabled) {
         return;
     }
-    m_musicEnabled = loaded;
-    CGruntzSoundZ* snd = m_sound;
-    if (snd == NULL) {
+    m_musicEnabled = enabled;
+    MidiManager* midi = m_midi;
+    if (midi == NULL) {
         return;
     }
-    if (loaded != 0) {
-        CGruntzSoundInnerZ* cur = snd->m_pCurrent;
-        if (cur == NULL) {
+    if (enabled != 0) {
+        MidiSequence* sequence = midi->m_currentSequence;
+        if (sequence == NULL) {
             return;
         }
-        if (cur->m_playMode != 0) {
-            snd->Restart(1);
-        } else if (snd->m_pCurrent != NULL) {
+        if (sequence->m_looping != 0) {
+            midi->RestartCurrent(1);
+        } else if (midi->m_currentSequence != NULL) {
 
-            snd->StopBank(1);
+            midi->ResumeCurrent(1);
         }
         return;
     }
-    snd->StopAll();
+    midi->PauseCurrent();
 }
 
 RVA(0x00092420, 0xa4)
