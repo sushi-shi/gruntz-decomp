@@ -32,8 +32,14 @@ i32 CSBI_ImageSet::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    if (host == NULL || owner == NULL) {
-        return 0;
+    CObject* found;
+    CDDrawWorker* rec;
+
+    if (host == NULL) {
+        goto fail;
+    }
+    if (owner == NULL) {
+        goto fail;
     }
     INITIALIZE_STATUS_BAR_ITEM(owner, obj, host)
 
@@ -42,14 +48,15 @@ i32 CSBI_ImageSet::SetupImage(
     if (key == NULL) {
         return 0;
     }
-    CObject* found = NULL;
+    found = NULL;
     host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
+    rec = static_cast<CDDrawWorker*>(found);
     m_frameSet = rec;
     if (rec == NULL) {
-        return 0;
+        goto fail;
     }
-    i32 f = frame;
+    i32 f;
+    f = frame;
     if (f == -1) {
         f = rec->m_minIndex;
     }
@@ -57,6 +64,8 @@ i32 CSBI_ImageSet::SetupImage(
 
     SetFrame(rec->GetAt(f));
     return 1;
+fail:
+    return 0;
 }
 
 RVA(0x000e7400, 0x9)
