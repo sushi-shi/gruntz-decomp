@@ -67,7 +67,7 @@ public:
     i32 StepRowUnits();
     i32 RepathAroundBlockedTiles(CGrunt*);
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH);
-    i32 HandleUnitContact(CGrunt*, CGrunt*);
+    i32 HandleUnitContact(CGrunt* actor, CGrunt* other);
     i32 RouteToNearbyPickup(CGrunt*);
 
     i32 ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);

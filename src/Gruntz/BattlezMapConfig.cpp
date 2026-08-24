@@ -2198,54 +2198,54 @@ void CBattlezMapConfig::Clear() {
 // a re-read; and making CMapMgr::Clip a header inline makes cl 5.0 expand BOTH
 // sites and no obj emits the 0x2b340 COMDAT (docs/patterns/inline-budget-emits-ool-comdat.md).
 RVA(0x0002ae00, 0x42e)
-i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
-    if (unit->m_entranceCommitted == 0) {
+i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
+    if (other->m_entranceCommitted == 0) {
         return 0;
     }
     bool eq;
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
+    eq = (ANIMATION_ACT_EQUALS_FOR(other, "J"));
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
+    eq = (ANIMATION_ACT_EQUALS_FOR(other, "C"));
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
+    eq = (ANIMATION_ACT_EQUALS_FOR(other, "R"));
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
+    eq = (ANIMATION_ACT_EQUALS_FOR(other, "G"));
     if (eq) {
         return 0;
     }
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
+    eq = (ANIMATION_ACT_EQUALS_FOR(other, "L"));
     if (eq) {
         return 0;
     }
-    if (unit->m_gruntKind == GRUNT_GHOST) {
+    if (other->m_gruntKind == GRUNT_GHOST) {
         return 0;
     }
-    if (unit->m_entranceDropActive != 0) {
+    if (other->m_entranceDropActive != 0) {
         return 0;
     }
     i32 roll = rand() % 4;
-    if (tgt->m_vehiclePickupType != PICKUP_NONE && roll == 0) {
-        CGameObject* ul = unit->m_object;
-        if ((static_cast<CGrunt*>(tgt))->RectContainsGated(ul->m_screenX, ul->m_screenY) != 0) {
-            if (tgt->m_vehiclePickupType == PICKUP_SCROLL) {
-                CGameObject* tl = tgt->m_object;
+    if (actor->m_vehiclePickupType != PICKUP_NONE && roll == 0) {
+        CGameObject* ul = other->m_object;
+        if ((static_cast<CGrunt*>(actor))->RectContainsGated(ul->m_screenX, ul->m_screenY) != 0) {
+            if (actor->m_vehiclePickupType == PICKUP_SCROLL) {
+                CGameObject* tl = actor->m_object;
                 m_triggerMgr->ApplyTriggerB(
-                    tgt->m_tileOwnerHi,
-                    tgt->m_tileOwnerLo,
+                    actor->m_tileOwnerHi,
+                    actor->m_tileOwnerLo,
                     tl->m_screenX,
                     tl->m_screenY
                 );
             } else {
-                CGameObject* ul2 = unit->m_object;
+                CGameObject* ul2 = other->m_object;
                 m_triggerMgr->ApplyTriggerB(
-                    tgt->m_tileOwnerHi,
-                    tgt->m_tileOwnerLo,
+                    actor->m_tileOwnerHi,
+                    actor->m_tileOwnerLo,
                     ul2->m_screenX,
                     ul2->m_screenY
                 );
@@ -2253,18 +2253,18 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
             return 1;
         }
     }
-    CGameObject* ul3 = unit->m_object;
-    (static_cast<CGrunt*>(tgt))
-        ->CommitNeighbor(unit->m_tileOwnerHi, unit->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
-    PickupType prim = ArrivalPickup(tgt);
+    CGameObject* ul3 = other->m_object;
+    (static_cast<CGrunt*>(actor))
+        ->CommitNeighbor(other->m_tileOwnerHi, other->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
+    PickupType prim = ArrivalPickup(actor);
     if (prim != PICKUP_TIMEBOMB) {
         return 1;
     }
 
-    CGameObject* tl = tgt->m_object;
+    CGameObject* tl = actor->m_object;
     i32 ycoord = (tl->m_screenY >> TILE_SHIFT_PX) + rand() % 10 - 5;
     i32 r2 = rand() % 10;
-    CGameObject* tl2 = tgt->m_object;
+    CGameObject* tl2 = actor->m_object;
     i32 left = (tl2->m_screenX >> TILE_SHIFT_PX) - 5;
     i32 xcoord = (tl->m_screenX >> TILE_SHIFT_PX) + r2 - 5;
     i32 right = (tl2->m_screenX >> TILE_SHIFT_PX) + 5;
@@ -2300,7 +2300,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     }
     board->m_gridW = aDst->right - aDst->left;
     board->m_gridH = aDst->bottom - aDst->top;
-    RouteUnitTo(tgt, xcoord, ycoord, 0x20000d87, 0, 0);
+    RouteUnitTo(actor, xcoord, ycoord, 0x20000d87, 0, 0);
     board->Clip(static_cast<const RECT*>(0));
     return 1;
 }
