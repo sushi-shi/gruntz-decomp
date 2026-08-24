@@ -439,23 +439,23 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
             d = 1;
             break;
     }
-    if (m->m_live != 0) {
-        delete m;
-        return NULL;
+    if (m->m_live == 0) {
+        m->m_tileX = tileX;
+        m->m_tileY = tileY;
+        m->m_cellKey = cellKey;
+        m->m_playerFlags[2] = b;
+        m->m_actionCode = actionCode;
+        m->m_owner = this;
+        m->m_live = 1;
+        m->m_playerFlags[0] = d;
+        m->m_playerFlags[1] = c;
+        m->m_playerFlags[3] = a;
+        m->SetActionCode(actionCode);
+        m_list3.AddTail(m);
+        return m;
     }
-    m->m_tileX = tileX;
-    m->m_tileY = tileY;
-    m->m_cellKey = cellKey;
-    m->m_playerFlags[2] = b;
-    m->m_actionCode = actionCode;
-    m->m_owner = this;
-    m->m_live = 1;
-    m->m_playerFlags[0] = d;
-    m->m_playerFlags[1] = c;
-    m->m_playerFlags[3] = a;
-    m->SetActionCode(actionCode);
-    m_list3.AddTail(m);
-    return m;
+    delete m;
+    return NULL;
 }
 
 RVA(0x00116cf0, 0x111)
@@ -472,29 +472,29 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     if (e == NULL) {
         return NULL;
     }
-    if (e->m_initGate != 0) {
-        delete e;
-        return NULL;
+    if (e->m_initGate == 0) {
+        memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
+        e->m_powerupType = static_cast<PickupType>(powerupType);
+        e->m_textId = textId;
+        e->m_typeTag = TRIGID_GIANT_ROCK_22;
+        e->m_tileX = tileX;
+        e->m_tileY = tileY;
+        e->m_cellKey = cellKey;
+        e->m_owner = this;
+        e->m_initGate = 1;
+        e->m_dutyOn = 0;
+        e->m_startClock = g_frameTime;
+        e->m_dutyOnSpan = 0;
+        e->m_tileToken = 0;
+        e->m_leadInSpan = 0;
+        e->m_dutyOffSpan = 0;
+        e->m_startClock = g_frameTime;
+        e->m_dutyOffSpan = dutyOffSpan;
+        m_list1.AddTail(e);
+        return e;
     }
-    memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
-    e->m_powerupType = static_cast<PickupType>(powerupType);
-    e->m_textId = textId;
-    e->m_typeTag = TRIGID_GIANT_ROCK_22;
-    e->m_tileX = tileX;
-    e->m_tileY = tileY;
-    e->m_cellKey = cellKey;
-    e->m_owner = this;
-    e->m_initGate = 1;
-    e->m_dutyOn = 0;
-    e->m_startClock = g_frameTime;
-    e->m_dutyOnSpan = 0;
-    e->m_tileToken = 0;
-    e->m_leadInSpan = 0;
-    e->m_dutyOffSpan = 0;
-    e->m_startClock = g_frameTime;
-    e->m_dutyOffSpan = dutyOffSpan;
-    m_list1.AddTail(e);
-    return e;
+    delete e;
+    return NULL;
 }
 
 RVA(0x00116e60, 0x59)
