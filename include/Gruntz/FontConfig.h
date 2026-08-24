@@ -24,7 +24,7 @@ public:
     i32 AddItem(const char* str, i32 type, i32 data);
     void Scroll(i32 delta);
 
-    i32 TypeChar(i32 ch, i32 flag);
+    i32 HandleInputChar(i32 charCode, i32 keyData);
 
     CString GetInputText();
     void EndInput();

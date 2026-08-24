@@ -108,8 +108,8 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_pendingHlRow = STATUS_HL_ROW_NONE;
     m_rezActive = 0;
     m_rezTick = 0;
-    m_toggleActive = 0;
-    m_toggleHandle = 0;
+    m_levelOverlayActive = 0;
+    m_quitConfirmationActive = 0;
     m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
     m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
     m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
@@ -452,7 +452,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             }
 
         case TAB_GAME:
-            if (m_toggleActive != 0) {
+            if (m_levelOverlayActive != 0) {
                 break;
             }
             switch (cmd) {
@@ -483,7 +483,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         g_gameReg->m_frameGate = gate;
                         g_gameReg->FinishLevel(gate, 1);
                     }
-                    (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(1);
+                    (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(1);
                     return 1;
                 case SBICMD_GAME_TAB:
                     HiCueLookup();
@@ -653,7 +653,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         HiPost(0x806b);
                     } else {
                         HiCueLookup();
-                        (static_cast<CPlay*>(g_gameReg->m_curState))->ReleaseLevelOverlay(0);
+                        (static_cast<CPlay*>(g_gameReg->m_curState))->CloseLevelOverlay(0);
                     }
                     return 1;
                 case SBICMD_DIALOG_SECONDARY:
@@ -682,7 +682,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_DIALOG_NO:
                     HiCueTimed();
-                    (static_cast<CPlay*>(g_gameReg->m_curState))->ReleaseLevelOverlay(0);
+                    (static_cast<CPlay*>(g_gameReg->m_curState))->CloseLevelOverlay(0);
                     return 1;
                 default:
                     return 0;
@@ -762,7 +762,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
             ClearTabSprites(TAB_GAME);
         }
     }
-    if (m_toggleActive) {
+    if (m_levelOverlayActive) {
         if (r->m_tab == TAB_DIALOG) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
             return 1;
@@ -4229,8 +4229,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_fallRect, sizeof(m_fallRect));
     s->Write(&m_itemRect, sizeof(m_itemRect));
     s->Write(&m_hlBusy, sizeof(m_hlBusy));
-    s->Write(&m_toggleActive, sizeof(m_toggleActive));
-    s->Write(&m_toggleHandle, sizeof(m_toggleHandle));
+    s->Write(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
+    s->Write(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     s->Write(&m_machinePhase, sizeof(m_machinePhase));
     s->Write(&m_extraNotifyArg0, sizeof(m_extraNotifyArg0));
     s->Write(&m_fallActive, sizeof(m_fallActive));
@@ -4335,8 +4335,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_fallRect, sizeof(m_fallRect));
     s->Read(&m_itemRect, sizeof(m_itemRect));
     s->Read(&m_hlBusy, sizeof(m_hlBusy));
-    s->Read(&m_toggleActive, sizeof(m_toggleActive));
-    s->Read(&m_toggleHandle, sizeof(m_toggleHandle));
+    s->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
+    s->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     s->Read(&m_machinePhase, sizeof(m_machinePhase));
     s->Read(&m_extraNotifyArg0, sizeof(m_extraNotifyArg0));
     s->Read(&m_fallActive, sizeof(m_fallActive));
@@ -4636,7 +4636,7 @@ i32 CWarpStoneFly::Draw() {
 // @early-stop
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
-    if (m_toggleActive == 0) {
+    if (m_levelOverlayActive == 0) {
         return 1;
     }
 
@@ -4651,7 +4651,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         cy = dst.top + (dst.bottom - dst.top) / 2;
     }
 
-    if (m_toggleHandle != 0) {
+    if (m_quitConfirmationActive != 0) {
         // every child rect below is relative to this dialog's top-left corner
         cx -= 0x5e;
         cy -= 0x3c;
@@ -4955,7 +4955,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
 RVA(0x0010b210, 0xc5)
 void CStatusBarMgr::ExitMode() {
-    if (m_toggleActive == 0) {
+    if (m_levelOverlayActive == 0) {
         return;
     }
     POSITION n = m_tabLists[6].GetHeadPosition();
@@ -4964,13 +4964,13 @@ void CStatusBarMgr::ExitMode() {
         delete cur;
     }
     m_tabLists[6].RemoveAll();
-    i32 handle = m_toggleHandle;
+    i32 wasQuitConfirmation = m_quitConfirmationActive;
     m_tabSprite11 = NULL;
     m_tabSprite12 = NULL;
     m_tabSprite13 = NULL;
     m_tabSprite14 = NULL;
     m_hlBusy = 0;
-    if (handle == 0 && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (wasQuitConfirmation == 0 && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -4982,8 +4982,8 @@ void CStatusBarMgr::ExitMode() {
     } else {
         m_hitTestDisabled = 0;
     }
-    m_toggleActive = 0;
-    m_toggleHandle = 0;
+    m_levelOverlayActive = 0;
+    m_quitConfirmationActive = 0;
     Deactivate();
 }
 

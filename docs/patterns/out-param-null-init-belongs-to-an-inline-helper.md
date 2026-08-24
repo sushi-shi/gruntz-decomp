@@ -139,9 +139,9 @@ and clobbers the owner: `CChatBox::ConfigureLeftCursorAnimation`/`Right` 0x182df
 Read which one retail used straight off the disassembly: `lea r,[&out]` before
 the receiver load means (b), after it means (a).
 
-This refines the `BeginGridWalk` counter-example in
+This refines the `LoadCursorAnimation` counter-example in
 [out-param-reset-between-arg-setup-and-call-is-in-the-helper.md](out-param-reset-between-arg-setup-and-call-is-in-the-helper.md):
-`CPlay::BeginGridWalk` 0xd0920 regresses under (a) and is 97.62 -> **100.00**
+`CPlay::LoadCursorAnimation` 0xd0920 regresses under (a) and is 97.62 -> **100.00**
 under (b) (`LookupWorker(m_world, key)`), so "no literal push to schedule behind"
 was the wrong reading - the receiver shape was.
 

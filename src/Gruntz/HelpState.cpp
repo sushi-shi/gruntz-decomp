@@ -84,7 +84,7 @@ i32 CHelpState::EnterState(GameStateId arg) {
         && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
         return 0;
     }
-    if (FadeInTitle(g_titleBuf, 0, 0, 0, 0, 1) == 0) {
+    if (LoadTitlePage(g_titleBuf, 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
     RetireScene(0x50, 0x3e8, 0, 1);
@@ -132,7 +132,7 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq(g_titleBuf, 0, 0, 1, 0);
+    i32 r = LoadAndPresentTitlePage(g_titleBuf, 0, 0, 1, 0);
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -145,7 +145,7 @@ i32 CHelpState::RestoreDisplay() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(g_titleBuf, 0, 0, 1, 0);
+    return LoadAndPresentTitlePage(g_titleBuf, 0, 0, 1, 0);
 }
 
 RVA(0x000953f0, 0x37)

@@ -225,9 +225,10 @@ void CFontConfig::Scroll(i32 delta) {
 // @early-stop
 RVA(0x00021e20, 0x95)
 
-i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
+i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
+    static_cast<void>(keyData);
     m_inputScrollTotal = 0;
-    if (ch == '\r') {
+    if (charCode == '\r') {
         if (m_inputActive == 0) {
             m_inputActive = 1;
             m_scrollOffset = 0;
@@ -244,7 +245,7 @@ i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
     if (m_inputActive == 0) {
         return 0;
     }
-    if (ch == '\b') {
+    if (charCode == '\b') {
         i32 len = m_inputText.GetLength();
         if (len <= 0) {
             return 0;
@@ -252,11 +253,11 @@ i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
         m_inputText.GetBufferSetLength(len - 1);
         return 0;
     }
-    if (ch < 0x20 || ch > 0xff) {
+    if (charCode < 0x20 || charCode > 0xff) {
         return 0;
     }
     if (m_inputText.GetLength() < 0x50) {
-        m_inputText += static_cast<char>(ch);
+        m_inputText += static_cast<char>(charCode);
     }
     return 0;
 }

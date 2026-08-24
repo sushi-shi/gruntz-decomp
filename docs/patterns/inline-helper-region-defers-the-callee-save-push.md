@@ -57,13 +57,13 @@ i32 CChatBox::PlayFocusSound() {
 |---|---|
 | `CChatBox::PlayFocusSound` @0x183030 | 84.71 -> **100.00 EXACT** |
 | `CChatBox::PlayActivationSound` @0x1830b0 | 84.71 -> **100.00 EXACT** |
-| `CPlay::StepGridWalk` @0xd0a60 | 66.67 -> **100.00 EXACT** |
+| `CPlay::AdvanceCursorAnimation` @0xd0a60 | 66.67 -> **100.00 EXACT** |
 
 ## How to find the candidates
 
 Two of the three came free: `PlayFocusSound`/`PlayActivationSound` are the SAME body over
 `m_row0Key`/`m_row1Key`, which is the [inlined-ENTITY tell](shared-inline-transcribed-once-per-call-site.md).
-`StepGridWalk` had no twin — the disassembly alone said it, via the mechanical screen:
+`AdvanceCursorAnimation` had no twin — the disassembly alone said it, via the mechanical screen:
 
     retail: index of the first `ret` < index of the first `push esi|edi|ebx|ebp`
     base:   the reverse

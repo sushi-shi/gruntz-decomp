@@ -722,62 +722,62 @@ done:
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000dd050, 0x24b)
-i32 CPlay::BuildGruntNamespaceList(CMulti* arg) {
+i32 CPlay::BuildGruntNamespaceList(CMulti* finishGate) {
     CString s;
     s = "NORMALGRUNT";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     s = "DEATHZ";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     s = "ENTRANCEZ";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     s = "EXITZ";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     s = "GRUNTPUDDLE";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     s = "PICKUPS";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     s = "BOMBGRUNT";
-    if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 1, 0, finishGate)) {
         return 0;
     }
     return 1;
 }
 
 RVA(0x000dd340, 0x189)
-i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
+i32 CPlay::BuildWarlordNameTable(CMulti* finishGate) {
     for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
         if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 0, 0, NULL)) {
             return 0;
         }
     }
-    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 0, 0, arg)) {
+    if (!BuildGruntTypeNameTable(GRUNT_HAREKRISHNA, 0, 0, finishGate)) {
         return 0;
     }
-    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 0, 0, arg)) {
+    if (!BuildGruntTypeNameTable(GRUNT_REAPER, 0, 0, finishGate)) {
         return 0;
     }
     CString s("WARLORDZ_NAPOLEAN");
-    if (!BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
         return 0;
     }
     s = "WARLORDZ_VIKING";
-    if (!BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
         return 0;
     }
     s = "WARLORDZ_PATTON";
-    if (!BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
+    if (!BuildAssetNamespacePrefixes(s, 0, 0, finishGate)) {
         return 0;
     }
     return 1;

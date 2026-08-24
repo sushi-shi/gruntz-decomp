@@ -73,8 +73,8 @@ void CChatBoxOwner::Configure(ChatBoxLayout mode) {
 // out-of-line ostrstream::rdbuf + streambuf::out_waiting pair. See
 // docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
 RVA(0x000205c0, 0x741)
-void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
-    if (m_fontConfig->TypeChar(a, b) == 0) {
+void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
+    if (m_fontConfig->HandleInputChar(charCode, keyData) == 0) {
         return;
     }
 
@@ -191,7 +191,7 @@ CString CFontConfig::GetInputText() {
     return m_inputText;
 }
 
-// The inline accessor ProcessCheatInput above reaches m_cheatMgr through; this TU
+// The inline accessor HandleTextInputKey above reaches m_cheatMgr through; this TU
 // wins the COMDAT, so retail's copy is the 4-byte `mov eax,[ecx+0x44]; ret` here.
 
 // @early-stop
@@ -289,7 +289,7 @@ i32 __stdcall ChatBoxOwnerReturnTrue(i32) {
 
 // 0x212a0 IS `zPTree::Reset()` emitted out of line: its body is exactly the
 // inline (ClearRecursive(0) + the three zero stores at +0x18/+0x28/+0x14), and
-// its only caller is this TU's ProcessCheatInput, which calls it for
+// its only caller is this TU's HandleTextInputKey, which calls it for
 // m_tree48/m_tree74 after expanding the same inline for m_tree.
 RVA(0x000212a0, 0x21)
 void zPTree::ResetCopy() {
@@ -297,7 +297,7 @@ void zPTree::ResetCopy() {
 }
 
 // The zPTree/CBSecStream/CButeMgr teardown COMDATs of this TU's `CButeMgr bute;`
-// stack local: retail expands ~CButeMgr on ProcessCheatInput's normal path and
+// stack local: retail expands ~CButeMgr on HandleTextInputKey's normal path and
 // leaves these out-of-line copies for its unwind funclets - the only callers of
 // 0x213c0 / 0x21570 are the EH thunks in this TU's 0x5d93xx-0x5d95xx band.
 RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)

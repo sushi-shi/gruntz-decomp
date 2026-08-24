@@ -1892,7 +1892,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::StopPendingFx() {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    if (m_pendingFxKind == 0 && world->m_dragEndNotify == 0) {
+    if (m_pendingFxKind == 0 && world->m_cursorTargetValid == 0) {
         return;
     }
     world->LoadCursorSprites(0, 0);

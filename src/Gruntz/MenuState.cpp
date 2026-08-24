@@ -202,7 +202,7 @@ i32 CMenuState::EnterState(GameStateId mode) {
             return 0;
         }
 
-        i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+        i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
         if (faded == 0) {
             m_stateBank = (saved);
             return 0;
@@ -389,7 +389,7 @@ i32 CMenuState::RestoreDisplay() {
         return 0;
     }
 
-    i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
     if (faded == 0) {
         m_stateBank = (saved);
         return 0;

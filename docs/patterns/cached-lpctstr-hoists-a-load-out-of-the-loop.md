@@ -33,7 +33,7 @@ push ecx
 ```
 Steerable: delete the cache and pass the `CString`. The delta is exactly one
 `mov` per use site, so `walls loopscan`'s `retail+movxN` names N = the number of
-uses before you read any source. `CChatBoxOwner::ProcessCheatInput` 0x205c0
+uses before you read any source. `CChatBoxOwner::HandleTextInputKey` 0x205c0
 85.18 -> 85.32 with five uses (`retail+movx6`: five conversions plus the
 receiver hoist described in the row). The reverse reading is the useful one:
 `ours+movxN` inside a loop means WE re-read something retail cached in a local.

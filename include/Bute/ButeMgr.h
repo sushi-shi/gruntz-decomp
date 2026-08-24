@@ -61,7 +61,7 @@ public:
     void Init();
 
     // Empty in retail (0x170370 is a bare `ret`) and called exactly once, on the
-    // `CButeMgr bute;` stack local in CChatBoxOwner::ProcessCheatInput right after
+    // `CButeMgr bute;` stack local in CChatBoxOwner::HandleTextInputKey right after
     // its ctor.  It is emitted between Init() and SetErrCallback(), i.e. it is
     // Init()'s counterpart whose real teardown lives in ~CButeMgr.
     void Term();
@@ -94,7 +94,7 @@ public:
 
     bool Exists(const char* tag, const char* key);
 
-    // Inline in retail: ProcessCheatInput 0x205c0 expands the member teardown on its
+    // Inline in retail: HandleTextInputKey 0x205c0 expands the member teardown on its
     // normal path (3x ~zErrHandling + 3x ~zPtrColl) and only its EH funclet calls the
     // out-of-line COMDAT at 0x213c0.
     RVA(0x000213c0, 0x14c)

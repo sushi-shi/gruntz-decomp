@@ -69,7 +69,7 @@ Two source corrections demonstrate why these categories outrank a local score.
 `CDDrawSurfaceMgr::operator delete`; removing it made constructor-failure cleanup
 resolve the inherited `CObject::operator delete`, exactly as retail does, while
 revealing the function's underlying frame-layout residue. In
-`CChatBoxOwner::ProcessCheatInput`, the final status line was formatted into a
+`CChatBoxOwner::HandleTextInputKey`, the final status line was formatted into a
 new `CString message`; retail's map proved that the already-live cheat-code string
 was reused. Formatting into `code` removed exactly one state and made all 26 map
 rows equal. The remaining `zPtrColl` guard funclets also have identical opcodes and
@@ -128,7 +128,7 @@ though the owning `creditsstate` copies are 5 versus 5. Canonicalize both
 `[ebp+disp8]` and `[ebp+disp32]` frame operands before comparing funclet code,
 including register `mov`/`lea` and the immediate `cmp`/`mov` forms used by nested
 construction guards. Otherwise a large frame shift looks like a different teardown
-body. `ProcessCheatInput` is the integration control: its three `zPtrColl` guards
+body. `HandleTextInputKey` is the integration control: its three `zPtrColl` guards
 differ only in those displacements and must remain in the frame-layout class.
 
 Costing caveat: a TRACE temp or named conversion may add a lifetime-flag

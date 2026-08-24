@@ -41,7 +41,7 @@ public:
 
     i32 HitTest(i32 x, i32 y);
 
-    void ProcessCheatInput(i32 a, i32 b);
+    void HandleTextInputKey(i32 charCode, i32 keyData);
 
     i32 LoadChatBoxSprite(CDDrawSurfacePair* target);
 

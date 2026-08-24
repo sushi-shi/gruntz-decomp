@@ -920,10 +920,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     return 1;
                 }
                 if (ps->m_guts) {
-                    if (ps->m_guts->m_toggleActive) {
+                    if (ps->m_guts->m_levelOverlayActive) {
                         return 1;
                     }
-                    if (ps->m_guts->m_toggleHandle) {
+                    if (ps->m_guts->m_quitConfirmationActive) {
                         return 1;
                     }
                 }

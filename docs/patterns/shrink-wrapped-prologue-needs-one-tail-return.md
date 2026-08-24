@@ -48,7 +48,7 @@ guard does not need a zero register. Sieve: leading-push count base vs target
 (33 candidates found tree-wide). `SoundSample::AcquireInstance` 0x135d70 90.31 ->
 100.00 EXACT, `CGrunt::UpdateGruntStatus` 0x617c0 94.63 -> 100.00 EXACT,
 `CDDrawWorkerHost::DeactivateDistantObjects` 0x163370 87.88 -> 100.00 EXACT,
-`CPlay::StepGridWalk` 0xd0a60 66.67 -> 100.00 EXACT (that one was filed as a
+`CPlay::AdvanceCursorAnimation` 0xd0a60 66.67 -> 100.00 EXACT (that one was filed as a
 WALL - see the related link).
 
 ## Read it in REVERSE too: base shrink-wraps, retail does not
@@ -101,7 +101,7 @@ Two things this instance adds:
 out either MERGED - the guard's exit branches strictly INSIDE the final pop run, below the
 sunk pops - or TAIL-DUPLICATED, with the guard given its own shorter pop run and `ret` and
 no branch into the tail at all. They are the same decision. `ClearVolumeRamps`, `AcquireInstance`,
-`UpdateGruntStatus`, `DeactivateDistantObjects` and `StepGridWalk` above are ALL the
+`UpdateGruntStatus`, `DeactivateDistantObjects` and `AdvanceCursorAnimation` above are ALL the
 duplicated form, so a census written only for the merged form does not see any of them.
 
 Decode each side from its OWN instruction stream. The two sides are not byte-symmetric -

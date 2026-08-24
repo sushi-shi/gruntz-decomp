@@ -155,7 +155,7 @@ without implying that every surrounding scheduling residue belongs to the lookup
 
 ### It is per-site, not per-idiom — measure before converting a whole family
 
-A fourth site with the identical source idiom, `CPlay::BeginGridWalk` 0x000d0920,
+A fourth site with the identical source idiom, `CPlay::LoadCursorAnimation` 0x000d0920,
 **regressed 97.6191 -> 92.6786** on the same helper - but the reading "its key is a
 `const char*` parameter, so there is no `push <literal>` to schedule the store behind"
 is WRONG. The variable is the helper's PARAMETER, not the caller's key: retail emits

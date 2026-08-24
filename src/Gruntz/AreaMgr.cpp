@@ -44,9 +44,9 @@ CAreaMgr::~CAreaMgr() {
 RVA_COMPGEN(0x00099ca0, 0x49, ??1CSpawnList@@QAE@XZ)
 
 RVA(0x00099d10, 0x20)
-i32 InitializeLevelArea(i32 arg) {
+i32 InitializeLevelArea(i32 levelIndex) {
     g_areaMgr.Reset();
-    return g_areaMgr.InitializeLevel(arg) != 0;
+    return g_areaMgr.InitializeLevel(levelIndex) != 0;
 }
 
 RVA(0x00099d40, 0x2c0)

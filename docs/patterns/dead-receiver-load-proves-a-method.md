@@ -49,7 +49,7 @@ Confirming evidence is one-sided xrefs — `sema xref` gave each helper exactly 
 
 ## Third tell: the EH band finds it when neither call site is being read
 
-`CChatBoxOwner::ProcessCheatInput` @0x205c0 carried one unwind funclet retail has not
+`CChatBoxOwner::HandleTextInputKey` @0x205c0 carried one unwind funclet retail has not
 got — `??1CButeTail@@QAE@XZ` — which shifted every later state by one and made the whole
 chain read as a wrong-TYPE divergence in `eh_band --census`. The extra state came from a
 fabricated `CButeTail cryptTail;` local, and chasing the class through `sema xref` put
@@ -60,7 +60,7 @@ $ gruntz sema xref 0x0016f680          # ??0CButeTail
   <- call 0x00170210 ??0CButeMgr@@QAE@XZ        # `lea ecx,[esi+0x10f]` at 0x17029d
 $ gruntz sema xref 0x0016f6b0          # ??1CButeTail
   <- call 0x000213c0 ??1CButeMgr@@QAE@XZ
-  <- call 0x000205c0 ?ProcessCheatInput@...     # `lea ecx,[esp+0x14b]`, the SAME slot
+  <- call 0x000205c0 ?HandleTextInputKey@...     # `lea ecx,[esp+0x14b]`, the SAME slot
 ```
 
 A type constructed only by another class's constructor and destroyed only by its

@@ -448,17 +448,17 @@ i32 CCheckpointTrigger::Act() {
     SwitchGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
     if (play->m_frameMarker != NULL) {
-        i32 a = m_object->m_score;
-        i32 b = m_object->m_points;
+        i32 minutes = m_object->m_score;
+        i32 seconds = m_object->m_points;
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            b += b;
-            a += a;
-            if (b > 0x3b) {
-                a++;
-                b -= 0x3c;
+            seconds += seconds;
+            minutes += minutes;
+            if (seconds > 0x3b) {
+                minutes++;
+                seconds -= 0x3c;
             }
         }
-        play->m_frameMarker->AddTime(a, b);
+        play->m_frameMarker->AddTime(minutes, seconds);
     }
 
     CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");

@@ -22,7 +22,7 @@ of those 2-3 instructions per lookup permutes.
 Affected and worth re-attacking with the helper: SpriteLoaders / IconLoaders /
 ActionOptionsMenuBar (84-94%), all CGrunt `Create*` (99%), and the ~14 wwd/levelplane
 functions listed below. Convert ONE site at a time and read the per-function score:
-the helper is per-site, not per-idiom (`CPlay::BeginGridWalk` regressed 97.62 -> 92.68
+the helper is per-site, not per-idiom (`CPlay::LoadCursorAnimation` regressed 97.62 -> 92.68
 on it, because its key is a parameter rather than a pooled literal and there is no
 `push <literal>` to schedule the store behind).
 

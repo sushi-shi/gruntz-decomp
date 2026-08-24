@@ -719,7 +719,7 @@ void CMulti::PumpB() {
         if (h == NULL) {
             return;
         }
-        StepGridWalk(g_frameDelta);
+        AdvanceCursorAnimation(g_frameDelta);
         DrawCursorSaveUnder(h);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
         return;
@@ -780,7 +780,7 @@ void CMulti::PumpB() {
     m_hitTest->LoadChatBoxSprite(h);
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
-    StepGridWalk(g_frameDelta);
+    AdvanceCursorAnimation(g_frameDelta);
     DrawCursorSaveUnder(h);
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
@@ -825,7 +825,7 @@ i32 CMulti::StartTitle() {
     CString title;
     title.Format("TITLE%d", idx);
 
-    if (RunTitleSeq(title, 0, 0, 1, 0) == 0) {
+    if (LoadAndPresentTitlePage(title, 0, 0, 1, 0) == 0) {
         m_stateBank = saved;
         return 0;
     }
@@ -891,7 +891,7 @@ i32 CMulti::Open() {
     if (!Peer()) {
         return 0;
     }
-    RunTitleSeq("BACKGND", 0, 0, 1, 0);
+    LoadAndPresentTitlePage("BACKGND", 0, 0, 1, 0);
     m_world->m_drawTarget->PresentBackPage();
     InterfaceObject* descriptor = SetupServices();
     if (!descriptor) {
@@ -3330,7 +3330,7 @@ RVA(0x000bd210, 0x14d)
 i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     if (m_hitTest && m_hitTest->m_inputActive) {
         if (m_connected) {
-            if (Mgr()->m_chatLog->TypeChar(charCode, keyData)) {
+            if (Mgr()->m_chatLog->HandleInputChar(charCode, keyData)) {
                 CString line = Mgr()->m_chatLog->GetInputText();
                 i32 n = line.GetLength();
                 if (n > 9) {

@@ -97,7 +97,7 @@ A third, milder one: the delinked names carry **library-label ambiguity** —
 | `LoadByMode` never called `BuildWorldLevelPath` | retail-only indirect call at slot `+0xa8` — **game unplayable** |
 | `UpdateEntranceAnim` called an **empty placeholder** | retail-only `LoadGruntAbilityTuning`; ability tuning never loaded after the toy-break anim |
 | `StepArrivalCommit` never set up the toob animation | retail-only `SetupTubeAnim` after the actKey swap |
-| `ProcessCheatInput` inlined what retail calls | retail-only out-of-line `Reset` ×2 |
+| `HandleTextInputKey` inlined what retail calls | retail-only out-of-line `Reset` ×2 |
 
 Plus a whole-program complement worth running once: symbols retail's `.text` references and
 we reference **nowhere**. Only 4 survived, all benign — a useful bound on how much of this

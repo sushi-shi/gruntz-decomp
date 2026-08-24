@@ -40,7 +40,7 @@ public:
         m_nodeCount = 0;
     }
 
-    // Same body, out of line (0x212a0): CChatBoxOwner::ProcessCheatInput expands
+    // Same body, out of line (0x212a0): CChatBoxOwner::HandleTextInputKey expands
     // Reset() for m_tree and CALLS this one for m_tree48/m_tree74. cl 5 emits one
     // shape per spelling, so retail's two shapes need two entities
     // (docs/patterns/two-shapes-need-two-entities.md).

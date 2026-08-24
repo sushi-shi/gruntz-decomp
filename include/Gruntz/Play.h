@@ -181,7 +181,7 @@ public:
     void DrawMessageFrame(i32 index, i32 useFront);
 
     void LoadSBITextEdges(i32 msgId);
-    i32 BuildGruntNamespaceList(CMulti* arg);
+    i32 BuildGruntNamespaceList(CMulti* finishGate);
 
     i32 StepViewportResize();
     i32 GetAmbientId();
@@ -205,8 +205,14 @@ public:
 
     void DrawDebugStats();
 
-    i32 BeginGridWalk(const char*, i32, i32, i32, i32);
-    i32 StepGridWalk(i32 dt);
+    i32 LoadCursorAnimation(
+        const char* spriteKey,
+        i32 initialFrame,
+        i32 animate,
+        i32 frameDelayMs,
+        i32 tintForPlayer
+    );
+    i32 AdvanceCursorAnimation(i32 elapsedMs);
     i32 ResetGoals(i32, i32);
 
     i32 PositionBridgeToggle(StatusBarDock mode, StatusBarDock unused);
@@ -241,7 +247,7 @@ public:
     );
     i32 Flip();
 
-    i32 ReleaseLevelOverlay(i32 unused);
+    i32 CloseLevelOverlay(i32 unused);
     i32 ClearPlacedObjects();
     i32 FlushPendingOps();
 
@@ -251,7 +257,7 @@ public:
 
     i32 DrawWorldPresent();
 
-    i32 EnterOverlayDrag(i32 arg);
+    i32 OpenLevelOverlay(i32 showQuitConfirmation);
 
     i32 LoadActionTileSprites(i32 force);
     i32 LoadLevelSounds(i32 force);
@@ -272,7 +278,7 @@ public:
 
     i32 SetEffectSpriteDurations();
 
-    i32 BuildWarlordNameTable(CMulti* arg);
+    i32 BuildWarlordNameTable(CMulti* finishGate);
 
     i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
 
@@ -304,7 +310,7 @@ public:
     i32 m_dragInProgress;
     i32 m_reserved2f0;
     i32 m_cursorFrame;
-    i32 m_levelId;
+    i32 m_cursorId;
     Coord m_cursorOffset;
     i32 m_dragClampMaxX;
     i32 m_dragClampMaxY;
@@ -365,22 +371,22 @@ public:
 
     CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
 
-    CDDrawWorker* m_grid;
-    CImage* m_gridCurFrame;
-    i32 m_gridHasSprite;
-    i32 m_gridDelayBase;
-    i32 m_gridDelayCount;
-    i32 m_gridRow;
+    CDDrawWorker* m_cursorSprite;
+    CImage* m_cursorImage;
+    i32 m_cursorUsesPlayerTint;
+    i32 m_cursorFrameDelayMs;
+    i32 m_cursorFrameCountdownMs;
+    i32 m_cursorFrameIndex;
 
     CWwdGameObjectA* m_scrollSink;
-    i32 m_gridWalkActive;
+    i32 m_cursorAnimationActive;
     i32 m_renderDisabled;
     i32 m_playerCommandPending;
     i32 m_winLoseBanner;
     i32 m_inGame;
-    i32 m_overlayDrag;
+    i32 m_levelOverlayOpen;
     i32 m_paused;
-    i32 m_dragEndNotify;
+    i32 m_cursorTargetValid;
     i32 m_lastScrollTimeX;
     i32 m_lastScrollTimeY;
     i32 m_stepCountdown;
@@ -391,7 +397,7 @@ public:
     i32 m_reserved51c;
 
     i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);
-    i32 LoadCursorSprites(i32 frame, i32 flag);
+    i32 LoadCursorSprites(i32 cursorId, i32 targetValid);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(PickupType typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
 
@@ -449,7 +455,7 @@ i32 ShowHudMessageAlt(
     i32 f
 );
 void Cmd_ResetScroll();
-i32 InitializeLevelArea(i32 a);
+i32 InitializeLevelArea(i32 levelIndex);
 void ActiveWait(u32 ms);
 
 inline CPlay::~CPlay() {
@@ -477,15 +483,15 @@ inline CPlay::CPlay() {
     m_frameMarker = NULL;
     m_guts = NULL;
     m_beginMarker = NULL;
-    m_grid = NULL;
+    m_cursorSprite = NULL;
     m_scrollSink = NULL;
     m_reserved2f0 = 0;
     m_packetsRcvd = 0;
     m_packetsSent = 0;
     m_cursorFrame = 0;
-    m_levelId = -1;
+    m_cursorId = -1;
     m_lightFx = NULL;
-    m_gridHasSprite = 0;
+    m_cursorUsesPlayerTint = 0;
     m_snapshotActive = 0;
     m_ambientInitDone = 1;
     m_stepCountdown = 0;
@@ -496,7 +502,7 @@ inline CPlay::CPlay() {
     m_dragInhibit1 = 0;
     m_dragInhibit2 = 0;
     m_dragInProgress = 0;
-    m_dragEndNotify = 0;
+    m_cursorTargetValid = 0;
 }
 
 #endif // SRC_GRUNTZ_CPLAY_H

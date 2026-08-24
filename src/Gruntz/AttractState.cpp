@@ -92,7 +92,7 @@ i32 CAttract::EnterState(GameStateId arg) {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format("TITLE%d", idx);
-    RunTitleSeq(s, 0, 0, 1, 0);
+    LoadAndPresentTitlePage(s, 0, 0, 1, 0);
     CDDrawSubMgrPages* page = menuRoot()->m_drawTarget;
     page->BlitPage(page->m_backPair);
 
@@ -187,7 +187,7 @@ i32 CAttract::InputVirtual() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format("TITLE%d", idx);
-    return RunTitleSeq(s, 0, 0, 1, 0);
+    return LoadAndPresentTitlePage(s, 0, 0, 1, 0);
 }
 
 RVA(0x00014630, 0xbd)
@@ -203,7 +203,7 @@ i32 CAttract::RestoreDisplay() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format("TITLE%d", idx);
-    return RunTitleSeq(s, 0, 0, 1, 0);
+    return LoadAndPresentTitlePage(s, 0, 0, 1, 0);
 }
 
 RVA(0x00014720, 0x37)

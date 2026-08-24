@@ -287,7 +287,7 @@ public:
 
     // Retail reaches m_cheatMgr through this accessor, not the member: cl emits it
     // out of line as the 4-byte COMDAT `mov eax,[ecx+0x44]; ret` (0x20f20, won by
-    // chatboxowner) and CChatBoxOwner::ProcessCheatInput calls it through the ILT
+    // chatboxowner) and CChatBoxOwner::HandleTextInputKey calls it through the ILT
     // thunk 0x167c. One call site in the whole game.
     RVA(0x00020f20, 0x4)
     CCheatMgr* CheatMgr() {

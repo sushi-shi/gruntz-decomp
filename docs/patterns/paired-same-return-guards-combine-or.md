@@ -11,7 +11,7 @@ Two adjacent early-guards that return the **same value** are written as separate
 if (m_hudSuppressed != 0) return 1;   // guard A
 if (m_guts == 0)          return 1;   // guard B
 ...
-if (m_overlayDrag != 0)          return Dispatch();  // guard C
+if (m_levelOverlayOpen != 0)          return Dispatch();  // guard C
 if (g_sbiMgr->m_68->m_400 == 0)  return Dispatch();  // guard D
 ```
 
@@ -55,7 +55,7 @@ Combine each same-return pair with `||` (value-identical short-circuit):
 
 ```cpp
 if (m_hudSuppressed != 0 || m_guts == 0) return 1;
-if (m_overlayDrag != 0 || g_sbiMgr->m_68->m_400 == 0) return Dispatch();
+if (m_levelOverlayOpen != 0 || g_sbiMgr->m_68->m_400 == 0) return Dispatch();
 ```
 
 Each pair emits two tests (`test;jne` / `test;je`) that both branch to the one shared

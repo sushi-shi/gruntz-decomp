@@ -123,7 +123,8 @@ i32 CPreviewState::Refade() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
+    i32 r =
+        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     return r;
 }
@@ -137,7 +138,8 @@ i32 CPreviewState::RefadeVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = FadeInTitle(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
+    i32 r =
+        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1);
     return r;
 }
@@ -173,7 +175,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
     SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
     i32 failed = 0;
-    if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1)
+    if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1)
         == 0) {
         failed = 1;
     } else {

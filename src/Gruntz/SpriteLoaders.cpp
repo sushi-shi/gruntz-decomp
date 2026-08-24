@@ -97,7 +97,8 @@ void CTimer::Reset() {
 
 // @early-stop
 RVA(0x0009bca0, 0x25d)
-i32 CTimer::Tick(i32 dt) {
+i32 CTimer::Tick(i32 elapsedMs) {
+    static_cast<void>(elapsedMs);
     if (!m_running) {
         return 1;
     }
@@ -188,11 +189,11 @@ i32 CTimer::Tick(i32 dt) {
 }
 
 RVA(0x0009bfa0, 0xb4)
-i32 CTimer::Draw(CDDrawSurfacePair* target, i32 force) {
+i32 CTimer::Draw(CDDrawSurfacePair* target, i32 forceVisible) {
     if (!m_running) {
         return 1;
     }
-    if (force == 0 && static_cast<u32>(m_currentMs) < 0x2710
+    if (forceVisible == 0 && static_cast<u32>(m_currentMs) < 0x2710
         && static_cast<u32>(g_timer500) >= 0xfa) {
         return 1;
     }
@@ -215,44 +216,43 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, i32 force) {
 }
 
 RVA(0x0009c090, 0x37)
-void CTimer::SetTime(i32 a, i32 b) {
-    u32 av = static_cast<u32>(a);
-    if (av > 0x63) {
-        av = 0x63;
+void CTimer::SetTime(i32 minutes, i32 seconds) {
+    u32 clampedMinutes = static_cast<u32>(minutes);
+    if (clampedMinutes > 0x63) {
+        clampedMinutes = 0x63;
     }
-    u32 bv = static_cast<u32>(b);
-    if (bv > 0x3b) {
-        bv = 0x3b;
+    u32 clampedSeconds = static_cast<u32>(seconds);
+    if (clampedSeconds > 0x3b) {
+        clampedSeconds = 0x3b;
     }
-    m_currentMs = static_cast<i32>(((av * 60 + bv) * 1000));
+    m_currentMs = static_cast<i32>(((clampedMinutes * 60 + clampedSeconds) * 1000));
 }
 
 RVA(0x0009c0e0, 0xa3)
-void CTimer::AddTime(i32 seconds, i32 minutes) {
+void CTimer::AddTime(i32 minutes, i32 seconds) {
     if (!m_running) {
         return;
     }
-    u32 mins = static_cast<u32>(minutes);
-    if (mins > 0x3b) {
-        mins = 0x3b;
-    }
     u32 secs = static_cast<u32>(seconds);
-    if (secs > 0x63) {
-        secs = 0x63;
+    if (secs > 0x3b) {
+        secs = 0x3b;
+    }
+    u32 mins = static_cast<u32>(minutes);
+    if (mins > 0x63) {
+        mins = 0x63;
     }
     u32 cur = static_cast<u32>(m_currentMs);
-    u32 onClock;
-
     u32 carry = 0;
-    if (cur % MILLIS_PER_MINUTE / MILLIS_PER_SECOND + mins > 0x3b) {
+    u32 onClock;
+    if (cur % MILLIS_PER_MINUTE / MILLIS_PER_SECOND + secs > 0x3b) {
         carry = 1;
     }
 
     onClock = cur / MILLIS_PER_MINUTE;
-    if (onClock + secs > 0x63) {
-        secs = 0x63 - onClock - carry;
+    if (onClock + mins > 0x63) {
+        mins = 0x63 - onClock - carry;
     }
-    u32 total = (mins + secs * 60) * 1000;
+    u32 total = (secs + mins * 60) * 1000;
     m_accum.m_v += total;
 }
 

@@ -352,7 +352,7 @@ RVA(0x00018d30, 0xcd)
 i32 CBootyState::EnterState(GameStateId) {
     while (ShowCursor(FALSE) >= 0)
         ;
-    if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+    if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
         return 0;
     }
     m_world->m_drawTarget->TransExit();
@@ -393,7 +393,7 @@ RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
         CString s;
-        if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+        if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
             return 0;
         }
         RECT rA, rB, rTitle;
@@ -418,7 +418,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
             (count >= 0x64) ? SECRET_BONUS_TIER_THREE
                             : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
 
-        if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+        if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
             return 0;
         }
         CString title;
@@ -1594,7 +1594,7 @@ i32 CBootyState::InputVirtual() {
         return 0;
     }
     if (m_activation != BOOTYSEQ_DONE) {
-        if (FadeInTitle("bg", 0, 0, 0, 0, 1) == 0) {
+        if (LoadTitlePage("bg", 0, 0, 0, 0, 1) == 0) {
             return 0;
         }
         ShowLevelCompleteMessage();
@@ -1748,7 +1748,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     (*ap)->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     ap++;
                 }
-                if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+                if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
                     return 0;
                 }
                 ShowLevelCompleteMessage();
@@ -1756,7 +1756,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
                 m_world->m_drawTarget->TransTitle();
                 RetireScene(0x50, 0x3e8, 0, 1);
-                if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+                if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
                     return 0;
                 }
                 ShowLevelCompleteMessage();
@@ -2214,7 +2214,7 @@ void CMultiBootyState::ReleaseResources() {
 
 RVA(0x0001e570, 0xb4)
 i32 CMultiBootyState::EnterState(GameStateId) {
-    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
+    i32 ok = LoadTitlePage("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok;
     }
@@ -2749,7 +2749,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+    if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
         return 0;
     }
 

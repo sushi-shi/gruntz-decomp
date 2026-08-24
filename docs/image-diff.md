@@ -375,7 +375,7 @@ also exposed two previously hidden CRT identity differences: retail's
 pooled `"."` literal.  The honest wrong-region count therefore rises **34 -> 36**.
 The selftest uses the `RECT` field as a negative control.
 
-`CChatBoxOwner::ProcessCheatInput` then supplied the first source correction from the
+`CChatBoxOwner::HandleTextInputKey` then supplied the first source correction from the
 identity-only list.  Retail pushes `??_C@_00A@?$AA@` and calls
 `CString::CString(const char*)` for the `group` local; `CString group = "";`
 reproduces that evidence.  The region leaves the wrong-identity bucket (**36 -> 35**).

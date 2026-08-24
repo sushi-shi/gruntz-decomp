@@ -42,11 +42,18 @@ i32 g_playActive;
 // One scratch register: retail keeps esi live and uses edx for the drawTarget chain.
 // Caching menuRoot() in a local is strictly worse; no local spelling reaches it.
 RVA(0x000fa1f0, 0xc6)
-i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
-    static_cast<void>(a);
-    static_cast<void>(b);
-    static_cast<void>(c);
-    static_cast<void>(d);
+i32 CState::LoadTitlePage(
+    const char* titleName,
+    i32 unused1,
+    i32 unused2,
+    i32 unused3,
+    i32 unused4,
+    i32 useOverlay
+) {
+    static_cast<void>(unused1);
+    static_cast<void>(unused2);
+    static_cast<void>(unused3);
+    static_cast<void>(unused4);
     if (!m_world) {
         return 0;
     }
@@ -58,19 +65,19 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
 
     char buf[0x40];
-    sprintf(buf, "\\SCREENZ\\%s", name);
+    sprintf(buf, "\\SCREENZ\\%s", titleName);
     CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
     if (page == NULL) {
         return 0;
     }
 
     DDrawPageKind mode = DDRAW_PAGE_BACK;
-    if (e != 0) {
+    if (useOverlay != 0) {
         mode = DDRAW_PAGE_OVERLAY;
     }
 
     if (menuRoot()->m_drawTarget->LoadPageImage(page, mode) == 0) {
-        if (e != 0) {
+        if (useOverlay != 0) {
             if (menuRoot()->m_drawTarget->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
                 return 0;
             }
@@ -83,7 +90,18 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // One scratch register on the frontPair->m_surface chain; a local for the pair or
 // for the surface is byte-identical.
 RVA(0x000fa300, 0x3a)
-i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
+i32 CState::PresentTitlePage(
+    const char* unusedTitleName,
+    i32 unused1,
+    i32 unused2,
+    i32 unused3,
+    i32 unused4
+) {
+    static_cast<void>(unusedTitleName);
+    static_cast<void>(unused1);
+    static_cast<void>(unused2);
+    static_cast<void>(unused3);
+    static_cast<void>(unused4);
     if (!m_world) {
         return 0;
     }
@@ -98,7 +116,13 @@ i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
 }
 
 RVA(0x000fa350, 0x84)
-i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
+i32 CState::LoadAndPresentTitlePage(
+    const char* titleName,
+    i32 unused1,
+    i32 unused2,
+    i32 unused3,
+    i32 unused4
+) {
     if (!m_world) {
         return 0;
     }
@@ -108,10 +132,10 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (!m_stateBank) {
         return 0;
     }
-    if (FadeInTitle(name, a, b, c, d, 0) == 0) {
+    if (LoadTitlePage(titleName, unused1, unused2, unused3, unused4, 0) == 0) {
         return 0;
     }
-    return RunTitle(name, a, b, c, d) != 0;
+    return PresentTitlePage(titleName, unused1, unused2, unused3, unused4) != 0;
 }
 
 // @dead-code

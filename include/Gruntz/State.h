@@ -126,11 +126,30 @@ public:
 
     i32 ShadeScreen(i32 pct);
 
-    i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e);
+    i32 LoadTitlePage(
+        const char* titleName,
+        i32 unused1,
+        i32 unused2,
+        i32 unused3,
+        i32 unused4,
+        i32 useOverlay
+    );
 
     i32 DrawScreenTextImage(const char* name);
-    i32 RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e);
-    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);
+    i32 PresentTitlePage(
+        const char* unusedTitleName,
+        i32 unused1,
+        i32 unused2,
+        i32 unused3,
+        i32 unused4
+    );
+    i32 LoadAndPresentTitlePage(
+        const char* titleName,
+        i32 unused1,
+        i32 unused2,
+        i32 unused3,
+        i32 unused4
+    );
 
     i32 RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay);
 

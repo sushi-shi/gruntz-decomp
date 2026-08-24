@@ -34,7 +34,7 @@ problem for several sessions. The multiset closed it in one line:
     ?LoadDestructButtonSprite@CStatusBarMgr@@QAEHH@Z    tgt=0 base=3
     ?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ      tgt=4 base=1
     ?FilterList2@CTileTriggerContainer@@QAEHH@Z         tgt=2 base=4
-    ?StepGridWalk@CPlay@@QAEHH@Z                        tgt=3 base=1
+    ?AdvanceCursorAnimation@CPlay@@QAEHH@Z                        tgt=3 base=1
 
 A `tgt=0` row is decisive: retail never calls it, so every one of our sites is
 wrong, and a complementary pair (`0/3` against `4/1`) names the replacement for

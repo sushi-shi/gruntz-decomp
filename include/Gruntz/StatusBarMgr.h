@@ -351,8 +351,8 @@ public:
 
     i32 m_hlBusy;
     CWarpStoneFly* m_retabNotify;
-    i32 m_toggleActive;
-    i32 m_toggleHandle;
+    i32 m_levelOverlayActive;
+    i32 m_quitConfirmationActive;
     DestructWarningState m_destructWarnActive;
     DestructButtonFrame m_modeState;
     SbiClockPair m_destructWarnClock;
@@ -409,8 +409,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_activeTab = TAB_NONE;
     m_hitTestDisabled = 0;
     m_tabsBuilt = 0;
-    m_toggleActive = 0;
-    m_toggleHandle = 0;
+    m_levelOverlayActive = 0;
+    m_quitConfirmationActive = 0;
     m_barFrameGate = 0x1e0;
     m_tabCycle = 0;
     // Seven memsets in ASCENDING member order, which is what retail emits:

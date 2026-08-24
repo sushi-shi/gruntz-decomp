@@ -22,7 +22,7 @@ Measured across one 40-65% batch (2026-08-07):
 
 | fn | base frame | retail frame | delta |
 |---|---|---|---|
-| `CChatBoxOwner::ProcessCheatInput` 0x205c0 | 0x134 | 0x13c | retail +8 |
+| `CChatBoxOwner::HandleTextInputKey` 0x205c0 | 0x134 | 0x13c | retail +8 |
 | `CDDSurface::SaveRle16` 0x144640 | 0x50 | 0x54 | retail +4 |
 | `CGrunt::ChargeStep` 0xef6b0 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::ResetEntranceAnimation` 0x62e10 | `push ecx` (4) | 0xc | retail +8 |

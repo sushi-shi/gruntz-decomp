@@ -11,7 +11,7 @@ same source. Recognize it and stop; do not restructure the source to chase it.
 
 ## The three sites
 
-- `CPlay::StepGridWalk` 0x000d0a60 (66.67). Bodies are byte-identical from the fourth
+- `CPlay::AdvanceCursorAnimation` 0x000d0a60 (66.67). Bodies are byte-identical from the fourth
   block on. Retail: `test eax,eax / jne L1 / mov eax,1 / ret 4` — an early `return 1`
   with **no** `pop esi` — then `push esi` shrink-wrapped into L1, after the
   `mov edx,[esp+0x4]` parameter read. Base merges that `return 1` with the function's
@@ -45,7 +45,7 @@ same source. Recognize it and stop; do not restructure the source to chase it.
 predecessor-count change this wall wanted, and it makes cl sink the callee-saved pushes
 past the entry guard - see
 [`shrink-wrapped-prologue-needs-one-tail-return`](shrink-wrapped-prologue-needs-one-tail-return.md).
-`CPlay::StepGridWalk` 0xd0a60, listed below as unmovable, went **66.67 -> 100.00 EXACT**
+`CPlay::AdvanceCursorAnimation` 0xd0a60, listed below as unmovable, went **66.67 -> 100.00 EXACT**
 with that one edit.
 
 Only a change in predecessor count - see

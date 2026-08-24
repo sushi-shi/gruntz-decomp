@@ -70,7 +70,7 @@ i32 CSplashState::EnterState(GameStateId) {
     int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
     }
-    RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 1, 1, 1, 0);
+    LoadAndPresentTitlePage(static_cast<const char*>(CAssetRootStorage::s_value), 1, 1, 1, 0);
     m_splashCountdownMs = 0xea60;
     return 1;
 }
@@ -132,7 +132,13 @@ i32 CSplashState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 0, 0, 1, 0);
+    return LoadAndPresentTitlePage(
+        static_cast<const char*>(CAssetRootStorage::s_value),
+        0,
+        0,
+        1,
+        0
+    );
 }
 
 RVA(0x000f9af0, 0x3e)
@@ -142,7 +148,13 @@ i32 CSplashState::RestoreDisplay() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 0, 0, 1, 0);
+    return LoadAndPresentTitlePage(
+        static_cast<const char*>(CAssetRootStorage::s_value),
+        0,
+        0,
+        1,
+        0
+    );
 }
 
 RVA(0x000f9b40, 0x37)

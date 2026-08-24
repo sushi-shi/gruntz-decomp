@@ -160,7 +160,7 @@ i32 CCreditsState::LeaveState(GameStateId unused) {
     owner()->m_midi->EndCurrent();
     owner()->m_midi->ClearSequences();
     m_stateBank = stateMgr()->ResolvePath("STATEZ_ATTRACT");
-    RunTitleSeq("TITLE", 0, 0, 1, 0);
+    LoadAndPresentTitlePage("TITLE", 0, 0, 1, 0);
     return 1;
 }
 
@@ -295,7 +295,7 @@ i32 CCreditsState::InitAttractTitle() {
     if (state == NULL) {
         return 0;
     }
-    i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
     if (faded == 0) {
         m_stateBank = saved;
         return 0;

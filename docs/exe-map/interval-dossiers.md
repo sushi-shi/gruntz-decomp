@@ -131,7 +131,7 @@ Evidence:
   `m4::PwdHost` = `+0x1c` edit-text CString + `+0x38` control HFONT ≡
   `CFontConfig::m_inputText` (+0x1c) + `m_arialFont` (+0x38)
   (include/Gruntz/FontConfig.h vs src/Gruntz/GameText.cpp). The renderers
-  render the very string `TypeChar` accumulates.
+  render the very string `HandleInputChar` accumulates.
 - The single fontconfig fn inside the drawtext run (`0x22360`) is an
   unreconstructed `@stub` whose only signal is its winapi fingerprint
   (`DrawTextA/SelectObject/SetTextColor`) — the drawtext family itself; its
@@ -573,7 +573,7 @@ tail pending the 0xea990-0xf8800 partition package.
   channelslots + gruntzplayer + gamemodeobjlifecycle units folded in, /GX
   unified. The "CGameModeObj" view was offset-proven to be CPlay ITSELF
   (+0x1cc m_savedClock / +0x2dc m_guts / +0x3a4 array block / +0x4fc
-  m_overlayDrag) and its four lifecycle methods are now CPlay members; the
+  m_levelOverlayOpen) and its four lifecycle methods are now CPlay members; the
   retail `lea ecx,[this+idx*0x14+0x3a4]` RemoveAt base proves CPlay::m_3a4 is
   **CPtrArray[4]** (not CByteArray[4] - same 0x14 size, dtor fold unchanged,
   ~CPlay/~CDemo held 100%). The "Cdb2f0" orphan folded to

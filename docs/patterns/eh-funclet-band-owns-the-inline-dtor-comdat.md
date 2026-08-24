@@ -38,12 +38,12 @@ rows re-home on the next full build.
 
 `??1CButeMgr@@QAE@XZ` (0x213c0) and `??1CBSecStream@@UAE@XZ` (0x21570) had their
 only callers in `0x5d9322`/`0x5d9556`/`0x5d9561` — the same handler band as
-`CChatBoxOwner::ProcessCheatInput`'s `push 0x5d9474`. That TU has the
+`CChatBoxOwner::HandleTextInputKey`'s `push 0x5d9474`. That TU has the
 `CButeMgr bute;` stack local. Moving all five pins (0x212e0 `??_GzPTree`,
 0x21310 `??1zPTree`, 0x213c0 `??1CButeMgr`, 0x21570 `??1CBSecStream`, 0x21600
 `??_EzPTree`) from `ButeMgr.cpp` to `ChatBoxOwner.cpp` and making `~CButeMgr()`
 inline: cl emitted all five in `chatboxowner.obj`, each **100%**, and
-ProcessCheatInput went **62.32 → 76.01** on that change alone. Five
+HandleTextInputKey went **62.32 → 76.01** on that change alone. Five
 `@identity-TODO`s resolved.
 
 variants: [interleaved-comdat-methods.md](interleaved-comdat-methods.md),

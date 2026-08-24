@@ -70,11 +70,11 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         }
     }
     if (count <= 1 && m_phase == FINISH_STATE_DEFEAT
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleActive == 0
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleHandle == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_levelOverlayActive == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_quitConfirmationActive == 0
         && m_pendingFx == NULL) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
-            (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
         }
     }
 
@@ -91,7 +91,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
 
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
             m_countdownActive = 0;
             return 0;
         }
@@ -105,7 +105,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_pendingFx != NULL) {
             goto done;
         }
-        (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
+        (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
         m_countdownActive = 0;
         return 0;
     }

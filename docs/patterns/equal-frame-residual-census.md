@@ -271,10 +271,10 @@ of `operand` (32 -> 17); every one landed in `regname` or `selection`.
 
 **13. cl folding a parameter inside the arm that tested it.** `CPlay::
 LoadCursorSprites` 0xd0120 stores `mov [esi+0x2f8],0x66` where retail stores the
-`frame` PARAMETER — because that arm is guarded by `cursor == CURSOR_FLAILING
+`cursorId` PARAMETER — because that arm is guarded by `cursor == CURSOR_FLAILING
 GRUNT`, and `CURSOR_FLAILINGGRUNT` is 0x66. The store is semantically identical;
-what differs is that retail's arms share one `m_levelId = frame; return 1;`
-tail, so `frame` is not a known constant there. Before reading a base-only
+what differs is that retail's arms share one `m_cursorId = cursorId; return 1;`
+tail, so `cursorId` is not a known constant there. Before reading a base-only
 constant as a wrong value, check whether it EQUALS the arm's own guard.
 
 **14. A one-past-the-end array pointer, i.e. §5 in the FORWARD direction.** A

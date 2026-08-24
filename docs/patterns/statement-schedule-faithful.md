@@ -100,7 +100,7 @@ repeated `m_world` chains with the existing `menuRoot()` expansion moved the fir
 load across the two `LoadPageImage` argument pushes exactly as retail does and raised the
 function from 96.39% to 99.69%. Both sides remain 64 instructions, 4 calls, 6 branches,
 6 returns, and 5 ordered referents. The sole residue is the already-bounded scratch
-register choice on `frontPair->m_surface`, shared with adjacent `CState::RunTitle`.
+register choice on `frontPair->m_surface`, shared with adjacent `CState::PresentTitlePage`.
 
 `CDDrawChildGroup::LoadObjects` @0x15ad30 supplies the pre-lookup argument-lifetime form.
 The retail sprite/container arms load four snapshot fields before `CMapStringToOb::Lookup`,

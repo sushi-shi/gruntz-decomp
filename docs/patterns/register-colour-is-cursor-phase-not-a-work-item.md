@@ -31,7 +31,7 @@ references whose relocation symbol agrees on both sides: 144 sites, 83 functions
 **Usually a readout, not a cause: 17 of the 374 functions are PURE colour**, i.e.
 have no other divergence at all - `CSpotLight::SerializeMove` 99.96,
 `CBootyState::LoadGruntEffectSprites` 99.95, `CPathHazard::CPathHazard` 99.92,
-`ReadMenuOptionsDialog` 0x36a30 99.90, `CState::FadeInTitle` 99.88,
+`ReadMenuOptionsDialog` 0x36a30 99.90, `CState::LoadTitlePage` 99.88,
 `zBitVec::operator=` 99.84, `CGrunt::IsDropReady` 99.84, `CFrontCandy` /
 `CDoNothing` / `CBehindCandy` ctors 99.83, `LoadDestructButtonSprite` 99.82,
 `CDDrawSurfacePair::DrawCross` 99.73, `SaveVideoCheckboxes` 0x378c0 99.50,
