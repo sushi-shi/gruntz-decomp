@@ -26,13 +26,13 @@ DATA(0x0022990c)
 i32 g_posSoundReq;
 
 RVA(0x0000b5e0, 0x29)
-i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 volume) {
+i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
     if (cueRegistry == NULL) {
         return 0;
     }
     m_cueRegistry = cueRegistry;
-    m_volume = volume;
-    m_active = 1;
+    m_masterVolume = masterVolume;
+    m_enabled = 1;
     m_listenerX = 0;
     m_listenerY = 0;
     return 1;
@@ -64,16 +64,17 @@ void CWorldSoundSet::Teardown() {
 RVA(0x0000b6a0, 0x83)
 CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
     const char* key,
-    i32 level,
-    RECT* box,
-    i32 scaleB,
+    i32 volumeLevel,
+    RECT* region,
+    i32 volumeScale,
     i32 unused
 ) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromKey(m_cueRegistry, key, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromKey(m_cueRegistry, key, volumeLevel, m_masterVolume, region, volumeScale)
+        == 0) {
         delete obj;
         return NULL;
     }
@@ -87,17 +88,17 @@ RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
 CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
-    SoundBuffer* mgr,
-    i32 level,
-    RECT* box,
-    i32 scaleB,
+    SoundBuffer* sound,
+    i32 volumeLevel,
+    RECT* region,
+    i32 volumeScale,
     i32 unused
 ) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromSound(sound, volumeLevel, m_masterVolume, region, volumeScale) == 0) {
         delete obj;
         return NULL;
     }
@@ -110,16 +111,17 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
 RVA(0x0000b850, 0x83)
 CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
     const char* key,
-    i32 level,
-    AmbientPoint* pos,
-    i32 scaleB,
+    i32 volumeLevel,
+    AmbientPoint* position,
+    i32 volumeScale,
     i32 unused
 ) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromKey(m_cueRegistry, key, level, m_volume, pos, scaleB) == 0) {
+    if (obj->InitFromKey(m_cueRegistry, key, volumeLevel, m_masterVolume, position, volumeScale)
+        == 0) {
         delete obj;
         return NULL;
     }
@@ -133,17 +135,17 @@ RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
 RVA(0x0000b960, 0x80)
 CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
-    SoundBuffer* mgr,
-    i32 level,
-    AmbientPoint* pos,
-    i32 scaleB,
+    SoundBuffer* sound,
+    i32 volumeLevel,
+    AmbientPoint* position,
+    i32 volumeScale,
     i32 unused
 ) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromSound(mgr, level, m_volume, pos, scaleB) == 0) {
+    if (obj->InitFromSound(sound, volumeLevel, m_masterVolume, position, volumeScale) == 0) {
         delete obj;
         return NULL;
     }
@@ -154,32 +156,33 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0000ba00, 0xc6)
-CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
+CRandomAmbientSound* CWorldSoundSet::CreateRandomFromKey(
     const char* key,
-    i32 level,
-    RECT* box,
-    i32 scaleB,
-    i32 intervalLoA,
-    i32 intervalHiA,
-    i32 intervalLoB,
-    i32 intervalHiB,
+    i32 volumeLevel,
+    RECT* region,
+    i32 volumeScale,
+    i32 playDurationMin,
+    i32 playDurationMax,
+    i32 silenceDurationMin,
+    i32 silenceDurationMax,
     i32 unused
 ) {
-    if (static_cast<u32>(intervalHiA) < static_cast<u32>(intervalLoA)) {
+    if (static_cast<u32>(playDurationMax) < static_cast<u32>(playDurationMin)) {
         return NULL;
     }
-    if (static_cast<u32>(intervalHiB) < static_cast<u32>(intervalLoB)) {
+    if (static_cast<u32>(silenceDurationMax) < static_cast<u32>(silenceDurationMin)) {
         return NULL;
     }
     CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromKey(m_cueRegistry, key, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromKey(m_cueRegistry, key, volumeLevel, m_masterVolume, region, volumeScale)
+        == 0) {
         delete obj;
         return NULL;
     }
-    obj->InitCycleTiming(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
+    obj->InitCycleTiming(playDurationMin, playDurationMax, silenceDurationMin, silenceDurationMax);
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
@@ -188,33 +191,33 @@ RVA_COMPGEN(0x0000bb10, 0x1e, ??_GCRandomAmbientSound@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000bb40, 0xf, ??1CRandomAmbientSound@@UAE@XZ)
 
 RVA(0x0000bb60, 0x9b)
-CRandomAmbientSound* CWorldSoundSet::CreateRandom(
-    SoundBuffer* mgr,
-    i32 level,
-    RECT* box,
-    i32 scaleB,
-    i32 intervalLoA,
-    i32 intervalHiA,
-    i32 intervalLoB,
-    i32 intervalHiB,
+CRandomAmbientSound* CWorldSoundSet::CreateRandomFromSound(
+    SoundBuffer* sound,
+    i32 volumeLevel,
+    RECT* region,
+    i32 volumeScale,
+    i32 playDurationMin,
+    i32 playDurationMax,
+    i32 silenceDurationMin,
+    i32 silenceDurationMax,
     i32 unused
 ) {
     CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromSound(mgr, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromSound(sound, volumeLevel, m_masterVolume, region, volumeScale) == 0) {
         delete obj;
         return NULL;
     }
-    obj->InitCycleTiming(intervalLoA, intervalHiA, intervalLoB, intervalHiB);
+    obj->InitCycleTiming(playDurationMin, playDurationMax, silenceDurationMin, silenceDurationMax);
     obj->m_listNode = m_list.AddTail(obj);
     return obj;
 }
 
 RVA(0x0000bc30, 0x3a)
-void CWorldSoundSet::Restart(i32 volume) {
-    m_volume = volume;
+void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
+    m_masterVolume = masterVolume;
     if (m_cueRegistry->m_soundStream != NULL) {
         m_cueRegistry->m_soundStream->ClearVolumeRamps();
     }
@@ -222,7 +225,7 @@ void CWorldSoundSet::Restart(i32 volume) {
     while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (ch != NULL) {
-            ch->Recompute(static_cast<i32>(volume));
+            ch->ApplyMasterVolume(masterVolume);
         }
     }
 }
@@ -235,8 +238,8 @@ void CWorldSoundSet::Stop() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != NULL && ch->m_voice != NULL) {
-            ch->m_voice->StopAndRewind();
+        if (ch != NULL && ch->m_sound != NULL) {
+            ch->m_sound->StopAndRewind();
             ch->m_isPlaying = 0;
         }
     }
@@ -257,7 +260,7 @@ void CWorldSoundSet::Resume() {
 }
 
 RVA(0x0000bd60, 0x4b)
-void CWorldSoundSet::Retune(i32 x, i32 y) {
+void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
     m_listenerX = x;
     m_listenerY = y;
     POSITION pos = m_list.GetHeadPosition();
@@ -275,61 +278,68 @@ RVA(0x0000bdd0, 0x53)
 i32 CAmbientSound::InitFromKey(
     SoundCueRegistry* cueRegistry,
     const char* key,
-    i32 level,
-    i32 master,
-    RECT* box,
-    i32 scaleB
+    i32 volumeLevel,
+    i32 masterVolume,
+    RECT* region,
+    i32 volumeScale
 ) {
     SoundCue* cue = NULL;
     MapLookup(cueRegistry->m_cues, key, cue);
     if (cue == NULL) {
         return 0;
     }
-    return InitFromSound(cue->m_sound, level, master, box, scaleB);
+    return InitFromSound(cue->m_sound, volumeLevel, masterVolume, region, volumeScale);
 }
 
 RVA(0x0000be50, 0x8f)
-i32 CAmbientSound::InitFromSound(SoundBuffer* mgr, i32 level, i32 master, RECT* box, i32 scaleB) {
-    if (mgr == NULL) {
+i32 CAmbientSound::InitFromSound(
+    SoundBuffer* sound,
+    i32 volumeLevel,
+    i32 masterVolume,
+    RECT* region,
+    i32 volumeScale
+) {
+    if (sound == NULL) {
         return 0;
     }
-    m_voice = mgr;
-    m_level = level;
-    m_scaleA = master;
-    m_scaleB = scaleB;
-    m_panIndex = 0;
+    m_sound = sound;
+    m_volumeLevel = volumeLevel;
+    m_masterVolume = masterVolume;
+    m_volumeScale = volumeScale;
+    m_panPercent = 0;
     m_isPlaying = 0;
-    RECT* p = &m_box1;
-    if (box != NULL) {
-        *p = *box;
+    RECT* p = &m_primaryRegion;
+    if (region != NULL) {
+        *p = *region;
     } else {
         p->left = COORD_UNSET;
     }
-    if (p->left == 0 && m_box1.top == 0 && m_box1.right == 0 && m_box1.bottom == 0) {
+    if (p->left == 0 && m_primaryRegion.top == 0 && m_primaryRegion.right == 0
+        && m_primaryRegion.bottom == 0) {
         p->left = COORD_UNSET;
     }
-    m_box2.left = COORD_UNSET;
+    m_secondaryRegion.left = COORD_UNSET;
     return 1;
 }
 
 RVA(0x0000bf10, 0x72)
-void CAmbientSound::Recompute(i32 master) {
-    if (m_scaleA == master) {
+void CAmbientSound::ApplyMasterVolume(i32 masterVolume) {
+    if (m_masterVolume == masterVolume) {
         return;
     }
-    i32 mult = m_level;
-    m_scaleA = master;
+    i32 mult = m_volumeLevel;
+    m_masterVolume = masterVolume;
     i32 v = ScaleVolume(mult);
-    m_voice->SetVolumePercent(v);
+    m_sound->SetVolumePercent(v);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0000bfb0, 0xa9)
-void CAmbientSound::Restart() {
-    SoundBuffer* voice = m_voice;
-    i32 pos = m_level;
-    if (voice == NULL) {
+void CAmbientSound::StartPlayback() {
+    SoundBuffer* sound = m_sound;
+    i32 pos = m_volumeLevel;
+    if (sound == NULL) {
         return;
     }
     if (m_isPlaying != 0) {
@@ -338,28 +348,28 @@ void CAmbientSound::Restart() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_worldSounds->m_active == 0) {
+    if (g_gameReg->m_worldSounds->m_enabled == 0) {
         return;
     }
-    m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-    m_level = pos;
+    m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+    m_volumeLevel = pos;
     i32 v = ScaleVolume(pos);
-    m_voice->SetVolumePercent(v);
-    m_level = pos;
+    m_sound->SetVolumePercent(v);
+    m_volumeLevel = pos;
     m_isPlaying = 1;
 }
 
 RVA(0x0000c090, 0x118)
-void CAmbientSound::Update(i32 x, i32 y, i32 force) {
+void CAmbientSound::Update(i32 x, i32 y, i32 immediate) {
     i32 inRange;
-    if (m_box1.left == COORD_UNSET) {
+    if (m_primaryRegion.left == COORD_UNSET) {
 
         if (m_isPlaying != 0) {
             return;
         }
-        SoundBuffer* voice = m_voice;
-        i32 lvl = m_level;
-        if (voice == NULL) {
+        SoundBuffer* sound = m_sound;
+        i32 lvl = m_volumeLevel;
+        if (sound == NULL) {
             return;
         }
         if (lvl == 0) {
@@ -368,20 +378,22 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        if (g_gameReg->m_worldSounds->m_active == 0) {
+        if (g_gameReg->m_worldSounds->m_enabled == 0) {
             return;
         }
-        voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-        SetLevel(0x64, 0, 0);
-        m_level = 0x64;
+        sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+        SetVolumeLevel(0x64, 0, 0);
+        m_volumeLevel = 0x64;
         m_isPlaying = 1;
         return;
     }
 
-    if (x > m_box1.left && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
+    if (x > m_primaryRegion.left && x < m_primaryRegion.right && y > m_primaryRegion.top
+        && y < m_primaryRegion.bottom) {
         inRange = 1;
-    } else if (m_box2.left != COORD_UNSET && x > m_box2.left && x < m_box2.right && y > m_box2.top
-               && y < m_box2.bottom) {
+    } else if (m_secondaryRegion.left != COORD_UNSET && x > m_secondaryRegion.left
+               && x < m_secondaryRegion.right && y > m_secondaryRegion.top
+               && y < m_secondaryRegion.bottom) {
         inRange = 1;
     } else {
         inRange = 0;
@@ -395,46 +407,46 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        if (g_gameReg->m_worldSounds->m_active == 0) {
+        if (g_gameReg->m_worldSounds->m_enabled == 0) {
             return;
         }
-        if (force != 0) {
-            if (m_voice == NULL) {
+        if (immediate != 0) {
+            if (m_sound == NULL) {
                 return;
             }
-            m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-            SetLevel(0x64, 0, 0);
-            m_level = 0x64;
+            m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+            SetVolumeLevel(0x64, 0, 0);
+            m_volumeLevel = 0x64;
             m_isPlaying = 1;
         } else {
-            Fade(1, 0x64, 0x3e8);
+            FadePlayback(1, 0x64, 0x3e8);
         }
     } else {
 
         if (inRange != 0) {
             return;
         }
-        Fade(0, 0, 0x3e8);
+        FadePlayback(0, 0, 0x3e8);
     }
 }
 
 RVA(0x0000c200, 0x7e)
-i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
-    m_level = value;
-    i32 v = ScaleVolume(value);
-    if (mode == 0) {
-        return m_voice->SetVolumePercent(v);
+i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, i32 stopAndRewind) {
+    m_volumeLevel = volumeLevel;
+    i32 v = ScaleVolume(volumeLevel);
+    if (rampMs == 0) {
+        return m_sound->SetVolumePercent(v);
     }
-    return m_voice->RampVolumeTo(v, mode, extra);
+    return m_sound->RampVolumeTo(v, rampMs, stopAndRewind);
 }
 
 // @early-stop
 RVA(0x0000c2a0, 0x19e)
-void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
-    if (m_voice == NULL) {
+void CAmbientSound::FadePlayback(i32 startPlaying, i32 volumeLevel, i32 rampMs) {
+    if (m_sound == NULL) {
         return;
     }
-    if (playFlag != 0) {
+    if (startPlaying != 0) {
 
         if (m_isPlaying != 0) {
             return;
@@ -442,48 +454,48 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        if (g_gameReg->m_worldSounds->m_active == 0) {
+        if (g_gameReg->m_worldSounds->m_enabled == 0) {
             return;
         }
-        if (mode == 0) {
-            m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-            i32 t = m_scaleA;
-            m_level = level;
+        if (rampMs == 0) {
+            m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+            i32 t = m_masterVolume;
+            m_volumeLevel = volumeLevel;
             if (t > 5) {
                 t -= 0xf;
             }
-            i32 v = (t * level) / 100;
-            if (m_scaleB > 0) {
-                v = (v * m_scaleB) / 100;
+            i32 v = (t * volumeLevel) / 100;
+            if (m_volumeScale > 0) {
+                v = (v * m_volumeScale) / 100;
             }
             if (v < 0) {
                 v = 0;
             } else if (v > 0x64) {
                 v = 0x64;
             }
-            m_voice->SetVolumePercent(v);
-            m_level = level;
+            m_sound->SetVolumePercent(v);
+            m_volumeLevel = volumeLevel;
             m_isPlaying = 1;
             return;
         }
 
-        m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-        i32 t = m_scaleA;
-        m_level = level;
+        m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+        i32 t = m_masterVolume;
+        m_volumeLevel = volumeLevel;
         if (t > 5) {
             t -= 0xf;
         }
-        i32 v = (t * level) / 100;
-        if (m_scaleB > 0) {
-            v = (v * m_scaleB) / 100;
+        i32 v = (t * volumeLevel) / 100;
+        if (m_volumeScale > 0) {
+            v = (v * m_volumeScale) / 100;
         }
         if (v < 0) {
             v = 0;
         } else if (v > 0x64) {
             v = 0x64;
         }
-        m_voice->RampVolumeTo(v, mode, 0);
-        m_level = level;
+        m_sound->RampVolumeTo(v, rampMs, 0);
+        m_volumeLevel = volumeLevel;
         m_isPlaying = 1;
         return;
     }
@@ -491,13 +503,13 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
     if (m_isPlaying == 0) {
         return;
     }
-    if (mode == 0) {
-        m_voice->StopAndRewind();
+    if (rampMs == 0) {
+        m_sound->StopAndRewind();
         m_isPlaying = 0;
         return;
     }
-    m_level = 0;
-    m_voice->RampVolumeTo(0, mode, 1);
+    m_volumeLevel = 0;
+    m_sound->RampVolumeTo(0, rampMs, 1);
     m_isPlaying = 0;
 }
 
@@ -505,51 +517,51 @@ RVA(0x0000c4b0, 0x53)
 i32 CAmbientPosSound::InitFromKey(
     SoundCueRegistry* cueRegistry,
     const char* key,
-    i32 level,
-    i32 master,
-    AmbientPoint* pos,
-    i32 scaleB
+    i32 volumeLevel,
+    i32 masterVolume,
+    AmbientPoint* position,
+    i32 volumeScale
 ) {
     SoundCue* cue = NULL;
     MapLookup(cueRegistry->m_cues, key, cue);
     if (cue == NULL) {
         return 0;
     }
-    return InitFromSound(cue->m_sound, level, master, pos, scaleB);
+    return InitFromSound(cue->m_sound, volumeLevel, masterVolume, position, volumeScale);
 }
 
 RVA(0x0000c530, 0x51)
 i32 CAmbientPosSound::InitFromSound(
-    SoundBuffer* mgr,
-    i32 level,
-    i32 master,
-    AmbientPoint* pos,
-    i32 scaleB
+    SoundBuffer* sound,
+    i32 volumeLevel,
+    i32 masterVolume,
+    AmbientPoint* position,
+    i32 volumeScale
 ) {
-    if (mgr == NULL) {
+    if (sound == NULL) {
         return 0;
     }
-    if (pos == NULL) {
+    if (position == NULL) {
         return 0;
     }
-    m_voice = mgr;
-    m_level = level;
-    m_scaleA = master;
-    m_panIndex = 0;
-    m_scaleB = scaleB;
+    m_sound = sound;
+    m_volumeLevel = volumeLevel;
+    m_masterVolume = masterVolume;
+    m_panPercent = 0;
+    m_volumeScale = volumeScale;
     m_isPlaying = 0;
-    m_position = *pos;
+    m_position = *position;
     return 1;
 }
 
 RVA(0x0000c5b0, 0x1df)
-void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
+void CAmbientPosSound::Update(i32 x, i32 y, i32 immediate) {
     i32 dx = abs(m_position.x - x);
     i32 dy = abs(m_position.y - y);
     i32 dist2 = dx * dx + dy * dy;
     if (dx > 0x280 || dy > 0x280) {
-        if (m_voice != NULL && m_isPlaying != 0) {
-            m_voice->StopAndRewind();
+        if (m_sound != NULL && m_isPlaying != 0) {
+            m_sound->StopAndRewind();
             m_isPlaying = 0;
         }
         return;
@@ -573,32 +585,32 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     }
 
     {
-        m_level = vol;
+        m_volumeLevel = vol;
         i32 v = ScaleVolume(vol);
-        m_voice->SetVolumePercent(v);
+        m_sound->SetVolumePercent(v);
     }
-    m_panIndex = pan;
-    m_voice->SetPanPercent(pan);
+    m_panPercent = pan;
+    m_sound->SetPanPercent(pan);
 
     if (m_isPlaying != 0) {
         return;
     }
-    if (m_voice == NULL) {
+    if (m_sound == NULL) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_worldSounds->m_active == 0) {
+    if (g_gameReg->m_worldSounds->m_enabled == 0) {
         return;
     }
-    m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+    m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
     {
-        m_level = vol;
+        m_volumeLevel = vol;
         i32 v = ScaleVolume(vol);
-        m_voice->SetVolumePercent(v);
+        m_sound->SetVolumePercent(v);
     }
-    m_level = vol;
+    m_volumeLevel = vol;
     m_isPlaying = 1;
 }
 
@@ -630,7 +642,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
             if (g_gameReg->m_worldSounds) {
                 CAmbientSound* placed;
                 if (obj->m_extent.top > 0) {
-                    placed = g_gameReg->m_worldSounds->CreateRandom(
+                    placed = g_gameReg->m_worldSounds->CreateRandomFromSound(
                         layer->m_sound,
                         0x64,
                         &rc,
@@ -647,7 +659,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                             ->CreateAmbientFromSound(layer->m_sound, 0x64, &rc, obj->m_damage, 0);
                 }
                 if (placed && obj->m_switchRect.top > 0) {
-                    placed->m_box2 = obj->m_switchRect;
+                    placed->m_secondaryRegion = obj->m_switchRect;
                 }
             }
         }
@@ -678,8 +690,8 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
         }
 
         CWorldSoundSet* set = g_gameReg->m_worldSounds;
-        if (sound->m_voice != NULL) {
-            sound->m_voice->StopAndRewind();
+        if (sound->m_sound != NULL) {
+            sound->m_sound->StopAndRewind();
             sound->m_isPlaying = 0;
         }
         if (sound->m_listNode != NULL) {
@@ -724,32 +736,33 @@ static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
 
 // @early-stop
 RVA(0x0000cb30, 0x168)
-void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
+void CRandomAmbientSound::Update(i32 x, i32 y, i32 immediate) {
 
-    i32 firstBoxLeft = m_box1.left;
+    i32 firstBoxLeft = m_primaryRegion.left;
     i32 inBox = 0;
     if (firstBoxLeft == COORD_UNSET) {
         inBox = 1;
-    } else if (x > firstBoxLeft && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
+    } else if (x > firstBoxLeft && x < m_primaryRegion.right && y > m_primaryRegion.top
+               && y < m_primaryRegion.bottom) {
         inBox = 1;
     } else {
-        i32 secondBoxLeft = m_box2.left;
-        if (secondBoxLeft != COORD_UNSET && x > secondBoxLeft && x < m_box2.right && y > m_box2.top
-            && y < m_box2.bottom) {
+        i32 secondBoxLeft = m_secondaryRegion.left;
+        if (secondBoxLeft != COORD_UNSET && x > secondBoxLeft && x < m_secondaryRegion.right
+            && y > m_secondaryRegion.top && y < m_secondaryRegion.bottom) {
             inBox = 1;
         }
     }
 
     if (inBox == 0) {
-        if (m_isPlaying != 0 && m_voice != NULL) {
-            SetLevel(0, 0x3e8, 1);
+        if (m_isPlaying != 0 && m_sound != NULL) {
+            SetVolumeLevel(0, 0x3e8, 1);
             m_isPlaying = 0;
         }
-        m_phase = 0;
+        m_playPhase = 0;
         return;
     }
 
-    if (force != 0 && m_phase != 0 && m_isPlaying != 0) {
+    if (immediate != 0 && m_playPhase != 0 && m_isPlaying != 0) {
         return;
     }
 
@@ -762,15 +775,15 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         return;
     }
 
-    m_phase ^= 1;
-    if (m_phase != 0) {
+    m_playPhase ^= 1;
+    if (m_playPhase != 0) {
         i32 r = RandRange(g_gameReg, m_playDurationMin, m_playDurationMax);
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1;
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        Fade(1, 0x64, half);
+        FadePlayback(1, 0x64, half);
     } else {
         i32 r = RandRange(g_gameReg, m_silenceDurationMin, m_silenceDurationMax);
         m_countdownMs = r;
@@ -778,7 +791,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        Fade(0, 0x64, half);
+        FadePlayback(0, 0x64, half);
     }
 }
 
@@ -805,16 +818,16 @@ void CRandomAmbientSound::InitCycleTiming(
         random = GetRandomNumber();
         if (random & 1) {
             i32 countdown = playDurationMin;
-            m_phase = 1;
+            m_playPhase = 1;
             m_countdownMs = countdown;
         } else {
             i32 countdown = playDurationMax;
-            m_phase = 1;
+            m_playPhase = 1;
             m_countdownMs = countdown;
         }
         return;
     }
     random = GetRandomNumber();
-    m_phase = 1;
+    m_playPhase = 1;
     m_countdownMs = playDurationMin + random % span;
 }

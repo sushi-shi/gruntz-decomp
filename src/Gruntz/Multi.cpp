@@ -739,7 +739,7 @@ void CMulti::RenderGameFrame() {
         }
     }
     StepScroll();
-    Mgr()->m_worldSounds->Retune(
+    Mgr()->m_worldSounds->SetListenerPosition(
         (m_world->m_level->m_mainPlane)->m_snappedX,
         (m_world->m_level->m_mainPlane)->m_snappedY
     );

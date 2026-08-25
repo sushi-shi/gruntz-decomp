@@ -10,19 +10,20 @@ all-zero check (`cmp edx,[ecx+N]`) — diverging from retail, which instead take
 member's address once (`lea edx,[ecx+N]`), copies through it with a separate temp,
 stores the zeros as **literal** immediates, and tests the first field through that
 pointer (`cmp [edx],0`). Reproduce retail by giving the member an explicit
-`AmbientBox* p = &m_box1;` pointer, doing the copy as a whole-struct assignment
+`AmbientBox* p = &m_primaryRegion;` pointer, doing the copy as a whole-struct assignment
 `*p = *src;` (cl emits the 4-mov copy through `lea`+temp, NOT rep movs for 16 bytes),
 the no-source sentinel store through `p`, and the first field of the all-zero check
 through `p` — so `p` stays live in edx and no zero gets pinned.
 
 ```cpp
-AmbientBox* p = &m_box1;
+AmbientBox* p = &m_primaryRegion;
 if (box != 0) {
     *p = *box;                    // lea edx,[ecx+0x18]; mov edi,edx; 4x (mov ebx,[eax+k]; mov [edi+k],ebx)
 } else {
     p->left = (i32)0x80000000;    // mov [edx],0x80000000
 }
-if (p->left == 0 && m_box1.top == 0 && m_box1.right == 0 && m_box1.bottom == 0)
+if (p->left == 0 && m_primaryRegion.top == 0 && m_primaryRegion.right == 0
+    && m_primaryRegion.bottom == 0)
     p->left = (i32)0x80000000;    // cmp [edx],0 ; mov eax,[ecx+0x1c]; test eax,eax; ...
 ```
 STEERABLE. The field-by-field copy (`p->left=box->left; ...`) does NOT suffice — cl

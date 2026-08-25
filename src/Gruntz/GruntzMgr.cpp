@@ -2662,7 +2662,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
     }
     CWorldSoundSet* in = m_worldSounds;
     if (in) {
-        in->Restart(v);
+        in->SetMasterVolume(v);
     }
 }
 
@@ -2761,13 +2761,13 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     CWorldSoundSet* cur = m_worldSounds;
     if (m_isAmbientEnabled != 0) {
-        if (cur->m_active == 0) {
-            cur->m_active = 1;
+        if (cur->m_enabled == 0) {
+            cur->m_enabled = 1;
             cur->Resume();
         }
     } else {
-        if (cur->m_active != 0) {
-            cur->m_active = 0;
+        if (cur->m_enabled != 0) {
+            cur->m_enabled = 0;
             cur->Stop();
         }
     }

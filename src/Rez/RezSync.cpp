@@ -371,14 +371,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     {
-        i32 f = m_worldSounds->m_active;
+        i32 f = m_worldSounds->m_enabled;
         if (vMusic != 0) {
             if (f == 0) {
-                m_worldSounds->m_active = 1;
+                m_worldSounds->m_enabled = 1;
                 m_worldSounds->Resume();
             }
         } else if (f != 0) {
-            m_worldSounds->m_active = 0;
+            m_worldSounds->m_enabled = 0;
             m_worldSounds->Stop();
         }
     }

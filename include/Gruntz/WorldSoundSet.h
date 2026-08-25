@@ -20,58 +20,73 @@ enum {
 
 class CWorldSoundSet {
 public:
-    i32 Init(SoundCueRegistry* cueRegistry, i32 volume);
+    i32 Init(SoundCueRegistry* cueRegistry, i32 masterVolume);
     void Teardown();
-    void Restart(i32 volume);
+    void SetMasterVolume(i32 masterVolume);
     void Stop();
     void Resume();
-    void Retune(i32 x, i32 y);
+    void SetListenerPosition(i32 x, i32 y);
     void Deactivate();
     CWorldSoundSet();
     ~CWorldSoundSet();
 
-    CAmbientSound*
-    CreateAmbientFromKey(const char* key, i32 level, RECT* box, i32 scaleB, i32 unused);
-    CAmbientSound*
-    CreateAmbientFromSound(SoundBuffer* mgr, i32 level, RECT* box, i32 scaleB, i32 unused);
-    CAmbientPosSound*
-    CreatePositionedFromKey(const char* key, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
-    CAmbientPosSound* CreatePositionedFromSound(
-        SoundBuffer* mgr,
-        i32 level,
-        AmbientPoint* pos,
-        i32 scaleB,
-        i32 unused
-    );
-
-    CRandomAmbientSound* CreateRandom(
-        SoundBuffer* mgr,
-        i32 level,
-        RECT* box,
-        i32 scaleB,
-        i32 intervalLoA,
-        i32 intervalHiA,
-        i32 intervalLoB,
-        i32 intervalHiB,
-        i32 unused
-    );
-
-    CRandomAmbientSound* CreateRandomBox(
+    CAmbientSound* CreateAmbientFromKey(
         const char* key,
-        i32 level,
-        RECT* box,
-        i32 scaleB,
-        i32 intervalLoA,
-        i32 intervalHiA,
-        i32 intervalLoB,
-        i32 intervalHiB,
+        i32 volumeLevel,
+        RECT* region,
+        i32 volumeScale,
+        i32 unused
+    );
+    CAmbientSound* CreateAmbientFromSound(
+        SoundBuffer* sound,
+        i32 volumeLevel,
+        RECT* region,
+        i32 volumeScale,
+        i32 unused
+    );
+    CAmbientPosSound* CreatePositionedFromKey(
+        const char* key,
+        i32 volumeLevel,
+        AmbientPoint* position,
+        i32 volumeScale,
+        i32 unused
+    );
+    CAmbientPosSound* CreatePositionedFromSound(
+        SoundBuffer* sound,
+        i32 volumeLevel,
+        AmbientPoint* position,
+        i32 volumeScale,
+        i32 unused
+    );
+
+    CRandomAmbientSound* CreateRandomFromSound(
+        SoundBuffer* sound,
+        i32 volumeLevel,
+        RECT* region,
+        i32 volumeScale,
+        i32 playDurationMin,
+        i32 playDurationMax,
+        i32 silenceDurationMin,
+        i32 silenceDurationMax,
+        i32 unused
+    );
+
+    CRandomAmbientSound* CreateRandomFromKey(
+        const char* key,
+        i32 volumeLevel,
+        RECT* region,
+        i32 volumeScale,
+        i32 playDurationMin,
+        i32 playDurationMax,
+        i32 silenceDurationMin,
+        i32 silenceDurationMax,
         i32 unused
     );
 
     SoundCueRegistry* m_cueRegistry;
-    i32 m_volume;
+    i32 m_masterVolume;
     CPtrList m_list;
-    i32 m_active;
+    i32 m_enabled;
 
     i32 m_listenerX;
     i32 m_listenerY;
@@ -79,7 +94,7 @@ public:
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_cueRegistry = NULL;
-    m_volume = kSoundVolumeMax;
+    m_masterVolume = kSoundVolumeMax;
 }
 
 // Inline in retail: CGruntzMgr::LoadWorldMode expands it (Deactivate + the m_list

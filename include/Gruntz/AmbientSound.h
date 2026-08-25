@@ -28,25 +28,25 @@ struct SoundCueRegistry;
 class CAmbientSound : public CUserBase {
 public:
     CAmbientSound() {
-        m_voice = NULL;
-        m_level = 0x64;
+        m_sound = NULL;
+        m_volumeLevel = 0x64;
         m_isPlaying = 0;
         m_listNode = NULL;
     }
 
     virtual ~CAmbientSound() OVERRIDE {
-        m_voice = NULL;
+        m_sound = NULL;
         m_listNode = NULL;
     }
 
-    i32 ScaleVolume(i32 level) {
-        i32 scale = m_scaleA;
+    i32 ScaleVolume(i32 volumeLevel) {
+        i32 scale = m_masterVolume;
         if (scale > 5) {
             scale -= 0xf;
         }
-        i32 volume = (scale * level) / 100;
-        if (m_scaleB > 0) {
-            volume = (volume * m_scaleB) / 100;
+        i32 volume = (scale * volumeLevel) / 100;
+        if (m_volumeScale > 0) {
+            volume = (volume * m_volumeScale) / 100;
         }
         if (volume < 0) {
             return 0;
@@ -57,34 +57,40 @@ public:
         return volume;
     }
 
-    i32 SetLevel(i32 value, i32 mode, i32 extra);
+    i32 SetVolumeLevel(i32 volumeLevel, i32 rampMs, i32 stopAndRewind);
 
-    virtual void Update(i32 x, i32 y, i32 force);
+    virtual void Update(i32 x, i32 y, i32 immediate);
 
-    void Fade(i32 playFlag, i32 level, i32 mode);
+    void FadePlayback(i32 startPlaying, i32 volumeLevel, i32 rampMs);
 
-    void Restart();
+    void StartPlayback();
 
-    void Recompute(i32 master);
+    void ApplyMasterVolume(i32 masterVolume);
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,
         const char* key,
-        i32 level,
-        i32 master,
-        RECT* box,
-        i32 scaleB
+        i32 volumeLevel,
+        i32 masterVolume,
+        RECT* region,
+        i32 volumeScale
     );
-    i32 InitFromSound(SoundBuffer* mgr, i32 level, i32 master, RECT* box, i32 scaleB);
+    i32 InitFromSound(
+        SoundBuffer* sound,
+        i32 volumeLevel,
+        i32 masterVolume,
+        RECT* region,
+        i32 volumeScale
+    );
 
-    SoundBuffer* m_voice;
-    i32 m_level;
-    i32 m_scaleA;
-    i32 m_scaleB;
+    SoundBuffer* m_sound;
+    i32 m_volumeLevel;
+    i32 m_masterVolume;
+    i32 m_volumeScale;
     i32 m_isPlaying;
-    RECT m_box1;
-    RECT m_box2;
-    i32 m_panIndex;
+    RECT m_primaryRegion;
+    RECT m_secondaryRegion;
+    i32 m_panPercent;
     POSITION m_listNode;
 };
 
@@ -93,17 +99,23 @@ public:
     CAmbientPosSound() {}
 
     virtual ~CAmbientPosSound() OVERRIDE {}
-    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;
+    virtual void Update(i32 x, i32 y, i32 immediate) OVERRIDE;
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,
         const char* key,
-        i32 level,
-        i32 master,
-        AmbientPoint* pos,
-        i32 scaleB
+        i32 volumeLevel,
+        i32 masterVolume,
+        AmbientPoint* position,
+        i32 volumeScale
     );
-    i32 InitFromSound(SoundBuffer* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB);
+    i32 InitFromSound(
+        SoundBuffer* sound,
+        i32 volumeLevel,
+        i32 masterVolume,
+        AmbientPoint* position,
+        i32 volumeScale
+    );
 
     AmbientPoint m_position;
 };

@@ -511,7 +511,7 @@ i32 CPlay::Render() {
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
-        m_mgr->m_worldSounds->Retune(
+        m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_snappedX,
             m_world->m_level->m_mainPlane->m_snappedY
         );
@@ -618,7 +618,7 @@ i32 CPlay::Render() {
             }
         }
 
-        m_mgr->m_worldSounds->Retune(
+        m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_snappedX,
             m_world->m_level->m_mainPlane->m_snappedY
         );
@@ -957,7 +957,7 @@ i32 CPlay::DrawWorldFrames() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
-    m_mgr->m_worldSounds->Retune(
+    m_mgr->m_worldSounds->SetListenerPosition(
         m_world->m_level->m_mainPlane->m_snappedX,
         m_world->m_level->m_mainPlane->m_snappedY
     );
@@ -1045,7 +1045,7 @@ i32 CPlay::ProfileDeltaFrame() {
         DrawWorldFrame();
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
-    m_mgr->m_worldSounds->Retune(
+    m_mgr->m_worldSounds->SetListenerPosition(
         m_world->m_level->m_mainPlane->m_snappedX,
         m_world->m_level->m_mainPlane->m_snappedY
     );

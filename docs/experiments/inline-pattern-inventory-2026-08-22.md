@@ -85,10 +85,10 @@ inventory at the snapshot time.
 
 ```text
 RVA     current  function                                         inlinees
-00bf10  100.000  CAmbientSound::Recompute                         AV
-00bfb0  100.000  CAmbientSound::Restart                           AV
-00c200  100.000  CAmbientSound::SetLevel                          AV
-00c2a0   89.257  CAmbientSound::Fade                              AV
+00bf10  100.000  CAmbientSound::ApplyMasterVolume                 AV
+00bfb0  100.000  CAmbientSound::StartPlayback                     AV
+00c200  100.000  CAmbientSound::SetVolumeLevel                    AV
+00c2a0   89.257  CAmbientSound::FadePlayback                      AV
 00c5b0  100.000  CAmbientPosSound::Update                         AV
 018d30   98.851  CBootyState::EnterState                          LC
 01b690   95.483  CBootyState::UpdateBootyWalkingGruntz            LC
@@ -341,7 +341,7 @@ Measured score improvements retained by the campaign:
 
 | Function | Snapshot | Retained | Delta |
 |---|---:|---:|---:|
-| `CAmbientSound::Fade` | 89.25694% | 91.80556% | +2.54862 |
+| `CAmbientSound::FadePlayback` | 89.25694% | 91.80556% | +2.54862 |
 | `CGrunt::ArrivalReticleScan` | 85.22585% | 85.99320% | +0.76735 |
 | `CBootyState::UpdateBootyWalkingGruntz` | 95.48321% | 95.99254% | +0.50933 |
 | `CGruntzMgr::HandleCommand` | 98.54093% | 98.56809% | +0.02716 |

@@ -241,10 +241,10 @@ Corpus profile of the 212 records, which pins one more field: `object_type`,
 `hit_type`, `flags_dynamic`, `flags_user`, `score`, `points`, `powerup`,
 `smarts`, `health`, `z` are **0 in all 212**; the only varying user slot is
 `damage`, over `{0, 40, 45, 50, 60, 65, 70, 75, 80, 85, 90, 100}`. It reaches
-`CAmbientSound::m_scaleB` via
+`CAmbientSound::m_volumeScale` via
 `CreateAmbientFromSound(sound, 0x64, &rc, obj->m_damage, 0)`, and both
 `SetLevel` @0xc200 and `Recompute` @0xbf10 apply it as
-`if (m_scaleB > 0) v = (v * m_scaleB) / 100`. So for a `GlobalAmbientSound`
+`if (m_volumeScale > 0) v = (v * m_volumeScale) / 100`. So for a `GlobalAmbientSound`
 object the `damage` slot **is a volume percentage** — another arm of the
 `+0x114` union documented in [`../domain/README.md`](../domain/README.md).
 
