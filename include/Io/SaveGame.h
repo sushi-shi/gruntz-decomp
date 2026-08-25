@@ -58,7 +58,7 @@ class CSaveGame {
 public:
     ~CSaveGame();
 
-    i32 SaveGameFile(const char* dir);
+    i32 InitializeSaveDirectory(const char* saveDirectory);
     void Reset();
     void Init();
     i32 Load();
@@ -86,8 +86,8 @@ public:
     i32 CheckMagic();
     void SetMagic();
 
-    CString m_str0;
-    CString m_name;
+    CString m_saveDirectory;
+    CString m_progressFilePath;
 
     i32 m_header[4];
     GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;

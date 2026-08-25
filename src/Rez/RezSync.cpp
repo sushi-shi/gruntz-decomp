@@ -440,7 +440,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_saveGame = new CSaveGame;
-    if (!m_saveGame->SaveGameFile("")) {
+    if (!m_saveGame->InitializeSaveDirectory("")) {
         if (m_saveGame) {
             delete m_saveGame;
             m_saveGame = NULL;

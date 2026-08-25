@@ -527,10 +527,10 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         ApplyLookupSprite(buf, frame);
     }
 
-    CWwdGameObjectA* hud = m_object;
+    CWwdGameObjectA* object = m_object;
     CGruntzMgr* g = g_gameReg;
-    i32 yy = hud->m_screenY;
-    i32 xx = hud->m_screenX;
+    i32 yy = object->m_screenY;
+    i32 xx = object->m_screenX;
 
     if (sel == 0) {
         if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
@@ -927,20 +927,20 @@ i32 CGrunt::StepEntranceReinit() {
         return 0;
     }
 
-    Coord* co = static_cast<Coord*>(m_coordList.GetHead());
-    CMapMgr* b = g_gameReg->m_tileGrid;
-    i32 flag = b->CellFlagsAt(co->m_x, co->m_y);
+    Coord* targetCoord = static_cast<Coord*>(m_coordList.GetHead());
+    CMapMgr* tileGrid = g_gameReg->m_tileGrid;
+    i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
     GruntDirectionCell cell;
-    if (!(flag & 0x20000000)) {
+    if (!(targetCellFlags & 0x20000000)) {
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         cell = m_entranceCell;
     } else {
 
-        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 flag2 = b->CellFlagsAt(tx, ty);
-        if (!(flag2 & 0x80)) {
+        i32 currentTileX = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 currentTileY = m_object->m_screenY >> TILE_SHIFT_PX;
+        i32 currentCellFlags = tileGrid->CellFlagsAt(currentTileX, currentTileY);
+        if (!(currentCellFlags & 0x80)) {
             return 0;
         }
         SET_ANIMATION_ACT("D");
@@ -951,8 +951,8 @@ i32 CGrunt::StepEntranceReinit() {
     i32 col = cell.column + cell.row * 2;
     i32 base = cell.row + col;
 
-    char* nm = m_cells[base].WalkName().GetBuffer(0);
-    ApplyName(nm);
+    char* walkAnimationName = m_cells[base].WalkName().GetBuffer(0);
+    ApplyName(walkAnimationName);
     return 0;
 }
 

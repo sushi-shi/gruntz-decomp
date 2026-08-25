@@ -131,8 +131,8 @@ public:
     i16 m_lexState;
     char m_token[0x100 - 0xae];
     CString m_tagName;
-    CString m_str104;
-    CString m_str108;
+    CString m_attributeName;
+    CString m_filename;
     char m_captureText;
     char m_writeMode;
 

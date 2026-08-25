@@ -444,9 +444,9 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (id != 0) {
-        CWwdGameObjectA* hud = m_object;
+        CWwdGameObjectA* object = m_object;
         CGruntzMgr* g = g_gameReg;
-        if ((CGameLevel::PointInRect(&g->m_viewBounds, hud->m_screenX, hud->m_screenY))
+        if ((CGameLevel::PointInRect(&g->m_viewBounds, object->m_screenX, object->m_screenY))
             || forced != 0) {
             g->m_voiceManager->PlayVoice(this, id, -1, 0, -1, -1);
         }

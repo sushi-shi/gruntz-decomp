@@ -1142,16 +1142,16 @@ i32 CMultiStartDlg::EnableControls() {
 RVA(0x000c4230, 0x38e)
 i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     CWnd::FromHandle(::GetFocus());
-    i32 f1c = 1;
-    i32 f18 = 0;
-    i32 t = this->GetSlotIndex();
-    i32 localColour = g_multiState->m_isHost ? m_host->m_options[t].m_readyFlag : 1;
+    i32 allLivePlayersReady = 1;
+    i32 hasRemoteHumanPlayer = 0;
+    i32 localSlotIndex = this->GetSlotIndex();
+    i32 localReadyFlag = g_multiState->m_isHost ? m_host->m_options[localSlotIndex].m_readyFlag : 1;
     for (i32 idx = 0; idx < 4; idx++) {
         GruntzPlayer* slot = &g_gameReg->m_options[idx];
         if (slot) {
             if (slot->m_slotKey != g_multiState->m_localPlayerId && slot->m_humanControlled
                 && slot->m_liveGate) {
-                f18 = 1;
+                hasRemoteHumanPlayer = 1;
             }
             CWnd* name = GetCtrlB(idx);
             if ((g_multiState->m_isHost && slot->m_humanControlled == 0)
@@ -1161,7 +1161,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 name->EnableWindow(0);
             }
             CWnd* kind = GetCtrlE(idx);
-            if (g_multiState->m_isHost && localColour == 0
+            if (g_multiState->m_isHost && localReadyFlag == 0
                 && slot->m_slotKey != g_multiState->m_localPlayerId) {
                 kind->EnableWindow(1);
             } else {
@@ -1176,7 +1176,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             if (slot->m_readyFlag == 0) {
                 if (slot->m_liveGate) {
                     ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
-                    f1c = 0;
+                    allLivePlayersReady = 0;
                 } else {
                     ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
                 }
@@ -1188,7 +1188,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             CWnd* color = GetCtrlC(idx);
             // The &&-chain as the ARGUMENT, not an if/else round two calls: retail
             // materialises the flag (mov edx,1 / jmp / xor edx,edx) and pushes it once.
-            color->EnableWindow(g_multiState->m_isHost && slot->m_liveGate && localColour == 0);
+            color->EnableWindow(g_multiState->m_isHost && slot->m_liveGate && localReadyFlag == 0);
             SetListCurSel(idx, slot->m_liveGate ? slot->m_comboSel : 0);
             if (force == 0) {
                 if (this->GetSlotIndex() == idx) {
@@ -1228,7 +1228,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
         if (ok == NULL) {
             return 0;
         }
-        ok->EnableWindow(f18 & f1c);
+        ok->EnableWindow(hasRemoteHumanPlayer & allLivePlayersReady);
     }
     HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
     ::InvalidateRect(color0, NULL, 1);

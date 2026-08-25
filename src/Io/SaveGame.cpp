@@ -46,12 +46,12 @@ static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
 static const u32 SAVE_PROGRESS_MAGIC = 0x42a;
 
 RVA(0x000e4b60, 0x158)
-i32 CSaveGame::SaveGameFile(const char* dir) {
-    if (dir == NULL) {
+i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
+    if (saveDirectory == NULL) {
         return 0;
     }
-    m_str0 = dir;
-    m_name = m_str0 + "Gruntz.sav";
+    m_saveDirectory = saveDirectory;
+    m_progressFilePath = m_saveDirectory + "Gruntz.sav";
     memset(m_header, 0, SAVE_FILE_HEADER_BYTES);
     Init();
     Load();
@@ -60,7 +60,7 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
         if (slot != NULL) {
             char numbuf[16];
             _itoa(i + 1, numbuf, 10);
-            wsprintfA(slot->m_savePath, m_str0 + "Slot" + numbuf + ".sav");
+            wsprintfA(slot->m_savePath, m_saveDirectory + "Slot" + numbuf + ".sav");
         }
     }
     return 1;
@@ -69,7 +69,7 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
 RVA(0x000e4d20, 0x12)
 void CSaveGame::Reset() {
     Init();
-    m_name.Empty();
+    m_progressFilePath.Empty();
 }
 
 RVA(0x000e4d50, 0x2f)
@@ -86,7 +86,7 @@ void CSaveGame::Init() {
 RVA(0x000e4d90, 0xcc)
 i32 CSaveGame::Load() {
     CFile file;
-    if (!file.Open(m_name, CFile::modeRead, NULL)) {
+    if (!file.Open(m_progressFilePath, CFile::modeRead, NULL)) {
         return 0;
     }
     file.Read(m_header, SAVE_FILE_HEADER_BYTES);
@@ -102,11 +102,11 @@ RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     CWaitCursorScope wait;
     CFile file;
-    if (!file.Open(m_name, CFile::modeCreate, NULL)) {
+    if (!file.Open(m_progressFilePath, CFile::modeCreate, NULL)) {
         return 0;
     }
     file.Close();
-    if (!file.Open(m_name, CFile::modeWrite, NULL)) {
+    if (!file.Open(m_progressFilePath, CFile::modeWrite, NULL)) {
         return 0;
     }
     ComputeAll();

@@ -194,7 +194,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
 
     Init();
     m_streamBase = streamBase;
-    m_str108 = filename;
+    m_filename = filename;
 
     m_tree.Reset();
     m_tree48.Reset();

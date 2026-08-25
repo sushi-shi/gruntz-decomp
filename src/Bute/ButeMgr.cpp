@@ -774,7 +774,7 @@ CButeMgr::CButeMgr() {
     m_writeMode = 0;
     m_encrypted = 0;
     m_parseFailed = 0;
-    m_str108.Empty();
+    m_filename.Empty();
     m_tagName.Empty();
 }
 
@@ -785,7 +785,7 @@ void CButeMgr::Init() {
     m_countLine = true;
     m_parseFailed = 0;
     m_tagName = "";
-    m_str104 = "";
+    m_attributeName = "";
 }
 
 RVA(0x00170370, 0x1)
@@ -942,12 +942,12 @@ bool ButeMgr::ParseAttributeFile() {
     i32 px, py;
     double x, y, z;
 
-    m_str104 = m_token;
+    m_attributeName = m_token;
 
     bool bDup = false;
     if (!m_writeMode) {
-        if (m_pNode->Find(m_str104)) {
-            ReportError(s_fmtDupSymbol, m_str104.GetBuffer(0));
+        if (m_pNode->Find(m_attributeName)) {
+            ReportError(s_fmtDupSymbol, m_attributeName.GetBuffer(0));
             bDup = true;
         }
     }
@@ -969,10 +969,10 @@ bool ButeMgr::ParseAttributeFile() {
             i32 v = atoi(m_token);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_INT, v));
+                    m_pNode->Insert(m_attributeName, new CButeValue(BUTE_INT, v));
                 }
             } else {
-                (*m_pText) << static_cast<int>(GetInt(m_tagName, m_str104));
+                (*m_pText) << static_cast<int>(GetInt(m_tagName, m_attributeName));
             }
             break;
         }
@@ -983,11 +983,11 @@ bool ButeMgr::ParseAttributeFile() {
             DWORD v = strtoul(m_token, NULL, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, v));
+                    m_pNode->Insert(m_attributeName, new CButeValue(BUTE_DWORD, v));
                 }
             } else {
                 (*m_pText) << s_strDword
-                           << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
+                           << static_cast<unsigned long>(GetDword(m_tagName, m_attributeName));
             }
             break;
         }
@@ -998,12 +998,12 @@ bool ButeMgr::ParseAttributeFile() {
             float v = static_cast<float>(atof(m_token));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, v));
+                    m_pNode->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, v));
                 }
             } else {
                 // float, not a hand-widened double: retail's `mov [eax+4],1` is
                 // x_floatused = 1 from ostream's inline operator<<(float).
-                ((*m_pText) << s_strFloat) << GetFloat(m_tagName, m_str104);
+                ((*m_pText) << s_strFloat) << GetFloat(m_tagName, m_attributeName);
             }
             break;
         }
@@ -1011,10 +1011,10 @@ bool ButeMgr::ParseAttributeFile() {
             float v = static_cast<float>(atof(m_token));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, v));
+                    m_pNode->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, v));
                 }
             } else {
-                (*m_pText) << GetFloat(m_tagName, m_str104) << s_strFloatSuffix;
+                (*m_pText) << GetFloat(m_tagName, m_attributeName) << s_strFloatSuffix;
             }
             break;
         }
@@ -1022,10 +1022,10 @@ bool ButeMgr::ParseAttributeFile() {
             double v = atof(m_token);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DOUBLE, v));
+                    m_pNode->Insert(m_attributeName, new CButeValue(BUTE_DOUBLE, v));
                 }
             } else {
-                (*m_pText) << GetDouble(m_tagName, m_str104);
+                (*m_pText) << GetDouble(m_tagName, m_attributeName);
             }
             break;
         }
@@ -1033,10 +1033,13 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d)));
+                    m_pNode->Insert(
+                        m_attributeName,
+                        new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d))
+                    );
                 }
             } else {
-                ButeIntRect* r = GetRect(m_tagName, m_str104);
+                ButeIntRect* r = GetRect(m_tagName, m_attributeName);
                 (*m_pText) << s_strOpen << static_cast<long>(r->a) << s_strComma
                            << static_cast<long>(r->b) << s_strComma << static_cast<long>(r->c)
                            << s_strComma << static_cast<long>(r->d) << s_strClose;
@@ -1047,10 +1050,13 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtPoint2, &px, &py);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, &ButeIntPoint(px, py)));
+                    m_pNode->Insert(
+                        m_attributeName,
+                        new CButeValue(BUTE_POINT, &ButeIntPoint(px, py))
+                    );
                 }
             } else {
-                ButeIntPoint* r = GetPoint(m_tagName, m_str104);
+                ButeIntPoint* r = GetPoint(m_tagName, m_attributeName);
                 (*m_pText) << s_strOpen << static_cast<long>(r->a) << s_strComma
                            << static_cast<long>(r->b) << s_strClose;
             }
@@ -1061,12 +1067,12 @@ bool ButeMgr::ParseAttributeFile() {
             if (!m_writeMode) {
                 if (!bDup) {
                     m_pNode->Insert(
-                        m_str104,
+                        m_attributeName,
                         new CButeValue(BUTE_VECTOR, &ButeDoubleVector(x, y, z))
                     );
                 }
             } else {
-                ButeDoubleVector v = *GetVector(m_tagName, m_str104);
+                ButeDoubleVector v = *GetVector(m_tagName, m_attributeName);
                 (*m_pText) << s_strLt << v.x << s_strComma << v.y << s_strComma << v.z << s_strGt;
             }
             break;
@@ -1075,10 +1081,13 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_RANGE, &ButeDoubleRange(x, y)));
+                    m_pNode->Insert(
+                        m_attributeName,
+                        new CButeValue(BUTE_RANGE, &ButeDoubleRange(x, y))
+                    );
                 }
             } else {
-                ButeDoubleRange* r = GetRange(m_tagName, m_str104);
+                ButeDoubleRange* r = GetRange(m_tagName, m_attributeName);
                 (*m_pText) << "[" << r->x << s_strComma << r->y << "]";
             }
             break;
@@ -1086,10 +1095,10 @@ bool ButeMgr::ParseAttributeFile() {
         case BUTETOK_STRING: {
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, CString(m_token)));
+                    m_pNode->Insert(m_attributeName, new CButeValue(BUTE_STRING, CString(m_token)));
                 }
             } else {
-                CString tmp(*GetString(m_tagName, m_str104));
+                CString tmp(*GetString(m_tagName, m_attributeName));
                 (*m_pText) << static_cast<unsigned char>('"') << tmp.GetBuffer(0)
                            << static_cast<unsigned char>('"');
             }
@@ -1301,14 +1310,14 @@ bool CButeMgr::ParseGroup() {
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
     Init();
-    if (m_str108.IsEmpty()) {
+    if (m_filename.IsEmpty()) {
         return false;
     }
 
     m_writeMode = 1;
     m_captureText = 1;
 
-    ifstream input(m_str108, ios::nocreate | ios::binary);
+    ifstream input(m_filename, ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
     i32 length = input.tellg();
     input.clear();
@@ -1329,7 +1338,7 @@ bool CButeMgr::Save() {
             source.write(block, input.gcount());
         }
         input.close();
-        m_pText = new fstream(m_str108, ios::in | ios::out | ios::binary);
+        m_pText = new fstream(m_filename, ios::in | ios::out | ios::binary);
     }
     m_pText->precision(100);
 
@@ -1340,7 +1349,7 @@ bool CButeMgr::Save() {
     m_pText->clear();
 
     if (m_encrypted) {
-        ofstream output(m_str108, ios::binary);
+        ofstream output(m_filename, ios::binary);
         m_crypt.Encode(m_pText, &output);
     }
 

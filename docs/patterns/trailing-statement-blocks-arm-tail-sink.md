@@ -27,13 +27,13 @@ a new statement.
 ```cpp
 // NO - both arms end `...Setup(m_poseWalk);`, so cl sinks the whole run into the
 //      join: arms 4i/4i, join 27i  (retail: 22i/22i, join 10i)
-if (!(flag & 0x20000000)) {
+if (!(targetCellFlags & 0x20000000)) {
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->m_eventCode = ActFindId(s_codeD);
     m_value            = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_poseWalk);
 } else {
-    if (!(flag2 & 0x80)) { return 0; }
+    if (!(currentCellFlags & 0x80)) { return 0; }
     m_entranceActive = 1;                       // arm-only, at the HEAD
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     /* ...identical... */
@@ -45,11 +45,11 @@ GruntDirectionCell cell = m_entranceCell;
 //       nothing sinks; then the join's own head statement is written into both
 //       arms, which is where retail has it too
 GruntDirectionCell cell;
-if (!(flag & 0x20000000)) {
+if (!(targetCellFlags & 0x20000000)) {
     /* ...the four shared statements... */
     cell = m_entranceCell;
 } else {
-    if (!(flag2 & 0x80)) { return 0; }
+    if (!(currentCellFlags & 0x80)) { return 0; }
     /* ...the four shared statements... */
     cell = m_entranceCell;
     m_entranceActive = 1;                       // arm-only, at the TAIL
