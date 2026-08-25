@@ -762,8 +762,8 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 // the same ecx/edx swap plus a store scheduled before rather than after the
 // receiver `lea`.
 RVA(0x0004ac10, 0x402)
-void CGrunt::SetFacing(i32 unusedRange, GruntDirectionCell facing) {
-    static_cast<void>(unusedRange);
+void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
+    static_cast<void>(unused);
     if (SameCellTag(&m_entranceCell, &facing)) {
         return;
     }

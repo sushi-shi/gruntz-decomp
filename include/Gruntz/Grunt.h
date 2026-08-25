@@ -817,15 +817,6 @@ public:
 
     void EnsureStruckVoice(const char* key);
 
-    // @identity-TODO: no definition, caller, retail binding, or baseline row has
-    // established this declaration's role yet.
-    void ArrivalClaim(i32 a, i32 b);
-    void ArrivalHook0();
-    void ArrivalHook1();
-    void ArrivalHook2();
-    void ArrivalHook3();
-    void ArrivalHook4();
-    void ArrivalHook5();
     i32 CanShowStamina();
     i32* EntranceTileOffset(i32* out);
     void ComputeFacing(double dt);
@@ -833,7 +824,7 @@ public:
     i32 StepAttackAction();
 
     void FaceTowardPixel(i32 x, i32 y);
-    void SetFacing(i32 unusedRange, GruntDirectionCell facing);
+    void SetFacing(i32 unused, GruntDirectionCell facing);
     void OnStruck(i32 wasHit);
     i32 ResolveArrivalNeighbor();
     i32 RearmEntranceDrop();

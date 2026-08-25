@@ -586,7 +586,7 @@ i32 CGrunt::StepCompassMove() {
     i32 result = 0;
     i32 moveX;
     i32 moveY;
-    GruntDirectionCell voice;
+    GruntDirectionCell facing;
 
     if (board->CellFlagsAt(tx, ty) & 0x80) {
 
@@ -597,28 +597,28 @@ i32 CGrunt::StepCompassMove() {
                 y -= 0x20;
                 moveY = y;
                 moveX = x;
-                voice = g_gruntMoveDirNorth;
+                facing = g_gruntMoveDirNorth;
                 break;
             case TILEKIND_ARROW_RIGHT_A:
             case TILEKIND_ARROW_RIGHT_B:
                 x += 0x20;
                 moveX = x;
                 moveY = y;
-                voice = g_gruntMoveDirEast;
+                facing = g_gruntMoveDirEast;
                 break;
             case TILEKIND_ARROW_DOWN_A:
             case TILEKIND_ARROW_DOWN_B:
                 y += 0x20;
                 moveX = x;
                 moveY = y;
-                voice = g_gruntMoveDirSouth;
+                facing = g_gruntMoveDirSouth;
                 break;
             case TILEKIND_ARROW_LEFT_A:
             case TILEKIND_ARROW_LEFT_B:
                 x -= 0x20;
                 moveX = x;
                 moveY = y;
-                voice = g_gruntMoveDirWest;
+                facing = g_gruntMoveDirWest;
                 break;
             case TILEKIND_ARROW_CURRENT:
                 switch (m_entranceCell.direction) {
@@ -626,52 +626,52 @@ i32 CGrunt::StepCompassMove() {
                         y -= 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirNorth;
+                        facing = g_gruntMoveDirNorth;
                         break;
                     case DIR_EAST:
                         x += 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirEast;
+                        facing = g_gruntMoveDirEast;
                         break;
                     case DIR_SOUTH:
                         y += 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirSouth;
+                        facing = g_gruntMoveDirSouth;
                         break;
                     case DIR_WEST:
                         x -= 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirWest;
+                        facing = g_gruntMoveDirWest;
                         break;
                     case DIR_NORTHEAST:
                         x += 0x20;
                         y -= 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirNorthEast;
+                        facing = g_gruntMoveDirNorthEast;
                         break;
                     case DIR_SOUTHEAST:
                         x += 0x20;
                         y += 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirSouthEast;
+                        facing = g_gruntMoveDirSouthEast;
                         break;
                     case DIR_SOUTHWEST:
                         x -= 0x20;
                         y += 0x20;
                         moveX = x;
                         moveY = y;
-                        voice = g_gruntMoveDirSouthWest;
+                        facing = g_gruntMoveDirSouthWest;
                         break;
                     case DIR_NORTHWEST:
                         x -= 0x20;
                         y -= 0x20;
                         moveX = x;
-                        voice = g_gruntMoveDirNorthWest;
+                        facing = g_gruntMoveDirNorthWest;
                         moveY = y;
                         break;
                     default:
@@ -728,43 +728,43 @@ i32 CGrunt::StepCompassMove() {
             switch (m_entranceCell.direction) {
                 case DIR_NORTH:
                     moveX = x;
-                    voice = g_gruntMoveDirNorth;
+                    facing = g_gruntMoveDirNorth;
                     moveY = y - 0x20;
                     break;
                 case DIR_NORTHEAST:
                     moveX = x + 0x20;
                     moveY = y - 0x20;
-                    voice = g_gruntMoveDirNorthEast;
+                    facing = g_gruntMoveDirNorthEast;
                     break;
                 case DIR_EAST:
                     moveX = x + 0x20;
                     moveY = y;
-                    voice = g_gruntMoveDirEast;
+                    facing = g_gruntMoveDirEast;
                     break;
                 case DIR_SOUTHEAST:
                     moveX = x + 0x20;
                     moveY = y + 0x20;
-                    voice = g_gruntMoveDirSouthEast;
+                    facing = g_gruntMoveDirSouthEast;
                     break;
                 case DIR_SOUTH:
                     moveX = x;
-                    voice = g_gruntMoveDirSouth;
+                    facing = g_gruntMoveDirSouth;
                     moveY = y + 0x20;
                     break;
                 case DIR_SOUTHWEST:
                     moveX = x - 0x20;
                     moveY = y + 0x20;
-                    voice = g_gruntMoveDirSouthWest;
+                    facing = g_gruntMoveDirSouthWest;
                     break;
                 case DIR_WEST:
                     moveX = x - 0x20;
                     moveY = y;
-                    voice = g_gruntMoveDirWest;
+                    facing = g_gruntMoveDirWest;
                     break;
                 case DIR_NORTHWEST:
                     moveX = x - 0x20;
                     moveY = y - 0x20;
-                    voice = g_gruntMoveDirNorthWest;
+                    facing = g_gruntMoveDirNorthWest;
                     break;
                 default:
                     moveX = x;
@@ -811,40 +811,40 @@ i32 CGrunt::StepCompassMove() {
                 case DIR_NORTH:
                     moveX = x;
                     moveY = y - 0x20;
-                    voice = g_gruntMoveDirNorth;
+                    facing = g_gruntMoveDirNorth;
                     break;
                 case DIR_NORTHEAST:
                     moveX = x + 0x20;
                     moveY = y - 0x20;
-                    voice = g_gruntMoveDirNorthEast;
+                    facing = g_gruntMoveDirNorthEast;
                     break;
                 case DIR_EAST:
                     moveX = x + 0x20;
                     moveY = y;
-                    voice = g_gruntMoveDirEast;
+                    facing = g_gruntMoveDirEast;
                     break;
                 case DIR_SOUTHEAST:
                     moveX = x + 0x20;
                     moveY = y + 0x20;
-                    voice = g_gruntMoveDirSouthEast;
+                    facing = g_gruntMoveDirSouthEast;
                     break;
                 case DIR_SOUTH:
                     moveX = x;
                     moveY = y + 0x20;
-                    voice = g_gruntMoveDirSouth;
+                    facing = g_gruntMoveDirSouth;
                     break;
                 case DIR_SOUTHWEST:
                     moveX = x - 0x20;
-                    voice = g_gruntMoveDirSouthWest;
+                    facing = g_gruntMoveDirSouthWest;
                     moveY = y + 0x20;
                     break;
                 case DIR_WEST:
                     moveX = x - 0x20;
                     moveY = y;
-                    voice = g_gruntMoveDirWest;
+                    facing = g_gruntMoveDirWest;
                     break;
                 case DIR_NORTHWEST:
-                    voice = g_gruntMoveDirNorthWest;
+                    facing = g_gruntMoveDirNorthWest;
                     moveX = x - 0x20;
                     moveY = y - 0x20;
                     break;
@@ -862,7 +862,7 @@ i32 CGrunt::StepCompassMove() {
 
 commit:
     m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-    SetFacing(0x3e8, voice);
+    SetFacing(0x3e8, facing);
     m_commitPx = m_lastTilePx;
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;

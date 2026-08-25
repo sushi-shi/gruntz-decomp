@@ -57,7 +57,7 @@ struct PidHeader {
     i32 offsetX;
     i32 offsetY;
     u32 fill;
-    u32 unk1;
+    u32 reserved1c;
 
     u8 pixels[1];
 };

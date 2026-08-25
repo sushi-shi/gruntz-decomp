@@ -29,7 +29,7 @@ struct PidHeader {
     u32 formatTag;  PidFlags flags;
     i32 width;      i32 height;
     i32 offsetX;    i32 offsetY;
-    u32 fill;       u32 unk1;      // 8 dwords -> payload begins at 0x20
+    u32 fill;       u32 reserved1c; // 8 dwords -> payload begins at 0x20
     u8  pixels[1];
 };
 ```

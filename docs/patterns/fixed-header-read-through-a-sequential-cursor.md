@@ -24,7 +24,7 @@ p.m_bytes += sizeof(u32);
 p.m_bytes += 2 * sizeof(u32);          // offsetX, offsetY
 i32 fill = *p.m_dwords;
 p.m_bytes += sizeof(u32);
-p.m_bytes += sizeof(u32);              // unk1
+p.m_bytes += sizeof(u32);              // reserved1c
 ```
 ```asm
 lea    ebx,[eax+0x4]

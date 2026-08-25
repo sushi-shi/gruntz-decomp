@@ -9,8 +9,7 @@
 #include <Ints.h>
 
 class CSymParser;
-
-class SoundBuffer;
+struct SoundCue;
 
 class CGruntzMgr;
 
@@ -34,9 +33,9 @@ public:
     virtual i32 OnKeyDown(i32, i32) OVERRIDE;
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
-    u32 m_idleTimer;
-    struct SoundCue* m_host;
-    i32 m_activeFlag;
+    u32 m_titleCountdownMs;
+    SoundCue* m_titleCue;
+    i32 m_titleCueEnabled;
 };
 
 extern i32 g_skipNextScreenEffect;

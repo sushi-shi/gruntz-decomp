@@ -63,11 +63,11 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
     }
 
     if (static_cast<GameStateId>(prevStateId) == GAMESTATE_PLAY) {
-        m_activeFlag = 0;
-        m_host = NULL;
+        m_titleCueEnabled = 0;
+        m_titleCue = NULL;
     } else {
-        m_activeFlag = 1;
-        m_host = NULL;
+        m_titleCueEnabled = 1;
+        m_titleCue = NULL;
     }
     return 1;
 }
@@ -106,14 +106,14 @@ i32 CAttract::EnterState(GameStateId previousState) {
 
     SoundCue* found = NULL;
     MapLookup(menuRoot()->m_soundRegistry->m_cues, buf, found);
-    m_host = found;
-    if (found != NULL && m_activeFlag != 0) {
+    m_titleCue = found;
+    if (found != NULL && m_titleCueEnabled != 0) {
         if (g_soundEnabled) {
-            m_host->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
+            m_titleCue->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
         }
-        m_idleTimer = m_host->m_sound->m_durationMs + 0x2710;
+        m_titleCountdownMs = m_titleCue->m_sound->m_durationMs + 0x2710;
     } else {
-        m_idleTimer = 0x1f40;
+        m_titleCountdownMs = 0x1f40;
     }
 
     CFixedPtrArray32* list = g_actorList;
@@ -125,19 +125,19 @@ i32 CAttract::EnterState(GameStateId previousState) {
 
 RVA(0x00014340, 0x71)
 i32 CAttract::LeaveState(GameStateId nextState) {
-    if (m_host == NULL) {
+    if (m_titleCue == NULL) {
         return 1;
     }
-    if (!m_host->m_sound->IsPlaying()) {
+    if (!m_titleCue->m_sound->IsPlaying()) {
         return 1;
     }
-    m_host->m_sound->RampVolumeTo(0, 0x1f4, 1);
-    if (!m_host->m_sound->IsPlaying()) {
+    m_titleCue->m_sound->RampVolumeTo(0, 0x1f4, 1);
+    if (!m_titleCue->m_sound->IsPlaying()) {
         return 1;
     }
     do {
         TickSoundVolumeRamps(menuRoot()->m_soundRegistry);
-    } while (m_host->m_sound->IsPlaying());
+    } while (m_titleCue->m_sound->IsPlaying());
     return 1;
 }
 
@@ -153,10 +153,10 @@ i32 CAttract::Render() {
 
     TickSoundVolumeRamps(menuRoot()->m_soundRegistry);
 
-    if (g_frameDelta >= m_idleTimer) {
-        m_idleTimer = 0;
+    if (g_frameDelta >= m_titleCountdownMs) {
+        m_titleCountdownMs = 0;
     } else {
-        m_idleTimer -= g_frameDelta;
+        m_titleCountdownMs -= g_frameDelta;
     }
 
     CFixedPtrArray32* list = g_actorList;
