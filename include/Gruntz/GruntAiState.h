@@ -23,7 +23,7 @@ GZ_ENUM_CONST_END(GruntDwellMs)
 // CGrunt::m_defenderState. Orthogonal to EnemyAiType: the type picks WHICH step
 // method runs each frame, this says where in its fight/return cycle the grunt is.
 // Every behaviour in GruntArrivalScan.cpp / GruntTargetScan.cpp switches on it,
-// and CBattlezData drives the same field from the Battlez side.
+// and CGameStats drives the same field from the Battlez side.
 //
 // Each name is what its own arm does, not a guess at intent:
 //
@@ -43,7 +43,7 @@ GZ_ENUM_CONST_END(GruntDwellMs)
 //           m_defenderPx - 0x20 - the post CGrunt::Place seeds for AI_POSTGUARD,
 //           AI_OBJECTGUARD, AI_DEFENDER and AI_BOMBER - and arriving flips to
 //           SEEK. Battlez reads the same value as "idle at post, take an order":
-//           CBattlezData scans its row for RETURN grunts by
+//           CGameStats scans its row for RETURN grunts by
 //           m_defenderQueuePosition and pushes the front one to SEEK or RETREAT.
 //   COOLDOWN Parked after acting: the only exit is m_dwell passing 0x1f40, then
 //           SEEK. The Time Bomber enters it after walking clear of its bomb and

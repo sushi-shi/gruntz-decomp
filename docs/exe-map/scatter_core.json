@@ -273,7 +273,7 @@
   "spread": 1.3171562366964666
  },
  {
-  "file": "src/Gruntz/BattlezData.cpp",
+  "file": "src/Gruntz/GameStats.cpp",
   "n": 29,
   "bytes": 1716,
   "lo": 1034688,

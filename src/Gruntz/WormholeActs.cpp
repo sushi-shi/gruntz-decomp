@@ -5,7 +5,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FontConfig.h>
@@ -15,6 +14,7 @@
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -95,7 +95,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 );
                 loser->m_clearedRound = 1;
             }
-            g_gameReg->m_gameStats->MarkFlag(hitPlayerIndex, owningPlayer);
+            g_gameReg->m_gameStats->RecordFlagCapture(hitPlayerIndex, owningPlayer);
             g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(owningPlayer);
             g_gameReg->m_triggerMgr->StartUnitDeath(hitPlayerIndex, hitUnitIndex, DEATH_EXIT, -1);
             if (m_warlordLogic != NULL) {

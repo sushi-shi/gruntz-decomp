@@ -793,7 +793,7 @@
  },
  {
   "file": "src/Gruntz/GruntzMgr.cpp",
-  "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
+  "name": "?FinalizeLevelAndShowResults@CGruntzMgr@@QAEXXZ",
   "rva": 549344,
   "demo_rva": 542800,
   "retail_dist": 22043,

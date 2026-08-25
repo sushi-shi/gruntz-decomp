@@ -6,11 +6,11 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -124,7 +124,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
     if (killerPlayerIndex != -1) {
         m_killerPlayerIndex = killerPlayerIndex;
-        g_gameReg->m_gameStats->BumpWin(killerPlayerIndex, m_playerIndex);
+        g_gameReg->m_gameStats->RecordKill(killerPlayerIndex, m_playerIndex);
     }
 
     switch (deathType) {

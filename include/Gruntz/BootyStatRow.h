@@ -9,9 +9,9 @@
 // Retail names every one of them itself - each arm reads the group accessor of
 // the same name:
 //
-//   0 SumElapsedTimeForGroup      4 SumToyzAvailable/CollectedForGroup
-//   1 SumGruntzExitedForGroup     5 SumPowerupzAvailable/CollectedForGroup
-//   2 SumGruntzLostForGroup       6 SumCoinsAvailable/CollectedForGroup
+//   0 SumElapsedTimeForCurrentArea      4 SumToyzAvailable/CollectedForGroup
+//   1 SumGruntzExitedForCurrentArea     5 SumPowerupzAvailable/CollectedForGroup
+//   2 SumGruntzLostForCurrentArea       6 SumCoinsAvailable/CollectedForGroup
 //   3 SumToolzAvailable/CollectedForGroup
 //                                 7 SumSecretsAvailable/FoundForGroup
 //

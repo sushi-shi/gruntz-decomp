@@ -15,7 +15,7 @@ class CVoiceManager;
 class CState;
 class CWorldSoundSet;
 class CTriggerMgr;
-class CBattlezData;
+class CGameStats;
 struct CDDrawSubMgrPages;
 class CDDrawWorkerRegistry;
 

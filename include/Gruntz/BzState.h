@@ -6,8 +6,8 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/UserLogic.h>

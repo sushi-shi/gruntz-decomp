@@ -8,7 +8,7 @@
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 
-class CBattlezData;
+class CGameStats;
 struct tagRECT;
 struct BrickzNode;
 

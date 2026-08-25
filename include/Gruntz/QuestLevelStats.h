@@ -1,10 +1,10 @@
-#ifndef GRUNTZ_BATTLEZRECORD_H
-#define GRUNTZ_BATTLEZRECORD_H
+#ifndef GRUNTZ_QUESTLEVELSTATS_H
+#define GRUNTZ_QUESTLEVELSTATS_H
 
 #include <Ints.h>
 
-struct BattlezRecord {
-    i32 m_populated;
+struct QuestLevelStats {
+    i32 m_completed;
     i32 m_isEasyMode;
     i32 m_elapsedTimeMs;
     i32 m_toyzCollected;
@@ -14,7 +14,7 @@ struct BattlezRecord {
     i32 m_powerupzCollected;
     i32 m_secretsFound;
     i32 m_coinsCollected;
-    i32 m_scoreValue;
+    i32 m_warpLetterFound;
     i32 m_toyzAvailable;
     i32 m_toolzAvailable;
     i32 m_powerupzAvailable;
@@ -22,4 +22,4 @@ struct BattlezRecord {
     i32 m_coinsAvailable;
 };
 
-#endif // GRUNTZ_BATTLEZRECORD_H
+#endif // GRUNTZ_QUESTLEVELSTATS_H

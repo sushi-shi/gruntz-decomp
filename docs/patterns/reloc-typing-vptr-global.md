@@ -31,7 +31,7 @@ OR a `??_7` vtable (`data_vtables.tsv`) flips **NOTHING**. Three independent pro
    the base C++ symbol via a labels.py canonical-override + full rebuild (delink + objdiff re-ran,
    529/529) left **every** metric byte-identical — overall **1861 exact / 68.75% fuzzy → 1861 /
    68.75%**, every per-unit % and every sampled per-function fuzzy% bit-for-bit unchanged.
-   `CBattlezData::FillRecord` is **100.0% (a counted match)** with base `?g_gameReg…` vs target
+   `CGameStats::UpdateLevelRecord` is **100.0% (a counted match)** with base `?g_gameReg…` vs target
    `_g_mgrSettings`. So a both-named-but-differently-named DIR32 data referent is fully masked: do
    **NOT** chase `g_gameReg`/`g_mgrSettings` name alignment (source rename OR a synth-PDB alias) as a
    scoring lever — it is a proven 0-delta no-op.

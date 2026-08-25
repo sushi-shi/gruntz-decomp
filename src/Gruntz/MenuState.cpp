@@ -19,12 +19,12 @@
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>

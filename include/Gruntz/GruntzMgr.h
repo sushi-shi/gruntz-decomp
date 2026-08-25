@@ -66,7 +66,7 @@ namespace Utils {
 class CFontConfig;
 class CTriggerMgr;
 class CPlay;
-class CBattlezData;
+class CGameStats;
 
 class CGruntzMgr : public CGameMgr {
 public:
@@ -76,7 +76,7 @@ public:
     virtual i32 IsActive() OVERRIDE;
 
     virtual void Close() OVERRIDE;
-    void AccrueScoreTime();
+    void FinalizeLevelAndShowResults();
     void OnCheckpointReached();
     void DelayedQuit();
 
@@ -215,7 +215,7 @@ public:
         i32 levelId,
         CString levelName
     );
-    void UpdateScoreHud();
+    void CommitSinglePlayerProgress();
 
     i32 BroadcastCmd(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     void RecomputeViewScale();
@@ -331,7 +331,7 @@ public:
 
     CLightFxMgr* m_lightFxMgr;
 
-    CBattlezData* m_gameStats;
+    CGameStats* m_gameStats;
     i32 m_numRuns;
     i32 m_numMovies;
     ColorDepth m_colorDepth;

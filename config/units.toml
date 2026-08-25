@@ -1141,8 +1141,8 @@ source = "src/DDrawMgr/ShadeTableCache.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "battlezdata"
-source = "src/Gruntz/BattlezData.cpp"
+unit = "gamestats"
+source = "src/Gruntz/GameStats.cpp"
 flags = "cpp-rtti"
 
 [[unit]]

@@ -20,7 +20,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/ArrivalFlagsPreset.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BattlezTask.h>
 #include <Gruntz/Brickz.h>
@@ -33,6 +32,7 @@
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceArrival.h>
@@ -3088,7 +3088,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_A:
         case PICKUP_R:
         case PICKUP_P: {
-            g_gameReg->m_gameStats->m_scoreValue = 1;
+            g_gameReg->m_gameStats->m_warpLetterFound = 1;
             return 1;
         }
         case PICKUP_HELPBOX: {

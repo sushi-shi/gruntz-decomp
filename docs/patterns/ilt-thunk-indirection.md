@@ -1,6 +1,6 @@
 # ILT: retail is linked `/INCREMENTAL`, so a vtable slot holds a `jmp` thunk, not the body
 tags: asm:jmp | topic:delinker topic:scoring-artifact topic:reloc-fidelity
-symptoms: a vtable slot's delinked reloc names an unrelated class (`~CTriggerMgr`, `GroupAllScored`, `SetupImage`, `WaitForOtherPlayers`), or `thunk_FUN_...`; an `RVA_COMPGEN`/`RVA()` pin whose address is `0x1005..0x44a8` and whose body is only 5 bytes; `.rdata` section stuck below 100% with correct-looking code
+symptoms: a vtable slot's delinked reloc names an unrelated class (`~CTriggerMgr`, `CurrentAreaHasAllWarpLetters`, `SetupImage`, `WaitForOtherPlayers`), or `thunk_FUN_...`; an `RVA_COMPGEN`/`RVA()` pin whose address is `0x1005..0x44a8` and whose body is only 5 bytes; `.rdata` section stuck below 100% with correct-looking code
 confidence: 10/10
 
 Retail `GRUNTZ.EXE` was linked **`/INCREMENTAL`**. link.exe therefore emits an
@@ -32,7 +32,7 @@ Two consequences, both load-bearing:
 - **Delinking must resolve through the thunk.** Otherwise the slot is named after
   whatever symbol sits at the thunk address. Ghidra propagates the *target's* name
   onto its thunks (1387 of the 1584 it carves in the band get "real-looking" names),
-  so the delinked reloc reads `~CTriggerMgr` / `GroupAllScored` — garbage from an
+  so the delinked reloc reads `~CTriggerMgr` / `CurrentAreaHasAllWarpLetters` — garbage from an
   unrelated class, and the `.rdata` section can never match. `nix/patches/vostok-ilt-thunk-resolution.patch`
   detects the band structurally and hops to the destination (only when a function
   symbol sits exactly there, so an unnamed destination is left alone).
@@ -99,7 +99,7 @@ methods, while the shared supposed `CVoiceManager::Tick` call resolves to
 `ClearVoiceIndicatorSlots`. The complete fan-out proves the first argument is
 `CFileMemBase*`: the caller has just used its Read/Write virtual slots and every
 destination is an existing serializer. Retyping that boundary also exposes
-`CBattlezData::Command` as an alias for `CBattlezData::Serialize`. The argument
+`CGameStats::Command` as an alias for `CGameStats::Serialize`. The argument
 push, receiver, consumed EAX, and command arm together recover the real
 operation. A similar per-frame placeholder, `CGruntzCmdMgr::Step20b3`,
 resolves to the existing `ScanTargets`. Use the caller's dataflow and receiver

@@ -13,7 +13,7 @@
 // order.
 //
 // The same index addresses CBootyWalkAnim::m_animSprites[4] and selects the
-// scoreboard row via GetWarpLetterScore(i), which is why the count belongs here
+// scoreboard row via CurrentAreaHasWarpLetter(i), which is why the count belongs here
 // rather than as a bare 4 at each of its three loop bounds.
 GZ_ENUM_BEGIN(WarpLetter)
     WARPLETTER_W = 0,

@@ -26,6 +26,6 @@ add  edi,0x4           ; advanced AFTER the call
 dec  ebx
 jne  short ...
 ```
-Steerable. Closed every Read/Write streaming loop in CBattlezData::Serialize
+Steerable. Closed every Read/Write streaming loop in CGameStats::Serialize
 (40.6%→86.9%→92.4% across this + the unroll/branch-order fixes); residual is the
 shrink-wrapped prologue (see shrink-wrapped-callee-save-push.md).

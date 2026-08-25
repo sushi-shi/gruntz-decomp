@@ -17,7 +17,6 @@
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/ErrorStringId.h>
@@ -29,6 +28,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GameText.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzDebugDialog.h>
@@ -448,8 +448,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
         return 0;
     }
-    m_gameStats = new CBattlezData;
-    if (!m_gameStats->InitWithRecords(m_saveGame->m_battlezRecords)) {
+    m_gameStats = new CGameStats;
+    if (!m_gameStats->ResetWithLevelRecords(m_saveGame->m_levelStats)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x464);
         return 0;
     }

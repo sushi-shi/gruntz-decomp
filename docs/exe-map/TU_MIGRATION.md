@@ -98,8 +98,8 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x083030` | `??0CGruntzMgr@@QAE@XZ` | gruntzmgr | `0x83030` ? |
 | `0x085460` | `??_FCPtrList@@QAEXXZ` | multi | `0x85460` ? |
 | `0x085500` | `?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ` | rezsync | `0x85500` ? |
-| `0x0860b0` | `?UpdateScoreHud@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x860b0` ? |
-| `0x0861e0` | `?AccrueScoreTime@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x861e0` ? |
+| `0x0860b0` | `?CommitSinglePlayerProgress@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x860b0` ? |
+| `0x0861e0` | `?FinalizeLevelAndShowResults@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x861e0` ? |
 | `0x093d40` | `?ResolveLevelChecksum@CGruntzMgr@@QAEHHHHHVCString@@@Z` | levelrezpath | `0x93d40` ? |
 | `0x094340` | `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` | arrayserialize | `0x94340` ? |
 | `0x094640` | `??0CGruntzWnd@@QAE@XZ` | gruntzwnd | `0x94640` ? |
@@ -550,7 +550,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - hazardlogicdispatch (`cpp-rtti`) — src/Gruntz/HazardLogicDispatch.cpp
 - sfselectdevice (`cpp-rtti`) — src/Gruntz/SFSelectDevice.cpp
 - shadetablecache (`cpp`) — src/DDrawMgr/ShadeTableCache.cpp
-- battlezdata (`cpp-rtti`) — src/Gruntz/BattlezData.cpp
+- gamestats (`cpp-rtti`) — src/Gruntz/GameStats.cpp
 - goowellmgr (`cpp-rtti`) — src/Gruntz/GooWellMgr.cpp
 - fadermgr (`cpp`) — src/DDrawMgr/FaderMgr.cpp
 - netsession (`cpp`) — src/Net/NetSession.cpp
@@ -686,7 +686,7 @@ sbi_sidetabx9 | sbi_statztabarrowx9 | cmdscrollapplyx10 | gruntarrivalscanx9 | g
 gruntgoosuckerstepx9 | gruntdefensealtx9 | gruntarrivalneighborx9 | gruntdefensestepx9 |
 gruntdiggerstepx9 | gruntscantargetx9 | gruntphasestepx9 | gruntseektargetx9 | gruntpeertrackingx9 |
 gruntdefenseleanx9 | splashstatex9 | attract | gameassetnamespacesx9 | statichazardx9 |
-battlezdatax10 | sbi_rectonlyx9 | statusbarspriteactsx9 | tilelogicpumpx16 | tileswitchlogicx3 |
+gamestatsx10 | sbi_rectonlyx9 | statusbarspriteactsx9 | tilelogicpumpx16 | tileswitchlogicx3 |
 tilelogicpump | tileswitchlogicx3 | tilelogicpumpx2 | toobspikezx3 | tileswitchlogic | toobspikezx3
 | tileswitchlogicx3 | fonts | savefrontbuffershot | fonts | tileswitchlogic | fonts |
 savefrontbuffershot | fonts | tileswitchlogicx2 | tiletriggercontainerx14 | heapdiagx3 |

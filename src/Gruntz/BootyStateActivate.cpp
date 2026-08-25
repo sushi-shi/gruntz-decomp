@@ -23,7 +23,6 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattleStatRow.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/BootyCheatState.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootySeqPhase.h>
@@ -40,6 +39,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GameText.h>
 #include <Gruntz/GlyphStringDraw.h>
 #include <Gruntz/GruntDeathType.h>
@@ -391,7 +391,7 @@ i32 CBootyState::LeaveState(GameStateId nextState) {
 
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
-    if (m_secretBannerOnce != 0 && (g_gameReg->m_gameStats)->AllRecordsInBounds()) {
+    if (m_secretBannerOnce != 0 && (g_gameReg->m_gameStats)->IsCampaignPerfect()) {
         CString s;
         if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
             return 0;
@@ -412,8 +412,10 @@ i32 CBootyState::ShowSecretBonusMessage() {
         ShowHudMessage(m_world, &s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
         return 1;
     } else {
-        i32 count = static_cast<i32>(((g_gameReg->m_gameStats)->GroupRatio() * g_secretRatioScale));
-        i32 rowBase = (g_gameReg->m_gameStats->m_count - 1) / 4;
+        i32 count = static_cast<i32>(
+            ((g_gameReg->m_gameStats)->CurrentAreaCoinRatio() * g_secretRatioScale)
+        );
+        i32 rowBase = (g_gameReg->m_gameStats->m_levelNumber - 1) / 4;
         SecretBonusTier category =
             (count >= 0x64) ? SECRET_BONUS_TIER_THREE
                             : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
@@ -474,7 +476,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CWwdGameObjectA** slot = m_trailSprites;
-    m_letterIdx = (g_gameReg->m_gameStats->m_count - 1) % 4;
+    m_letterIdx = (g_gameReg->m_gameStats->m_levelNumber - 1) % 4;
     m_radius = 0xc8;
     m_angleStep = 0;
     m_scratchX = 0;
@@ -680,7 +682,7 @@ void CBootyState::MoveLettersByDir() {
 }
 
 #define STAT(getter, field)                                                                        \
-    ((m_initOnce != 0 && g_gameReg->m_gameStats->m_allDone != 0)                                   \
+    ((m_initOnce != 0 && g_gameReg->m_gameStats->m_currentAreaComplete != 0)                       \
          ? g_gameReg->m_gameStats->getter()                                                        \
          : g_gameReg->m_gameStats->field)
 
@@ -1096,20 +1098,21 @@ RVA(0x0001af70, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
     switch (sel) {
         case BOOTYSTAT_TIME: {
-            u32 secs = static_cast<u32>((STAT(SumElapsedTimeForGroup, m_elapsedTimeMs) / 1000));
+            u32 secs =
+                static_cast<u32>((STAT(SumElapsedTimeForCurrentArea, m_elapsedTimeMs) / 1000));
             buf->Format("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
         case BOOTYSTAT_GRUNTZ_EXITED:
-            buf->Format("%d", STAT(SumGruntzExitedForGroup, m_gruntzExited));
+            buf->Format("%d", STAT(SumGruntzExitedForCurrentArea, m_gruntzExited));
             return;
         case BOOTYSTAT_GRUNTZ_LOST:
-            buf->Format("%d", STAT(SumGruntzLostForGroup, m_gruntzLost));
+            buf->Format("%d", STAT(SumGruntzLostForCurrentArea, m_gruntzLost));
             return;
         case BOOTYSTAT_TOOLZ: {
-            i32 total = STAT(SumToolzAvailableForGroup, m_toolzAvailable);
-            i32 cap = STAT(SumToolzAvailableForGroup, m_toolzAvailable);
-            i32 cur = STAT(SumToolzCollectedForGroup, m_toolzCount);
+            i32 total = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
+            i32 cap = STAT(SumToolzAvailableForCurrentArea, m_toolzAvailable);
+            i32 cur = STAT(SumToolzCollectedForCurrentArea, m_toolzCollected);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -1117,9 +1120,9 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             return;
         }
         case BOOTYSTAT_TOYZ: {
-            i32 total = STAT(SumToyzAvailableForGroup, m_toyzAvailable);
-            i32 cap = STAT(SumToyzAvailableForGroup, m_toyzAvailable);
-            i32 cur = STAT(SumToyzCollectedForGroup, m_toyzCount);
+            i32 total = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
+            i32 cap = STAT(SumToyzAvailableForCurrentArea, m_toyzAvailable);
+            i32 cur = STAT(SumToyzCollectedForCurrentArea, m_toyzCollected);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -1127,9 +1130,9 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             return;
         }
         case BOOTYSTAT_POWERUPZ: {
-            i32 total = STAT(SumPowerupzAvailableForGroup, m_powerupzAvailable);
-            i32 cap = STAT(SumPowerupzAvailableForGroup, m_powerupzAvailable);
-            i32 cur = STAT(SumPowerupzCollectedForGroup, m_powerupCount);
+            i32 total = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
+            i32 cap = STAT(SumPowerupzAvailableForCurrentArea, m_powerupzAvailable);
+            i32 cur = STAT(SumPowerupzCollectedForCurrentArea, m_powerupzCollected);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -1137,9 +1140,9 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             return;
         }
         case BOOTYSTAT_COINZ: {
-            i32 total = STAT(SumCoinsAvailableForGroup, m_coinsAvailable);
-            i32 cap = STAT(SumCoinsAvailableForGroup, m_coinsAvailable);
-            i32 cur = STAT(SumCoinsCollectedForGroup, m_coinsCollected);
+            i32 total = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
+            i32 cap = STAT(SumCoinsAvailableForCurrentArea, m_coinsAvailable);
+            i32 cur = STAT(SumCoinsCollectedForCurrentArea, m_coinsCollected);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -1147,9 +1150,9 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             return;
         }
         case BOOTYSTAT_SECRETZ: {
-            i32 total = STAT(SumSecretsAvailableForGroup, m_secretsAvailable);
-            i32 cap = STAT(SumSecretsAvailableForGroup, m_secretsAvailable);
-            i32 cur = STAT(SumSecretsFoundForGroup, m_secretsFound);
+            i32 total = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
+            i32 cap = STAT(SumSecretsAvailableForCurrentArea, m_secretsAvailable);
+            i32 cur = STAT(SumSecretsFoundForCurrentArea, m_secretsFound);
             if (cur >= cap) {
                 cur = cap;
             }
@@ -1168,7 +1171,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_gameStats->m_isCustomLevel != 0) {
         return 1;
     }
-    if (g_gameReg->m_gameStats->m_count > IDX(QUESTLEVEL_LAST)) {
+    if (g_gameReg->m_gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
         return 1;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
@@ -1196,8 +1199,9 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         RVA_DYNINIT(0x0001b670, 0xa, buf)
         DATA(0x0022af0c)
         static CString buf;
-        const char* prefix =
-            (i < (g_gameReg->m_gameStats->m_count - 1) % 4 + 1) ? "GAME_INGAMEICONZ_" : "BOOTY_DIM";
+        const char* prefix = (i < (g_gameReg->m_gameStats->m_levelNumber - 1) % 4 + 1)
+                                 ? "GAME_INGAMEICONZ_"
+                                 : "BOOTY_DIM";
         buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
         m_visSprites[i]->ApplyName(buf);
         m_visSprites[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
@@ -1210,12 +1214,12 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 // @early-stop
 RVA(0x0001b690, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
-    CBattlezData* rec = g_gameReg->m_gameStats;
-    if (rec->m_isCustomLevel != 0) {
+    CGameStats* gameStats = g_gameReg->m_gameStats;
+    if (gameStats->m_isCustomLevel != 0) {
         return 1;
     }
-    i32 n = rec->m_count;
-    if (n > 0x24) {
+    i32 levelNumber = gameStats->m_levelNumber;
+    if (levelNumber > 0x24) {
         return 1;
     }
     if (m_stepIndex >= WARPLETTER_COUNT) {
@@ -1224,14 +1228,14 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
 
     if (m_initGate != 0) {
 
-        if (n < 0x24) {
+        if (levelNumber < 0x24) {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
-                if (i <= (g_gameReg->m_gameStats->m_count - 1) % 4) {
+                if (i <= (g_gameReg->m_gameStats->m_levelNumber - 1) % 4) {
                     m_visSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_animSprites[i]->m_screenY = 0xdc;
                     m_animSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                    if ((g_gameReg->m_gameStats)->GetWarpLetterScore(i) == 0) {
+                    if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(i) == 0) {
                         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
@@ -1277,7 +1281,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
-        if ((g_gameReg->m_gameStats)->GetWarpLetterScore(m_stepIndex) == 0) {
+        if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) == 0) {
             m_soundStarted = 1;
             SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_silentMode == 0) {
@@ -1323,7 +1327,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != NULL) {
-                if ((g_gameReg->m_gameStats)->GetWarpLetterScore(m_stepIndex) != 0) {
+                if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
                     if (ss->m_silentMode == 0) {
                         SoundCue* res = NULL;
@@ -1352,7 +1356,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     m_stepIndex++;
                     g_gameReg->m_voiceManager->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
-                    if (m_stepIndex == g_gameReg->m_gameStats->m_count % 4) {
+                    if (m_stepIndex == g_gameReg->m_gameStats->m_levelNumber % 4) {
                         m_stepIndex = 4;
                         return 1;
                     }
@@ -1371,7 +1375,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         CWwdGameObjectA* spr = m_animSprites[m_stepIndex];
         if (IsAniCursorComplete(&spr->m_animCursor)) {
             m_stepIndex++;
-            if (m_stepIndex == g_gameReg->m_gameStats->m_count % 4) {
+            if (m_stepIndex == g_gameReg->m_gameStats->m_levelNumber % 4) {
                 m_stepIndex = 4;
                 return 1;
             }
@@ -1405,7 +1409,7 @@ i32 CBootyState::BuildBootyPerfectAnimation() {
 
 RVA(0x0001c0f0, 0xd5)
 i32 CBootyState::CheckPerfectBonus() {
-    if (!g_gameReg->m_gameStats->InBounds(-1)) {
+    if (!g_gameReg->m_gameStats->IsCurrentLevelPerfect(-1)) {
         return 1;
     }
     CWwdGameObjectA* st = m_bootyPerfectSprite;
@@ -1483,7 +1487,8 @@ i32 CBootyState::Render() {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
-            if (m_initOnce != 0 && g_gameReg->m_gameStats->m_allDone != 0 && g_levelBias100 == 0) {
+            if (m_initOnce != 0 && g_gameReg->m_gameStats->m_currentAreaComplete != 0
+                && g_levelBias100 == 0) {
                 RECT rc;
                 rc.left = 0;
                 rc.top = 0x24;
@@ -1525,25 +1530,25 @@ i32 CBootyState::Render() {
             if (m_secretHudHandled == 0 && g_gameReg->m_gameStats->m_isCustomLevel == 0) {
                 CString s;
                 RECT rc;
-                CBattlezData* hud = g_gameReg->m_gameStats;
-                if (hud->m_count > IDX(QUESTLEVEL_LAST)) {
+                CGameStats* gameStats = g_gameReg->m_gameStats;
+                if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
 
-                    if (hud->m_allDone != 0) {
+                    if (gameStats->m_currentAreaComplete != 0) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
                     } else {
                         s = "You are closer to achieving mastery! Keep training!";
                     }
                     SetRect(&rc, 0x194, 0xaa, 0x263, SCREEN_H_PX);
                 } else {
-                    if (hud->m_allDone != 0) {
-                        if (hud->GroupAllScored()) {
+                    if (gameStats->m_currentAreaComplete != 0) {
+                        if (gameStats->CurrentAreaHasAllWarpLetters()) {
                             s.Format(
                                 "WARP letterz recovered! Prepare to receive your cheat codez!"
                             );
                         } else {
                             s = "WARP letterz not recovered! No cheatz for you.";
                         }
-                    } else if (hud->m_scoreValue != 0) {
+                    } else if (gameStats->m_warpLetterFound != 0) {
                         s = "Keep finding those WARP letterz!";
                     } else {
                         s = "Collect all four WARP letterz to receive secret bonus!";
@@ -1630,7 +1635,7 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 
     if (m_levelCompleteGate) {
-        if (g_gameReg->m_gameStats->m_allDone != 0) {
+        if (g_gameReg->m_gameStats->m_currentAreaComplete != 0) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
             ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
@@ -1644,23 +1649,23 @@ void CBootyState::ShowLevelCompleteMessage() {
     if (g_gameReg->m_gameStats->m_isCustomLevel == 0 && m_secretGate != 0) {
         CString s;
         RECT r;
-        CBattlezData* rec = g_gameReg->m_gameStats;
-        if (rec->m_count > IDX(QUESTLEVEL_LAST)) {
-            if (rec->m_allDone != 0) {
+        CGameStats* gameStats = g_gameReg->m_gameStats;
+        if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
+            if (gameStats->m_currentAreaComplete != 0) {
                 s = "You have completed training! Now, grab the pebble from my hand.";
             } else {
                 s = "You are closer to achieving mastery! Keep training!";
             }
             SetRect(&r, 0x194, 0xaa, 0x263, SCREEN_H_PX);
         } else {
-            if (rec->m_allDone != 0) {
-                if ((rec)->GroupAllScored()) {
+            if (gameStats->m_currentAreaComplete != 0) {
+                if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
                     s.Format("WARP letterz recovered! Prepare to receive your cheat codez!");
                 } else {
                     s = "WARP letterz not recovered! No cheatz for you.";
                 }
             } else {
-                if (rec->m_scoreValue != 0) {
+                if (gameStats->m_warpLetterFound != 0) {
                     s = "Keep finding those WARP letterz!";
                 } else {
                     s = "Collect all four WARP letterz to receive secret bonus!";
@@ -1695,12 +1700,12 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         m_initGate = 1;
         return 1;
     }
-    CBattlezData* rec = g_gameReg->m_gameStats;
-    if (rec->m_isCustomLevel != 0) {
+    CGameStats* gameStats = g_gameReg->m_gameStats;
+    if (gameStats->m_isCustomLevel != 0) {
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
         if (m_initOnce == 0) {
-            if (rec->m_allDone != 0) {
+            if (gameStats->m_currentAreaComplete != 0) {
                 m_initOnce = 1;
                 SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
                 if (ss->m_silentMode == 0) {
@@ -1710,13 +1715,13 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
-                if (g_gameReg->m_gameStats->m_count < 0x24) {
+                if (g_gameReg->m_gameStats->m_levelNumber < 0x24) {
                     for (i32 p = 0; p < 4; p++) {
                         m_visSprites[p]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                         m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                         m_animSprites[p]->m_screenY = 0xdc;
                         m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                        if ((g_gameReg->m_gameStats)->GetWarpLetterScore(p) == 0) {
+                        if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(p) == 0) {
                             m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                             m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                         } else {
@@ -1764,9 +1769,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 return 1;
             }
         }
-        if (m_initOnce != 0 && rec->m_allDone != 0 && rec->m_count < IDX(QUESTLEVEL_LAST)
-            && state == BOOTYSEQ_PERFECT_BONUS) {
-            if ((rec)->GroupAllScored()) {
+        if (m_initOnce != 0 && gameStats->m_currentAreaComplete != 0
+            && gameStats->m_levelNumber < IDX(QUESTLEVEL_LAST) && state == BOOTYSEQ_PERFECT_BONUS) {
+            if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
                 if (!ShowSecretBonusMessage()) {
                     return 0;
                 }
@@ -1777,8 +1782,8 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             }
         }
 
-        if (m_activation == BOOTYSEQ_SECRET_PENDING
-            && (g_gameReg->m_gameStats)->AllRecordsInBounds() && m_secretBannerOnce == 0) {
+        if (m_activation == BOOTYSEQ_SECRET_PENDING && (g_gameReg->m_gameStats)->IsCampaignPerfect()
+            && m_secretBannerOnce == 0) {
             m_secretBannerOnce = 1;
             if (!ShowSecretBonusMessage()) {
                 return 0;
@@ -1788,8 +1793,8 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             return 1;
         }
 
-        CBattlezData* rec2 = g_gameReg->m_gameStats;
-        if (rec2->m_count == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
+        CGameStats* nextLevelStats = g_gameReg->m_gameStats;
+        if (nextLevelStats->m_levelNumber == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
             SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
             if (sub != NULL) {
                 sub->StopAllStreams();
@@ -1798,7 +1803,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
-            g_gameReg->PassClickToPlayState((rec2->m_count % 0x28) + 1, 0, 1);
+            g_gameReg->PassClickToPlayState((nextLevelStats->m_levelNumber % 0x28) + 1, 0, 1);
         }
     }
     return 1;
@@ -1844,7 +1849,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     {
         char area[128];
-        sprintf(area, "AREA%i", (g_gameReg->m_gameStats->m_count - 1) % 0x24 / 4 + 1);
+        sprintf(area, "AREA%i", (g_gameReg->m_gameStats->m_levelNumber - 1) % 0x24 / 4 + 1);
         m_levelBank = m_symParser->ResolvePath(area);
     }
     if (!m_levelBank) {
@@ -1922,7 +1927,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         {
             i32 best = -1;
             i32 bestIdx = 0;
-            const i32* tally = &g_gameReg->m_gameStats->m_weaponPickupz[i * 22];
+            const i32* tally = &g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22];
             for (i32 j = 0; j < 22; j++) {
                 if (tally[j] > best) {
                     best = tally[j];
@@ -1954,7 +1959,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             {
                 i32 best = -1;
                 i32 bestIdx = 0;
-                const i32* tally = &g_gameReg->m_gameStats->m_toyPickupz[i * 10];
+                const i32* tally = &g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10];
                 for (i32 j = 0; j < 10; j++) {
                     if (tally[j] > best) {
                         best = tally[j];
@@ -1981,7 +1986,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             {
                 i32 best = -1;
                 i32 bestIdx = 0;
-                const i32* tally = &g_gameReg->m_gameStats->m_powerupPickupz[i * 7];
+                const i32* tally = &g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7];
                 for (i32 j = 0; j < 7; j++) {
                     if (tally[j] > best) {
                         best = tally[j];
@@ -2008,7 +2013,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             {
                 i32 best = -1;
                 i32 bestIdx = 0;
-                const i32* tally = &g_gameReg->m_gameStats->m_miscPickupz[i * 4];
+                const i32* tally = &g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4];
                 for (i32 j = 0; j < 4; j++) {
                     if (tally[j] > best) {
                         best = tally[j];
@@ -2172,10 +2177,10 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         flagEnd.m_addr = g_bootyTabPos;
         i32 w = 0;
         do {
-            i32 held = g_gameReg->m_gameStats->SumFlags(w);
+            i32 held = g_gameReg->m_gameStats->CountAllFlagCaptures(w);
             i32 placed = 0;
             for (i32 c = 0; c < 4; c++) {
-                if (g_gameReg->m_gameStats->GetFlag(w, c) != 0) {
+                if (g_gameReg->m_gameStats->GetFlagCapture(w, c) != 0) {
                     i32 spread[3][3];
                     spread[0][0] = 0;
                     spread[0][1] = 0;
@@ -2546,27 +2551,27 @@ void CMultiBootyState::DrawBattleStats() {
 
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_options[i].m_joined != 0) {
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupz[i * 4], 4));
+            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4));
             copyRect(&rc, &g_col1Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_powerupPickupz[i * 7], 7));
+            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7], 7));
             copyRect(&rc, &g_col2Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_toyPickupz[i * 10], 10));
+            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10], 10));
             copyRect(&rc, &g_col3Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_weaponPickupz[i * 22], 22));
+            s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22], 22));
             copyRect(&rc, &g_col4Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", g_gameReg->m_gameStats->m_counts[i]);
+            s.Format("%d", g_gameReg->m_gameStats->m_gruntzByPlayer[i]);
             copyRect(&rc, &g_col5Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", (g_gameReg->m_gameStats)->SumWinRow(i));
+            s.Format("%d", (g_gameReg->m_gameStats)->CountKillsForPlayer(i));
             copyRect(&rc, &g_col6Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }

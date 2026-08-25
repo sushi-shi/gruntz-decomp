@@ -11,12 +11,12 @@ matching retail.
 
 ```cpp
 // WRONG: arg in eax, xor late, counter in fresh reg
-i32* p = (i32*)((char*)m_wins + y * 0x10);
+i32* p = (i32*)((char*)m_killsByPlayer + y * 0x10);
 i32 sum = 0;
 for (i32 c = 0; c < 4; c++) sum += *p++;
 // RIGHT: xor eax,eax first; y in edx; mov edx,4 (counter) reuses edx
 i32 sum = 0;
-i32* p = (i32*)((char*)m_wins + y * 0x10);
+i32* p = (i32*)((char*)m_killsByPlayer + y * 0x10);
 for (i32 c = 0; c < 4; c++) sum += *p++;
 ```
 ```asm
@@ -26,5 +26,5 @@ shl  edx,0x4          ; y*0x10
 lea  ecx,[edx+ecx+0x58]
 mov  edx,0x4          ; counter reuses edx
 ```
-Steerable. Closed CBattlezData::SumWinRow 85%→100% (paired with the byte-offset
+Steerable. Closed CGameStats::CountKillsForPlayer 85%→100% (paired with the byte-offset
 row base, see byte-offset-address-row-base-scaled-index.md).

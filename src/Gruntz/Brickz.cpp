@@ -2,7 +2,7 @@
 
 #include <Gruntz/Brickz.h>
 
-#include <Gruntz/BattlezData.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/SerialArchive.h>
 
 #include <stdlib.h>

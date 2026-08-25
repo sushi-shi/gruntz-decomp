@@ -46,7 +46,7 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?GetName@CSpawnEntry@@QAE?AVCString@@XZ` | GruntSpawnConfig.cpp | **AreaMgr.cpp** (54 fns) | 514.8 KB |
 | `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | PlayAssetLoad.cpp | **GruntzMgr.cpp** (54 fns) | 291.3 KB |
 | `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord` | WwdFile.cpp | **BattlezMapConfig.cpp** (9 fns) | 156.3 KB |
-| `_DispatchStaticHazardLogic` | LogicRecordDispatch.cpp | **BattlezData.cpp** (29 fns) | 114.6 KB |
+| `_DispatchStaticHazardLogic` | LogicRecordDispatch.cpp | **GameStats.cpp** (29 fns) | 114.6 KB |
 | `?BuiltInLevelName@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
 | `?CustomLevelName@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
 

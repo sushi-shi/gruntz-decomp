@@ -9,9 +9,9 @@ coalescing its zero value with the following `rep stos` expansions. Four
 handwritten element stores are semantically equivalent, but create a different
 value lifetime.
 
-`CBattlezData::Init` is the controlled pair. The source originally reconstructed
-`m_counts[4]` as four explicit assignments, followed by loops over four pickup
-arrays. The base kept the zero in EDI across `ClearWins` and `ClearFlags`, used
+`CGameStats::Reset` is the controlled pair. The source originally reconstructed
+`m_gruntzByPlayer[4]` as four explicit assignments, followed by loops over four pickup
+arrays. The base kept the zero in EDI across `ClearKills` and `ClearFlags`, used
 EDI for the four count stores, then initialized EAX separately for the pickup
 array clears:
 
@@ -21,7 +21,7 @@ push edi
 mov  esi,ecx
 xor  edi,edi
 ; scalar stores through edi
-call ClearWins
+call ClearKills
 call ClearFlags
 mov  [esi+48h],edi
 ; four count stores through edi
@@ -37,14 +37,14 @@ count loop, and carries that same EAX into every later `rep stosd`:
 ```cpp
 i32 i;
 for (i = 0; i < BZ_PLAYER_COUNT; i++) {
-    m_counts[i] = 0;
+    m_gruntzByPlayer[i] = 0;
 }
 for (i = 0; i < 88; i++) {
-    m_weaponPickupz[i] = 0;
+    m_weaponPickupsByPlayer[i] = 0;
 }
 ```
 
-That one aggregate correction takes `CBattlezData::Init` at `0x0fca10` from
+That one aggregate correction takes `CGameStats::Reset` at `0x0fca10` from
 81.0909% to 100% exact: `0x8a` bytes, 44 instructions, 2 calls, 0 branches,
 1 return, 21 stores, and 2 ordered relocations on both sides.
 

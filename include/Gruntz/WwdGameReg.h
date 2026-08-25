@@ -11,7 +11,7 @@ class CVoiceManager;
 
 class CGruntzMapMgr;
 class CSpriteRefTable;
-class CBattlezData;
+class CGameStats;
 struct tagRECT;
 
 struct WwdGameReg;

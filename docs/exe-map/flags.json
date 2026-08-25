@@ -359,7 +359,7 @@
    "outliers": [
     {
      "rva": 549040,
-     "name": "?UpdateScoreHud@CGruntzMgr@@QAEXXZ",
+     "name": "?CommitSinglePlayerProgress@CGruntzMgr@@QAEXXZ",
      "dist": 22043,
      "cluster_n": 2,
      "kind": "misplaced",
@@ -368,7 +368,7 @@
     },
     {
      "rva": 549344,
-     "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
+     "name": "?FinalizeLevelAndShowResults@CGruntzMgr@@QAEXXZ",
      "dist": 22043,
      "cluster_n": 2,
      "kind": "misplaced",
@@ -739,7 +739,7 @@
      "dist": 117327,
      "cluster_n": 1,
      "kind": "interleaver",
-     "home": "src/Gruntz/BattlezData.cpp",
+     "home": "src/Gruntz/GameStats.cpp",
      "home_n": 29
     }
    ],

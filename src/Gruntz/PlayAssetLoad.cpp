@@ -22,7 +22,6 @@
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
 #include <Gruntz/BankMgr.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CBrickz.h>
@@ -41,6 +40,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GameText.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>

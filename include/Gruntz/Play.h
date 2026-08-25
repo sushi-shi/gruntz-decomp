@@ -27,7 +27,7 @@
 
 class MidiManager;
 class MidiSequence;
-class CBattlezData;
+class CGameStats;
 class CChatBoxOwner;
 class CFontConfig;
 class CWorldSoundSet;

@@ -646,7 +646,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_DIALOG_PRIMARY:
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         HiCueLookup();
-                        g_gameReg->AccrueScoreTime();
+                        g_gameReg->FinalizeLevelAndShowResults();
                     } else if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         HiCueLookup();
                         HiPost(0x806b);
@@ -658,25 +658,25 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_DIALOG_SECONDARY:
                     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-                            g_gameReg->UpdateScoreHud();
+                            g_gameReg->CommitSinglePlayerProgress();
                         }
                         HiCueLookup();
                         HiPost(0x8023);
                     } else {
                         HiCueTimed();
-                        g_gameReg->AccrueScoreTime();
+                        g_gameReg->FinalizeLevelAndShowResults();
                     }
                     return 1;
                 case SBICMD_DIALOG_YES:
                     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-                            g_gameReg->UpdateScoreHud();
+                            g_gameReg->CommitSinglePlayerProgress();
                         }
                         HiCueTimed();
                         HiPost(0x8023);
                     } else {
                         HiCueTimed();
-                        g_gameReg->AccrueScoreTime();
+                        g_gameReg->FinalizeLevelAndShowResults();
                     }
                     return 1;
                 case SBICMD_DIALOG_NO:

@@ -4,10 +4,10 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -163,7 +163,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                     }
                 }
-                g_gameReg->m_gameStats->MarkFlag(idx, i);
+                g_gameReg->m_gameStats->RecordFlagCapture(idx, i);
                 return 0;
             }
         }

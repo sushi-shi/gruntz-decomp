@@ -3,13 +3,13 @@
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezUnitKind.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
@@ -264,7 +264,7 @@ i32 CTriggerMgr::PlaceObject(
             m_units[base + unitIndex] = logic;
             m_unitCountByPlayer[playerIndex] += 1;
             m_unitExited[base + unitIndex] = 0;
-            game->m_gameStats->m_counts[playerIndex] += 1;
+            game->m_gameStats->m_gruntzByPlayer[playerIndex] += 1;
             return unitIndex;
         }
     }

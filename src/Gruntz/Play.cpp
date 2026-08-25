@@ -25,7 +25,6 @@
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
 #include <Gruntz/BankMgr.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
@@ -46,6 +45,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GameText.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
@@ -1179,7 +1179,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
-    g_gameReg->m_gameStats->Init();
+    g_gameReg->m_gameStats->Reset();
     g_gameReg->m_commandMgr->m_pendingLocalCommands.RemoveAll();
     g_gameReg->m_commandMgr->RecycleQueuedCommands();
     g_frameTicks = 0;
@@ -2032,13 +2032,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-                        g_gameReg->UpdateScoreHud();
+                        g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                     return 1;
                 }
                 CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-                mgr->AccrueScoreTime();
+                mgr->FinalizeLevelAndShowResults();
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
@@ -2053,7 +2053,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-                        g_gameReg->UpdateScoreHud();
+                        g_gameReg->CommitSinglePlayerProgress();
                     }
                     PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 }
@@ -2062,7 +2062,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'S' && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-                mgr->AccrueScoreTime();
+                mgr->FinalizeLevelAndShowResults();
             }
             if (vk == 'R') {
                 if (mgr->m_gameMode == GAMEMODE_SINGLE
@@ -2081,7 +2081,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (mgr->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
-                    mgr->AccrueScoreTime();
+                    mgr->FinalizeLevelAndShowResults();
                 }
                 return 1;
             }
@@ -6165,7 +6165,7 @@ i32 CPlay::ResetPlayState() {
         CGruntzMgr* reg = g_gameReg;
 
         if (reg->m_strWorldFile.GetLength() == 0) {
-            m_mgr->m_gameStats->FillRecord(m_levelIndex, 1);
+            m_mgr->m_gameStats->UpdateLevelRecord(m_levelIndex, 1);
             reg = g_gameReg;
 
             if (reg->m_cheatMgr->m_cheatsUsed == 0) {

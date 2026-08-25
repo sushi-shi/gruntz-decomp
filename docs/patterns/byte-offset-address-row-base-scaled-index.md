@@ -21,8 +21,8 @@ shl  eax,0x4            ; outer*0x10  (row stride, BYTES)
 lea  eax,[ecx+eax+0x98] ; row base = this + outer*0x10 + 0xBASE
 mov  eax,[eax+edx*0x4]  ; + inner*4
 ```
-Steerable. Closed CBattlezData::GetFlag 86.5%→100% (the byte-offset form also
+Steerable. Closed CGameStats::GetFlagCapture 86.5%→100% (the byte-offset form also
 fixed the outer/inner→eax/edx register split the fused index got wrong). The same
 row-base spelling (`(char*)m_grid + y*0x10`) for a row-SUM loop closed
-CBattlezData::SumWinRow once paired with an early `sum=0` (see
+CGameStats::CountKillsForPlayer once paired with an early `sum=0` (see
 [zero-init-before-pointer-setup-for-loop.md](zero-init-before-pointer-setup-for-loop.md)).

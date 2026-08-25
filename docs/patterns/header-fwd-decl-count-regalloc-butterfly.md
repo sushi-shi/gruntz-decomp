@@ -174,7 +174,7 @@ restore the disproved placeholder. The owner fold itself is documented in
 
 ELEVENTH FIRING (2026-07-23, command-role alias collapse): deleting seven fake
 member declarations from `GruntzMgr.h`, `GruntzCmdMgr.h`,
-`VoiceManager.h`, and `BattlezData.h` after their ILT targets proved to be
+`VoiceManager.h`, and `GameStats.h` after their ILT targets proved to be
 existing methods recolored a wide shared-header closure. Retyping the archive
 fan-out from integer/`void*` placeholders to `CFileMemBase*` then removed the
 wrong receiver casts without changing that set. Eight unrelated,

@@ -23,7 +23,6 @@
 #include <Enums.h>
 #include <Gruntz/AssetRoot.h>
 #include <Gruntz/Attract.h>
-#include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/CheatMgr.h>
@@ -41,6 +40,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameStats.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -354,9 +354,9 @@ void CGruntzMgr::Close() {
         delete m_tileGrid;
         m_tileGrid = NULL;
     }
-    CBattlezData* scoreHud = m_gameStats;
-    if (scoreHud) {
-        delete scoreHud;
+    CGameStats* gameStats = m_gameStats;
+    if (gameStats) {
+        delete gameStats;
         m_gameStats = NULL;
     }
     if (m_commandMgr) {
@@ -461,55 +461,58 @@ RVA_COMPGEN(0x00085fc0, 0x57, ??1DirectInputMgr2@@QAE@XZ)
 RVA_COMPGEN(0x00086040, 0x49, ??1MidiManager@@QAE@XZ)
 
 RVA(0x000860b0, 0xe8)
-void CGruntzMgr::UpdateScoreHud() {
+void CGruntzMgr::CommitSinglePlayerProgress() {
     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         return;
     }
-    CState* sub = g_gameReg->m_curState;
+    CState* currentState = g_gameReg->m_curState;
 
     m_gameStats->m_gruntzExited += m_triggerMgr->m_gruntzExitedByPlayer[g_curPlayer];
     m_gameStats->m_gruntzLost += m_triggerMgr->m_gruntzLostByPlayer[g_curPlayer];
 
     if (m_strWorldFile.GetLength() != 0) {
-        m_gameStats->SetCount(1);
+        m_gameStats->SetLevelNumber(1);
         m_gameStats->m_isCustomLevel = 1;
         return;
     }
 
     if (m_cheatMgr->m_cheatsUsed == 0) {
-        m_gameStats->FillRecord(sub->m_levelIndex, 0);
-        g_gameReg->m_saveGame->SetCurLevel(static_cast<QuestLevel>(sub->m_levelIndex));
+        m_gameStats->UpdateLevelRecord(currentState->m_levelIndex, 0);
+        g_gameReg->m_saveGame->SetCurLevel(static_cast<QuestLevel>(currentState->m_levelIndex));
         g_gameReg->m_saveGame->SetMaxLevel(
-            static_cast<QuestLevel>((sub->m_levelIndex % IDX(QUESTLEVEL_TRAINING_LAST)) + 1)
+            static_cast<QuestLevel>(
+                (currentState->m_levelIndex % IDX(QUESTLEVEL_TRAINING_LAST)) + 1
+            )
         );
         g_gameReg->m_saveGame->Save(NULL, 0x81a6);
     }
-    m_gameStats->SetCount(sub->m_levelIndex);
+    m_gameStats->SetLevelNumber(currentState->m_levelIndex);
     m_gameStats->m_isCustomLevel = 0;
 }
 
 RVA(0x000861e0, 0xc5)
-void CGruntzMgr::AccrueScoreTime() {
-    CState* st = m_curState;
+void CGruntzMgr::FinalizeLevelAndShowResults() {
+    CState* currentState = m_curState;
     if (m_gameMode == GAMEMODE_SINGLE) {
         if (m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-            UpdateScoreHud();
+            CommitSinglePlayerProgress();
         }
         TransitionState(GAMESTATE_BOOTY, 1, 0, 0);
         return;
     }
-    g_gameReg->m_gameStats->SetCount(st->m_levelIndex);
+    g_gameReg->m_gameStats->SetLevelNumber(currentState->m_levelIndex);
     if (m_gameMode == GAMEMODE_REPLAY) {
 
-        CTimer* clk = (static_cast<CPlay*>(st))->m_levelTimer;
-        i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
-        g_gameReg->m_gameStats->m_elapsedTimeMs += (d < 0) ? 0 : static_cast<i32>(d);
+        CTimer* levelTimer = (static_cast<CPlay*>(currentState))->m_levelTimer;
+        i64 elapsedMs = static_cast<i64>(g_frameTime) - levelTimer->m_startStamp.m_v;
+        g_gameReg->m_gameStats->m_elapsedTimeMs +=
+            (elapsedMs < 0) ? 0 : static_cast<i32>(elapsedMs);
         TransitionState(GAMESTATE_MULTIBOOTY, 1, 0, 0);
         return;
     }
-    CBattlezData* hud = g_gameReg->m_gameStats;
+    CGameStats* gameStats = g_gameReg->m_gameStats;
     u32 now = timeGetTime();
-    hud->m_elapsedTimeMs += (now - g_scoreTimeBase);
+    gameStats->m_elapsedTimeMs += (now - g_scoreTimeBase);
     TransitionState(GAMESTATE_MULTIBOOTY, 1, 0, 0);
 }
 

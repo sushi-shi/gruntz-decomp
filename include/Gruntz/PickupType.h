@@ -115,7 +115,7 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_GHOST = 0x36,
     // The seven TIMED powerups. Megaphone (a call) and the three Zap Colas
     // (instant heal) sit below and are excluded, which is why the scoreboard's
-    // powerup row is 7 wide: m_powerupPickupz[type - GHOST + 7 * owner].
+    // powerup row is 7 wide: m_powerupPickupsByPlayer[type - GHOST + 7 * owner].
     PICKUP_TIMEDPOWERUP_FIRST = PICKUP_GHOST,
     PICKUP_SUPERSPEED = 0x37,
     PICKUP_INVULNERABILITY = 0x38,
