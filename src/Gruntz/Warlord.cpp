@@ -4,7 +4,6 @@
 
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
@@ -12,6 +11,7 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
@@ -251,7 +251,7 @@ i32 CWarlord::SerializeMove(
                 strcpy(
                     buf,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
+                        m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }
@@ -276,7 +276,9 @@ i32 CWarlord::SerializeMove(
             if (m_idleAnims[0] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[0]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_idleAnims[0])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -285,7 +287,9 @@ i32 CWarlord::SerializeMove(
             if (m_idleAnims[1] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[1]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_idleAnims[1])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -294,7 +298,9 @@ i32 CWarlord::SerializeMove(
             if (m_idleAnims[2] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[2]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_idleAnims[2])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -303,7 +309,9 @@ i32 CWarlord::SerializeMove(
             if (m_idleAnims[3] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[3]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_idleAnims[3])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -312,7 +320,9 @@ i32 CWarlord::SerializeMove(
             if (m_battlecryAnims[0] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[0]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_battlecryAnims[0])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -321,7 +331,9 @@ i32 CWarlord::SerializeMove(
             if (m_battlecryAnims[1] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[1]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_battlecryAnims[1])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -330,14 +342,19 @@ i32 CWarlord::SerializeMove(
             if (m_battlecryAnims[2] != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[2]))
+                    static_cast<const char*>(
+                        world->m_animRegistry->FindAnimationKey(m_battlecryAnims[2])
+                    )
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_animJoy != NULL) {
-                strcpy(buf, static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animJoy)));
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animJoy))
+                );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
             g_serialCounter++;
@@ -345,7 +362,7 @@ i32 CWarlord::SerializeMove(
             if (m_animDeath != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animDeath))
+                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animDeath))
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -354,7 +371,7 @@ i32 CWarlord::SerializeMove(
             if (m_animMoving != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animMoving))
+                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animMoving))
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);
@@ -363,7 +380,7 @@ i32 CWarlord::SerializeMove(
             if (m_animPanic != NULL) {
                 strcpy(
                     buf,
-                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animPanic))
+                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animPanic))
                 );
             }
             ar->Write(buf, SERIAL_NAME_LEN);

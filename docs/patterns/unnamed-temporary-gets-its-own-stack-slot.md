@@ -13,9 +13,9 @@ and the function cannot align at all — a hard 0% is normal.
 The giveaway is at the call site, not in the frame:
 
 ```
-target:  call ?KeyOfValue@...     ; returns CString by value
+target:  call ?FindAnimationKey@...     ; returns CString by value
          mov  edi,[eax]           ; m_pchData read straight off the return buffer
-base:    call ?KeyOfValue@...
+base:    call ?FindAnimationKey@...
          mov  edi,[esp+0x10]      ; stored, then reloaded from the temp's slot
 ```
 
@@ -24,7 +24,7 @@ base:    call ?KeyOfValue@...
 cl 5.0 allocates a distinct temporary slot **per call site** for an unnamed class
 return value. Bind that return to a **named local** and it becomes an ordinary local
 whose live range ends at its last use — and cl then colours all of them onto one slot,
-because the lifetimes are disjoint (`KeyOfValue` → inline `strcpy` → `~CString`, no
+because the lifetimes are disjoint (`FindAnimationKey` → inline `strcpy` → `~CString`, no
 throwing call spanning them).
 
 So the coalescing is not a compiler mood: it is what a named local *asks for*.
@@ -35,11 +35,11 @@ Consume the temporary in place.
 
 ```cpp
 // before - one shared slot, and `mov edi,[esp+N]`
-CString nm = reg->KeyOfValue(m_animMoving);
-strcpy(buf, static_cast<const char*>(nm));
+CString animationName = registry->FindAnimationKey(m_animMoving);
+strcpy(nameBuffer, static_cast<const char*>(animationName));
 
 // after - its own slot, and `mov edi,[eax]`
-strcpy(buf, static_cast<const char*>(reg->KeyOfValue(m_animMoving)));
+strcpy(nameBuffer, static_cast<const char*>(registry->FindAnimationKey(m_animMoving)));
 ```
 
 ## What this does NOT mean

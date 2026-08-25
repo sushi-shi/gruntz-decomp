@@ -110,5 +110,5 @@ shared base once, then the derived classes), not one-off:
 - **EH / special singletons**: Dsndmgr (`SoundDevice`/`SoundStream`/
   `SoundBuffer`/`StreamVoice`/`StreamFeeder` — `/GX` EH frames, non-RTTI),
   CBoomerang (sunk-store wall), CImage/CFileImage, CRemusNode (PMF-vtable +
-  CObject base), CDDrawSurface{Mgr,Pair}/CDDrawSubMgrAni (CObject restamps),
+  CObject base), CDDrawSurface{Mgr,Pair}/AnimationRegistry (CObject restamps),
   CMulti/CPlay/CState (43/43/26-slot vtables), ZVec/EngStr.

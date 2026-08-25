@@ -4,7 +4,6 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <Enums.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
@@ -13,6 +12,7 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>

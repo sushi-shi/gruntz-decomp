@@ -353,10 +353,11 @@ class-family transitions:
 2. **`0x156cb0`** — SurfaceMgr file ends (`CDDrawSurfaceMgr` ctor/dtor/Init/
    Snapshot/RestoreChildren, `0x155840-0x156ca2`) → the SubMgr worker-family
    begins (`??0CDDrawSubMgr` + the IsReady/GetStateId/ScalarDtor/dtor quartets
-   of WorkerMapSmall/WorkerList/WorkerA/B/Cache/SubMgrPages/SubMgrLeaf/
-   LeafScan, then LeafScan/LeafElementObj resource maps `0x157a80-0x158b04`,
-   then SubMgrPages `Method_*` + `CDDrawSurfacePair` `0x158b10-0x1591c9`).
-   This middle zone may itself split (~`0x157a80` before the leaf-scan block,
+   of WorkerMapSmall/WorkerList/WorkerA/B/Cache/SubMgrPages/AnimationRegistry/
+   SoundCueRegistry, then SoundCueRegistry/SoundCue resource maps
+   `0x157a80-0x158b04`, then SubMgrPages `Method_*` + `CDDrawSurfacePair`
+   `0x158b10-0x1591c9`). This middle zone may itself split (~`0x157a80` before
+   the sound-cue registry block,
    ~`0x1588f0` before the pages block) — unresolved.
 3. **`0x1591e0`** (alt `0x159250`) — → the `CWwdObjMgr` file
    (CreateObject/CreateNamed factories, find/foreach/serialize family,
@@ -366,7 +367,7 @@ class-family transitions:
    `CDDrawBlitParam` + `CAniAdvanceCursor::Advance`, to `0x15ccc8`).
 
 Note: the CFileMem pocket `0x157850-0x157a66` is COMDAT-at-usage emission
-(filemem's core is `0x165e30`), NOT a file boundary. Strays `CSoundResMap`
+(filemem's core is `0x165e30`), NOT a file boundary. Strays `SoundCueRegistry`
 (`0x157b00`), `CSpriteFactory` (`0x1597b0`), `Rng::Next2` (`0x15cbe0`),
 `CSprite::GetFrame` (`0x15cc30`) sit inside these zones by position.
 
@@ -779,7 +780,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
 | # | block | span | verdict | our file (host) | flags |
 |---|---|---|---|---|---|
 | S1 | wwd game-object core + worker frames | `0x1504d0-0x152636` | ONE obj (WOVEN, strong) | src/Wwd/WwdGameObject.cpp | eh |
-| S2 | submgr leaf/ani catalog | `0x152640-0x152e83` | ONE obj (A-B-A, strong) | src/DDrawMgr/DDrawSubMgrLeaf.cpp | eh |
+| S2 | animation registry | `0x152640-0x152e83` | ONE obj (A-B-A, strong) | src/DDrawMgr/AnimationRegistry.cpp | eh |
 | C | CImage impl (Create/Render/Blit*) | `0x152e90-0x1549c5` | ONE obj (single class, strong) | src/Image/CImage.cpp | eh |
 | D | CResolveNode/base-slot COMDAT pocket | `0x1549d0-0x154a90` | E's leading COMDATs (high) | src/Image/ResolveNode.cpp (held) | eh |
 | E | CDDrawWorkerRegistry + ~CDDrawWorker | `0x154aa0-0x155833` | block held (#9 boundary 1 @0x155840) | src/DDrawMgr/DDrawWorkerRegistry.cpp | eh |
@@ -801,10 +802,10 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   first-stamped by the userbaselink EnsureWorker fns and its slot bodies are the
   0x151d60-0x151e70 run; ??1CLogicRecord (0x151da0) re-stamps it => our
   "CLogicRecord" IS AnimWorkerObj (identity note, not renamed this wave).
-* **S2 (ONE obj).** A-B-A: leaf(0x152640-0x1527d0) | ani(0x1528d0-0x152ad0) |
-  leaf(0x152c50-0x152d30). ??1CAniElement@0x152e30 directly after = the element
-  class the ani CreateAniEntry fns stamp (??_7CAniElementObj first-stamp
-  0x1528d0) -> S2's tail.
+* **S2 (ONE obj).** A-B-A: registry helpers (0x152640-0x1527d0) | animation
+  loaders (0x1528d0-0x152ad0) | registry helpers (0x152c50-0x152d30).
+  ??1CAniElement@0x152e30 directly after = the element class the animation
+  loaders stamp (??_7CAniElement@@6B@ first-stamp 0x1528d0) -> S2's tail.
 * **C (ONE obj).** 0x152e90-0x1549c5 is ALL CImage: the RTTI vtable 0x1eaa2c
   slots [7]-[15] point 0x152e90-0x153470; Blit*@0x1538c0-0x154750 are CImage
   methods. The 0xd5c10-0xd5e80 quartet (Gap/dtor/Slot17) are COMDAT-at-usage
@@ -813,13 +814,13 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   OPEN (its own vtable emission was discarded); one obj regardless.
 * **D (pocket).** ??0/??1CResolveNode + four tiny unnamed slot bodies
   (0x154a00-0x154a80). 0x154a00 is the SHARED slot-[8] body of ??_7WwdBResolve/
-  ??_7CDDrawSubMgr/??_7LeafElementObj/??_7CWwdGameObjectE - a grand-base inline
+  ??_7CDDrawSubMgr/??_7SoundCue/??_7CWwdGameObjectE - a grand-base inline
   virtual; the pocket is the COMDAT cluster kept at the first obj emitting those
   vtables. ??_7WwdBResolve first-stamp = 0x1549d0 itself; next obj (E) starts
   0x154aa0 -> pocket rides E's contribution head. Held in ResolveNode.cpp.
 * **E/F/G (held at 0x155840 + 0x156cb0, LEANING ONE-TO-TWO objs).** The
-  keeper-argument LEANS F==G: ALL eight family vtables (??_7CDDrawSubMgrLeaf/
-  LeafScan/MapSmall/Cache/List/ChildGroup/Pages/CWorkerVtableView 0x1efc78-
+  keeper-argument LEANS F==G: ALL eight family vtables (??_7AnimationRegistry/
+  SoundCueRegistry/MapSmall/Cache/List/ChildGroup/Pages/CWorkerVtableView 0x1efc78-
   0x1efe08) are FIRST-stamped by CDDrawSurfaceMgr::Init@0x155900 (F), yet their
   tiny-slot bodies (IsReady/GetStateId/ScalarDtor quartets) sit at
   0x156cd0-0x1577e0 (G) - if F and G were different objs, F (the keeper) would
@@ -832,9 +833,10 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   g_soundEnabled / g_soundVolumePercent / three Gap_15a210 cells) binds S2+E+G+H+I if its
   cells are file-statics - but every one is plausibly extern, so not decisive.
 * **G internal sub-splits REFUTED.** #9 suggested ~0x157a80 and ~0x1588f0 as
-  possible boundaries; the weave crosses both: leaf fns at 0x1577a0-0x1577e0 AND
-  0x157ae0/0x157bc0 (filemem pocket between); submgr's PlaySpatialized@0x1587f0
-  between the leafscan block and the pages block; pages fns run 0x1588f0-0x158ee0
+  possible boundaries; the weave crosses both: AnimationRegistry functions at
+  0x1577a0-0x1577e0 and SoundCueRegistry functions at 0x157ae0/0x157bc0
+  (filemem pocket between); SoundCue::PlaySpatialized@0x1587f0 sits between the
+  sound-cue registry block and the pages block; pages fns run 0x1588f0-0x158ee0
   continuously then subworker|pair|subworker|pair alternates 0x158f30-0x1591b0.
   G is internally woven -> one block.
 * **H/I (held at 0x15b2c0).** H = the CWwdObjMgr collection file (finds/foreach/
@@ -860,17 +862,18 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   (levelplane) -> 0x165460 -> 0x1658c0 (T)) - corroborates .text order == obj
   link order across the whole region, and places gamelevel/levelplane/T's
   vtables in their own contributions.
-* **Strays (position-homed or left as exiles).** CSoundResMap::RemoveByValue
-  @0x157b00 -> G (the leaf/ani catalog IS the sound-res map neighborhood);
+* **Strays (position-homed or left as exiles).** SoundCueRegistry::RemoveCue
+  @0x157b00 -> G (the animation registry sits beside the sound-cue registry);
   CSpriteFactory pair @0x1597b0/0x159830 -> H; CSprite::GetFrame@0x15cc30 -> I;
   Rng::Next2@0x15cbe0 LEFT in Random.cpp (foreign inline-COMDAT exile hole in
-  I's span); leafscan's far exiles 0x1f940/0x5b7e0/0x114120 ride G's file head;
-  CAniElement::AtChecked@0x6b270 rides T's file head; leaf's 0x6b2a0 rides S2's
-  file head; SpriteResource's 0x58b60 exile rides the S1 file head.
+  I's span); SoundCueRegistry's far exiles 0x1f940/0x5b7e0/0x114120 ride G's
+  file head; CAniElement::AtChecked@0x6b270 rides T's file head;
+  AnimationRegistry's 0x6b2a0 rides S2's file head; SpriteResource's 0x58b60
+  exile rides the S1 file head.
 
 ### #15 execution notes (wave4-L, as landed)
 
-* **Executed:** S1 -> `src/Wwd/WwdGameObject.cpp`; S2 -> `src/DDrawMgr/DDrawSubMgrLeaf.cpp`;
+* **Executed:** S1 -> `src/Wwd/WwdGameObject.cpp`; S2 -> `src/DDrawMgr/AnimationRegistry.cpp`;
   C -> `src/Image/CImage.cpp` (Blit family merged in); D pocket -> `src/Image/ResolveNode.cpp`
   (ctor/dtor only); E -> `src/DDrawMgr/DDrawWorkerRegistry.cpp`; F -> `src/DDrawMgr/DDrawSurfaceMgr.cpp`
   (reordered ascending); G -> `src/DDrawMgr/DDrawSubMgr.cpp` (~90 fns, woven); H -> `src/Wwd/WwdObjMgr.cpp`;
@@ -878,7 +881,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   R holding file -> `src/Wwd/WwdGameObjectRender.cpp` (NEW unit). 22 units dissolved, 2 added.
   Shared class hierarchies hoisted to headers so split method sets can live in their objs:
   WwdGameObjectFamily.h, WwdGameObjCtor.h, WwdFactoryObject.h, ResolveNode.h, AnimWorkerObj.h,
-  DDrawWorkerCache.h, DDrawWorkerList.h, DDrawWorkerMapSmall.h, DDrawSubMgrLeaf.h, AniAdvance.h.
+  DDrawWorkerCache.h, DDrawWorkerList.h, DDrawWorkerMapSmall.h, AnimationRegistry.h, AniAdvance.h.
 * **Held correct-partials (documented, NOT merged):** DDrawSurfaceMgrSerialize.cpp stays a
   separate F-block file (its CFileMem/CDDrawSurfaceMgr/CDDrawSubMgrPages local views clash with
   F's; fold deferred); WwdSpatialMgr.cpp keeps the 0x163a40 dtor (co-located with FreeGrids);

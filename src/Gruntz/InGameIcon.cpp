@@ -7,12 +7,12 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/GameLevel.h>
@@ -835,7 +835,7 @@ i32 CInGameIcon::SerializeMove(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
+                        m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }

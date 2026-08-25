@@ -10,7 +10,6 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -29,6 +28,7 @@
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
@@ -397,7 +397,7 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
 }
 
 RVA(0x001577a0, 0x16)
-i32 CDDrawSubMgrLeaf::IsLoaded() {
+i32 AnimationRegistry::IsLoaded() {
     if (m_ownerCtx == NULL) {
         goto fail;
     }
@@ -409,10 +409,10 @@ fail:
     return 0;
 }
 
-RVA_COMPGEN(0x001577c0, 0x1e, ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z)
+RVA_COMPGEN(0x001577c0, 0x1e, ??_GAnimationRegistry@@UAEPAXI@Z)
 
 RVA(0x001577e0, 0x68)
-CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
+AnimationRegistry::~AnimationRegistry() {
     Unload();
 }
 

@@ -37,7 +37,7 @@ class CDDrawWorkerRegistry;
 class CDDrawWorkerCache;
 class CDDrawWorkerMapSmall;
 class SoundCueRegistry;
-class CDDrawSubMgrLeaf;
+class AnimationRegistry;
 class CDDrawDeviceManager;
 class SoundStream;
 
@@ -91,7 +91,7 @@ public:
     class CGameLevel* m_level;
     SoundCueRegistry* m_soundRegistry;
 
-    CDDrawSubMgrLeaf* m_animRegistry;
+    AnimationRegistry* m_animRegistry;
 
     HWND m_hWnd;
     i32 m_flags;

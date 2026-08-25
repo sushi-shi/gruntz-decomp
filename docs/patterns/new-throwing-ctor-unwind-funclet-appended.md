@@ -42,6 +42,6 @@ that no source spelling moves.
 
 WALL (EH-funclet placement). The body is byte-exact; only the trailing unwind
 funclet is appended rather than section-split — not source-steerable. Evidence:
-`CDDrawSubMgrAni::CreateAniEntry_1528d0` (0x1528d0) — body byte-identical to the
+`AnimationRegistry::LoadAnimationFromSource_1528d0` (0x1528d0) — body byte-identical to the
 `ret`, 96.87%. Distinct from rezalloc-placement-new (frame ABSENT, ~47%): here the
 frame is PRESENT and matches; only the funclet tail differs.

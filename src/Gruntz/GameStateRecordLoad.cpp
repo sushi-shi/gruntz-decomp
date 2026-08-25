@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>

@@ -948,8 +948,8 @@ source = "src/Gruntz/AreaMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "ddrawsubmgrleaf"
-source = "src/DDrawMgr/DDrawSubMgrLeaf.cpp"
+unit = "animationregistry"
+source = "src/DDrawMgr/AnimationRegistry.cpp"
 flags = "cpp"
 
 [[unit]]

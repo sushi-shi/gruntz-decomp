@@ -7,7 +7,6 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -17,6 +16,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>

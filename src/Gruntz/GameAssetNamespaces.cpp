@@ -6,8 +6,8 @@
 
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -61,7 +61,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         }
         m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
-    if (m_world->m_animRegistry->HasKeyPrefix("GAME") == 0) {
+    if (m_world->m_animRegistry->HasWithPrefix("GAME") == 0) {
         CSymTab* aniz = m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == NULL) {
             return 0;

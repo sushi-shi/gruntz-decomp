@@ -1,8 +1,8 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>

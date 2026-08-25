@@ -248,7 +248,7 @@
 238	shadetablecache	0x0014de30	0x00150176	lib	DDrawMgr	24	position
 239	databuffer	0x00150180	0x001504cc	lib	DDrawMgr	8	position
 240	wwdgameobject	0x001504d0	0x00152636	lib	Wwd	44	position
-241	ddrawsubmgrleaf	0x00152640	0x00152e83	lib	DDrawMgr	11	position
+241	animationregistry	0x00152640	0x00152e83	lib	DDrawMgr	11	position
 242	cimage	0x00152e90	0x001549c5	lib	Image	20	position
 243	cremusnode	0x001549d0	0x00154a93	lib	Image	2	position
 244	ddrawworkerregistry	0x00154aa0	0x00155833	lib	DDrawMgr	24	position

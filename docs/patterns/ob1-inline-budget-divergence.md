@@ -66,7 +66,7 @@ expands it for four others, and the eight are eight distinct classes:
 | child (by its `??_7` stamp) | retail |
 |---|---|
 | `CDDrawSubMgrPages` 0x1efe08, `CDDrawChildGroup` 0x1efdc0, `CDDrawWorkerList` 0x1efd88, `CDDrawWorkerMapSmall` 0x1efcc8 | **call** |
-| `CDDrawWorkerRegistry` 0x1efd28, `CDDrawWorkerCache` 0x1efd00, `SoundCueRegistry` 0x1efca0, `CDDrawSubMgrLeaf` 0x1efc78 | expand |
+| `CDDrawWorkerRegistry` 0x1efd28, `CDDrawWorkerCache` 0x1efd00, `SoundCueRegistry` 0x1efca0, `AnimationRegistry` 0x1efc78 | expand |
 
 Pinning `CLoadable(CDDrawSurfaceMgr*,i32,i32)` out of line in DDrawSubMgr.cpp and
 tagging the expansion sites `CLoadable(owner, a, b, CLoadable::NO_SEED)` measured

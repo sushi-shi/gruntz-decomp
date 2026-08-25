@@ -12,10 +12,10 @@ reference is then 4 bytes apart, and the coalescing also changes whether a calle
 kept in `eax` (retail `mov edi,[eax]`) or re-loaded from the shared slot (`mov edi,[esp+M]`).
 
 ```cpp
-// Both `out` (read branch) and `nm` (write branch) are branch-local and never
+// Both `animation` (read branch) and `animationName` (write branch) are branch-local and never
 // co-live, so cl coalesces them → one slot, frame 4 B short. Retail keeps two.
-if (mode == 7) { CObject* out = 0; map.Lookup(key, out); m_0c = out; }
-if (mode == 4) { CString nm = leaf.KeyOfValue(m_0c); strcpy(buf, (const char*)nm); }
+if (mode == 7) { CAniElement* animation = registry.FindAnimation(key); m_animation = animation; }
+if (mode == 4) { CString animationName = registry.FindAnimationKey(m_animation); strcpy(nameBuffer, static_cast<const char*>(animationName)); }
 ```
 ```asm
 ; retail: sub esp,0x88  (out@0x10, CString@0x14, buf@0x18) ; mov edi,[eax]
@@ -23,7 +23,7 @@ if (mode == 4) { CString nm = leaf.KeyOfValue(m_0c); strcpy(buf, (const char*)nm
 ```
 WALL. Not steerable under /O2: hoisting `out` to function scope, inner-block reshapes, and
 swapping the branch order all regressed (`CSerialSub34::Chain` 0x8c00: 88.0%; the read/write
-dispatch, Lookup/KeyOfValue chain, inline strlen/strcpy, and /GX-elided CString temp are all
+dispatch, Lookup/FindAnimationKey chain, inline strlen/strcpy, and /GX-elided CString temp are all
 exact — only the one coalesced slot + its cascade differ). Sibling of
 gx-scoped-local-eh-frame-size.md (that is the /GX-frame 4 B variant; this is the frameless
 coalesce variant). Deferred to the final sweep.

@@ -7,7 +7,6 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/ActName.h>
@@ -16,6 +15,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
@@ -797,7 +797,7 @@ i32 CProjectile::SerializeMove(
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (*fp != NULL) {
-                    strcpy(buf, reg->m_animRegistry->KeyOfValue(*fp));
+                    strcpy(buf, reg->m_animRegistry->FindAnimationKey(*fp));
                 }
                 s->Write(buf, SERIAL_NAME_LEN);
                 fp++;
@@ -848,7 +848,7 @@ i32 CProjectile::SerializeMove(
             char blob[SERIAL_NAME_LEN];
             memset(blob, 0, sizeof(blob));
             if (m_value != NULL) {
-                strcpy(blob, m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value));
+                strcpy(blob, m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value));
             }
             s->Write(blob, SERIAL_NAME_LEN);
             s->Write(m_blob, 0x10);

@@ -12,25 +12,25 @@ then reads from is a source fact:
 
 ```cpp
 // NO - a named local; cl reads [esp+N] and the frame gains a dword
-CString nm = reg->KeyOfValue(m_value);
-strcpy(name, static_cast<const char*>(nm));
+CString animationName = registry->FindAnimationKey(m_animation);
+strcpy(nameBuffer, static_cast<const char*>(animationName));
 
 // YES - the temporary is consumed in place; cl reads mov edi,[eax]
-strcpy(name, static_cast<const char*>(reg->KeyOfValue(m_value)));
+strcpy(nameBuffer, static_cast<const char*>(registry->FindAnimationKey(m_animation)));
 ```
 
 ```asm
 lea  ecx,[esp+0x10]           ; hidden return buffer
 push ecx
-call ?KeyOfValue@...
+call ?FindAnimationKey@...
 mov  edi,DWORD PTR [eax]      ; <-- the tell: through the RETURN VALUE, not [esp+0x10]
 ```
 
 The frame size moves with it, so this shows up as a whole-arm `[esp+N]` shift plus one
 instruction of delta - not as a localized diff. Measured: `CWapX::Chain` `0x8c00`
 92.65 -> 93.26 (frame `0x84` -> retail's `0x88`), and the same edit at both
-`CInGameIcon::SerializeMove` sites (`m_animRegistry->KeyOfValue`,
-`m_soundRegistry->FindKeyOfValue`).
+`CInGameIcon::SerializeMove` sites (`m_animRegistry->FindAnimationKey`,
+`m_soundRegistry->FindCueKey`).
 
-Screen for it with `rg 'CString \w+ = .*(KeyOfValue|GetName|GetString)'` next to a `strcpy` /
+Screen for it with `rg 'CString \w+ = .*(FindAnimationKey|FindCueKey|GetName|GetString)'` next to a `strcpy` /
 `Write` of the same buffer.

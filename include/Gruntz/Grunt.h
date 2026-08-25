@@ -49,8 +49,6 @@ class CAniElement;
 
 class FreeNodePool;
 
-class CDDrawSubMgrLeaf;
-
 class SoundSample;
 
 class SoundBuffer;

@@ -8,7 +8,6 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -22,6 +21,7 @@
 #include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>

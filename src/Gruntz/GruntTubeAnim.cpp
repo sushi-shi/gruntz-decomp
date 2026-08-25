@@ -3,10 +3,10 @@
 #include <Mfc.h>
 #include <MfcWin.h>
 
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>

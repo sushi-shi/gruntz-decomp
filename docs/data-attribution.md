@@ -768,7 +768,7 @@ we found *by* those bytes, so a wrong constant in our source would still score 1
   (retail's code used the literal directly and had no array), and enrolling them appended a
   phantom tail to the object's first `.data`: measured, `warlord` 100 → 83.07,
   `gruntsteps` 100 → 76.06, plus `triggermgr`, `gruntassetloaders`, `directsoundmgr`,
-  `ddrawsubmgrleaf`. The candidate obj's own section name refutes the PIN rather than the
+  `animationregistry`. The candidate obj's own section name refutes the PIN rather than the
   literal, and the 30 are listed by name by `data_manifest --report` as a source worklist.
   (The reloc oracle independently confirms their ADDRESSES: retail's code really does load
   `0x20a5dc` where our `triggermgr` loads its `.rdata` `s_LightFx`. It is the `const`, not

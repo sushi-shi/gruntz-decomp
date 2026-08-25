@@ -4,12 +4,12 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerCacheFindInline.h>
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/LogicTypeId.h>
@@ -87,7 +87,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
+                        m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }

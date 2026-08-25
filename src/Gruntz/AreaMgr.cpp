@@ -5,10 +5,10 @@
 #include <Mfc.h>
 
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Image/CImage.h>
@@ -455,7 +455,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     pos = toAdd.GetHeadPosition();
     while (pos != NULL) {
         CAniElement* obj = static_cast<CAniElement*>(toAdd.GetNext(pos));
-        entry->m_animRegistry->RemoveValue(obj);
+        entry->m_animRegistry->RemoveAnimation(obj);
     }
     toAdd.RemoveAll();
 

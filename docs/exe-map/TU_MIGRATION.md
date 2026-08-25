@@ -294,7 +294,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x14de30-0x150176` (14 EH sites): shadetablecache (cpp)
 - `0x150180-0x1504cc` (3 EH sites): databuffer (cpp)
 - `0x1504d0-0x152636` (1 EH sites): wwdgameobject (cpp)
-- `0x152660-0x152e04` (7 EH sites): ddrawsubmgrleaf (cpp)
+- `0x152660-0x152e04` (7 EH sites): animationregistry (cpp)
 - `0x153180-0x1549c5` (1 EH sites): cimage (cpp-rtti)
 - `0x155360-0x1556f5` (4 EH sites): ddrawworkerregistry (cpp)
 - `0x155840-0x158f57` (26 EH sites): ddrawsurfacemgr (cpp), ddrawsubmgr (cpp)
@@ -511,7 +511,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - tileswitchlogic (`cpp-rtti`) — src/Gruntz/TileTriggerSwitchLogic.cpp
 - tiletriggercontainer (`cpp-rtti`) — src/Gruntz/TileTriggerContainer.cpp
 - areamgr (`cpp-rtti`) — src/Gruntz/AreaMgr.cpp
-- ddrawsubmgrleaf (`cpp`) — src/DDrawMgr/DDrawSubMgrLeaf.cpp
+- animationregistry (`cpp`) — src/DDrawMgr/AnimationRegistry.cpp
 - anirecord (`cpp`) — src/DDrawMgr/AniRecord.cpp
 - wwdspatialmgr (`cpp`) — src/Wwd/WwdSpatialMgr.cpp
 - wwdgrid (`cpp`) — src/Wwd/WwdGrid.cpp

@@ -6,7 +6,6 @@
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
@@ -16,6 +15,7 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -1307,10 +1307,10 @@ CObject* CAniElement::AtChecked(i32 i) const {
 }
 
 RVA(0x0006b2a0, 0x23)
-CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
-    CObject* value = NULL;
-    MapLookup(m_animations, key, value);
-    return value;
+CAniElement* AnimationRegistry::FindAnimation(const char* key) {
+    CAniElement* animation = NULL;
+    MapLookup(m_animations, key, animation);
+    return animation;
 }
 
 RVA(0x0006b2e0, 0x39)
@@ -1325,7 +1325,7 @@ void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceNow) {
 
 // The out-of-line half of the bounds test: 30 retail call sites reach it through ILT
 // thunk 0x1127, while the inline PointInRect sibling expands at the rest. Defined
-// here with the AtChecked/LookupValue/Apply group this TU's tail contributes.
+// here with the AtChecked/FindAnimation/Apply group this TU's tail contributes.
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     return PointInRect(r, x, y);

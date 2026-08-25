@@ -8,7 +8,6 @@
 #include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
@@ -18,6 +17,7 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
@@ -1124,9 +1124,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CAniElement* found;
     i32 r = rand() % 0x1e1;
     if (r > 0x140) {
-        found = static_cast<CAniElement*>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_ONE)
-        );
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_ONE);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_viewRect,
@@ -1136,9 +1134,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_voiceManager->PlayVoice(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = static_cast<CAniElement*>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_TWO)
-        );
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_TWO);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_viewRect,
@@ -1148,9 +1144,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_voiceManager->PlayVoice(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = static_cast<CAniElement*>(
-            m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_THREE)
-        );
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_THREE);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_viewRect,

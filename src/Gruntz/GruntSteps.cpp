@@ -3,13 +3,13 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
@@ -1255,249 +1255,249 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         return 0;
     }
 
-    CDDrawSurfaceMgr* mgr = m_animWorker->m_ownerCtx;
-    if (!mgr) {
+    CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
+    if (!world) {
         return 0;
     }
-    i32 n;
-    char buf[SERIAL_NAME_LEN];
+    i32 count;
+    char nameBuffer[SERIAL_NAME_LEN];
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_selectedSprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_selectedSprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_toySprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_toySprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_healthSprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_healthSprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_staminaSprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_staminaSprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_toyTimeSprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_toyTimeSprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_wingzTimeSprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_wingzTimeSprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
     {
-        i32 tmp = 0;
-        CWwdGameObjectA* sp = m_powerupSprite;
-        if (sp) {
-            tmp = sp->m_objectId;
+        i32 spriteObjectId = 0;
+        CWwdGameObjectA* sprite = m_powerupSprite;
+        if (sprite) {
+            spriteObjectId = sprite->m_objectId;
         }
-        ar->Write(&tmp, sizeof(tmp));
+        ar->Write(&spriteObjectId, sizeof(spriteObjectId));
     }
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
-    strcpy(buf, static_cast<const char*>(m_animSetName));
-    ar->Write(buf, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
+    strcpy(nameBuffer, static_cast<const char*>(m_animSetName));
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
-    strcpy(buf, m_frameSetName);
-    ar->Write(buf, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
+    strcpy(nameBuffer, m_frameSetName);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
-    strcpy(buf, m_deathFrameSetName);
-    ar->Write(buf, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
+    strcpy(nameBuffer, m_deathFrameSetName);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = m_poseWalk;
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = m_poseWalk;
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseAttack, GRUNT_ATTACK1);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseAttack, GRUNT_ATTACK1);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseAttack, GRUNT_ATTACK2);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseAttack, GRUNT_ATTACK2);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = m_poseAttackIdle;
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = m_poseAttackIdle;
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseStruck, GRUNT_STRUCK1);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseStruck, GRUNT_STRUCK1);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseStruck, GRUNT_STRUCK2);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseStruck, GRUNT_STRUCK2);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE1);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE1);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE2);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE2);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE3);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE3);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE4);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE4);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseIdle, GRUNT_IDLE5);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE5);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = m_poseDeath;
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = m_poseDeath;
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseToy, GRUNT_TOY1);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseToy, GRUNT_TOY1);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseToy, GRUNT_TOY2);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseToy, GRUNT_TOY2);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseToy, GRUNT_TOY_BREAK);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseToy, GRUNT_TOY_BREAK);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseItem, GRUNT_ITEM1);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseItem, GRUNT_ITEM1);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = AT(m_poseItem, GRUNT_ITEM2);
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
+        CAniElement* animation = AT(m_poseItem, GRUNT_ITEM2);
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     g_serialCounter++;
-    memset(buf, 0, SERIAL_NAME_LEN);
+    memset(nameBuffer, 0, SERIAL_NAME_LEN);
     {
-        CAniElement* id = m_pickupGeoSrc;
-        if (id) {
-            strcpy(buf, mgr->m_animRegistry->KeyOfValue(id));
+        CAniElement* animation = m_pickupGeoSrc;
+        if (animation) {
+            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
         }
     }
-    ar->Write(buf, SERIAL_NAME_LEN);
+    ar->Write(nameBuffer, SERIAL_NAME_LEN);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));
@@ -1611,16 +1611,16 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
 
     {
-        n = m_coordList.GetCount();
-        ar->Write(&n, sizeof(n));
+        count = m_coordList.GetCount();
+        ar->Write(&count, sizeof(count));
         POSITION cpos = m_coordList.GetHeadPosition();
         while (cpos != NULL) {
             ar->Write(m_coordList.GetNext(cpos), 8);
         }
     }
     {
-        n = m_payloads.GetCount();
-        ar->Write(&n, sizeof(n));
+        count = m_payloads.GetCount();
+        ar->Write(&count, sizeof(count));
         POSITION pos = m_payloads.GetHeadPosition();
         while (pos != NULL) {
             ar->Write(m_payloads.GetNext(pos), 0x2c);

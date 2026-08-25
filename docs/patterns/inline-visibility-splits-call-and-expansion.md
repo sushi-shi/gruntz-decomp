@@ -72,7 +72,7 @@ are `@early-stop` on this wall.
 `/Gy` is **forced on by `/O2`** on this project (`docs/linker-flags.md`), so *every* retail
 function is a COMDAT and the linker may group small functions from several compilands into one
 adjacent run. `0x6b330` sits in exactly such a run (`CAniElement::AtChecked` 0x6b270,
-`CDDrawSubMgrLeaf::LookupValue` 0x6b2a0, `CWapX::ApplyAnimation` 0x6b2e0), which looks like an
+`AnimationRegistry::FindAnimation` 0x6b2a0, `CWapX::ApplyAnimation` 0x6b2e0), which looks like an
 inline-COMDAT tail and proves nothing. Use the `add reg,K` argument-temporary tell instead.
 
 ## Recovering the pin later

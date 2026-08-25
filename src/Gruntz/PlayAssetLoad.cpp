@@ -6,7 +6,6 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -20,6 +19,7 @@
 #include <Dsndmgr/MidiManager.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>
@@ -176,7 +176,7 @@ i32 CPlay::LoadLevelAnims(i32 force) {
         return 0;
     }
     if (force == 0) {
-        if (m_world->m_animRegistry->HasKeyPrefix("LEVEL") != 0) {
+        if (m_world->m_animRegistry->HasWithPrefix("LEVEL") != 0) {
             return 1;
         }
     }
@@ -260,7 +260,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if (self->m_world->m_animRegistry->HasKeyPrefix("GAME")) {
+    if (self->m_world->m_animRegistry->HasWithPrefix("GAME")) {
         return 1;
     }
 
@@ -690,7 +690,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                     ->LoadFromTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
             }
         }
-        if (m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_" + name) == 0) {
+        if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
             CSymTab* tree = m_gruntzBank->ResolvePath("ANIZ_" + name);
             if (tree == NULL) {
                 result = 0;
@@ -712,7 +712,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (m_world->m_soundRegistry->HasWithPrefix("GRUNTZ_" + name)) {
         m_world->m_soundRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
     }
-    if (m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_" + name)) {
+    if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name)) {
         m_world->m_animRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
     }
     result = 1;
@@ -956,7 +956,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     if (!self->m_world) {
         return 0;
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_NORMALGRUNT")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
@@ -967,7 +967,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_DEATHZ")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_DEATHZ")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
@@ -977,7 +977,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
@@ -988,7 +988,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_EXITZ")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_EXITZ")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
@@ -998,7 +998,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_GRUNTPUDDLE")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
@@ -1009,7 +1009,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_PICKUPS")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_PICKUPS")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
@@ -1020,7 +1020,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!self->m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
         CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;

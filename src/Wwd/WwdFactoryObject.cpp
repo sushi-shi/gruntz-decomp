@@ -9,11 +9,11 @@
 #include <DDrawMgr/AnimWorkerObjCtorInline.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgr.h>
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
+#include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -773,7 +773,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     memset(buf, 0, sizeof(buf));
     if (m_animation != NULL) {
 
-        strcpy(buf, OwnerMgr()->m_animRegistry->KeyOfValue(m_animation));
+        strcpy(buf, OwnerMgr()->m_animRegistry->FindAnimationKey(m_animation));
     }
     ar->Write(buf, SERIAL_NAME_LEN);
     return 1;

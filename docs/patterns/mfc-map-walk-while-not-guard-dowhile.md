@@ -63,8 +63,8 @@ int n = 0;                    // AFTER pos → n=0 (xorl ebp) lands after the EH
 store (a 2-instruction order swap, ~98%); moving it after `pos` fixes it. `RemoveWithPrefix_1527d0/
 157c70/155360` 91.67% → 100%.
 
-**By-value `CString` return variant** (a reverse-lookup returning the found key, e.g.
-`KeyOfValue_*`/`FindKeyOfValue_*`): the `while` conversion still kills the peel, and two extra
+**By-value `CString` return variant** (a reverse lookup returning the found key, e.g.
+`FindAnimationKey_*`/`FindCueKey_*`/`FindKeyOfValue_*`): the `while` conversion still kills the peel, and two extra
 levers close what was mis-filed as an "NRVO wall":
 - The no-match tail `return key;` must be preceded by `key.Empty();` when retail emits a trailing
   `lea ecx,[key]; call CString::Empty` there — the reconstruction had simply dropped it.
@@ -72,7 +72,8 @@ levers close what was mis-filed as an "NRVO wall":
   extra 4-byte CString slot → `sub esp,N+4`) must be spelled `CString empty; return empty;`; a bare
   `return CString()` RVOs the temp straight into the return slot (`sub esp,N`, ~87%).
 
-`KeyOfValue_152d30`/`FindKeyOfValue_158570`/`FindKeyOfValue_165360` 68.77/70.77/79.06% → 100%.
+`FindAnimationKey_152d30`/`FindCueKey_158570`/`FindKeyOfValue_165360`
+68.77/70.77/79.06% → 100%.
 
 **Accumulate-with-predicate variant** (`SumAudioBytes_1580b0`, `SumSizesEqual_155460`: walk the map, and
 for each entry that passes a key predicate add something to a running total). Two extra levers, both
@@ -109,7 +110,7 @@ also what the duplicated `add ebp,eax` blocks in retail say — consumes ebx and
 edi. Use the arm count in the target as the oracle.
 
 STEERABLE — supersedes the old "optimizer loop-peel wall / zero-register-pinning / NRVO wall"
-@early-stop on these. Evidence: `CDDrawSubMgrLeaf::HasKeyPrefix_152c50`, `SoundCueRegistry::HasWithPrefix_1583c0`,
+@early-stop on these. Evidence: `AnimationRegistry::HasWithPrefix_152c50`, `SoundCueRegistry::HasWithPrefix_1583c0`,
 `CDDrawWorkerRegistry::HasWithPrefix_155550` — all 61.36% → 100%. Same peel family as
 [linked-list-advance-before-process](linked-list-advance-before-process.md) and
 [retry-loop-bail-while-goto-no-peel](retry-loop-bail-while-goto-no-peel.md).

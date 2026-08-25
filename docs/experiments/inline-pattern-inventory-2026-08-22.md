@@ -520,7 +520,7 @@ open-coded. A semicolon-separated list means multiple expansion sites or source 
 | `CTimer::Reset` | 100.000% | `CTimer::CTimer` |
 | `CVoiceManager::ClearVoiceIndicatorSlots` | 100.000% | `CVoiceManager::Init` |
 | `CDDrawChildGroup::RemoveByPosition` | 100.000% | `CDDrawChildGroup::RemoveAll` |
-| `CDDrawSubMgrLeaf::AddEntry` | 100.000% | both `CreateAniEntry` variants |
+| `AnimationRegistry::AddAnimation` | 100.000% | `LoadAnimationFromSource`, `LoadAnimationFromFile` |
 | `SoundCueRegistry::AddCue` | 100.000% | `LoadCueFromSource`, `LoadCueFromFile` |
 | `CGameApp::FreeGameManager` | 100.000% | `CGameApp::CloseResources` |
 | `CGrunt::DestroyAnims` | 100.000% | `LoadGruntDeathAnimations`, `BuildGruntExitAnimation` |

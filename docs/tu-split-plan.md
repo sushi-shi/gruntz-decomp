@@ -35,13 +35,13 @@ are misattributions. Find the real owner by xref / vtable slot (`gruntz sema xre
 | unit | stray | lives at | main block |
 |---|---|---|---|
 | `ddrawsubmgr` | `SoundCueRegistry::PlayCueIfElapsed` | `0x114120` | `0x156cb0..0x1591d0` (118 fns) |
-| `ddrawsubmgrleaf` | `CDDrawSubMgrLeaf::LookupValue` | `0x06b2a0` | `0x152640..0x152e30` |
+| `animationregistry` | `AnimationRegistry::FindAnimation` | `0x06b2a0` | `0x152640..0x152e30` |
 | `wwdgameobject` | `CWwdGameObjectA::ApplyGeometryDirect` | `0x058b60` | `0x1504d0..0x1525c0` |
 | `levelpreview` | `CPreviewState::LoadScreen` | `0x0fab90` | `0x0de030..0x0de590` |
 | `gamelevel` | 2 strays (`0x06b330`, `0x082600`) | — | `0x15ccd0..0x1614e0` (73 fns) |
 | `ddrawsurfacepair` | 2 strays (`0x03a1d0`, `0x06b270`) | — | `0x163bc0..0x1660b0` |
 
-**`0x06b2a0` and `0x06b330` are 0x90 apart** — `ddrawsubmgrleaf`'s stray and one of
+**`0x06b2a0` and `0x06b330` are 0x90 apart** — `animationregistry`'s stray and one of
 `gamelevel`'s sit side by side. This was first read as an unidentified third object;
 **that is wrong**. The region is fully attributed — five functions, five *different*
 units, packed back to back with a 0x2e6 gap after:
@@ -49,7 +49,7 @@ units, packed back to back with a 0x2e6 gap after:
 ```
 0x06b260   5B  gruntentrancemove      CGrunt::StepAttackAction
 0x06b270  27B  ddrawsurfacepair       CAniElement::AtChecked
-0x06b2a0  35B  ddrawsubmgrleaf        CDDrawSubMgrLeaf::LookupValue
+0x06b2a0  35B  animationregistry       AnimationRegistry::FindAnimation
 0x06b2e0  57B  gruntentrancearrival   CWapX::ApplyAnimation
 0x06b330  42B  gamelevel              CGameLevel::PointInBounds
 ```
@@ -61,7 +61,7 @@ That is a pooled band — small bodies from many TUs placed together — not a c
 The obvious hypothesis is that a body landing in a pooled band was a header inline in the
 original, folded to its first referencer. **Tested; it does not hold for any of these.**
 
-* `CDDrawSubMgrLeaf::LookupValue` (35 B) moved into its header (24 includers) was emitted
+* `AnimationRegistry::FindAnimation` (35 B) moved into its header (24 includers) was emitted
   in **0** base objs — MSVC inlines a trivial non-virtual away entirely — while the target
   still defines it, so it became an unmatched target symbol. Reverted.
 * Of the **110** bodies already defined in `include/`, **101 are virtual** (the vtable
