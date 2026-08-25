@@ -52,6 +52,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
+#include <Gruntz/InputState.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxRender.h>
@@ -71,7 +72,6 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>

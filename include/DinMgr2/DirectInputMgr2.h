@@ -13,11 +13,12 @@
 #include <dinput.h>
 
 class CInputDevBase;
+class CJoystickDevice;
+class CKeyboardDevice;
+class CMouseDevice;
 
-class CInputDevice;
-
-struct CDeviceListNode : public CFixedPtrArray32 {
-    CDeviceListNode() {
+struct CInputDeviceGroup : public CFixedPtrArray32 {
+    CInputDeviceGroup() {
         m_reserved00 = 0;
         m_count = 0;
     }
@@ -29,8 +30,8 @@ public:
         m_directInput = NULL;
         m_owner = NULL;
         m_hinst = NULL;
-        m_deviceB = NULL;
-        m_deviceA = NULL;
+        m_mouse = NULL;
+        m_keyboard = NULL;
     }
 
     i32 Create(HWND owner, HINSTANCE hinst, u32 flags);
@@ -39,19 +40,19 @@ public:
 
     void Shutdown();
 
-    i32 InitA(u32 flags);
-    i32 InitB(u32 flags);
-    i32 EnumGameControllers(u32 unused);
+    i32 InitializeKeyboard(u32 flags);
+    i32 InitializeMouse(u32 flags);
+    i32 EnumerateJoysticks(u32 unused);
 
     i32 PollAll();
-    i32 PollArrayA();
+    i32 PollJoysticks();
     i32 ReadAll();
-    i32 PollArrayB();
+    i32 ResetJoystickStates();
 
-    void FreeDeviceList();
+    void FreeDeviceGroups();
 
-    CDeviceListNode* AddController(CInputDevBase** devices, i32 n, i32 unused);
-    CDeviceListNode* AddControllerArr(
+    CInputDeviceGroup* CreateDeviceGroup(CInputDevBase** devices, i32 n, i32 unused);
+    CInputDeviceGroup* CreateDeviceGroup(
         CInputDevBase* dev0,
         CInputDevBase* dev1,
         CInputDevBase* dev2,
@@ -68,10 +69,10 @@ public:
     HWND m_owner;
     HINSTANCE m_hinst;
     u32 m_flags;
-    CInputDevBase* m_deviceB;
-    CInputDevBase* m_deviceA;
-    CPtrArray m_devices;
-    CPtrList m_deviceList;
+    CMouseDevice* m_mouse;
+    CKeyboardDevice* m_keyboard;
+    CPtrArray m_joysticks;
+    CPtrList m_deviceGroups;
 };
 
 // Inline in retail: CGruntzMgr::Run expands it (Shutdown plus both container
@@ -138,9 +139,9 @@ public:
     HWND m_hwnd;
     DeviceState* m_stateBuffer;
     u32 m_stateBufferSize;
-    i32 m_latchedKeys;
-    u32 m_currentKeys;
-    u32 m_edgeKeys;
+    i32 m_buttonLatch;
+    u32 m_pressedButtons;
+    u32 m_heldButtons;
 };
 
 class CInputDevBase : public CInputDevRoot {
@@ -162,9 +163,9 @@ public:
 };
 
 // The device's 32 key bindings. Owning the fill + the element access here is what
-// reproduces retail's emission order in CInputDevice::SetupKeyTable (a raw member
+// reproduces retail's emission order in CKeyboardDevice::ConfigureDefaultBindings (a raw member
 // array with a hand-written loop is one instruction off; see that function).
-class CKeyTable {
+class CKeyboardBindings {
 public:
     void Clear() {
         for (i32 i = 0; i < 0x20; i++) {
@@ -181,49 +182,49 @@ public:
     u32 m_keys[0x20];
 };
 
-class CInputDevice : public CInputDevBase {
+class CKeyboardDevice : public CInputDevBase {
 public:
-    CInputDevice();
-    virtual ~CInputDevice() OVERRIDE;
+    CKeyboardDevice();
+    virtual ~CKeyboardDevice() OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
 
-    i32 CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
-    void SetupKeyTable();
+    i32 CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
+    void ConfigureDefaultBindings();
     virtual i32 Poll() OVERRIDE;
 
-    CKeyTable m_keyTable;
-    i32 m_modeFlags;
+    CKeyboardBindings m_keyBindings;
+    i32 m_createFlags;
 };
 
-class CDeviceConfigB : public CInputDevBase {
+class CMouseDevice : public CInputDevBase {
 public:
-    CDeviceConfigB();
-    virtual ~CDeviceConfigB() OVERRIDE;
+    CMouseDevice();
+    virtual ~CMouseDevice() OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
     virtual i32 Poll() OVERRIDE;
 
-    i32 CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
+    i32 CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
     i32 IsReady();
 
-    i32 m_flags;
+    i32 m_createFlags;
     char m_pad2b8[0x2c8 - 0x2b8];
 };
 
-class CDeviceConfigC : public CInputDevBase {
+class CJoystickDevice : public CInputDevBase {
 public:
-    CDeviceConfigC();
-    virtual ~CDeviceConfigC() OVERRIDE;
+    CJoystickDevice();
+    virtual ~CJoystickDevice() OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
     virtual i32 Poll() OVERRIDE;
-    i32 CreateDevJoystick(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
-    i32 SetupAxes();
+    i32 CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags);
+    i32 ConfigureAxes();
 
-    i32 m_flags;
+    i32 m_createFlags;
 };
 
-i32 __stdcall DinEnumDevicesCallback(LPCDIDEVICEINSTANCEA instance, void* ref);
+i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref);
 
-union DinDeviceEnumFn {
+union DinJoystickEnumFn {
     LPDIENUMDEVICESCALLBACKA m_sdk;
     i32(__stdcall* m_body)(LPCDIDEVICEINSTANCEA, void*);
 };
@@ -233,23 +234,23 @@ inline CInputDevRoot::CInputDevRoot() {
     m_device2 = NULL;
     m_hwnd = NULL;
     m_stateBuffer = NULL;
-    m_latchedKeys = -1;
-    m_currentKeys = 0;
-    m_edgeKeys = 0;
+    m_buttonLatch = -1;
+    m_pressedButtons = 0;
+    m_heldButtons = 0;
 }
 inline CInputDevBase::CInputDevBase() {}
 
-inline CInputDevice::CInputDevice() {
-    m_keyTable.Clear();
-    m_modeFlags = 0;
+inline CKeyboardDevice::CKeyboardDevice() {
+    m_keyBindings.Clear();
+    m_createFlags = 0;
 }
 
-inline CDeviceConfigB::CDeviceConfigB() {
-    m_flags = 0;
+inline CMouseDevice::CMouseDevice() {
+    m_createFlags = 0;
 }
 
-inline CDeviceConfigC::CDeviceConfigC() {
-    m_flags = 0;
+inline CJoystickDevice::CJoystickDevice() {
+    m_createFlags = 0;
 }
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H

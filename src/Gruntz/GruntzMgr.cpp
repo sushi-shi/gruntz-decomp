@@ -51,6 +51,7 @@
 #include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
 #include <Gruntz/InputDeviceSel.h>
+#include <Gruntz/InputState.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LoadGameMenu.h>
@@ -69,7 +70,6 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SplashState.h>
 #include <Gruntz/SpriteRefTable.h>
-#include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TraitorMode.h>
@@ -169,7 +169,7 @@ i32 g_debugDisplayFlags;
 DATA(0x00245570)
 DirectInputMgr2* g_inputMgr = NULL;
 DATA(0x00245578)
-StateMgrBZ* g_spawnConfig = NULL;
+CInputState* g_gameplayInput = NULL;
 
 DATA(0x0020fa70)
 i32 g_localVersion = 1;
@@ -213,7 +213,7 @@ CGruntzMgr::CGruntzMgr() {
     m_shadeCache = NULL;
     m_reserved64 = 0;
     m_lobby = NULL;
-    m_inputState = NULL;
+    m_worldSounds = NULL;
     m_saveSink = NULL;
     m_chatLog = NULL;
     m_cueSink = NULL;
@@ -363,15 +363,15 @@ void CGruntzMgr::Close() {
         delete m_cmdSubMgr;
         m_cmdSubMgr = NULL;
     }
-    if (g_spawnConfig) {
-        StateMgrBZ* v = g_spawnConfig;
-        v->m_device = NULL;
+    if (g_gameplayInput) {
+        CInputState* v = g_gameplayInput;
+        v->m_primaryDevice = NULL;
         v->m_keyboard = NULL;
         v->m_joystick = NULL;
-        v->m_deviceList = NULL;
-        v->m_mode = INPUTDEV_NONE;
+        v->m_deviceGroup = NULL;
+        v->m_deviceSelection = INPUTDEV_NONE;
         operator delete(v);
-        g_spawnConfig = NULL;
+        g_gameplayInput = NULL;
     }
     if (g_inputMgr) {
 
@@ -386,9 +386,9 @@ void CGruntzMgr::Close() {
         delete m_midi;
         m_midi = NULL;
     }
-    if (m_inputState) {
-        delete m_inputState;
-        m_inputState = NULL;
+    if (m_worldSounds) {
+        delete m_worldSounds;
+        m_worldSounds = NULL;
     }
     if (m_faderMgr) {
         delete m_faderMgr;
@@ -1254,8 +1254,8 @@ i32 CGruntzMgr::FinishLevel(i32 pauseGame, i32 pauseMusic) {
     }
 
     if (pauseGame) {
-        if (m_inputState) {
-            m_inputState->Stop();
+        if (m_worldSounds) {
+            m_worldSounds->Stop();
         }
         if (m_world) {
             CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
@@ -1279,7 +1279,7 @@ i32 CGruntzMgr::FinishLevel(i32 pauseGame, i32 pauseMusic) {
         }
     }
     if (m_soundEnabled) {
-        m_inputState->Resume();
+        m_worldSounds->Resume();
         if (m_cmdGrid && m_soundEnabled) {
             m_cmdGrid->DestroyAllAnims();
         }
@@ -2659,7 +2659,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
     if (m_world && m_world->m_soundRegistry) {
         g_sndCueTag = v;
     }
-    CWorldSoundSet* in = m_inputState;
+    CWorldSoundSet* in = m_worldSounds;
     if (in) {
         in->Restart(v);
     }
@@ -2688,9 +2688,9 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    if (m_inputState != NULL) {
-        delete m_inputState;
-        m_inputState = NULL;
+    if (m_worldSounds != NULL) {
+        delete m_worldSounds;
+        m_worldSounds = NULL;
     }
 
     CSymParser* surf = m_symParser;
@@ -2746,19 +2746,19 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     SetColorDepth(m_colorDepth);
 
-    if (m_inputState != NULL) {
-        delete m_inputState;
-        m_inputState = NULL;
+    if (m_worldSounds != NULL) {
+        delete m_worldSounds;
+        m_worldSounds = NULL;
     }
 
     CWorldSoundSet* ni = new CWorldSoundSet();
-    m_inputState = ni;
+    m_worldSounds = ni;
     if (ni->Init(m_world->m_soundRegistry, m_soundVolume) == 0) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x442);
         return 0;
     }
 
-    CWorldSoundSet* cur = m_inputState;
+    CWorldSoundSet* cur = m_worldSounds;
     if (m_isAmbientEnabled != 0) {
         if (cur->m_active == 0) {
             cur->m_active = 1;
@@ -2856,7 +2856,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
 RVA(0x000920b0, 0x1c)
 i32 CGruntzMgr::TickStateMgrs() {
     g_inputMgr->PollAll();
-    g_spawnConfig->Flush();
+    g_gameplayInput->Update();
     return 1;
 }
 
@@ -2964,9 +2964,9 @@ void CGruntzMgr::SetSoundEnabled(i32 enabled) {
     i32 soundEnabled = m_soundEnabled;
     g_sndEnabled = soundEnabled;
     if (m_soundEnabled) {
-        m_inputState->Resume();
+        m_worldSounds->Resume();
     } else {
-        m_inputState->Stop();
+        m_worldSounds->Stop();
     }
 }
 

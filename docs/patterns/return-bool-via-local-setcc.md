@@ -31,7 +31,7 @@ ff 51 20        call [ecx+0x20]   ; the COM/leaf call, result in eax
 0f 94 c2        sete dl
 8b c2           mov eax,edx
 ```
-STEERABLE. Evidence: CInputDevice::Unacquire (@0x134fe0) 68.9% → 100% on the named-`hr` local
+STEERABLE. Evidence: CInputDevRoot::Unacquire (@0x134fe0) 68.9% → 100% on the named-`hr` local
 (the inline `== 0` gave neg/sbb/inc). CTileTriggerContainer::SetCell (@0x117f60) changed its
 tail from `neg/sbb/neg` to retail's `xor/test/setne/mov` and raised 76.6912% → 82.5735% when the
 `CGiantRockLogic*` result was named; `i32 found = call(...) != NULL` was byte-neutral. related:

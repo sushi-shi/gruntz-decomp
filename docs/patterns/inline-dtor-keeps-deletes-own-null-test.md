@@ -15,9 +15,9 @@ doubled test is not a peephole quirk; it says *this class's destructor is inline
 inline CWorldSoundSet::~CWorldSoundSet() { Deactivate(); }
 
 // call site
-if (m_inputState != NULL) {
-    delete m_inputState;      // expands: null test, Deactivate(), ~CPtrList(m_list), operator delete
-    m_inputState = NULL;      // INSIDE the guard
+if (m_worldSounds != NULL) {
+    delete m_worldSounds;      // expands: null test, Deactivate(), ~CPtrList(m_list), operator delete
+    m_worldSounds = NULL;      // INSIDE the guard
 }
 ```
 

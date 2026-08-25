@@ -34,7 +34,7 @@ class that already existed:
 | invented view | `void*` boundary that hid it | real class |
 |---|---|---|
 | `ScanlinePalette` | `Convert8To16(…, void* pal)` param | `CImagePaletteNode` (`char m_pad0[8]` + `PALETTEENTRY[256]` IS `HPALETTE` + `LOGPALETTE::palPalEntry` at +8) |
-| `SbzDeviceList` | `AddControllerArr(...)` return | `CFixedPtrArray32` (same three fields, same offsets) |
+| `SbzDeviceList` | `CreateDeviceGroup(CInputDevBase**, ...)` return | `CFixedPtrArray32` (same three fields, same offsets) |
 | `CRandomAmbientWorld` | `CWorldSoundSet(void* world)` param | `CDDrawSubMgrLeafScan` (`CWapObj` is the 0x10 pad) |
 | `MpSymItem` | `CSymTab::FirstSym/NextSym2/NextSym3` returns | a one-field view of `CParseSource` |
 

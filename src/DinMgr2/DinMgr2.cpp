@@ -8,14 +8,11 @@
 #include <string.h>
 
 typedef enum DinCreateFlags {
-    DIDF_NO_DEVICE_B = 2,
-    DIDF_NO_DEVICE_A = 4,
-    DIDF_NO_CONTROLLERS = 8,
+    DIDF_ASYNC_KEYBOARD = 1,
+    DIDF_NO_MOUSE = 2,
+    DIDF_NO_KEYBOARD = 4,
+    DIDF_NO_JOYSTICKS = 8,
 } DinCreateFlags;
-
-typedef enum DinDeviceMode {
-    MODE_ASYNC = 1,
-} DinDeviceMode;
 
 typedef enum DinBufferSize {
     STATE_BUFFER_SIZE = 0x100,
@@ -49,18 +46,18 @@ i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     m_owner = owner;
     m_hinst = hinst;
     m_flags = flags;
-    if ((flags & DIDF_NO_DEVICE_A) == 0) {
-        if (InitA(flags) == 0) {
+    if ((flags & DIDF_NO_KEYBOARD) == 0) {
+        if (InitializeKeyboard(flags) == 0) {
             return 0;
         }
     }
-    if ((m_flags & DIDF_NO_DEVICE_B) == 0) {
-        if (InitB(flags) == 0) {
+    if ((m_flags & DIDF_NO_MOUSE) == 0) {
+        if (InitializeMouse(flags) == 0) {
             return 0;
         }
     }
-    if ((m_flags & DIDF_NO_CONTROLLERS) == 0) {
-        if (EnumGameControllers(flags) == 0) {
+    if ((m_flags & DIDF_NO_JOYSTICKS) == 0) {
+        if (EnumerateJoysticks(flags) == 0) {
             return 0;
         }
     }
@@ -72,73 +69,73 @@ void DirectInputMgr2::Shutdown() {
     if (m_directInput == NULL) {
         return;
     }
-    if (m_deviceB != NULL) {
-        delete m_deviceB;
-        m_deviceB = NULL;
+    if (m_mouse != NULL) {
+        delete m_mouse;
+        m_mouse = NULL;
     }
-    if (m_deviceA != NULL) {
-        delete m_deviceA;
-        m_deviceA = NULL;
+    if (m_keyboard != NULL) {
+        delete m_keyboard;
+        m_keyboard = NULL;
     }
-    i32 n = m_devices.GetSize();
+    i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = (i >= 0 && i < m_devices.GetSize())
-                               ? static_cast<CInputDevBase*>(m_devices.GetAt(i))
+        CInputDevBase* d = (i >= 0 && i < m_joysticks.GetSize())
+                               ? static_cast<CInputDevBase*>(m_joysticks.GetAt(i))
                                : NULL;
         if (d != NULL) {
             delete d;
         }
     }
-    m_devices.SetSize(0, -1);
-    FreeDeviceList();
+    m_joysticks.SetSize(0, -1);
+    FreeDeviceGroups();
     m_directInput->Release();
     m_directInput = NULL;
 }
 
 RVA(0x00132e20, 0xb1)
-i32 DirectInputMgr2::InitA(u32 flags) {
+i32 DirectInputMgr2::InitializeKeyboard(u32 flags) {
     IDirectInputA* di = m_directInput;
     if (di == NULL) {
         return 0;
     }
-    CInputDevice* dev = new CInputDevice;
-    m_deviceA = dev;
-    if (dev->CreateDev(m_directInput, &GUID_SysKeyboard, m_owner, flags) == 0) {
-        if (m_deviceA != NULL) {
-            delete m_deviceA;
+    CKeyboardDevice* keyboard = new CKeyboardDevice;
+    m_keyboard = keyboard;
+    if (keyboard->CreateDevice(m_directInput, &GUID_SysKeyboard, m_owner, flags) == 0) {
+        if (m_keyboard != NULL) {
+            delete m_keyboard;
         }
-        m_deviceA = NULL;
+        m_keyboard = NULL;
         return 0;
     }
     return 1;
 }
 
 RVA(0x00132ee0, 0x9a)
-i32 DirectInputMgr2::InitB(u32 flags) {
+i32 DirectInputMgr2::InitializeMouse(u32 flags) {
     IDirectInputA* di = m_directInput;
     if (di == NULL) {
         return 0;
     }
-    CDeviceConfigB* dev = new CDeviceConfigB;
-    m_deviceB = dev;
-    if (dev->CreateDev(m_directInput, &GUID_SysMouse, m_owner, flags) == 0) {
-        if (m_deviceB != NULL) {
-            delete m_deviceB;
+    CMouseDevice* mouse = new CMouseDevice;
+    m_mouse = mouse;
+    if (mouse->CreateDevice(m_directInput, &GUID_SysMouse, m_owner, flags) == 0) {
+        if (m_mouse != NULL) {
+            delete m_mouse;
         }
-        m_deviceB = NULL;
+        m_mouse = NULL;
         return 0;
     }
     return 1;
 }
 
 RVA(0x00132f80, 0x3d)
-i32 DirectInputMgr2::EnumGameControllers(u32) {
+i32 DirectInputMgr2::EnumerateJoysticks(u32) {
     IDirectInputA* di = m_directInput;
     if (di == NULL) {
         return 0;
     }
-    DinDeviceEnumFn cb;
-    cb.m_body = DinEnumDevicesCallback;
+    DinJoystickEnumFn cb;
+    cb.m_body = DinEnumJoystickCallback;
     i32 hr = di->EnumDevices(DIDEVTYPE_JOYSTICK, cb.m_sdk, this, DIEDFL_ATTACHEDONLY);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0xfb, hr);
@@ -148,7 +145,7 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
 }
 
 RVA(0x00132fc0, 0xb8)
-i32 __stdcall DinEnumDevicesCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
+i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
     if (instance == NULL) {
         return 1;
     }
@@ -156,21 +153,17 @@ i32 __stdcall DinEnumDevicesCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
     if (mgr == NULL) {
         return 1;
     }
-    CDeviceConfigC* dev = new CDeviceConfigC;
-    if (dev->CreateDevJoystick(
-            mgr->m_directInput,
-            &instance->guidInstance,
-            mgr->m_owner,
-            mgr->m_flags
-        )
+    CJoystickDevice* joystick = new CJoystickDevice;
+    if (joystick
+            ->CreateDevice(mgr->m_directInput, &instance->guidInstance, mgr->m_owner, mgr->m_flags)
         == 0) {
-        if (dev != NULL) {
-            delete dev;
+        if (joystick != NULL) {
+            delete joystick;
         }
         return 1;
     }
-    if (dev != NULL) {
-        mgr->m_devices.Add(dev);
+    if (joystick != NULL) {
+        mgr->m_joysticks.Add(joystick);
     }
     return 1;
 }
@@ -178,24 +171,24 @@ i32 __stdcall DinEnumDevicesCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
 RVA(0x00133080, 0x4a)
 i32 DirectInputMgr2::PollAll() {
     i32 failed = 0;
-    if (m_deviceA != NULL && m_deviceA->Poll() == 0) {
+    if (m_keyboard != NULL && m_keyboard->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != NULL && m_deviceB->Poll() == 0) {
+    if (m_mouse != NULL && m_mouse->Poll() == 0) {
         failed = 1;
     }
-    if (PollArrayA() == 0) {
+    if (PollJoysticks() == 0) {
         failed = 1;
     }
     return failed == 0;
 }
 
 RVA(0x001330d0, 0x3a)
-i32 DirectInputMgr2::PollArrayA() {
+i32 DirectInputMgr2::PollJoysticks() {
     i32 failed = 0;
-    i32 n = m_devices.GetSize();
+    i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = static_cast<CInputDevBase*>(m_devices.GetAt(i));
+        CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks.GetAt(i));
         if (d != NULL && d->Poll() == 0) {
             failed = 1;
         }
@@ -206,24 +199,24 @@ i32 DirectInputMgr2::PollArrayA() {
 RVA(0x00133110, 0x4a)
 i32 DirectInputMgr2::ReadAll() {
     i32 failed = 0;
-    if (m_deviceA != NULL && m_deviceA->Poll() == 0) {
+    if (m_keyboard != NULL && m_keyboard->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != NULL && m_deviceB->Poll() == 0) {
+    if (m_mouse != NULL && m_mouse->Poll() == 0) {
         failed = 1;
     }
-    if (PollArrayB() == 0) {
+    if (ResetJoystickStates() == 0) {
         failed = 1;
     }
     return failed == 0;
 }
 
 RVA(0x00133160, 0x3a)
-i32 DirectInputMgr2::PollArrayB() {
+i32 DirectInputMgr2::ResetJoystickStates() {
     i32 failed = 0;
-    i32 n = m_devices.GetSize();
+    i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = static_cast<CInputDevBase*>(m_devices.GetAt(i));
+        CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks.GetAt(i));
         if (d != NULL && d->ResetState() == 0) {
             failed = 1;
         }
@@ -232,37 +225,37 @@ i32 DirectInputMgr2::PollArrayB() {
 }
 
 RVA(0x001331a0, 0x37)
-void DirectInputMgr2::FreeDeviceList() {
-    POSITION pos = m_deviceList.GetHeadPosition();
+void DirectInputMgr2::FreeDeviceGroups() {
+    POSITION pos = m_deviceGroups.GetHeadPosition();
     while (pos != NULL) {
-        CDeviceListNode* payload = static_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
-        if (payload != NULL) {
-            payload->Clear();
-            operator delete(payload);
+        CInputDeviceGroup* group = static_cast<CInputDeviceGroup*>(m_deviceGroups.GetNext(pos));
+        if (group != NULL) {
+            group->Clear();
+            operator delete(group);
         }
     }
-    m_deviceList.RemoveAll();
+    m_deviceGroups.RemoveAll();
 }
 
 RVA(0x001331e0, 0x7c)
-CDeviceListNode* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused) {
+CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(CInputDevBase** devices, i32 n, i32 unused) {
     if (devices == NULL) {
         return NULL;
     }
-    CDeviceListNode* node = new CDeviceListNode;
-    if (node->FillFrom(devices, n, unused) == 0) {
-        if (node != NULL) {
-            node->Clear();
-            operator delete(node);
+    CInputDeviceGroup* group = new CInputDeviceGroup;
+    if (group->FillFrom(devices, n, unused) == 0) {
+        if (group != NULL) {
+            group->Clear();
+            operator delete(group);
         }
         return NULL;
     }
-    m_deviceList.AddTail(node);
-    return node;
+    m_deviceGroups.AddTail(group);
+    return group;
 }
 
 RVA(0x00133260, 0x4a)
-CDeviceListNode* DirectInputMgr2::AddControllerArr(
+CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(
     CInputDevBase* dev0,
     CInputDevBase* dev1,
     CInputDevBase* dev2,
@@ -278,21 +271,21 @@ CDeviceListNode* DirectInputMgr2::AddControllerArr(
     buf[3] = dev3;
     buf[4] = dev4;
     buf[5] = dev5;
-    return AddController(buf, 6, unused);
+    return CreateDeviceGroup(buf, 6, unused);
 }
 
 RVA(0x001332c0, 0x1e)
 i32 CInputDevBase::ResetState() {
-    m_latchedKeys = -1;
-    m_currentKeys = 0;
-    m_edgeKeys = 0;
+    m_buttonLatch = -1;
+    m_pressedButtons = 0;
+    m_heldButtons = 0;
     return 1;
 }
 
-RVA_COMPGEN(0x001332e0, 0x1e, ??_GCInputDevice@@UAEPAXI@Z)
+RVA_COMPGEN(0x001332e0, 0x1e, ??_GCKeyboardDevice@@UAEPAXI@Z)
 
 RVA(0x00133300, 0x6a)
-CInputDevice::~CInputDevice() {
+CKeyboardDevice::~CKeyboardDevice() {
     ReleaseDevices();
 }
 
@@ -301,16 +294,16 @@ RVA_COMPGEN(0x00133380, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x001333b0, 0x55, ??1CInputDevBase@@UAE@XZ)
 RVA_COMPGEN(0x00133420, 0x1e, ??_GCInputDevBase@@UAEPAXI@Z)
-RVA_COMPGEN(0x00133440, 0x1e, ??_GCDeviceConfigC@@UAEPAXI@Z)
+RVA_COMPGEN(0x00133440, 0x1e, ??_GCJoystickDevice@@UAEPAXI@Z)
 
 RVA(0x00133460, 0x6a)
-CDeviceConfigC::~CDeviceConfigC() {
+CJoystickDevice::~CJoystickDevice() {
     ReleaseDevices();
 }
-RVA_COMPGEN(0x001334d0, 0x1e, ??_GCDeviceConfigB@@UAEPAXI@Z)
+RVA_COMPGEN(0x001334d0, 0x1e, ??_GCMouseDevice@@UAEPAXI@Z)
 
 RVA(0x001334f0, 0x6a)
-CDeviceConfigB::~CDeviceConfigB() {
+CMouseDevice::~CMouseDevice() {
     ReleaseDevices();
 }
 
@@ -441,7 +434,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 RVA(0x00133b50, 0x97)
-i32 CInputDevice::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
+i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
     }
@@ -451,8 +444,8 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32
     if (CInputDevBase::Create(di, guid, owner) == 0) {
         return 0;
     }
-    m_modeFlags = flags;
-    SetupKeyTable();
+    m_createFlags = flags;
+    ConfigureDefaultBindings();
     if (SetDataFormat(&c_dfDIKeyboard) == 0) {
         return 0;
     }
@@ -470,7 +463,7 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32
 }
 
 RVA(0x00133bf0, 0x33)
-void CInputDevice::ReleaseDevices() {
+void CKeyboardDevice::ReleaseDevices() {
     if (m_stateBuffer != NULL) {
         RecordBytes<DeviceState> state;
         state.m_rec = m_stateBuffer;
@@ -482,242 +475,242 @@ void CInputDevice::ReleaseDevices() {
 }
 
 RVA(0x00133c30, 0xc9)
-void CInputDevice::SetupKeyTable() {
-    m_keyTable.Clear();
-    if (m_modeFlags & MODE_ASYNC) {
-        m_keyTable[0] = 0x20;
-        m_keyTable[1] = 0x11;
-        m_keyTable[2] = 0x12;
-        m_keyTable[3] = 0x10;
+void CKeyboardDevice::ConfigureDefaultBindings() {
+    m_keyBindings.Clear();
+    if (m_createFlags & DIDF_ASYNC_KEYBOARD) {
+        m_keyBindings[0] = 0x20;
+        m_keyBindings[1] = 0x11;
+        m_keyBindings[2] = 0x12;
+        m_keyBindings[3] = 0x10;
     } else {
-        m_keyTable[0] = 0x39;
-        m_keyTable[1] = 0x1d;
-        m_keyTable[2] = 0x38;
-        m_keyTable[3] = 0x2a;
+        m_keyBindings[0] = 0x39;
+        m_keyBindings[1] = 0x1d;
+        m_keyBindings[2] = 0x38;
+        m_keyBindings[3] = 0x2a;
     }
-    if (m_modeFlags & MODE_ASYNC) {
-        m_keyTable[0x1c] = 0x25;
-        m_keyTable[0x1d] = 0x27;
-        m_keyTable[0x1e] = 0x26;
-        m_keyTable[0x1f] = 0x28;
+    if (m_createFlags & DIDF_ASYNC_KEYBOARD) {
+        m_keyBindings[0x1c] = 0x25;
+        m_keyBindings[0x1d] = 0x27;
+        m_keyBindings[0x1e] = 0x26;
+        m_keyBindings[0x1f] = 0x28;
     } else {
-        m_keyTable[0x1c] = 0xcb;
-        m_keyTable[0x1d] = 0xcd;
-        m_keyTable[0x1e] = 0xc8;
-        m_keyTable[0x1f] = 0xd0;
+        m_keyBindings[0x1c] = 0xcb;
+        m_keyBindings[0x1d] = 0xcd;
+        m_keyBindings[0x1e] = 0xc8;
+        m_keyBindings[0x1f] = 0xd0;
     }
 }
 
 RVA(0x00133d00, 0x55e)
-i32 CInputDevice::Poll() {
-    m_currentKeys = 0;
-    m_edgeKeys = 0;
-    if ((m_modeFlags & MODE_ASYNC) == 0) {
+i32 CKeyboardDevice::Poll() {
+    m_pressedButtons = 0;
+    m_heldButtons = 0;
+    if ((m_createFlags & DIDF_ASYNC_KEYBOARD) == 0) {
         if (ReadState() == NULL) {
             return 0;
         }
     }
-    if (m_modeFlags & MODE_ASYNC) {
-        if (GetAsyncKeyState(m_keyTable[0]) & 0x80000000) {
-            m_currentKeys |= 1;
+    if (m_createFlags & DIDF_ASYNC_KEYBOARD) {
+        if (GetAsyncKeyState(m_keyBindings[0]) & 0x80000000) {
+            m_pressedButtons |= 1;
         }
-        if (GetAsyncKeyState(m_keyTable[1]) & 0x80000000) {
-            m_currentKeys |= 2;
+        if (GetAsyncKeyState(m_keyBindings[1]) & 0x80000000) {
+            m_pressedButtons |= 2;
         }
-        if (GetAsyncKeyState(m_keyTable[2]) & 0x80000000) {
-            m_currentKeys |= 4;
+        if (GetAsyncKeyState(m_keyBindings[2]) & 0x80000000) {
+            m_pressedButtons |= 4;
         }
-        if (GetAsyncKeyState(m_keyTable[3]) & 0x80000000) {
-            m_currentKeys |= 8;
+        if (GetAsyncKeyState(m_keyBindings[3]) & 0x80000000) {
+            m_pressedButtons |= 8;
         }
-        if (GetAsyncKeyState(m_keyTable[4]) & 0x80000000) {
-            m_currentKeys |= 0x10;
+        if (GetAsyncKeyState(m_keyBindings[4]) & 0x80000000) {
+            m_pressedButtons |= 0x10;
         }
-        if (GetAsyncKeyState(m_keyTable[5]) & 0x80000000) {
-            m_currentKeys |= 0x20;
+        if (GetAsyncKeyState(m_keyBindings[5]) & 0x80000000) {
+            m_pressedButtons |= 0x20;
         }
-        if (GetAsyncKeyState(m_keyTable[6]) & 0x80000000) {
-            m_currentKeys |= 0x40;
+        if (GetAsyncKeyState(m_keyBindings[6]) & 0x80000000) {
+            m_pressedButtons |= 0x40;
         }
-        if (GetAsyncKeyState(m_keyTable[7]) & 0x80000000) {
-            m_currentKeys |= 0x80;
+        if (GetAsyncKeyState(m_keyBindings[7]) & 0x80000000) {
+            m_pressedButtons |= 0x80;
         }
-        if (GetAsyncKeyState(m_keyTable[0x1c]) & 0x80000000) {
-            m_currentKeys |= 0x10000000;
+        if (GetAsyncKeyState(m_keyBindings[0x1c]) & 0x80000000) {
+            m_pressedButtons |= 0x10000000;
         }
-        if (GetAsyncKeyState(m_keyTable[0x1d]) & 0x80000000) {
-            m_currentKeys |= 0x20000000;
+        if (GetAsyncKeyState(m_keyBindings[0x1d]) & 0x80000000) {
+            m_pressedButtons |= 0x20000000;
         }
-        if (GetAsyncKeyState(m_keyTable[0x1e]) & 0x80000000) {
-            m_currentKeys |= 0x40000000;
+        if (GetAsyncKeyState(m_keyBindings[0x1e]) & 0x80000000) {
+            m_pressedButtons |= 0x40000000;
         }
-        if (GetAsyncKeyState(m_keyTable[0x1f]) & 0x80000000) {
-            m_currentKeys |= 0x80000000;
+        if (GetAsyncKeyState(m_keyBindings[0x1f]) & 0x80000000) {
+            m_pressedButtons |= 0x80000000;
         }
     } else {
         u8* buf = m_stateBuffer->keys;
-        if (buf[m_keyTable[0]] & 0x80) {
-            m_currentKeys |= 1;
+        if (buf[m_keyBindings[0]] & 0x80) {
+            m_pressedButtons |= 1;
         }
-        if (buf[m_keyTable[1]] & 0x80) {
-            m_currentKeys |= 2;
+        if (buf[m_keyBindings[1]] & 0x80) {
+            m_pressedButtons |= 2;
         }
-        if (buf[m_keyTable[2]] & 0x80) {
-            m_currentKeys |= 4;
+        if (buf[m_keyBindings[2]] & 0x80) {
+            m_pressedButtons |= 4;
         }
-        if (buf[m_keyTable[3]] & 0x80) {
-            m_currentKeys |= 8;
+        if (buf[m_keyBindings[3]] & 0x80) {
+            m_pressedButtons |= 8;
         }
-        if (buf[m_keyTable[4]] & 0x80) {
-            m_currentKeys |= 0x10;
+        if (buf[m_keyBindings[4]] & 0x80) {
+            m_pressedButtons |= 0x10;
         }
-        if (buf[m_keyTable[5]] & 0x80) {
-            m_currentKeys |= 0x20;
+        if (buf[m_keyBindings[5]] & 0x80) {
+            m_pressedButtons |= 0x20;
         }
-        if (buf[m_keyTable[6]] & 0x80) {
-            m_currentKeys |= 0x40;
+        if (buf[m_keyBindings[6]] & 0x80) {
+            m_pressedButtons |= 0x40;
         }
-        if (buf[m_keyTable[7]] & 0x80) {
-            m_currentKeys |= 0x80;
+        if (buf[m_keyBindings[7]] & 0x80) {
+            m_pressedButtons |= 0x80;
         }
         if (buf[0xcb] & 0x80) {
-            m_currentKeys |= 0x10000000;
+            m_pressedButtons |= 0x10000000;
         }
         if (buf[0xcd] & 0x80) {
-            m_currentKeys |= 0x20000000;
+            m_pressedButtons |= 0x20000000;
         }
         if (buf[0xc8] & 0x80) {
-            m_currentKeys |= 0x40000000;
+            m_pressedButtons |= 0x40000000;
         }
         if (buf[0xd0] & 0x80) {
-            m_currentKeys |= 0x80000000;
+            m_pressedButtons |= 0x80000000;
         }
         if (buf[0x4b] & 0x80) {
-            m_currentKeys |= 0x10000000;
+            m_pressedButtons |= 0x10000000;
         }
         if (buf[0x4d] & 0x80) {
-            m_currentKeys |= 0x20000000;
+            m_pressedButtons |= 0x20000000;
         }
         if (buf[0x48] & 0x80) {
-            m_currentKeys |= 0x40000000;
+            m_pressedButtons |= 0x40000000;
         }
         if (buf[0x50] & 0x80) {
-            m_currentKeys |= 0x80000000;
+            m_pressedButtons |= 0x80000000;
         }
     }
 
-    m_edgeKeys = m_currentKeys;
-    if (m_edgeKeys & 0x00000001) {
-        if (m_latchedKeys & 0x00000001) {
-            m_currentKeys &= ~0x00000001;
+    m_heldButtons = m_pressedButtons;
+    if (m_heldButtons & 0x00000001) {
+        if (m_buttonLatch & 0x00000001) {
+            m_pressedButtons &= ~0x00000001;
         } else {
-            m_latchedKeys |= 0x00000001;
+            m_buttonLatch |= 0x00000001;
         }
     } else {
-        m_latchedKeys &= ~0x00000001;
+        m_buttonLatch &= ~0x00000001;
     }
-    if (m_edgeKeys & 0x00000002) {
-        if (m_latchedKeys & 0x00000002) {
-            m_currentKeys &= ~0x00000002;
+    if (m_heldButtons & 0x00000002) {
+        if (m_buttonLatch & 0x00000002) {
+            m_pressedButtons &= ~0x00000002;
         } else {
-            m_latchedKeys |= 0x00000002;
+            m_buttonLatch |= 0x00000002;
         }
     } else {
-        m_latchedKeys &= ~0x00000002;
+        m_buttonLatch &= ~0x00000002;
     }
-    if (m_edgeKeys & 0x00000004) {
-        if (m_latchedKeys & 0x00000004) {
-            m_currentKeys &= ~0x00000004;
+    if (m_heldButtons & 0x00000004) {
+        if (m_buttonLatch & 0x00000004) {
+            m_pressedButtons &= ~0x00000004;
         } else {
-            m_latchedKeys |= 0x00000004;
+            m_buttonLatch |= 0x00000004;
         }
     } else {
-        m_latchedKeys &= ~0x00000004;
+        m_buttonLatch &= ~0x00000004;
     }
-    if (m_edgeKeys & 0x00000008) {
-        if (m_latchedKeys & 0x00000008) {
-            m_currentKeys &= ~0x00000008;
+    if (m_heldButtons & 0x00000008) {
+        if (m_buttonLatch & 0x00000008) {
+            m_pressedButtons &= ~0x00000008;
         } else {
-            m_latchedKeys |= 0x00000008;
+            m_buttonLatch |= 0x00000008;
         }
     } else {
-        m_latchedKeys &= ~0x00000008;
+        m_buttonLatch &= ~0x00000008;
     }
-    if (m_edgeKeys & 0x00000010) {
-        if (m_latchedKeys & 0x00000010) {
-            m_currentKeys &= ~0x00000010;
+    if (m_heldButtons & 0x00000010) {
+        if (m_buttonLatch & 0x00000010) {
+            m_pressedButtons &= ~0x00000010;
         } else {
-            m_latchedKeys |= 0x00000010;
+            m_buttonLatch |= 0x00000010;
         }
     } else {
-        m_latchedKeys &= ~0x00000010;
+        m_buttonLatch &= ~0x00000010;
     }
-    if (m_edgeKeys & 0x00000020) {
-        if (m_latchedKeys & 0x00000020) {
-            m_currentKeys &= ~0x00000020;
+    if (m_heldButtons & 0x00000020) {
+        if (m_buttonLatch & 0x00000020) {
+            m_pressedButtons &= ~0x00000020;
         } else {
-            m_latchedKeys |= 0x00000020;
+            m_buttonLatch |= 0x00000020;
         }
     } else {
-        m_latchedKeys &= ~0x00000020;
+        m_buttonLatch &= ~0x00000020;
     }
-    if (m_edgeKeys & 0x00000040) {
-        if (m_latchedKeys & 0x00000040) {
-            m_currentKeys &= ~0x00000040;
+    if (m_heldButtons & 0x00000040) {
+        if (m_buttonLatch & 0x00000040) {
+            m_pressedButtons &= ~0x00000040;
         } else {
-            m_latchedKeys |= 0x00000040;
+            m_buttonLatch |= 0x00000040;
         }
     } else {
-        m_latchedKeys &= ~0x00000040;
+        m_buttonLatch &= ~0x00000040;
     }
     {
 
         u32 bit = 0x00000080;
-        if (m_edgeKeys & bit) {
-            if (m_latchedKeys & bit) {
-                m_currentKeys &= ~bit;
+        if (m_heldButtons & bit) {
+            if (m_buttonLatch & bit) {
+                m_pressedButtons &= ~bit;
             } else {
-                m_latchedKeys |= bit;
+                m_buttonLatch |= bit;
             }
         } else {
-            m_latchedKeys &= ~bit;
+            m_buttonLatch &= ~bit;
         }
     }
-    if (m_edgeKeys & 0x10000000) {
-        if (m_latchedKeys & 0x10000000) {
-            m_currentKeys &= ~0x10000000;
+    if (m_heldButtons & 0x10000000) {
+        if (m_buttonLatch & 0x10000000) {
+            m_pressedButtons &= ~0x10000000;
         } else {
-            m_latchedKeys |= 0x10000000;
+            m_buttonLatch |= 0x10000000;
         }
     } else {
-        m_latchedKeys &= ~0x10000000;
+        m_buttonLatch &= ~0x10000000;
     }
-    if (m_edgeKeys & 0x20000000) {
-        if (m_latchedKeys & 0x20000000) {
-            m_currentKeys &= ~0x20000000;
+    if (m_heldButtons & 0x20000000) {
+        if (m_buttonLatch & 0x20000000) {
+            m_pressedButtons &= ~0x20000000;
         } else {
-            m_latchedKeys |= 0x20000000;
+            m_buttonLatch |= 0x20000000;
         }
     } else {
-        m_latchedKeys &= ~0x20000000;
+        m_buttonLatch &= ~0x20000000;
     }
-    if (m_edgeKeys & 0x40000000) {
-        if (m_latchedKeys & 0x40000000) {
-            m_currentKeys &= ~0x40000000;
+    if (m_heldButtons & 0x40000000) {
+        if (m_buttonLatch & 0x40000000) {
+            m_pressedButtons &= ~0x40000000;
         } else {
-            m_latchedKeys |= 0x40000000;
+            m_buttonLatch |= 0x40000000;
         }
     } else {
-        m_latchedKeys &= ~0x40000000;
+        m_buttonLatch &= ~0x40000000;
     }
-    if (m_edgeKeys & 0x80000000) {
-        if (m_latchedKeys & 0x80000000) {
-            m_currentKeys &= ~0x80000000;
+    if (m_heldButtons & 0x80000000) {
+        if (m_buttonLatch & 0x80000000) {
+            m_pressedButtons &= ~0x80000000;
         } else {
-            m_latchedKeys |= 0x80000000;
+            m_buttonLatch |= 0x80000000;
         }
     } else {
-        m_latchedKeys &= ~0x80000000;
+        m_buttonLatch &= ~0x80000000;
     }
     return 1;
 }
@@ -743,7 +736,7 @@ void CInputDevBase::ReleaseDevices() {
 }
 
 RVA(0x001342c0, 0x95)
-i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
+i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
     }
@@ -753,7 +746,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u
     if (CInputDevBase::Create(di, guid, owner) == 0) {
         return 0;
     }
-    m_flags = flags;
+    m_createFlags = flags;
     if (SetDataFormat(&c_dfDIMouse) == 0) {
         return 0;
     }
@@ -770,7 +763,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const GUID* guid, HWND owner, u
     return IsReady() != 0;
 }
 RVA(0x00134360, 0x33)
-void CDeviceConfigB::ReleaseDevices() {
+void CMouseDevice::ReleaseDevices() {
     if (m_stateBuffer) {
         RecordBytes<DeviceState> state;
         state.m_rec = m_stateBuffer;
@@ -782,38 +775,38 @@ void CDeviceConfigB::ReleaseDevices() {
 }
 
 RVA(0x001343a0, 0xb)
-i32 CDeviceConfigB::IsReady() {
+i32 CMouseDevice::IsReady() {
     return m_device2 != NULL;
 }
 
-typedef enum MouseKeyFlags {
-    MOUSE_BTN0 = 0x00000001,
-    MOUSE_BTN1 = 0x00000002,
-    MOUSE_BTN2 = 0x00000004,
-    MOUSE_BTN3 = 0x00000008,
-    MOUSE_LEFT = 0x10000000,
-    MOUSE_RIGHT = 0x20000000,
-    MOUSE_UP = 0x40000000,
-    MOUSE_DOWN = 0x80000000,
-} MouseKeyFlags;
+typedef enum InputButtonFlags {
+    INPUT_BUTTON0 = 0x00000001,
+    INPUT_BUTTON1 = 0x00000002,
+    INPUT_BUTTON2 = 0x00000004,
+    INPUT_BUTTON3 = 0x00000008,
+    INPUT_LEFT = 0x10000000,
+    INPUT_RIGHT = 0x20000000,
+    INPUT_UP = 0x40000000,
+    INPUT_DOWN = 0x80000000,
+} InputButtonFlags;
 
-#define MOUSE_EDGE(bit)                                                                            \
+#define UPDATE_BUTTON_EDGE(bit)                                                                    \
     do {                                                                                           \
-        if (m_edgeKeys & (bit)) {                                                                  \
-            if (m_latchedKeys & (bit)) {                                                           \
-                m_currentKeys &= ~static_cast<u32>(bit);                                           \
+        if (m_heldButtons & (bit)) {                                                               \
+            if (m_buttonLatch & (bit)) {                                                           \
+                m_pressedButtons &= ~static_cast<u32>(bit);                                        \
             } else {                                                                               \
-                m_latchedKeys |= (bit);                                                            \
+                m_buttonLatch |= (bit);                                                            \
             }                                                                                      \
         } else {                                                                                   \
-            m_latchedKeys &= ~static_cast<u32>(bit);                                               \
+            m_buttonLatch &= ~static_cast<u32>(bit);                                               \
         }                                                                                          \
     } while (0)
 
 RVA(0x001343b0, 0x27e)
-i32 CDeviceConfigB::Poll() {
-    m_currentKeys = 0;
-    m_edgeKeys = 0;
+i32 CMouseDevice::Poll() {
+    m_pressedButtons = 0;
+    m_heldButtons = 0;
     if (ReadState() == NULL) {
         return 0;
     }
@@ -822,43 +815,43 @@ i32 CDeviceConfigB::Poll() {
         return 0;
     }
     if (ms->lX < 0) {
-        m_currentKeys |= MOUSE_LEFT;
+        m_pressedButtons |= INPUT_LEFT;
     }
     if (ms->lX > 0) {
-        m_currentKeys |= MOUSE_RIGHT;
+        m_pressedButtons |= INPUT_RIGHT;
     }
     if (ms->lY < 0) {
-        m_currentKeys |= MOUSE_UP;
+        m_pressedButtons |= INPUT_UP;
     }
     if (ms->lY > 0) {
-        m_currentKeys |= MOUSE_DOWN;
+        m_pressedButtons |= INPUT_DOWN;
     }
     if (ms->rgbButtons[0] & 0x80) {
-        m_currentKeys |= MOUSE_BTN0;
+        m_pressedButtons |= INPUT_BUTTON0;
     }
     if (ms->rgbButtons[1] & 0x80) {
-        m_currentKeys |= MOUSE_BTN1;
+        m_pressedButtons |= INPUT_BUTTON1;
     }
     if (ms->rgbButtons[2] & 0x80) {
-        m_currentKeys |= MOUSE_BTN2;
+        m_pressedButtons |= INPUT_BUTTON2;
     }
     if (ms->rgbButtons[3] & 0x80) {
-        m_currentKeys |= MOUSE_BTN3;
+        m_pressedButtons |= INPUT_BUTTON3;
     }
-    m_edgeKeys = m_currentKeys;
-    MOUSE_EDGE(MOUSE_BTN0);
-    MOUSE_EDGE(MOUSE_BTN1);
-    MOUSE_EDGE(MOUSE_BTN2);
-    MOUSE_EDGE(MOUSE_BTN3);
-    MOUSE_EDGE(MOUSE_LEFT);
-    MOUSE_EDGE(MOUSE_RIGHT);
-    MOUSE_EDGE(MOUSE_UP);
-    MOUSE_EDGE(MOUSE_DOWN);
+    m_heldButtons = m_pressedButtons;
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON0);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON1);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON2);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON3);
+    UPDATE_BUTTON_EDGE(INPUT_LEFT);
+    UPDATE_BUTTON_EDGE(INPUT_RIGHT);
+    UPDATE_BUTTON_EDGE(INPUT_UP);
+    UPDATE_BUTTON_EDGE(INPUT_DOWN);
     return 1;
 }
 
 RVA(0x00134630, 0x98)
-i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
+i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
     }
@@ -868,7 +861,7 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const GUID* guid, HWND 
     if (CInputDevBase::Create(di, guid, owner) == 0) {
         return 0;
     }
-    m_flags = flags;
+    m_createFlags = flags;
     if (SetDataFormat(&c_dfDIJoystick2) == 0) {
         return 0;
     }
@@ -882,10 +875,10 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const GUID* guid, HWND 
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
-    return SetupAxes() != 0;
+    return ConfigureAxes() != 0;
 }
 RVA(0x001346d0, 0x33)
-void CDeviceConfigC::ReleaseDevices() {
+void CJoystickDevice::ReleaseDevices() {
     if (m_stateBuffer) {
         RecordBytes<DeviceState> state;
         state.m_rec = m_stateBuffer;
@@ -897,7 +890,7 @@ void CDeviceConfigC::ReleaseDevices() {
 }
 
 RVA(0x00134710, 0xb2)
-i32 CDeviceConfigC::SetupAxes() {
+i32 CJoystickDevice::ConfigureAxes() {
     if (m_device2 == NULL) {
         return 0;
     }
@@ -922,9 +915,9 @@ i32 CDeviceConfigC::SetupAxes() {
 }
 
 RVA(0x001347d0, 0x40a)
-i32 CDeviceConfigC::Poll() {
-    m_currentKeys = 0;
-    m_edgeKeys = 0;
+i32 CJoystickDevice::Poll() {
+    m_pressedButtons = 0;
+    m_heldButtons = 0;
     if (PollDevice() == 0) {
         return 0;
     }
@@ -936,62 +929,62 @@ i32 CDeviceConfigC::Poll() {
         return 0;
     }
     if (js->lX < 0) {
-        m_currentKeys |= MOUSE_LEFT;
+        m_pressedButtons |= INPUT_LEFT;
     }
     if (js->lX > 0) {
-        m_currentKeys |= MOUSE_RIGHT;
+        m_pressedButtons |= INPUT_RIGHT;
     }
     if (js->lY < 0) {
-        m_currentKeys |= MOUSE_UP;
+        m_pressedButtons |= INPUT_UP;
     }
     if (js->lY > 0) {
-        m_currentKeys |= MOUSE_DOWN;
+        m_pressedButtons |= INPUT_DOWN;
     }
     if (js->rgbButtons[0] & 0x80) {
-        m_currentKeys |= 0x1;
+        m_pressedButtons |= 0x1;
     }
     if (js->rgbButtons[1] & 0x80) {
-        m_currentKeys |= 0x2;
+        m_pressedButtons |= 0x2;
     }
     if (js->rgbButtons[2] & 0x80) {
-        m_currentKeys |= 0x4;
+        m_pressedButtons |= 0x4;
     }
     if (js->rgbButtons[3] & 0x80) {
-        m_currentKeys |= 0x8;
+        m_pressedButtons |= 0x8;
     }
     if (js->rgbButtons[4] & 0x80) {
-        m_currentKeys |= 0x10;
+        m_pressedButtons |= 0x10;
     }
     if (js->rgbButtons[5] & 0x80) {
-        m_currentKeys |= 0x20;
+        m_pressedButtons |= 0x20;
     }
     if (js->rgbButtons[6] & 0x80) {
-        m_currentKeys |= 0x40;
+        m_pressedButtons |= 0x40;
     }
     if (js->rgbButtons[7] & 0x80) {
-        m_currentKeys |= 0x80;
+        m_pressedButtons |= 0x80;
     }
     if (js->rgbButtons[8] & 0x80) {
-        m_currentKeys |= 0x100;
+        m_pressedButtons |= 0x100;
     }
     if (js->rgbButtons[9] & 0x80) {
-        m_currentKeys |= 0x200;
+        m_pressedButtons |= 0x200;
     }
-    m_edgeKeys = m_currentKeys;
-    MOUSE_EDGE(0x1);
-    MOUSE_EDGE(0x2);
-    MOUSE_EDGE(0x4);
-    MOUSE_EDGE(0x8);
-    MOUSE_EDGE(0x10);
-    MOUSE_EDGE(0x20);
-    MOUSE_EDGE(0x40);
-    MOUSE_EDGE(0x80);
-    MOUSE_EDGE(0x100);
-    MOUSE_EDGE(0x200);
-    MOUSE_EDGE(MOUSE_LEFT);
-    MOUSE_EDGE(MOUSE_RIGHT);
-    MOUSE_EDGE(MOUSE_UP);
-    MOUSE_EDGE(MOUSE_DOWN);
+    m_heldButtons = m_pressedButtons;
+    UPDATE_BUTTON_EDGE(0x1);
+    UPDATE_BUTTON_EDGE(0x2);
+    UPDATE_BUTTON_EDGE(0x4);
+    UPDATE_BUTTON_EDGE(0x8);
+    UPDATE_BUTTON_EDGE(0x10);
+    UPDATE_BUTTON_EDGE(0x20);
+    UPDATE_BUTTON_EDGE(0x40);
+    UPDATE_BUTTON_EDGE(0x80);
+    UPDATE_BUTTON_EDGE(0x100);
+    UPDATE_BUTTON_EDGE(0x200);
+    UPDATE_BUTTON_EDGE(INPUT_LEFT);
+    UPDATE_BUTTON_EDGE(INPUT_RIGHT);
+    UPDATE_BUTTON_EDGE(INPUT_UP);
+    UPDATE_BUTTON_EDGE(INPUT_DOWN);
     return 1;
 }
 

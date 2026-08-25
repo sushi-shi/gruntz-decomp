@@ -38,13 +38,13 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/InputDeviceSel.h>
+#include <Gruntz/InputState.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
-#include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Ints.h>
@@ -361,25 +361,25 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_midi->m_midiAvailable = 0;
     }
 
-    if (m_inputState) {
-        delete m_inputState;
-        m_inputState = NULL;
+    if (m_worldSounds) {
+        delete m_worldSounds;
+        m_worldSounds = NULL;
     }
-    m_inputState = new CWorldSoundSet;
-    if (!m_inputState->Init(world->m_soundRegistry, soundVolume)) {
+    m_worldSounds = new CWorldSoundSet;
+    if (!m_worldSounds->Init(world->m_soundRegistry, soundVolume)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40d);
         return 0;
     }
     {
-        i32 f = m_inputState->m_active;
+        i32 f = m_worldSounds->m_active;
         if (vMusic != 0) {
             if (f == 0) {
-                m_inputState->m_active = 1;
-                m_inputState->Resume();
+                m_worldSounds->m_active = 1;
+                m_worldSounds->Resume();
             }
         } else if (f != 0) {
-            m_inputState->m_active = 0;
-            m_inputState->Stop();
+            m_worldSounds->m_active = 0;
+            m_worldSounds->Stop();
         }
     }
     SetSoundVolume(soundVolume);
@@ -397,12 +397,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    i32 devCount = g_inputMgr->m_devices.GetSize();
-    g_actorList = g_inputMgr->AddControllerArr(
-        devCount > 0 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[0]) : NULL,
-        devCount > 1 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[1]) : NULL,
-        devCount > 2 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[2]) : NULL,
-        devCount > 3 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[3]) : NULL,
+    i32 joystickCount = g_inputMgr->m_joysticks.GetSize();
+    g_actorList = g_inputMgr->CreateDeviceGroup(
+        joystickCount > 0 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[0]) : NULL,
+        joystickCount > 1 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[1]) : NULL,
+        joystickCount > 2 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[2]) : NULL,
+        joystickCount > 3 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[3]) : NULL,
         NULL,
         NULL,
         0
@@ -412,13 +412,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    CInputDevice* keyboard = static_cast<CInputDevice*>(g_inputMgr->m_deviceA);
+    CKeyboardDevice* keyboard = g_inputMgr->m_keyboard;
     if (keyboard != NULL) {
-        keyboard->m_keyTable[0] = VK_CONTROL;
-        keyboard->m_keyTable[1] = 'X';
-        keyboard->m_keyTable[2] = VK_SPACE;
-        keyboard->m_keyTable[3] = VK_RETURN;
-        keyboard->m_keyTable[8] = 0;
+        keyboard->m_keyBindings[0] = VK_CONTROL;
+        keyboard->m_keyBindings[1] = 'X';
+        keyboard->m_keyBindings[2] = VK_SPACE;
+        keyboard->m_keyBindings[3] = VK_RETURN;
+        keyboard->m_keyBindings[8] = 0;
     }
 
     m_shadeCache = new CShadeTableCache;
@@ -454,19 +454,19 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    g_spawnConfig = new StateMgrBZ;
-    if (!g_spawnConfig->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
+    g_gameplayInput = new CInputState;
+    if (!g_gameplayInput->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
         // The zeroing runs off a cached pointer and skips m_mouse - retail's own
         // hand-written teardown, not the constructor's six stores replayed.
-        StateMgrBZ* dead = g_spawnConfig;
+        CInputState* dead = g_gameplayInput;
         if (dead) {
-            dead->m_device = NULL;
+            dead->m_primaryDevice = NULL;
             dead->m_keyboard = NULL;
             dead->m_joystick = NULL;
-            dead->m_deviceList = NULL;
-            dead->m_mode = INPUTDEV_NONE;
+            dead->m_deviceGroup = NULL;
+            dead->m_deviceSelection = INPUTDEV_NONE;
             ::operator delete(dead);
-            g_spawnConfig = NULL;
+            g_gameplayInput = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x413);
         return 0;

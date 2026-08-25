@@ -297,37 +297,37 @@ i32 CMenuState::Render() {
     L = g_actorList;
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x80000000) {
+        if (static_cast<u32>(L->m_items[c]->m_pressedButtons) & 0x80000000) {
             m_menuTree->MoveFocusUp();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x40000000) {
+        if (static_cast<u32>(L->m_items[c]->m_pressedButtons) & 0x40000000) {
             m_menuTree->MoveFocusDown();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x20000000) {
+        if (static_cast<u32>(L->m_items[c]->m_pressedButtons) & 0x20000000) {
             m_menuTree->MoveFocusRight();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (static_cast<u32>(L->m_items[c]->m_currentKeys) & 0x10000000) {
+        if (static_cast<u32>(L->m_items[c]->m_pressedButtons) & 0x10000000) {
             m_menuTree->MoveFocusLeft();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (L->m_items[c]->m_currentKeys & 0x3) {
+        if (L->m_items[c]->m_pressedButtons & 0x3) {
             m_menuTree->ActivateFocusedItem();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (L->m_items[c]->m_currentKeys & 0x100) {
+        if (L->m_items[c]->m_pressedButtons & 0x100) {
             if (!m_menuTree->ReturnToPreviousPage()) {
                 PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
             }

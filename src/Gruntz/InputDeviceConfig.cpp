@@ -52,7 +52,7 @@ i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
     item.m_str = "Keyboard";
     SendMessageA(ctrl, CB_ADDSTRING, 0, item.m_lparam);
     i32 i = 0;
-    while (i < g_inputMgr->m_devices.GetSize()) {
+    while (i < g_inputMgr->m_joysticks.GetSize()) {
         CString s;
         i++;
         s.Format("Joystick %i", i);

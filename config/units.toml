@@ -487,7 +487,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "statemgrbz"
-source = "src/Gruntz/StateMgrBZ.cpp"
+source = "src/Gruntz/InputState.cpp"
 flags = "cpp-rtti"
 
 [[unit]]

@@ -135,9 +135,9 @@ rva	size	name	kind	note
 0x1eaf3c	0x10	??_7CTileTimeTriggerSwitchLogic@@6B@	primary	
 0x1eaf54	0x10	??_7CCheckpointTriggerSwitchLogic@@6B@	primary	
 0x1eaf6c	0x40	??_7CGruntVoice@@6B@	primary	
-0x1ef628	0x18	??_7CInputDevice@@6B@	primary	
-0x1ef640	0x18	??_7CDeviceConfigB@@6B@	primary	
-0x1ef658	0x18	??_7CDeviceConfigC@@6B@	primary	
+0x1ef628	0x18	??_7CKeyboardDevice@@6B@	primary	
+0x1ef640	0x18	??_7CMouseDevice@@6B@	primary	
+0x1ef658	0x18	??_7CJoystickDevice@@6B@	primary	
 0x1ef670	0x10	??_7CInputDevRoot@@6B@	primary	
 0x1ef680	0x18	??_7CInputDevBase@@6B@	primary	
 0x1ef6b8	0x4	??_7SoundBuffer@@6B@	primary	

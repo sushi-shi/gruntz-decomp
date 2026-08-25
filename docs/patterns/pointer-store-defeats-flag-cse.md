@@ -26,7 +26,7 @@ b0 01               mov al,1
 ; …block…
 84 82 34 03 00 00   test BYTE [edx+0x334],al   ; second if, mask al=1 reused, field re-read
 ```
-STEERABLE. Evidence: CInputDevice::SetupKeyTable (@0x133c30) 88.5% → 94.6% — the typed `m_2b4[0]=…`
+STEERABLE. Evidence: CKeyboardDevice::ConfigureDefaultBindings (@0x133c30) 88.5% → 94.6% — the typed `m_keyBindings[0]=…`
 CSE'd the flag (`and eax,1`/`andb $1,%al`); routing index 0 through a `tbl` pointer local restored
 the per-test re-read + `mov al,1; test al,cl`. Residual is epilogue pop-scheduling only.
 related: int-to-bool-normalize.md.

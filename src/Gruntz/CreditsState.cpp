@@ -187,7 +187,7 @@ i32 CCreditsState::Render() {
         CFixedPtrArray32* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
-            if (L->m_items[j]->m_currentKeys & 0xffffff) {
+            if (L->m_items[j]->m_pressedButtons & 0xffffff) {
 
                 if (m_previousStateId == GAMESTATE_MENU) {
                     PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);

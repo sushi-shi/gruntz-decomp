@@ -63,7 +63,7 @@ next function symbol in that section), and `RVA()` is sometimes **indented** ins
 | 89.36 | `CMultiBootyState::GetWarlordName` |
 | 90.91 | `CInGameIcon::HandleInput` |
 | 92.55 | `CGameLevel::EditDispatch` |
-| 94.77 | `StateMgrBZ::Build` |
+| 94.77 | `CInputState::SelectDevices` |
 | 95.05 | `CTileTriggerContainer::AddSwitchLogic` |
 | 96.26 | `CDDrawDeviceManager::ReportError` |
 | 97.50 | `CBootyState::FormatHudText` |

@@ -337,7 +337,7 @@ void CAmbientSound::Restart() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_inputState->m_active == 0) {
+    if (g_gameReg->m_worldSounds->m_active == 0) {
         return;
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
@@ -367,7 +367,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        if (g_gameReg->m_inputState->m_active == 0) {
+        if (g_gameReg->m_worldSounds->m_active == 0) {
             return;
         }
         voice->ApplyAndPlay(1, m_panIndex, 0, 1);
@@ -394,7 +394,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        if (g_gameReg->m_inputState->m_active == 0) {
+        if (g_gameReg->m_worldSounds->m_active == 0) {
             return;
         }
         if (force != 0) {
@@ -441,7 +441,7 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        if (g_gameReg->m_inputState->m_active == 0) {
+        if (g_gameReg->m_worldSounds->m_active == 0) {
             return;
         }
         if (mode == 0) {
@@ -588,7 +588,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_inputState->m_active == 0) {
+    if (g_gameReg->m_worldSounds->m_active == 0) {
         return;
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
@@ -626,10 +626,10 @@ i32 CreateAmbientSound(CGameObject* obj) {
             if (aux->m_minX > 0 || aux->m_maxX > 0) {
                 SetRect(&rc, aux->m_minX, aux->m_minY, aux->m_maxX, aux->m_maxY);
             }
-            if (g_gameReg->m_inputState) {
+            if (g_gameReg->m_worldSounds) {
                 CAmbientSound* placed;
                 if (obj->m_extent.top > 0) {
-                    placed = g_gameReg->m_inputState->CreateRandom(
+                    placed = g_gameReg->m_worldSounds->CreateRandom(
                         layer->m_sound,
                         0x64,
                         &rc,
@@ -642,7 +642,7 @@ i32 CreateAmbientSound(CGameObject* obj) {
                     );
                 } else {
                     placed =
-                        g_gameReg->m_inputState
+                        g_gameReg->m_worldSounds
                             ->CreateAmbientFromSound(layer->m_sound, 0x64, &rc, obj->m_damage, 0);
                 }
                 if (placed && obj->m_switchRect.top > 0) {
@@ -676,7 +676,7 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
             return 1;
         }
 
-        CWorldSoundSet* set = g_gameReg->m_inputState;
+        CWorldSoundSet* set = g_gameReg->m_worldSounds;
         if (sound->m_voice != NULL) {
             sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;
@@ -696,7 +696,7 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
     LeafCue* layer = sprite->m_soundCue;
     if (layer != NULL && g_gameReg != NULL) {
 
-        CWorldSoundSet* set = g_gameReg->m_inputState;
+        CWorldSoundSet* set = g_gameReg->m_worldSounds;
         if (set != NULL) {
             AmbientPoint pt;
             pt.x = obj->m_screenX;

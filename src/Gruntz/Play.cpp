@@ -57,6 +57,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
+#include <Gruntz/InputState.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxRender.h>
@@ -77,7 +78,6 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
@@ -451,7 +451,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
     m_worldReady = 0;
     if (m_renderDisabled == 0) {
         if (previousState != GAMESTATE_HELP) {
-            (static_cast<CWorldSoundSet*>(m_mgr->m_inputState))->Resume();
+            m_mgr->m_worldSounds->Resume();
         }
         (static_cast<CTriggerMgr*>(m_mgr->m_cmdGrid))->DestroyAllAnims();
         (static_cast<CGruntSpawnConfig*>(m_mgr->m_cueSink))->PauseAllVoices();
@@ -511,7 +511,7 @@ i32 CPlay::Render() {
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
-        m_mgr->m_inputState->Retune(
+        m_mgr->m_worldSounds->Retune(
             m_world->m_level->m_mainPlane->m_snappedX,
             m_world->m_level->m_mainPlane->m_snappedY
         );
@@ -618,7 +618,7 @@ i32 CPlay::Render() {
             }
         }
 
-        m_mgr->m_inputState->Retune(
+        m_mgr->m_worldSounds->Retune(
             m_world->m_level->m_mainPlane->m_snappedX,
             m_world->m_level->m_mainPlane->m_snappedY
         );
@@ -957,7 +957,7 @@ i32 CPlay::DrawWorldFrames() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
-    m_mgr->m_inputState->Retune(
+    m_mgr->m_worldSounds->Retune(
         m_world->m_level->m_mainPlane->m_snappedX,
         m_world->m_level->m_mainPlane->m_snappedY
     );
@@ -1045,7 +1045,7 @@ i32 CPlay::ProfileDeltaFrame() {
         DrawWorldFrame();
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
-    m_mgr->m_inputState->Retune(
+    m_mgr->m_worldSounds->Retune(
         m_world->m_level->m_mainPlane->m_snappedX,
         m_world->m_level->m_mainPlane->m_snappedY
     );
@@ -1121,7 +1121,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         grid->StopAllStreams();
     }
     self->m_mgr->m_midi->ClearSequences();
-    self->m_mgr->m_inputState->Teardown();
+    self->m_mgr->m_worldSounds->Teardown();
     self->m_mgr->m_cueSink->PauseAllVoices();
     self->m_mgr->m_cueSink->ClearSprites();
     self->m_mgr->RestoreVideoMode(0);
@@ -1738,7 +1738,7 @@ void CPlay::FreeListTeardown() {
         }
     }
     m_mgr->m_midi->ClearSequences();
-    m_mgr->m_inputState->Teardown();
+    m_mgr->m_worldSounds->Teardown();
     m_mgr->m_cueSink->ClearSprites();
     g_gameReg->m_cmdGrid->DestroyAllAnims();
     m_world->m_level->ReleaseChildren();
@@ -1812,7 +1812,7 @@ void CPlay::ModeCleanup() {
     if (m_mgr) {
         m_mgr->m_midi->ClearSequences();
 
-        m_mgr->m_inputState->Teardown();
+        m_mgr->m_worldSounds->Teardown();
     }
     if (m_world) {
         m_world->m_imageRegistry->MapTeardown();
@@ -2144,7 +2144,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 idx = this->m_focusPlayerIndex;
         i32 pick;
         GruntzPlayer* area;
-        if (g_spawnConfig->m_edgeKeys & 1) {
+        if (g_gameplayInput->m_heldButtons & 1) {
             pick = idx - 1;
             if (pick < 0) {
                 pick = 3;
@@ -2193,7 +2193,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'Q') {
-        if ((g_spawnConfig->m_edgeKeys & 0x20) == 0) {
+        if ((g_gameplayInput->m_heldButtons & 0x20) == 0) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -2212,7 +2212,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'C') {
-        g_gameReg->m_cmdGrid->CenterOnGroup(g_spawnConfig->m_edgeKeys & 0x20);
+        g_gameReg->m_cmdGrid->CenterOnGroup(g_gameplayInput->m_heldButtons & 0x20);
         return 1;
     }
 
@@ -2229,7 +2229,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_SPACE) {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
@@ -2267,7 +2267,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (this->CameraBookmarkCount() == 0) {
             return 1;
         }
-        if (g_spawnConfig->m_edgeKeys & 1) {
+        if (g_gameplayInput->m_heldButtons & 1) {
             i32 c = this->m_cameraBookmarkIndex - 1;
             this->m_cameraBookmarkIndex = c;
             if (c < 0) {
@@ -2309,12 +2309,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (vk == 'M' && (g_spawnConfig->m_edgeKeys & 0x20)) {
+    if (vk == 'M' && (g_gameplayInput->m_heldButtons & 0x20)) {
         g_gameReg->SetMusicEnabled(g_gameReg->m_musicEnabled == 0);
         return 1;
     }
 
-    if (vk == 'V' && (g_spawnConfig->m_edgeKeys & 0x20)) {
+    if (vk == 'V' && (g_gameplayInput->m_heldButtons & 0x20)) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == 0);
         return 1;
     }
@@ -2341,7 +2341,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'S') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == 0);
             return 1;
         }
@@ -2394,7 +2394,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        this->m_guts->AdvanceTab(g_spawnConfig->m_edgeKeys & 1);
+        this->m_guts->AdvanceTab(g_gameplayInput->m_heldButtons & 1);
         return 1;
     }
 
@@ -2541,7 +2541,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == '1') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(1);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(1);
@@ -2549,7 +2549,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '2') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(2);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(2);
@@ -2557,7 +2557,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '3') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(3);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(3);
@@ -2565,7 +2565,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '4') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(4);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(4);
@@ -2573,7 +2573,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '5') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(5);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(5);
@@ -2581,7 +2581,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '6') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(6);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(6);
@@ -2589,7 +2589,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '7') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(7);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(7);
@@ -2597,7 +2597,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '8') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(8);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(8);
@@ -2605,7 +2605,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
     if (vk == '9') {
-        if (g_spawnConfig->m_edgeKeys & 0x20) {
+        if (g_gameplayInput->m_heldButtons & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(9);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(9);
@@ -3107,9 +3107,9 @@ drag_box: {
     CGrunt* picked =
         static_cast<CGrunt*>(m_mgr->m_cmdGrid->ScreenToCell(xr, y, &eventArg, &x, TM_ALL_PLAYERS));
     if (picked != NULL) {
-        m_mgr->m_cmdGrid->ResetCell(eventArg, x, g_spawnConfig->m_edgeKeys & 0x20, 0);
+        m_mgr->m_cmdGrid->ResetCell(eventArg, x, g_gameplayInput->m_heldButtons & 0x20, 0);
         if (eventArg == g_curPlayer) {
-            if (g_spawnConfig->m_edgeKeys & 0x20) {
+            if (g_gameplayInput->m_heldButtons & 0x20) {
                 goto ret1;
             }
             picked->OnStruck(1);
@@ -3140,7 +3140,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
             m_lightFx->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != 0) {
-            m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
+            m_mgr->m_cmdGrid->HudRect(m_hudRect, g_gameplayInput->m_heldButtons & 0x20);
         }
         m_worldReady = 0;
         m_dragSnapActive = 0;
@@ -3675,7 +3675,7 @@ i32 CPlay::CompleteLevel() {
             reg->m_soundStream->StopAllStreams();
         }
         m_mgr->m_midi->ClearSequences();
-        m_mgr->m_inputState->Teardown();
+        m_mgr->m_worldSounds->Teardown();
         m_mgr->m_cueSink->ClearSprites();
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
@@ -6632,7 +6632,7 @@ finish:
     m_inputWarmup2 = 0;
     m_inputHalfSel = 0;
     if (m_mgr->m_soundEnabled != 0 && mode != GAMESTATE_HELP) {
-        m_mgr->m_inputState->Resume();
+        m_mgr->m_worldSounds->Resume();
     }
     if (mode == GAMESTATE_HELP) {
         g_frameTime = m_savedClock;
@@ -7878,7 +7878,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != 0) {
-        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
+        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_gameplayInput->m_heldButtons & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;

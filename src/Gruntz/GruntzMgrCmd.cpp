@@ -1055,9 +1055,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             g_sndEnabled = m_soundEnabled;
             i32 soundEnabled = m_soundEnabled;
             if (soundEnabled != 0) {
-                m_inputState->Resume();
+                m_worldSounds->Resume();
             } else {
-                m_inputState->Stop();
+                m_worldSounds->Stop();
             }
             return 1;
         }

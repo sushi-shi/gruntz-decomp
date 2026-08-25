@@ -92,6 +92,6 @@ Evidence: real `new` improved or held historical MAX for `CFaderMgr`,
 `SoundBuffer` clone construction, `TriggerMgrEh`, and draw-pool items.
 Retain evidence-backed constructor ownership even when unrelated current scores
 move; investigate only a MAX-gate failure or structural contradiction. Attempted
-conversions in `DirectInputMgr2::AddController`, `CButeValueNode`,
+conversions in `DirectInputMgr2::CreateDeviceGroup`, `CButeValueNode`,
 `WwdPlaneRender`, `SoundDevice`, and `SoundStream` changed the wrong call/CFG
 shape and were rejected on that evidence.

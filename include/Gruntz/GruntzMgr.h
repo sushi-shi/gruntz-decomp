@@ -315,7 +315,7 @@ public:
     i32 m_reserved4c;
     CShadeTableCache* m_shadeCache;
 
-    CWorldSoundSet* m_inputState;
+    CWorldSoundSet* m_worldSounds;
 
     CSaveGame* m_saveSink;
 

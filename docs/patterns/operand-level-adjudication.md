@@ -80,7 +80,7 @@ dropped statement or argument, not allocator residue.
 
 WORKED EXAMPLE 6 - the mirror case: a store displacement present only in base
 can identify one statement too many. `CGruntzMgr::Close` 0x855e0 screened
-`disp/store +0xc base 1 target 0`; its hand-written `StateMgrBZ` teardown
+`disp/store +0xc base 1 target 0`; its hand-written `CInputState` teardown
 cleared `m_mouse`, while retail skips that member. The sibling teardown in
 `CGruntzMgr::Run`'s failure path independently emits the same five-store
 sequence as retail. Compare repeated expansions of the same source entity
