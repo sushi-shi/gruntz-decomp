@@ -43,7 +43,7 @@ if (h > 0) {
     dec    ecx
     jne    <loop>
 ```
-STEERABLE. `CLightFxRender::DrawBorderRaw` 0xa3a20 67.64 -> 71.02 with the `if`
+STEERABLE. `CMinimap::DrawBorderRaw` 0xa3a20 67.64 -> 71.02 with the `if`
 wrapper alone, -> 72.07 with the countdown `while` (a `do..while(--h)` gives 71.84,
 the offset-indexed form 71.10, a `u16*` cursor form 71.02). A 400-cell AST forest over
 the same body moved nothing, so pick the shape from the guard position, not the search.

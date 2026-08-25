@@ -434,7 +434,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
-            return m_tileMgr->CombatCue(
+            return m_triggerMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_FreezeRadius, 8),
@@ -454,7 +454,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
-            return m_tileMgr->CombatCue(
+            return m_triggerMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_HealthRadius, 8),
@@ -474,7 +474,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
-            return m_tileMgr->LoadGruntResurrectTuning(
+            return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_RessurectionRadius, 8)
@@ -492,7 +492,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
-            return m_tileMgr->CombatCue(
+            return m_triggerMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_ToyzRadius, 8),
@@ -512,7 +512,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
-            return m_tileMgr->CombatCue(
+            return m_triggerMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_TeleportRadius, 8),
@@ -674,7 +674,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if ((flags & BRICKZ_BLOCKED_MASK) || (flags & 2)) {
         return 0;
     }
-    m_tileMgr->LoadPowerupIconSprites(reason, px, py, 0, 1, 0);
+    m_triggerMgr->LoadPowerupIconSprites(reason, px, py, 0, 1, 0);
     return 1;
 }
 
@@ -1204,7 +1204,7 @@ i32 CGrunt::HandleCombatContact(
         if ((phase == ARRIVAL_TAG_TRIGGER_B || phase == ARRIVAL_TAG_TRIGGER_A)
             && m_arrivalActive != 0) {
             CGrunt* occ =
-                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 sx = inner->m_screenX;
@@ -1216,12 +1216,12 @@ i32 CGrunt::HandleCombatContact(
                     if (RectContainsGated(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_tileMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, sx, sy);
+                    applied = m_triggerMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, sx, sy);
                 } else {
                     if (RectContains(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_tileMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, sx, sy);
+                    applied = m_triggerMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, sx, sy);
                 }
                 // The outer test is redundant with the inner one; retail emits both.
                 if (applied == 0 || applied == 1) {
@@ -1304,9 +1304,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     if (attackerGruntKind == GRUNT_CONVERSION) {
-        CGrunt* enemy = m_tileMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+        CGrunt* enemy = m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
         if (enemy != NULL
-            && m_tileMgr->SpawnGrunt(
+            && m_triggerMgr->SpawnGrunt(
                    this->m_playerIndex,
                    this->m_unitIndex,
                    srcPlayerIndex,
@@ -1342,13 +1342,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
     } else if (this->m_gruntKind == GRUNT_REACTIVEARMOR) {
         hit = static_cast<i32>((static_cast<float>(hit) * g_quarterScale));
         if (fromProjectile == 0) {
-            CGrunt* enemy = m_tileMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+            CGrunt* enemy =
+                m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
             if (enemy != NULL && enemy->m_entranceCommitted != 0) {
                 i32 nh = enemy->m_health - hit * 3;
                 nh = (nh < 0) ? 0 : nh;
                 enemy->m_health = nh;
                 if (nh <= 0) {
-                    m_tileMgr->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_NORMAL, -1);
+                    m_triggerMgr->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_NORMAL, -1);
                 }
             }
         }
@@ -1358,7 +1359,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     nh = (nh < 0) ? 0 : nh;
     this->m_health = nh;
     if (this->m_entranceReason == PICKUP_BOMB) {
-        m_tileMgr
+        m_triggerMgr
             ->StartUnitDeath(this->m_playerIndex, this->m_unitIndex, DEATH_NORMAL, srcPlayerIndex);
         return 0;
     }
@@ -1546,7 +1547,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_health > 0) {
             return 1;
         }
-        m_tileMgr
+        m_triggerMgr
             ->StartUnitDeath(this->m_playerIndex, this->m_unitIndex, DEATH_BURN, srcPlayerIndex);
         return 0;
     }
@@ -1725,7 +1726,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
 
         if (this->m_arrivalPending == 0) {
-            m_tileMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
+            m_triggerMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
         }
         CMapMgr* oldGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         i32 ox = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -1798,7 +1799,7 @@ i32 CGrunt::CommitNeighbor(
     ArmGruntCombatTimeout(this);
     m_neighborScanEnabled = 1;
 
-    CGrunt* nb = m_tileMgr->m_units[targetPlayerIndex * TM_UNITS_PER_PLAYER + targetUnitIndex];
+    CGrunt* nb = m_triggerMgr->m_units[targetPlayerIndex * TM_UNITS_PER_PLAYER + targetUnitIndex];
     if (nb == NULL || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
         return 0;
     }
@@ -1824,7 +1825,7 @@ i32 CGrunt::CommitNeighbor(
 
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,
@@ -1854,7 +1855,7 @@ i32 CGrunt::CommitNeighbor(
     }
 
     if (m_arrivalPending != 0) {
-        m_tileMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
+        m_triggerMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
         m_arrivalPending = 0;
     }
     m_poweredUp = 1;
@@ -1923,7 +1924,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     }
 
     CGrunt* n =
-        m_tileMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
+        m_triggerMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
     if (n != NULL && n->m_entranceCommitted != 0) {
         if (validate != 0) {
             if (n->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, n)) {
@@ -2372,7 +2373,7 @@ void CGrunt::StepBehavior(char*) {
                     break;
             }
             if (gate != 0) {
-                m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, hazard, -1);
+                m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, hazard, -1);
                 return;
             }
         }
@@ -2419,7 +2420,7 @@ void CGrunt::StepBehavior(char*) {
                 m_health = hp;
                 if (hp <= 0) {
                     ConsiderArrival(1);
-                    m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+                    m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                     return;
                 }
             }
@@ -2700,7 +2701,7 @@ kindDispatch:
             m_health = hp;
             if (hp <= 0) {
                 ConsiderArrival(1);
-                m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+                m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 return;
             }
             m_convertTimeLo =
@@ -2806,7 +2807,7 @@ kindDispatch:
     }
 
     if (m_pendingTrigger != 0 && m_stamina >= STAMINA_FULL) {
-        m_tileMgr->ApplyTriggerA(
+        m_triggerMgr->ApplyTriggerA(
             m_playerIndex,
             m_unitIndex,
             m_pendingTriggerPx.m_x,
@@ -3003,7 +3004,7 @@ void CGrunt::AdvanceMotion() {
     }
     if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
         if (m_arrivalPending != 0) {
-            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_arrivalPending = 0;
 
             if (m_arrivalPhase != ARRIVAL_TAG_NONE) {
@@ -3011,7 +3012,7 @@ void CGrunt::AdvanceMotion() {
                 if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
                     if (m_arrivalActive != 0) {
                         CGrunt* other =
-                            m_tileMgr->m_units
+                            m_triggerMgr->m_units
                                 [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
@@ -3050,13 +3051,13 @@ void CGrunt::AdvanceMotion() {
                                 targetY = m_arrivalTargetPx.m_y;
                             }
                             result =
-                                m_tileMgr
+                                m_triggerMgr
                                     ->ApplyTriggerA(m_playerIndex, m_unitIndex, targetX, targetY);
                         } else {
                             result = 0;
                         }
                     } else {
-                        result = m_tileMgr->ApplyTriggerA(
+                        result = m_triggerMgr->ApplyTriggerA(
                             m_playerIndex,
                             m_unitIndex,
                             m_arrivalTargetPx.m_x,
@@ -3066,7 +3067,7 @@ void CGrunt::AdvanceMotion() {
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
                     if (m_arrivalActive != 0) {
                         CGrunt* other =
-                            m_tileMgr->m_units
+                            m_triggerMgr->m_units
                                 [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                         if (other != NULL) {
                             i32 otherPxX = other->m_object->m_screenX;
@@ -3096,13 +3097,13 @@ void CGrunt::AdvanceMotion() {
                                 targetY = m_arrivalTargetPx.m_y;
                             }
                             result =
-                                m_tileMgr
+                                m_triggerMgr
                                     ->ApplyTriggerB(m_playerIndex, m_unitIndex, targetX, targetY);
                         } else {
                             result = 0;
                         }
                     } else {
-                        result = m_tileMgr->ApplyTriggerB(
+                        result = m_triggerMgr->ApplyTriggerB(
                             m_playerIndex,
                             m_unitIndex,
                             m_arrivalTargetPx.m_x,
@@ -3144,7 +3145,7 @@ void CGrunt::AdvanceMotion() {
             if (ClaimSwitchTile() != 0) {
                 return;
             }
-            m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+            m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
             return;
         }
         Coord entrance = EntrancePx();

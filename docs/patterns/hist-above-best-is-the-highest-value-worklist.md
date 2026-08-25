@@ -89,7 +89,7 @@ copy, so the escaped sink is reloaded at every use
 
 Classified as deliberate and left alone: `CRezImage::FlipVertical`,
 `CSBI_ImageSet::SetupImage`, `CWwdGameObjectA::BltDirtyEx`,
-`UpdateChipGrinderStatusBar`, `CLightFxRender::ComputeRect`,
+`UpdateChipGrinderStatusBar`, `CMinimap::Draw`,
 `ConvertRowDoubleFwd`, `CTileSecretTriggerLogic::Tick`,
 `FontRenderer::DrawGlyphRun` (its commit message even prints the 71.74 -> 68.10
 it accepted and why).

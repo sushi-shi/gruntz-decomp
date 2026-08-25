@@ -26,9 +26,9 @@ or  edi,ebp                                                                     
 mov ebp,0x01 ; mov ecx,ds:0x683eb4 ; sar ebp,cl ; or ecx,ebp                           ; |B
 ```
 **Per-channel term is steerable** (the `(c>>down)<<up` spelling reproduces it). But
-in the 8 CLightFxRender shape generators (0xa3dc0…0xa8900, ~2KB each) ~22 such
+in the 8 CMinimap shape generators (0xa3dc0…0xa8900, ~2KB each) ~22 such
 packs share the 5 globals and the optimizer heavily CSEs the global loads and
 schedules the 22 expressions + their u16-temp spills across the frame — that
 inter-color scheduling/regalloc is a **wall** no uniform `Pack()` source
 reproduces byte-for-byte (~70% plateau on a complete, correct body). Evidence:
-CLightFxRender::Shape1..Shape8; the standalone DrawBorder/FillSpan u16 fills match.
+CMinimap::Shape1..Shape8; the standalone DrawBorder/FillSpan u16 fills match.

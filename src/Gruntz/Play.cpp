@@ -58,9 +58,9 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LevelArea.h>
-#include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/Minimap.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
@@ -259,53 +259,53 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_defeatCountdownActive = 0;
         m_scrollEdgeActive = 0;
         m_scrollEdgeLock = 0;
-        m_frameMarker = NULL;
+        m_levelTimer = NULL;
 
         if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
             return 0;
         }
 
         CChatBoxOwner* ctl = new CChatBoxOwner;
-        m_hitTest = ctl;
-        if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
-            // retail loads m_hitTest ONCE (0xc7f9a `mov esi,[ebx+0x2e0]`) and feeds
+        m_chatBox = ctl;
+        if (m_chatBox->Attach(m_world, m_mgr->m_chatLog) == 0) {
+            // retail loads m_chatBox ONCE (0xc7f9a `mov esi,[ebx+0x2e0]`) and feeds
             // the same esi to Deactivate and operator delete - a cached local, not
             // two member reads.
-            CChatBoxOwner* dead = m_hitTest;
+            CChatBoxOwner* dead = m_chatBox;
             if (dead == NULL) {
                 return 0;
             }
             dead->Deactivate();
             ::operator delete(dead);
-            m_hitTest = NULL;
+            m_chatBox = NULL;
             return 0;
         }
-        m_hitTest->m_inputActive = 0;
-        m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
+        m_chatBox->m_inputActive = 0;
+        m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
-        m_guts = new CStatusBarMgr;
-        if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
-            if (m_guts == NULL) {
+        m_statusBar = new CStatusBarMgr;
+        if (m_statusBar->LoadBattlezItemConfig(m_world) == 0) {
+            if (m_statusBar == NULL) {
                 return 0;
             }
-            delete m_guts;
-            m_guts = NULL;
+            delete m_statusBar;
+            m_statusBar = NULL;
             return 0;
         }
 
         CTileTriggerContainer* r78 = new CTileTriggerContainer;
-        m_beginMarker = r78;
-        if (m_beginMarker->Initialize() == 0) {
-            if (m_beginMarker == NULL) {
+        m_tileTriggers = r78;
+        if (m_tileTriggers->Initialize() == 0) {
+            if (m_tileTriggers == NULL) {
                 return 0;
             }
-            delete m_beginMarker;
-            m_beginMarker = NULL;
+            delete m_tileTriggers;
+            m_tileTriggers = NULL;
             return 0;
         }
 
         CTimer* r50 = new CTimer;
-        m_frameMarker = r50;
+        m_levelTimer = r50;
         if (r50 == NULL) {
             return 0;
         }
@@ -319,7 +319,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         mgr->ResetClockGlobals();
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
-        m_lightFx = NULL;
+        m_minimap = NULL;
         if (m_mgr->m_loadingSaveGame == 0) {
             m_mgr->m_saveInfoRec = NULL;
         }
@@ -333,7 +333,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (!LoadCursorSprites(0, 0)) {
             return 0;
         }
-        CWwdGameObjectA* peer = m_scrollSink;
+        CWwdGameObjectA* peer = m_cursorSnapSprite;
         if (peer) {
             peer->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
@@ -345,11 +345,11 @@ RVA(0x000c8700, 0x1f4)
 void CPlay::ReleaseResources() {
     i32 i;
 
-    CLightFxRender* fx = m_lightFx;
-    if (fx) {
-        fx->Reset();
-        ::operator delete(fx);
-        m_lightFx = NULL;
+    CMinimap* minimap = m_minimap;
+    if (minimap) {
+        minimap->Reset();
+        ::operator delete(minimap);
+        m_minimap = NULL;
     }
     OnExit();
     if (m_mgr) {
@@ -365,25 +365,25 @@ void CPlay::ReleaseResources() {
     if (m_mgr && m_mgr->m_chatLog) {
         m_mgr->m_chatLog->FreeNodes();
     }
-    if (m_guts) {
-        delete m_guts;
-        m_guts = NULL;
+    if (m_statusBar) {
+        delete m_statusBar;
+        m_statusBar = NULL;
     }
-    CChatBoxOwner* hit = m_hitTest;
+    CChatBoxOwner* hit = m_chatBox;
     if (hit) {
         hit->Deactivate();
         ::operator delete(hit);
-        m_hitTest = NULL;
+        m_chatBox = NULL;
     }
-    if (m_beginMarker) {
-        delete m_beginMarker;
-        m_beginMarker = NULL;
+    if (m_tileTriggers) {
+        delete m_tileTriggers;
+        m_tileTriggers = NULL;
     }
-    CTimer* fm = m_frameMarker;
+    CTimer* fm = m_levelTimer;
     if (fm) {
         fm->Reset();
         ::operator delete(fm);
-        m_frameMarker = NULL;
+        m_levelTimer = NULL;
     }
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
@@ -453,7 +453,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
         if (previousState != GAMESTATE_HELP) {
             m_mgr->m_worldSounds->Resume();
         }
-        (static_cast<CTriggerMgr*>(m_mgr->m_cmdGrid))->DestroyAllAnims();
+        (static_cast<CTriggerMgr*>(m_mgr->m_triggerMgr))->DestroyAllAnims();
         (static_cast<CVoiceManager*>(m_mgr->m_voiceManager))->PauseAllVoices();
     }
     return 1;
@@ -478,8 +478,8 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         r.top = 0;
         ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, 1);
-        if (m_mgr && m_mgr->m_cmdGrid) {
-            m_mgr->m_cmdGrid->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+        if (m_mgr && m_mgr->m_triggerMgr) {
+            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
         }
     }
     return 1;
@@ -521,8 +521,8 @@ i32 CPlay::Render() {
             stream->TickVolumeRamps(t);
             stream->TickStreams(t);
         }
-        m_beginMarker->UpdateTimedLogics(g_frameDelta);
-        m_guts->LoadMainStatusBarSprite();
+        m_tileTriggers->UpdateTimedLogics(g_frameDelta);
+        m_statusBar->LoadMainStatusBarSprite();
 
         {
             if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
@@ -544,20 +544,20 @@ i32 CPlay::Render() {
             return 0;
         }
 
-        m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
-        m_frameMarker->Draw(back, 1);
+        m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
+        m_levelTimer->Draw(back, 1);
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         DrawCursorSaveUnder(back);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
-        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
         return 1;
     }
 
     if (m_mgr->m_frameGate == 0
         && (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == 0)) {
-        m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
-        m_mgr->m_cmdSubMgr->ExecuteScheduledCommands(0);
+        m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
+        m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
             if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
@@ -597,12 +597,12 @@ i32 CPlay::Render() {
 
         if (m_region0Gate != 0) {
             m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
-            m_guts->Deactivate();
+            m_statusBar->Deactivate();
         }
 
         if (m_worldReady == 0) {
-            if (m_mgr->m_cmdGrid->m_armed != 0) {
-                m_mgr->m_cmdGrid->ScrollToActiveRecord();
+            if (m_mgr->m_triggerMgr->m_armed != 0) {
+                m_mgr->m_triggerMgr->ScrollToActiveRecord();
             }
             LoadScrollSpeedOptions();
         }
@@ -642,14 +642,14 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_overlayPair
             );
         }
-        m_beginMarker->UpdateTimedLogics(g_frameDelta);
-        m_guts->LoadMainStatusBarSprite();
+        m_tileTriggers->UpdateTimedLogics(g_frameDelta);
+        m_statusBar->LoadMainStatusBarSprite();
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
-        if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-            && m_guts->m_activeTab != TAB_GAME) {
+        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+            && m_statusBar->m_activeTab != TAB_GAME) {
             RECT rc;
-            if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
+            if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
                 SetRect(
@@ -660,8 +660,8 @@ i32 CPlay::Render() {
                     125
                 );
             }
-            m_lightFx->Resize(static_cast<i32>(g_frameDelta), 0);
-            m_lightFx->ComputeRect(m_world->m_drawTarget->m_backPair, &rc);
+            m_minimap->Refresh(static_cast<i32>(g_frameDelta), 0);
+            m_minimap->Draw(m_world->m_drawTarget->m_backPair, &rc);
         }
 
         m_mgr->m_chatLog->Scroll(static_cast<i32>(g_frameDelta));
@@ -689,21 +689,21 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
                 >= m_defeatCountdownTiming.m_interval.m_v) {
 
-                if (m_guts->m_destructButtonLocked != 0) {
-                    g_gameReg->m_cmdGrid->StartPlayerDefeatSequence(5);
+                if (m_statusBar->m_destructButtonLocked != 0) {
+                    g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(5);
                 } else {
                     i32 row = g_curPlayer;
-                    g_gameReg->m_cmdGrid->StartPlayerDefeatSequence(row);
+                    g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(row);
                 }
 
-                CTimer* marker = m_frameMarker;
+                CTimer* marker = m_levelTimer;
                 marker->m_unusedStamp.m_lo = 0;
                 marker->m_unusedStamp.m_hi = 0;
                 marker->m_accum.m_lo = 0;
                 marker->m_accum.m_hi = 0;
                 marker->m_running = 0;
                 marker->m_currentMs = 0;
-                m_guts->LockDestructButton(0);
+                m_statusBar->LockDestructButton(0);
                 m_defeatCountdownActive = 0;
 
                 if (g_gameReg->m_options[0].m_warlordObjectId != 0) {
@@ -736,13 +736,13 @@ i32 CPlay::Render() {
             }
         }
 
-        m_frameMarker->Draw(view, 0);
-        m_hitTest->LoadChatBoxSprite(view);
+        m_levelTimer->Draw(view, 0);
+        m_chatBox->LoadChatBoxSprite(view);
         DrawDebugStats();
-        m_mgr->m_cmdGrid->OverlayRelease();
+        m_mgr->m_triggerMgr->OverlayRelease();
 
-        if (m_winLoseBanner != 0 && m_guts->m_levelOverlayActive == 0
-            && m_guts->m_quitConfirmationActive == 0) {
+        if (m_winLoseBanner != 0 && m_statusBar->m_levelOverlayActive == 0
+            && m_statusBar->m_quitConfirmationActive == 0) {
 
             if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
                 >= m_cueTiming.m_interval.m_v) {
@@ -763,7 +763,7 @@ i32 CPlay::Render() {
             view->DrawBox(&m_hudRect, 0xff);
         }
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
-        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         {
             CGameLevel* lvl = m_world->m_level;
             if (lvl->m_mainPlane != NULL) {
@@ -822,10 +822,10 @@ i32 CPlay::Render() {
                     m_world->m_drawTarget->m_backPair,
                     m_world->m_drawTarget->m_overlayPair
                 );
-                m_guts->LoadMainStatusBarSprite();
+                m_statusBar->LoadMainStatusBarSprite();
                 back->m_surface->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
-                m_frameMarker->Draw(back, 1);
+                m_levelTimer->Draw(back, 1);
             }
             if (m_ambientInitDone == 0) {
                 if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
@@ -858,11 +858,12 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );
-            m_guts->LoadMainStatusBarSprite();
-            if (m_guts->m_levelOverlayActive == 0 && m_guts->m_quitConfirmationActive == 0) {
+            m_statusBar->LoadMainStatusBarSprite();
+            if (m_statusBar->m_levelOverlayActive == 0
+                && m_statusBar->m_quitConfirmationActive == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
             }
-            m_frameMarker->Draw(back, 1);
+            m_levelTimer->Draw(back, 1);
         }
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         DrawCursorSaveUnder(back);
@@ -884,12 +885,12 @@ void CPlay::DrawWorldFrame() {
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_world->m_childGroup->TickKillCues(0);
-    m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
+    m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
 
         (g_gameReg)->AdvanceOptionsCycle();
     }
-    m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
+    m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
 }
 
 // @early-stop
@@ -941,11 +942,11 @@ i32 CPlay::DrawWorldFrames() {
                 }
             }
             m_world->m_childGroup->TickKillCues(0);
-            m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
+            m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
                 (g_gameReg)->AdvanceOptionsCycle();
             }
-            m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
+            m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
             i++;
         } while (i < steps);
     }
@@ -979,8 +980,8 @@ i32 CPlay::ProfileInputFrame() {
 
     i32 updateMs = static_cast<i32>(tg());
     m_world->m_childGroup->TickKillCues(1);
-    m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
-    m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
+    m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
+    m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
     updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
 
     i32 hitTestMs = static_cast<i32>(tg());
@@ -998,7 +999,7 @@ i32 CPlay::ProfileInputFrame() {
     fixedMs = static_cast<i32>(tg() - static_cast<u32>(fixedMs));
 
     i32 statusBarMs = static_cast<i32>(tg());
-    m_guts->LoadMainStatusBarSprite();
+    m_statusBar->LoadMainStatusBarSprite();
     statusBarMs = static_cast<i32>(tg() - static_cast<u32>(statusBarMs));
 
     g_brickText1.Format(
@@ -1027,7 +1028,7 @@ i32 CPlay::ProfileInputFrame() {
         }
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
-    UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     return 1;
 }
 
@@ -1106,7 +1107,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // Per-dword, as in Render: retail fills 0x40/0x44 then 0x30/0x34 (0xca25e),
     // while the i64 spelling makes cl interleave the two pairs 0x40/0x30/0x44/0x34.
-    CTimer* worker = self->m_frameMarker;
+    CTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
         worker->m_unusedStamp.m_lo = 0;
         worker->m_unusedStamp.m_hi = 0;
@@ -1178,9 +1179,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
-    g_gameReg->m_scoreHud->Init();
-    g_gameReg->m_cmdSubMgr->m_pendingLocalCommands.RemoveAll();
-    g_gameReg->m_cmdSubMgr->RecycleQueuedCommands();
+    g_gameReg->m_gameStats->Init();
+    g_gameReg->m_commandMgr->m_pendingLocalCommands.RemoveAll();
+    g_gameReg->m_commandMgr->RecycleQueuedCommands();
     g_frameTicks = 0;
     self->m_returnToMenuOnComplete = 0;
     self->m_mgr->m_isCustomLevel = 0;
@@ -1512,14 +1513,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
 
-    if (self->m_lightFx == NULL) {
-        CLightFxRender* ctx = new CLightFxRender;
-        self->m_lightFx = ctx;
-        if (!ctx->Init(self->m_mgr, 0xfa)) {
+    if (self->m_minimap == NULL) {
+        CMinimap* minimap = new CMinimap;
+        self->m_minimap = minimap;
+        if (!minimap->Init(self->m_mgr, 0xfa)) {
             goto fail0;
         }
     }
-    if (!self->m_lightFx->BuildShape(self->m_levelType)) {
+    if (!self->m_minimap->SetAreaPalette(self->m_levelType)) {
         goto fail0;
     }
 
@@ -1549,32 +1550,32 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     // Third arg is the manager, not 0 - CSaveGame::InitializeLevelSlot returns 0
     // immediately on a null mgr, so passing 0 made the whole call a no-op.  Retail
-    // pushes the same `[esi+4]` it uses as the m_saveSink base (0xcac0d/0xcac13).
-    self->m_mgr->m_saveSink
+    // pushes the same `[esi+4]` it uses as the m_saveGame base (0xcac0d/0xcac13).
+    self->m_mgr->m_saveGame
         ->InitializeLevelSlot(&self->m_saveSlot, self->m_levelIndex, self->m_mgr);
     {
         CString key;
-        g_gameReg->m_cmdGrid->m_pendingFx = NULL;
+        g_gameReg->m_triggerMgr->m_pendingFx = NULL;
         i32 count = self->m_levelIndex;
         i32 i = count - ((count - 1) % 4);
         for (; i < self->m_levelIndex; ++i) {
 
             key.Format("Level%i", i);
-            CTriggerMgr* bm = g_gameReg->m_cmdGrid;
+            CTriggerMgr* bm = g_gameReg->m_triggerMgr;
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
             bm->m_byteArr.SetAtGrow(bm->m_byteArr.GetSize(), static_cast<u8>(v));
         }
-        self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);
+        self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
         CWwdGameObjectA* scrollSink =
             self->m_world->m_childGroup
                 ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
-        self->m_scrollSink = scrollSink;
+        self->m_cursorSnapSprite = scrollSink;
         if (scrollSink != NULL) {
             self->m_world->m_childGroup->TickKillCues(0);
             if (savedThis == NULL) {
 
-                CStatusBarMgr* statusBar = self->m_guts;
+                CStatusBarMgr* statusBar = self->m_statusBar;
                 // Initialise to the docked-right origin and OVERWRITE, which is
                 // retail's shape (0xcacfd `mov eax,0x1a9` / `cmp [ecx],ebx` / `je` /
                 // `mov eax,0x249`).  A ternary compiles to cl's branchless select
@@ -1585,12 +1586,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 if (statusBar->m_position != STATUSBAR_DOCK_RIGHT) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
-                if (!self->m_frameMarker->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
-                    CTimer* spr = self->m_frameMarker;
+                if (!self->m_levelTimer->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
+                    CTimer* spr = self->m_levelTimer;
                     if (spr != NULL) {
                         spr->Reset();
                         ::operator delete(spr);
-                        self->m_frameMarker = NULL;
+                        self->m_levelTimer = NULL;
                     }
                 }
             }
@@ -1603,7 +1604,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
                     && ValidateLevelTiles() && AddLevelGruntz()) {
                     self->m_world->m_childGroup->TickKillCues(0);
-                    self->m_guts->StartChipMachineCycle();
+                    self->m_statusBar->StartChipMachineCycle();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
                     while (ShowCursor(0) >= 0)
                         ;
@@ -1727,8 +1728,8 @@ void CPlay::FreeListTeardown() {
     if (m_mgr == NULL) {
         return;
     }
-    if (m_mgr->m_cmdGrid != NULL) {
-        m_mgr->m_cmdGrid->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+    if (m_mgr->m_triggerMgr != NULL) {
+        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
     }
     ForwardReady();
     {
@@ -1741,26 +1742,26 @@ void CPlay::FreeListTeardown() {
     m_mgr->m_midi->ClearSequences();
     m_mgr->m_worldSounds->Teardown();
     m_mgr->m_voiceManager->ClearVoiceIndicatorSlots();
-    g_gameReg->m_cmdGrid->DestroyAllAnims();
+    g_gameReg->m_triggerMgr->DestroyAllAnims();
     m_world->m_level->ReleaseChildren();
     (m_world->m_childGroup)->PruneList();
-    if (m_guts != NULL) {
-        m_guts->ResetWidgets(0);
+    if (m_statusBar != NULL) {
+        m_statusBar->ResetWidgets(0);
     }
-    if (m_beginMarker != NULL) {
-        m_beginMarker->RemoveAll();
+    if (m_tileTriggers != NULL) {
+        m_tileTriggers->RemoveAll();
     }
-    if (m_frameMarker != NULL) {
-        m_frameMarker->Reset();
+    if (m_levelTimer != NULL) {
+        m_levelTimer->Reset();
     }
-    m_scrollSink = NULL;
-    m_mgr->m_cmdGrid->OverlayTick();
-    CTriggerMgr* tl68 = m_mgr->m_cmdGrid;
+    m_cursorSnapSprite = NULL;
+    m_mgr->m_triggerMgr->OverlayTick();
+    CTriggerMgr* tl68 = m_mgr->m_triggerMgr;
 
     tl68->m_byteArr.SetSize(0, -1);
     tl68->m_groupInitialized = 0;
-    m_mgr->m_cmdGrid->m_baseList.RemoveAll();
-    m_mgr->m_cmdGrid->m_pendingFx = NULL;
+    m_mgr->m_triggerMgr->m_baseList.RemoveAll();
+    m_mgr->m_triggerMgr->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
@@ -1869,7 +1870,7 @@ i32 CPlay::InputVirtual() {
         ;
 
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
-    UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
@@ -1881,8 +1882,8 @@ i32 CPlay::InputVirtual() {
         );
     }
 
-    m_guts->Deactivate();
-    m_guts->LoadMainStatusBarSprite();
+    m_statusBar->Deactivate();
+    m_statusBar->LoadMainStatusBarSprite();
     m_stepCountdown = 2;
     m_world->m_drawTarget->TransTitle();
     RetireScene(0x50, 0x3e8, 0, 1);
@@ -1911,8 +1912,8 @@ i32 CPlay::RestoreDisplay() {
             return 0;
         }
     }
-    if (m_guts != NULL) {
-        m_guts->Deactivate();
+    if (m_statusBar != NULL) {
+        m_statusBar->Deactivate();
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
@@ -1956,29 +1957,29 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     }
 
     if (m_mgr->m_frameGate == 0) {
-        if (m_hitTest->m_inputActive != 0) {
+        if (m_chatBox->m_inputActive != 0) {
             m_mgr->m_chatLog->HandleInputChar(charCode, keyData);
             return 1;
         }
         if (charCode == ']') {
-            m_guts->DockStatusBarRight();
+            m_statusBar->DockStatusBarRight();
             return 1;
         }
         if (charCode == '[') {
-            m_guts->DockStatusBarLeft();
+            m_statusBar->DockStatusBarLeft();
             return 1;
         }
         if (charCode == '-') {
-            m_guts->HideRect();
+            m_statusBar->HideRect();
             return 1;
         }
         if (charCode == '=' || charCode == '+') {
-            m_guts->RestoreStatusBar();
+            m_statusBar->RestoreStatusBar();
 
-            if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
-                m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
+            if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+                m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
             } else {
-                m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
+                m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
             }
             return 1;
         }
@@ -1996,7 +1997,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
 // MEASURED AND REJECTED, do not repeat: retail's frame is 0x10 = one 16-byte RECT
 // and it spills only .top/.bottom, 8 apart at [esp+0x14] and [esp+0x1c], which
 // reads exactly like a whole-struct `LevelCoordRect r = ...->m_planeCtx;` local at
-// both bounds tests - and it is not.  Writing it that way (with `m_mgr`/`m_guts`
+// both bounds tests - and it is not.  Writing it that way (with `m_mgr`/`m_statusBar`
 // inlined so cl stops spilling them, which does give retail's `sub esp,0x10`)
 // drops the instruction count further below retail's and the in-order agreement with it.
 // The four scalars are closer everywhere else, so they stay and the frame does not
@@ -2022,7 +2023,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     CGruntzMgr* mgr = this->m_mgr;
-    CStatusBarMgr* statusBar = this->m_guts;
+    CStatusBarMgr* statusBar = this->m_statusBar;
 
     if (statusBar->m_levelOverlayActive != 0 || statusBar->m_quitConfirmationActive != 0) {
         if (statusBar->m_quitConfirmationActive != 0) {
@@ -2030,7 +2031,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-                    if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->UpdateScoreHud();
                     }
                     PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -2051,7 +2052,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'Q') {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-                    if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
+                    if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->UpdateScoreHud();
                     }
                     PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -2065,7 +2066,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'R') {
                 if (mgr->m_gameMode == GAMEMODE_SINGLE
-                    && g_gameReg->m_cmdGrid->m_phase != FINISH_STATE_VICTORY) {
+                    && g_gameReg->m_triggerMgr->m_phase != FINISH_STATE_VICTORY) {
                     // g_gameReg, not m_mgr: retail reads m_world off the global here
                     // (0xcbf65 `mov eax,[ecx+0x30]` with ecx = ds:0x64556c) while the
                     // gameMode test above it still comes from m_mgr.  Same for the 'N'
@@ -2078,7 +2079,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'N') {
                 if (mgr->m_gameMode == GAMEMODE_SINGLE
-                    && g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
+                    && g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
                     mgr->AccrueScoreTime();
                 }
@@ -2086,7 +2087,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
             if (vk == 'O') {
                 if (mgr->m_gameMode != GAMEMODE_SINGLE
-                    && this->m_guts->m_observerTabAvailable != 0) {
+                    && this->m_statusBar->m_observerTabAvailable != 0) {
                     CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
                     this->CloseLevelOverlay(0);
                 }
@@ -2096,30 +2097,30 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_RETURN) {
-        CChatBoxOwner* rec = this->m_hitTest;
+        CChatBoxOwner* rec = this->m_chatBox;
         if (rec->m_inputActive != 0) {
             rec->HandleTextInputKey('\r', lparam);
         } else {
             rec->m_fontConfig->EndInput();
             rec->m_inputActive = 1;
-            this->m_hitTest->HandleTextInputKey('\r', lparam);
+            this->m_chatBox->HandleTextInputKey('\r', lparam);
         }
         return 1;
     }
 
     if (vk == VK_ESCAPE) {
-        CTriggerMgr* h68 = mgr->m_cmdGrid;
+        CTriggerMgr* h68 = mgr->m_triggerMgr;
         CWwdGameObjectA* n = h68->m_goal;
         if (n != NULL) {
             n->m_flags |= 0x10000;
             h68->m_goal = NULL;
         }
         h68->m_armed = 0;
-        CChatBoxOwner* rec = this->m_hitTest;
+        CChatBoxOwner* rec = this->m_chatBox;
         if (rec->m_inputActive != 0) {
             this->FlushPendingOps();
-            this->m_hitTest->m_fontConfig->EndInput();
-            this->m_hitTest->m_inputActive = 0;
+            this->m_chatBox->m_fontConfig->EndInput();
+            this->m_chatBox->m_inputActive = 0;
             return 1;
         }
         if (this->FlushPendingOps() != 0) {
@@ -2134,10 +2135,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (this->m_hitTest->m_inputActive != 0) {
+    if (this->m_chatBox->m_inputActive != 0) {
         return 1;
     }
-    if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+    if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
         return 1;
     }
 
@@ -2208,24 +2209,24 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'Z') {
-        g_gameReg->m_cmdGrid->EnqueueGroupCells();
+        g_gameReg->m_triggerMgr->EnqueueGroupCells();
         return 1;
     }
 
     if (vk == 'C') {
-        g_gameReg->m_cmdGrid->CenterOnGroup(g_gameplayInput->m_heldButtons & 0x20);
+        g_gameReg->m_triggerMgr->CenterOnGroup(g_gameplayInput->m_heldButtons & 0x20);
         return 1;
     }
 
     if (vk == 'T') {
         this->FlushPendingOps();
-        g_gameReg->m_cmdGrid->ToggleRegionA();
+        g_gameReg->m_triggerMgr->ToggleRegionA();
         return 1;
     }
 
     if (vk == 'Y') {
         this->FlushPendingOps();
-        g_gameReg->m_cmdGrid->ToggleRegionB();
+        g_gameReg->m_triggerMgr->ToggleRegionB();
         return 1;
     }
 
@@ -2321,11 +2322,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'A') {
-        if (statusBar->m_hitTestDisabled != 0) {
+        if (statusBar->m_chatBoxDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = this->m_guts;
+        CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2346,11 +2347,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == 0);
             return 1;
         }
-        if (statusBar->m_hitTestDisabled != 0) {
+        if (statusBar->m_chatBoxDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = this->m_guts;
+        CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2367,11 +2368,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'D') {
-        if (statusBar->m_hitTestDisabled != 0) {
+        if (statusBar->m_chatBoxDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = this->m_guts;
+        CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2388,23 +2389,23 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'F') {
-        if (statusBar->m_hitTestDisabled != 0) {
+        if (statusBar->m_chatBoxDisabled != 0) {
             return 1;
         }
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             return 1;
         }
         CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-        this->m_guts->AdvanceTab(g_gameplayInput->m_heldButtons & 1);
+        this->m_statusBar->AdvanceTab(g_gameplayInput->m_heldButtons & 1);
         return 1;
     }
 
     if (vk == 'G') {
-        if (statusBar->m_hitTestDisabled != 0) {
+        if (statusBar->m_chatBoxDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = this->m_guts;
+        CStatusBarMgr* lv = this->m_statusBar;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2459,7 +2460,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        if (g_gameReg->m_cmdGrid->m_unitCountByPlayer[g_curPlayer] >= a->m_comboSel) {
+        if (g_gameReg->m_triggerMgr->m_unitCountByPlayer[g_curPlayer] >= a->m_comboSel) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -2476,7 +2477,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         // EnqueuePlaceGruntAtScreenPoint takes i32; retail emits no sign-extension anywhere in
         // OnKeyDown.  The i16 casts made cl re-read the members as signed WORDs
         // (`movsx eax,word ptr [esi+0x154]`), clipping the cursor position.
-        h->m_cmdSubMgr->EnqueuePlaceGruntAtScreenPoint(1, g_curPlayer, mx, my, 0);
+        h->m_commandMgr->EnqueuePlaceGruntAtScreenPoint(1, g_curPlayer, mx, my, 0);
         return 1;
     }
 
@@ -2501,7 +2502,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             RECT* view = &g->m_viewRect;
             i32 by = view->top - q->m_planeCtx.top + my;
             i32 bx = view->left - q->m_planeCtx.left + mx;
-            mgr->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
+            mgr->m_triggerMgr->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
 
@@ -2517,7 +2518,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 by = ((view->top - q->m_planeCtx.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 bx =
             ((this->m_cursorX - q->m_planeCtx.left + view->left) & ~TILE_MASK_PX) + TILE_HALF_PX;
-        g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
+        g_gameReg->m_triggerMgr->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
 
@@ -2527,7 +2528,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         i32 playerIndex;
         i32 unitIndex;
-        CGrunt* r = mgr->m_cmdGrid->ScreenToCell(
+        CGrunt* r = mgr->m_triggerMgr->ScreenToCell(
             this->m_cursorX,
             this->m_cursorY,
             &playerIndex,
@@ -2537,79 +2538,79 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (r == NULL) {
             return 1;
         }
-        mgr->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, -1);
+        mgr->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, -1);
         return 1;
     }
 
     if (vk == '1') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(1);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(1);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(1);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(1);
         }
         return 1;
     }
     if (vk == '2') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(2);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(2);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(2);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(2);
         }
         return 1;
     }
     if (vk == '3') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(3);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(3);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(3);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(3);
         }
         return 1;
     }
     if (vk == '4') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(4);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(4);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(4);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(4);
         }
         return 1;
     }
     if (vk == '5') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(5);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(5);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(5);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(5);
         }
         return 1;
     }
     if (vk == '6') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(6);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(6);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(6);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(6);
         }
         return 1;
     }
     if (vk == '7') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(7);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(7);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(7);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(7);
         }
         return 1;
     }
     if (vk == '8') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(8);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(8);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(8);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(8);
         }
         return 1;
     }
     if (vk == '9') {
         if (g_gameplayInput->m_heldButtons & 0x20) {
-            g_gameReg->m_cmdGrid->RebuildSelectionList(9);
+            g_gameReg->m_triggerMgr->RebuildSelectionList(9);
         } else {
-            g_gameReg->m_cmdGrid->CenterSelectionGroup(9);
+            g_gameReg->m_triggerMgr->CenterSelectionGroup(9);
         }
         return 1;
     }
@@ -2623,7 +2624,7 @@ recorder_place:
     }
     if (this->m_dragInhibit1 != 0) {
         this->m_dragInhibit1 = 0;
-        this->m_guts->CommitSlot(0);
+        this->m_statusBar->CommitSlot(0);
         this->SetCursorFrame(0);
         if (vk != VK_INSERT) {
             goto tail_default;
@@ -2634,7 +2635,7 @@ recorder_place:
         goto tail_default2;
     }
     i32 st = this->m_cursorFrame;
-    StatusBarHighlightRow ph = this->m_guts->m_pendingHlRow;
+    StatusBarHighlightRow ph = this->m_statusBar->m_pendingHlRow;
     i32 lvl;
     if (st >= 0x22) {
         lvl = 2;
@@ -2748,12 +2749,12 @@ recorder_place:
 tail_default:
 
 {
-    g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
+    g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
     this->LoadCursorSprites(0, 0);
 }
 tail_default2:
 
-    if (this->m_guts->m_hitTestDisabled != 0) {
+    if (this->m_statusBar->m_chatBoxDisabled != 0) {
         return 1;
     }
     {
@@ -2761,7 +2762,7 @@ tail_default2:
         // Retail's arms run in NUMPAD LAYOUT order (1..9, NumLock, /, *, Ins) and
         // each numpad vk shares its arm with the nav vk on the same pad cell -
         // 21 case labels, 13 emitted bodies.
-        CStatusBarMgr* lv = this->m_guts;
+        CStatusBarMgr* lv = this->m_statusBar;
         switch (vk) {
             case VK_END:
             case VK_NUMPAD1:
@@ -2879,15 +2880,15 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         return 1;
     }
 
-    if (m_levelOverlayOpen != 0 || g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-        return m_guts->UpdateStatusBarTabHighlight(eventArg, x, y);
+    if (m_levelOverlayOpen != 0 || g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+        return m_statusBar->UpdateStatusBarTabHighlight(eventArg, x, y);
     }
 
     xr = x;
     if (m_mgr->m_frameGate == 0) {
-        if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-            && m_guts->m_activeTab != TAB_GAME) {
-            if (m_lightFx->BeginMinimapPan(eventArg, xr, y)) {
+        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+            && m_statusBar->m_activeTab != TAB_GAME) {
+            if (m_minimap->BeginMinimapPan(eventArg, xr, y)) {
                 return 1;
             }
         }
@@ -2903,7 +2904,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             // for both the voice-cue guard and CommitSlot.  A separate local costs
             // the extra dword that made the frame 0x24 instead of retail's 0x20.
             eventArg = 0;
-            RECT* gr = &m_guts->m_barRect;
+            RECT* gr = &m_statusBar->m_barRect;
             if (CGameLevel::PointInRect(gr, xr, y)) {
 
             } else {
@@ -2913,7 +2914,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 // 0x24 instead of retail's 0x20.
                 if (CGameLevel::PointInRect(&geom->m_planeCtx, xr, y)) {
                     if (FindStartPointAt(sx, sy, &x, &y)) {
-                        m_mgr->m_cmdSubMgr->EnqueueSingle(
+                        m_mgr->m_commandMgr->EnqueueSingle(
                             1,
                             static_cast<char>(g_curPlayer),
                             0,
@@ -2931,19 +2932,19 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
             m_dragInhibit1 = 0;
-            m_guts->CommitSlot(eventArg);
+            m_statusBar->CommitSlot(eventArg);
             SetCursorFrame(0);
             return 1;
         }
 
         if (m_dragInhibit2 != 0 && m_playerCommandPending == 0) {
             {
-                RECT* gr = &m_guts->m_barRect;
+                RECT* gr = &m_statusBar->m_barRect;
                 if (CGameLevel::PointInRect(gr, xr, y)) {
                     // No narrowing: retail loads the WHOLE dword (`mov eax,[esi+0x2f4]`),
                     // and DropFallingItemAt takes an i32. Casting to char clipped the held
                     // cursor item to its low signed byte before the status bar saw it.
-                    if (m_guts->DropFallingItemAt(xr, y, m_cursorFrame)) {
+                    if (m_statusBar->DropFallingItemAt(xr, y, m_cursorFrame)) {
                         m_dragInhibit2 = 0;
                         SetCursorFrame(0);
                         return 1;
@@ -2960,8 +2961,9 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 LevelCoordRect* vr2 = &ds->m_mainPlane->m_viewRect;
                 i32 wx = vr2->left - ds->m_planeCtx.left + xr;
                 i32 wy = vr2->top - ds->m_planeCtx.top + y;
-                if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer) != NULL) {
-                    m_mgr->m_cmdSubMgr->EnqueueSingle(
+                if (g_gameReg->m_triggerMgr->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
+                    != NULL) {
+                    m_mgr->m_commandMgr->EnqueueSingle(
                         1,
                         static_cast<char>(eventArg),
                         static_cast<char>(y),
@@ -2982,11 +2984,12 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 box.bottom = wy + 0xf;
 
                 RECT span = {0, 0, 0, 0};
-                CGrunt* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
+                CGrunt* p =
+                    g_gameReg->m_triggerMgr->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
                 if (p == NULL || g_curPlayer != p->m_playerIndex) {
                     goto waypoint_cancel;
                 }
-                m_mgr->m_cmdSubMgr->EnqueueSingle(
+                m_mgr->m_commandMgr->EnqueueSingle(
                     1,
                     static_cast<char>(eventArg),
                     static_cast<char>(y),
@@ -3001,7 +3004,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
         waypoint_cancel:
             m_dragInhibit2 = 0;
-            m_guts->EnterHlRow(0, m_cursorFrame);
+            m_statusBar->EnterHlRow(0, m_cursorFrame);
             SetCursorFrame(0);
             return 1;
         }
@@ -3012,20 +3015,20 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
     {
 
-        if (m_guts == NULL) {
+        if (m_statusBar == NULL) {
             return 1;
         }
-        if (m_guts->m_position == STATUSBAR_HIDDEN) {
-            if (m_guts->HitTestLayer(xr, y)) {
+        if (m_statusBar->m_position == STATUSBAR_HIDDEN) {
+            if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = 1;
 
-                CGameObject* g8 = m_guts->m_barSprite;
+                CGameObject* g8 = m_statusBar->m_barSprite;
                 i32 dx = 0;
                 if (g8 != NULL) {
                     dx = g8->m_screenX - xr;
                 }
                 m_snapOriginX = dx;
-                CGameObject* g8b = m_guts->m_barSprite;
+                CGameObject* g8b = m_statusBar->m_barSprite;
                 if (g8b == NULL) {
                     m_snapOriginY = 0;
                     return 1;
@@ -3036,12 +3039,12 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             goto drag_box;
         }
 
-        RECT* gr = &m_guts->m_barRect;
+        RECT* gr = &m_statusBar->m_barRect;
         if (CGameLevel::PointInRect(gr, xr, y)) {
             FlushPendingOps();
-            return m_guts->UpdateStatusBarTabHighlight(eventArg, xr, y);
+            return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
         }
-        if (m_hitTest->HitTest(xr, y)) {
+        if (m_chatBox->HitTest(xr, y)) {
             return 1;
         }
     }
@@ -3064,11 +3067,11 @@ drag_box: {
         i32 lv = m_cursorId - IDX(CURSOR_TOOL_HANDZ);
         PickupType item = static_cast<PickupType>(lv);
         if (item <= PICKUP_EQUIPPABLE_LAST) {
-            g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+            g_gameReg->m_triggerMgr->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
         } else if (item >= PICKUP_TOYZ_FIRST && item <= PICKUP_TOYZ_LAST) {
-            g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+            g_gameReg->m_triggerMgr->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
-        g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
+        g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
         LoadCursorSprites(0, 0);
         m_dragClampMaxX = xr;
         m_dragClampMaxY = y;
@@ -3079,12 +3082,12 @@ drag_box: {
         m_worldReady = 1;
         return 1;
     }
-    if (g_gameReg->m_cmdGrid->TriggerCell(sx, sy)) {
+    if (g_gameReg->m_triggerMgr->TriggerCell(sx, sy)) {
         return 1;
     }
 
     if (m_cursorId >= IDX(CURSOR_TOOL_HANDZ)) {
-        CTriggerMgr* cg = g_gameReg->m_cmdGrid;
+        CTriggerMgr* cg = g_gameReg->m_triggerMgr;
         CGrunt* slot;
         if (1 != cg->m_recList.GetCount()) {
             slot = NULL;
@@ -3097,18 +3100,19 @@ drag_box: {
         }
     }
     LoadCursorSprites(0, 0);
-    i32 hit = m_guts->HitTest(xr, y);
+    i32 hit = m_statusBar->HitTest(xr, y);
     if (hit != -1) {
-        m_guts->PlaceCursorTarget(hit, 0);
+        m_statusBar->PlaceCursorTarget(hit, 0);
         return 1;
     }
 
     // ScreenToCell reuses the dead input homes: eventArg becomes playerIndex and x becomes
     // unitIndex.
-    CGrunt* picked =
-        static_cast<CGrunt*>(m_mgr->m_cmdGrid->ScreenToCell(xr, y, &eventArg, &x, TM_ALL_PLAYERS));
+    CGrunt* picked = static_cast<CGrunt*>(
+        m_mgr->m_triggerMgr->ScreenToCell(xr, y, &eventArg, &x, TM_ALL_PLAYERS)
+    );
     if (picked != NULL) {
-        m_mgr->m_cmdGrid->ResetCell(eventArg, x, g_gameplayInput->m_heldButtons & 0x20, 0);
+        m_mgr->m_triggerMgr->ResetCell(eventArg, x, g_gameplayInput->m_heldButtons & 0x20, 0);
         if (eventArg == g_curPlayer) {
             if (g_gameplayInput->m_heldButtons & 0x20) {
                 goto ret1;
@@ -3136,19 +3140,19 @@ ret1:
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed == 0) {
-        if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-            && m_guts->m_activeTab != TAB_GAME) {
-            m_lightFx->EndMinimapPan(keyFlags, x, y);
+        if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+            && m_statusBar->m_activeTab != TAB_GAME) {
+            m_minimap->EndMinimapPan(keyFlags, x, y);
         }
         if (m_worldReady != 0) {
-            m_mgr->m_cmdGrid->HudRect(m_hudRect, g_gameplayInput->m_heldButtons & 0x20);
+            m_mgr->m_triggerMgr->HudRect(m_hudRect, g_gameplayInput->m_heldButtons & 0x20);
         }
         m_worldReady = 0;
         m_dragSnapActive = 0;
-        if (m_guts->m_position != STATUSBAR_HIDDEN) {
+        if (m_statusBar->m_position != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->m_level->m_planeCtx;
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
-                return m_guts->OnPointerRelease(keyFlags, x, y);
+                return m_statusBar->OnPointerRelease(keyFlags, x, y);
             }
         }
     }
@@ -3158,17 +3162,17 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
 // @early-stop
 RVA(0x000ce660, 0x362)
 i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed != 0 || m_guts == NULL) {
+    if (m_hudSuppressed != 0 || m_statusBar == NULL) {
         return 1;
     }
-    if (m_levelOverlayOpen != 0 || g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-        return m_guts->HandleDoubleClick(keyFlags, x, y);
+    if (m_levelOverlayOpen != 0 || g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+        return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
-    if (m_guts->m_position == STATUSBAR_HIDDEN && m_guts->HitTestLayer(x, y)) {
+    if (m_statusBar->m_position == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
         SoundCueRegistry* registry = m_mgr->m_world->m_soundRegistry;
         if (registry->m_silentMode == 0) {
             SoundCue* cue = NULL;
@@ -3177,18 +3181,18 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
                 cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
             }
         }
-        m_guts->RestoreStatusBar();
-        if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
-            m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
+        m_statusBar->RestoreStatusBar();
+        if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         } else {
-            m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
+            m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         }
         return 1;
     }
 
-    i32 idx = m_guts->HitTest(x, y);
+    i32 idx = m_statusBar->HitTest(x, y);
     if (idx != -1) {
-        m_guts->PlaceCursorTarget(idx, 1);
+        m_statusBar->PlaceCursorTarget(idx, 1);
         return 1;
     }
 
@@ -3197,15 +3201,15 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     // [esi+4], [esi+8], [esi+0xc]) and compares against the REGISTER.
     RECT rc = m_world->m_level->m_planeCtx;
     if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
-        return m_guts->HandleDoubleClick(keyFlags, x, y);
+        return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
 
     {
         i32 playerIndex;
         i32 unitIndex;
-        if (m_mgr->m_cmdGrid->ScreenToCell(x, y, &playerIndex, &unitIndex, TM_ALL_PLAYERS)
+        if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, TM_ALL_PLAYERS)
             && g_curPlayer == playerIndex) {
-            m_guts->ToggleStat(unitIndex);
+            m_statusBar->ToggleStat(unitIndex);
             return 1;
         }
     }
@@ -3220,7 +3224,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 i;
     i32 area = g_curPlayer;
     GruntzPlayer* cfg = &g_gameReg->m_options[area];
-    if (cfg == NULL || g_gameReg->m_cmdGrid->m_unitCountByPlayer[area] >= cfg->m_comboSel) {
+    if (cfg == NULL || g_gameReg->m_triggerMgr->m_unitCountByPlayer[area] >= cfg->m_comboSel) {
         return 0;
     }
 
@@ -3236,13 +3240,13 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         RECT er;
         SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
         if (CGameLevel::PointInRect(&er, px, py)) {
-            if (!m_guts->FindReadySlot()) {
+            if (!m_statusBar->FindReadySlot()) {
                 return 1;
             }
             char ab = static_cast<char>(g_curPlayer);
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_mgr->m_cmdSubMgr->EnqueueSingle(
+            m_mgr->m_commandMgr->EnqueueSingle(
                 1,
                 ab,
                 0,
@@ -3302,24 +3306,24 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_levelOverlayOpen != 0) {
         return 1;
     }
-    if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+    if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
         return 1;
     }
     if (m_mgr->m_frameGate != 0) {
         return 1;
     }
-    if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-        && m_guts->m_activeTab != TAB_GAME && m_lightFx->IssueMinimapCommand(keyFlags, x, y)) {
+    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+        && m_statusBar->m_activeTab != TAB_GAME && m_minimap->IssueMinimapCommand(keyFlags, x, y)) {
         return 1;
     }
 
-    if (CGameLevel::PointInRect(&m_guts->m_barRect, x, y)) {
+    if (CGameLevel::PointInRect(&m_statusBar->m_barRect, x, y)) {
         return 1;
     }
-    i32 idx = m_guts->HitTest(x, y);
+    i32 idx = m_statusBar->HitTest(x, y);
     if (idx != -1) {
-        m_guts->ClearStat(idx);
-        CTriggerMgr* w = m_mgr->m_cmdGrid;
+        m_statusBar->ClearStat(idx);
+        CTriggerMgr* w = m_mgr->m_triggerMgr;
         if (w->m_goal != NULL) {
             w->m_goal->m_flags |= 0x10000;
             w->m_goal = NULL;
@@ -3327,7 +3331,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         w->m_armed = 0;
         return 1;
     }
-    if (m_mgr->m_cmdGrid->m_recList.GetCount() == 0) {
+    if (m_mgr->m_triggerMgr->m_recList.GetCount() == 0) {
         return 1;
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
@@ -3341,7 +3345,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         i32 snapY = (rawY & ~TILE_MASK_PX) + TILE_HALF_PX;
         m_tileClick.m_x = snapX;
         m_tileClick.m_y = snapY;
-        CTriggerMgr* w = m_mgr->m_cmdGrid;
+        CTriggerMgr* w = m_mgr->m_triggerMgr;
         if (w->m_overlay != NULL && w->m_overlay->m_active != 0) {
             w->OverlayTick();
             return 1;
@@ -3387,9 +3391,9 @@ RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
     FlushPendingOps();
     if (m_paused) {
-        m_guts->BuildGameTabResumeButton(0);
+        m_statusBar->BuildGameTabResumeButton(0);
     } else {
-        m_guts->BuildGameTabResumeButton(1);
+        m_statusBar->BuildGameTabResumeButton(1);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -3399,11 +3403,11 @@ i32 CPlay::PauseGame() {
 
 RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
-    m_guts->BuildGameTabPauseButton();
+    m_statusBar->BuildGameTabPauseButton();
     g_frameTime = m_savedClock;
     m_paused = 0;
-    if (m_guts != NULL) {
-        m_guts->Deactivate();
+    if (m_statusBar != NULL) {
+        m_statusBar->Deactivate();
     }
     return 1;
 }
@@ -3827,8 +3831,8 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         if (this->LoadCursorAnimation("GAME_INGAMEICONZ_NORMCHIPZ", cursorId, 0, 0x64, 0) == 0) {
             return 0;
         }
-        if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        if (this->m_cursorSnapSprite != NULL) {
+            this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -3841,8 +3845,8 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         if (this->LoadCursorAnimation("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
             return 0;
         }
-        if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        if (this->m_cursorSnapSprite != NULL) {
+            this->m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0x10;
         this->m_cursorOffset.m_y = 0x10;
@@ -3854,8 +3858,8 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         if (this->LoadCursorAnimation("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
             return 0;
         }
-        if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        if (this->m_cursorSnapSprite != NULL) {
+            this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -4049,8 +4053,8 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         default:
             return 0;
     }
-    if (this->m_scrollSink != NULL) {
-        this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    if (this->m_cursorSnapSprite != NULL) {
+        this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     this->m_cursorOffset.m_x = 0;
     this->m_cursorOffset.m_y = 0;
@@ -4230,28 +4234,28 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     if (m_paused != 0) {
         return 1;
     }
-    if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-        && m_guts->m_activeTab != TAB_GAME) {
-        m_lightFx->ContinueMinimapPan(keyFlags, x, y);
+    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+        && m_statusBar->m_activeTab != TAB_GAME) {
+        m_minimap->ContinueMinimapPan(keyFlags, x, y);
     }
 
     if (m_dragSnapActive != 0) {
-        if (m_guts == NULL) {
+        if (m_statusBar == NULL) {
             return 1;
         }
-        m_guts->SetSpritePos(m_snapOriginX + x, m_snapOriginY + y);
+        m_statusBar->SetSpritePos(m_snapOriginX + x, m_snapOriginY + y);
         goto rearm;
     }
 
     if (m_levelOverlayOpen != 0) {
-        return m_guts->HandlePointerDrag(keyFlags, x, y);
+        return m_statusBar->HandlePointerDrag(keyFlags, x, y);
     }
 
     box = m_world->m_level->m_planeCtx;
     if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
 
         if (m_dragInProgress != 0) {
-            m_guts->ClearTabSprites(TAB_ALL);
+            m_statusBar->ClearTabSprites(TAB_ALL);
         }
         m_dragInProgress = 0;
         if (m_worldReady != 0) {
@@ -4270,7 +4274,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
                 m_hudRect.bottom = curY <= anchorY ? anchorY : curY;
             }
         rearm:
-            CWwdGameObjectA* s = m_scrollSink;
+            CWwdGameObjectA* s = m_cursorSnapSprite;
             if (s == NULL) {
                 return 1;
             }
@@ -4278,36 +4282,36 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             return 1;
         }
 
-        if (m_hitTest->HitTest(x, y) == 0 && m_mgr->m_frameGate == 0 && m_inGame == 0
+        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->m_frameGate == 0 && m_inGame == 0
             && m_dragInhibit1 == 0 && m_dragInhibit2 == 0) {
 
             if (m_cursorId != 0) {
-                if (m_scrollSink != NULL) {
-                    m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                if (m_cursorSnapSprite != NULL) {
+                    m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
                 }
             } else {
-                if (m_scrollSink != NULL) {
-                    m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                if (m_cursorSnapSprite != NULL) {
+                    m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 }
             }
             CGameLevel* v = m_world->m_level;
             LevelCoordRect* vr = &v->m_mainPlane->m_viewRect;
             i32 wx = vr->left - v->m_planeCtx.left + x;
             i32 wy = vr->top - v->m_planeCtx.top + y;
-            m_mgr->m_cmdGrid->PlaceObjectFull(wx, wy);
+            m_mgr->m_triggerMgr->PlaceObjectFull(wx, wy);
             return 1;
         }
-        if (m_scrollSink != NULL) {
-            m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        if (m_cursorSnapSprite != NULL) {
+            m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         return 1;
     }
 
-    if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    if (m_cursorSnapSprite != NULL) {
+        m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     m_dragInProgress = 1;
-    m_guts->HandlePointerDrag(keyFlags, x, y);
+    m_statusBar->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != 0) {
 
         m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
@@ -4319,7 +4323,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_hudRect.bottom = m_cursorY < box.bottom ? m_cursorY : box.bottom;
         m_hudRect.bottom = m_hudRect.bottom > m_dragClampMaxY ? m_hudRect.bottom : m_dragClampMaxY;
     }
-    if (m_cursorTargetValid != 0 && m_mgr->m_cmdGrid->m_pendingFxKind == 0) {
+    if (m_cursorTargetValid != 0 && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();
     }
     return 1;
@@ -4568,8 +4572,8 @@ void CPlay::StepScroll() {
     y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
     x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;
 
-    m_scrollSink->m_screenX = x;
-    m_scrollSink->m_screenY = y;
+    m_cursorSnapSprite->m_screenX = x;
+    m_cursorSnapSprite->m_screenY = y;
 }
 
 RVA(0x000d1b30, 0x20)
@@ -4601,7 +4605,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_PLACE_GRUNT: {
             u32 currentPlayer = static_cast<u32>(g_curPlayer);
 
-            i32 r = mgr->m_cmdGrid->PlaceObject(
+            i32 r = mgr->m_triggerMgr->PlaceObject(
                 static_cast<u8>(playerIndex),
                 static_cast<u16>(targetXOrPlayerIndex),
                 static_cast<u16>(targetYOrUnitIndex),
@@ -4627,7 +4631,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (static_cast<u8>(playerIndex) == currentPlayer) {
-                g_gameReg->m_cmdGrid->ResetAll();
+                g_gameReg->m_triggerMgr->ResetAll();
             }
             return 1;
         }
@@ -4635,11 +4639,11 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_MOVE: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
             if (g != NULL && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
-            if (!m_mgr->m_cmdGrid->ClearCell(
+            if (!m_mgr->m_triggerMgr->ClearCell(
                     player,
                     gi,
                     static_cast<u16>(targetXOrPlayerIndex),
@@ -4663,7 +4667,7 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_GUARD_BEGIN: {
             CGrunt* g =
-                mgr->m_cmdGrid
+                mgr->m_triggerMgr
                     ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             if (g != NULL) {
                 if (g->m_tileClaimed != 1) {
@@ -4712,7 +4716,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_GUARD_END: {
 
             CGrunt* g =
-                mgr->m_cmdGrid
+                mgr->m_triggerMgr
                     ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             // Gate on m_tileClaimed (+0x420), NOT m_entranceCommitted (+0x1fc): retail
             // reads the SAME slot it is about to clear five instructions later, i.e.
@@ -4737,7 +4741,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -4755,7 +4759,7 @@ i32 CPlay::ExecuteCommand(
             i32 py = static_cast<u16>(targetYOrUnitIndex);
 
             CGrunt* node =
-                m_mgr->m_cmdGrid
+                m_mgr->m_triggerMgr
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
@@ -4767,7 +4771,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gi, px, py);
+            res = m_mgr->m_triggerMgr->ApplyTriggerA(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4776,7 +4780,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 2)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 2)) {
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
@@ -4799,7 +4803,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -4815,7 +4819,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_cmdGrid
+            CGrunt* g2 = m_mgr->m_triggerMgr
                              ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
             if (g2 == NULL || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
@@ -4824,7 +4828,7 @@ i32 CPlay::ExecuteCommand(
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gi, sx, sy);
+            res = m_mgr->m_triggerMgr->ApplyTriggerA(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4833,7 +4837,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 2)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 2)) {
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
@@ -4860,7 +4864,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -4877,7 +4881,7 @@ i32 CPlay::ExecuteCommand(
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* node =
-                m_mgr->m_cmdGrid
+                m_mgr->m_triggerMgr
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
@@ -4889,7 +4893,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gi, px, py);
+            res = m_mgr->m_triggerMgr->ApplyTriggerB(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4898,7 +4902,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 3)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 3)) {
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
@@ -4921,7 +4925,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -4937,7 +4941,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_cmdGrid
+            CGrunt* g2 = m_mgr->m_triggerMgr
                              ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
             if (g2 == NULL || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
@@ -4946,7 +4950,7 @@ i32 CPlay::ExecuteCommand(
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gi, sx, sy);
+            res = m_mgr->m_triggerMgr->ApplyTriggerB(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4955,7 +4959,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 3)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 3)) {
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
@@ -4986,7 +4990,7 @@ i32 CPlay::ExecuteCommand(
             }
             u32 gi = static_cast<u8>(unitIndex);
             i32 idx = gi + player * 0xf;
-            CGrunt* g = mgr->m_cmdGrid->m_units[idx];
+            CGrunt* g = mgr->m_triggerMgr->m_units[idx];
             if (g != NULL && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
                 g->m_arrivalRerollLo = 0;
                 g->m_arrivalRerollWindowLo = 0;
@@ -4999,7 +5003,7 @@ i32 CPlay::ExecuteCommand(
             }
             i32 sel = 0;
             i32 live = (g_gameReg->m_gameMode != GAMEMODE_SINGLE);
-            CGrunt* g2 = m_mgr->m_cmdGrid->m_units[idx];
+            CGrunt* g2 = m_mgr->m_triggerMgr->m_units[idx];
             i32 r;
             if (g2 == NULL || g2->m_entranceCommitted == 0) {
                 r = 0;
@@ -5014,13 +5018,13 @@ i32 CPlay::ExecuteCommand(
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {
-                    m_mgr->m_cmdGrid->ResetCell(player, gi, 0, 0);
+                    m_mgr->m_triggerMgr->ResetCell(player, gi, 0, 0);
                 }
                 sel = 1;
             }
             if (player == static_cast<u32>(g_curPlayer)) {
                 m_dragInhibit2 = 0;
-                m_guts->EnterHlRow(sel, m_cursorFrame);
+                m_statusBar->EnterHlRow(sel, m_cursorFrame);
                 SetCursorFrame(0);
             }
             return r;
@@ -5028,7 +5032,7 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_STOP: {
             CGrunt* g =
-                mgr->m_cmdGrid
+                mgr->m_triggerMgr
                     ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
@@ -5131,7 +5135,7 @@ b32 CPlay::PlaceStartGruntz() {
             if (dispatch == DispatchGruntStartingPointLogic) {
                 i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 idx = m_mgr->m_cmdGrid->PlaceObject(
+                i32 idx = m_mgr->m_triggerMgr->PlaceObject(
                     obj->m_smarts,
                     x,
                     y,
@@ -5161,7 +5165,7 @@ b32 CPlay::PlaceStartGruntz() {
                 if (e != NULL && counter < e->m_comboSel) {
                     i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                     i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    m_mgr->m_cmdSubMgr->EnqueueSingle(
+                    m_mgr->m_commandMgr->EnqueueSingle(
                         true,
                         static_cast<char>(obj->m_smarts),
                         0,
@@ -5219,7 +5223,7 @@ i32 CPlay::ValidateLevelTiles() {
                 while (found == 0 && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
                     while (found == 0 && row < obj->m_speedY + 2) {
-                        hit = m_beginMarker->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
+                        hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = 1;
                         }
@@ -5254,7 +5258,7 @@ i32 CPlay::ValidateLevelTiles() {
                 || type == TILEKIND_COVERED_POWERUP || type == TILEKIND_REVEALED_POWERUP) {
 
                 CTileTriggerLogic* r =
-                    m_beginMarker->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                    m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
                     CString s;
                     s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
@@ -5274,7 +5278,7 @@ i32 CPlay::ValidateLevelTiles() {
             switch (type) {
                 case TILEKIND_MULTI_SWITCH:
                 case TILEKIND_MULTI_SWITCH_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_MULTI_SWITCH_3,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5299,7 +5303,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case TILEKIND_EXCLUSIVE_SWITCH:
                 case TILEKIND_EXCLUSIVE_SWITCH_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_EXCLUSIVE_SWITCH_4,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5332,10 +5336,10 @@ i32 CPlay::ValidateLevelTiles() {
                     // point at 0xd32b7 that falls into the shared body at 0xd32c3,
                     // which is what makes the dispatch a DIRECT 16-entry table rather
                     // than the byte-index LUT cl builds when the pairs all coincide.
-                    g_gameReg->m_scoreHud->m_secretsAvailable++;
+                    g_gameReg->m_gameStats->m_secretsAvailable++;
                     // fall through
                 case TILEKIND_SECRET_SWITCH_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SECRET_SWITCH_6,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5364,7 +5368,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case TILEKIND_TIME_SWITCH:
                 case TILEKIND_TIME_SWITCH_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_TIME_SWITCH_7,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5389,7 +5393,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case TILEKIND_CHECKPOINT:
                 case TILEKIND_CHECKPOINT_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_CHECKPOINT_SWITCH_8,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5418,7 +5422,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case TILEKIND_SWITCH_A:
                 case TILEKIND_SWITCH_A_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_1,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5449,7 +5453,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case TILEKIND_SWITCH_B:
                 case TILEKIND_SWITCH_B_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_2,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5476,7 +5480,7 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
                 case TILEKIND_SWITCH_C:
                 case TILEKIND_SWITCH_C_UP:
-                    if (!m_beginMarker->AddSwitchLogic(
+                    if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_5,
                             obj->m_speedX,
                             obj->m_speedY,
@@ -5529,7 +5533,7 @@ i32 CPlay::ValidateLevelTiles() {
                 while (found == 0 && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
                     while (found == 0 && row < obj->m_speedY + 2) {
-                        hit = m_beginMarker->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
+                        hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = 1;
                         }
@@ -5563,7 +5567,7 @@ i32 CPlay::ValidateLevelTiles() {
                        || type == TILEKIND_COVERED_POWERUP) {
 
                 CTileTriggerLogic* r =
-                    m_beginMarker->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                    m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
                     CString s;
                     s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
@@ -5581,7 +5585,7 @@ i32 CPlay::ValidateLevelTiles() {
                            ->GetCollisionAt(0, 0);
             }
             if (type >= TILEKIND_TOGGLE_BRIDGE_FIRST && type <= TILEKIND_TOGGLE_BRIDGE_LAST) {
-                if (!m_beginMarker->AddLogic(
+                if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TIME_TRIGGER_23,
                         obj->m_speedX,
@@ -5610,7 +5614,7 @@ i32 CPlay::ValidateLevelTiles() {
                 validCount++;
                 obj->m_flags |= 0x10000;
             } else {
-                if (!m_beginMarker->AddLogic(
+                if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TILE_TRIGGER_21,
                         obj->m_speedX,
@@ -5638,7 +5642,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (dispatch == DispatchTileSecretTriggerLogic) {
             TileCollisionKind type =
                 LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
-            if (!m_beginMarker->AddLogic(
+            if (!m_tileTriggers->AddLogic(
                     type,
                     TRIGID_SECRET_TRIGGER_25,
                     obj->m_speedX,
@@ -5664,7 +5668,7 @@ i32 CPlay::ValidateLevelTiles() {
             obj->m_flags |= 0x10000;
         } else if (dispatch == DispatchLevelTimeLogic) {
 
-            if (m_frameMarker != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
+            if (m_levelTimer != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
                 && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 i32 seconds = obj->m_points;
                 i32 minutes = obj->m_score;
@@ -5674,13 +5678,13 @@ i32 CPlay::ValidateLevelTiles() {
                     minutes++;
                     seconds -= 0x3c;
                 }
-                m_frameMarker->SetTime(minutes, seconds);
+                m_levelTimer->SetTime(minutes, seconds);
             }
             obj->m_flags |= 0x10000;
         } else if (dispatch == DispatchInGameIconLogic) {
             if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
 
-                m_guts->QueuePickupReward(obj->m_points, obj->m_score);
+                m_statusBar->QueuePickupReward(obj->m_points, obj->m_score);
             }
         } else if (dispatch == DispatchGruntCreationPointLogic) {
             if (obj->m_smarts == g_curPlayer) {
@@ -5699,7 +5703,7 @@ i32 CPlay::ValidateLevelTiles() {
             CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
             i32 tile = pl->m_tileGrid[pl->m_rowOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
-                if (m_beginMarker->AddActionEvent(
+                if (m_tileTriggers->AddActionEvent(
                         static_cast<BrickTileId>(tile),
                         obj->m_speedX,
                         obj->m_speedY,
@@ -5722,7 +5726,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (dispatch == DispatchGruntPuddleLogic) {
 
-            m_mgr->m_cmdGrid->PlacePuddle(obj, 0);
+            m_mgr->m_triggerMgr->PlacePuddle(obj, 0);
         } else if (dispatch == DispatchGuardPointLogic) {
 
             i32 col = obj->m_screenX >> TILE_SHIFT_PX;
@@ -5846,7 +5850,7 @@ i32 CPlay::ScanBuildTiles() {
             buf[6] = p->m_switchRect.left;
             buf[7] = p->m_switchRect.top;
             buf[8] = p->m_switchRect.right;
-            if (m_beginMarker->AddGiantRockLogic(
+            if (m_tileTriggers->AddGiantRockLogic(
                     p->m_speedX,
                     p->m_speedY,
                     p->m_id,
@@ -5862,7 +5866,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_guts->QueuePickupReward(p->m_points, p->m_score);
+                m_statusBar->QueuePickupReward(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
         } else if (dispatch == DispatchCoveredPowerupLogic) {
@@ -5902,7 +5906,7 @@ i32 CPlay::ScanBuildTiles() {
                 tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
                            ->GetCollisionAt(subX, subY);
             }
-            if (m_beginMarker->AddLogic(
+            if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
                     p->m_speedX,
@@ -5926,7 +5930,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
-                m_guts->QueuePickupReward(p->m_points, p->m_score);
+                m_statusBar->QueuePickupReward(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
         }
@@ -5963,7 +5967,7 @@ i32 CPlay::AddLevelGruntz() {
         i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
         i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
 
-        i32 r = m_mgr->m_cmdGrid->PlaceObject(
+        i32 r = m_mgr->m_triggerMgr->PlaceObject(
             g->m_smarts,
             x,
             y,
@@ -6002,8 +6006,8 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     i32 ey = w->m_modeSize.cy;
     CTimer* pt;
     if (mode == STATUSBAR_DOCK_LEFT) {
-        m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
-        pt = m_frameMarker;
+        m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
+        pt = m_levelTimer;
         if (pt == NULL) {
             goto done;
         }
@@ -6012,8 +6016,8 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
         pt->m_baseX = ex;
         pt->m_baseY = ey;
     } else if (mode == STATUSBAR_DOCK_RIGHT) {
-        m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
-        pt = m_frameMarker;
+        m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
+        pt = m_levelTimer;
         if (pt == NULL) {
             goto done;
         }
@@ -6022,8 +6026,8 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
         pt->m_baseX = ex;
         pt->m_baseY = ey;
     } else {
-        m_hitTest->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
-        pt = m_frameMarker;
+        m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
+        pt = m_levelTimer;
         if (pt == NULL) {
             goto done;
         }
@@ -6037,13 +6041,13 @@ done:
     // The outer gate spells the whole member chain and the body caches it: cl5's
     // redundant-test peephole is syntactic, so both `test eax,eax` survive as retail
     // has them (docs/patterns/guard-reads-the-array-element-not-the-cached-local.md).
-    if (m_mgr->m_cmdGrid->m_goal != NULL) {
-        CTriggerMgr* g = m_mgr->m_cmdGrid;
+    if (m_mgr->m_triggerMgr->m_goal != NULL) {
+        CTriggerMgr* g = m_mgr->m_triggerMgr;
         if (g->m_goal != NULL) {
             g->m_goal->m_flags |= 0x10000;
             g->m_goal = NULL;
         }
-        m_mgr->m_cmdGrid->LoadCameraSprite();
+        m_mgr->m_triggerMgr->LoadCameraSprite();
     }
     return 1;
 }
@@ -6080,7 +6084,7 @@ RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
 RVA(0x000d5f00, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
-    CTriggerMgr* g = w->m_cmdGrid;
+    CTriggerMgr* g = w->m_triggerMgr;
     if (g->m_goal != NULL) {
         g->m_goal->m_flags |= 0x10000;
         g->m_goal = NULL;
@@ -6097,7 +6101,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;
     GruntzPlayer* slot = &g_gameReg->m_options[id];
 
-    if (slot != NULL && g_gameReg->m_cmdGrid->m_unitCountByPlayer[id] < slot->m_comboSel) {
+    if (slot != NULL && g_gameReg->m_triggerMgr->m_unitCountByPlayer[id] < slot->m_comboSel) {
         i32 i = 0;
         if (i < StartMarkerCount()) {
             do {
@@ -6161,18 +6165,18 @@ i32 CPlay::ResetPlayState() {
         CGruntzMgr* reg = g_gameReg;
 
         if (reg->m_strWorldFile.GetLength() == 0) {
-            m_mgr->m_scoreHud->FillRecord(m_levelIndex, 1);
+            m_mgr->m_gameStats->FillRecord(m_levelIndex, 1);
             reg = g_gameReg;
 
             if (reg->m_cheatMgr->m_cheatsUsed == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
-                    (static_cast<CSaveGame*>(reg->m_saveSink))
+                    (static_cast<CSaveGame*>(reg->m_saveGame))
                         ->SetMaxLevel(static_cast<QuestLevel>(id));
                     reg = g_gameReg;
                 }
             }
-            (static_cast<CSaveGame*>(reg->m_saveSink))->Save(NULL, 0x81a6);
+            (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->m_world->m_level;
         ResetGoals(g->m_header.startX, g->m_header.startY);
@@ -6185,8 +6189,8 @@ i32 CPlay::ResetPlayState() {
             ResetGoals(g->m_header.startX, g->m_header.startY);
         }
     }
-    if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    if (m_cursorSnapSprite != NULL) {
+        m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
     m_inGame = 0;
     if (!PlaceStartGruntz()) {
@@ -6196,7 +6200,7 @@ i32 CPlay::ResetPlayState() {
         g_gameReg->m_options[i].m_battlezConfig.StepAllRowSpawns();
     }
     m_winLoseBanner = 0;
-    CTimer* fm = m_frameMarker;
+    CTimer* fm = m_levelTimer;
     if (fm != NULL) {
         fm->m_unusedStamp.m_v = 0xffffffff;
         if (fm->m_currentMs != 0) {
@@ -6208,7 +6212,7 @@ i32 CPlay::ResetPlayState() {
             fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
         }
     }
-    CTriggerMgr* tl = m_mgr->m_cmdGrid;
+    CTriggerMgr* tl = m_mgr->m_triggerMgr;
     tl->m_countdownActive = 1;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
@@ -6237,7 +6241,7 @@ i32 CPlay::OpenLevelOverlay(i32 showQuitConfirmation) {
     m_dragSnapActive = 0;
     FlushPendingOps();
     if (showQuitConfirmation == 0) {
-        CStatusBarMgr* g = m_guts;
+        CStatusBarMgr* g = m_statusBar;
         if (g->m_position == STATUSBAR_HIDDEN) {
             g->RestoreStatusBar();
         }
@@ -6247,8 +6251,8 @@ i32 CPlay::OpenLevelOverlay(i32 showQuitConfirmation) {
         g->SetTab(GAME_TAB_MISSION_STATUS, 1);
         g->Deactivate();
     }
-    m_guts->BuildGameTabResumeButton(1);
-    CStatusBarMgr* g = m_guts;
+    m_statusBar->BuildGameTabResumeButton(1);
+    CStatusBarMgr* g = m_statusBar;
     g->m_levelOverlayActive = 1;
     g->m_quitConfirmationActive = showQuitConfirmation;
     g->ResetWidgets(0);
@@ -6262,7 +6266,7 @@ i32 CPlay::OpenLevelOverlay(i32 showQuitConfirmation) {
 RVA(0x000d6560, 0x45)
 i32 CPlay::CloseLevelOverlay(i32) {
     if (m_levelOverlayOpen != 0) {
-        CStatusBarMgr* worker = m_guts;
+        CStatusBarMgr* worker = m_statusBar;
         m_levelOverlayOpen = 0;
         worker->ExitMode();
         if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
@@ -6435,13 +6439,13 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
-                    m_mgr->m_scoreHud->m_toolzAvailable++;
+                    m_mgr->m_gameStats->m_toolzAvailable++;
                 } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
-                    m_mgr->m_scoreHud->m_toyzAvailable++;
+                    m_mgr->m_gameStats->m_toyzAvailable++;
                 } else if (cv >= PICKUP_TIMEDPOWERUP_FIRST && cv <= PICKUP_TIMEDPOWERUP_LAST) {
-                    m_mgr->m_scoreHud->m_powerupzAvailable++;
+                    m_mgr->m_gameStats->m_powerupzAvailable++;
                 } else if (cv == PICKUP_COIN) {
-                    m_mgr->m_scoreHud->m_coinsAvailable++;
+                    m_mgr->m_gameStats->m_coinsAvailable++;
                 }
                 i32 d = obj->m_smarts;
                 PickupType item = static_cast<PickupType>(d);
@@ -6503,13 +6507,13 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     powerup == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : powerup;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
-                    m_mgr->m_scoreHud->m_toolzAvailable++;
+                    m_mgr->m_gameStats->m_toolzAvailable++;
                 } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
-                    m_mgr->m_scoreHud->m_toyzAvailable++;
+                    m_mgr->m_gameStats->m_toyzAvailable++;
                 } else if (cv >= PICKUP_TIMEDPOWERUP_FIRST && cv <= PICKUP_TIMEDPOWERUP_LAST) {
-                    m_mgr->m_scoreHud->m_powerupzAvailable++;
+                    m_mgr->m_gameStats->m_powerupzAvailable++;
                 } else if (cv == PICKUP_COIN) {
-                    m_mgr->m_scoreHud->m_coinsAvailable++;
+                    m_mgr->m_gameStats->m_coinsAvailable++;
                 }
                 i32 e = obj->m_powerup;
                 PickupType item = static_cast<PickupType>(e);
@@ -6573,14 +6577,14 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
     (g_gameReg)->CheckSavedMode();
-    m_guts->Deactivate();
-    m_guts->UpdateStatusBar(0);
+    m_statusBar->Deactivate();
+    m_statusBar->UpdateStatusBar(0);
     m_mgr->RefreshGameClock();
 
     if (m_initialFramePending != 0) {
         m_initialFramePending = 0;
         m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
-        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+        UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
@@ -6593,8 +6597,8 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 m_world->m_drawTarget->m_overlayPair
             );
         }
-        m_guts->Deactivate();
-        m_guts->LoadMainStatusBarSprite();
+        m_statusBar->Deactivate();
+        m_statusBar->LoadMainStatusBarSprite();
     } else {
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
@@ -6608,8 +6612,8 @@ i32 CPlay::EnterMode(GameStateId mode) {
                 m_world->m_drawTarget->m_overlayPair
             );
         }
-        m_guts->Deactivate();
-        m_guts->LoadMainStatusBarSprite();
+        m_statusBar->Deactivate();
+        m_statusBar->LoadMainStatusBarSprite();
         if (mode == GAMESTATE_HELP) {
             if (m_world->m_drawTarget->HasOverlay() != 0) {
                 goto finish;
@@ -6640,7 +6644,7 @@ finish:
     if (mode == GAMESTATE_HELP) {
         g_frameTime = m_savedClock;
     }
-    m_guts->Deactivate();
+    m_statusBar->Deactivate();
     RegisterInputBindings();
     m_hudSuppressed = 0;
     return 1;
@@ -6659,8 +6663,8 @@ i32 CPlay::PostActionCue(i32 cueId) {
     m_paused = 1;
 
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
-    if (m_scrollSink) {
-        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    if (m_cursorSnapSprite) {
+        m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     return 1;
 }
@@ -6769,15 +6773,15 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
     i32* p;
     p = &m_syncTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_guts->Sync(ar, mode, typeId, payload)) {
+    if (!m_statusBar->Sync(ar, mode, typeId, payload)) {
         return 0;
     }
-    if (!m_frameMarker->HandleEvent(ar, mode, typeId, payload)) {
+    if (!m_levelTimer->HandleEvent(ar, mode, typeId, payload)) {
         return 0;
     }
     p = &m_cueTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_beginMarker->Serialize(ar, mode, typeId, payload)) {
+    if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
     p = &m_region0Timing.m_start.m_lo;
@@ -6885,8 +6889,8 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     g_serialCounter++;
     {
         i32 v = 0;
-        if (m_scrollSink != NULL) {
-            v = m_scrollSink->m_objectId;
+        if (m_cursorSnapSprite != NULL) {
+            v = m_cursorSnapSprite->m_objectId;
         }
         s->Write(&v, sizeof(v));
     }
@@ -7099,7 +7103,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         } else {
             sink = NULL;
         }
-        m_scrollSink = sink;
+        m_cursorSnapSprite = sink;
         if (sink == NULL && found != NULL) {
             return 0;
         }
@@ -7241,7 +7245,7 @@ i32 CPlay::SetRandomMoveIconsCurse(i32 active) {
     } else {
         m_region3Gate = 0;
         RegionLeave();
-        g_gameReg->m_cmdGrid->CycleMoveIcons(-1, 0);
+        g_gameReg->m_triggerMgr->CycleMoveIcons(-1, 0);
     }
     m_region3Timing.m_interval.m_lo = REGION_INTERVAL_MS;
     m_region3Timing.m_interval.m_hi = 0;
@@ -7254,7 +7258,7 @@ i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
     tagSIZE mode = w->GetModeSize();
     i32 right = mode.cx;
-    StatusBarDock state = m_guts->m_position;
+    StatusBarDock state = m_statusBar->m_position;
     i32 bottom = mode.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
@@ -7314,7 +7318,7 @@ i32 CPlay::ClampViewport(i32 inset) {
 
     m_world->m_level->BuildAllPlanes((&r));
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
-    m_guts->Deactivate();
+    m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
 }
@@ -7322,7 +7326,7 @@ i32 CPlay::ClampViewport(i32 inset) {
 // @early-stop
 // One scheduling position, then a full register renaming cascade: retail
 // materialises all three head pointers in declaration order and compares
-// m_position straight from memory (`cmp [ebp+0],2`), while cl sinks the m_guts
+// m_position straight from memory (`cmp [ebp+0],2`), while cl sinks the m_statusBar
 // load to its use and loads the field VALUE first.
 // MEASURED AND REJECTED: an `i32 lim` if/else in place of the ternary does buy the
 // memory compare, but not the hoist, and costs more than it buys.  Dropping the
@@ -7334,7 +7338,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;
     CDDrawSurfaceMgr* v = m_world;
     CGruntzMgr* w = m_mgr;
-    CStatusBarMgr* guts = m_guts;
+    CStatusBarMgr* guts = m_statusBar;
 
     LevelCoordRect* rp = &v->m_level->m_planeCtx;
     RECT r = *rp;
@@ -7375,7 +7379,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
 
     m_world->m_level->BuildAllPlanes((&r));
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
-    m_guts->Deactivate();
+    m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
     return 1;
 }
@@ -7848,7 +7852,7 @@ i32 CPlay::FlushPendingOps() {
     }
     i32 changed = 0;
     if (m_dragInhibit1 != 0) {
-        CStatusBarMgr* worker = m_guts;
+        CStatusBarMgr* worker = m_statusBar;
         m_dragInhibit1 = 0;
         worker->CommitSlot(0);
         SetCursorFrame(0);
@@ -7856,13 +7860,13 @@ i32 CPlay::FlushPendingOps() {
     }
     if (m_dragInhibit2 != 0) {
         i32 spr = m_cursorFrame;
-        CStatusBarMgr* worker = m_guts;
+        CStatusBarMgr* worker = m_statusBar;
         m_dragInhibit2 = 0;
         worker->EnterHlRow(0, spr);
         SetCursorFrame(0);
         changed = 1;
     }
-    CTriggerMgr* fx = g_gameReg->m_cmdGrid;
+    CTriggerMgr* fx = g_gameReg->m_triggerMgr;
     if (fx->m_pendingFxKind != 0) {
         changed = 1;
     }
@@ -7874,9 +7878,9 @@ i32 CPlay::FlushPendingOps() {
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
     if (m_renderDisabled == 0 && m_inGame == 0 && m_levelOverlayOpen == 0
-        && m_defeatCountdownActive == 0 && m_guts->m_hlBusy == 0
-        && m_guts->m_levelOverlayActive == 0 && m_guts->m_quitConfirmationActive == 0
-        && g_gameReg->m_frameGate == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0) {
+        && m_defeatCountdownActive == 0 && m_statusBar->m_hlBusy == 0
+        && m_statusBar->m_levelOverlayActive == 0 && m_statusBar->m_quitConfirmationActive == 0
+        && g_gameReg->m_frameGate == 0 && g_gameReg->m_triggerMgr->m_groupFlag != 0) {
         return 1;
     }
     return 0;
@@ -7885,7 +7889,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != 0) {
-        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_gameplayInput->m_heldButtons & 0x20);
+        m_mgr->m_triggerMgr->HudRect(m_hudRect, g_gameplayInput->m_heldButtons & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;

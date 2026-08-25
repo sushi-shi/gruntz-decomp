@@ -106,7 +106,7 @@ i32 CGrunt::PhaseStep() {
     goto common;
 
 state0: {
-    CGrunt* nb = m_tileMgr->FindNearestEnemy(this);
+    CGrunt* nb = m_triggerMgr->FindNearestEnemy(this);
     if (nb == NULL) {
         goto common;
     }
@@ -238,7 +238,7 @@ common: {
             if (CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
-            g_gameReg->m_cmdGrid->ApplyTriggerA(
+            g_gameReg->m_triggerMgr->ApplyTriggerA(
                 m_playerIndex,
                 m_unitIndex,
                 (bx << TILE_SHIFT_PX) + TILE_HALF_PX,

@@ -439,17 +439,17 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x411);
         return 0;
     }
-    m_saveSink = new CSaveGame;
-    if (!m_saveSink->SaveGameFile("")) {
-        if (m_saveSink) {
-            delete m_saveSink;
-            m_saveSink = NULL;
+    m_saveGame = new CSaveGame;
+    if (!m_saveGame->SaveGameFile("")) {
+        if (m_saveGame) {
+            delete m_saveGame;
+            m_saveGame = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
         return 0;
     }
-    m_scoreHud = new CBattlezData;
-    if (!m_scoreHud->InitWithRecords(m_saveSink->m_battlezRecords)) {
+    m_gameStats = new CBattlezData;
+    if (!m_gameStats->InitWithRecords(m_saveGame->m_battlezRecords)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x464);
         return 0;
     }
@@ -472,12 +472,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    m_cmdSubMgr = new CGruntzCmdMgr;
+    m_commandMgr = new CGruntzCmdMgr;
 
-    if (!m_cmdSubMgr->SetManager(this)) {
-        if (m_cmdSubMgr) {
-            delete m_cmdSubMgr;
-            m_cmdSubMgr = NULL;
+    if (!m_commandMgr->SetManager(this)) {
+        if (m_commandMgr) {
+            delete m_commandMgr;
+            m_commandMgr = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x414);
         return 0;
@@ -563,11 +563,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41a);
         return 0;
     }
-    m_cmdGrid = new CTriggerMgr;
-    if (!m_cmdGrid->SetLevel(m_world)) {
-        if (m_cmdGrid) {
-            delete m_cmdGrid;
-            m_cmdGrid = NULL;
+    m_triggerMgr = new CTriggerMgr;
+    if (!m_triggerMgr->SetLevel(m_world)) {
+        if (m_triggerMgr) {
+            delete m_triggerMgr;
+            m_triggerMgr = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41b);
         return 0;

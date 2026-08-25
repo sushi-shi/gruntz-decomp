@@ -39,7 +39,7 @@ ecx,0x10; mov cx,ax`) and `rep stos` runs. Two cross-checks that caught the bug:
 one said `0x00`) and the **frame size** (retail 21 dwords vs our 20 for what we had
 written as 24 constants).
 
-Evidence (2026-07-28, `src/Gruntz/LightFxRender.cpp`): `CLightFxRender::Shape1..Shape8`
+Evidence (2026-07-28, `src/Gruntz/Minimap.cpp`): `CMinimap::Shape1..Shape8`
 had 21-24 hand-read `Pack()`s each, most with a spurious zero channel, and three
 fabricated single-channel colours per generator; buf[9..16], buf[120..123] and
 buf[160..163] were painted from the wrong ones. Re-decoding took the eight from

@@ -57,7 +57,7 @@ i32 CGrunt::ScanNearestTarget() {
         for (i32 candidateUnitIndex = 0; candidateUnitIndex < TM_UNITS_PER_PLAYER;
              candidateUnitIndex++) {
             CGrunt* cand =
-                g_gameReg->m_cmdGrid
+                g_gameReg->m_triggerMgr
                     ->m_units[candidatePlayerIndex * TM_UNITS_PER_PLAYER + candidateUnitIndex];
             if (cand != NULL && cand->m_entranceCommitted != 0
                 && cand->m_gruntKind != GRUNT_GHOST) {
@@ -250,7 +250,7 @@ i32 CGrunt::ScanNearestTarget() {
         }
         case AISTATE_CHASE: {
             CGrunt* sg =
-                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (best != NULL && best != sg) {
                 Coord none;
                 m_arrivalCell = *none.Set(-1, -1);
@@ -300,7 +300,8 @@ i32 CGrunt::ScanNearestTarget() {
             }
             {
                 CGrunt* sg =
-                    m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                    m_triggerMgr
+                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 if (sg != NULL) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);

@@ -46,7 +46,7 @@ BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         default:
             return 0;
         case WM_INITDIALOG: {
-            CSaveGame* v = g_gameReg->m_saveSink;
+            CSaveGame* v = g_gameReg->m_saveGame;
             g_savedMenuCmd = -1;
             g_saveDlgSink = v;
             FillSaveDialog(hDlg, v);
@@ -132,7 +132,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_previewMgr->Configure(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
                 break;
             }
-            BuildLevelTitleString(hDlg, g_gameReg->m_saveSink, g_slotState);
+            BuildLevelTitleString(hDlg, g_gameReg->m_saveGame, g_slotState);
             return 1;
         }
         case WM_COMMAND: {
@@ -165,7 +165,7 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
                 EndDialog(hDlg, ret.m_lparam);
                 return 1;
             }
-            SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
+            SetSaveSlotDialogName(hDlg, g_gameReg->m_saveGame, g_slotState);
             return 1;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
@@ -173,8 +173,8 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
                 return 1;
             }
             if (wParam == IDOK) {
-                (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->CloseTempFile(g_slotState);
-                (static_cast<CSaveGame*>(g_gameReg->m_saveSink))
+                (static_cast<CSaveGame*>(g_gameReg->m_saveGame))->CloseTempFile(g_slotState);
+                (static_cast<CSaveGame*>(g_gameReg->m_saveGame))
                     ->Save(NULL, SAVE_STRING_SAVING_GAME);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -196,7 +196,7 @@ BOOL CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 EndDialog(hDlg, ret.m_lparam);
                 return 1;
             }
-            SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
+            SetSaveSlotDialogName(hDlg, g_gameReg->m_saveGame, g_slotState);
             return 1;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {

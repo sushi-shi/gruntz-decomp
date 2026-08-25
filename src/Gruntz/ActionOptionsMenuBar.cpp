@@ -138,7 +138,7 @@ i32 CActionOptionsMenuBar::RefreshIfActive(i32 unusedDeltaMs) {
 RVA(0x00009330, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
     CGrunt* grunt =
-        g_gameReg->m_cmdGrid->m_units[m_unitIndex + m_playerIndex * TM_UNITS_PER_PLAYER];
+        g_gameReg->m_triggerMgr->m_units[m_unitIndex + m_playerIndex * TM_UNITS_PER_PLAYER];
     if (grunt == NULL) {
         m_buttonIcon[1] = PICKUP_NONE;
         m_buttonIcon[0] = PICKUP_NONE;
@@ -218,7 +218,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
         return 1;
     }
     i32 registryIndex = m_unitIndex + m_playerIndex * TM_UNITS_PER_PLAYER;
-    CGrunt* unit = g_gameReg->m_cmdGrid->m_units[registryIndex];
+    CGrunt* unit = g_gameReg->m_triggerMgr->m_units[registryIndex];
     if (unit == NULL) {
         return 1;
     }

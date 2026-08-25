@@ -320,7 +320,7 @@ public:
     CSBI_GruntMachine* m_machineDisplay;
     i32 m_reserved34c;
     i32 m_reserved350;
-    i32 m_hitTestDisabled;
+    i32 m_chatBoxDisabled;
     i32 m_tabsBuilt;
     i32 m_activeSlot;
     StatusBarHighlightRow m_pendingHlRow;
@@ -407,7 +407,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_world = NULL;
     m_redrawFrames = 0;
     m_activeTab = TAB_NONE;
-    m_hitTestDisabled = 0;
+    m_chatBoxDisabled = 0;
     m_tabsBuilt = 0;
     m_levelOverlayActive = 0;
     m_quitConfirmationActive = 0;

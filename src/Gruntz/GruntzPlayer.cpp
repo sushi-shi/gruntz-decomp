@@ -53,9 +53,9 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LevelArea.h>
-#include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/Minimap.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>

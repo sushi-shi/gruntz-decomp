@@ -10,17 +10,17 @@ already tested — which it can if the guard and the `delete` name the same LOCA
 
 ```cpp
 // NO - one test. cl proves `so != NULL` at the delete and drops its check.
-CStatusBarMgr* so = m_guts;
+CStatusBarMgr* so = m_statusBar;
 if (so == NULL) { return 0; }
 so->Teardown();            // and this call is not in retail either
 delete so;
-m_guts = NULL;
+m_statusBar = NULL;
 return 0;
 
 // YES - two tests, which is what retail has
-if (m_guts == NULL) { return 0; }
-delete m_guts;             // ~CStatusBarMgr inlines and calls Teardown itself
-m_guts = NULL;
+if (m_statusBar == NULL) { return 0; }
+delete m_statusBar;             // ~CStatusBarMgr inlines and calls Teardown itself
+m_statusBar = NULL;
 return 0;
 ```
 
@@ -36,9 +36,9 @@ Two things travel with this shape and are worth checking at the same site:
   calls `Teardown()`/`Unload()`, retail's block has ONE call and ours has two.
   Count the calls in the target block before assuming the extra one is real.
 * **`::operator delete` is a different construct and retail uses it too.** In
-  `CMulti::LoadGameAssetNamespaces` the `m_hitTest` cleanup is genuinely
+  `CMulti::LoadGameAssetNamespaces` the `m_chatBox` cleanup is genuinely
   `io->Deactivate(); ::operator delete(io);` with NO null test and NO destructor
-  (8i, matching) while the `m_guts` and `m_beginMarker` cleanups two blocks later
+  (8i, matching) while the `m_statusBar` and `m_tileTriggers` cleanups two blocks later
   are `delete`. Do not normalise the three to one spelling.
 
 Measured 2026-08-08: `CMulti::LoadGameAssetNamespaces` 0xb5460 80.21 -> 84.46

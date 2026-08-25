@@ -205,7 +205,7 @@ CGruntzMgr::CGruntzMgr() {
     m_world = NULL;
     m_symParser = NULL;
     m_settings = NULL;
-    m_scoreHud = NULL;
+    m_gameStats = NULL;
     m_reserved3c = NULL;
     m_faderMgr = NULL;
     m_cheatMgr = NULL;
@@ -215,11 +215,11 @@ CGruntzMgr::CGruntzMgr() {
     m_reserved64 = 0;
     m_lobby = NULL;
     m_worldSounds = NULL;
-    m_saveSink = NULL;
+    m_saveGame = NULL;
     m_chatLog = NULL;
     m_voiceManager = NULL;
-    m_cmdGrid = NULL;
-    m_cmdSubMgr = NULL;
+    m_triggerMgr = NULL;
+    m_commandMgr = NULL;
     m_tileGrid = NULL;
     m_spriteFactory = NULL;
     m_lightFxMgr = NULL;
@@ -345,24 +345,24 @@ void CGruntzMgr::Close() {
         operator delete(m_spriteFactory);
         m_spriteFactory = NULL;
     }
-    if (m_cmdGrid) {
-        delete m_cmdGrid;
-        m_cmdGrid = NULL;
+    if (m_triggerMgr) {
+        delete m_triggerMgr;
+        m_triggerMgr = NULL;
     }
     if (m_tileGrid) {
 
         delete m_tileGrid;
         m_tileGrid = NULL;
     }
-    CBattlezData* scoreHud = m_scoreHud;
+    CBattlezData* scoreHud = m_gameStats;
     if (scoreHud) {
         delete scoreHud;
-        m_scoreHud = NULL;
+        m_gameStats = NULL;
     }
-    if (m_cmdSubMgr) {
+    if (m_commandMgr) {
 
-        delete m_cmdSubMgr;
-        m_cmdSubMgr = NULL;
+        delete m_commandMgr;
+        m_commandMgr = NULL;
     }
     if (g_gameplayInput) {
         CInputState* v = g_gameplayInput;
@@ -427,10 +427,10 @@ void CGruntzMgr::Close() {
         delete m_shadeCache;
         m_shadeCache = NULL;
     }
-    if (m_saveSink) {
+    if (m_saveGame) {
 
-        delete m_saveSink;
-        m_saveSink = NULL;
+        delete m_saveGame;
+        m_saveGame = NULL;
     }
     if (m_lightFxMgr) {
         m_lightFxMgr->Reset();
@@ -467,47 +467,47 @@ void CGruntzMgr::UpdateScoreHud() {
     }
     CState* sub = g_gameReg->m_curState;
 
-    m_scoreHud->m_gruntzExited += m_cmdGrid->m_gruntzExitedByPlayer[g_curPlayer];
-    m_scoreHud->m_gruntzLost += m_cmdGrid->m_gruntzLostByPlayer[g_curPlayer];
+    m_gameStats->m_gruntzExited += m_triggerMgr->m_gruntzExitedByPlayer[g_curPlayer];
+    m_gameStats->m_gruntzLost += m_triggerMgr->m_gruntzLostByPlayer[g_curPlayer];
 
     if (m_strWorldFile.GetLength() != 0) {
-        m_scoreHud->SetCount(1);
-        m_scoreHud->m_isCustomLevel = 1;
+        m_gameStats->SetCount(1);
+        m_gameStats->m_isCustomLevel = 1;
         return;
     }
 
     if (m_cheatMgr->m_cheatsUsed == 0) {
-        m_scoreHud->FillRecord(sub->m_levelIndex, 0);
-        g_gameReg->m_saveSink->SetCurLevel(static_cast<QuestLevel>(sub->m_levelIndex));
-        g_gameReg->m_saveSink->SetMaxLevel(
+        m_gameStats->FillRecord(sub->m_levelIndex, 0);
+        g_gameReg->m_saveGame->SetCurLevel(static_cast<QuestLevel>(sub->m_levelIndex));
+        g_gameReg->m_saveGame->SetMaxLevel(
             static_cast<QuestLevel>((sub->m_levelIndex % IDX(QUESTLEVEL_TRAINING_LAST)) + 1)
         );
-        g_gameReg->m_saveSink->Save(NULL, 0x81a6);
+        g_gameReg->m_saveGame->Save(NULL, 0x81a6);
     }
-    m_scoreHud->SetCount(sub->m_levelIndex);
-    m_scoreHud->m_isCustomLevel = 0;
+    m_gameStats->SetCount(sub->m_levelIndex);
+    m_gameStats->m_isCustomLevel = 0;
 }
 
 RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
     if (m_gameMode == GAMEMODE_SINGLE) {
-        if (m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
+        if (m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
             UpdateScoreHud();
         }
         TransitionState(GAMESTATE_BOOTY, 1, 0, 0);
         return;
     }
-    g_gameReg->m_scoreHud->SetCount(st->m_levelIndex);
+    g_gameReg->m_gameStats->SetCount(st->m_levelIndex);
     if (m_gameMode == GAMEMODE_REPLAY) {
 
-        CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
+        CTimer* clk = (static_cast<CPlay*>(st))->m_levelTimer;
         i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
-        g_gameReg->m_scoreHud->m_elapsedTimeMs += (d < 0) ? 0 : static_cast<i32>(d);
+        g_gameReg->m_gameStats->m_elapsedTimeMs += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(GAMESTATE_MULTIBOOTY, 1, 0, 0);
         return;
     }
-    CBattlezData* hud = g_gameReg->m_scoreHud;
+    CBattlezData* hud = g_gameReg->m_gameStats;
     u32 now = timeGetTime();
     hud->m_elapsedTimeMs += (now - g_scoreTimeBase);
     TransitionState(GAMESTATE_MULTIBOOTY, 1, 0, 0);
@@ -981,11 +981,11 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                 if (w > f->m_wrapW || h > f->m_wrapH) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
-                    if (st->m_guts != NULL) {
-                        st->m_guts->m_barFrameGate = m_modeSize.cy;
-                        if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
-                            st->m_guts->DockStatusBarLeft();
-                            st->m_guts->DockStatusBarRight();
+                    if (st->m_statusBar != NULL) {
+                        st->m_statusBar->m_barFrameGate = m_modeSize.cy;
+                        if (st->m_statusBar->m_position == STATUSBAR_DOCK_RIGHT) {
+                            st->m_statusBar->DockStatusBarLeft();
+                            st->m_statusBar->DockStatusBarRight();
                             EnterModalUI(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
@@ -993,9 +993,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                             );
                             return 0;
                         }
-                        if (st->m_guts->m_position == STATUSBAR_DOCK_LEFT) {
-                            st->m_guts->DockStatusBarRight();
-                            st->m_guts->DockStatusBarLeft();
+                        if (st->m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+                            st->m_statusBar->DockStatusBarRight();
+                            st->m_statusBar->DockStatusBarLeft();
                         }
                     }
                     EnterModalUI(
@@ -1022,14 +1022,14 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         }
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
-        if (st->m_guts != NULL) {
-            st->m_guts->m_barFrameGate = h;
-            if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
-                st->m_guts->DockStatusBarLeft();
-                st->m_guts->DockStatusBarRight();
-            } else if (st->m_guts->m_position == STATUSBAR_DOCK_LEFT) {
-                st->m_guts->DockStatusBarRight();
-                st->m_guts->DockStatusBarLeft();
+        if (st->m_statusBar != NULL) {
+            st->m_statusBar->m_barFrameGate = h;
+            if (st->m_statusBar->m_position == STATUSBAR_DOCK_RIGHT) {
+                st->m_statusBar->DockStatusBarLeft();
+                st->m_statusBar->DockStatusBarRight();
+            } else if (st->m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+                st->m_statusBar->DockStatusBarRight();
+                st->m_statusBar->DockStatusBarLeft();
             }
         }
     }
@@ -1281,8 +1281,8 @@ i32 CGruntzMgr::FinishLevel(i32 pauseGame, i32 pauseMusic) {
     }
     if (m_soundEnabled) {
         m_worldSounds->Resume();
-        if (m_cmdGrid && m_soundEnabled) {
-            m_cmdGrid->DestroyAllAnims();
+        if (m_triggerMgr && m_soundEnabled) {
+            m_triggerMgr->DestroyAllAnims();
         }
     }
     m_curState->ResumeGame();
@@ -1967,8 +1967,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
     if (m_voiceManager) {
         m_voiceManager->PauseAllVoices();
     }
-    if (m_cmdGrid && m_soundEnabled) {
-        m_cmdGrid->DestroyAllAnims();
+    if (m_triggerMgr && m_soundEnabled) {
+        m_triggerMgr->DestroyAllAnims();
     }
     if (m_world) {
         if (flag && m_curState && m_curState->Update() != GAMESTATE_MENU) {
@@ -2007,8 +2007,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
     RefreshGameClock();
     CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
-        if (o->m_guts) {
-            (static_cast<CStatusBarMgr*>(o->m_guts))->Deactivate();
+        if (o->m_statusBar) {
+            (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
         }
         o->PostHudRect();
     }
@@ -2020,8 +2020,8 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     if (m_voiceManager) {
         m_voiceManager->PauseAllVoices();
     }
-    if (m_cmdGrid && m_soundEnabled) {
-        m_cmdGrid->DestroyAllAnims();
+    if (m_triggerMgr && m_soundEnabled) {
+        m_triggerMgr->DestroyAllAnims();
     }
     if (m_world) {
         if (notify && m_curState && m_curState->Update() != GAMESTATE_MENU) {
@@ -2056,8 +2056,8 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 
     CPlay* o = static_cast<CPlay*>(PickPausedThenPlayState());
     if (o) {
-        if (o->m_guts) {
-            (static_cast<CStatusBarMgr*>(o->m_guts))->Deactivate();
+        if (o->m_statusBar) {
+            (static_cast<CStatusBarMgr*>(o->m_statusBar))->Deactivate();
         }
         o->PostHudRect();
     }
@@ -3017,7 +3017,7 @@ i32 CGruntzMgr::RunLoadGameDialog() {
 
 RVA(0x00092530, 0x17c)
 i32 CGruntzMgr::Quicksave() {
-    if (m_saveSink == NULL) {
+    if (m_saveGame == NULL) {
         return 0;
     }
     if (m_curState->Update() != GAMESTATE_PLAY) {
@@ -3041,7 +3041,7 @@ i32 CGruntzMgr::Quicksave() {
     }
     FillSaveInfo(m_saveInfoRec, NULL);
 
-    if (g_gameReg->m_saveSink->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
+    if (g_gameReg->m_saveGame->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
         EnterModalUI("ERROR - Cannot Save Game.");
         return 1;
     }
@@ -3051,7 +3051,7 @@ i32 CGruntzMgr::Quicksave() {
 
 RVA(0x00092710, 0x77)
 i32 CGruntzMgr::Quickload() {
-    if (m_saveSink == NULL) {
+    if (m_saveGame == NULL) {
         return 0;
     }
     if (m_voiceManager) {
@@ -3059,7 +3059,7 @@ i32 CGruntzMgr::Quickload() {
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
 
-        if (m_saveSink->VerifySlot(m_saveInfoRec) == 0) {
+        if (m_saveGame->VerifySlot(m_saveInfoRec) == 0) {
             return 1;
         }
         PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
@@ -3083,7 +3083,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
     dst->m_isWon = (m_gameMode == GAMEMODE_REPLAY);
     dst->m_isCustom = m_isCustomLevel;
 
-    m_saveSink->CopySlot(dst, &src->m_saveSlot);
+    m_saveGame->CopySlot(dst, &src->m_saveSlot);
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy(static_cast<char*>(dst->m_snapshot), snapshot, 0x20);
@@ -3396,13 +3396,13 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
         slot++;
     }
 
-    if (m_cmdGrid->Serialize(ar, cmd, typeId, payload) == 0) {
+    if (m_triggerMgr->Serialize(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
     if (PickPlayOrPausedState()->SyncState(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
-    if (m_cmdSubMgr->Serialize(ar, cmd, typeId, payload) == 0) {
+    if (m_commandMgr->Serialize(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
 
@@ -3413,7 +3413,7 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
     if (MapSerializeCurve(ar, cmd, typeId, payload) == 0) {
         return 0;
     }
-    return m_scoreHud->Serialize(ar, cmd, typeId, payload) != 0;
+    return m_gameStats->Serialize(ar, cmd, typeId, payload) != 0;
 }
 
 RVA(0x00093620, 0x254)

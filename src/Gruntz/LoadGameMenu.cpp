@@ -35,7 +35,7 @@ BOOL CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
         default:
             return 0;
         case WM_INITDIALOG: {
-            g_dlgLoadSink = static_cast<CSaveGame*>(g_gameReg->m_saveSink);
+            g_dlgLoadSink = static_cast<CSaveGame*>(g_gameReg->m_saveGame);
             FillGameInfoDialog(hDlg, g_dlgLoadSink);
             return 1;
         }

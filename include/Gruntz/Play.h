@@ -35,7 +35,7 @@ class CVoiceManager;
 class CGruntzCmdMgr;
 class CTriggerMgr;
 class CStatusBarMgr;
-class CLightFxRender;
+class CMinimap;
 class CTileTriggerContainer;
 struct CGameObject;
 class CWwdGameObjectA;
@@ -301,11 +301,11 @@ public:
     i32 m_packetsSent;
     i32 m_rngSeed;
 
-    CStatusBarMgr* m_guts;
+    CStatusBarMgr* m_statusBar;
 
-    CChatBoxOwner* m_hitTest;
+    CChatBoxOwner* m_chatBox;
 
-    CTileTriggerContainer* m_beginMarker;
+    CTileTriggerContainer* m_tileTriggers;
     i32 m_dragSnapActive;
     i32 m_dragInProgress;
     i32 m_reserved2f0;
@@ -317,7 +317,7 @@ public:
     i32 m_worldReady;
     RECT m_hudRect;
 
-    CLightFxRender* m_lightFx;
+    CMinimap* m_minimap;
     char m_pad324[0x328 - 0x324];
     ClockInterval m_bootyTiming;
 
@@ -338,7 +338,7 @@ public:
     Anchor m_anchors[4];
 
     CPtrArray m_placedObjectCells[4];
-    CTimer* m_frameMarker;
+    CTimer* m_levelTimer;
     ClockInterval m_cueTiming;
     i32 m_cueToggle;
     i32 m_lastCueId;
@@ -378,7 +378,7 @@ public:
     i32 m_cursorFrameCountdownMs;
     i32 m_cursorFrameIndex;
 
-    CWwdGameObjectA* m_scrollSink;
+    CWwdGameObjectA* m_cursorSnapSprite;
     i32 m_cursorAnimationActive;
     i32 m_renderDisabled;
     i32 m_playerCommandPending;
@@ -479,18 +479,18 @@ inline CPlay::CPlay() {
     m_returnToMenuOnComplete = 0;
     m_completedFinalLevel = 0;
     m_reserved1c8 = 0;
-    m_hitTest = NULL;
-    m_frameMarker = NULL;
-    m_guts = NULL;
-    m_beginMarker = NULL;
+    m_chatBox = NULL;
+    m_levelTimer = NULL;
+    m_statusBar = NULL;
+    m_tileTriggers = NULL;
     m_cursorSprite = NULL;
-    m_scrollSink = NULL;
+    m_cursorSnapSprite = NULL;
     m_reserved2f0 = 0;
     m_packetsRcvd = 0;
     m_packetsSent = 0;
     m_cursorFrame = 0;
     m_cursorId = -1;
-    m_lightFx = NULL;
+    m_minimap = NULL;
     m_cursorUsesPlayerTint = 0;
     m_defeatCountdownActive = 0;
     m_ambientInitDone = 1;

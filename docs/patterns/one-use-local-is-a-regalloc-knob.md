@@ -30,7 +30,7 @@ So a one-use local is a knob **in both directions**, and you must try both:
 - **ADD a local** to free the register earlier
   (`MidiManager* midi = m_midi; if (midi->m_currentSequence) midi->m_currentSequence->SetVolumePercent(0, durationMs);`)
 - **DELETE a local** so the value becomes a cache-parked temp instead
-  (`g_gameReg->m_cmdGrid->m_units[...]` rather than `CGruntzMgr* reg = g_gameReg;`)
+  (`g_gameReg->m_triggerMgr->m_units[...]` rather than `CGruntzMgr* reg = g_gameReg;`)
 
 The same knob also selects *how many* registers a pointer chain consumes: with the
 middle link bound to a local, cl chases the chain in ONE register

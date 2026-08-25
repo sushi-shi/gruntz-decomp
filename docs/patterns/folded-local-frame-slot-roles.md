@@ -43,7 +43,7 @@ is not comparable across sides, a displacement is):
 * **a member we read MORE times than retail** - retail cached it in a source
   local. `CRezImage::FlipVertical` 0x176840 reads `m_height` (+0x43c) three
   times to retail's two, and the third read is INSIDE the row loop where the
-  byte stores may alias it; `CLightFxRender::ComputeRect` 0xa3820 reads
+  byte stores may alias it; `CMinimap::Draw` 0xa3820 reads
   `m_surface` (+0x10) FIVE times to retail's one. `gruntz walls reloadscan
   --loop` already fires on the first (`+0x43c ours 1 retail 0`); the
   straight-line case has no shipped channel.
@@ -64,7 +64,7 @@ found three different causes, one of which is not a colour question at all:
 
 | function | bank | with the folded local | frame ours/retail | actual cause |
 |---|---|---|---|---|
-| `CLightFxRender::ComputeRect` 0xa3820 | 76.38 @162 | **70.12** @158 | 0x14/**0x14** | callee-saved re-colour (below) |
+| `CMinimap::Draw` 0xa3820 | 76.38 @162 | **70.12** @158 | 0x14/**0x14** | callee-saved re-colour (below) |
 | `CBoomerang::AdvanceMotion` 0xe08b0 | 86.25 @128 | **71.52** @138 | 0x28/0x20 | x87 spill temps - **no GPR is involved**, see x87-spill-slots-are-compiler-temps.md |
 | `CRezImage::FlipVertical` 0x176840 | 71.07 @89 | 61.86 @88 | 0x14/0x18 | misfiled - it is a CFG/IV question (below) |
 

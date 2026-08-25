@@ -192,7 +192,7 @@ L_tailc:
                 i32 dr = bestRow - c2.m_y;
                 dr = abs(dr);
                 if (dc <= 1 && dr <= 1) {
-                    m_tileMgr->ApplyTriggerA(
+                    m_triggerMgr->ApplyTriggerA(
                         m_playerIndex,
                         m_unitIndex,
                         (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -214,7 +214,7 @@ L_tailc:
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
-            m_tileMgr->ApplyTriggerA(
+            m_triggerMgr->ApplyTriggerA(
                 m_playerIndex,
                 m_unitIndex,
                 (col << TILE_SHIFT_PX) + TILE_HALF_PX,

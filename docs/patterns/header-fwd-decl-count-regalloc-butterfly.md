@@ -57,7 +57,7 @@ pin: DATA relocs pair by RVA/mask, so DecCounter is byte-EXACT with its `g_gameR
 
 THIRD FIRING (same fn + a sibling, GruntzMgr.h again, 2026-07-05 gzstar megafold): folding the
 CWorldSub28/CWorldSub2c defs onto CSndHost (SoundCue.h include OR a `struct CSndHost;` fwd decl -
-both spellings measured IDENTICAL), retyping m_cmdGrid CCmdGrid->CTriggerMgr (fwd-decl swap) and
+both spellings measured IDENTICAL), retyping m_triggerMgr CCmdGrid->CTriggerMgr (fwd-decl swap) and
 typing CWorldZ::m_8 `struct CSpriteFactory*` (elaborated) re-cratered DecCounter 100->74.04 AND
 CPlay::StepScroll 81.62->63.52 (+ LoadMainStatusBarSprite -7.09, FlashColor -3.85). Net closure
 fwd-decl delta ~+2 with no zero-own-fwd-decl include available to shed (the remaining GruntzMgr.h
@@ -81,7 +81,7 @@ header declaration from the false `ResetWorldState(i32)` to the retail-backed
 `ResetWorldState()` made that method exact (`ret 4`→`ret`) and raised global current/MAX fuzzy.
 The full rebuild also moved three source-identical functions in three separate TUs that directly
 include `GruntzMgr.h`: `CGrunt::PhaseStep` 39.7717→38.5960,
-`CLightFxRender::Shape6` 77.0497→76.9834, and `CGrunt::RectSegProbe` 78.7723→78.7228.
+`CMinimap::Shape6` 77.0497→76.9834, and `CGrunt::RectSegProbe` 78.7723→78.7228.
 None of the three source files changed. This proves that member-function signature state, not
 only forward declarations or class bodies, belongs to the butterfly family. Keep the correct ABI
 and preserve the per-function MAX; use the includer intersection to explain and later reverse
@@ -181,9 +181,9 @@ wrong receiver casts without changing that set. Eight unrelated,
 source-identical rows newly dipped: `CNetSession::Verify(i32)` 100→89.5349,
 `CSBI_GruntMachine::Render` 92.8205→88.5897,
 `CGrunt::LoadWingzGruntSprites` 76.6337→75.2651,
-`CLightFxRender::Shape1` 73.5357→73.4969,
+`CMinimap::Shape1` 73.5357→73.4969,
 `Shape6` 77.0497→77.0015, `CSBI_Image::Render` 74.0714→74.0357,
-`CLightFxRender::Shape2` 73.1042→73.0785, and
+`CMinimap::Shape2` 73.1042→73.0785, and
 `Shape4` 69.0179→68.9935. Four earlier dips reversed without body edits:
 `CSpotLight::Tick`, `CGrunt::StepGruntMovement`, and
 `CGrunt::ArrivalScanA`/`ArrivalScanB` returned to their saved MAX values.
@@ -200,7 +200,7 @@ proved to be `CVoiceManager*`) changed no executable statement, field, or
 function signature. Nevertheless, `CSBI_ImageSet::Render` newly moved
 98.5790→86.7368, `CSpriteRef::Build` 77.9927→74.7273, and
 `CGrunt::ArrivalScanA` 50.2333→50.2182; meanwhile
-`CSBI_GruntMachine::Render` and `CLightFxRender::Shape4` returned to MAX, and
+`CSBI_GruntMachine::Render` and `CMinimap::Shape4` returned to MAX, and
 `Shape1`/`Shape6` partially recovered to 73.5202/77.0196. Overall current fuzzy
 settled at 73.71 while MAX remained 73.73. Therefore even an unused class
 forward declaration participates in this MSVC 5 compiler-state butterfly.
@@ -246,7 +246,7 @@ functions newly moved below their saved values:
 `CPlay::StepScroll` 71.6207→63.5172,
 `CGruntHealthSprite::HealthUpdate` 99.6377→96.6667,
 `CGrunt::RectContains` 61.6774→59.0564,
-`CLightFxRender::Resize` 48.6176→47.3824,
+`CMinimap::Refresh` 48.6176→47.3824,
 `CTriggerMgr::HitTestCell` 39.7921→39.7723, and
 `CGrunt::ArrivalScanB` 41.1545→41.1407. Conversely,
 `CGrunt::PhaseStep` recovered 38.5960→39.7717 without a body edit.

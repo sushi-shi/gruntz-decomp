@@ -364,7 +364,7 @@
   "spread": 1.1345493562231759
  },
  {
-  "file": "src/Gruntz/LightFxRender.cpp",
+  "file": "src/Gruntz/Minimap.cpp",
   "n": 23,
   "bytes": 20302,
   "lo": 668352,

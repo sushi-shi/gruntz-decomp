@@ -57,7 +57,7 @@ levers only close the diff together, which is why a sequential edit ladder
 misses it.
 
 Sibling call sites already in this shape: `src/Gruntz/TriggerMgr.cpp`
-`PackRgb16`, `src/Gruntz/LightFxRender.cpp` `Pack`.
+`PackRgb16`, `src/Gruntz/Minimap.cpp` `Pack`.
 
 ## Boundary of the pattern
 

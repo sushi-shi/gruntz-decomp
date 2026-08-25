@@ -119,8 +119,8 @@ i32 CGrunt::WanderStep() {
 
         case AISTATE_CHASE: {
             CGrunt* slot =
-                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-            CGrunt* active = m_tileMgr->FindNearestEnemy(this);
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* active = m_triggerMgr->FindNearestEnemy(this);
             if (active != NULL && active != slot) {
                 Coord none;
                 m_arrivalCell = *none.Set(-1, -1);
@@ -171,7 +171,7 @@ i32 CGrunt::WanderStep() {
                 return 1;
             }
             CGrunt* slot =
-                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (slot == NULL || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0
                 || slot->m_entranceCommitted == 0) {
                 goto ph1;
@@ -228,7 +228,7 @@ i32 CGrunt::WanderStep() {
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry =
-                    g_gameReg->m_cmdGrid
+                    g_gameReg->m_triggerMgr
                         ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 if (entry != NULL) {
                     CGameObject* e10 = entry->m_object;

@@ -254,9 +254,9 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
             count++;
         }
     }
-    CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
+    CGruntzCmdMgr* rep = g_gameReg->m_commandMgr;
     if (count == 1) {
-        g_gameReg->m_cmdSubMgr->EnqueueSingle(
+        g_gameReg->m_commandMgr->EnqueueSingle(
             tag,
             firstByte,
             bytes[0],
@@ -267,7 +267,7 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
             0
         );
     } else {
-        g_gameReg->m_cmdSubMgr->EnqueueMulti(
+        g_gameReg->m_commandMgr->EnqueueMulti(
             tag,
             firstByte,
             count,
@@ -298,10 +298,10 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
             count++;
         }
     }
-    CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
+    CGruntzCmdMgr* rep = g_gameReg->m_commandMgr;
     if (count == 1) {
         if (flag != 0) {
-            g_gameReg->m_cmdSubMgr->EnqueueSingle(
+            g_gameReg->m_commandMgr->EnqueueSingle(
                 tag,
                 firstByte,
                 bytes[0],
@@ -312,7 +312,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
                 0
             );
         } else {
-            g_gameReg->m_cmdSubMgr->EnqueueSingle(
+            g_gameReg->m_commandMgr->EnqueueSingle(
                 tag,
                 firstByte,
                 bytes[0],
@@ -325,7 +325,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
         }
     } else {
         if (flag != 0) {
-            g_gameReg->m_cmdSubMgr->EnqueueMulti(
+            g_gameReg->m_commandMgr->EnqueueMulti(
                 tag,
                 firstByte,
                 count,
@@ -336,7 +336,7 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
                 0
             );
         } else {
-            g_gameReg->m_cmdSubMgr->EnqueueMulti(
+            g_gameReg->m_commandMgr->EnqueueMulti(
                 tag,
                 firstByte,
                 count,
@@ -383,7 +383,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 vx = g_gameReg->m_modeSize.cx;
     i32 vy = g_gameReg->m_modeSize.cy;
-    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_position;
+    StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_position;
 
     i32 ax, cx;
     if (pos != STATUSBAR_DOCK_RIGHT) {
@@ -843,7 +843,7 @@ i32 CTriggerMgr::ResetGroup(
                 i32 hitUnitIndex = hit->m_unitIndex;
                 i32 cellUnitIndex = cell->m_unitIndex;
                 i32 cellPlayerIndex = cell->m_playerIndex;
-                g_gameReg->m_cmdSubMgr->EnqueueSingle(
+                g_gameReg->m_commandMgr->EnqueueSingle(
                     1,
                     cellPlayerIndex,
                     cellUnitIndex,
@@ -856,7 +856,7 @@ i32 CTriggerMgr::ResetGroup(
             } else {
                 i32 cellUnitIndex = cell->m_unitIndex;
                 i32 cellPlayerIndex = cell->m_playerIndex;
-                g_gameReg->m_cmdSubMgr->EnqueueSingle(
+                g_gameReg->m_commandMgr->EnqueueSingle(
                     1,
                     cellPlayerIndex,
                     cellUnitIndex,
@@ -976,7 +976,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     LONG outR = col;
     LONG outC = row;
     plane->m_mainPlane->WrapCoord(&outR, &outC);
-    CStatusBarMgr* sbi = lvl->m_guts;
+    CStatusBarMgr* sbi = lvl->m_statusBar;
     if (sbi->m_hlBusy == 0) {
         if (sbi->m_position == STATUSBAR_HIDDEN) {
             sbi->RestoreStatusBar();
@@ -987,8 +987,8 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         sbi->SetTab(GAME_TAB_MENU, 1);
         sbi->Deactivate();
     }
-    if (lvl->m_guts->StartWarpStoneFly(outR, outC, fragment) != 0) {
-        lvl->m_guts->m_hlBusy = 1;
+    if (lvl->m_statusBar->StartWarpStoneFly(outR, outC, fragment) != 0) {
+        lvl->m_statusBar->m_hlBusy = 1;
     } else {
         m_byteArr.Add(static_cast<u8>(IDX(fragment)));
     }
@@ -1004,18 +1004,18 @@ void CTriggerMgr::ResetSpawnState() {
         return;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    CStatusBarMgr* st = world->m_guts;
+    CStatusBarMgr* st = world->m_statusBar;
     if (st->m_retabNotify != NULL) {
         operator delete(st->m_retabNotify);
         st->m_retabNotify = NULL;
     }
-    world->m_guts->m_hlBusy = 0;
+    world->m_statusBar->m_hlBusy = 0;
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
-        CStatusBarMgr* ctx = world->m_guts;
+        CStatusBarMgr* ctx = world->m_statusBar;
         if (ctx->m_position != STATUSBAR_HIDDEN && ctx->m_activeTab == TAB_GAME) {
             ctx->ResetWidgets(0);
-            world->m_guts->TryActivate();
+            world->m_statusBar->TryActivate();
         }
     }
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
@@ -1239,7 +1239,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     world->FlushPendingOps();
     world->SetDefeatCountdown(0, 0xbb7);
-    (static_cast<CStatusBarMgr*>(world->m_guts))->LockDestructButton(1);
+    (static_cast<CStatusBarMgr*>(world->m_statusBar))->LockDestructButton(1);
     return 1;
 }
 
@@ -1583,7 +1583,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
         PickupType alt = ArrivalPickup(cell);
         if (alt == PICKUP_WAND) {
-            g_gameReg->m_cmdGrid->ResetGroup(
+            g_gameReg->m_triggerMgr->ResetGroup(
                 cell->LastTilePx().m_x,
                 cell->LastTilePx().m_y,
                 0,
@@ -1598,7 +1598,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         PickupType alt = cell->m_vehiclePickupType;
         if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
-            g_gameReg->m_cmdGrid
+            g_gameReg->m_triggerMgr
                 ->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         } else if (alt != PICKUP_NONE) {
             i32 v = IDX(alt) + kPendingFxIdBase;
@@ -1672,7 +1672,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {
-                    CGiantRockLogic* gr = root->m_beginMarker->ScanNeighborhood(tx, ty);
+                    CGiantRockLogic* gr = root->m_tileTriggers->ScanNeighborhood(tx, ty);
                     if (gr == NULL) {
                         CString msg;
                         msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
@@ -1684,25 +1684,25 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                         return 0;
                     }
                     gr->BuildRockBreakInGameText();
-                    root->m_beginMarker->RemoveIdleLogic(gr);
+                    root->m_tileTriggers->RemoveIdleLogic(gr);
                     continue;
                 }
                 if (type != TILEKIND_GAUNTLET_BRICK_A && type != TILEKIND_GAUNTLET_BRICK_B
                     && type != TILEKIND_GAUNTLET_BRICK_C) {
                     continue;
                 }
-                CTileActionEvent* o = root->m_beginMarker->FindActionByCellKey(ty + (tx << 8));
+                CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(ty + (tx << 8));
                 if (o->Process(NULL)) {
-                    root->m_beginMarker->RemoveActionEvent(o);
+                    root->m_tileTriggers->RemoveActionEvent(o);
                 }
                 continue;
             }
 
             CTileTriggerLogic* lo =
-                root->m_beginMarker->FindLogic(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
+                root->m_tileTriggers->FindLogic(ty + (tx << 8), TRIGID_COVERED_POWERUP_26);
             if (lo != NULL) {
                 lo->ApplyMove(type);
-                root->m_beginMarker->RemoveIdleLogic(lo);
+                root->m_tileTriggers->RemoveIdleLogic(lo);
             } else {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* wg = reg->m_world->m_level->m_mainPlane;
@@ -2660,7 +2660,7 @@ void CTriggerMgr::DestroyAllAnims() {
     }
     CState* state = g_gameReg->PickPausedThenPlayState();
     if (state != NULL) {
-        CStatusBarMgr* sub = (static_cast<CPlay*>(state))->m_guts;
+        CStatusBarMgr* sub = (static_cast<CPlay*>(state))->m_statusBar;
         if (sub != NULL) {
             SoundBuffer* destructWarningSound = sub->m_destructWarningSound;
             if (destructWarningSound != NULL) {
@@ -2693,7 +2693,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         } else {
             PickupType v = ArrivalPickup(cell);
             if (v == PICKUP_WAND) {
-                g_gameReg->m_cmdGrid->ResetGroup(
+                g_gameReg->m_triggerMgr->ResetGroup(
                     cell->LastTilePx().m_x,
                     cell->LastTilePx().m_y,
                     0,
@@ -2735,7 +2735,7 @@ i32 CTriggerMgr::ToggleRegionB() {
             PickupType kind = cell->m_vehiclePickupType;
             if (kind == PICKUP_SCROLL) {
                 CGameObject* o = cell->m_object;
-                g_gameReg->m_cmdGrid
+                g_gameReg->m_triggerMgr
                     ->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, TARGET_SELECTION_TOY, 1);
             } else if (kind != PICKUP_NONE) {
                 m_pendingFxKind = IDX(kind) + kPendingFxIdBase;
@@ -2772,7 +2772,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (pos != NULL);
     }
     if (count == 1) {
-        g_gameReg->m_cmdSubMgr->EnqueueSingle(
+        g_gameReg->m_commandMgr->EnqueueSingle(
             1,
             x,
             static_cast<char>(buf[0]),
@@ -2783,7 +2783,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             0
         );
     } else {
-        g_gameReg->m_cmdSubMgr
+        g_gameReg->m_commandMgr
             ->EnqueueMulti(1, x, count, buf, static_cast<char>(IDX(PLAYERCMD_STOP)), 0, 0, 0);
     }
     return 1;

@@ -13,7 +13,7 @@ sweeps **N throwaway prototypes**. That is one probe FAMILY, and it only reaches
 functions whose parse-state phase that family happens to step through. Three families over
 the same six TUs, 81 states, measured 2026-08-10:
 
-| probe family | where | `CLightFxRender::BuildRockyRoadzPalette` | `CShadeTableCache::HsvShiftTable` | `CSpriteRef::Build` |
+| probe family | where | `CMinimap::BuildRockyRoadzPalette` | `CShadeTableCache::HsvShiftTable` | `CSpriteRef::Build` |
 |---|---|---|---|---|
 | `int f_i(int);` x N, N=1..24 | after the includes | **97.58 flat, all 24** | **84.85 flat, all 24** | 83.2 - 99.82 |
 | `struct { int m_i; int f_i(int){...} }` x N, N=1..26 | above the includes | 96.8 - 97.52 | 83.1 - 86.52 | 96.47 flat |
@@ -36,7 +36,7 @@ top = rng.randrange(0, n + 1)            # and NOT one insertion point
 ```
 
 WALL-CLASSIFICATION rule, not a matching trick: **"the sweep was flat" is only a valid
-wall report when the sweep varied the declaration KIND.** Eight `CLightFxRender` palette
+wall report when the sweep varied the declaration KIND.** Eight `CMinimap` palette
 builders, `HsvShiftTable`, `SubTable` and `CDDrawWorkerHost::Draw` all read as immovable
 under a uniform prototype run and every one of them moved 2-13 points under the mixed one;
 `CSpriteRef::Build` and `CShadeTableCache::AlphaTable` reached 100.00 under a

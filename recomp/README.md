@@ -30,7 +30,7 @@ harness that needs a live process.
 
 What it proved is kept in `docs/verdicts.md` as a frozen record — seven functions
 verified behaviourally correct (including one scoring 0.00% and four `@early-stop`-parked
-bodies whose correctness was previously unknown), and the `CLightFxRender::Shape1..8`
+bodies whose correctness was previously unknown), and the `CMinimap::Shape1..8`
 family shown to drop RGB565 colour channels. That last one is a live lead and is
 chaseable **statically**: the sibling `CDDrawShadeBlit` names the three `g_clut` planes
 (`+0x20002` R, `+0x2` G, `+0x10002` B), and a missing `+0x10000`/`+0x20000` on a channel

@@ -31,7 +31,7 @@ hud->m_elapsedTimeMs += (diff < 0) ? 0 : (i32)diff;
 
 STEERABLE. `CTriggerMgr::HitTestApply` 0x6ea00 91.28 -> 95.49 on the ternary alone
 (`sub esp,0x8` -> retail's frameless prologue), then 98.80 with the second finding
-in the same body: retail reads `world->m_frameMarker` TWICE - inline for the delta,
+in the same body: retail reads `world->m_levelTimer` TWICE - inline for the delta,
 then into a local for the group of zero stores that follows.
 
 Do NOT reach for this on an i64 that is genuinely 64-bit downstream: see

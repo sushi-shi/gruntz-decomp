@@ -88,7 +88,7 @@ snapped the Grunt to `m_lastTilePx`, then called:
 
 ```cpp
 // WRONG: rewires the transposed map cell.
-m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
+m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
 ```
 
 The multiset-style semantic diff reported no exclusive displacement, store,

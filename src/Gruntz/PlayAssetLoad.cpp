@@ -52,9 +52,9 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LevelArea.h>
-#include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/Minimap.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
@@ -661,7 +661,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (mode != 0) {
         if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
             g_gameReg->m_voiceManager->PauseAllVoices();
-            (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
+            (static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);

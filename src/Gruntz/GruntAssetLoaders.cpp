@@ -112,7 +112,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         RESET_GRUNT_POWERED_STATE(this)
     }
-    m_tileMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
+    m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
     SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
 
@@ -124,7 +124,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
     if (killerPlayerIndex != -1) {
         m_killerPlayerIndex = killerPlayerIndex;
-        g_gameReg->m_scoreHud->BumpWin(killerPlayerIndex, m_playerIndex);
+        g_gameReg->m_gameStats->BumpWin(killerPlayerIndex, m_playerIndex);
     }
 
     switch (deathType) {
@@ -140,7 +140,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             goto finalize;
 
         case DEATH_DROP:
-            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             SetObjectFlags(0x10000);
             goto tail;
 
@@ -149,7 +149,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             SwitchGeometryDirect(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
-            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
 
@@ -208,7 +208,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             SwitchGeometryDirect(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
-            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
         }
@@ -237,7 +237,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             SwitchGeometryDirect(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
-            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
         }
@@ -332,12 +332,12 @@ pathA:
     goto tail;
 
 finalize:
-    m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
+    m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
 
 tail:
 
     if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-        m_tileMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
+        m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
     if (m_arrivalState == AI_TOOLTHIEF) {
         TryPowerupAtTile();

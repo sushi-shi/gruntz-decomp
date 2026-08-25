@@ -65,7 +65,7 @@ i32 CGrunt::ArrivalReticleScan() {
         return 1;
     }
 
-    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
+    CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     i32 occOnTile = 0;
     if (occ) {
         CGameObject* oo = occ->m_object;

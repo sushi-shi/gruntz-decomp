@@ -317,21 +317,21 @@ public:
 
     CWorldSoundSet* m_worldSounds;
 
-    CSaveGame* m_saveSink;
+    CSaveGame* m_saveGame;
 
     CFontConfig* m_chatLog;
     CVoiceManager* m_voiceManager;
 
     i32 m_reserved64;
-    CTriggerMgr* m_cmdGrid;
-    CGruntzCmdMgr* m_cmdSubMgr;
+    CTriggerMgr* m_triggerMgr;
+    CGruntzCmdMgr* m_commandMgr;
     CGruntzMapMgr* m_tileGrid;
 
     CSpriteRefTable* m_spriteFactory;
 
     CLightFxMgr* m_lightFxMgr;
 
-    CBattlezData* m_scoreHud;
+    CBattlezData* m_gameStats;
     i32 m_numRuns;
     i32 m_numMovies;
     ColorDepth m_colorDepth;

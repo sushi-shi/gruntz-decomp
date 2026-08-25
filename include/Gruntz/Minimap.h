@@ -1,5 +1,5 @@
-#ifndef GRUNTZ_GRUNTZ_CLIGHTFXRENDER_H
-#define GRUNTZ_GRUNTZ_CLIGHTFXRENDER_H
+#ifndef GRUNTZ_GRUNTZ_MINIMAP_H
+#define GRUNTZ_GRUNTZ_MINIMAP_H
 
 #include <rva.h>
 
@@ -15,19 +15,19 @@ class CDDrawSurfaceMgr;
 class CDDSurface;
 class CDDrawSurfacePair;
 
-// How many tile ids the minimap colour table covers. m_buf is indexed by
-// m_tileGrid->m_rows[y][x].m_tileId, and both readers guard with
+// How many tile ids the minimap colour table covers. m_tileColors is indexed by
+// m_mapMgr->m_rows[y][x].m_tileId, and both readers guard with
 // `idx >= MINIMAP_TILE_COLOR_COUNT` before indexing - so the array bound and the
 // guard are the same fact written twice.
 GZ_ENUM_CONST_BEGIN(MinimapTileColor)
     MINIMAP_TILE_COLOR_COUNT = 0x1f4
 GZ_ENUM_CONST_END(MinimapTileColor)
 
-class CLightFxRender {
+class CMinimap {
 public:
-    CLightFxRender();
+    CMinimap();
 
-    i32 Init(CGruntzMgr* mgr, i32 refreshInterval);
+    i32 Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs);
 
     void Reset();
 
@@ -35,15 +35,15 @@ public:
 
     i32 AllocSurface();
 
-    i32 Resize(i32 delta, i32 rebuild);
+    i32 Refresh(i32 elapsedMs, i32 forceRefresh);
 
-    i32 ComputeRect(CDDrawSurfacePair* ctx, RECT* src);
+    i32 Draw(CDDrawSurfacePair* target, RECT* bounds);
 
-    void DrawBorderRaw(RECT* r, char* base, i32 color);
+    void DrawBorderRaw(RECT* rect, char* pixels, i32 color);
 
-    void DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color);
+    void DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color);
 
-    i32 BuildShape(LevelArea shape);
+    i32 SetAreaPalette(LevelArea area);
 
     i32 BuildRockyRoadzPalette();
     i32 BuildGruntziclezPalette();
@@ -56,40 +56,40 @@ public:
 
     void FillSpan(u32 x1, u32 x2, u16 color);
 
-    i32 BeginMinimapPan(i32 unusedFlags, i32 x, i32 y);
+    i32 BeginMinimapPan(i32 unusedFlags, i32 cursorX, i32 cursorY);
 
     i32 EndMinimapPan(i32 unusedFlags, i32 unusedX, i32 unusedY);
 
     i32 IgnoreMinimapEvent(i32 unusedFlags, i32 unusedX, i32 unusedY);
 
-    i32 IssueMinimapCommand(i32 unusedFlags, i32 x, i32 y);
+    i32 IssueMinimapCommand(i32 unusedFlags, i32 cursorX, i32 cursorY);
 
-    i32 ContinueMinimapPan(i32 unusedFlags, i32 x, i32 y);
+    i32 ContinueMinimapPan(i32 unusedFlags, i32 cursorX, i32 cursorY);
 
-    i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
+    i32 ScreenPointToCell(i32 cursorX, i32 cursorY, i32* outCell, i32 snapMargin);
 
-    CGruntzMgr* m_mgr;
-    CTriggerMgr* m_cmdGrid;
-    CGruntzMapMgr* m_tileGrid;
+    CGruntzMgr* m_gameMgr;
+    CTriggerMgr* m_triggerMgr;
+    CGruntzMapMgr* m_mapMgr;
     CDDrawSurfaceMgr* m_world;
     CDDSurface* m_surface;
     char m_pad14[0x10];
-    RECT m_srcRect;
-    RECT m_dstRect;
-    i32 m_scale;
-    i32 m_handle;
-    u16 m_buf[MINIMAP_TILE_COLOR_COUNT];
+    RECT m_boundsRect;
+    RECT m_drawRect;
+    i32 m_cellScale;
+    i32 m_panActive;
+    u16 m_tileColors[MINIMAP_TILE_COLOR_COUNT];
     i32 m_refreshInterval;
     i32 m_refreshRemaining;
 };
 
-inline CLightFxRender::CLightFxRender() {
-    m_mgr = NULL;
-    m_cmdGrid = NULL;
-    m_tileGrid = NULL;
+inline CMinimap::CMinimap() {
+    m_gameMgr = NULL;
+    m_triggerMgr = NULL;
+    m_mapMgr = NULL;
     m_world = NULL;
     m_surface = NULL;
-    m_handle = 0;
+    m_panActive = 0;
     m_refreshInterval = 0;
     m_refreshRemaining = 0;
 }

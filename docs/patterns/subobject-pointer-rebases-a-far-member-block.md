@@ -18,13 +18,13 @@ store` shape.
 
 ```cpp
 // before - four disp32 stores, no rebase
-CTriggerMgr* h2 = g_gameReg->m_cmdGrid;
+CTriggerMgr* h2 = g_gameReg->m_triggerMgr;
 h2->m_timerWindow = 0x3e8;              // +0x298 / +0x29c
 h2->m_timerBase   = (u32)g_frameTime;   // +0x290 / +0x294
 
 // after - the {base,window} pair is a real sub-object, reached by pointer
 struct CueTimer { i64 m_base, m_window; };   // in the owner's header, at +0x290
-CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
+CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
 tm->m_window = 0x3e8;
 tm->m_base   = (u32)g_frameTime;
 ```

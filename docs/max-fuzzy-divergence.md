@@ -328,7 +328,7 @@ At the time of measurement the committed baseline had last been written at
 `c088e0a6f` — **26 commits and 200 changed source files** behind `HEAD`. 172 of 4300
 rows disagreed with a clean build before anyone touched anything. Worse, even a
 from-scratch build **at `c088e0a6f` itself** disagreed on **20 rows** (e.g.
-`?DrawBorder@CLightFxRender` 100.00 → 88.10, `?Verify@CNetSession` 100.00 → 89.53):
+`?DrawBorder@CMinimap` 100.00 → 88.10, `?Verify@CNetSession` 100.00 → 89.53):
 the file was written from a report whose source is not the source it was committed
 with — a lane worktree's state, carried in by cherry-pick.
 

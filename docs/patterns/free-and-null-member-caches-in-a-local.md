@@ -15,11 +15,11 @@ missing local. Only the blocks that use the member more than once are affected; 
 
 ```cpp
 // before - cl re-reads [edi+0x320] for the delete
-if (m_lightFx) { m_lightFx->Ctor(); ::operator delete(m_lightFx); m_lightFx = 0; }
+if (m_minimap) { m_minimap->Ctor(); ::operator delete(m_minimap); m_minimap = 0; }
 
 // after - one read, retail's shape
-CLightFxRender* fx = m_lightFx;
-if (fx) { fx->Ctor(); ::operator delete(fx); m_lightFx = 0; }
+CMinimap* minimap = m_minimap;
+if (minimap) { minimap->Ctor(); ::operator delete(minimap); m_minimap = 0; }
 ```
 
 ```asm
@@ -29,5 +29,5 @@ base:   mov ecx,[edi+0x320] | cmp ecx,ebp | je .. |               call .. | mov 
 
 STEERABLE. Do NOT widen the local past the block (it then lives across the following calls
 and takes a callee-saved register of its own). Evidence: `CPlay::ReleaseResources` @0x0c8700
-94.90 → **100% EXACT** with three such locals (m_lightFx / m_hitTest / m_frameMarker), filed
+94.90 → **100% EXACT** with three such locals (m_minimap / m_chatBox / m_levelTimer), filed
 as a "hard-regalloc wall … not source-steerable".

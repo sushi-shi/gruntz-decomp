@@ -51,7 +51,7 @@
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderPx = m_lastTilePx;
-    CGrunt* g = m_tileMgr->FindNearestEnemy(this);
+    CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
@@ -164,8 +164,8 @@ i32 CGrunt::ChargeStep() {
         case AISTATE_CHASE: {
 
             CGrunt* t =
-                m_tileMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
-            CGrunt* cur = m_tileMgr->FindNearestEnemy(this);
+                m_triggerMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
+            CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
                 Coord none;
                 m_arrivalCell = *none.Set(-1, -1);
@@ -194,7 +194,8 @@ i32 CGrunt::ChargeStep() {
 
             if (m_poweredUp != 0) {
                 CGrunt* t =
-                    m_tileMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
+                    m_triggerMgr
+                        ->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
                 if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
                     || t->m_entranceCommitted == 0) {
                     m_defenderState = AISTATE_CHASE;

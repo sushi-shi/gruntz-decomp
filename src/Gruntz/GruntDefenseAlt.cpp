@@ -40,7 +40,7 @@
 RVA(0x000f1c70, 0x620)
 i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
-    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
+    CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     i32 inRange = 0;
     if (occ != NULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
         && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
@@ -92,7 +92,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
 
     switch (m_defenderState) {
         case AISTATE_SEEK: {
-            CGrunt* o = m_tileMgr->FindNearestEnemy(this);
+            CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o != NULL) {
                 if (m_poweredUp != 0) {
                     goto tail;
@@ -171,8 +171,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
 
         case AISTATE_CHASE: {
             CGrunt* o =
-                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-            CGrunt* g = m_tileMgr->FindNearestEnemy(this);
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
                 Coord none;
                 m_arrivalCell = *none.Set(-1, -1);
@@ -230,7 +230,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            CGrunt* o = m_tileMgr->FindNearestEnemy(this);
+            CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o == NULL) {
                 goto tail;
             }

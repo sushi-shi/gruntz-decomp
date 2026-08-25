@@ -327,8 +327,8 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
 
-            m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         }
     }
     return 1;
@@ -470,7 +470,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
     SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != 0) {
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+        m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         m_arrivalPending = 0;
     }
     return 1;
@@ -485,7 +485,7 @@ void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != 0) {
 
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+        m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         m_arrivalPending = 0;
     }
 }
@@ -697,7 +697,7 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = board->m_rowInts[mty][mtx * 7 + 1];
             }
-            m_tileMgr
+            m_triggerMgr
                 ->StartUnitDeath((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_playerIndex);
         }
         goto commit;
@@ -861,7 +861,7 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     SetFacing(0x3e8, facing);
     m_commitPx = m_lastTilePx;
     {
@@ -943,7 +943,7 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
@@ -1023,7 +1023,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,
@@ -1034,7 +1034,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         if (m_entranceReason != PICKUP_BOMB) {
             goto applyTail;
         }
-        m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
         return 1;
     }
     eq = ANIMATION_ACT_EQUALS("G");
@@ -1047,7 +1047,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 if (eq) {
 
                     SnapToLastTile(1);
-                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                     goto applyTail;
                 }
                 eq = ANIMATION_ACT_EQUALS("Q");
@@ -1128,7 +1128,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     eq = (strcmp(*rec, "M") == 0);
                 }
                 if (eq) {
-                    m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+                    m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                     return 1;
                 }
                 goto applyTail;
@@ -1159,7 +1159,7 @@ applyTail:
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         RESET_GRUNT_POWERED_STATE(this)
     }
-    m_tileMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
+    m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
         m_object->m_screenX = spawnPx;
@@ -1228,7 +1228,7 @@ i32 CGrunt::SerializeMove(
             }
             break;
         case SERIAL_POSTLOAD:
-            m_tileMgr = g_gameReg->m_cmdGrid;
+            m_triggerMgr = g_gameReg->m_triggerMgr;
             break;
     }
     m_entranceCell.Serialize(ar, mode, typeId, object);

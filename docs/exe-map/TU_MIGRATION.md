@@ -538,7 +538,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - menutree (`cpp-rtti`) — src/Gruntz/MenuTree.cpp
 - chatboxowner (`cpp-rtti`) — src/Gruntz/ChatBoxOwner.cpp
 - lightfx (`cpp-rtti`) — src/Gruntz/LightFx.cpp
-- lightfxrender (`cpp-rtti`) — src/Gruntz/LightFxRender.cpp
+- lightfxrender (`cpp-rtti`) — src/Gruntz/Minimap.cpp
 - gruntstartingpoint (`cpp-rtti`) — src/Gruntz/GruntStartingPoint.cpp
 - guardpoint (`cpp-rtti`) — src/Gruntz/GuardPoint.cpp
 - waypoint (`cpp-rtti`) — src/Gruntz/WayPoint.cpp

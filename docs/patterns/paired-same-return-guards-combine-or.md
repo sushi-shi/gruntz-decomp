@@ -9,7 +9,7 @@ Two adjacent early-guards that return the **same value** are written as separate
 
 ```cpp
 if (m_hudSuppressed != 0) return 1;   // guard A
-if (m_guts == 0)          return 1;   // guard B
+if (m_statusBar == 0)          return 1;   // guard B
 ...
 if (m_levelOverlayOpen != 0)          return Dispatch();  // guard C
 if (g_sbiMgr->m_68->m_400 == 0)  return Dispatch();  // guard D
@@ -54,7 +54,7 @@ lever, not the optimizer level.
 Combine each same-return pair with `||` (value-identical short-circuit):
 
 ```cpp
-if (m_hudSuppressed != 0 || m_guts == 0) return 1;
+if (m_hudSuppressed != 0 || m_statusBar == 0) return 1;
 if (m_levelOverlayOpen != 0 || g_sbiMgr->m_68->m_400 == 0) return Dispatch();
 ```
 

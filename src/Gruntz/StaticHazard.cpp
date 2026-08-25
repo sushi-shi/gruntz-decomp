@@ -247,10 +247,10 @@ i32 CStaticHazard::LoadAttributes() {
 
     if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
-        if (g_gameReg->m_cmdGrid
+        if (g_gameReg->m_triggerMgr
                 ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 0)
             != NULL) {
-            g_gameReg->m_cmdGrid->StartUnitDeath(
+            g_gameReg->m_triggerMgr->StartUnitDeath(
                 playerIndex,
                 unitIndex,
                 static_cast<GruntDeathType>(m_object->m_smarts),

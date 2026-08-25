@@ -43,7 +43,7 @@ register pin.
 ## Not a blanket rule — decide per member
 
 The same function keeps a *different* cached pointer and matches:
-`CStatusBarMgr* fx = m_guts;` stays, because retail also loads `[esi+0x2dc]`
+`CStatusBarMgr* fx = m_statusBar;` stays, because retail also loads `[esi+0x2dc]`
 once and then reads `[eax]` / `[eax+0x10c]` off it. Read the target: if the
 `mov <reg>,[this+N]` appears once, keep the local; if it appears at every use,
 delete it. The FIELD reads off the cached pointer are a separate question —

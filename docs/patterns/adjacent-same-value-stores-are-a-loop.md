@@ -38,7 +38,7 @@ transcribing by hand.
 Even a **2-element** run is a fill (one `mov DWORD PTR [dst],eax`), so `buf[195]=c; buf[196]=c;`
 must be written as a 2-iteration loop too.
 
-Evidence (2026-07-28, `src/Gruntz/LightFxRender.cpp`): `CLightFxRender::Shape1..Shape8` had all
+Evidence (2026-07-28, `src/Gruntz/Minimap.cpp`): `CMinimap::Shape1..Shape8` had all
 67 short runs spelled as individual assignments. Converting them to loops took the eight from
 **82.7–85.4% to 98.5–99.5%** in one change — and dropped the frame size from 20 to 21 dwords,
 which incidentally dissolved the "retail enregisters `g_rDown` in ebx / we give ebx to colour #0"

@@ -34,7 +34,7 @@ each entry on its own receiver. The current reconstructed entry type is
 be a `CUserLogic` PMF instead, but neither model supplies a separate leaf
 receiver. The former `CGruntBehaviorLeaf` handlers map completely onto
 `CGrunt`: `+0x154` is `m_38`, `+0x170` is `m_entranceReason`, `+0x1c0` is
-`m_animSetName`, `+0x260` is `m_tileMgr`, `+0x360` is `m_deathType`,
+`m_animSetName`, `+0x260` is `m_triggerMgr`, `+0x360` is `m_deathType`,
 `+0x830/+0x838` are the idle timer/window pairs, and `+0x860/+0x868` are the
 attack timer/downtime pairs. Their three supposed leaf helpers resolve through
 the ILT to `CGrunt::CreateStaminaSprite`,

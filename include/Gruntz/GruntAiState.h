@@ -32,7 +32,7 @@ GZ_ENUM_CONST_END(GruntDwellMs)
 //           once m_dwell passes 0x3e8, TileSwitch paths to it, m_arrivalCell
 //           latches its grid slot and the state goes to CHASE (with the 0x366
 //           voice cue when the grunt is on screen).
-//   CHASE   Re-reads m_tileMgr->m_units[m_arrivalCell]. FindNearestEnemy returning
+//   CHASE   Re-reads m_triggerMgr->m_units[m_arrivalCell]. FindNearestEnemy returning
 //           anyone else, or the slot emptying / leaving GruntInRadius, drops back
 //           to SEEK; otherwise StepArrivalDrop re-paths every 0x1f4 of m_dwell
 //           and reaching the target runs CommitNeighbor.

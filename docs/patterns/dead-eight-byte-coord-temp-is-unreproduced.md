@@ -19,7 +19,7 @@ this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
 Coord pt = cell->LastTilePx();          // ALSO no frame - naming it is the defeat
 
 // retail: sub esp,0x8, both field stores emitted, both reads folded back to the member
-g_gameReg->m_cmdGrid->ResetGroup(cell->LastTilePx().m_x, cell->LastTilePx().m_y, ...);
+g_gameReg->m_triggerMgr->ResetGroup(cell->LastTilePx().m_x, cell->LastTilePx().m_y, ...);
 ```
 
 The precondition - that the result must never be **named** - is the whole content, and it

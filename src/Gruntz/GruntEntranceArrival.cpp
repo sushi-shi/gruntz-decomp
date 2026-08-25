@@ -109,7 +109,7 @@ i32 CGrunt::UpdateGruntStatus() {
         if (m_neighborValid != 0) {
             m_neighborValid = 0;
             CGrunt* n =
-                m_tileMgr
+                m_triggerMgr
                     ->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
             if (n != NULL && n->m_entranceCommitted != 0) {
                 if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
@@ -310,7 +310,7 @@ i32 CGrunt::StepAttackFire() {
             default: {
 
                 CGrunt* tgt =
-                    m_tileMgr->m_units
+                    m_triggerMgr->m_units
                         [m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
                 if (tgt != NULL) {
                     tgt->StepCombatReaction(
@@ -325,7 +325,7 @@ i32 CGrunt::StepAttackFire() {
                     );
                     PickupType t = ArrivalPickup(tgt);
                     if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
-                        m_tileMgr->StartUnitDeath(
+                        m_triggerMgr->StartUnitDeath(
                             m_playerIndex,
                             m_unitIndex,
                             DEATH_EXPLODE,
@@ -392,7 +392,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         StopVehicleLoopSound();
         if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != 0) {
             CGrunt* occ =
-                m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 innerY = inner->m_screenY;
@@ -400,7 +400,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
-                    m_tileMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, innerX, innerY);
+                    m_triggerMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, innerX, innerY);
                 }
             }
         }
@@ -564,7 +564,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         i32 flags = grid->CellFlagsAt(tx, ty);
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
-            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             return 0;
         }
         CWwdGameObjectA* h = m_object;
@@ -825,7 +825,7 @@ i32 CGrunt::ResolveEntranceArrival() {
             if (slot != NULL && slot->m_humanControlled != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == GAMEMODE_MULTIPLAYER
                     && g_curPlayer == m_playerIndex && m_arrived == 0) {
-                    m_tileMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
+                    m_triggerMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
                     m_arrivalNotified = 1;
                     goto tail;
                 }
@@ -910,7 +910,7 @@ i32 CGrunt::StepEntranceReinit() {
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
 
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,
@@ -1025,7 +1025,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         i32 flags = grid->CellFlagsAt(tx, ty);
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
-            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         }
         return 0;
     }
@@ -1179,7 +1179,7 @@ i32 CGrunt::StepWarpExit() {
             }
         }
         if (m_cellRemovalNotified == 0) {
-            m_tileMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 1);
+            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 1);
         }
         SetObjectFlags(0x10000);
     }
@@ -1222,7 +1222,7 @@ i32 CGrunt::StepCombatReaction(
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,
@@ -1241,12 +1241,12 @@ i32 CGrunt::StepCombatReaction(
                 eq = ANIMATION_ACT_EQUALS("O");
                 if (eq) {
                     SnapToLastTile(1);
-                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                     goto tail;
                 }
                 eq = ANIMATION_ACT_EQUALS("Q");
                 if (eq) {
-                    m_tileMgr
+                    m_triggerMgr
                         ->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
                     return 0;
                 }
@@ -1357,7 +1357,7 @@ tail:
         if (ne) {
             SET_ANIMATION_ACT("H");
             CGrunt* cellObj =
-                m_tileMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
+                m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
             if (cellObj != NULL) {
                 CGameObject* oh = cellObj->m_object;
                 i32 cx = oh->m_screenX;
@@ -1412,7 +1412,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
         return 0;
     }
     m_entranceActive = 0;
@@ -1423,7 +1423,7 @@ i32 CGrunt::StepArrivalCommitA() {
     i32 flags = grid->CellFlagsAt(tx, ty);
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+        m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         return 0;
     }
     if (m_neighborScanEnabled == 0 && m_tileMoveCommitted != 0) {
@@ -1449,10 +1449,10 @@ i32 CGrunt::StepArrivalCommitB() {
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
 
-    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, m_killerPlayerIndex);
         return 0;
     }
     CGruntzMgr* g = g_gameReg;
@@ -1483,7 +1483,7 @@ RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     bool eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,
@@ -1594,11 +1594,11 @@ i32 CGrunt::LoadWandGruntItemConfig() {
                 i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
-                    m_tileMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
+                    m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 }
             }
         }
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,
@@ -1627,7 +1627,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
-        m_tileMgr->LoadTileArrivalFx(
+        m_triggerMgr->LoadTileArrivalFx(
             m_playerIndex,
             m_unitIndex,
             m_moveTile.m_x,

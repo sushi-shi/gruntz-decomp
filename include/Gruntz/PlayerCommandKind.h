@@ -7,7 +7,7 @@
 // over the wire and dispatched by CPlay::ExecuteCommand.
 //
 //   0  PLACE_GRUNT
-//      Its arm's whole body is m_cmdGrid->PlaceObject(...). Both producers
+//      Its arm's whole body is m_triggerMgr->PlaceObject(...). Both producers
 //      agree: CPlay::PlaceStartGruntz sends it, and so does the start-marker
 //      branch of OnLButtonDblClk, which snaps the click to a tile centre
 //      ((px & 0xffe0) + 0x10) and requires FindReadySlot() first.

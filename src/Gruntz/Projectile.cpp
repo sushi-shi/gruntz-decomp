@@ -563,7 +563,7 @@ i32 CBoomerang::LoadProjectileSprites(
     m_dirY = originY - static_cast<double>(m_launchY);
     m_phase = 0.0;
     m_velScale = d;
-    CGrunt* g = g_gameReg->m_cmdGrid->m_units[15 * sourcePlayerIndex + sourceUnitIndex];
+    CGrunt* g = g_gameReg->m_triggerMgr->m_units[15 * sourcePlayerIndex + sourceUnitIndex];
     if (g != NULL) {
         g->m_holdWindowLo = static_cast<i32>((duration * m_flightDist * g_boomRetC3 - g_boomRetC4));
         g->m_holdWindowHi = 0;
@@ -632,7 +632,7 @@ void CProjectile::ScanTargets(i32 impact) {
         unitIndex = 0;
         gridIndex = playerBase;
         for (; unitIndex < 0xf; unitIndex++, gridIndex++) {
-            CGrunt* g = g_gameReg->m_cmdGrid->m_units[gridIndex];
+            CGrunt* g = g_gameReg->m_triggerMgr->m_units[gridIndex];
             if (g == NULL) {
                 continue;
             }
@@ -987,7 +987,7 @@ i32 CTimeBomb::LoadAttributes() {
         } else {
             SetObjectFlags(0x10000);
             TBombGridClear(m_object);
-            g_gameReg->m_cmdGrid->LoadExplosionSprites(
+            g_gameReg->m_triggerMgr->LoadExplosionSprites(
                 m_object->m_screenX,
                 m_object->m_screenY,
                 m_object->m_smarts,

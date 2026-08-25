@@ -184,9 +184,9 @@ i32 CGrunt::UpdateArrival() {
             break;
         case AISTATE_CHASE: {
             CGrunt* slot =
-                m_tileMgr->m_units
+                m_triggerMgr->m_units
                     [this->m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_y];
-            CGrunt* found = m_tileMgr->FindNearestEnemy(this);
+            CGrunt* found = m_triggerMgr->FindNearestEnemy(this);
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->m_entranceCommitted == 0
                     || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
@@ -217,7 +217,8 @@ i32 CGrunt::UpdateArrival() {
         case AISTATE_ATTACK: {
             if (m_poweredUp != 0) {
                 CGrunt* slot =
-                    m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                    m_triggerMgr
+                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 // The null test is the FIRST term of the &&-chain and is repeated after
                 // the block: retail jump-threads the leading `slot == NULL` straight to
                 // the SEEK store (0xf056c) and threads the in-block failures PAST the
@@ -269,7 +270,7 @@ i32 CGrunt::UpdateArrival() {
             if (this->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
-            g_gameReg->m_cmdGrid->ApplyTriggerA(
+            g_gameReg->m_triggerMgr->ApplyTriggerA(
                 m_playerIndex,
                 m_unitIndex,
                 cell->m_x * 0x20 + 0x10,

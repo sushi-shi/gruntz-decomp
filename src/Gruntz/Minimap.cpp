@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Gruntz/LightFxRender.h>
+#include <Gruntz/Minimap.h>
 
 #include <Mfc.h>
 
@@ -27,28 +27,28 @@
 #include <ddraw.h>
 
 static inline SIZE
-GridSize(const CGruntzMapMgr* grid) {
+GridSize(const CGruntzMapMgr* mapMgr) {
     SIZE
-    s;
-    s.cx = grid->m_width;
-    s.cy = grid->m_height;
-    return s;
+    size;
+    size.cx = mapMgr->m_width;
+    size.cy = mapMgr->m_height;
+    return size;
 }
 
-static inline i32 PixOffset(const CDDSurface* s, i32 x, i32 y) {
-    return y * s->m_pitch + x * s->m_bytesPerPixel;
+static inline i32 PixOffset(const CDDSurface* surface, i32 x, i32 y) {
+    return y * surface->m_pitch + x * surface->m_bytesPerPixel;
 }
 
-static inline i32 OccupantAt(const CGruntzMapMgr* g, u32 x, u32 y) {
-    if (x < g->m_width && y < g->m_height) {
-        return g->m_rows[y][x].m_occupantId;
+static inline i32 OccupantAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
+    if (x < mapMgr->m_width && y < mapMgr->m_height) {
+        return mapMgr->m_rows[y][x].m_occupantId;
     }
     return -1;
 }
 
-static inline i32 TileIdAt(const CGruntzMapMgr* g, u32 x, u32 y) {
-    if (x < g->m_width && y < g->m_height) {
-        return g->m_rows[y][x].m_tileId;
+static inline i32 TileIdAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
+    if (x < mapMgr->m_width && y < mapMgr->m_height) {
+        return mapMgr->m_rows[y][x].m_tileId;
     }
     return 0;
 }
@@ -60,46 +60,46 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
 }
 
 RVA(0x000a32c0, 0x72)
-i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 refreshInterval) {
-    if (mgr == NULL) {
+i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
+    if (gameMgr == NULL) {
         return 0;
     }
-    m_mgr = mgr;
-    m_cmdGrid = mgr->m_cmdGrid;
-    m_tileGrid = mgr->m_tileGrid;
-    m_world = mgr->m_world;
-    m_refreshInterval = refreshInterval;
-    m_scale = 1;
+    m_gameMgr = gameMgr;
+    m_triggerMgr = gameMgr->m_triggerMgr;
+    m_mapMgr = gameMgr->m_tileGrid;
+    m_world = gameMgr->m_world;
+    m_refreshInterval = refreshIntervalMs;
+    m_cellScale = 1;
     m_refreshRemaining = 0;
     if (!AllocSurface()) {
         return 0;
     }
-    m_dstRect.left = 0;
-    m_dstRect.top = 0;
-    m_dstRect.right = 0;
-    m_dstRect.bottom = 0;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.right = 0;
-    m_srcRect.bottom = 0;
+    m_drawRect.left = 0;
+    m_drawRect.top = 0;
+    m_drawRect.right = 0;
+    m_drawRect.bottom = 0;
+    m_boundsRect.left = 0;
+    m_boundsRect.top = 0;
+    m_boundsRect.right = 0;
+    m_boundsRect.bottom = 0;
     return 1;
 }
 
 RVA(0x000a3360, 0x29)
-void CLightFxRender::Reset() {
+void CMinimap::Reset() {
     FreeSurface();
-    m_mgr = NULL;
-    m_cmdGrid = NULL;
-    m_tileGrid = NULL;
+    m_gameMgr = NULL;
+    m_triggerMgr = NULL;
+    m_mapMgr = NULL;
     m_world = NULL;
     m_surface = NULL;
-    m_handle = 0;
+    m_panActive = 0;
     m_refreshInterval = 0;
     m_refreshRemaining = 0;
 }
 
 RVA(0x000a33a0, 0x23)
-void CLightFxRender::FreeSurface() {
+void CMinimap::FreeSurface() {
     if (m_world != NULL && m_surface != NULL) {
         m_world->m_deviceManager->RemoveSurface(m_surface);
         m_surface = NULL;
@@ -107,20 +107,20 @@ void CLightFxRender::FreeSurface() {
 }
 
 RVA(0x000a33e0, 0x55)
-i32 CLightFxRender::AllocSurface() {
-    if (m_tileGrid == NULL) {
+i32 CMinimap::AllocSurface() {
+    if (m_mapMgr == NULL) {
         return 0;
     }
     if (m_world == NULL) {
         return 0;
     }
     FreeSurface();
-    CGruntzMapMgr* info = m_tileGrid;
-    CDDrawSurfaceMgr* mgr = m_world;
+    CGruntzMapMgr* mapMgr = m_mapMgr;
+    CDDrawSurfaceMgr* world = m_world;
 
     SIZE
-    dims = GridSize(info);
-    m_surface = mgr->m_deviceManager->CreateOffscreenSurface(dims.cx, dims.cy, BPP_UNSET, 0, -1);
+    size = GridSize(mapMgr);
+    m_surface = world->m_deviceManager->CreateOffscreenSurface(size.cx, size.cy, BPP_UNSET, 0, -1);
     if (m_surface == NULL) {
         return 0;
     }
@@ -129,13 +129,13 @@ i32 CLightFxRender::AllocSurface() {
 }
 
 RVA(0x000a3460, 0x2f3)
-i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
-    if (rebuild == 0) {
+i32 CMinimap::Refresh(i32 elapsedMs, i32 forceRefresh) {
+    if (forceRefresh == 0) {
 
-        if (static_cast<u32>(delta) >= static_cast<u32>(m_refreshRemaining)) {
+        if (static_cast<u32>(elapsedMs) >= static_cast<u32>(m_refreshRemaining)) {
             m_refreshRemaining = 0;
         } else {
-            m_refreshRemaining -= delta;
+            m_refreshRemaining -= elapsedMs;
         }
         if (m_refreshRemaining != 0) {
             return 1;
@@ -148,79 +148,83 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             return 0;
         }
     }
-    if (m_surface->m_width != static_cast<i32>(m_tileGrid->m_width)
-        || m_surface->m_height != static_cast<i32>(m_tileGrid->m_height)) {
+    if (m_surface->m_width != static_cast<i32>(m_mapMgr->m_width)
+        || m_surface->m_height != static_cast<i32>(m_mapMgr->m_height)) {
         if (!AllocSurface()) {
             return 0;
         }
     }
-    char* base = static_cast<char*>(m_surface->Lock(0));
-    if (base == NULL) {
+    char* pixels = static_cast<char*>(m_surface->Lock(0));
+    if (pixels == NULL) {
         return 0;
     }
-    for (u32 y = 0; y < m_tileGrid->m_height; y++) {
-        for (u32 x = 0; x < m_tileGrid->m_width; x++) {
-            u16* dst = Pix16(base + y * m_surface->m_pitch + x * m_surface->m_bytesPerPixel);
-            i32 tile = OccupantAt(m_tileGrid, x, y);
+    for (u32 y = 0; y < m_mapMgr->m_height; y++) {
+        for (u32 x = 0; x < m_mapMgr->m_width; x++) {
+            u16* pixel = Pix16(pixels + y * m_surface->m_pitch + x * m_surface->m_bytesPerPixel);
+            i32 occupantId = OccupantAt(m_mapMgr, x, y);
 
-            if (tile != -1) {
+            if (occupantId != -1) {
 
-                CGrunt* desc = m_cmdGrid->m_units[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
-                if (desc == NULL) {
+                CGrunt* grunt =
+                    m_triggerMgr->m_units[(occupantId & 0xff) + ((occupantId >> 8) & 0xff) * 15];
+                if (grunt == NULL) {
                     continue;
                 }
-                SpriteTeamColorVariant alt = SPRITE_TEAM_COLOR_PRIMARY;
-                if (desc->m_arrived != 0) {
-                    alt = SPRITE_TEAM_COLOR_SECONDARY;
+                SpriteTeamColorVariant teamColor = SPRITE_TEAM_COLOR_PRIMARY;
+                if (grunt->m_arrived != 0) {
+                    teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
-                if (static_cast<i64>(g_frameTime) - desc->m_combatClock64 >= desc->m_combatTimeout64
-                    || desc->m_playerIndex != g_curPlayer) {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(IDX(desc->m_moveIcon));
-                    if (node == NULL) {
-                        *dst = 0;
+                if (static_cast<i64>(g_frameTime) - grunt->m_combatClock64
+                        >= grunt->m_combatTimeout64
+                    || grunt->m_playerIndex != g_curPlayer) {
+                    CSpriteRef* spriteRef =
+                        m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
+                    if (spriteRef == NULL) {
+                        *pixel = 0;
                         continue;
                     }
 
-                    switch (alt) {
+                    switch (teamColor) {
                         case SPRITE_TEAM_COLOR_PRIMARY:
-                            *dst = node->m_teamColor1;
+                            *pixel = spriteRef->m_teamColor1;
                             break;
                         case SPRITE_TEAM_COLOR_SECONDARY:
-                            *dst = node->m_teamColor2;
+                            *pixel = spriteRef->m_teamColor2;
                             break;
                         case SPRITE_TEAM_COLOR_TERTIARY:
-                            *dst = node->m_teamColor3;
+                            *pixel = spriteRef->m_teamColor3;
                             break;
                         default:
-                            *dst = node->m_teamColor1;
+                            *pixel = spriteRef->m_teamColor1;
                             break;
                     }
                 } else if (static_cast<u32>(g_timer100) < 0x32) {
 
-                    i32 idx = TileIdAt(m_tileGrid, x, y);
-                    if (static_cast<u32>(idx) >= MINIMAP_TILE_COLOR_COUNT) {
-                        *dst = 0;
+                    i32 tileId = TileIdAt(m_mapMgr, x, y);
+                    if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
+                        *pixel = 0;
                     } else {
-                        *dst = m_buf[idx];
+                        *pixel = m_tileColors[tileId];
                     }
                 } else {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(IDX(desc->m_moveIcon));
-                    if (node == NULL) {
-                        *dst = 0;
+                    CSpriteRef* spriteRef =
+                        m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
+                    if (spriteRef == NULL) {
+                        *pixel = 0;
                         continue;
                     }
-                    *dst = node->m_teamColor2;
+                    *pixel = spriteRef->m_teamColor2;
                 }
             } else {
-                i32 idx = TileIdAt(m_tileGrid, x, y);
-                u16 c;
-                if (static_cast<u32>(idx) >= MINIMAP_TILE_COLOR_COUNT) {
-                    c = 0;
+                i32 tileId = TileIdAt(m_mapMgr, x, y);
+                u16 color;
+                if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
+                    color = 0;
                 } else {
-                    c = m_buf[idx];
+                    color = m_tileColors[tileId];
                 }
-                *dst = c;
+                *pixel = color;
             }
         }
     }
@@ -229,39 +233,39 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 }
 
 RVA(0x000a3820, 0x18e)
-i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
+i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     if (m_surface == NULL) {
         return 0;
     }
-    m_srcRect = *src;
-    i32 sl = src->left;
-    i32 w = src->right - sl + 1;
-    i32 st = src->top;
-    i32 h = src->bottom - st + 1;
+    m_boundsRect = *bounds;
+    i32 left = bounds->left;
+    i32 width = bounds->right - left + 1;
+    i32 top = bounds->top;
+    i32 height = bounds->bottom - top + 1;
 
-    i32 cx = sl + w / 2;
-    i32 cy = st + h / 2;
-    i32 qx = w / m_surface->m_width;
-    i32 qy = h / m_surface->m_height;
+    i32 centerX = left + width / 2;
+    i32 centerY = top + height / 2;
+    i32 scaleX = width / m_surface->m_width;
+    i32 scaleY = height / m_surface->m_height;
 
-    i32 scale = qy;
-    if (qx < qy) {
-        scale = qx;
+    i32 scale = scaleY;
+    if (scaleX < scaleY) {
+        scale = scaleX;
     }
 
-    i32 s = 3;
+    i32 cellScale = 3;
     if (scale <= 3) {
-        s = scale;
+        cellScale = scale;
     }
-    m_scale = s;
-    i32 dl = cx - m_surface->m_width * s / 2;
-    i32 dt = cy - m_surface->m_height * s / 2;
-    RECT* dstRect = &m_dstRect;
-    dstRect->left = dl;
-    dstRect->top = dt;
-    dstRect->right = m_surface->m_width * s + dl;
-    dstRect->bottom = m_surface->m_height * s + dt;
-    if (ctx->m_surface->BltEx(dstRect, m_surface, NULL, 0x1000000, NULL) != 0) {
+    m_cellScale = cellScale;
+    i32 drawLeft = centerX - m_surface->m_width * cellScale / 2;
+    i32 drawTop = centerY - m_surface->m_height * cellScale / 2;
+    RECT* dstRect = &m_drawRect;
+    dstRect->left = drawLeft;
+    dstRect->top = drawTop;
+    dstRect->right = m_surface->m_width * cellScale + drawLeft;
+    dstRect->bottom = m_surface->m_height * cellScale + drawTop;
+    if (target->m_surface->BltEx(dstRect, m_surface, NULL, 0x1000000, NULL) != 0) {
         return 0;
     }
 
@@ -271,13 +275,13 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     box.top = vr->top >> TILE_SHIFT_PX;
     box.right = vr->right >> TILE_SHIFT_PX;
     box.bottom = vr->bottom >> TILE_SHIFT_PX;
-    if (m_scale != 1) {
+    if (m_cellScale != 1) {
 
-        box.left *= m_scale;
-        box.top *= m_scale;
-        box.right *= m_scale;
-        box.bottom *= m_scale;
-        i32 extension = m_scale - 1;
+        box.left *= m_cellScale;
+        box.top *= m_cellScale;
+        box.right *= m_cellScale;
+        box.bottom *= m_cellScale;
+        i32 extension = m_cellScale - 1;
         box.right += extension;
         box.bottom += extension;
     }
@@ -285,7 +289,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     box.right += dstRect->left;
     box.top += dstRect->top;
     box.bottom += dstRect->top;
-    DrawBorder(&box, ctx, 0xffff);
+    DrawBorder(&box, target, 0xffff);
     return 1;
 }
 
@@ -295,78 +299,80 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a3a20, 0xe2)
-void CLightFxRender::DrawBorderRaw(RECT* r, char* base, i32 color) {
-    i32 w = r->right - r->left + 1;
+void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
+    i32 width = rect->right - rect->left + 1;
 
-    u16* tp = Pix16(base + PixOffset(m_surface, r->left, r->top));
-    for (i32 t = 0; t < w; t++) {
-        tp[t] = static_cast<u16>(color);
+    u16* topPixels = Pix16(pixels + PixOffset(m_surface, rect->left, rect->top));
+    for (i32 topX = 0; topX < width; topX++) {
+        topPixels[topX] = static_cast<u16>(color);
     }
 
-    u16* bp = Pix16(base + PixOffset(m_surface, r->left, r->bottom));
-    for (i32 b = 0; b < w; b++) {
-        bp[b] = static_cast<u16>(color);
+    u16* bottomPixels = Pix16(pixels + PixOffset(m_surface, rect->left, rect->bottom));
+    for (i32 bottomX = 0; bottomX < width; bottomX++) {
+        bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
-    i32 h = r->bottom - r->top + 1;
-    i32 lo = PixOffset(m_surface, r->left, r->top);
-    i32 ro = PixOffset(m_surface, r->right, r->top);
-    i32 step = m_surface->m_pitch;
+    i32 height = rect->bottom - rect->top + 1;
+    i32 leftOffset = PixOffset(m_surface, rect->left, rect->top);
+    i32 rightOffset = PixOffset(m_surface, rect->right, rect->top);
+    i32 rowStride = m_surface->m_pitch;
 
-    if (h > 0) {
-        char* lp = base + lo;
-        char* rp = base + ro;
-        i32 v = h;
-        while (v != 0) {
-            *Pix16(lp) = static_cast<u16>(color);
-            lp += step;
-            *Pix16(rp) = static_cast<u16>(color);
-            rp += step;
-            v--;
+    if (height > 0) {
+        char* leftPixel = pixels + leftOffset;
+        char* rightPixel = pixels + rightOffset;
+        i32 rowsRemaining = height;
+        while (rowsRemaining != 0) {
+            *Pix16(leftPixel) = static_cast<u16>(color);
+            leftPixel += rowStride;
+            *Pix16(rightPixel) = static_cast<u16>(color);
+            rightPixel += rowStride;
+            rowsRemaining--;
         }
     }
 }
 
 RVA(0x000a3b50, 0xfa)
-void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
-    CDDSurface* surf = ctx->m_surface;
-    char* base = static_cast<char*>(surf->Lock(0));
-    if (base == NULL) {
+void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
+    CDDSurface* surface = target->m_surface;
+    char* pixels = static_cast<char*>(surface->Lock(0));
+    if (pixels == NULL) {
         return;
     }
-    i32 w = r->right - r->left + 1;
+    i32 width = rect->right - rect->left + 1;
 
-    u16* tp = Pix16(base + r->top * surf->m_pitch + r->left * surf->m_bytesPerPixel);
-    for (i32 t = 0; t < w; t++) {
-        tp[t] = static_cast<u16>(color);
+    u16* topPixels =
+        Pix16(pixels + rect->top * surface->m_pitch + rect->left * surface->m_bytesPerPixel);
+    for (i32 topX = 0; topX < width; topX++) {
+        topPixels[topX] = static_cast<u16>(color);
     }
 
-    u16* bp = Pix16(base + r->bottom * surf->m_pitch + r->left * surf->m_bytesPerPixel);
-    for (i32 b = 0; b < w; b++) {
-        bp[b] = static_cast<u16>(color);
+    u16* bottomPixels =
+        Pix16(pixels + rect->bottom * surface->m_pitch + rect->left * surface->m_bytesPerPixel);
+    for (i32 bottomX = 0; bottomX < width; bottomX++) {
+        bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
-    i32 h = r->bottom - r->top + 1;
-    i32 lo = r->left * surf->m_bytesPerPixel + r->top * surf->m_pitch;
-    i32 ro = r->right * surf->m_bytesPerPixel + r->top * surf->m_pitch;
-    i32 step = surf->m_pitch;
-    for (i32 v = 0; v < h; v++) {
-        *Pix16(base + lo) = static_cast<u16>(color);
-        *Pix16(base + ro) = static_cast<u16>(color);
-        lo += step;
-        ro += step;
+    i32 height = rect->bottom - rect->top + 1;
+    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->m_pitch;
+    i32 rightOffset = rect->right * surface->m_bytesPerPixel + rect->top * surface->m_pitch;
+    i32 rowStride = surface->m_pitch;
+    for (i32 y = 0; y < height; y++) {
+        *Pix16(pixels + leftOffset) = static_cast<u16>(color);
+        *Pix16(pixels + rightOffset) = static_cast<u16>(color);
+        leftOffset += rowStride;
+        rightOffset += rowStride;
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surface->m_ddSurface->Unlock(NULL);
 }
 
 RVA(0x000a3c90, 0xe8)
-i32 CLightFxRender::BuildShape(LevelArea shape) {
-    if (shape > AREA_LAST) {
+i32 CMinimap::SetAreaPalette(LevelArea area) {
+    if (area > AREA_LAST) {
         return 0;
     }
-    memset(m_buf, 0, sizeof(m_buf));
-    switch (shape) {
+    memset(m_tileColors, 0, sizeof(m_tileColors));
+    switch (area) {
         case AREA_ROCKY_ROADZ:
             if (!BuildRockyRoadzPalette()) {
                 return 0;
@@ -415,12 +421,12 @@ i32 CLightFxRender::BuildShape(LevelArea shape) {
 // @early-stop
 // One member store sits one push earlier in retail inside the FillSpan argument
 // setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
 // recovers only 2 of those - the cursor is retail's own.
 // docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a3dc0, 0x85f)
-i32 CLightFxRender::BuildRockyRoadzPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildRockyRoadzPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x4f, 0x14, 0x01);
     u16 c01 = Pack(0x63, 0x37, 0x13);
@@ -530,24 +536,24 @@ i32 CLightFxRender::BuildRockyRoadzPalette() {
 }
 
 RVA(0x000a4840, 0x32)
-void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
+void CMinimap::FillSpan(u32 x1, u32 x2, u16 color) {
     if (x1 > x2) {
         return;
     }
     for (u32 i = x1; i <= x2; i++) {
-        m_buf[i] = color;
+        m_tileColors[i] = color;
     }
 }
 
 // @early-stop
 // One member store sits one push earlier in retail inside the FillSpan argument
 // setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
 // recovers only 2 of those - the cursor is retail's own.
 // docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a4890, 0x852)
-i32 CLightFxRender::BuildGruntziclezPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildGruntziclezPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0xe0, 0xed, 0xfe);
     u16 c01 = Pack(0x89, 0x6e, 0x58);
@@ -657,12 +663,12 @@ i32 CLightFxRender::BuildGruntziclezPalette() {
 // @early-stop
 // One member store sits one push earlier in retail inside the FillSpan argument
 // setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
 // recovers only 2 of those - the cursor is retail's own.
 // docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a5310, 0x855)
-i32 CLightFxRender::BuildTropiczPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildTropiczPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x4e, 0x78, 0x1c);
     u16 c01 = Pack(0x23, 0x23, 0x23);
@@ -772,8 +778,8 @@ i32 CLightFxRender::BuildTropiczPalette() {
 }
 // @early-stop
 RVA(0x000a5d90, 0x825)
-i32 CLightFxRender::BuildHighOnSweetzPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildHighOnSweetzPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x8b, 0x9f, 0xfd);
     u16 c01 = Pack(0x00, 0xc1, 0xa7);
@@ -883,12 +889,12 @@ i32 CLightFxRender::BuildHighOnSweetzPalette() {
 // @early-stop
 // One member store sits one push earlier in retail inside the FillSpan argument
 // setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
 // recovers only 2 of those - the cursor is retail's own.
 // docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a67d0, 0x864)
-i32 CLightFxRender::BuildHighRollerzPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildHighRollerzPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x3c, 0x0e, 0x15);
     u16 c01 = Pack(0x68, 0x08, 0x07);
@@ -997,8 +1003,8 @@ i32 CLightFxRender::BuildHighRollerzPalette() {
 }
 // @early-stop
 RVA(0x000a7260, 0x8c0)
-i32 CLightFxRender::BuildHoneyPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildHoneyPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x85, 0x73, 0x6f);
     u16 c01 = Pack(0x28, 0x25, 0xc8);
@@ -1112,8 +1118,8 @@ i32 CLightFxRender::BuildHoneyPalette() {
 }
 // @early-stop
 RVA(0x000a7d50, 0x94f)
-i32 CLightFxRender::BuildMiniatureMasterzPalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildMiniatureMasterzPalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x40, 0xb5, 0x13);
     u16 c01 = Pack(0x00, 0x7a, 0x2f);
@@ -1234,12 +1240,12 @@ i32 CLightFxRender::BuildMiniatureMasterzPalette() {
 // @early-stop
 // One member store sits one push earlier in retail inside the FillSpan argument
 // setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
 // recovers only 2 of those - the cursor is retail's own.
 // docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a8900, 0x926)
-i32 CLightFxRender::BuildSpacePalette() {
-    u16* buf = m_buf;
+i32 CMinimap::BuildSpacePalette() {
+    u16* buf = m_tileColors;
     i32 i;
     u16 c00 = Pack(0x5e, 0x5e, 0x5e);
     u16 c01 = Pack(0x28, 0x28, 0x28);
@@ -1358,24 +1364,24 @@ i32 CLightFxRender::BuildSpacePalette() {
 }
 
 RVA(0x000a9480, 0x5c)
-i32 CLightFxRender::BeginMinimapPan(i32, i32 x, i32 y) {
+i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
     i32 cell[2];
-    if (!ClampRect(x, y, cell, 0x20)) {
+    if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
         return 0;
     }
 
-    CPlay* ctx = static_cast<CPlay*>(m_mgr->m_curState);
-    if (ctx != NULL) {
-        ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
+    CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
+    if (play != NULL) {
+        play->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
-    m_handle = 1;
+    m_panActive = 1;
     return 1;
 }
 
 RVA(0x000a9500, 0x16)
-i32 CLightFxRender::EndMinimapPan(i32, i32, i32) {
-    if (m_handle != 0) {
-        m_handle = 0;
+i32 CMinimap::EndMinimapPan(i32, i32, i32) {
+    if (m_panActive != 0) {
+        m_panActive = 0;
     }
     return 1;
 }
@@ -1384,63 +1390,65 @@ i32 CLightFxRender::EndMinimapPan(i32, i32, i32) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a9530, 0x5)
-i32 CLightFxRender::IgnoreMinimapEvent(i32, i32, i32) {
+i32 CMinimap::IgnoreMinimapEvent(i32, i32, i32) {
     return 0;
 }
 
 RVA(0x000a9550, 0x5b)
-i32 CLightFxRender::IssueMinimapCommand(i32, i32 x, i32 y) {
+i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     i32 cell[2];
-    if (!ClampRect(x, y, cell, 0x20)) {
+    if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
         return 0;
     }
-    g_gameReg->m_cmdGrid
+    g_gameReg->m_triggerMgr
         ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, TARGET_SELECTION_AUTO, 1);
     return 1;
 }
 
 RVA(0x000a95d0, 0x69)
-i32 CLightFxRender::ContinueMinimapPan(i32, i32 x, i32 y) {
-    if (m_handle == 0) {
+i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
+    if (m_panActive == 0) {
         return 0;
     }
     i32 cell[2];
-    if (!ClampRect(x, y, cell, 0x20)) {
+    if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
         return 0;
     }
-    CPlay* ctx = static_cast<CPlay*>(m_mgr->m_curState);
-    if (ctx != NULL) {
-        ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
+    CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
+    if (play != NULL) {
+        play->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     return 1;
 }
 
 RVA(0x000a9660, 0xca)
-i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
-    if (x < m_srcRect.left || x > m_srcRect.right || y < m_srcRect.top || y > m_srcRect.bottom) {
+i32 CMinimap::ScreenPointToCell(i32 cursorX, i32 cursorY, i32* outCell, i32 snapMargin) {
+    if (cursorX < m_boundsRect.left || cursorX > m_boundsRect.right || cursorY < m_boundsRect.top
+        || cursorY > m_boundsRect.bottom) {
         return 0;
     }
-    if (margin > 0) {
-        if (x < m_dstRect.left && m_dstRect.left - x <= margin) {
-            x = m_dstRect.left;
+    if (snapMargin > 0) {
+        if (cursorX < m_drawRect.left && m_drawRect.left - cursorX <= snapMargin) {
+            cursorX = m_drawRect.left;
         }
-        if (x > m_dstRect.right && x - m_dstRect.right <= margin) {
-            x = m_dstRect.right;
+        if (cursorX > m_drawRect.right && cursorX - m_drawRect.right <= snapMargin) {
+            cursorX = m_drawRect.right;
         }
-        if (y < m_dstRect.top && m_dstRect.top - y <= margin) {
-            y = m_dstRect.top;
+        if (cursorY < m_drawRect.top && m_drawRect.top - cursorY <= snapMargin) {
+            cursorY = m_drawRect.top;
         }
-        if (y > m_dstRect.bottom && y - m_dstRect.bottom <= margin) {
-            y = m_dstRect.bottom;
+        if (cursorY > m_drawRect.bottom && cursorY - m_drawRect.bottom <= snapMargin) {
+            cursorY = m_drawRect.bottom;
         }
     }
-    if (x < m_dstRect.left || x > m_dstRect.right || y < m_dstRect.top || y > m_dstRect.bottom) {
+    if (cursorX < m_drawRect.left || cursorX > m_drawRect.right || cursorY < m_drawRect.top
+        || cursorY > m_drawRect.bottom) {
         return 0;
     }
 
-    out[0] = x - m_dstRect.left;
-    out[1] = y - m_dstRect.top;
-    out[0] /= m_scale;
-    out[1] /= m_scale;
+    outCell[0] = cursorX - m_drawRect.left;
+    outCell[1] = cursorY - m_drawRect.top;
+    outCell[0] /= m_cellScale;
+    outCell[1] /= m_cellScale;
     return 1;
 }

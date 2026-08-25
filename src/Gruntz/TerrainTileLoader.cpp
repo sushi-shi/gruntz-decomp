@@ -94,13 +94,13 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
 
             if (cellType == TILEKIND_COVERED_POWERUP) {
-                CTileTriggerLogic* found = state->m_beginMarker->FindLogic(
+                CTileTriggerLogic* found = state->m_tileTriggers->FindLogic(
                     (tileX << 8) + tileY,
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
                     found->ApplyMove(TILEKIND_COVERED_POWERUP);
-                    state->m_beginMarker->RemoveIdleLogic(found);
+                    state->m_tileTriggers->RemoveIdleLogic(found);
                     return 1;
                 }
                 // Retail re-reads the cell off the plane rather than reusing the
@@ -157,13 +157,13 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
 
             if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B) {
-                CTileTriggerLogic* found = state->m_beginMarker->FindLogic(
+                CTileTriggerLogic* found = state->m_tileTriggers->FindLogic(
                     (tileX << 8) + tileY,
                     TRIGID_COVERED_POWERUP_26
                 );
                 if (found != NULL) {
                     found->ApplyMove(cellType);
-                    state->m_beginMarker->RemoveIdleLogic(found);
+                    state->m_tileTriggers->RemoveIdleLogic(found);
                 } else if (cellType == TILEKIND_GAUNTLET_ROCK_A) {
                     CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
                     SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5a);
@@ -174,7 +174,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5b);
                 }
             } else if (cellType == TILEKIND_GIANT_ROCK) {
-                CGiantRockLogic* rock = state->m_beginMarker->ScanNeighborhood(tileX, tileY);
+                CGiantRockLogic* rock = state->m_tileTriggers->ScanNeighborhood(tileX, tileY);
                 if (rock == NULL) {
                     CString diag;
                     diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
@@ -186,15 +186,15 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     return 0;
                 }
                 rock->BuildRockBreakInGameText();
-                state->m_beginMarker->RemoveIdleLogic(rock);
+                state->m_tileTriggers->RemoveIdleLogic(rock);
                 return 1;
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
                 CTileActionEvent* event =
-                    state->m_beginMarker->FindActionByCellKey((tileX << 8) + tileY);
+                    state->m_tileTriggers->FindActionByCellKey((tileX << 8) + tileY);
                 if (event->Process(unit) != 0) {
-                    state->m_beginMarker->RemoveActionEvent(event);
+                    state->m_tileTriggers->RemoveActionEvent(event);
                 }
                 return 1;
             } else {
@@ -245,7 +245,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     }
                 }
                 if (removed != 0 && playerIndex == g_curPlayer) {
-                    static_cast<CPlay*>(g_gameReg->m_curState)->m_guts->AdvanceGauge(gaugePoints);
+                    static_cast<CPlay*>(g_gameReg->m_curState)
+                        ->m_statusBar->AdvanceGauge(gaugePoints);
                 }
             }
             return 1;
@@ -256,7 +257,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     i32 topY = tileY - radius;
                     i32 bottomY = tileY + radius;
                     for (i32 scanX = tileX - radius; scanX <= tileX + radius; scanX++) {
-                        if (state->m_beginMarker->SetCell(scanX, topY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(scanX, topY, playerIndex) != 0
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = topY * 0x20 + 0x10;
@@ -330,7 +331,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             }
                         }
 
-                        if (state->m_beginMarker->SetCell(scanX, bottomY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(scanX, bottomY, playerIndex) != 0
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = bottomY * 0x20 + 0x10;
@@ -407,7 +408,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     i32 leftX = tileX - radius;
                     i32 rightX = tileX + radius;
                     for (i32 scanY = topY + 1; scanY < bottomY; scanY++) {
-                        if (state->m_beginMarker->SetCell(leftX, scanY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(leftX, scanY, playerIndex) != 0
                             && g_curPlayer == playerIndex) {
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
@@ -481,7 +482,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             }
                         }
 
-                        if (state->m_beginMarker->SetCell(rightX, scanY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(rightX, scanY, playerIndex) != 0
                             && playerIndex == g_curPlayer) {
                             i32 fxX = rightX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
@@ -581,7 +582,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         actionCode = BRICKTILE_BROWN_1;
                         break;
                 }
-                if (state->m_beginMarker->AddSwitchActionEvent(
+                if (state->m_tileTriggers->AddSwitchActionEvent(
                         actionCode,
                         tileX,
                         tileY,
@@ -600,7 +601,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event =
-                    state->m_beginMarker->FindActionByCellKey((tileX << 8) + tileY);
+                    state->m_tileTriggers->FindActionByCellKey((tileX << 8) + tileY);
                 if (event
                         ->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(playerIndex))
                     == 0) {

@@ -27,11 +27,11 @@ tail-merges the two identical call sites into one call with the branched push, a
 receiver load naturally lands after the branch (fixing register/order divergence too):
 
 ```cpp
-// NOT: m_guts->Method(m_paused ? 0 : 1);   // -> xor;test;sete al;push eax (~60%)
+// NOT: m_statusBar->Method(m_paused ? 0 : 1);   // -> xor;test;sete al;push eax (~60%)
 if (m_paused) {
-    m_guts->Method(0);
+    m_statusBar->Method(0);
 } else {
-    m_guts->Method(1);
+    m_statusBar->Method(1);
 }
 ```
 Steerable. Closed CPlay::PauseGame (0x0cee90) 61% → 100%; an intermediate `int` local

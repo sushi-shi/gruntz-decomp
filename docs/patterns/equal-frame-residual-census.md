@@ -69,7 +69,7 @@ rows flagged. All fifteen resolve, and none is a defect:
 * **six are pure MOVES** - delete-and-insert of the SAME symbol, i.e. one global
   read scheduled at a different point (`LoadScrollSpeedOptions`,
   `LoadGruntDecayConfig`, `AnnounceVersion`, `ApplyGameOptions`, and both
-  `CLightFxRender` palette builders on `g_rDown`);
+  `CMinimap` palette builders on `g_rDown`);
 * **seven are already catalogued** - `BuildBootyWalkingGruntz` is §8's `$E`
   helper under two non-names plus §14's one-past-the-end addend, and the six
   ctors (`CTeleporter`, `CSecretTeleporterTrigger`, `CSecretLevelTrigger`,
@@ -249,7 +249,7 @@ already erases, so `lea esi,[eax+0x1]` IS `inc esi` and `lea ecx,[eax+eax*1]`
 IS `add eax,eax` — but un-mirrored the lea's displacement read as a member
 offset the other side never touched (`CGruntzMgr::RandRange`,
 `UpdateMgrScroll`, `CRandomAmbientSound::Update`,
-`CLightFxRender::DrawBorderRaw`, `_zvec::GrowTo`,
+`CMinimap::DrawBorderRaw`, `_zvec::GrowTo`,
 `CTileTriggerLogic::Classify`). The flag side effect does NOT fold: `lea` sets
 none, so retail's extra `test r,r` survives and the row reads `selection`,
 which is honestly what it is.

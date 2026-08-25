@@ -574,7 +574,7 @@ tail pending the 0xea990-0xf8800 partition package.
   channelslots frag INSIDE the play run is the frag-level sandwich); the ex
   channelslots + gruntzplayer + gamemodeobjlifecycle units folded in, /GX
   unified. The "CGameModeObj" view was offset-proven to be CPlay ITSELF
-  (+0x1cc m_savedClock / +0x2dc m_guts / +0x3a4 array block / +0x4fc
+  (+0x1cc m_savedClock / +0x2dc m_statusBar / +0x3a4 array block / +0x4fc
   m_levelOverlayOpen) and its four lifecycle methods are now CPlay members; the
   retail `lea ecx,[this+idx*0x14+0x3a4]` RemoveAt base proves CPlay::m_3a4 is
   **CPtrArray[4]** (not CByteArray[4] - same 0x14 size, dtor fold unchanged,

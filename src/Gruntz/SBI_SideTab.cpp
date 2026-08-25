@@ -143,7 +143,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == STATUS_SAMPLE_NONE) {
         return 0;
     }
-    CGrunt* unit = g_gameReg->m_cmdGrid->m_units[m_colIndex + 15 * m_rowIndex];
+    CGrunt* unit = g_gameReg->m_triggerMgr->m_units[m_colIndex + 15 * m_rowIndex];
     if (unit == NULL) {
         m_owner->ClearStat(m_colIndex);
         return 0;

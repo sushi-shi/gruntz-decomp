@@ -50,7 +50,8 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
-            occ = m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            occ =
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ == NULL) {
                 goto seek;
             }
@@ -70,7 +71,7 @@ i32 CGrunt::StepArrivalDefense() {
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
                     && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
-                        g_gameReg->m_cmdGrid->ApplyTriggerB(
+                        g_gameReg->m_triggerMgr->ApplyTriggerB(
                             m_playerIndex,
                             m_unitIndex,
                             occ->m_object->m_screenX,
@@ -97,8 +98,9 @@ i32 CGrunt::StepArrivalDefense() {
             return 1;
 
         case AISTATE_CHASE: {
-            occ = m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-            CGrunt* g = m_tileMgr->FindNearestEnemy(this);
+            occ =
+                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
                 Coord none;
                 m_arrivalCell = *none.Set(-1, -1);
@@ -135,7 +137,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (m_vehiclePickupType == PICKUP_SCROLL) {
-                g_gameReg->m_cmdGrid->ApplyTriggerB(
+                g_gameReg->m_triggerMgr->ApplyTriggerB(
                     m_playerIndex,
                     m_unitIndex,
                     occ->m_object->m_screenX,
@@ -152,14 +154,14 @@ i32 CGrunt::StepArrivalDefense() {
         }
 
         case AISTATE_SEEK:
-            occ = m_tileMgr->FindNearestEnemy(this);
+            occ = m_triggerMgr->FindNearestEnemy(this);
             if (occ == NULL) {
                 goto L_f308a;
             }
             if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
-                    g_gameReg->m_cmdGrid->ApplyTriggerB(
+                    g_gameReg->m_triggerMgr->ApplyTriggerB(
                         m_playerIndex,
                         m_unitIndex,
                         occ->m_object->m_screenX,

@@ -168,10 +168,10 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficul
     m_repickTimer = 0;
     m_ctx = mgr;
     m_playerIndex = playerIndex;
-    m_triggerMgr = mgr->m_cmdGrid;
+    m_triggerMgr = mgr->m_triggerMgr;
     m_board = mgr->m_tileGrid;
     m_play = static_cast<CPlay*>(mgr->m_curState);
-    m_cellQuery = m_play->m_beginMarker;
+    m_cellQuery = m_play->m_tileTriggers;
     m_active = 1;
 
     m_gruntCreationTime = g_buteMgr.GetDwordDef("Battlez", "GruntCreationTime", 10000);
@@ -376,7 +376,7 @@ i32 CBattlezMapConfig::StepBoard() {
     if (m_active == 0) {
         return 1;
     }
-    if (m_ctx->m_cmdGrid == NULL) {
+    if (m_ctx->m_triggerMgr == NULL) {
         return 0;
     }
     if (m_spawnTimer - m_spawnLastFire > m_gruntCreationTime) {
@@ -590,7 +590,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         ->SnapToTileCenter(&screen, cand->m_x << TILE_SHIFT_PX, cand->m_y << TILE_SHIFT_PX);
     i32 cell;
     if (allowReserved != 0) {
-        cell = m_ctx->m_cmdGrid->PlaceObject(
+        cell = m_ctx->m_triggerMgr->PlaceObject(
             m_playerIndex,
             screen.m_x,
             screen.m_y,
@@ -606,7 +606,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
             NULL
         );
     } else {
-        cell = m_ctx->m_cmdGrid->PlaceObject(
+        cell = m_ctx->m_triggerMgr->PlaceObject(
             m_playerIndex,
             screen.m_x,
             screen.m_y,
@@ -626,7 +626,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         return 0;
     }
 
-    CGrunt* unit = m_ctx->m_cmdGrid->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt* unit = m_ctx->m_triggerMgr->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
     if (unit == NULL) {
         return 0;
     }
@@ -3119,7 +3119,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     } else {
                         if (k == BRICKTILE_GOLD_1 || k == BRICKTILE_GOLD_2_TOP
                             || k == BRICKTILE_GOLD_3_TOP) {
-                            m_play->m_beginMarker->SetCell(fcx, fcy, m_playerIndex);
+                            m_play->m_tileTriggers->SetCell(fcx, fcy, m_playerIndex);
                         }
                     }
                 }
@@ -4549,7 +4549,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = m_ctx->m_cmdGrid->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt* unit = m_ctx->m_triggerMgr->m_units[cell + m_playerIndex * TM_UNITS_PER_PLAYER];
     if (unit == NULL) {
         return 0;
     }

@@ -43,7 +43,7 @@
 RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
-    CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
+    CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
     POSITION pos = list.GetHeadPosition();
 
     if (pos != NULL) {
@@ -208,9 +208,9 @@ L_scanb:
         i32 bestX = 0;
         i32 bestY = 0;
 
-        POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
+        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
-            CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
+            CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
             if (gg->m_pending == 0) {
                 i32 gx = gg->m_tileX;
                 i32 gy = gg->m_tileY;
@@ -219,7 +219,7 @@ L_scanb:
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     )
                     != 0) {
-                    m_tileMgr->ApplyTriggerA(
+                    m_triggerMgr->ApplyTriggerA(
                         m_playerIndex,
                         m_unitIndex,
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -249,7 +249,7 @@ L_scanb:
             i32 dy = bestY - c2.m_y;
             dy = abs(dy);
             if (dx <= 1 && dy <= 1) {
-                m_tileMgr->ApplyTriggerA(
+                m_triggerMgr->ApplyTriggerA(
                     m_playerIndex,
                     m_unitIndex,
                     (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -268,7 +268,7 @@ L_scanb:
         if (CellTargetable(col, row) == 0) {
             return 1;
         }
-        m_tileMgr->ApplyTriggerA(
+        m_triggerMgr->ApplyTriggerA(
             m_playerIndex,
             m_unitIndex,
             (col << TILE_SHIFT_PX) + TILE_HALF_PX,

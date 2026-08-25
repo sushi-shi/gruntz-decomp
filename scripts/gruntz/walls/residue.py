@@ -252,7 +252,7 @@ UNNAMED = re.compile(r"^(FUN_|DAT_|\$gap_|\$anon_data_)")
 #: IS `add r,r` once the names are gone. Left un-mirrored, the lea's
 #: displacement reads as a member offset the other side never touches
 #: (`CGruntzMgr::RandRange`, `UpdateMgrScroll`, `CRandomAmbientSound::Update`,
-#: `CLightFxRender::DrawBorderRaw`, `_zvec::GrowTo`). The flag side effect does
+#: `CMinimap::DrawBorderRaw`, `_zvec::GrowTo`). The flag side effect does
 #: NOT fold: `lea` sets none, so retail's extra `test r,r` survives into the
 #: residual and the row reads `selection`, which is what it is.
 LEA_ARITH = {"lea r,[r+0x1]": "inc r", "lea r,[r-0x1]": "dec r",

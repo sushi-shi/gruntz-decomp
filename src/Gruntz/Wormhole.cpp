@@ -240,7 +240,7 @@ i32 CGruntPuddle::Remove() {
         i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & 0x2) != 0) {
             SetObjectFlags(0x10000);
-            CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
+            CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
             POSITION pos = list.GetHeadPosition();
             while (pos != NULL) {
                 POSITION current = pos;
@@ -452,7 +452,7 @@ i32 CTeleporter::Update() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         if (CGameLevel::PointInRect(&mgr->m_viewBounds, x, y)) {
-            (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_teleportWanted = 1;
+            (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_teleportWanted = 1;
         }
     }
     mgr = g_gameReg;
@@ -474,14 +474,14 @@ i32 CTeleporter::Update() {
     i32 playerIndex;
     i32 unitIndex;
     CGrunt* found =
-        mgr->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+        mgr->m_triggerMgr->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (found == NULL) {
         return 0;
     }
 
     if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 1, 1);
-        g_gameReg->m_scoreHud->m_secretsFound++;
+        g_gameReg->m_gameStats->m_secretsFound++;
         SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
         CWwdGameObjectA* s = m_object;
         CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -520,11 +520,11 @@ i32 CTeleporter::Update() {
     m_tickHandled = 1;
     mgr = g_gameReg;
     CGrunt* current;
-    if ((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetCount() != 1) {
+    if ((static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_recList.GetCount() != 1) {
         current = NULL;
     } else {
-        Coord* rec = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->HeadRec();
-        current = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
+        Coord* rec = (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->HeadRec();
+        current = (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))
                       ->m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
     if (found == current && playerIndex == g_curPlayer) {

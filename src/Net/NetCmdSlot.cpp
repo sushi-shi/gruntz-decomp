@@ -180,7 +180,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
         remaining -= consumed;
         cursor += consumed;
-        m_owner->m_mgr->m_cmdSubMgr->EnqueueCommand(0, command);
+        m_owner->m_mgr->m_commandMgr->EnqueueCommand(0, command);
     }
     return 1;
 }

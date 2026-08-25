@@ -155,7 +155,7 @@ i32 CPathHazard::Tick() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
         i32 playerIndex, unitIndex;
-        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
+        CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
             &obj->m_area,
@@ -281,7 +281,7 @@ i32 CPathHazard::SiblingTick() {
 
     } else {
         i32 playerIndex, unitIndex;
-        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
+        CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
             &obj->m_area,
@@ -318,7 +318,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strike.m_window =
         static_cast<i64>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0));
     m_strike.m_deadline = static_cast<i64>(g_frameTime);
-    g_gameReg->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
+    g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;

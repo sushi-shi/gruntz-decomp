@@ -55,7 +55,7 @@ scratch-register rotation in `SaveVideoCheckboxes`.
 
 The probe was run against 28 sub-100 functions across 22 TUs. It flipped exactly two
 (`GetMemoryUsage`, `Save`) and was **codegen-neutral on the other 26** — not one diff line
-moved, including four `CGameLevel` probe helpers, five `CLightFxRender` palette builders,
+moved, including four `CGameLevel` probe helpers, five `CMinimap` palette builders,
 `CMulti::Render`, `SoundStream::ParseWave` and `CSBI_GruntMachine::SerializeFields`. So
 "adding a definition to the TU perturbs everything" is FALSE here; it perturbs this one
 canonicalisation. That also means the probe is a safe, cheap diagnostic.
@@ -97,7 +97,7 @@ unrecoverable; the .text is gapless, functions.tsv confirms 0x163300+0x70 abuts 
 
 ## The trigger can be EQUAL ARGUMENT VALUES, and then only some call sites flip
 
-`CLightFxRender::BuildRockyRoadzPalette` 0x0a3dc0 compiles to **exactly retail's 2143 bytes
+`CMinimap::BuildRockyRoadzPalette` 0x0a3dc0 compiles to **exactly retail's 2143 bytes
 (0x85f)** and 645 instructions, of which **18 differ** - and every one of them is the
 `mov ecx,<shift global>` operand of the R and G terms inside the same inlined helper:
 
@@ -120,7 +120,7 @@ canonicalisation keys on the operand VALUES and not on the expression shape. Not
 Seven spellings of `Pack` were byte-identical or worse and none reordered the greys: named
 per-channel temps, right-association of the `|` chain, an `|=` accumulator, `u32`
 parameters, and casting after the shifts. The TU-state lever DOES reach it - the eight
-`CLightFxRender` palette builders move 95.79-97.65 -> 98.86-99.50 under a mixed
+`CMinimap` palette builders move 95.79-97.65 -> 98.86-99.50 under a mixed
 declaration-kind probe (see
 [`tu-state-probe-family-decides-reachability.md`](tu-state-probe-family-decides-reachability.md)),
 which is why the "five palette builders were codegen-neutral" row above is about the

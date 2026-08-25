@@ -123,7 +123,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
         ls->m_cueTiming.m_interval.m_hi = 0;
         ls->m_cueTiming.m_start.m_lo = g_frameTime;
         ls->m_cueTiming.m_start.m_hi = 0;
-        g_gameReg->m_cmdGrid->StartPlayerDefeatSequence(g_curPlayer);
+        g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer];
         if (slot != NULL) {
             slot->m_clearedRound = 1;

@@ -37,10 +37,10 @@ code, but retail emits it, and several such guards cross-jump onto one shared
 implicit null test, which can sit right after it on the same register.
 
 ```asm
-0c82b2: mov  esi,[ebx+0x2dc]     ; m_guts
+0c82b2: mov  esi,[ebx+0x2dc]     ; m_statusBar
 0c82b8: cmp  esi,ebp             ; ebp == 0     <- the SOURCE guard
 0c82ba: je   0xc8485             ; -> shared `xor eax,eax; jmp`
-0c82c0: cmp  esi,ebp             ; <- `delete m_guts`'s own test
+0c82c0: cmp  esi,ebp             ; <- `delete m_statusBar`'s own test
 0c82c6: je   0xc830a
 ```
 

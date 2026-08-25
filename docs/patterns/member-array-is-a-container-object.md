@@ -66,7 +66,7 @@ codegen-identical; `/Ob0 /Oy- /Oi- /Os /Og- /O1` all regress.
 
 ## Counter-example: the local cursor is sometimes RETAIL'S OWN shape
 
-Do not apply this blind to every member array walked through a cursor. `CLightFxRender`'s
+Do not apply this blind to every member array walked through a cursor. `CMinimap`'s
 eight palette builders write `m_buf[0x1f4]` through exactly that idiom
 (`u16* buf = m_buf; … buf[257] = c07;`) and are 99.1-99.5% with a ONE-instruction residue,
 which is the trigger signature above — but here the cursor is load-bearing:

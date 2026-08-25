@@ -593,8 +593,8 @@ i32 CWarlord::LoadAttributes() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_gameMode != GAMEMODE_SINGLE) {
         CWwdGameObjectA* o = m_object;
-        i32 dist =
-            reg->m_cmdGrid->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+        i32 dist = reg->m_triggerMgr
+                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -619,7 +619,7 @@ i32 CWarlord::LoadAttributes2() {
 
     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         CWwdGameObjectA* o = m_object;
-        i32 dist = g_gameReg->m_cmdGrid
+        i32 dist = g_gameReg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
@@ -627,7 +627,7 @@ i32 CWarlord::LoadAttributes2() {
         }
     } else {
 
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_frameMarker->m_currentMs == 0) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_levelTimer->m_currentMs == 0) {
             ResolveMovingAnimation();
             return 0;
         }
@@ -644,10 +644,10 @@ RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
-        CTriggerMgr* h = g_gameReg->m_cmdGrid;
+        CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
+            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
             tm->m_window = 0x3e8;
             tm->m_base = static_cast<u32>(g_frameTime);
         }
@@ -682,10 +682,10 @@ i32 CWarlord::BuildFortSplashParticles() {
             }
         }
 
-        CTriggerMgr* h = g_gameReg->m_cmdGrid;
+        CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
+            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
             tm->m_window = 0x3e8;
             tm->m_base = static_cast<u32>(g_frameTime);
         }
@@ -729,7 +729,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
                 if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start >= m_notifyTimer.m_window
-                    && g_gameReg->m_cmdGrid->m_pendingFx == this) {
+                    && g_gameReg->m_triggerMgr->m_pendingFx == this) {
                     g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)

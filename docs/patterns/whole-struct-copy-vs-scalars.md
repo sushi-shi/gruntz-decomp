@@ -72,7 +72,7 @@ grind it by inventing a live use of the dead field.
 
 `CPlay::OnKeyDown` has the textbook signal (frame 0x10 = one RECT, two spills 8 apart,
 at BOTH of its two `m_planeCtx` bounds tests) and the change is still wrong. Writing
-both as whole-struct copies - together with dropping the `m_mgr`/`m_guts` locals, which
+both as whole-struct copies - together with dropping the `m_mgr`/`m_statusBar` locals, which
 is what stops cl spilling them and does give retail's `sub esp,0x8 -> 0x10` - moves the
 frame onto retail's value and the block skeleton from 371 to 373 of 374, and yet:
 

@@ -1080,7 +1080,7 @@ flags = "cpp-rtti"
 
 [[unit]]
 unit = "lightfxrender"
-source = "src/Gruntz/LightFxRender.cpp"
+source = "src/Gruntz/Minimap.cpp"
 flags = "cpp-rtti"
 
 [[unit]]

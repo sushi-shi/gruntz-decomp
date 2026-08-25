@@ -59,8 +59,8 @@ about. `fuzz` is how many additional mutated inputs were run through
 | `CChatBoxOwner::HitTest` | 63.06 | 0 B (pure predicate) | +18 inputs | **AGREES** |
 | `CPlay::StepGridWalk` | 66.64 | 0 B, 1–2 B under mutation | +10 inputs | **AGREES** |
 | `CDDrawShadeBlit::Select` | 68.75 | 1 B / 1 region | — | **AGREES** |
-| `CLightFxRender::Shape3` | 72.11 | **524 B / 1 region** | — | **DISAGREES — 257 B wrong** |
-| `CLightFxRender::Shape1,2,4..8` | 67–77 | 524 B | — | **DISAGREE** (cross-run, below) |
+| `CMinimap::Shape3` | 72.11 | **524 B / 1 region** | — | **DISAGREES — 257 B wrong** |
+| `CMinimap::Shape1,2,4..8` | 67–77 | 524 B | — | **DISAGREE** (cross-run, below) |
 | `StateMgrBZ::Flush` | 74.39 | 0 B (return value only) | — | **AGREES** |
 | `CMapMgr::Expand` | 78.83 | 19 B / 3 regions | +12 inputs | **AGREES** |
 | `_ParseWaveChunks` | 100.00 | 9 B / 1 region | +3 inputs | **AGREES** |
@@ -69,7 +69,7 @@ Seven AGREE, one family DISAGREE. The AGREE rows are worth having — five of th
 `@early-stop`-parked bodies whose correctness was previously unknown — but the DISAGREE
 is the point of the exercise.
 
-## `CLightFxRender::Shape3` — 72.11% and computing the wrong pixels
+## `CMinimap::Shape3` — 72.11% and computing the wrong pixels
 
 The recorded call writes **524 bytes** into a 16-bit surface at `0x03ab9176..0x03ab93fb`
 (20 contiguous spans). Our build gets **257 of them wrong**, and the harness self-test
@@ -129,7 +129,7 @@ with, so those seven counts are speculative in the way any mutated input is — 
 Shape3's own row is ground truth. What they establish is that the defect is not confined
 to Shape3.
 
-`src/Gruntz/LightFxRender.cpp` is owned by another lane and was **not touched here**. The
+`src/Gruntz/Minimap.cpp` is owned by another lane and was **not touched here**. The
 verdict is against the compiled `build/objdiff/base/lightfxrender.obj` at commit
 `2bebf202f`.
 

@@ -70,8 +70,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
     }
     if (count <= 1 && m_phase == FINISH_STATE_DEFEAT
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_levelOverlayActive == 0
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_quitConfirmationActive == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_levelOverlayActive == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_quitConfirmationActive == 0
         && m_pendingFx == NULL) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
@@ -141,7 +141,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                     } else {
                         if (g_curPlayer == i) {
-                            g_gameReg->m_cmdGrid->LoadFinishLevelSprite(
+                            g_gameReg->m_triggerMgr->LoadFinishLevelSprite(
                                 FINISH_REASON_BATTLEZ_VICTORY
                             );
                         }
@@ -163,7 +163,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                     }
                 }
-                g_gameReg->m_scoreHud->MarkFlag(idx, i);
+                g_gameReg->m_gameStats->MarkFlag(idx, i);
                 return 0;
             }
         }
@@ -190,13 +190,13 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
 
         if (static_cast<i64>(g_frameTime) - m_gooTimerBase >= m_gooInterval) {
-            obj->m_guts->AdvanceGauge(1);
+            obj->m_statusBar->AdvanceGauge(1);
             m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBase = g_frameTime;
         }
 
         if (static_cast<i64>(g_frameTime) - m_resourceTimerBase >= m_resourceInterval) {
-            obj->m_guts->UpdateRezMachineWakeStatusBar();
+            obj->m_statusBar->UpdateRezMachineWakeStatusBar();
             m_resourceInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimerBase = g_frameTime;
         }

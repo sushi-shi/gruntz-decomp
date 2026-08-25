@@ -35,7 +35,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/LightFxRender.h>
+#include <Gruntz/Minimap.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -163,7 +163,7 @@ char g_recvBuffer[0x800];
 // in ebx and the constant 0 in ebp, cl does the reverse, so almost every line of
 // the diff is that swap.
 //
-// The m_beginMarker cleanup here is NOT a content gap and NOT an inline-vs-not
+// The m_tileTriggers cleanup here is NOT a content gap and NOT an inline-vs-not
 // question about the header. ~CTileTriggerContainer is one inline definition that
 // retail EXPANDS at this site and DECLINES at CPlay::LoadGameAssetNamespaces
 // (0xc7ec0 holds a rel32 call to 0xc8640), so forcing it out of line satisfies
@@ -216,7 +216,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_commandDelay = 0;
     m_autoCommandDelay = 1;
     m_resendInterval = 0;
-    m_lightFx = NULL;
+    m_minimap = NULL;
     m_savedClock = 0;
     m_rngSeed = static_cast<i32>(timeGetTime());
     m_connectAccepted = 0;
@@ -289,40 +289,40 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     }
 
     CChatBoxOwner* iface = new CChatBoxOwner();
-    m_hitTest = iface;
+    m_chatBox = iface;
 
     if (iface->Attach(m_world, NetGameMgr()->m_chatLog) == 0) {
-        CChatBoxOwner* io = m_hitTest;
+        CChatBoxOwner* io = m_chatBox;
         if (io == NULL) {
             return 0;
         }
         io->Deactivate();
         ::operator delete(io);
-        m_hitTest = NULL;
+        m_chatBox = NULL;
         return 0;
     }
-    m_hitTest->m_inputActive = 0;
-    m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
+    m_chatBox->m_inputActive = 0;
+    m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
     CStatusBarMgr* sess = new CStatusBarMgr;
-    m_guts = sess;
+    m_statusBar = sess;
     if (sess->LoadBattlezItemConfig(m_world) == 0) {
-        if (m_guts == NULL) {
+        if (m_statusBar == NULL) {
             return 0;
         }
-        delete m_guts;
-        m_guts = NULL;
+        delete m_statusBar;
+        m_statusBar = NULL;
         return 0;
     }
 
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
-    m_beginMarker = cmd;
+    m_tileTriggers = cmd;
     if (cmd->Initialize() == 0) {
-        if (m_beginMarker == NULL) {
+        if (m_tileTriggers == NULL) {
             return 0;
         }
-        delete m_beginMarker;
-        m_beginMarker = NULL;
+        delete m_tileTriggers;
+        m_tileTriggers = NULL;
         return 0;
     }
 
@@ -373,11 +373,11 @@ void CMulti::ReleaseResources() {
         m_netMgr = NULL;
     }
 
-    CLightFxRender* lightFx = m_lightFx;
-    if (lightFx) {
-        lightFx->Reset();
-        ::operator delete(lightFx);
-        m_lightFx = NULL;
+    CMinimap* minimap = m_minimap;
+    if (minimap) {
+        minimap->Reset();
+        ::operator delete(minimap);
+        m_minimap = NULL;
     }
     Mgr()->m_isEffectsEnabled = m_savedEffectsEnabled;
 
@@ -439,8 +439,8 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         r.top = 0;
         ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, 1);
-        if (m_mgr && m_mgr->m_cmdGrid) {
-            m_mgr->m_cmdGrid->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+        if (m_mgr && m_mgr->m_triggerMgr) {
+            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
         }
     }
     return 1;
@@ -546,7 +546,7 @@ i32 CMulti::Render() {
     i32 newId = m_session->m_commandTick;
     if (m_processedCommandTick != newId) {
         m_processedCommandTick = newId;
-        CGruntzCmdMgr* mgr = Mgr()->m_cmdSubMgr;
+        CGruntzCmdMgr* mgr = Mgr()->m_commandMgr;
         CGruntzCommand* node;
         if (mgr->m_pendingLocalCommands.GetCount() == 0) {
             node = NULL;
@@ -649,7 +649,7 @@ i32 CMulti::AdvanceGameFrame() {
             m_ambientInitDone = 1;
         }
     }
-    Mgr()->m_cmdSubMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
+    Mgr()->m_commandMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;
@@ -684,15 +684,15 @@ i32 CMulti::AdvanceGameFrame() {
     }
     m_world->m_childGroup->TickKillCues(0);
     m_world->m_childGroup->CollideBroadcast();
-    Mgr()->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
-    m_guts->UpdateStatusBar(g_frameDelta);
+    Mgr()->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
+    m_statusBar->UpdateStatusBar(g_frameDelta);
     SoundStream* win = m_world->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
         win->TickVolumeRamps(now);
         win->TickStreams(now);
     }
-    m_beginMarker->UpdateTimedLogics(g_frameDelta);
+    m_tileTriggers->UpdateTimedLogics(g_frameDelta);
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))->UpdateDiagonals(Mgr());
     if (ready == 0) {
         RenderGameFrame();
@@ -715,7 +715,7 @@ void CMulti::RenderGameFrame() {
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair
         );
-        m_guts->LoadMainStatusBarSprite();
+        m_statusBar->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
         if (h == NULL) {
             return;
@@ -729,11 +729,11 @@ void CMulti::RenderGameFrame() {
     StepViewportResize();
     if (m_region0Gate != 0) {
         (static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair))->m_surface->Fill(0);
-        m_guts->Deactivate();
+        m_statusBar->Deactivate();
     }
     if (m_worldReady == 0) {
-        if (Mgr()->m_cmdGrid->m_armed != 0) {
-            Mgr()->m_cmdGrid->ScrollToActiveRecord();
+        if (Mgr()->m_triggerMgr->m_armed != 0) {
+            Mgr()->m_triggerMgr->ScrollToActiveRecord();
         } else {
             LoadScrollSpeedOptions();
         }
@@ -752,12 +752,12 @@ void CMulti::RenderGameFrame() {
             m_world->m_drawTarget->m_overlayPair
         );
     }
-    m_guts->LoadMainStatusBarSprite();
-    if (m_lightFx != NULL) {
-        CStatusBarMgr* fx = m_guts;
-        if (fx->m_position != STATUSBAR_HIDDEN && fx->m_activeTab != TAB_GAME) {
+    m_statusBar->LoadMainStatusBarSprite();
+    if (m_minimap != NULL) {
+        CStatusBarMgr* statusBar = m_statusBar;
+        if (statusBar->m_position != STATUSBAR_HIDDEN && statusBar->m_activeTab != TAB_GAME) {
             RECT rc;
-            if (fx->m_position == STATUSBAR_DOCK_LEFT) {
+            if (statusBar->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
                 rc.top = g_gameReg->m_modeSize.cy;
@@ -766,8 +766,8 @@ void CMulti::RenderGameFrame() {
                 rc.top = g_gameReg->m_modeSize.cy;
                 SetRect(&rc, left, 5, right, 125);
             }
-            m_lightFx->Resize(static_cast<i32>(g_frameDelta), 0);
-            m_lightFx->ComputeRect(
+            m_minimap->Refresh(static_cast<i32>(g_frameDelta), 0);
+            m_minimap->Draw(
                 static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
                 &rc
             );
@@ -778,16 +778,16 @@ void CMulti::RenderGameFrame() {
     if (h == NULL) {
         return;
     }
-    m_hitTest->LoadChatBoxSprite(h);
+    m_chatBox->LoadChatBoxSprite(h);
     DrawDebugStats();
-    Mgr()->m_cmdGrid->OverlayRelease();
+    Mgr()->m_triggerMgr->OverlayRelease();
     AdvanceCursorAnimation(g_frameDelta);
     DrawCursorSaveUnder(h);
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
     }
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
-    UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+    UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
@@ -3275,7 +3275,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 
-        NetGameMgr()->m_cmdSubMgr->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
+        NetGameMgr()->m_commandMgr->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
     slot->ClearSequenceSet(slot->m_receivedAhead);
@@ -3364,7 +3364,7 @@ void CMulti::AnnounceVersion(CNetPlayerNode* recipient) {
 
 RVA(0x000bd210, 0x14d)
 i32 CMulti::OnChar(i32 charCode, i32 keyData) {
-    if (m_hitTest && m_hitTest->m_inputActive) {
+    if (m_chatBox && m_chatBox->m_inputActive) {
         if (m_connected) {
             if (Mgr()->m_chatLog->HandleInputChar(charCode, keyData)) {
                 CString line = Mgr()->m_chatLog->GetInputText();

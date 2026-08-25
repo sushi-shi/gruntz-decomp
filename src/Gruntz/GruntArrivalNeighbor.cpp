@@ -64,7 +64,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
         return 1;
     }
 
-    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
+    CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     if (occ == NULL) {
         return 1;
     }

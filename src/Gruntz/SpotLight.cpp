@@ -143,7 +143,7 @@ void RegisterSpotLightActions() {
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-        CGrunt* tgt = g_gameReg->m_cmdGrid->FindGruntAt(
+        CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
             m_object->m_screenX,
             m_object->m_screenY,
             &m_object->m_area,
@@ -158,7 +158,7 @@ i32 CSpotLight::Tick() {
             m_object->m_screenX = tgt->m_object->m_screenX;
             m_object->m_screenY = tgt->m_object->m_screenY;
             if (m_object->m_score == 1) {
-                g_gameReg->m_cmdGrid
+                g_gameReg->m_triggerMgr
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
@@ -185,7 +185,7 @@ i32 CSpotLight::Tick() {
                 return 0;
             } else {
                 tgt->SnapToLastTile(1);
-                g_gameReg->m_cmdGrid
+                g_gameReg->m_triggerMgr
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_KAROKE, -1);
                 return 0;
             }
@@ -231,7 +231,7 @@ int CSpotLight::Update() {
         m_position.y = m_center.y + m_position.y;
         m_angle = newAngle;
     }
-    if (g_gameReg->m_cmdGrid->m_units[m_targetUnitIndex + m_targetPlayerIndex * 15] == NULL) {
+    if (g_gameReg->m_triggerMgr->m_units[m_targetUnitIndex + m_targetPlayerIndex * 15] == NULL) {
         m_previousAnimationActId = m_logicRecord->m_eventCode;
         m_logicRecord->m_eventCode = ActFindId("A");
     }

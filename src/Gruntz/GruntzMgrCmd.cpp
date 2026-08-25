@@ -77,14 +77,15 @@
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() != 1                                                   \
+            m_triggerMgr->m_recList.GetCount() != 1                                                \
                 ? 0                                                                                \
-                : m_cmdGrid->m_units[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];  \
+                : m_triggerMgr                                                                     \
+                      ->m_units[m_triggerMgr->HeadRec()->m_y + m_triggerMgr->HeadRec()->m_x * 15]; \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_playerIndex != g_curPlayer)                                                   \
             return 0;                                                                              \
-        CGrunt* _c2 = m_cmdGrid->m_units[_cell->m_unitIndex + _cell->m_playerIndex * 15];          \
+        CGrunt* _c2 = m_triggerMgr->m_units[_cell->m_unitIndex + _cell->m_playerIndex * 15];       \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -97,9 +98,10 @@
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() != 1                                                   \
+            m_triggerMgr->m_recList.GetCount() != 1                                                \
                 ? 0                                                                                \
-                : m_cmdGrid->m_units[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];  \
+                : m_triggerMgr                                                                     \
+                      ->m_units[m_triggerMgr->HeadRec()->m_y + m_triggerMgr->HeadRec()->m_x * 15]; \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_playerIndex != g_curPlayer)                                                   \
@@ -194,7 +196,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_CONTINUE_AT_MAX_LEVEL:
             m_gameMode = GAMEMODE_SINGLE;
             m_strWorldFile.Empty();
-            if (!PassClickToPlayState(IDX(m_saveSink->m_maxLevel), 0, 1)) {
+            if (!PassClickToPlayState(IDX(m_saveGame->m_maxLevel), 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
@@ -373,7 +375,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
-                        m_cmdGrid->StartPlayerDefeatSequence(5);
+                        m_triggerMgr->StartPlayerDefeatSequence(5);
                         i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
                         if (_key) {
                             _dr = NULL;
@@ -399,7 +401,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        CTimer* _t = _g->m_frameMarker;
+                        CTimer* _t = _g->m_levelTimer;
                         _t->m_unusedStamp.m_lo = 0;
                         _t->m_unusedStamp.m_hi = 0;
                         _t->m_accum.m_lo = 0;
@@ -442,7 +444,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
-                        m_cmdGrid->CycleMoveIcons(-1, 1);
+                        m_triggerMgr->CycleMoveIcons(-1, 1);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("How about a little color in your Gruntz?");
                         return 1;
@@ -512,7 +514,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 0;
                         }
 
-                        (static_cast<CStatusBarMgr*>(_g->m_guts))->StartDestructWarning(0x1387);
+                        (static_cast<CStatusBarMgr*>(_g->m_statusBar))
+                            ->StartDestructWarning(0x1387);
                         AppendChatMessage(
                             "My name is Kevin Lambert.  You typed in my cheat "
                             "code.  Prepare to die."
@@ -530,10 +533,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        if (!_g->m_guts) {
+                        if (!_g->m_statusBar) {
                             return 0;
                         }
-                        (static_cast<CStatusBarMgr*>(_g->m_guts))->AdvanceGauge(0x64);
+                        (static_cast<CStatusBarMgr*>(_g->m_statusBar))->AdvanceGauge(0x64);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("May your Wellz be full of Goo!");
                         return 1;
@@ -550,9 +553,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     case CHEAT_CHEATELSON:
                         PLAYCUE("GAME_MAJORCHEAT");
-                        if (m_saveSink) {
-                            m_saveSink->SetCurLevel(QUESTLEVEL_CAMPAIGN_LAST);
-                            m_saveSink->SetMagic();
+                        if (m_saveGame) {
+                            m_saveGame->SetCurLevel(QUESTLEVEL_CAMPAIGN_LAST);
+                            m_saveGame->SetMagic();
                         }
                         AppendChatMessage(
                             "They should call you Cheat Cheatelson from "
@@ -572,32 +575,32 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     case CHEAT_WARP_TROPICZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Trouble in the Tropicz activated!");
-                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA2_STAGE4);
+                        m_saveGame->SetCurLevel(QUESTLEVEL_AREA2_STAGE4);
                         return 1;
                     case CHEAT_WARP_SWEETZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High on Sweetz activated!");
-                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA3_STAGE4);
+                        m_saveGame->SetCurLevel(QUESTLEVEL_AREA3_STAGE4);
                         return 1;
                     case CHEAT_WARP_ROLLERZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High Rollerz activated!");
-                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA4_STAGE4);
+                        m_saveGame->SetCurLevel(QUESTLEVEL_AREA4_STAGE4);
                         return 1;
                     case CHEAT_WARP_HONEY_SHRUNK:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Honey, I Shrunk the Gruntz activated!");
-                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA5_STAGE4);
+                        m_saveGame->SetCurLevel(QUESTLEVEL_AREA5_STAGE4);
                         return 1;
                     case CHEAT_WARP_MINIATURE_MASTERZ:
                         PLAYCUE_MAP("GAME_MINORCHEAT", _cueMiniature);
                         AppendChatMessage("Warp to The Miniature Masterz activated!");
-                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA6_STAGE4);
+                        m_saveGame->SetCurLevel(QUESTLEVEL_AREA6_STAGE4);
                         return 1;
                     case CHEAT_WARP_GRUNTZ_IN_SPACE:
                         PLAYCUE_MAP("GAME_MINORCHEAT", _cueSpace);
                         AppendChatMessage("Warp to Gruntz in Space activated!");
-                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA7_STAGE4);
+                        m_saveGame->SetCurLevel(QUESTLEVEL_AREA7_STAGE4);
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
                         g_explosionz ^= 1;
@@ -921,11 +924,11 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 if (ps->m_renderDisabled) {
                     return 1;
                 }
-                if (ps->m_guts) {
-                    if (ps->m_guts->m_levelOverlayActive) {
+                if (ps->m_statusBar) {
+                    if (ps->m_statusBar->m_levelOverlayActive) {
                         return 1;
                     }
-                    if (ps->m_guts->m_quitConfirmationActive) {
+                    if (ps->m_statusBar->m_quitConfirmationActive) {
                         return 1;
                     }
                 }

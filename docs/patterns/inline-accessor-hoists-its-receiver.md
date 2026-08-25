@@ -17,7 +17,7 @@ distinguishable in the emitted code:
 0011: lea eax,[eax+eax*2]
 0014: lea eax,[eax+eax*4]
 0017: add ecx,eax
-0019: mov eax,[edx+0x68]        ; the BODY - ->m_cmdGrid, only now
+0019: mov eax,[edx+0x68]        ; the BODY - ->m_triggerMgr, only now
 001c: mov edi,[eax+ecx*4+0x1c]
 
 ; ours - one flat expression, global sunk to its first use
@@ -31,13 +31,13 @@ distinguishable in the emitted code:
 
 ```cpp
 // BASE, 95.07 - the deref chain written out
-CGrunt* e = g_gameReg->m_cmdGrid
+CGrunt* e = g_gameReg->m_triggerMgr
                 ->m_units[m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER
                           + m_gruntIdentity.m_unitIndex];
 
 // TARGET - an inline accessor, and the cell passed BY REFERENCE
 inline CGrunt* FindGruntByIdentity(CGruntzMgr* reg, const GruntIdentity& identity) {
-    return reg->m_cmdGrid
+    return reg->m_triggerMgr
         ->m_units[identity.m_unitIndex + identity.m_playerIndex * TM_UNITS_PER_PLAYER];
 }
 CGrunt* e = FindGruntByIdentity(g_gameReg, m_gruntIdentity);
@@ -58,7 +58,7 @@ Measured on that one function, every variant from the same 95.07 base:
 | **inline helper taking `(CGruntzMgr*, const Coord&)`** | **100.00 EXACT** |
 
 A local for the receiver gets the global into the right position but leaves
-`->m_cmdGrid` hoisted with it - only the call barrier separates them. And
+`->m_triggerMgr` hoisted with it - only the call barrier separates them. And
 unpacking the aggregate into two `int` formals throws the whole effect away: the
 two scalars are evaluated and coloured at the call site exactly as the flat form
 does. **Pass the aggregate, by reference, or the lever does not fire.**
@@ -84,7 +84,7 @@ FIRST divergence is a relocated global load):
 | genuine hoist (target loads it 1-6 instructions earlier) | 3 | this pattern |
 
 The three real hoists are `CGruntPowerupSprite::Update` 0x080410 (+1, already
-banked 100.00), `CLightFxRender::BuildHighRollerzPalette` 0x0a2bb0 (+5) and
+banked 100.00), `CMinimap::BuildHighRollerzPalette` 0x0a2bb0 (+5) and
 `BuildGruntziclezPalette` (+6) — the parked palette family. So the sieve's live
 worklist is much smaller than the raw hit count suggests.
 

@@ -154,12 +154,12 @@ i32 CRollingBall::Update() {
         i32 sx = lg->m_screenX;
         i32 sy = lg->m_screenY;
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, sx, sy)) {
-            g_gameReg->m_cmdGrid->m_rollingballWanted = 1;
+            g_gameReg->m_triggerMgr->m_rollingballWanted = 1;
         }
         CWwdGameObjectA* lg2 = m_object;
         i32 playerIndex;
         i32 unitIndex;
-        if (g_gameReg->m_cmdGrid->FindGruntAt(
+        if (g_gameReg->m_triggerMgr->FindGruntAt(
                 lg2->m_screenX,
                 lg2->m_screenY,
                 &lg2->m_area,
@@ -167,15 +167,15 @@ i32 CRollingBall::Update() {
                 &unitIndex,
                 NULL
             )) {
-            g_gameReg->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, -1);
+            g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, -1);
         }
     }
 
     CWwdGameObjectA* cur = m_object;
     if (cur->m_screenX == m_target.m_x && cur->m_screenY == m_target.m_y) {
 
-        g_gameReg->m_cmdGrid->WireTileSwitchLogic(NULL, m_target.m_x, m_target.m_y);
-        g_gameReg->m_cmdGrid->ApplySwitch(NULL, m_target.m_x, m_target.m_y);
+        g_gameReg->m_triggerMgr->WireTileSwitchLogic(NULL, m_target.m_x, m_target.m_y);
+        g_gameReg->m_triggerMgr->ApplySwitch(NULL, m_target.m_x, m_target.m_y);
 
         i32 tx = m_target.m_x >> TILE_SHIFT_PX;
         i32 ty = m_target.m_y >> TILE_SHIFT_PX;

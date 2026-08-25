@@ -58,7 +58,7 @@ tell, and per-symbol reloc counts
 (the relocation sequence, read off `gruntz sema dump <rva>`) finds it faster than the
 diff. Spelling the eight sites `g_gameplayInput->` took it **87.19 -> 90.31**.
 Do NOT generalise the delete to every local: `host`/`level` (`this->m_mgr` /
-`this->m_guts`, 26 and 14 uses) are REAL source locals and removing either costs
+`this->m_statusBar`, 26 and 14 uses) are REAL source locals and removing either costs
 2-5 points. The rule is "the local adds no value over its initializer *and* is
 not what pays for the reloads", so measure one at a time.
 

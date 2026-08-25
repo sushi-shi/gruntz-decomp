@@ -62,15 +62,15 @@
 
 #define BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL                                                      \
     m_entranceActive = 1;                                                                          \
-    m_tileMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
+    m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
 #define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
-    CGrunt* grunt = m_tileMgr->FindNearestEnemy(this);                                             \
+    CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
     i32 atTarget = 0;                                                                              \
     MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
 
 #define FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(grunt, atTarget, screenX)                           \
-    CGrunt* grunt = m_tileMgr->FindNearestEnemy(this);                                             \
+    CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
     MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
 
 #define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \

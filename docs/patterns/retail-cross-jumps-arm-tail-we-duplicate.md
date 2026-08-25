@@ -54,7 +54,7 @@ it the other way round: the doc's rule predicts when cl merges TOO MUCH and how 
 stop it; there is no known source spelling that makes cl merge when it has decided
 not to. Both residues are one instruction-run each; park them.
 
-`CLightFxRender::Resize` at `0x0a3460` is the small no-call control.  Its
+`CMinimap::Refresh` at `0x0a3460` is the small no-call control.  Its
 `SpriteTeamColorVariant` switch has separate `PRIMARY` and `default` arms that
 both store `node->m_teamColor1`.  Retail cross-jumps them into one selected
 address/store block; the current `/O2` state emits both.  This accounts for the

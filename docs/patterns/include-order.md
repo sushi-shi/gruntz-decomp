@@ -107,7 +107,7 @@ project-local shadows of these framework classes.
 sweep of every header under `include/` (one probe TU per header, MSVC 5.0 under
 wine) proved all 419 compile on their own; the audit's `missing prelude` count
 gates at 0. The sweep's real defects, all fixed by one verified prelude each:
-`Image/FileImage.h` + `Gruntz/LightFxRender.h` (`<Win32.h>` -> `<Mfc.h>`; as
+`Image/FileImage.h` + `Gruntz/Minimap.h` (`<Win32.h>` -> `<Mfc.h>`; as
 own headers of MFC TUs they landed windows.h before afx -> C1189),
 `DDrawMgr/DirPal.h` (`LOGPALETTE`/`PALETTEENTRY` with no supply at all),
 `Dsndmgr/WaveFormatSdk.h` (the SDK requires `<mmsystem.h>` before `<dsound.h>`),

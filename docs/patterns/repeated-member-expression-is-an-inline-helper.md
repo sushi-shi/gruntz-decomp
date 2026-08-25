@@ -54,12 +54,12 @@ a365f: cmp esi,DWORD PTR [ecx+0xc]      ; the back-edge, memory operand
 
 Steerable. The codebase already carries the shape as `CMapMgr::CellFlagsAt`
 (a real out-of-line COMDAT at 0x75a40) and `TileScan.cpp`'s `GridLookup`, so
-prefer an existing accessor before inventing one. Evidence: `CLightFxRender::Resize`
+prefer an existing accessor before inventing one. Evidence: `CMinimap::Refresh`
 59.75 -> 69.22 (prologue plus the first 68 loop instructions become byte-exact,
-frame 0xc -> 0x8); `CLightFxRender::DrawBorderRaw` 72.07 -> 92.01 via a
+frame 0xc -> 0x8); `CMinimap::DrawBorderRaw` 72.07 -> 92.01 via a
 `PixOffset(surf, x, y)` helper for `y * m_pitch + x * m_bytesPerPixel`;
 `CGrunt::StepEntranceReinit` 87.60 -> 90.18 on the same fold onto `CellFlagsAt`.
-**Measure per function**: the neighbour `CLightFxRender::DrawBorder` is banked at
+**Measure per function**: the neighbour `CMinimap::DrawBorder` is banked at
 MAX 100.00 with the expression spelled OUT at all four of its sites, which is the
 byte evidence that retail wrote the two differently.
 

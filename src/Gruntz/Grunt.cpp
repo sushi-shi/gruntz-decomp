@@ -708,7 +708,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a9f0, 0x1aa)
 i32 CGrunt::IntersectsTileObjectAxes() {
-    CGrunt* tgt = m_tileMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
+    CGrunt* tgt = m_triggerMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
     if (tgt == NULL) {
         return 0;
     }
@@ -856,7 +856,7 @@ i32 CGrunt::CommitArrival() {
     }
 
     if (m_tileClaimed != 0 && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-        m_tileMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
+        m_triggerMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
     } else if (m_tileClaimed != 0) {
         m_arrivalReroll64 = 0;
         m_arrivalRerollWindow64 = 0;
@@ -1125,7 +1125,7 @@ i32 CGrunt::StepArrivalDrop(
     if (0 != nudged) {
         if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
             && m_entranceReason == PICKUP_GAUNTLETZ) {
-            m_tileMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, pxX, pxY);
+            m_triggerMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, pxX, pxY);
             SetEntrancePos(1, 1);
             return 1;
         }
@@ -1488,7 +1488,8 @@ i32 CGrunt::StepGruntMovement() {
         } else {
             owner = -1;
         }
-        m_tileMgr->StartUnitDeath((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_playerIndex);
+        m_triggerMgr
+            ->StartUnitDeath((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_playerIndex);
     }
 
 label_4c6e4:
@@ -1668,7 +1669,7 @@ label_4cb2a:
 
 label_4cb4b:
     m_reserved210 = 0;
-    m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     m_coordRetryCount = 0;
     SetFacing(0x3e8, rec);
     {
@@ -2012,7 +2013,7 @@ i32 CGrunt::Place(
     m_holdAnchorHi = 0;
     m_holdWindowHi = 0;
     m_moveIcon = moveIcon;
-    m_tileMgr = board;
+    m_triggerMgr = board;
     m_daFlag = 1;
     m_arrivalPhase = 0;
     m_toolConfigured = 1;
@@ -3045,7 +3046,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            CStatusBarMgr* sb = play->m_guts;
+            CStatusBarMgr* sb = play->m_statusBar;
             if (sb->m_hlBusy == 0) {
                 if (sb->m_position == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
@@ -3055,11 +3056,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 }
                 sb->Deactivate();
             }
-            play->m_guts->UpdateRezMachineWakeStatusBar();
+            play->m_statusBar->UpdateRezMachineWakeStatusBar();
             return 1;
         }
         case PICKUP_RANDOMCOLORZ: {
-            m_tileMgr->CycleMoveIcons(m_playerIndex, 1);
+            m_triggerMgr->CycleMoveIcons(m_playerIndex, 1);
             return 1;
         }
         case PICKUP_SCREENSHAKE: {
@@ -3087,7 +3088,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_A:
         case PICKUP_R:
         case PICKUP_P: {
-            g_gameReg->m_scoreHud->m_scoreValue = 1;
+            g_gameReg->m_gameStats->m_scoreValue = 1;
             return 1;
         }
         case PICKUP_HELPBOX: {
@@ -3095,12 +3096,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_COIN: {
-            g_gameReg->m_scoreHud->m_coinsCollected++;
+            g_gameReg->m_gameStats->m_coinsCollected++;
             return 1;
         }
         case PICKUP_STOPWATCH: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            if (play->m_frameMarker == NULL) {
+            if (play->m_levelTimer == NULL) {
                 return 1;
             }
             i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
@@ -3113,7 +3114,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     secs -= 0x3c;
                 }
             }
-            play->m_frameMarker->AddTime(mins, secs);
+            play->m_levelTimer->AddTime(mins, secs);
             return 1;
         }
         default: {
@@ -3196,7 +3197,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {
-                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 }
             }
         }
@@ -3205,8 +3206,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
         if (tk == TILEKIND_CHECKPOINT || tk == TILEKIND_CHECKPOINT_UP) {
             if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
-                m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-                m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }
         }
     } else {
@@ -3214,11 +3215,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     if (m_arrived != 0) {
         if (m_playerIndex == g_curPlayer) {
-            m_tileMgr->StopPendingFx();
+            m_triggerMgr->StopPendingFx();
         }
     }
     if (kind == PICKUP_WARPSTONE) {
-        m_tileMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
+        m_triggerMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
     }
     return 1;
 fail:

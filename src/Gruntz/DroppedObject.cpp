@@ -280,7 +280,7 @@ i32 CObjectDropper::Update() {
             box.bottom = o->m_screenY + o->m_layer->m_anchorY - 7;
             i32 playerIndex;
             i32 unitIndex;
-            CGrunt* found = g_gameReg->m_cmdGrid->FindGruntAt(
+            CGrunt* found = g_gameReg->m_triggerMgr->FindGruntAt(
                 o->m_screenX,
                 o->m_screenY,
                 &o->m_area,
@@ -496,7 +496,7 @@ i32 CDroppedObject::AdvanceFall() {
         }
         SwitchGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         SET_ANIMATION_ACT("B");
-        g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
+        g_gameReg->m_triggerMgr->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
         return 0;
     }
     m_object->m_screenY = landed;

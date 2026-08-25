@@ -16,7 +16,7 @@ i32 CExplosion::Update() {
     if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 1) {
         CWwdGameObjectA* t = m_object;
         if (t->m_score == 1) {
-            g_gameReg->m_cmdGrid
+            g_gameReg->m_triggerMgr
                 ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_smarts);
         }
     }

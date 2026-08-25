@@ -385,7 +385,7 @@ public:
     PickupType m_gruntKind;
     i32 m_entranceArmed;
 
-    class CTriggerMgr* m_tileMgr;
+    class CTriggerMgr* m_triggerMgr;
     i32 m_struckCount;
 
     union {

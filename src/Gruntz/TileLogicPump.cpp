@@ -436,7 +436,7 @@ i32 CCheckpointTrigger::Act() {
             return 0;
         }
         CTileTriggerSwitchLogic* child =
-            play->m_beginMarker->FindSwitchLogic(key, TRIGID_CHECKPOINT_SWITCH_8);
+            play->m_tileTriggers->FindSwitchLogic(key, TRIGID_CHECKPOINT_SWITCH_8);
         if (child == NULL) {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
             return 0;
@@ -449,7 +449,7 @@ i32 CCheckpointTrigger::Act() {
     SET_ANIMATION_ACT("B");
     SwitchGeometry("GAME_CHECKPOINTFLAGSET", 0);
 
-    if (play->m_frameMarker != NULL) {
+    if (play->m_levelTimer != NULL) {
         i32 minutes = m_object->m_score;
         i32 seconds = m_object->m_points;
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
@@ -460,7 +460,7 @@ i32 CCheckpointTrigger::Act() {
                 seconds -= 0x3c;
             }
         }
-        play->m_frameMarker->AddTime(minutes, seconds);
+        play->m_levelTimer->AddTime(minutes, seconds);
     }
 
     CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
@@ -485,7 +485,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     CTileTriggerSwitchLogic* pad =
-        play->m_beginMarker->FindSwitchLogic(m_state[pick], TRIGID_CHECKPOINT_SWITCH_8);
+        play->m_tileTriggers->FindSwitchLogic(m_state[pick], TRIGID_CHECKPOINT_SWITCH_8);
     if (pad == NULL) {
         g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
         return 0;
@@ -506,7 +506,7 @@ i32 CCheckpointTrigger::Act() {
 
     i32 ownerCol = (owner >> 8) & 0xff;
     owner &= 0xff;
-    CGrunt* g = g_gameReg->m_cmdGrid->m_units[ownerCol * TM_UNITS_PER_PLAYER + owner];
+    CGrunt* g = g_gameReg->m_triggerMgr->m_units[ownerCol * TM_UNITS_PER_PLAYER + owner];
     if (g == NULL) {
         return 0;
     }
