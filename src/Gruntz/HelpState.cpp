@@ -4,8 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
@@ -23,6 +21,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SplashState.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
 
 #include <ddraw.h>
 
@@ -63,8 +63,8 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
     while (ShowCursor(0) >= 0)
         ;
-    m_stateBank = m_symParser->ResolvePath("STATEZ_HELP");
-    if (!m_stateBank) {
+    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_HELP");
+    if (!m_stateResources) {
         return 0;
     }
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);

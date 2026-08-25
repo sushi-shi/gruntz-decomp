@@ -30,7 +30,7 @@ struct IntrusiveList {
     call   0x136260
 ```
 STEERABLE. Adding `~IntrusiveList(){}` flipped `??1SoundSample` (0x135bb0, entry 0→1) and
-`??1CSymParser` (0x13abc0, entry 1→2) to EXACT in one build. The same read cracked
+`??1CRezArchive` (0x13abc0, entry 1→2) to EXACT in one build. The same read cracked
 `??1GruntzPlayer` (0x083260): entry 2 with only `CString m_name` + `CBattlezMapConfig m_038`
 modelled proved a third sub-object declared after m_038 — the +0x22c `PlayerLatency`
 {avg,count} accumulator, whose inline ctor is the pair of zero-stores retail emits right after

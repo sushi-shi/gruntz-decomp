@@ -5,8 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -62,7 +60,6 @@
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayHudLayoutPx.h>
@@ -100,6 +97,9 @@
 #include <Io/SaveGame.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -1081,14 +1081,14 @@ i32 CPlay::ProfileDeltaFrame() {
 // the three CStrings but a different pairing, so every local above modeFlag sits 4
 // low.  (2) Retail parks 1 in ebp/edi and re-materialises each zero fresh, cl parks
 // the zero, which flips stores between the register and immediate forms and blocks
-// the cross-jump of the two `atoi(p) / EndParse()` arms (cl's tails carry an extra
+// the cross-jump of the two `atoi(p) / ReleaseData()` arms (cl's tails carry an extra
 // `xor edi,edi` to restore the parked zero, so they no longer tail-merge).
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
-    CSymTab* bank;
-    CSymTab* prevTiles;
+    CRezArchiveDir* bank;
+    CRezArchiveDir* prevTiles;
     i32 reload = 0;
     i32 diff = 0;
 
@@ -1188,24 +1188,24 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CGruntzMgr* mgr = self->m_mgr;
     if (mgr->m_strWorldFile.GetLength() != 0) {
-        CParseSource* ins;
+        CRezArchiveEntry* ins;
         char* desc;
         char* p;
         char c;
         if (mgr->m_isBattlezLevel != 0) {
 
-            bank = mgr->m_symParser->ResolvePath("GAME_BATTLEZ");
+            bank = mgr->m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
             if (bank == NULL) {
                 goto fail0;
             }
-            ins = bank->Insert(
+            ins = bank->FindEntry(
                 static_cast<const char*>(self->m_mgr->GetWorldFileName()),
                 REZ_TAG_WWD
             );
             if (ins == NULL) {
                 return 0;
             }
-            desc = ins->BeginParse();
+            desc = ins->LoadData();
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1220,21 +1220,21 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             level = atoi(p);
-            ins->EndParse();
+            ins->ReleaseData();
         } else if (mgr->m_isMultiLevel != 0) {
 
-            bank = mgr->m_symParser->ResolvePath("GAME_MULTI");
+            bank = mgr->m_resourceArchive->FindDirectoryByPath("GAME_MULTI");
             if (bank == NULL) {
                 goto fail0;
             }
-            ins = bank->Insert(
+            ins = bank->FindEntry(
                 static_cast<const char*>(self->m_mgr->GetWorldFileName()),
                 REZ_TAG_WWD
             );
             if (ins == NULL) {
                 return 0;
             }
-            desc = ins->BeginParse();
+            desc = ins->LoadData();
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1249,7 +1249,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             level = atoi(p);
-            ins->EndParse();
+            ins->ReleaseData();
         } else {
 
             // 1, not 0: this arm IS the custom-level path, and retail stores edi -
@@ -1266,8 +1266,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
-    bank = self->m_symParser->ResolvePath(nameBuf);
-    self->m_levelBank = bank;
+    bank = self->m_resourceArchive->FindDirectoryByPath(nameBuf);
+    self->m_levelResources = bank;
     if (bank == NULL) {
         goto fail0;
     }
@@ -1320,8 +1320,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        prevTiles = self->m_stateBank;
-        self->m_stateBank = (self->m_levelBank);
+        prevTiles = self->m_stateResources;
+        self->m_stateResources = (self->m_levelResources);
         UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
 
         mgr = self->m_mgr;
@@ -1339,10 +1339,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RetireScene(0x50, 0x3e8, 0, 1);
     DrawLevelInfoText();
-    // RESTORE, not clear: retail reads m_stateBank into edi before overwriting it
+    // RESTORE, not clear: retail reads m_stateResources into edi before overwriting it
     // (0xca6b9 `mov edi,[esi+0x2c]`) and writes edi back here (0xca722), so the
     // bank is saved across the title fade rather than nulled.
-    self->m_stateBank = prevTiles;
+    self->m_stateResources = prevTiles;
     {
         i32* z = initScratch;
         i32 n = 0x25;
@@ -1841,7 +1841,7 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    CSymTab* h = m_levelBank->ResolvePath("TILEZ");
+    CRezArchiveDir* h = m_levelResources->FindDirectoryByPath("TILEZ");
     if (!h) {
         return 0;
     }
@@ -1849,7 +1849,7 @@ i32 CPlay::InputVirtual() {
         return 0;
     }
 
-    h = m_levelBank->ResolvePath("IMAGEZ");
+    h = m_levelResources->FindDirectoryByPath("IMAGEZ");
     if (!h) {
         return 0;
     }
@@ -1857,7 +1857,7 @@ i32 CPlay::InputVirtual() {
         return 0;
     }
 
-    h = m_gruntzBank->ResolvePath("IMAGEZ");
+    h = m_gruntResources->FindDirectoryByPath("IMAGEZ");
     if (!h) {
         return 0;
     }
@@ -3766,15 +3766,15 @@ i32 CPlay::DrawStateMessage() {
 RVA(0x000cffe0, 0x3c)
 i32 CPlay::LoadImageBanks() {
     CPlay* self = this;
-    if (!self->m_symParser) {
+    if (!self->m_resourceArchive) {
         return 0;
     }
-    self->m_gruntzBank = self->m_symParser->ResolvePath("GRUNTZ");
-    if (!self->m_gruntzBank) {
+    self->m_gruntResources = self->m_resourceArchive->FindDirectoryByPath("GRUNTZ");
+    if (!self->m_gruntResources) {
         return 0;
     }
-    self->m_gameBank = self->m_symParser->ResolvePath("GAME");
-    return self->m_gameBank != NULL;
+    self->m_gameResources = self->m_resourceArchive->FindDirectoryByPath("GAME");
+    return self->m_gameResources != NULL;
 }
 
 RVA(0x000d0050, 0x3a)
@@ -6058,7 +6058,7 @@ RVA(0x000d5c10, 0x10d)
 i32 CState::DrawScreenTextImage(const char* name) {
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%sTEXT", name);
-    CParseSource* src = SymTab2c()->ResolveQualified(buf, IMGTAG_DIP);
+    CRezArchiveEntry* src = StateResources()->FindEntryByPath(buf, IMGTAG_DIP);
     if (src == NULL) {
         return 0;
     }

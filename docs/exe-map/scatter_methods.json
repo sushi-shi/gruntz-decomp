@@ -2860,7 +2860,7 @@
   "spread": 1.382746051032807
  },
  {
-  "file": "src/Bute/SymTab.cpp",
+  "file": "src/Rez/RezArchive.cpp",
   "n": 60,
   "bytes": 9519,
   "lo": 1283824,

@@ -1,7 +1,6 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
@@ -32,6 +31,7 @@
 #include <Gruntz/Wormhole.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
 #include <Wwd/LogicRecordEvent.h>
 

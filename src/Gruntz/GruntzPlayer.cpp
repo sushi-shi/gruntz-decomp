@@ -5,8 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -57,7 +55,6 @@
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
@@ -93,6 +90,9 @@
 #include <Io/SaveGame.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>

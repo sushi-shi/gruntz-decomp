@@ -42,18 +42,18 @@ datum the body initializes, never from the neighbours.
 The 0x17d60 run is the negative control: it sits between `BattlezDlgColors.cpp` claims but
 writes the `customleveldlg` copies at 0x229e08..0x229e88.
 
-On `src/Bute/SymTab.cpp` this turned up **nine** bodies where the Ghidra-based scan found
+On `src/Rez/RezArchive.cpp` this turned up **nine** bodies where the Ghidra-based scan found
 four, all of them reconstructable from the raw bytes in minutes:
 
 | gap | body |
 |---|---|
-| 0x139a00 | `if (m_owner->m_mappedBuf) return 1; return m_buffer != NULL;` |
-| 0x139a20 | `return ReadAt(dst, 0, m_length);` |
-| 0x139bc0 | `return (u32)m_cursor >= m_length;` (`cmp/sbb/inc`) |
-| 0x139bd0 | `char c; Read(&c, 1, -1); return c;` |
-| 0x13a2a0 | `return m_symbols.FindInt(key);` (`add ecx,0x40` = the member's address) |
+| 0x139a00 | `if (m_directory->m_preloadedData) return 1; return m_loadedData != NULL;` |
+| 0x139a20 | `return ReadAt(destination, 0, m_size);` |
+| 0x139bc0 | `return (u32)m_cursor >= m_size;` (`cmp/sbb/inc`) |
+| 0x139bd0 | `char value; Read(&value, 1, -1); return value;` |
+| 0x13a2a0 | `return m_types.FindTypeByTag(typeTag);` (`add ecx,0x40` = the member's address) |
 | 0x13ba50 | a four-argument setter over `[ecx+0x70..0x7c]` |
-| 0x13c010 | `return GetRoot()->FindQualified(name);` (push arg, evaluate receiver, call) |
+| 0x13c010 | `return GetRootDirectory()->FindEntryByPath(path);` (push arg, evaluate receiver, call) |
 | 0x139c70, 0x139ec0 | `jmp CHashBase::RemoveAll` — cl's out-of-line copies of two inline hash dtors |
 
 Reading them is mechanical: `mov eax,[ecx+N]` is a member off `this`; `[esp+4]` is the

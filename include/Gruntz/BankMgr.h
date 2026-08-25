@@ -5,6 +5,6 @@
 
 #include <Ints.h>
 
-class CSymTab;
+class CRezArchiveDir;
 
 #endif // GRUNTZ_GRUNTZ_CBANKMGR_H

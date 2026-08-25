@@ -274,14 +274,15 @@ Seam fns:
 2. **Engine-lib utility pocket** `[0x1848b0 .. 0x185460)` — foreign to any menu
    TU (contains zlib `_uncompress`!). Probable sub-objs (weak, resolution not
    required here):
-   - `0x1848b0-0x184b5d` rezcoll+symtab+hash woven (RezNode/CSymList/CHashBase)
-     — one small rez/sym/hash utility obj;
+   - `0x1848b0-0x184b5d` rezcoll+rezarchive+hash woven
+     (`CRezArchiveEntryHashNode`/`CRezStorageList`/`CHashBase`) — one small
+     archive/hash utility obj;
    - `0x184b70-0x1851d3` debugprintf+rangeset woven (`RezDebugInit`,
      `RezDebugPrintf*`, `CDebugConfig::InitFromEnv` + `CRangeSet` — the debug
      config parses range strings, same file); 1-frag debugprintf init run
      @`0x184b60` at its head;
    - `0x1851e0-0x1852d8` rezlist (`CRezList`);
-   - `0x1852e0` symparser (`?Remove@CObjList` — 1 fn, possibly COMDAT);
+   - `0x1852e0` rezarchive (`?Remove@CObjList` — 1 fn, possibly COMDAT);
    - `0x185320` zlib `uncompr.c` (library obj, vendor zlib-1.0.4);
    - `0x1853b0` `WapUncompress` (the engine wrapper — own obj or a rez-file tail).
 3. **MenuItem.cpp** `[0x185460 .. 0x185a0e]` — `CMenuItem` out-of-line
@@ -347,7 +348,7 @@ Seam fns:
 Not fully resolved (per brief). Four probable file boundaries from the
 class-family transitions:
 
-1. **`0x155840`** — WorkerRegistry file ends (`CDDrawWorkerRegistry` symtab-keyed
+1. **`0x155840`** — WorkerRegistry file ends (`CDDrawWorkerRegistry` name-hash-keyed
    dispatch/scan block `0x154aa0-0x155833`, + `??1CDDrawWorker`) →
    `??0CDDrawSurfaceMgr` begins.
 2. **`0x156cb0`** — SurfaceMgr file ends (`CDDrawSurfaceMgr` ctor/dtor/Init/
@@ -645,7 +646,7 @@ tail pending the 0xea990-0xf8800 partition package.
 
 | # | original TU | .text span | our file (unit kept) | flags |
 |---|---|---|---|---|
-| A | ButeMgr sym file (name unknown) | `0x1396f0-0x13c23a` | src/Bute/SymTab.cpp (symtab) | eh |
+| A | REZ archive file (original name unknown) | `0x1396f0-0x13c23a` | src/Rez/RezArchive.cpp (rezarchive) | eh |
 | B | Hash pocket — AMBIGUOUS | `0x13c240-0x13c4ba` | src/Bute/Hash.cpp (hash) | eh |
 | C | RezMgr archive file | `0x13c4e0-0x13ce8c` | src/Rez/RezMgr.cpp (rezmgr) | eh |
 | D | GameWnd.cpp | `0x13cf00-0x13d58a` | src/Wap32/GameWnd.cpp (gamewnd) | base |
@@ -655,20 +656,21 @@ tail pending the 0xea990-0xf8800 partition package.
 | H | **DDRAWMGR.CPP** (anchored) | `0x1413d0-0x143ca4` | src/DDrawMgr/DirectDrawMgr.cpp (directdrawmgr) | base->**eh** |
 | I | surface file-codec file (name unknown; "DIRFILE"-like) | `0x143cf0-0x145dff` | src/Image/FileImage.cpp (fileimage) | eh |
 
-Units dissolved: cremusreadstream+symrec+symparser (->A), rezfile (->C),
+Units dissolved: the former stream/entry/archive-manager fragments (->A), rezfile (->C),
 image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
 (->G/H/I + the 0x148840 pocket), ddrawptrcollections' 34 in-band fns (->H).
 
-* **A (sym file = ONE TU).** Multi-scale text A-B-A: the CParseSource run
-  0x139800-0x139bbc sits INSIDE the SymTab head (Build@0x139710 .. ??0@0x139de0)
-  with the CSymRec ctors between; the CSymTab Resolve* trio 0x13bae0-0x13bfec
-  sits INSIDE the CSymParser run (SetDelims@0x13ba80 .. ResolveQualified@0x13bff0).
-  Private-cell order: Load@CRezDirNode(0x13a0f0)'s cell 0x21a070 <
-  ParseRecords@CSymParser's 0x21a0a0 < the rez obj's 0x21a0a4 - the two
-  "rezmgr"-attributed strays (0x13a0f0, 0x13c080 - both text-contained) carry
-  cells INSIDE the sym band -> they are this obj's fns wearing Rez names
-  (@identity-TODO). EH sites throughout (SymRec/SymTab/SymParser ctors+dtors,
-  ApplyRange, PopParseSlot) -> /GX; the cremusreadstream base profile was a
+* **A (archive file = ONE TU).** Multi-scale text A-B-A: the
+  `CRezArchiveEntry` run 0x139800-0x139bbc sits inside the archive entry/directory
+  head (Initialize@0x139710 .. CRezArchiveDir ctor@0x139de0), with the
+  `CRezArchiveType` ctors between; the `CRezArchiveDir::Find*` trio 0x13bae0-0x13bfec
+  sits INSIDE the CRezArchive run (SetPathDelimiters@0x13ba80 .. FindEntryByPath@0x13bff0).
+  Private-cell order: PreloadData@CRezArchiveDir(0x13a0f0)'s cell 0x21a070 <
+  ImportDirectoryTree@CRezArchive's 0x21a0a0 < the rez obj's 0x21a0a4 - the two
+  formerly storage-manager-attributed strays (0x13a0f0, 0x13c080 - both text-contained)
+  carry cells inside the archive band, so they belong to this object. EH sites
+  throughout (`CRezArchiveEntry`/`CRezArchiveDir`/`CRezArchive` ctors+dtors,
+  ReadDirectoryBody, AcquireEntry) -> /GX; the cremusreadstream base profile was a
   seam artifact.
 * **B (hash pocket).** One contiguous CHash/CHashB block directly after A; no
   frags, no private cells, no EH sites, no weave -> cannot bind to A or prove
@@ -829,7 +831,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   0x157850-0x157a66 sits in G). ESCAPE (why held, not merged): the quartet
   bodies may be real out-of-line definitions in a second file (1997 code often
   wrote 6-byte getters out-of-line), which no oracle here can exclude. The
-  .data band 0x21ab14-0x21ab30 (g_wwdObjIdCounter / a shared symtab cell /
+  .data band 0x21ab14-0x21ab30 (g_wwdObjIdCounter / a shared name-registry cell /
   g_soundEnabled / g_soundVolumePercent / three Gap_15a210 cells) binds S2+E+G+H+I if its
   cells are file-statics - but every one is plausibly extern, so not decisive.
 * **G internal sub-splits REFUTED.** #9 suggested ~0x157a80 and ~0x1588f0 as
@@ -1027,7 +1029,7 @@ sub-structure is now resolved (was "weak, resolution not required"):
    are this documented COMDAT-pool artifact, not a fixable misplacement.
 2. **Pocket `[0x1848b0..0x185460)` = FIVE objs**, current tree layout already
    correct - no moves:
-   - RezColl.cpp `[0x1848b0..0x184b5d]` (RezNode/CSymList/CHashBase - the rez
+   - RezColl.cpp `[0x1848b0..0x184b5d]` (CHashSlot/CHashElement/CHashBase - the rez
      hash/collection utility; no frags, no privates, clean block);
    - DebugPrintf.cpp `[0x184b70..0x1851d3]` - its OWN obj, positively proven: own
      init frag i1493 @0x184b60 (ctor-attributed -> RezDebugInit) + own PRIVATE

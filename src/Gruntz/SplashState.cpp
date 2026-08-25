@@ -4,8 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -27,6 +25,8 @@
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
 #include <Wap32/GameApp.h>
 
 #include <ddraw.h>
@@ -43,14 +43,14 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
     SetCursor(NULL);
     m_mgr->RestoreVideoMode(0);
 
-    m_stateBank = m_symParser->ResolvePath("STATEZ_SPLASH");
-    if (!m_stateBank) {
+    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_SPLASH");
+    if (!m_stateResources) {
         return 0;
     }
 
-    CSymTab* soundz = SymTab2c()->FindSub("SOUNDZ");
+    CRezArchiveDir* soundz = StateResources()->FindSubdirectory("SOUNDZ");
     if (soundz) {
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(soundz), "", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(soundz), "", "_");
     }
     return 1;
 }

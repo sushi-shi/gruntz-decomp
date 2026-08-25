@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/WaveFormatX.h>
-#include <Gruntz/ParseSource.h>
+#include <Rez/RezArchiveEntry.h>
 
 class SoundDevice;
 
@@ -26,14 +26,14 @@ struct StreamFeeder {
     u32 m_silenceBytes;
     u8 m_silenceByte;
     u32 m_lastTickMs;
-    CParseSource* m_source;
+    CRezArchiveEntry* m_source;
     u32 m_looping;
     u32 m_sourceOffset;
     u32 m_windowStart;
     u32 m_windowLength;
     u32 m_windowEnd;
 
-    i32 SeedWindow(CParseSource* source, u32 offset, u32 bytes);
+    i32 SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes);
     StreamFeeder();
 
     ~StreamFeeder();

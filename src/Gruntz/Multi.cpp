@@ -3,7 +3,6 @@
 #include <Gruntz/Multi.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -62,6 +61,7 @@
 #include <Net/NetSession.h>
 #include <Net/NetSlotState.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
 #include <Rez/RezSync.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/MapTyped.h>
@@ -264,8 +264,8 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     PostLoadImageBanks();
-    m_stateBank = m_symParser->ResolvePath("STATEZ_MULTI");
-    if (m_stateBank == NULL) {
+    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_MULTI");
+    if (m_stateResources == NULL) {
         return 0;
     }
     if (ShowMultiStartDlg() == 0) {
@@ -816,9 +816,9 @@ i32 CMulti::StartTitle() {
     if (!m_netMgr) {
         return 0;
     }
-    CSymTab* saved = m_stateBank;
-    CSymTab* st = m_symParser->ResolvePath("STATEZ_ATTRACT");
-    m_stateBank = st;
+    CRezArchiveDir* saved = m_stateResources;
+    CRezArchiveDir* st = m_resourceArchive->FindDirectoryByPath("STATEZ_ATTRACT");
+    m_stateResources = st;
     if (!st) {
         return 0;
     }
@@ -827,14 +827,14 @@ i32 CMulti::StartTitle() {
     title.Format("TITLE%d", idx);
 
     if (LoadAndPresentTitlePage(title, 0, 0, 1, 0) == 0) {
-        m_stateBank = saved;
+        m_stateResources = saved;
         return 0;
     }
 
     m_world->m_drawTarget->PresentBackPage();
 
     m_world->m_deviceManager->m_device->FlipToGDISurface();
-    m_stateBank = saved;
+    m_stateResources = saved;
     while (ShowCursor(1) < 0) {
     }
     IDirectPlayLobby* lobby = Mgr()->m_lobby;

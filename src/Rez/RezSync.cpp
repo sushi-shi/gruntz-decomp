@@ -6,7 +6,6 @@
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
 #include <DDrawMgr/ColorDepth.h>
@@ -38,7 +37,6 @@
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LightFxMgr.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFont.h>
@@ -51,6 +49,8 @@
 #include <Io/SaveGame.h>
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegistryHelper.h>
@@ -303,32 +303,29 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    if (m_symParser) {
-        m_symParser->CSymParser::~CSymParser();
-        ::operator delete(m_symParser);
-        m_symParser = NULL;
+    if (m_resourceArchive) {
+        m_resourceArchive->CRezArchive::~CRezArchive();
+        ::operator delete(m_resourceArchive);
+        m_resourceArchive = NULL;
     }
-    m_symParser = new CSymParser;
+    m_resourceArchive = new CRezArchive;
     {
         CString resourcePath = GetRezPath();
 
-        i32 parsed = m_symParser->ParseBuffer(
-                         const_cast<char*>(static_cast<const char*>(resourcePath)),
-                         1,
-                         0
-                     )
-                     != 0;
+        i32 parsed =
+            m_resourceArchive->Open(const_cast<char*>(static_cast<const char*>(resourcePath)), 1, 0)
+            != 0;
         if (!parsed) {
             ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
             return 0;
         }
     }
-    if (!m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) {
+    if (!m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.VRZ"), 0)) {
         ReportError(IDX(IDS_LOAD_VOICE_RESOURCE_FILE), 0x460);
         return 0;
     }
-    m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.ZZZ"), 1);
-    m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.XXX"), 1);
+    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.ZZZ"), 1);
+    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.XXX"), 1);
     SetColorDepth(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
@@ -511,15 +508,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     {
-        CParseSource* stream =
-            g_gameReg->m_symParser->ResolveQualified("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
+        CRezArchiveEntry* stream =
+            g_gameReg->m_resourceArchive->FindEntryByPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
         TRACE("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         bool ok = false;
         if (stream) {
             g_buteMgr.m_encrypted = 1;
-            char* esz = stream->BeginParse();
-            i32 eszLen = stream->m_length;
+            char* esz = stream->LoadData();
+            i32 eszLen = stream->m_size;
             istrstream* rdr = new istrstream(esz, eszLen);
             g_buteMgr.m_crypt.InitKey("1212C");
             char* decoded = new char[eszLen];
@@ -529,7 +526,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_stream = new istrstream(decoded, snk->rdbuf()->out_waiting());
             delete rdr;
             delete snk;
-            stream->EndParse();
+            stream->ReleaseData();
             g_buteMgr.Init();
             g_buteMgr.m_tree.ClearRecursive(NULL);
             g_buteMgr.m_tree.m_root = NULL;
@@ -590,11 +587,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isHighDetail = vHigh1;
     m_isEffectsEnabled = vHigh2;
     if (!m_world->m_soundRegistry->HasWithPrefix("GAME")) {
-        CSymTab* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
+        CRezArchiveDir* sz = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(sz), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sz), "GAME", "_");
     }
     {
         SoundCue* movieCue = NULL;
@@ -617,11 +614,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     {
 
-        CSymTab* attract = m_symParser->ResolvePath("STATEZ_ATTRACT");
+        CRezArchiveDir* attract = m_resourceArchive->FindDirectoryByPath("STATEZ_ATTRACT");
         g_attractStateCount = 0;
         CString title;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->ResolveQualified(static_cast<const char*>(title), IMGTAG_XCP)) {
+        while (attract->FindEntryByPath(static_cast<const char*>(title), IMGTAG_XCP)) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }

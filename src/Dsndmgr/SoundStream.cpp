@@ -25,7 +25,7 @@ DATA(0x00253c58)
 i32 g_dsoundFormatErrors;
 
 RVA(0x00137340, 0x33)
-i32 StreamFeeder::SeedWindow(CParseSource* source, u32 offset, u32 bytes) {
+i32 StreamFeeder::SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes) {
     if (source == NULL) {
         return 0;
     }
@@ -95,7 +95,7 @@ RVA(0x001374b0, 0x1)
 void StreamVoiceFeeder::OnReset() {}
 
 RVA(0x001374c0, 0x5d)
-i32 StreamVoice::SetSource(CParseSource* source) {
+i32 StreamVoice::SetSource(CRezArchiveEntry* source) {
     if (source == NULL) {
         return 0;
     }
@@ -237,7 +237,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
 // @early-stop
 RVA(0x00137900, 0xc6)
 StreamVoice* SoundStream::OpenStream(
-    CParseSource* source,
+    CRezArchiveEntry* source,
     i32 bufferBytes,
     i32 refillThresholdBytes,
     i32 dsFlags,
@@ -291,7 +291,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00137a30, 0x4b)
 StreamVoice* SoundStream::PlayStream(
-    CParseSource* source,
+    CRezArchiveEntry* source,
     i32 bufferBytes,
     i32 refillThresholdBytes,
     i32 dsFlags
@@ -347,7 +347,7 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
 
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
-    CParseSource* source,
+    CRezArchiveEntry* source,
     WaveFormatX* outFormat,
     u32* outDataOffset,
     u32* outDataBytes
@@ -370,8 +370,8 @@ i32 SoundStream::ParseWave(
     }
 
     u32 riffEnd = source->m_cursor + chunkSize - 4;
-    if (riffEnd > source->m_length) {
-        riffEnd = source->m_length;
+    if (riffEnd > source->m_size) {
+        riffEnd = source->m_size;
     }
     while (source->m_cursor < riffEnd) {
         source->Read(&chunkId, 4, -1);

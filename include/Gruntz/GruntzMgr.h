@@ -59,7 +59,7 @@ class CVoiceManager;
 class CGameLevel;
 class CLightFxMgr;
 
-class CSymParser;
+class CRezArchive;
 namespace Utils {
     class RegistryHelper;
 }
@@ -300,7 +300,7 @@ public:
     CState* m_curState;
     CDDrawSurfaceMgr* m_world;
 
-    CSymParser* m_symParser;
+    CRezArchive* m_resourceArchive;
 
     Utils::RegistryHelper* m_settings;
 

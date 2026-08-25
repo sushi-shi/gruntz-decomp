@@ -32,6 +32,6 @@ for (i32 i = 0; i < n; i++) { if (…) live++; }
     jle    <after>
 ```
 
-Evidence: `CDDrawWorker::ValidateFramesFromSymTab` @0x1522b0, filed "regalloc-coloring
+Evidence: `CDDrawWorker::ValidateFramesFromArchive` @0x1522b0, filed "regalloc-coloring
 wall … permute (start 87.755%) found no better spelling" — 87.81 → **100.00 EXACT**; both
 callee-saved colours fell out on their own.

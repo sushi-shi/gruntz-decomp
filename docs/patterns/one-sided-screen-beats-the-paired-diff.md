@@ -124,10 +124,10 @@ as function pointers (`DispatchActionAreaLogic(CGameObject*)` and forty siblings
 MFC's `ConstructElements`/`DestructElements`, serializers taking `CFileMemBase*`.
 
 Worse, the screen cannot see the shape it was proposed for. Neither
-`CSymParser::UnpackTag` nor `CGameLevel::InflateMainBlock` had a leading class
+`CRezArchive::UnpackTag` nor `CGameLevel::InflateMainBlock` had a leading class
 parameter: their receiver was ABSENT from the model, not demoted to an
 argument. `void __stdcall UnpackTag(RezTypeTag, char*)` became
-`void CSymParser::UnpackTag(RezTypeTag, char*)` — the stack arguments never
+`void CRezArchive::UnpackTag(RezTypeTag, char*)` — the stack arguments never
 moved, which is exactly why the callee bytes did not either.
 
 A leading class pointer is a hypothesis. The receiver-shaped ECX write at the

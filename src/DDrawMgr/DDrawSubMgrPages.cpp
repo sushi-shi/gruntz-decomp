@@ -4,8 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -29,7 +27,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -40,6 +37,9 @@
 #include <Io/FileMem.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -116,7 +116,7 @@ i32 CDDrawSubMgrPages::ResolvePageImage(char* name, DDrawPageKind pageIndex) {
 }
 
 RVA(0x00158b40, 0x2c)
-i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, DDrawPageKind pageIndex) {
+i32 CDDrawSubMgrPages::LoadPageImage(CRezArchiveEntry* src, DDrawPageKind pageIndex) {
     CDDrawSurfacePair* p;
     if (pageIndex == DDRAW_PAGE_OVERLAY) {
         p = m_overlayPair;

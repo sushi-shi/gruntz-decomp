@@ -4,7 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/MapStringToOb.h>
@@ -12,6 +11,7 @@
 #include <Gruntz/String.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <Rez/RezArchiveDir.h>
 #include <Wap32/WapObj.h>
 
 #include <ddraw.h>
@@ -34,8 +34,12 @@ void CDDrawWorkerRegistry::Unload() {
 }
 
 RVA(0x00154ae0, 0xfc)
-CImage*
-CDDrawWorkerRegistry::InsertFrameByKey(CParseSource* rec, const char* key, i32 index, i32 mode) {
+CImage* CDDrawWorkerRegistry::InsertFrameByKey(
+    CRezArchiveEntry* rec,
+    const char* key,
+    i32 index,
+    i32 mode
+) {
     CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
@@ -123,7 +127,7 @@ CDDrawWorkerRegistry::LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 i
 
 RVA(0x00154f20, 0x1b)
 CImage* CDDrawWorkerRegistry::InsertFrameForWorker(
-    CParseSource* rec,
+    CRezArchiveEntry* rec,
     CDDrawWorker* worker,
     i32 index,
     i32 mode
@@ -154,14 +158,14 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
 }
 
 RVA(0x00154f80, 0x1d5)
-i32 CDDrawWorkerRegistry::InstallTree(CSymTab* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::InstallTree(CRezArchiveDir* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
     if (buf == NULL) {
         return count;
     }
     buf[0] = 0;
-    CSymTab* e = dir->FirstSub();
+    CRezArchiveDir* e = dir->FirstSubdirectory();
     while (e != NULL) {
         if (sub != NULL && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -169,7 +173,7 @@ i32 CDDrawWorkerRegistry::InstallTree(CSymTab* dir, const char* sub, const char*
             strcpy(buf, e->m_name);
         }
         count += InstallTree(e, buf, prefix);
-        e = dir->NextSub(e);
+        e = dir->NextSubdirectory(e);
     }
     if (sub != NULL && *sub != 0) {
         CObject* w = NULL;
@@ -184,7 +188,7 @@ i32 CDDrawWorkerRegistry::InstallTree(CSymTab* dir, const char* sub, const char*
             }
             m_workersByName.SetAt(sub, w);
         }
-        static_cast<CDDrawWorker*>(w)->BuildFramesFromSymTab(dir);
+        static_cast<CDDrawWorker*>(w)->BuildFramesFromArchive(dir);
         if (static_cast<CDDrawWorker*>(w)->m_items.GetSize() == 0) {
             RemoveByKey(sub);
         } else {
@@ -196,10 +200,10 @@ i32 CDDrawWorkerRegistry::InstallTree(CSymTab* dir, const char* sub, const char*
 }
 
 RVA(0x00155160, 0x11e)
-i32 CDDrawWorkerRegistry::LoadNamespace(CSymTab* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::LoadNamespace(CRezArchiveDir* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
-    CSymTab* e = dir->FirstSub();
+    CRezArchiveDir* e = dir->FirstSubdirectory();
     while (e != NULL) {
         if (sub != NULL && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -212,14 +216,14 @@ i32 CDDrawWorkerRegistry::LoadNamespace(CSymTab* dir, const char* sub, const cha
             return -1;
         }
         count += r;
-        e = dir->NextSub(e);
+        e = dir->NextSubdirectory(e);
     }
     if (sub != NULL && *sub != 0) {
         CObject* out = NULL;
         m_workersByName.Lookup(sub, out);
         if (out != NULL) {
 
-            if (static_cast<CDDrawWorker*>(out)->ValidateFramesFromSymTab(dir) == -1) {
+            if (static_cast<CDDrawWorker*>(out)->ValidateFramesFromArchive(dir) == -1) {
                 delete[] buf;
                 return -1;
             }

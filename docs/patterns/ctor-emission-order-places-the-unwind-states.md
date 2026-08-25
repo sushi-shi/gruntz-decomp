@@ -31,7 +31,7 @@ Three shapes, all measured 2026-08-08:
 
 | retail | our source | fix |
 |---|---|---|
-| state 0 at the member's `call`, ours stores 2 | `m_hash.Construct(1);` in the body | `: m_hash(1)` mem-init (`CSymParser` 76.68 -> **100.00**) |
+| state 0 at the member's `call`, ours stores 2 | `m_hash.Construct(1);` in the body | `: m_hash(1)` mem-init (`CRezArchive` 76.68 -> **100.00**) |
 | head/tail zeroed BEFORE the vptr stamp | `m_list.m_head = NULL;` in the body | the ctor belongs to the member's own class, in ITS mem-init list (`CObjList() : m_head(NULL), m_tail(NULL) {}`) |
 | an extra state, then three field stores | `m_gameObject = owner; ...` in the body | the fields belong to a real base - `: CMovingLogic(owner), CWapX(owner)` (`CProjectile` 86.23 -> **99.78**) |
 

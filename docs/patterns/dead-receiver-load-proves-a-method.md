@@ -9,7 +9,7 @@ ignores `this` compile to **identical bodies** — both read the argument at `[e
 SITE silently drops the receiver setup. The tell is at the call sites, never in the body:
 
 ```asm
-; CSymTab::Find @0x13a0b2                 ; CSymParser::ParseRecords @0x13b71a
+; CRezArchiveDir::Find @0x13a0b2                 ; CRezArchive::ImportDirectoryTree @0x13b71a
 mov  ecx,DWORD PTR [ebx+0x18]  ; m_owner  ; mov ecx,DWORD PTR [esp+0x14]  ; its own `this`
 add  esp,0x4                              ; add esp,0x4
 lea  edx,[esp+0xc]                        ; lea edx,[esp+0x18]
@@ -22,16 +22,16 @@ Two independent call sites both loading a receiver ⇒ the callee is a method of
 // WRONG - scores 100% on the body, loses one instruction at every call site
 u32 __stdcall PackTag(const char* s);
 // RIGHT
-class CSymParser { u32 PackTag(const char* s); };   // 0x13b910
+class CRezArchive { u32 PackTag(const char* s); };   // 0x13b910
 // and the other class reaches it through its owner:
 fourcc = m_owner->PackTag(tmp);
 ```
-The mangled name changes (`?PackTag@@YGIPBD@Z` -> `?PackTag@CSymParser@@QAEIPBD@Z`) and
+The mangled name changes (`?PackTag@@YGIPBD@Z` -> `?PackTag@CRezArchive@@QAEIPBD@Z`) and
 that is fine — names are ours, the RVA binding is what matters.
 
 **Do not "fix" this with an inline forwarder.** A wrapper whose body ignores `this` gets
 its receiver load deleted by cl, so it reproduces nothing; only real `__thiscall` linkage
-emits the load. STEERABLE: `CSymTab::Find` @0x13a040 98.28 -> **100 EXACT**.
+emits the load. STEERABLE: `CRezArchiveDir::Find` @0x13a040 98.28 -> **100 EXACT**.
 
 ## The inverse tell: the CALLER spills `this` for no other reason
 

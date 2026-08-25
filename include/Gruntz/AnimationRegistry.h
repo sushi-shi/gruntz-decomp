@@ -9,8 +9,8 @@
 #include <Wap32/WapObj.h>
 
 class CAniElement;
-class CSymTab;
-struct CParseSource;
+class CRezArchiveDir;
+struct CRezArchiveEntry;
 
 class AnimationRegistry : public CWapObj {
 public:
@@ -28,11 +28,11 @@ public:
     CString FindAnimationKey(CAniElement* target);
     virtual ~AnimationRegistry() OVERRIDE;
 
-    CAniElement* LoadAnimationFromSource(const char* key, CParseSource* source);
+    CAniElement* LoadAnimationFromSource(const char* key, CRezArchiveEntry* source);
     CAniElement* LoadAnimationFromFile(const char* key, const char* path);
-    CAniElement* LoadNamedAnimation(CParseSource* source);
+    CAniElement* LoadNamedAnimation(CRezArchiveEntry* source);
     void AddAnimation(CAniElement* animation, const char* key);
-    i32 LoadFromTree(CSymTab* tree, const char* prefix, const char* separator);
+    i32 LoadFromTree(CRezArchiveDir* tree, const char* prefix, const char* separator);
 
     CMapStringToPtr m_animations;
 };

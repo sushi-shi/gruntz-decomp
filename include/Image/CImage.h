@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-struct CParseSource;
+struct CRezArchiveEntry;
 
 class CDDrawDeviceManager;
 
@@ -50,9 +50,9 @@ public:
 
     virtual i32 CreateBlankSurface(i32 width, i32 height, i32 keyed);
     virtual i32 LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed);
-    virtual i32 Resolve(CParseSource* src, i32 keyed);
+    virtual i32 Resolve(CRezArchiveEntry* src, i32 keyed);
     virtual i32 Create(char* path, i32 keyed);
-    virtual i32 Reload(CParseSource* src, i32 keyed);
+    virtual i32 Reload(CRezArchiveEntry* src, i32 keyed);
     virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);
     virtual void FlipVertical(void* unused);
     virtual void FlipHorizontal(void* unused);

@@ -15,7 +15,7 @@ template<class T> inline T* ElementFromLink(IntrusiveLink* link) {
 
 // The shared list head: retail carries exactly one copy of each operation below
 // (InsertHead 0x1390e0 .. Unlink 0x1391e0), reached from SoundBuffer,
-// SoundDevice, SoundStream, CSymParser, CHashBase and CWwdGrid.
+// SoundDevice, SoundStream, CRezArchive, CHashBase and CWwdGrid.
 struct IntrusiveList {
     IntrusiveLink* m_head;
     IntrusiveLink* m_tail;

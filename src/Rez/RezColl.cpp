@@ -13,23 +13,23 @@
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
 
-    CHashElement* n = CHashBase::FromLink(m_link.m_next);
-    if (n == NULL) {
-        u32 i = m_bucket + 1;
-        CHashBase* coll = m_owner;
-        u32 count = coll->m_count;
-        if (i < count) {
-            CHashSlot* b = coll->m_buckets;
+    CHashElement* next = CHashBase::FromLink(m_link.m_next);
+    if (next == NULL) {
+        u32 bucketIndex = m_bucketIndex + 1;
+        CHashBase* hash = m_hash;
+        u32 bucketCount = hash->m_bucketCount;
+        if (bucketIndex < bucketCount) {
+            CHashSlot* buckets = hash->m_buckets;
             do {
-                n = CHashBase::FromLink(b[i].m_chain.m_head);
-                if (n) {
+                next = CHashBase::FromLink(buckets[bucketIndex].m_chain.m_head);
+                if (next) {
                     break;
                 }
-                i++;
-            } while (i < count);
+                bucketIndex++;
+            } while (bucketIndex < bucketCount);
         }
     }
-    return n;
+    return next;
 }
 
 // @early-stop
@@ -39,33 +39,33 @@ CHashElement* CHashElement::Next() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
-    CHashElement* e = CHashBase::FromLink(m_link.m_prev);
-    if (e == NULL) {
+    CHashElement* previous = CHashBase::FromLink(m_link.m_prev);
+    if (previous == NULL) {
 
-        if (m_bucket > 0) {
+        if (m_bucketIndex > 0) {
 
-            CHashSlot* b = m_owner->m_buckets;
-            u32 i = m_bucket;
+            CHashSlot* buckets = m_hash->m_buckets;
+            u32 bucketIndex = m_bucketIndex;
             do {
-                --i;
-                e = CHashBase::FromLink(b[i].m_chain.m_tail);
-            } while (e == NULL && i > 0);
+                --bucketIndex;
+                previous = CHashBase::FromLink(buckets[bucketIndex].m_chain.m_tail);
+            } while (previous == NULL && bucketIndex > 0);
         }
     }
-    return e;
+    return previous;
 }
 
 RVA(0x00184950, 0x10)
 CHash::CHash() {
-    m_count = 0;
+    m_bucketCount = 0;
     m_buckets = NULL;
 }
 
 RVA(0x00184960, 0x70)
-CHashBase::CHashBase(i32 count) {
-    m_count = count;
+CHashBase::CHashBase(i32 bucketCount) {
+    m_bucketCount = bucketCount;
 
-    m_buckets = new CHashSlot[count];
+    m_buckets = new CHashSlot[bucketCount];
 }
 
 RVA_COMPGEN(0x001849d0, 0x50, ??_ECHashSlot@@QAEPAXI@Z)
@@ -86,28 +86,28 @@ void CHashBase::RemoveAll() {
 // docs/patterns/sib-base-index-follows-local-decl-order.md
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashElement* node) {
-    node->m_owner = this;
-    u32 idx = node->Hash();
-    node->m_bucket = idx;
-    IntrusiveLink* biased = node ? &node->m_link : NULL;
-    m_buckets[idx].m_chain.InsertHead(biased);
+    node->m_hash = this;
+    u32 bucketIndex = node->Hash();
+    node->m_bucketIndex = bucketIndex;
+    IntrusiveLink* link = node ? &node->m_link : NULL;
+    m_buckets[bucketIndex].m_chain.InsertHead(link);
 }
 
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
     IntrusiveLink* node = entry ? &entry->m_link : NULL;
-    m_buckets[entry->m_bucket].m_chain.Unlink(node);
+    m_buckets[entry->m_bucketIndex].m_chain.Unlink(node);
 }
 
 RVA(0x00184ae0, 0x24)
 CHashElement* CHashBase::First() {
-    u32 i = 0;
-    CHashElement* n;
+    u32 bucketIndex = 0;
+    CHashElement* first;
     do {
-        n = FromLink(m_buckets[i].m_chain.m_head);
-        i++;
-    } while (n == NULL && i < m_count);
-    return n;
+        first = FromLink(m_buckets[bucketIndex].m_chain.m_head);
+        bucketIndex++;
+    } while (first == NULL && bucketIndex < m_bucketCount);
+    return first;
 }
 
 // @early-stop
@@ -117,21 +117,21 @@ CHashElement* CHashBase::First() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
-    u32 i = m_count - 1;
-    IntrusiveLink** t = &m_buckets[i].m_chain.m_tail;
-    CHashElement* e;
+    u32 bucketIndex = m_bucketCount - 1;
+    IntrusiveLink** tail = &m_buckets[bucketIndex].m_chain.m_tail;
+    CHashElement* last;
     for (;;) {
-        e = FromLink(*t);
-        if (i <= 0) {
+        last = FromLink(*tail);
+        if (bucketIndex <= 0) {
             break;
         }
-        --i;
-        t -= 4;
-        if (e != NULL) {
+        --bucketIndex;
+        tail -= 4;
+        if (last != NULL) {
             break;
         }
     }
-    return e;
+    return last;
 }
 
 // @early-stop
@@ -139,6 +139,6 @@ CHashElement* CHashBase::Last() {
 // address: [ecx+eax+8] here and [eax+ecx+8] in retail. A natural bucket-pointer
 // local is byte-flat.
 RVA(0x00184b40, 0x1d)
-CHashElement* CHashBase::Lookup(u32 idx) {
-    return FromLink(m_buckets[idx].m_chain.m_head);
+CHashElement* CHashBase::Lookup(u32 bucketIndex) {
+    return FromLink(m_buckets[bucketIndex].m_chain.m_head);
 }

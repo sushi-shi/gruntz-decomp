@@ -631,7 +631,7 @@
  },
  {
   "file": "src/Bute/Hash.cpp",
-  "name": "?FindInt@CHash@@QAEPAXI@Z",
+  "name": "?FindTypeByTag@CHashD@@QAEPAVCRezArchiveType@@I@Z",
   "rva": 1295200,
   "demo_rva": 1286672,
   "retail_dist": 296214,
@@ -1287,7 +1287,7 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Bute/SymTab.cpp",
+  "file": "src/Rez/RezArchive.cpp",
   "name": "?Gap_184900@@YAHXZ",
   "rva": 1591552,
   "demo_rva": 1573840,
@@ -1296,8 +1296,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Bute/SymTab.cpp",
-  "name": "?Construct@CSymList@@QAEPAU1@H@Z",
+  "file": "src/Rez/RezArchive.cpp",
+  "name": "??0CHashBase@@QAE@H@Z",
   "rva": 1591648,
   "demo_rva": 1573936,
   "retail_dist": 297236,
@@ -1494,8 +1494,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Bute/SymParser.cpp",
-  "name": "?Remove@CObjList@@QAEXPAVCObjNode@@@Z",
+  "file": "src/Rez/RezList.cpp",
+  "name": "?Remove@CObjList@@QAEXPAVCRezItmBase@@@Z",
   "rva": 1594080,
   "demo_rva": 1576368,
   "retail_dist": 299190,

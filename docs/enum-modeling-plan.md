@@ -264,8 +264,6 @@ are variables that genuinely carry two things, and typing them would be a lie:
   it into two locals was tried and **changes `.text`**, so retail reused the slot.
 - `CGruntzMgr::ReportError`'s first parameter — takes both 0x8xxx resource ids
   and the 0x4xx ids the `WARP` macro passes. Two spaces, one slot.
-- `CHash::FindInt` — a generic integer lookup; one caller passes a fourcc, another
-  an arbitrary symbol key.
 
 Each is recorded at the site with what the two readings are.
 

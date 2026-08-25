@@ -36,7 +36,7 @@ compiland was non-`/GX`** — regardless of what the neighbouring functions look
 0x16d700  push <str>; mov ecx,g_zBitSetErrorSlot; call ??0CVariantSlot; ret   <- NOT inlined
 0x16d9b0  ... g_globalErrorSlot ...                                          <- NOT inlined
 0x16de20  ... g_dynamicArrayErrorSlot ...                                    <- NOT inlined
-0x16dfe0  ... g_symTabErrorSlot ...                                          <- NOT inlined
+0x16dfe0  ... g_rezArchiveErrorSlot ...                                      <- NOT inlined
 0x16e6a0  push 0; push ButeTreeNopFree; mov ecx,g_buteTree;
           call ??0zPTree; mov g_buteTree,??_7CButeTree@@6B@;
           mov g_buteTree+8,??_7CButeTree@@6BzPtrColl@@@; ret                 <- INLINED

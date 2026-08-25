@@ -38,8 +38,8 @@ public:
     void ClearVoiceIndicatorSlots();
     i32 ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId);
 
-    struct CParseSource* SelectVoiceVariant(i32 voiceGroup, i32 variantIndex);
-    struct CParseSource* SelectVoiceVariant(i32 voiceGroup);
+    struct CRezArchiveEntry* SelectVoiceVariant(i32 voiceGroup, i32 variantIndex);
+    struct CRezArchiveEntry* SelectVoiceVariant(i32 voiceGroup);
     BOOL BuildVoiceGroups();
 
     BOOL

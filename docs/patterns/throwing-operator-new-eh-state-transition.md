@@ -22,6 +22,6 @@ push   ecx                      ; the size
 mov    BYTE PTR [esp+0x20],0x1  ; <- member-ctor EH state -> 1 (only with throwing new)
 call   <operator new>           ; 0x1b9b46
 ```
-Steerable: CSymTab::CSymTab 0x139de0 went 95.95%→97.33% on the swap (residual is the
+Steerable: CRezArchiveDir::CRezArchiveDir 0x139de0 went 95.95%→97.33% on the swap (residual is the
 operator-new vs delinked `_RezAlloc` reloc-name artifact — exact is unreachable since
 the throwing-name and the `_RezAlloc` symbol-name requirements conflict).

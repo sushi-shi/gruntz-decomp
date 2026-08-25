@@ -2308,7 +2308,7 @@ class WallsDiagnoseTargetControls(unittest.TestCase):
         from types import SimpleNamespace
 
         from gruntz.walls import diagnose as D
-        name = "?ParseRecords@CSymParser@@QAEHXZ"
+        name = "?ImportDirectoryTree@CRezArchive@@QAEHXZ"
         binding = SimpleNamespace(unit="u", name=name, rva=0x13B300)
         asm = "   0:\te8 fb ff ff ff\tcall 0x0\n"
         with tempfile.TemporaryDirectory() as td:
@@ -5311,7 +5311,7 @@ class VptrStampControls(unittest.TestCase):
 
     def test_the_two_sides_are_not_byte_symmetric(self):
         """Why every differing row is re-read off a DECODED stream. These are
-        `CSymTab`'s destructor's own bytes at +0x9c: our base object has the
+        `CRezArchiveDir`'s destructor's own bytes at +0x9c: our base object has the
         `call rel32` displacement zeroed by its relocation, the delinked target
         resolves the SELF-call internally and leaves a negative one - and four
         `ff` bytes decode as `call DWORD PTR [edi+0xe8]`. That row is

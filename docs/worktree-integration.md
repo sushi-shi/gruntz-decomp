@@ -6,4 +6,4 @@ Dirty worktree state is never covered by a checkpoint.
 
 | Worktree | Last inspected commit | Notes |
 | :-- | :-- | :-- |
-| `matcher-1` | `0768b092f7e0bec003181f14f84018bd15f26306` | Its committed history is already in `main`. Imported from the dirty tree: MoviePlayer destructor ownership, SymTab version validation, GameStats reset order, runnable-link resources, and the input/shade startup block. The remaining dirty state is still active. |
+| `matcher-1` | `0768b092f7e0bec003181f14f84018bd15f26306` | Its committed history is already in `main`. Imported from the dirty tree: MoviePlayer destructor ownership, REZ archive version validation, GameStats reset order, runnable-link resources, and the input/shade startup block. The remaining dirty state is still active. |

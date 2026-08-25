@@ -2,7 +2,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymTab.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -20,7 +19,6 @@
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/Sprite.h>
@@ -31,6 +29,8 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -925,7 +925,7 @@ void CDDrawWorker::Unload() {
     }
 
 RVA(0x00151f00, 0xa4)
-CImage* CDDrawWorker::InsertFrame(CParseSource* src, i32 n, i32 mode) {
+CImage* CDDrawWorker::InsertFrame(CRezArchiveEntry* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
         return NULL;
     }
@@ -1005,11 +1005,11 @@ RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
 RVA(0x001521f0, 0xbc)
-i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
+i32 CDDrawWorker::BuildFramesFromArchive(CRezArchiveDir* tab) {
     i32 count = 0;
-    CSymRec* sym = tab->FirstSym();
+    CRezArchiveType* sym = tab->FirstType();
     while (sym != NULL) {
-        CParseSource* val = tab->NextSym2(sym);
+        CRezArchiveEntry* val = tab->FirstEntry(sym);
         while (val != NULL) {
             char* p = val->m_name;
             while (*p != 0) {
@@ -1022,12 +1022,12 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
             if (InsertFrame(val, fi, 1) != NULL) {
                 count++;
             }
-            val = tab->NextSym3(val);
+            val = tab->NextEntry(val);
             if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
                 val = NULL;
             }
         }
-        sym = tab->NextSym(sym);
+        sym = tab->NextType(sym);
         if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
             sym = NULL;
         }
@@ -1036,7 +1036,7 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
 }
 
 RVA(0x001522b0, 0xf7)
-i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
+i32 CDDrawWorker::ValidateFramesFromArchive(CRezArchiveDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;
@@ -1052,11 +1052,12 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
             liveFrames++;
         }
     }
-    CSymRec* sym = tab->FirstSym();
+    CRezArchiveType* sym = tab->FirstType();
     while (sym != NULL) {
-        CParseSource* val = tab->NextSym2(sym);
+        CRezArchiveEntry* val = tab->FirstEntry(sym);
         while (val != NULL) {
-            GZ_ENUM_RETURN(RezTypeTag, u32) tag = (static_cast<CParseSource*>(val))->GetEntryTag();
+            GZ_ENUM_RETURN(RezTypeTag, u32)
+            tag = (static_cast<CRezArchiveEntry*>(val))->GetTypeTag();
             if (tag == IMGTAG_XCP || tag == IMGTAG_PMB || tag == IMGTAG_DIR || tag == IMGTAG_DIP) {
                 char* p = val->m_name;
                 while (*p != 0) {
@@ -1066,20 +1067,20 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
                     p++;
                 }
                 i32 fi = atoi(p);
-                if (0 == ReloadFrame(static_cast<CParseSource*>(val), fi, 1)) {
+                if (0 == ReloadFrame(static_cast<CRezArchiveEntry*>(val), fi, 1)) {
                     return -1;
                 }
                 matched++;
             }
-            val = tab->NextSym3(val);
+            val = tab->NextEntry(val);
         }
-        sym = tab->NextSym(sym);
+        sym = tab->NextType(sym);
     }
     return (matched >= liveFrames) ? matched : -1;
 }
 
 RVA(0x001523b0, 0x3b)
-i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
+i32 CDDrawWorker::ReloadFrame(CRezArchiveEntry* rec, i32 n, i32 flag) {
     CImage* el = GetAt(n);
     if (el == NULL) {
         return 0;

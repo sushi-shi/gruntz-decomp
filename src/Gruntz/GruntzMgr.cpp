@@ -5,7 +5,6 @@
 #include <Mfc.h>
 #include <MfcWin.h>
 
-#include <Bute/SymParser.h>
 #include <Crypto/FecCrypt.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -89,6 +88,7 @@
 #include <Net/NetMgr.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
@@ -203,7 +203,7 @@ RVA(0x00083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {
     m_curState = NULL;
     m_world = NULL;
-    m_symParser = NULL;
+    m_resourceArchive = NULL;
     m_settings = NULL;
     m_gameStats = NULL;
     m_reserved3c = NULL;
@@ -410,9 +410,9 @@ void CGruntzMgr::Close() {
         delete m_world;
         m_world = NULL;
     }
-    if (m_symParser) {
-        delete m_symParser;
-        m_symParser = NULL;
+    if (m_resourceArchive) {
+        delete m_resourceArchive;
+        m_resourceArchive = NULL;
     }
     if (m_settings) {
 
@@ -1834,11 +1834,11 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     IDirectDraw2* dd2 = m_world->m_deviceManager->m_device;
 
     if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
-        CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
+        CRezArchiveDir* snd = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(snd), "GAME", "_");
     }
     if (front == NULL || dd2 == NULL) {
         return 0;
@@ -2697,11 +2697,11 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         m_worldSounds = NULL;
     }
 
-    CSymParser* surf = m_symParser;
+    CRezArchive* surf = m_resourceArchive;
     if (surf) {
         delete surf;
     }
-    m_symParser = NULL;
+    m_resourceArchive = NULL;
 
     m_colorDepth = mode;
     g_enableTrueColor = 0;
@@ -2729,19 +2729,19 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    CSymParser* old = m_symParser;
+    CRezArchive* old = m_resourceArchive;
     if (old) {
         delete old;
-        m_symParser = NULL;
+        m_resourceArchive = NULL;
     }
 
-    m_symParser = new CSymParser;
+    m_resourceArchive = new CRezArchive;
 
     // The argument is spelled on the returned temporary, not on a named CString:
     // retail reads the buffer through the return register (`mov ecx,[eax]`), which a
     // named local turns into a direct frame-slot load.
     bool parseFailed =
-        m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(GetRezPath())), 1, 0)
+        m_resourceArchive->Open(const_cast<char*>(static_cast<const char*>(GetRezPath())), 1, 0)
         == 0;
     if (parseFailed) {
         ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x441);

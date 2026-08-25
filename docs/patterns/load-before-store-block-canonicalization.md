@@ -25,14 +25,14 @@ code, so both source orders collapse to one output.
 
 ## Measured non-fixes
 
-On `CSymParser::Clear` 0x13b850 (99.55%, the sole residue), nine spellings all
+On `CRezArchive::Close` 0x13b850 (99.55%, the sole residue), nine spellings all
 produced byte-identical output:
 
 - `for (p = head; p; p = head)` / `while ((p = head) != 0)` / `for(;;){ p = head; if(!p) break; }`
 - `while (m_list.m_head != 0) { CRezItmBase* p = m_list.m_head; … }` (fetch inside the body)
 - `p` declared before the preceding `delete` / fetched *before* the null-store
 - `this->m_activeNode = 0;`
-- a `CParserObjList*` local for the whole list / for the head reads only
+- a `CRezStorageList*` local for the whole list / for the head reads only
 
 `CGruntPuddle::Place` 0x40c30 is the same scheduler decision after a larger
 source defect is removed. Correcting its post-lookup guard from `placeIndex` to

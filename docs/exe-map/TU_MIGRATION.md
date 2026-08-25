@@ -283,7 +283,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x1350b0-0x137323` (9 EH sites): directsoundmgr (cpp)
 - `0x137340-0x13848b` (3 EH sites): soundstream (cpp)
 - `0x138490-0x13907c` (3 EH sites): gruntzsoundz (cpp)
-- `0x1396f0-0x13c22a` (15 EH sites): symtab (cpp)
+- `0x1396f0-0x13c22a` (15 EH sites): rezarchive (cpp)
 - `0x13c4e0-0x13ceec` (4 EH sites): rezfile (cpp)
 - `0x13d590-0x13dfdf` (2 EH sites): gameapp (cpp)
 - `0x13e550-0x1413cb` (2 EH sites): ddsurface (cpp)
@@ -426,7 +426,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - spriteref (`cpp-rtti`) — src/Gruntz/SpriteRef.cpp
 - butemgr (`cpp`) — src/Bute/ButeMgr.cpp
 - gamestaterecordload (`cpp-rtti`) — src/Gruntz/GameStateRecordLoad.cpp
-- symtab (`cpp`) — src/Bute/SymTab.cpp
+- rezarchive (`cpp`) — src/Rez/RezArchive.cpp
 - hash (`cpp`) — src/Bute/Hash.cpp
 - butetree (`cpp`) — src/Bute/ButeTree.cpp
 - debugtiming (`cpp`) — src/Utils/DebugTiming.cpp

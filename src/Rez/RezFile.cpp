@@ -2,8 +2,8 @@
 
 #include <Rez/RezFile.h>
 
-#include <Bute/SymParser.h>
 #include <Enums.h>
+#include <Rez/RezArchive.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 
@@ -21,7 +21,7 @@ RVA(0x0013c4d0, 0x1)
 void CRezList::UnusedListHook() {}
 
 RVA(0x0013c4e0, 0x12)
-CRezItmBase::CRezItmBase(CSymParser* parent) {
+CRezItmBase::CRezItmBase(CRezArchive* parent) {
 
     m_parent = parent;
 }
@@ -37,7 +37,7 @@ RVA(0x0013c530, 0x1)
 void CRezItmBase::Noop() {}
 
 RVA(0x0013c540, 0x28)
-CRezItm::CRezItm(CSymParser* parent) : CRezItmBase(parent) {
+CRezItm::CRezItm(CRezArchive* parent) : CRezItmBase(parent) {
     m_fp = NULL;
     m_readBuf = NULL;
     m_pos = -1;
@@ -65,7 +65,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     if (m_pos != pos) {
         while (fseek(m_fp, pos, 0) != 0) {
-            if (m_parent->Retry() == 0) {
+            if (m_parent->RetryStorageOperation() == 0) {
                 m_pos = -1;
                 return 0;
             }
@@ -74,7 +74,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     u32 got = fread(buf, 1, count, m_fp);
     while (got != count) {
-        if (m_parent->Retry() == 0) {
+        if (m_parent->RetryStorageOperation() == 0) {
             m_pos = -1;
             return 0;
         }
@@ -95,14 +95,14 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     i32 pos = off + base;
 
     while (fseek(m_fp, pos, 0) != 0) {
-        if (m_parent->Retry() == 0) {
+        if (m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
     }
 
     u32 put = fwrite(buf, 1, count, m_fp);
     while (put != count) {
-        if (m_parent->Retry() == 0) {
+        if (m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
         put = fwrite(buf, 1, count, m_fp);
@@ -126,7 +126,7 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
         if (m_fp != NULL) {
             break;
         }
-        if (m_parent->Retry() == 0) {
+        if (m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
         if (m_fp != NULL) {
@@ -156,7 +156,7 @@ i32 CRezItm::Close() {
                 ok = 1;
             } else {
                 ok = 0;
-                if (m_parent->Retry() == 0) {
+                if (m_parent->RetryStorageOperation() == 0) {
                     return 0;
                 }
             }
@@ -183,7 +183,7 @@ i32 CRezItm::Flush() {
                 found = 1;
             } else {
                 found = 0;
-                if (m_parent->Retry() == 0) {
+                if (m_parent->RetryStorageOperation() == 0) {
                     return 0;
                 }
             }
@@ -206,7 +206,7 @@ i32 CRezItm::Check() {
 }
 
 RVA(0x0013c940, 0x46)
-CRezDir::CRezDir(CSymParser* parent, i32 maxOpen) : CRezItmBase(parent) {
+CRezDir::CRezDir(CRezArchive* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;
     m_write = 0;
     m_maxOpen = maxOpen;
@@ -261,7 +261,7 @@ i32 CRezDir::Check() {
 }
 
 RVA(0x0013cac0, 0x9b)
-CRezFile::CRezFile(CSymParser* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
+CRezFile::CRezFile(CRezArchive* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
     m_dir = dir;
     m_handle = NULL;
 
@@ -295,13 +295,13 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
         OpenFile();
     }
     while (fseek(m_handle, pos, 0) != 0) {
-        if (m_dir->m_parent->Retry() == 0) {
+        if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
     }
     u32 got = fread(buf, 1, count, m_handle);
     while (got != count) {
-        if (m_dir->m_parent->Retry() == 0) {
+        if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
         got = fread(buf, 1, count, m_handle);
@@ -319,13 +319,13 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
         OpenFile();
     }
     while (fseek(m_handle, pos, 0) != 0) {
-        if (m_dir->m_parent->Retry() == 0) {
+        if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
     }
     u32 put = fwrite(buf, 1, count, m_handle);
     while (put != count) {
-        if (m_dir->m_parent->Retry() == 0) {
+        if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
         put = fwrite(buf, 1, count, m_handle);
@@ -347,7 +347,7 @@ i32 CRezFile::Flush() {
     if (m_handle != NULL) {
         i32 ok = (fflush(m_handle) == 0);
         while (!ok) {
-            if (m_dir->m_parent->Retry() == 0) {
+            if (m_dir->m_parent->RetryStorageOperation() == 0) {
                 return 0;
             }
             ok = (fflush(m_handle) == 0);
@@ -388,7 +388,7 @@ i32 CRezFile::OpenFile() {
         if (m_handle != NULL) {
             break;
         }
-        if (m_dir->m_parent->Retry() == 0) {
+        if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
         if (m_handle != NULL) {
@@ -408,7 +408,7 @@ i32 CRezFile::CloseFile() {
     }
     i32 ok = (fclose(m_handle) == 0);
     while (!ok) {
-        if (m_dir->m_parent->Retry() == 0) {
+        if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;
         }
         ok = (fclose(m_handle) == 0);

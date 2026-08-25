@@ -26,7 +26,7 @@ FORMAT (recovered by hand against the shipped archive, 2026-08-20):
   boundary and stops - which looks exactly like "this imageset has 2 frames"
   instead of 24, and that is a wrong answer, not a crash.
 
-WHY THIS MATTERS TO THE MATCH: CDDrawWorker::BuildFramesFromSymTab (0x1521f0,
+WHY THIS MATTERS TO THE MATCH: CDDrawWorker::BuildFramesFromArchive (0x1521f0,
 byte-exact) derives each frame index by `atoi`-ing the FIRST DIGIT RUN of the
 resource name, and InsertFrame keeps a running min/max over those indices.
 So `list --index` prints exactly the m_minIndex/m_maxIndex a namespace worker
@@ -89,7 +89,7 @@ def walk(fh) -> dict[str, list[tuple[str, str, int, int]]]:
 
 
 def frame_index(name: str) -> int:
-    """The index BuildFramesFromSymTab derives: atoi of the first digit run."""
+    """The index BuildFramesFromArchive derives: atoi of the first digit run."""
     m = re.search(r"\d+", name)
     return int(m.group(0)) if m else 0
 

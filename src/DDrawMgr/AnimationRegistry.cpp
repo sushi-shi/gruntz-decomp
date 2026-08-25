@@ -2,12 +2,12 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 
@@ -89,7 +89,7 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
 #define REGISTER_ANIMATION(animation, key) m_animations[key] = animation
 
 RVA(0x001528d0, 0xdd)
-CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CParseSource* source) {
+CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezArchiveEntry* source) {
     CAniElement* animation = new CAniElement;
     if (animation == NULL) {
         return NULL;
@@ -123,7 +123,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const cha
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152a90, 0x17)
-CAniElement* AnimationRegistry::LoadNamedAnimation(CParseSource* source) {
+CAniElement* AnimationRegistry::LoadNamedAnimation(CRezArchiveEntry* source) {
     if (source == NULL) {
         return NULL;
     }
@@ -138,14 +138,18 @@ void AnimationRegistry::AddAnimation(CAniElement* animation, const char* key) {
 }
 
 RVA(0x00152ad0, 0x17f)
-i32 AnimationRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char* separator) {
+i32 AnimationRegistry::LoadFromTree(
+    CRezArchiveDir* tree,
+    const char* prefix,
+    const char* separator
+) {
     i32 loadedCount = 0;
     char* keyBuffer = new char[0x100];
     if (keyBuffer == NULL) {
         return 0;
     }
     keyBuffer[0] = 0;
-    CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
+    CRezArchiveDir* node = static_cast<CRezArchiveDir*>(tree->FirstSubdirectory());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
             sprintf(keyBuffer, "%s%s%s", prefix, separator, node->m_name);
@@ -153,15 +157,15 @@ i32 AnimationRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const cha
             strcpy(keyBuffer, node->m_name);
         }
         loadedCount += LoadFromTree(node, keyBuffer, separator);
-        node = static_cast<CSymTab*>(tree->NextSub(node));
+        node = static_cast<CRezArchiveDir*>(tree->NextSubdirectory(node));
     }
-    CSymRec* group = tree->FirstSym();
+    CRezArchiveType* group = tree->FirstType();
     if (group != NULL) {
         do {
 
-            CParseSource* source = tree->NextSym2(group);
+            CRezArchiveEntry* source = tree->FirstEntry(group);
             while (source != NULL) {
-                if (source->GetEntryTag() == REZ_TAG_ANI) {
+                if (source->GetTypeTag() == REZ_TAG_ANI) {
                     if (prefix != NULL && *prefix != 0) {
                         sprintf(keyBuffer, "%s%s%s", prefix, separator, source->m_name);
                     } else {
@@ -171,9 +175,9 @@ i32 AnimationRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const cha
                         ++loadedCount;
                     }
                 }
-                source = tree->NextSym3(source);
+                source = tree->NextEntry(source);
             }
-            group = tree->NextSym(group);
+            group = tree->NextType(group);
         } while (group != NULL);
     }
     delete[] keyBuffer;

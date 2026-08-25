@@ -69,7 +69,7 @@ original, folded to its first referencer. **Tested; it does not hold for any of 
   MSVC5 will not elide). Those are the only two shapes that keep a header body emitted.
   **All ten strays here are non-virtual returning `int`/`void`/pointer** — neither shape.
 * Size is not the competing explanation: the largest, `CPreviewState::LoadScreen` (170 B),
-  will not even compile in a header — it needs `IMGTAG_XCP`, `CParseSource` and
+  will not even compile in a header — it needs `IMGTAG_XCP`, `CRezArchiveEntry` and
   `m_world->m_drawTarget->LoadPageImage`, i.e. half the engine hoisted into a header.
 
 So these strays are **mis-homed**, and re-homing by xref is the only route open.

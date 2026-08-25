@@ -20,7 +20,7 @@
 //! | resolve an image-set name | [`load_frame_set`] | `CDDrawWorkerRegistry::m_workersByName.Lookup` |
 //! | build the registry keys | [`installed_key`] | `CDDrawWorkerRegistry::InstallTree` @0x154f80 |
 //! | pick the three registry roots | [`registry_roots`] | `CPlay::LoadActionTileSprites` @0xdb600, `LoadLevelImages` @0xdb7e0, `LoadGameImages` @0xdb8a0 |
-//! | frame number from a resource name | [`first_number`] | `CDDrawWorker::BuildFramesFromSymTab` @0x1521f0 — skip to the first digit, then `atoi` |
+//! | frame number from a resource name | [`first_number`] | `CDDrawWorker::BuildFramesFromArchive` @0x1521f0 — skip to the first digit, then `atoi` |
 //! | draw one cell | the `plane.tiles()` loop | `CDDrawWorkerHost::Draw` @0x162010 |
 //! | complain about a bad handle | [`record_missing`] | `CDDrawWorkerHost::ValidateTiles` @0x163510 |
 //!

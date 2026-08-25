@@ -3,7 +3,6 @@
 #include <Gruntz/Attract.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -25,6 +24,7 @@
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
+#include <Rez/RezArchive.h>
 #include <Rez/RezTypeTag.h>
 #include <Wap32/EngStr.h>
 
@@ -57,16 +57,16 @@ i32 CState::LoadTitlePage(
     if (!m_world) {
         return 0;
     }
-    if (!m_symParser) {
+    if (!m_resourceArchive) {
         return 0;
     }
-    if (!m_stateBank) {
+    if (!m_stateResources) {
         return 0;
     }
 
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%s", titleName);
-    CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
+    CRezArchiveEntry* page = StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
     if (page == NULL) {
         return 0;
     }
@@ -105,10 +105,10 @@ i32 CState::PresentTitlePage(
     if (!m_world) {
         return 0;
     }
-    if (!m_symParser) {
+    if (!m_resourceArchive) {
         return 0;
     }
-    if (!m_stateBank) {
+    if (!m_stateResources) {
         return 0;
     }
     menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
@@ -126,10 +126,10 @@ i32 CState::LoadAndPresentTitlePage(
     if (!m_world) {
         return 0;
     }
-    if (!m_symParser) {
+    if (!m_resourceArchive) {
         return 0;
     }
-    if (!m_stateBank) {
+    if (!m_stateResources) {
         return 0;
     }
     if (LoadTitlePage(titleName, unused1, unused2, unused3, unused4, 0) == 0) {
@@ -380,15 +380,15 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     if (m_world == NULL) {
         return 0;
     }
-    if (m_symParser == NULL) {
+    if (m_resourceArchive == NULL) {
         return 0;
     }
-    if (m_stateBank == NULL) {
+    if (m_stateResources == NULL) {
         return 0;
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    CParseSource* sym = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
+    CRezArchiveEntry* sym = StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
     if (sym == NULL) {
         return 0;
     }
@@ -441,7 +441,7 @@ i32 CState::InputVirtual() {
     while (ShowCursor(0) >= 0)
         ;
     g_playActive = 0;
-    CSymTab* path = m_symParser->ResolvePath("GAME_IMAGEZ");
+    CRezArchiveDir* path = m_resourceArchive->FindDirectoryByPath("GAME_IMAGEZ");
     if (path == NULL) {
         return 0;
     }

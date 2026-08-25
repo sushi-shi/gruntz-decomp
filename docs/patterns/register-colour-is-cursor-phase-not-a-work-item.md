@@ -35,7 +35,7 @@ have no other divergence at all - `CSpotLight::SerializeMove` 99.96,
 `zBitVec::operator=` 99.84, `CGrunt::IsDropReady` 99.84, `CFrontCandy` /
 `CDoNothing` / `CBehindCandy` ctors 99.83, `LoadDestructButtonSprite` 99.82,
 `CDDrawSurfacePair::DrawCross` 99.73, `SaveVideoCheckboxes` 0x378c0 99.50,
-`CTimer::HandleEvent` 99.43, `CSymRec::CSymRec` 99.35, `CGrunt::StepWarpExit` 98.77
+`CTimer::HandleEvent` 99.43, `CRezArchiveType::CRezArchiveType` 99.35, `CGrunt::StepWarpExit` 98.77
 and `CAniAdvanceCursor::Construct` 95.42. In the other 357 the colour rides on an
 independent divergence, and THAT is the row's work.
 

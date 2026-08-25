@@ -15,7 +15,7 @@ class CDDrawWorker;
 
 class CImage;
 struct PidHeader;
-class CSymTab;
+class CRezArchiveDir;
 
 class CDDrawWorkerRegistry : public CWapObj {
 public:
@@ -49,19 +49,19 @@ public:
     );
 
     virtual CImage*
-    InsertFrameForWorker(struct CParseSource* rec, CDDrawWorker* worker, i32 index, i32 mode);
+    InsertFrameForWorker(struct CRezArchiveEntry* rec, CDDrawWorker* worker, i32 index, i32 mode);
 
     virtual CImage*
-    InsertFrameByKey(struct CParseSource* rec, const char* key, i32 index, i32 mode);
+    InsertFrameByKey(struct CRezArchiveEntry* rec, const char* key, i32 index, i32 mode);
 
     virtual CImage* LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed);
     virtual CImage* LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed);
 
-    virtual i32 ProbeWorkerKey(class CSymParser* parser, const char* key);
+    virtual i32 ProbeWorkerKey(class CRezArchive* parser, const char* key);
 
-    virtual i32 InstallTree(CSymTab* tree, const char* szName, const char* szKey);
+    virtual i32 InstallTree(CRezArchiveDir* tree, const char* szName, const char* szKey);
 
-    virtual i32 LoadNamespace(CSymTab* tree, const char* szName, const char* szKey);
+    virtual i32 LoadNamespace(CRezArchiveDir* tree, const char* szName, const char* szKey);
 
     virtual void RemoveWorker(CDDrawWorker* worker);
     virtual void RemoveByKey(const char* key);

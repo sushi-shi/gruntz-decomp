@@ -3,8 +3,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CustomMapSelection.h>
@@ -14,8 +12,10 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ParseSource.h>
 #include <MsgParam.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Utils/RegistryHelper.h>
 
 #include <stdio.h>

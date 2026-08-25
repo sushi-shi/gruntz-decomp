@@ -12,8 +12,8 @@
 struct PidHeader;
 class CImage;
 
-class CSymTab;
-struct CParseSource;
+class CRezArchiveDir;
+struct CRezArchiveEntry;
 class CDDrawSurfaceMgr;
 
 class CDDrawWorker : public CWapObj {
@@ -30,17 +30,17 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 SetKey(const char* key);
-    virtual i32 BuildFramesFromSymTab(CSymTab* tab);
+    virtual i32 BuildFramesFromArchive(CRezArchiveDir* tab);
 
     virtual CImage* CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed);
     virtual CImage*
     CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size);
     virtual CImage* LoadFrame(char* path, i32 index, i32 keyed);
 
-    virtual CImage* InsertFrame(struct CParseSource* rec, i32 n, i32 flag);
-    virtual i32 ValidateFramesFromSymTab(CSymTab* tab);
+    virtual CImage* InsertFrame(struct CRezArchiveEntry* rec, i32 n, i32 flag);
+    virtual i32 ValidateFramesFromArchive(CRezArchiveDir* tab);
 
-    virtual i32 ReloadFrame(CParseSource* rec, i32 n, i32 flag);
+    virtual i32 ReloadFrame(CRezArchiveEntry* rec, i32 n, i32 flag);
 
     i32 SetAllTypes(ShadeMode type);
     i32 SetAllFormats(CShadeTable* shade);

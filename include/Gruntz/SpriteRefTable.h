@@ -31,7 +31,7 @@ class CShadeTableCache;
 
 class CDDrawSurfaceMgr;
 
-class CSymParser;
+class CRezArchive;
 class CSpriteRefTable {
 public:
     CSpriteRefTable();
@@ -50,11 +50,11 @@ public:
 
     CSpriteRef* Add(char* szName, ColorTint kind);
 
-    i32 LoadGruntzPalette(CSymParser* src, const char* name);
+    i32 LoadGruntzPalette(CRezArchive* src, const char* name);
 
-    i32 LoadToolToyPalettes(CSymParser* src);
+    i32 LoadToolToyPalettes(CRezArchive* src);
 
-    i32 BuildToolToyColorTable(CSymParser* src);
+    i32 BuildToolToyColorTable(CRezArchive* src);
 
     CShadeTableCache* m_factory;
     CDDrawSurfaceMgr* m_spriteMgrHolder;

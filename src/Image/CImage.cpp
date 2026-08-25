@@ -4,7 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -13,12 +12,13 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/State.h>
 #include <Image/ImageClipMacros.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdFile.h>
@@ -61,7 +61,7 @@ i32 CImage::Create(char* path, i32 keyed) {
 }
 
 RVA(0x00152f20, 0x86)
-i32 CImage::Resolve(CParseSource* src, i32 keyed) {
+i32 CImage::Resolve(CRezArchiveEntry* src, i32 keyed) {
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
 
     RecordBytes<PidHeader> blob;
@@ -70,10 +70,10 @@ i32 CImage::Resolve(CParseSource* src, i32 keyed) {
 
         static_cast<PidHeader*>(blob.m_rec),
         index,
-        src->m_length,
+        src->m_size,
         keyed
     );
-    src->EndParse();
+    src->ReleaseData();
     return result;
 }
 
@@ -247,7 +247,7 @@ void CImage::FlipVertical(void*) {
 }
 
 RVA(0x00153380, 0xeb)
-i32 CImage::Reload(CParseSource* src, i32 keyed) {
+i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
 
     CDDSurface* surf = m_surface;
     if (surf == NULL) {
@@ -266,7 +266,7 @@ i32 CImage::Reload(CParseSource* src, i32 keyed) {
     }
 
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
-    if (src->m_length == 0) {
+    if (src->m_size == 0) {
         return 0;
     }
 
@@ -274,7 +274,7 @@ i32 CImage::Reload(CParseSource* src, i32 keyed) {
         m_ownerCtx->m_deviceManager,
         resolved,
         index,
-        static_cast<u32>(src->m_length),
+        static_cast<u32>(src->m_size),
         g_surfaceColorKey
     );
 }

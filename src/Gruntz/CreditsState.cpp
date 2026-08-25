@@ -5,8 +5,6 @@
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -29,7 +27,6 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelPreview.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -38,6 +35,9 @@
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
 #include <Io/MoviePlayer.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
 #include <Rez/RezTypeTag.h>
@@ -75,34 +75,34 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     m_flashTimer = 0;
     m_fadeCountdown = 0;
     m_fxEnabled = 0;
-    m_stateBank = m_symParser->ResolvePath("STATEZ_CREDITZ");
-    if (!m_stateBank) {
+    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_CREDITZ");
+    if (!m_stateResources) {
         return 0;
     }
 
-    CSymTab* sounds = SymTab2c()->FindSub("SOUNDZ");
+    CRezArchiveDir* sounds = StateResources()->FindSubdirectory("SOUNDZ");
     if (!sounds) {
         return 0;
     }
-    m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
+    m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sounds), "CREDITZ", "_");
 
-    CSymTab* midiTable = SymTab2c()->ResolvePath("MIDIZ");
+    CRezArchiveDir* midiTable = StateResources()->FindDirectoryByPath("MIDIZ");
     if (midiTable) {
-        CParseSource* creditsEntry = midiTable->Insert("PLAY", REZ_TAG_XMI);
+        CRezArchiveEntry* creditsEntry = midiTable->FindEntry("PLAY", REZ_TAG_XMI);
         if (creditsEntry) {
-            char* creditsData = creditsEntry->BeginParse();
+            char* creditsData = creditsEntry->LoadData();
             if (creditsData) {
-                m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->m_length, "CREDITZ");
+                m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->m_size, "CREDITZ");
             }
         }
     }
 
     if (midiTable) {
-        CParseSource* monolithEntry = midiTable->Insert("MONOLITH", REZ_TAG_XMI);
+        CRezArchiveEntry* monolithEntry = midiTable->FindEntry("MONOLITH", REZ_TAG_XMI);
         if (monolithEntry) {
-            char* monolithData = monolithEntry->BeginParse();
+            char* monolithData = monolithEntry->LoadData();
             if (monolithData) {
-                m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->m_length, "MONOLITH");
+                m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->m_size, "MONOLITH");
             }
         }
     }
@@ -160,7 +160,7 @@ RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId nextState) {
     owner()->m_midi->EndCurrent();
     owner()->m_midi->ClearSequences();
-    m_stateBank = stateMgr()->ResolvePath("STATEZ_ATTRACT");
+    m_stateResources = ResourceArchive()->FindDirectoryByPath("STATEZ_ATTRACT");
     LoadAndPresentTitlePage("TITLE", 0, 0, 1, 0);
     return 1;
 }
@@ -290,18 +290,18 @@ i32 CCreditsState::InitAttractTitle() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
-    CSymTab* saved = m_stateBank;
-    CSymTab* state = m_symParser->ResolvePath(stateName);
-    m_stateBank = state;
+    CRezArchiveDir* saved = m_stateResources;
+    CRezArchiveDir* state = m_resourceArchive->FindDirectoryByPath(stateName);
+    m_stateResources = state;
     if (state == NULL) {
         return 0;
     }
     i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
     if (faded == 0) {
-        m_stateBank = saved;
+        m_stateResources = saved;
         return 0;
     }
-    m_stateBank = saved;
+    m_stateResources = saved;
     CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
@@ -378,13 +378,13 @@ i32 CCreditsState::DrawScrollingCredits() {
 RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
 
-    CParseSource* sect = SymTab2c()->Insert("CREDITZ", REZ_TAG_TXT);
+    CRezArchiveEntry* sect = StateResources()->FindEntry("CREDITZ", REZ_TAG_TXT);
     if (sect) {
-        char* src = sect->BeginParse();
+        char* src = sect->LoadData();
         if (!src) {
             return 0;
         }
-        i32 len = sect->m_length;
+        i32 len = sect->m_size;
         char* buf = new char[len + 1];
         if (!buf) {
             return 0;
@@ -392,7 +392,7 @@ i32 CCreditsState::SetupTitle() {
         memcpy(buf, src, len);
         buf[len] = 0;
         m_caption = buf;
-        sect->EndParse();
+        sect->ReleaseData();
         delete[] buf;
     }
     m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX));

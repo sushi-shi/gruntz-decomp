@@ -33,7 +33,7 @@ if (v != 1) { return 0; }
 ```
 
 STEERABLE when a `||` chain (or any single statement reached from many sites) is the funnel:
-splitting `CSymParser::ParseBuffer`'s four-term magic guard into four `if`s moved the epilogue to
+splitting `CRezArchive::Open`'s four-term magic guard into four `if`s moved the epilogue to
 the end, took the body from 290 to 300/300 instructions and 938 to 952/952 bytes, and the score
 from **0.00% to 98.46%**. WALL when the funnel is cl's own cross-jumper picking a different merge
 factor (`CGameObject::Play` 0x151150 — retail merges the LOAD+POSTLOAD arms whole, cl merges

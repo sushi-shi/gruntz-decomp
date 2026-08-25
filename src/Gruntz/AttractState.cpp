@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -24,6 +23,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/String.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 
@@ -44,18 +44,18 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
     owner()->RestoreVideoMode(0);
 
-    CSymTab* state = stateMgr()->ResolvePath("STATEZ_ATTRACT");
-    m_stateBank = (state);
+    CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath("STATEZ_ATTRACT");
+    m_stateResources = (state);
     if (state == NULL) {
         return 0;
     }
 
-    CSymTab* sound = state->FindSub("SOUNDZ");
+    CRezArchiveDir* sound = state->FindSubdirectory("SOUNDZ");
     if (sound == NULL) {
         return 0;
     }
 
-    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(sound), "ATTRACT", "_");
+    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {

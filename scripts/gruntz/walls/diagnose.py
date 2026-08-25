@@ -431,9 +431,9 @@ def _call_targets(rel: dict, asm: str, own: str | None = None) -> list[tuple[str
 
     A relative call whose destination is the start of the sliced function is
     unambiguously recursive even when the target delinker did not attach a
-    relocation.  Without this control ParseRecords was falsely classified as
+    relocation.  Without this control ImportDirectoryTree was falsely classified as
     INLINE/CALL-SET although both sides contain the same 21 calls and the linked
-    image resolves the site back to ParseRecords.
+    image resolves the site back to ImportDirectoryTree.
     """
     call_offs = set()
     unrelocated_self = []

@@ -1,5 +1,5 @@
-#ifndef GRUNTZ_CPARSESOURCE_H
-#define GRUNTZ_CPARSESOURCE_H
+#ifndef REZ_REZARCHIVEENTRY_H
+#define REZ_REZARCHIVEENTRY_H
 
 #include <rva.h>
 
@@ -10,72 +10,72 @@
 
 #include <stddef.h>
 
-class CSymTab;
-class CSymRec;
+class CRezArchiveDir;
+class CRezArchiveType;
 
 class CRezItmBase;
 
-struct CParseSlotHashNode : public CHashElement {
+struct CRezArchiveEntryHashNode : public CHashElement {
 
-    CParseSlotHashNode() {
-        m_parseSource = NULL;
+    CRezArchiveEntryHashNode() {
+        m_archiveEntry = NULL;
     }
 
     virtual u32 Hash() OVERRIDE;
 };
 
-struct CParseSource {
+struct CRezArchiveEntry {
 
-    GZ_ENUM_RETURN(RezTypeTag, u32) GetEntryTag();
-    char* BeginParse();
-    i32 EndParse();
+    GZ_ENUM_RETURN(RezTypeTag, u32) GetTypeTag();
+    char* LoadData();
+    i32 ReleaseData();
 
-    char* CurrentScopeName();
+    char* GetDirectoryName();
 
-    char* CurrentScopePath(char* dst, i32 size);
+    char* GetDirectoryPath(char* destination, i32 size);
 
-    CParseSource();
+    CRezArchiveEntry();
 
-    void Build(
-        CSymTab* owner,
+    void Initialize(
+        CRezArchiveDir* directory,
         const char* name,
-        void* f4,
-        CSymRec* rec,
-        void* str2,
-        i32 f3,
-        i32 f1,
-        i32 f2,
-        i32 f6,
-        void* arr,
-        CRezItmBase* stream
+        void* resourceId,
+        CRezArchiveType* type,
+        void* comment,
+        i32 size,
+        i32 dataOffset,
+        i32 time,
+        i32 keyCount,
+        void* keys,
+        CRezItmBase* storage
     );
-    void Teardown();
-    i32 SetPos(i32 pos);
-    i32 ReadAt(void* dst, i32 pos, u32 len);
-    i32 ReadAll(void* dst);
-    i32 Read(void* dst, u32 len, i32 seekPos);
+    void Reset();
+    i32 SetPos(i32 position);
+    i32 ReadAt(void* destination, i32 position, u32 byteCount);
+    i32 ReadAll(void* destination);
+    i32 Read(void* destination, u32 byteCount, i32 seekPosition);
     char ReadChar();
-    i32 IsResident();
+    i32 IsDataLoaded();
     i32 AtEnd();
 
     char* m_name;
-    CSymRec* m_entry;
-    i32 m_typeTag;
+    CRezArchiveType* m_type;
+    i32 m_time;
 
-    u32 m_length;
-    CSymTab* m_owner;
+    u32 m_size;
+    CRezArchiveDir* m_directory;
 
-    i32 m_base;
+    i32 m_dataOffset;
     i32 m_cursor;
 
-    CParseSlotHashNode m_node1c;
-    CRezItmBase* m_reader;
-    char* m_buffer;
+    CRezArchiveEntryHashNode m_nameNode;
+    CRezItmBase* m_storage;
+    char* m_loadedData;
 };
 
 #define BEGIN_FILE_IMAGE_PARSE(source, format, bytes)                                              \
     FileImageFormat format;                                                                        \
-    switch (static_cast<u32>(source->GetEntryTag())) {                                             \
+    switch (static_cast<u32>(source->GetTypeTag())) {                                              \
         case IMGTAG_PMB:                                                                           \
             format = FMT_BMP;                                                                      \
             break;                                                                                 \
@@ -91,9 +91,9 @@ struct CParseSource {
         default:                                                                                   \
             return 0;                                                                              \
     }                                                                                              \
-    char* bytes = source->BeginParse();                                                            \
+    char* bytes = source->LoadData();                                                              \
     if (bytes == NULL) {                                                                           \
         return 0;                                                                                  \
     }
 
-#endif // GRUNTZ_CPARSESOURCE_H
+#endif // REZ_REZARCHIVEENTRY_H

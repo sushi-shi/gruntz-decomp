@@ -19,9 +19,9 @@ diagnose` REGALLOC/SCHEDULING with identical multisets:
 
 | function | residue before | spelling that closed it | after |
 |---|---|---|---|
-| `CSymParser::Clear` 0x13b850 | `mov esi,[edi+0x14]` (loop-head `m_list.m_head`) hoisted over `mov [edi+0x20],ebp` (`m_activeNode = NULL`) | loop head reads `HeadRezNode(m_list)` | 99.5493 -> **100.000** |
-| `CSymRec::~CSymRec` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetSymRec(m_symNode, NULL)` | 98.3099 -> **100.000** |
-| `CSymTab::CSymTab` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetSymTab(m_node20, this)` | 97.3333 -> **100.000** |
+| `CRezArchive::Close` 0x13b850 | `mov esi,[edi+0x14]` (loop-head `m_storages.m_head`) hoisted over `mov [edi+0x20],ebp` (`m_primaryStorage = NULL`) | loop head reads `FirstStorage(m_storages)` | 99.5493 -> **100.000** |
+| `CRezArchiveType::~CRezArchiveType` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetArchiveType(m_typeNode, NULL)` | 98.3099 -> **100.000** |
+| `CRezArchiveDir::CRezArchiveDir` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetArchiveDirectory(m_nameNode, this)` | 97.3333 -> **100.000** |
 | `DispatchDoNothingNormalLogic` 0xa9e00 | inlined `new CDoNothingNormal(owner)`: `mov eax,[esi+0x38]` hoisted over the leaf vptr stamp | ctor body `SetObjectFlags(1)` instead of `m_wwdObject->m_flags \|= 1` | 99.6129 -> **100.000** |
 | `CDDSurface::DecodeBmp` 0x143fc0 | two entry values spill and restore through the opposite registers after a palette guard | guard reads `HasPalette(pal)` instead of `pal->m_hasPalette` | 99.79 -> **100.000** |
 
@@ -31,7 +31,7 @@ should come SECOND and the free instruction lands just before it instead of earl
 
 ## Put the boundary in the .cpp - a shared-header member costs 8 fresh regressions
 
-The first spelling of `CSymParser::Clear`'s lever was a new member `CObjList::GetHead()`
+The first spelling of `CRezArchive::Close`'s lever was a new member `CObjList::GetHead()`
 in `include/Rez/RezList.h`. It closed the function, and it also moved every one of the 43
 TUs that include that header: `verify check` went from clean to **8 fresh regressions**
 (`CPlay::StepScroll` 100 -> 88.03, `CNetSession::Verify` 100 -> 89.53, four
@@ -44,7 +44,7 @@ and a class-with-an-inline-member is the +11 handle stride of
 Replacing it with a **file-local `static inline`** in the one `.cpp`
 
 ```cpp
-static inline CRezItmBase* HeadRezNode(CObjList& list) {
+static inline CRezItmBase* FirstStorage(CObjList& list) {
     return list.m_head;
 }
 ```
@@ -55,8 +55,8 @@ three include `Rez/RezList.h` transitively, and the other two edits in that buil
 `.cpp`-local.
 
 What matters is only that the access sits inside an expansion. A free function taking the
-containing object by reference works exactly like a member; `SymTab.cpp` already carried
-`HeadSlotNode(IntrusiveList&)` and `PeekI32(const char*)` in that style before this work.
+containing object by reference works exactly like a member; `RezArchive.cpp` carries
+`FirstEntryPoolBlock(IntrusiveList&)` and `ReadPackedI32(const char*)` in that style.
 Prefer the narrowest home that still expands: `.cpp`-local first, the owner's header only
 when several TUs genuinely need it (that is the CWapX case, which has 40-75 sites each).
 
@@ -71,8 +71,8 @@ per-site lever.
 
 ## Negative controls - it is per-site, and it can cost points
 
-* `CSymRec::CSymRec(i32,CSymTab*,i32,i32)` 0x139bf0: routing its FIRST body statement
-  through `SetSymRec` took it 99.3548 -> **95.6452**. Its residue is an eax/edx pair
+* `CRezArchiveType::CRezArchiveType(i32,CRezArchiveDir*,i32,i32)` 0x139bf0: routing its FIRST body statement
+  through `SetArchiveType` took it 99.3548 -> **95.6452**. Its residue is an eax/edx pair
   rotation, not a transposition; the boundary changed the allocation order and lost.
   Written out again.
 * `CAniPlayer::TickToggle` 0xe5b90: byte-identical either way (92.0000), so the boundary
@@ -94,7 +94,7 @@ spelling reaches it.
 ## The expansion must CONTAIN a memory access - a store through the enclosing `this` is not one
 
 Every closing example above moves a *read through a passed-by-reference object* inside the
-expansion (`HeadRezNode(m_list)` puts the `[edi+0x14]` load there; `m_list`'s address is
+expansion (`FirstStorage(m_storages)` puts the `[edi+0x14]` load there; the list's address is
 already live in the caller). A helper whose whole body is a store to the object the caller
 is ALREADY holding in a register adds no access to pin: cl folds it before scheduling and
 emits the same bytes.

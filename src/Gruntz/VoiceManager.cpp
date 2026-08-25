@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>
@@ -18,6 +17,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SpawnList.h>
+#include <Rez/RezArchive.h>
 #include <Rez/RezTypeTag.h>
 
 #define CLEAR_VOICE_INDICATORS memset(m_indicators, 0, sizeof(m_indicators))
@@ -139,7 +139,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
             return 0;
         }
     }
-    CParseSource* source = SelectVoiceVariant(voiceGroup, variantIndex);
+    CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL || m_world->m_soundStream == NULL) {
         return 0;
     }
@@ -236,7 +236,7 @@ i32 CVoiceManager::PlayVoice(
     if (unpositioned == 0 && sourceGrunt != NULL) {
         sourceObjectId = sourceGrunt->m_object->m_objectId;
     }
-    CParseSource* source = SelectVoiceVariant(voiceGroup, variantIndex);
+    CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL) {
         return 0;
     }
@@ -336,7 +336,7 @@ i32 CVoiceManager::PlayVoice(
             return 0;
         }
     }
-    CParseSource* source = SelectVoiceVariant(voiceGroup, variantIndex);
+    CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL) {
         return 0;
     }
@@ -495,12 +495,12 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0011bec0, 0x5)
-CParseSource* CVoiceManager::SelectVoiceVariant(i32 voiceGroup) {
+CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup) {
     return NULL;
 }
 
 RVA(0x0011bee0, 0x230)
-CParseSource* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
+CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     if (voiceGroup < 0) {
         return NULL;
     }
@@ -569,7 +569,7 @@ CParseSource* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex
     if (variant == NULL) {
         return NULL;
     }
-    return m_game->m_symParser->ResolveQualified(
+    return m_game->m_resourceArchive->FindEntryByPath(
         static_cast<LPCTSTR>(variant->GetName()),
         REZ_TAG_WAV
     );
@@ -625,7 +625,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
                     static_cast<LPCTSTR>(soundName)
                 );
             }
-            CParseSource* source = m_game->m_symParser->ResolveQualified(
+            CRezArchiveEntry* source = m_game->m_resourceArchive->FindEntryByPath(
                 static_cast<LPCTSTR>(resourceName),
                 REZ_TAG_WAV
             );

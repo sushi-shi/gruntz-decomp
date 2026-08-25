@@ -4,8 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -30,7 +28,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -41,6 +38,9 @@
 #include <Io/FileMem.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -112,8 +112,8 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 }
 
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
-    CSymTab* result = parser->GetRoot()->FindSub(key);
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezArchive* parser, const char* key) {
+    CRezArchiveDir* result = parser->GetRootDirectory()->FindSubdirectory(key);
 
     if (result != NULL) {
         return InstallTree(result, "", "_");
@@ -546,7 +546,7 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
     cue->m_replayDelayMs = m_defaultReplayDelayMs
 
 RVA(0x00157d70, 0x90)
-SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CParseSource* source) {
+SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezArchiveEntry* source) {
     if (m_silentMode != 0) {
         return NULL;
     }
@@ -584,7 +584,7 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e90, 0x23)
-SoundCue* SoundCueRegistry::LoadNamedCue(CParseSource* source) {
+SoundCue* SoundCueRegistry::LoadNamedCue(CRezArchiveEntry* source) {
     if (m_silentMode != 0) {
         return NULL;
     }
@@ -602,7 +602,11 @@ void SoundCueRegistry::AddCue(SoundCue* cue, const char* key) {
 }
 
 RVA(0x00157ee0, 0x1c6)
-i32 SoundCueRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char* separator) {
+i32 SoundCueRegistry::LoadFromTree(
+    CRezArchiveDir* tree,
+    const char* prefix,
+    const char* separator
+) {
     if (m_silentMode != 0) {
         return 0;
     }
@@ -612,7 +616,7 @@ i32 SoundCueRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char
         return 0;
     }
     cueKey[0] = 0;
-    CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
+    CRezArchiveDir* node = static_cast<CRezArchiveDir*>(tree->FirstSubdirectory());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
             sprintf(cueKey, "%s%s%s", prefix, separator, node->m_name);
@@ -620,15 +624,15 @@ i32 SoundCueRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char
             strcpy(cueKey, node->m_name);
         }
         count += LoadFromTree(node, cueKey, separator);
-        node = static_cast<CSymTab*>(tree->NextSub(node));
+        node = static_cast<CRezArchiveDir*>(tree->NextSubdirectory(node));
     }
 
-    CSymRec* file = tree->FirstSym();
+    CRezArchiveType* file = tree->FirstType();
     if (file != NULL) {
         do {
-            CParseSource* source = tree->NextSym2(file);
+            CRezArchiveEntry* source = tree->FirstEntry(file);
             while (source != NULL) {
-                if (source->GetEntryTag() == PARSETAG_VAW) {
+                if (source->GetTypeTag() == REZ_TAG_WAV) {
                     if (prefix != NULL && *prefix != 0) {
                         sprintf(cueKey, "%s%s%s", prefix, separator, source->m_name);
                     } else {
@@ -642,9 +646,9 @@ i32 SoundCueRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char
                         }
                     }
                 }
-                source = tree->NextSym3(source);
+                source = tree->NextEntry(source);
             }
-            file = tree->NextSym(file);
+            file = tree->NextType(file);
         } while (file != NULL);
     }
     delete[] cueKey;
@@ -842,8 +846,8 @@ i32 SoundCue::LoadFromFile(char* path) {
 }
 
 RVA(0x00158760, 0x59)
-i32 SoundCue::LoadFromSource(CParseSource* source) {
-    char* blob = source->BeginParse();
+i32 SoundCue::LoadFromSource(CRezArchiveEntry* source) {
+    char* blob = source->LoadData();
     if (blob == NULL) {
         return 0;
     }
@@ -857,7 +861,7 @@ i32 SoundCue::LoadFromSource(CParseSource* source) {
         m_sound = dev->LoadSample(riff.m_rec, 0x100ea, 0);
         ok = m_sound != NULL;
     }
-    source->EndParse();
+    source->ReleaseData();
     return ok;
 }
 

@@ -49,9 +49,9 @@ decision, however many TUs repeat it.
 
 * **8x a class-level `operator new`/`operator delete` that only forwards.** Retail's
   funclet calls the GLOBAL `??3@YAXPAX@Z`. A forwarder cannot produce that: cl
-  inlines it at the call sites but emits `??3CSymTab@@SAXPAX@Z` for the funclet to
+  inlines it at the call sites but emits `??3CRezArchiveDir@@SAXPAX@Z` for the funclet to
   call. So a funclet naming the global REFUTES the class-level operator.
-  (CSymRec, CSymTab, SoundTask.)
+  (CRezArchiveType, CRezArchiveDir, SoundTask.)
 
 * **18x an empty destructor that still needs an ADDRESS.** `~WwdRegion() {}` /
   `~WwdDirtyRect() {}` are inlined away at every call site - retail's `~CGameObject`

@@ -91,7 +91,7 @@ the index is still live, e.g. because the row addresses are computed from it.)
 - but cl only emits the `jbe` encoding when the *source operator* is `>`/`<=` on an
 **unsigned** value. `if (want != 0)` gives `je`; `if (want > 0)` gives `jbe`.
 
-`CParseSource::Read` @0x139af0 91.20 -> **92.72** (`if (want > 0)`, want u32), and
+`CRezArchiveEntry::Read` @0x139af0 91.20 -> **92.72** (`if (want > 0)`, want u32), and
 `CFaderShape::ApplyInit` @0x1817e0's mode guard 72.56 -> 72.68
 (`if ((u32)pInit->m_14 <= 0) goto fail;` - the negated form, since that guard bails).
 Both had the 1-byte difference filed as an unsteerable encoding choice.

@@ -87,8 +87,8 @@ right, and each is what one of the four filters above removes:
 
 The 2026-08-23 sweep of the 675-row sub-100 queue: 243 asymmetric ECX sites
 over 49 callees unfiltered, 2 after the filters, and BOTH were real -
-`CSymParser::UnpackTag` (the mirror of the already-member
-`CSymParser::PackTag`, and retail hands it ParseRecords' own spilled `this`)
+`CRezArchive::UnpackTag` (the mirror of the already-member
+`CRezArchive::PackTag`, and retail hands it ImportDirectoryTree' own spilled `this`)
 and `CGameLevel::InflateMainBlock` (retail hands it LoadWwd's `this` in EBP).
 Neither callee's bytes moved; both callers gained the load. `--inverse`,
 `--receivers` and `--arity` were all zero in the same sweep.

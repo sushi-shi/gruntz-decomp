@@ -5,8 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -46,6 +44,8 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
 #include <Rez/RezSync.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
@@ -85,13 +85,13 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
     m_mgr->RestoreVideoMode(0);
-    m_stateBank = m_symParser->ResolvePath("STATEZ_MENU");
-    if (m_stateBank == NULL) {
+    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_MENU");
+    if (m_stateResources == NULL) {
         return 0;
     }
 
     if (!m_world->m_imageRegistry->HasWithPrefix("MENU")) {
-        CSymTab* imageSymbols = SymTab2c()->ResolvePath("IMAGEZ");
+        CRezArchiveDir* imageSymbols = StateResources()->FindDirectoryByPath("IMAGEZ");
         if (imageSymbols == NULL) {
             return 0;
         }
@@ -101,11 +101,12 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     if (!m_world->m_soundRegistry->HasWithPrefix("MENU")) {
-        CSymTab* soundSymbols = SymTab2c()->ResolvePath("SOUNDZ");
+        CRezArchiveDir* soundSymbols = StateResources()->FindDirectoryByPath("SOUNDZ");
         if (soundSymbols == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(soundSymbols), "MENU", "_");
+        m_world->m_soundRegistry
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(soundSymbols), "MENU", "_");
     }
 
     if (!m_world->m_drawTarget->HasOverlay()) {
@@ -196,19 +197,19 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         sprintf(stateName, "STATEZ_ATTRACT");
         sprintf(titleName, "TITLE%d", idx);
 
-        CSymTab* saved = attractState();
-        CSymTab* state = stateMgr()->ResolvePath(stateName);
-        m_stateBank = (state);
+        CRezArchiveDir* saved = StateResources();
+        CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath(stateName);
+        m_stateResources = (state);
         if (state == NULL) {
             return 0;
         }
 
         i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
         if (faded == 0) {
-            m_stateBank = (saved);
+            m_stateResources = (saved);
             return 0;
         }
-        m_stateBank = (saved);
+        m_stateResources = (saved);
 
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
@@ -349,7 +350,7 @@ i32 CMenuState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-    CSymTab* tree = SymTab2c()->ResolvePath("IMAGEZ");
+    CRezArchiveDir* tree = StateResources()->FindDirectoryByPath("IMAGEZ");
     if (tree == NULL) {
         return 0;
     }
@@ -383,19 +384,19 @@ i32 CMenuState::RestoreDisplay() {
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
 
-    CSymTab* saved = attractState();
-    CSymTab* state = stateMgr()->ResolvePath(stateName);
-    m_stateBank = (state);
+    CRezArchiveDir* saved = StateResources();
+    CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath(stateName);
+    m_stateResources = (state);
     if (state == NULL) {
         return 0;
     }
 
     i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
     if (faded == 0) {
-        m_stateBank = (saved);
+        m_stateResources = (saved);
         return 0;
     }
-    m_stateBank = (saved);
+    m_stateResources = (saved);
 
     CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(

@@ -4,8 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
@@ -23,6 +21,8 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/State.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
 #include <Rez/RezSync.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
@@ -46,14 +46,15 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    m_stateBank = m_symParser->ResolvePath("STATEZ_PREVIEW");
-    if (m_stateBank == NULL) {
+    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_PREVIEW");
+    if (m_stateResources == NULL) {
         return 0;
     }
     if (g_disableAudio == 0 && g_disableSound == 0) {
-        CSymTab* set = SymTab2c()->FindSub("SOUNDZ");
+        CRezArchiveDir* set = StateResources()->FindSubdirectory("SOUNDZ");
         if (set != NULL) {
-            m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
+            m_world->m_soundRegistry
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(set), "PREVIEW", "_");
         }
     }
     m_previewName = "PREVIEW0";
@@ -172,7 +173,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_previewName = buf;
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
-    SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
+    StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
     i32 failed = 0;
     if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1)
         == 0) {

@@ -5,8 +5,8 @@
 
 #include <DDrawMgr/AniRecordBase2.h>
 #include <Gruntz/MapStringToOb.h>
-#include <Gruntz/ParseSource.h>
 #include <Ints.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Wap32/WapObj.h>
 
 #include <stddef.h>
@@ -21,12 +21,13 @@ public:
     virtual void Unload() OVERRIDE;
 
     virtual LoadableClassId GetClassId() OVERRIDE;
-    virtual CAniRecordBase2* LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags);
+    virtual CAniRecordBase2*
+    LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags);
 
     virtual CAniRecordBase2* CreateWorkerFromData(u8* data, const char* key, i32 flags);
     virtual CAniRecordBase2* CreateWorkerFromFile(char* path, const char* key, i32 flags);
 
-    virtual CAniRecordBase2* LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags);
+    virtual CAniRecordBase2* LoadSizedPaletteFromSource(CRezArchiveEntry* src, i32 key, i32 flags);
     virtual ~CDDrawWorkerMapSmall() OVERRIDE;
 
     CMapStringToOb m_map1;

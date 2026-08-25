@@ -2,11 +2,11 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
 #include <Enums.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/ParseSource.h>
 #include <Io/FileStream.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Wwd/WwdFile.h>
 
@@ -53,37 +53,37 @@ i32 CGruntzMgr::ResolveLevelChecksum(
     if (useDirectLevelReference == 0) {
         if (isBattlez != 0) {
             WwdHeader buf;
-            CSymTab* node = m_symParser->ResolvePath("GAME_BATTLEZ");
+            CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
             if (node == NULL) {
                 return 0;
             }
-            CParseSource* sub = node->Insert(levelName, REZ_TAG_WWD);
+            CRezArchiveEntry* sub = node->FindEntry(levelName, REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
-            char* parsed = sub->BeginParse();
+            char* parsed = sub->LoadData();
             if (parsed == NULL) {
                 return 0;
             }
             memcpy(&buf, parsed, 0x5f4);
-            sub->EndParse();
+            sub->ReleaseData();
             return buf.checksum;
         } else {
             WwdHeader buf;
-            CSymTab* node = m_symParser->ResolvePath("GAME_MULTI");
+            CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath("GAME_MULTI");
             if (node == NULL) {
                 return 0;
             }
-            CParseSource* sub = node->Insert(levelName, REZ_TAG_WWD);
+            CRezArchiveEntry* sub = node->FindEntry(levelName, REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
-            char* parsed = sub->BeginParse();
+            char* parsed = sub->LoadData();
             if (parsed == NULL) {
                 return 0;
             }
             memcpy(&buf, parsed, 0x5f4);
-            sub->EndParse();
+            sub->ReleaseData();
             return buf.checksum;
         }
     } else {
@@ -92,7 +92,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         WwdHeader buf;
         char scratch[32];
         sprintf(scratch, "AREA%i_WORLDZ", ((levelId - 1) % 0x24) / 4 + 1);
-        CSymTab* node = m_symParser->ResolvePath(scratch);
+        CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath(scratch);
         if (node == NULL) {
             return 0;
         }
@@ -101,16 +101,16 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         } else {
             sprintf(scratch, "LEVEL%i", levelId);
         }
-        CParseSource* sub = node->Insert(scratch, REZ_TAG_WWD);
+        CRezArchiveEntry* sub = node->FindEntry(scratch, REZ_TAG_WWD);
         if (sub == NULL) {
             return 0;
         }
-        char* parsed = sub->BeginParse();
+        char* parsed = sub->LoadData();
         if (parsed == NULL) {
             return 0;
         }
         memcpy(&buf, parsed, 0x5f4);
-        sub->EndParse();
+        sub->ReleaseData();
         return buf.checksum;
     }
 }

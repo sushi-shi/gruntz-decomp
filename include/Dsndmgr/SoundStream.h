@@ -6,7 +6,7 @@
 #include <Dsndmgr/IntrusiveList.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/StreamVoice.h>
-#include <Gruntz/ParseSource.h>
+#include <Rez/RezArchiveEntry.h>
 
 class SoundStream;
 
@@ -24,7 +24,7 @@ public:
     );
 
     StreamVoice* OpenStream(
-        CParseSource* src,
+        CRezArchiveEntry* src,
         i32 bufferBytes,
         i32 refillThresholdBytes,
         i32 dsFlags,
@@ -32,7 +32,7 @@ public:
         i32 destroyWhenIdle
     );
     StreamVoice*
-    PlayStream(CParseSource* source, i32 bufferBytes, i32 refillThresholdBytes, i32 dsFlags);
+    PlayStream(CRezArchiveEntry* source, i32 bufferBytes, i32 refillThresholdBytes, i32 dsFlags);
 
     void DestroyVoice(StreamVoice* voice);
 
@@ -43,8 +43,12 @@ public:
     i32 InitializeDevice(HWND hwnd, i32 cooperativeLevel);
 
     i32 TickStreams(i32 timestampMs);
-    i32
-    ParseWave(CParseSource* source, WaveFormatX* outFormat, u32* outDataOffset, u32* outDataBytes);
+    i32 ParseWave(
+        CRezArchiveEntry* source,
+        WaveFormatX* outFormat,
+        u32* outDataOffset,
+        u32* outDataBytes
+    );
 
     IntrusiveList m_voices;
 };

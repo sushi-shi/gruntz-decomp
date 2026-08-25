@@ -70,10 +70,10 @@ RVA_DYNINIT(0x0016de20, 0x10, g_dynamicArrayErrorSlot)
 DATA(0x002bf468)
 CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
 
-RVA_DYNINIT(0x0016dfd0, 0x5, g_symTabErrorSlot)
-RVA_DYNINIT(0x0016dfe0, 0x10, g_symTabErrorSlot)
+RVA_DYNINIT(0x0016dfd0, 0x5, g_rezArchiveErrorSlot)
+RVA_DYNINIT(0x0016dfe0, 0x10, g_rezArchiveErrorSlot)
 DATA(0x002bf480)
-CVariantSlot g_symTabErrorSlot("zSymTab: ");
+CVariantSlot g_rezArchiveErrorSlot("zSymTab: ");
 
 // TypeKeyRec's declared constructor is what puts this array in `.CRT$XC` at all;
 // the body optimises to a bare `ret`, which is why the pin is 1 byte. It is the
@@ -691,7 +691,10 @@ zPtrColl::~zPtrColl() {}
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 
-    : zErrHandling(&g_symTabErrorSlot), zPtrColl(n, teardown), m_root(NULL), m_lookupPending(0) {}
+    : zErrHandling(&g_rezArchiveErrorSlot),
+      zPtrColl(n, teardown),
+      m_root(NULL),
+      m_lookupPending(0) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {

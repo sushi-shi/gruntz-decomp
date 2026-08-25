@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -19,9 +18,10 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 
 #include <ddraw.h>
@@ -95,7 +95,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     static_cast<const char*>(resourceName)
                 );
 
-                CParseSource* source = g_gameReg->m_symParser->ResolveQualified(
+                CRezArchiveEntry* source = g_gameReg->m_resourceArchive->FindEntryByPath(
                     static_cast<const char*>(qualified),
                     REZ_TAG_TXT
                 );
@@ -105,8 +105,8 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 if (source == NULL) {
                     parsed = false;
                 } else {
-                    char* encoded = source->BeginParse();
-                    u32 length = source->m_length;
+                    char* encoded = source->LoadData();
+                    u32 length = source->m_size;
                     istrstream* inputStream = new istrstream(encoded, length);
                     bute.m_crypt.InitKey(static_cast<const char*>(key));
                     char* decoded = new char[length];
@@ -115,7 +115,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     istrstream* parseStream = new istrstream(decoded, outputStream->pcount());
                     delete inputStream;
                     delete outputStream;
-                    source->EndParse();
+                    source->ReleaseData();
 
                     bute.Init();
                     bute.m_tree.Reset();

@@ -51,8 +51,8 @@ char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 #include <Gruntz/MultiStartDlg.h>
 
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
 #include <Enums.h>
 #include <Gruntz/CustomMapSelection.h>
 #include <Gruntz/Dialogs.h>
@@ -61,7 +61,7 @@ char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
+#include <Rez/RezArchiveEntry.h>
 #include <MsgParam.h>
 #include <Net/NetProviderNode.h>
 #include <Net/LatencyList.h>
@@ -134,11 +134,11 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == NULL) {
         return 0;
     }
-    CSymTab* st = m_host->m_symParser->ResolvePath("GAME_MULTI");
+    CRezArchiveDir* st = m_host->m_resourceArchive->FindDirectoryByPath("GAME_MULTI");
     if (st == NULL) {
         return 0;
     }
-    CParseSource* item = st->NextSym2(st->FirstSym());
+    CRezArchiveEntry* item = st->FirstEntry(st->FirstType());
     while (item != NULL) {
         CString name(item->m_name);
         name.MakeUpper();
@@ -149,7 +149,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
             0,
             (text.m_str = static_cast<LPCTSTR>(name), text.m_lparam)
         );
-        item = st->NextSym3(item);
+        item = st->NextEntry(item);
     }
     CWnd* combo2 = GetDlgItem(IDX(IDC_MULTI_WORLD));
     CWnd* child = CWnd::FromHandle(::GetWindow(combo2->m_hWnd, GW_CHILD));

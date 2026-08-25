@@ -5,8 +5,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CustomMapSelection.h>
@@ -16,9 +14,11 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
 #include <MsgParam.h>
 #include <Net/NetLobby.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Utils/RegistryHelper.h>
 
 #include <stdio.h>
@@ -135,11 +135,12 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         comboChild->SetWindowTextA("");
 
         CWnd* combo = GetDlgItem(0x4ff);
-        CSymTab* worlds = m_slots->m_symParser->ResolvePath("GAME_BATTLEZ");
+        CRezArchiveDir* worlds = m_slots->m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
         if (worlds == NULL) {
             return;
         }
-        CParseSource* entry = static_cast<CParseSource*>(worlds->NextSym2(worlds->FirstSym()));
+        CRezArchiveEntry* entry =
+            static_cast<CRezArchiveEntry*>(worlds->FirstEntry(worlds->FirstType()));
         i32 first = 1;
         while (entry != NULL) {
             CString upper(entry->m_name);
@@ -165,7 +166,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 first = 0;
                 comboChild->SetWindowTextA(display);
             }
-            entry = static_cast<CParseSource*>(worlds->NextSym3(entry));
+            entry = static_cast<CRezArchiveEntry*>(worlds->NextEntry(entry));
         }
         ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
         MsgParam prev;

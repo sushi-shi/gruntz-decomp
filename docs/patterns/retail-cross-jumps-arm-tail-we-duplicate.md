@@ -30,7 +30,7 @@ retail, CBattlezMapConfig::LoadConfig 0x25020         ours
 
 `CPlay::LoadByMode` 0xca200 is the same shape: the `GAME_BATTLEZ` arm's digit-skip
 loop falls into a bare `jmp` at the `GAME_MULTI` arm's `push ecx; call _atoi; add
-esp,4; mov ecx,edi; mov ebx,eax; call ?EndParse` tail, so retail calls `atoi` once
+esp,4; mov ecx,edi; mov ebx,eax; call ?ReleaseData` tail, so retail calls `atoi` once
 where we call it twice.
 
 ## What is NOT the lever
@@ -42,7 +42,7 @@ locals so the tails become statement-identical and cl merges like retail — was
 measured on both functions and **does not fire**:
 
 * `CPlay::LoadByMode`: hoisting `ins`/`desc`/`p`/`c` out of the two arms and
-  dropping the `i32 num` temp (`level = atoi(p); ins->EndParse();`) removed the
+  dropping the `i32 num` temp (`level = atoi(p); ins->ReleaseData();`) removed the
   extra `mov ebx,edi` and made the two tails byte-identical. cl still emitted both.
   (It was still worth doing: 82.83 -> 83.15 and the tail is now retail's.)
 * `CBattlezMapConfig::LoadConfig`: hoisting the per-`case` `i32 r` to one

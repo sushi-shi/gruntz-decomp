@@ -4,7 +4,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -16,6 +15,7 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
 #include <Image/CImage.h>
+#include <Rez/RezArchive.h>
 
 #include <stdio.h>
 
@@ -26,7 +26,7 @@ i32 g_buildNumber;
 RVA(0x000f9ea0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     m_mgr = mgr;
-    m_symParser = mgr->m_symParser;
+    m_resourceArchive = mgr->m_resourceArchive;
     m_world = mgr->m_world;
 
     m_faderMgr = mgr->m_faderMgr;
@@ -40,13 +40,13 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", IDX(m_levelType));
-    CSymTab* node = m_symParser->ResolvePath(area);
-    m_levelBank = node;
+    CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath(area);
+    m_levelResources = node;
     if (node == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->HasWithPrefix("GAME") == 0) {
-        CSymTab* img = m_symParser->ResolvePath("GAME_IMAGEZ");
+        CRezArchiveDir* img = m_resourceArchive->FindDirectoryByPath("GAME_IMAGEZ");
         if (img == NULL) {
             return 0;
         }
@@ -55,21 +55,21 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         g_resourceInstallActive = 0;
     }
     if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
-        CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
+        CRezArchiveDir* snd = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(snd), "GAME", "_");
     }
     if (m_world->m_animRegistry->HasWithPrefix("GAME") == 0) {
-        CSymTab* aniz = m_symParser->ResolvePath("GAME_ANIZ");
+        CRezArchiveDir* aniz = m_resourceArchive->FindDirectoryByPath("GAME_ANIZ");
         if (aniz == NULL) {
             return 0;
         }
-        m_world->m_animRegistry->LoadFromTree(static_cast<CSymTab*>(aniz), "GAME", "_");
+        m_world->m_animRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(aniz), "GAME", "_");
     }
 
-    if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_symParser) == 0) {
+    if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_resourceArchive) == 0) {
         return 0;
     }
     if (m_scratchSurface0 == NULL && m_scratchSurface1 == NULL) {

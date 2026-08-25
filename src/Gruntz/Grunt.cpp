@@ -8,7 +8,6 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -72,6 +71,7 @@
 #include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>

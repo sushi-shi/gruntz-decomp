@@ -5,7 +5,6 @@
 #include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -54,6 +53,7 @@
 #include <Ints.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
@@ -1174,7 +1174,7 @@ i32 CGrunt::StepWarpExit() {
             i32 lvl = st->m_levelIndex + 0x64;
             CString s;
             s.Format("WORLDZ\\LEVEL%i", lvl);
-            if (st->m_levelBank->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
+            if (st->m_levelResources->FindEntryByPath(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
                 PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
             }
         }

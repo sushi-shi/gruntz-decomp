@@ -7,7 +7,7 @@
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
-class CSymTab;
+class CRezArchiveDir;
 
 class CAreaMgr {
 public:
@@ -21,10 +21,10 @@ public:
 
     ~CAreaMgr();
 
-    i32 LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
-    i32 LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
-    i32 LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
-    i32 LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
+    i32 LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src);
+    i32 LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src);
+    i32 LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src);
+    i32 LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src);
 
     i32 InitializeArea1Stage1();
     i32 InitializeArea1Stage2();

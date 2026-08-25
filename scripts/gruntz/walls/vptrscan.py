@@ -74,7 +74,7 @@ The byte scan finds 28 of those rows and a real disassembly discards 23:
 our base object has every `call rel32` displacement zeroed by its relocation
 while the delinked target resolves a SELF-call internally, so retail carries
 four `ff` bytes that decode as `call DWORD PTR [edi+0xe8]` and we carry four
-zeros. `CSymTab`'s destructor is byte-identical to retail at 100.00 and still
+zeros. `CRezArchiveDir`'s destructor is byte-identical to retail at 100.00 and still
 read as a retail-only slot 58 that way, which is why every differing row is
 re-read off a decoded stream before it is reported.
 
@@ -441,7 +441,7 @@ def _decoded_slots(root: Path, side: str, unit: str, name: str):
     two sides are not byte-symmetric: our base object has every `call rel32`
     displacement zeroed by its relocation, while the delinked target resolves
     a SELF-call internally and leaves a real negative displacement - four
-    `ff` bytes that decode as `call DWORD PTR [edi+0xe8]`. `CSymTab`'s
+    `ff` bytes that decode as `call DWORD PTR [edi+0xe8]`. `CRezArchiveDir`'s
     destructor is byte-identical to retail at 100.00 and still produced a
     retail-only slot 58 that way. So every differing row is re-read here.
     """

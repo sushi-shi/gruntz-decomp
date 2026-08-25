@@ -58,7 +58,7 @@ funclets destroy `this+0x4` through 0x1364e0 and `this+0xc` through 0x1364f0;
 `??0/??1SoundSample`'s destroy `this+0x58` through 0x135ba0. Three separate
 1-byte COMDATs, so three classes — while `InsertHead` 0x1390e0 / `Unlink` 0x1391e0
 exist in exactly ONE copy each, shared by SoundBuffer, SoundDevice,
-SoundStream, CSymParser, CHashBase and CWwdGrid, which puts the operations on a
+SoundStream, CRezArchive, CHashBase and CWwdGrid, which puts the operations on a
 common base and the destructor on the typed wrapper. Splitting the type and
 pinning the three dtors took all four `directsoundmgr` groups to
 `unwind-identical`.

@@ -56,7 +56,7 @@ double-counted). Verify with a full `gruntz build`: **no regressions vs baseline
   often already neutral — test both.
 - Does **not** rescue divergent views (different base/ctor/slot-signatures, e.g.
   `CTeleporter` UserLogic-ctor-facet vs Begin/Update-facet) or blob-vs-heavy-header
-  folds (`CSymParser`/`CSymTab` pulling a fat polymorphic header) — those change the
+  folds (`CRezArchive`/`CRezArchiveDir` pulling a fat polymorphic header) — those change the
   emitted shape/symbol set and must stay per-TU or be reconciled deliberately.
 
 ## Evidence

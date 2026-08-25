@@ -31,7 +31,7 @@ cl hoisted above the branch:
 ```cpp
 // ours - one store, above the test: cl keeps eax live, no xor
 i32 faded = LoadTitlePage(...);
-m_stateBank = saved;
+m_stateResources = saved;
 if (faded == 0) {
     return 0;
 }
@@ -39,10 +39,10 @@ if (faded == 0) {
 // retail - the restore is written in both arms; cl hoists it, eax dies
 i32 faded = LoadTitlePage(...);
 if (faded == 0) {
-    m_stateBank = saved;
+    m_stateResources = saved;
     return 0;
 }
-m_stateBank = saved;
+m_stateResources = saved;
 ```
 
 Both spellings emit ONE store in the same place. Only the liveness differs, and

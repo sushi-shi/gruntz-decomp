@@ -6,7 +6,7 @@
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/WaveFormatX.h>
-#include <Gruntz/ParseSource.h>
+#include <Rez/RezArchiveEntry.h>
 
 struct IDirectSoundBuffer;
 
@@ -23,7 +23,7 @@ struct StreamVoice : public SoundSample {
 
     virtual ~StreamVoice() OVERRIDE;
 
-    i32 SetSource(CParseSource* source);
+    i32 SetSource(CRezArchiveEntry* source);
     i32 Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping);
     u32 GetDurationMs();
 

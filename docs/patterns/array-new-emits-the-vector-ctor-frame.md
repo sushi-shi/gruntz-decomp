@@ -60,11 +60,11 @@ it twice). For a parameterized base constructor, move derived wrappers from
 
 ## Evidence
 
-`CSymParser::PopParseSlot` @0x13c0c0 — **77.13 % → 98.22 %** in one change, having been
+`CRezArchive::AcquireEntry` @0x13c0c0 — **77.13 % → 98.22 %** in one change, having been
 filed as an "EH-state + regalloc wall (the node/array allocations land in a swapped
 callee-saved register, the operator-new trylevel transitions and the slot-block
 down-counter init loop idiom diverge)". Every one of those symptoms was the missing
-array-new. `??0CParseSource@@QAE@XZ` stayed EXACT across the rename.
+array-new. `??0CRezArchiveEntry@@QAE@XZ` stayed EXACT across the source-structure change.
 
 `CHashBase::Construct(i32)` @0x184960 was already 112-byte exact and carried an identical
 1/1 EH map, but all of its callers were derived-member construction sites. Remodeling it

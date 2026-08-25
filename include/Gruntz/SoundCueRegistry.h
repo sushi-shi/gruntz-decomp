@@ -12,8 +12,8 @@
 #include <Wap32/WapObj.h>
 
 struct SoundStream;
-class CSymTab;
-struct CParseSource;
+class CRezArchiveDir;
+struct CRezArchiveEntry;
 
 class SoundCueRegistry : public CWapObj {
 public:
@@ -51,12 +51,12 @@ public:
         }
     }
 
-    SoundCue* LoadCueFromSource(const char* key, CParseSource* source);
+    SoundCue* LoadCueFromSource(const char* key, CRezArchiveEntry* source);
     SoundCue* LoadCueFromFile(const char* key, char* path);
-    SoundCue* LoadNamedCue(CParseSource* source);
+    SoundCue* LoadNamedCue(CRezArchiveEntry* source);
     void AddCue(SoundCue* cue, const char* key);
 
-    i32 LoadFromTree(CSymTab* tree, const char* prefix, const char* separator);
+    i32 LoadFromTree(CRezArchiveDir* tree, const char* prefix, const char* separator);
 
     CObject* Lookup(const char* key);
     i32 RemoveWithPrefix(const char* prefix, const char* separator);

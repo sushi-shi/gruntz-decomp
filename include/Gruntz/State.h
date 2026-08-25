@@ -11,11 +11,11 @@
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
-class CSymParser;
+class CRezArchive;
 class CDDSurface;
-class CSymTab;
+class CRezArchiveDir;
 
-class CSymTab;
+class CRezArchiveDir;
 class CFileMemBase;
 class CGruntzMgr;
 class CFaderMgr;
@@ -158,16 +158,12 @@ public:
     CDDrawSurfaceMgr* menuRoot() {
         return m_world;
     }
-    CSymParser* stateMgr() {
-        return static_cast<CSymParser*>(m_symParser);
+    CRezArchive* ResourceArchive() {
+        return static_cast<CRezArchive*>(m_resourceArchive);
     }
     CGruntzMgr* owner() {
         return m_mgr;
     }
-    CSymTab* attractState() {
-        return (m_stateBank);
-    }
-
     i32 BuildAssetNamespacePrefixes(
         const CString& name,
         i32 mode,
@@ -177,7 +173,7 @@ public:
 
     CGruntzMgr* m_mgr;
 
-    CSymParser* m_symParser;
+    CRezArchive* m_resourceArchive;
 
     CDDrawSurfaceMgr* m_world;
     CFaderMgr* m_faderMgr;
@@ -190,15 +186,15 @@ public:
 
     GameStateId m_previousStateId;
 
-    CSymTab* m_levelBank;
+    CRezArchiveDir* m_levelResources;
 
-    CSymTab* m_stateBank;
+    CRezArchiveDir* m_stateResources;
 
-    CSymTab* SymTab2c() {
-        return (m_stateBank);
+    CRezArchiveDir* StateResources() {
+        return m_stateResources;
     }
-    CSymTab* m_gruntzBank;
-    CSymTab* m_gameBank;
+    CRezArchiveDir* m_gruntResources;
+    CRezArchiveDir* m_gameResources;
     i32 m_reserved38;
     i32 m_ready;
     i32 m_notifyLatch;
@@ -229,10 +225,10 @@ public:
 // retail copy 0x0008c750 (emitted by gruntzmgr; pin there)
 inline CState::CState() {
     m_mgr = NULL;
-    m_symParser = NULL;
+    m_resourceArchive = NULL;
     m_world = NULL;
-    m_levelBank = NULL;
-    m_stateBank = NULL;
+    m_levelResources = NULL;
+    m_stateResources = NULL;
     m_blitSurface0 = NULL;
     m_blitSurface1 = NULL;
     m_reserved38 = 0;

@@ -232,7 +232,7 @@
 222	gruntzsoundz	0x00138490	0x0013907c	lib	Dsndmgr	34	position
 223	soundvoicelist	0x001390e0	0x00139210	lib	Dsndmgr	5	position
 224	registryhelper	0x00139210	0x00139682	lib	Utils	11	position
-225	symtab	0x001396f0	0x0013c22a	lib	Bute	66	position
+225	rezarchive	0x001396f0	0x0013c22a	lib	Rez	66	position
 226	hash	0x0013c230	0x0013c4c1	lib	Bute	10	position
 227	rezfile	0x0013c4d0	0x0013cef1	lib	Rez	31	position
 228	gamewnd	0x0013cf00	0x0013d585	lib	Wap32	17	position

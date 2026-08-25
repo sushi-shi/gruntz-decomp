@@ -10,12 +10,12 @@
 #include <Enums.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Io/FileStream.h>
 #include <Pix16.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapUncompress.h>
@@ -107,7 +107,7 @@ i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
 }
 
 RVA(0x0015ceb0, 0xb8)
-i32 CGameLevel::LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords) {
+i32 CGameLevel::LoadSourceWithCoords(CRezArchiveEntry* src, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     SetParamBlockDefaults();
     if (LoadFromSource(src) == 0) {
@@ -320,18 +320,18 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 }
 
 RVA(0x0015d630, 0x41)
-i32 CGameLevel::LoadFromSource(CParseSource* source) {
-    char* handle = source->BeginParse();
+i32 CGameLevel::LoadFromSource(CRezArchiveEntry* source) {
+    char* handle = source->LoadData();
     if (handle == NULL) {
         return 0;
     }
 
     // Byte-forced view of packed WWD storage.
     if (LoadWwd(reinterpret_cast<WwdHeader*>(handle)) == 0) {
-        source->EndParse();
+        source->ReleaseData();
         return 0;
     }
-    source->EndParse();
+    source->ReleaseData();
     return 1;
 }
 

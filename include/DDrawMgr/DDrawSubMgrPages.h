@@ -39,7 +39,7 @@ public:
     virtual i32 CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags);
 
     i32 ResolvePageImage(char* name, DDrawPageKind pageIndex);
-    i32 LoadPageImage(struct CParseSource* src, DDrawPageKind pageIndex);
+    i32 LoadPageImage(struct CRezArchiveEntry* src, DDrawPageKind pageIndex);
     void BltDirtyChildrenEx();
     void FlipAndNotify();
     i32 PagesReady();

@@ -10,7 +10,7 @@
 
 struct CVariantSlot;
 struct CButeTreeNode;
-extern CVariantSlot g_symTabErrorSlot;
+extern CVariantSlot g_rezArchiveErrorSlot;
 
 // Index of the first differing bit between two NUL-terminated keys; the PATRICIA
 // critbit primitive shared by zPTree::Insert and zPTree::FindOrInsert.

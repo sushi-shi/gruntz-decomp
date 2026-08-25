@@ -3,7 +3,6 @@
 #include <Gruntz/Demo.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
@@ -33,6 +32,7 @@
 #include <Gruntz/Wormhole.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
 #include <Wwd/LogicRecordEvent.h>
 
@@ -70,14 +70,14 @@ i32 CDemoSetup::SetupDemoActors() {
     return 1;
 }
 
-class CParseSource;
+class CRezArchiveEntry;
 
 RVA(0x0003c0e0, 0xfb)
 i32 CDemo::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    CParseSource* node = m_levelBank->ResolveQualified(key, REZ_TAG_WWD);
+    CRezArchiveEntry* node = m_levelResources->FindEntryByPath(key, REZ_TAG_WWD);
     if (node == NULL) {
         return 0;
     }

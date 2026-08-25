@@ -3,8 +3,6 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/SymParser.h>
-#include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -56,7 +54,6 @@
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
@@ -92,6 +89,9 @@
 #include <Io/SaveGame.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -138,7 +138,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
         ->RemoveWithPrefix("BACK", "");
     g_resourceInstallActive = 0;
 
-    CSymTab* tiles = (self->m_levelBank)->ResolvePath("TILEZ");
+    CRezArchiveDir* tiles = (self->m_levelResources)->FindDirectoryByPath("TILEZ");
     if (!tiles) {
         return 0;
     }
@@ -161,12 +161,12 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
         ->RemoveWithPrefix("LEVEL", "_");
 
-    CSymTab* sounds = (self->m_levelBank)->ResolvePath("SOUNDZ");
+    CRezArchiveDir* sounds = (self->m_levelResources)->FindDirectoryByPath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
     (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-        ->LoadFromTree(static_cast<CSymTab*>(sounds), "LEVEL", "_");
+        ->LoadFromTree(static_cast<CRezArchiveDir*>(sounds), "LEVEL", "_");
     return 1;
 }
 
@@ -181,11 +181,11 @@ i32 CPlay::LoadLevelAnims(i32 force) {
         }
     }
     m_world->m_animRegistry->RemoveWithPrefix("LEVEL", "_");
-    CSymTab* e = m_levelBank->ResolvePath("ANIZ");
+    CRezArchiveDir* e = m_levelResources->FindDirectoryByPath("ANIZ");
     if (e == NULL) {
         return 0;
     }
-    m_world->m_animRegistry->LoadFromTree(static_cast<CSymTab*>(e), "LEVEL", "_");
+    m_world->m_animRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(e), "LEVEL", "_");
     return 1;
 }
 
@@ -205,7 +205,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
         ->RemoveWithPrefix("LEVEL", "_");
     g_resourceInstallActive = 0;
 
-    CSymTab* images = (self->m_levelBank)->ResolvePath("IMAGEZ");
+    CRezArchiveDir* images = (self->m_levelResources)->FindDirectoryByPath("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -226,7 +226,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     }
 
     g_resourceInstallActive = 1;
-    CSymTab* images = (self->m_gameBank)->ResolvePath("IMAGEZ");
+    CRezArchiveDir* images = (self->m_gameResources)->FindDirectoryByPath("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -245,12 +245,12 @@ i32 CPlay::LoadGameSounds(i32 force) {
         return 1;
     }
 
-    CSymTab* sounds = (self->m_gameBank)->ResolvePath("SOUNDZ");
+    CRezArchiveDir* sounds = (self->m_gameResources)->FindDirectoryByPath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
     (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-        ->LoadFromTree(static_cast<CSymTab*>(sounds), "GAME", "_");
+        ->LoadFromTree(static_cast<CRezArchiveDir*>(sounds), "GAME", "_");
     return 1;
 }
 
@@ -264,11 +264,11 @@ i32 CPlay::LoadGameAnims(i32 force) {
         return 1;
     }
 
-    CSymTab* anims = (self->m_gameBank)->ResolvePath("ANIZ");
+    CRezArchiveDir* anims = (self->m_gameResources)->FindDirectoryByPath("ANIZ");
     if (!anims) {
         return 0;
     }
-    self->m_world->m_animRegistry->LoadFromTree(static_cast<CSymTab*>(anims), "GAME", "_");
+    self->m_world->m_animRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(anims), "GAME", "_");
     return 1;
 }
 
@@ -276,59 +276,59 @@ RVA(0x000dba30, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {
     m_mgr->m_midi->ClearSequences();
 
-    CSymTab* levelSet = m_levelBank->ResolvePath("MIDIZ");
+    CRezArchiveDir* levelSet = m_levelResources->FindDirectoryByPath("MIDIZ");
     if (levelSet) {
-        CParseSource* e = levelSet->Insert("AMBIENT0", REZ_TAG_XMI);
+        CRezArchiveEntry* e = levelSet->FindEntry("AMBIENT0", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "AMBIENT0");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "AMBIENT0");
             }
         }
-        e = levelSet->Insert("AMBIENT1", REZ_TAG_XMI);
+        e = levelSet->FindEntry("AMBIENT1", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "AMBIENT1");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "AMBIENT1");
             }
         }
-        e = levelSet->Insert("INTRO0", REZ_TAG_XMI);
+        e = levelSet->FindEntry("INTRO0", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "INTRO0");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "INTRO0");
             }
         }
-        e = levelSet->Insert("INTRO1", REZ_TAG_XMI);
+        e = levelSet->FindEntry("INTRO1", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "INTRO1");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "INTRO1");
             }
         }
     }
 
-    CSymTab* gameSet = m_gameBank->ResolvePath("MIDIZ");
+    CRezArchiveDir* gameSet = m_gameResources->FindDirectoryByPath("MIDIZ");
     if (gameSet) {
-        CParseSource* e = gameSet->Insert("POWERUP", REZ_TAG_XMI);
+        CRezArchiveEntry* e = gameSet->FindEntry("POWERUP", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "POWERUP");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "POWERUP");
             }
         }
-        e = gameSet->Insert("CURSE", REZ_TAG_XMI);
+        e = gameSet->FindEntry("CURSE", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "CURSE");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "CURSE");
             }
         }
-        e = gameSet->Insert("MONOLITH", REZ_TAG_XMI);
+        e = gameSet->FindEntry("MONOLITH", REZ_TAG_XMI);
         if (e) {
-            char* res = e->BeginParse();
+            char* res = e->LoadData();
             if (res) {
-                m_mgr->m_midi->LoadBuffer(res, e->m_length, "MONOLITH");
+                m_mgr->m_midi->LoadBuffer(res, e->m_size, "MONOLITH");
             }
         }
     }
@@ -341,7 +341,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
         if (m_mgr->m_isBattlezLevel != 0) {
             CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
-            CParseSource* node = m_gameBank->ResolveQualified(key, REZ_TAG_WWD);
+            CRezArchiveEntry* node = m_gameResources->FindEntryByPath(key, REZ_TAG_WWD);
             if (node == NULL) {
                 return 0;
             }
@@ -350,7 +350,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             }
         } else if (m_mgr->m_isMultiLevel != 0) {
             CString key = "MULTI_" + m_mgr->GetWorldFileName();
-            CParseSource* node = m_gameBank->ResolveQualified(key, REZ_TAG_WWD);
+            CRezArchiveEntry* node = m_gameResources->FindEntryByPath(key, REZ_TAG_WWD);
             if (node == NULL) {
                 return 0;
             }
@@ -373,7 +373,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         } else {
             key.Format("WORLDZ\\LEVEL%i", sel);
         }
-        CParseSource* node = m_levelBank->ResolveQualified(key, REZ_TAG_WWD);
+        CRezArchiveEntry* node = m_levelResources->FindEntryByPath(key, REZ_TAG_WWD);
         if (node == NULL) {
             return 0;
         }
@@ -671,7 +671,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 EngStr_DrawText(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = 1;
-            CSymTab* tree = m_gruntzBank->ResolvePath("IMAGEZ_" + name);
+            CRezArchiveDir* tree = m_gruntResources->FindDirectoryByPath("IMAGEZ_" + name);
             if (tree == NULL) {
                 result = 0;
                 goto done;
@@ -683,21 +683,21 @@ i32 CState::BuildAssetNamespacePrefixes(
             }
         }
         if (m_world->m_soundRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            CSymTab* tree = m_gruntzBank->ResolvePath("SOUNDZ_" + name);
+            CRezArchiveDir* tree = m_gruntResources->FindDirectoryByPath("SOUNDZ_" + name);
             if (tree != NULL) {
 
                 m_world->m_soundRegistry
-                    ->LoadFromTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
+                    ->LoadFromTree(static_cast<CRezArchiveDir*>(tree), "GRUNTZ_" + name, "_");
             }
         }
         if (m_world->m_animRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
-            CSymTab* tree = m_gruntzBank->ResolvePath("ANIZ_" + name);
+            CRezArchiveDir* tree = m_gruntResources->FindDirectoryByPath("ANIZ_" + name);
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
             m_world->m_animRegistry
-                ->LoadFromTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(tree), "GRUNTZ_" + name, "_");
         }
         result = 1;
         goto done;
@@ -793,7 +793,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     g_resourceInstallActive = 1;
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
@@ -804,7 +804,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_DEATHZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
         }
@@ -815,7 +815,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
@@ -826,7 +826,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_EXITZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
         }
@@ -837,7 +837,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
@@ -848,7 +848,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_PICKUPS")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
         }
@@ -859,7 +859,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
@@ -881,34 +881,34 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
 
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_NORMALGRUNT");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_DEATHZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_DEATHZ");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_DEATHZ", "_");
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_ENTRANCEZ");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_EXITZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_EXITZ");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -916,10 +916,10 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -927,10 +927,10 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_PICKUPS")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_PICKUPS");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -938,10 +938,10 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
              ->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("SOUNDZ_BOMBGRUNT");
         if (s) {
             (static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
-                ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
+                ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -957,76 +957,78 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         return 0;
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_NORMALGRUNT", "_");
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_DEATHZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
+        self->m_world->m_animRegistry
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_EXITZ")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
+        self->m_world->m_animRegistry
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_PICKUPS")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
-        CSymTab* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
+        CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
         self->m_world->m_animRegistry
-            ->LoadFromTree(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
+            ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }

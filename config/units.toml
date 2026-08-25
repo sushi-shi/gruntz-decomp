@@ -526,8 +526,8 @@ source = "src/Gruntz/GameStateRecordLoad.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "symtab"
-source = "src/Bute/SymTab.cpp"
+unit = "rezarchive"
+source = "src/Rez/RezArchive.cpp"
 flags = "cpp"
 
 [[unit]]

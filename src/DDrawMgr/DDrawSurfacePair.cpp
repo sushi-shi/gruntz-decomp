@@ -25,7 +25,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapStringToOb.h>
-#include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/String.h>
@@ -33,6 +32,7 @@
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <Pix16.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 
@@ -179,10 +179,10 @@ void CDDrawSurfacePair::Unload() {
 }
 
 RVA(0x00163e50, 0x8b)
-i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
+i32 CDDrawSurfacePair::LoadImage(CRezArchiveEntry* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
-    i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->m_length, 0);
-    src->EndParse();
+    i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->m_size, 0);
+    src->ReleaseData();
     return r;
 }
 
@@ -994,18 +994,18 @@ fail:
 }
 
 RVA(0x001655c0, 0x53)
-i32 CAniElement::Configure(SoundCueRegistry* ctx, CParseSource* entry, i32 flags) {
-    if (entry->GetEntryTag() != REZ_TAG_ANI) {
+i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 flags) {
+    if (entry->GetTypeTag() != REZ_TAG_ANI) {
         return 0;
     }
     m_flags = flags;
     RecordBytes<CAniSource> src;
-    src.m_chars = entry->BeginParse();
+    src.m_chars = entry->LoadData();
     if (src.m_chars == NULL) {
         return 0;
     }
     i32 r = Build(ctx, src.m_rec, 0);
-    entry->EndParse();
+    entry->ReleaseData();
     return r;
 }
 
@@ -1057,22 +1057,22 @@ void CDDrawWorkerMapSmall::Unload() {
 
 RVA(0x001658c0, 0xcc)
 CAniRecordBase2*
-CDDrawWorkerMapSmall::LoadPaletteFromSource(CParseSource* src, const char* key, i32 flags) {
+CDDrawWorkerMapSmall::LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags) {
     RecordBytes<char> source;
-    source.m_chars = src->BeginParse();
+    source.m_chars = src->LoadData();
     u8* data = source.m_bytes;
     if (data == NULL) {
         return NULL;
     }
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
-        src->EndParse();
+        src->ReleaseData();
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    src->EndParse();
+    src->ReleaseData();
     char buf[0x50];
     if (key != NULL) {
         strcpy(buf, key);
@@ -1112,16 +1112,16 @@ CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i32 flag
 
 RVA(0x00165a90, 0xf4)
 CAniRecordBase2*
-CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CParseSource* src, i32 key, i32 flags) {
-    if (src->GetEntryTag() != IMGTAG_XCP) {
+CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CRezArchiveEntry* src, i32 key, i32 flags) {
+    if (src->GetTypeTag() != IMGTAG_XCP) {
         return NULL;
     }
-    char* data = src->BeginParse();
+    char* data = src->LoadData();
     if (data == NULL) {
         return NULL;
     }
 
-    i32 length = static_cast<i32>(src->m_length);
+    i32 length = static_cast<i32>(src->m_size);
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
         if (w != NULL) {
