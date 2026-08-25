@@ -19,6 +19,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapCompress.h>
+#include <Wwd/MoveFlags.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdObjectType.h>
@@ -673,11 +674,11 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
 
         if (t->m_moveMode != kind) {
             ok = 0;
-        } else if ((flags & 0x10000) != 0) {
+        } else if ((flags & IDX(MOVE_RESULT_TILE_COLLISION)) != 0) {
             ok = 0;
         } else if (t->m_screenX == goalX && t->m_screenY == destY) {
             ok = 0;
-        } else if ((flags & 0x400000) != 0) {
+        } else if ((flags & IDX(MOVE_RESULT_NO_POSITION_CHANGE)) != 0) {
             ok = 0;
         }
     } while (ok != 0);
@@ -704,26 +705,26 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
         case MOVE_RISING:
             result = MoveRising(target, destX, destY, moveFlags);
             if (target->m_moveMode == MOVE_FALLING) {
-                result |= 0x800000;
+                result |= IDX(MOVE_RESULT_TILE_TOP);
             }
             break;
         case MOVE_FALLING:
             result = MoveFalling(target, destX, destY, moveFlags);
             if (target->m_moveMode == MOVE_GROUNDED) {
-                result |= 0x1000000;
+                result |= IDX(MOVE_RESULT_TILE_BOTTOM);
             }
             break;
         case MOVE_AUTO_VERTICAL:
             if (destY < prevY) {
                 result = MoveRising(target, destX, destY, moveFlags);
                 if (target->m_moveMode == MOVE_FALLING) {
-                    result |= 0x800000;
+                    result |= IDX(MOVE_RESULT_TILE_TOP);
                     target->m_moveMode = MOVE_AUTO_VERTICAL;
                 }
             } else {
                 result = MoveFalling(target, destX, destY, moveFlags);
                 if (target->m_moveMode == MOVE_GROUNDED) {
-                    result |= 0x1000000;
+                    result |= IDX(MOVE_RESULT_TILE_BOTTOM);
                 }
             }
             break;
@@ -736,18 +737,18 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
             break;
     }
 
-    if (result & 0x1820000) {
-        result |= 0x10000;
+    if (result & IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_TOP | MOVE_RESULT_TILE_BOTTOM)) {
+        result |= IDX(MOVE_RESULT_TILE_COLLISION);
     }
     u32 objectFlags = target->m_flags;
-    if (objectFlags & 0x400000) {
-        result |= 0x100000;
+    if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE)) {
+        result |= IDX(MOVE_RESULT_DEATH_TILE);
     }
     if (objectFlags & 0x10) {
-        result |= 0x200000;
+        result |= IDX(MOVE_RESULT_ON_CARRIER);
     }
     if (target->m_screenX == prevX && target->m_screenY == prevY) {
-        result |= 0x400000;
+        result |= IDX(MOVE_RESULT_NO_POSITION_CHANGE);
     }
     return result;
 }
@@ -770,11 +771,11 @@ i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
     i32 bracket;
     i32 mid;
 
-    if (moveFlags & 1) {
+    if (moveFlags & IDX(MOVE_REQUEST_PROBE_TOP)) {
         i32 col = destX;
         i32 limit = t->m_extent.top + destY - 1;
         if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
-            bracket = moveFlags & 0x10;
+            bracket = moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB);
             if (bracket != 0) {
                 i32 lo = col;
                 i32 hi = col;
@@ -787,11 +788,11 @@ i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
             }
             goto rebracket;
         }
-    } else if (moveFlags & 2) {
+    } else if (moveFlags & IDX(MOVE_REQUEST_PROBE_BOTTOM)) {
         i32 col = destX;
         i32 limit = t->m_extent.bottom + destY + 2;
         if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
-            bracket = moveFlags & 0x10;
+            bracket = moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB);
             if (bracket != 0) {
                 i32 lo = col;
                 i32 hi = col;
@@ -838,7 +839,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
         result = StepAxisHi(t, destX, destY, &destX, moveFlags);
     }
 
-    if (moveFlags & 8) {
+    if (moveFlags & IDX(MOVE_REQUEST_LAND_ON_PLATFORM)) {
         i32 outY;
         if (TryLandOnPlatform(t, destX, destY, &outY, moveFlags) != 0) {
             destY = outY;
@@ -849,11 +850,11 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
         destY = ResolveFloorCollision(t, destX, destY, moveFlags);
     }
 
-    if (moveFlags & 1) {
+    if (moveFlags & IDX(MOVE_REQUEST_PROBE_TOP)) {
         i32 coord = destX;
         i32 limit = t->m_extent.top + destY - 1;
         if (AxisProbe(coord, limit) == TILEKIND_CLIMB) {
-            if (moveFlags & 0x10) {
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
                 i32 lo = coord;
                 i32 hi = coord;
                 if (ClampSpan(coord, limit, &lo, &hi) != 0) {
@@ -862,7 +863,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
             } else {
                 coord = destX;
             }
-            if (moveFlags & 0x10) {
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
                 destX = coord;
                 t->m_moveMode = MOVE_CLIMBING;
             } else {
@@ -872,8 +873,9 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
     }
 
     if (t->m_moveMode == MOVE_GROUNDED && destX != savedDestX) {
-        if (result & 0x20000) {
-            result &= 0xfff1ffff;
+        if (result & IDX(MOVE_RESULT_AXIS_BLOCKED)) {
+            result &=
+                ~IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT | MOVE_RESULT_TILE_LEFT);
             if (destX > t->m_screenX) {
                 result |= StepAxisLo(t, destX, destY, &destX, moveFlags);
             } else if (destX < t->m_screenX) {
@@ -899,11 +901,11 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
 
     destY = ResolveCeilingCollision(t, destX, destY, moveFlags);
 
-    if (moveFlags & 1) {
+    if (moveFlags & IDX(MOVE_REQUEST_PROBE_TOP)) {
         i32 coord = destX;
         i32 limit = t->m_extent.top + destY - 1;
         if (AxisProbe(coord, limit) == TILEKIND_CLIMB) {
-            if (moveFlags & 0x10) {
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
                 i32 lo = coord;
                 i32 hi = coord;
                 if (ClampSpan(coord, limit, &lo, &hi) != 0) {
@@ -912,7 +914,7 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
             } else {
                 coord = destX;
             }
-            if (moveFlags & 0x10) {
+            if (moveFlags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
                 destX = coord;
             }
             t->m_moveMode = MOVE_CLIMBING;
@@ -1095,7 +1097,7 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
     TileCollisionKind first;
     PROBE_TILE(this, destX, hiY, first);
     if (first == TILEKIND_DEATH) {
-        t->m_flags |= 0x400000;
+        t->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE);
     }
     i32 base = destY - t->m_screenY;
 
@@ -1319,7 +1321,7 @@ i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags
     if (result != TILEKIND_CLIMB) {
         return 0;
     }
-    if (flags & 0x10) {
+    if (flags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
         i32 lo = x, hi = x;
         *out = x;
         if (ClampSpan(x, footY + 1, &lo, &hi) != 0) {
@@ -1339,7 +1341,7 @@ i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) 
     if (result != TILEKIND_CLIMB) {
         return 0;
     }
-    if (flags & 0x10) {
+    if (flags & IDX(MOVE_REQUEST_CENTER_ON_CLIMB)) {
         i32 lo = x, hi = x;
         *out = x;
         if (ClampSpan(x, probeY, &lo, &hi) != 0) {
@@ -1371,7 +1373,7 @@ i32 CGameLevel::TryLandOnPlatform(
     i32* outLandingY,
     i32 moveFlags
 ) {
-    if ((moveFlags & 8) == 0) {
+    if ((moveFlags & IDX(MOVE_REQUEST_LAND_ON_PLATFORM)) == 0) {
         return 0;
     }
 
@@ -1461,7 +1463,7 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, 
     if (p == NULL) {
         return 0;
     }
-    if ((moveFlags & 8) == 0) {
+    if ((moveFlags & IDX(MOVE_REQUEST_LAND_ON_PLATFORM)) == 0) {
         return 0;
     }
     if (p->m_objectType != WWD_OBJECT_TYPE_PLATFORM) {

@@ -11,6 +11,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
+#include <Wwd/MoveFlags.h>
 #include <Wwd/MoveMode.h>
 
 #include <stddef.h>
@@ -62,8 +63,8 @@ public:
 
     CMotionState m_motion;
     Coord m_previousScreenPosition;
-    i32 m_collisionFlags;
-    i32 m_moveFlags;
+    GZ_ENUM_STORAGE(MoveResultFlags, i32) m_collisionFlags;
+    GZ_ENUM_STORAGE(MoveRequestFlags, i32) m_moveFlags;
 
 private:
     void InitOwner(const double& timeScale);

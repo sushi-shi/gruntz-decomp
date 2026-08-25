@@ -9,6 +9,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
+#include <Wwd/MoveFlags.h>
 
 #include <math.h>
 #include <stddef.h>
@@ -45,7 +46,7 @@ void CMovingLogic::AdvanceMotion() {
             m_object,
             static_cast<i32>(Motion()->m_position.x),
             m_object->m_screenY,
-            m_moveFlags
+            IDX(m_moveFlags)
         );
         Motion()->m_velocity.y = 0.0;
     } else {
@@ -54,7 +55,7 @@ void CMovingLogic::AdvanceMotion() {
             m_object,
             static_cast<i32>(Motion()->m_position.x),
             static_cast<i32>(Motion()->m_position.y),
-            m_moveFlags
+            IDX(m_moveFlags)
         );
     }
 
@@ -78,17 +79,17 @@ void CMovingLogic::AdvanceMotion() {
     }
 
     if (m_object->m_moveMode != MOVE_DIRECT) {
-        i32 f = m_collisionFlags;
-        if (f & 0x800000) {
+        i32 f = IDX(m_collisionFlags);
+        if (f & IDX(MOVE_RESULT_TILE_TOP)) {
             Motion()->m_velocity.y = -Motion()->m_velocity.y;
             return;
         }
-        if (f & 0x40000) {
+        if (f & IDX(MOVE_RESULT_TILE_RIGHT)) {
             Motion()->m_maxBounds.x = static_cast<double>(m_previousScreenPosition.m_x);
             Motion()->m_velocity.x = Motion()->m_velocity.x * g_motionNegHalf;
             return;
         }
-        if (f & 0x80000) {
+        if (f & IDX(MOVE_RESULT_TILE_LEFT)) {
             Motion()->m_minBounds.x = static_cast<double>(m_previousScreenPosition.m_x);
             Motion()->m_velocity.x = Motion()->m_velocity.x * g_motionNegHalf;
         }

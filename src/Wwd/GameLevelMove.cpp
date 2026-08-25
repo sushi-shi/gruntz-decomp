@@ -9,6 +9,7 @@
 #include <Gruntz/WwdGrid.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wwd/MoveFlags.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdGridShell.h>
 #include <Wwd/WwdSpatialMgr.h>
@@ -31,18 +32,18 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
         }
     }
 
-    if (result & 0x20000) {
-        result |= 0x10000;
+    if (result & IDX(MOVE_RESULT_AXIS_BLOCKED)) {
+        result |= IDX(MOVE_RESULT_TILE_COLLISION);
     }
     u32 objectFlags = target->m_flags;
-    if (objectFlags & 0x400000) {
-        result |= 0x100000;
+    if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE)) {
+        result |= IDX(MOVE_RESULT_DEATH_TILE);
     }
     if (objectFlags & 0x10) {
-        result |= 0x200000;
+        result |= IDX(MOVE_RESULT_ON_CARRIER);
     }
     if (target->m_screenX == prevX && target->m_screenY == prevY) {
-        result |= 0x400000;
+        result |= IDX(MOVE_RESULT_NO_POSITION_CHANGE);
     }
     return result;
 }
@@ -118,7 +119,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenX + t->m_extent.right;
             i32 j = xEnd - 1;
-            state |= 0x60000;
+            state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT);
             for (; j > lo; j--) {
                 if (AxisProbe(j, yLo) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.right;
@@ -144,7 +145,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     }
     if (BroadPhase(t, x, y) != 0) {
         *px = t->m_screenX;
-        return state | 0x22000000;
+        return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_RIGHT);
     }
     *px = x;
     return state;
@@ -201,7 +202,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenX + t->m_extent.left;
             i32 j = xEnd + 1;
-            state |= 0xa0000;
+            state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_LEFT);
             for (; j < lo; j++) {
                 if (AxisProbe(j, yLo) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.left;
@@ -227,7 +228,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     }
     if (BroadPhase(t, x, y) != 0) {
         *px = t->m_screenX;
-        return state | 0x82000000;
+        return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_LEFT);
     }
     *px = x;
     return state;
@@ -284,7 +285,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenY + t->m_extent.bottom;
             i32 j = fixedY - 1;
-            state |= 0x1020000;
+            state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_BOTTOM);
             for (; j > lo; j--) {
                 if (AxisProbe(col, j) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.bottom;
@@ -310,7 +311,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     }
     if (BroadPhase(t, x, y) != 0) {
         *py = t->m_screenY;
-        return state | 0x42000000;
+        return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_BOTTOM);
     }
     *py = y;
     return state;
@@ -367,7 +368,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenY + t->m_extent.top;
             i32 j = fixedY + 1;
-            state |= 0x820000;
+            state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_TOP);
             for (; j < lo; j++) {
                 if (AxisProbe(col, j) == TILEKIND_PASSABLE) {
                     j -= t->m_extent.top;
@@ -393,7 +394,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     }
     if (BroadPhase(t, x, y) != 0) {
         *py = t->m_screenY;
-        return state | 0x12000000;
+        return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_TOP);
     }
     *py = y;
     return state;
