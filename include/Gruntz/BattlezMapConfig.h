@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Clock64.h>
+#include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
@@ -22,7 +23,7 @@ class CPlay;
 
 class CBattlezMapConfig {
 public:
-    i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficulty);
+    i32 LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty);
 
     CBattlezMapConfig();
     ~CBattlezMapConfig();

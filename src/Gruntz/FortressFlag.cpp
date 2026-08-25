@@ -113,7 +113,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SwitchGeometry("GAME_CYCLE100", 0);
     SetObjectFlags(3);
-    i32 idx = IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex);
+    i32 idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_colorIndex);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
@@ -151,7 +151,7 @@ i32 CFortressFlag::SerializeMove(
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
         CWwdGameObjectA* spr = m_object;
-        i32 idx = IDX(g_gameReg->m_options[spr->m_smarts].m_colorIndex);
+        i32 idx = IDX(g_gameReg->m_players[spr->m_smarts].m_colorIndex);
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         SET_DRAW_FILL(spr, SHADE_PAL_16, sel);

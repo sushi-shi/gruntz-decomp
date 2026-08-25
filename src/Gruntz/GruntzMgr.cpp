@@ -255,7 +255,7 @@ CGruntzMgr::CGruntzMgr() {
     m_gameMode = GAMEMODE_NONE;
     m_isHighDetail = 1;
     m_isEffectsEnabled = 1;
-    m_optionsCount = 3;
+    m_computerPlayerCount = 3;
 }
 
 RVA(0x00083300, 0x17)
@@ -3199,10 +3199,10 @@ BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092d50, 0x3c)
-i32 CGruntzMgr::LoadOptionsSlotName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
+i32 CGruntzMgr::SetInactivePlayerName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
     if (CheckPlayState()) {
-        if (m_options[slot].m_liveGate == 0) {
-            m_options[slot].m_name = val;
+        if (m_players[slot].m_active == 0) {
+            m_players[slot].m_name = val;
         }
     }
     return 0;
@@ -3211,40 +3211,41 @@ i32 CGruntzMgr::LoadOptionsSlotName(i32 slot, i32, i32, i32, i32, const CString&
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092da0, 0x3a)
-i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
-    if (static_cast<u32>(idx) >= 4) {
+i32 CGruntzMgr::ResetPlayerSlot(i32 slot) {
+    if (static_cast<u32>(slot) >= 4) {
         return 0;
     }
-    GruntzPlayer* s = &m_options[idx];
-    if (s == NULL) {
+    GruntzPlayer* player = &m_players[slot];
+    if (player == NULL) {
         return 0;
     }
-    if (s->m_liveGate == 0) {
+    if (player->m_active == 0) {
         return 0;
     }
 
-    return s->Reset();
+    return player->Reset();
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00092df0, 0x24)
-void CGruntzMgr::ResetAllOptionsSlots() {
-    GruntzPlayer* s = &m_options[0];
-    for (i32 d = 4; d != 0; d--) {
-        if (s != NULL) {
-            s->Reset();
+void CGruntzMgr::ResetAllPlayerSlots() {
+    GruntzPlayer* player = &m_players[0];
+    for (i32 remaining = 4; remaining != 0; remaining--) {
+        if (player != NULL) {
+            player->Reset();
         }
-        s++;
+        player++;
     }
 }
 
 RVA(0x00092e30, 0x39)
-i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
+i32 CGruntzMgr::CountActivePlayers(i32 includeComputerPlayers) {
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        GruntzPlayer* slot = &m_options[i];
-        if (slot && slot->m_liveGate != 0 && (anyState != 0 || slot->m_humanControlled != 0)) {
+        GruntzPlayer* slot = &m_players[i];
+        if (slot && slot->m_active != 0
+            && (includeComputerPlayers != 0 || slot->m_humanControlled != 0)) {
             count++;
         }
     }
@@ -3252,11 +3253,11 @@ i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
 }
 
 RVA(0x00092e80, 0x25)
-GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
+GruntzPlayer* CGruntzMgr::FindPlayerByNetworkId(i32 networkPlayerId) {
 
     for (i32 i = 0; i < 4; i++) {
-        GruntzPlayer* slot = &m_options[i];
-        if (slot && slot->m_slotKey == x) {
+        GruntzPlayer* slot = &m_players[i];
+        if (slot && slot->m_networkPlayerId == networkPlayerId) {
             return slot;
         }
     }
@@ -3264,13 +3265,13 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 }
 
 RVA(0x00092ec0, 0x24)
-void CGruntzMgr::ClearOptionsSlots() {
+void CGruntzMgr::DeactivateAllPlayers() {
 
     for (i32 i = 0; i < 4; i++) {
-        GruntzPlayer* p = &m_options[i];
-        if (p != NULL) {
-            p->m_liveGate = 0;
-            p->m_clearedRound = 0;
+        GruntzPlayer* player = &m_players[i];
+        if (player != NULL) {
+            player->m_active = 0;
+            player->m_clearedRound = 0;
         }
     }
 }
@@ -3303,7 +3304,7 @@ i32 CGruntzMgr::SaveGameAs() {
 
 // @early-stop
 RVA(0x00093170, 0x1e3)
-i32 CGruntzMgr::SyncOptionsState() {
+i32 CGruntzMgr::InitializeBattlezPlayers() {
     i32 matched = 0;
     CString s;
     if (s.LoadString(0x81ab)) {
@@ -3314,57 +3315,57 @@ i32 CGruntzMgr::SyncOptionsState() {
         }
     }
     srand(static_cast<u32>(time(0)));
-    g_optionsCursor = 0;
+    g_battlezTurnPlayerIndex = 0;
 
     i32 idx = 0;
-    GruntzPlayer* opt = &m_options[0];
-    for (i32 i = 0; i < m_optionsCount; i++) {
-        i32 cfg;
+    GruntzPlayer* player = &m_players[0];
+    for (i32 i = 0; i < m_computerPlayerCount; i++) {
+        BattlezDifficulty difficulty;
         if (idx == g_curPlayer) {
-            opt->m_humanControlled = 1;
-            cfg = opt->m_configId;
+            player->m_humanControlled = 1;
+            difficulty = player->m_difficulty;
             if (matched) {
-                cfg = 0;
+                difficulty = BZDIFF_EASY;
             }
-            if (!opt->m_battlezConfig.LoadConfig(this, idx, cfg)) {
+            if (!player->m_battlezConfig.LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
-            opt->m_battlezConfig.Clear();
-            opt++;
+            player->m_battlezConfig.Clear();
+            player++;
             idx++;
-            opt->m_humanControlled = 0;
-            cfg = opt->m_configId;
+            player->m_humanControlled = 0;
+            difficulty = player->m_difficulty;
             if (matched) {
-                cfg = 0;
+                difficulty = BZDIFF_EASY;
             }
-            if (!opt->m_battlezConfig.LoadConfig(this, idx, cfg)) {
+            if (!player->m_battlezConfig.LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
         } else {
-            opt->m_humanControlled = 0;
-            cfg = opt->m_configId;
+            player->m_humanControlled = 0;
+            difficulty = player->m_difficulty;
             if (matched) {
-                cfg = 0;
+                difficulty = BZDIFF_EASY;
             }
-            if (!opt->m_battlezConfig.LoadConfig(this, idx, cfg)) {
+            if (!player->m_battlezConfig.LoadConfig(this, idx, difficulty)) {
                 return 0;
             }
         }
         idx++;
-        opt++;
+        player++;
     }
     return 1;
 }
 
 RVA(0x000933e0, 0x5e)
-i32 CGruntzMgr::AdvanceOptionsCycle() {
-    i32 cursor = (g_optionsCursor + 1) & 3;
-    g_optionsCursor = cursor;
-    for (i32 i = 0; i < m_optionsCount + 1; i++) {
-        GruntzPlayer* slot = &m_options[i];
-        if (cursor == i && slot->m_humanControlled == 0 && slot->m_liveGate != 0) {
+i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
+    i32 cursor = (g_battlezTurnPlayerIndex + 1) & 3;
+    g_battlezTurnPlayerIndex = cursor;
+    for (i32 i = 0; i < m_computerPlayerCount + 1; i++) {
+        GruntzPlayer* slot = &m_players[i];
+        if (cursor == i && slot->m_humanControlled == 0 && slot->m_active != 0) {
             slot->m_battlezConfig.StepBoard();
-            cursor = g_optionsCursor;
+            cursor = g_battlezTurnPlayerIndex;
         }
     }
     return 1;
@@ -3392,7 +3393,7 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
 
     i32 i;
     GruntzPlayer* slot;
-    for (i = 0, slot = m_options; i < 4; i++) {
+    for (i = 0, slot = m_players; i < 4; i++) {
         if (slot == NULL || slot->Serialize(ar, cmd, typeId, payload) == 0) {
             return 0;
         }
@@ -3440,7 +3441,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&m_isMultiLevel, sizeof(m_isMultiLevel));
     ar->Write(&m_isCustomLevel, sizeof(m_isCustomLevel));
     ar->Write(&m_gameMode, sizeof(m_gameMode));
-    ar->Write(&m_optionsCount, sizeof(m_optionsCount));
+    ar->Write(&m_computerPlayerCount, sizeof(m_computerPlayerCount));
     ar->Write(&m_viewBounds.left, sizeof(m_viewBounds));
     ar->Write(&g_lastNow, sizeof(g_lastNow));
     ar->Write(&g_frameDelta, sizeof(g_frameDelta));
@@ -3487,7 +3488,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&m_isMultiLevel, sizeof(m_isMultiLevel));
     ar->Read(&m_isCustomLevel, sizeof(m_isCustomLevel));
     ar->Read(&m_gameMode, sizeof(m_gameMode));
-    ar->Read(&m_optionsCount, sizeof(m_optionsCount));
+    ar->Read(&m_computerPlayerCount, sizeof(m_computerPlayerCount));
     ar->Read(&m_viewBounds.left, sizeof(m_viewBounds));
     ar->Read(&g_lastNow, sizeof(g_lastNow));
     ar->Read(&g_frameDelta, sizeof(g_frameDelta));

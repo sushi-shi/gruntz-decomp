@@ -429,7 +429,7 @@ i32 CNetSession::RelayDrainingRecords() {
                                     record,
                                     flags,
                                     sourceIndex,
-                                    recipient->m_player->m_slotKey
+                                    recipient->m_player->m_networkPlayerId
                                 )) {
                                 count++;
                             }
@@ -550,7 +550,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
 
     i32 status = m_netMgr->SendById(
         m_localPlayer->m_playerId,
-        slot->m_player->m_slotKey,
+        slot->m_player->m_networkPlayerId,
         0,
         &g_netCmdSendMsg,
         entry->m_payloadLength + offsetof(NetCmdSendMsg, m_payload)
@@ -568,7 +568,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
         return NULL;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetSlot();
-    return slot->Initialize(m_owner, &m_mgr->m_options[index], state) ? slot : NULL;
+    return slot->Initialize(m_owner, &m_mgr->m_players[index], state) ? slot : NULL;
 }
 
 RVA(0x000c0070, 0x15)
@@ -581,7 +581,7 @@ void CNetSession::ResetLatencies() {
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindSlotByPlayerId(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
-        if (m_slots[i].m_player->m_slotKey == playerId) {
+        if (m_slots[i].m_player->m_networkPlayerId == playerId) {
             return &m_slots[i];
         }
     }

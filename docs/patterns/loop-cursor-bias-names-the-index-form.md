@@ -24,7 +24,7 @@ do { ... ph->m_state ... ph->m_last ... ph++; } while (--count);
 for (i32 i = 0; i < 3; i++) { ... m_groupSlots[i].m_state ... }
 
 // ALSO YES, when the body wants a name - derive it from the index EACH iteration:
-for (i32 i = 0; i < 4; i++) { GruntzPlayer* p = &g_gameReg->m_options[i]; ... }
+for (i32 i = 0; i < 4; i++) { GruntzPlayer* p = &g_gameReg->m_players[i]; ... }
 ```
 ```asm
     lea    esi,[edi+0x2c8]        ; &m_groupSlots[0] + 8, not +0

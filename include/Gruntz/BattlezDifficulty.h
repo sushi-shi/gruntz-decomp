@@ -13,10 +13,10 @@
 //
 // The two ladders corroborate the order independently: the bute default halves
 // and then halves again, and g_diffTier steps 20/10/5 alongside it.
-GZ_ENUM_BEGIN(BattlezDifficulty)
+GZ_ENUM_BEGIN_SPLIT(BattlezDifficulty, u8)
     BZDIFF_EASY = 0,
     BZDIFF_NORMAL = 1,
     BZDIFF_HARD = 2
-GZ_ENUM_END(BattlezDifficulty)
+GZ_ENUM_END_SPLIT(BattlezDifficulty, u8)
 
 #endif // GRUNTZ_GRUNTZ_BATTLEZDIFFICULTY_H

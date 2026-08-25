@@ -376,7 +376,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 0;
                         }
                         m_triggerMgr->StartPlayerDefeatSequence(5);
-                        i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
+                        i32 _key = g_gameReg->m_players[0].m_warlordObjectId;
                         if (_key) {
                             _dr = NULL;
                             if (MapLookupById(

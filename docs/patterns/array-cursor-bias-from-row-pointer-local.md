@@ -13,12 +13,12 @@ plain subscripting at every field at **rows+1** — which is retail's.
 ```cpp
 // NO - `rec` biases the cursor to rows+2 (lea ebx,[esp+0x22])
 CNetChannelRow* rec = &packet.m_rows[i];
-rec->m_liveGate = (u8)ch->m_liveGate;
-rec->m_slotKey  = ch->m_slotKey;
+rec->m_active = (u8)ch->m_active;
+rec->m_networkPlayerId  = ch->m_networkPlayerId;
 
 // YES - subscript each field; cursor lands at rows+1 (lea ebx,[esp+0x21])
-packet.m_rows[i].m_liveGate = (u8)ch->m_liveGate;
-packet.m_rows[i].m_slotKey  = ch->m_slotKey;
+packet.m_rows[i].m_active = (u8)ch->m_active;
+packet.m_rows[i].m_networkPlayerId  = ch->m_networkPlayerId;
 ```
 ```asm
 lea    ebx,[esp+0x21]               ; the BIASED cursor (record base + 1)

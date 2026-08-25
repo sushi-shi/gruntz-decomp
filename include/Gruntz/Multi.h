@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
@@ -158,7 +159,12 @@ public:
     i32 BroadcastChannelTable(CNetPlayerNode* recipient);
     i32 BroadcastOneChannel(GruntzPlayer* player);
 
-    i32 RegisterChannelFrom(const char* name, ColorTint color, i32 preferredIndex, i32 playerId);
+    i32 RegisterChannelFrom(
+        const char* name,
+        ColorTint color,
+        i32 preferredPlayerIndex,
+        i32 networkPlayerId
+    );
 
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd);
     i32 ReadGroupSel();
@@ -199,9 +205,9 @@ public:
         const char* name,
         ColorTint color,
         i32 humanControlled,
-        i32 configId,
-        i32 preferredIndex,
-        i32 playerId
+        BattlezDifficulty difficulty,
+        i32 preferredPlayerIndex,
+        i32 networkPlayerId
     );
     i32 RegisterChannelFromPacket(CNetChannelPacket* packet);
     i32 RemoveChannel(i32 slotIndex);
@@ -282,7 +288,7 @@ public:
 
 extern CMulti* g_multiState;
 extern CString g_sessionName;
-extern i32 g_optionsCursor;
+extern i32 g_battlezTurnPlayerIndex;
 
 extern CNetMgr* g_netMgr;
 

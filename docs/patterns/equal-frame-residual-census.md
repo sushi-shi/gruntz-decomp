@@ -237,7 +237,7 @@ numbers. Reclassified: `CImage::RenderImage` 0x153470 (a four-dword RECT at
 `[r+r+0x3b4]`), `CBattlezMapConfig::ClaimCellFromRow` 0x30730
 (`lea [r+r*8+0x188]` then `[r+0xd4]` against `[r+r*8+0x25c]`),
 `CSBI_WellGoo::Setup`, `CTriggerMgr::CellHitTest`,
-`CGruntzMgr::SyncOptionsState` (the 0x238-stride walk),
+`CGruntzMgr::InitializeBattlezPlayers` (the 0x238-stride walk),
 `CImageSet1/2::Parse`. `CMenuSparkle::AdvanceAnim` 0xae2a0 and
 `CStaticHazard`'s `[eax+0x1cc]` vs `add eax,0x1a0; [eax+0x2c]` were the
 original two.

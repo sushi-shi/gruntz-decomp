@@ -213,11 +213,11 @@ i32 CTriggerMgr::PlaceObject(
             kindId = kindDefault;
         }
 
-        if (m_unitCountByPlayer[playerIndex] < game->m_options[playerIndex].m_comboSel) {
-            if (game->m_options[playerIndex].m_liveGate != 0
+        if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].m_maxGruntz) {
+            if (game->m_players[playerIndex].m_active != 0
                 || (playerIndex != g_curPlayer
-                    && kindId == IDX(game->m_options[g_curPlayer].m_colorIndex))) {
-                kindId = IDX(game->m_options[playerIndex].m_colorIndex);
+                    && kindId == IDX(game->m_players[g_curPlayer].m_colorIndex))) {
+                kindId = IDX(game->m_players[playerIndex].m_colorIndex);
             }
             if (playerIndex == g_curPlayer && aiType != 0) {
                 aiType = 0;

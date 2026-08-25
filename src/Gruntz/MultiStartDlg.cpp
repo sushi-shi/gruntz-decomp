@@ -197,7 +197,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
             return 0;
         }
         i32 localSlot = GetLocalPlayerSlotIndex();
-        i32 canEditWorld = (m_gameManager->m_options[localSlot].m_readyFlag == 0);
+        i32 canEditWorld = (m_gameManager->m_players[localSlot].m_ready == 0);
         worldCombo->EnableWindow(canEditWorld);
         customWorldButton->EnableWindow(canEditWorld);
         echoLatencyButton->EnableWindow(0);
@@ -276,7 +276,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
     CMulti* multi = g_multiState;
     if (multi->m_isHost) {
         i32 localSlot = GetLocalPlayerSlotIndex();
-        latencyCombo->EnableWindow(m_gameManager->m_options[localSlot].m_readyFlag == 0);
+        latencyCombo->EnableWindow(m_gameManager->m_players[localSlot].m_ready == 0);
     } else {
         latencyCombo->EnableWindow(0);
     }
@@ -401,7 +401,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             reg->SetValueString("LastMultiMap", m_worldName);
             reg->SetValueDword("CustomMultiMap", m_customWorldFlag);
         }
-        GruntzPlayer* slots = m_gameManager->m_options;
+        GruntzPlayer* slots = m_gameManager->m_players;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
@@ -601,38 +601,39 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     CWnd* colorControl = GetPlayerColorControl(slot);
     GetMaxGruntzControl(slot);
     GetReadyControl(slot);
-    GruntzPlayer* player = &m_gameManager->m_options[slot];
+    GruntzPlayer* player = &m_gameManager->m_players[slot];
     LRESULT(WINAPI * sendMessage)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0) == 0) {
-        if (player->m_humanControlled && player->m_liveGate) {
+        if (player->m_humanControlled && player->m_active) {
             g_multiState->DropChannelPlayer(player->m_playerIndex);
-        } else if (!player->m_humanControlled && player->m_liveGate) {
+        } else if (!player->m_humanControlled && player->m_active) {
             ChannelSlots_Set(IDX(player->m_colorIndex), 1);
         }
-        player->m_liveGate = 0;
-        player->m_readyFlag = 0;
+        player->m_active = 0;
+        player->m_ready = 0;
         nameControl->EnableWindow(0);
         colorControl->EnableWindow(0);
     } else {
         if (static_cast<MultiplayerPlayerKind>(sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0))
             != MULTI_PLAYER_HUMAN) {
             if (player->m_humanControlled != 0) {
-                if (player->m_liveGate != 0) {
+                if (player->m_active != 0) {
                     g_multiState->DropChannelPlayer(player->m_playerIndex);
                 }
                 i32 freeColor = ChannelSlots_FindFree();
                 player->m_colorIndex = static_cast<ColorTint>(freeColor);
                 ChannelSlots_Set(freeColor, 0);
-            } else if (player->m_liveGate == 0) {
+            } else if (player->m_active == 0) {
                 i32 freeColor = ChannelSlots_FindFree();
                 player->m_colorIndex = static_cast<ColorTint>(freeColor);
                 ChannelSlots_Set(freeColor, 0);
             }
-            player->m_readyFlag = 1;
+            player->m_ready = 1;
             player->m_humanControlled = 0;
-            player->m_configId =
-                static_cast<i32>(sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0)) - 1;
-            player->m_liveGate = 1;
+            player->m_difficulty = static_cast<BattlezDifficulty>(
+                static_cast<i32>(sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0)) - 1
+            );
+            player->m_active = 1;
             player->m_name = g_defaultPlayerNames[slot];
         }
         nameControl->EnableWindow(1);
@@ -732,7 +733,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[0].m_colorIndex) {
+                switch (m_gameManager->m_players[0].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -793,7 +794,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[1].m_colorIndex) {
+                switch (m_gameManager->m_players[1].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -854,7 +855,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[2].m_colorIndex) {
+                switch (m_gameManager->m_players[2].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -915,7 +916,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[3].m_colorIndex) {
+                switch (m_gameManager->m_players[3].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -988,9 +989,9 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnPlayerColor0() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == 0 || m_gameManager->m_options[0].m_humanControlled != 0)
-        && (m_gameManager->m_options[0].m_readyFlag != 0
-            || m_gameManager->m_options[0].m_slotKey != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == 0 || m_gameManager->m_players[0].m_humanControlled != 0)
+        && (m_gameManager->m_players[0].m_ready != 0
+            || m_gameManager->m_players[0].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 0, 1, NULL);
@@ -1005,9 +1006,9 @@ void CMultiStartDlg::OnPlayerColor0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnPlayerColor1() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == 0 || m_gameManager->m_options[1].m_humanControlled != 0)
-        && (m_gameManager->m_options[1].m_readyFlag != 0
-            || m_gameManager->m_options[1].m_slotKey != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == 0 || m_gameManager->m_players[1].m_humanControlled != 0)
+        && (m_gameManager->m_players[1].m_ready != 0
+            || m_gameManager->m_players[1].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 1, 1, NULL);
@@ -1022,9 +1023,9 @@ void CMultiStartDlg::OnPlayerColor1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnPlayerColor2() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == 0 || m_gameManager->m_options[2].m_humanControlled != 0)
-        && (m_gameManager->m_options[2].m_readyFlag != 0
-            || m_gameManager->m_options[2].m_slotKey != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == 0 || m_gameManager->m_players[2].m_humanControlled != 0)
+        && (m_gameManager->m_players[2].m_ready != 0
+            || m_gameManager->m_players[2].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 2, 1, NULL);
@@ -1039,9 +1040,9 @@ void CMultiStartDlg::OnPlayerColor2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnPlayerColor3() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == 0 || m_gameManager->m_options[3].m_humanControlled != 0)
-        && (m_gameManager->m_options[3].m_readyFlag != 0
-            || m_gameManager->m_options[3].m_slotKey != multi->m_localPlayerId)) {
+    if ((multi->m_isHost == 0 || m_gameManager->m_players[3].m_humanControlled != 0)
+        && (m_gameManager->m_players[3].m_ready != 0
+            || m_gameManager->m_players[3].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors colorDialog(m_gameManager, 3, 1, NULL);
@@ -1124,7 +1125,9 @@ void CMultiStartDlg::BroadcastPlayerSlotChanges() {
         multi->BroadcastChannelTable(NULL);
         RefreshPlayerControls(1);
     } else {
-        g_multiState->BroadcastOneChannel(m_gameManager->FindOptionsSlot(multi->m_localPlayerId));
+        g_multiState->BroadcastOneChannel(
+            m_gameManager->FindPlayerByNetworkId(multi->m_localPlayerId)
+        );
     }
 }
 
@@ -1153,42 +1156,42 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     i32 hasRemoteHumanPlayer = 0;
     i32 localSlotIndex = this->GetLocalPlayerSlotIndex();
     i32 localReadyFlag =
-        g_multiState->m_isHost ? m_gameManager->m_options[localSlotIndex].m_readyFlag : 1;
+        g_multiState->m_isHost ? m_gameManager->m_players[localSlotIndex].m_ready : 1;
     for (i32 slotIndex = 0; slotIndex < 4; slotIndex++) {
-        GruntzPlayer* player = &g_gameReg->m_options[slotIndex];
+        GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
         if (player) {
-            if (player->m_slotKey != g_multiState->m_localPlayerId && player->m_humanControlled
-                && player->m_liveGate) {
+            if (player->m_networkPlayerId != g_multiState->m_localPlayerId
+                && player->m_humanControlled && player->m_active) {
                 hasRemoteHumanPlayer = 1;
             }
             CWnd* nameControl = GetPlayerNameControl(slotIndex);
             if ((g_multiState->m_isHost && player->m_humanControlled == 0)
-                || player->m_slotKey == g_multiState->m_localPlayerId) {
+                || player->m_networkPlayerId == g_multiState->m_localPlayerId) {
                 nameControl->EnableWindow(1);
             } else {
                 nameControl->EnableWindow(0);
             }
             CWnd* typeControl = GetPlayerTypeControl(slotIndex);
             if (g_multiState->m_isHost && localReadyFlag == 0
-                && player->m_slotKey != g_multiState->m_localPlayerId) {
+                && player->m_networkPlayerId != g_multiState->m_localPlayerId) {
                 typeControl->EnableWindow(1);
             } else {
                 typeControl->EnableWindow(0);
             }
             CWnd* readyControl = GetReadyControl(slotIndex);
-            if (player->m_slotKey == g_multiState->m_localPlayerId) {
+            if (player->m_networkPlayerId == g_multiState->m_localPlayerId) {
                 readyControl->EnableWindow(1);
             } else {
                 readyControl->EnableWindow(0);
             }
-            if (player->m_readyFlag == 0) {
-                if (player->m_liveGate) {
+            if (player->m_ready == 0) {
+                if (player->m_active) {
                     ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
                     allLivePlayersReady = 0;
                 } else {
                     ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
                 }
-            } else if (player->m_liveGate) {
+            } else if (player->m_active) {
                 ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 1, 0);
             } else {
                 ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
@@ -1197,9 +1200,9 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             // The &&-chain as the ARGUMENT, not an if/else round two calls: retail
             // materialises the flag (mov edx,1 / jmp / xor edx,edx) and pushes it once.
             maxGruntzControl->EnableWindow(
-                g_multiState->m_isHost && player->m_liveGate && localReadyFlag == 0
+                g_multiState->m_isHost && player->m_active && localReadyFlag == 0
             );
-            SetMaxGruntzSelection(slotIndex, player->m_liveGate ? player->m_comboSel : 0);
+            SetMaxGruntzSelection(slotIndex, player->m_active ? player->m_maxGruntz : 0);
             if (force == 0) {
                 if (this->GetLocalPlayerSlotIndex() == slotIndex) {
                     continue;
@@ -1208,7 +1211,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     continue;
                 }
             }
-            if (player->m_liveGate) {
+            if (player->m_active) {
                 {
                     force = 0;
                     GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
@@ -1221,7 +1224,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
                     ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 4, 0);
                 } else {
-                    i32 selection = player->m_configId;
+                    i32 selection = IDX(player->m_difficulty);
                     CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
                     ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, selection + 1, 0);
                 }
@@ -1294,7 +1297,7 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_latencyDisplayTick == 0) {
         for (i32 i = 0; i < 4; i++) {
-            GruntzPlayer* player = &g_gameReg->m_options[i];
+            GruntzPlayer* player = &g_gameReg->m_players[i];
             CWnd* latencyValueControl;
             CWnd* latencyUnitControl;
             switch (static_cast<PlayerSlot>(i)) {
@@ -1315,7 +1318,7 @@ void CMultiStartDlg::Watchdog() {
                     latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT3);
                     break;
             }
-            if (player->m_liveGate != 0 && player->m_humanControlled != 0) {
+            if (player->m_active != 0 && player->m_humanControlled != 0) {
                 char latencyText[0x20];
                 wsprintfA(latencyText, "%d", player->m_latency.m_avg);
                 latencyValueControl->SetWindowTextA(latencyText);
@@ -1380,7 +1383,7 @@ void CMultiStartDlg::Watchdog() {
 
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
-    GruntzPlayer* slot = m_gameManager->FindOptionsSlot(g_multiState->m_localPlayerId);
+    GruntzPlayer* slot = m_gameManager->FindPlayerByNetworkId(g_multiState->m_localPlayerId);
     if (slot == NULL) {
         return -1;
     }
@@ -1389,7 +1392,7 @@ i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
 
 RVA(0x000c4b60, 0x77)
 i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
-    GruntzPlayer* player = &m_gameManager->m_options[slot];
+    GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (g_multiState->m_isHost != 0) {
         i32 available = ChannelSlots_Get(IDX(color));
         if (available == 0) {
@@ -1480,28 +1483,28 @@ void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection0() {
     HWND comboHwnd = GetMaxGruntzControl(0)->m_hWnd;
-    g_gameReg->m_options[0].m_comboSel = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_players[0].m_maxGruntz = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection1() {
     HWND comboHwnd = GetMaxGruntzControl(1)->m_hWnd;
-    g_gameReg->m_options[1].m_comboSel = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_players[1].m_maxGruntz = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection2() {
     HWND comboHwnd = GetMaxGruntzControl(2)->m_hWnd;
-    g_gameReg->m_options[2].m_comboSel = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_players[2].m_maxGruntz = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection3() {
     HWND comboHwnd = GetMaxGruntzControl(3)->m_hWnd;
-    g_gameReg->m_options[3].m_comboSel = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_players[3].m_maxGruntz = ::SendMessageA(comboHwnd, CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
@@ -1531,14 +1534,14 @@ void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
         return;
     }
     i32 checked = ::SendMessageA(readyControl->m_hWnd, BM_GETCHECK, 0, 0);
-    GruntzPlayer* player = &g_gameReg->m_options[slotIndex];
+    GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
     if (!player) {
         return;
     }
     if (checked) {
-        player->m_readyFlag = 1;
+        player->m_ready = 1;
     } else {
-        player->m_readyFlag = 0;
+        player->m_ready = 0;
     }
     if (g_multiState->m_isHost) {
         g_multiState->BroadcastChannelTable(NULL);

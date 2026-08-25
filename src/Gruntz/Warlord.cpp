@@ -123,7 +123,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
-    i32 cfg = IDX(g_gameReg->m_options[IDX(owner)].m_colorIndex);
+    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].m_colorIndex);
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
@@ -504,7 +504,7 @@ i32 CWarlord::SerializeMove(
         case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex),
+                IDX(g_gameReg->m_players[m_object->m_smarts].m_colorIndex),
                 0
             );
             if (sel == NULL) {
@@ -690,7 +690,7 @@ i32 CWarlord::BuildFortSplashParticles() {
             tm->m_base = static_cast<u32>(g_frameTime);
         }
 
-        GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
+        GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
         if (slot != NULL) {
             slot->m_warlordObjectId = 0;
         }

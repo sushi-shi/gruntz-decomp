@@ -1779,7 +1779,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     AddTabItem(2, set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex),
+                        IDX(g_gameReg->m_players[g_curPlayer].m_colorIndex),
                         0
                     );
                     if (sel == NULL) {
@@ -2241,10 +2241,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 do {
                     // Indexed, not a walking pointer: retail's exit test is the
                     // strength-reduced BYTE offset (`add eax,0x238; cmp eax,0x8e0;
-                    // jl`), which cl only produces from `m_options[pi]` - a
-                    // `p < m_options + 4` pointer guard reloads g_gameReg and
+                    // jl`), which cl only produces from `m_players[pi]` - a
+                    // `p < m_players + 4` pointer guard reloads g_gameReg and
                     // compares unsigned against a computed limit instead.
-                    GruntzPlayer* p = &g_gameReg->m_options[pi];
+                    GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_colorIndex), 0);
@@ -4898,8 +4898,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_options[i].m_joined != 0 && g_gameReg->m_options[i].m_doneFlag == 0
-            && g_gameReg->m_options[i].m_clearedRound == 0) {
+        if (g_gameReg->m_players[i].m_joined != 0 && g_gameReg->m_players[i].m_doneFlag == 0
+            && g_gameReg->m_players[i].m_clearedRound == 0) {
             count++;
         }
     }

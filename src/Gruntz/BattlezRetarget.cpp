@@ -59,7 +59,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     CBattlezMapConfig* cfgB = NULL;
     i32 cell = unit->ArrivalCell().m_x;
     if (cell >= 0 && cell < 4) {
-        recA = &m_ctx->m_options[cell];
+        recA = &m_ctx->m_players[cell];
         cfgB = &recA->m_battlezConfig;
     }
     if (unit->CoordCount() == 0) {
@@ -73,7 +73,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             }
             i32 band = r % 4;
             // retail emits this guard (test edi,edi); SP3 folds it - era residue
-            CBattlezMapConfig* b = &m_ctx->m_options[band].m_battlezConfig;
+            CBattlezMapConfig* b = &m_ctx->m_players[band].m_battlezConfig;
             if (b != NULL) {
                 i32 cnt = b->m_attackWaypoints.GetSize();
                 i32 x = b->m_marker.m_x;
@@ -93,7 +93,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             unit->m_dwell = 0;
             return 1;
         }
-        CBattlezMapConfig* recB = &m_ctx->m_options[cell].m_battlezConfig;
+        CBattlezMapConfig* recB = &m_ctx->m_players[cell].m_battlezConfig;
         if (recB == NULL) {
             return 1;
         }

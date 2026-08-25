@@ -39,8 +39,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SET_OBJECT_AREA(1)
     SwitchGeometry("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
-    GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_smarts];
-    if (slot->m_liveGate == 0) {
+    GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
+    if (slot->m_active == 0) {
         m_resolved = 0;
         return;
     }
@@ -59,7 +59,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         if (m_object->m_smarts == g_curPlayer) {
             g_gameReg->m_triggerMgr->m_pendingFx = m_warlordLogic;
         }
-        GruntzPlayer* slot2 = &g_gameReg->m_options[m_object->m_smarts];
+        GruntzPlayer* slot2 = &g_gameReg->m_players[m_object->m_smarts];
         if (slot2 != NULL) {
             slot2->m_warlordObjectId = e->m_objectId;
         }

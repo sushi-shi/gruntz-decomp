@@ -1935,7 +1935,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         i32 playerIndex = g->m_playerIndex;
-        GruntzPlayer* player = &g_gameReg->m_options[playerIndex];
+        GruntzPlayer* player = &g_gameReg->m_players[playerIndex];
         i32 aiType = 0;
         i32 ok = 0;
         i32 radius = 0;
@@ -1963,7 +1963,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 != -1) {
                 ok = 1;
             }
-        } else if (player->m_liveGate != 0 && player->m_doneFlag == 0
+        } else if (player->m_active != 0 && player->m_doneFlag == 0
                    && player->m_clearedRound == 0) {
             if (player->m_humanControlled != 0) {
                 if (PlaceObject(

@@ -501,7 +501,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_frameDelta = 0;
     for (i32 s = 0; s < 4; ++s) {
 
-        if (!m_options[s].SeedForSlot(s)) {
+        if (!m_players[s].SeedForSlot(s)) {
             ReportError(IDX(IDS_INITIALIZE_GAME), 0x417);
             return 0;
         }

@@ -51,7 +51,7 @@ BEFORE reading an exclusive as a missing statement:
    function's census says otherwise.
 
 What survived as REAL after the families: a register-dataflow index bug
-(AdvanceAnim recoloring by the LOSER's m_options entry - invisible to every
+(AdvanceAnim recoloring by the LOSER's m_players entry - invisible to every
 multiset, visible only by reading the [esp+N] slot discipline across the
 push), a missing ctor (MidiManager - store exclusives at a `new` site fed
 by zero registers), sized-clear idioms (Toolhelp32 memset past dwSize), and

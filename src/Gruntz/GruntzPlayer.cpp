@@ -123,15 +123,15 @@ class CImage;
 
 #define CLEAR_GRUNTZ_PLAYER                                                                        \
     m_playerIndex = -1;                                                                            \
-    m_slotKey = -2;                                                                                \
-    m_liveGate = 0;                                                                                \
+    m_networkPlayerId = -2;                                                                        \
+    m_active = 0;                                                                                  \
     m_humanControlled = 1;                                                                         \
     m_name = "";                                                                                   \
     m_colorIndex = TINT_ORANGE;                                                                    \
-    m_configId = 0;                                                                                \
+    m_difficulty = BZDIFF_EASY;                                                                    \
     m_focusX = 0;                                                                                  \
     m_focusY = 0;                                                                                  \
-    m_comboSel = 0xf;                                                                              \
+    m_maxGruntz = 0xf;                                                                             \
     m_doneFlag = 0;                                                                                \
     m_presenceCounted = 0;                                                                         \
     m_latency.Clear()
@@ -144,16 +144,16 @@ class CImage;
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
     m_playerIndex = -1;
-    m_slotKey = -2;
-    m_liveGate = 0;
+    m_networkPlayerId = -2;
+    m_active = 0;
     m_joined = 0;
     m_humanControlled = 1;
     m_name = "";
     m_colorIndex = TINT_ORANGE;
-    m_configId = 0;
+    m_difficulty = BZDIFF_EASY;
     m_focusX = 0;
     m_focusY = 0;
-    m_comboSel = 0xf;
+    m_maxGruntz = 0xf;
     m_doneFlag = 0;
     m_presenceCounted = 0;
     m_latency.Clear();
@@ -162,17 +162,17 @@ GruntzPlayer::GruntzPlayer() {
 RVA(0x000da870, 0xb8)
 i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_playerIndex = index;
-    m_slotKey = -2;
-    m_liveGate = 0;
+    m_networkPlayerId = -2;
+    m_active = 0;
     m_joined = 0;
     m_humanControlled = 1;
     m_name = "";
 
     m_colorIndex = static_cast<ColorTint>(index);
-    m_configId = 0;
+    m_difficulty = BZDIFF_EASY;
     m_focusX = 0;
     m_focusY = 0;
-    m_comboSel = 0xf;
+    m_maxGruntz = 0xf;
     m_doneFlag = 0;
     m_presenceCounted = 0;
     m_name = GetDefaultName(0);
@@ -195,8 +195,8 @@ i32 GruntzPlayer::Reset() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000daa60, 0x24)
 i32 GruntzPlayer::ClearRoundState() {
-    m_liveGate = 1;
-    m_readyFlag = 0;
+    m_active = 1;
+    m_ready = 0;
     m_doneFlag = 0;
     m_presenceCounted = 0;
     m_latency.Clear();
@@ -267,11 +267,11 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
             ar->Read(&m_playerIndex, sizeof(m_playerIndex));
             ar->Read(&m_colorIndex, sizeof(m_colorIndex));
             ar->Read(&m_warlordObjectId, sizeof(m_warlordObjectId));
-            ar->Read(&m_configId, sizeof(m_configId));
+            ar->Read(&m_difficulty, sizeof(m_difficulty));
             ar->Read(&m_humanControlled, sizeof(m_humanControlled));
-            ar->Read(&m_slotKey, sizeof(m_slotKey));
-            ar->Read(&m_readyFlag, sizeof(m_readyFlag));
-            ar->Read(&m_liveGate, sizeof(m_liveGate));
+            ar->Read(&m_networkPlayerId, sizeof(m_networkPlayerId));
+            ar->Read(&m_ready, sizeof(m_ready));
+            ar->Read(&m_active, sizeof(m_active));
             ar->Read(&m_joined, sizeof(m_joined));
             ar->Read(&m_clearedRound, sizeof(m_clearedRound));
             g_serialCounter++;
@@ -279,18 +279,18 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
             m_name = tmp;
             ar->Read(&m_focusX, sizeof(m_focusX));
             ar->Read(&m_focusY, sizeof(m_focusY));
-            ar->Read(&m_comboSel, sizeof(m_comboSel));
+            ar->Read(&m_maxGruntz, sizeof(m_maxGruntz));
         }
     } else {
 
         ar->Write(&m_playerIndex, sizeof(m_playerIndex));
         ar->Write(&m_colorIndex, sizeof(m_colorIndex));
         ar->Write(&m_warlordObjectId, sizeof(m_warlordObjectId));
-        ar->Write(&m_configId, sizeof(m_configId));
+        ar->Write(&m_difficulty, sizeof(m_difficulty));
         ar->Write(&m_humanControlled, sizeof(m_humanControlled));
-        ar->Write(&m_slotKey, sizeof(m_slotKey));
-        ar->Write(&m_readyFlag, sizeof(m_readyFlag));
-        ar->Write(&m_liveGate, sizeof(m_liveGate));
+        ar->Write(&m_networkPlayerId, sizeof(m_networkPlayerId));
+        ar->Write(&m_ready, sizeof(m_ready));
+        ar->Write(&m_active, sizeof(m_active));
         ar->Write(&m_joined, sizeof(m_joined));
         ar->Write(&m_clearedRound, sizeof(m_clearedRound));
         g_serialCounter++;
@@ -299,7 +299,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         ar->Write(tmp, SERIAL_NAME_LEN);
         ar->Write(&m_focusX, sizeof(m_focusX));
         ar->Write(&m_focusY, sizeof(m_focusY));
-        ar->Write(&m_comboSel, sizeof(m_comboSel));
+        ar->Write(&m_maxGruntz, sizeof(m_maxGruntz));
     }
     return (static_cast<CBattlezMapConfig*>(&m_battlezConfig))
                ->SerializeState(ar, mode, typeId, payload)
@@ -378,12 +378,12 @@ i32 ChannelSlots_Get(i32 i) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000db2f0, 0x2b)
 i32 GruntzPlayer::Deactivate() {
-    if (m_liveGate == 0) {
+    if (m_active == 0) {
         return 0;
     }
     if (m_humanControlled == 0) {
         (static_cast<CBattlezMapConfig*>(&m_battlezConfig))->Clear();
     }
-    m_liveGate = 0;
+    m_active = 0;
     return 1;
 }

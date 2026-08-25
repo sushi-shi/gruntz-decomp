@@ -34,5 +34,5 @@ STEERABLE (this closes most of the gap). Contrast the CALL-LESS sibling case
 [zero-register-pinning.md](zero-register-pinning.md)): with no call there is no
 callee-saved constraint, so the zero-reg choice + the `-1`/`0xf` immediate float are a
 free scheduler coin-flip that NO reorder flips. Evidence: GruntzPlayer::Clear @0x0da960
-52→94.65% (residual = the sibling's `m_comboSel=0xf` immediate-float wall); the Reset
+52→94.65% (residual = the sibling's `m_maxGruntz=0xf` immediate-float wall); the Reset
 sibling @0x0da9e0 (no reorderable call) stays 94.9% on that same immediate float.

@@ -158,7 +158,7 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 // residual. The rest is the g_diffScale multiply, which retail folds into
 // `fmul m32` while cl preloads it with fld/fmulp.
 RVA(0x00025020, 0x984)
-i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficulty) {
+i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty) {
 
     m_gruntCreationTime = 0;
     m_spawnTimer = 0;
@@ -227,7 +227,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficul
         }
     }
 
-    switch (static_cast<BattlezDifficulty>(difficulty)) {
+    switch (difficulty) {
         case BZDIFF_EASY: {
             g_buteMgr.GetIntDef("Battlez", "EasyDifficulty", 100);
             g_diffTier = 20;
@@ -332,8 +332,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficul
 
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
-    if (g_gameReg->m_options[m_playerIndex].m_humanControlled == 0
-        && g_gameReg->m_options[m_playerIndex].m_liveGate != 0) {
+    if (g_gameReg->m_players[m_playerIndex].m_humanControlled == 0
+        && g_gameReg->m_players[m_playerIndex].m_active != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             this->StepRowSpawn(0);
         }
@@ -547,7 +547,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         }
         units++;
     }
-    if (occupied >= m_ctx->m_options[m_playerIndex].m_comboSel) {
+    if (occupied >= m_ctx->m_players[m_playerIndex].m_maxGruntz) {
         return 1;
     }
     i32 n = m_candArray.GetSize();
@@ -642,7 +642,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
         r2++;
     }
     i32 budget = static_cast<i32>(
-        (static_cast<double>(m_ctx->m_options[m_playerIndex].m_comboSel)
+        (static_cast<double>(m_ctx->m_players[m_playerIndex].m_maxGruntz)
          * static_cast<double>(m_gruntRatio) * g_diffScale)
     );
     if (roll >= m_defenderChance || freeCount >= budget) {
@@ -4490,7 +4490,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         i32 lx = lvl->m_screenX >> TILE_SHIFT_PX;
         i32 ly = lvl->m_screenY >> TILE_SHIFT_PX;
         if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
-            CBattlezMapConfig* bundle = &m_ctx->m_options[u->m_targetTeam].m_battlezConfig;
+            CBattlezMapConfig* bundle = &m_ctx->m_players[u->m_targetTeam].m_battlezConfig;
             i32 dx = bundle->m_marker.m_x - lx;
             i32 dy = bundle->m_marker.m_y - ly;
             dx = abs(dx);
@@ -4528,7 +4528,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         }
         units++;
     }
-    if (occupied >= m_ctx->m_options[m_playerIndex].m_comboSel) {
+    if (occupied >= m_ctx->m_players[m_playerIndex].m_maxGruntz) {
         return 0;
     }
     i32 cell = m_triggerMgr->PlaceObject(
@@ -4537,7 +4537,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
         (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         GRUNT_ENTRANCE_RESURRECT,
-        IDX(m_ctx->m_options[m_playerIndex].m_colorIndex),
+        IDX(m_ctx->m_players[m_playerIndex].m_colorIndex),
         0,
         0,
         0x11,
@@ -4714,7 +4714,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
-    CPtrArray* coords = &m_ctx->m_options[kind].m_battlezConfig.m_attackWaypoints;
+    CPtrArray* coords = &m_ctx->m_players[kind].m_battlezConfig.m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
         i32 r = rand() % count;

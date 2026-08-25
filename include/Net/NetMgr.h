@@ -89,14 +89,14 @@ struct CNetChannelPacket {
     char m_pad01[3];
     NetMsgId m_statId;
     u8 m_present;
-    u8 m_kind;
-    u8 m_slot;
-    u8 m_flagsB;
-    u8 m_configId;
     GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
+    GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
+    u8 m_preferredPlayerIndex;
+    u8 m_maxGruntz;
+    u8 m_ready;
     char m_pad0f[1];
-    i32 m_playerId;
+    i32 m_networkPlayerId;
     char m_name[0x28 - 0x14];
 };
 
@@ -108,25 +108,25 @@ struct CNetOneChannelPacket {
     u8 m_present;
     GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
-    u8 m_configId;
+    GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
     char m_pad10[1];
-    u8 m_comboSel;
-    u8 m_readyFlag;
+    u8 m_maxGruntz;
+    u8 m_ready;
     char m_pad13[1];
-    i32 m_slotKey;
+    i32 m_networkPlayerId;
     char m_name[0x2c - 0x18];
 };
 
 struct CNetChannelRow {
-    u8 m_liveGate;
+    u8 m_active;
     GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
-    u8 m_configId;
+    GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
     u8 m_pad04;
-    u8 m_comboSel;
-    u8 m_readyFlag;
+    u8 m_maxGruntz;
+    u8 m_ready;
     u8 m_pad07;
-    i32 m_slotKey;
+    i32 m_networkPlayerId;
     char m_name[0x20 - 0x0c];
 };
 

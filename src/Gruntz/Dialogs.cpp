@@ -126,8 +126,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             g_battlezLastDifficulties[i] = reg->GetValueDword(key, 1);
             sprintf(key, "LastColour%d", i);
             g_battlezLastColors[i] =
-                reg->GetValueDword(key, IDX(g_gameReg->m_options[i].m_colorIndex));
-            g_gameReg->m_options[i].m_colorIndex = static_cast<ColorTint>(g_battlezLastColors[i]);
+                reg->GetValueDword(key, IDX(g_gameReg->m_players[i].m_colorIndex));
+            g_gameReg->m_players[i].m_colorIndex = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
         CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
@@ -208,14 +208,15 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         SetPlayerTypeSelection(3, 2);
 
         if (g_battlezResetOptions != 0) {
-            m_gameManager->m_options[1].m_configId = 1;
-            m_gameManager->m_options[2].m_configId = 1;
-            m_gameManager->m_options[3].m_configId = 1;
+            m_gameManager->m_players[1].m_difficulty = BZDIFF_NORMAL;
+            m_gameManager->m_players[2].m_difficulty = BZDIFF_NORMAL;
+            m_gameManager->m_players[3].m_difficulty = BZDIFF_NORMAL;
         } else {
             for (i = 1; i < 4; i++) {
                 if (g_battlezLastDifficulties[i] != -1) {
                     SetPlayerTypeSelection(i, g_battlezLastDifficulties[i] + 1);
-                    m_gameManager->m_options[i].m_configId = g_battlezLastDifficulties[i];
+                    m_gameManager->m_players[i].m_difficulty =
+                        static_cast<BattlezDifficulty>(g_battlezLastDifficulties[i]);
                 } else {
                     SetPlayerTypeSelection(i, 0);
                 }
@@ -233,11 +234,11 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         for (i = 0; i < 4; i++) {
             if (g_battlezResetOptions == 0) {
                 SetMaxGruntzSelection(i, g_battlezLastMaxGruntz[i]);
-                m_gameManager->m_options[i].m_comboSel = g_battlezLastMaxGruntz[i];
+                m_gameManager->m_players[i].m_maxGruntz = g_battlezLastMaxGruntz[i];
             }
-            GruntzPlayer* slot = &m_gameManager->m_options[i];
+            GruntzPlayer* slot = &m_gameManager->m_players[i];
             if (slot != NULL) {
-                slot->m_liveGate = 1;
+                slot->m_active = 1;
             }
         }
         for (i = 0; i < 4; i++) {
@@ -314,10 +315,10 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 SetMaxGruntzSelection(1, 1);
                 SetMaxGruntzSelection(2, 1);
                 SetMaxGruntzSelection(3, 1);
-                m_gameManager->m_options[0].m_comboSel = 15;
-                m_gameManager->m_options[1].m_comboSel = 1;
-                m_gameManager->m_options[2].m_comboSel = 1;
-                m_gameManager->m_options[3].m_comboSel = 1;
+                m_gameManager->m_players[0].m_maxGruntz = 15;
+                m_gameManager->m_players[1].m_maxGruntz = 1;
+                m_gameManager->m_players[2].m_maxGruntz = 1;
+                m_gameManager->m_players[3].m_maxGruntz = 1;
                 for (i = 1; i < 4; i++) {
                     SetPlayerTypeSelection(i, 1);
                     GetPlayerNameControl(i)->EnableWindow(1);
@@ -342,7 +343,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             if (edit != NULL) {
                 CString name;
                 edit->GetWindowTextA(name);
-                m_gameManager->m_options[i].m_name = name;
+                m_gameManager->m_players[i].m_name = name;
             }
         }
         for (i = 0; i < 4; i++) {
@@ -351,11 +352,12 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             i32 selection =
                 static_cast<i32>(GetPlayerTypeControl(i)->SendMessageA(CB_GETCURSEL, 0, 0));
             if (selection != 0) {
-                m_gameManager->m_options[i].m_liveGate = 1;
-                m_gameManager->m_options[i].m_configId = selection - 1;
+                m_gameManager->m_players[i].m_active = 1;
+                m_gameManager->m_players[i].m_difficulty =
+                    static_cast<BattlezDifficulty>(selection - 1);
             } else {
-                m_gameManager->m_options[i].m_liveGate = 0;
-                m_gameManager->m_options[i].m_configId = 1;
+                m_gameManager->m_players[i].m_active = 0;
+                m_gameManager->m_players[i].m_difficulty = BZDIFF_NORMAL;
             }
         }
         if (g_battlezResetOptions != 0) {
@@ -366,13 +368,13 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastMaxGruntz%d", i);
             reg->SetValueDword(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
-            if (m_gameManager->m_options[i].m_liveGate != 0) {
-                reg->SetValueDword(key, m_gameManager->m_options[i].m_configId);
+            if (m_gameManager->m_players[i].m_active != 0) {
+                reg->SetValueDword(key, IDX(m_gameManager->m_players[i].m_difficulty));
             } else {
                 reg->SetValueDword(key, -1);
             }
             sprintf(key, "LastColour%d", i);
-            reg->SetValueDword(key, IDX(g_gameReg->m_options[i].m_colorIndex));
+            reg->SetValueDword(key, IDX(g_gameReg->m_players[i].m_colorIndex));
         }
         NetLobby::g_curDlg = NULL;
     }
@@ -559,17 +561,17 @@ void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
     if (slot == 0) {
         return;
     }
-    GruntzPlayer* player = &m_gameManager->m_options[slot];
+    GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (::SendMessageA(typeControl->m_hWnd, CB_GETCURSEL, 0, 0) != 0) {
         nameControl->EnableWindow(1);
         colorControl->EnableWindow(1);
-        player->m_liveGate = 1;
+        player->m_active = 1;
         maxGruntzControl->EnableWindow(1);
         return;
     }
     nameControl->EnableWindow(0);
     colorControl->EnableWindow(0);
-    player->m_liveGate = 0;
+    player->m_active = 0;
     maxGruntzControl->EnableWindow(0);
 }
 
@@ -637,7 +639,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[0].m_colorIndex) {
+                switch (m_gameManager->m_players[0].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -698,7 +700,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[1].m_colorIndex) {
+                switch (m_gameManager->m_players[1].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -759,7 +761,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[2].m_colorIndex) {
+                switch (m_gameManager->m_players[2].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -820,7 +822,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                switch (m_gameManager->m_options[3].m_colorIndex) {
+                switch (m_gameManager->m_players[3].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -1028,7 +1030,7 @@ i32 CBattlezDlg::UnusedMsgHandler() {
 
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetPlayerColor(i32 slot, ColorTint color) {
-    m_gameManager->m_options[slot].m_colorIndex = color;
+    m_gameManager->m_players[slot].m_colorIndex = color;
     return 1;
 }
 
@@ -1060,27 +1062,27 @@ RVA(0x00017560, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection0() {
     CWnd* control = GetMaxGruntzControl(0);
     i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[0].m_comboSel = count;
+    g_gameReg->m_players[0].m_maxGruntz = count;
     return count;
 }
 RVA(0x000175a0, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection1() {
     CWnd* control = GetMaxGruntzControl(1);
     i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[1].m_comboSel = count;
+    g_gameReg->m_players[1].m_maxGruntz = count;
     return count;
 }
 RVA(0x000175e0, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection2() {
     CWnd* control = GetMaxGruntzControl(2);
     i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[2].m_comboSel = count;
+    g_gameReg->m_players[2].m_maxGruntz = count;
     return count;
 }
 RVA(0x00017620, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection3() {
     CWnd* control = GetMaxGruntzControl(3);
     i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[3].m_comboSel = count;
+    g_gameReg->m_players[3].m_maxGruntz = count;
     return count;
 }

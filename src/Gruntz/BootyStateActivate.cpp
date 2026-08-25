@@ -1872,11 +1872,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_options[i].m_joined == 0) {
+        if (g_gameReg->m_players[i].m_joined == 0) {
             continue;
         }
         CShadeTable* tint =
-            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_options[i].m_colorIndex), 0);
+            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[i].m_colorIndex), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -2061,7 +2061,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     for (i32 t = 0; t < 4; t++) {
         CString tabKey;
         CString flagKey;
-        GruntzPlayer* pl = &g_gameReg->m_options[t];
+        GruntzPlayer* pl = &g_gameReg->m_players[t];
         CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->m_colorIndex), 0);
         if (tint == NULL) {
             return 0;
@@ -2117,7 +2117,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
     {
         CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
-            IDX(g_gameReg->m_options[QueryGruntSlots()].m_colorIndex),
+            IDX(g_gameReg->m_players[QueryGruntSlots()].m_colorIndex),
             0
         );
         if (tint == NULL) {
@@ -2522,7 +2522,7 @@ RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     while (i < 4) {
-        GruntzPlayer* p = &g_gameReg->m_options[i];
+        GruntzPlayer* p = &g_gameReg->m_players[i];
         if (p->m_joined != 0 && p->m_clearedRound == 0) {
             return p->m_playerIndex;
         }
@@ -2550,7 +2550,7 @@ void CMultiBootyState::DrawBattleStats() {
     i32 c;
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_options[i].m_joined != 0) {
+        if (g_gameReg->m_players[i].m_joined != 0) {
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4));
             copyRect(&rc, &g_col1Rects[i]);
             ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2607,9 +2607,9 @@ void CMultiBootyState::DrawBattleStats() {
     }
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_options[i].m_joined != 0) {
+        if (g_gameReg->m_players[i].m_joined != 0) {
             i32 color;
-            switch (g_gameReg->m_options[i].m_colorIndex) {
+            switch (g_gameReg->m_players[i].m_colorIndex) {
                 case TINT_ORANGE:
                     color = 0x80ff;
                     break;
@@ -2662,7 +2662,7 @@ void CMultiBootyState::DrawBattleStats() {
                     color = 0;
                     break;
             }
-            s.Format("%s", static_cast<const char*>(g_gameReg->m_options[i].GetName()));
+            s.Format("%s", static_cast<const char*>(g_gameReg->m_players[i].GetName()));
             copyRect(&rc, &g_colorRects[i]);
             ShowHudMessage(
                 m_world,

@@ -243,11 +243,11 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (mgr == NULL) {
             return 0;
         }
-        GruntzPlayer* sub = mgr->m_options;
+        GruntzPlayer* sub = mgr->m_players;
         if (sub == NULL) {
             return 0;
         }
-        sub->m_liveGate = 1;
+        sub->m_active = 1;
         sub->m_humanControlled = 1;
         m_region0Gate = 0;
         m_region1Gate = 0;
@@ -359,7 +359,7 @@ void CPlay::ReleaseResources() {
     m_saveSlot.m_type = 0;
     i32 t = 0;
     do {
-        g_gameReg->m_options[t].m_liveGate = 0;
+        g_gameReg->m_players[t].m_active = 0;
         t++;
     } while (t < 4);
     if (m_mgr && m_mgr->m_chatLog) {
@@ -706,7 +706,7 @@ i32 CPlay::Render() {
                 m_statusBar->LockDestructButton(0);
                 m_defeatCountdownActive = 0;
 
-                if (g_gameReg->m_options[0].m_warlordObjectId != 0) {
+                if (g_gameReg->m_players[0].m_warlordObjectId != 0) {
                     // The lookup result is materialised BEFORE the null test, not
                     // nested inside it: retail's 0xc9396 `je` skips only the
                     // `mov eax,[esp+0x10]` and both paths share the one `cmp eax,edi`
@@ -715,7 +715,7 @@ i32 CPlay::Render() {
                     CGameObject* object = NULL;
                     if (MapLookupById(
                             g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                            g_gameReg->m_options[0].m_warlordObjectId,
+                            g_gameReg->m_players[0].m_warlordObjectId,
                             out
                         )) {
                         object = out;
@@ -888,7 +888,7 @@ void CPlay::DrawWorldFrame() {
     m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
     if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
 
-        (g_gameReg)->AdvanceOptionsCycle();
+        (g_gameReg)->AdvanceComputerPlayerTurns();
     }
     m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
 }
@@ -944,7 +944,7 @@ i32 CPlay::DrawWorldFrames() {
             m_world->m_childGroup->TickKillCues(0);
             m_mgr->m_triggerMgr->UpdateFrame(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
-                (g_gameReg)->AdvanceOptionsCycle();
+                (g_gameReg)->AdvanceComputerPlayerTurns();
             }
             m_statusBar->UpdateStatusBar(static_cast<i32>(g_frameDelta));
             i++;
@@ -1150,16 +1150,16 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     for (i32 t = 0; t < 4; ++t) {
         CGruntzMgr* mgr = self->m_mgr;
         gameReg = g_gameReg;
-        GruntzPlayer* team = &mgr->m_options[t];
+        GruntzPlayer* team = &mgr->m_players[t];
         if (gameReg->m_gameMode == GAMEMODE_SINGLE) {
             team->SeedForSlot(t);
             if (t == 0) {
-                team->m_liveGate = 1;
+                team->m_active = 1;
                 team->m_joined = 1;
             }
         } else {
             team->m_doneFlag = 0;
-            team->m_joined = team->m_liveGate;
+            team->m_joined = team->m_active;
             team->m_clearedRound = 0;
         }
     }
@@ -1546,7 +1546,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     if (self->m_mgr->m_gameMode == GAMEMODE_REPLAY) {
-        self->m_mgr->SyncOptionsState();
+        self->m_mgr->InitializeBattlezPlayers();
     }
     // Third arg is the manager, not 0 - CSaveGame::InitializeLevelSlot returns 0
     // immediately on a null mgr, so passing 0 made the whole call a no-op.  Retail
@@ -1793,8 +1793,8 @@ void CPlay::FreeListTeardown() {
     }
     m_cameraBookmarks.SetSize(0, -1);
     for (i = 0; i < 4; i++) {
-        m_mgr->m_options[i].m_battlezConfig.FreeArrays();
-        m_mgr->m_options[i].m_battlezConfig.Clear();
+        m_mgr->m_players[i].m_battlezConfig.FreeArrays();
+        m_mgr->m_players[i].m_battlezConfig.Clear();
     }
     m_cameraBookmarkIndex = -1;
 }
@@ -2151,7 +2151,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (pick < 0) {
                 pick = 3;
             }
-            area = &g_gameReg->m_options[pick];
+            area = &g_gameReg->m_players[pick];
             while (pick != idx) {
                 if (area->m_joined == 0 || (area->m_doneFlag == 0 && area->m_clearedRound == 0)) {
                     break;
@@ -2160,14 +2160,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (pick < 0) {
                     pick = 3;
                 }
-                area = &g_gameReg->m_options[pick];
+                area = &g_gameReg->m_players[pick];
             }
         } else {
             pick = idx + 1;
             if (pick >= 4) {
                 pick = 0;
             }
-            area = &g_gameReg->m_options[pick];
+            area = &g_gameReg->m_players[pick];
             while (pick != idx) {
                 if (area->m_joined == 0 || (area->m_doneFlag == 0 && area->m_clearedRound == 0)) {
                     break;
@@ -2176,7 +2176,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (pick >= 4) {
                     pick = 0;
                 }
-                area = &g_gameReg->m_options[pick];
+                area = &g_gameReg->m_players[pick];
             }
         }
         if (area->m_joined != 0 && area->m_doneFlag == 0 && area->m_clearedRound == 0) {
@@ -2186,7 +2186,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'H') {
-        GruntzPlayer* a = &g_gameReg->m_options[g_curPlayer];
+        GruntzPlayer* a = &g_gameReg->m_players[g_curPlayer];
         if (a == NULL) {
             return 1;
         }
@@ -2456,11 +2456,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gruntCreation == 0) {
             return 1;
         }
-        GruntzPlayer* a = &g_gameReg->m_options[g_curPlayer];
+        GruntzPlayer* a = &g_gameReg->m_players[g_curPlayer];
         if (a == NULL) {
             return 1;
         }
-        if (g_gameReg->m_triggerMgr->m_unitCountByPlayer[g_curPlayer] >= a->m_comboSel) {
+        if (g_gameReg->m_triggerMgr->m_unitCountByPlayer[g_curPlayer] >= a->m_maxGruntz) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
@@ -3223,8 +3223,8 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 py;
     i32 i;
     i32 area = g_curPlayer;
-    GruntzPlayer* cfg = &g_gameReg->m_options[area];
-    if (cfg == NULL || g_gameReg->m_triggerMgr->m_unitCountByPlayer[area] >= cfg->m_comboSel) {
+    GruntzPlayer* cfg = &g_gameReg->m_players[area];
+    if (cfg == NULL || g_gameReg->m_triggerMgr->m_unitCountByPlayer[area] >= cfg->m_maxGruntz) {
         return 0;
     }
 
@@ -4083,7 +4083,7 @@ i32 CPlay::LoadCursorAnimation(
     if (tintForPlayer != 0) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        CShadeTable* spr = w->m_spriteFactory->GetSel(IDX(w->m_options[id].m_colorIndex), 0);
+        CShadeTable* spr = w->m_spriteFactory->GetSel(IDX(w->m_players[id].m_colorIndex), 0);
         if (spr == NULL) {
             spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
@@ -5161,8 +5161,8 @@ b32 CPlay::PlaceStartGruntz() {
                        && dispatch == DispatchGruntCreationPointLogic
                        && obj->m_smarts == g_curPlayer) {
 
-                GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
-                if (e != NULL && counter < e->m_comboSel) {
+                GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
+                if (e != NULL && counter < e->m_maxGruntz) {
                     i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                     i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                     m_mgr->m_commandMgr->EnqueueSingle(
@@ -6099,9 +6099,9 @@ RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 
     i32 id = g_curPlayer;
-    GruntzPlayer* slot = &g_gameReg->m_options[id];
+    GruntzPlayer* slot = &g_gameReg->m_players[id];
 
-    if (slot != NULL && g_gameReg->m_triggerMgr->m_unitCountByPlayer[id] < slot->m_comboSel) {
+    if (slot != NULL && g_gameReg->m_triggerMgr->m_unitCountByPlayer[id] < slot->m_maxGruntz) {
         i32 i = 0;
         if (i < StartMarkerCount()) {
             do {
@@ -6181,7 +6181,7 @@ i32 CPlay::ResetPlayState() {
         CGameLevel* g = m_mgr->m_world->m_level;
         ResetGoals(g->m_header.startX, g->m_header.startY);
     } else {
-        GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer];
+        GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
             ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
@@ -6197,7 +6197,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        g_gameReg->m_options[i].m_battlezConfig.StepAllRowSpawns();
+        g_gameReg->m_players[i].m_battlezConfig.StepAllRowSpawns();
     }
     m_winLoseBanner = 0;
     CTimer* fm = m_levelTimer;
@@ -6751,7 +6751,7 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
                 CGruntzMgr* gameManager = m_mgr;
                 i32 playerIndex = g_curPlayer;
                 CShadeTable* shadeTable = gameManager->m_spriteFactory->GetSel(
-                    IDX(gameManager->m_options[playerIndex].m_colorIndex),
+                    IDX(gameManager->m_players[playerIndex].m_colorIndex),
                     0
                 );
                 if (shadeTable == NULL) {

@@ -15,13 +15,13 @@ that ends a run without emitting an instruction is an **inlined method call on a
 sub-object**.
 
 ```cpp
-// before - one flat run; cl sinks `m_comboSel = 0xf` past all four trailing edi stores
-m_focusX = 0;  m_focusY = 0;  m_comboSel = 0xf;
+// before - one flat run; cl sinks `m_maxGruntz = 0xf` past all four trailing edi stores
+m_focusX = 0;  m_focusY = 0;  m_maxGruntz = 0xf;
 m_doneFlag = 0;  m_030 = 0;  m_latency.m_avg = 0;  m_latency.m_count = 0;
 
 // after - PlayerLatency gets the method it obviously owns; the inline call splits the run
 struct PlayerLatency { i32 m_avg, m_count; void Clear() { m_avg = 0; m_count = 0; } };
-m_focusX = 0;  m_focusY = 0;  m_comboSel = 0xf;
+m_focusX = 0;  m_focusY = 0;  m_maxGruntz = 0xf;
 m_doneFlag = 0;  m_030 = 0;  m_latency.Clear();
 ```
 

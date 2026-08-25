@@ -47,8 +47,8 @@ Measured 2026-08-08: `CMulti::LoadGameAssetNamespaces` 0xb5460 80.21 -> 84.46
 
 ## The neighbour bug in the same function
 
-`g_gameReg->m_options[i].m_latency.m_avg = 0; g_gameReg->m_options[i].m_latency
+`g_gameReg->m_players[i].m_latency.m_avg = 0; g_gameReg->m_players[i].m_latency
 .m_count = 0;` re-loads the global for the second field. Retail takes the address
 once - `mov ecx,[g_gameReg]; mov [ecx+eax+0x37c],ebp; lea ecx,[ecx+eax+0x37c];
-mov [ecx+0x4],ebp` - i.e. `PlayerLatency* lat = &g_gameReg->m_options[i]
+mov [ecx+0x4],ebp` - i.e. `PlayerLatency* lat = &g_gameReg->m_players[i]
 .m_latency;` then two stores through it. Worth 1.9 points on its own.

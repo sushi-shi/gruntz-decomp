@@ -82,8 +82,8 @@ i32 CExitTrigger::AdvanceAnim() {
                 goto done;
             }
             m_resolved = 0;
-            GruntzPlayer* loser = &g_gameReg->m_options[owningPlayer];
-            GruntzPlayer* winner = &g_gameReg->m_options[hitPlayerIndex];
+            GruntzPlayer* loser = &g_gameReg->m_players[owningPlayer];
+            GruntzPlayer* winner = &g_gameReg->m_players[hitPlayerIndex];
             if (loser != NULL) {
                 g_gameReg->m_chatLog->AddItem(
                     static_cast<const char*>(
@@ -102,7 +102,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = NULL;
             }
-            GruntzPlayer* claimed = &g_gameReg->m_options[hitPlayerIndex];
+            GruntzPlayer* claimed = &g_gameReg->m_players[hitPlayerIndex];
             if (claimed != NULL) {
                 CGameObject* found = NULL;
                 CGameObject* warlordObj = NULL;
@@ -126,7 +126,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[hitPlayerIndex].m_colorIndex),
+                        IDX(g_gameReg->m_players[hitPlayerIndex].m_colorIndex),
                         0
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
@@ -149,7 +149,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_options[hitPlayerIndex].m_colorIndex),
+                        IDX(g_gameReg->m_players[hitPlayerIndex].m_colorIndex),
                         0
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
@@ -158,7 +158,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (owningPlayer == g_curPlayer) {
                 g_gameReg->m_triggerMgr->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
             } else {
-                GruntzPlayer* board = &g_gameReg->m_options[owningPlayer];
+                GruntzPlayer* board = &g_gameReg->m_players[owningPlayer];
                 if (board != NULL && board->m_humanControlled == 0) {
                     board->m_battlezConfig.Clear();
                 }
@@ -169,7 +169,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (lostPlayer == g_curPlayer) {
                 goto done;
             }
-            GruntzPlayer* slot = &g_gameReg->m_options[lostPlayer];
+            GruntzPlayer* slot = &g_gameReg->m_players[lostPlayer];
             if (slot->m_joined == 0) {
                 goto done;
             }

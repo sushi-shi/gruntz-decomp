@@ -124,11 +124,11 @@ i32 CTimer::Tick(i32 elapsedMs) {
         ls->m_cueTiming.m_start.m_lo = g_frameTime;
         ls->m_cueTiming.m_start.m_hi = 0;
         g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(g_curPlayer);
-        GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer];
+        GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
             slot->m_clearedRound = 1;
         }
-        i32 key = g_gameReg->m_options[0].m_warlordObjectId;
+        i32 key = g_gameReg->m_players[0].m_warlordObjectId;
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;
@@ -147,7 +147,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32 key = g_gameReg->m_options[0].m_warlordObjectId;
+        i32 key = g_gameReg->m_players[0].m_warlordObjectId;
         if (key != 0) {
             CGameObject* obj = NULL;
             CGameObject* hit = NULL;

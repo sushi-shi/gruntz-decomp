@@ -64,7 +64,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     i32 count = 0;
     GruntzPlayer* pslot = NULL;
     for (i32 k = 0; k < 4; k++) {
-        pslot = &g_gameReg->m_options[k];
+        pslot = &g_gameReg->m_players[k];
         if (pslot->m_joined && !pslot->m_doneFlag && !pslot->m_clearedRound) {
             count++;
         }
@@ -122,7 +122,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         if (g_curPlayer == i) {
                             LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
                         }
-                        GruntzPlayer* slot = &g_gameReg->m_options[i];
+                        GruntzPlayer* slot = &g_gameReg->m_players[i];
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                             slot->m_clearedRound = 1;
                             CGameObject* out = NULL;
@@ -205,7 +205,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             if (i == g_curPlayer) {
                 continue;
             }
-            GruntzPlayer* slot = &g_gameReg->m_options[i];
+            GruntzPlayer* slot = &g_gameReg->m_players[i];
             if (slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                 goto done;
             }

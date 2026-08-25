@@ -30,5 +30,5 @@ mov    ecx,DWORD PTR [esi+0x24]
 STEERABLE. CStatusBarMgr::Activate 0x104dd0 93.58 -> 100 EXACT and
 CStatusBarMgr::Deactivate 0x100cb0 97.21 -> 100 EXACT (both filed "scheduling wall:
 retail computes m_8c-0x22 via lea"); the same lever on an array base
-(`GruntzPlayer* ch = &g_gameReg->m_options[i]` instead of a hoisted `mgr` local) was
+(`GruntzPlayer* ch = &g_gameReg->m_players[i]` instead of a hoisted `mgr` local) was
 one of the two fixes that took CMulti::Poll 0x0bba10 94.22 -> 100 EXACT.

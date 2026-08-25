@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/LogicTypeId.h>
@@ -54,12 +55,12 @@ public:
     ColorTint m_colorIndex;
 
     i32 m_warlordObjectId;
-    i32 m_configId;
+    BattlezDifficulty m_difficulty;
     i32 m_humanControlled;
 
-    i32 m_slotKey;
-    i32 m_readyFlag;
-    i32 m_liveGate;
+    i32 m_networkPlayerId;
+    i32 m_ready;
+    i32 m_active;
     i32 m_clearedRound;
     i32 m_joined;
     i32 m_doneFlag;
@@ -70,7 +71,7 @@ public:
     CBattlezMapConfig m_battlezConfig;
     i32 m_focusX;
     i32 m_focusY;
-    i32 m_comboSel;
+    i32 m_maxGruntz;
 
     PlayerLatency m_latency;
     char m_pad234[0x238 - 0x234];

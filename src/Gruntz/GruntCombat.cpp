@@ -2256,13 +2256,13 @@ void CGrunt::StepBehavior(char*) {
             flags = bd->CellFlagsAt(tx, ty);
         }
         if (flags & 0x100000) {
-            reg2->m_options[0].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
+            reg2->m_players[0].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x200000) {
-            reg2->m_options[1].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
+            reg2->m_players[1].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x400000) {
-            reg2->m_options[2].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
+            reg2->m_players[2].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         } else if (flags & 0x800000) {
-            reg2->m_options[3].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
+            reg2->m_players[3].m_battlezConfig.ClaimCellFromRow(m_playerIndex, m_unitIndex, tx, ty);
         }
 
         if (onWingzTile != 0) {

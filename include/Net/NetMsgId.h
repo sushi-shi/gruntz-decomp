@@ -15,7 +15,7 @@ GZ_ENUM_BEGIN(NetMsgId)
     NETMSG_LOBBY_TICK = 0x3f6,          // handled, no side effect
     NETMSG_REQUEST_CHANNELS = 0x3f7,    // BroadcastChannelTable (host)
     NETMSG_CHANNEL_TABLE = 0x3f8,       // ApplyChannelTable
-    NETMSG_READY_COUNT = 0x3f9,         // CountReadyOptionsSlots
+    NETMSG_REGISTER_PLAYER = 0x3f9,     // RegisterChannelFromPacket
     NETMSG_SWAP_CHANNEL = 0x3fa,        // SwapChannel, sets m_colorIndex
     NETMSG_REMOVED_BY_HOST = 0x3fb,     // m_removedByHost
     NETMSG_VERIFY_CUSTOM_LEVEL = 0x3fc, // m_customLevelVerificationPending
@@ -33,7 +33,7 @@ GZ_ENUM_BEGIN(NetMsgId)
     NETMSG_COLOR_REJECTED = 0x419,      // m_colorSelectionRejected
     NETMSG_DROP_PLAYER_ACK = 0x410,     // AckDropPlayer
     NETMSG_POLL_ABORT = 0x411,          // m_pollAbort, ReportVersionMsg
-    NETMSG_SLOT_QUERY = 0x41c,          // FindOptionsSlot
+    NETMSG_LEVEL_CHECKSUM = 0x41c,      // records sender's level checksum
     NETMSG_VERIFY_OK = 0x41d,           // m_verifyDone = 1
     NETMSG_VERIFY_FAILED = 0x41e,       // m_levelVerifyResult = 0
     NETMSG_STAT_REQUEST = 0x41f,        // replies with SendStatValue(..., 0x420)
@@ -47,7 +47,7 @@ GZ_ENUM_BEGIN(NetMsgId)
     STAT_DROP_ANNOUNCE = NETMSG_ALL_PLAYERS_READY,
     STAT_CHAT = NETMSG_CHAT_LINE,
     STAT_CHANNEL_TABLE = NETMSG_CHANNEL_TABLE,
-    STAT_PLAYER_JOINED = NETMSG_READY_COUNT,
+    STAT_REGISTER_PLAYER = NETMSG_REGISTER_PLAYER,
     STAT_CHANNEL_ONE = NETMSG_SWAP_CHANNEL,
     STAT_CHANNEL_LEFT = NETMSG_REMOVED_BY_HOST,
     STAT_PAUSE = NETMSG_PAUSE,
@@ -58,7 +58,7 @@ GZ_ENUM_BEGIN(NetMsgId)
     STAT_VERSIONPACKET = NETMSG_VERSION_CHECK,
     STAT_VERSIONMISMATCH = NETMSG_PLAYER_NAME,
     STAT_ACKLATENCY = NETMSG_STAT_DONE,
-    STAT_VERIFY_REQUEST = NETMSG_SLOT_QUERY,
+    STAT_LEVEL_CHECKSUM = NETMSG_LEVEL_CHECKSUM,
     STAT_VERIFY_AGREE = NETMSG_VERIFY_OK,
     STAT_VERIFY_DISAGREE = NETMSG_VERIFY_FAILED
 GZ_ENUM_END(NetMsgId)

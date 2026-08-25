@@ -99,7 +99,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_player->m_slotKey, packetStart, packetSize);
+        return m_owner->DispatchRecvMsg(m_player->m_networkPlayerId, packetStart, packetSize);
     }
     if (isDrainPacket == 0) {
         if (m_isDraining != 0) {

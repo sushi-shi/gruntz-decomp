@@ -20,4 +20,4 @@ return 1;
 // vs.  if (m_count>0){ T* p=...; do{...}while(++i<m_count);}  -> preheader OK but error-first exit
 ```
 
-WALL (regalloc/scheduling). Evidence: CGruntzMgr::SyncOptionsState (@0x093170) — the dual-slot options-reload loop: `for` form 92.95%, `if`-guarded `do-while` 90.7%; the logic (inline strcmp, srand(time(0)), the matched/successor dual-slot unroll) is byte-exact, only the preheader placement + `this`-register scheduling differ. related: nested-if-success-deepest-error-tail.md (the non-loop exit-ordering case), void-vs-bool-return-epilogue-split.md.
+WALL (regalloc/scheduling). Evidence: CGruntzMgr::InitializeBattlezPlayers (@0x093170) — the dual-slot options-reload loop: `for` form 92.95%, `if`-guarded `do-while` 90.7%; the logic (inline strcmp, srand(time(0)), the matched/successor dual-slot unroll) is byte-exact, only the preheader placement + `this`-register scheduling differ. related: nested-if-success-deepest-error-tail.md (the non-loop exit-ordering case), void-vs-bool-return-epilogue-split.md.

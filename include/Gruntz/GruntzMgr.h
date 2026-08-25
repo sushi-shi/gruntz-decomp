@@ -185,13 +185,13 @@ public:
     void SetSoundVolume(i32 v);
 
     void StopAudioPlayback();
-    void ClearOptionsSlots();
+    void DeactivateAllPlayers();
     RVA(0x000928c0, 0x23)
     CString GetWorldFileName() {
         return m_strWorldFile;
     }
-    i32 AdvanceOptionsCycle();
-    i32 SyncOptionsState();
+    i32 AdvanceComputerPlayerTurns();
+    i32 InitializeBattlezPlayers();
     void SetCellHeight(i32 x, i32 y, i32 value);
     i32 PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused);
     i32 SwitchToNextState();
@@ -251,7 +251,7 @@ public:
     i32 Quickload();
     i32 RunDebugGruntTypeDialog();
 
-    i32 LoadOptionsSlotName(
+    i32 SetInactivePlayerName(
         i32 slot,
         i32 unusedB,
         i32 unusedC,
@@ -260,11 +260,11 @@ public:
         const CString& val,
         i32 unusedG
     );
-    i32 CountReadyOptionsSlots(i32 anyState);
+    i32 CountActivePlayers(i32 includeComputerPlayers);
 
-    GruntzPlayer* FindOptionsSlot(i32 x);
-    i32 ResetOptionsSlot(i32 idx);
-    void ResetAllOptionsSlots();
+    GruntzPlayer* FindPlayerByNetworkId(i32 networkPlayerId);
+    i32 ResetPlayerSlot(i32 slot);
+    void ResetAllPlayerSlots();
     i32 IsStandardMode();
     i32 DebugJumpLevel();
     i32 PostSlotCommandB1(i32 slot);
@@ -381,10 +381,10 @@ public:
     i32 m_isMultiLevel;
     i32 m_isCustomLevel;
     GameModeId m_gameMode;
-    i32 m_optionsCount;
+    i32 m_computerPlayerCount;
     RECT m_viewBounds;
     char m_pad14c[0x150 - 0x14c];
-    GruntzPlayer m_options[4];
+    GruntzPlayer m_players[4];
 };
 
 extern i32 g_scoreTimeBase;
