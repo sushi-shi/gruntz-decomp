@@ -3770,6 +3770,49 @@ class ToolDriverEnvironmentControls(unittest.TestCase):
         self.assertIn("retail image", err.getvalue())
 
 
+class LabelGraphDependencyControls(unittest.TestCase):
+    def test_a_header_is_an_input_of_both_compile_and_label_edges(self):
+        """An inline RVA name can change while its TU emits no changed bytes.
+
+        The cl edge then restats its object, so only a direct header dependency
+        can make the label extractor refresh the retail claim.
+        """
+        from gruntz.graph import emit
+
+        class OneHeader:
+            def headers(self, _source):
+                return ["include/Test/InlineClaim.h"]
+
+            def scanned(self):
+                return {"src/Test/Owner.cpp", "include/Test/InlineClaim.h"}
+
+        unit = {"unit": "owner", "source": "src/Test/Owner.cpp",
+                "flags": "retail", "cflags": ["/nologo", "/c"]}
+        manifest = {"flags": {"retail": ["/nologo", "/c"]}}
+        with tempfile.TemporaryDirectory() as td, \
+                mock.patch.object(emit, "load_units",
+                                  return_value=(manifest, [unit])), \
+                mock.patch.object(emit, "prune_orphan_artifacts",
+                                  return_value=0), \
+                mock.patch.object(emit, "write_toolchain_id",
+                                  return_value=False), \
+                mock.patch.object(emit, "Scanner", return_value=OneHeader()), \
+                mock.patch.object(emit, "era_rc_available", return_value=False):
+            out = Path(td) / "build.ninja"
+            emit.emit(out)
+            graph_text = out.read_text()
+
+        def edge(prefix):
+            start = graph_text.index(prefix)
+            end = graph_text.index("\n\n", start)
+            return graph_text[start:end]
+
+        compile_edge = edge("build build/objdiff/base/owner.obj: cl")
+        label_edge = edge("build build/gen/claims/owner.tsv: labels")
+        self.assertIn("include/Test/InlineClaim.h", compile_edge)
+        self.assertIn("include/Test/InlineClaim.h", label_edge)
+
+
 class LinkVerbTargetControls(unittest.TestCase):
     """`gruntz link <anything>` died on `unknown target build/gen/gruntz.res`.
 

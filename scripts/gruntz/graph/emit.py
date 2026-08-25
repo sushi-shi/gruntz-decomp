@@ -11,7 +11,7 @@ The rules, in the order the loop runs them. The first nine plus the two
     cl          source -> build/objdiff/base/<unit>.obj   (gruntz.graph.cc)
     compdb      units.toml -> build/clangd/compile_commands.json - the clang-cl
                 flags extraction and the LSP consumers ride (gruntz.graph.compdb)
-    labels      source + base obj -> build/gen/claims/<unit>.tsv
+    labels      source + headers + base obj -> build/gen/claims/<unit>.tsv
     model       claims x censuses/providers -> build/gen/bindings.tsv
     delink      bindings -> build/objdiff/target-new/<unit>.c.obj
     normalize   base + target objs -> the comparison copies
@@ -34,7 +34,9 @@ that write if-changed. That is the whole incrementality story: a pure code
 edit re-runs configure (every source is in the include scan's own dep set) +
 cl + labels, stops at an unchanged claim fragment, and reaches the report
 without re-delinking; a label edit carries on through model, delink and the
-pairing.
+pairing. Labels declare the same per-TU header closure as `cl`: extraction
+reads inline `RVA` annotations from headers even when MSVC emits no changed
+bytes, so the object edge's `restat` cannot be allowed to hide a renamed claim.
 
 `verify_fp` also carries restat, but MEASURED its producer rewrites the cache
 unconditionally (identical bytes, fresh mtime), so the restat is inert there
@@ -352,6 +354,7 @@ def emit(out: Path | None = None) -> tuple[int, int]:
     cl_edges = [(f"{graph.BASE_DIR}/{u['unit']}.obj", u["source"],
                  scan.headers(u["source"]), u["cflags"], u["unit"]) for u in units]
     base_objs = [e[0] for e in cl_edges]
+    headers_by_unit = {e[4]: e[2] for e in cl_edges}
 
     with out.open("w", encoding="utf-8") as f:
         w = ninja_syntax.Writer(f)
@@ -418,11 +421,13 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                 implicit=COMPDB_MODS + [graph.TOOLCHAIN_ID])
         w.newline()
 
-        w.comment("=== labels: source + base obj -> per-unit claim fragment ===")
+        w.comment("=== labels: source + headers + base obj -> per-unit claim fragment ===")
         # One TU's clang IR pass per edge (the expensive step), so a single
         # edit re-extracts only THAT unit. Fragments are written if-changed and
         # the rule restats, so an unchanged symbol set stops here and never
-        # reaches model/delink.
+        # reaches model/delink. The header closure is independently required:
+        # a header-only RVA claim can be renamed while cl emits no COMDAT in
+        # this TU, leaving the object byte-identical and therefore restatted.
         w.rule("labels", command="$py -m gruntz.retail_labels.source --unit $unit",
                description="labels $unit", restat=True)
         fragments = []
@@ -430,7 +435,8 @@ def emit(out: Path | None = None) -> tuple[int, int]:
             frag = f"{graph.CLAIMS_DIR}/{u['unit']}.tsv"
             fragments.append(frag)
             w.build(frag, "labels", inputs=u["source"],
-                    implicit=[f"{graph.BASE_DIR}/{u['unit']}.obj", MANIFEST,
+                    implicit=[*headers_by_unit[u["unit"]],
+                              f"{graph.BASE_DIR}/{u['unit']}.obj", MANIFEST,
                               COMPDB, *LABELS_MODS],
                     variables={"unit": u["unit"]})
         w.newline()
