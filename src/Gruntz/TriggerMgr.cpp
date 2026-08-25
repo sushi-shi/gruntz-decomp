@@ -1238,7 +1238,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     world->FlushPendingOps();
     world->SetDefeatCountdown(0, 0xbb7);
-    (static_cast<CStatusBarMgr*>(world->m_guts))->SetMode(1);
+    (static_cast<CStatusBarMgr*>(world->m_guts))->LockDestructButton(1);
     return 1;
 }
 
@@ -2647,24 +2647,24 @@ void CTriggerMgr::DestroyAllAnims() {
         }
     }
 
-    SoundBuffer* ch0 = m_rollingballLoop;
-    if (ch0 != NULL) {
-        ch0->StopAndRewind();
+    SoundBuffer* rollingballSound = m_rollingballLoop;
+    if (rollingballSound != NULL) {
+        rollingballSound->StopAndRewind();
         m_rollingballLoop = NULL;
     }
-    SoundBuffer* ch1 = m_teleportLoop;
-    if (ch1 != NULL) {
-        ch1->StopAndRewind();
+    SoundBuffer* teleportSound = m_teleportLoop;
+    if (teleportSound != NULL) {
+        teleportSound->StopAndRewind();
         m_teleportLoop = NULL;
     }
     CState* state = g_gameReg->PickPausedThenPlayState();
     if (state != NULL) {
         CStatusBarMgr* sub = (static_cast<CPlay*>(state))->m_guts;
         if (sub != NULL) {
-            SoundBuffer* ch2 = sub->m_destructButton;
-            if (ch2 != NULL) {
-                ch2->StopAndRewind();
-                sub->m_destructButton = NULL;
+            SoundBuffer* destructWarningSound = sub->m_destructWarningSound;
+            if (destructWarningSound != NULL) {
+                destructWarningSound->StopAndRewind();
+                sub->m_destructWarningSound = NULL;
             }
         }
     }

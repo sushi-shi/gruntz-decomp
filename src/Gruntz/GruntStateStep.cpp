@@ -75,18 +75,18 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             if (dist <= 0xa) {
 
-                Coord b0, b1, b2, b3;
-                g->GetScreenTile(&b3);
-                g->GetScreenTile(&b2);
-                g->GetScreenTile(&b1);
-                g->GetScreenPos(&b0);
-                b0.m_x = b0.m_x >> TILE_SHIFT_PX;
+                Coord leftPos, topPos, rightPos, bottomPos;
+                g->GetScreenTile(&bottomPos);
+                g->GetScreenTile(&rightPos);
+                g->GetScreenTile(&topPos);
+                g->GetScreenPos(&leftPos);
+                leftPos.m_x = leftPos.m_x >> TILE_SHIFT_PX;
                 CMapMgr* grid = m_board;
                 RECT box;
-                box.left = b0.m_x - 5;
-                box.top = b1.m_y - 5;
-                box.right = b2.m_x + 5;
-                box.bottom = b3.m_y + 5;
+                box.left = leftPos.m_x - 5;
+                box.top = topPos.m_y - 5;
+                box.right = rightPos.m_x + 5;
+                box.bottom = bottomPos.m_y + 5;
                 arrivalMask = 0x20000dc7;
                 GRID_CLIP(grid, &box);
             }
@@ -210,29 +210,29 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             i32 arrivalMask = 0xdc7;
             i32 dist2;
             {
-                Coord c0;
-                cur->GetScreenTile(&c0);
-                Coord c1;
-                g->GetScreenTile(&c1);
-                Coord c2;
-                cur->GetScreenTile(&c2);
-                Coord c3;
-                g->GetScreenTile(&c3);
-                dist2 = abs(c0.m_x - c1.m_x) + abs(c2.m_y - c3.m_y);
+                Coord targetPos1;
+                cur->GetScreenTile(&targetPos1);
+                Coord gruntPos1;
+                g->GetScreenTile(&gruntPos1);
+                Coord targetPos2;
+                cur->GetScreenTile(&targetPos2);
+                Coord gruntPos2;
+                g->GetScreenTile(&gruntPos2);
+                dist2 = abs(targetPos1.m_x - gruntPos1.m_x) + abs(targetPos2.m_y - gruntPos2.m_y);
             }
             if (dist2 <= 0xa) {
-                Coord d0, d1, d2, d3;
-                g->GetScreenTile(&d3);
-                g->GetScreenTile(&d2);
-                g->GetScreenTile(&d1);
-                g->GetScreenPos(&d0);
-                d0.m_x = d0.m_x >> TILE_SHIFT_PX;
+                Coord leftPos, topPos, rightPos, bottomPos;
+                g->GetScreenTile(&bottomPos);
+                g->GetScreenTile(&rightPos);
+                g->GetScreenTile(&topPos);
+                g->GetScreenPos(&leftPos);
+                leftPos.m_x = leftPos.m_x >> TILE_SHIFT_PX;
                 CMapMgr* grid = m_board;
                 RECT box;
-                box.left = d0.m_x - 5;
-                box.top = d1.m_y - 5;
-                box.right = d2.m_x + 5;
-                box.bottom = d3.m_y + 5;
+                box.left = leftPos.m_x - 5;
+                box.top = topPos.m_y - 5;
+                box.right = rightPos.m_x + 5;
+                box.bottom = bottomPos.m_y + 5;
                 arrivalMask = 0x20000dc7;
                 GRID_CLIP(grid, &box);
             }

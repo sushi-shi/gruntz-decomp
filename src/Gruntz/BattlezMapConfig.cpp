@@ -1292,13 +1292,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
         a.top = 0;
         a.right = bd2->m_width;
         a.bottom = bd2->m_height;
-        RECT b2 = CRect(0, 0, bd2->m_width, bd2->m_height);
-        RECT* b2Dst = &bd2->m_bounds;
-        if (!IntersectRect(b2Dst, &b2, &a)) {
-            *b2Dst = b2;
+        RECT fullBounds = CRect(0, 0, bd2->m_width, bd2->m_height);
+        RECT* clippedBounds = &bd2->m_bounds;
+        if (!IntersectRect(clippedBounds, &fullBounds, &a)) {
+            *clippedBounds = fullBounds;
         }
-        bd2->m_gridW = b2Dst->right - b2Dst->left;
-        bd2->m_gridH = b2Dst->bottom - b2Dst->top;
+        bd2->m_gridW = clippedBounds->right - clippedBounds->left;
+        bd2->m_gridH = clippedBounds->bottom - clippedBounds->top;
         PickupType stX = unit->m_entranceReason;
         if (hit == 0) {
             switch (unit->m_battleState) {
@@ -3615,14 +3615,14 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             }
             Coord unitPos1;
             unit->GetScreenTile(&unitPos1);
-            Coord b1;
-            u->GetScreenTile(&b1);
-            i32 dx = abs(unitPos1.m_x - b1.m_x);
+            Coord candidatePos1;
+            u->GetScreenTile(&candidatePos1);
+            i32 dx = abs(unitPos1.m_x - candidatePos1.m_x);
             Coord unitPos2;
             unit->GetScreenTile(&unitPos2);
-            Coord b2;
-            u->GetScreenTile(&b2);
-            i32 dy = abs(unitPos2.m_y - b2.m_y);
+            Coord candidatePos2;
+            u->GetScreenTile(&candidatePos2);
+            i32 dy = abs(unitPos2.m_y - candidatePos2.m_y);
             i32 dist = dx * dx + dy * dy;
             if (dist >= bestDist) {
                 continue;

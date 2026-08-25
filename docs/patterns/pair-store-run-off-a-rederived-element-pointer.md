@@ -85,8 +85,8 @@ walks `pair` and `pair + 1` in `CStatusBarMgr::Sync`); prefer a real
 aggregate member where the layout allows one.
 
 THE POINTEE TYPE IS NOT PART OF THE MECHANISM (measured 2026-08-17): where
-the pair IS a real aggregate (`SbiClockPair m_destructWarnClock`), spelling
-the device as `SbiClockPair* clock = &m_destructWarnClock;` with
+the pair IS a real aggregate (`SbiClockPair m_destructWarningClock`), spelling
+the device as `SbiClockPair* clock = &m_destructWarningClock;` with
 `clock->m_last` / `clock->m_interval` accesses is BYTE-IDENTICAL at all
 three sites (UpdateDestructWarningAnimation held 100.00 EXACT, full-tree
 score line unchanged, 0 fresh). All three powers - index-fold, alias

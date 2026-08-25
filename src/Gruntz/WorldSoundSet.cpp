@@ -725,15 +725,15 @@ static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
 
-    i32 b1 = m_box1.left;
+    i32 firstBoxLeft = m_box1.left;
     i32 inBox = 0;
-    if (b1 == COORD_UNSET) {
+    if (firstBoxLeft == COORD_UNSET) {
         inBox = 1;
-    } else if (x > b1 && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
+    } else if (x > firstBoxLeft && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
         inBox = 1;
     } else {
-        i32 b2 = m_box2.left;
-        if (b2 != COORD_UNSET && x > b2 && x < m_box2.right && y > m_box2.top
+        i32 secondBoxLeft = m_box2.left;
+        if (secondBoxLeft != COORD_UNSET && x > secondBoxLeft && x < m_box2.right && y > m_box2.top
             && y < m_box2.bottom) {
             inBox = 1;
         }

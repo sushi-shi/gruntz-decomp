@@ -689,7 +689,7 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
                 >= m_defeatCountdownTiming.m_interval.m_v) {
 
-                if (m_guts->m_modeArmed != 0) {
+                if (m_guts->m_destructButtonLocked != 0) {
                     g_gameReg->m_cmdGrid->StartPlayerDefeatSequence(5);
                 } else {
                     i32 row = g_curPlayer;
@@ -703,7 +703,7 @@ i32 CPlay::Render() {
                 marker->m_accum.m_hi = 0;
                 marker->m_running = 0;
                 marker->m_currentMs = 0;
-                m_guts->SetMode(0);
+                m_guts->LockDestructButton(0);
                 m_defeatCountdownActive = 0;
 
                 if (g_gameReg->m_options[0].m_warlordObjectId != 0) {

@@ -493,7 +493,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                         break;
                     }
-                    if (m_modeArmed != 0) {
+                    if (m_destructButtonLocked != 0) {
                         break;
                     }
                     if (m_hitTestDisabled != 0) {
@@ -502,10 +502,10 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     HiCueLookup();
                     {
                         CPlay* sm = static_cast<CPlay*>(g_gameReg->m_curState);
-                        if (m_destructWarnActive == DESTRUCT_WARNING_INACTIVE) {
-                            m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
-                            m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
-                            SbiClockPair* clock = &m_destructWarnClock;
+                        if (m_destructWarningState == DESTRUCT_WARNING_INACTIVE) {
+                            m_destructWarningState = DESTRUCT_WARNING_FORWARD;
+                            m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
+                            SbiClockPair* clock = &m_destructWarningClock;
                             clock->m_interval = g_buteMgr.GetDwordDef(
                                 "StatusBar",
                                 "DestructButtonWarningDelay",
@@ -514,11 +514,11 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                             clock->m_last = static_cast<u32>(g_frameTime);
                             sm->SetDefeatCountdown(1, 0xbb7);
                         } else {
-                            CSBI_ImageSet* n = m_modeNotify;
-                            m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
-                            m_modeState = DESTRUCT_FRAME_IDLE;
-                            if (n) {
-                                n->Notify(1);
+                            CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
+                            m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
+                            m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
+                            if (destructButtonImage) {
+                                destructButtonImage->Notify(1);
                             }
                             sm->SetDefeatCountdown(0, 0xbb7);
                         }
@@ -777,28 +777,28 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     if (g_gameReg->m_soundEnabled != 0) {
-        if (m_destructWarnActive != DESTRUCT_WARNING_INACTIVE && m_modeArmed == 0) {
-            if (m_destructButton == NULL) {
+        if (m_destructWarningState != DESTRUCT_WARNING_INACTIVE && m_destructButtonLocked == 0) {
+            if (m_destructWarningSound == NULL) {
 
                 CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                 CMapStringToPtr* map = &host->m_cues;
                 LeafCue* found = NULL;
                 MapLookup(*map, "GAME_DESTRUCT", found);
                 if (found) {
-                    SoundSample* f = found->m_sound;
-                    if (f) {
-                        SoundBuffer* obj = f->AcquireInstance();
-                        m_destructButton = obj;
-                        if (obj) {
-                            obj->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+                    SoundSample* sample = found->m_sound;
+                    if (sample) {
+                        SoundBuffer* voice = sample->AcquireInstance();
+                        m_destructWarningSound = voice;
+                        if (voice) {
+                            voice->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
                         }
                     }
                 }
             }
         } else {
-            if (m_destructButton) {
-                m_destructButton->StopAndRewind();
-                m_destructButton = NULL;
+            if (m_destructWarningSound) {
+                m_destructWarningSound->StopAndRewind();
+                m_destructWarningSound = NULL;
             }
         }
     }
@@ -1160,7 +1160,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     memset(m_warlordHead, 0, sizeof(m_warlordHead));
     m_extraNotify0 = NULL;
     m_extraNotify1 = NULL;
-    m_modeNotify = NULL;
+    m_destructButtonImage = NULL;
     m_notify0 = NULL;
     m_notify2 = NULL;
     m_notify3 = NULL;
@@ -1191,7 +1191,7 @@ void CStatusBarMgr::ClearTabGroup() {
             m_tabSprite8 = NULL;
             m_tabSprite9 = NULL;
             m_tabSprite10 = NULL;
-            m_modeNotify = NULL;
+            m_destructButtonImage = NULL;
             break;
         case TAB_STATZ:
 
@@ -1613,19 +1613,19 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 TAB_GAME,
                 SbGeom(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
                 "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
-                IDX(m_modeState),
+                IDX(m_destructButtonFrame),
                 0
             )) {
             delete destruct;
             return 0;
         }
         AddTabItem(5, destruct);
-        m_modeNotify = destruct;
+        m_destructButtonImage = destruct;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             destruct->SetEnabled(0);
-            m_modeState = DESTRUCT_FRAME_DISABLED;
-            m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
-            m_modeNotify->Notify(IDX(DESTRUCT_FRAME_DISABLED));
+            m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
+            m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
+            m_destructButtonImage->Notify(IDX(DESTRUCT_FRAME_DISABLED));
         }
         return 1;
     }
@@ -2889,8 +2889,8 @@ void CStatusBarMgr::Reset() {
     ResetGroupA();
     UpdateRezMachineSnoozeStatusBar();
     InitTabRects();
-    m_modeState = DESTRUCT_FRAME_IDLE;
-    m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
+    m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
+    m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
 }
 
 RVA(0x00105990, 0x3b4)
@@ -3812,7 +3812,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     }
     ExitMode();
     m_observerTabAvailable = 0;
-    m_modeArmed = 0;
+    m_destructButtonLocked = 0;
     TryActivate();
 }
 // @early-stop
@@ -4054,7 +4054,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     SyncClockPair(s, mode, &m_fallClock.m_last);
     SyncClockPair(s, mode, &m_machineB.m_last);
     SyncClockPair(s, mode, &m_machineA.m_last);
-    SyncClockPair(s, mode, &m_destructWarnClock.m_last);
+    SyncClockPair(s, mode, &m_destructWarningClock.m_last);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
@@ -4172,7 +4172,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     SER(m_notify3)
     SER(m_extraNotify0)
     SER(m_extraNotify1)
-    SER(m_modeNotify)
+    SER(m_destructButtonImage)
 #undef SER
 
     Deactivate();
@@ -4239,9 +4239,9 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_machineB.m_value, sizeof(m_machineB.m_value));
     s->Write(&m_machineA, 4);
     s->Write(&m_machineA.m_value, sizeof(m_machineA.m_value));
-    s->Write(&m_destructWarnActive, sizeof(m_destructWarnActive));
-    s->Write(&m_modeState, sizeof(m_modeState));
-    s->Write(&m_modeArmed, sizeof(m_modeArmed));
+    s->Write(&m_destructWarningState, sizeof(m_destructWarningState));
+    s->Write(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
+    s->Write(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
     s->Write(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
@@ -4282,7 +4282,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (gm == NULL) {
         return 0;
     }
-    m_destructButton = NULL;
+    m_destructWarningSound = NULL;
     ResetWidgets(0);
 
     s->Read(this, 4);
@@ -4345,9 +4345,9 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_machineB.m_value, sizeof(m_machineB.m_value));
     s->Read(&m_machineA, 4);
     s->Read(&m_machineA.m_value, sizeof(m_machineA.m_value));
-    s->Read(&m_destructWarnActive, sizeof(m_destructWarnActive));
-    s->Read(&m_modeState, sizeof(m_modeState));
-    s->Read(&m_modeArmed, sizeof(m_modeArmed));
+    s->Read(&m_destructWarningState, sizeof(m_destructWarningState));
+    s->Read(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
+    s->Read(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
     s->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
@@ -4990,43 +4990,43 @@ void CStatusBarMgr::ExitMode() {
 RVA(0x0010b320, 0x167)
 void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
-    switch (m_destructWarnActive) {
+    switch (m_destructWarningState) {
         case DESTRUCT_WARNING_FORWARD: {
-            SbiClockPair* clock = &m_destructWarnClock;
+            SbiClockPair* clock = &m_destructWarningClock;
             i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
             if (d >= clock->m_interval) {
-                m_modeState = static_cast<DestructButtonFrame>(m_modeState + 1);
-                if (m_modeState >= DESTRUCT_FRAME_WARNING_LAST) {
-                    m_modeState = DESTRUCT_FRAME_WARNING_LAST;
-                    m_destructWarnActive = DESTRUCT_WARNING_REVERSE;
+                m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame + 1);
+                if (m_destructButtonFrame >= DESTRUCT_FRAME_WARNING_LAST) {
+                    m_destructButtonFrame = DESTRUCT_FRAME_WARNING_LAST;
+                    m_destructWarningState = DESTRUCT_WARNING_REVERSE;
                 }
                 clock->m_interval = static_cast<u32>(
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
                 clock->m_last = static_cast<u32>(g_frameTime);
-                CSBI_ImageSet* w = m_modeNotify;
-                if (w) {
-                    w->Notify(IDX(m_modeState));
+                CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
+                if (destructButtonImage) {
+                    destructButtonImage->Notify(IDX(m_destructButtonFrame));
                 }
             }
             break;
         }
         case DESTRUCT_WARNING_REVERSE: {
-            SbiClockPair* clock = &m_destructWarnClock;
+            SbiClockPair* clock = &m_destructWarningClock;
             i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
             if (d >= clock->m_interval) {
-                m_modeState = static_cast<DestructButtonFrame>(m_modeState - 1);
-                if (m_modeState <= DESTRUCT_FRAME_WARNING_FIRST) {
-                    m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
-                    m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
+                m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame - 1);
+                if (m_destructButtonFrame <= DESTRUCT_FRAME_WARNING_FIRST) {
+                    m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
+                    m_destructWarningState = DESTRUCT_WARNING_FORWARD;
                 }
                 clock->m_interval = static_cast<u32>(
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
                 clock->m_last = static_cast<u32>(g_frameTime);
-                CSBI_ImageSet* w = m_modeNotify;
-                if (w) {
-                    w->Notify(IDX(m_modeState));
+                CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
+                if (destructButtonImage) {
+                    destructButtonImage->Notify(IDX(m_destructButtonFrame));
                 }
             }
             break;
@@ -5255,13 +5255,13 @@ void CStatusBarMgr::ReportTab(i32 tab) {
 }
 
 RVA(0x0010bb90, 0x3f)
-void CStatusBarMgr::SetMode(i32 mode) {
-    m_modeArmed = 1;
-    if (mode && m_modeState != DESTRUCT_FRAME_DISABLED) {
-        m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
-        m_modeState = DESTRUCT_FRAME_IDLE;
-        if (m_modeNotify) {
-            m_modeNotify->Notify(1);
+void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
+    m_destructButtonLocked = 1;
+    if (resetWarningAnimation && m_destructButtonFrame != DESTRUCT_FRAME_DISABLED) {
+        m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
+        m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
+        if (m_destructButtonImage) {
+            m_destructButtonImage->Notify(1);
         }
     }
 }

@@ -171,7 +171,7 @@ public:
     i32 SetHlCell(i32 row, i32 handle, i32 group);
     i32 SetHlCellByTier(i32 handle, i32 group);
     i32 FindReadySlot();
-    void SetMode(i32 mode);
+    void LockDestructButton(i32 resetWarningAnimation);
 
     i32 BuildStatusBarTabs();
 
@@ -353,15 +353,15 @@ public:
     CWarpStoneFly* m_retabNotify;
     i32 m_levelOverlayActive;
     i32 m_quitConfirmationActive;
-    DestructWarningState m_destructWarnActive;
-    DestructButtonFrame m_modeState;
-    SbiClockPair m_destructWarnClock;
-    CSBI_ImageSet* m_modeNotify;
-    i32 m_modeArmed;
+    DestructWarningState m_destructWarningState;
+    DestructButtonFrame m_destructButtonFrame;
+    SbiClockPair m_destructWarningClock;
+    CSBI_ImageSet* m_destructButtonImage;
+    i32 m_destructButtonLocked;
     i32 m_observerTabAvailable;
     i32 m_battlezPct[38];
     i32 m_barFrameGate;
-    SoundBuffer* m_destructButton;
+    SoundBuffer* m_destructWarningSound;
 
     CSBI_WarlordHead* m_warlordHead[4];
     i32 m_tabCycle;
@@ -375,7 +375,7 @@ public:
 //            `??_H(m_groupSlots, 0x18, 3)`
 //   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_hlGrid,0x18,12)`
 //   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_rewardQueue)`
-//   0xc8106  m_destructWarnClock, straight AFTER it
+//   0xc8106  m_destructWarningClock, straight AFTER it
 // Body assignments land after every member ctor instead - measured, all six sat past
 // `??0CPtrArray` at base+0x218. Mem-initializers put them back where retail has them
 // at no cost (CMulti::LoadGameAssetNamespaces 91.88 -> 94.30).
@@ -398,7 +398,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite8 = NULL;
     m_tabSprite9 = NULL;
     m_tabSprite10 = NULL;
-    m_destructButton = NULL;
+    m_destructWarningSound = NULL;
     m_tabSprite11 = NULL;
     m_tabSprite12 = NULL;
     m_tabSprite13 = NULL;
@@ -433,7 +433,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_extraNotify0 = NULL;
     m_extraNotify1 = NULL;
     m_machineDisplay = NULL;
-    m_modeNotify = NULL;
+    m_destructButtonImage = NULL;
     m_gaugeNotify = NULL;
     m_gaugeSink = NULL;
     m_gaugeTarget = SBI_GAUGE_EMPTY;
@@ -441,7 +441,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_reserved544 = 1;
     m_hlBusy = 0;
     m_retabNotify = NULL;
-    m_modeArmed = 0;
+    m_destructButtonLocked = 0;
 }
 
 #endif // GRUNTZ_SBI_RECTONLY_H

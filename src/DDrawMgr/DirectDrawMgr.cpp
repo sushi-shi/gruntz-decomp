@@ -1188,10 +1188,10 @@ i32 CDDrawDeviceManager::ComputeColorMasks() {
     u32 m = desc.ddpfPixelFormat.dwRBitMask;
     i32 count = 0;
     i32 shift = -1;
-    for (i32 b = 0; b < 0x20; b++) {
+    for (i32 redBit = 0; redBit < 0x20; redBit++) {
         if ((m & 1) == 1) {
             if (shift == -1) {
-                shift = b;
+                shift = redBit;
             }
             count++;
         }
@@ -1203,10 +1203,10 @@ i32 CDDrawDeviceManager::ComputeColorMasks() {
     m = desc.ddpfPixelFormat.dwGBitMask;
     count = 0;
     shift = -1;
-    for (i32 b2 = 0; b2 < 0x20; b2++) {
+    for (i32 greenBit = 0; greenBit < 0x20; greenBit++) {
         if ((m & 1) == 1) {
             if (shift == -1) {
-                shift = b2;
+                shift = greenBit;
             }
             count++;
         }
@@ -1218,10 +1218,10 @@ i32 CDDrawDeviceManager::ComputeColorMasks() {
     m = desc.ddpfPixelFormat.dwBBitMask;
     count = 0;
     shift = -1;
-    for (i32 b3 = 0; b3 < 0x20; b3++) {
+    for (i32 blueBit = 0; blueBit < 0x20; blueBit++) {
         if ((m & 1) == 1) {
             if (shift == -1) {
-                shift = b3;
+                shift = blueBit;
             }
             count++;
         }
