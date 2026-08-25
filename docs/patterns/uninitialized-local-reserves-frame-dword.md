@@ -38,7 +38,7 @@ The frame-size cross-check is decisive: `gruntz walls diagnose <rva>` (or just t
 `sub esp,N`/`push` count) shows retail's frame is exactly 4 bytes larger with no local to
 account for it.
 
-Evidence: `CTileTriggerSwitchLogic::VerifyBlockLinks` @0x112c70 and `VerifyBlockLinksB`
+Evidence: `CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive` @0x112c70 and `AreMultiSwitchLinksActive`
 @0x111f40, both filed as a "this-spill frame wall (~86%, dead seed value, non-steerable
 frame choice)" — 86.60 → 95.29 on dropping the `= 0` alone, then 100.00 EXACT with the
 block-walk subscript fix (see

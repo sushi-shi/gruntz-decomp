@@ -25,10 +25,10 @@ i32 EngStr_RenderText(
     i32 flag
 );
 
-i32 EngStr_DrawText(
-    CDDrawSurfaceMgr* obj,
+i32 DrawTextToFrontSurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     class CString* text,
-    struct tagRECT* dst,
+    struct tagRECT* box,
     i32 fontSel,
     i32 shadow,
     i32 r,

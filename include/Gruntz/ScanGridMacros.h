@@ -133,7 +133,7 @@
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
-// ArrivalReticleScan's retail tail reads the LOCAL rect (four frame fields), not
+// StepDefenderBehavior's retail tail reads the LOCAL rect (four frame fields), not
 // m_bounds - the intersection of (0,0,w,h) with itself makes them equal.
 #define GRID_RECT_INLINE_LOCAL(grid)                                                               \
     {                                                                                              \

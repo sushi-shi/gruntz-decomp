@@ -209,7 +209,7 @@ functions (1994 blocks):
 | 9 | **`CTriggerMgr::PlaceObjectFull` `0x00078a50`** (all into `0x78e9b`) |
 | 7 | `CGrunt::StepCompassMove` `0x00051c00` (all into `0x521e1`) |
 | 1 | `CGrunt::LoadGruntCombatAnimations` `0x000597a0`, `CGrunt::StepDiggerBehavior` `0x000f36a0`, `CBattlezMapConfig::RepathAroundBlockedTiles` `0x0002a570` |
-| **0** | the other **19**, including `CGrunt::ScanNearestTarget` (385 blocks), `CGrunt::LoadGruntTypeTable` (502 blocks), `CPlay::ExecuteCommand`, `CMapMgr::ComputeCellFlags`, `CGrunt::StepGruntMovement` |
+| **0** | the other **19**, including `CGrunt::StepSmartChaserBehavior` (385 blocks), `CGrunt::LoadGruntTypeTable` (502 blocks), `CPlay::ExecuteCommand`, `CMapMgr::ComputeCellFlags`, `CGrunt::StepGruntMovement` |
 
 Zero violations is the normal case even at 500 blocks. A nonzero count is not noise:
 the three heaviest are exactly the campaign's known layout walls, all violations funnel

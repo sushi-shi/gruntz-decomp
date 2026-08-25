@@ -624,12 +624,12 @@ i32 CResolveNode::Init(
 // Two coupled scratch-register swaps, both measured inert against a 3x5 spelling
 // matrix (res/out order x logic/obj/result locals): the POSTLOAD lookup chain is
 // coloured ecx/edx (retail edx/ecx; same MapLookupById family wall as
-// ResolveTarget below), and the SerializeMove call transports param d in eax
+// ResolveTarget below), and the SerializeDispatch call transports param d in eax
 // where retail uses edx (vtbl edx vs eax). res-before-out sank the out=0 store
 // into retail's slot; the rest is the coupled coloring. Tail rows past the last
 // ret are the delinker jump-table artifact.
 RVA(0x00164830, 0xec)
-i32 CLogicRecord::Dispatch(
+i32 CLogicRecord::SerializeDispatch(
     CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,
@@ -670,7 +670,7 @@ i32 CLogicRecord::Dispatch(
             break;
     }
     if (m_userLogic) {
-        if (m_userLogic->SerializeMove(archive, mode, typeId, object) == 0) {
+        if (m_userLogic->SerializeDispatch(archive, mode, typeId, object) == 0) {
             return 0;
         }
     }

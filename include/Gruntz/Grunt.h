@@ -190,7 +190,7 @@ class CGrunt : public CMovingLogic, public CWapX {
 public:
     virtual ~CGrunt() OVERRIDE;
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
     RVA(0x0000f2a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
@@ -258,9 +258,9 @@ public:
     i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
 
-    i32 ChargeStep();
+    i32 StepDumbChaserBehavior();
 
-    i32 ScanNearestTarget();
+    i32 StepSmartChaserBehavior();
     i32 UpdateGruntStatus();
 
     i32 StepCompassMove();
@@ -279,8 +279,8 @@ public:
 
     i32 LoadGruntAbilityTuning(i32 forced);
 
-    i32 LoadGruntDecayConfig();
-    i32 LoadGruntDecayConfig2();
+    i32 UpdateDeathAnimation();
+    i32 UpdateDecayFade();
     i32 LoadWandGruntItemConfig();
 
     i32 LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex);
@@ -737,7 +737,7 @@ public:
 
     // Every 64-bit clock/window member is seeded to 0; cl emits each store at the
     // member's DECLARATION position, interleaved with the member ctor calls, which is
-    // what retail's inlined copy in SerialObjectFactory shows (60 stores).
+    // what retail's inlined copy in GameSerializationCallback shows (60 stores).
     CGrunt()
         : CMovingLogic(CUserLogic::INLINE_BASE),
           m_struckClock64(0),
@@ -826,7 +826,7 @@ public:
     void FaceTowardPixel(i32 x, i32 y);
     void SetFacing(i32 unused, GruntDirectionCell facing);
     void OnStruck(i32 wasHit);
-    i32 ResolveArrivalNeighbor();
+    i32 StepPostGuardBehavior();
     i32 RearmEntranceDrop();
 
     i32 HandleCombatContact(
@@ -866,31 +866,31 @@ public:
 
     i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 
-    i32 RearmAttackAnim(i32 targetPlayerIndex, i32 targetUnitIndex);
+    i32 StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex);
 
-    i32 RearmAttackAnim2();
+    i32 StartRangedAttackAnimation();
 
     i32 GruntInRadius(i32 playerIndex, i32 unitIndex);
 
-    i32 StepPeerTracking();
+    i32 StepToyerBehavior();
 
     i32 FinishEntranceMove();
 
     i32 LoadFreezeSpellAssets();
 
-    i32 ResolveArrivalReposition();
+    i32 StepBomberBehavior();
 
-    i32 StepArrivalDefense();
+    i32 StepScrollGruntBehavior();
 
-    i32 StepArrivalDefenseLean();
+    i32 StepMagicWandGruntBehavior();
 
-    i32 StepArrivalDefenseAlt();
+    i32 StepObjectGuardBehavior();
 
-    i32 PhaseStep();
+    i32 StepTimeBomberBehavior();
 
-    i32 UpdateArrival();
-    i32 SeekTarget();
-    i32 WanderStep();
+    i32 StepGauntletGruntBehavior();
+    i32 StepToolThiefBehavior();
+    i32 StepHitAndRunnerBehavior();
     i32 StepBrickLayerBehavior();
     i32 StepGooSuckerBehavior();
     i32 StepDiggerBehavior();
@@ -899,11 +899,11 @@ public:
 
     virtual void FinalizeStep(char* name) OVERRIDE;
 
-    i32 StepEntranceRelatchA();
+    i32 UpdateToyUseAnimation();
     i32 StepArrivalReroll();
-    i32 StepArrivalCommitA();
-    i32 StepArrivalCommitB();
-    i32 StepEntranceRelatchB();
+    i32 FinishStruckAnimation();
+    i32 FinishKnockbackAnimation();
+    i32 FinishToobMoveAnimation();
 
     i32 StepCombatReaction(
         PickupType attackKind,
@@ -935,7 +935,7 @@ public:
         GruntEntranceMode entranceMode
     );
 
-    i32 ArrivalReticleScan();
+    i32 StepDefenderBehavior();
 };
 
 union LogicDispatchWord {
@@ -967,11 +967,11 @@ bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 // [s=IDLE] [s=ATTACK] [s=ATTACKIDLE] [s=MOVINGTOY] [s=DEATH] - before the names
 // were shortened to single letters:
 //   "A" IDLE       the default act and the log's most common state; SetFacing
-//                  gives it the _IDLE1 pose and ResolveArrivalReposition
+//                  gives it the _IDLE1 pose and StepBomberBehavior
 //                  already reads it as "not idle".
 //   "C" DEATH      BuildGruntDeathAnimation latches it with SORTKEY_GRUNT_DEATH.
 //   "E" ATTACKIDLE the only act SetFacing gives m_poseAttackIdle.
-//   "F" ATTACK     latched by RearmAttackAnim/RearmAttackAnim2; its step is
+//   "F" ATTACK     latched by StartNeighborAttackAnimation/StartRangedAttackAnimation; its step is
 //                  StepAttackAction.
 // MOVINGTOY is one of the remaining letters; which is not yet proven.
 

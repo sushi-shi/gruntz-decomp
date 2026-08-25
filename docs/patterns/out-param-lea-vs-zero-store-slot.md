@@ -62,7 +62,7 @@ mov DWORD PTR [esp+0x4],0             lea ecx,[esp+0x4]
 ```
 
 `CDDrawSurfaceMgr* world = g_gameReg->m_world;` as its own statement puts the load where
-retail has it and closed the function. The same edit took `CSpotLight::SerializeMove`
+retail has it and closed the function. The same edit took `CSpotLight::SerializeDispatch`
 0xb2050 98.06 -> 99.96 and simultaneously fixed a whole-function EBX/EBP swap: with `world`
 declared before the mode `switch` it becomes a call-crossing value that binds a callee-saved
 register, which is why retail's parameter binding order differs from a body that re-reads

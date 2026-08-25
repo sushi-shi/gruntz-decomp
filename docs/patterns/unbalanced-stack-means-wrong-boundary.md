@@ -64,12 +64,13 @@ and everything closes:
 00093569: ret 0x10                                      ; an EARLY return, mid-function
 0009356c: (the block)                                   ; esp = E0-0x14  -> balances exactly
 ```
-`0x93460` is `CGruntzMgr::BroadcastCmd` — already reconstructed, in another unit, with
+`0x93460` is `CGruntzMgr::SerializeGameState` — already reconstructed, in another unit,
+with
 `RVA(0x00093460, 0x15c)` covering `0x93460..0x935bc`. The "function" at `0x9356c..0x935a4`
 sat **entirely inside it**: the same 56 bytes claimed twice, by two names, in two units.
 
 Every symptom then explains itself:
-- args "arrive in callee-saved registers" — because **BroadcastCmd's earlier body loaded
+- args "arrive in callee-saved registers" — because **SerializeGameState's earlier body loaded
   them**; that body is simply not in the fragment.
 - `mov eax,[esp+0x10]; mov ecx,[eax+0x7c]` read as "arg3->m_7c" — under the real 5-push
   frame `[esp+0x10]` is the saved `ecx`, i.e. **`this`**, so it is plainly `this->m_7c`.

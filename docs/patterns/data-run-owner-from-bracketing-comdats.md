@@ -25,7 +25,7 @@ That makes a stray global's real owner recoverable without any debug info:
 Worked (2026-07-28): `g_localVersion`/`g_remoteVersion`/`g_dplayAppGuid` were defined
 in `Multi.cpp`, but CMulti's own run is `[0x211d88,0x2121e0)` — `g_dropPlayerId`,
 `??_R0?AVCNetMgr@@@8`, then every `MULTI_*` literal. The three sit 8 KB lower at
-`[0x20fa70,0x20fae0)`, bracketed by `CGruntzMapMgr::LoadAttributes`' `'Black'…'Brown'`
+`[0x20fa70,0x20fae0)`, bracketed by `CGruntzMapMgr::BuildCellAttributes`' `'Black'…'Brown'`
 below and the CGameLevel area titles + `CGameMgr`/`CGruntzMgr` RTTI + every
 `CGruntzMgr::Run`/`Close`/`HandleCommand` literal above — the same run that holds
 `g_pendingFrame`. One `.obj` cannot own two runs, so they are GruntzMgr's.

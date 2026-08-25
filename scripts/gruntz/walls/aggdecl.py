@@ -66,7 +66,7 @@ tested; `a.m_x != X || a.m_y != Y` short-circuits, so cl tests the first half
 straight out of memory (`cmp [obj+K],r`) and only touches the second on the
 fall-through. Three kinds: PAIR (both halves in registers, no conditional
 branch between), SPLIT (a branch separates the touches), MEMOP (a half is
-consumed as a memory operand and never loaded). CTriggerMgr::ApplyTriggerB
+consumed as a memory operand and never loaded). CTriggerMgr::UseToyAt
 0x6e120 is the worked positive: one `Coord` copy per compared pair took it
 87.70 -> 88.73 and made the whole region instruction-for-instruction retail's.
 Calibration on the 100% rows: 1515 comparable keys, 1515 agree, zero rows.
@@ -111,7 +111,7 @@ AGGREGATE = ("COPYF", "COPYM", "ARG", "WALK")
 #: `--reads`: the READ side of the same question. A whole-object copy loads
 #: BOTH halves before anything is tested; `a.m_x != X || a.m_y != Y` short-
 #: circuits, so cl tests the first half straight out of memory and only
-#: touches the second on the fall-through. CTriggerMgr::ApplyTriggerB 0x6e120
+#: touches the second on the fall-through. CTriggerMgr::UseToyAt 0x6e120
 #: is the worked positive (87.70 -> 88.73).
 COND_JUMP = re.compile(r"^j(?!mp$)[a-z]+$")
 READ_WINDOW = 10
@@ -439,7 +439,7 @@ mov ecx,DWORD PTR [esp+0x10]
 mov DWORD PTR [esi+0x10],eax
 mov DWORD PTR [esi+0x14],ecx
 """
-#: ApplyTriggerB 0x6e120: the pair-load retail emits, and the `||` we had
+#: UseToyAt 0x6e120: the pair-load retail emits, and the `||` we had
 FIXTURE_PAIR_READ = """
 mov eax,DWORD PTR [ebp+0x17c]
 mov ecx,DWORD PTR [ebp+0x180]

@@ -33,7 +33,7 @@ mov  eax,[esi+0x17c] ; reload x   mov  ecx,[esi+0x180] ; reload y
 STEERABLE, and NARROW. Read retail's FIRST load of the pair and match the declaration
 order; the argument order at the call site is unchanged, so this is byte-neutral in
 meaning. `CProjectile::AdvanceMotion` 0xdfd00 93.7714 -> 96.0192 (both duplicated
-`CreateSprite` tail blocks fell into line at once); `CTriggerMgr::ApplyTriggerB` 0x6e120
+`CreateSprite` tail blocks fell into line at once); `CTriggerMgr::UseToyAt` 0x6e120
 85.2268 -> 85.2354.
 
 **THE READ-ORDER DIFFERENCE IS NOT THE WORKLIST — THE COPY SHAPE IS.** A tree-wide census

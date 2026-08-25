@@ -18,7 +18,7 @@ class SoundBuffer;
 
 class CProjectile : public CMovingLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00012960, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;
@@ -45,7 +45,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterType();
 
-    i32 DetachRenderObj();
+    i32 AdvanceAnimationAndDeleteWhenComplete();
     void ScanTargets(i32 impact);
     i32 LaunchSound(const char* key);
     virtual void AdvanceMotion() OVERRIDE;

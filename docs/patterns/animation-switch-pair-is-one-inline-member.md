@@ -20,7 +20,7 @@ POINTER (`CWapX`, which owns `m_wwdObject` and `m_value`).
 **The pair must be ONE member.** Splitting it into a `CacheAnimation()` plus a plain
 `SetAnimationByName()` forwarder is WORSE than not converting: the boundary does move the
 load inside, but the call that follows still needs the receiver in ECX, so cl allocates
-EDX inside the expansion and pays a `mov ecx,edx` (`CStaticHazard::LoadAttributes2`
+EDX inside the expansion and pays a `mov ecx,edx` (`CStaticHazard::UpdateIdleState`
 97.857 -> 93.929, function grew 0xb2 -> 0xb4). With both statements in one member the call
 inside the expansion pins the register and the extra move disappears.
 
@@ -46,7 +46,7 @@ class CWapX {
     }
 };
 
-// CStaticHazard::LoadAttributes2
+// CStaticHazard::UpdateIdleState
 m_fired = 1;
 SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
 ```
@@ -62,17 +62,17 @@ mov  DWORD PTR [esi+0x40],edx       mov  DWORD PTR [esi+0x40],edx
 
 ## Measured: 106 sites converted, 46 functions up, 10 to EXACT, ZERO site regressions
 
-To EXACT: `CGruntPuddle::Place` 93.560, `CWarlord::RaiseBattleAlert` 95.095,
+To EXACT: `CGruntPuddle::Place` 93.560, `CWarlord::ResolveJoyAnimation` 95.095,
 `CGrunt::ResetGeometry` 95.700, `CWarlord::ResolveMovingAnimation` 97.171,
-`CWarlord::ResolveDeathAnimation` 97.828, `CStaticHazard::LoadAttributes2` 97.857,
-`CGrunt::LoadVehicleGruntAnimations` 98.623, `CGrunt::StepEntranceRelatchA` 98.799 - all
+`CWarlord::ResolveDeathAnimation` 97.828, `CStaticHazard::UpdateIdleState` 97.857,
+`CGrunt::LoadVehicleGruntAnimations` 98.623, `CGrunt::UpdateToyUseAnimation` 98.799 - all
 -> **100.000**. Largest partials: `CProjectile::AdvanceMotion` 88.536 -> 93.387,
 `CGrunt::ResetEntranceAnimation` 88.505 -> 92.242, `CGrunt::UpdateArrival` 92.509 ->
 95.475, `CGrunt::UpdateEntranceAnim` 94.346 -> 96.816, `CRollingBall::CRollingBall`
 77.007 -> 79.313, `CGrunt::SetFacing` 93.374 -> 95.397, `CGrunt::LoadFreezeSpellAssets`
 87.381 -> 89.127, `CEyeCandyAni::CEyeCandyAni` 96.601 -> 98.105, `CGrunt::SetupTubeAnim`
 97.396 -> 98.825, `CObjectDropper::CObjectDropper` 96.445 -> 97.274,
-`CPathHazard::CPathHazard` 98.947 -> 99.925, `CStaticHazard::LoadAttributes` 98.913 ->
+`CPathHazard::CPathHazard` 98.947 -> 99.925, `CStaticHazard::UpdateActiveState` 98.913 ->
 99.774. **Not one converted site scored lower**, over three measured batches (5 sites, then
 61 across 7 TUs, then 22 across 16 TUs). The remaining 10 textual sites are NOT this shape -
 the cache is guarded, branched, reached through `m_object`, or routed via a local

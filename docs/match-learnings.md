@@ -37,7 +37,7 @@ latch, **+0x1c4** conditional-FX gate.
 holder (`+0x4`→renderer-state {`+0x10`→`+0x2c` surface, `+0x14` view, `+0x18`
 present-target}, `+0x8`/`+0xc` renderers, `+0x20` profiler timer, `+0x24`
 draw-surface), **+0x150/+0x154** BeginFrameClear args. CPlay-own: **+0x1a8/+0x1ac**
-StepInputA boot one-shot latches, **+0x1b0** half-selector, **+0x2dc** subsystem
+RestoreCursorSaveUnder boot one-shot latches, **+0x1b0** half-selector, **+0x2dc** subsystem
 (`+0x10c`, `+0x550/+0x554` ready-gate, `+0x574`), **+0x2e0/+0x2e4** marker sinks,
 **+0x2f8** level-id (==0x66), **+0x30c** world-ready gate, **+0x310** RECT buffer,
 **+0x320** overlay gate, **+0x328..+0x344** booty/ambient timers, **+0x348**
@@ -68,7 +68,7 @@ renderer vtable slots **+0x24** begin-scene / **+0x34** present (on `m_c->m_8`/`
 **Status:** CPlay::Render @0xc8cf0 (3092 B) is a faithful CARCASS (the per-frame heart;
 3-way SEH dispatch, kept `wip` — see patterns/big-seh-fuzzy-desync.md). The four
 OnRegion scroll one-shots @0xd8aa0/0xd8a00/0xd8b20/0xd8bc0 are BYTE-EXACT; StepC@0xd8d90,
-StepScroll@0xd1ac0, StepInputA@0xd11e0, PlayCueAt@0xd1890 are faithful carcasses
+StepScroll@0xd1ac0, RestoreCursorSaveUnder@0xd11e0, PlayCueAt@0xd1890 are faithful carcasses
 (78-90%). GameMode unit 8/8 byte-exact (CState ctor/dtor + the five Update stubs).
 **NEXT:** StepWorldB @0xd12b0 (725 B, world/camera step); below it the per-entity
 update layer walked inside the world-draw blit (`m_4->m_54->Blit` @0x1a7d).

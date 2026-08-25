@@ -37,6 +37,6 @@ target: mov [eax+0x298],0x3e8 | add eax,0x290 | mov [eax+0xc],ecx | mov [eax],ed
 STEERABLE, and it is an IDENTITY finding as much as a codegen one: the rebase names the
 struct boundary, so keep the old flat names alive as an anonymous-struct union arm and the
 other TUs that use them need no edit. Evidence (2026-07-28, `src/Gruntz/Warlord.cpp` +
-`include/Gruntz/TriggerMgr.h`): `CWarlord::AdvanceMovingAnim` 95.85 -> **100 EXACT** and
+`include/Gruntz/TriggerMgr.h`): `CWarlord::FinishJoyAnimation` 95.85 -> **100 EXACT** and
 `CWarlord::BuildFortSplashParticles` 98.07 -> **100 EXACT**, both filed as an
 "addressing-mode wall ... nothing in the source selects it".

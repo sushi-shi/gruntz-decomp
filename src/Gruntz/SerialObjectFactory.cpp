@@ -80,14 +80,14 @@
 #include <string.h>
 
 RVA(0x0000d210, 0x65)
-i32 ParseSerial(CGruntzMgr* mgr, char* s) {
+i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
     if (mgr == NULL) {
         return 0;
     }
-    if (s == NULL) {
+    if (path == NULL) {
         return 0;
     }
-    if (strlen(s) == 0) {
+    if (strlen(path) == 0) {
         return 0;
     }
     g_serialCounter = 0;
@@ -97,12 +97,13 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     }
     // Filter seeded with 0, NOT LOGIC_NONE(-1): retail pushes 0 here, the same
     // "no filter" idiom as CGameSave::Save's SnapshotChildren call.
-    return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, LOGIC_UNSET) != LOGIC_UNSET;
+    return mgr->m_world->RestoreChildren(&GameSerializationCallback, path, LOGIC_UNSET)
+           != LOGIC_UNSET;
 }
 
 // @early-stop
 RVA(0x0000d2a0, 0x1984)
-i32 __cdecl SerialObjectFactory(
+i32 __cdecl GameSerializationCallback(
     CDDrawSurfaceMgr* ctx,
     CFileMemBase* archive,
     SerialMode mode,
@@ -338,7 +339,7 @@ i32 __cdecl SerialObjectFactory(
 
     AddrWord<char> payloadWord;
     payloadWord.m_addr = static_cast<char*>(payload);
-    return g_gameReg->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
+    return g_gameReg->SerializeGameState(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
 // The pinned halves of the four ctor pairs declared in UserLogic.h,
@@ -362,20 +363,20 @@ RVA_COMPGEN(0x00013170, 0x7b, ??0CPathHazard@@QAE@XZ)
 CPathHazard::CPathHazard() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
 // The pinned half of CMotionState's two-entity split: CGrunt::CGrunt,
-// CProjectile::CProjectile and SerialObjectFactory above all `call` it, while the
+// CProjectile::CProjectile and GameSerializationCallback above all `call` it, while the
 // CMovingLogic()/CProjectile() COMDATs beside it expand CMotionState(INLINE_BASE).
 // The COMPGEN form is the accurate one and not a workaround: retail's 0x136d0 IS a
 // compiler-emitted out-of-line copy of an inline ctor cl declined to expand, exactly
 // like the six siblings pinned around it.  The definition below is only how we make
 // our cl emit that same body.  It also keeps this unit's tu_order span honest - the
 // span is measured from RVA() rows, and a real claim at 0x136d0 would stretch
-// SerialObjectFactory across the carved SerializeSyncMarker (0x13610).
+// GameSerializationCallback across the carved SerializeSyncMarker (0x13610).
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
 CMotionState::CMotionState() {
     InitBounds();
 }
 
-// The pinned half of CUserLogic's default-ctor pair: SerialObjectFactory above
+// The pinned half of CUserLogic's default-ctor pair: GameSerializationCallback above
 // `call`s it at 45 of its 57 direct-derived sites and expands the CUserLogic(EInlineBase)
 // sibling at the other 11.  Same COMPGEN reasoning as CMotionState below - a real RVA()
 // claim here would stretch this unit's tu_order span across the carved 0x13610.

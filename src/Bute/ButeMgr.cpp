@@ -821,24 +821,24 @@ i16 CButeMgr::CharClass(char c) {
 }
 
 RVA(0x00170400, 0x2f)
-GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::PeekState(i16 state, char c) {
+GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::GetLexAction(i16 state, char c) {
     return g_transTable[state][CharClass(c)][LEXSLOT_ACTION];
 }
 
 RVA(0x00170430, 0x2f)
-i16 CButeMgr::PeekState2(i16 state, char c) {
+i16 CButeMgr::GetTransitionTarget(i16 state, char c) {
     return g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
 }
 
 RVA(0x00170460, 0x58)
-void CButeMgr::ScanState(i16 state, char c) {
+void CButeMgr::AcceptTransition(i16 state, char c) {
     m_tokType = g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
     m_lexState = g_transTable[state][CharClass(c)][LEXSLOT_STATE];
 }
 
 RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
-    // `kind` is 16-bit: retail copies PeekState2's result with a plain `mov edi,eax`
+    // `kind` is 16-bit: retail copies GetTransitionTarget's result with a plain `mov edi,eax`
     // (cl's cheap 2-byte 16-bit copy - the upper half is dead because every consumer
     // reads `WORD PTR [esp+4]`), where an `i32` forces a real `movsx edi,ax`.
     const i16 kLexStartState = 0x11;
@@ -846,14 +846,14 @@ bool CButeMgr::Parse() {
     g_tokenLen = 0;
 
     for (;;) {
-        GZ_ENUM_RETURN(ButeLexAction, i16) cls = PeekState(kind, m_curChar);
+        GZ_ENUM_RETURN(ButeLexAction, i16) cls = GetLexAction(kind, m_curChar);
         switch (cls) {
             case LEXACT_ERROR:
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
 
             case LEXACT_TAKE:
-                kind = PeekState2(kind, m_curChar);
+                kind = GetTransitionTarget(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
@@ -862,7 +862,7 @@ bool CButeMgr::Parse() {
                 break;
 
             case LEXACT_SKIP:
-                kind = PeekState2(kind, m_curChar);
+                kind = GetTransitionTarget(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
@@ -870,7 +870,7 @@ bool CButeMgr::Parse() {
                 break;
 
             case LEXACT_ACCEPT_TAKE:
-                ScanState(kind, m_curChar);
+                AcceptTransition(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
@@ -883,7 +883,7 @@ bool CButeMgr::Parse() {
                 return true;
 
             case LEXACT_ACCEPT_SKIP:
-                ScanState(kind, m_curChar);
+                AcceptTransition(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
@@ -895,7 +895,7 @@ bool CButeMgr::Parse() {
                 return true;
 
             case LEXACT_ACCEPT_PUSHBACK:
-                ScanState(kind, m_curChar);
+                AcceptTransition(kind, m_curChar);
                 if (m_tokType == BUTETOK_NONE) {
                     Parse();
                 }

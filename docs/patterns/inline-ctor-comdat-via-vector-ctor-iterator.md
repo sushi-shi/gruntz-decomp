@@ -21,13 +21,13 @@ struct CSbiHlRow {
     ...
 };
 class CStatusBarMgr {
-    CSbiHlRow m_groupSlots[3];      // <- these two arrays are what take the address
-    CSbiHlRow m_hlGrid[12];
+    CSbiHlRow m_conveyorSlots[3];      // <- these two arrays are what take the address
+    CSbiHlRow m_resourceSlots[12];
 };
 ```
 ```asm
 c8041: push 0x403a3a      ; &??0CSbiHlRow  (through its ILT thunk)
-c8052: push 0x3           ; element count -> m_groupSlots[3]
+c8052: push 0x3           ; element count -> m_conveyorSlots[3]
 c8066: push 0x18          ; sizeof(CSbiHlRow)
 c8074: push eax           ; array base (esi+0x2c0)
 c8081: call 0x1aa5        ; `vector constructor iterator'

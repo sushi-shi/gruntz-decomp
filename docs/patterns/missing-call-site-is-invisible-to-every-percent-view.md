@@ -62,7 +62,7 @@ virtual case (the vtable still references the method on both sides), so run both
 A count deficit has three causes and only one is a defect:
 
 1. **cl cross-jumped two ARGUMENT-IDENTICAL call sites that retail kept apart.**
-   This is the dominant class. `CGrunt::UpdateArrival` shows retail with one more
+   This is the dominant class. `CGrunt::StepGauntletGruntBehavior` shows retail with one more
    each of `GruntInRadius`, `RectContains`, `ResetEntranceAnimation` and
    `PlayVoice`; the source has every one of those sites, textually
    identical in two arms, and cl merged each pair. Same for

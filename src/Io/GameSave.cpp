@@ -35,6 +35,7 @@ i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
     // Filter seeded with 0, NOT LOGIC_NONE(-1): a full save keeps every child,
     // and 0 is not a member of the LogicTypeId domain (same idiom as
     // CGameObject::WriteSnapshot's typeTag).
-    return world->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", LOGIC_UNSET)
+    return world
+               ->SnapshotChildren(&GameSerializationCallback, name, "Gruntz Save Game", LOGIC_UNSET)
            != LOGIC_UNSET;
 }

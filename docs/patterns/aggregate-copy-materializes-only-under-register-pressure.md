@@ -8,7 +8,7 @@ confidence: 8/10
 
 ## Symptom
 
-`CGrunt::WanderStep` 0xed9f0, three sites (SEEK / CHASE / ATTACK arms):
+`CGrunt::StepHitAndRunnerBehavior` 0xed9f0, three sites (SEEK / CHASE / ATTACK arms):
 
 ```asm
 ; retail                                  ; ours
@@ -72,7 +72,7 @@ retail folds, your body is carrying a value retail did not.
 
 The address-escape row is the steerable half and it is a different pattern: when
 the aggregate's address IS taken (`g->GetScreenPos(c)`), every store to it
-survives, which is how `WanderStep`'s `c[0].m_x = c[0].m_x >> TILE_SHIFT_PX;`
+survives, which is how `StepHitAndRunnerBehavior`'s `c[0].m_x = c[0].m_x >> TILE_SHIFT_PX;`
 in-place shift was recovered - see
 [interior-subobject-pointer-is-a-source-local](interior-subobject-pointer-is-a-source-local.md)
 and the alias model in

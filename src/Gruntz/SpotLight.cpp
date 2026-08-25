@@ -240,13 +240,13 @@ int CSpotLight::Update() {
 
 // @early-stop
 RVA(0x000b2050, 0x295)
-i32 CSpotLight::SerializeMove(
+i32 CSpotLight::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(
         ar,
         static_cast<CFileMemBase*>(ar),
         mode,

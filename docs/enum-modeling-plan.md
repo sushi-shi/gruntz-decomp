@@ -201,7 +201,7 @@ All byte-neutral: the score returned to its pre-campaign value (3260/4272 exact,
   pre/main/post per direction (3-5, 6-8), plus the two construction callbacks
   (`SERIAL_CREATE(9)`, `SERIAL_CREATE_BY_SERIAL_ID(10)`). Proven by
   `CDDrawSurfaceMgr::SnapshotChildren`/`RestoreChildren`'s call order and by
-  `SerialObjectFactory`'s arms.
+  `GameSerializationCallback`'s arms.
 - **~380 serialize-family signatures** retyped: the `mode` parameter to
   `SerialMode` and the `typeId` parameter to `LogicTypeId`, including the
   `HP_Callback` archive callback typedef.
@@ -224,7 +224,7 @@ Findings the type system produced (each evidenced, not guessed):
   RollingBall→`DEATH_SQUASH`, KitchenSlime→`DEATH_MELT`, SpotLight→`DEATH_KAROKE`.
 - **`m_moveMode` carries a `PickupType`**, range-dispatched by pickup boundaries.
 - **The Brickz range starts at `0x22`**, not `0x23` as the community docs say.
-- **`InvokeCallback`'s type-id parameter carries two domains** — a `LogicTypeId`
+- **`DispatchSerializationCallback`'s type-id parameter carries two domains** — a `LogicTypeId`
   in phase 9, a record serial id in phase 10. Recorded, not merged.
 
 ## The strict drain

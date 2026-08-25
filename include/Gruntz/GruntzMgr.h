@@ -121,8 +121,8 @@ public:
     i32 RestoreVideoMode(i32 save);
     i32 SetVideoMode(i32 w, i32 h, i32 flag);
 
-    i32 CheckDisplayBoundsA();
-    i32 CheckDisplayBoundsB();
+    i32 TryNextResolution();
+    i32 TryPreviousResolution();
 
     i32 ForwardCharToState(i32 charCode, i32 keyData);
     i32 ForwardKeyDownToState(i32 virtualKey, i32 keyData);
@@ -218,7 +218,7 @@ public:
     );
     void CommitSinglePlayerProgress();
 
-    i32 BroadcastCmd(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeGameState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     void RecomputeViewScale();
 
     i32 MakeRezPath();

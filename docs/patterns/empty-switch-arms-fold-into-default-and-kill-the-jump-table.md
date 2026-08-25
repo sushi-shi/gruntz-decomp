@@ -31,7 +31,7 @@ cmp    eax,0x5                 ; six entries, 3..8
 ja     <tail>
 jmp    DWORD PTR [eax*4+<tbl>] ; entries for 3/5/6/8 == <tail>
 ```
-STEERABLE. `CGameLevel::EditDispatch` 0x160f70 **49.78% -> 92.55%** (filed as a
+STEERABLE. `CGameLevel::SerializeDispatch` 0x160f70 **49.78% -> 92.55%** (filed as a
 "switch jump-table-density wall"; the remaining residue is the delinker's jump-table
 symbol naming, see jumptable-data-overlap). CAVEAT: spelling the tail out *inside* `default`
 instead of `goto`-ing also builds the table but leaves a full duplicate of the tail (+50 B).

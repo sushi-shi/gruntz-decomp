@@ -142,13 +142,13 @@ i32 CFortressFlag::AdvanceAnim() {
 }
 
 RVA(0x00046410, 0x92)
-i32 CFortressFlag::SerializeMove(
+i32 CFortressFlag::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
         CWwdSpriteObject* spr = m_object;
         i32 idx = IDX(g_gameReg->m_players[spr->m_smarts].m_color);

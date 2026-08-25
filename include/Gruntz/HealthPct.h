@@ -10,7 +10,7 @@
 // clamps with the identical two lines, `if (h >= HEALTH_FULL) h = HEALTH_FULL`.
 // A clamp that three independent arms share is a scale bound, not a threshold.
 //
-// The CUE_HEAL combat cue and the fresh-grunt paths set it straight to
+// The GRUNT_AREA_EFFECT_HEAL combat cue and the fresh-grunt paths set it straight to
 // HEALTH_FULL, and death is tested as `m_health <= HEALTH_EMPTY` - so both ends
 // of the scale are exercised.
 GZ_ENUM_CONST_BEGIN(HealthPct)

@@ -668,7 +668,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 RECT r = *(&g_gameReg->m_world->m_level->m_viewportRect);
                 RECT r2;
                 CopyRect(&r2, &r);
-                EngStr_DrawText(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToFrontSurface(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = 1;
             CRezArchiveDir* tree = m_gruntResources->FindDirectoryByPath("IMAGEZ_" + name);

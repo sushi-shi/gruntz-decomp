@@ -57,6 +57,6 @@ the prologue delta. Same family as the `this`-register-spill residual noted in
 [loop-preheader-vs-exit-block-order.md](loop-preheader-vs-exit-block-order.md),
 isolated here to a function whose ONLY difference is the seed spill.
 
-Evidence: Gruntz `CTileTriggerSwitchLogic::VerifyBlockLinks` (0x112c70, 196 B):
+Evidence: Gruntz `CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive` (0x112c70, 196 B):
 ~86% fuzzy, byte-identical except the `push ecx` slot + `mov edi,[esp+0x10]` vs
 `xor edi,edi`/`mov edi,ebp`.

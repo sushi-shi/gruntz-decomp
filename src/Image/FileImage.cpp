@@ -36,7 +36,7 @@ static PALETTEENTRY s_palPcxData[0x100];
 // join. Thirty-two TU states, 256 syntax-aware shapes and 28 reviewed boundary,
 // view-placement, pointer and call spellings did not reverse that pair.
 RVA(0x00143cf0, 0x16b)
-i32 CDDSurface::DecodeRun(
+i32 CDDSurface::CreateFromBmpData(
     CDDrawDeviceManager* manager,
     BmpFileImage* image,
     i32 dataSize,
@@ -96,7 +96,7 @@ i32 CDDSurface::DecodeRun(
 }
 
 RVA(0x00143e60, 0x15b)
-i32 CDDSurface::LoadFile2(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
+i32 CDDSurface::CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
     CFile file;
     if (!file.Open(path, 0, NULL)) {
         return 0;
@@ -115,7 +115,7 @@ i32 CDDSurface::LoadFile2(CDDrawDeviceManager* manager, const char* path, i32 su
     }
     RecordBytes<BmpFileImage> data;
     data.m_bytes = buf;
-    i32 result = DecodeRun(manager, data.m_rec, len, surfaceCaps);
+    i32 result = CreateFromBmpData(manager, data.m_rec, len, surfaceCaps);
     delete[] buf;
     return result;
 }
@@ -499,7 +499,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 
 // @early-stop
 RVA(0x00144b30, 0x250)
-i32 CDDSurface::Decode(
+i32 CDDSurface::CreateFromPcxData(
     CDDrawDeviceManager* manager,
     PcxHeader* image,
     i32 dataSize,
@@ -572,7 +572,7 @@ i32 CDDSurface::Decode(
             if (buf == NULL) {
                 return 0;
             }
-            result = RunDecode1(buf, run, width, height);
+            result = DecodeByteRun1Plane(buf, run, width, height);
         } else {
             if (width % 2 != 0) {
                 return 0;
@@ -581,7 +581,7 @@ i32 CDDSurface::Decode(
             if (buf == NULL) {
                 return 0;
             }
-            result = RunDecode3(buf, run, width, height);
+            result = DecodeByteRun3Planes(buf, run, width, height);
         }
         if (result == 0) {
             delete[] buf;
@@ -602,7 +602,7 @@ i32 CDDSurface::Decode(
 }
 
 RVA(0x00144d80, 0x15b)
-i32 CDDSurface::LoadFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
+i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
     CFile file;
     if (!file.Open(path, 0, NULL)) {
         return 0;
@@ -620,7 +620,7 @@ i32 CDDSurface::LoadFile(CDDrawDeviceManager* manager, const char* path, i32 sur
         delete[] fileData.m_bytes;
         return 0;
     }
-    i32 result = Decode(manager, fileData.m_rec, len, surfaceCaps);
+    i32 result = CreateFromPcxData(manager, fileData.m_rec, len, surfaceCaps);
     delete[] fileData.m_bytes;
     return result;
 }
@@ -677,13 +677,13 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
                         if (decoded == NULL) {
                             return 0;
                         }
-                        ok = RunDecode1(decoded, pixels, width, height);
+                        ok = DecodeByteRun1Plane(decoded, pixels, width, height);
                     } else {
                         decoded = new u8[width * height * 3];
                         if (decoded == NULL) {
                             return 0;
                         }
-                        ok = RunDecode3(decoded, pixels, width, height);
+                        ok = DecodeByteRun3Planes(decoded, pixels, width, height);
                     }
                     if (!ok) {
                         delete[] decoded;
@@ -739,7 +739,7 @@ i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
 #pragma optimize("", off)
 
 RVA(0x00145270, 0x17a)
-i32 CDDSurface::RunDecode1(u8* dstBuf, u8* src, i32 width, i32 height) {
+i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) {
     u8* sp;
     i32 y;
     u8 tok;
@@ -795,7 +795,7 @@ i32 CDDSurface::RunDecode1(u8* dstBuf, u8* src, i32 width, i32 height) {
 }
 
 RVA(0x001453f0, 0x3ac)
-i32 CDDSurface::RunDecode3(u8* dstBuf, u8* src, i32 width, i32 height) {
+i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height) {
     u8* sp;
     i32 y;
     u8 tok;
@@ -993,7 +993,7 @@ i32 CDDSurface::DecodePcxData(
         if (!decoded) {
             return 0;
         }
-        if (!RunDecode1(decoded, record.m_bytes, width, height)) {
+        if (!DecodeByteRun1Plane(decoded, record.m_bytes, width, height)) {
             delete[] decoded;
             return 0;
         }
@@ -1100,7 +1100,7 @@ i32 CDDSurface::DecodePid(
             if (!decoded) {
                 return 0;
             }
-            if (!RunDecode1(decoded, record.m_bytes, width, height)) {
+            if (!DecodeByteRun1Plane(decoded, record.m_bytes, width, height)) {
                 delete[] decoded;
                 return 0;
             }

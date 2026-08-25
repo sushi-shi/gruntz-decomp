@@ -1528,7 +1528,7 @@ rowHitB: {
 spellHit: {
     i32 hx = unit->m_lastTilePx.m_x;
     i32 hy = unit->m_lastTilePx.m_y;
-    m_triggerMgr->ApplyTriggerA(unit->m_playerIndex, unit->m_unitIndex, hx, hy);
+    m_triggerMgr->UseEquippedToolAt(unit->m_playerIndex, unit->m_unitIndex, hx, hy);
     return 1;
 }
 
@@ -1771,7 +1771,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (tB & 0x20) {
                 i32 tA2 = m_board->CellFlagsAt(ax, ay);
                 if (!(tA2 & 0x2)) {
-                    m_triggerMgr->ApplyTriggerA(
+                    m_triggerMgr->UseEquippedToolAt(
                         unit->m_playerIndex,
                         unit->m_unitIndex,
                         ax * 0x20 + 0x10,
@@ -1787,7 +1787,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         i32 sA = scratchA.m_flags;
         if ((sA & 0x8000) && prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
-            m_triggerMgr->ApplyTriggerA(
+            m_triggerMgr->UseEquippedToolAt(
                 unit->m_playerIndex,
                 unit->m_unitIndex,
                 cx * 0x20 + 0x10,
@@ -1913,7 +1913,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 i32 oy = cand->m_tileY;
                 if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                     != 0) {
-                    m_triggerMgr->ApplyTriggerA(
+                    m_triggerMgr->UseEquippedToolAt(
                         unit->m_playerIndex,
                         unit->m_unitIndex,
                         ox * 0x20 + 0x10,
@@ -2236,7 +2236,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
         if ((static_cast<CGrunt*>(actor))->RectContainsGated(ul->m_screenX, ul->m_screenY) != 0) {
             if (actor->m_vehiclePickupType == PICKUP_SCROLL) {
                 CGameObject* tl = actor->m_object;
-                m_triggerMgr->ApplyTriggerB(
+                m_triggerMgr->UseToyAt(
                     actor->m_playerIndex,
                     actor->m_unitIndex,
                     tl->m_screenX,
@@ -2244,7 +2244,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
                 );
             } else {
                 CGameObject* ul2 = other->m_object;
-                m_triggerMgr->ApplyTriggerB(
+                m_triggerMgr->UseToyAt(
                     actor->m_playerIndex,
                     actor->m_unitIndex,
                     ul2->m_screenX,
@@ -3004,7 +3004,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if ((maskFlags & 0x8000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
-        m_triggerMgr->ApplyTriggerA(
+        m_triggerMgr->UseEquippedToolAt(
             g->m_playerIndex,
             g->m_unitIndex,
             (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -3016,7 +3016,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if ((maskFlags & 0x4000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
         if (m_board->m_rows[fcy][fcx].m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
-            m_triggerMgr->ApplyTriggerA(
+            m_triggerMgr->UseEquippedToolAt(
                 g->m_playerIndex,
                 g->m_unitIndex,
                 (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -3044,7 +3044,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         PickupType er = g->m_entranceReason;
         if (ArrivalPickupOf(g, er) == PICKUP_BOMB || ArrivalPickupOf(g, er) == PICKUP_TIMEBOMB) {
             if (ArrivalPickupOf(g, er) == PICKUP_BOMB) {
-                m_triggerMgr->ApplyTriggerA(
+                m_triggerMgr->UseEquippedToolAt(
                     g->m_playerIndex,
                     g->m_unitIndex,
                     (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -3063,8 +3063,12 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                             }
                             DECLARE_TILE_CENTER_PIXEL_PAIR(hitX, hitY, col, row)
                             if (g->RectContains(hitX, hitY) != 0) {
-                                m_triggerMgr
-                                    ->ApplyTriggerA(g->m_playerIndex, g->m_unitIndex, hitX, hitY);
+                                m_triggerMgr->UseEquippedToolAt(
+                                    g->m_playerIndex,
+                                    g->m_unitIndex,
+                                    hitX,
+                                    hitY
+                                );
                             }
                             return 1;
                         }
@@ -3084,7 +3088,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     ResolveTileClaim(g, fcx, fcy, 1);
                     return 1;
                 }
-                m_triggerMgr->ApplyTriggerA(
+                m_triggerMgr->UseEquippedToolAt(
                     g->m_playerIndex,
                     g->m_unitIndex,
                     (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -3124,7 +3128,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     }
                 }
             }
-            m_triggerMgr->ApplyTriggerA(
+            m_triggerMgr->UseEquippedToolAt(
                 g->m_playerIndex,
                 g->m_unitIndex,
                 (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -3153,7 +3157,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         PickupType er2 = g->m_entranceReason;
         if (ArrivalPickupOf(g, er2) != PICKUP_WINGZ) {
             if (ArrivalPickupOf(g, er2) == PICKUP_SHOVEL) {
-                m_triggerMgr->ApplyTriggerA(
+                m_triggerMgr->UseEquippedToolAt(
                     g->m_playerIndex,
                     g->m_unitIndex,
                     (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -3535,7 +3539,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     {
         // Each probe seeds cD's other axis before cD is itself probed: retail
         // stores the unused half of probes 1..3 into the slot probe 4 later
-        // overwrites (the same idiom GruntPhaseStep spells).
+        // overwrites (the same idiom CGrunt::StepTimeBomberBehavior spells).
         Coord cA;
         Coord cB;
         Coord cC;

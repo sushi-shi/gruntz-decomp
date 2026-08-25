@@ -27,9 +27,9 @@ mov  edi,DWORD PTR [eax]      ; <-- the tell: through the RETURN VALUE, not [esp
 ```
 
 The frame size moves with it, so this shows up as a whole-arm `[esp+N]` shift plus one
-instruction of delta - not as a localized diff. Measured: `CWapX::Chain` `0x8c00`
+instruction of delta - not as a localized diff. Measured: `CWapX::SerializeAnimationState` `0x8c00`
 92.65 -> 93.26 (frame `0x84` -> retail's `0x88`), and the same edit at both
-`CInGameIcon::SerializeMove` sites (`m_animRegistry->FindAnimationKey`,
+`CInGameIcon::SerializeDispatch` sites (`m_animRegistry->FindAnimationKey`,
 `m_soundRegistry->FindCueKey`).
 
 Screen for it with `rg 'CString \w+ = .*(FindAnimationKey|FindCueKey|GetName|GetString)'` next to a `strcpy` /

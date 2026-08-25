@@ -42,7 +42,7 @@ dominated by REGISTER-VS-IMMEDIATE substitution - one side materialises the
 constant in a register and stores that, so its immediate-store map simply
 lacks the entry. All 43 such rows in the 2026-08-23 queue were that (retail
 holds 0xc8 in EBP across `CBootyState::BuildBootyGruntIdleAnimation` and
-re-materialises the same EBP as -2 later; `CGrunt::RearmAttackAnim` stores
+re-materialises the same EBP as -2 later; `CGrunt::StartNeighborAttackAnimation` stores
 EBX=1 where we store the immediate 1 at the very same offsets). Confirm a row
 against the disassembly before reading it as a value defect.
 
@@ -63,7 +63,7 @@ store ORDER was not the defect:
                               consequence (CBattlezMapConfig ctor: retail
                               `mov eax,0xbb8` + `mov edx,0x7d0` live together).
   * frame/local-count wall    a `sub esp` delta shifts every slot and the
-                              store swap rides on it (ResolveArrivalReposition).
+                              store swap rides on it (StepBomberBehavior).
   * vptr-stamp placement      the moved "store" is the `??_7` stamp, which is
                               not a source statement at all.
 

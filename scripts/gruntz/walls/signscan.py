@@ -250,7 +250,7 @@ CONTROL = {
                    "`range == 0` coin arms and `sar` in the four `% range` "
                    "arms, we emit `sar` at all eight"),
     "0x000810f0": (False,
-                   "NEGATIVE: CGruntzMapMgr::LoadAttributes held retail's two "
+                   "NEGATIVE: CGruntzMapMgr::BuildCellAttributes held retail's two "
                    "extra `cdq` - a signed `/ 32` we had hand-expanded as "
                    "`(px + (px >> 31 & 0x1f)) >> 5` - and `px / TILE_SIZE_PX` "
                    "closed it.  It must stay silent"),

@@ -153,6 +153,11 @@ public:
 
     i32 RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay);
 
+    i32 FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
+    i32 FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
+    i32 FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs);
+    i32 FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs);
+
     void Present(i32 pct);
 
     CDDrawSurfaceMgr* menuRoot() {
@@ -209,17 +214,17 @@ public:
     i32 m_snapOriginX;
     i32 m_snapOriginY;
 
-    CDDSurface* m_scratchSurface0;
-    CDDSurface* m_scratchSurface1;
+    CDDSurface* m_cursorSaveSurface0;
+    CDDSurface* m_cursorSaveSurface1;
 
     RECT m_cursorSaveSrc0;
     RECT m_cursorSaveSrc1;
     RECT m_cursorSaveDst0;
     RECT m_cursorSaveDst1;
 
-    i32 m_inputWarmup1;
-    i32 m_inputWarmup2;
-    i32 m_inputHalfSel;
+    i32 m_cursorRestoreWarmup1;
+    i32 m_cursorRestoreWarmup2;
+    i32 m_cursorSaveSlot;
 };
 
 // retail copy 0x0008c750 (emitted by gruntzmgr; pin there)
@@ -235,8 +240,8 @@ inline CState::CState() {
     m_ready = 0;
     m_versionString[0] = 0;
     m_previousStateId = GAMESTATE_NONE;
-    m_scratchSurface0 = NULL;
-    m_scratchSurface1 = NULL;
+    m_cursorSaveSurface0 = NULL;
+    m_cursorSaveSurface1 = NULL;
     m_cursorSaveSrc0.left = 0;
     m_cursorSaveSrc0.right = 0x40;
     m_cursorSaveSrc0.top = 0;

@@ -81,7 +81,7 @@ flip it but neither is used by the TU), `CImage::BlitShadeNorm` 0x154270 (99.85,
 ## Where the count is NOT the knob (measured, 50 islands each, dead flat)
 
 `CPlay::StepScroll` 0xd1ac0 (88.03), `CTriggerMgr::UnregisterUnit` 0x79fb0 (85.89),
-`CTriggerMgr::ToggleRegionA` 0x7d450 (79.13), `CGrunt::ResolveArrivalNeighbor` 0xf26f0
+`CTriggerMgr::ToggleToolTargeting` 0x7d450 (79.13), `CGrunt::StepPostGuardBehavior` 0xf26f0
 (86.61) - 50/50 island cells identical to the baseline, so their residue is intra-function
 and no amount of TU state reaches it. `CDDrawChildGroup::SumWeighted` 0x15aaf0 moves only
 99.852 -> 99.889.
@@ -90,7 +90,7 @@ and no amount of TU state reaches it. `CDDrawChildGroup::SumWeighted` 0x15aaf0 m
 six decimal places. `CStatusBarMgr::SetSpritePos` 0xfe860 (25 graded free-function
 prototypes AND 80 `tu_state_*` islands across all twelve families),
 `CStatusBarMgr::HitTestRects` 0xffcb0, `CStatusBarMgr::PlaceCursorTarget` 0x105800 and
-`CGrunt::RearmAttackAnim` 0x61940 (17/17/13 graded classes-with-inline-bodies, the
+`CGrunt::StartNeighborAttackAnimation` 0x61940 (17/17/13 graded classes-with-inline-bodies, the
 densest carrier). `#include <string.h>` above the first project include is neutral in
 that TU too. The substitution machinery was verified live in the same run - a
 deliberately broken option is dropped as a compile failure - so the flatness is real.

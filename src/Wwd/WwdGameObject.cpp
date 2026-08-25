@@ -225,16 +225,16 @@ i32 CWwdSpriteObject::IntersectsViewport() {
 }
 
 RVA(0x00150a70, 0x89)
-i32 CWwdSpriteObject::Play(
+i32 CWwdSpriteObject::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
-    CGameObject* self
+    CGameObject* object
 ) {
     if (ar == NULL) {
         return 0;
     }
-    if (m_animationCursor.ProcessSerialMode(ar, mode, typeId, self) == 0) {
+    if (m_animationCursor.SerializeDispatch(ar, mode, typeId, object) == 0) {
         return 0;
     }
     switch (mode) {
@@ -249,7 +249,7 @@ i32 CWwdSpriteObject::Play(
             }
             break;
     }
-    return CGameObject::Play(ar, mode, typeId, self) != 0;
+    return CGameObject::SerializeDispatch(ar, mode, typeId, object) != 0;
 }
 
 RVA(0x00150b00, 0x12b)
@@ -455,7 +455,12 @@ void CGameObject::AddLogicBump(char* key) {
 // the goto edge instead of the record pointer, and binds savedEvent/notifyEvent to
 // EBX/EDI there where the two inline arms (and retail everywhere) use EDI/EBX.
 RVA(0x00151150, 0x190)
-i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self) {
+i32 CGameObject::SerializeDispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    CGameObject* object
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -485,7 +490,7 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
         }
         default:
         dispatch:
-            return m_logicRecord->Dispatch(ar, mode, typeId, self) != 0;
+            return m_logicRecord->SerializeDispatch(ar, mode, typeId, object) != 0;
         case SERIAL_SAVE: {
             if (Serialize(ar) == 0) {
                 return 0;

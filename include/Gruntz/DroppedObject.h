@@ -12,7 +12,7 @@ class CFileMemBase;
 
 class CDroppedObject : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
     i32 AdvanceImpactAnimation();
     RVA(0x00012560, 0x6)

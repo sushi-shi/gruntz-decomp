@@ -47,7 +47,7 @@ they had not recognised.
 units, **30** out-of-line calls across 14 functions. Folding all 89 open-coded blocks onto one
 in-class definition in `include/Gruntz/GameLevel.h` is byte-neutral at every one of the 89 and
 *improves* 15 functions (`CSecretTeleporterTrigger::SpawnTeleporter` 96.43 -> **100.00 EXACT**,
-`CGrunt::StepPeerTracking` +2.93, `CDroppedObject::AdvanceFall` +3.68, `CInGameIcon::PlaceAt`
+`CGrunt::StepToyerBehavior` +2.93, `CDroppedObject::AdvanceFall` +3.68, `CInGameIcon::PlaceAt`
 +3.15, `CPlay::OnLButtonDblClk` +3.64).
 
 But cl 5 at `/O2` (`/Ob1`) then expands it at the 30 retail *call* sites as well, and no TU

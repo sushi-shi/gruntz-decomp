@@ -65,13 +65,13 @@ static inline CActHandler* ActLookup(i32 coord) {
 }
 
 RVA(0x00010a10, 0x47)
-i32 CSecretTeleporterTrigger::SerializeMove(
+i32 CSecretTeleporterTrigger::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x00010a80, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
@@ -81,13 +81,13 @@ RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
 RVA(0x00010bb0, 0x47)
-i32 CSecretLevelTrigger::SerializeMove(
+i32 CSecretLevelTrigger::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x00010c20, 0x1e, ??_GCSecretLevelTrigger@@UAEPAXI@Z)

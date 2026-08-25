@@ -9,7 +9,7 @@
 
 // @early-stop
 RVA(0x000612a0, 0x23c)
-i32 CGrunt::LoadGruntDecayConfig() {
+i32 CGrunt::UpdateDeathAnimation() {
     if (m_deathType == DEATH_DROP) {
         return 0;
     }
@@ -87,7 +87,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
 // recompute - the low half only, since the sign test still reads the guard's
 // high half - at the cost of an extra branch.  Both lose ground.
 RVA(0x00061570, 0x11d)
-i32 CGrunt::LoadGruntDecayConfig2() {
+i32 CGrunt::UpdateDecayFade() {
     i64 now = static_cast<i64>(g_frameTime);
     if (now - m_idleTimer >= m_idleWindow) {
         Hide();

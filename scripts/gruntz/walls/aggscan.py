@@ -45,7 +45,7 @@ WHAT IS COUNTED APART: a reservation nothing is COPIED INTO is the frame,
 which is `framescan`'s channel and not an argument. That test is structural
 rather than positional - "the first reservation is the frame" both dropped six
 real callees whose only block sits in the prologue and, on
-`CGrunt::ArrivalReticleScan`, charged a 104-vs-92-byte frame delta to
+`CGrunt::StepDefenderBehavior`, charged a 104-vs-92-byte frame delta to
 `CUserLogic::GetScreenPos`, whose parameter is a pointer.
 
 WHAT THE SWEEP IS WORTH, measured 2026-08-23: 179 argument holes ours against
@@ -137,7 +137,7 @@ def _fills(payload, k, hi, reg, size) -> int:
     scan's own misalignments: `8b dc` read as `mov ebx,esp` in the middle of
     `mov ecx,DWORD PTR [ebx+0x2dc]` is not followed by stores through EBX with
     small displacements, and that is exactly the coincidence that charged a
-    104-vs-92-byte frame delta in `CGrunt::ArrivalReticleScan` to
+    104-vs-92-byte frame delta in `CGrunt::StepDefenderBehavior` to
     `CUserLogic::GetScreenPos`, whose parameter is a pointer.
     """
     rm = REGS.index(reg)

@@ -1125,7 +1125,7 @@ i32 CGrunt::StepArrivalDrop(
     if (0 != nudged) {
         if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
             && m_entranceReason == PICKUP_GAUNTLETZ) {
-            m_triggerMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, pxX, pxY);
+            m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, pxX, pxY);
             SetEntrancePos(1, 1);
             return 1;
         }

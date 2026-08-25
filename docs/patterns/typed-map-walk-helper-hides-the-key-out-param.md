@@ -65,8 +65,8 @@ MapGetNext(m_registeredGameObjectsById, pos, key, val);
 pointer.
 
 STEERABLE. Measured 2026-08-21 on `CDDrawChildGroup`'s five map walks:
-`CountActive` 97.47 -> **100.00 EXACT**, `ForEachDispatch` 86.82 -> **100.00
-EXACT**, `ForEachProbe` 92.94 -> **100.00 EXACT**, `ForEachSerialize` 97.92 ->
+`CountActive` 97.47 -> **100.00 EXACT**, `DispatchSerializationToObjects` 86.82 -> **100.00
+EXACT**, `WriteObjectSnapshots` 92.94 -> **100.00 EXACT**, `SerializeObjects` 97.92 ->
 **100.00 EXACT**, `PruneOrphans` 90.95 -> 93.75 (its residue is a separate
 `Lookup`-result materialisation). `MapGetNextValue` had no other user and was
 removed.

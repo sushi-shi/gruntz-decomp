@@ -26,7 +26,7 @@ Every Gruntz logic class whose members include 64-bit clock/window pairs
 (`i64`, `Clock64`, `CHazardTimer`, a `CPairRecord` band) has a default constructor
 that seeds each of them to 0. Our headers spell those ctors `CFoo() {}`.
 
-Measured on `SerialObjectFactory` (0x0000d2a0), whose `SERIAL_CREATE` switch inlines
+Measured on `GameSerializationCallback` (0x0000d2a0), whose `SERIAL_CREATE` switch inlines
 67 default ctors: the missing seeds accounted for **92 of a 108-instruction deficit**
 (`CGrunt` alone 60 — its 30 clock members), and closing them took the function
 86.74% -> 97.55%.

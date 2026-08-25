@@ -21,7 +21,7 @@ public:
     };
 
     // Out of line at 0x136d0.  Retail `call`s it from CGrunt::CGrunt,
-    // CProjectile::CProjectile and SerialObjectFactory.
+    // CProjectile::CProjectile and GameSerializationCallback.
     CMotionState();
     // The expanded sibling: CMovingLogic's and CProjectile's default ctors carry
     // this body inline.

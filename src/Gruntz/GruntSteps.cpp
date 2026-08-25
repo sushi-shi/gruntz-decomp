@@ -1199,7 +1199,7 @@ applyTail:
 }
 
 RVA(0x00053b80, 0x340)
-i32 CGrunt::SerializeMove(
+i32 CGrunt::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1211,7 +1211,7 @@ i32 CGrunt::SerializeMove(
 
     SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)
 
-    if (CWapX::Chain(ar, mode, typeId, object) == 0) {
+    if (CWapX::SerializeAnimationState(ar, mode, typeId, object) == 0) {
         return 0;
     }
     switch (mode) {

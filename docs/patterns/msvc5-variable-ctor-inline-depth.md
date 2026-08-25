@@ -22,7 +22,7 @@ source shape, decides where the chain becomes a call. Consequences:
   wrong - retail had uniform visibility). This residue class is currently a
   WALL: neither hand shape-tweaks nor the permuter's statement reordering
   reliably moves cl5's per-site inline budget.
-- The same effect explains `SerialObjectFactory`'s arms: `new CProjectile`
+- The same effect explains `GameSerializationCallback`'s arms: `new CProjectile`
   inlines the ctor but keeps its base `??0CMovingLogic` call (depth 1), while
   the `new CGrunt` arm inlines two levels down. Our cl flattened deeper at
   those sites, so some retail-emitted base-ctor COMDATs
@@ -39,14 +39,14 @@ rather than the source.
 
 Ruled out: body-size mismatch (the historical standalone
 `??0CUserLogic@@QAE@XZ` body was byte-perfect at 100%), missing EH frame (our
-`SerialObjectFactory` carries the same fs:0 registration as retail), and header
+`GameSerializationCallback` carries the same fs:0 registration as retail), and header
 visibility (identical on both sides). What remains is the caller's accumulated
 per-site inline budget: cl5 decides call-vs-flatten from the surrounding
 intermediate code, so every OTHER divergence in the caller shifts the decision.
 
 **Consequence: this wall is a convergence phenomenon, not a source-shape defect.**
 Artificial emission devices were removed in August 2026. Finish the real callers -
-SerialObjectFactory, BuildGameMenu, and CGruntzMgr::PlayMovieEntry - through the normal
+GameSerializationCallback, BuildGameMenu, and CGruntzMgr::PlayMovieEntry - through the normal
 matching campaign, then census which inline COMDATs the compiler emits naturally.
 
 ## Sibling divergence: funclet helper vs inline dtor pair (CButeMgr::Save)
@@ -93,5 +93,5 @@ driven by how many INLINE EXPANSIONS the caller contains, and the reconstruction
 missing one member function: `AddTabItem(i32 tab, CStatusBarItem* item)` over 71
 `m_tabLists[N].AddTail(item)` sites. See
 repeated-container-call-is-an-inline-member.md and the BROKEN section of
-ctor-inline-cut-depth-varies-per-new-site.md. The `SerialObjectFactory` /
+ctor-inline-cut-depth-varies-per-new-site.md. The `GameSerializationCallback` /
 `CGruntzMgr::PlayMovieEntry` rows are untouched by that measurement.

@@ -89,7 +89,12 @@ public:
     i32 InvokeCallbackInline(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
         return ar != NULL && m_callback != NULL && m_callback(this, ar, mode, typeId, payload) != 0;
     }
-    i32 InvokeCallback(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* payload);
+    i32 DispatchSerializationCallback(
+        CFileMemBase* ar,
+        SerialMode mode,
+        LogicTypeId typeId,
+        void* payload
+    );
 
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);
     i32 RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId);

@@ -15,12 +15,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_STATICHAZARD;
     }
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     CStaticHazard() {}
     CStaticHazard(CGameObject* obj);
     static void RegisterActs();
-    i32 LoadAttributes2();
-    i32 LoadAttributes();
+    i32 UpdateIdleState();
+    i32 UpdateActiveState();
     virtual void FireActivation(i32 id) OVERRIDE;
 
     u32 m_pulseEpoch;

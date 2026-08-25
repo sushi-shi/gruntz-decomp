@@ -56,20 +56,25 @@ void CUserLogic::FinalizeStep(char*) {
 // 96.36: only instruction scheduling around the CMapStringToPtr::Lookup call
 // (retail pushes &val before computing the name `lea`).
 RVA(0x00008c00, 0x152)
-i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj) {
+i32 CWapX::SerializeAnimationState(
+    CFileMemBase* archive,
+    SerialMode mode,
+    LogicTypeId unusedTypeId,
+    CGameObject* object
+) {
     char name[SERIAL_NAME_LEN];
 
-    if (arc == NULL) {
+    if (archive == NULL) {
         return 0;
     }
     switch (mode) {
         case SERIAL_LOAD: {
 
-            arc->Read(name, SERIAL_NAME_LEN);
-            arc->Read(m_blob, 0x10);
-            m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
-            m_ownerLogicRecord = obj->m_logicRecord;
+            archive->Read(name, SERIAL_NAME_LEN);
+            archive->Read(m_blob, 0x10);
+            m_gameObject = object;
+            m_wwdObject = static_cast<CWwdSpriteObject*>(object);
+            m_ownerLogicRecord = object->m_logicRecord;
             if (strlen(name) == 0) {
                 m_value = NULL;
             } else {
@@ -92,8 +97,8 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
                     )
                 );
             }
-            arc->Write(name, SERIAL_NAME_LEN);
-            arc->Write(m_blob, 0x10);
+            archive->Write(name, SERIAL_NAME_LEN);
+            archive->Write(m_blob, 0x10);
             break;
         }
     }

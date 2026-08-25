@@ -41,7 +41,7 @@ GZ_ENUM_BEGIN(SerialMode)
     SERIAL_POSTLOAD = 8,
 
     // Construction callbacks: the archive asks the factory to make an
-    // object of the given type id. SerialObjectFactory's arm 9 switches on
+    // object of the given type id. GameSerializationCallback's arm 9 switches on
     // LOGIC_* and news the class; arm 10 declines (returns 0).
     SERIAL_CREATE = 9,
     SERIAL_CREATE_BY_SERIAL_ID = 10

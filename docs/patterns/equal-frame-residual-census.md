@@ -68,7 +68,7 @@ rows flagged. All fifteen resolve, and none is a defect:
 
 * **six are pure MOVES** - delete-and-insert of the SAME symbol, i.e. one global
   read scheduled at a different point (`LoadScrollSpeedOptions`,
-  `LoadGruntDecayConfig`, `SendVersionCheck`, `ApplyGameOptions`, and both
+  `UpdateDeathAnimation`, `SendVersionCheck`, `ApplyGameOptions`, and both
   `CMinimap` palette builders on `g_rDown`);
 * **seven are already catalogued** - `BuildBootyWalkingGruntz` is §8's `$E`
   helper under two non-names plus §14's one-past-the-end addend, and the six
@@ -296,7 +296,7 @@ Two survivors remain, where retail's side names an unclaimed file-local static.
 
 **15. cl's accumulator encoding on a HIGH byte register.** §2's twin: `and
 dh,0xef` masks bits 8..15 and touches nothing else, so it IS `and edx,
-0xffffefff`. `CGruntzMapMgr::LoadAttributes` 0x810f0 read `immediate` on this
+0xffffefff`. `CGruntzMapMgr::BuildCellAttributes` 0x810f0 read `immediate` on this
 one instruction. (`and edx,0xf` is NOT `and dh,0xf` — the byte form is only a
 mirror of the 32-bit mask that leaves the OTHER three bytes alone.)
 
@@ -346,7 +346,7 @@ calls - a callee-saved register survives the call, an immediate would have to be
 re-encoded at every site - and then spends it: `cmp eax,ebx` for `test eax,eax`,
 `mov DWORD PTR [edi+0x4],ebx` for `mov DWORD PTR [edi+0x4],0x0`, `push ebx` for
 `push 0x0`. Whether it bothers is register PRESSURE, and it was measured going
-both ways in one tree - `CStaticHazard::LoadAttributes` 0xfc1a0 and
+both ways in one tree - `CStaticHazard::UpdateActiveState` 0xfc1a0 and
 `RunCustomWorldDialog` 0x3ad90 carry the immediate where retail carries the
 register, `CMulti::PollSession` 0xb95f0 and `CPlay::LoadPlayState` 0xd8060 the
 reverse - so it is noise, not a source lever. Folding it took `operand` from 32
@@ -361,7 +361,7 @@ they are not reached through that epilogue - and an instruction whose only
 predecessor is an indirect jump starts from the empty set, so a jump-table arm
 never inherits a zero the other arms happen to hold.
 
-`CStaticHazard::LoadAttributes` is the whole class in one byte: 264 of its 265
+`CStaticHazard::UpdateActiveState` is the whole class in one byte: 264 of its 265
 instructions already agreed, including every OTHER use of retail's zero
 register, and the single survivor was the `!= NULL` after `HitTestCell`, where
 retail spends `cmp eax,ebx` and we emit `test eax,eax`. Residual 1 to 0.
@@ -462,7 +462,7 @@ have been taken out, is three recurring shapes that no source edit reaches:
 * a **rematerialization count** - both sides read the same member set and only
   which copy stays in a register differs (`CEyeCandy`'s ctor, `DispatchDemoMoverLogic`,
   `CUFO`'s ctor before it was fixed, `FillSessionList`, `BoxesOverlap`,
-  `LoadVehicleGruntSprites`, `CGrunt::LoadGruntDecayConfig2`, which recomputes a
+  `LoadVehicleGruntSprites`, `CGrunt::UpdateDecayFade`, which recomputes a
   64-bit subtraction retail keeps and cl CSEs);
 * a **cross-jump merge degree** - one side shares an exit the other duplicates,
   which renumbers every branch displacement (`CSBI_WellGoo::Setup`);

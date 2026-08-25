@@ -19,7 +19,7 @@ this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
 Coord pt = cell->LastTilePx();          // ALSO no frame - naming it is the defeat
 
 // retail: sub esp,0x8, both field stores emitted, both reads folded back to the member
-g_gameReg->m_triggerMgr->ResetGroup(cell->LastTilePx().m_x, cell->LastTilePx().m_y, ...);
+g_gameReg->m_triggerMgr->HandleTargetSelection(cell->LastTilePx().m_x, cell->LastTilePx().m_y, ...);
 ```
 
 The precondition - that the result must never be **named** - is the whole content, and it
@@ -28,7 +28,7 @@ It is why the 2026-08-10 pass recorded "a by-value inline accessor `CGrunt::Last
 added to `Grunt.h` for exactly this purpose ... cl elided the local": that cell named the
 result, and so did every other aggregate cell in the 38-probe campaign below.
 
-## The controlled A/B (2026-08-23, `CTriggerMgr::TriggerCell` 0x7b1b0, one build)
+## The controlled A/B (2026-08-23, `CTriggerMgr::HandleActionOptionsPointer` 0x7b1b0, one build)
 
 | spelling | insns | size | frame |
 |---|---|---|---|
@@ -42,19 +42,19 @@ Three of this file's own rows closed on it, in one commit:
 
 | fn | rva | before | after |
 |---|---|---|---|
-| `CTriggerMgr::ToggleRegionA` | 0x7d450 | 85.71 | **100.00 EXACT** |
-| `CTriggerMgr::TriggerCell` | 0x7b1b0 | 91.19 | 99.95 |
+| `CTriggerMgr::ToggleToolTargeting` | 0x7d450 | 85.71 | **100.00 EXACT** |
+| `CTriggerMgr::HandleActionOptionsPointer` | 0x7b1b0 | 91.19 | 99.95 |
 | `CTriggerMgr::UnregisterUnit` | 0x79fb0 | 86.48 | 94.19 |
 
 ## What is still true, and it is the useful half
 
 **The lever is SITE-SPECIFIC. Do not sweep it.** Ten further single-site conversions,
 each picked because the function reads `p->m_lastTilePx.m_x/.m_y` through a pointer, were
-measured on the same instrument and **every one was flat or worse**: `ChargeStep` 0xef6b0,
-`UpdateArrival` 0xf0130, `StepArrivalDefenseAlt` 0xf1c70, `StepArrivalDefenseLean`
-0xf8240, `ScanNearestTarget` 0xf42f0, `WanderStep` 0xed9f0, `GruntInRadius` 0x67b00,
+measured on the same instrument and **every one was flat or worse**: `StepDumbChaserBehavior` 0xef6b0,
+`UpdateArrival` 0xf0130, `StepObjectGuardBehavior` 0xf1c70, `StepMagicWandGruntBehavior`
+0xf8240, `StepSmartChaserBehavior` 0xf42f0, `StepHitAndRunnerBehavior` 0xed9f0, `GruntInRadius` 0x67b00,
 `TmDeflectStep` 0x6f2f0, `FindNearestUnitForPlayer` 0x77f80, `FindNearestEnemy` 0x77df0.
-`StepArrivalDefense` 0xf2b20 and `ClaimSwitchTile` 0x52c70 likewise did not move, and on
+`StepScrollGruntBehavior` 0xf2b20 and `ClaimSwitchTile` 0x52c70 likewise did not move, and on
 `ClaimSwitchTile` the receiver is `this`, where the temp CSEs with the other member reads
 and never reaches a home.
 
@@ -84,7 +84,7 @@ copy ctor additionally does not build - it makes `Coord` non-POD and `GruntWande
 then fails C2362, which is weak evidence retail's `Coord` was a POD.
 
 TU declaration count is dead flat here: 50 island cells per function on `UnregisterUnit`,
-`ToggleRegionA` and `ResolveArrivalNeighbor` were 50/50 identical, and a 16-cell sweep
+`ToggleToolTargeting` and `StepPostGuardBehavior` were 50/50 identical, and a 16-cell sweep
 above `TriggerMgr.cpp`'s first include moved none of the unit's 21 sub-100 functions. That
 remains correct and is the reason the axis was mis-read as "unreachable" rather than
 "reachable, on an axis nobody had tried".

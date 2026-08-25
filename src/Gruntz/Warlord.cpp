@@ -212,7 +212,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
 // @early-stop
 RVA(0x00043670, 0xc20)
-i32 CWarlord::SerializeMove(
+i32 CWarlord::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -563,12 +563,12 @@ void CWarlord::FireActivation(i32 key) {
 
 RVA(0x000447a0, 0x333)
 void RegisterWarlordActions() {
-    REGISTER_ACTION("A", &CWarlord::RearmMoving);
-    REGISTER_ACTION("B", &CWarlord::LoadAttributes);
+    REGISTER_ACTION("A", &CWarlord::FinishIdleAnimation);
+    REGISTER_ACTION("B", &CWarlord::UpdateMovingState);
     REGISTER_ACTION("C", &CWarlord::BuildFortSplashParticles);
-    REGISTER_ACTION("D", &CWarlord::LoadAttributes2);
-    REGISTER_ACTION("E", &CWarlord::AdvanceMovingAnim);
-    REGISTER_ACTION_TYPED("F", &CWarlord::RearmMoving2);
+    REGISTER_ACTION("D", &CWarlord::UpdatePanicState);
+    REGISTER_ACTION("E", &CWarlord::FinishJoyAnimation);
+    REGISTER_ACTION_TYPED("F", &CWarlord::FinishBattlecryAnimation);
 }
 
 #undef REGISTER_ACTION
@@ -576,7 +576,7 @@ void RegisterWarlordActions() {
 #undef REGISTER_NAME
 
 RVA(0x00044bb0, 0x38)
-i32 CWarlord::RearmMoving() {
+i32 CWarlord::FinishIdleAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         ResolveMovingAnimation();
@@ -585,7 +585,7 @@ i32 CWarlord::RearmMoving() {
 }
 
 RVA(0x00044c00, 0xc6)
-i32 CWarlord::LoadAttributes() {
+i32 CWarlord::UpdateMovingState() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
@@ -612,7 +612,7 @@ i32 CWarlord::LoadAttributes() {
 }
 
 RVA(0x00044d10, 0x106)
-i32 CWarlord::LoadAttributes2() {
+i32 CWarlord::UpdatePanicState() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
@@ -622,7 +622,7 @@ i32 CWarlord::LoadAttributes2() {
         i32 dist = g_gameReg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
-            RaiseBattleAlert();
+            ResolveJoyAnimation();
             return 0;
         }
     } else {
@@ -641,7 +641,7 @@ i32 CWarlord::LoadAttributes2() {
 }
 
 RVA(0x00044e70, 0x87)
-i32 CWarlord::AdvanceMovingAnim() {
+i32 CWarlord::FinishJoyAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
@@ -657,7 +657,7 @@ i32 CWarlord::AdvanceMovingAnim() {
 }
 
 RVA(0x00044f30, 0x38)
-i32 CWarlord::RearmMoving2() {
+i32 CWarlord::FinishBattlecryAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
         ResolveMovingAnimation();
@@ -788,7 +788,7 @@ i32 CWarlord::ResolveDeathAnimation() {
 }
 
 RVA(0x000457b0, 0x14c)
-i32 CWarlord::RaiseBattleAlert() {
+i32 CWarlord::ResolveJoyAnimation() {
     if (m_deathStarted != 0) {
         return 0;
     }

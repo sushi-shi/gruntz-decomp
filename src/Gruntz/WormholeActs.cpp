@@ -115,7 +115,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
                 if (wl != NULL) {
-                    wl->RaiseBattleAlert();
+                    wl->ResolveJoyAnimation();
                 }
             }
             CDDrawChildGroup* grp = g_gameReg->m_world->m_childGroup;

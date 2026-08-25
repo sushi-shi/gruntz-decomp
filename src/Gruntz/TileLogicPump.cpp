@@ -537,7 +537,7 @@ i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
 }
 
 RVA(0x0010f9a0, 0x8f)
-i32 CCheckpointTrigger::SerializeMove(
+i32 CCheckpointTrigger::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
@@ -554,7 +554,7 @@ i32 CCheckpointTrigger::SerializeMove(
             sa->Write(&m_firstEmpty, sizeof(m_firstEmpty));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)
 }
 
 RVA(0x0010fa60, 0x19)

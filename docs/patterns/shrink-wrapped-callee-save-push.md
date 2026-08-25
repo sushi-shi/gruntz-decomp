@@ -44,7 +44,7 @@ PARTLY SUPERSEDED (2026-07-27): when the guard is a *ready/null gate over the wh
 shrink-wrap IS source-steerable — write the gate in its POSITIVE form (`if (ready) { body }` +
 one trailing `return`) instead of `if (!ready) return;`. See
 [`positive-gate-enables-shrink-wrap.md`](positive-gate-enables-shrink-wrap.md)
-(CWarlord::BuildFortSplashParticles 93.1→98.1%, AdvanceMovingAnim 90.3→95.9%). The text below
+(CWarlord::BuildFortSplashParticles 93.1→98.1%, FinishJoyAnimation 90.3→95.9%). The text below
 still holds for the cases that lever does not reach.
 
 WALL. MSVC 5.0 sometimes shrink-wraps the callee-save pushes around a cheap early-return so the guard

@@ -67,13 +67,13 @@ template<> DATA(0x00244700)
 CActReg CActRegPool<CGruntCreationPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0003e7a0, 0xd7)
-i32 CGruntCreationPoint::SerializeMove(
+i32 CGruntCreationPoint::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
         if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {

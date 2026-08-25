@@ -46,7 +46,7 @@ instead of going through the tool, and each one looks exactly like a finding.
    exact). **Bound it by the extent; do not demand a zero addend** - cl folds a field
    offset into the address of an indexed array element on one side and not the other, so
    `_g_rasterEdgeL + 0x14` and `_g_rasterEdgeL + 0` are the same reference. Same mechanism
-   with a pooled string: `CTriggerMgr::ResetGroup`'s `"LightFx"` reads as
+   with a pooled string: `CTriggerMgr::HandleTargetSelection`'s `"LightFx"` reads as
    `??_C@_09MHNK@DemoMover?$AA@ + 0xc` on the target side, which by hand looks like we
    passed the wrong sprite-logic name and is nothing but the pool's previous symbol.
 4. **Drop a unit `report.json` does not score.** `build/objdiff/normalized/` is
@@ -87,7 +87,7 @@ A row is a lead about the SOURCE, and four shapes account for nearly all of them
   because our two `AddCheat(code, GetIntDef(..,"Value",0x807b), 1/0)` arms cross-jumped
   onto one copy while retail's did not (retail defers `push 1` past the call in the then-arm
   and pushes `0` before it in the else-arm - different tails, no merge).
-  `CTriggerMgr::ResetGroup` is the mirror image: retail merged all three `CLightFx::Activate`
+  `CTriggerMgr::HandleTargetSelection` is the mirror image: retail merged all three `CLightFx::Activate`
   sites (1 call, 1 of each cursor string) and we merged only two.
   See [tail-merged-inline-helper-collapses-repeat-cues.md](tail-merged-inline-helper-collapses-repeat-cues.md).
   This is not a source bug; do not hand-duplicate the call.

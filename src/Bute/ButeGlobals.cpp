@@ -63,7 +63,7 @@ DATA(0x002bf620)
 CButeTree g_buteTree(&ButeTreeNopFree, 0);
 
 RVA(0x0016e7f0, 0x1cf)
-i32 CUserLogic::SerializeMove(
+i32 CUserLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,

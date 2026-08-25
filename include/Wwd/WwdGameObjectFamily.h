@@ -93,7 +93,8 @@ public:
         CDDrawSurfacePair* restoreSrc
     ) = 0;
 
-    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self);
+    virtual i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 
     void Notify(CGameObject* p);
 
@@ -259,7 +260,8 @@ public:
     virtual void
     BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
-    virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self)
+    virtual i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
 
     void SetImageFrameByName(const char* key, i32 frame);

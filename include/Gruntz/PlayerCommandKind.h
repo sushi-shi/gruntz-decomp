@@ -28,16 +28,16 @@
 //
 //   2  MOVE
 //      The arm delegates to ClearCell, whose only terminal action is
-//      StepArrivalDrop at the requested point. ReportRecordsA emits this value
+//      StepArrivalDrop at the requested point. EnqueueSelectedMove emits this value
 //      for both single and grouped selections.
 //
 //   3  USE_TOOL_AT_POINT   9  USE_TOOL_ON_GRUNT
-//      Both arms call ApplyTriggerA, which dispatches on the grunt's equipped
+//      Both arms call UseEquippedToolAt, which dispatches on the grunt's equipped
 //      tool. The second form resolves a grid-addressed grunt to its screen
 //      position before applying the same operation.
 //
 //   4  USE_TOY_AT_POINT   10  USE_TOY_ON_GRUNT
-//      Both arms call ApplyTriggerB, which dispatches on m_vehiclePickupType.
+//      Both arms call UseToyAt, which dispatches on m_vehiclePickupType.
 //      The second form likewise carries a grid-addressed grunt target.
 //
 //   8  GIVE_TOOL

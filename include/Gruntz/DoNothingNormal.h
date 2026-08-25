@@ -14,7 +14,7 @@ public:
     CDoNothingNormal(CGameObject* owner) : CUserLogic(owner), CWapX(owner) {
         SetObjectFlags(1);
     }
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x0000f7e0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DONOTHINGNORMAL;

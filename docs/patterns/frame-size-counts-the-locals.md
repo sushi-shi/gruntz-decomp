@@ -55,7 +55,7 @@ five causes, and only the first three are source-steerable today:
    ([byvalue-size-accessor-temp.md](byvalue-size-accessor-temp.md)) - the largest
    family. `CPlay::ResetViewport` 95.55 -> **100 EXACT**,
    `CMulti::WaitForOtherPlayers` 94.42 -> **100 EXACT**,
-   `CPlay::DrawCursorSaveUnder` 90.00 -> 99.99, `CState::InputVirtual` 96.18 -> 99.54.
+   `CPlay::SaveUnderAndDrawCursor` 90.00 -> 99.99, `CState::InputVirtual` 96.18 -> 99.54.
 2. **An `i64` clamped in place** ([i64-clamp-homes-the-whole-quad.md](i64-clamp-homes-the-whole-quad.md))
    - `CTriggerMgr::HitTestApply` 91.33 -> 98.80, frame 8 -> retail's ZERO.
 3. **A value hoisted into a local that retail re-reads at each use** -
@@ -64,7 +64,7 @@ five causes, and only the first three are source-steerable today:
 4. **The dead-PARAMETER-home coalesce** - retail homes a local in a dead parameter's
    slot and cl does not (or vice versa). Seen on `CFecFile::AddFile`,
    `CMulti::LeaveState` + `CPlay::LeaveState`, `CWarpStoneFly::Init`,
-   `FontRenderer::LayoutWrapped`, `CPlay::DrawCursorSaveUnder`'s DDSCAPS. It is **NOT a
+   `FontRenderer::LayoutWrapped`, `CPlay::SaveUnderAndDrawCursor`'s DDSCAPS. It is **NOT a
    compiler flag** (/Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave
    the frame unchanged) and it is **NOT** scope tricks, decl order or CRect/CPoint
    spellings - **it is CONTROL FLOW**: a call plus an early `return` ahead of the

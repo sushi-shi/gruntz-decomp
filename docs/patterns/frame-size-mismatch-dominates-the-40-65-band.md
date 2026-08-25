@@ -24,9 +24,9 @@ Measured across one 40-65% batch (2026-08-07):
 |---|---|---|---|
 | `CChatBoxOwner::HandleTextInputKey` 0x205c0 | 0x134 | 0x13c | retail +8 |
 | `CDDSurface::SaveRle16` 0x144640 | 0x50 | 0x54 | retail +4 |
-| `CGrunt::ChargeStep` 0xef6b0 | `push ecx` (4) | 0xc | retail +8 |
+| `CGrunt::StepDumbChaserBehavior` 0xef6b0 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::ResetEntranceAnimation` 0x62e10 | `push ecx` (4) | 0xc | retail +8 |
-| `CGrunt::StepArrivalDefense` 0xf2b20 | 0xc | 0x10 | retail +4 |
+| `CGrunt::StepScrollGruntBehavior` 0xf2b20 | 0xc | 0x10 | retail +4 |
 | `CGrunt::StepDiggerBehavior` 0xf36a0 | 0x94 -> 0x8c | 0x8c | retail -8 -> exact |
 | `CGrunt::StepGooSuckerBehavior` 0xf0e20 | 0x90 -> 0x88 | 0x88 | retail -8 -> exact |
 | `CGrunt::LoadPickupSprites` 0x65e80 | `push ecx` (4) | 0 | retail -4 |

@@ -434,13 +434,13 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 }
 
 RVA(0x000b4c40, 0x4b)
-i32 CUFO::SerializeMove(
+i32 CUFO::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (!CPathHazard::SerializeMove(ar, mode, typeId, object)) {
+    if (!CPathHazard::SerializeDispatch(ar, mode, typeId, object)) {
         return 0;
     }
     if (mode == SERIAL_POSTLOAD) {
@@ -457,13 +457,13 @@ i32 CUFO::SerializeMove(
 }
 
 RVA(0x000b4cb0, 0x56)
-i32 CRainCloud::SerializeMove(
+i32 CRainCloud::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (!CPathHazard::SerializeMove(ar, mode, typeId, object)) {
+    if (!CPathHazard::SerializeDispatch(ar, mode, typeId, object)) {
         return 0;
     }
     if (mode == SERIAL_POSTLOAD) {
@@ -487,14 +487,14 @@ static inline void SerQuadPair(CFileMemBase* ar, SerialMode mode, CHazardTimer* 
 }
 
 RVA(0x000b4d30, 0x287)
-i32 CPathHazard::SerializeMove(
+i32 CPathHazard::SerializeDispatch(
     CFileMemBase* stream,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
     CFileMemBase* s = stream;
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(
         stream,
         static_cast<CFileMemBase*>(stream),
         mode,

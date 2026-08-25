@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -229,7 +230,7 @@ public:
 
     void VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx);
 
-    i32 EditDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 SaveName(CFileMemBase* sink);
     i32 LoadName(CFileMemBase* sink);
@@ -260,17 +261,18 @@ private:
     i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);
     i32 HoldMove(CGameObject* t, CGameObject* carrier, i32 destX, i32 destY, i32 moveFlags);
     i32 FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
-    i32 StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags);
+    i32
+    TryLandOnPlatform(CGameObject* object, i32 destX, i32 destY, i32* outLandingY, i32 moveFlags);
     i32 ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
     i32 SpanCheck(i32 x, i32 yEndExclusive, i32 yBegin, i32* outY);
     TileCollisionKind AxisProbe(i32 coord, i32 limit);
 
-    i32 AltStepValidate(
-        CGameObject* t,
-        CGameObject* payload,
+    i32 CanLandOnPlatform(
+        CGameObject* object,
+        CGameObject* platform,
         i32 destX,
         i32 destY,
-        i32* outY,
+        i32* outLandingY,
         i32 moveFlags
     );
 

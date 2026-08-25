@@ -89,7 +89,7 @@ jump to *differently-valued* exits is a behaviour difference, not a layout choic
 
 - **ret counts differ** (`rets 1->2` / `3->4`): the exits are duplicated/merged differently, which
   is [positive-gate-enables-shrink-wrap](positive-gate-enables-shrink-wrap.md)'s lever, not this
-  one. `EngStr_DrawText` @0x115440 (1→2 rets) is the documented *inverse* wall — retail emits the
+  one. `DrawTextToFrontSurface` @0x115440 (1→2 rets) is the documented *inverse* wall — retail emits the
   guard's `ret` inline where cl tail-merges it, and no gate spelling splits a bare `void` ret
   ([identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md)).
 - **the flip is not the LAST conditional** and the bodies are not two exits: see

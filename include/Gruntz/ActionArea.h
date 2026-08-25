@@ -27,7 +27,7 @@ public:
         return LOGIC_ACTIONAREA;
     }
 
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
     i32 Tick();
 

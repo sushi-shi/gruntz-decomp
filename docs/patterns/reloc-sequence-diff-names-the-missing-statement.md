@@ -4,7 +4,7 @@
 - **tags** `topic:method` `topic:triage` | `asm:call` | `topic:codegen-idiom`
 - **measured** `CGrunt::TryTeleportToCell` @0x52fb0 **42.21 -> 92.99** (deficit -292 -> +3);
   `CGrunt::AdvanceMotion` @0x5f310 **64.14 -> 79.03** (-192 -> -71);
-  `CGrunt::ScanNearestTarget` @0xf42f0 **51.30 -> 65.71** (-212 -> -54).
+  `CGrunt::StepSmartChaserBehavior` @0xf42f0 **51.30 -> 65.71** (-212 -> -54).
 
 ## The method
 

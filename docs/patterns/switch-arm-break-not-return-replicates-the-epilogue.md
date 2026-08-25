@@ -50,7 +50,7 @@ too is not needed.
 The lever only reaches sites whose ENTIRE merged content is the epilogue. Two
 near-neighbours in the same family were re-measured and neither moves:
 
-* `CTriggerMgr::ResetGroup` 0x79520 — arms end `Activate(...); return 1;` with a
+* `CTriggerMgr::HandleTargetSelection` 0x79520 — arms end `Activate(...); return 1;` with a
   DIFFERENT literal argument per arm. Break form is **byte-neutral** (90.7352 before
   and after): cl had already merged on the shared `Activate` suffix, which the
   break form does not touch.
@@ -104,8 +104,8 @@ byte-neutral, three worse.
 
 | fn | rva | before -> after |
 |---|---|---|
-| `CGrunt::ScanNearestTarget` | 0xf42f0 | 68.28 -> 67.73 |
-| `CProjectile::SerializeMove` | 0xe0d40 | byte-neutral |
+| `CGrunt::StepSmartChaserBehavior` | 0xf42f0 | 68.28 -> 67.73 |
+| `CProjectile::SerializeDispatch` | 0xe0d40 | byte-neutral |
 | `CStatusBarMgr::LoadTabSprites` | 0x102250 | 76.12 -> 73.75 |
 | `CSBI_WellGoo::SerializeFields` | 0xe64c0 | byte-neutral |
 | `CMulti::DispatchRecvMsg` | 0xb9750 | 99.05 -> 98.21 |
@@ -116,7 +116,7 @@ post-switch work (a `goto` label - `seek:`/`resetState:`/`reportError:`/
 `timeout:` - a differing `return 0;`, or a whole trailing block).
 `CGrunt::LoadGruntTypeTable` 0x4dd50 is the clearest, its 17 arm-returns skipping
 the `BuildAssetNamespacePrefixes`/`ReadConfigFromButeMgr` tail. This is also why
-`CTriggerMgr::ResetGroup` measured byte-neutral: a `reportError:` label sits after
+`CTriggerMgr::HandleTargetSelection` measured byte-neutral: a `reportError:` label sits after
 its switch.
 
 **Two things this retires.**
@@ -125,7 +125,7 @@ its switch.
    switch is *shape-identical* to `SetTabState` - 13 arms, one call per arm, 12
    arm-terminal `return 1;` plus one already-`break;`, trailing `return 1;` - and
    converting all 12 is byte-identical output.
-2. **Exit-count parity is not a proxy for bytes.** `ScanNearestTarget`'s break
+2. **Exit-count parity is not a proxy for bytes.** `StepSmartChaserBehavior`'s break
    form fired the layout replicator and took its ret count 12 -> 13, *exactly*
    matching retail's 13, while the score went DOWN. `LoadTabSprites` moved 17 ->
    14 *toward* retail's 13 and lost 2.37.

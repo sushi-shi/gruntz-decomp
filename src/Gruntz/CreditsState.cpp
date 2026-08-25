@@ -31,7 +31,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
-#include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
 #include <Io/MoviePlayer.h>

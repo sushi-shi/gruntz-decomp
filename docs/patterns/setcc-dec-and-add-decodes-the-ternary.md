@@ -46,7 +46,7 @@ return (roll > t4) ? BRICKTILE_BLACK_1 : BRICKTILE_GOLD_1;
 Steerable, and the ternary/if-return/if-else spellings are interchangeable —
 `cl` probe at /O2 gives byte-identical output for `(roll <= t4) ? GOLD : BLACK`,
 `if (roll <= t4) { return GOLD; } return BLACK;` and the full if/else. Only the
-**polarity** matters. `CGruntzMapMgr::LoadAttributes` (`PickA`) 75.21 -> 75.42
+**polarity** matters. `CGruntzMapMgr::BuildCellAttributes` (`PickA`) 75.21 -> 75.42
 and its `mask_immediates` row (`base-only 0x6 / target-only 0xfffffffa`) closed.
 Note the `andb` form is also one byte shorter, so the wrong polarity shifts every
 displacement after it.

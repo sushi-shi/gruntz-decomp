@@ -75,7 +75,7 @@ i32 CGruntSelectedSprite::Update() {
 }
 
 RVA(0x0007ea70, 0x6f)
-i32 CGruntSelectedSprite::SerializeMove(
+i32 CGruntSelectedSprite::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
@@ -90,5 +90,5 @@ i32 CGruntSelectedSprite::SerializeMove(
     } else {
         sa->Write(&m_gruntIdentity, sizeof(m_gruntIdentity));
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)
 }

@@ -8,7 +8,7 @@
 // what folding it measured.
 
 // Absorbed SPLIT_ABS (byte-neutral: hoisting abs into its own statement is the
-// same IL) and one of the two SIGNED_OUTPUT sites (StepArrivalDefense +0.15).
+// same IL) and one of the two SIGNED_OUTPUT sites (StepScrollGruntBehavior +0.15).
 #define SELECT_RANDOM_EXTENT_POINT(object, outX, spanX, outY, spanY)                               \
     i32 outX = object->m_extent.left;                                                              \
     i32 spanX = abs(object->m_extent.right - outX);                                                \
@@ -21,7 +21,7 @@
         outY += rand() % spanY;                                                                    \
     }
 
-// Both spans declared before either output.  ResolveArrivalReposition is the
+// Both spans declared before either output.  StepBomberBehavior is the
 // only site; folding it into the canonical order costs 95.29 -> 91.38.
 #define SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(object, spanX, spanY, outX, outY)                   \
     i32 spanX = abs(object->m_extent.right - object->m_extent.left);                               \
@@ -35,9 +35,9 @@
         outY += rand() % spanY;                                                                    \
     }
 
-// Base and output are distinct locals.  StepArrivalDefenseLean is the only site
+// Base and output are distinct locals.  StepMagicWandGruntBehavior is the only site
 // left; folding it costs 88.97 -> 86.92, while the same fold at
-// StepArrivalDefense gained 0.15, so the two sites disagree and the loser keeps
+// StepScrollGruntBehavior gained 0.15, so the two sites disagree and the loser keeps
 // its own spelling.
 #define SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(object, baseX, spanX, baseY, spanY, outX, outY)   \
     i32 baseX = object->m_extent.left;                                                             \
@@ -56,7 +56,7 @@
 // u32 outputs, so the caller's `outX < grid->m_width` bounds test is an
 // unsigned compare.  Absorbed UNSIGNED_ASSIGN (byte-neutral).  REMOVAL
 // CONDITION: respell both sites as the canonical signed locals plus an explicit
-// static_cast<u32> at the compare, the way ChargeStep and ScanNearestTarget
+// static_cast<u32> at the compare, the way StepDumbChaserBehavior and StepSmartChaserBehavior
 // already write it, and measure.
 #define SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(object, outX, spanX, outY, spanY)                 \
     u32 outX = static_cast<u32>(object->m_extent.left);                                            \

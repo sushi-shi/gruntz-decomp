@@ -21,13 +21,13 @@ template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0000f5a0, 0x47)
-i32 CSingleFrameMessage::SerializeMove(
+i32 CSingleFrameMessage::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)

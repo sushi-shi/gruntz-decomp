@@ -74,9 +74,9 @@ five missing references localized to three functions in one file.
 
 The 16 functions with paired sites (retail RVAs): `ChooseIdleBehavior` 0x2f620 (x4),
 `ResetEntranceAnimation` 0x62e10 (x3), `LoadAttributes` 0x810f0 (x3), `ScanShuffleQuads`
-0xd9290 (x3), `CombatCue` 0x7b930 (x2), and one site each in `StepCompassMove` 0x51c00,
+0xd9290 (x3), `ApplyGruntAreaEffect` 0x7b930 (x2), and one site each in `StepCompassMove` 0x51c00,
 `LoadGruntAbilityTuning` 0x57100, `UpdateArrival` 0x62110, `RunMoveConfig` 0x65630,
-`ResolveArrivalReposition` 0xec670, `WanderStep` 0xed9f0, `ChargeStep` 0xef6b0,
-`UpdateArrival` 0xf0130, `StepArrivalDefense` 0xf2b20, `ScanNearestTarget` 0xf42f0,
-`StepArrivalDefenseLean` 0xf8240. Most already spell the guard out by hand; those are the
+`StepBomberBehavior` 0xec670, `StepHitAndRunnerBehavior` 0xed9f0, `StepDumbChaserBehavior` 0xef6b0,
+`UpdateArrival` 0xf0130, `StepScrollGruntBehavior` 0xf2b20, `StepSmartChaserBehavior` 0xf42f0,
+`StepMagicWandGruntBehavior` 0xf8240. Most already spell the guard out by hand; those are the
 `inline_clones` worklist for folding onto `GetRandom`.

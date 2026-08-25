@@ -10,7 +10,7 @@
 
 class CTimeBomb : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00012a20, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TIMEBOMB;
@@ -25,7 +25,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
 
-    i32 LoadAttributes();
+    i32 UpdateCountdown();
 
     i32 m_fastPhase;
     union {

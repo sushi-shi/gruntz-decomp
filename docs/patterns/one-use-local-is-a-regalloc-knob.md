@@ -47,9 +47,9 @@ see [pointer-chain-hoist-intermediate-local](pointer-chain-hoist-intermediate-lo
 | `CGruntzMgr::ExitModalUI` 0x0903f0 | **add** `CDDrawDeviceManager* deviceManager` (middle link) — fixed **three** vtable-call scratch registers at once | 99.57 → **100** |
 | `CGruntzMgr::EnterModalUI` 0x08ef10 | same one-line edit | ~93 → **100** (had been filed an esi/edi wall) |
 | `CGruntHealthSprite::HealthUpdate` 0x07f180 | **delete** `CGruntzMgr* reg = g_gameReg;` | 99.64 → **100** (had been filed a zero-register-pinning wall) |
-| `CGrunt::StepArrivalCommitA` 0x065300 | **delete** `CGruntzMgr* g = g_gameReg;` (also fixed the tx/ty emission order) | 99.70 → **100** |
+| `CGrunt::FinishStruckAnimation` 0x065300 | **delete** `CGruntzMgr* g = g_gameReg;` (also fixed the tx/ty emission order) | 99.70 → **100** |
 
-Note the last two: the sibling `CGrunt::StepArrivalCommitB`, which *keeps* the
+Note the last two: the sibling `CGrunt::FinishKnockbackAnimation`, which *keeps* the
 local, is 100% — the right spelling depends on the register state the preceding
 statements leave behind, so **decide it per call site, by experiment**, not by a
 tree-wide rule.

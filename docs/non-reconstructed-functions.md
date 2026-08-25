@@ -50,7 +50,7 @@ manually and are not short bodies:
 
 | RVA | Function | Retail bytes | Compiled bytes | Disposition |
 |---|---|---:|---:|---|
-| `0x000810f0` | `CGruntzMapMgr::LoadAttributes` | 2228 | 2735 | Full tile-grid, attribute-switch, neighborhood, and exit-trigger passes are present; the compiled sparse switches are larger than retail. |
+| `0x000810f0` | `CGruntzMapMgr::BuildCellAttributes` | 2228 | 2735 | Full tile-grid, attribute-switch, neighborhood, and exit-trigger passes are present; the compiled sparse switches are larger than retail. |
 | `0x0006a060` | `CGrunt::LoadGruntMovingDeathConfig` | 1085 | 1568 | Both level-family direction switches and all movement outcomes are present; the compiled sparse switches are larger than retail. |
 
 These remain matching work, but neither is evidence of omitted logic. Any newly excluded

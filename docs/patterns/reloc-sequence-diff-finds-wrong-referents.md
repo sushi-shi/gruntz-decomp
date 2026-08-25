@@ -47,12 +47,12 @@ in minutes:
 | `CTriggerMgr::LoadPowerupIconSprites` | three powerup arms rotated by one | 98.93 -> **100 EXACT** |
 | `CGrunt::StepCompassMove` | `GetIntDef` should be `GetDwordDef`; the empty-bag `return` belongs inside the `CByteArray` scope (two dtor calls); the random-slot pick keeps its degenerate `count == 0` arm (two `rand()` calls) | 37.48 -> 53.25 |
 | `CTriggerMgr::ReinitGroup` | `GetInt` not `GetIntDef` and its two arguments swapped; `RefreshState` not `Reset`; `SetAtGrow(size, colour)` not `InsertAt(size, 0, 0)`; `Format` had one variadic argument too many; `EnsureSub(outR, outC, colour)` | 75.50 -> 83.06 |
-| `CTriggerMgr::CombatCue` | a missing `CGrunt::StepArrivalCommit()` call; `GetDwordDef` | 79.58 -> 85.54 |
+| `CTriggerMgr::ApplyGruntAreaEffect` | a missing `CGrunt::StepArrivalCommit()` call; `GetDwordDef` | 79.58 -> 85.54 |
 | `CTriggerMgr::PlaceObjectFull` | a whole missing case arm (GOOBER walks `m_baseList`) plus the spy's hidden-object lookup | 31.94 -> 45.30 |
 | `CGruntzMgr::TransitionState` | `CMulti`'s ctor is inline in retail | 82.60 -> 86.44 |
 | `CRollingBall::Update` | `VtblResolve` is inlined; and the floor/ceil arms were **inverted** (a live behaviour bug) | 83.14 -> 83.96 |
 | `CTriggerMgr::WireTileSwitchLogic` | the arrow-current inner switch has no `default` arm | 88.37 -> 90.00 |
-| `CTriggerMgr::UnregisterUnit` | `CWarlord::RaiseBattleAlert`, not `ResolveDeathAnimation` | referent set now identical |
+| `CTriggerMgr::UnregisterUnit` | `CWarlord::ResolveJoyAnimation`, not `ResolveDeathAnimation` | referent set now identical |
 | `CTriggerMgr::DestroyAllAnims` | the notify slot is compared against `DispatchProjectileLogic`, not a `CGrunt` member pointer | referent set now identical |
 
 Two of these (the RollingBall rounding, the ReinitGroup bound compares) were live
@@ -82,7 +82,7 @@ comparing against `"J"` and `"R"` where you compare against `"L"` and `"P"` is
 usually this artifact, not a wrong letter. **Confirm every string finding against
 `gruntz sema disasm <rva>`**, whose reloc table prints the raw retail
 address - then map addresses to letters once (they are consecutive in `.rdata`)
-and reuse that map. `CTriggerMgr::ApplyTriggerB` looked like three wrong letters
+and reuse that map. `CTriggerMgr::UseToyAt` looked like three wrong letters
 and was in fact three missing re-resolutions of the same name.
 
 ## Confidence

@@ -46,11 +46,11 @@ member's single-use temp folds away entirely). The lever is therefore exactly
 as wide as the store set - the five-store battery members qualify, m_stamina
 does not.
 
-Measured: `CGrunt::SeekTarget` 0xf71c0 80.82 -> 85.14 (the biggest hit; its
+Measured: `CGrunt::StepToolThiefBehavior` 0xf71c0 80.82 -> 85.14 (the biggest hit; its
 file comment had declared the fold "not reachable from source" - retired).
-`CGrunt::WanderStep` 0xed9f0 83.38 -> 84.34 (the no-call arm's two
+`CGrunt::StepHitAndRunnerBehavior` 0xed9f0 83.38 -> 84.34 (the no-call arm's two
 tests reappear as `cmp eax,ebp` / `cmp ecx,ebp`, block census 115 -> 117 of
-retail's 121). `CGrunt::ScanNearestTarget` 0xf42f0 carries the same shape
+retail's 121). `CGrunt::StepSmartChaserBehavior` 0xf42f0 carries the same shape
 (its `powered`/`neighborValid` locals are why its else-arm tests survive).
 The five-store + ResetEntranceAnimation battery recurs across the CGrunt
 step/scan family - screen StepDiggerBehavior / StepGooSuckerBehavior /

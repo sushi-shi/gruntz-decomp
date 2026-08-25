@@ -1,7 +1,7 @@
 # A 0.00% objdiff row is not always an unwritten body: cross-jump grouping floors the score
 
 **Tags:** `cpp:switch` `cpp:control-flow` | `topic:wall` `topic:scoring-artifact`
-**Confidence:** 10/10 — `CGameObject::Play` 0x151150, verified instruction-by-instruction
+**Confidence:** 10/10 — `CGameObject::SerializeDispatch` 0x151150, verified instruction-by-instruction
 against retail, a 192-variant wall-breaker run, and a source-shape correction that moved
 the same body from 0.0000% to 92.9655%.
 

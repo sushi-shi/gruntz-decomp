@@ -13,7 +13,7 @@ confidence: 10/10 (one function, taken to EXACT by the spelling alone)
 ## The two spellings
 
 ```cpp
-CSbiHlRow* g = m_groupSlots;   // a cursor INTO the array
+CSbiHlRow* g = m_conveyorSlots;   // a cursor INTO the array
 g[col].m_state = HLROW_RAMP_UP_HIGH;
 g[col].m_counter = 0x13;
 i64* rowClock = &g[col].m_last;
@@ -26,9 +26,9 @@ mov  DWORD PTR [edi+0x4],0x13
 ```
 
 ```cpp
-m_groupSlots[col].m_state = HLROW_RAMP_UP_HIGH;   // the ARRAY is named at each use
-m_groupSlots[col].m_counter = 0x13;
-i64* rowClock = &m_groupSlots[col].m_last;
+m_conveyorSlots[col].m_state = HLROW_RAMP_UP_HIGH;   // the ARRAY is named at each use
+m_conveyorSlots[col].m_counter = 0x13;
+i64* rowClock = &m_conveyorSlots[col].m_last;
 ```
 
 ```asm
@@ -40,7 +40,7 @@ mov  DWORD PTR [edi+0x2c4],0x13
 Both are the same addresses and the same total byte count; cl decides where the
 array's member offset lands purely from whether the source ever names a POINTER to
 the element. A cursor makes the element address a value, so it is materialized once;
-naming `m_groupSlots[col]` leaves cl free to keep the scaled index alone and re-add
+naming `m_conveyorSlots[col]` leaves cl free to keep the scaled index alone and re-add
 the member offset per access, which is what it does.
 
 This is the mirror of
@@ -59,7 +59,7 @@ two blocks is equal, no field is wrong - the addressing shape is.
 ## Measured (2026-08-23, `src/Gruntz/SBI_RectOnly.cpp`)
 
 `CStatusBarMgr::LoadRezMachineConfig` 0x105e40 **99.1540 -> 100.0000 EXACT** by
-deleting the `CSbiHlRow* g = m_groupSlots;` cursor and naming `m_groupSlots[col]` at
+deleting the `CSbiHlRow* g = m_conveyorSlots;` cursor and naming `m_conveyorSlots[col]` at
 its four uses. Zero other rows moved (1 of 4427 differed from the banked snapshot,
 and that row was this one).
 

@@ -95,7 +95,7 @@ instructions is the lie scoring better than the truth, inverted.
 
 Corollary, also measured: the lever is specific to the 16-byte rect. Converting two
 `SIZE` (8-byte) field-by-field copies to struct assignment took
-`CPlay::ClampViewport2` 91.27 -> 89.72 and left `CPlay::LoadScrollSpeedOptions` flat.
+`CPlay::ExpandViewport` 91.27 -> 89.72 and left `CPlay::LoadScrollSpeedOptions` flat.
 With only two fields there is no spacing to read, so there is no evidence either way -
 do not apply it on shape alone.
 

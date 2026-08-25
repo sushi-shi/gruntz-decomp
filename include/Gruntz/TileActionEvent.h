@@ -24,7 +24,7 @@ public:
 
     i32 SetActionCode(BrickTileId code);
 
-    i32 Process(CGrunt* brick);
+    i32 BreakTopBrick(CGrunt* grunt);
 
     i32 MorphByTool(PickupType toolId, PlayerSlot playerSlot);
 

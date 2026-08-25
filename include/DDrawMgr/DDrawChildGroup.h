@@ -115,17 +115,17 @@ public:
     void PruneList();
     i32 CountActive();
 
-    i32 ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId);
-    i32 ForEachProbe(CFileMemBase* ar, LogicTypeId typeId);
-    i32 ForEachSerialize(class CFileMemBase* ar, LogicTypeId typeId);
-    i32 Deserialize(class CFileMemBase* ar, u32 count, LogicTypeId flag);
+    i32 DispatchSerializationToObjects(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId);
+    i32 WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId);
+    i32 SerializeObjects(class CFileMemBase* ar, LogicTypeId typeId);
+    i32 DeserializeObjects(class CFileMemBase* ar, u32 count, LogicTypeId typeId);
     i32 PruneOrphans();
     void RemoveAndDelete(CWwdGameObject* obj);
     void ReinsertUnflagged(CWwdGameObject* obj);
     void InsertSorted(CGameObject* obj, i32 addToMaps);
     i32 CheckSortOrder();
-    CWwdGameObject* FindByType04(i32 type);
-    CWwdGameObject* FindByTypeProbe(i32 type);
+    CWwdGameObject* FindById(i32 id);
+    CWwdGameObject* FindSerialRefById(i32 id);
     CWwdGameObject* FindByLogicRecord(i32 id, CLogicRecord* logicRecord);
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 

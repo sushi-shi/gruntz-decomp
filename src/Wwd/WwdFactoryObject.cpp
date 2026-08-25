@@ -723,7 +723,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 }
 
 RVA(0x0015c900, 0x5c)
-i32 CAniAdvanceCursor::ProcessSerialMode(
+i32 CAniAdvanceCursor::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,

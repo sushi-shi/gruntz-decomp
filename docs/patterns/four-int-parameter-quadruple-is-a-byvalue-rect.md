@@ -131,7 +131,7 @@ appearing in a `lea` on the other side.
 COST, and it is intrinsic: the declaration loses three type handles, which moves C1's
 state for every TU that parses the header. Three untouched functions in two other TUs
 dipped in the same build (`CTriggerMgr::ScrollToActiveRecord` 100.00 -> 99.14,
-`CPlay::LoadScrollSpeedOptions` 98.75 -> 98.62, `CTriggerMgr::ApplyTriggerA` 87.45 ->
+`CPlay::LoadScrollSpeedOptions` 98.75 -> 98.62, `CTriggerMgr::UseEquippedToolAt` 87.45 ->
 87.44). Every banked MAX and hist survived - `bank` only raises `best` when the
 per-function fingerprint is unchanged - but expect the ledger to need an adjudicated
 re-bank when you apply this to a widely-included header.

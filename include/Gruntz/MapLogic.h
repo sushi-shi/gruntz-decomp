@@ -5,6 +5,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
-i32 MapSerializeCurve(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32);
+i32 SerializeScrollState(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32);
 
 #endif // GRUNTZ_MAPLOGIC_H

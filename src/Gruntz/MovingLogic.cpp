@@ -229,7 +229,7 @@ double CMotionState::ArrivalVelY(double target) {
 }
 
 RVA(0x0016f4a0, 0x1da)
-i32 CMovingLogic::SerializeMove(
+i32 CMovingLogic::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
@@ -271,5 +271,5 @@ i32 CMovingLogic::SerializeMove(
             break;
         }
     }
-    return CUserLogic::SerializeMove(arc, mode, typeId, object) != 0;
+    return CUserLogic::SerializeDispatch(arc, mode, typeId, object) != 0;
 }

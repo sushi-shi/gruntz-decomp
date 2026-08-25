@@ -81,7 +81,7 @@ object copy actually is:
 lands the run on retail's order: **98.76 -> 99.84**, residue reduced to a
 five-instruction EDI/EDX rotation elsewhere in the body. Applied at the four
 coord-pool clone sites the same way, `RepathAroundBlockedTiles` went
-72.97 -> 73.68 and `PhaseStep` 83.37 -> 83.79.
+72.97 -> 73.68 and `StepTimeBomberBehavior` 83.37 -> 83.79.
 
 The counter-case is worth knowing: `CTriggerMgr::UnregisterUnit`'s `Coord pt` is a
 reconstruction of a retail SPILL PAIR, not a source local
@@ -126,7 +126,7 @@ Four false-positive classes, each observed on a flagged row:
   stores, then reloads EAX with 0x7d0. The store permutation is downstream of
   the register choice; no source ordering reaches it.
 * **Frame / local-count wall.** A `sub esp` delta shifts every slot and the
-  store swap rides on it (`CGrunt::ResolveArrivalReposition`, frame 0x8 vs
+  store swap rides on it (`CGrunt::StepBomberBehavior`, frame 0x8 vs
   0xc). Run `walls framescan` first.
 * **vptr-stamp placement.** The moved "store" is the `??_7` stamp, which is
   not a source statement at all (`CActionArea` and `CGruntVoice` ctors, where

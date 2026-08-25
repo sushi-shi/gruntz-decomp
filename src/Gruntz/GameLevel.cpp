@@ -848,7 +848,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
 
     if (moveFlags & 8) {
         i32 outY;
-        if (StepAxisAlt(t, destX, destY, &outY, moveFlags) != 0) {
+        if (TryLandOnPlatform(t, destX, destY, &outY, moveFlags) != 0) {
             destY = outY;
         }
     }
@@ -1381,7 +1381,13 @@ i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
 }
 
 RVA(0x0015fdb0, 0x8a)
-i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags) {
+i32 CGameLevel::TryLandOnPlatform(
+    CGameObject* object,
+    i32 destX,
+    i32 destY,
+    i32* outLandingY,
+    i32 moveFlags
+) {
     if ((moveFlags & 8) == 0) {
         return 0;
     }
@@ -1389,12 +1395,12 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32
     CDDrawChildGroup* children = OwnerMgr()->m_childGroup;
     POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* pl = children->NextChild(pos);
-        if (pl->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
-            if (AltStepValidate(t, pl, destX, destY, outY, moveFlags) != 0) {
-                t->m_moveMode = MOVE_GROUNDED;
-                t->m_carrier = pl;
-                t->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
+        CGameObject* platform = children->NextChild(pos);
+        if (platform->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
+            if (CanLandOnPlatform(object, platform, destX, destY, outLandingY, moveFlags) != 0) {
+                object->m_moveMode = MOVE_GROUNDED;
+                object->m_carrier = platform;
+                object->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
                 return 1;
             }
         }
@@ -1404,37 +1410,37 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32
 
 // @early-stop
 RVA(0x0015fe40, 0xd4)
-i32 CGameLevel::AltStepValidate(
-    CGameObject* t,
-    CGameObject* p,
+i32 CGameLevel::CanLandOnPlatform(
+    CGameObject* object,
+    CGameObject* platform,
     i32 destX,
     i32 destY,
-    i32* outY,
+    i32* outLandingY,
     i32 moveFlags
 ) {
 
-    if (p->m_area.left == -1) {
+    if (platform->m_area.left == -1) {
         goto fail;
     }
-    if (t->m_extent.left == -1) {
+    if (object->m_extent.left == -1) {
         goto fail;
     }
     {
-        i32 sy = t->m_screenY;
+        i32 sy = object->m_screenY;
         if (sy > destY) {
             goto fail;
         }
 
-        i32 boxL = p->m_area.left + p->m_screenX;
-        i32 boxR = p->m_area.right + p->m_screenX;
-        i32 boxT = p->m_screenY + p->m_area.top;
-        i32 tLoA = t->m_extent.left + destX;
-        i32 tMid = t->m_extent.right + destX;
-        i32 bottom = t->m_extent.bottom;
+        i32 boxL = platform->m_area.left + platform->m_screenX;
+        i32 boxR = platform->m_area.right + platform->m_screenX;
+        i32 boxT = platform->m_screenY + platform->m_area.top;
+        i32 tLoA = object->m_extent.left + destX;
+        i32 tMid = object->m_extent.right + destX;
+        i32 bottom = object->m_extent.bottom;
         i32 tHi = bottom + destY;
         i32 cmpHi = tHi - destY + sy;
 
-        i32 over = p->m_deltaY;
+        i32 over = platform->m_deltaY;
         if (over > 0) {
             over = 0;
         }
@@ -1460,7 +1466,7 @@ i32 CGameLevel::AltStepValidate(
             }
         }
 
-        *outY = boxT - bottom - 1;
+        *outLandingY = boxT - bottom - 1;
         return 1;
     }
 fail:
@@ -1815,7 +1821,12 @@ void CGameLevel::NotifyAllPlanes() {
 }
 
 RVA(0x00160f70, 0x120)
-i32 CGameLevel::EditDispatch(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CGameLevel::SerializeDispatch(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (s == NULL) {
         return 0;
     }

@@ -2,7 +2,7 @@
 
 - **confidence** c9
 - **tags** `cpp:branch` `cpp:switch` `cpp:dce` | `asm:cmp` `asm:jne` | `topic:codegen-idiom`
-- **measured** `CGrunt::ScanNearestTarget` @0xf42f0 **52.70 -> 64.78** on this one line
+- **measured** `CGrunt::StepSmartChaserBehavior` @0xf42f0 **52.70 -> 64.78** on this one line
   (instruction deficit -210 -> -69): a whole `case` arm came back.
 
 ## Symptom

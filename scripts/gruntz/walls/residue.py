@@ -109,7 +109,7 @@ ACC8_HIGH = {"and": "ffffff", "or": "000000", "xor": "000000"}
 
 #: the same 2-byte form on a HIGH byte register: `and dh,0xef` masks bits
 #: 8..15 and touches nothing else, so it IS `and edx,0xffffefff`.
-#: `CGruntzMapMgr::LoadAttributes` read `immediate` on this mirror alone -
+#: `CGruntzMapMgr::BuildCellAttributes` read `immediate` on this mirror alone -
 #: our `and edx,0xffffefff` against retail's `and dh,0xef`, one instruction.
 ACC8H = re.compile(r"^(and|or|xor)\s+([abcd])h,0x([0-9a-f]{1,2})$")
 ACC8H_WRAP = {"and": ("ffff", "ff"), "or": ("0000", "00"),
@@ -280,7 +280,7 @@ ACCMEM = re.compile(r"^mov (r|ds:(?:0x[0-9a-f]+|ADDEND)),"
 #: immediate would otherwise appear: `cmp eax,ebx` for `test eax,eax`,
 #: `mov [edi+0x4],ebx` for `mov DWORD PTR [edi+0x4],0x0`, `push ebx` for
 #: `push 0x0`.  Whether it bothers is register PRESSURE, and it was measured
-#: going both ways in one tree - `CStaticHazard::LoadAttributes` and
+#: going both ways in one tree - `CStaticHazard::UpdateActiveState` and
 #: `RunCustomWorldDialog` carry the immediate where retail carries the register,
 #: `CMulti::PollSession` and `CPlay::LoadPlayState` the reverse - so it is noise,
 #: not a source lever.

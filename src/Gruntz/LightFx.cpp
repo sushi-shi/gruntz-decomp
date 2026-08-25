@@ -142,13 +142,13 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
 }
 
 RVA(0x0009d660, 0xc8)
-i32 CLightFx::SerializeMove(
+i32 CLightFx::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
             (ar)->Write(&m_anchorA, sizeof(m_anchorA));

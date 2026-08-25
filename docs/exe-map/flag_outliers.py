@@ -37,7 +37,7 @@ _POOLED_RE = _re.compile(
 # a VIRTUAL method (public/protected/private virtual __thiscall = @@[UME]AE) sitting
 # as an OUTLIER is a COMDAT the linker pooled from the first obj - benign, not a
 # misplacement. Catches the whole vtable-slot family generically (GetTypeTag/Slot/
-# SerializeMove/IsLoaded and any leaf-class override) without name-enumeration.
+# SerializeDispatch/IsLoaded and any leaf-class override) without name-enumeration.
 _VIRT_RE = _re.compile(r"@@[UME]AE")
 
 

@@ -161,8 +161,18 @@ public:
     i32 MakeImageKey(class CDDrawDeviceManager* manager, char* path, u32 colorKey);
     i32 DecodePcxEx(class CDDrawDeviceManager* manager, char* path, i32 surfaceCaps, u32 colorKey);
 
-    i32 DecodeRun(CDDrawDeviceManager* manager, BmpFileImage* image, i32 dataSize, i32 surfaceCaps);
-    i32 Decode(CDDrawDeviceManager* manager, PcxHeader* image, i32 dataSize, i32 surfaceCaps);
+    i32 CreateFromBmpData(
+        CDDrawDeviceManager* manager,
+        BmpFileImage* image,
+        i32 dataSize,
+        i32 surfaceCaps
+    );
+    i32 CreateFromPcxData(
+        CDDrawDeviceManager* manager,
+        PcxHeader* image,
+        i32 dataSize,
+        i32 surfaceCaps
+    );
 
     void FlipVertical();
 
@@ -198,16 +208,16 @@ public:
     i32 StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey);
 
     void DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip);
-    i32 LoadFile2(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps);
-    i32 LoadFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps);
+    i32 CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps);
+    i32 CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps);
     i32 Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfaceCaps);
 
     i32 Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, RasterRowOrder rowOrder);
     i32 BlitDirect(u8* src, RasterRowOrder rowOrder);
     i32 DecodeRun8(u8* src);
     i32 DecodeRun24(u8* src);
-    i32 RunDecode1(u8* dst, u8* src, i32 width, i32 height);
-    i32 RunDecode3(u8* dst, u8* src, i32 width, i32 height);
+    i32 DecodeByteRun1Plane(u8* dst, u8* src, i32 width, i32 height);
+    i32 DecodeByteRun3Planes(u8* dst, u8* src, i32 width, i32 height);
     void FillPalette(u32 key);
     i32 ShadeRect(i32 pct, RECT* clip);
 

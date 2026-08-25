@@ -42,7 +42,7 @@
 // @early-stop
 // One dead spill of the candidate's tile x at 0xf778f remains unreached.
 RVA(0x000f71c0, 0x721)
-i32 CGrunt::SeekTarget() {
+i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
         && g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]

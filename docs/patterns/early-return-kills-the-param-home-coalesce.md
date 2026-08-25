@@ -42,7 +42,7 @@ return 1;
 STEERABLE. `CMulti::LeaveState` 0xb63f0 and `CPlay::LeaveState` 0xc8b80 (identical
 bodies) both **92.75 -> 100.00 EXACT** — the guard inversion took the frame
 `0x14 -> 0x10` and put the CString in the param home, and the residual
-`ShowHudMessage` block then closed with the by-value size temp
+`DrawTextToOverlaySurface` block then closed with the by-value size temp
 ([byvalue-size-accessor-temp.md](byvalue-size-accessor-temp.md)). Both had been filed
 as a non-steerable "dead-parameter-home coalesce" wall after ~15 spellings (CRect,
 block scopes, decl order, an LPRECT alias, writing through the parameter) and a
@@ -72,7 +72,7 @@ less than one build of the real tree and gives a categorical answer.
    variable is in the home first.
 2. **Retail genuinely wants the early return.** Count the `ret`s / read the exit tails
    before inverting - the ret counts in `gruntz walls diagnose`, or
-   `gruntz walls diagnose <rva>`. `CPlay::DrawCursorSaveUnder` 0xd0b30
+   `gruntz walls diagnose <rva>`. `CPlay::SaveUnderAndDrawCursor` 0xd0b30
    has the same call+early-return+DDSCAPS shape, but retail emits a SEPARATE early-exit
    epilogue (`jne` into its own `xor eax,eax` / pops / `ret 4`); inverting the guard
    merges that tail away and cost 99.99 -> 90.57, reverted. Same caveat as

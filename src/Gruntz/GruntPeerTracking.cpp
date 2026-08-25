@@ -38,7 +38,7 @@
 
 // @early-stop
 RVA(0x000f7d90, 0x171)
-i32 CGrunt::StepPeerTracking() {
+i32 CGrunt::StepToyerBehavior() {
     m_defenderPx = m_lastTilePx;
     if (m_vehiclePickupType == PICKUP_NONE) {
         m_arrivalState = AI_POSTGUARD;
@@ -56,8 +56,7 @@ i32 CGrunt::StepPeerTracking() {
     CGameObject* a = p->m_object;
     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p) && RectContainsGated(a->m_screenX, a->m_screenY)) {
         CGameObject* b = p->m_object;
-        g_gameReg->m_triggerMgr
-            ->ApplyTriggerB(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
+        g_gameReg->m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
         return 1;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {

@@ -84,7 +84,7 @@ that retail merges into a block at the very END. `goto fail;` merged them but pa
 block mid-function (86.53 -> 90.35, rets 10=10 but one branch polarity wrong); the same
 two guards as `if (a || b) return 0;` put it where retail has it (-> **95.70**, branch
 sequences agree). **The label's position in the SOURCE is irrelevant** - moving
-`StepArrivalDefense`'s `seek:` label from function scope into the end of the `case` block
+`StepScrollGruntBehavior`'s `seek:` label from function scope into the end of the `case` block
 it is emitted in was byte-identical.
 
 Equal return counts do not rule this out. `CSBI_SideTab::BuildStatzTabStatusBar`
@@ -100,10 +100,10 @@ uses block position and predecessor identity, not merely a return-count delta.
 
 ## The shared block does not have to be a bare `return`
 
-Any statement list that several guards jump to is one label. `CGrunt::StepArrivalDefense`
+Any statement list that several guards jump to is one label. `CGrunt::StepScrollGruntBehavior`
 0xf2b20 had FIVE copies of `{ m_defenderState = AISTATE_SEEK; return 1; }` against
 retail's one; a `seek:` label took it 76.85 -> **83.09** (rets 16->13, target 12). Its
-near-clone `CGrunt::StepArrivalDefenseLean` 0xf8240 took the same edit 54.22 -> **63.47**
+near-clone `CGrunt::StepMagicWandGruntBehavior` 0xf8240 took the same edit 54.22 -> **63.47**
 (rets 13->10, matching retail).
 
 ## In an EH (`/GX`) function, distinguish cleanup-call sites from full epilogues
@@ -159,7 +159,7 @@ Treat this family as a scheduling wall and skip it: 0x18830, 0x3f5f0, 0x37ff0, 0
 
 Two of the biggest wins in the 2026-08-08 sweep were not spelling at all - the surplus ret
 was a real reconstruction bug the ret count made visible:
-`CTriggerMgr::DestroyGroup` 0x798d0 had `return 0;` *outside* the `LoadAssets() == 0` block,
+`CTriggerMgr::OpenActionOptionsMenu` 0x798d0 had `return 0;` *outside* the `LoadAssets() == 0` block,
 so it bailed even when the overlay was built (86.63 -> **100.00 EXACT**, with a
 `RECT* vr = &view->m_mainPlane->m_viewRect;` for the last two loads);
 `CGrunt::OnStruck` 0x588f0 had `m_struckCount = 0;` in an `else` where retail runs it

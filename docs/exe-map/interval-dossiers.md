@@ -258,7 +258,8 @@ Evidence:
 - Single 9-frag sbi_sidetab init run @`0xe9e20` inside the interval → one obj.
 
 Seam fns:
-- `0x000ea0f0` / `0x000ea170` — `?SetDirection(Alt)@CSbConfigItem@@QAEXHH@Z` —
+- `0x000ea0f0` / `0x000ea170` —
+  `CSBI_StatzTabArrow::SetUnsampledDirection/SetSampledDirection` —
   statusbarmgr -> this TU — positioned between the sidetab block and
   `BuildMultiplayerTabStatusBar`; the config-item setters used by the builders.
 
@@ -406,7 +407,7 @@ Seam fns (all -> triggermgr TU by position; identities are placeholders,
   iconloaders — trigger-spawned FX.
 - `0x0007b440` — `?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z` —
   rockbreakparticles — rock-break FX spawned by triggers.
-- `0x0007b930` — `?CombatCue@CGruntTileMgr@@QAEHHHHHH@Z` — grunttilemgr.
+- `0x0007b930` — `?ApplyGruntAreaEffect@CGruntTileMgr@@QAEHHHHHH@Z` — grunttilemgr.
 - `0x0007be60` — `?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z` —
   gruntresurrectradius.
 - `0x0007c3d0` — `?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z` —
@@ -502,7 +503,7 @@ to CheckpointTrigger.cpp (its class TU, 0x10cb10 interval).
   block; CWormhole::SpawnPartners and the teleporter block bracket the
   CGruntPuddle block); frags i297-i299 one run; private .data band
   0x20d194-0x20d1d0 contiguous. The method ownership is not an ICF fold:
-  CTeleporter's ctor and SerializeMove pass their unadjusted `this`, while
+  CTeleporter's ctor and SerializeDispatch pass their unadjusted `this`, while
   CWormhole::SpawnPartners compares the candidate notify function with ILT
   0x4039b3, which jumps to DispatchTeleporterLogic, then calls 0x412c0 on that
   candidate's CTeleporter logic pointer. RTTI independently shows CTeleporter
@@ -739,10 +740,10 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   RLE16 + run-decode) but CANNOT be DIRSURF.CPP: the whole DDRAWMGR obj sits
   between (contiguity at first link). No __FILE__ string (no asserts) -> the
   original name is unknown (DIRFILE.CPP-like); hosted in FileImage.cpp. Total
-  image|fileimage interleave at fn granularity -> one obj. EH sites (LoadFile2/
+  image|fileimage interleave at fn granularity -> one obj. EH sites (CreateFromBmpFile/
   LoadBmp/SaveBmp/SaveRle16/SaveTga/LoadFile/LoadPcx/DecodePcxEx/LoadPid) ->
   /GX (fileimage already eh). ResLoad_144270 (resourceloaders, 0x144270,
-  text-contained) moves in by position; RunDecode1/3 are the codec file's
+  text-contained) moves in by position; DecodeByteRun1Plane/3 are the codec file's
   `#pragma optimize` islands (see G).
 * **The `0x148840-0x148cd8` pocket** (outside this band; TU_MIGRATION row
   "WOVEN 0.29" = one obj): the leftover second cores of image (LoadKeyed/

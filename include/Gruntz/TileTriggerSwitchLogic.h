@@ -44,10 +44,10 @@ public:
         m_initGate = 0;
     }
 
-    i32 VerifyBlockLinksB();
-    i32 VerifyBlockLinks();
+    i32 AreMultiSwitchLinksActive();
+    i32 AreCheckpointSwitchLinksActive();
 
-    i32 ValidateByType(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 SaveState(CFileMemBase* s);
 
     i32 LoadState(CFileMemBase* s);

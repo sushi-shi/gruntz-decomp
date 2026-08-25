@@ -11,26 +11,26 @@
 #include <stddef.h>
 
 RVA(0x0000f6d0, 0x47)
-i32 CDoNothing::SerializeMove(
+i32 CDoNothing::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x0000f740, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f770, 0x44, ??1CDoNothing@@UAE@XZ)
 
 RVA(0x0000f800, 0x47)
-i32 CDoNothingNormal::SerializeMove(
+i32 CDoNothingNormal::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x0000f870, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)

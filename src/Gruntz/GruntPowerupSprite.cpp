@@ -81,13 +81,13 @@ i32 CGruntPowerupSprite::Update() {
 }
 
 RVA(0x00080490, 0xbe)
-i32 CGruntPowerupSprite::SerializeMove(
+i32 CGruntPowerupSprite::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_gruntIdentity, sizeof(m_gruntIdentity));

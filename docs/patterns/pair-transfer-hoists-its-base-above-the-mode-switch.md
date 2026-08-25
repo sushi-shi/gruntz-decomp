@@ -1,6 +1,6 @@
 # Two adjacent 8-byte fields serialise through ONE hoisted base, not two `lea`s
 tags: cpp:switch cpp:member cpp:inline cpp:serialize | asm:lea asm:add asm:call | topic:codegen-idiom
-symptoms: a `SerializeMove`/`Serialize` whose only diff is one extra instruction; retail has `lea reg,[this+off]` ABOVE the `cmp mode,4` and reaches the second field with `add reg,8`, ours recomputes `lea eax,[this+off]` and `lea eax,[this+off+8]` inside each arm; 87-96% plateau
+symptoms: a `SerializeDispatch`/`Serialize` whose only diff is one extra instruction; retail has `lea reg,[this+off]` ABOVE the `cmp mode,4` and reaches the second field with `add reg,8`, ours recomputes `lea eax,[this+off]` and `lea eax,[this+off+8]` inside each arm; 87-96% plateau
 confidence: 10/10
 
 An engine object that stores a **timing pair** — two adjacent `i64`/`Clock64`
@@ -54,10 +54,10 @@ that; where it does not, `&m_firstField` is enough (the helper's parameter is
 switch and is byte-exact that way. The hoist is what distinguishes the *inlined*
 sites, so decide per call site by whether retail's `lea` sits above the `cmp`.
 
-Fixed at 100% EXACT by this: `CObjectDropper::SerializeMove` 0x0c6680 (97.58),
-`CTimeBomb::SerializeMove` 0x0e2080 (87.66), `CActionArea::SerializeMove`
+Fixed at 100% EXACT by this: `CObjectDropper::SerializeDispatch` 0x0c6680 (97.58),
+`CTimeBomb::SerializeDispatch` 0x0e2080 (87.66), `CActionArea::SerializeDispatch`
 0x008600 (92.70), `CAniPlayer::Serialize` 0x0e5c90 (94.66),
-`CToyPeek::SerializeMove` 0x0983e0 (95.38). `CTimer::HandleEvent` 0x09c1c0 has
+`CToyPeek::SerializeDispatch` 0x0983e0 (95.38). `CTimer::SerializeDispatch` 0x09c1c0 has
 TWO such pairs and went 84.58 -> 99.43 (residue: an ebx<->ebp coin flip between
 `this` and the `SerialMode` parameter).
 

@@ -91,7 +91,7 @@ coverage and both sides in fact use 0x1e0/0x1e4/0x1e8/0x1ec identically.
 The genuine one is worth stating because it is not a wrong member at all but a
 wrong ADDRESSING SHAPE, which this reading also catches.
 `CStatusBarMgr::LoadRezMachineConfig` named the row array through a pointer to
-the ARRAY (`CSbiHlRow* g = m_groupSlots; g[col].m_state`), which folds the
+the ARRAY (`CSbiHlRow* g = m_conveyorSlots; g[col].m_state`), which folds the
 member offset into the `lea`:
 
 ```
@@ -99,7 +99,7 @@ ours    lea edi,[esi+edx*8+0x2c0]   mov [edi],0x4        mov [edi+0x10],eax
 retail  lea edi,[esi+ecx*8]         mov [edi+0x2c0],0x4  mov [edi+0x2d0],eax
 ```
 
-Writing `m_groupSlots[col].m_state` reproduces retail's form byte for byte and
+Writing `m_conveyorSlots[col].m_state` reproduces retail's form byte for byte and
 silences the row - and costs 99.15 -> 91.50, because the shorter body flips one
 `AcquireAndPlay` and one `GetDwordDef` site's tail-merge.  Not committed for that
 reason; recorded here so the next reader does not re-derive it.

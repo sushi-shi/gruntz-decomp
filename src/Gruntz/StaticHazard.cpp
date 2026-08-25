@@ -169,15 +169,15 @@ RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
-        static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
+        static_cast<CActHandler>(&CStaticHazard::UpdateIdleState);
 
     ACT_NAME_ID(id2, "B")
     (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) =
-        static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
+        static_cast<CActHandler>(&CStaticHazard::UpdateActiveState);
 }
 
 RVA(0x000fc0b0, 0xb2)
-i32 CStaticHazard::LoadAttributes2() {
+i32 CStaticHazard::UpdateIdleState() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_QUESTZ) {
         return 0;
@@ -202,7 +202,7 @@ i32 CStaticHazard::LoadAttributes2() {
 // One instruction: retail compares the HitTestCell pointer against its cached zero
 // register (`cmp eax,ebx`) where cl emits `test eax,eax`.
 RVA(0x000fc1a0, 0x33b)
-i32 CStaticHazard::LoadAttributes() {
+i32 CStaticHazard::UpdateActiveState() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
     u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
     if (rem > static_cast<u32>(m_activeWindow)) {
@@ -295,7 +295,7 @@ i32 CStaticHazard::LoadAttributes() {
 }
 
 RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(
+i32 CStaticHazard::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -320,5 +320,5 @@ i32 CStaticHazard::SerializeMove(
             arc->Read(&m_tileRow, sizeof(m_tileRow));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(ar, arc, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(ar, arc, mode, typeId, object)
 }

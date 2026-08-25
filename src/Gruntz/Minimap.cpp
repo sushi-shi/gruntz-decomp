@@ -1400,8 +1400,15 @@ i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
         return 0;
     }
-    g_gameReg->m_triggerMgr
-        ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, TARGET_SELECTION_AUTO, 1);
+    g_gameReg->m_triggerMgr->HandleTargetSelection(
+        cell[0] * 32 + 16,
+        cell[1] * 32 + 16,
+        0,
+        0,
+        0,
+        TARGET_SELECTION_AUTO,
+        1
+    );
     return 1;
 }
 

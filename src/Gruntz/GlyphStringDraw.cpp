@@ -101,10 +101,10 @@ i32 LayerBlitFrame(
 }
 
 RVA(0x00115440, 0x45)
-i32 EngStr_DrawText(
-    CDDrawSurfaceMgr* obj,
+i32 DrawTextToFrontSurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
-    RECT* dst,
+    RECT* box,
     i32 fontSel,
     i32 shadow,
     i32 r,
@@ -112,17 +112,28 @@ i32 EngStr_DrawText(
     i32 b,
     i32 flag
 ) {
-    CDDrawFrontSurface* pair = obj->m_drawTarget->m_frontSurface;
+    CDDrawFrontSurface* frontSurface = surfaceMgr->m_drawTarget->m_frontSurface;
 
-    if (pair == NULL) {
+    if (frontSurface == NULL) {
         return 0;
     }
-    return EngStr_RenderText(obj, text, dst, pair->m_surface, fontSel, shadow, r, g, b, flag);
+    return EngStr_RenderText(
+        surfaceMgr,
+        text,
+        box,
+        frontSurface->m_surface,
+        fontSel,
+        shadow,
+        r,
+        g,
+        b,
+        flag
+    );
 }
 
 RVA(0x001154b0, 0x45)
-i32 ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToOverlaySurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
@@ -132,16 +143,27 @@ i32 ShowHudMessage(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* page = sink->m_drawTarget->m_overlayPair;
+    CDDrawSurfacePair* overlaySurface = surfaceMgr->m_drawTarget->m_overlayPair;
 
-    if (page == NULL) {
+    if (overlaySurface == NULL) {
         return 0;
     }
-    return EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
+    return EngStr_RenderText(
+        surfaceMgr,
+        text,
+        box,
+        overlaySurface->m_surface,
+        fontSel,
+        shadow,
+        r,
+        g,
+        b,
+        flag
+    );
 }
 RVA(0x00115520, 0x45)
-i32 ShowHudMessageAlt(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToBackSurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
@@ -151,9 +173,20 @@ i32 ShowHudMessageAlt(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfacePair* page = sink->m_drawTarget->m_backPair;
-    if (page == NULL) {
+    CDDrawSurfacePair* backSurface = surfaceMgr->m_drawTarget->m_backPair;
+    if (backSurface == NULL) {
         return 0;
     }
-    return EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
+    return EngStr_RenderText(
+        surfaceMgr,
+        text,
+        box,
+        backSurface->m_surface,
+        fontSel,
+        shadow,
+        r,
+        g,
+        b,
+        flag
+    );
 }

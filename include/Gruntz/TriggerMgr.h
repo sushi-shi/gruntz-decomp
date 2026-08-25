@@ -5,11 +5,11 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/FinishLevelReason.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceMode.h>
 #include <Gruntz/LogicTypeId.h>
@@ -54,9 +54,9 @@ public:
 
     i32 ScrollToActiveRecord();
 
-    void OverlayTick();
+    void CloseActionOptionsMenu();
 
-    i32 OverlayRelease();
+    i32 RenderActionOptionsMenu();
 
     i32 ByteTableHas(WarpStoneFragment fragment);
 
@@ -132,8 +132,8 @@ public:
 
     i32 ApplySwitch(CGrunt* g, i32 sx, i32 sy);
 
-    i32 ApplyTriggerA(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
-    i32 ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
+    i32 UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
+    i32 UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY);
 
     i32 ClearCell(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY, i32 arrivalPhase);
 
@@ -148,25 +148,25 @@ public:
     CGrunt*
     FindGruntAt(i32 px, i32 py, RECT* span, i32* outPlayerIndex, i32* outUnitIndex, RECT* src);
 
-    void ReportRecordsA(i32 tag, i32 gx, i32 gy);
-    void ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag);
+    void EnqueueSelectedMove(i32 isLocalCommand, i32 targetX, i32 targetY);
+    void EnqueueSelectedToolUse(i32 isLocalCommand, i32 targetX, i32 targetY, i32 targetIsGrunt);
 
     i32 PlaceObjectFull(i32 x, i32 y);
 
     void EnqueueGuardBegin(i32 playerIndex, i32 unitIndex);
     void EnqueueGuardEnd(i32 playerIndex, i32 unitIndex);
 
-    i32 ResetGroup(
-        i32 x,
-        i32 y,
-        i32 worldX,
-        i32 worldY,
+    i32 HandleTargetSelection(
+        i32 targetX,
+        i32 targetY,
+        i32 pointerX,
+        i32 pointerY,
         i32 unused5,
         TargetSelectionKind selector,
         i32 spawnCursor
     );
 
-    i32 DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY);
+    i32 OpenActionOptionsMenu(i32 selectedWorldX, i32 selectedWorldY, i32 pointerX, i32 pointerY);
 
     void ReinitGroup(i32 col, i32 row);
 
@@ -174,7 +174,7 @@ public:
 
     i32 ScanGroup(CFileMemBase* ar);
 
-    i32 TriggerCell(i32 x, i32 y);
+    i32 HandleActionOptionsPointer(i32 x, i32 y);
 
     i32 SpawnGrunt(i32 srcPlayerIndex, i32 srcUnitIndex, i32 dstPlayerIndex, i32 moveIcon);
 
@@ -186,8 +186,8 @@ public:
 
     i32 CenterSelectionGroup(i32 slot);
 
-    i32 ToggleRegionA();
-    i32 ToggleRegionB();
+    i32 ToggleToolTargeting();
+    i32 ToggleToyTargeting();
 
     i32 EnqueueGroupCells();
 
@@ -212,7 +212,8 @@ public:
         WwdAniDrawValue cue
     );
 
-    i32 CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 flag);
+    i32
+    ApplyGruntAreaEffect(i32 x, i32 y, i32 radiusTiles, GruntAreaEffectKind effect, i32 deathParam);
 
     i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag);
 
@@ -257,7 +258,6 @@ public:
     }
 
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
-    i32 PlaceB(i32 a, i32 b, i32 c);
 
     i32
     LoadPowerupIconSprites(PickupType type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);

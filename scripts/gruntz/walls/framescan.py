@@ -28,7 +28,7 @@ direction closed three rows on 2026-08-23 and the default ranking hides every
 one of them, because ranking by RESIDUAL puts frame-equal rows near 100% at the
 head and the whole `residual<=4` hit list is empty in both signed buckets:
 
-    CTriggerMgr::ToggleRegionA   0x7d450  0 vs 0x8  85.71 -> 100.00 EXACT
+    CTriggerMgr::ToggleToolTargeting   0x7d450  0 vs 0x8  85.71 -> 100.00 EXACT
     CStatusBarMgr::UpdateFalling 0x107590 0 vs 0x10 89.65 ->  97.91
     PolyIsConvexCW               0x145e30 0xc vs 0x10 85.70 -> 93.23
 

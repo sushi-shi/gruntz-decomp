@@ -73,14 +73,14 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
 // `xor esi,esi`. The value-returning and if/else spellings both get if-converted to
 // `neg/sbb/and` instead, which is worse.
 RVA(0x0003f040, 0x147)
-i32 CExitTrigger::SerializeMove(
+i32 CExitTrigger::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
     CFileMemBase* arc = ar;
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(ar, arc, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(ar, arc, mode, typeId, object)
 
     CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {

@@ -57,7 +57,7 @@ transposed, transpose the declarations.
 
 The int locals raise the pressure enough that cl stops hoisting an unrelated global
 load out of the two arms that feed the call — which is what had merged the two call
-sites into one shared tail. `CTriggerMgr::ResetGroup` @0x079520: **84.15 -> 98.14**
+sites into one shared tail. `CTriggerMgr::HandleTargetSelection` @0x079520: **84.15 -> 98.14**
 from this one change (77.14 before the arm-order work in the same commit; 99.85
 after the compare operands were transposed to match).
 

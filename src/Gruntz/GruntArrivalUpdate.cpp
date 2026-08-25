@@ -48,7 +48,7 @@
 // is left onto the first block. Local outer guards + MEMBER inner re-tests
 // keep the second arm's guards (local-guard-member-retest-blocks-fold).
 RVA(0x000f0130, 0x7c0)
-i32 CGrunt::UpdateArrival() {
+i32 CGrunt::StepGauntletGruntBehavior() {
     char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
     // POLARITY: retail's `sete cl` (0xf0184) leaves the body on the strcmp!=0 path -
     // the arrival AI is SKIPPED for act "I". We had `!=`, which ran it only for "I".
@@ -270,7 +270,7 @@ i32 CGrunt::UpdateArrival() {
             if (this->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
-            g_gameReg->m_triggerMgr->ApplyTriggerA(
+            g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
                 cell->m_x * 0x20 + 0x10,

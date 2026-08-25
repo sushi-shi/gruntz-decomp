@@ -324,7 +324,7 @@ of all 54 retail files is in
 
 | # | Field | Consumed as | | |
 |---|---|---|---|---|
-| 0 | **`name`** | `obj->m_name` — `lea ecx,[ebx+0xdc]` @0x162f05 + `CString::operator=` | **P** | Present on **14 of 27 110** objects, all `WEENIE_SWITCH` in `AREA2\WORLDZ\LEVEL7`. The only reader of `m_name` in the tree is the release-dead `TRACE` in `CDDrawChildGroup::Deserialize` @0x15b0e0, so it is a designer annotation the shipped build never looks at |
+| 0 | **`name`** | `obj->m_name` — `lea ecx,[ebx+0xdc]` @0x162f05 + `CString::operator=` | **P** | Present on **14 of 27 110** objects, all `WEENIE_SWITCH` in `AREA2\WORLDZ\LEVEL7`. The only reader of `m_name` in the tree is the release-dead `TRACE` in `CDDrawChildGroup::DeserializeObjects` @0x15b0e0, so it is a designer annotation the shipped build never looks at |
 | 1 | **`logic`** | `m_workerCache->m_workers.Lookup(logic)`; a miss **drops the object** | **P** | 34 distinct, every one registered by `RegisterGameObjectLogicTypes` @0xa3b0 |
 | 2 | **`image_set`** | `SetImageFrameByName(s, gridIndex)` when `gridIndex != -1`, else `SetImageSetByName(s)` | **P** | 186 distinct; all 27 110 references resolve to a real `<NS>\IMAGEZ` path |
 | 3 | **`animation`** | `SetAnimationByName(s, 0)` **and** `SetSoundCueByName(s)` | **P** | 29 distinct. Resolves in **two** registries — 2 945 references name an `<NS>\ANIZ` resource, 211 an `<NS>\SOUNDZ\AMBIENT` WAV (the `GlobalAmbientSound` objects). One reference in the corpus dangles |

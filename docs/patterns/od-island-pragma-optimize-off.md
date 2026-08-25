@@ -35,13 +35,13 @@ run-decoders).
 
 Move the bodies into the real /O2 TU and fence them with the pragma pair. The
 fuzzy % is IDENTICAL to the old per-unit /Od profile (measured: DecodeRun8
-99.50, DecodeRun24 99.54, RunDecode1 99.57, RunDecode3 99.54 — byte-for-byte
+99.50, DecodeRun24 99.54, DecodeByteRun1Plane 99.57, DecodeByteRun3Planes 99.54 — byte-for-byte
 the same residual, the documented `/Od local-slot-ordering` wall
 ([od-local-slot-ordering](od-local-slot-ordering.md)) is unchanged).
 
 Proof case (wave4-K): the `fileimagerundecode` unit (flags = "od", 4 fns) was a
 crutch — its four fns are text-contained in TWO different /GX /O2 objs
-(DIRSURF.CPP gets DecodeRun8/24, the file-codec obj gets RunDecode1/3). The
+(DIRSURF.CPP gets DecodeRun8/24, the file-codec obj gets DecodeByteRun1Plane/3). The
 unit is deleted; the pragma islands reproduce the shape in place.
 
 ## When you see a singleton flags-profile override

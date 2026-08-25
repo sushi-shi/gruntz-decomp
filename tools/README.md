@@ -222,7 +222,7 @@ See the module docs for the per-field disassembly citations; the short version:
   (`(v & 0xC0) != 0xC0`); sprites and booty only when `(v & 0xC0) == 0`. Recovering
   that is what took `roundtrip` from 85 % to 100 %.
 * **Two decoders that disagree**, on a run that would cross a scanline:
-  `CDDSurface::RunDecode1` clamps and carries, `CRezImage::DecodePidData` writes
+  `CDDSurface::DecodeByteRun1Plane` clamps and carries, `CRezImage::DecodePidData` writes
   the whole run and spills. They consume a *different number of tokens*, so one
   such run desynchronises them permanently. No shipped sprite contains one.
 * **The RLE16 row-end split is unobservable.** `EncodeRle16` ends a scanline at

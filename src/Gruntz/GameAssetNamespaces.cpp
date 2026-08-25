@@ -72,17 +72,17 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_resourceArchive) == 0) {
         return 0;
     }
-    if (m_scratchSurface0 == NULL && m_scratchSurface1 == NULL) {
+    if (m_cursorSaveSurface0 == NULL && m_cursorSaveSurface1 == NULL) {
         CDDrawDeviceManager* manager = m_world->m_deviceManager;
         if (manager == NULL) {
             return 0;
         }
-        m_scratchSurface0 = manager->CreateOffscreenSurface(0x40, 0x40, BPP_RGB_16, 0, -1);
-        if (m_scratchSurface0 == NULL) {
+        m_cursorSaveSurface0 = manager->CreateOffscreenSurface(0x40, 0x40, BPP_RGB_16, 0, -1);
+        if (m_cursorSaveSurface0 == NULL) {
             return 0;
         }
-        m_scratchSurface1 = manager->CreateOffscreenSurface(0x40, 0x40, BPP_RGB_16, 0, -1);
-        if (m_scratchSurface1 == NULL) {
+        m_cursorSaveSurface1 = manager->CreateOffscreenSurface(0x40, 0x40, BPP_RGB_16, 0, -1);
+        if (m_cursorSaveSurface1 == NULL) {
             return 0;
         }
     }

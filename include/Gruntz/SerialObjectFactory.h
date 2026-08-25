@@ -12,7 +12,7 @@
 class CDDrawSurfaceMgr;
 class CFileMemBase;
 
-i32 __cdecl SerialObjectFactory(
+i32 __cdecl GameSerializationCallback(
     CDDrawSurfaceMgr* ctx,
     CFileMemBase* archive,
     SerialMode mode,

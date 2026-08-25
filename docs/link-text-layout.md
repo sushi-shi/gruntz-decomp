@@ -177,7 +177,7 @@ frozen in the tu-order ratchet baseline):
 |---|---|---|
 | 1 | 8 | **statusbar.cpp reunification** — SBI_RectOnly × {StatusBarItem, StatusBarMgr, SBI_StatzTabArrowEh, SBI_SideTabBuild, WarpStoneFly, MgrSettings, SBI_TabzDialogEh} + WarpStoneFly × MgrSettings. Compiland proven (credits name + bracketing, `docs/tu-partition-brief.md`). Note the sbi_tabzdialog_eh base-ctor-spelling objection in the units archaeology must be re-tested — per-site inliner variance within one TU may void it. |
 | 2 | 4 | **booty.cpp** — BootyStateActivate × {GameMode, BootyWalkAnim, IconLoaders, GameText}. Compiland proven. |
-| 3 | 3 | **PathHazard family** — PathHazard × Ufo × RainCloud: dense bidirectional weave of real bodies (PathHazard.cpp even pins a CRainCloud method; Ufo.cpp pins CPathHazard::SerializeMove) = one compiland. |
+| 3 | 3 | **PathHazard family** — PathHazard × Ufo × RainCloud: dense bidirectional weave of real bodies (PathHazard.cpp even pins a CRainCloud method; Ufo.cpp pins CPathHazard::SerializeDispatch) = one compiland. |
 | 4 | 2 | **DDPageMgr palette pocket** — CMoviePlayer::UploadPalette/ResetPalette embedded in the DDPageMgr obj (same conclusion the palettesnapshot archaeology already reached). Fold MoviePaletteUpload + PaletteReset (+ siblings) in. |
 | 5 | 2 | **Blowfish** — done (see above). |
 | 6 | 1 | **Projectile × Boomerang** — bidirectional weave (CBoomerang::AdvanceMotion pinned in Projectile.cpp between Boomerang.cpp's pins) = one compiland. |
@@ -195,7 +195,7 @@ frozen in the tu-order ratchet baseline):
   link-line code inside the region and carries an `@identity-TODO` already.
 * **NetSessionMgr × {BuildGruntzCrcInfo, PacketPool} (2)** — same class family
   either side of the holes; needs the netcmdslot/netsessionmgr interval work.
-* **MovingLogic × TypeKeyColl (1)** — is `CUserLogic::SerializeMove` 0x16e7f0 a
+* **MovingLogic × TypeKeyColl (1)** — is `CUserLogic::SerializeDispatch` 0x16e7f0 a
   kept inline of the z-collections TU (plausible: that TU also holds
   `CUserBaseLink`), or does the z-band split into >1 obj around it? Deciding
   evidence: whether any z-band TU includes UserLogic.h, or an initializer/

@@ -48,9 +48,9 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_RESOURCE_MAIN_BACKGROUND = 0xc8,
     SBICMD_RESOURCE_UPPER_BACKGROUND = 0xc9,
     SBICMD_RESOURCE_WINDOW_BACKGROUND = 0xca,
-    SBICMD_RESOURCE_BELT_GROUP0 = 0xcb,
-    SBICMD_RESOURCE_BELT_GROUP1 = 0xcc,
-    SBICMD_RESOURCE_BELT_GROUP2 = 0xcd,
+    SBICMD_RESOURCE_BELT_TOOLS = 0xcb,
+    SBICMD_RESOURCE_BELT_TOYS = 0xcc,
+    SBICMD_RESOURCE_BELT_BRICKS = 0xcd,
 
     // Resource-tab conveyor widgets. DropFallingItemAt accepts either belt segment.
     SBICMD_CONVEYOR_TOP = 0xce,
@@ -121,34 +121,34 @@ GZ_ENUM_BEGIN(SbiCommandId)
     //   The three groups are the HUD's three inventory rows, and four separate
     //   sites in CStatusBarMgr say which is which by tiering a PickupType the
     //   same way every time: `>= PICKUP_BRICKZ_FIRST` picks 2, else
-    //   `>= PICKUP_TOYZ_FIRST` picks 1, else 0. So group 0 is toolz, 1 is toyz,
-    //   2 is brickz - which is also the order they are drawn in, at
+    //   `>= PICKUP_TOYZ_FIRST` picks 1, else 0. So the lanes are Toolz, Toyz,
+    //   and Brickz - which is also the order they are drawn in, at
     //   m_itemBaseX 0x1d, 0x45 and 0x6d.
     //
-    //   Each group holds FOUR ids because the index the arm produces is fed to
-    //   HlClickGroup<n>(StatusBarHighlightRow) - so the four members of a group
-    //   ARE that domain's four rows, in its order. The dispatch is a 12-label
+    //   Each lane holds FOUR ids because the index the arm produces is fed to the
+    //   matching Select*Resource(StatusBarHighlightRow) method. The four members
+    //   therefore ARE that inventory domain's four rows, in order. The dispatch is a 12-label
     //   jump table (`lea eax,[ebx-0xd3]; cmp eax,0xb; ja; mov cl,[eax+lut]`,
     //   lut `00 00 00 00 01 01 01 01 02 02 02 02` at 0xff51c), which is what
     //   needs the twelve ids spelled out rather than just their bounds.
-    SBICMD_HL_GROUP0_CATEGORY = 0xd3,
-    SBICMD_HL_GROUP0_FIRST = SBICMD_HL_GROUP0_CATEGORY,
-    SBICMD_HL_GROUP0_UPPER = 0xd4,
-    SBICMD_HL_GROUP0_MIDDLE = 0xd5,
-    SBICMD_HL_GROUP0_LOWER = 0xd6,
-    SBICMD_HL_GROUP0_LAST = SBICMD_HL_GROUP0_LOWER,
-    SBICMD_HL_GROUP1_CATEGORY = 0xd7,
-    SBICMD_HL_GROUP1_FIRST = SBICMD_HL_GROUP1_CATEGORY,
-    SBICMD_HL_GROUP1_UPPER = 0xd8,
-    SBICMD_HL_GROUP1_MIDDLE = 0xd9,
-    SBICMD_HL_GROUP1_LOWER = 0xda,
-    SBICMD_HL_GROUP1_LAST = SBICMD_HL_GROUP1_LOWER,
-    SBICMD_HL_GROUP2_CATEGORY = 0xdb,
-    SBICMD_HL_GROUP2_FIRST = SBICMD_HL_GROUP2_CATEGORY,
-    SBICMD_HL_GROUP2_UPPER = 0xdc,
-    SBICMD_HL_GROUP2_MIDDLE = 0xdd,
-    SBICMD_HL_GROUP2_LOWER = 0xde,
-    SBICMD_HL_GROUP2_LAST = SBICMD_HL_GROUP2_LOWER
+    SBICMD_TOOL_RESOURCE_CATEGORY = 0xd3,
+    SBICMD_TOOL_RESOURCE_FIRST = SBICMD_TOOL_RESOURCE_CATEGORY,
+    SBICMD_TOOL_RESOURCE_UPPER = 0xd4,
+    SBICMD_TOOL_RESOURCE_MIDDLE = 0xd5,
+    SBICMD_TOOL_RESOURCE_LOWER = 0xd6,
+    SBICMD_TOOL_RESOURCE_LAST = SBICMD_TOOL_RESOURCE_LOWER,
+    SBICMD_TOY_RESOURCE_CATEGORY = 0xd7,
+    SBICMD_TOY_RESOURCE_FIRST = SBICMD_TOY_RESOURCE_CATEGORY,
+    SBICMD_TOY_RESOURCE_UPPER = 0xd8,
+    SBICMD_TOY_RESOURCE_MIDDLE = 0xd9,
+    SBICMD_TOY_RESOURCE_LOWER = 0xda,
+    SBICMD_TOY_RESOURCE_LAST = SBICMD_TOY_RESOURCE_LOWER,
+    SBICMD_BRICK_RESOURCE_CATEGORY = 0xdb,
+    SBICMD_BRICK_RESOURCE_FIRST = SBICMD_BRICK_RESOURCE_CATEGORY,
+    SBICMD_BRICK_RESOURCE_UPPER = 0xdc,
+    SBICMD_BRICK_RESOURCE_MIDDLE = 0xdd,
+    SBICMD_BRICK_RESOURCE_LOWER = 0xde,
+    SBICMD_BRICK_RESOURCE_LAST = SBICMD_BRICK_RESOURCE_LOWER
 GZ_ENUM_END(SbiCommandId)
 
 // The bands above are INDEXED, not enumerated: four separate arms in

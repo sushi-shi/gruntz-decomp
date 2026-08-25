@@ -46,7 +46,7 @@ away, so it costs nothing.
 
 ## Evidence
 
-`CGrunt::StepEntranceRelatchB` (0x00065c20). With the redundant `result`:
+`CGrunt::FinishToobMoveAnimation` (0x00065c20). With the redundant `result`:
 90.86% and a `push ebp` retail does not have. Deleting `result`: **98.22%**,
 prologue/epilogue exact, and every `cmp X,ebp` / `mov [X],ebp` collapsed to the
 `test` / immediate form in one build. No other edit.

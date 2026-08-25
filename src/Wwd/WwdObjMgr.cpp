@@ -913,12 +913,12 @@ i32 CDDrawChildGroup::CheckSortOrder() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a7f0, 0x20)
-CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
+CWwdGameObject* CDDrawChildGroup::FindById(i32 id) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->m_id == type) {
+        if (obj->m_id == id) {
             return obj;
         }
     }
@@ -928,12 +928,12 @@ CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a810, 0x42)
-CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
+CWwdGameObject* CDDrawChildGroup::FindSerialRefById(i32 id) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
             return obj;
         }
     }
@@ -1135,7 +1135,11 @@ i32 CDDrawChildGroup::CountActive() {
 }
 
 RVA(0x0015ac20, 0x81)
-i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId) {
+i32 CDDrawChildGroup::DispatchSerializationToObjects(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -1150,7 +1154,7 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTy
                     static_cast<WwdGameObjectFlags>(val->m_flags),
                     WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
                 )) {
-                val->Play(ar, mode, typeId, val);
+                val->SerializeDispatch(ar, mode, typeId, val);
             }
         } while (pos != NULL);
     }
@@ -1158,7 +1162,7 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTy
 }
 
 RVA(0x0015acb0, 0x76)
-i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
+i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
     }
@@ -1252,7 +1256,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 CWwdGameObject* rec = NULL;
                 // m_serialTypeId is NOT a LogicTypeId: this phase keys off the
                 // record's own serial type id.
-                if (OwnerMgr()->InvokeCallback(
+                if (OwnerMgr()->DispatchSerializationCallback(
                         reader,
                         SERIAL_CREATE_BY_SERIAL_ID,
                         static_cast<LogicTypeId>(desc.m_serialTypeId),
@@ -1294,7 +1298,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         if (desc.m_logicTypeId != LOGIC_UNSET) {
 
             CUserLogic* child = NULL;
-            if (OwnerMgr()->InvokeCallback(
+            if (OwnerMgr()->DispatchSerializationCallback(
                     reader,
                     SERIAL_CREATE,
                     desc.m_logicTypeId,
@@ -1314,7 +1318,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 }
 
 RVA(0x0015b020, 0xc0)
-i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
+i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
     }
@@ -1330,7 +1334,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
             )) {
             i32 objectId = val->m_objectId;
             ar->Write(&objectId, sizeof(objectId));
-            if (val->Play(ar, SERIAL_SAVE, typeId, val) == 0) {
+            if (val->SerializeDispatch(ar, SERIAL_SAVE, typeId, val) == 0) {
                 return 0;
             }
         }
@@ -1347,7 +1351,7 @@ static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
 }
 
 RVA(0x0015b0e0, 0xec)
-i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag) {
+i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
     }
@@ -1366,10 +1370,10 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
         }
         // Release-dead TRACE (`1 ? (void)0 : ::AfxTrace`). Only "one CString
         // temporary lived here" is byte-proven; the arm itself is gone.
-        if ((flag & 1) != LOGIC_UNSET) {
+        if ((typeId & 1) != LOGIC_UNSET) {
             TRACE("%s\n", static_cast<LPCTSTR>(CString(obj->m_name)));
         }
-        if (obj->Play(ar, SERIAL_LOAD, flag, obj) == 0) {
+        if (obj->SerializeDispatch(ar, SERIAL_LOAD, typeId, obj) == 0) {
             return 0;
         }
     }

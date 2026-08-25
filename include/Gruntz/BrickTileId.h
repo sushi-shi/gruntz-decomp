@@ -4,7 +4,7 @@
 #include <Enums.h>
 
 // The WWD tile-image index of a Brickz stack - what CTileActionEvent::m_actionCode
-// holds, what CGruntzMapMgr::LoadAttributes re-rolls, and what CTileActionEvent
+// holds, what CGruntzMapMgr::BuildCellAttributes re-rolls, and what CTileActionEvent
 // writes back into CDDrawWorkerHost::m_tileGrid.
 //
 // A stack is one to three brickz high. At most ONE brick in it is coloured; the
@@ -12,14 +12,14 @@
 // the coloured one), and the three facts that pin it are all in this file's own
 // callers:
 //
-//  * COLOUR, from CTileActionEvent::Process. Breaking the top brick sets `effect`
+//  * COLOUR, from CTileActionEvent::BreakTopBrick. Breaking the top brick sets `effect`
 //    to the colour's height-1 id exactly when the break removed the last brick of
 //    that colour, and `effect` selects the break sprite by name:
 //    0x132 -> "GAME_REDBRICKBREAK", 0x138 -> "GAME_BLUEBRICKBREAK",
 //    0x13e -> "GAME_GOLDBRICKBREAK", 0x144 -> "GAME_BLACKBRICKBREAK", and the
 //    default (the brown ladder) -> "GAME_BRICKBREAK". The same five colours, in
 //    this order, are the [Brickz] Brown/Red/Blue/Gold/Black weights that
-//    CGruntzMapMgr::LoadAttributes reads out of the bute.
+//    CGruntzMapMgr::BuildCellAttributes reads out of the bute.
 //
 //  * HEIGHT, from CTileActionEvent::SetActionCode. When the current player has
 //    not been shown the stack's true colour (m_playerFlags[g_curPlayer] == 0) the
@@ -30,7 +30,7 @@
 //    from the editor docs, and it partitions the 27 ids by height. The three
 //    re-rollers in LoadAttributes partition them the same way.
 //
-//  * LAYER, from CTileActionEvent::Process's newCode chain (break the top brick)
+//  * LAYER, from CTileActionEvent::BreakTopBrick's newCode chain (break the top brick)
 //    read against CTileActionEvent::MorphByTool (add one on top). Adding a BROWN
 //    brick (PICKUP_BROWNBRICK, 0x22) takes RED_1 -> RED_2_LOW -> RED_3_LOW and
 //    RED_2_TOP -> RED_3_MID, so _LOW/_MID/_TOP name where the coloured brick sits
@@ -45,7 +45,7 @@
 // reveals the colour instead of removing a layer.
 GZ_ENUM_BEGIN(BrickTileId)
 // The tile a fully broken stack leaves behind: Process's newCode for every
-// height-1 arm, and the value CTileActionEvent::Process returns 1 for.
+// height-1 arm, and the value CTileActionEvent::BreakTopBrick returns 1 for.
     BRICKTILE_CLEARED = 0x12d,
 
     BRICKTILE_BROWN_1 = 0x12f,

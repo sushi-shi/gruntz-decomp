@@ -12,7 +12,7 @@ statements is tempting to fold into
 
 ```cpp
 static void* RegSwitchTail(Container* self, Logic* obj, ...) {   // NO
-    if (obj->ValidateByType(...) == 0) return 0;
+    if (obj->SerializeDispatch(...) == 0) return 0;
     obj->m_owner  = self;
     obj->m_typeId = id;
     return obj;
@@ -40,9 +40,9 @@ function it took the score from 71.27 to **0.00**.
 
 ## Evidence
 
-`CTileTriggerContainer::LoadLogic` (0x00117800), twelve arms behind two such
+`CTileTriggerContainer::DeserializeLogic` (0x00117800), twelve arms behind two such
 helpers (`RegSwitchTail`, `RegLogicTail`): retail has four
-`ValidateByType@CTileTriggerSwitchLogic` calls where we had twelve
+`SerializeDispatch@CTileTriggerSwitchLogic` calls where we had twelve
 `call Reg*Tail`. Expanding both and deleting them: **71.27 → 89.75** in one
 build.
 

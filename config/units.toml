@@ -231,7 +231,7 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "gruntarrivalscan"
 source = "src/Gruntz/GruntArrivalScan.cpp"
-flags = "cpp" # REHOME M2: merged the arrival-band over-split files; Reticle/PhaseStep need /GX
+flags = "cpp" # REHOME M2: merged the arrival-band over-split files; Reticle/StepTimeBomberBehavior need /GX
 
 
 [[unit]]

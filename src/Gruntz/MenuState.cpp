@@ -36,7 +36,6 @@
 #include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
-#include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/String.h>
@@ -480,5 +479,5 @@ void CMenuState::BuildVersionString(CRect r) {
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    ShowHudMessage(m_world, &str, &r, 0x64, 1, 0xff, 0xff, 0, 0);
+    DrawTextToOverlaySurface(m_world, &str, &r, 0x64, 1, 0xff, 0xff, 0, 0);
 }

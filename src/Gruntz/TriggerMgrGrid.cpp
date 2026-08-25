@@ -655,7 +655,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 return 0;
             }
             sw->SwitchDown();
-            if (sw->VerifyBlockLinksB() == 0) {
+            if (sw->AreMultiSwitchLinksActive() == 0) {
                 return 1;
             }
             anyHit = 0;
@@ -855,7 +855,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     }
                 }
             }
-            if (sw->VerifyBlockLinks() == 0) {
+            if (sw->AreCheckpointSwitchLinksActive() == 0) {
                 return 0;
             }
             anyHit = 0;
@@ -1009,7 +1009,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 return 0;
             }
             i32 found = 0;
-            if (obj->VerifyBlockLinksB() != 0) {
+            if (obj->AreMultiSwitchLinksActive() != 0) {
                 POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
                 i32 stop = 0;
                 while (pos != NULL) {
@@ -1062,7 +1062,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_42));
                 return 0;
             }
-            if (obj->VerifyBlockLinks() != 0) {
+            if (obj->AreCheckpointSwitchLinksActive() != 0) {
                 return 0;
             }
             obj->SwitchUp();
@@ -1102,7 +1102,7 @@ void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
 
 // @early-stop
 RVA(0x0006dae0, 0x4f9)
-i32 CTriggerMgr::ApplyTriggerA(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
+i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         return 0;
@@ -1246,7 +1246,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
 
 // @early-stop
 RVA(0x0006e120, 0x552)
-i32 CTriggerMgr::ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
+i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 bx;
     i32 by;
     CGrunt* hit;

@@ -22,7 +22,7 @@ public:
     i32 Draw(CDDrawSurfacePair* target, i32 forceVisible);
     void SetTime(i32 minutes, i32 seconds);
     void AddTime(i32 minutes, i32 seconds);
-    i32 HandleEvent(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 

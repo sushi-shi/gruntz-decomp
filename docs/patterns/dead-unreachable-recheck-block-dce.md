@@ -9,8 +9,9 @@ whole `if (m_flag != 0)` recheck block (dozens of insns, reached by `cmp <cached
 jne recheck`); our same MSVC5 cl proves it unreachable and DEAD-CODE-ELIMINATES it, so
 the case collapses to just the default. base is tens of insns shorter, per state.
 
-The grunt per-tick AI steps (CGrunt::ChargeStep 0xef6b0, ::UpdateArrival 0xf0130,
-CGruntScan::ScanNearestTarget 0xf42f0) all share this shape:
+The grunt per-tick AI steps (CGrunt::StepDumbChaserBehavior 0xef6b0,
+::StepGauntletGruntBehavior 0xf0130,
+CGruntScan::StepSmartChaserBehavior 0xf42f0) all share this shape:
 
 ```cpp
 if (m_poweredUp != 0) {          // early-out: every path returns 1
@@ -36,5 +37,5 @@ the recheck body reads the same member the guard already narrowed, so value-prop
 kills it. `volatile` on the member (cf. [[volatile-member-preserves-redundant-store]])
 was NOT tried here — it would also change the guard's codegen. Accept the plateau: the
 recheck is ~12-14% of each function, so these cap in the 40-60s even after the
-`switch` dispatch + reverse layout are byte-exact. Evidence: ChargeStep 57.6%,
-UpdateArrival ~34%, ScanNearestTarget ~28% (all @early-stop, logic + dispatch correct).
+`switch` dispatch + reverse layout are byte-exact. Evidence: StepDumbChaserBehavior 57.6%,
+UpdateArrival ~34%, StepSmartChaserBehavior ~28% (all @early-stop, logic + dispatch correct).

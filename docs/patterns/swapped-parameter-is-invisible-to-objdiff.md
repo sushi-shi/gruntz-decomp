@@ -192,7 +192,7 @@ rebuilt and retail objects. Comparing symbolic pushed-value vectors found three
 more source defects:
 - two pursuit calls in `CBattlezMapConfig::Step` put `0xd87` in
   `arrivalPhase`; retail puts it in `maskA`;
-- `CGrunt::ScanNearestTarget` put `m_arrivalFlags` in `arrivalPhase`; retail
+- `CGrunt::StepSmartChaserBehavior` put `m_arrivalFlags` in `arrivalPhase`; retail
   puts it in `maskA`;
 - a source-level coordinate-pair pass found `CGrunt::UpdateArrival` passing
   one `Coord` as `(y, x)` where retail passes `(x, y)`.

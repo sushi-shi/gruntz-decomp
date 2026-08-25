@@ -18,9 +18,10 @@ public:
 
     virtual void Reset() OVERRIDE;
 
-    virtual i32 Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) OVERRIDE;
+    virtual i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) OVERRIDE;
 
-    i32 LoadAttributes(i32 width, i32 height);
+    i32 BuildCellAttributes(i32 width, i32 height);
 
     CPtrArray m_arr;
     i32 m_reserved90;

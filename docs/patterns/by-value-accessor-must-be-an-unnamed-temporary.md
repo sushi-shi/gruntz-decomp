@@ -36,9 +36,9 @@ call ?CommitNeighbor@CGrunt@@QAEHHHHH@Z
 The tell is the DOUBLE LOAD of one member with a single dead store of it: a named
 copy would load each member once. Measured 2026-08-23 on `COMMIT_GRUNT_NEIGHBOR`
 across 29 sites in 14 TUs: 14 functions moved, 13 up and one down 0.22, net
-+51.04, `CGrunt::ResolveArrivalNeighbor` 86.54 -> 100.00 EXACT, `ChargeStep`
++51.04, `CGrunt::StepPostGuardBehavior` 86.54 -> 100.00 EXACT, `StepDumbChaserBehavior`
 83.91 -> 90.06, `StepDiggerBehavior` 84.24 -> 90.01 (which also closed one of its
-two branch deltas), `StepArrivalDefense` 85.82 -> 91.16. It overturned five
+two branch deltas), `StepScrollGruntBehavior` 85.82 -> 91.16. It overturned five
 `bounded` verdicts, four of which had explicitly recorded the surviving home or
 the "retail-only aggregate reload" as the residue with no lever left - the
 exhaustion was over spellings that all NAME the copy.

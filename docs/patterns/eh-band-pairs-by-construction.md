@@ -62,7 +62,7 @@ remove a temporary's state. This is the actionable bucket, and the funclets at
 are a DESTRUCTOR-NAMING question, not a cleanup one.** Ours says
 `??1CGruntCoordList@@UAE@XZ` where retail says `??1CPtrList@@UAE@XZ` at
 `CGrunt+0x31c` (three funclets: the CGrunt ctor, the CGrunt dtor and
-`SerialObjectFactory`), and ours says `??1CTileImageSet@@UAE@XZ` where retail
+`GameSerializationCallback`), and ours says `??1CTileImageSet@@UAE@XZ` where retail
 says `??1CObject@@UAE@XZ` in `~CPixelTileImageSet`. In both, the object SLOT and the
 funclet's position in the sequence are identical - only the referent's name
 differs, which is the signature of

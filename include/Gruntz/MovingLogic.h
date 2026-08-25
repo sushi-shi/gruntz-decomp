@@ -21,7 +21,7 @@ public:
         GRUNT_SCALE,
     };
 
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00013bb0, 0x4)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_NONE;
@@ -48,7 +48,7 @@ public:
     // CUserLogic base (??_7CUserBase stamp + the single `call ??0zBitVec`) and
     // its CMotionState member; CProjectile `call`s it.  The inline sibling leaves
     // both a `call`, which is what CGrunt's construction shows in retail's
-    // SerialObjectFactory: `call ??0CUserLogic`, `call ??0CMotionState`, then the
+    // GameSerializationCallback: `call ??0CUserLogic`, `call ??0CMotionState`, then the
     // ??_7CMovingLogic stamp.
     CMovingLogic();
     CMovingLogic(CUserLogic::EInlineBase);
@@ -77,7 +77,7 @@ private:
     void BeginMotion();
 };
 
-// The untagged default ctor is out of line in SerialObjectFactory.cpp (0x13940); it
+// The untagged default ctor is out of line in GameSerializationCallback.cpp (0x13940); it
 // expands CMotionState's body, while the owner-taking one below leaves it a call -
 // the 0x13940-vs-0x47a10 split retail shows.
 inline CMovingLogic::CMovingLogic(CUserLogic::EInlineBase) {}

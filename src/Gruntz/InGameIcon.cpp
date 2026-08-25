@@ -549,13 +549,13 @@ i32 CInGameIcon::RefreshCell() {
 }
 
 RVA(0x000983e0, 0x98)
-i32 CToyPeek::SerializeMove(
+i32 CToyPeek::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
     SerBandPair(ar, mode, &m_startClock);
     return 1;
@@ -799,7 +799,7 @@ i32 CInGameIcon::Reposition() {
 
 // @early-stop
 RVA(0x00098c90, 0x382)
-i32 CInGameIcon::SerializeMove(
+i32 CInGameIcon::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1040,7 +1040,7 @@ i32 CInGameText::Update() {
 }
 
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::SerializeMove(
+i32 CInGameText::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1049,7 +1049,7 @@ i32 CInGameText::SerializeMove(
     if (ar == NULL) {
         return 0;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_cachedPlayerIndex, sizeof(m_cachedPlayerIndex));

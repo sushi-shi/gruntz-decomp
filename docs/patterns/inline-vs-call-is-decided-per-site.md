@@ -11,10 +11,10 @@
 A tiny out-of-line member exists in retail (so cl did NOT inline it everywhere), but a
 matcher who converts every site to a call — or every site to the inlined body — gets
 both right and wrong at once. `CBattlezMapConfig::ResolveArrival` calls `Push` seven
-times *and* inlines the splice once; `CGrunt::ArrivalReticleScan` calls it twice and
+times *and* inlines the splice once; `CGrunt::StepDefenderBehavior` calls it twice and
 inlines it four times. A shared statement macro (`DRAIN_COORDS()`) is a **call** in
 `StepBrickLayerBehavior` / `StepGooSuckerBehavior` and **inlined** in
-`ArrivalReticleScan`, so the macro cannot be the unit of decision.
+`StepDefenderBehavior`, so the macro cannot be the unit of decision.
 
 ## The audit
 

@@ -80,7 +80,7 @@ FIFTH FIRING (2026-07-23, `CGruntzMgr::ResetWorldState` ABI correction): changin
 header declaration from the false `ResetWorldState(i32)` to the retail-backed
 `ResetWorldState()` made that method exact (`ret 4`→`ret`) and raised global current/MAX fuzzy.
 The full rebuild also moved three source-identical functions in three separate TUs that directly
-include `GruntzMgr.h`: `CGrunt::PhaseStep` 39.7717→38.5960,
+include `GruntzMgr.h`: `CGrunt::StepTimeBomberBehavior` 39.7717→38.5960,
 `CMinimap::Shape6` 77.0497→76.9834, and `CGrunt::RectSegProbe` 78.7723→78.7228.
 None of the three source files changed. This proves that member-function signature state, not
 only forward declarations or class bodies, belongs to the butterfly family. Keep the correct ABI
@@ -124,7 +124,7 @@ body edits: `CTriggerMgr::HitTestCell` 39.7921→39.7723 and
 changed with the header signature even though its source body did not. The
 other outstanding regression rows were already isolated above:
 `LoadScrollSpeedOptions` belongs to the sixth firing, `ArrivalScanC` to the
-seventh, and `PhaseStep` to the fifth. Thus the two new deltas are header-state
+seventh, and `StepTimeBomberBehavior` to the fifth. Thus the two new deltas are header-state
 recolorings, not evidence against the helper or return-type corrections.
 Preserve both per-function MAX values and include the declaration/signature
 batch as a reverse-search dimension for these residues.
@@ -135,11 +135,11 @@ removing the corresponding `Grunt.h` member declarations left the exact count
 unchanged but recolored direct and transitive includers. Nine unrelated,
 source-identical rows moved below their saved current values: the largest were
 `CGruntSelectedSprite::Update` 99.2424→84.8485,
-`CTriggerMgr::ToggleRegionA` 76.5663→71.9277, and
+`CTriggerMgr::ToggleToolTargeting` 76.5663→71.9277, and
 `CGrunt::LoadWingzGruntSprites` 76.6337→75.2651; smaller movements affected
 `CGruntToySprite::Update`,
-`CTriggerMgr::ScrollToActiveRecord`/`ToggleRegionB`,
-and `CGrunt::StepArrivalDefense`/`ArrivalScanB`/`GruntInRadius`. Two other
+`CTriggerMgr::ScrollToActiveRecord`/`ToggleToyTargeting`,
+and `CGrunt::StepScrollGruntBehavior`/`ArrivalScanB`/`GruntInRadius`. Two other
 rows, `CGrunt::ArrivalRecycle` 55.4211→54.8607 and
 `CGrunt::StepAnimDispatchA` 43.5366→43.5229, directly changed their helper-call
 targets and are not unrelated butterfly controls. Two further reported rows
@@ -158,7 +158,7 @@ class definition and added the real member declarations to `Grunt.h`; two
 mis-modeled `CTriggerMgr` members were also corrected to free `__stdcall`
 functions. Eight source-identical rows newly moved below their saved current
 values: `CSpotLight::Tick` 53.5444→52.0887,
-`CGrunt::PhaseStep` 39.7717→38.5960,
+`CGrunt::StepTimeBomberBehavior` 39.7717→38.5960,
 `CGrunt::StepGruntMovement` 64.2121→63.4882,
 `CGrunt::RectSegProbe` 78.8911→78.7723,
 `CGrunt::ArrivalScanC` 47.2696→47.2280,
@@ -212,7 +212,7 @@ four fake declarations from `VoiceManager.h` and `StatusBarMgr.h`, while
 correcting `0x11b7c0` from a free `__stdcall` placeholder to the five-argument
 `CVoiceManager::PlayVoice` member overload, introduced no new dips.
 Instead, two source-identical rows reversed earlier butterfly movement:
-`CGrunt::PhaseStep` recovered 38.5960→39.7717 and
+`CGrunt::StepTimeBomberBehavior` recovered 38.5960→39.7717 and
 `CGrunt::ArrivalScanC` recovered 47.2280→47.2696 without body edits. Overall
 current fuzzy remained 73.71 and MAX remained 73.73. This is another
 controlled reverse sample: when a residue appeared after a declaration batch,
@@ -226,7 +226,7 @@ THIRTEENTH FIRING (2026-07-23, constructed-global type recovery): replacing
 header closure. Four source-identical functions newly dipped:
 `CSBI_MenuItem::Render` 100→92.0357,
 `CGrunt::StepCompassMove` 35.2959→32.9266,
-`CGrunt::PhaseStep` 39.7717→38.5960, and
+`CGrunt::StepTimeBomberBehavior` 39.7717→38.5960, and
 `CGrunt::RectSegProbe` 78.7723→78.7228. Three unrelated rows moved the other
 way without body edits: `CBattlezMapConfig::Step33520` 53.5016→53.5120, and
 `CDDrawWorkerHost::Save` / `CDDrawWorker::GetMemoryUsage` became exact.
@@ -249,7 +249,7 @@ functions newly moved below their saved values:
 `CMinimap::Refresh` 48.6176→47.3824,
 `CTriggerMgr::HitTestCell` 39.7921→39.7723, and
 `CGrunt::ArrivalScanB` 41.1545→41.1407. Conversely,
-`CGrunt::PhaseStep` recovered 38.5960→39.7717 without a body edit.
+`CGrunt::StepTimeBomberBehavior` recovered 38.5960→39.7717 without a body edit.
 `CGrunt::ArrivalRecycle` changed directly and is not a butterfly control. The
 full field map and callee relocations prove the cleanup, so retain it and the
 saved per-function MAX values. The same rebuild raised two per-function marks:
@@ -266,7 +266,7 @@ one-site `zDArray::Probe` and `zDArray::Reserve` declarations from
 `_zvec::GrowTo` and `zErrHandling::Report`, left the directly edited
 `CBattlezMapConfig::CanPlaySpecialAnim` at 80.7091. Three source-identical
 consumers moved: `CGrunt::RectContains` 59.0564→55.2258,
-`CGrunt::PhaseStep` 39.7717→38.5960, and
+`CGrunt::StepTimeBomberBehavior` 39.7717→38.5960, and
 `CGrunt::ArrivalScanC` 47.2696→47.2280. The latter two exactly revisit earlier
 butterfly colors, showing that even deleting two unused member declarations can
 reverse a recent recovery. Preserve the real inherited callees and the saved
@@ -302,7 +302,7 @@ dipped: `CPlay::LoadScrollSpeedOptions` 90.3250→90.2500,
 The same declaration change reversed five older dips without body edits:
 `CBattlezMapConfig::FindIdleGruntInBox` 77.4821→77.4911,
 `CGrunt::ArrivalScanB` 41.1407→41.1545,
-`CGrunt::PhaseStep` 38.5960→39.7717,
+`CGrunt::StepTimeBomberBehavior` 38.5960→39.7717,
 `CGrunt::RectContains` 55.2258→61.6774, and
 `CSBI_GruntMachine::Render` 88.5897→92.8205, all to their saved MAX.
 `CGrunt::RectSegProbe` partially recovered 78.7228→78.7723. Preserve

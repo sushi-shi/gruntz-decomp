@@ -22,7 +22,7 @@ trailing transfer:
 ```
 
 Both sides hold the same CFG. The only difference is which block the layout
-pass put next. `CStatusBarMgr::Sync` 0x1084d0, `CGrunt::ArrivalReticleScan`
+pass put next. `CStatusBarMgr::SerializeDispatch` 0x1084d0, `CGrunt::StepDefenderBehavior`
 0xee800 and `CTriggerMgr::WireTileSwitchLogic` 0x6c130 all show it with
 instruction-identical context on both sides at the site.
 
@@ -56,7 +56,7 @@ target       1   352   160   123   158   205   208    53
 Same shape, same sizes, same frequency, no direction. That is a coin, and it is
 the coin already characterized for cl 5.0's C2 layout pass (region-intrinsic,
 decided inside c2 with no IL representation, six construct families refuted -
-`docs/patterns/tail-block-placement-cross-jump-wall.md` and the ChargeStep
+`docs/patterns/tail-block-placement-cross-jump-wall.md` and the StepDumbChaserBehavior
 reproducer, which is itself in the base-heavy list).
 
 ## What this retires
@@ -72,7 +72,7 @@ flip carries no information".
 ## The scope, stated narrowly
 
 Block placement is of course reachable from source in general - any CFG edit
-moves it. Measured the same day on `CProjectile::SerializeMove` 0xe0d40:
+moves it. Measured the same day on `CProjectile::SerializeDispatch` 0xe0d40:
 rewriting `if (s == NULL) return 0;` as an `else` arm of the main body did move
 the block, but the wrong way (cl then merged all three `return 0` blocks
 including the one at the function head, 95.07 -> 92.74). The claim here is the

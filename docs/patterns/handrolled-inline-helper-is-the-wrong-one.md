@@ -18,7 +18,7 @@ scheduling. It means the two sides call different code.
 ## Measured
 
 `include/Gruntz/GameRand.h` defines a `static __inline i32 GameRand()` that
-lazily seeds from `timeGetTime()` and then runs MSVC's LCG. `CGrunt::WanderStep`
+lazily seeds from `timeGetTime()` and then runs MSVC's LCG. `CGrunt::StepHitAndRunnerBehavior`
 0xed9f0 used it at five sites:
 
 | unit | base `g_randSeed*` | target `g_randSeed*` | target `_rand` |
@@ -29,7 +29,7 @@ lazily seeds from `timeGetTime()` and then runs MSVC's LCG. `CGrunt::WanderStep`
 | `multistartdlgroster` | 6 | 6 | 0 |
 
 `GameRand` is a REAL device - three units match with it. It was simply the wrong
-one in `WanderStep`, where retail calls the plain CRT `rand()`. Swapping the five
+one in `StepHitAndRunnerBehavior`, where retail calls the plain CRT `rand()`. Swapping the five
 sites: 50.97 -> 60.55, instruction count 698 -> 607 against retail's 661, reloc
 sequence 52/52 and byte-identical in order.
 

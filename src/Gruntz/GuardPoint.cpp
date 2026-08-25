@@ -8,13 +8,13 @@
 #include <Gruntz/SpriteStateFlags.h>
 
 RVA(0x00010370, 0x47)
-i32 CGuardPoint::SerializeMove(
+i32 CGuardPoint::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
 RVA_COMPGEN(0x000103e0, 0x1e, ??_GCGuardPoint@@UAEPAXI@Z)

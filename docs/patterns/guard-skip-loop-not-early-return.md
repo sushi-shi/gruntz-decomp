@@ -95,7 +95,7 @@ has **no inline epilogue of its own** for the neighbouring guards, because cl al
 picks *which* of several identical returns to keep inline, and that choice is
 placement, not a return count.
 
-`CTriggerMgr::ApplyTriggerA` 0x6dae0 is the trap. Two adjacent guards, both
+`CTriggerMgr::UseEquippedToolAt` 0x6dae0 is the trap. Two adjacent guards, both
 `return -1`:
 
 ```cpp

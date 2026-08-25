@@ -53,7 +53,7 @@ two fields explicitly recovers it: 96.63 -> 97.61.
 
 ## Worked example 2 — the memory case (arm temp is MISSING)
 
-`CGrunt::LoadGruntDecayConfig` 0x612a0. Retail:
+`CGrunt::UpdateDeathAnimation` 0x612a0. Retail:
 
 ```asm
 ; arm A                              ; arm B
@@ -91,7 +91,7 @@ counts every member store keyed on its DESTINATION and every callee-saved
 register copy over the whole stream (78 and 113 rows in the 579-row todo queue),
 then grep the flagged function for a member-assigning ternary.
 
-## Two negative controls, both measured on `LoadSprites`/`LoadGruntDecayConfig`
+## Two negative controls, both measured on `LoadSprites`/`UpdateDeathAnimation`
 
 1. **Do not hoist the temp's declaration out of the arm and do not initialise it.**
    `i32 tx = 0, ty = 0;` above the switch let cl hoist the zeroing out of the loop and

@@ -19,7 +19,7 @@ rewriting every reference. On GRUNTZ.EXE the band is exact and structural:
 
 So a vtable slot does **not** hold its method's address. `??_7CGuardPoint@@6B@`
 slot 1 holds `0x00401a32`; those bytes are `e9 39 e9 00 00` = `jmp 0x010370`, and
-`0x010370` is the real `?SerializeMove@CGuardPoint@@UAEHPAVCFileMemBase@@HHH@Z`.
+`0x010370` is the real `?SerializeDispatch@CGuardPoint@@UAEHPAVCFileMemBase@@HHH@Z`.
 
 **The thunk is a pure link-time artifact.** `cl` cannot name a symbol that does not
 exist until link, so *every* `DIR32` in the original object named the **body**. This
@@ -79,7 +79,7 @@ declared-only function.
 A placeholder name is not an identity shared by all of its call sites. Audit
 each relocation independently before doing a global rename. `CGrunt::ApplyBox`
 was used at two six-argument call sites: `CTriggerMgr::ClearCell` really
-relocates to `CGrunt::StepArrivalDrop`, while `CTriggerMgr::ApplyTriggerB` has
+relocates to `CGrunt::StepArrivalDrop`, while `CTriggerMgr::UseToyAt` has
 no such call at all. The latter placeholder compresses a much larger missing
 branch whose first retail call is `CTriggerMgr::CellHitTest`. Replacing both
 uses from the evidence for the first would trade one fabricated declaration
@@ -93,7 +93,7 @@ member is disproved even when the source-inferred name looked plausible.
 real `i32` return type removed the fake `GruntTileSwitchImpl` alias.
 
 Command names are especially weak placeholder evidence. In
-`CGruntzMgr::BroadcastCmd`, the supposed `PrepCmd4`/`PrepCmd7` siblings resolve
+`CGruntzMgr::SerializeGameState`, the supposed `PrepCmd4`/`PrepCmd7` siblings resolve
 through distinct ILT entries to the already exact `SaveState`/`LoadState`
 methods, while the shared supposed `CVoiceManager::Tick` call resolves to
 `ClearVoiceIndicatorSlots`. The complete fan-out proves the first argument is

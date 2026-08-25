@@ -62,7 +62,7 @@ next function symbol in that section), and `RVA()` is sometimes **indented** ins
 | 79.31 | `CLatencyList::Dispatch` |
 | 89.36 | `CMultiBootyState::GetWarlordName` |
 | 90.91 | `CInGameIcon::HandleInput` |
-| 92.55 | `CGameLevel::EditDispatch` |
+| 92.55 | `CGameLevel::SerializeDispatch` |
 | 94.77 | `CInputState::SelectDevices` |
 | 95.05 | `CTileTriggerContainer::AddSwitchLogic` |
 | 96.26 | `CDDrawDeviceManager::ReportError` |
@@ -151,7 +151,7 @@ catches the multi-table case for free (collect every match, not the first).
 Residue after the two sweeps: **28 more functions** (10 in the Bute/Gruntz lane, 18 elsewhere),
 including four the "slop" heuristic could not see because the table starts within 2 bytes of
 the claim end (`CTileTriggerLogic::Tick` @0x110c10, table at 0x111a50, claim ended 0x111a4f).
-Measured on the ten: CRollingBall::Update 54.9 -> 83.1, CTileActionEvent::Process 58.9 -> 89.8,
+Measured on the ten: CRollingBall::Update 54.9 -> 83.1, CTileActionEvent::BreakTopBrick 58.9 -> 89.8,
 CTileTriggerLogic::Tick 84.1 -> 94.9, CTriggerMgr::WireTileSwitchLogic 76.8 -> 88.4,
 CButeValue::CopyValue 91.3 -> 100 EXACT.
 

@@ -13,7 +13,7 @@ GZ_ENUM_BEGIN(ActionOptionButtonState)
 GZ_ENUM_END(ActionOptionButtonState)
 
 // HitHover identifies which of the two action chips contains the cursor.  The
-// values are the retail return codes consumed by CTriggerMgr::TriggerCell.
+// values are the retail return codes consumed by CTriggerMgr::HandleActionOptionsPointer.
 GZ_ENUM_BEGIN(ActionOptionHit)
     ACTIONOPTION_HIT_NONE = 0,
     ACTIONOPTION_HIT_PRIMARY = 2,

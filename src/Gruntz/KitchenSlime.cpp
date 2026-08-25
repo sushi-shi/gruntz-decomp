@@ -221,7 +221,7 @@ i32 CKitchenSlime::Tick() {
 }
 
 RVA(0x000b2ff0, 0x11b)
-i32 CKitchenSlime::SerializeMove(
+i32 CKitchenSlime::SerializeDispatch(
     CFileMemBase* stream,
     SerialMode mode,
     LogicTypeId typeId,
@@ -248,7 +248,7 @@ i32 CKitchenSlime::SerializeMove(
         s->Write(&m_tilePosition, sizeof(m_tilePosition));
         s->Write(&m_stepMag, sizeof(m_stepMag));
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN(stream, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(stream, mode, typeId, object)
 }
 
 // @early-stop

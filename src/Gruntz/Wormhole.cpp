@@ -91,13 +91,13 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 }
 
 RVA(0x0003fed0, 0xa9)
-i32 CWormhole::SerializeMove(
+i32 CWormhole::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
 
         i32 kind = m_object->m_smarts;
@@ -266,13 +266,13 @@ i32 CGruntPuddle::Remove() {
 }
 
 RVA(0x00040e50, 0x170)
-i32 CGruntPuddle::SerializeMove(
+i32 CGruntPuddle::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_tileX, sizeof(m_tileX));
@@ -360,13 +360,13 @@ i32 CTeleporter::ReapplyConfig() {
 }
 
 RVA(0x00041350, 0xee)
-i32 CTeleporter::SerializeMove(
+i32 CTeleporter::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     // one cursor over the adjacent m_armClock/m_interval pair - retail hoists it
     // above the arms and advances it, rather than re-lea'ing each member.
     i64* clocks = &m_armClock;

@@ -212,7 +212,7 @@ L_ed153:
             i32 dr = bestRow - c2.m_y;
             dr = abs(dr);
             if (dc <= 1 && dr <= 1) {
-                m_triggerMgr->ApplyTriggerA(
+                m_triggerMgr->UseEquippedToolAt(
                     m_playerIndex,
                     m_unitIndex,
                     (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -234,7 +234,7 @@ L_ed153:
         BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
             || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
-            m_triggerMgr->ApplyTriggerA(
+            m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
                 (col << TILE_SHIFT_PX) + TILE_HALF_PX,

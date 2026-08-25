@@ -9,7 +9,7 @@
 #include <Io/FileMem.h>
 
 RVA(0x000ec230, 0x11c)
-i32 MapSerializeCurve(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
+i32 SerializeScrollState(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (ar == NULL) {
         return 0;
     }

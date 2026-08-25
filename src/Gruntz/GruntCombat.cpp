@@ -434,11 +434,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
-            return m_triggerMgr->CombatCue(
+            return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_FreezeRadius, 8),
-                CUE_FREEZE,
+                GRUNT_AREA_EFFECT_FREEZE,
                 -1
             );
         }
@@ -454,11 +454,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
-            return m_triggerMgr->CombatCue(
+            return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_HealthRadius, 8),
-                CUE_HEAL,
+                GRUNT_AREA_EFFECT_HEAL,
                 -1
             );
         }
@@ -492,11 +492,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
-            return m_triggerMgr->CombatCue(
+            return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_ToyzRadius, 8),
-                CUE_GIVE_TOY,
+                GRUNT_AREA_EFFECT_GIVE_TOY,
                 -1
             );
         }
@@ -512,11 +512,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
-            return m_triggerMgr->CombatCue(
+            return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef("Spellz", s_TeleportRadius, 8),
-                CUE_TELEPORT,
+                GRUNT_AREA_EFFECT_TELEPORT,
                 -1
             );
         }
@@ -1216,12 +1216,12 @@ i32 CGrunt::HandleCombatContact(
                     if (RectContainsGated(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_triggerMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, sx, sy);
+                    applied = m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, sx, sy);
                 } else {
                     if (RectContains(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
-                    applied = m_triggerMgr->ApplyTriggerA(m_playerIndex, m_unitIndex, sx, sy);
+                    applied = m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, sx, sy);
                 }
                 // The outer test is redundant with the inner one; retail emits both.
                 if (applied == 0 || applied == 1) {
@@ -1878,7 +1878,7 @@ i32 CGrunt::CommitNeighbor(
         m_playerIndex,
         m_unitIndex
     );
-    RearmAttackAnim(targetPlayerIndex, targetUnitIndex);
+    StartNeighborAttackAnimation(targetPlayerIndex, targetUnitIndex);
     return 1;
 }
 
@@ -1906,7 +1906,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
                 m_neighborScanEnabled = 1;
                 m_attackTargetPx.m_x = targetPxX;
                 m_attackTargetPx.m_y = targetPxY;
-                RearmAttackAnim2();
+                StartRangedAttackAnimation();
                 return 1;
             }
         }
@@ -2009,22 +2009,22 @@ RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
     REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
-    REGISTER_KEY_644AF0("C", &CGrunt::LoadGruntDecayConfig);
+    REGISTER_KEY_644AF0("C", &CGrunt::UpdateDeathAnimation);
     REGISTER_KEY_644AF0("D", &CGrunt::StepArrivalReroll);
     REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);
     REGISTER_KEY_644AF0("F", &CGrunt::StepAttackAction);
-    REGISTER_KEY_644AF0("G", &CGrunt::StepEntranceRelatchA);
-    REGISTER_KEY_644AF0("H", &CGrunt::StepArrivalCommitA);
+    REGISTER_KEY_644AF0("G", &CGrunt::UpdateToyUseAnimation);
+    REGISTER_KEY_644AF0("H", &CGrunt::FinishStruckAnimation);
     REGISTER_KEY_644AF0("I", &CGrunt::LoadWandGruntItemConfig);
     REGISTER_KEY_644AF0("J", &CGrunt::RunEntranceMove);
     REGISTER_KEY_644AF0("K", &CGrunt::LoadEntranceConfig);
     REGISTER_KEY_644AF0("L", &CGrunt::LoadVehicleGruntAnimations);
     REGISTER_KEY_644AF0("M", &CGrunt::RearmEntranceDrop);
-    REGISTER_KEY_644AF0("N", &CGrunt::StepEntranceRelatchB);
-    REGISTER_KEY_644AF0("O", &CGrunt::StepArrivalCommitB);
+    REGISTER_KEY_644AF0("N", &CGrunt::FinishToobMoveAnimation);
+    REGISTER_KEY_644AF0("O", &CGrunt::FinishKnockbackAnimation);
     REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_KEY_644AF0("Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_KEY_644AF0_TYPED("R", &CGrunt::LoadGruntDecayConfig2);
+    REGISTER_KEY_644AF0_TYPED("R", &CGrunt::UpdateDecayFade);
     REGISTER_KEY_644AF0_DERIVED("S", &CGrunt::FinishEntranceMove);
 }
 
@@ -2523,25 +2523,25 @@ afterTile:
             if (!IsHoldPending()) {
                 switch (m_arrivalState) {
                     case AI_DUMBCHASER:
-                        ChargeStep();
+                        StepDumbChaserBehavior();
                         break;
                     case AI_SMARTCHASER:
-                        ScanNearestTarget();
+                        StepSmartChaserBehavior();
                         break;
                     case AI_HITANDRUNNER:
-                        WanderStep();
+                        StepHitAndRunnerBehavior();
                         break;
                     case AI_DEFENDER:
-                        ArrivalReticleScan();
+                        StepDefenderBehavior();
                         break;
                     case AI_POSTGUARD:
-                        ResolveArrivalNeighbor();
+                        StepPostGuardBehavior();
                         break;
                     case AI_OBJECTGUARD:
-                        StepArrivalDefenseAlt();
+                        StepObjectGuardBehavior();
                         break;
                     case AI_BOMBER:
-                        ResolveArrivalReposition();
+                        StepBomberBehavior();
                         break;
                     case AI_BRICKLAYER:
                         StepBrickLayerBehavior();
@@ -2553,22 +2553,22 @@ afterTile:
                         StepDiggerBehavior();
                         break;
                     case AI_GAUNTLETZGRUNT:
-                        UpdateArrival();
+                        StepGauntletGruntBehavior();
                         break;
                     case AI_TIMEBOMBER:
-                        PhaseStep();
+                        StepTimeBomberBehavior();
                         break;
                     case AI_TOOLTHIEF:
-                        SeekTarget();
+                        StepToolThiefBehavior();
                         break;
                     case AI_TOYER:
-                        StepPeerTracking();
+                        StepToyerBehavior();
                         break;
                     case AI_MAGICWANDGRUNT:
-                        StepArrivalDefenseLean();
+                        StepMagicWandGruntBehavior();
                         break;
                     case AI_SCROLLGRUNT:
-                        StepArrivalDefense();
+                        StepScrollGruntBehavior();
                         break;
                 }
             }
@@ -2808,7 +2808,7 @@ kindDispatch:
     }
 
     if (m_pendingTrigger != 0 && m_stamina >= STAMINA_FULL) {
-        m_triggerMgr->ApplyTriggerA(
+        m_triggerMgr->UseEquippedToolAt(
             m_playerIndex,
             m_unitIndex,
             m_pendingTriggerPx.m_x,
@@ -3042,7 +3042,7 @@ void CGrunt::AdvanceMotion() {
                                 targetY = otherPxY;
                             } else if (RectContains(lastX, lastY) != 0) {
                                 // 0x5f7f2 `mov eax,edi / mov ecx,ebp` - retail
-                                // carries the PRE-snap pair into ApplyTriggerA;
+                                // carries the PRE-snap pair into UseEquippedToolAt;
                                 // it never re-reads m_lastTilePx after the snap,
                                 // and 0x5f7dc pushes the same two registers into
                                 // this very probe.
@@ -3051,14 +3051,17 @@ void CGrunt::AdvanceMotion() {
                                 targetX = m_arrivalTargetPx.m_x;
                                 targetY = m_arrivalTargetPx.m_y;
                             }
-                            result =
-                                m_triggerMgr
-                                    ->ApplyTriggerA(m_playerIndex, m_unitIndex, targetX, targetY);
+                            result = m_triggerMgr->UseEquippedToolAt(
+                                m_playerIndex,
+                                m_unitIndex,
+                                targetX,
+                                targetY
+                            );
                         } else {
                             result = 0;
                         }
                     } else {
-                        result = m_triggerMgr->ApplyTriggerA(
+                        result = m_triggerMgr->UseEquippedToolAt(
                             m_playerIndex,
                             m_unitIndex,
                             m_arrivalTargetPx.m_x,
@@ -3097,14 +3100,13 @@ void CGrunt::AdvanceMotion() {
                                 targetX = m_arrivalTargetPx.m_x;
                                 targetY = m_arrivalTargetPx.m_y;
                             }
-                            result =
-                                m_triggerMgr
-                                    ->ApplyTriggerB(m_playerIndex, m_unitIndex, targetX, targetY);
+                            result = m_triggerMgr
+                                         ->UseToyAt(m_playerIndex, m_unitIndex, targetX, targetY);
                         } else {
                             result = 0;
                         }
                     } else {
-                        result = m_triggerMgr->ApplyTriggerB(
+                        result = m_triggerMgr->UseToyAt(
                             m_playerIndex,
                             m_unitIndex,
                             m_arrivalTargetPx.m_x,

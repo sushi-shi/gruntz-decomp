@@ -54,7 +54,7 @@ void RegisterMenuSparkleActions() {
 }
 
 RVA(0x000ae1c0, 0xae)
-i32 CMenuSparkle::SerializeMove(
+i32 CMenuSparkle::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
@@ -64,7 +64,12 @@ i32 CMenuSparkle::SerializeMove(
         return 0;
     }
 
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(static_cast<CFileMemBase*>(arc), mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(
+        static_cast<CFileMemBase*>(arc),
+        mode,
+        typeId,
+        object
+    )
     if (mode != SERIAL_SAVE) {
         if (mode != SERIAL_LOAD) {
             return 1;

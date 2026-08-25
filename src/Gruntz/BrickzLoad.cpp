@@ -94,7 +94,7 @@ static __inline BrickTileId PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 // add` is cl's own `/ TILE_SIZE_PX`, and `cx` is a real outer-loop variable - retail
 // homes the x offset at esp+0x58 precisely because its register carries `tileX + xo`.
 RVA(0x000810f0, 0xa80)
-i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
+i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
     CDDrawWorkerHost* grid = m_attrMgr->m_level->m_mainPlane;
     if (grid == NULL) {

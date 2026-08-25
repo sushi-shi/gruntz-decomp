@@ -72,9 +72,9 @@ public:
 
     i16 CharClass(char c);
 
-    GZ_ENUM_RETURN(ButeLexAction, i16) PeekState(i16 state, char c);
-    i16 PeekState2(i16 state, char c);
-    void ScanState(i16 state, char c);
+    GZ_ENUM_RETURN(ButeLexAction, i16) GetLexAction(i16 state, char c);
+    i16 GetTransitionTarget(i16 state, char c);
+    void AcceptTransition(i16 state, char c);
 
     bool SkipToTag();
 

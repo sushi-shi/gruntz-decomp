@@ -25,7 +25,7 @@ struct CSbiHlRow {
 ```asm
 ; CStatusBarMgr's inlined ctor, retail 0x10a1c6..0x10a1fa
 push <??0CSbiHlRow> ; push 0xc ; lea ecx,[esi+0x378] ; push 0x18 ; push ecx
-call ??_H@YGXPAXIHP6EX0@Z@Z     ; vector ctor iterator over m_hlGrid[12]
+call ??_H@YGXPAXIHP6EX0@Z@Z     ; vector ctor iterator over m_resourceSlots[12]
 ; the seven memsets in the same ctor cover 0x114/0x150/0x18c/0x204/0x308/
 ; 0x498/0x61c - NONE of them covers 0x378
 ```
@@ -38,15 +38,15 @@ reconstruction:
   * which writers are reachable on that chain versus only from save/network
     deserialization (`gruntz sema xref <rva> --tree` answers this).
 
-For `CStatusBarMgr::m_hlGrid` (this+0x378, 12 x 0x18): the writers are the
+For `CStatusBarMgr::m_resourceSlots` (this+0x378, 12 x 0x18): the writers are the
 vector ctor above, `SetHlCell` 0x106b40, `ClearHlCell` 0x1069c0, `EnterHlRow`
 0x106820 (all EXACT, all per-cell) and `Deserialize` 0x109520 (bulk) - and
-Deserialize is reachable ONLY via `Sync <- CPlay::SyncState <- BroadcastCmd <-
-SerialObjectFactory`, the serialization path. The fresh path is
+Deserialize is reachable ONLY via `Sync <- CPlay::SerializeDispatch <- SerializeGameState <-
+GameSerializationCallback`, the serialization path. The fresh path is
 `new CStatusBarMgr(0x630)` -> ctor -> `LoadBattlezItemConfig` 0xfdc00 ->
-`Reset` 0x105920 -> ResetSlots/ArmSlot/ResetGroupA/UpdateRezMachineSnooze-
+`Reset` 0x105920 -> ResetSlots/ArmSlot/ResetConveyorBelts/UpdateRezMachineSnooze-
 StatusBar/InitTabRects, every one 100% EXACT and none of them writing
-m_hlGrid.
+m_resourceSlots.
 
 CONCLUSION SHAPE. "Retail relies on fresh-heap zeros" is a legitimate,
 reportable outcome: the shipped game has uninitialized-memory UB, our build

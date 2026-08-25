@@ -38,12 +38,13 @@ rebuild. If the instruction count does not move by one, the arm is not being emi
 at all and no amount of re-spelling inside it can matter — the deficit is this wall.
 
 Measured negatives (do not repeat): hoisting `m_poweredUp` into an `i32` local used by
-BOTH the outer test and the arm does not stop the fold (`CGrunt::ChargeStep` moved +4
+BOTH the outer test and the arm does not stop the fold (`CGrunt::StepDumbChaserBehavior` moved +4
 instructions, all from the single load, and the arm stayed deleted); restructuring the
 arm's shared `goto` tail is byte-invisible for the same reason.
 
-Evidence: `CGrunt::ChargeStep` 0x000ef6b0 (retail 465 insns vs 374; extra GruntInRadius +
-RectContains + a second ResetEntranceAnimation) and `CGrunt::UpdateArrival` 0x000f0130
+Evidence: `CGrunt::StepDumbChaserBehavior` 0x000ef6b0 (retail 465 insns vs 374; extra GruntInRadius +
+RectContains + a second ResetEntranceAnimation) and
+`CGrunt::StepGauntletGruntBehavior` 0x000f0130
 (retail 568 vs 449; extra GruntInRadius + RectContains + PlayVoice +
 ResetEntranceAnimation). Both arms are `if (m_poweredUp != 0)` under an outer
 `if (m_poweredUp != 0) { ... return 1; }`.

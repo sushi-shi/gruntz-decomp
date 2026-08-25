@@ -53,7 +53,8 @@ public:
     ~CMapMgr();
 
     virtual void Reset();
-    virtual i32 Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    virtual i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     virtual i32 Save(CFileMemBase*);
     virtual i32 Load(CFileMemBase*);
 

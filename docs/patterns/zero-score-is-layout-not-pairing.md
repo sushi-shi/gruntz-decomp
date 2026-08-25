@@ -36,7 +36,7 @@ STEERABLE when a `||` chain (or any single statement reached from many sites) is
 splitting `CRezArchive::Open`'s four-term magic guard into four `if`s moved the epilogue to
 the end, took the body from 290 to 300/300 instructions and 938 to 952/952 bytes, and the score
 from **0.00% to 98.46%**. WALL when the funnel is cl's own cross-jumper picking a different merge
-factor (`CGameObject::Play` 0x151150 — retail merges the LOAD+POSTLOAD arms whole, cl merges
+factor (`CGameObject::SerializeDispatch` 0x151150 — retail merges the LOAD+POSTLOAD arms whole, cl merges
 PRESAVE+SAVE+LOAD's restore; ~15 spellings did not move it). Screen with
 `gruntz walls diagnose --asm`; the percentage is useless below the clamp, and
 `gruntz.verify.scores.fn_fuzzy()` is the only correct way to read the missing key (it means 0.0,

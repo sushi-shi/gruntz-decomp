@@ -46,10 +46,10 @@ strcpy(nameBuffer, static_cast<const char*>(registry->FindAnimationKey(m_animMov
 
 It is not "always inline the temporary". The choice is a per-function measurement:
 
-- `CWarlord::SerializeMove` (0x43670) has **eleven** such call sites and retail gives
+- `CWarlord::SerializeDispatch` (0x43670) has **eleven** such call sites and retail gives
   each its own slot — unnamed is right, and it is the whole reason the function can
   align at all.
-- `CInGameIcon::SerializeMove` (0x98c90) has **two**, and retail SHARES one slot —
+- `CInGameIcon::SerializeDispatch` (0x98c90) has **two**, and retail SHARES one slot —
   named locals are right there. Inlining both cost it a 4-byte frame growth and 2.4%.
 
 Read the frame, count retail's slots, then pick. `mov edi,[eax]` vs `mov edi,[esp+N]`
@@ -57,7 +57,7 @@ tells you per site.
 
 ## Evidence
 
-2026-07-29. `CWarlord::SerializeMove` (0x43670, 3104 B) was stubbed at 0.19% behind an
+2026-07-29. `CWarlord::SerializeDispatch` (0x43670, 3104 B) was stubbed at 0.19% behind an
 explicit dead-end note: *"our MSVC5 /O2 /GX COALESCES those eleven destructible
 temporaries into one slot ... No source spelling defeats the coalescing (tried: unnamed
 temporary, eleven distinct named locals, function-scope buffers)"*, and a complete body
@@ -65,7 +65,7 @@ had been written, built, and reverted for scoring below the stub. Written with u
 temporaries it built at **91.8% first try**, and the frame matched 0x130 exactly:
 2 dwords + 0x80 body buffer + ten temp slots + 0x80 chain header.
 
-The rule had been measured independently an hour earlier on `CInGameIcon::SerializeMove`
+The rule had been measured independently an hour earlier on `CInGameIcon::SerializeDispatch`
 in the opposite direction — two unnamed temporaries there grew the frame by 4 over two
 named locals, which is the same rule seen from the other side.
 

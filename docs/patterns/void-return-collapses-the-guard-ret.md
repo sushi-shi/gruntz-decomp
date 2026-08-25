@@ -75,7 +75,7 @@ declined to cross-jump - and four spellings there were measured and rejected. Ch
 the declared return type FIRST; the cheap fix is a signature, not a restructure.
 
 Measured 2026-08-08: `SaveFrontBufferShotImpl` 0x114f00 87.69 -> 100.00 EXACT;
-`EngStr_DrawText` 0x115440, `ShowHudMessage` 0x1154b0, `ShowHudMessageAlt` 0x115520
+`DrawTextToFrontSurface` 0x115440, `DrawTextToOverlaySurface` 0x1154b0, `DrawTextToBackSurface` 0x115520
 94.29 -> 100.00 EXACT each - all three had been parked as an unsolved two-`ret`
 case with four guard spellings already tried. `CGiantRockLogic::
 BuildRockBreakInGameText` 0x1122a0 is the `xor eax,eax` half the same audit finds,

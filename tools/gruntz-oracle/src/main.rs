@@ -11,7 +11,7 @@
 //!   where the resource does?
 //! * `roundtrip` — does `decode -> encode` reproduce the original bytes? This is
 //!   the only real test of an encoder, and where it fails it characterises how.
-//! * `decoders` — do retail's two mutually inconsistent decoders (`RunDecode1`
+//! * `decoders` — do retail's two mutually inconsistent decoders (`DecodeByteRun1Plane`
 //!   carry vs `DecodePidData` spill) actually disagree on shipped data?
 //! * `recomp` — the third implementation: run retail's OWN machine code over the
 //!   corpus and compare. Neither our C++ nor our Rust can bias this one.
@@ -70,7 +70,7 @@ enum Cmd {
         examples: usize,
     },
     /// The third implementation: run retail's OWN machine code
-    /// (`CDDSurface::RunDecode1` @0x145270, mapped out of GRUNTZ.EXE by
+    /// (`CDDSurface::DecodeByteRun1Plane` @0x145270, mapped out of GRUNTZ.EXE by
     /// `tools/recomp/pidrun.exe` under wine) over the whole corpus and compare
     /// its pixels against ours.
     Recomp {
@@ -232,7 +232,7 @@ impl From<Literals> for pid::LiteralRule {
 
 #[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
 enum Which {
-    /// `CDDSurface::RunDecode1` @0x145270.
+    /// `CDDSurface::DecodeByteRun1Plane` @0x145270.
     Carry,
     /// `CRezImage::DecodePidData` @0x176440.
     Spill,
@@ -1487,7 +1487,7 @@ const JOB_MAGIC: u32 = 0x424f_4a50; // 'PJOB'
 const RES_MAGIC: u32 = 0x5345_5250; // 'PRES'
 
 /// Batch the whole corpus through `pidrun.exe`, which maps retail GRUNTZ.EXE at
-/// 0x400000 and calls `CDDSurface::RunDecode1` for real.
+/// 0x400000 and calls `CDDSurface::DecodeByteRun1Plane` for real.
 ///
 /// One wine invocation for the entire archive: 30 000 process launches would
 /// dominate the runtime and prove nothing extra.
@@ -1511,7 +1511,7 @@ fn recomp(
         let Ok(p) = pid::split(r.data(rez.bytes())) else {
             continue;
         };
-        // RunDecode1 only implements the 0xC0 grammar; the skip/fill grammar
+        // DecodeByteRun1Plane only implements the 0xC0 grammar; the skip/fill grammar
         // lives inside CRezImage::DecodePidData, which needs a DIB section and
         // the statically-linked CRT and is therefore out of the harness's scope.
         if p.header.grammar() != pid::Grammar::Rle {
@@ -1571,7 +1571,7 @@ fn recomp(
         at += plen;
         if rc != 1 {
             t.add(
-                format!("retail RunDecode1 returned {rc}, not 1"),
+                format!("retail DecodeByteRun1Plane returned {rc}, not 1"),
                 path,
                 keep,
             );

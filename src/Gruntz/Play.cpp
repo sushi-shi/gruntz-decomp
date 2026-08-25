@@ -59,6 +59,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
+#include <Gruntz/MovieEntryId.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
@@ -225,7 +226,7 @@ char g_customLevelText[0x200];
 // callers, so the /Ob1 arithmetic does not reach this decision.  Unexplained.
 //
 // (b) the CSbiHlRow arrays inside the expanded inline CStatusBarMgr ctor: retail
-// hands the element ctor's ADDRESS to ??_H twice (m_groupSlots[3], m_hlGrid[12])
+// hands the element ctor's ADDRESS to ??_H twice (m_conveyorSlots[3], m_resourceSlots[12])
 // and expands the two scalars; we reach one ??_H and a ctor loop.  This one IS
 // budget-bound - cb(CSbiHlRow::CSbiHlRow) = 13 + 4 stores sits right at the <= 40
 // exemption edge, and padding it makes ??_H appear (K=1 and K=8 emit one).  The
@@ -248,7 +249,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_region1Gate = 0;
         m_region2Gate = 0;
         m_region3Gate = 0;
-        m_viewMode = VIEW_MODE_IDLE;
+        m_viewportResizeMode = VIEW_RESIZE_IDLE;
         m_hudSuppressed = 1;
         m_cameraBookmarkIndex = -1;
         m_defeatCountdownActive = 0;
@@ -471,7 +472,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         r.bottom = mode.cy;
         r.left = 0;
         r.top = 0;
-        ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, 1);
         if (m_mgr && m_mgr->m_triggerMgr) {
             m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
@@ -493,7 +494,7 @@ i32 CPlay::Render() {
 
     if (m_inGame != 0) {
 
-        StepInputA();
+        RestoreCursorSaveUnder();
         LoadScrollSpeedOptions();
         m_world->m_level->ActivateVisibleObjectsOnMainPlane();
 
@@ -542,7 +543,7 @@ i32 CPlay::Render() {
         m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
         m_levelTimer->Draw(back, 1);
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
-        DrawCursorSaveUnder(back);
+        SaveUnderAndDrawCursor(back);
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         m_world->m_level->DeactivateDistantObjectsOnMainPlane();
@@ -565,7 +566,7 @@ i32 CPlay::Render() {
             }
         }
 
-        StepInputA();
+        RestoreCursorSaveUnder();
         StepViewportResize();
 
         if (m_ambientInitDone == 0) {
@@ -607,9 +608,9 @@ i32 CPlay::Render() {
         {
             u32 dt = g_frameDelta;
             if (dt > 0x12 && dt < 0xc8) {
-                DrawWorldFrames();
+                UpdateWorldFixedSteps();
             } else {
-                DrawWorldFrame();
+                UpdateWorldFrame();
             }
         }
 
@@ -727,14 +728,14 @@ i32 CPlay::Render() {
                 RECT lvl = g_gameReg->m_world->m_level->m_viewportRect;
                 RECT box;
                 CopyRect(&box, &lvl);
-                ShowHudMessageAlt(g_gameReg->m_world, &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToBackSurface(g_gameReg->m_world, &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
 
         m_levelTimer->Draw(view, 0);
         m_chatBox->LoadChatBoxSprite(view);
         DrawDebugStats();
-        m_mgr->m_triggerMgr->OverlayRelease();
+        m_mgr->m_triggerMgr->RenderActionOptionsMenu();
 
         if (m_winLoseBanner != 0 && m_statusBar->m_levelOverlayActive == 0
             && m_statusBar->m_quitConfirmationActive == 0) {
@@ -753,7 +754,7 @@ i32 CPlay::Render() {
         }
 
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
-        DrawCursorSaveUnder(view);
+        SaveUnderAndDrawCursor(view);
         if (m_worldReady != 0) {
             view->DrawBox(&m_hudRect, 0xff);
         }
@@ -793,7 +794,7 @@ i32 CPlay::Render() {
         return 1;
     }
 
-    StepInputA();
+    RestoreCursorSaveUnder();
     CDDrawSurfacePair* back = m_world->m_drawTarget->m_backPair;
     if (back == NULL) {
         return 0;
@@ -861,14 +862,14 @@ i32 CPlay::Render() {
             m_levelTimer->Draw(back, 1);
         }
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
-        DrawCursorSaveUnder(back);
+        SaveUnderAndDrawCursor(back);
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     }
     return 1;
 }
 
 RVA(0x000c9c20, 0x79)
-void CPlay::DrawWorldFrame() {
+void CPlay::UpdateWorldFrame() {
     TickStateMgrs();
     {
 
@@ -896,7 +897,7 @@ void CPlay::DrawWorldFrame() {
 // counter is declared ABOVE the `if (steps > 0)` because that is where retail zeroes
 // it (0xc9d0a `xor edi,edi`, before the `test edx,edx`).
 RVA(0x000c9cc0, 0x12e)
-i32 CPlay::DrawWorldFrames() {
+i32 CPlay::UpdateWorldFixedSteps() {
     i32 delta = static_cast<i32>(g_frameDelta);
     i32 steps = static_cast<i32>((static_cast<u32>(delta) / FIXED_SUBSTEP_MS));
 
@@ -1036,9 +1037,9 @@ i32 CPlay::ProfileDeltaFrame() {
     u32 t0 = tg();
     u32 d = g_frameDelta;
     if (d > 0x12 && d < 0xc8) {
-        updates = DrawWorldFrames();
+        updates = UpdateWorldFixedSteps();
     } else {
-        DrawWorldFrame();
+        UpdateWorldFrame();
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
     m_mgr->m_worldSounds->SetListenerPosition(
@@ -1501,7 +1502,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CDDrawWorkerHost* mainPlane =
             static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
         CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
-        if (!tileGrid->LoadAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
+        if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
             goto fail0;
         }
     }
@@ -1655,7 +1656,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             rect.right = SCREEN_W_PX;
             rect.bottom = SCREEN_H_PX;
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
-                EngStr_DrawText(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+                DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
         } else {
             self->m_hudSuppressed = 1;
@@ -1751,7 +1752,7 @@ void CPlay::FreeListTeardown() {
         m_levelTimer->Reset();
     }
     m_cursorSnapSprite = NULL;
-    m_mgr->m_triggerMgr->OverlayTick();
+    m_mgr->m_triggerMgr->CloseActionOptionsMenu();
     CTriggerMgr* tl68 = m_mgr->m_triggerMgr;
 
     tl68->m_byteArr.SetSize(0, -1);
@@ -2216,13 +2217,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
     if (vk == 'T') {
         this->FlushPendingOps();
-        g_gameReg->m_triggerMgr->ToggleRegionA();
+        g_gameReg->m_triggerMgr->ToggleToolTargeting();
         return 1;
     }
 
     if (vk == 'Y') {
         this->FlushPendingOps();
-        g_gameReg->m_triggerMgr->ToggleRegionB();
+        g_gameReg->m_triggerMgr->ToggleToyTargeting();
         return 1;
     }
 
@@ -2762,48 +2763,48 @@ tail_default2:
         switch (vk) {
             case VK_END:
             case VK_NUMPAD1:
-                lv->HlClickGroup0(STATUS_HL_ROW_LOWER);
+                lv->SelectToolResource(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_DOWN:
             case VK_NUMPAD2:
-                lv->HlClickGroup1(STATUS_HL_ROW_LOWER);
+                lv->SelectToyResource(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_NEXT:
             case VK_NUMPAD3:
-                lv->HlClickGroup2(STATUS_HL_ROW_LOWER);
+                lv->SelectBrickResource(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_LEFT:
             case VK_NUMPAD4:
-                lv->HlClickGroup0(STATUS_HL_ROW_MIDDLE);
+                lv->SelectToolResource(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_CLEAR:
             case VK_NUMPAD5:
-                lv->HlClickGroup1(STATUS_HL_ROW_MIDDLE);
+                lv->SelectToyResource(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_RIGHT:
             case VK_NUMPAD6:
-                lv->HlClickGroup2(STATUS_HL_ROW_MIDDLE);
+                lv->SelectBrickResource(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_HOME:
             case VK_NUMPAD7:
-                lv->HlClickGroup0(STATUS_HL_ROW_UPPER);
+                lv->SelectToolResource(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_UP:
             case VK_NUMPAD8:
-                lv->HlClickGroup1(STATUS_HL_ROW_UPPER);
+                lv->SelectToyResource(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_PRIOR:
             case VK_NUMPAD9:
-                lv->HlClickGroup2(STATUS_HL_ROW_UPPER);
+                lv->SelectBrickResource(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_NUMLOCK:
-                lv->HlClickGroup0(STATUS_HL_ROW_CATEGORY);
+                lv->SelectToolResource(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_DIVIDE:
-                lv->HlClickGroup1(STATUS_HL_ROW_CATEGORY);
+                lv->SelectToyResource(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_MULTIPLY:
-                lv->HlClickGroup2(STATUS_HL_ROW_CATEGORY);
+                lv->SelectBrickResource(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_INSERT:
                 lv->ActivateSlot(-1);
@@ -3063,9 +3064,11 @@ drag_box: {
         i32 lv = m_cursorId - IDX(CURSOR_TOOL_HANDZ);
         PickupType item = static_cast<PickupType>(lv);
         if (item <= PICKUP_EQUIPPABLE_LAST) {
-            g_gameReg->m_triggerMgr->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+            g_gameReg->m_triggerMgr
+                ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
         } else if (item >= PICKUP_TOYZ_FIRST && item <= PICKUP_TOYZ_LAST) {
-            g_gameReg->m_triggerMgr->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+            g_gameReg->m_triggerMgr
+                ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
         g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
         LoadCursorSprites(0, 0);
@@ -3078,7 +3081,7 @@ drag_box: {
         m_worldReady = 1;
         return 1;
     }
-    if (g_gameReg->m_triggerMgr->TriggerCell(sx, sy)) {
+    if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(sx, sy)) {
         return 1;
     }
 
@@ -3347,10 +3350,10 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         m_tileClick.m_y = snapY;
         CTriggerMgr* w = m_mgr->m_triggerMgr;
         if (w->m_overlay != NULL && w->m_overlay->m_active != 0) {
-            w->OverlayTick();
+            w->CloseActionOptionsMenu();
             return 1;
         }
-        w->ResetGroup(snapX, snapY, rawX, rawY, 1, TARGET_SELECTION_AUTO, 1);
+        w->HandleTargetSelection(snapX, snapY, rawX, rawY, 1, TARGET_SELECTION_AUTO, 1);
     }
     return 1;
 }
@@ -3420,7 +3423,7 @@ i32 CPlay::QuitToMenu() {
         if (m_world->m_drawTarget->HasOverlay() != 0) {
             m_world->m_drawTarget->TransEnter();
         }
-        m_mgr->PlayMovieEntry(3);
+        m_mgr->PlayMovieEntry(IDX(MOVIE_ENTRY_ENDING));
     }
     return 1;
 }
@@ -4137,54 +4140,54 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
 
 // @early-stop
 // sole residue: retail homes the 4-byte DDSCAPS in the dead `pair` parameter's slot
-// ([esp+0x38]) where cl overlays it onto `half`'s local ([esp+0x10]); hoisting the
+// ([esp+0x38]) where cl overlays it onto `savedPixels`' local ([esp+0x10]); hoisting the
 // declaration and the complete parser-state forest do not move it.
 RVA(0x000d0b30, 0x200)
-i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
+i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     i32 x = m_cursorX + m_cursorOffset.m_x;
     i32 y = m_cursorY + m_cursorOffset.m_y;
 
-    CDDSurface* half;
-    RECT* dst;
-    RECT* src;
-    if (m_inputHalfSel == 0) {
-        dst = &m_cursorSaveDst0;
-        half = m_scratchSurface0;
-        src = &m_cursorSaveSrc0;
+    CDDSurface* savedPixels;
+    RECT* screenRect;
+    RECT* savedRect;
+    if (m_cursorSaveSlot == 0) {
+        screenRect = &m_cursorSaveDst0;
+        savedPixels = m_cursorSaveSurface0;
+        savedRect = &m_cursorSaveSrc0;
     } else {
-        dst = &m_cursorSaveDst1;
-        half = m_scratchSurface1;
-        src = &m_cursorSaveSrc1;
+        screenRect = &m_cursorSaveDst1;
+        savedPixels = m_cursorSaveSurface1;
+        savedRect = &m_cursorSaveSrc1;
     }
 
-    dst->left = x - m_cursorImage->m_anchorX;
-    dst->right = m_cursorImage->m_width + dst->left;
-    dst->top = y - m_cursorImage->m_anchorY;
-    dst->bottom = m_cursorImage->m_height + dst->top;
+    screenRect->left = x - m_cursorImage->m_anchorX;
+    screenRect->right = m_cursorImage->m_width + screenRect->left;
+    screenRect->top = y - m_cursorImage->m_anchorY;
+    screenRect->bottom = m_cursorImage->m_height + screenRect->top;
     tagSIZE mode = m_mgr->GetModeSize();
-    if (dst->left < 0) {
-        dst->left = 0;
+    if (screenRect->left < 0) {
+        screenRect->left = 0;
     }
-    if (dst->right > mode.cx) {
-        dst->right = mode.cx;
+    if (screenRect->right > mode.cx) {
+        screenRect->right = mode.cx;
     }
-    if (dst->top < 0) {
-        dst->top = 0;
+    if (screenRect->top < 0) {
+        screenRect->top = 0;
     }
-    if (dst->bottom > mode.cy) {
-        dst->bottom = mode.cy;
+    if (screenRect->bottom > mode.cy) {
+        screenRect->bottom = mode.cy;
     }
-    src->right = dst->right - dst->left;
-    src->bottom = dst->bottom - dst->top;
+    savedRect->right = screenRect->right - screenRect->left;
+    savedRect->bottom = screenRect->bottom - screenRect->top;
 
     CDDSurface* target = pair->m_surface;
     if (target == NULL) {
         return 0;
     }
 
-    i32 r = half->BltFast(0, 0, target, dst, 0x10);
-    if (r != 0) {
-        CDDrawDeviceManager::ReportError(NULL, 0, r);
+    i32 result = savedPixels->BltFast(0, 0, target, screenRect, 0x10);
+    if (result != 0) {
+        CDDrawDeviceManager::ReportError(NULL, 0, result);
     }
 
     if (m_drewThisFrame != 0) {
@@ -4212,7 +4215,7 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
         inSysMem = 0;
     }
     if (inSysMem == 0) {
-        m_inputHalfSel = m_inputHalfSel == 0;
+        m_cursorSaveSlot = m_cursorSaveSlot == 0;
     }
     return 1;
 }
@@ -4330,37 +4333,38 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 }
 
 RVA(0x000d11e0, 0x9b)
-i32 CPlay::StepInputA() {
-    if (m_inputWarmup1 == 0) {
-        m_inputWarmup1 = 1;
+i32 CPlay::RestoreCursorSaveUnder() {
+    if (m_cursorRestoreWarmup1 == 0) {
+        m_cursorRestoreWarmup1 = 1;
         return 1;
     }
-    if (m_inputWarmup2 == 0) {
-        m_inputWarmup2 = 1;
+    if (m_cursorRestoreWarmup2 == 0) {
+        m_cursorRestoreWarmup2 = 1;
         return 1;
     }
 
-    CDDSurface* half;
-    RECT* dst;
-    RECT* src;
-    if (m_inputHalfSel == 0) {
-        half = m_scratchSurface0;
-        dst = &m_cursorSaveDst0;
-        src = &m_cursorSaveSrc0;
+    CDDSurface* savedPixels;
+    RECT* screenRect;
+    RECT* savedRect;
+    if (m_cursorSaveSlot == 0) {
+        savedPixels = m_cursorSaveSurface0;
+        screenRect = &m_cursorSaveDst0;
+        savedRect = &m_cursorSaveSrc0;
     } else {
-        half = m_scratchSurface1;
-        dst = &m_cursorSaveDst1;
-        src = &m_cursorSaveSrc1;
+        savedPixels = m_cursorSaveSurface1;
+        screenRect = &m_cursorSaveDst1;
+        savedRect = &m_cursorSaveSrc1;
     }
 
-    CDDSurface* probeTarget = m_world->m_drawTarget->m_backPair->m_surface;
-    if (probeTarget == NULL) {
+    CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->m_surface;
+    if (backSurface == NULL) {
         return 0;
     }
 
-    i32 r = probeTarget->BltFast(dst->left, dst->top, half, src, 0x10);
-    if (r != 0) {
-        CDDrawDeviceManager::ReportError(NULL, 0, r);
+    i32 result =
+        backSurface->BltFast(screenRect->left, screenRect->top, savedPixels, savedRect, 0x10);
+    if (result != 0) {
+        CDDrawDeviceManager::ReportError(NULL, 0, result);
     }
     return 1;
 }
@@ -4507,7 +4511,7 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
     i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
-    EngStr_DrawText(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+    DrawTextToFrontSurface(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
 }
 
@@ -4549,14 +4553,14 @@ void CPlay::PlayCueAt(
     }
 
     // Retail 0xd19c6 `je 0xd1a09`: the NON-zero arm is the FRONT/primary renderer
-    // (thunk 0x1c5d -> EngStr_DrawText 0x115440) and the zero arm is the BACK page
-    // (thunk 0x31d9 -> ShowHudMessageAlt 0x115520). Every in-game caller passes 0,
+    // (thunk 0x1c5d -> DrawTextToFrontSurface 0x115440) and the zero arm is the BACK page
+    // (thunk 0x31d9 -> DrawTextToBackSurface 0x115520). Every in-game caller passes 0,
     // so the cue text belongs on the back page - drawing it on the primary lets the
     // frame's own Flip swap it away, which is the level-start text blink.
     if (toFrontPage != 0) {
-        EngStr_DrawText(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToFrontSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
     } else {
-        ShowHudMessageAlt(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+        DrawTextToBackSurface(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
     }
 }
 
@@ -4771,7 +4775,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_triggerMgr->ApplyTriggerA(player, gi, px, py);
+            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4828,7 +4832,7 @@ i32 CPlay::ExecuteCommand(
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_triggerMgr->ApplyTriggerA(player, gi, sx, sy);
+            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4893,7 +4897,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_triggerMgr->ApplyTriggerB(player, gi, px, py);
+            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4950,7 +4954,7 @@ i32 CPlay::ExecuteCommand(
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_triggerMgr->ApplyTriggerB(player, gi, sx, sy);
+            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -6641,9 +6645,9 @@ finish:
         lvl->m_mainPlane->DeactivateDistantObjects();
     }
     m_mgr->RefreshGameClock();
-    m_inputWarmup1 = 0;
-    m_inputWarmup2 = 0;
-    m_inputHalfSel = 0;
+    m_cursorRestoreWarmup1 = 0;
+    m_cursorRestoreWarmup2 = 0;
+    m_cursorSaveSlot = 0;
     if (m_mgr->m_soundEnabled != 0 && mode != GAMESTATE_HELP) {
         m_mgr->m_worldSounds->Resume();
     }
@@ -6734,11 +6738,11 @@ i32 CPlay::LoadLoadingBarSprite() {
 }
 
 RVA(0x000d7520, 0x3b9)
-i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }
-    if (!HeaderSerialize(ar, mode, typeId, payload)) {
+    if (!SerializeHeader(ar, mode, typeId, payload)) {
         return 0;
     }
     switch (mode) {
@@ -6779,10 +6783,10 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
     i32* p;
     p = &m_syncTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_statusBar->Sync(ar, mode, typeId, payload)) {
+    if (!m_statusBar->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    if (!m_levelTimer->HandleEvent(ar, mode, typeId, payload)) {
+    if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
     p = &m_cueTiming.m_start.m_lo;
@@ -6921,7 +6925,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_region1Gate, sizeof(m_region1Gate));
     s->Write(&m_region2Gate, sizeof(m_region2Gate));
     s->Write(&m_region3Gate, sizeof(m_region3Gate));
-    s->Write(&m_viewMode, sizeof(m_viewMode));
+    s->Write(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     s->Write(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     s->Write(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
     s->Write(&m_cameraBookmarkIndex, sizeof(m_cameraBookmarkIndex));
@@ -7135,7 +7139,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_region1Gate, sizeof(m_region1Gate));
     ar->Read(&m_region2Gate, sizeof(m_region2Gate));
     ar->Read(&m_region3Gate, sizeof(m_region3Gate));
-    ar->Read(&m_viewMode, sizeof(m_viewMode));
+    ar->Read(&m_viewportResizeMode, sizeof(m_viewportResizeMode));
     ar->Read(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     ar->Read(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
     ar->Read(&m_cameraBookmarkIndex, sizeof(m_cameraBookmarkIndex));
@@ -7200,11 +7204,11 @@ i32 CPlay::SetTinyViewportCurse(i32 active) {
     if (active != 0) {
         m_region0Gate = 1;
         RegionEnter();
-        m_viewMode = VIEW_MODE_A;
+        m_viewportResizeMode = VIEW_RESIZE_SHRINK;
     } else {
         m_region0Gate = 0;
         RegionLeave();
-        m_viewMode = VIEW_MODE_B;
+        m_viewportResizeMode = VIEW_RESIZE_EXPAND;
     }
     m_region0Timing.m_interval.m_lo = REGION_INTERVAL_MS;
     m_region0Timing.m_interval.m_hi = 0;
@@ -7282,7 +7286,7 @@ i32 CPlay::ResetViewport() {
         r.right = r.right + (0x60 - halfW);
         r.bottom = r.bottom + (0x60 - halfH);
     }
-    m_viewMode = VIEW_MODE_IDLE;
+    m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_world->m_level->UpdatePlaneViewports((&r));
     m_mgr->RecomputeViewScale();
     return 1;
@@ -7290,39 +7294,39 @@ i32 CPlay::ResetViewport() {
 
 RVA(0x000d8d90, 0x1e)
 i32 CPlay::StepViewportResize() {
-    PlayViewMode mode = m_viewMode;
-    if (mode == VIEW_MODE_IDLE) {
+    ViewportResizeMode mode = m_viewportResizeMode;
+    if (mode == VIEW_RESIZE_IDLE) {
         return 0;
     }
-    if (mode == VIEW_MODE_A) {
-        return ClampViewport(4);
+    if (mode == VIEW_RESIZE_SHRINK) {
+        return ShrinkViewport(4);
     }
-    return ClampViewport2(4);
+    return ExpandViewport(4);
 }
 
 RVA(0x000d8dc0, 0xce)
-i32 CPlay::ClampViewport(i32 inset) {
-    CDDrawSurfaceMgr* v = m_world;
-    i32 clamped = 0;
-    LevelCoordRect* vp = &v->m_level->m_viewportRect;
-    RECT r = *vp;
+i32 CPlay::ShrinkViewport(i32 step) {
+    CDDrawSurfaceMgr* world = m_world;
+    i32 changed = 0;
+    LevelCoordRect* viewport = &world->m_level->m_viewportRect;
+    RECT resized = *viewport;
 
-    if (r.right - r.left > 0xc0) {
-        r.left += inset;
-        r.right -= inset;
-        clamped = 1;
+    if (resized.right - resized.left > 0xc0) {
+        resized.left += step;
+        resized.right -= step;
+        changed = 1;
     }
-    if (r.bottom - r.top > 0xc0) {
-        r.top += inset;
-        r.bottom -= inset;
-        clamped = 1;
+    if (resized.bottom - resized.top > 0xc0) {
+        resized.top += step;
+        resized.bottom -= step;
+        changed = 1;
     }
-    if (clamped == 0) {
+    if (changed == 0) {
         ResetViewport();
         return 0;
     }
 
-    m_world->m_level->UpdatePlaneViewports((&r));
+    m_world->m_level->UpdatePlaneViewports((&resized));
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
@@ -7340,50 +7344,51 @@ i32 CPlay::ClampViewport(i32 inset) {
 // v/w/guts in the tail instead of re-reading the members is far worse - retail
 // re-reads them, so the current spelling is confirmed, not merely untested.
 RVA(0x000d8ed0, 0x128)
-i32 CPlay::ClampViewport2(i32 stride) {
-    i32 clamped = 0;
-    CDDrawSurfaceMgr* v = m_world;
-    CGruntzMgr* w = m_mgr;
-    CStatusBarMgr* guts = m_statusBar;
+i32 CPlay::ExpandViewport(i32 step) {
+    i32 changed = 0;
+    CDDrawSurfaceMgr* world = m_world;
+    CGruntzMgr* manager = m_mgr;
+    CStatusBarMgr* statusBar = m_statusBar;
 
-    LevelCoordRect* rp = &v->m_level->m_viewportRect;
-    RECT r = *rp;
+    LevelCoordRect* viewport = &world->m_level->m_viewportRect;
+    RECT resized = *viewport;
 
     SIZE
-    limit;
-    limit.cx = w->m_modeSize.cx;
-    limit.cy = w->m_modeSize.cy;
+    modeSize;
+    modeSize.cx = manager->m_modeSize.cx;
+    modeSize.cy = manager->m_modeSize.cy;
 
-    if (r.right - r.left
-        < (guts->m_position == STATUSBAR_HIDDEN ? limit.cx : limit.cx - STATUSBAR_WIDTH_PX)) {
-        r.left -= stride;
-        r.right += stride;
-        if (r.left < 0) {
-            r.left = 0;
+    if (resized.right - resized.left
+        < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
+                                                     : modeSize.cx - STATUSBAR_WIDTH_PX)) {
+        resized.left -= step;
+        resized.right += step;
+        if (resized.left < 0) {
+            resized.left = 0;
         }
-        if (r.right >= limit.cx) {
-            r.right = limit.cx - 1;
+        if (resized.right >= modeSize.cx) {
+            resized.right = modeSize.cx - 1;
         }
-        clamped = 1;
+        changed = 1;
     }
-    if (r.bottom - r.top < limit.cy) {
-        r.top -= stride;
-        r.bottom += stride;
-        if (r.top < 0) {
-            r.top = 0;
+    if (resized.bottom - resized.top < modeSize.cy) {
+        resized.top -= step;
+        resized.bottom += step;
+        if (resized.top < 0) {
+            resized.top = 0;
         }
-        if (r.bottom >= limit.cy) {
-            r.bottom = limit.cy - 1;
+        if (resized.bottom >= modeSize.cy) {
+            resized.bottom = modeSize.cy - 1;
         }
-        clamped = 1;
+        changed = 1;
     }
 
-    if (clamped == 0) {
+    if (changed == 0) {
         ResetViewport();
         return 0;
     }
 
-    m_world->m_level->UpdatePlaneViewports((&r));
+    m_world->m_level->UpdatePlaneViewports((&resized));
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     m_statusBar->Deactivate();
     m_mgr->RecomputeViewScale();
@@ -7761,10 +7766,10 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r2, 0, 0x2b, SCREEN_W_PX, 0x59);
     SetRect(&r3, 0, 0x176, SCREEN_W_PX, 0x1a2);
     SetRect(&r4, 0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
-    EngStr_DrawText(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
-    EngStr_DrawText(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);
-    EngStr_DrawText(m_world, &s3, &r4, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);
+    DrawTextToFrontSurface(m_world, &s3, &r4, 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 

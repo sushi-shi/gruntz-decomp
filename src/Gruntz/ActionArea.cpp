@@ -126,7 +126,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
 }
 
 RVA(0x00008600, 0xcd)
-i32 CActionArea::SerializeMove(
+i32 CActionArea::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -135,7 +135,7 @@ i32 CActionArea::SerializeMove(
     if (ar == NULL) {
         return 0;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     SerBandPair(ar, mode, &m_timing);
     switch (mode) {
         case SERIAL_SAVE:

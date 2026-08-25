@@ -156,7 +156,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                                 && out) {
                                 if (out->m_logicRecord->m_userLogic) {
                                     (static_cast<CWarlord*>(out->m_logicRecord->m_userLogic))
-                                        ->RaiseBattleAlert();
+                                        ->ResolveJoyAnimation();
                                 }
                             }
                             StartPlayerVictorySequence(i);

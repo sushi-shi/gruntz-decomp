@@ -173,7 +173,7 @@ an inline call for the front end and emits nothing.
   lands near retail. Probing at the "remember the pointer" assignments (44 sites) gets
   LoadTabSprites' base count exactly right (15) and Dialog to 88.20, but again cuts a dock
   button in BuildStatusBarTabs. **So the missing sites are NOT one per item**, and the
-  heterogeneous `m_tabSpriteN` / `m_notifyN` / `m_groupNotify[i]` stores are not setters.
+  heterogeneous `m_tabSpriteN` / `m_notifyN` / `m_conveyorSprites[i]` stores are not setters.
 * **Hoisting BuildGameMenu's mission-status branch to the top is refuted a second time.** It
   is tempting because retail's EH state indices number the two mission-status `new` sites 0
   and 1 - i.e. the FRONT END saw them first - while laying that branch out last, and those two

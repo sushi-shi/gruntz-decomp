@@ -8,7 +8,6 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameLevel.h>
@@ -17,6 +16,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntPickupInline.h>
@@ -188,7 +188,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 i32 overlayPlayerIndex = ov->m_playerIndex;
                 i32 overlayUnitIndex = ov->m_unitIndex;
                 if (overlayPlayerIndex == p->m_x && overlayUnitIndex == p->m_y) {
-                    OverlayTick();
+                    CloseActionOptionsMenu();
                 }
             }
             CoordPoolNode* slot = g_coordPool.NodeOf(p);
@@ -237,113 +237,116 @@ i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
 }
 
 RVA(0x00078520, 0x106)
-void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
+void CTriggerMgr::EnqueueSelectedMove(i32 isLocalCommand, i32 targetX, i32 targetY) {
     if (m_groupFlag == 0) {
         return;
     }
     u8 count = 0;
-    u8 firstByte; // retail leaves it uninitialized - only the loop writes it
-    u8 bytes[0x80];
+    u8 playerIndex; // retail leaves it uninitialized - only the loop writes it
+    u8 unitIndices[0x80];
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
-        Coord* payload = static_cast<Coord*>(m_recList.GetNext(pos));
-        CGrunt* cell = m_units[payload->m_y + payload->m_x * TM_UNITS_PER_PLAYER];
-        firstByte = static_cast<u8>(payload->m_x);
-        if (cell->m_playerIndex == g_curPlayer && cell->m_entranceActive == 0) {
-            bytes[count] = static_cast<u8>(payload->m_y);
+        Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
+        CGrunt* grunt = m_units[selection->m_y + selection->m_x * TM_UNITS_PER_PLAYER];
+        playerIndex = static_cast<u8>(selection->m_x);
+        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == 0) {
+            unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
     }
-    CGruntzCmdMgr* rep = g_gameReg->m_commandMgr;
     if (count == 1) {
         g_gameReg->m_commandMgr->EnqueueSingle(
-            tag,
-            firstByte,
-            bytes[0],
+            isLocalCommand,
+            playerIndex,
+            unitIndices[0],
             static_cast<char>(IDX(PLAYERCMD_MOVE)),
-            static_cast<i16>(gx),
-            static_cast<i16>(gy),
+            static_cast<i16>(targetX),
+            static_cast<i16>(targetY),
             0,
             0
         );
     } else {
         g_gameReg->m_commandMgr->EnqueueMulti(
-            tag,
-            firstByte,
+            isLocalCommand,
+            playerIndex,
             count,
-            bytes,
+            unitIndices,
             static_cast<char>(IDX(PLAYERCMD_MOVE)),
-            static_cast<i16>(gx),
-            static_cast<i16>(gy),
+            static_cast<i16>(targetX),
+            static_cast<i16>(targetY),
             0
         );
     }
 }
 
 RVA(0x00078680, 0x189)
-void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
+void CTriggerMgr::EnqueueSelectedToolUse(
+    i32 isLocalCommand,
+    i32 targetX,
+    i32 targetY,
+    i32 targetIsGrunt
+) {
     if (m_groupFlag == 0) {
         return;
     }
     u8 count = 0;
-    u8 firstByte; // retail leaves it uninitialized - only the loop writes it
-    u8 bytes[0x80];
+    u8 playerIndex; // retail leaves it uninitialized - only the loop writes it
+    u8 unitIndices[0x80];
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
-        Coord* payload = static_cast<Coord*>(m_recList.GetNext(pos));
-        CGrunt* cell = m_units[payload->m_y + payload->m_x * TM_UNITS_PER_PLAYER];
-        firstByte = static_cast<u8>(payload->m_x);
-        if (cell->m_playerIndex == g_curPlayer && cell->m_entranceActive == 0) {
-            bytes[count] = static_cast<u8>(payload->m_y);
+        Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
+        CGrunt* grunt = m_units[selection->m_y + selection->m_x * TM_UNITS_PER_PLAYER];
+        playerIndex = static_cast<u8>(selection->m_x);
+        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == 0) {
+            unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
     }
-    CGruntzCmdMgr* rep = g_gameReg->m_commandMgr;
     if (count == 1) {
-        if (flag != 0) {
+        if (targetIsGrunt != 0) {
             g_gameReg->m_commandMgr->EnqueueSingle(
-                tag,
-                firstByte,
-                bytes[0],
+                isLocalCommand,
+                playerIndex,
+                unitIndices[0],
                 static_cast<char>(IDX(PLAYERCMD_USE_TOOL_ON_GRUNT)),
-                static_cast<i16>(gx),
-                static_cast<i16>(gy),
+                static_cast<i16>(targetX),
+                static_cast<i16>(targetY),
                 0,
                 0
             );
         } else {
             g_gameReg->m_commandMgr->EnqueueSingle(
-                tag,
-                firstByte,
-                bytes[0],
+                isLocalCommand,
+                playerIndex,
+                unitIndices[0],
                 static_cast<char>(IDX(PLAYERCMD_USE_TOOL_AT_POINT)),
-                static_cast<i16>(gx),
-                static_cast<i16>(gy),
+                static_cast<i16>(targetX),
+                static_cast<i16>(targetY),
                 0,
                 0
             );
         }
     } else {
-        if (flag != 0) {
+        if (targetIsGrunt != 0) {
             g_gameReg->m_commandMgr->EnqueueMulti(
-                tag,
-                firstByte,
+                isLocalCommand,
+                playerIndex,
                 count,
-                bytes,
+                unitIndices,
                 static_cast<char>(IDX(PLAYERCMD_USE_TOOL_ON_GRUNT)),
-                static_cast<i16>(gx),
-                static_cast<i16>(gy),
+                static_cast<i16>(targetX),
+                static_cast<i16>(targetY),
                 0
             );
         } else {
             g_gameReg->m_commandMgr->EnqueueMulti(
-                tag,
-                firstByte,
+                isLocalCommand,
+                playerIndex,
                 count,
-                bytes,
+                unitIndices,
                 static_cast<char>(IDX(PLAYERCMD_USE_TOOL_AT_POINT)),
-                static_cast<i16>(gx),
-                static_cast<i16>(gy),
+                static_cast<i16>(targetX),
+                static_cast<i16>(targetY),
                 0
             );
         }
@@ -405,7 +408,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 }
 
 RVA(0x00078a30, 0x10)
-void CTriggerMgr::OverlayTick() {
+void CTriggerMgr::CloseActionOptionsMenu() {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov) {
         ov->Deactivate();
@@ -746,11 +749,11 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 // is not identical to the others and the suffix matcher correctly declines. The
 // other 45 blocks are byte-identical.
 RVA(0x00079520, 0x2e3)
-i32 CTriggerMgr::ResetGroup(
-    i32 x,
-    i32 y,
-    i32 worldX,
-    i32 worldY,
+i32 CTriggerMgr::HandleTargetSelection(
+    i32 targetX,
+    i32 targetY,
+    i32 pointerX,
+    i32 pointerY,
     i32 unused5,
     TargetSelectionKind selector,
     i32 spawnCursor
@@ -759,48 +762,53 @@ i32 CTriggerMgr::ResetGroup(
     if (m_groupFlag == 0) {
         return 0;
     }
-    CGrunt* hit = CellHitTest(x, y, NULL, NULL, TM_ALL_PLAYERS);
-    CGrunt* cell;
+    CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, TM_ALL_PLAYERS);
+    CGrunt* selectedGrunt;
     if (m_recList.GetCount() != 1) {
-        cell = NULL;
+        selectedGrunt = NULL;
     } else {
         Coord* rec = static_cast<Coord*>(m_recList.GetHead());
-        cell = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
+        selectedGrunt = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
 
-    TargetSelectionKind sel;
-    if (cell != NULL) {
-        if (cell->m_playerIndex != g_curPlayer) {
+    TargetSelectionKind targetKind;
+    if (selectedGrunt != NULL) {
+        if (selectedGrunt->m_playerIndex != g_curPlayer) {
             return 1;
         }
         if (selector != TARGET_SELECTION_AUTO) {
-            sel = selector;
+            targetKind = selector;
         } else if (hit != NULL) {
-            if (hit == cell) {
+            if (hit == selectedGrunt) {
                 m_pendingFxKind = 0;
                 (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
-                CGameObject* o = hit->m_object;
+                CGameObject* sprite = hit->m_object;
 
-                this->DestroyGroup(o->m_screenX, o->m_screenY, worldX, worldY);
+                this->OpenActionOptionsMenu(
+                    sprite->m_screenX,
+                    sprite->m_screenY,
+                    pointerX,
+                    pointerY
+                );
                 return 1;
             }
-            sel = TARGET_SELECTION_GRUNT;
+            targetKind = TARGET_SELECTION_GRUNT;
         } else {
-            sel = TARGET_SELECTION_POINT;
+            targetKind = TARGET_SELECTION_POINT;
         }
     } else {
-        sel = (hit != NULL) ? TARGET_SELECTION_GRUNT : TARGET_SELECTION_POINT;
+        targetKind = (hit != NULL) ? TARGET_SELECTION_GRUNT : TARGET_SELECTION_POINT;
     }
 
     CGameObject* sprite;
-    switch (sel) {
+    switch (targetKind) {
         case TARGET_SELECTION_POINT:
-            this->ReportRecordsA(1, x, y);
+            this->EnqueueSelectedMove(1, targetX, targetY);
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite =
-                m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup
+                         ->CreateSprite(0, targetX, targetY, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_logicRecord->m_dispatch(sprite);
             (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 2, 1);
@@ -809,7 +817,7 @@ i32 CTriggerMgr::ResetGroup(
             if (hit != NULL) {
                 i32 hitPlayerIndex = hit->m_playerIndex;
                 if (hitPlayerIndex == g_curPlayer && g_traitorMode == 0) {
-                    if (cell != hit) {
+                    if (selectedGrunt != hit) {
                         goto reportError;
                     }
                     PickupType v = ARRIVAL_PICKUP_TERNARY_LE(hit);
@@ -820,15 +828,15 @@ i32 CTriggerMgr::ResetGroup(
                         }
                     }
                 }
-                this->ReportRecordsB(1, hitPlayerIndex, hit->m_unitIndex, 1);
+                this->EnqueueSelectedToolUse(1, hitPlayerIndex, hit->m_unitIndex, 1);
             } else {
-                this->ReportRecordsB(1, x, y, 0);
+                this->EnqueueSelectedToolUse(1, targetX, targetY, 0);
             }
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite =
-                m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup
+                         ->CreateSprite(0, targetX, targetY, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_logicRecord->m_dispatch(sprite);
             (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 1, 1);
@@ -836,17 +844,17 @@ i32 CTriggerMgr::ResetGroup(
         case TARGET_SELECTION_TOY:
             if (hit != NULL) {
                 if (hit->m_playerIndex == g_curPlayer && g_traitorMode == 0
-                    && (cell != hit || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
+                    && (selectedGrunt != hit || hit->m_vehiclePickupType != PICKUP_SCROLL)) {
                     goto reportError;
                 }
                 i32 hitPlayerIndex = hit->m_playerIndex;
                 i32 hitUnitIndex = hit->m_unitIndex;
-                i32 cellUnitIndex = cell->m_unitIndex;
-                i32 cellPlayerIndex = cell->m_playerIndex;
+                i32 selectedUnitIndex = selectedGrunt->m_unitIndex;
+                i32 selectedPlayerIndex = selectedGrunt->m_playerIndex;
                 g_gameReg->m_commandMgr->EnqueueSingle(
                     1,
-                    cellPlayerIndex,
-                    cellUnitIndex,
+                    selectedPlayerIndex,
+                    selectedUnitIndex,
                     static_cast<char>(IDX(PLAYERCMD_USE_TOY_ON_GRUNT)),
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -854,15 +862,15 @@ i32 CTriggerMgr::ResetGroup(
                     0
                 );
             } else {
-                i32 cellUnitIndex = cell->m_unitIndex;
-                i32 cellPlayerIndex = cell->m_playerIndex;
+                i32 selectedUnitIndex = selectedGrunt->m_unitIndex;
+                i32 selectedPlayerIndex = selectedGrunt->m_playerIndex;
                 g_gameReg->m_commandMgr->EnqueueSingle(
                     1,
-                    cellPlayerIndex,
-                    cellUnitIndex,
+                    selectedPlayerIndex,
+                    selectedUnitIndex,
                     static_cast<char>(IDX(PLAYERCMD_USE_TOY_AT_POINT)),
-                    x,
-                    y,
+                    targetX,
+                    targetY,
                     0,
                     0
                 );
@@ -870,8 +878,8 @@ i32 CTriggerMgr::ResetGroup(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite =
-                m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup
+                         ->CreateSprite(0, targetX, targetY, SORTKEY_OVERLAY, "LightFx", 0x40003);
             sprite->m_logicRecord->m_dispatch(sprite);
             (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 3, 1);
@@ -881,12 +889,17 @@ i32 CTriggerMgr::ResetGroup(
     }
 
 reportError:
-    g_gameReg->m_voiceManager->PlayVoice(cell, 0x324, -1, 0, -1, -1);
+    g_gameReg->m_voiceManager->PlayVoice(selectedGrunt, 0x324, -1, 0, -1, -1);
     return 0;
 }
 
 RVA(0x000798d0, 0x1b6)
-i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
+i32 CTriggerMgr::OpenActionOptionsMenu(
+    i32 selectedWorldX,
+    i32 selectedWorldY,
+    i32 pointerX,
+    i32 pointerY
+) {
     if (m_overlay == NULL) {
         m_overlay = new CActionOptionsMenuBar;
         if (m_overlay->LoadAssets() == 0) {
@@ -903,40 +916,40 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
     if (m_overlay->m_active != 0) {
         return 0;
     }
-    CGrunt* cellp;
+    CGrunt* selectedGrunt;
     if (m_recList.GetCount() != 1) {
-        cellp = NULL;
+        selectedGrunt = NULL;
     } else {
         Coord* rec = static_cast<Coord*>(m_recList.GetHead());
-        cellp = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
+        selectedGrunt = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
-    if (cellp == NULL) {
+    if (selectedGrunt == NULL) {
         return 0;
     }
-    if (cellp->m_playerIndex != g_curPlayer) {
+    if (selectedGrunt->m_playerIndex != g_curPlayer) {
         return 0;
     }
     if (m_overlay->Init(
             ACTIONOPTION_HIDDEN,
             ACTIONOPTION_HIDDEN,
-            screenX,
-            screenY,
-            cellp->m_playerIndex,
-            cellp->m_unitIndex
+            selectedWorldX,
+            selectedWorldY,
+            selectedGrunt->m_playerIndex,
+            selectedGrunt->m_unitIndex
         )
         == ACTIONOPTION_HIDDEN) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
     RECT* vr = &view->m_mainPlane->m_planeViewRect;
-    i32 ox = vr->left - view->m_viewportRect.left + worldX;
-    i32 oy = vr->top - view->m_viewportRect.top + worldY;
-    this->PlaceObjectFull(ox, oy);
+    i32 worldX = vr->left - view->m_viewportRect.left + pointerX;
+    i32 worldY = vr->top - view->m_viewportRect.top + pointerY;
+    this->PlaceObjectFull(worldX, worldY);
     return 1;
 }
 
 RVA(0x00079b00, 0x15)
-i32 CTriggerMgr::OverlayRelease() {
+i32 CTriggerMgr::RenderActionOptionsMenu() {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov) {
         return ov->Render();
@@ -1090,7 +1103,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 CWarlord* fx = m_pendingFx;
                 if (fx != NULL) {
-                    fx->RaiseBattleAlert();
+                    fx->ResolveJoyAnimation();
                 }
             }
             this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
@@ -1572,7 +1585,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 
 // @early-stop
 RVA(0x0007b1b0, 0x12b)
-i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
+i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
     m_pendingFxKind = 0;
     if (ov == NULL || ov->m_active == 0) {
@@ -1590,7 +1603,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
         PickupType alt = ArrivalPickup(cell);
         if (alt == PICKUP_WAND) {
-            g_gameReg->m_triggerMgr->ResetGroup(
+            g_gameReg->m_triggerMgr->HandleTargetSelection(
                 cell->LastTilePx().m_x,
                 cell->LastTilePx().m_y,
                 0,
@@ -1605,15 +1618,22 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         PickupType alt = cell->m_vehiclePickupType;
         if (alt == PICKUP_SCROLL) {
             CGameObject* o = cell->m_object;
-            g_gameReg->m_triggerMgr
-                ->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+            g_gameReg->m_triggerMgr->HandleTargetSelection(
+                o->m_screenX,
+                o->m_screenY,
+                0,
+                0,
+                0,
+                TARGET_SELECTION_TOY,
+                1
+            );
         } else if (alt != PICKUP_NONE) {
             i32 v = IDX(alt) + kPendingFxIdBase;
             m_pendingFxKind = v;
             world->LoadCursorSprites(v, 0);
         }
     }
-    this->OverlayTick();
+    this->CloseActionOptionsMenu();
     this->PlaceObjectFull(x, y);
     return 1;
 }
@@ -1640,7 +1660,7 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 // @early-stop
 RVA(0x0007b440, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
-    CombatCue(cx, cy, r, CUE_EXPLODE, flag);
+    ApplyGruntAreaEffect(cx, cy, r, GRUNT_AREA_EFFECT_EXPLODE, flag);
 
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 tileCx = cx >> TILE_SHIFT_PX;
@@ -1701,7 +1721,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                     continue;
                 }
                 CTileActionEvent* o = root->m_tileTriggers->FindActionByCellKey(ty + (tx << 8));
-                if (o->Process(NULL)) {
+                if (o->BreakTopBrick(NULL)) {
                     root->m_tileTriggers->RemoveActionEvent(o);
                 }
                 continue;
@@ -1767,96 +1787,109 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 
 // @early-stop
 RVA(0x0007b930, 0x3e0)
-i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 flag) {
-    i32 r = radius << TILE_SHIFT_PX;
+i32 CTriggerMgr::ApplyGruntAreaEffect(
+    i32 x,
+    i32 y,
+    i32 radiusTiles,
+    GruntAreaEffectKind effect,
+    i32 deathParam
+) {
+    i32 radiusPx = radiusTiles << TILE_SHIFT_PX;
     RECT area;
-    area.left = x - r - 7;
-    area.right = x + r + 7;
-    area.top = y - r - 7;
-    area.bottom = y + r + 7;
-    i32 rangeA = m_world->m_level->m_mainPlane->m_tileColumns - 2;
-    i32 rangeB = m_world->m_level->m_mainPlane->m_tileRows - 2;
+    area.left = x - radiusPx - 7;
+    area.right = x + radiusPx + 7;
+    area.top = y - radiusPx - 7;
+    area.bottom = y + radiusPx + 7;
+    i32 maxTileX = m_world->m_level->m_mainPlane->m_tileColumns - 2;
+    i32 maxTileY = m_world->m_level->m_mainPlane->m_tileRows - 2;
 
     CGrunt** units = m_units;
     for (i32 playerIndex = 0; playerIndex < TM_PLAYER_COUNT; playerIndex++) {
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++, units++) {
-            CGrunt* g = *units;
-            if (g == NULL) {
+            CGrunt* grunt = *units;
+            if (grunt == NULL) {
                 continue;
             }
-            if (g->m_entranceCommitted == 0) {
+            if (grunt->m_entranceCommitted == 0) {
                 continue;
             }
-            if (g->m_entranceDropActive != 0) {
+            if (grunt->m_entranceDropActive != 0) {
                 continue;
             }
-            i32 gx = g->m_object->m_screenX;
-            i32 gy = g->m_object->m_screenY;
-            i32 lx = gx - 7;
-            i32 ly = gy - 7;
-            i32 hx = lx + 14;
-            i32 hy = ly + 14;
-            if (area.left <= hx && area.right >= lx && area.top <= hy && area.bottom >= ly) {
-                switch (tier) {
-                    case CUE_DROP:
-                        if (g->m_gruntKind != GRUNT_INVULNERABLE) {
-                            StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, flag);
+            i32 gruntX = grunt->m_object->m_screenX;
+            i32 gruntY = grunt->m_object->m_screenY;
+            i32 gruntLeft = gruntX - 7;
+            i32 gruntTop = gruntY - 7;
+            i32 gruntRight = gruntLeft + 14;
+            i32 gruntBottom = gruntTop + 14;
+            if (area.left <= gruntRight && area.right >= gruntLeft && area.top <= gruntBottom
+                && area.bottom >= gruntTop) {
+                switch (effect) {
+                    case GRUNT_AREA_EFFECT_DROP:
+                        if (grunt->m_gruntKind != GRUNT_INVULNERABLE) {
+                            StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, deathParam);
                         }
                         break;
-                    case CUE_EXPLODE:
-                        if (g->m_gruntKind != GRUNT_INVULNERABLE) {
-                            StartUnitDeath(playerIndex, unitIndex, DEATH_EXPLODE, flag);
+                    case GRUNT_AREA_EFFECT_EXPLODE:
+                        if (grunt->m_gruntKind != GRUNT_INVULNERABLE) {
+                            StartUnitDeath(playerIndex, unitIndex, DEATH_EXPLODE, deathParam);
                         }
                         break;
-                    case CUE_SQUASH:
-                        if (g->m_gruntKind != GRUNT_INVULNERABLE) {
-                            StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, flag);
+                    case GRUNT_AREA_EFFECT_SQUASH:
+                        if (grunt->m_gruntKind != GRUNT_INVULNERABLE) {
+                            StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, deathParam);
                         }
                         break;
-                    case CUE_TELEPORT: {
-                        if (gx == x && gy == y) {
+                    case GRUNT_AREA_EFFECT_TELEPORT: {
+                        if (gruntX == x && gruntY == y) {
                             break;
                         }
-                        i32 done = 0;
+                        i32 placed = 0;
                         do {
-                            i32 dx =
-                                rangeA == 0 ? static_cast<char>(rand()) & 1 : rand() % rangeA + 1;
-                            i32 dy =
-                                rangeB == 0 ? static_cast<char>(rand()) & 1 : rand() % rangeB + 1;
-                            if (g->TryTeleportToCell(dx, dy, 0, 1)) {
-                                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                                    0,
-                                    gx,
-                                    gy,
-                                    SORTKEY_OVERLAY,
-                                    "LightFx",
-                                    0x40003
-                                );
-                                done = 1;
-                                spr->m_logicRecord->m_dispatch(spr);
-                                (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
+                            i32 tileX = maxTileX == 0 ? static_cast<char>(rand()) & 1
+                                                      : rand() % maxTileX + 1;
+                            i32 tileY = maxTileY == 0 ? static_cast<char>(rand()) & 1
+                                                      : rand() % maxTileY + 1;
+                            if (grunt->TryTeleportToCell(tileX, tileY, 0, 1)) {
+                                CGameObject* flashObject =
+                                    g_gameReg->m_world->m_childGroup->CreateSprite(
+                                        0,
+                                        gruntX,
+                                        gruntY,
+                                        SORTKEY_OVERLAY,
+                                        "LightFx",
+                                        0x40003
+                                    );
+                                placed = 1;
+                                flashObject->m_logicRecord->m_dispatch(flashObject);
+                                (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
                                     ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
                             }
-                        } while (done == 0);
+                        } while (placed == 0);
                         break;
                     }
-                    case CUE_HEAL: {
-                        if (gx == x && gy == y) {
+                    case GRUNT_AREA_EFFECT_HEAL: {
+                        if (gruntX == x && gruntY == y) {
                             break;
                         }
-                        g->m_health = HEALTH_FULL;
-                        g->CreateHealthSprite();
-                        ArmGruntCombatTimeout(g);
-                        CGameObject* spr =
-                            g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
-                        spr->m_logicRecord->m_dispatch(spr);
-                        (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
+                        grunt->m_health = HEALTH_FULL;
+                        grunt->CreateHealthSprite();
+                        ArmGruntCombatTimeout(grunt);
+                        CGameObject* flashObject = g_gameReg->m_world->m_childGroup->CreateSprite(
+                            0,
+                            gruntX,
+                            gruntY,
+                            SORTKEY_OVERLAY,
+                            "LightFx",
+                            0x40003
+                        );
+                        flashObject->m_logicRecord->m_dispatch(flashObject);
+                        (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
                             ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
                         break;
                     }
-                    case CUE_GIVE_TOY: {
-                        if (gx == x && gy == y) {
+                    case GRUNT_AREA_EFFECT_GIVE_TOY: {
+                        if (gruntX == x && gruntY == y) {
                             break;
                         }
                         PickupType toy =
@@ -1864,31 +1897,37 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         if (toy == PICKUP_SCROLL) {
                             toy = PICKUP_YOYO;
                         }
-                        g->LoadGruntTypeTable(toy, 1, 0, 0);
-                        CGameObject* spr =
-                            g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
-                        spr->m_logicRecord->m_dispatch(spr);
-                        (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
-                        break;
-                    }
-                    case CUE_FREEZE: {
-                        if (gx == x && gy == y) {
-                            break;
-                        }
-                        g->StepArrivalCommit();
-                        CGameObject* h = g->m_object;
-                        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                        grunt->LoadGruntTypeTable(toy, 1, 0, 0);
+                        CGameObject* flashObject = g_gameReg->m_world->m_childGroup->CreateSprite(
                             0,
-                            h->m_screenX,
-                            h->m_screenY,
+                            gruntX,
+                            gruntY,
                             SORTKEY_OVERLAY,
                             "LightFx",
                             0x40003
                         );
-                        spr->m_logicRecord->m_dispatch(spr);
-                        (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
+                        flashObject->m_logicRecord->m_dispatch(flashObject);
+                        (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
+                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
+                        break;
+                    }
+                    case GRUNT_AREA_EFFECT_FREEZE: {
+                        if (gruntX == x && gruntY == y) {
+                            break;
+                        }
+                        grunt->StepArrivalCommit();
+                        CGameObject* object = grunt->m_object;
+                        CWwdSpriteObject* flashObject =
+                            g_gameReg->m_world->m_childGroup->CreateSprite(
+                                0,
+                                object->m_screenX,
+                                object->m_screenY,
+                                SORTKEY_OVERLAY,
+                                "LightFx",
+                                0x40003
+                            );
+                        flashObject->m_logicRecord->m_dispatch(flashObject);
+                        (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
                             ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
                         break;
                     }
@@ -2408,7 +2447,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     ResetAll();
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != NULL && ov->m_active != 0) {
-        OverlayTick();
+        CloseActionOptionsMenu();
     }
     POSITION pos = m_selLists[slot].GetHeadPosition();
     if (pos == NULL) {
@@ -2682,7 +2721,7 @@ void CTriggerMgr::DestroyAllAnims() {
 }
 
 RVA(0x0007d450, 0x112)
-i32 CTriggerMgr::ToggleRegionA() {
+i32 CTriggerMgr::ToggleToolTargeting() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
         (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
@@ -2699,11 +2738,11 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
-            OverlayTick();
+            CloseActionOptionsMenu();
         } else {
             PickupType v = ArrivalPickup(cell);
             if (v == PICKUP_WAND) {
-                g_gameReg->m_triggerMgr->ResetGroup(
+                g_gameReg->m_triggerMgr->HandleTargetSelection(
                     cell->LastTilePx().m_x,
                     cell->LastTilePx().m_y,
                     0,
@@ -2717,14 +2756,14 @@ i32 CTriggerMgr::ToggleRegionA() {
                 (static_cast<CPlay*>(g_gameReg->m_curState))
                     ->LoadCursorSprites(IDX(v) + kPendingFxIdBase, 0);
             }
-            OverlayTick();
+            CloseActionOptionsMenu();
         }
     }
     return 1;
 }
 
 RVA(0x0007d5c0, 0xdc)
-i32 CTriggerMgr::ToggleRegionB() {
+i32 CTriggerMgr::ToggleToyTargeting() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
         (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
@@ -2740,19 +2779,26 @@ i32 CTriggerMgr::ToggleRegionB() {
     }
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
         if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
-            OverlayTick();
+            CloseActionOptionsMenu();
         } else {
             PickupType kind = cell->m_vehiclePickupType;
             if (kind == PICKUP_SCROLL) {
                 CGameObject* o = cell->m_object;
-                g_gameReg->m_triggerMgr
-                    ->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+                g_gameReg->m_triggerMgr->HandleTargetSelection(
+                    o->m_screenX,
+                    o->m_screenY,
+                    0,
+                    0,
+                    0,
+                    TARGET_SELECTION_TOY,
+                    1
+                );
             } else if (kind != PICKUP_NONE) {
                 m_pendingFxKind = IDX(kind) + kPendingFxIdBase;
                 (static_cast<CPlay*>(g_gameReg->m_curState))
                     ->LoadCursorSprites(IDX(kind) + kPendingFxIdBase, 0);
             }
-            OverlayTick();
+            CloseActionOptionsMenu();
         }
     }
     return 1;

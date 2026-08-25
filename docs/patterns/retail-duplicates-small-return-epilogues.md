@@ -81,7 +81,7 @@ table to a compare chain (91.37 -> 66.42). Sites:
 `CDDrawFrontSurface::SetGeometry` 0x1644a0 (retail emits the
 `WORLDERR_CREATE_DEVICE` block twice - once for the switch default, once for the
 `err == 0` else - we fold them and both branches target one address, 91.37),
-`CTriggerMgr::ResetGroup` 0x79520 (retail merges all three cursor-spawn arms into
+`CTriggerMgr::HandleTargetSelection` 0x79520 (retail merges all three cursor-spawn arms into
 one tail, we leave the third out, 90.74), `CTriggerMgr::ScanGroup` 0x7a760 (three
 `return 0` epilogues vs our one; every other byte matches, 89.48). Try the `break`
 form on any of those whose sites are switch arms BEFORE calling it a wall.
@@ -99,7 +99,7 @@ real semantic bug on the way (see
 So before accepting this signature, grep the body for that shape; it does not
 grep as `||`.
 
-`ResetGroup` 0x79520 IS still a wall, but for a different reason than the entry
+`HandleTargetSelection` 0x79520 IS still a wall, but for a different reason than the entry
 above says: its unmerged arm's tail is genuinely **not identical** to the other
 two. cl hoisted the `m_logicRecord` reload above the argument pushes in that one
 arm (`mov eax,[esi+0x7c]` / `mov ecx,[eax+0x18]` before `push 0x1; push 0x3`),
@@ -118,7 +118,7 @@ Full recipe and its discriminator:
 [switch-arm-break-not-return-replicates-the-epilogue.md](switch-arm-break-not-return-replicates-the-epilogue.md).
 
 Re-measured on the other two entries above, same session: the break form is
-**byte-neutral** on `ResetGroup` (90.7352 either way - its arms share an
+**byte-neutral** on `HandleTargetSelection` (90.7352 either way - its arms share an
 `Activate(...)` suffix, not just an epilogue) and **91.37 -> 69.81** on
 `SetGeometry` (retail's arms return directly). `SetGeometry`'s real residue is
 an ENCODING accident, not a merge policy: retail's two `WORLDERR_CREATE_DEVICE`

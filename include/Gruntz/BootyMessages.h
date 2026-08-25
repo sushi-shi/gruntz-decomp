@@ -21,16 +21,16 @@ extern const Coord g_bootyLetterCoords[16];
 
 extern const float g_secretRatioScale;
 
-i32 ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToOverlaySurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
     i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
+    i32 flag
 );
 
 #endif // GRUNTZ_GRUNTZ_BOOTYMESSAGES_H

@@ -12,7 +12,6 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CardinalDir.h>
-#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -20,6 +19,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
@@ -359,13 +359,13 @@ i32 CObjectDropper::Update() {
 }
 
 RVA(0x000c6680, 0x1b4)
-i32 CObjectDropper::SerializeMove(
+i32 CObjectDropper::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
     SerBandPair(ar, mode, &m_dropTiming);
 
@@ -503,7 +503,8 @@ i32 CDroppedObject::AdvanceFall() {
         }
         SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);
         SET_ANIMATION_ACT("B");
-        g_gameReg->m_triggerMgr->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
+        g_gameReg->m_triggerMgr
+            ->ApplyGruntAreaEffect(m_object->m_screenX, m_landY, 1, GRUNT_AREA_EFFECT_SQUASH, -1);
         return 0;
     }
     m_object->m_screenY = landed;
@@ -518,13 +519,13 @@ i32 CDroppedObject::AdvanceAnimation() {
 }
 
 RVA(0x000c73a0, 0xb5)
-i32 CDroppedObject::SerializeMove(
+i32 CDroppedObject::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_timePerTile, sizeof(m_timePerTile));
@@ -581,13 +582,13 @@ i32 CDroppedObjectShadow::Advance() {
 }
 
 RVA(0x000c7b40, 0x76)
-i32 CDroppedObjectShadow::SerializeMove(
+i32 CDroppedObjectShadow::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;

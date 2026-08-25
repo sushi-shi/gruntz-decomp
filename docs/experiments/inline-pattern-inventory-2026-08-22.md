@@ -44,9 +44,9 @@ Other especially strong findings:
   tree has separate TU-local copies in `src/DDrawMgr/DDSurface.cpp` and
   `src/DDrawMgr/LevelPlane.cpp`.
 - The common Grunt AI routines repeatedly contain arrival, elapsed-timer,
-  random-point, powered-state-reset, and reroll-timer bodies. `WanderStep` contains
+  random-point, powered-state-reset, and reroll-timer bodies. `StepHitAndRunnerBehavior` contains
   six detected candidates; `UpdateArrival`, `TryTeleportToCell`, and
-  `ScanNearestTarget` each contain five.
+  `StepSmartChaserBehavior` each contain five.
 - `StepArrivalDrop`, currently 32.303%, already exhibits three nested candidates:
   arrival predicate, coordinate-recycle body, and expanded pool push. Its low
   starting score should not exclude it from later inline accounting.
@@ -145,20 +145,20 @@ RVA     current  function                                         inlinees
 05f310   91.850  CGrunt::AdvanceMotion                            AD,TC,SK
 060150   91.287  CGrunt::LoadGruntDeathAnimations                 HS,RP
 0616e0  100.000  CGrunt::ResetGeometry                            A0
-061940   88.742  CGrunt::RearmAttackAnim                          A0
-061bc0   95.784  CGrunt::RearmAttackAnim2                         A0
+061940   88.742  CGrunt::StartNeighborAttackAnimation                          A0
+061bc0   95.784  CGrunt::StartRangedAttackAnimation                         A0
 061cb0   98.761  CGrunt::StepAttackFire                           SK
 062110   95.475  CGrunt::UpdateArrival                            HS,RP
-062840  100.000  CGrunt::StepEntranceRelatchA                     HS,AC,SK,A0
+062840  100.000  CGrunt::UpdateToyUseAnimation                     HS,AC,SK,A0
 0633e0   92.520  CGrunt::ResolveEntranceArrival                   AD
 0637a0   90.462  CGrunt::StepEntranceReinit                       RP
 063db0  100.000  CGrunt::LoadVehicleGruntAnimations               AD,HS,AC,A0
 0641b0  100.000  CGrunt::BuildGruntExitAnimation                  HS
 064540   98.766  CGrunt::StepWarpExit                             AC
 0646b0   94.024  CGrunt::StepCombatReaction                       HS,SP,RP,A0
-065300  100.000  CGrunt::StepArrivalCommitA                       AC
-0654b0  100.000  CGrunt::StepArrivalCommitB                       AC
-065c20   98.219  CGrunt::StepEntranceRelatchB                     AC
+065300  100.000  CGrunt::FinishStruckAnimation                       AC
+0654b0  100.000  CGrunt::FinishKnockbackAnimation                       AC
+065c20   98.219  CGrunt::FinishToobMoveAnimation                     AC
 065e80   80.775  CGrunt::LoadPickupSprites                        HS,RP
 067850   94.859  CGrunt::RunEntranceMove                          RP
 067f80   89.031  CGrunt::LoadEntranceConfig                       SK
@@ -169,7 +169,7 @@ RVA     current  function                                         inlinees
 0692f0   90.991  CGrunt::StepArrivalCommit                        HS,SP,SK,RP
 069fd0  100.000  CGrunt::FinishEntranceMove                       AC
 06a6d0   89.264  CGrunt::FinishActiveAction                       HS,SP,SK,RP
-06dae0   85.701  CTriggerMgr::ApplyTriggerA                       RP
+06dae0   85.701  CTriggerMgr::UseEquippedToolAt                       RP
 075e90   79.390  CTriggerMgr::LoadTileArrivalFx                   LC
 07b440   92.515  CTriggerMgr::BuildRockBreakParticles             LC
 07cc60   89.224  CTriggerMgr::RebuildSelectionList                FP
@@ -202,22 +202,22 @@ RVA     current  function                                         inlinees
 0def60  100.000  CProjectile::~CProjectile                        FP
 0e2df0  100.000  CSpriteRef::Build                                PK
 0e8310  100.000  CSBI_MenuItem::SetState                          LC
-0ec670   95.291  CGrunt::ResolveArrivalReposition                 RX,HE,RT
+0ec670   95.291  CGrunt::StepBomberBehavior                 RX,HE,RT
 0ecc90   83.830  CGrunt::StepBrickLayerBehavior                   AD,CR
-0ed9f0   87.862  CGrunt::WanderStep                               AD,RX,HE,RT,FP,CR
-0ee800   85.226  CGrunt::ArrivalReticleScan                       AD,FP,CR
-0ef6b0   83.910  CGrunt::ChargeStep                               AD,RX,RP
-0f0130   90.919  CGrunt::UpdateArrival                            AD,RX,HE,RT,RP
+0ed9f0   87.862  CGrunt::StepHitAndRunnerBehavior                               AD,RX,HE,RT,FP,CR
+0ee800   85.226  CGrunt::StepDefenderBehavior                       AD,FP,CR
+0ef6b0   83.910  CGrunt::StepDumbChaserBehavior                               AD,RX,RP
+0f0130   90.919  CGrunt::StepGauntletGruntBehavior                AD,RX,HE,RT,RP
 0f0e20   81.559  CGrunt::StepGooSuckerBehavior                    AD,CR
-0f1c70   79.831  CGrunt::StepArrivalDefenseAlt                    AD,RP
-0f26f0   86.544  CGrunt::ResolveArrivalNeighbor                   AD
-0f2b20   85.678  CGrunt::StepArrivalDefense                       AD,RX,HE
+0f1c70   79.831  CGrunt::StepObjectGuardBehavior                    AD,RP
+0f26f0   86.544  CGrunt::StepPostGuardBehavior                   AD
+0f2b20   85.678  CGrunt::StepScrollGruntBehavior                       AD,RX,HE
 0f36a0   83.869  CGrunt::StepDiggerBehavior                       AD
-0f42f0   94.784  CGrunt::ScanNearestTarget                        AD,RX,HE,RT,RP
-0f60f0   82.857  CGrunt::PhaseStep                                AD,FP
-0f71c0   85.630  CGrunt::SeekTarget                               AD,RP,CR
-0f7d90   97.992  CGrunt::StepPeerTracking                         AD
-0f8240   88.973  CGrunt::StepArrivalDefenseLean                   AD,RX,HE
+0f42f0   94.784  CGrunt::StepSmartChaserBehavior                        AD,RX,HE,RT,RP
+0f60f0   82.857  CGrunt::StepTimeBomberBehavior                                AD,FP
+0f71c0   85.630  CGrunt::StepToolThiefBehavior                               AD,RP,CR
+0f7d90   97.992  CGrunt::StepToyerBehavior                         AD
+0f8240   88.973  CGrunt::StepMagicWandGruntBehavior                   AD,RX,HE
 0fb7a0   91.685  CStaticHazard::CStaticHazard                     SO
 0fe910   94.865  CStatusBarMgr::UpdateStatusBarTabHighlight       LC
 0ff850   97.584  CStatusBarMgr::ClickHilite                       LC
@@ -226,9 +226,9 @@ RVA     current  function                                         inlinees
 105e40   99.154  CStatusBarMgr::LoadRezMachineConfig              LC
 106bb0   94.149  CStatusBarMgr::LoadChipMachineConfig             LC
 109bd0   91.329  CWarpStoneFly::Init                              LC
-10b5d0  100.000  CStatusBarMgr::HlClickGroup0                     LC
-10b6f0  100.000  CStatusBarMgr::HlClickGroup1                     LC
-10b810  100.000  CStatusBarMgr::HlClickGroup2                     LC
+10b5d0  100.000  CStatusBarMgr::SelectToolResource                     LC
+10b6f0  100.000  CStatusBarMgr::SelectToyResource                     LC
+10b810  100.000  CStatusBarMgr::SelectBrickResource                     LC
 10c230  100.000  CStatusBarSprite::CStatusBarSprite               SK
 110110  100.000  CTileTriggerTransition::TransitionAct            AC
 110570   93.598  CTileTriggerSwitchLogic::SwitchDown              LC
@@ -263,7 +263,7 @@ RVA     current  function                                         inlinees
 Most matrix entries are supported directly by repeated normalized retail
 instructions. The few broader source-semantic additions are:
 
-- `RX`: six exact retail clones plus `ScanNearestTarget`, whose scheduling differs.
+- `RX`: six exact retail clones plus `StepSmartChaserBehavior`, whose scheduling differs.
 - `HS`: six exact retail clones; eleven additional CGrunt functions contain the
   same hide-and-null body.
 - `BA`: six exact clones plus `CDoNothing`.
@@ -342,7 +342,7 @@ Measured score improvements retained by the campaign:
 | Function | Snapshot | Retained | Delta |
 |---|---:|---:|---:|
 | `CAmbientSound::FadePlayback` | 89.25694% | 91.80556% | +2.54862 |
-| `CGrunt::ArrivalReticleScan` | 85.22585% | 85.99320% | +0.76735 |
+| `CGrunt::StepDefenderBehavior` | 85.22585% | 85.99320% | +0.76735 |
 | `CBootyState::UpdateBootyWalkingGruntz` | 95.48321% | 95.99254% | +0.50933 |
 | `CGruntzMgr::HandleCommand` | 98.54093% | 98.56809% | +0.02716 |
 
@@ -573,7 +573,8 @@ Bounded and rejected final candidates:
   five calls, eight branches, one return, and seven relocations, but retail stores grid
   size, tile size, bounds, and movement before the wrap products and loops. No legal
   single insertion point reproduces that interleaving, so the experiment was reverted.
-- `CParticlez::Update` is a suffix of `CProjectile::DetachRenderObj`, but the handlers
+- `CParticlez::Update` is a suffix of
+  `CProjectile::AdvanceAnimationAndDeleteWhenComplete`, but the handlers
   have incompatible owners and different semantics. Their real shared predicate is
   already `IsAniCursorComplete`; inventing a cross-class call would be a model defect.
 - `CImage::RenderFrame` and `RenderFrameClipped` have similar clipping blocks but distinct

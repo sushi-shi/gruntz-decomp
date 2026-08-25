@@ -31,5 +31,5 @@ mov    DWORD PTR [esp+0x1c],ebx
 Steerable: reorder the declarations, and move an initialiser that retail emits
 inside a branch out of the declaration into a plain assignment there (a
 declaration-with-initialiser at the outer scope emits the store at the outer
-scope). CExitTrigger::SerializeMove 0x3f040 96.65 -> 98.95 (this plus dropping an
+scope). CExitTrigger::SerializeDispatch 0x3f040 96.65 -> 98.95 (this plus dropping an
 `i32 key = 0` initialiser retail never stores).

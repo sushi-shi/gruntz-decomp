@@ -10,7 +10,7 @@
  * The PE mapping, relocation and __thiscall bridging all live in recomp.h,
  * which every harness here shares. The one function this harness invokes,
  *
- *     ?RunDecode1@CDDSurface@@QAEHPAX0HH@Z   RVA 0x145270, VA 0x00545270
+ *     ?DecodeByteRun1Plane@CDDSurface@@QAEHPAX0HH@Z   RVA 0x145270, VA 0x00545270
  *
  * is entirely self-contained: `gruntz sema disasm 0x145270 --target` reports
  * "Relocations: none", and the disassembly contains no CALL at all - it is a
@@ -46,18 +46,18 @@
 
 #include "recomp.h"
 
-#define RVA_RUNDECODE1 0x00145270
+#define RVA_DECODE_BYTE_RUN_1_PLANE 0x00145270
 
 #define JOB_MAGIC 0x424f4a50 /* 'PJOB' little-endian */
 #define RES_MAGIC 0x53455250 /* 'PRES' little-endian */
 
-/* CDDSurface::RunDecode1(void* dst, void* src, int width, int height).
+/* CDDSurface::DecodeByteRun1Plane(void* dst, void* src, int width, int height).
  * __thiscall with four stack args; `this` is never dereferenced, so any
  * pointer will do. */
-static int call_rundecode1(void *dst, void *src, int width, int height)
+static int call_decode_byte_run_1_plane(void *dst, void *src, int width, int height)
 {
     int this_dummy = 0;
-    return recomp_thiscall4(RECOMP_RVA(RVA_RUNDECODE1), &this_dummy, (int)dst,
+    return recomp_thiscall4(RECOMP_RVA(RVA_DECODE_BYTE_RUN_1_PLANE), &this_dummy, (int)dst,
                             (int)src, width, height);
 }
 
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
          * marker so a short write shows up as a difference rather than as
          * whatever the allocator left behind. */
         memset(pixels, 0xcd, need);
-        rc = call_rundecode1(pixels, stream, (int)w, (int)h);
+        rc = call_decode_byte_run_1_plane(pixels, stream, (int)w, (int)h);
         wr32(out, (unsigned int)rc);
         wr32(out, need);
         fwrite(pixels, 1, need, out);

@@ -33,7 +33,7 @@ public:
     CUserBase() {}
     virtual ~CUserBase() {}
     RVA(0x000087d0, 0x8)
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
         return 1;
     }
     RVA(0x000087f0, 0x3)
@@ -49,7 +49,7 @@ public:
         INLINE_BASE
     };
 
-    // Two entities, same tag type.  Retail's SerialObjectFactory `call`s
+    // Two entities, same tag type.  Retail's GameSerializationCallback `call`s
     // ??0CUserLogic@@QAE@XZ (0x138d0) at 45 of its 57 direct-derived `new` sites and
     // expands it at the other 11 (CRollingBall .. CBehindCandyAni), so the split is
     // per CLASS - two-shapes-need-two-entities.md.
@@ -62,7 +62,7 @@ public:
     // The expanded sibling: every other derived ctor carries this body inline.
     CUserLogic(CGameObject* obj, EInlineBase);
     virtual ~CUserLogic() OVERRIDE {}
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x00008840, 0x4)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_NONE;
@@ -201,31 +201,37 @@ public:
     m_object->m_area.bottom = 0;
 
 #define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                   \
-    if (!CUserLogic::SerializeMove(ar, mode, typeId, object)) {                                    \
+    if (!CUserLogic::SerializeDispatch(ar, mode, typeId, object)) {                                \
         return 0;                                                                                  \
     }
 
-#define SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)                                   \
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)                         \
     SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                       \
-    return Chain(ar, mode, typeId, object) != 0;
+    return SerializeAnimationState(ar, mode, typeId, object) != 0;
 
-#define SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)                         \
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)               \
     SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                       \
-    if (!Chain(ar, mode, typeId, object)) {                                                        \
+    if (!SerializeAnimationState(ar, mode, typeId, object)) {                                      \
         return 0;                                                                                  \
     }
 
-#define SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(baseAr, chainAr, mode, typeId, object)                 \
-    if (!CUserLogic::SerializeMove(baseAr, mode, typeId, object)) {                                \
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(baseAr, stateAr, mode, typeId, object)       \
+    if (!CUserLogic::SerializeDispatch(baseAr, mode, typeId, object)) {                            \
         return 0;                                                                                  \
     }                                                                                              \
-    return Chain(chainAr, mode, typeId, object) != 0;
+    return SerializeAnimationState(stateAr, mode, typeId, object) != 0;
 
-#define SERIALIZE_USER_LOGIC_AND_CHAIN_FROM_OR_RETURN(baseAr, chainAr, mode, typeId, object)       \
-    if (!CUserLogic::SerializeMove(baseAr, mode, typeId, object)) {                                \
+#define SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM_OR_RETURN(                                   \
+    baseAr,                                                                                        \
+    stateAr,                                                                                       \
+    mode,                                                                                          \
+    typeId,                                                                                        \
+    object                                                                                         \
+)                                                                                                  \
+    if (!CUserLogic::SerializeDispatch(baseAr, mode, typeId, object)) {                            \
         return 0;                                                                                  \
     }                                                                                              \
-    if (!Chain(chainAr, mode, typeId, object)) {                                                   \
+    if (!SerializeAnimationState(stateAr, mode, typeId, object)) {                                 \
         return 0;                                                                                  \
     }
 
@@ -286,7 +292,12 @@ public:
     RVA(0x00008be0, 0x1)
     ~CWapX() {}
 
-    i32 Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj);
+    i32 SerializeAnimationState(
+        CFileMemBase* archive,
+        SerialMode mode,
+        LogicTypeId unusedTypeId,
+        CGameObject* object
+    );
 
     void ApplyAnimation(class CAniElement* animation, i32 advanceImmediately);
 
@@ -339,8 +350,10 @@ class CTileTrigger : public CUserLogic, public CWapX {
 public:
     RVA(0x000111f0, 0x47)
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
-        OVERRIDE{SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)} RVA(0x000111d0, 0x6)
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
+        OVERRIDE{
+            SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
+        } RVA(0x000111d0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TILETRIGGER;
     }

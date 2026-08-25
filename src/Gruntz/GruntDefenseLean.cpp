@@ -38,7 +38,7 @@
 #include <string.h>
 
 RVA(0x000f8240, 0x5b9)
-i32 CGrunt::StepArrivalDefenseLean() {
+i32 CGrunt::StepMagicWandGruntBehavior() {
     m_defenderPx = m_lastTilePx;
     bool eqI = ANIMATION_ACT_EQUALS("I");
     if (eqI) {
@@ -149,8 +149,12 @@ i32 CGrunt::StepArrivalDefenseLean() {
             occ = m_triggerMgr->FindNearestEnemy(this);
             if (rand() % 0x64 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= STAMINA_FULL
                 && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
-                m_triggerMgr
-                    ->ApplyTriggerA(m_playerIndex, m_unitIndex, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                m_triggerMgr->UseEquippedToolAt(
+                    m_playerIndex,
+                    m_unitIndex,
+                    m_lastTilePx.m_x,
+                    m_lastTilePx.m_y
+                );
                 return 1;
             }
             if (m_resetApplied != 0) {

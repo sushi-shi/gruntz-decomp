@@ -57,7 +57,7 @@ struct Cli {
     #[arg(long)]
     rgba: bool,
     /// Use the CRezImage decoder's row-overrun rule (spill) instead of
-    /// CDDSurface::RunDecode1's (carry). They differ only on malformed streams.
+    /// CDDSurface::DecodeByteRun1Plane's (carry). They differ only on malformed streams.
     #[arg(long)]
     spill: bool,
     /// Report what would be written without writing it.

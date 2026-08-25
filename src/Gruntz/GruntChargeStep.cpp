@@ -49,7 +49,7 @@
 //   * conversely retail SHARES the SEEK and ATTACK CommitNeighbor tails (0xef8?? jmps
 //     into B58) where cl emits both.
 RVA(0x000ef6b0, 0x61d)
-i32 CGrunt::ChargeStep() {
+i32 CGrunt::StepDumbChaserBehavior() {
     m_defenderPx = m_lastTilePx;
     CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
     i32 hitGate = 0;

@@ -20,16 +20,16 @@ GZ_ENUM_CONST_BEGIN(BootyEffectCount)
     BOOTY_EXPLOSION_COUNT = 8
 GZ_ENUM_CONST_END(BootyEffectCount)
 
-i32 ShowHudMessageAlt(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToBackSurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
     i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
+    i32 flag
 );
 
 #endif // GRUNTZ_BOOTYSTATEACTIVATE_H

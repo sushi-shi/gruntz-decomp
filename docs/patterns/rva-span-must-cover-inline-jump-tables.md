@@ -66,7 +66,7 @@ Measured 2026-07-29, all three in `tileswitchlogic`, all three reverted:
 | function | base COMDAT | extent-to-next | verdict |
 |---|---|---|---|
 | `CTileActionEvent::SetActionCode` | 0xf0 → **66.6** | 0x140 → 47.2 | COMDAT wins |
-| `CTileActionEvent::Process` | 0x35e → **58.9** | 0x540 → 47.4 | COMDAT wins |
+| `CTileActionEvent::BreakTopBrick` | 0x35e → **58.9** | 0x540 → 47.4 | COMDAT wins |
 | `CTileActionEvent::MorphByTool` | 0x350 → **92.1** | 0x440 → 53.9 | COMDAT wins |
 
 So: compile both candidates and take the number. The defect these three were found by —
@@ -109,7 +109,8 @@ A body that is genuinely **shorter than retail** scores 0 for a different reason
 no span helps. Check with `gruntz walls diagnose <rva>` first: if the
 compiled length is far below the annotated one, the body is under-reconstructed.
 Reverted after testing, all still 0 at every span: `CPlay::Render` (-276 bytes),
-`CGrunt::StepArrivalDrop` (-253), `CFaderMgr::Add` (-546), and `CGameObject::Play`
+`CGrunt::StepArrivalDrop` (-253), `CFaderMgr::Add` (-546), and
+`CGameObject::SerializeDispatch`
 (-15, tried at both its exact code+table extent 0x190 and next-function extent 0x1d0).
 
 ## Evidence

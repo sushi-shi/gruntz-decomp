@@ -22,9 +22,9 @@ public:
     }
     RVA(0x00012bc0, 0x47)
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {
-        SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
+        SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
     }
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();

@@ -13,7 +13,7 @@ namespace Utils {
     class RegistryHelper;
 }
 
-i32 ParseSerial(CGruntzMgr* mgr, char* s);
+i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path);
 void SaveFrontBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* mgr,

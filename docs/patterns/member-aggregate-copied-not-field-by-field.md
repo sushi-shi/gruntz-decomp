@@ -37,8 +37,8 @@ mov    ebp,DWORD PTR [ebx+0x4]  | inc eax
 STEERABLE, and it cascades: fixing the copy also recovers the `clamped`-in-register merge
 and the pointer's callee-saved colour. Evidence (2026-07-28, `src/Gruntz/Play.cpp`):
 `LoadSBITextEdges` 97.8 → **100 EXACT** (frame 0x18 → retail's 0x24 = 3 enregistered
-members), `PlayCueAt` 88.0 → **100 EXACT** (0x14 → 0x24), `ClampViewport` 93.8 → **100
+members), `PlayCueAt` 88.0 → **100 EXACT** (0x14 → 0x24), `ShrinkViewport` 93.8 → **100
 EXACT** (copy + hoisting `clamped = 0` above it), `NotifyVisibleEntities` 85.5 → **100
-EXACT**, `ClampViewport2` 85.8 → 91.3. The sibling `StepScroll` 63.5 → **100 EXACT** is
+EXACT**, `ExpandViewport` 85.8 → 91.3. The sibling `StepScroll` 63.5 → **100 EXACT** is
 the pointer half alone: `RECT* vr = &v->m_mainPlane->m_viewRect;`. All six were filed as
 register-coloring walls.

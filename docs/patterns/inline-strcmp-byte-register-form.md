@@ -21,9 +21,9 @@ cmp dl,BYTE PTR [edi]
 ```
 Wall. It recurs across at least five rows of the loopscan census in both
 directions - `CBattlezMapConfig::StepRowUnits` 0x267c0 and
-`CTriggerMgr::ApplyTriggerB` 0x6e120 read `retail+movx2`, while
+`CTriggerMgr::UseToyAt` 0x6e120 read `retail+movx2`, while
 `CBattlezMapConfig::StepDefenderUnit` 0x33520 (four loops),
-`CGrunt::StepArrivalDrop` 0x4b370 and `CTriggerMgr::ApplyTriggerA` 0x6dae0
+`CGrunt::StepArrivalDrop` 0x4b370 and `CTriggerMgr::UseEquippedToolAt` 0x6dae0
 read `ours+movx2` - so the sign carries no information about the source.
 Recognise the head `mov dl,BYTE PTR [eax]` with an `sbb eax,eax` exit and
 spend the row's budget on its other loops.

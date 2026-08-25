@@ -219,7 +219,7 @@ L_scanb:
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     )
                     != 0) {
-                    m_triggerMgr->ApplyTriggerA(
+                    m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -249,7 +249,7 @@ L_scanb:
             i32 dy = bestY - c2.m_y;
             dy = abs(dy);
             if (dx <= 1 && dy <= 1) {
-                m_triggerMgr->ApplyTriggerA(
+                m_triggerMgr->UseEquippedToolAt(
                     m_playerIndex,
                     m_unitIndex,
                     (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -268,7 +268,7 @@ L_scanb:
         if (CellTargetable(col, row) == 0) {
             return 1;
         }
-        m_triggerMgr->ApplyTriggerA(
+        m_triggerMgr->UseEquippedToolAt(
             m_playerIndex,
             m_unitIndex,
             (col << TILE_SHIFT_PX) + TILE_HALF_PX,

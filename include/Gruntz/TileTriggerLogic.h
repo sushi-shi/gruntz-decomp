@@ -117,7 +117,7 @@ public:
         i32 dutyOffSpan
     );
 
-    i32 ValidateByType(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
 
@@ -145,7 +145,7 @@ public:
 
     i32 BuildRockBreakInGameText();
 
-    i32 ApplyByType(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 SerializeMatrix(CFileMemBase* s);
     i32 DeserializeMatrix(CFileMemBase* s);
 

@@ -193,7 +193,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_region0Gate = 0;
     m_region1Gate = 0;
     m_region2Gate = 0;
-    m_viewMode = VIEW_MODE_IDLE;
+    m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_hudSuppressed = 1;
     m_cameraBookmarkIndex = -1;
     m_defeatCountdownActive = 0;
@@ -443,7 +443,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         r.bottom = mode.cy;
         r.left = 0;
         r.top = 0;
-        ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, 1);
         if (m_mgr && m_mgr->m_triggerMgr) {
             m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
@@ -715,7 +715,7 @@ i32 CMulti::AdvanceGameFrame() {
 RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == 0 && Mgr()->m_frameGate != 0) {
-        StepInputA();
+        RestoreCursorSaveUnder();
         m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
         m_world->m_workerList->RenderAndPruneWorkers(
             m_world->m_drawTarget->m_backPair,
@@ -727,11 +727,11 @@ void CMulti::RenderGameFrame() {
             return;
         }
         AdvanceCursorAnimation(g_frameDelta);
-        DrawCursorSaveUnder(h);
+        SaveUnderAndDrawCursor(h);
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
         return;
     }
-    StepInputA();
+    RestoreCursorSaveUnder();
     StepViewportResize();
     if (m_region0Gate != 0) {
         (static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair))->m_surface->Fill(0);
@@ -786,9 +786,9 @@ void CMulti::RenderGameFrame() {
     }
     m_chatBox->LoadChatBoxSprite(h);
     DrawDebugStats();
-    Mgr()->m_triggerMgr->OverlayRelease();
+    Mgr()->m_triggerMgr->RenderActionOptionsMenu();
     AdvanceCursorAnimation(g_frameDelta);
-    DrawCursorSaveUnder(h);
+    SaveUnderAndDrawCursor(h);
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
     }
@@ -2710,7 +2710,7 @@ i32 CMulti::WaitForOtherPlayers() {
             rc.bottom = mode.cy;
             rc.left = 0;
             rc.top = 0;
-            EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+            DrawTextToFrontSurface(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
             i32 resend = 0x1388;
             i32 abort = 0x1d4c0;

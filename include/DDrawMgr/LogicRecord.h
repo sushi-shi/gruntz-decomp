@@ -55,7 +55,8 @@ struct CLogicRecord : public CWapObj {
 
     i32 Consume(i32 amount);
 
-    i32 Dispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
+    i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
     i32 CacheTargetId(void* context);
     i32 Save(CFileMemBase* archive);
     i32 Load(CFileMemBase* archive);

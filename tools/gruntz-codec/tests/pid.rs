@@ -54,7 +54,7 @@ fn rle_high_bytes_are_legal_literals() {
 
 #[test]
 fn rle_zero_run_is_refused_not_hung() {
-    // Retail's RunDecode1 does `remaining -= 0` and loops forever on `C0 xx`.
+    // Retail's DecodeByteRun1Plane does `remaining -= 0` and loops forever on `C0 xx`.
     // The corpus contains none, so this is the one place we deliberately
     // diverge from retail rather than reproduce it.
     let err = decode_rle(&[0xc0, 0xaa], 4, 1, RowOverrun::Carry).unwrap_err();
@@ -90,7 +90,7 @@ fn rle_destination_must_be_exact() {
 fn carry_and_spill_differ_on_a_row_crossing_run() {
     // A 6-long run on a 4-wide image: 4 pixels fit, 2 would cross into row 1.
     //
-    //   Carry (RunDecode1 @0x145270)     - clamp to the row, prepend the
+    //   Carry (DecodeByteRun1Plane @0x145270)     - clamp to the row, prepend the
     //                                      remainder to the next row, and give
     //                                      row 1 only `width - carry` to fill.
     //   Spill (DecodePidData @0x176440)  - write all 6 from the row start and

@@ -558,13 +558,13 @@ i32 CRollingBall::Update() {
 }
 
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::SerializeMove(
+i32 CRollingBall::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
     // Retail walks one pointer over the two adjacent i64 clocks (lea + add 8),
     // so it stays live across the call in a callee-saved register.

@@ -19,14 +19,14 @@ p.m_dwords += 4;
 u8* data = p.m_bytes;
 ...
 DecodeRun8(data);
-RunDecode1(decoded, data, w, h);
+DecodeByteRun1Plane(decoded, data, w, h);
 
 // retail: the union cursor stays in ESI across both calls
 RecordBytes<PidHeader> p;
 p.m_dwords += 4;
 ...
 DecodeRun8(p.m_bytes);
-RunDecode1(decoded, p.m_bytes, w, h);
+DecodeByteRun1Plane(decoded, p.m_bytes, w, h);
 ```
 
 **Declare a global-receiver read where it is first used.** Declared early it is

@@ -20,6 +20,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
+#include <Gruntz/FaderSettings.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/Fonts.h>
@@ -37,10 +38,10 @@
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/MovieEntryId.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFont.h>
-#include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/VoiceManager.h>
@@ -614,7 +615,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             }
         } else {
             PlayLogoMovie();
-            if (PlayMovieEntry(2)) {
+            if (PlayMovieEntry(IDX(MOVIE_ENTRY_INTRO))) {
                 ++m_numMovies;
             }
         }

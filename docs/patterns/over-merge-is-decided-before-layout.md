@@ -91,7 +91,7 @@ scored worse. That is too strong. **When the site is a single guard whose
 test's fall-through, the `goto` form flips the branch polarity to retail's and is
 worth real points**, even though it does not sink the block:
 
-`CProjectile::SerializeMove` 0xe0d40, `if (CMovingLogic::SerializeMove(...) == 0)
+`CProjectile::SerializeDispatch` 0xe0d40, `if (CMovingLogic::SerializeDispatch(...) == 0)
 return 0;` -> `goto fail;` + a trailing `fail: return 0;`: **94.39 -> 94.82**, and
 blocks B32-B38 go from permuted to `==`. Base had `jne <continue> | fall <ret0>`,
 retail has `je <sunk ret0> | fall <continue>`; the goto buys the polarity.

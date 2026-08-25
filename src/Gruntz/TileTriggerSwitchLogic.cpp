@@ -10,13 +10,13 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BridgeTileId.h>
-#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -720,7 +720,7 @@ RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
 RVA(0x00111f40, 0xc4)
-i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
+i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
     if (m_linkGate == 0) {
         return 0;
     }
@@ -1143,7 +1143,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
 }
 
 RVA(0x00112c70, 0xc4)
-i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
+i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
     if (m_linkGate == 0) {
         return 0;
     }
@@ -1250,7 +1250,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
 // three residues: the px/py + g_gameReg schedule, an eax/edx swap on the player
 // flag stores, and `add edi,-0x132` where retail keeps edi with `lea eax,[edi-0x132]`.
 RVA(0x00112ee0, 0x42b)
-i32 CTileActionEvent::Process(CGrunt* brick) {
+i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     BrickTileId newCode = m_actionCode;
     i32 effect = 0;
     // Arm order is proven by the retail jump table at 0x113278: the tiers are
@@ -1268,7 +1268,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
         case BRICKTILE_GOLD_1:
             effect = IDX(BRICKTILE_GOLD_1);
-            if (brick != NULL) {
+            if (grunt != NULL) {
                 break;
             }
             newCode = BRICKTILE_CLEARED;
@@ -1289,7 +1289,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
         case BRICKTILE_GOLD_2_TOP:
             effect = IDX(BRICKTILE_GOLD_1);
-            if (brick != NULL) {
+            if (grunt != NULL) {
                 break;
             }
             newCode = BRICKTILE_BROWN_1;
@@ -1322,7 +1322,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
         case BRICKTILE_GOLD_3_TOP:
             effect = IDX(BRICKTILE_GOLD_1);
-            if (brick != NULL) {
+            if (grunt != NULL) {
                 break;
             }
             newCode = BRICKTILE_BROWN_2;
@@ -1360,16 +1360,16 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     }
 
     BrickTileId brickEffect = static_cast<BrickTileId>(effect);
-    if (effect != 0 && brick != NULL) {
+    if (effect != 0 && grunt != NULL) {
         if (brickEffect == BRICKTILE_RED_1) {
-            brick->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
-            brick->m_entranceActive = 0;
+            grunt->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+            grunt->m_entranceActive = 0;
         } else if (brickEffect == BRICKTILE_BLUE_1) {
-            g_gameReg->m_triggerMgr->CombatCue(
+            g_gameReg->m_triggerMgr->ApplyGruntAreaEffect(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
                 1,
-                CUE_TELEPORT,
+                GRUNT_AREA_EFFECT_TELEPORT,
                 -1
             );
         } else if (brickEffect == BRICKTILE_GOLD_1) {
@@ -1384,7 +1384,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                     snd->PlayIfElapsed(static_cast<i32>(g_soundVolumePercent), 0, 0, 0);
                 }
             }
-            i32 slot = brick->m_playerIndex;
+            i32 slot = grunt->m_playerIndex;
             if (slot == IDX(PLAYER_SLOT_ALL)) {
                 i32* flags = m_playerFlags;
                 flags[0] = 1;
@@ -1611,7 +1611,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
 }
 
 RVA(0x00113860, 0x3b)
-i32 CTileTriggerSwitchLogic::ValidateByType(
+i32 CTileTriggerSwitchLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1685,7 +1685,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
 }
 
 RVA(0x00113a90, 0x3b)
-i32 CTileTriggerLogic::ValidateByType(
+i32 CTileTriggerLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1766,7 +1766,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
 }
 
 RVA(0x00113d40, 0x6f)
-i32 CGiantRockLogic::ApplyByType(
+i32 CGiantRockLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1775,7 +1775,7 @@ i32 CGiantRockLogic::ApplyByType(
     if (ar == NULL) {
         return 0;
     }
-    if (ValidateByType(ar, mode, typeId, payload) == 0) {
+    if (CTileTriggerLogic::SerializeDispatch(ar, mode, typeId, payload) == 0) {
         return 0;
     }
     switch (mode) {

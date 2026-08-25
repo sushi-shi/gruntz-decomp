@@ -45,7 +45,7 @@
 //! on the one case the format leaves open: a run that would overrun the current
 //! scanline.
 //!
-//! * [`RowOverrun::Carry`] — `CDDSurface::RunDecode1` @0x145270 (and its
+//! * [`RowOverrun::Carry`] — `CDDSurface::DecodeByteRun1Plane` @0x145270 (and its
 //!   surface-locking twin `DecodeRun8` @0x140aa0). Clamps the run to the row
 //!   and *carries* the remainder into the head of the next row.
 //! * [`RowOverrun::Spill`] — `CRezImage::DecodePidData` @0x176440. Writes the
@@ -171,7 +171,7 @@ pub enum Grammar {
 /// Which retail decoder's row-overrun behaviour to reproduce.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RowOverrun {
-    /// `CDDSurface::RunDecode1` @0x145270 — clamp and carry into the next row.
+    /// `CDDSurface::DecodeByteRun1Plane` @0x145270 — clamp and carry into the next row.
     Carry,
     /// `CRezImage::DecodePidData` @0x176440 — write the whole run, spilling.
     Spill,
@@ -300,7 +300,7 @@ pub enum PidError {
         remaining: usize,
         at: usize,
     },
-    /// A run token with count 0. Retail's `RunDecode1` subtracts 0 from
+    /// A run token with count 0. Retail's `DecodeByteRun1Plane` subtracts 0 from
     /// `remaining` and loops forever on this; we refuse instead.
     ZeroRun {
         at: usize,
@@ -397,7 +397,7 @@ impl Pid<'_> {
     ///
     /// Pixels are written **top-down**. Retail's `CRezImage` path stores them
     /// bottom-up (its row table is `(height-1-y) * stride`), but that is a
-    /// Windows-DIB storage convention, not the format: `CDDSurface::RunDecode1`
+    /// Windows-DIB storage convention, not the format: `CDDSurface::DecodeByteRun1Plane`
     /// writes the very same token stream top-down into `dst + width*y`.
     pub fn decode_into(&self, dst: &mut [u8], overrun: RowOverrun) -> Result<usize, PidError> {
         let dims = self.header.dims()?;
@@ -457,7 +457,7 @@ fn check_dst(dst: &[u8], dims: Dims) -> Result<(), PidError> {
 /// The PCX-style grammar. `dst` must be `width * height`; returns the stream
 /// bytes consumed.
 ///
-/// Transcribed from `CDDSurface::RunDecode1` @0x145270 ([`RowOverrun::Carry`])
+/// Transcribed from `CDDSurface::DecodeByteRun1Plane` @0x145270 ([`RowOverrun::Carry`])
 /// and `CRezImage::DecodePidData` @0x1765e8 ([`RowOverrun::Spill`]).
 ///
 /// Retail keeps `remaining` in a signed register and lets `Spill` drive it

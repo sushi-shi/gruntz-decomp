@@ -143,7 +143,7 @@ public:
     // objects for m_switchLogics; trigger arms return the incompatible CTileTriggerLogic
     // family for m_idleLogics/m_timedLogics. Their vtable slot zero signatures differ, so
     // there is no common polymorphic base to substitute for this void* seam.
-    void* LoadLogic(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);
+    void* DeserializeLogic(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 LoadInitialized(CFileMemBase* archive);
     i32 SaveInitialized(CFileMemBase* archive);

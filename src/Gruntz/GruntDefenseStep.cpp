@@ -41,7 +41,7 @@
 // cl folds the second `occ == NULL` test that retail re-emits after the
 // GruntInRadius/m_entranceCommitted guards, so we are two branches short.
 RVA(0x000f2b20, 0x6e1)
-i32 CGrunt::StepArrivalDefense() {
+i32 CGrunt::StepScrollGruntBehavior() {
     m_defenderPx = m_lastTilePx;
     CGrunt* occ;
     switch (m_defenderState) {
@@ -71,7 +71,7 @@ i32 CGrunt::StepArrivalDefense() {
                 if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
                     && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
-                        g_gameReg->m_triggerMgr->ApplyTriggerB(
+                        g_gameReg->m_triggerMgr->UseToyAt(
                             m_playerIndex,
                             m_unitIndex,
                             occ->m_object->m_screenX,
@@ -137,7 +137,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (m_vehiclePickupType == PICKUP_SCROLL) {
-                g_gameReg->m_triggerMgr->ApplyTriggerB(
+                g_gameReg->m_triggerMgr->UseToyAt(
                     m_playerIndex,
                     m_unitIndex,
                     occ->m_object->m_screenX,
@@ -161,7 +161,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
-                    g_gameReg->m_triggerMgr->ApplyTriggerB(
+                    g_gameReg->m_triggerMgr->UseToyAt(
                         m_playerIndex,
                         m_unitIndex,
                         occ->m_object->m_screenX,

@@ -54,7 +54,7 @@ So when the target carries the `dec`+`lea +1` pair, write the post-decrement `wh
 
 ## Measured
 
-`CTriggerMgr::ClearCell` 0x6e800 **76.83 -> 86.36** and `CTriggerMgr::ApplyTriggerB`
+`CTriggerMgr::ClearCell` 0x6e800 **76.83 -> 86.36** and `CTriggerMgr::UseToyAt`
 0x6e120 **81.43 -> 82.99**, both on the `g_typeColl.Slots()` / `m_grown` CString
 re-construction walk, by that single rewrite. After it the two prologues are
 register-for-register identical to retail.

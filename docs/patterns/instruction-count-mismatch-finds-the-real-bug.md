@@ -25,12 +25,12 @@ sweep** (`--summary`, `--unit X`, `--min/--max`, `--tsv`, `--eh`). It reads
 * the switch JUMP TABLE, which decodes linearly and DIFFERENTLY on the two sides
   (base entries are all-zero reloc slots, target entries hold real addresses).
   Found exactly, from the run of DIR32 relocations at a 4-byte stride — the
-  "cut after the last `ret`" rule fails on `CTileActionEvent::Process`, whose
+  "cut after the last `ret`" rule fails on `CTileActionEvent::BreakTopBrick`, whose
   table bytes happen to decode a `retl $0x0`.
 
 Between them those accounted for 39 of the 304 mismatches a naive count reports,
 including the two largest: `CSpriteRef::Build` (-33, really 275 vs 275) and
-`CTileActionEvent::Process` (-40, really 261 vs 261). Both regalloc walls.
+`CTileActionEvent::BreakTopBrick` (-40, really 261 vs 261). Both regalloc walls.
 
 Use `llvm-objdump`, not `gruntz walls diagnose --asm`: the latter truncates at the first
 `$L` jump-table label, and the delinker packs a jump table INTO the owning

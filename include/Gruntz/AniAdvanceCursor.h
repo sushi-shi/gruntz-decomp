@@ -67,7 +67,8 @@ public:
     i32 Deserialize(CFileMemBase* ar);
     i32 CanDeserialize(CFileMemBase* ar);
 
-    i32 ProcessSerialMode(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self);
+    i32
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
     i32 Advance(u32 elapsed);
 
     CWwdSpriteObject* m_boundObject;

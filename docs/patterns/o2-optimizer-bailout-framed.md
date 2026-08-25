@@ -26,7 +26,7 @@ register-allocated (the opposite mode) because your source has FEWER live temps,
 so it stays under the optimizer's bailout threshold. You can't reliably force
 MSVC to give up from natural source; matching needs the function in an `/O1`/`/Od`
 TU (or to reproduce the exact temp pressure that trips the bailout). Evidence:
-Gruntz CFileImage::DecodeRun8/DecodeRun24/RunDecode1/RunDecode3 (DIRSURF.CPP RLE
+Gruntz CFileImage::DecodeRun8/DecodeRun24/DecodeByteRun1Plane/DecodeByteRun3Planes (DIRSURF.CPP RLE
 run-decoders, 0x140aa0/0x140c50/0x145270/0x1453f0) are all framed in retail while
 their sibling blitters (Blit/BlitSurf/FillPalette, same TU) are frameless `/O2`.
 

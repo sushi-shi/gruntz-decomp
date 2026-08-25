@@ -37,8 +37,8 @@ Measured 2026-08-08, five functions in the tree: `CGrunt::LoadGruntTypeTable` 0x
 **59.76 -> 87.11** (1168 B, the largest residual body in the tree),
 `CMapMgr::ComputeCellFlags` 0x77790 **46.04 -> 76.40** (320 B),
 `CInGameIcon::CInGameIcon` 0x95b10 **79.11 -> 92.23** (304 B),
-`CGrunt::WanderStep` 0xed9f0 **66.71 -> 83.44** (160 B),
-`CGruntzMapMgr::LoadAttributes` 0x810f0 **71.43 -> 75.21** (48 B).
+`CGrunt::StepHitAndRunnerBehavior` 0xed9f0 **66.71 -> 83.44** (160 B),
+`CGruntzMapMgr::BuildCellAttributes` 0x810f0 **71.43 -> 75.21** (48 B).
 `CGrunt::LoadGruntCombatAnimations` 0x597a0 (64 B) went 46.35 -> 45.93: the score can
 DROP when the filler happened to align against base padding, and that is the claim
 starting to tell the truth — judge the extent by the bytes, never by the score.

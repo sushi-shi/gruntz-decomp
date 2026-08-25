@@ -485,7 +485,7 @@ contribution). The wrong `LOW` FID row `0x014be0,__fpclear` is pruned — that a
 **Why an unlabelled MFC virtual did not merely show up blank.** `relocs.rs` names a `.text`
 address by the closest PRECEDING function, and a vtable slot holds an `/INCREMENTAL` **jmp
 thunk**, so the "closest preceding function" is *the previous 5-byte thunk*, which forwards
-somewhere unrelated: `CObject::Serialize` printed as `?ToggleRegionA@CTriggerMgr@@QAEHXZ+5`,
+somewhere unrelated: `CObject::Serialize` printed as `?ToggleToolTargeting@CTriggerMgr@@QAEHXZ+5`,
 once per vtable. Off the thunk band it is the enclosing admitted boundary instead —
 `?AfxExtractSubString@@YGHAAVCString@@PBDHD@Z+0x78` for `CObject::GetRuntimeClass`.
 

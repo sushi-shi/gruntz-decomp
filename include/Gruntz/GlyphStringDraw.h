@@ -9,8 +9,8 @@ class CString;
 struct tagRECT;
 typedef tagRECT RECT;
 
-i32 ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToOverlaySurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
@@ -20,8 +20,8 @@ i32 ShowHudMessage(
     i32 b,
     i32 flag
 );
-i32 ShowHudMessageAlt(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToBackSurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,

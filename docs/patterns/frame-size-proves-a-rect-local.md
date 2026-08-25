@@ -41,7 +41,7 @@ if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy
 made the frame `sub esp,0x10` and closed the entire body: **86.24 -> 94.16**, everything
 after the prologue byte-identical.
 
-**2. The slot order, when the frame size already agrees.** `CTriggerMgr::CombatCue` 0x7b930
+**2. The slot order, when the frame size already agrees.** `CTriggerMgr::ApplyGruntAreaEffect` 0x7b930
 computes its four cue bounds in the order xLo, xHi, yLo, yHi but retail stores them to
 `+0x28 / +0x30 / +0x2c / +0x34` - i.e. **xLo, yLo, xHi, yHi by ADDRESS**. Four independent
 ints would be laid out in declaration order; left/top/right/bottom is a RECT whose fields

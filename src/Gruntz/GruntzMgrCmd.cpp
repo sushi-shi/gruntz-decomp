@@ -18,6 +18,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MovieEntryId.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -122,7 +123,7 @@
             while (ShowCursor(0) >= 0) {                                                           \
             }                                                                                      \
         }                                                                                          \
-        PlayMovieEntry(N);                                                                         \
+        PlayMovieEntry(IDX(N));                                                                    \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
             while (ShowCursor(1) < 0) {                                                            \
@@ -138,7 +139,7 @@
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
         }                                                                                          \
-        PlayMovieEntry(N);                                                                         \
+        PlayMovieEntry(IDX(N));                                                                    \
         if (mus)                                                                                   \
             mus->StartMusic();                                                                     \
         return 1;                                                                                  \
@@ -669,7 +670,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x421);
             }
-            if (!ParseSerial(this, si->m_serial)) {
+            if (!RestoreGameFromFile(this, si->m_serial)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x465);
             }
             CheckSavedMode();
@@ -714,13 +715,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_RESTART_LEVEL:
-            RESTART(1);
+            RESTART(MOVIE_ENTRY_LOGO);
         case CMD_RESTART_WORLD:
-            RESTART(2);
+            RESTART(MOVIE_ENTRY_INTRO);
         case CMD_RESTART_WORLD_NO_CURSOR:
-            RESTART2(2);
+            RESTART2(MOVIE_ENTRY_INTRO);
         case CMD_RESTART_GAME:
-            RESTART(3);
+            RESTART(MOVIE_ENTRY_ENDING);
         case CMD_WARP_LEVEL1:
             WARP(1, 0x422);
         case CMD_DEBUG_WARP_LEVEL37:
@@ -1088,17 +1089,17 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             RestoreVideoMode(0);
             return 1;
-        case CMD_CHECK_DISPLAY_BOUNDS_A:
+        case CMD_NEXT_RESOLUTION:
             if (!IsInPlayState()) {
                 return 1;
             }
-            CheckDisplayBoundsA();
+            TryNextResolution();
             return 1;
-        case CMD_CHECK_DISPLAY_BOUNDS_B:
+        case CMD_PREVIOUS_RESOLUTION:
             if (!IsInPlayState()) {
                 return 1;
             }
-            CheckDisplayBoundsB();
+            TryPreviousResolution();
             return 1;
         case CMD_SCREENSHOT: {
             SaveFrontBufferShot(

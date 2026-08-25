@@ -5,10 +5,12 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
 #include <Ints.h>
-#include <Wwd/WwdPlaneFlags.h>
+
+#if GZ_STRICT_ENUMS && !defined(GRUNTZ_WWD_WWDPLANEFLAGS_H)
+GZ_ENUM_FORWARD_SPLIT(WwdPlaneFlags, u32);
+#endif
 
 class CDDrawWorker;
 

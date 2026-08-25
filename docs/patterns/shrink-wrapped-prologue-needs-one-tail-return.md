@@ -120,7 +120,7 @@ self-calls internally - so a raw-byte scan mixes decoder noise into the answer.
   difference, not a shrink-wrap one): 814 base / 814 target, 811 agreeing, and a six-row
   worklist - base-only `CGameLevel::MoveToward` (1,4,4,4 vs 4,4,4,4),
   `WarpTextureBlit` (2,3 vs 2,2), `CMapMgr::CellPush` (1,3 vs 3,3); target-only
-  `CGrunt::LoadGruntDecayConfig2` (1,1 vs 1,3), `CPlay::HandleDragMove` (4,4,4,4,4 vs
+  `CGrunt::UpdateDecayFade` (1,1 vs 1,3), `CPlay::HandleDragMove` (4,4,4,4,4 vs
   1,4,4,4,4), `CVariantSlot::Add` (3,3,3,3,3 vs 2,3,3,3,3).
 
 **Screen out TU state before searching the source.** On BuildLevelTitleString, moving the

@@ -55,6 +55,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapLogic.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/MovieEntryId.h>
 #include <Gruntz/MovieId.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
@@ -1049,18 +1050,19 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
 }
 
 RVA(0x0008e1d0, 0xa5)
-i32 CGruntzMgr::CheckDisplayBoundsA() {
+i32 CGruntzMgr::TryNextResolution() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
         return 1;
     }
-    DisplayResolution pt;
-    pt = m_world->m_deviceManager->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
-    i32 x = pt.m_width;
-    i32 y = pt.m_height;
-    if (x > 0x514 || x == -1 || y == -1) {
+    DisplayResolution resolution;
+    resolution =
+        m_world->m_deviceManager->FindNextResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+    i32 width = resolution.m_width;
+    i32 height = resolution.m_height;
+    if (width > 0x514 || width == -1 || height == -1) {
         return 1;
     }
-    if (SetVideoMode(x, y, 1)) {
+    if (SetVideoMode(width, height, 1)) {
         return 1;
     }
     if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, 1)) {
@@ -1071,19 +1073,19 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
 }
 
 RVA(0x0008e2b0, 0xb1)
-i32 CGruntzMgr::CheckDisplayBoundsB() {
+i32 CGruntzMgr::TryPreviousResolution() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
         return 1;
     }
-    DisplayResolution pt;
-    pt = m_world->m_deviceManager
-             ->FindPreviousResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
-    i32 x = pt.m_width;
-    i32 y = pt.m_height;
-    if (x == -1 || y == -1 || x < SCREEN_HALF_W_PX || y < 0xc8) {
+    DisplayResolution resolution;
+    resolution = m_world->m_deviceManager
+                     ->FindPreviousResolution(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
+    i32 width = resolution.m_width;
+    i32 height = resolution.m_height;
+    if (width == -1 || height == -1 || width < SCREEN_HALF_W_PX || height < 0xc8) {
         return 1;
     }
-    if (SetVideoMode(x, y, 1)) {
+    if (SetVideoMode(width, height, 1)) {
         return 1;
     }
     if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, 1)) {
@@ -1820,7 +1822,7 @@ char CGruntzMgr::GetGruntzDriveLetter() {
 
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
-    if (entryId < 1 || entryId > 3) {
+    if (entryId < IDX(MOVIE_ENTRY_FIRST) || entryId > IDX(MOVIE_ENTRY_LAST)) {
         return 0;
     }
     if (!FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)))) {
@@ -1849,7 +1851,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     }
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
         MovieOpenFlags openFlags = m_isInterlaced != 0 ? MOVIE_OPEN_INTERLACED : MOVIE_OPEN_DEFAULT;
-        if (player.Open(m_strMoviePath, entryId, MOVIE_TILE, openFlags, NULL, NULL)) {
+        if (player.Open(m_strMoviePath, IDX(entryId), MOVIE_TILE, openFlags, NULL, NULL)) {
             m_modalBusy = 1;
             player.Pump(MOVIE_PUMP_SKIP_ON_KEY, 1);
             m_modalBusy = 0;
@@ -1949,7 +1951,7 @@ i32 CGruntzMgr::IsMoviePathValid() {
 
 RVA(0x00090200, 0x8)
 i32 CGruntzMgr::PlayLogoMovie() {
-    return PlayMovieEntry(1);
+    return PlayMovieEntry(IDX(MOVIE_ENTRY_LOGO));
 }
 
 RVA(0x00090220, 0x2f)
@@ -3373,11 +3375,16 @@ i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
 }
 
 RVA(0x00093460, 0x15c)
-i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeId, i32 payload) {
+i32 CGruntzMgr::SerializeGameState(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
-    switch (cmd) {
+    switch (mode) {
         case SERIAL_SAVE:
 
             if (SaveState(ar) == 0) {
@@ -3393,32 +3400,32 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
     }
 
     i32 i;
-    GruntzPlayer* slot;
-    for (i = 0, slot = m_players; i < 4; i++) {
-        if (slot == NULL || slot->Serialize(ar, cmd, typeId, payload) == 0) {
+    GruntzPlayer* player;
+    for (i = 0, player = m_players; i < 4; i++) {
+        if (player == NULL || player->Serialize(ar, mode, typeId, payload) == 0) {
             return 0;
         }
-        slot++;
+        player++;
     }
 
-    if (m_triggerMgr->Serialize(ar, cmd, typeId, payload) == 0) {
+    if (m_triggerMgr->Serialize(ar, mode, typeId, payload) == 0) {
         return 0;
     }
-    if (PickPlayOrPausedState()->SyncState(ar, cmd, typeId, payload) == 0) {
+    if (PickPlayOrPausedState()->SerializeDispatch(ar, mode, typeId, payload) == 0) {
         return 0;
     }
-    if (m_commandMgr->Serialize(ar, cmd, typeId, payload) == 0) {
-        return 0;
-    }
-
-    if (m_tileGrid->Visit(ar, cmd, typeId, payload) == 0) {
+    if (m_commandMgr->Serialize(ar, mode, typeId, payload) == 0) {
         return 0;
     }
 
-    if (MapSerializeCurve(ar, cmd, typeId, payload) == 0) {
+    if (m_tileGrid->SerializeDispatch(ar, mode, typeId, payload) == 0) {
         return 0;
     }
-    return m_gameStats->Serialize(ar, cmd, typeId, payload) != 0;
+
+    if (SerializeScrollState(ar, mode, typeId, payload) == 0) {
+        return 0;
+    }
+    return m_gameStats->Serialize(ar, mode, typeId, payload) != 0;
 }
 
 RVA(0x00093620, 0x254)

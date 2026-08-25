@@ -125,9 +125,9 @@ slot/home assignment carries one more unmapped input.
 
 ## Round 4: the real-TU warm driver is still unidentified
 
-`CGrunt::ChargeStep` isolates it: retail keeps TEN identical 4-insn
+`CGrunt::StepDumbChaserBehavior` isolates it: retail keeps TEN identical 4-insn
 epilogues (fully cold, +30 insns - the whole 83.91 residue's skeleton half),
-ours merges them even when ChargeStep is the obj's FIRST emission with the
+ours merges them even when StepDumbChaserBehavior is the obj's FIRST emission with the
 `$E`s tailed. The probe stays COLD under every axis tried: the real MFC
 prelude (Mfc/MfcNoInline/MfcWin), /GR, 50/200/800 parsed-but-unused inline
 bodies, statics/templates in any position. Identical cflags
@@ -138,18 +138,18 @@ preprocessed real TU minimizes to `GruntDirStatics.h` alone as the
 preceding-warmth carrier while headers-without-it stay cold. The full
 model: C2's cross-jump activates at the first function-like IL processed -
 a preceding body, a `$E` at its source position, OR the function's own
-first inline expansion. ChargeStep warms itself via `m_coordList.GetCount()`
+first inline expansion. StepDumbChaserBehavior warms itself via `m_coordList.GetCount()`
 (MFC inline; no MfcNoInline in this TU). POSITIONAL variant falsified in
 the same round: the expansion warms the WHOLE function wherever it sits
 (early-guard and last-guard probes both fully merge). The sharp residue:
-retail ChargeStep is cold with EQUAL call multisets and equal operands -
+retail StepDumbChaserBehavior is cold with EQUAL call multisets and equal operands -
 the era compile expanded NO inline there, yet its count reads are direct
 member loads like ours and its accessor calls match ours. What non-inline,
 non-call spelling produced its member reads (or what suppressed its C1
 expansions TU-wide) is the single open question for the step band; test
 /Ob-flag and era-header-inline-visibility hypotheses against a full-band
-call census before any source churn. The step-band rows' skeleton deltas (ChargeStep
-10v11, WanderStep 11v12, ScanNearestTarget 11v12, RunEntranceMove 5v6) are
+call census before any source churn. The step-band rows' skeleton deltas (StepDumbChaserBehavior
+10v11, StepHitAndRunnerBehavior 11v12, StepSmartChaserBehavior 11v12, RunEntranceMove 5v6) are
 all THIS one input; mapping it would close the band's CFG residue in one
 move.
 
@@ -171,7 +171,7 @@ function's own earlier inline expansion lifts the suppression; local-object
 dtor EH does not trigger it. This exactly reproduces CreateChildren
 (3 news, first -> EXACT unmerged; mid-TU -> merged) and every fold
 production. STILL OPEN for the era side only: retail's step band
-(ChargeStep etc.) is unmerged WITHOUT news and not first - no SP3
+(StepDumbChaserBehavior etc.) is unmerged WITHOUT news and not first - no SP3
 configuration reproduced that; the leading remaining hypothesis is a
 different compiler build (RTM vs SP3) for those compilands, untestable
 until an RTM toolchain is provisioned.
@@ -180,7 +180,7 @@ V3-consistent datum: hoisting `AddLogic` first does NOT unmerge it - its
 `AddTail` MFC-inline expansions self-warm it (the TU has no MfcNoInline),
 so ours can never reproduce retail's 3 epilogues under SP3 regardless of
 position. With equal call multisets on both sides, retail's cold copy joins
-the ChargeStep-class era anomaly - more weight on the RTM-provenance test.
+the StepDumbChaserBehavior-class era anomaly - more weight on the RTM-provenance test.
 
 The anomaly is WIDER than epilogue merging: `CMulti::PollSession`
 (0xb95f0, 88.41, 96v103) shows retail RE-TESTING a register it just tested

@@ -16,18 +16,18 @@ snapped to a real field: `{0,4,8,0xc,0x10,0x14}` -> +8, `{0,4}` -> +4,
 
 ```cpp
 // NO - the loop-carried pointer pins the cursor at +0:
-CSbiHlRow* ph = m_groupSlots;
+CSbiHlRow* ph = m_conveyorSlots;
 i32 count = 3;
 do { ... ph->m_state ... ph->m_last ... ph++; } while (--count);
 
 // YES - index, and let cl synthesize the cursor:
-for (i32 i = 0; i < 3; i++) { ... m_groupSlots[i].m_state ... }
+for (i32 i = 0; i < 3; i++) { ... m_conveyorSlots[i].m_state ... }
 
 // ALSO YES, when the body wants a name - derive it from the index EACH iteration:
 for (i32 i = 0; i < 4; i++) { GruntzPlayer* p = &g_gameReg->m_players[i]; ... }
 ```
 ```asm
-    lea    esi,[edi+0x2c8]        ; &m_groupSlots[0] + 8, not +0
+    lea    esi,[edi+0x2c8]        ; &m_conveyorSlots[0] + 8, not +0
     mov    eax,DWORD PTR [esi-0x8]   ; m_state
     mov    ecx,DWORD PTR [esi-0x4]   ; m_counter
     mov    edx,DWORD PTR [esi]       ; m_last  (the pair cl centred on)

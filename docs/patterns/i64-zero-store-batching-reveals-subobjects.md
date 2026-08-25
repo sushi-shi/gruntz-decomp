@@ -60,7 +60,7 @@ The helper then takes `CHazardTimer*` and the `p + 1` pointer arithmetic goes aw
 - `??0CPathHazard@@QAE@XZ` 0x13170 — 99.87% -> **100% EXACT**.
 - `??0CPathHazard@@QAE@PAUCGameObject@@@Z` 0xb35a0 — the same batch order lands,
   and the derived-vptr stamp moves after the stores as retail has it.
-- `?SerializeMove@CPathHazard@@` 0xb4d30 — 100%, unchanged by the retype.
+- `?SerializeDispatch@CPathHazard@@` 0xb4d30 — 100%, unchanged by the retype.
 
 `CStatusBarMgr` supplies the score-led negative control. Three adjacent
 `{last, interval}` pairs were left as six loose `i64` fields because the first
@@ -82,7 +82,7 @@ highs. Retail instead emits `+0x88,+0x90,+0x8c,+0x94`, then
 constructor and before the derived-vptr stamp. Modeling those ranges as
 `m_cooldownTimer` and `m_notifyTimer`, each a two-`i64` `WarlordTimer`, reproduces
 both batches exactly and moves the first divergence from +0xfc to +0x12d
-(78.1128% -> 78.8385%). `SerializeMove` independently walks each range through
+(78.1128% -> 78.8385%). `SerializeDispatch` independently walks each range through
 one `i64*` cursor. Initializer-list versus constructor-body assignments and a
 typed helper versus native MFC `void*&` lookup were byte-flat; a classified
 32-island/33-state campaign found one compiler island. The remaining first

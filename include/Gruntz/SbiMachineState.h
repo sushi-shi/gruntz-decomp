@@ -17,7 +17,7 @@
 //   6  "StatusBar" / "RightMachineSpewingDelay"      right side spewing
 //
 // NOTE these share the CSbiHlRow storage with SbiHlRowState but are a DIFFERENT
-// machine: m_groupSlots run the rise/hold/fall highlight states, while
+// machine: m_conveyorSlots run the rise/hold/fall highlight states, while
 // m_machineA and m_machineB run these. Two domains, one field, told apart by
 // which instance is being stepped - which is why CSbiHlRow::m_state is not
 // typed with either.

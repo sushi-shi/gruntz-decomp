@@ -46,7 +46,7 @@ for (i32 ri = 0; ri < 0x10; ri++) { ... r ... ; r += 0x10; }
 MEASURED (both 2026-08-01, both closed the sieve's `jl->jne` row and made the branch
 sequences agree):
 - `CShadeTableCache::AddTable` 0x14f080 — three colour loops — **74.23% -> 84.04%**
-- `CProjectile::SerializeMove` 0xe0d40 — the 7-frame write loop — **91.62% -> 94.34%**
+- `CProjectile::SerializeDispatch` 0xe0d40 — the 7-frame write loop — **91.62% -> 94.34%**
   (cursor alone: 93.09%; cursor + separate counter: 94.34%)
 
 Found with `gruntz walls diagnose <rva> --asm`: the back-edge is a `jl` -> `jne`

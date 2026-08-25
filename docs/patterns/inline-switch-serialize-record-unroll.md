@@ -41,6 +41,6 @@ cmp edi,7 ; jne NEXT
 ; WRITE: mov edx,[esi]; push 8; push ebp; mov ecx,esi; call [edx+0x30]; …
 ```
 
-Evidence: `CGrunt::SerializeMove` (0x53b80, 832 B) — helper-call + if/else =
+Evidence: `CGrunt::SerializeDispatch` (0x53b80, 832 B) — helper-call + if/else =
 38.8%; `__inline` helper = 77.6%; + outer `switch` = 90.8%; + in-helper `switch`
 = 100.0% byte-exact.

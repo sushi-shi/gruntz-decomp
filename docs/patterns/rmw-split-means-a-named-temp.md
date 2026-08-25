@@ -32,7 +32,7 @@ Bit-flag updates on a struct/array element that the surrounding code also reads
 for other reasons — the dev had the value in a variable anyway. Both live
 examples in this codebase are exactly that:
 
-- `CGrunt::StepEntranceRelatchB` clearing the tile-grid flag bit,
+- `CGrunt::FinishToobMoveAnimation` clearing the tile-grid flag bit,
 - `CGruntCreationPoint::CGruntCreationPoint` setting `m_object->m_flags |= 0x20000`
   (where the same `m_object` pointer is live from the `m_sortKey` test just
   above — retail keeps it in a register and does load/or/store through it, while

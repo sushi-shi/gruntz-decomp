@@ -35,7 +35,7 @@ jumps throughout the scan.
 
 ## Evidence
 
-`CGruntzMapMgr::LoadAttributes` at 0x000810f0 had 23/23 calls and 122/122 relocations
+`CGruntzMapMgr::BuildCellAttributes` at 0x000810f0 had 23/23 calls and 122/122 relocations
 after restoring the retail reload of `g_gameReg`, but its eight nullable neighbor pointers
 still produced too many blocks. Dominating `NULL` initializers plus conditional assignments,
 and branching directly on the four-pair predicate instead of materializing a `bool`, moved

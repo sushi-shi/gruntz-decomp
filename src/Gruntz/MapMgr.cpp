@@ -684,7 +684,7 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
 }
 
 RVA(0x0009f7f0, 0x3b)
-i32 CMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CMapMgr::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }

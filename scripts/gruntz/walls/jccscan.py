@@ -243,7 +243,7 @@ def first_flip(base, target, self_name):
 
     Not decided by this one site alone either way: cl also chooses WHICH of
     several identical returns stays inline, so check the neighbouring guards
-    (see that pattern's over-application note, ApplyTriggerA 0x6dae0).
+    (see that pattern's over-application note, UseEquippedToolAt 0x6dae0).
 
     THE POSITIONAL WALK BELOW IS SOUND, AND RE-ALIGNING IT IS WORSE.  Zipping
     two sequences by index normally drifts on the first insert or delete, but
@@ -255,7 +255,7 @@ def first_flip(base, target, self_name):
     alphabet is under-determined and it put LoadStateRecord 0x555e0's surplus
     at branch #0 where the two sides are instruction-identical; keyed on the
     preceding opcodes it is over-determined and any scheduling change breaks
-    the anchor, so it read Sync 0x1084d0, ArrivalReticleScan 0xee800 and
+    the anchor, so it read Sync 0x1084d0, StepDefenderBehavior 0xee800 and
     WireTileSwitchLogic 0x6c130 as `extra branch` rows when all three have
     hand-verified corresponding pairs at the site this walk reports."""
     o, t = code_region(base, self_name), code_region(target, self_name)
@@ -394,7 +394,7 @@ def main(argv=None) -> int:
         print("  ours is a CANDIDATE for guard-skip-loop-not-early-return.md -"
               " but only when the source really does state that exit twice.")
         print("  It also reads `ours` when cl duplicated a shared `goto` target"
-              " the source states ONCE (StepArrivalDefenseLean 0xf8240), which is")
+              " the source states ONCE (StepMagicWandGruntBehavior 0xf8240), which is")
         print("  not steerable. Read the source before editing.")
         print("  retail is the tail-merge wall; '-' means neither, so the gap is"
               " block placement, not an exit count.")

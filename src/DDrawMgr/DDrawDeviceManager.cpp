@@ -57,7 +57,7 @@ i32 CFileImageSurface::ResolveEx(
             }
             break;
         case FMT_PCX:
-            if (!Decode(
+            if (!CreateFromPcxData(
                     manager,
                     static_cast<PcxHeader*>(data),
                     static_cast<i32>(dataSize),
@@ -67,7 +67,7 @@ i32 CFileImageSurface::ResolveEx(
             }
             break;
         case FMT_BMP:
-            if (!DecodeRun(
+            if (!CreateFromBmpData(
                     manager,
                     static_cast<BmpFileImage*>(data),
                     static_cast<i32>(dataSize),
@@ -96,11 +96,11 @@ i32 CFileImageSurface::LoadByExt(
     i32 applyColorKey = 1;
     char* ext = strrchr(path, '.');
     if (ext != NULL && _strcmpi(ext, ".BMP") == 0) {
-        if (LoadFile2(manager, path, surfaceCaps) == 0) {
+        if (CreateFromBmpFile(manager, path, surfaceCaps) == 0) {
             return 0;
         }
     } else if (ext != NULL && _strcmpi(ext, ".PCX") == 0) {
-        if (LoadFile(manager, path, surfaceCaps) == 0) {
+        if (CreateFromPcxFile(manager, path, surfaceCaps) == 0) {
             return 0;
         }
     } else if (ext != NULL && _strcmpi(ext, ".PID") == 0) {

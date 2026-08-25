@@ -36,7 +36,7 @@ STEERABLE where the intermediate is a real local; NOT steerable when the fold ha
 inside a single expression (parenthesising `(y+1) - (b+1)` still folds). Evidence
 (2026-07-28, `src/Gruntz/GameLevel.cpp`): `MoveHandlerD` 83.00 -> 96.33 (the SpanCheck
 span floor), `ResolveMoveDown` 83.49 -> **100 EXACT** (span floor + `++cur`),
-`AltStepValidate` 71.97 -> ~90 (`cmpHi = tHi - a2 + sy`, which took the whole body to
+`CanLandOnPlatform` 71.97 -> ~90 (`cmpHi = tHi - a2 + sy`, which took the whole body to
 instruction-for-instruction identity). `AdvanceB` @0x15ede0 is the un-steerable half:
 its two `return`s differ only by the fold, so cl merges them and retail's third epilogue
 is unreachable from any spelling tried.

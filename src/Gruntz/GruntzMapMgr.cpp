@@ -14,7 +14,12 @@
 
 // @early-stop
 RVA(0x00082430, 0x161)
-i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CGruntzMapMgr::SerializeDispatch(
+    CFileMemBase* ar,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (ar == NULL) {
         return 0;
     }
@@ -62,7 +67,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
         }
     }
 
-    return CMapMgr::Visit(ar, mode, typeId, payload) != 0;
+    return CMapMgr::SerializeDispatch(ar, mode, typeId, payload) != 0;
 }
 
 // A CGameLevel accessor the map-manager compiland defined: its retail copy sits

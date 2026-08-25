@@ -1,6 +1,6 @@
 # The vtable-realizer's span adjudicates header-inline vs out-of-line per BODY
 
-**Question it answers.** A small virtual body (GetTypeTag / SerializeMove /
+**Question it answers.** A small virtual body (GetTypeTag / SerializeDispatch /
 Update / a dtor-adjacent Reset) could have been spelled in-class in the header
 or out-of-line in the class's `.cpp`. Both compile to identical bytes, both are
 `call *(vtbl)`-dispatched (MSVC5 never devirtualizes), so the score cannot
@@ -36,9 +36,9 @@ serialobjectfactory.obj (0xd210-0x13c5e, early on the line) realizes ~45 logic
 vtables - its run holds their kept inline ctors (`??0CTileTrigger` 0x11160,
 `??0CProjectile` 0x126e0) and `??_G/??1` groups.
 
-* `CAniCycle::SerializeMove` kept at 0xf470 INSIDE that run -> header-inline;
+* `CAniCycle::SerializeDispatch` kept at 0xf470 INSIDE that run -> header-inline;
   moved in-class, rebuilt 100%, attribution follows the includer. Same for 27
-  sibling bodies (SerializeMove x13, GetTypeTag x9, CMovingLogic::FinalizeStep
+  sibling bodies (SerializeDispatch x13, GetTypeTag x9, CMovingLogic::FinalizeStep
   at the run's deferred-inline tail 0x13c70, the CPlay trio + CAttract::Update
   in gruntzmgr's state band, CSBI_WellGoo::Reset in the statusbar compiland's
   dtor cluster).

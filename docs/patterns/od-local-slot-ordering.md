@@ -45,7 +45,7 @@ build/objdiff/base/<unit>.obj` is ~1.6 s.
    non-decreasing in the required slot order, and emit the declaration list with
    each tie-group **reversed** (rule 2). Verify with one compile.
 
-Worked, byte-exact: `CDDSurface::RunDecode1` (0x145270) and `RunDecode3`
+Worked, byte-exact: `CDDSurface::DecodeByteRun1Plane` (0x145270) and `DecodeByteRun3Planes`
 (0x1453f0), both 99.5 → **100 EXACT**. Retail's layout for both is
 `sp -4, hold -8, tok -c, y -10, len -14, dstp -18, k -1c, cols -20 (, base -24)`
 and the name set that reproduces it is exactly those identifiers, declared
@@ -60,7 +60,7 @@ plain `sp/hold/tok/y/len/dstp/k/cols/base`).
 `CDDSurface::DecodeRun8` (0x140aa0) and `DecodeRun24` (0x140c50) closed the same way
 (99.50/99.54 -> **100 EXACT**), and they show the one gotcha: **the hash order depends on
 how MANY locals are in the table**, so a solved name set does NOT carry over between
-functions. RunDecode1's eight names produce a different order once DecodeRun8's three
+functions. DecodeByteRun1Plane's eight names produce a different order once DecodeRun8's three
 extra locals join them - each function must be ranked from scratch. Their solutions are
 `sp/hold/tok/w/pbits/y/runx/dstp/kj/height/nleft` and
 `inp/rest/pm/ln/nrow/cnt/dst/k/cols` respectively.

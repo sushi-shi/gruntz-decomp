@@ -608,12 +608,12 @@ void p3() { int a,b,c,d; R r1;       take(&d);take(&c);taker(&r1);take(&b);take(
 
    | function | base | target |
    |---|---|---|
-   | `CGrunt::WanderStep` `0x000ed9f0` 84.34 | `cmp eax,ebp` | `test eax,eax` |
+   | `CGrunt::StepHitAndRunnerBehavior` `0x000ed9f0` 84.34 | `cmp eax,ebp` | `test eax,eax` |
    | `CTriggerMgr::PlaceObjectFull` 72.22 | `cmp ecx,ebp` | `test ecx,ecx` |
    | `CMapMgr::ComputeCellFlags` 97.66 | `test ebx,ebx` | `cmp ebx,ecx` |
-   | `CGrunt::ScanNearestTarget` 69.31 | `test eax,eax` | `cmp eax,ebp` |
+   | `CGrunt::StepSmartChaserBehavior` 69.31 | `test eax,eax` | `cmp eax,ebp` |
 
-   `WanderStep` `0x000ed9f0` is the clean instance: WE hoist a zero into EBP and retail does
+   `StepHitAndRunnerBehavior` `0x000ed9f0` is the clean instance: WE hoist a zero into EBP and retail does
    not, six times in one function. Count the zero stores before touching anything
    else there.
 
@@ -833,7 +833,7 @@ five. Each is an R2/R3/R4 decision and nothing else:
 | `CMulti::FrameSyncWait` | `0x000bc070` | ~~98.50~~ **100.00** | esi<->edi — **closed**, see R3 |
 | `CGrunt::StepWarpExit` | `0x00064540` | 98.77 | esi<->edi (18/79 insns) |
 | `CTriggerMgr::DestroyAllAnims` | `0x0007d330` | 98.79 | ebx<->ebp (16/70) — R4, PARK |
-| `CTimer::HandleEvent` | `0x0009c1c0` | 99.43 | ebx<->ebp (12/106) |
+| `CTimer::SerializeDispatch` | `0x0009c1c0` | 99.43 | ebx<->ebp (12/106) |
 | `CMulti::DispatchRecvMsg` | `0x000b9750` | 99.97 | esi<->edi (3/526) |
 
 Reproduce with the scanner recipe in "Bounds" below; it is 20 lines over the

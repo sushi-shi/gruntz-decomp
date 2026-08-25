@@ -53,7 +53,7 @@ if (MapLookupById(grp->m_map48, id, found)) {
 
 | function | before -> after |
 |---|---|
-| `CExitTrigger::SerializeMove` @0x3f040 (read-side warlord id resolve) | 93.68 -> **96.65** |
+| `CExitTrigger::SerializeDispatch` @0x3f040 (read-side warlord id resolve) | 93.68 -> **96.65** |
 | `CExitTrigger::AdvanceAnim` @0x3f5f0 (the claimed-slot warlord resolve) | 76.85 -> **78.22** |
 
 Both had been filed as "branch-vs-branchless coin-flip, not source-steerable". It is
@@ -82,11 +82,11 @@ other:
 
 | function | spelling | fuzzy |
 |---|---|---|
-| `CGrunt::StepEntranceRelatchB` 0x65c20 | `found=0; if (Lookup(..)==0) found=0;` (the re-assign) | **98.22** |
+| `CGrunt::FinishToobMoveAnimation` 0x65c20 | `found=0; if (Lookup(..)==0) found=0;` (the re-assign) | **98.22** |
 | | `obj=0; if (Lookup(..)) obj=found;` (statement form) | 90.86 |
 | | `obj = Lookup(..) ? found : 0` (ternary) | 96.82 — if-converts |
 | | `if (Lookup(..)==0 \|\| found==0) { ... }` | 79.97 |
-| `CDDrawChildGroup::Deserialize` 0x15b0e0 | statement form (in tree) | **96.17** |
+| `CDDrawChildGroup::DeserializeObjects` 0x15b0e0 | statement form (in tree) | **96.17** |
 | | explicit `if/else`, both arms assigning | 91.44 — if-converts |
 
 The `Deserialize` result is the one to remember: the explicit `if`/`else` is NOT a
@@ -97,7 +97,7 @@ materialised INSIDE the miss arm (`jne 0x71 / xor esi,esi / jmp 0x75`), which is
 what cl emits when the destination register is live across the call with another
 value — a register-pressure fact, not a spelling. No spelling reached it.
 
-`StepEntranceRelatchB` says the same thing from the other side: the redundant
+`FinishToobMoveAnimation` says the same thing from the other side: the redundant
 `found = NULL` re-assign that this pattern would normally call the bug is the
 best-scoring form there by 1.4 points, because `found`'s address has escaped to
 the out-param and cl must keep memory coherent either way. **Check the tree's

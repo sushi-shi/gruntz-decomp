@@ -48,14 +48,14 @@ GZ_ENUM_CONST_END(GruntDwellMs)
 //   COOLDOWN Parked after acting: the only exit is m_dwell passing 0x1f40, then
 //           SEEK. The Time Bomber enters it after walking clear of its bomb and
 //           the Tool Thief after stripping a tool.
-//   RETREAT The Hit-And-Runner's back-off (CGrunt::WanderStep sets it whenever
+//   RETREAT The Hit-And-Runner's back-off (CGrunt::StepHitAndRunnerBehavior sets it whenever
 //           m_poweredUp or a CommitNeighbor lands). Holds while m_combatActive,
 //           returns to SEEK the moment m_stamina is back to 0x64, and otherwise
 //           walks to a random tile within two of where it stands.
 //
 // Battlez adds a two-stage route to an enemy base. ROUTE_TARGET paths to the
 // selected waypoint (or the base when there are no waypoints); FINAL_ROUTE then
-// paths to the base marker itself. PhaseStep adds two one-tick transitions for
+// paths to the base marker itself. StepTimeBomberBehavior adds two one-tick transitions for
 // a path cell carrying the phase-trigger bit. Both mirror the grunt across that
 // cell, then differ only in the state they enter afterwards.
 GZ_ENUM_BEGIN(GruntAiState)

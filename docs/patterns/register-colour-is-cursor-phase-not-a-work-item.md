@@ -29,13 +29,13 @@ references whose relocation symbol agrees on both sides: 144 sites, 83 functions
 `-3:2 -2:23 -1:42 +1:57 +2:19 +3:1`, 67 negative / 77 positive, EAX asymmetry 39/40.
 
 **Usually a readout, not a cause: 17 of the 374 functions are PURE colour**, i.e.
-have no other divergence at all - `CSpotLight::SerializeMove` 99.96,
+have no other divergence at all - `CSpotLight::SerializeDispatch` 99.96,
 `CBootyState::LoadGruntEffectSprites` 99.95, `CPathHazard::CPathHazard` 99.92,
 `ReadMenuOptionsDialog` 0x36a30 99.90, `CState::LoadTitlePage` 99.88,
 `zBitVec::operator=` 99.84, `CGrunt::IsDropReady` 99.84, `CFrontCandy` /
 `CDoNothing` / `CBehindCandy` ctors 99.83, `LoadDestructButtonSprite` 99.82,
 `CDDrawSurfacePair::DrawCross` 99.73, `SaveVideoCheckboxes` 0x378c0 99.50,
-`CTimer::HandleEvent` 99.43, `CRezArchiveType::CRezArchiveType` 99.35, `CGrunt::StepWarpExit` 98.77
+`CTimer::SerializeDispatch` 99.43, `CRezArchiveType::CRezArchiveType` 99.35, `CGrunt::StepWarpExit` 98.77
 and `CAniAdvanceCursor::Construct` 95.42. In the other 357 the colour rides on an
 independent divergence, and THAT is the row's work.
 

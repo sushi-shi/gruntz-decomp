@@ -21,7 +21,7 @@ struct WarlordTimer {
 
 class CWarlord : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x000107a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;
@@ -33,14 +33,14 @@ public:
 
     virtual void FireActivation(i32 id) OVERRIDE;
 
-    i32 RearmMoving();
+    i32 FinishIdleAnimation();
 
-    i32 RearmMoving2();
+    i32 FinishBattlecryAnimation();
 
-    i32 AdvanceMovingAnim();
+    i32 FinishJoyAnimation();
 
-    i32 LoadAttributes();
-    i32 LoadAttributes2();
+    i32 UpdateMovingState();
+    i32 UpdatePanicState();
 
     i32 BuildFortSplashParticles();
 
@@ -48,7 +48,7 @@ public:
 
     i32 ResolveMovingAnimation();
     i32 ResolveDeathAnimation();
-    i32 RaiseBattleAlert();
+    i32 ResolveJoyAnimation();
     i32 ResolveIdleAnimation();
     i32 ResolveBattlecryAnimation();
 

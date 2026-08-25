@@ -10,7 +10,10 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Gruntz/Fader.h>
+#include <Gruntz/FaderConfig.h>
 #include <Gruntz/FaderKind.h>
+#include <Gruntz/FaderMgr.h>
+#include <Gruntz/FaderSettings.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -21,7 +24,6 @@
 #include <Gruntz/PreviewState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCueRegistry.h>
-#include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
 #include <Rez/RezArchive.h>
@@ -141,15 +143,15 @@ i32 CState::LoadAndPresentTitlePage(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa410, 0xf5)
-i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
+i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_deviceManager == NULL) {
+    if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* surface = m_resChain->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->m_surface;
     if (surface == NULL) {
         return 0;
     }
@@ -165,14 +167,14 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
         return 0;
     }
 
-    m_gameMgr->PauseMusicIfEnabled();
+    m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
-        ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontSurface->m_surface->Fill(0);
+        ActiveWait(durationMs);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Fill(0);
     } else {
-        f->RunFade(dur, lead, 0);
+        f->RunFade(durationMs, leadMs, 0);
     }
-    m_gameMgr->ResumeMusicIfEnabled();
+    m_mgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -181,19 +183,19 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa550, 0x10c)
-i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
+i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_deviceManager == NULL) {
+    if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* chanA = m_world->m_drawTarget->m_frontSurface->m_surface;
     if (chanA == NULL) {
         return 0;
     }
-    CDDSurface* chanB = m_resChain->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* chanB = m_world->m_drawTarget->m_backPair->m_surface;
     if (chanB == NULL) {
         return 0;
     }
@@ -209,14 +211,14 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
         return 0;
     }
 
-    m_gameMgr->PauseMusicIfEnabled();
+    m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
-        ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
+        ActiveWait(durationMs);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
     } else {
-        f->RunFade(dur, lead, 0);
+        f->RunFade(durationMs, leadMs, 0);
     }
-    m_gameMgr->ResumeMusicIfEnabled();
+    m_mgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -249,26 +251,26 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa790, 0x104)
-i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
+i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_deviceManager == NULL) {
+    if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* chanA = m_world->m_drawTarget->m_frontSurface->m_surface;
     if (chanA == NULL) {
         return 0;
     }
-    CDDSurface* chanB = m_resChain->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* chanB = m_world->m_drawTarget->m_backPair->m_surface;
     if (chanB == NULL) {
         return 0;
     }
 
     CSineFaderConfig t;
     t.m_clearToBlack = 0;
-    t.m_intensityPercent = pct;
+    t.m_intensityPercent = intensityPercent;
     t.m_targetSurface = chanA;
     t.m_sourceSurface = chanB;
     CFader* f = mgr->Add(FADERKIND_SINE, &t);
@@ -276,14 +278,14 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
         return 0;
     }
 
-    m_gameMgr->PauseMusicIfEnabled();
+    m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
-        ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
+        ActiveWait(durationMs);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
     } else {
-        f->RunFade(dur, lead, 0);
+        f->RunFade(durationMs, leadMs, 0);
     }
-    m_gameMgr->ResumeMusicIfEnabled();
+    m_mgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -336,22 +338,22 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000faa60, 0xed)
-i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
+i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
         return 0;
     }
-    if (m_resChain->m_deviceManager == NULL) {
+    if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* surface = m_resChain->m_drawTarget->m_frontSurface->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_frontSurface->m_surface;
     if (surface == NULL) {
         return 0;
     }
 
     CSineFaderConfig t;
     t.m_clearToBlack = 1;
-    t.m_intensityPercent = pct;
+    t.m_intensityPercent = intensityPercent;
     t.m_targetSurface = surface;
     t.m_sourceSurface = NULL;
     CFader* f = mgr->Add(FADERKIND_SINE, &t);
@@ -359,14 +361,14 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
         return 0;
     }
 
-    m_gameMgr->PauseMusicIfEnabled();
+    m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
-        ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontSurface->m_surface->Fill(0);
+        ActiveWait(durationMs);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Fill(0);
     } else {
-        f->RunFade(dur, lead, 0);
+        f->RunFade(durationMs, leadMs, 0);
     }
-    m_gameMgr->ResumeMusicIfEnabled();
+    m_mgr->ResumeMusicIfEnabled();
     mgr->Remove(f);
     return 1;
 }
@@ -436,7 +438,7 @@ i32 CState::InputVirtual() {
         rect.bottom = mode.cy;
         rect.left = 0;
         rect.top = 0;
-        EngStr_DrawText(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToFrontSurface(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }
     while (ShowCursor(0) >= 0)
         ;
@@ -448,9 +450,9 @@ i32 CState::InputVirtual() {
     if (m_world->m_imageRegistry->LoadNamespace(path, "GAME", "_") == -1) {
         return 0;
     }
-    m_inputWarmup1 = 0;
-    m_inputWarmup2 = 1;
-    m_inputHalfSel = 0;
+    m_cursorRestoreWarmup1 = 0;
+    m_cursorRestoreWarmup2 = 1;
+    m_cursorSaveSlot = 0;
     return 1;
 }
 
@@ -479,7 +481,7 @@ i32 CState::ShadeScreen(i32 pct) {
 }
 
 RVA(0x000fafa0, 0x3b)
-i32 CPlay::HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CPlay::SerializeHeader(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }
@@ -524,9 +526,9 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_cursorSaveSrc1, sizeof(m_cursorSaveSrc1));
     ar->Write(&m_cursorSaveDst0, sizeof(m_cursorSaveDst0));
     ar->Write(&m_cursorSaveDst1, sizeof(m_cursorSaveDst1));
-    ar->Write(&m_inputWarmup1, sizeof(m_inputWarmup1));
-    ar->Write(&m_inputWarmup2, sizeof(m_inputWarmup2));
-    ar->Write(&m_inputHalfSel, sizeof(m_inputHalfSel));
+    ar->Write(&m_cursorRestoreWarmup1, sizeof(m_cursorRestoreWarmup1));
+    ar->Write(&m_cursorRestoreWarmup2, sizeof(m_cursorRestoreWarmup2));
+    ar->Write(&m_cursorSaveSlot, sizeof(m_cursorSaveSlot));
     return 1;
 }
 
@@ -556,8 +558,8 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_cursorSaveSrc1, sizeof(m_cursorSaveSrc1));
     ar->Read(&m_cursorSaveDst0, sizeof(m_cursorSaveDst0));
     ar->Read(&m_cursorSaveDst1, sizeof(m_cursorSaveDst1));
-    ar->Read(&m_inputWarmup1, sizeof(m_inputWarmup1));
-    ar->Read(&m_inputWarmup2, sizeof(m_inputWarmup2));
-    ar->Read(&m_inputHalfSel, sizeof(m_inputHalfSel));
+    ar->Read(&m_cursorRestoreWarmup1, sizeof(m_cursorRestoreWarmup1));
+    ar->Read(&m_cursorRestoreWarmup2, sizeof(m_cursorRestoreWarmup2));
+    ar->Read(&m_cursorSaveSlot, sizeof(m_cursorSaveSlot));
     return 1;
 }

@@ -258,7 +258,7 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
 
 // @early-stop
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
     }

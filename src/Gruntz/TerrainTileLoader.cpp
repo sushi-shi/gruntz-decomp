@@ -191,7 +191,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                        || cellType == TILEKIND_GAUNTLET_BRICK_C) {
                 CTileActionEvent* event =
                     state->m_tileTriggers->FindActionByCellKey((tileX << 8) + tileY);
-                if (event->Process(unit) != 0) {
+                if (event->BreakTopBrick(unit) != 0) {
                     state->m_tileTriggers->RemoveActionEvent(event);
                 }
                 return 1;

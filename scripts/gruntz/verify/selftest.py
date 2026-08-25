@@ -4291,7 +4291,7 @@ class ResidueClassifierControls(unittest.TestCase):
     def test_a_spent_zero_register_is_the_immediate(self):
         """cl parks a zero in a callee-saved register when it needs one
         repeatedly, then spends it where an immediate would go.  Measured both
-        ways in one tree, so it is noise: `CStaticHazard::LoadAttributes` and
+        ways in one tree, so it is noise: `CStaticHazard::UpdateActiveState` and
         `RunCustomWorldDialog` carry the immediate where retail carries the
         register, `CMulti::PollSession` the reverse."""
         from gruntz.walls.residue import classify, masked, residual_of
@@ -4444,7 +4444,7 @@ class ResidueClassifierControls(unittest.TestCase):
 
     def test_the_high_byte_accumulator_form_is_one_instruction(self):
         """`and dh,0xef` masks bits 8..15 and touches nothing else, so it IS
-        `and edx,0xffffefff`. CGruntzMapMgr::LoadAttributes read `immediate`
+        `and edx,0xffffefff`. CGruntzMapMgr::BuildCellAttributes read `immediate`
         on this mirror alone."""
         self.assertEqual(self._kind(["and edx,0xffffefff"],
                                     ["and dh,0xef"]), "none")

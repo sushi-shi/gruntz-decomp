@@ -19,13 +19,13 @@ immediately, which is the correct failure mode.
 
 | harness | target | RVA | kind | `this` | verdict |
 |---|---|---|---|---|---|
-| `pidrun`   | `CDDSurface::RunDecode1`            | `0x145270` | ISLAND    | unused | agrees, 9 821 sprites |
+| `pidrun`   | `CDDSurface::DecodeByteRun1Plane`            | `0x145270` | ISLAND    | unused | agrees, 9 821 sprites |
 | `colorrun` | `CShadeTableCache::FindNearestColor`| `0x14fbf0` | ISLAND    | static | agrees, 17 959 936 queries |
 | `saverun`  | `CSaveGame::Encode` / `::Decode`    | `0xe5410` / `0xe5460` | ISLAND | unused | agrees, 525 334 |
 | `polyrun`  | `PolyIsConvexCW`                    | `0x145e30` | DATA-ONLY | free   | agrees, 1 301 184 |
 | `rectrun`  | `CGrunt::RectSegProbe`              | `0x62b70`  | ISLAND    | unused | **disagreed — two bugs fixed** |
 
-## pidrun — `CDDSurface::RunDecode1`
+## pidrun — `CDDSurface::DecodeByteRun1Plane`
 
 The original. No relocations and no `CALL` at all: a pure loop over a token
 stream, writing into a caller-supplied buffer. Driven from

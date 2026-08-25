@@ -113,7 +113,7 @@ symptom did not move at all:
 * `CStatusBarMgr::InsertPtr` 0x108410 - retail homes the `a` parameter in eax at
   entry, above the pool branch. Flat under a two-int inline allocator, the same
   taking `const Coord&`, and a plain entry local. C2-anchored (below).
-* `CTriggerMgr::DestroyGroup` 0x798d0 - retail accumulates into the register
+* `CTriggerMgr::OpenActionOptionsMenu` 0x798d0 - retail accumulates into the register
   holding the first-loaded term at two sites. Flat under the `const Coord&`
   helper, a `Coord*` helper, a Coord copy local (96.60, worse), the other index
   order, statement reordering and two local-binding forms.

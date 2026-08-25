@@ -48,7 +48,7 @@
 // scratch RECTs and the common-block spills onto one another and ours gives each
 // its own granule, so every [esp+N] operand is displaced.
 RVA(0x000f60f0, 0xb30)
-i32 CGrunt::PhaseStep() {
+i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = 0;
     bool isFlag = ANIMATION_ACT_EQUALS("F");
     if (isFlag) {
@@ -238,7 +238,7 @@ common: {
             if (CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
-            g_gameReg->m_triggerMgr->ApplyTriggerA(
+            g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
                 (bx << TILE_SHIFT_PX) + TILE_HALF_PX,

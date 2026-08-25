@@ -11,13 +11,13 @@
 RVA(0x000fa150, 0x74)
 void CState::ReleaseResources() {
     if (m_world != NULL) {
-        if (m_scratchSurface0 != NULL) {
-            m_world->m_deviceManager->RemoveSurface(m_scratchSurface0);
-            m_scratchSurface0 = NULL;
+        if (m_cursorSaveSurface0 != NULL) {
+            m_world->m_deviceManager->RemoveSurface(m_cursorSaveSurface0);
+            m_cursorSaveSurface0 = NULL;
         }
-        if (m_scratchSurface1 != NULL) {
-            m_world->m_deviceManager->RemoveSurface(m_scratchSurface1);
-            m_scratchSurface1 = NULL;
+        if (m_cursorSaveSurface1 != NULL) {
+            m_world->m_deviceManager->RemoveSurface(m_cursorSaveSurface1);
+            m_cursorSaveSurface1 = NULL;
         }
         if (m_blitSurface0 != NULL) {
             m_world->m_deviceManager->RemoveSurface(m_blitSurface0);

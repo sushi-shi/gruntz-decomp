@@ -57,7 +57,7 @@ whenever the retail early exit lands below a `pop`.
 Two measured cases in one TU, both previously marked `@early-stop` with a "shrink-wrap wall":
 - `CWarlord::BuildFortSplashParticles` @0x44f80 — 93.11% → **98.07%** (with the y-before-x
   declaration order that fixes the paired member-load schedule)
-- `CWarlord::AdvanceMovingAnim` @0x44e70 — 90.33% → **95.85%**
+- `CWarlord::FinishJoyAnimation` @0x44e70 — 90.33% → **95.85%**
 
 Residual in both is the unrelated `add eax,0x290` disp8 rebase (see the `@early-stop` note there).
 
@@ -350,7 +350,7 @@ right*, because cl5 tail-merges identical epilogues regardless of where the sour
 block. But the signature is the thing to check first, and on the two worked cases below it
 was wrong on one of them.
 
-**Refuted 2026-08-08 for `EngStr_DrawText` and friends.** The three functions this section
+**Refuted 2026-08-08 for `DrawTextToFrontSurface` and friends.** The three functions this section
 listed as the wall's second instance were a `void` reconstruction of an `int` function. Their
 guards are `return 0;` where eax already holds the just-tested NULL, and their success path is
 `return EngStr_RenderText(...)` — a callee's result, so NO constant is materialised anywhere
@@ -379,7 +379,7 @@ cl has no reason to prefer retail's form. Three spellings measured 2026-07-28, a
 3. (2) plus the hit-list `return` routed to a `done:` label placed *after* the handler —
    i.e. retail's exact edge structure spelled out
 
-`EngStr_DrawText` @0x115440 / `ShowHudMessage(Alt)` @0x1154b0/0x115520 (1 -> 2 rets) used to
+`DrawTextToFrontSurface` @0x115440 / `DrawTextToOverlaySurface(Alt)` @0x1154b0/0x115520 (1 -> 2 rets) used to
 be quoted here as the same wall — they are NOT; they were a wrong `void` return type and all
 three are now EXACT (see above). `ScanTargets` differs from them in exactly the way that
 matters: its retail exits leave eax holding three different values, so no `return 0` reading

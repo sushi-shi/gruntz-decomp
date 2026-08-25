@@ -110,15 +110,15 @@ fell from 43 to 8 missing halves (`battlezunitstep` closed 8/24 to 24/24):
 | `CBattlezMapConfig::RetargetIdleUnit` | 84.88 | 86.59 |
 | `CBattlezMapConfig::AdvanceToEnemyBase` | 80.71 | 82.61 |
 | `CBattlezMapConfig::StepDefenderUnit` | 77.60 | 79.03 |
-| `CGrunt::WanderStep` | 86.35 | 87.86 |
+| `CGrunt::StepHitAndRunnerBehavior` | 86.35 | 87.86 |
 | `CBattlezMapConfig::CheckQueuedSpawnTile` | 76.86 | 78.19 |
-| `CGrunt::ChargeStep` | 82.95 | 83.91 |
-| `CGrunt::StepArrivalDefenseAlt` | 78.95 | 79.83 |
-| `CGrunt::StepArrivalDefenseLean` | 76.64 | 77.49 |
-| `CGrunt::StepArrivalDefense` | 84.98 | 85.68 |
-| `CGrunt::UpdateArrival` | 90.63 | 90.92 |
+| `CGrunt::StepDumbChaserBehavior` | 82.95 | 83.91 |
+| `CGrunt::StepObjectGuardBehavior` | 78.95 | 79.83 |
+| `CGrunt::StepMagicWandGruntBehavior` | 76.64 | 77.49 |
+| `CGrunt::StepScrollGruntBehavior` | 84.98 | 85.68 |
+| `CGrunt::StepGauntletGruntBehavior` | 90.63 | 90.92 |
 | `CBattlezMapConfig::Step` | 87.13 | 87.23 |
-| `CGrunt::ScanNearestTarget` | 94.60 | 94.78 |
+| `CGrunt::StepSmartChaserBehavior` | 94.60 | 94.78 |
 
 An earlier bound claimed `TrySeedSpawnAt` and
 `StepRowUnits` "really do store the two fields independently" because the fold

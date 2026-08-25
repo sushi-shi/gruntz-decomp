@@ -282,8 +282,9 @@ accessors - are excluded; the linker pools those).
   number for all twelve gruntz at once. The two structural candidates are
   (a) `0x000ec670`-`0x000f87f9` - sixteen consecutive one-function TUs of ours,
   every one a `CGrunt` behaviour step that switches on `m_defenderState`
-  (`WanderStep`, `ChargeStep`, `SeekTarget`, `ScanNearestTarget`, `PhaseStep`,
-  `StepArrivalDefense{,Alt,Lean}`, `StepBrickLayerBehavior`,
+  (`StepHitAndRunnerBehavior`, `StepDumbChaserBehavior`, `StepToolThiefBehavior`, `StepSmartChaserBehavior`, `StepTimeBomberBehavior`,
+  `StepScrollGruntBehavior`, `StepObjectGuardBehavior`,
+  `StepMagicWandGruntBehavior`, `StepBrickLayerBehavior`,
   `StepGooSuckerBehavior`, `StepDiggerBehavior`, ... plus the file-static
   `_CellTargetable`), ~49 KB, all called from the single 17-way dispatch at
   0x0005d210 - and (b) the `CGrunt` core at `0x00047a10`-`0x00055160`. Against
@@ -449,9 +450,9 @@ src/Stub/ApiCallers.cpp winapi grab-bag; a destructible /GX config-command
 local forces the EH frame -> "eh" (== engine_label_stubs' base+/GX).
 
 ### serialobjectfactory
-SerialObjectFactory (0xd2a0) + its ParseSerial helper (0xd210) - the game's
+GameSerializationCallback (0xd2a0) + its RestoreGameFromFile helper (0xd210) - the game's
 (de)serialize object dispatch, a separate obj (contiguous 0xd210-0xec24 block).
-Carved out of GruntzMgrCmd.cpp (REHOME D9); kept "eh" to preserve ParseSerial's
+Carved out of GruntzMgrCmd.cpp (REHOME D9); kept "eh" to preserve RestoreGameFromFile's
 exact build flags (byte-neutral - no destructible locals in either fn yet).
 
 ### savefrontbuffershot
@@ -530,7 +531,7 @@ of CState, folded). Its own retail .obj (re-homed from Stub).
 
 ### attract
 The attract state-services interval [0x0fa1f0..0x0fb328]: woven CAttract title/
-fade + CSoundFxEmitter + CState helpers + the CState header serialize (one obj).
+fade helpers + CState helpers + the CState header serialize (one obj).
 eh: CState::InputVirtual's CString splash + the draw temps carry the /GX frame.
 
 ### attractstate

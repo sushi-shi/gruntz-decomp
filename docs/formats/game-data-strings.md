@@ -290,7 +290,7 @@ player), i.e. an editor annotation.
 It is nonetheless a live field, not padding: `ReadPlaneObjects` @0x162af0 stores
 it into the object at **+0xdc** (`lea ecx,[ebx+0xdc]; call <CString::operator=>`
 in the target disassembly), which is `CWwdSpriteObject::m_name`. The only reader
-in the tree is a release-dead `TRACE` in `CDDrawChildGroup::Deserialize`
+in the tree is a release-dead `TRACE` in `CDDrawChildGroup::DeserializeObjects`
 @0x15b0e0. So: **read, stored, and consumed only by debug output**.
 
 ### 3e. The level table

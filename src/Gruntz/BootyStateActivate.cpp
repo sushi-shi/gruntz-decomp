@@ -49,6 +49,7 @@
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/MovieEntryId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>
@@ -401,15 +402,15 @@ i32 CBootyState::ShowSecretBonusMessage() {
         SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
         SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
         s.Format("The Secret of Secretz:");
-        ShowHudMessage(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
         CString s2(g_secretMsgRows[24].strA);
         CString s3(g_secretMsgRows[24].strB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
-        ShowHudMessage(m_world, &s2, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_world, &s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s2, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
         return 1;
     } else {
         i32 count = static_cast<i32>(
@@ -433,7 +434,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
         } else {
             title.Format("Secret Bonus Acquired:");
         }
-        ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
         for (i32 j = 0; j < IDX(category); j++) {
             RECT rA, rB;
@@ -466,8 +467,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
             for (i32 k = 0; k < s5.GetLength(); k++) {
                 s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
             }
-            ShowHudMessage(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-            ShowHudMessage(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
         }
         return 1;
     }
@@ -986,11 +987,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
-            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
-            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_animationCursor.m_animation == NULL)) {
                 m_expl[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
@@ -1034,7 +1035,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[m_slot]);
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
-            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         s = m_slot;
         if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s].m_x) {
@@ -1059,7 +1060,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
-            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             m_expl[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             m_expl[i]->SetAnimationByName("GAME_EXPLOSION1", 0);
             m_expl[i]->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
@@ -1496,7 +1497,7 @@ i32 CBootyState::Render() {
                 rc.bottom = 0x64;
                 CString s("World Completed!");
                 m_levelCompleteGate = 1;
-                ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
                 rc.left = 0;
@@ -1505,7 +1506,7 @@ i32 CBootyState::Render() {
                 rc.bottom = 0x64;
                 CString s("Level Completed!");
                 m_levelCompleteGate = 1;
-                ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
         // FALL THROUGH
@@ -1556,7 +1557,7 @@ i32 CBootyState::Render() {
                     SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
                 m_secretGate = 1;
-                ShowHudMessage(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+                DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
                 m_secretHudHandled = 1;
             } else if (g_gameReg->m_gameStats->m_isCustomLevel != 0) {
                 m_secretHudHandled = 1;
@@ -1623,14 +1624,14 @@ void CBootyState::ShowLevelCompleteMessage() {
             RECT r1;
             CopyRect(&r1, &g_levelMsgRectsA[i]);
             CString t(g_levelMsgStrings[i]);
-            ShowHudMessage(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
             RECT r2;
             CopyRect(&r2, &g_levelMsgRectsB[i]);
             CString t2;
             FormatHudText(&t2, static_cast<BootyStatRow>(i));
-            ShowHudMessage(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -1638,11 +1639,11 @@ void CBootyState::ShowLevelCompleteMessage() {
         if (g_gameReg->m_gameStats->m_currentAreaComplete != 0) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
-            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         } else {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("Level Completed!");
-            ShowHudMessage(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -1673,7 +1674,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             }
             SetRect(&r, 0x194, 0xe6, 0x263, SCREEN_H_PX);
         }
-        ShowHudMessage(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
 }
 
@@ -1799,7 +1800,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (sub != NULL) {
                 sub->StopAllStreams();
             }
-            g_gameReg->PlayMovieEntry(3);
+            g_gameReg->PlayMovieEntry(IDX(MOVIE_ENTRY_ENDING));
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
@@ -2553,27 +2554,27 @@ void CMultiBootyState::DrawBattleStats() {
         if (g_gameReg->m_players[i].m_joined != 0) {
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4));
             copyRect(&rc, &g_col1Rects[i]);
-            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7], 7));
             copyRect(&rc, &g_col2Rects[i]);
-            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10], 10));
             copyRect(&rc, &g_col3Rects[i]);
-            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22], 22));
             copyRect(&rc, &g_col4Rects[i]);
-            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", g_gameReg->m_gameStats->m_gruntzByPlayer[i]);
             copyRect(&rc, &g_col5Rects[i]);
-            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->m_gameStats)->CountKillsForPlayer(i));
             copyRect(&rc, &g_col6Rects[i]);
-            ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+            DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -2603,7 +2604,7 @@ void CMultiBootyState::DrawBattleStats() {
                 break;
         }
         copyRect(&rc, &g_labelRects[c]);
-        ShowHudMessage(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+        DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
     for (i = 0; i < 4; i++) {
@@ -2664,7 +2665,7 @@ void CMultiBootyState::DrawBattleStats() {
             }
             s.Format("%s", static_cast<const char*>(g_gameReg->m_players[i].GetName()));
             copyRect(&rc, &g_colorRects[i]);
-            ShowHudMessage(
+            DrawTextToOverlaySurface(
                 m_world,
                 &s,
                 &rc,
@@ -2683,7 +2684,7 @@ void CMultiBootyState::DrawBattleStats() {
     rc.top = 0xf;
     rc.right = SCREEN_W_PX;
     rc.bottom = 0x73;
-    ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 
 RVA(0x0001f480, 0x1e9)
@@ -2711,7 +2712,7 @@ i32 CMultiBootyState::Render() {
     } else {
         s.Format("%d:%2.2d", secs / 60, secs % 60);
     }
-    ShowHudMessageAlt(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+    DrawTextToBackSurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);

@@ -361,7 +361,7 @@
  },
  {
   "file": "src/Gruntz/TriggerMgr.cpp",
-  "name": "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z",
+  "name": "?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z",
   "rva": 449248,
   "demo_rva": 442688,
   "retail_dist": 28347,
@@ -370,7 +370,7 @@
  },
  {
   "file": "src/Gruntz/TriggerMgr.cpp",
-  "name": "?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z",
+  "name": "?UseToyAt@CTriggerMgr@@QAEHHHHH@Z",
   "rva": 450848,
   "demo_rva": 444288,
   "retail_dist": 28347,
@@ -928,7 +928,7 @@
  },
  {
   "file": "src/Gruntz/Grunt.cpp",
-  "name": "?ResolveArrivalReposition@CGrunt@@QAEHXZ",
+  "name": "?StepBomberBehavior@CGrunt@@QAEHXZ",
   "rva": 968304,
   "demo_rva": 959792,
   "retail_dist": 529419,
@@ -937,7 +937,7 @@
  },
  {
   "file": "src/Gruntz/Grunt.cpp",
-  "name": "?ResolveArrivalNeighbor@CGrunt@@QAEHXZ",
+  "name": "?StepPostGuardBehavior@CGrunt@@QAEHXZ",
   "rva": 993008,
   "demo_rva": 984496,
   "retail_dist": 554123,
@@ -946,7 +946,7 @@
  },
  {
   "file": "src/Gruntz/Grunt.cpp",
-  "name": "?StepArrivalDefense@CGrunt@@QAEHXZ",
+  "name": "?StepScrollGruntBehavior@CGrunt@@QAEHXZ",
   "rva": 994080,
   "demo_rva": 985568,
   "retail_dist": 554123,
@@ -955,7 +955,7 @@
  },
  {
   "file": "src/Gruntz/Grunt.cpp",
-  "name": "?StepArrivalDefenseLean@CGrunt@@QAEHXZ",
+  "name": "?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ",
   "rva": 1016384,
   "demo_rva": 1007872,
   "retail_dist": 577499,
@@ -1207,7 +1207,7 @@
  },
  {
   "file": "src/Gruntz/GruntzMgrCmd.cpp",
-  "name": "?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z",
+  "name": "?RestoreGameFromFile@@YAHPAUCGameRegistry@@PAD@Z",
   "rva": 53776,
   "demo_rva": 53744,
   "retail_dist": 1080395,
@@ -1270,7 +1270,7 @@
  },
  {
   "file": "src/Gruntz/MapLogic.cpp",
-  "name": "?MapSerializeCurve@@YAHPAUCSerialArchive@@H@Z",
+  "name": "?SerializeScrollState@@YAHPAUCSerialArchive@@H@Z",
   "rva": 967216,
   "demo_rva": 958704,
   "retail_dist": 421214,
@@ -1423,7 +1423,7 @@
  },
  {
   "file": "src/Image/FileImageRunDecode.cpp",
-  "name": "?RunDecode1@CDDSurface@@QAEHPAX0HH@Z",
+  "name": "?DecodeByteRun1Plane@CDDSurface@@QAEHPAX0HH@Z",
   "rva": 1331824,
   "demo_rva": 1323296,
   "retail_dist": 16958,
@@ -1432,7 +1432,7 @@
  },
  {
   "file": "src/Image/FileImageRunDecode.cpp",
-  "name": "?RunDecode3@CDDSurface@@QAEHPAX0HH@Z",
+  "name": "?DecodeByteRun3Planes@CDDSurface@@QAEHPAX0HH@Z",
   "rva": 1332208,
   "demo_rva": 1323680,
   "retail_dist": 16958,

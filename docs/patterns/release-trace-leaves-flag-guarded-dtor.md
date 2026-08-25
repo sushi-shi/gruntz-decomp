@@ -3,7 +3,7 @@
 - **Confidence:** 10/10
 - **Tags:** `cpp:eh` `cpp:dtor` `cpp:class` `cpp:branch` | `asm:test` `asm:and` `asm:call` | `topic:codegen-idiom`
 - **Seen:** `CAreaMgr::LoadObject{Image,Sound,Anim}Resources` 0x0009a510 / 0x0009a910 /
-  0x0009ac20 (90.94 / 85.78 / 85.78 -> 100.00 EXACT), `CDDrawChildGroup::Deserialize`
+  0x0009ac20 (90.94 / 85.78 / 85.78 -> 100.00 EXACT), `CDDrawChildGroup::DeserializeObjects`
   0x0015b0e0 (74.55 -> 96.17). These are the ONLY four sites in the whole image.
 
 ## Symptom
@@ -47,7 +47,7 @@ temporary and its flag bit; the optimizer then deletes the ctor, the call and th
 nothing, so only bare `TRACE` leaves this.
 
 A **runtime** `if` around the TRACE survives too, and shows up as an extra test in
-front of the flag test (`CDDrawChildGroup::Deserialize`: `test bl,1` on the
+front of the flag test (`CDDrawChildGroup::DeserializeObjects`: `test bl,1` on the
 `LogicTypeId` argument, then `test BYTE PTR [esp+0x10],1`).
 
 ## The fix

@@ -68,7 +68,7 @@ reserving `0x24`. The same scope mechanism on
 with `cx`/`cy` hoisted out of the block because they outlive it) took `sub esp,0x40 ->
 0x30` and +12.
 
-The non-EH control is `CGrunt::ScanNearestTarget` @0xf42f0. Four `Coord` outputs are
+The non-EH control is `CGrunt::StepSmartChaserBehavior` @0xf42f0. Four `Coord` outputs are
 simultaneously live while a `RECT` is assembled, but all four are dead before a fifth
 `Coord bp` is passed to `GetScreenPos`. With the four construction outputs at function
 scope, base reserved `0x44`, put `bp` at `[esp+0x1c..0x20]`, and left the first output's

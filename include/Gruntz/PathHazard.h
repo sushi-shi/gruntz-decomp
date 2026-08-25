@@ -25,7 +25,7 @@ struct CHazardTimer {
 
 class CPathHazard : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
     virtual void FireActivation(i32 id) OVERRIDE;
 

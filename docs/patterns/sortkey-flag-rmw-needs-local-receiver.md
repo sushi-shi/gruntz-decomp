@@ -36,7 +36,7 @@ STEERABLE, and it is a whole-tree sweep, not a one-off: 35 sites, **24 functions
 up / 3 marginally down**, e.g. CGruntHealthSprite ctor 94.28->97.63, CGruntToySprite
 97.80, CStatusBarSprite / CGruntSelectedSprite 96.46, CToobSpikez 96.12,
 CWormhole 94.25, CSecretTeleporterTrigger 96.32->97.88, CInGameText 95.83->97.01,
-CKitchenSlime 98.25, CStaticHazard::LoadAttributes 49.70->52.65.
+CKitchenSlime 98.25, CStaticHazard::UpdateActiveState 49.70->52.65.
 
 Inside a `switch` body wrap the site in braces (`C2360: initialization of 'o' is
 skipped by 'case' label`). The counter for "did I get them all" is

@@ -28,8 +28,8 @@ mov    ecx,DWORD PTR [edx+0x4]    ; row
 mov    edx,DWORD PTR [edx+0x8]    ; reason  <- dead load
 mov    DWORD PTR [esp+0x1c],edx   ; dead store nothing reads (the reserved frame)
 ```
-STEERABLE. CGrunt entrance-cell arms: StartBombGruntRun 93.4→98.7, RearmAttackAnim2
+STEERABLE. CGrunt entrance-cell arms: StartBombGruntRun 93.4→98.7, StartRangedAttackAnimation
 73→95.8, RunEntranceMove 73→82, UpdateArrival/RunMoveConfig/StepCombatReaction/
-StepEntranceReinit/RearmAttackAnim all +2..7. NOTE: only when the member is truly UNUSED
+StepEntranceReinit/StartNeighborAttackAnimation all +2..7. NOTE: only when the member is truly UNUSED
 (dead) — if it is read (passed to a callee), there is no dead spill and the copy diverges
 (reverted StepAnimDispatchA/B, which pass `reason` to the name accessor).

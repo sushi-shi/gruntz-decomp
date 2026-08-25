@@ -144,7 +144,7 @@ i32 CGrunt::UpdateGruntStatus() {
 // 0 instead, shared by the two i64 high-dword stores. 9 arm/timer spellings and 13
 // graded declaration counts measured, all 88.50.
 RVA(0x00061940, 0x200)
-i32 CGrunt::RearmAttackAnim(i32 targetPlayerIndex, i32 targetUnitIndex) {
+i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
     if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
@@ -216,7 +216,7 @@ i32 CGrunt::RearmAttackAnim(i32 targetPlayerIndex, i32 targetUnitIndex) {
 
 // @early-stop
 RVA(0x00061bc0, 0xb2)
-i32 CGrunt::RearmAttackAnim2() {
+i32 CGrunt::StartRangedAttackAnimation() {
     SET_ANIMATION_ACT("F");
 
     CWwdSpriteObject* p = m_wwdObject;
@@ -401,7 +401,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
-                    m_triggerMgr->ApplyTriggerB(m_playerIndex, m_unitIndex, innerX, innerY);
+                    m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, innerX, innerY);
                 }
             }
         }
@@ -546,7 +546,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 }
 
 RVA(0x00062840, 0x25d)
-i32 CGrunt::StepEntranceRelatchA() {
+i32 CGrunt::UpdateToyUseAnimation() {
     i32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
     if (IsAniCursorComplete(sub)) {
@@ -1415,7 +1415,7 @@ tail:
 }
 
 RVA(0x00065300, 0x148)
-i32 CGrunt::StepArrivalCommitA() {
+i32 CGrunt::FinishStruckAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (!IsAniCursorComplete(sub)) {
         return 0;
@@ -1449,7 +1449,7 @@ i32 CGrunt::StepArrivalCommitA() {
 }
 
 RVA(0x000654b0, 0x130)
-i32 CGrunt::StepArrivalCommitB() {
+i32 CGrunt::FinishKnockbackAnimation() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (!IsAniCursorComplete(sub)) {
@@ -1633,7 +1633,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 // into a separate out variable plus a register `found` is what retail's shape
 // implies but scores WORSE here (98.22 -> 95.86), so the spelling is not the lever.
 RVA(0x00065c20, 0x1d5)
-i32 CGrunt::StepEntranceRelatchB() {
+i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
         WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);

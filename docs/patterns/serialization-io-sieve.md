@@ -46,7 +46,7 @@ Companion checks that close the rest of the format surface, all also clean:
 * **`WwdSnapshot`** — retail's `LoadObjects` (0x15ad30) reads `push 0xa0`, then uses
   `desc+4` as the id key, `desc+8` as the class id (`add eax,-5; cmp eax,0x17` + jump
   table), `desc+0x14` as the worker name and `desc+0` as `m_id`. Layout confirmed.
-* **The factory type-id map** — `SerialObjectFactory`'s arm-9 switch is
+* **The factory type-id map** — `GameSerializationCallback`'s arm-9 switch is
   `lea eax,[ecx-0x3e8]; cmp eax,0x44; ja default; jmp [eax*4+0x40eb10]`. Read the 69
   dwords at RVA 0xeb10, take each arm's **last** `mov [esi],<imm>` before its `mov eax,1`
   epilogue, and look the address up in `config/retail/data_vtables.tsv`: the vptr NAMES
@@ -97,22 +97,22 @@ duplicate object id, `m_logicRecord == NULL`, factory declined), `Deserialize` (
 The `RemovePlayerUnitsImmediately` fault register set (`eax=0`, `ecx`, `esi`, `edi`) reconstructs the loop
 induction exactly — `edi = row*15 + 0x47`, `esi = this + 0x20c + 4*row`, `ecx = &m_units[row*15
 + col]` — giving **row 1, col 0**. `savegame_dump` resolves that cell to object id 178, and the
-table order (which is the `LoadObjects`/`Deserialize` order, since `ForEachProbe` and
-`ForEachSerialize` walk the same `m_map48`) puts the five grid grunts at indices 132..136.
+table order (which is the `LoadObjects`/`Deserialize` order, since `WriteObjectSnapshots` and
+`SerializeObjects` walk the same `m_map48`) puts the five grid grunts at indices 132..136.
 
 Row 0 completed before the fault, so ids 185 (idx 132) and 181 (idx 133) HAD a valid
-`m_wwdObject`; id 178 (idx 136) did not. `CWapX::Chain` runs *before* `LoadStateRecord`, so the
+`m_wwdObject`; id 178 (idx 136) did not. `CWapX::SerializeAnimationState` runs *before* `LoadStateRecord`, so the
 abort is at index 133..136 and after 181's Chain.
 
 Then walk the per-object `SERIAL_LOAD` path and keep only the guards that can return 0 for a
 reason other than `ar == NULL`:
 
-    CWwdSpriteObject::Play      CAniAdvanceCursor::Find/Deserialize   -- ar only
+    CWwdSpriteObject::SerializeDispatch CAniAdvanceCursor::SerializeDispatch/Deserialize -- ar only
                                ReadSpriteState                   -- ar only
-    CGameObject::Play          SerializeObjectState                  -- THREE real guards
+    CGameObject::SerializeDispatch SerializeObjectState              -- THREE real guards
                                m_logicRecord == NULL
-    CLogicRecord::Dispatch    Load                                  -- ar only
-    CGrunt::SerializeMove      CUserLogic::SerializeMove / CWapX::Chain -- ar only
+    CLogicRecord::SerializeDispatch    Load                                  -- ar only
+    CGrunt::SerializeDispatch      CUserLogic::SerializeDispatch / CWapX::SerializeAnimationState -- ar only
                                LoadStateRecord -> SERIALREF x7       -- checked, all resolve
 
 The seven `SERIALREF` sprite ids were read straight out of the file for all five grunts (anchor:
@@ -122,13 +122,13 @@ entry, so `LoadStateRecord` is excluded.
 
 **What survives is `CGameObject::SerializeObjectState`'s `EnsureHitLogic` /
 `EnsureAttackLogic` / `EnsureBumpLogic`** — the three `LogicHit`/`LogicAttack`/`LogicBump`
-name resolutions — and they run *before* `CWapX::Chain`, which is precisely why the victim's
+name resolutions — and they run *before* `CWapX::SerializeAnimationState`, which is precisely why the victim's
 `m_wwdObject` is still the zero `operator new` left. Each `Ensure*Worker` returns 0 exactly
 when its `m_workerCache->m_workers.Lookup(name, found)` missed, so the question is whether
 those three workers exist in the CURRENT world at restore time.
 
 **REFUTED, and recorded so nobody re-derives it:** "our source wrongly restores
-`g_logicTypesRegistered`" is wrong. Retail's `CUserLogic::SerializeMove` @0x16e7f0 reads it
+`g_logicTypesRegistered`" is wrong. Retail's `CUserLogic::SerializeDispatch` @0x16e7f0 reads it
 too — `push 0x4; push 0x6bf674; call [edx+0x2c]`, between `m_reserved2c` and
 `m_previousAnimationActId` — and RVA 0x2bf674 is exactly our `DATA(0x002bf674) i32
 g_logicTypesRegistered` (`src/Wwd/WwdGameObject.cpp:45`). Same global, same position, same
@@ -139,7 +139,7 @@ width. The restore-time value of that flag is retail's own behaviour.
 `CFoo::CFoo(CGameObject*)` ctors reached from the `_DispatchXxxLogic` functions — i.e. the
 single `RegisterLogicTypesOnce()` inside `USERLOGIC_ATTACH_TO_OBJECT`. Our tree has that same
 one call site and every one of those ctors, so **no caller is missing**. But the save-restore
-path does not use those ctors at all: `SerialObjectFactory`'s arm 9 builds logics with the
+path does not use those ctors at all: `GameSerializationCallback`'s arm 9 builds logics with the
 DEFAULT ctors (`new CGrunt()` -> `CMovingLogic(CUserLogic::INLINE_BASE)` ->
 `CUserLogic(EInlineBase) {}`, an empty body), which never run the macro and therefore never
 call `BuildLogicTypeTable`. A restore inherits those three workers from the preceding level
@@ -151,17 +151,17 @@ And the two things it depends on have different lifetimes: `g_logicTypesRegister
 `SerializeObjectState` looks them up in. Any path that builds a fresh `CDDrawSurfaceMgr` (or
 clears its worker cache) after the latch is set leaves the three workers permanently absent.
 `CMD_LOAD_SAVED_GAME` calls `PassClickToPlayState(si->m_levelId, 0, 1)` *before*
-`ParseSerial`, so that ordering is what to audit next — not the flag, and not the factory
+`RestoreGameFromFile`, so that ordering is what to audit next — not the flag, and not the factory
 table (`RegisterGameObjectLogicTypes` @0xa3b0 is 100.00% EXACT, and the three callback
 dispatchers are not in it anyway; their templates are registered lazily only by
 `BuildLogicTypeTable`).
 
 And it explains the crash *shape*: `CTriggerMgr::Load` fills `m_units` from object ids during
-`BroadcastCmd(SERIAL_LOAD)`, which `RestoreChildren` invokes **before**
-`m_childGroup->Deserialize`, and it is `Deserialize` that finally runs `CWapX::Chain` and
+`SerializeGameState(SERIAL_LOAD)`, which `RestoreChildren` invokes **before**
+`m_childGroup->Deserialize`, and it is `Deserialize` that finally runs `CWapX::SerializeAnimationState` and
 assigns `m_wwdObject`. So between those two calls the grid legitimately holds grunts whose
 `m_wwdObject` is still the zero left by `operator new` — retail's own `CGrunt()` writes
-nothing in the 0x150 band either (its inlined copy in `SerialObjectFactory` stores 0x268..0x8cc
+nothing in the 0x150 band either (its inlined copy in `GameSerializationCallback` stores 0x268..0x8cc
 only). If anything in that window returns 0, `CGruntzMgr`'s `CMD_LOAD_SAVED_GAME` arm merely
 `ReportError`s and leaves the half-built grid in place, and the next
 `CPlay::FreeListTeardown` / `LeaveState` faults in `RemovePlayerUnitsImmediately+0x5d` on

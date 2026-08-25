@@ -83,7 +83,7 @@ struct SbiClockPair {
 struct CSbiHlRow {
     // Inline: retail's out-of-line copy has NO rel32 caller at all - it exists only
     // because cl 5.0 hands its ADDRESS to `??_H` (`vector constructor iterator`) for
-    // CStatusBarMgr's m_groupSlots[3] and m_hlGrid[12].  That address-take is what
+    // CStatusBarMgr's m_conveyorSlots[3] and m_resourceSlots[12].  That address-take is what
     // emits the COMDAT, while every scalar/small-array site expands the body in
     // place.  See docs/patterns/inline-ctor-comdat-via-vector-ctor-iterator.md.
     RVA(0x000c86d0, 0x11)
@@ -193,9 +193,9 @@ public:
     i32 UpdateRezMachineWakeStatusBar();
     void LoadMultiplayerBattlezConfig(i32);
 
-    void ResetGroupA();
+    void ResetConveyorBelts();
 
-    i32 Sync(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 GetActiveValue();
     i32 LoadStatzTabToggleSprite(i32 idx, StatusSampleMode value);
@@ -210,9 +210,9 @@ public:
     void Teardown();
     i32 TryActivate();
     i32 Deactivate();
-    i32 HlClickGroup0(StatusBarHighlightRow row);
-    i32 HlClickGroup1(StatusBarHighlightRow row);
-    i32 HlClickGroup2(StatusBarHighlightRow row);
+    i32 SelectToolResource(StatusBarHighlightRow row);
+    i32 SelectToyResource(StatusBarHighlightRow row);
+    i32 SelectBrickResource(StatusBarHighlightRow row);
     i32 SetTab(GameTabContent tab, i32 flag);
     i32 ClearTabSprites(StatusBarTab idx);
     i32 HitTest(i32 x, i32 y);
@@ -311,8 +311,8 @@ public:
     SbiClockPair m_reserved2a0;
     SbiClockPair m_reserved2b0;
 
-    CSbiHlRow m_groupSlots[3];
-    CSBI_ImageSet* m_groupNotify[3];
+    CSbiHlRow m_conveyorSlots[3];
+    CSBI_ImageSet* m_conveyorSprites[3];
     char m_pad314[0x318 - 0x314];
 
     CSbiHlRow m_machineB;
@@ -329,8 +329,8 @@ public:
     CStatusBarItem* m_notify2;
     CStatusBarItem* m_notify3;
     char m_pad374[0x378 - 0x374];
-    CSbiHlRow m_hlGrid[12];
-    CSBI_ImageSet* m_hlNotify[12];
+    CSbiHlRow m_resourceSlots[12];
+    CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_machinePhase;
     i32 m_extraNotifyArg0;
     SbiClockPair m_beltClock;
@@ -372,8 +372,8 @@ public:
 // members' declaration positions, interleaved into the neighbouring member-ctor call
 // setup, so they are mem-init-run stores and not body statements:
 //   0xc8046  m_reserved2a0 / m_reserved2b0, scheduled into the argument pushes of
-//            `??_H(m_groupSlots, 0x18, 3)`
-//   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_hlGrid,0x18,12)`
+//            `??_H(m_conveyorSlots, 0x18, 3)`
+//   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_resourceSlots,0x18,12)`
 //   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_rewardQueue)`
 //   0xc8106  m_destructWarningClock, straight AFTER it
 // Body assignments land after every member ctor instead - measured, all six sat past
@@ -384,8 +384,8 @@ public:
 // that these three pairs are complete SbiClockPair objects like the four above them.
 inline CStatusBarMgr::CStatusBarMgr() {
     // m_reserved2a0/2b0 and m_machineA/B zero themselves in the mem-init run, which is
-    // where retail's stores are - between the m_slots[5] and m_groupSlots[3] ctor loops
-    // and between m_groupNotify and m_machineDisplay. Writing them again here only
+    // where retail's stores are - between the m_slots[5] and m_conveyorSlots[3] ctor loops
+    // and between m_conveyorSprites and m_machineDisplay. Writing them again here only
     // produced the same stores in the wrong PLACE and the wrong ORDER.
     m_tabSprite0 = NULL;
     m_tabSprite1 = NULL;
@@ -423,8 +423,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     memset(m_hitRects, 0, sizeof(m_hitRects));
     memset(m_statObj, 0, sizeof(m_statObj));
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
-    memset(m_groupNotify, 0, sizeof(m_groupNotify));
-    memset(m_hlNotify, 0, sizeof(m_hlNotify));
+    memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
+    memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_warlordHead, 0, sizeof(m_warlordHead));
     m_notify0 = NULL;
     m_notify2 = NULL;

@@ -45,7 +45,7 @@ if (rem > win) {
 Advance(); ...                       // was: dispatch:
 ```
 
-`CStaticHazard::LoadAttributes` 0xfc1a0 is the worked example: **52.65 -> 98.91** in three
+`CStaticHazard::UpdateActiveState` 0xfc1a0 is the worked example: **52.65 -> 98.91** in three
 steps, of which this was the largest (70.40 -> 98.10, and it is what made blocks B0-B13
 align). The other two steps are the companions below.
 

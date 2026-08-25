@@ -41,7 +41,7 @@
 // @early-stop regalloc: retail binds `this` to EDI and the grid-slot cursor to
 // EBX; cl rotates them the other way here, and the swap colours the whole body.
 RVA(0x000f42f0, 0x15c0)
-i32 CGrunt::ScanNearestTarget() {
+i32 CGrunt::StepSmartChaserBehavior() {
     i32 playerIndex = m_playerIndex;
     COPY_LAST_TILE_TO_DEFENDER
     i32 cx = m_lastTilePx.m_x >> TILE_SHIFT_PX;

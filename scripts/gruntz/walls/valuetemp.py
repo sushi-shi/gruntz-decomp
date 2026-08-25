@@ -86,13 +86,13 @@ WIDEST_AGGREGATE = 0x10          # RECT; Coord is 8
 SAVE_REGS = ("ebx", "ebp", "esi", "edi")
 FS_INSTALL = "DWORD PTR fs:0x0,esp"      # the /GX registration node going live
 # (unit, symbol, member offset, which sides must carry it - "" = NEITHER). The
-# first two took the accessor and agree. ApplyTriggerA is the NEGATIVE: it read
+# first two took the accessor and agree. UseEquippedToolAt is the NEGATIVE: it read
 # target-only while esp tracking ignored callee-popped arguments, and under a
 # correct frame level retail's two stores are a live local Coord whose address
 # it passes (`lea edx,[esp+0x20]` at slot -0x8), not a dead by-value temp.
 CONTROL = (("gruntsteps", "?RectContains@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
            ("gruntsteps", "?RectContainsGated@CGrunt@@QAEHHH@Z", 0x17C, "bt"),
-           ("triggermgrgrid", "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z", 0x17C, ""))
+           ("triggermgrgrid", "?UseEquippedToolAt@CTriggerMgr@@QAEHHHHH@Z", 0x17C, ""))
 # (unit, symbol, member offset, provenance). The PROVENANCE walker's own known
 # positive: SaveScreenshot reaches its pair through a pointer read from a global,
 # which is the alias fact that keeps the store alive. It is at 100.00%, so both
@@ -111,7 +111,7 @@ def _frame_level(ins) -> int:
 
     Getting this wrong is not a rounding error: the level is what a call
     restores to, so a level short by the saved registers makes every post-call
-    slot collide with a pre-call one (measured on CTriggerMgr::ApplyTriggerA,
+    slot collide with a pre-call one (measured on CTriggerMgr::UseEquippedToolAt,
     whose `sub esp,0x14` PRECEDES four pushes, and whose switch table decodes as
     trailing garbage so the epilogue cannot be read backwards either).
 

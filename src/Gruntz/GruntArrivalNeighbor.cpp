@@ -37,7 +37,7 @@
 #include <string.h>
 
 RVA(0x000f26f0, 0x106)
-i32 CGrunt::ResolveArrivalNeighbor() {
+i32 CGrunt::StepPostGuardBehavior() {
     switch (m_defenderState) {
         case AISTATE_SEEK:
             return 1;

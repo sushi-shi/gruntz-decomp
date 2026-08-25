@@ -15,13 +15,13 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
-#include <Gruntz/PlayViewMode.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/View.h>
+#include <Gruntz/ViewportResizeMode.h>
 #include <Io/SaveGame.h>
 #include <Rez/FrameClock.h>
 
@@ -136,8 +136,8 @@ public:
 
     virtual void TickStateMgrs();
 
-    virtual void DrawWorldFrame();
-    virtual i32 DrawWorldFrames();
+    virtual void UpdateWorldFrame();
+    virtual i32 UpdateWorldFixedSteps();
     virtual i32 BuildMusicCategoryTable(i32);
     virtual i32 BuildWorldLevelPath(i32);
 
@@ -163,7 +163,7 @@ public:
         return m_cameraBookmarks.GetSize();
     }
 
-    i32 StepInputA();
+    i32 RestoreCursorSaveUnder();
 
     void PlayCueAt(
         i32 cueId,
@@ -191,8 +191,8 @@ public:
     i32 SetMonitorCurse(i32 active);
     i32 SetRandomMoveIconsCurse(i32 active);
 
-    i32 ClampViewport(i32 inset);
-    i32 ClampViewport2(i32 stride);
+    i32 ShrinkViewport(i32 step);
+    i32 ExpandViewport(i32 step);
     i32 NotifyVisibleEntities();
 
     i32 ResetViewport();
@@ -282,9 +282,9 @@ public:
 
     i32 LoadWarlordSprites(CMulti* ctx, i32* loaded);
 
-    i32 SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    i32 HeaderSerialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 SerializeHeader(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
     i32 SavePlayState(CFileMemBase* ar);
     i32 LoadPlayState(CFileMemBase* ar);
 
@@ -358,7 +358,7 @@ public:
     i32 m_region1Gate;
     i32 m_region2Gate;
     i32 m_region3Gate;
-    PlayViewMode m_viewMode;
+    ViewportResizeMode m_viewportResizeMode;
     i32 m_hudSuppressed;
 
     CPtrArray m_cameraBookmarks;
@@ -396,7 +396,7 @@ public:
     // the ctor never touches this tail word.
     i32 m_reserved51c;
 
-    i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);
+    i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 cursorId, i32 targetValid);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(PickupType typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
@@ -439,27 +439,27 @@ i32 LayerBlitFrame(
     i32 useColorKey
 );
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);
-i32 ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToOverlaySurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
     i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
+    i32 flag
 );
-i32 ShowHudMessageAlt(
-    CDDrawSurfaceMgr* sink,
+i32 DrawTextToBackSurface(
+    CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
     RECT* box,
     i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
     i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
+    i32 flag
 );
 void Cmd_ResetScroll();
 i32 InitializeLevelArea(i32 levelIndex);

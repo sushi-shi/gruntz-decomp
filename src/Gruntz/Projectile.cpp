@@ -310,7 +310,8 @@ void CProjectile::FireActivation(i32 coord) {
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     ACT_NAME_ID(id, "A")
-    *ProjActLookup(id) = static_cast<CActHandler>(&CProjectile::DetachRenderObj);
+    *ProjActLookup(id) =
+        static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
 // @early-stop
@@ -508,13 +509,13 @@ void CProjectile::AdvanceMotion() {
 }
 
 RVA(0x000e05e0, 0x4e)
-i32 CProjectile::DetachRenderObj() {
+i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    CWwdSpriteObject* r = m_wwdObject;
-    if (IsAniCursorComplete(&r->m_animationCursor)) {
-        r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
+    CWwdSpriteObject* sprite = m_wwdObject;
+    if (IsAniCursorComplete(&sprite->m_animationCursor)) {
+        sprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 0;
 }
@@ -704,7 +705,7 @@ void CProjectile::ScanTargets(i32 impact) {
 
 // @early-stop
 RVA(0x000e0d40, 0x6c2)
-i32 CProjectile::SerializeMove(
+i32 CProjectile::SerializeDispatch(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
@@ -824,7 +825,7 @@ i32 CProjectile::SerializeMove(
         }
     }
 
-    i32 ok = CMovingLogic::SerializeMove(s, mode, typeId, object);
+    i32 ok = CMovingLogic::SerializeDispatch(s, mode, typeId, object);
     if (ok == 0) {
         return ok;
     }
@@ -865,7 +866,7 @@ i32 CProjectile::SerializeMove(
 }
 
 RVA(0x000e15d0, 0x155)
-i32 CBoomerang::SerializeMove(
+i32 CBoomerang::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -896,7 +897,7 @@ i32 CBoomerang::SerializeMove(
             ar->Write(&m_launched, sizeof(m_launched));
             break;
     }
-    return CProjectile::SerializeMove(ar, mode, typeId, object) ? 1 : 0;
+    return CProjectile::SerializeDispatch(ar, mode, typeId, object) ? 1 : 0;
 }
 
 static inline CActHandler* TBombLookup(i32 coord) {
@@ -915,7 +916,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::LoadAttributes);
+    *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
 }
 
 // @early-stop
@@ -972,7 +973,7 @@ static inline void TBombGridClear(CGameObject* obj) {
 
 // @early-stop
 RVA(0x000e1e60, 0x1ac)
-i32 CTimeBomb::LoadAttributes() {
+i32 CTimeBomb::UpdateCountdown() {
     i32 cell = TBombGridCell(m_object);
     if ((cell & BRICKZ_BLOCKED_MASK) || (cell & 2)) {
         SetObjectFlags(0x10000);
@@ -1002,7 +1003,7 @@ i32 CTimeBomb::LoadAttributes() {
 }
 
 RVA(0x000e2080, 0xc1)
-i32 CTimeBomb::SerializeMove(
+i32 CTimeBomb::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
     LogicTypeId typeId,
@@ -1021,7 +1022,7 @@ i32 CTimeBomb::SerializeMove(
             sa->Write(&m_fastPhase, sizeof(m_fastPhase));
             break;
     }
-    SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, object)
+    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)
 }
 
 RVA(0x000e2190, 0x83)

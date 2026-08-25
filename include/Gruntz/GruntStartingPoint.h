@@ -12,8 +12,10 @@ class CGruntStartingPoint : public CUserLogic, public CWapX {
 public:
     RVA(0x000105d0, 0x47)
     virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
-        OVERRIDE{SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)} RVA(0x000105b0, 0x6)
+    SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
+        OVERRIDE{
+            SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
+        } RVA(0x000105b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSTARTINGPOINT;
     }

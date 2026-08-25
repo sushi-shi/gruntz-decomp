@@ -49,7 +49,7 @@ STEERABLE, measured 2026-08-08 (the accessor already existed in
 |---|---|---|
 | `CPlay::ResetViewport` 0xd8c60 | 95.55 | **100.00 EXACT** |
 | `CMulti::WaitForOtherPlayers` 0xbb700 | 94.42 | **100.00 EXACT** |
-| `CPlay::DrawCursorSaveUnder` 0xd0b30 | 90.00 | 99.99 |
+| `CPlay::SaveUnderAndDrawCursor` 0xd0b30 | 90.00 | 99.99 |
 | `CState::InputVirtual` 0xface0 | 96.18 | 99.54 |
 
 `WaitForOtherPlayers` needed one extra knob on top: with the `RECT` built from the
@@ -59,7 +59,7 @@ size fields), which is what schedules the block exactly.
 NOT universal - it is a no-op where cl already CSEs (`CStatusBarMgr::LoadBattlezItemConfig`,
 `CTriggerMgr::LoadCameraSprite`, `CPlay::LoadScrollSpeedOptions`,
 `CPlay::PositionBridgeToggle` all unchanged) and it REGRESSES
-`CPlay::ClampViewport2` (91.27 -> 89.72), so measure per function.
+`CPlay::ExpandViewport` (91.27 -> 89.72), so measure per function.
 
 SECOND DETECTION SIGNATURE (2026-08-18): the temp can hide inside an OVERSIZED
 untyped local. `SaveScreenshot` 0x114ff0 declared `i32 descB[6]` and passed it as

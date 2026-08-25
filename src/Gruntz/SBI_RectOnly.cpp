@@ -614,28 +614,34 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 break;
             }
             switch (cmd) {
-                case SBICMD_HL_GROUP0_CATEGORY:
-                case SBICMD_HL_GROUP0_UPPER:
-                case SBICMD_HL_GROUP0_MIDDLE:
-                case SBICMD_HL_GROUP0_LOWER:
-                    HlClickGroup0(
-                        static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP0_FIRST))
+                case SBICMD_TOOL_RESOURCE_CATEGORY:
+                case SBICMD_TOOL_RESOURCE_UPPER:
+                case SBICMD_TOOL_RESOURCE_MIDDLE:
+                case SBICMD_TOOL_RESOURCE_LOWER:
+                    SelectToolResource(
+                        static_cast<StatusBarHighlightRow>(
+                            IDX(cmd) - IDX(SBICMD_TOOL_RESOURCE_FIRST)
+                        )
                     );
                     return 1;
-                case SBICMD_HL_GROUP1_CATEGORY:
-                case SBICMD_HL_GROUP1_UPPER:
-                case SBICMD_HL_GROUP1_MIDDLE:
-                case SBICMD_HL_GROUP1_LOWER:
-                    HlClickGroup1(
-                        static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP1_FIRST))
+                case SBICMD_TOY_RESOURCE_CATEGORY:
+                case SBICMD_TOY_RESOURCE_UPPER:
+                case SBICMD_TOY_RESOURCE_MIDDLE:
+                case SBICMD_TOY_RESOURCE_LOWER:
+                    SelectToyResource(
+                        static_cast<StatusBarHighlightRow>(
+                            IDX(cmd) - IDX(SBICMD_TOY_RESOURCE_FIRST)
+                        )
                     );
                     return 1;
-                case SBICMD_HL_GROUP2_CATEGORY:
-                case SBICMD_HL_GROUP2_UPPER:
-                case SBICMD_HL_GROUP2_MIDDLE:
-                case SBICMD_HL_GROUP2_LOWER:
-                    HlClickGroup2(
-                        static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP2_FIRST))
+                case SBICMD_BRICK_RESOURCE_CATEGORY:
+                case SBICMD_BRICK_RESOURCE_UPPER:
+                case SBICMD_BRICK_RESOURCE_MIDDLE:
+                case SBICMD_BRICK_RESOURCE_LOWER:
+                    SelectBrickResource(
+                        static_cast<StatusBarHighlightRow>(
+                            IDX(cmd) - IDX(SBICMD_BRICK_RESOURCE_FIRST)
+                        )
                     );
                     return 1;
             }
@@ -1154,8 +1160,8 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     memset(m_hitRects, 0, sizeof(m_hitRects));
     memset(m_statObj, 0, sizeof(m_statObj));
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
-    memset(m_groupNotify, 0, sizeof(m_groupNotify));
-    memset(m_hlNotify, 0, sizeof(m_hlNotify));
+    memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
+    memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_warlordHead, 0, sizeof(m_warlordHead));
     m_extraNotify0 = NULL;
     m_extraNotify1 = NULL;
@@ -1208,10 +1214,10 @@ void CStatusBarMgr::ClearTabGroup() {
         }
         case TAB_RESOURCE: {
 
-            memset(m_groupNotify, 0, sizeof(m_groupNotify));
+            memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
             m_machineDisplay = NULL;
 
-            memset(m_hlNotify, 0, sizeof(m_hlNotify));
+            memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
             m_notify0 = NULL;
             m_notify2 = NULL;
             m_notify3 = NULL;
@@ -1927,50 +1933,50 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!imgSet->SetupImage(
                     this,
                     code,
-                    SBICMD_RESOURCE_BELT_GROUP0,
+                    SBICMD_RESOURCE_BELT_TOOLS,
                     TAB_RESOURCE,
                     SbGeom(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
-                    m_groupSlots[0].m_value,
+                    m_conveyorSlots[0].m_value,
                     0
                 )) {
                 delete imgSet;
                 return 0;
             }
             AddTabItem(3, imgSet);
-            m_groupNotify[0] = imgSet;
+            m_conveyorSprites[0] = imgSet;
             imgSet = new CSBI_ImageSet;
             if (!imgSet->SetupImage(
                     this,
                     code,
-                    SBICMD_RESOURCE_BELT_GROUP1,
+                    SBICMD_RESOURCE_BELT_TOYS,
                     TAB_RESOURCE,
                     SbGeom(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
-                    m_groupSlots[1].m_value,
+                    m_conveyorSlots[1].m_value,
                     0
                 )) {
                 delete imgSet;
                 return 0;
             }
             AddTabItem(3, imgSet);
-            m_groupNotify[1] = imgSet;
+            m_conveyorSprites[1] = imgSet;
             imgSet = new CSBI_ImageSet;
             if (!imgSet->SetupImage(
                     this,
                     code,
-                    SBICMD_RESOURCE_BELT_GROUP2,
+                    SBICMD_RESOURCE_BELT_BRICKS,
                     TAB_RESOURCE,
                     SbGeom(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
-                    m_groupSlots[2].m_value,
+                    m_conveyorSlots[2].m_value,
                     0
                 )) {
                 delete imgSet;
                 return 0;
             }
             AddTabItem(3, imgSet);
-            m_groupNotify[2] = imgSet;
+            m_conveyorSprites[2] = imgSet;
 
             imgSet = new CSBI_ImageSet;
             if (!imgSet->SetupImage(
@@ -1996,15 +2002,15 @@ i32 CStatusBarMgr::LoadTabSprites() {
             imgSet->SetEnabled(0);
 
             {
-                i32* cfgp = &m_hlGrid[4].m_value;
-                CSBI_ImageSet** cachep = &m_hlNotify[4];
+                i32* cfgp = &m_resourceSlots[4].m_value;
+                CSBI_ImageSet** cachep = &m_resourceSlotSprites[4];
                 i32 y = by + 0x155;
                 for (i = 0; i < 4; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
                     if (!set->SetupImage(
                             this,
                             code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP0_FIRST) + i),
+                            static_cast<SbiCommandId>(IDX(SBICMD_TOOL_RESOURCE_FIRST) + i),
                             TAB_RESOURCE,
                             SbGeom(bx + 0x1d, y - 0x17, bx + 0x34, y),
                             "GAME_INGAMEICONZ_NORMCHIPZ",
@@ -2020,7 +2026,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!set->SetupImage(
                             this,
                             code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP1_FIRST) + i),
+                            static_cast<SbiCommandId>(IDX(SBICMD_TOY_RESOURCE_FIRST) + i),
                             TAB_RESOURCE,
                             SbGeom(bx + 0x45, y - 0x17, bx + 0x5c, y),
                             "GAME_INGAMEICONZ_NORMCHIPZ",
@@ -2036,7 +2042,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!set->SetupImage(
                             this,
                             code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP2_FIRST) + i),
+                            static_cast<SbiCommandId>(IDX(SBICMD_BRICK_RESOURCE_FIRST) + i),
                             TAB_RESOURCE,
                             SbGeom(bx + 0x6d, y - 0x17, bx + 0x84, y),
                             "GAME_INGAMEICONZ_NORMCHIPZ",
@@ -2343,9 +2349,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     // plain one (0xea0f0).  This arm was empty, so a sampled stat
                     // toggle kept whatever direction the ctor left.
                     if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
-                        arrow->SetDirectionAlt(m_position, 0);
+                        arrow->SetSampledDirection(m_position, 0);
                     } else {
-                        arrow->SetDirection(m_position, 0);
+                        arrow->SetUnsampledDirection(m_position, 0);
                     }
                     bar = new CSBI_StatzTabGruntBar;
                     if (!bar->BuildMultiplayerTabStatusBar(
@@ -2544,7 +2550,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         r->SetEnabled(1);
         if (m_activeTab == TAB_STATZ) {
 
-            m_statObj[idx]->SetDirectionAlt(m_position, 1);
+            m_statObj[idx]->SetSampledDirection(m_position, 1);
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
             if (registry->m_silentMode == 0) {
                 SoundCue* found = NULL;
@@ -2577,7 +2583,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->SetEnabled(0);
         if (m_activeTab == TAB_STATZ) {
 
-            m_statObj[idx]->SetDirection(m_position, 1);
+            m_statObj[idx]->SetUnsampledDirection(m_position, 1);
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
             if (registry->m_silentMode == 0) {
                 SoundCue* found = NULL;
@@ -2885,7 +2891,7 @@ void CStatusBarMgr::Reset() {
     ResetSlots();
     m_gaugeTarget = SBI_GAUGE_EMPTY;
     m_gauge = SBI_GAUGE_EMPTY;
-    ResetGroupA();
+    ResetConveyorBelts();
     UpdateRezMachineSnoozeStatusBar();
     InitTabRects();
     m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
@@ -2895,19 +2901,19 @@ void CStatusBarMgr::Reset() {
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     for (i32 i = 0; i < 3; i++) {
-        i64* clock = &m_groupSlots[i].m_last;
-        SbiHlRowState state = static_cast<SbiHlRowState>(m_groupSlots[i].m_state);
+        i64* clock = &m_conveyorSlots[i].m_last;
+        SbiHlRowState state = static_cast<SbiHlRowState>(m_conveyorSlots[i].m_state);
         switch (state) {
             case HLROW_IDLE_CYCLE:
-                if (++m_groupSlots[i].m_counter > 9) {
-                    m_groupSlots[i].m_counter = 1;
+                if (++m_conveyorSlots[i].m_counter > 9) {
+                    m_conveyorSlots[i].m_counter = 1;
                 }
                 break;
             case HLROW_RAMP_UP_LOW:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (++m_groupSlots[i].m_counter >= 0x12) {
-                        m_groupSlots[i].m_counter = 0x12;
-                        m_groupSlots[i].m_state = IDX(HLROW_HOLD_LOW);
+                    if (++m_conveyorSlots[i].m_counter >= 0x12) {
+                        m_conveyorSlots[i].m_counter = 0x12;
+                        m_conveyorSlots[i].m_state = IDX(HLROW_HOLD_LOW);
                         clock[1] =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
                         clock[0] = static_cast<u32>(g_frameTime);
@@ -2922,17 +2928,17 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 break;
             case HLROW_RAMP_DOWN_LOW:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (--m_groupSlots[i].m_counter < 0xa) {
-                        m_groupSlots[i].m_state = IDX(HLROW_OFF);
-                        m_groupSlots[i].m_counter = 1;
+                    if (--m_conveyorSlots[i].m_counter < 0xa) {
+                        m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
+                        m_conveyorSlots[i].m_counter = 1;
                     }
                 }
                 break;
             case HLROW_RAMP_UP_HIGH:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (++m_groupSlots[i].m_counter >= 0x18) {
-                        m_groupSlots[i].m_counter = 0x18;
-                        m_groupSlots[i].m_state = IDX(HLROW_HOLD_HIGH);
+                    if (++m_conveyorSlots[i].m_counter >= 0x18) {
+                        m_conveyorSlots[i].m_counter = 0x18;
+                        m_conveyorSlots[i].m_state = IDX(HLROW_HOLD_HIGH);
                         clock[1] =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
                         clock[0] = static_cast<u32>(g_frameTime);
@@ -2945,9 +2951,9 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 break;
             case HLROW_RAMP_DOWN_HIGH:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (--m_groupSlots[i].m_counter < 0x13) {
-                        m_groupSlots[i].m_state = IDX(HLROW_OFF);
-                        m_groupSlots[i].m_counter = 1;
+                    if (--m_conveyorSlots[i].m_counter < 0x13) {
+                        m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
+                        m_conveyorSlots[i].m_counter = 1;
                     }
                 }
                 break;
@@ -2972,7 +2978,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             }
                         }
                     }
-                    m_groupSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
+                    m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
                 }
                 break;
             case HLROW_HOLD_LOW:
@@ -2996,12 +3002,12 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             }
                         }
                     }
-                    m_groupSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
+                    m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
                 }
                 break;
         }
-        if (m_groupNotify[i]) {
-            m_groupNotify[i]->Notify(m_groupSlots[i].m_counter);
+        if (m_conveyorSprites[i]) {
+            m_conveyorSprites[i]->Notify(m_conveyorSlots[i].m_counter);
         }
     }
 }
@@ -3069,8 +3075,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
                     );
                     for (i32 i = 0; i < 3; i++) {
-                        m_groupSlots[i].m_state = IDX(HLROW_IDLE_CYCLE);
-                        m_groupSlots[i].m_value = 1;
+                        m_conveyorSlots[i].m_state = IDX(HLROW_IDLE_CYCLE);
+                        m_conveyorSlots[i].m_value = 1;
                     }
                     m_machinePhase = BELT_IN_MACHINE;
                     i64* belt = &m_beltClock.m_last;
@@ -3133,15 +3139,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         if (r < 0) {
                             break;
                         }
-                        if (m_hlGrid[col * 4 + r].m_state == IDX(HLROW_OFF)) {
+                        if (m_resourceSlots[col * 4 + r].m_state == IDX(HLROW_OFF)) {
                             found = 1;
                         } else {
                             r--;
                         }
                     }
                     if (found) {
-                        m_groupSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
-                        m_groupSlots[col].m_counter = 0x13;
+                        m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
+                        m_conveyorSlots[col].m_counter = 0x13;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
                             if (registry->m_silentMode == 0) {
@@ -3162,8 +3168,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             }
                         }
                     } else {
-                        m_groupSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
-                        m_groupSlots[col].m_counter = 0xa;
+                        m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
+                        m_conveyorSlots[col].m_counter = 0xa;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
                             if (registry->m_silentMode == 0) {
@@ -3184,7 +3190,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             }
                         }
                     }
-                    i64* rowClock = &m_groupSlots[col].m_last;
+                    i64* rowClock = &m_conveyorSlots[col].m_last;
                     rowClock[1] = g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltDelay", 0x64);
                     rowClock[0] = static_cast<u32>(g_frameTime);
                 }
@@ -3211,12 +3217,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
 }
 
 RVA(0x00106610, 0x3b)
-void CStatusBarMgr::ResetGroupA() {
+void CStatusBarMgr::ResetConveyorBelts() {
     for (i32 i = 0; i < 3; i++) {
-        m_groupSlots[i].m_state = IDX(HLROW_OFF);
-        m_groupSlots[i].m_value = 1;
-        if (m_groupNotify[i]) {
-            m_groupNotify[i]->Notify(-1);
+        m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
+        m_conveyorSlots[i].m_value = 1;
+        if (m_conveyorSprites[i]) {
+            m_conveyorSprites[i]->Notify(-1);
         }
     }
 }
@@ -3291,16 +3297,16 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
     if (shift != 0) {
         ClearHlCell(group, m_pendingHlRow);
         for (i32 row = IDX(m_pendingHlRow) - 1; row >= 0; row--) {
-            CSbiHlRow* cell = &m_hlGrid[row + group * 4];
+            CSbiHlRow* cell = &m_resourceSlots[row + group * 4];
             if (cell->m_state == IDX(HLROW_IDLE_CYCLE)) {
-                m_hlGrid[row + group * 4 + 1].m_state = IDX(HLROW_IDLE_CYCLE);
+                m_resourceSlots[row + group * 4 + 1].m_state = IDX(HLROW_IDLE_CYCLE);
                 cell[1].m_value = cell->m_value;
                 cell->m_state = IDX(HLROW_OFF);
                 cell->m_value = 0;
             }
         }
     } else {
-        m_hlGrid[IDX(m_pendingHlRow) + group * 4].m_value = key;
+        m_resourceSlots[IDX(m_pendingHlRow) + group * 4].m_value = key;
     }
     NotifyAllSlots();
     m_pendingHlRow = STATUS_HL_ROW_NONE;
@@ -3326,8 +3332,8 @@ void CStatusBarMgr::InitTabRects() {
 RVA(0x001069c0, 0x2e)
 void CStatusBarMgr::ClearHlCell(i32 group, StatusBarHighlightRow row) {
     i32 idx = IDX(row) + group * 4;
-    m_hlGrid[idx].m_state = IDX(HLROW_OFF);
-    m_hlGrid[idx].m_value = 0;
+    m_resourceSlots[idx].m_state = IDX(HLROW_OFF);
+    m_resourceSlots[idx].m_value = 0;
     NotifyAllSlots();
 }
 
@@ -3346,8 +3352,8 @@ void CStatusBarMgr::NotifyAllSlots() {
         m_extraNotify0->Notify(m_extraNotifyArg0);
     }
 
-    CSBI_ImageSet** p = &m_hlNotify[4];
-    i32* h = &m_hlGrid[4].m_value;
+    CSBI_ImageSet** p = &m_resourceSlotSprites[4];
+    i32* h = &m_resourceSlots[4].m_value;
     for (i32 n = 0; n < 4; n++) {
         if (p[-4]) {
             p[-4]->Notify(h[-24]);
@@ -3387,11 +3393,11 @@ i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
 RVA(0x00106b40, 0x44)
 i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     i32 idx = group + row * 4;
-    if (m_hlGrid[idx].m_state != IDX(HLROW_OFF)) {
+    if (m_resourceSlots[idx].m_state != IDX(HLROW_OFF)) {
         return 0;
     }
-    m_hlGrid[idx].m_value = handle;
-    m_hlGrid[idx].m_state = IDX(HLROW_IDLE_CYCLE);
+    m_resourceSlots[idx].m_value = handle;
+    m_resourceSlots[idx].m_state = IDX(HLROW_IDLE_CYCLE);
     NotifyAllSlots();
     return 1;
 }
@@ -3521,7 +3527,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRect.left = m_itemBaseX;
                 m_itemRect.right = m_itemBaseX + 0x17;
                 rectFlag = 1;
-                ResetGroupA();
+                ResetConveyorBelts();
                 SetLeftRezMachineAnimation(
                     0x1e,
                     MACHINE_LEVER,
@@ -3551,7 +3557,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 col = (item2 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
             i32 row;
-            CSbiHlRow* cell = &m_hlGrid[col * 4 + 3];
+            CSbiHlRow* cell = &m_resourceSlots[col * 4 + 3];
             // The row guard is the LOOP CONDITION, not a trailing `if (row < 0) break;`:
             // cl rotates `for (row = 3; row >= 0; ...)` into retail's `jne exit` / `jge
             // top` pair, where a `while (state == IDLE)` head duplicates the state test
@@ -4008,7 +4014,12 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode mode, i64* pair) {
 // spills the counters. Reusing one counter variable across the loops is byte-neutral
 // (measured), so the allocation choice is not decl-scope-driven.
 RVA(0x001084d0, 0x96c)
-i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CStatusBarMgr::SerializeDispatch(
+    CFileMemBase* s,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (s == NULL) {
         return 0;
     }
@@ -4052,7 +4063,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     }
 
     if (m_retabNotify != NULL) {
-        if (m_retabNotify->Sync(s, mode, typeId, payload) == 0) {
+        if (m_retabNotify->SerializeDispatch(s, mode, typeId, payload) == 0) {
             return 0;
         }
     }
@@ -4072,7 +4083,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     } while (n != 0);
 
     n = 3;
-    CSbiHlRow* r = m_groupSlots;
+    CSbiHlRow* r = m_conveyorSlots;
     do {
         SyncClockPair(s, mode, &r->m_last);
         r++;
@@ -4080,7 +4091,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     } while (n != 0);
 
     i32 outer = 3;
-    CSbiHlRow* g = m_hlGrid;
+    CSbiHlRow* g = m_resourceSlots;
     do {
         n = 4;
         do {
@@ -4122,7 +4133,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     }
     {
         i32 i = 0;
-        CSBI_ImageSet** q = m_groupNotify;
+        CSBI_ImageSet** q = m_conveyorSprites;
         do {
             SER(*q)
             i++;
@@ -4131,7 +4142,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i3
     }
     {
         i32 row = 0;
-        CSBI_ImageSet** base = m_hlNotify;
+        CSBI_ImageSet** base = m_resourceSlotSprites;
         do {
             i32 i = 0;
             CSBI_ImageSet** q = base;
@@ -4256,11 +4267,11 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
     }
     for (i32 k = 0; k < 3; k++) {
-        s->Write(&m_groupSlots[k].m_state, sizeof(m_groupSlots[k].m_state));
-        s->Write(&m_groupSlots[k].m_value, sizeof(m_groupSlots[k].m_value));
+        s->Write(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
+        s->Write(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
     {
-        CSbiHlRow* nb = m_hlGrid;
+        CSbiHlRow* nb = m_resourceSlots;
         i32 cnt = 3;
         do {
             for (i32 m = 0; m < 4; m++) {
@@ -4362,10 +4373,10 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         s->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
     }
     for (i32 k = 0; k < 3; k++) {
-        s->Read(&m_groupSlots[k].m_state, sizeof(m_groupSlots[k].m_state));
-        s->Read(&m_groupSlots[k].m_value, sizeof(m_groupSlots[k].m_value));
+        s->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
+        s->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
-    CSbiHlRow* nb = m_hlGrid;
+    CSbiHlRow* nb = m_resourceSlots;
     seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
@@ -4516,7 +4527,12 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
 }
 
 RVA(0x00109e00, 0x245)
-i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 payload) {
+i32 CWarpStoneFly::SerializeDispatch(
+    CFileMemBase* arc,
+    SerialMode mode,
+    LogicTypeId typeId,
+    i32 payload
+) {
     if (arc == NULL) {
         return 0;
     }
@@ -5073,12 +5089,12 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
 }
 
 RVA(0x0010b5d0, 0xdd)
-i32 CStatusBarMgr::HlClickGroup0(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
-        && m_hlGrid[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
-        i32 handle = m_hlGrid[rowIndex].m_value;
-        i32* slot = &m_hlGrid[rowIndex].m_value;
+        && m_resourceSlots[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
+        i32 handle = m_resourceSlots[rowIndex].m_value;
+        i32* slot = &m_resourceSlots[rowIndex].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
             if (registry->m_silentMode == 0) {
@@ -5108,12 +5124,12 @@ i32 CStatusBarMgr::HlClickGroup0(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b6f0, 0xdd)
-i32 CStatusBarMgr::HlClickGroup1(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
-        && m_hlGrid[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
-        i32 handle = m_hlGrid[rowIndex + 4].m_value;
-        i32* slot = &m_hlGrid[rowIndex + 4].m_value;
+        && m_resourceSlots[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
+        i32 handle = m_resourceSlots[rowIndex + 4].m_value;
+        i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
             if (registry->m_silentMode == 0) {
@@ -5143,12 +5159,12 @@ i32 CStatusBarMgr::HlClickGroup1(StatusBarHighlightRow row) {
 }
 
 RVA(0x0010b810, 0xdd)
-i32 CStatusBarMgr::HlClickGroup2(StatusBarHighlightRow row) {
+i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
-        && m_hlGrid[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {
-        i32 handle = m_hlGrid[rowIndex + 8].m_value;
-        i32* slot = &m_hlGrid[rowIndex + 8].m_value;
+        && m_resourceSlots[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {
+        i32 handle = m_resourceSlots[rowIndex + 8].m_value;
+        i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
             if (registry->m_silentMode == 0) {

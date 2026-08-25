@@ -69,7 +69,7 @@ CONSTANT member offset where the address itself folds away:
 3. IV ANCHOR: in an indexed walk, the bound pair address becomes the cursor
    IV, so every sibling field reads at `-8/-4` and the pair at `+0/4/8/c`
    (UpdateRezConveyorStatusBar 0x105990 96.26 -> 100.00 EXACT: retail
-   anchors `esi = &m_groupSlots[i].m_last`, sibling state/counter at
+   anchors `esi = &m_conveyorSlots[i].m_last`, sibling state/counter at
    -0x8/-0x4).
 
 The alias-opacity signature also applies to a fixed-size scalar member array. In
@@ -82,7 +82,7 @@ object, and the pointer names the real array subobject.
 
 The i64-pair pointer is the established in-tree modeling of these
 {timestamp, interval} tails (`SyncClockPair(CFileMemBase*, SerialMode, i64*)`
-walks `pair` and `pair + 1` in `CStatusBarMgr::Sync`); prefer a real
+walks `pair` and `pair + 1` in `CStatusBarMgr::SerializeDispatch`); prefer a real
 aggregate member where the layout allows one.
 
 THE POINTEE TYPE IS NOT PART OF THE MECHANISM (measured 2026-08-17): where

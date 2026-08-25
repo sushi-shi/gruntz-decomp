@@ -112,10 +112,10 @@ to an up-counted index loop (71.07 -> 61.86). It is a CFG/IV-selection row.
 ## What DOES convert
 
 The dead-pair half converts when the site is a real by-value accessor call.
-`CTriggerMgr::ApplyTriggerB` 0x6e120: both `LoadTileArrivalFx` argument pairs
+`CTriggerMgr::UseToyAt` 0x6e120: both `LoadTileArrivalFx` argument pairs
 plus the two `m_screenX`/`m_screenY` guards, spelled `cell->MoveTile().m_x` and
 `cell->LastTilePx().m_x` instead of the direct member, took it 87.70 -> 91.05
-and cleared its `walls valuetemp` TARGET-ONLY row. The sibling `ApplyTriggerA`
+and cleared its `walls valuetemp` TARGET-ONLY row. The sibling `UseEquippedToolAt`
 0x6dae0 looks identical in source and LOSES 0.27 the same way - retail compares
 `cmp [esi+0x17c],ecx` there, straight off the member - so the accessor is a
 per-site fact the sieve decides, never a spelling to apply by name.
