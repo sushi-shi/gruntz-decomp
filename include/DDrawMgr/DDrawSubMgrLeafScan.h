@@ -63,10 +63,10 @@ public:
     i32 SumField(const char* str);
     LeafCue* GetFirstValue();
     LeafCue* NextValueAfter(LeafCue* target);
-    i32 ProbeFirst(i32 arg);
+    i32 ConfigurePrimaryFromFirstCue(i32 startPrimary);
     i32 HasKeyEqual(const char* str);
     CString FindKeyOfValue(LeafCue* target);
-    i32 MatchSub(LeafCue* cue, i32 startPrimary);
+    i32 ConfigurePrimaryFromCue(LeafCue* cue, i32 startPrimary);
 
     // The registered-cue count; retail expands it at every use.
     i32 CueCount() const {

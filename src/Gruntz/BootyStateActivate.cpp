@@ -1793,7 +1793,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (sub != NULL) {
                 sub->StopAllStreams();
             }
-            g_gameReg->ChangeState(3);
+            g_gameReg->PlayMovieEntry(3);
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 

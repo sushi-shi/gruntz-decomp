@@ -1331,7 +1331,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     break;
                 }
                 case BZTASK_SEEK_SWITCH: {
-                    Scan(unit);
+                    RerouteSwitchSeeker(unit);
                     break;
                 }
                 case BZTASK_CARRY_BRICK: {

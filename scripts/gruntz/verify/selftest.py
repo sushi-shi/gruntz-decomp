@@ -4692,7 +4692,7 @@ class EhActionControls(unittest.TestCase):
         self.assertEqual(classify(b, t, ops), "shape")
 
     def test_saved_receiver_plus_member_offset_is_decoded(self):
-        """ChangeState's retail CFecFile cleanup reloads a saved receiver and
+        """PlayMovieEntry's retail CFecFile cleanup reloads a saved receiver and
         then adds the CFile member offset; this must not print ``no slot``."""
         from gruntz.walls.ehactions import action
         body = bytes.fromhex("8b4df081c124010000e900000000")

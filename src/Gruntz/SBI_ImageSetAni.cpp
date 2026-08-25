@@ -29,11 +29,11 @@ i32 CSBI_ImageSetAni::Init(
     StatusBarTab tab,
     RECT rc,
     const char* key,
-    i32 b0,
-    i32 b1,
-    i32 b2,
-    i32 b3,
-    i32 b4
+    i32 frameStart,
+    i32 frameEnd,
+    i32 intervalMs,
+    i32 loop,
+    i32 step
 ) {
     CObject* found;
     CDDrawWorker* tbl;
@@ -58,27 +58,27 @@ i32 CSBI_ImageSetAni::Init(
     if (tbl == NULL) {
         goto fail;
     }
-    m_interval = b2;
-    m_loop = b3;
-    m_step = b4;
+    m_interval = intervalMs;
+    m_loop = loop;
+    m_step = step;
 
-    if (b0 == -1) {
-        if (b4 >= 0) {
+    if (frameStart == -1) {
+        if (step >= 0) {
             m_frameStart = tbl->m_minIndex;
         } else {
             m_frameStart = tbl->m_maxIndex;
         }
     } else {
-        m_frameStart = b0;
+        m_frameStart = frameStart;
     }
-    if (b1 == -1) {
-        if (b4 >= 0) {
+    if (frameEnd == -1) {
+        if (step >= 0) {
             m_frameEnd = tbl->m_maxIndex;
         } else {
             m_frameEnd = tbl->m_minIndex;
         }
     } else {
-        m_frameEnd = b1;
+        m_frameEnd = frameEnd;
     }
     m_frameIndex = m_frameStart;
 

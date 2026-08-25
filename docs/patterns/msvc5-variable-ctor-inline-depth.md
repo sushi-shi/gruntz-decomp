@@ -46,7 +46,7 @@ intermediate code, so every OTHER divergence in the caller shifts the decision.
 
 **Consequence: this wall is a convergence phenomenon, not a source-shape defect.**
 Artificial emission devices were removed in August 2026. Finish the real callers -
-SerialObjectFactory, BuildGameMenu, and CGruntzMgr::ChangeState - through the normal
+SerialObjectFactory, BuildGameMenu, and CGruntzMgr::PlayMovieEntry - through the normal
 matching campaign, then census which inline COMDATs the compiler emits naturally.
 
 ## Sibling divergence: funclet helper vs inline dtor pair (CButeMgr::Save)
@@ -94,4 +94,4 @@ missing one member function: `AddTabItem(i32 tab, CStatusBarItem* item)` over 71
 `m_tabLists[N].AddTail(item)` sites. See
 repeated-container-call-is-an-inline-member.md and the BROKEN section of
 ctor-inline-cut-depth-varies-per-new-site.md. The `SerialObjectFactory` /
-`CGruntzMgr::ChangeState` rows are untouched by that measurement.
+`CGruntzMgr::PlayMovieEntry` rows are untouched by that measurement.

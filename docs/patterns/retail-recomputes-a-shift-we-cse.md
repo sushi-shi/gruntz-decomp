@@ -6,7 +6,8 @@ against copies of it; the recompile emits one `sar` and reaches the two consumer
 `lea [reg-1]` / `lea [reg+2]`. Every source spelling tried still CSEs
 confidence: 7/10
 
-Two independent tile-neighbourhood scans show the same shape. `CBattlezMapConfig::Scan`
+Two independent tile-neighbourhood scans show the same shape.
+`CBattlezMapConfig::RerouteSwitchSeeker`
 0x35f10 preheader:
 
 ```

@@ -29,13 +29,15 @@ i32 CAniPlayer::Start(
     StatusBarTab tab,
     RECT rc,
     const char* key,
-    i32 b0,
-    i32 b1,
-    i32 b2,
-    i32 b3,
-    i32 b4
+    i32 frameStart,
+    i32 frameEnd,
+    i32 intervalMs,
+    i32 loop,
+    i32 step
 ) {
-    if (CSBI_ImageSetAni::Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == SBICMD_NONE) {
+    if (CSBI_ImageSetAni::
+            Init(owner, host, cmd, tab, rc, key, frameStart, frameEnd, intervalMs, loop, step)
+        == SBICMD_NONE) {
         return 0;
     }
     m_window64 = static_cast<u32>(m_interval);
@@ -47,7 +49,7 @@ i32 CAniPlayer::Start(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000e5b90, 0x51)
-i32 CAniPlayer::TickToggle(i32 param) {
+i32 CAniPlayer::TickToggle(i32 unused) {
     if (static_cast<__int64>(g_frameTime) - m_start64 >= m_window64) {
         m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
         m_windowLo = m_interval;

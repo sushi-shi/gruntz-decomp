@@ -53,7 +53,7 @@ Three concurrently reconstructed status-bar
 builders currently have fewer states: `CStatusBarMgr::BuildGameMenu`,
 `BuildTabzDialog`, and `LoadTabSprites`. Their bodies and call sets must decide the
 missing or surplus scopes and inline cuts. The equal-count topology differences are
-`CGruntzMgr::ChangeState` (7 of 11 rows) and
+`CGruntzMgr::PlayMovieEntry` (7 of 11 rows) and
 `CDDrawSurfaceMgr::SnapshotChildren` (6 of 29 rows); their ctor/dtor inline cuts
 nest differently. The remaining target-only
 row is `CFontConfig::MeasureLabel` (`CPen` versus `CGdiObject` teardown).
@@ -110,7 +110,7 @@ the member offset. `??_M@YGXPAXIHP6EX0@Z@Z` with a pushed dtor callback proves
 an array member `T[n]`; its arguments expose dtor, count, `sizeof(T)`, and the
 member address.
 
-Compare the full map, not only `maxState`: `ChangeState` proves equal counts can
+Compare the full map, not only `maxState`: `PlayMovieEntry` proves equal counts can
 hide different topology. `gruntz walls ehactions 0x8fab0` also proves that an
 action-sequence difference is not automatically an authored cleanup defect:
 retail calls the embedded playlist CArray ctor/dtor while base expands them,

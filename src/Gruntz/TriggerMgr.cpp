@@ -1237,7 +1237,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
 
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     world->FlushPendingOps();
-    world->ArmSnapshot(0, 0xbb7);
+    world->SetDefeatCountdown(0, 0xbb7);
     (static_cast<CStatusBarMgr*>(world->m_guts))->SetMode(1);
     return 1;
 }

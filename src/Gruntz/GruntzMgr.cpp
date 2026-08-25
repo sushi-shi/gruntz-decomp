@@ -1815,8 +1815,8 @@ char CGruntzMgr::GetGruntzDriveLetter() {
 }
 
 RVA(0x0008fab0, 0x318)
-i32 CGruntzMgr::ChangeState(i32 arg) {
-    if (arg < 1 || arg > 3) {
+i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
+    if (entryId < 1 || entryId > 3) {
         return 0;
     }
     if (!FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)))) {
@@ -1844,7 +1844,7 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
         dsound = m_world->m_soundStream->m_device;
     }
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
-        if (player.Open(m_strMoviePath, arg, MOVIE_TILE, m_isInterlaced != 0, NULL, NULL)) {
+        if (player.Open(m_strMoviePath, entryId, MOVIE_TILE, m_isInterlaced != 0, NULL, NULL)) {
             m_modalBusy = 1;
             player.Pump(1, 1);
             m_modalBusy = 0;
@@ -1854,10 +1854,10 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
     return 1;
 }
 
-// Emit TU, wall-blocked: retail's CGruntzMgr::ChangeState calls this ctor
+// Emit TU, wall-blocked: retail's CGruntzMgr::PlayMovieEntry calls this ctor
 // out-of-line (via the inlined CMoviePlayer ctor, m_decodeStore member), and our
-// ChangeState already references it as extern - but converting the body to a
-// header inline makes our cl flatten it into ChangeState (caller-budget inline
+// PlayMovieEntry already references it as extern - but converting the body to a
+// header inline makes our cl flatten it into PlayMovieEntry (caller-budget inline
 // divergence, docs/patterns/msvc5-variable-ctor-inline-depth.md), losing this
 // label. Dissolves into FecCrypt.h + a gruntzmgr pin when that wall breaks.
 RVA(0x0008fea0, 0x6d)
@@ -1943,8 +1943,8 @@ i32 CGruntzMgr::IsMoviePathValid() {
 }
 
 RVA(0x00090200, 0x8)
-i32 CGruntzMgr::RunFromState() {
-    return ChangeState(1);
+i32 CGruntzMgr::PlayLogoMovie() {
+    return PlayMovieEntry(1);
 }
 
 RVA(0x00090220, 0x2f)

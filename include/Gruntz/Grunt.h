@@ -292,7 +292,7 @@ public:
 
     i32 BuildGruntLoseItemAnimation();
 
-    i32 LoadGruntTypeTable(PickupType a, i32 b, i32 c, i32 d);
+    i32 LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer);
 
     i32 LoadTypeTableClearMove(PickupType typeId);
 

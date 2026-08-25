@@ -597,19 +597,19 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sz), "GAME", "_");
     }
     {
-        LeafCue* mv = NULL;
-        MapLookup(m_world->m_soundRegistry->m_cues, "GAME_MOVIE", mv);
-        m_world->m_soundRegistry->MatchSub(mv, 0);
+        LeafCue* movieCue = NULL;
+        MapLookup(m_world->m_soundRegistry->m_cues, "GAME_MOVIE", movieCue);
+        m_world->m_soundRegistry->ConfigurePrimaryFromCue(movieCue, 0);
     }
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {
         if (m_numMovies > 0 && m_numRuns > 1) {
             if (m_settings->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0) {
-                RunFromState();
+                PlayLogoMovie();
             }
         } else {
-            RunFromState();
-            if (ChangeState(2)) {
+            PlayLogoMovie();
+            if (PlayMovieEntry(2)) {
                 ++m_numMovies;
             }
         }

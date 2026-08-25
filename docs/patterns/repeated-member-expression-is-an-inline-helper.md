@@ -66,7 +66,7 @@ byte evidence that retail wrote the two differently.
 **SCOPE - this is about repeated LOADS, not about arithmetic (measured
 2026-08-23).** An inline call boundary does NOT stop cl 5.0 from sharing pure
 register arithmetic: the expansions are folded first and the identical trees CSE
-afterwards. `CBattlezMapConfig::Scan` 0x35f10 is the control. Retail loads
+afterwards. `CBattlezMapConfig::RerouteSwitchSeeker` 0x35f10 is the control. Retail loads
 `m_screenY` ONCE and then copies the raw value into two registers and shifts
 BOTH (`mov edx,ecx / mov esi,ecx / sar edx,0x5 / sar esi,0x5`), where we emit one
 `sar` and reach `-1`/`+2` with a `lea` - the shared LEAF with duplicated trees

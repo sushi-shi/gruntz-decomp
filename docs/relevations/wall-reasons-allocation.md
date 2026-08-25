@@ -812,7 +812,7 @@ int t8(char x) { return x ? 1 : 0; }   // ... test cl,cl ...
    past one or two instructions. If the registers also differ, it is R1-R4 and
    the schedule is the consequence, not the cause.
 6. **WORKED EXAMPLE.** The established one stands:
-   `CStatusBarMgr::UpdateDestructButtonStatusBar` `0x0010b320` 94.67 -> 100.00
+   `CStatusBarMgr::UpdateDestructWarningAnimation` `0x0010b320` 94.67 -> 100.00
    EXACT by storing through an `SbiClockPair*`, with `SetHudRectA/B`
    `0x001066f0`/`0x00106740` 71.83 -> 100.00 on the same change. The negative
    control is in that pattern file: converting `Sync`'s nested walk to a flowing

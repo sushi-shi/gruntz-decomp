@@ -235,7 +235,7 @@ public:
     void OnMusicMuteBegin();
     void OnMusicMuteEnd();
     void OnMusicFadeStep(i32 value);
-    i32 RunFromState();
+    i32 PlayLogoMovie();
 
     CPlay* PickPlayOrPausedState();
     CState* PickPausedThenPlayState();
@@ -274,7 +274,7 @@ public:
 
     i32 IsBattlezMapFile(CString path);
 
-    i32 ChangeState(i32 arg);
+    i32 PlayMovieEntry(i32 entryId);
 
     // A member: HandleCommand's only call site materialises `this` in ecx
     // (`push <url> / mov ecx,esi / call`), which is the __thiscall sequence; the body

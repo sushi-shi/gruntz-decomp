@@ -635,7 +635,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     CGrunt* placed;
     AnimWorkerObj* aux;
     PickupType cmd;
-    i32 param;
+    PickupType toyboxPickup;
     i32 matchActive;
     i32 flag;
     i32 sub;
@@ -651,7 +651,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     obj = m_object;
     if (pickup == PICKUP_TOYBOX) {
 
-        param = obj->m_points;
+        toyboxPickup = static_cast<PickupType>(obj->m_points);
         matchActive = 0;
         flag = 1;
         if (obj->m_score == playerIndex) {
@@ -664,9 +664,9 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         if (cell == NULL || cell->m_entranceCommitted == 0) {
             ok = 0;
         } else if (matchActive) {
-            ok = cell->LoadPickupSprites(static_cast<PickupType>(param), flag, 0, sub, 0);
+            ok = cell->LoadPickupSprites(toyboxPickup, flag, 0, sub, 0);
         } else {
-            ok = cell->LoadGruntTypeTable(static_cast<PickupType>(param), flag, sub, 0);
+            ok = cell->LoadGruntTypeTable(toyboxPickup, flag, sub, 0);
         }
         reg = g_gameReg;
         if (ok == 0) {

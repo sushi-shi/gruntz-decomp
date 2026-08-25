@@ -750,7 +750,7 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001584a0, 0x43)
-i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
+i32 CDDrawSubMgrLeafScan::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
     if (m_soundStream == NULL) {
         return 0;
     }
@@ -762,11 +762,11 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
     if (val->m_sound == NULL) {
         return 0;
     }
-    return MatchSub(val, arg) != 0;
+    return ConfigurePrimaryFromCue(val, startPrimary) != 0;
 }
 
 RVA(0x001584f0, 0x80)
-i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
+i32 CDDrawSubMgrLeafScan::ConfigurePrimaryFromCue(LeafCue* cue, i32 startPrimary) {
     if (cue == NULL) {
         return 0;
     }

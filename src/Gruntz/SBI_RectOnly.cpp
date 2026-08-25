@@ -512,7 +512,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                                 0x32
                             );
                             clock->m_last = static_cast<u32>(g_frameTime);
-                            sm->ArmSnapshot(1, 0xbb7);
+                            sm->SetDefeatCountdown(1, 0xbb7);
                         } else {
                             CSBI_ImageSet* n = m_modeNotify;
                             m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
@@ -520,7 +520,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                             if (n) {
                                 n->Notify(1);
                             }
-                            sm->ArmSnapshot(0, 0xbb7);
+                            sm->SetDefeatCountdown(0, 0xbb7);
                         }
                     }
                     return 1;
@@ -2878,7 +2878,7 @@ void CStatusBarMgr::UpdateStatusSystems() {
     LoadRezMachineConfig();
     LoadChipMachineConfig();
     UpdateChipGrinderStatusBar();
-    UpdateDestructButtonStatusBar();
+    UpdateDestructWarningAnimation();
 }
 
 RVA(0x00105920, 0x47)
@@ -4988,7 +4988,7 @@ void CStatusBarMgr::ExitMode() {
 }
 
 RVA(0x0010b320, 0x167)
-void CStatusBarMgr::UpdateDestructButtonStatusBar() {
+void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
     switch (m_destructWarnActive) {
         case DESTRUCT_WARNING_FORWARD: {

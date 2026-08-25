@@ -151,7 +151,7 @@ public:
     i32 LoadTabSprites();
     i32 BuildGameMenu();
 
-    void UpdateDestructButton(i32 arg);
+    void StartDestructWarning(i32 countdownMs);
     i32 StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment);
     void ResetCounters();
     void ResetSlots();
@@ -203,7 +203,7 @@ public:
     void TickGauge();
     void UpdateChipGrinderStatusBar();
     void NotifyAllSlots();
-    void UpdateDestructButtonStatusBar();
+    void UpdateDestructWarningAnimation();
     i32 Activate();
     i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
 

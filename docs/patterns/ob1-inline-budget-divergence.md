@@ -232,7 +232,7 @@ population to find a per-class majority in**:
 | recorded wall | xref | why it stands |
 |---|---|---|
 | `??1CWwdGameObject` 0x15bd10 / `??1CLoadable` 0xd5d70 | 2 callers (`??_GCLoadable` + this dtor); every other derived dtor expands it | a base DESTRUCTOR is invoked implicitly and cannot carry a tag parameter, so the recipe has no spelling |
-| `CGruntzMgr::ChangeState` 0x8fab0 / `??1CMoviePlayer` 0x38fc0 | 1 caller, `CCreditsState::ReleaseResources`' `delete vh` | ChangeState EXPANDS it; out-of-lining it measured 74.88 -> 70.54 |
+| `CGruntzMgr::PlayMovieEntry` 0x8fab0 / `??1CMoviePlayer` 0x38fc0 | 1 caller, `CCreditsState::ReleaseResources`' `delete vh` | PlayMovieEntry EXPANDS it; out-of-lining it measured 74.88 -> 70.54 |
 | `SnapshotChildren` / `RestoreChildren` / `LoadRecordFile` / `??1CFileMemBase` | corroborated independently: retail's own `??1CFileMem` expands it | already measured, see above |
 | `FontRenderer::DrawWrapped` 0x17a460 / `CRect::Width` 0x17b500 | 1 caller - DrawWrapped itself, 4 sites inside it | the callee is an MFC header inline; a second entity would mean editing MFC |
 

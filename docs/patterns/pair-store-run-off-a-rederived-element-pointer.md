@@ -63,7 +63,7 @@ CONSTANT member offset where the address itself folds away:
    docs/relevations/wall-reasons-globalopt.md §1, §4.) This broke the whole single-store-sink
    family that had been misclassified as C1 handle-state (probe-inert,
    /G3-/G6-invariant): SetHudRectA/B 0x1066f0/0x106740 71.83 -> 100.00
-   EXACT, UpdateDestructButtonStatusBar 0x10b320 94.67 -> 100.00 EXACT,
+   EXACT, UpdateDestructWarningAnimation 0x10b320 94.67 -> 100.00 EXACT,
    LoadMultiplayerBattlezConfig 0x107ae0 98.06 -> 100.00 EXACT.
 3. IV ANCHOR: in an indexed walk, the bound pair address becomes the cursor
    IV, so every sibling field reads at `-8/-4` and the pair at `+0/4/8/c`
@@ -88,7 +88,7 @@ THE POINTEE TYPE IS NOT PART OF THE MECHANISM (measured 2026-08-17): where
 the pair IS a real aggregate (`SbiClockPair m_destructWarnClock`), spelling
 the device as `SbiClockPair* clock = &m_destructWarnClock;` with
 `clock->m_last` / `clock->m_interval` accesses is BYTE-IDENTICAL at all
-three sites (UpdateDestructButtonStatusBar held 100.00 EXACT, full-tree
+three sites (UpdateDestructWarningAnimation held 100.00 EXACT, full-tree
 score line unchanged, 0 fresh). All three powers - index-fold, alias
 opacity, IV anchor - come from materializing the pair's address and storing
 through a pointer cl cannot disambiguate; `i64*` indexing past a member is a

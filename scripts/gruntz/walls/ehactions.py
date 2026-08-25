@@ -22,7 +22,7 @@ own cleanup entry. Lane B closed three parents this way, matching the count
 arithmetically parent-by-parent, and then found all 18 funclets' ACTIONS equal.
 
 The converse is not valid either: a differing action shape is a structural
-signal, not automatic proof of an authored cleanup defect. ChangeState is the
+signal, not automatic proof of an authored cleanup defect. PlayMovieEntry is the
 negative control. Retail calls the CMoviePlayer member CArray ctor/dtor while
 base expands them; both sides have eleven funclets, but retail consequently
 has a preceding-member CFecFile cleanup during construction and decomposes an
@@ -85,7 +85,7 @@ retail's `??1CPtrList@@UAE@XZ` at CGrunt+0x31c (three funclets), and our
 the link kept one copy under whichever name came first
 (identical-derived-dtor-comdat-is-named-by-link-order.md). Do NOT re-model a
 class from a funclet referent - the unwind action can only report the name the
-LINK kept. The fifth is `CGruntzMgr::ChangeState`, the documented negative
+LINK kept. The fifth is `CGruntzMgr::PlayMovieEntry`, the documented negative
 control above.
 
 SLOT-SHIFT (`--shift`) - the largest group, and it holds NO work of its own.

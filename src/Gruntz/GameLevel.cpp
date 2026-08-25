@@ -320,18 +320,18 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 }
 
 RVA(0x0015d630, 0x41)
-i32 CGameLevel::LoadFromSource(CParseSource* arg) {
-    char* handle = arg->BeginParse();
+i32 CGameLevel::LoadFromSource(CParseSource* source) {
+    char* handle = source->BeginParse();
     if (handle == NULL) {
         return 0;
     }
 
     // Byte-forced view of packed WWD storage.
     if (LoadWwd(reinterpret_cast<WwdHeader*>(handle)) == 0) {
-        arg->EndParse();
+        source->EndParse();
         return 0;
     }
-    arg->EndParse();
+    source->EndParse();
     return 1;
 }
 

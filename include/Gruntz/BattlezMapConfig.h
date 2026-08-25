@@ -81,7 +81,7 @@ public:
 
     i32 ScanRegion(CGrunt* g);
 
-    i32 Scan(CGrunt* g);
+    i32 RerouteSwitchSeeker(CGrunt* grunt);
 
     i32 m_active;
     CGruntzMgr* m_ctx;

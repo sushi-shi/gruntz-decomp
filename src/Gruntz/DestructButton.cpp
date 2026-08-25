@@ -8,13 +8,13 @@
 #include <Ints.h>
 
 RVA(0x0010bc30, 0x78)
-void CStatusBarMgr::UpdateDestructButton(i32 arg) {
+void CStatusBarMgr::StartDestructWarning(i32 countdownMs) {
     CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
     m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
     m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
     m_destructWarnClock.m_interval =
         static_cast<u32>(g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32));
     m_destructWarnClock.m_last = static_cast<u32>(g_frameTime);
-    play->ArmSnapshot(1, arg);
+    play->SetDefeatCountdown(1, countdownMs);
     SetMode(0);
 }

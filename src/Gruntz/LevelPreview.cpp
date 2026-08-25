@@ -78,7 +78,7 @@ void CPreviewState::ResetPreview() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de190, 0x35)
-i32 CPreviewState::NextScreenCmd(i32 param) {
+i32 CPreviewState::NextScreenCmd(i32 unused) {
     while (ShowCursor(FALSE) >= 0) {
     }
     LoadLevelPreviewScreen();
@@ -90,7 +90,7 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de1e0, 0x8)
-i32 CPreviewState::AcceptPreviewCommand(i32 param) {
+i32 CPreviewState::AcceptPreviewCommand(i32 unused) {
     return 1;
 }
 
@@ -147,7 +147,7 @@ i32 CPreviewState::RefadeVirtual() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de3c0, 0x2d)
-i32 CPreviewState::OnKey(i32 key, i32 param) {
+i32 CPreviewState::OnKey(i32 key, i32 unused) {
     if (key == VK_ESCAPE) {
         Cancel();
     }

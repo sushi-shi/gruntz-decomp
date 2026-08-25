@@ -1483,7 +1483,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     sub->m_accum.m_v = 0;
     sub->m_running = 0;
     sub->m_currentMs = 0;
-    world->ArmSnapshot(0, 0xbb7);
+    world->SetDefeatCountdown(0, 0xbb7);
     world->m_guts->SetMode(1);
     this->StartPlayerVictorySequence(g_curPlayer);
 }

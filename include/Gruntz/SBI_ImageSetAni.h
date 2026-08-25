@@ -34,11 +34,11 @@ public:
         StatusBarTab tab,
         RECT rc,
         const char* key,
-        i32 b0,
-        i32 b1,
-        i32 b2,
-        i32 b3,
-        i32 b4
+        i32 frameStart,
+        i32 frameEnd,
+        i32 intervalMs,
+        i32 loop,
+        i32 step
     );
 
     virtual void SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval);

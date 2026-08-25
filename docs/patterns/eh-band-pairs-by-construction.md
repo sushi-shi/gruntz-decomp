@@ -79,7 +79,7 @@ non-virtual method, `NextData` at 0x029a30, and no members or virtuals) belongs
 in the original source is an open modelling question, and it must be decided on
 the vftable and COMDAT evidence, not here.
 
-The fifth, `CGruntzMgr::ChangeState`, is the negative control documented in
+The fifth, `CGruntzMgr::PlayMovieEntry`, is the negative control documented in
 `walls ehactions` itself: both sides have eleven funclets and retail's differ
 because it CALLS the `CArray` ctor/dtor our side expands.
 

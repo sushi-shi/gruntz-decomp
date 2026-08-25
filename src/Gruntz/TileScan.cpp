@@ -9,27 +9,27 @@
 #include <Wap32/TileGeometry.h>
 
 RVA(0x00035f10, 0x155)
-i32 CBattlezMapConfig::Scan(CGrunt* arg) {
-    if (static_cast<u32>(arg->m_dwell) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
+i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
+    if (static_cast<u32>(grunt->m_dwell) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
         return 1;
     }
-    i32 v = arg->m_targetTeam;
-    i32 ok = 0;
-    if (v != -1) {
-        GruntzPlayer* fs = &m_ctx->m_options[v];
-        if (fs->m_clearedRound != 0) {
-            ok = 1;
-        } else if (fs->m_liveGate == 0) {
-            ok = 1;
+    i32 targetTeamIndex = grunt->m_targetTeam;
+    i32 targetUnavailable = 0;
+    if (targetTeamIndex != -1) {
+        GruntzPlayer* targetPlayer = &m_ctx->m_options[targetTeamIndex];
+        if (targetPlayer->m_clearedRound != 0) {
+            targetUnavailable = 1;
+        } else if (targetPlayer->m_liveGate == 0) {
+            targetUnavailable = 1;
         }
     }
-    if (ok == 0) {
+    if (targetUnavailable == 0) {
         return 1;
     }
 
-    CGameObject* p = arg->m_object;
-    i32 centerPxY = p->m_screenY;
-    i32 centerPxX = p->m_screenX;
+    CGameObject* object = grunt->m_object;
+    i32 centerPxY = object->m_screenY;
+    i32 centerPxX = object->m_screenX;
     RECT box;
     box.top = (centerPxY >> TILE_SHIFT_PX) - 1;
     box.bottom = (centerPxY >> TILE_SHIFT_PX) + 2;
@@ -49,8 +49,8 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
                 continue;
             }
             if ((flags & 2) == 0) {
-                arg->TileSwitch(col, row, 0, 0xd87, 0, 0);
-                arg->m_dwell = 0;
+                grunt->TileSwitch(col, row, 0, 0xd87, 0, 0);
+                grunt->m_dwell = 0;
                 return 1;
             }
         }

@@ -168,7 +168,7 @@ If none applies, the honest state is that the caller is still under-inlined
 relative to retail — that is a reconstruction gap in the caller, not a missing
 device.
 
-## Worked example: `CGruntzMgr::ChangeState` 0x8fab0 - the divisor, not the mass
+## Worked example: `CGruntzMgr::PlayMovieEntry` 0x8fab0 - the divisor, not the mass
 
 Retail `call`s `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` inside the
 inlined `CMoviePlayer::CMoviePlayer`; we expand it. Diagnosed end-to-end with
@@ -191,11 +191,11 @@ the rule, three measurements, no guessing:
    the same probes *ahead* of the construction does nothing (they lower its
    divisor, not raise it) - which is exactly the model's `budget /
    sites-REMAINING`, and is the trap to avoid when probing.
-4. **What is NOT the lever:** caller statement mass. Padding `ChangeState` with
+4. **What is NOT the lever:** caller statement mass. Padding `PlayMovieEntry` with
    20 and 60 statements never moved the decision, it only inflated the body
    (74.84 -> 30.01 -> 0.00 fuzzy).
 
-Verdict, and it is a measurement rather than a wall: **our `ChangeState` is
+Verdict, and it is a measurement rather than a wall: **our `PlayMovieEntry` is
 missing roughly six inline call sites that retail's had after the
 `CMoviePlayer` construction** - more `CString` conversions / `CMoviePlayer`
 calls / scoped objects between the construction and the return. Finish the

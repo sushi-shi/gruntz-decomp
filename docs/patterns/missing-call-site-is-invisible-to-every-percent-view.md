@@ -74,7 +74,7 @@ A count deficit has three causes and only one is a defect:
    reverse (`CUserLogic::AttachToObject` in the logic ctors, `CMenuItem::Reset`
    in `CMenuPage::AddSubItem2`, `zPTree::Reset` in
    `CChatBoxOwner::HandleTextInputKey`, the `CFecFile`/`CArray` COMDATs in
-   `CGruntzMgr::ChangeState`). Also benign.
+   `CGruntzMgr::PlayMovieEntry`). Also benign.
 3. **A genuinely missing call** — the class above. Rare, and worth the whole
    sweep.
 

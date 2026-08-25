@@ -155,7 +155,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0f9280` | `?MakeButeSectionKey@@YAHPADPBD1@Z` | fxmodedesc | `0xf9280` ? |
 | `0x0f93b0` | `?AppendInt@@YAXPADPBDH@Z` | netsession | `0xf93b0` ? |
 | `0x0fb660` | `_CreateStaticHazard` | logicrecorddispatch | `0xfb660` ? |
-| `0x10bc30` | `?UpdateDestructButton@CStatusBarMgr@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
+| `0x10bc30` | `?StartDestructWarning@CStatusBarMgr@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
 | `0x114120` | `?RefreshAsset@CDDrawSubMgrLeafScan@@QAEHPBD@Z` | ddrawsubmgrrefresh | `0x114120` ? |
 | `0x114ec0` | `?SaveFrontBufferShot@@YAXPAVRegistryHelper@Utils@@PAVCGruntz` | savefrontbuffershot | `0x114ec0` ? |
 | `0x114f00` | `?SaveFrontBufferShotImpl@@YAHPAVRegistryHelper@Utils@@PAVCGr` | savefrontbuffershot | `0x114f00` ? |

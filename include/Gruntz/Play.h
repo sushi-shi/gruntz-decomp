@@ -251,7 +251,7 @@ public:
     i32 ClearPlacedObjects();
     i32 FlushPendingOps();
 
-    i32 ArmSnapshot(i32 active, i32 dur);
+    i32 SetDefeatCountdown(i32 active, i32 durationMs);
     i32 CanQuickSave();
     i32 PostHudRect();
 
@@ -363,8 +363,8 @@ public:
 
     CPtrArray m_cameraBookmarks;
     i32 m_cameraBookmarkIndex;
-    ClockInterval m_snapshotTiming;
-    i32 m_snapshotActive;
+    ClockInterval m_defeatCountdownTiming;
+    i32 m_defeatCountdownActive;
     i32 m_scrollEdgeActive;
     i32 m_scrollEdgeLock;
     i32 m_revealFrame;
@@ -492,7 +492,7 @@ inline CPlay::CPlay() {
     m_cursorId = -1;
     m_lightFx = NULL;
     m_cursorUsesPlayerTint = 0;
-    m_snapshotActive = 0;
+    m_defeatCountdownActive = 0;
     m_ambientInitDone = 1;
     m_stepCountdown = 0;
     m_savedMusicSequence = NULL;

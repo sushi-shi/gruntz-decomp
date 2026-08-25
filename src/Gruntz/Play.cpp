@@ -256,7 +256,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_viewMode = VIEW_MODE_IDLE;
         m_hudSuppressed = 1;
         m_cameraBookmarkIndex = -1;
-        m_snapshotActive = 0;
+        m_defeatCountdownActive = 0;
         m_scrollEdgeActive = 0;
         m_scrollEdgeLock = 0;
         m_frameMarker = NULL;
@@ -671,22 +671,23 @@ i32 CPlay::Render() {
             return 0;
         }
 
-        if (m_snapshotActive != 0) {
+        if (m_defeatCountdownActive != 0) {
             // Note: retail adds the pair FIRST and subtracts the clock
             // after (0xc92b8 add/adc, then 0xc92c2 sub/sbb).  cl reassociates it into
             // `(base - now) + dur` and no spelling stops it - a separate `deadline`
             // temp, a compound `-=`, and a separate `now` temp all fold to the same
             // tree, and swapping the two addends only moves which one is the
             // accumulator.
-            i64 deadline = m_snapshotTiming.m_interval.m_v + m_snapshotTiming.m_start.m_v;
+            i64 deadline =
+                m_defeatCountdownTiming.m_interval.m_v + m_defeatCountdownTiming.m_start.m_v;
             i64 left = deadline - static_cast<i64>(g_frameTime);
             u32 leftMs = static_cast<u32>(left);
             if (left < 0) {
                 leftMs = 0;
             }
             i32 secsLeft = static_cast<i32>(leftMs / MS_PER_SECOND) + 1;
-            if (static_cast<i64>(g_frameTime) - m_snapshotTiming.m_start.m_v
-                >= m_snapshotTiming.m_interval.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
+                >= m_defeatCountdownTiming.m_interval.m_v) {
 
                 if (m_guts->m_modeArmed != 0) {
                     g_gameReg->m_cmdGrid->StartPlayerDefeatSequence(5);
@@ -703,7 +704,7 @@ i32 CPlay::Render() {
                 marker->m_running = 0;
                 marker->m_currentMs = 0;
                 m_guts->SetMode(0);
-                m_snapshotActive = 0;
+                m_defeatCountdownActive = 0;
 
                 if (g_gameReg->m_options[0].m_warlordObjectId != 0) {
                     // The lookup result is materialised BEFORE the null test, not
@@ -1678,7 +1679,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_region1Gate = 0;
         self->m_region2Gate = 0;
         self->m_region3Gate = 0;
-        self->m_snapshotActive = 0;
+        self->m_defeatCountdownActive = 0;
         self->m_focusPlayerIndex = 3;
         self->m_renderDisabled = 1;
         g_playActive = 0;
@@ -3414,7 +3415,7 @@ i32 CPlay::QuitToMenu() {
         if (m_world->m_drawTarget->HasOverlay() != 0) {
             m_world->m_drawTarget->TransEnter();
         }
-        m_mgr->ChangeState(3);
+        m_mgr->PlayMovieEntry(3);
     }
     return 1;
 }
@@ -6780,7 +6781,7 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
     SYNC_PAIR(ar, mode, p);
     p = &m_region1Timing.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
-    p = &m_snapshotTiming.m_start.m_lo;
+    p = &m_defeatCountdownTiming.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
     p = &m_region2Timing.m_start.m_lo;
     SYNC_PAIR(ar, mode, p);
@@ -6908,7 +6909,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     s->Write(&m_region2Gate, sizeof(m_region2Gate));
     s->Write(&m_region3Gate, sizeof(m_region3Gate));
     s->Write(&m_viewMode, sizeof(m_viewMode));
-    s->Write(&m_snapshotActive, sizeof(m_snapshotActive));
+    s->Write(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     s->Write(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
     s->Write(&m_cameraBookmarkIndex, sizeof(m_cameraBookmarkIndex));
     s->Write(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
@@ -7122,7 +7123,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_region2Gate, sizeof(m_region2Gate));
     ar->Read(&m_region3Gate, sizeof(m_region3Gate));
     ar->Read(&m_viewMode, sizeof(m_viewMode));
-    ar->Read(&m_snapshotActive, sizeof(m_snapshotActive));
+    ar->Read(&m_defeatCountdownActive, sizeof(m_defeatCountdownActive));
     ar->Read(&m_cursorUsesPlayerTint, sizeof(m_cursorUsesPlayerTint));
     ar->Read(&m_cameraBookmarkIndex, sizeof(m_cameraBookmarkIndex));
     m_stepCountdown = 2;
@@ -7420,14 +7421,14 @@ i32 CPlay::RegisterInputBindings() {
 }
 
 RVA(0x000d9240, 0x3c)
-i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
+i32 CPlay::SetDefeatCountdown(i32 active, i32 durationMs) {
     if (active != 0) {
 
-        m_snapshotTiming.m_interval.m_lo = dur;
-        m_snapshotTiming.m_interval.m_hi = 0;
-        m_snapshotTiming.m_start.m_v = static_cast<u32>(g_frameTime);
+        m_defeatCountdownTiming.m_interval.m_lo = durationMs;
+        m_defeatCountdownTiming.m_interval.m_hi = 0;
+        m_defeatCountdownTiming.m_start.m_v = static_cast<u32>(g_frameTime);
     }
-    m_snapshotActive = active;
+    m_defeatCountdownActive = active;
     return 1;
 }
 
@@ -7865,10 +7866,10 @@ i32 CPlay::FlushPendingOps() {
 
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
-    if (m_renderDisabled == 0 && m_inGame == 0 && m_levelOverlayOpen == 0 && m_snapshotActive == 0
-        && m_guts->m_hlBusy == 0 && m_guts->m_levelOverlayActive == 0
-        && m_guts->m_quitConfirmationActive == 0 && g_gameReg->m_frameGate == 0
-        && g_gameReg->m_cmdGrid->m_groupFlag != 0) {
+    if (m_renderDisabled == 0 && m_inGame == 0 && m_levelOverlayOpen == 0
+        && m_defeatCountdownActive == 0 && m_guts->m_hlBusy == 0
+        && m_guts->m_levelOverlayActive == 0 && m_guts->m_quitConfirmationActive == 0
+        && g_gameReg->m_frameGate == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0) {
         return 1;
     }
     return 0;

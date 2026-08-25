@@ -119,7 +119,7 @@
             while (ShowCursor(0) >= 0) {                                                           \
             }                                                                                      \
         }                                                                                          \
-        ChangeState(N);                                                                            \
+        PlayMovieEntry(N);                                                                         \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
             while (ShowCursor(1) < 0) {                                                            \
@@ -135,7 +135,7 @@
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
         }                                                                                          \
-        ChangeState(N);                                                                            \
+        PlayMovieEntry(N);                                                                         \
         if (mus)                                                                                   \
             mus->StartMusic();                                                                     \
         return 1;                                                                                  \
@@ -510,7 +510,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 0;
                         }
 
-                        (static_cast<CStatusBarMgr*>(_g->m_guts))->UpdateDestructButton(0x1387);
+                        (static_cast<CStatusBarMgr*>(_g->m_guts))->StartDestructWarning(0x1387);
                         AppendChatMessage(
                             "My name is Kevin Lambert.  You typed in my cheat "
                             "code.  Prepare to die."

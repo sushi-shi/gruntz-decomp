@@ -137,7 +137,7 @@ public:
     virtual i32 SetCoords(LevelCoordRect* coords);
     virtual i32 SetCoordExtents(i32 w, i32 h);
     virtual i32 LoadWwd(WwdHeader* hdr);
-    virtual i32 LoadFromSource(CParseSource* arg);
+    virtual i32 LoadFromSource(CParseSource* source);
     virtual i32 LoadFromFile(const char* path);
     virtual void ReleaseChildren();
 

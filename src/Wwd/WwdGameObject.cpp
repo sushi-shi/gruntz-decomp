@@ -821,16 +821,16 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151d20, 0x3a)
-i32 CGameObject::NotifyHooked(i32 arg) {
-    AnimWorkerObj* p = m_animWorker;
-    if (!p) {
+i32 CGameObject::NotifyForActKey(i32 actKey) {
+    AnimWorkerObj* worker = m_animWorker;
+    if (!worker) {
         return 0;
     }
-    i32 saved = p->m_actKey;
-    p->SetActKey(arg);
+    i32 savedActKey = worker->m_actKey;
+    worker->SetActKey(actKey);
     m_animWorker->m_notify(this);
-    if (m_animWorker->m_actKey == arg) {
-        m_animWorker->SetActKey(saved);
+    if (m_animWorker->m_actKey == actKey) {
+        m_animWorker->SetActKey(savedActKey);
     }
     return 1;
 }

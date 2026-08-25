@@ -475,7 +475,7 @@ base pointer (`mov r,[r+0x40]` against `add r,0x40; mov r,[r]` - retail names
 the sub-object with a pointer local where we spell the flat member), and the
 `/GX` EH state variable, whose `mov DWORD PTR [esp+K],<small int>` run shifts by
 one whenever the set or order of destructible temporaries differs
-(`CGruntzMgr::ChangeState` 0x8fab0, `CStatusBarMgr::BuildTabzDialog` 0x10a340,
+(`CGruntzMgr::PlayMovieEntry` 0x8fab0, `CStatusBarMgr::BuildTabzDialog` 0x10a340,
 `CDDrawSurfaceMgr::SnapshotChildren` 0x156020 and `RestoreChildren` 0x156530,
 `CGruntzMgr::TransitionState` 0x8b960). Neither is a wrong value: the first is a
 type/locals question and the second is an EH-object-set question, and both are

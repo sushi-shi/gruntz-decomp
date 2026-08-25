@@ -479,8 +479,8 @@ CSplashState::LoadSounds (0xf9780); first/real CSplashState TU.
 
 ### unknownfileioctor
 ??0CFecFile emit TU: the retail copy at 0x8fea0 is gruntzmgr's COMDAT emission
-(ChangeState constructs CMoviePlayer whose m_decodeStore member is a CFecFile),
-but converting to a header inline makes our cl flatten the ctor into ChangeState
+(PlayMovieEntry constructs CMoviePlayer whose m_decodeStore member is a CFecFile),
+but converting to a header inline makes our cl flatten the ctor into PlayMovieEntry
 and lose the label (inline-depth wall). Kept until that caller converges.
 
 ### bootystateactivate

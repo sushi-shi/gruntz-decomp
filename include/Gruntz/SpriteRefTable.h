@@ -8,8 +8,6 @@
 #include <Gruntz/ColorTint.h>
 #include <Ints.h>
 
-GZ_ENUM_FORWARD_SPLIT(ColorTint, u8);
-
 class CSpriteRef {
 public:
     CSpriteRef();

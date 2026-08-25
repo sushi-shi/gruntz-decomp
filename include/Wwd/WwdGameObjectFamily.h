@@ -108,7 +108,7 @@ public:
     void AddLogicHit(char* key);
     void AddLogicAttack(char* key);
     void AddLogicBump(char* key);
-    i32 NotifyHooked(i32 arg);
+    i32 NotifyForActKey(i32 actKey);
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
 

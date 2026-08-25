@@ -189,7 +189,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_viewMode = VIEW_MODE_IDLE;
     m_hudSuppressed = 1;
     m_cameraBookmarkIndex = -1;
-    m_snapshotActive = 0;
+    m_defeatCountdownActive = 0;
     m_scrollEdgeActive = 0;
     m_scrollEdgeLock = 0;
     m_customLevelVerificationPending = 0;
