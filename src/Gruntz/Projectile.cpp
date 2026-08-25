@@ -315,6 +315,8 @@ void CProjectile::RegisterType() {
 }
 
 // @early-stop
+// Keep the FALL/IMPACT null checks in their switch arms and share only the
+// animation tail. A ternary pointer selection makes cl merge the checks.
 RVA(0x000dfd00, 0x70c)
 void CProjectile::AdvanceMotion() {
     if (m_arrived != 0) {
@@ -500,12 +502,23 @@ void CProjectile::AdvanceMotion() {
             return;
         }
     }
-    CAniElement* sprite = (tier != 0) ? m_frames[PF_FALL] : m_frames[PF_IMPACT];
-    if (sprite != NULL) {
-        SwitchAnimation(sprite);
-        return;
+    CAniElement* sprite;
+    if (tier != 0) {
+        sprite = m_frames[PF_FALL];
+        if (sprite != NULL) {
+            goto animate;
+        }
+    } else {
+        sprite = m_frames[PF_IMPACT];
+        if (sprite != NULL) {
+            goto animate;
+        }
     }
     SetObjectFlags(0x10000);
+    return;
+
+animate:
+    SwitchAnimation(sprite);
 }
 
 RVA(0x000e05e0, 0x4e)
