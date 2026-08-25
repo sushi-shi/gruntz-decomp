@@ -19,13 +19,9 @@
 #include <Gruntz/WarpStoneFragment.h>
 #include <Wwd/WwdAniDrawValue.h>
 
-// Player/unit registry extents, used only as array dimensions and index strides.
 GZ_ENUM_CONST_BEGIN(TmGridDim)
     TM_UNITS_PER_PLAYER = 15,
     TM_PLAYER_COUNT = 4,
-    // Not a player index: the "every player" selector accepted by three
-    // player-ranged walks. It is the same value as PLAYER_SLOT_ALL; 4 is not
-    // accepted by these retail branches.
     TM_ALL_PLAYERS = 5
 GZ_ENUM_CONST_END(TmGridDim)
 
@@ -221,13 +217,6 @@ public:
 
     i32 WireTileSwitchLogic(CGrunt* g, i32 x, i32 y);
 
-    // No retail ctor symbol: cl inlines this at the one `new CTriggerMgr`, in
-    // CGruntzMgr::Run.  The member set and the three non-zero defaults are read
-    // off those bytes.  m_armed, m_cameraTargetIdentity, m_reserved274,
-    // m_groupInitialized, m_phase, m_pendingFx, m_pendingFxKind and
-    // m_finishReasonFrame are deliberately NOT initialized here; SetLevel runs
-    // immediately after and supplies m_armed/m_pendingFx.  The embedded
-    // CPtrList/CByteArray members construct themselves.
     CTriggerMgr() {
         memset(m_units, 0, sizeof(m_units));
         memset(m_unitCountByPlayer, 0, sizeof(m_unitCountByPlayer));
@@ -285,7 +274,6 @@ public:
     CDDrawSurfaceMgr* m_world;
 
     i32 m_armed;
-    // A registry identity pair: m_x is playerIndex and m_y is unitIndex.
     Coord m_cameraTargetIdentity;
     CWwdSpriteObject* m_goal;
 
@@ -315,9 +303,6 @@ public:
     i32 m_pendingFxKind;
     char _pad2ac[0x4];
 
-    // Four 64-bit timers. UpdateFrame compares them with a real
-    // sub/sbb/cmp/cmp pair and writes BOTH halves on every rearm - so they are
-    // i64, not the low words alone.
     union {
         i64 m_gooTimerBase;
         struct {

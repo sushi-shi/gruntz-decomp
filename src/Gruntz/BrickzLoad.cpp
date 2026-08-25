@@ -119,10 +119,6 @@ static __inline BrickTileId PickThreeBrickStack(
 }
 
 // @early-stop
-// Calls and all 122 relocations agree; the residue is branch/join layout in the tile
-// switch. The exit-trigger neighbour walk is settled: retail's `cdq / and edx,0x1f /
-// add` is cl's own `/ TILE_SIZE_PX`, and `cx` is a real outer-loop variable - retail
-// homes the x offset at esp+0x58 precisely because its register carries `tileX + xo`.
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
@@ -229,18 +225,6 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
             i32 oldFlags = cell->m_flags;
             i32 keep = oldFlags & 0x1bf40000;
             i32 edgeBit = oldFlags & 0x20000000;
-            // The switch key is a TileCollisionKind - CTileImageSet::GetCollisionAt(0, 0)
-            // for the cell's tile - so each arm is one tile kind's cell-flag word. Retail
-            // wrote it biased (`switch (typeCode - 1)`), which cl 5.0 normalises: the
-            // unbiased form below compiles to byte-identical .text (verified with
-            // llvm-objdump -s --section=.text on this very obj).
-            // 0x20, 0x24 and 0x9a stay literals: nothing in the tree names them. 0x9a
-            // sits right after GAUNTLET_BRICK_A/B/C in this very switch, but it sets
-            // m_flags = 0x2001 where all three of those set 0x6021, so it is NOT a fourth
-            // of that band and must not be named as one. 0x24
-            // does sink a rolling ball like water (CRollingBall::Update groups it with
-            // TILEKIND_WATER) but it gets its own cell bit 0x800, not water's 0x100, so
-            // calling it water would be a guess.
             switch (typeCode) {
                 case TILEKIND_SOLID:
                     cell->m_flags = 0x1;

@@ -14,8 +14,6 @@
 class CDDrawSurfaceMgr;
 
 struct WwdDirtyRect {
-    // Out-of-line in retail: CDDrawChildGroup's factories CALL 0x15b270 (from
-    // 0x1592c8/0x1594b8/0x159673). The body lives in src/Wwd/WwdObjMgr.cpp.
     WwdDirtyRect();
 
     RVA(0x0015b290, 0x10)
@@ -26,8 +24,6 @@ struct WwdDirtyRect {
     };
     WwdDirtyRect(ENoSeed) {}
 
-    // The same seed, INLINE: CResolveNode's ctors expand it (0x1549d0 stores
-    // [+0x20]=COORD_UNSET and [+0x38]=-1 straight into the parent).
     enum EInlineSeed {
         INLINE_SEED
     };
@@ -61,13 +57,11 @@ public:
 
     CResolveNode();
 
-    // Out of line at 0x15b2c0 in WwdObjMgr.cpp; the creators there call it.
     CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     enum EInlineSeed {
         INLINE_SEED
     };
-    // The inline sibling 0x15b390 expands; defined in <Wwd/WwdFactoryObject.h>.
     CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
 
     enum ENoSeed {

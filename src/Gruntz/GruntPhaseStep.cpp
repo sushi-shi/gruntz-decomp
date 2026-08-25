@@ -38,15 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// CMapMgr::CellFlagsAt: the bounds-checked cell-flag read cl inlines at every
-// tile test (out-of-bounds reads back as flag bit 0, which every BRICKZ mask
-// treats as blocked). Declared in MapMgr.h; defined here because the body needs
-// BrickzCell complete.
 // @early-stop
-// Instruction stream and block skeleton both match 1:1; the frame is 0x64 where
-// retail's is 0x44 because retail's cl overlaid the mirror Coords, the clip
-// scratch RECTs and the common-block spills onto one another and ours gives each
-// its own granule, so every [esp+N] operand is displaced.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = 0;
@@ -56,10 +48,6 @@ i32 CGrunt::StepTimeBomberBehavior() {
     }
     m_defenderPx = m_lastTilePx;
 
-    // Mirror the grunt across m_arrivalCell: the destination tile is
-    // 2*here - arrival on each axis, and each axis re-reads the live screen
-    // position (retail shifts BOTH components of the first read in place and
-    // seeds the other axis of the second Coord before overwriting it).
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
         Coord pa;
         Coord pb;
@@ -179,8 +167,6 @@ state2: {
     box.bottom = m_arrivalCell.m_y + 5;
     GRID_CLIP_INL(grid, &box);
 
-    // The 16 cells on the 5x5 ring around m_arrivalCell, packed x:y into
-    // one DWORD; the loop picks one at random until a phase target takes.
     CDWordArray acc;
     acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 2));
     acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y - 2));

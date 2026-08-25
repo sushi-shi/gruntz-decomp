@@ -20,11 +20,6 @@ struct tagMEASUREITEMSTRUCT;
 struct tagDRAWITEMSTRUCT;
 GZ_ENUM_FORWARD(CustomMapSelection);
 
-// Resource control ids of the player-slot dialog template, shared by the
-// Battlez setup dialog (CBattlezDlg) and the multiplayer start dialog
-// (CMultiStartDlg). A constant BAG, never a variable's type - every carrier is
-// an MFC `int nID` (GetDlgItem, OnDrawItem, the ON_* message-map entries).
-//
 GZ_ENUM_CONST_BEGIN(DialogCtrlId)
     CTRL_PLAYER_TYPE0 = 0x500,
     CTRL_PLAYER_COLOR0 = 0x501,
@@ -56,16 +51,10 @@ GZ_ENUM_CONST_BEGIN(DialogCtrlId)
     CTRL_PLAYER_LATENCY_UNIT3 = 0x538
 GZ_ENUM_CONST_END(DialogCtrlId)
 
-// Resource control ids of the colour-picker dialog template (CBattlezDlgColors,
-// IDD 0xc2). Same constant-bag rule as DialogCtrlId - every carrier is an MFC
-// `int nID`.
 GZ_ENUM_CONST_BEGIN(ColorDlgCtrlId)
     CTRL_COLOR_LIST = 0x515
 GZ_ENUM_CONST_END(ColorDlgCtrlId)
 
-// WM_TIMER ids of the multiplayer start dialog. OnInitDialog arms the watchdog
-// at a 50 ms period; OnTimer dispatches it to Watchdog(). Carried as MFC's
-// `UINT nIDEvent`.
 GZ_ENUM_CONST_BEGIN(MultiStartTimerId)
     MULTI_START_WATCHDOG_TIMER = 1
 GZ_ENUM_CONST_END(MultiStartTimerId)

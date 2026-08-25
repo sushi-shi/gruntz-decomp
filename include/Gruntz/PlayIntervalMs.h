@@ -3,7 +3,6 @@
 
 #include <Enums.h>
 
-// Millisecond periods the play loop arms against g_frameTime.
 GZ_ENUM_CONST_BEGIN(PlayIntervalMs)
     CUE_INTERVAL_MS = 0x1f4,
     BOOTY_INTERVAL_MS = 0x2710,

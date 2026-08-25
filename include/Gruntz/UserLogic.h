@@ -44,22 +44,13 @@ public:
 
 class CUserLogic : public CUserBase {
 public:
-    // Tag type: picks the inline sibling of the out-of-line 0x58cd0 ctor.
     enum EInlineBase {
         INLINE_BASE
     };
 
-    // Two entities, same tag type.  Retail's GameSerializationCallback `call`s
-    // ??0CUserLogic@@QAE@XZ (0x138d0) at 45 of its 57 direct-derived `new` sites and
-    // expands it at the other 11 (CRollingBall .. CBehindCandyAni), so the split is
-    // per CLASS - two-shapes-need-two-entities.md.
     CUserLogic();
-    // The expanded sibling for those 11 classes.
     CUserLogic(EInlineBase) {}
-    // Out of line at 0x58cd0.  Only CMovingLogic (CGrunt / CProjectile) and
-    // CDoNothingNormal reach it - retail's three `call` sites.
     CUserLogic(CGameObject* obj);
-    // The expanded sibling: every other derived ctor carries this body inline.
     CUserLogic(CGameObject* obj, EInlineBase);
     virtual ~CUserLogic() OVERRIDE {}
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
@@ -105,9 +96,6 @@ public:
 
     void GetScreenPos(Coord* out);
 
-    // Header-inline: retail never emits it out of line - every caller carries
-    // the `call GetScreenPos` followed by both halves loaded, `sar 5`-ed and
-    // stored back in place.
     void GetScreenTile(Coord* out);
 
     void RegisterLogicTypesOnce();
@@ -248,14 +236,6 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     }
 }
 
-// The one textual copy of the ctor body.  Both CUserLogic ctor entities expand it.
-//
-// A MACRO, not an inline member: MSVC 5 has no __forceinline, and as a real inline
-// member cl's /Ob1 budget DECLINES it in the two largest derived ctors - measured
-// 2026-08-14: CWarlord (0x42d40) 78.11 -> 70.99 and CInGameIcon (0x95b10) 98.26 ->
-// 93.24, where retail expands it verbatim.  A textual macro is the period device for
-// a block that must expand at every site
-// (docs/patterns/inline-expanded-twice-costs-a-register.md).
 #define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                            \
     m_logicObject = (obj);                                                                         \
     m_object = static_cast<CWwdSpriteObject*>(obj);                                                \
@@ -273,10 +253,6 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     m_gatedCallbackCode = IDX(ACT_NONE);                                                           \
     m_reserved2c = 2;
 
-// Inline in the shared header: retail expands this whole body into ~57 derived
-// logic constructors (they show the two vptr stamps, the m_actBits zBitVec assign and
-// the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
-// DispatchDoNothingNormalLogic reach the 0x58cd0 out-of-line copy.
 inline CUserLogic::CUserLogic(CGameObject* obj, EInlineBase) {
     USERLOGIC_ATTACH_TO_OBJECT(obj);
 }
@@ -309,11 +285,6 @@ public:
     class CAniElement* m_value;
     char m_blob[0x10];
 
-    // These MUST stay inline members OF THIS class, not calls through
-    // m_wwdObject: the receiver load has to sit inside the expansion or cl 5.0
-    // hoists it over the preceding store
-    // (docs/patterns/ctor-body-first-statement-is-an-inline-member.md,
-    // docs/patterns/animation-switch-pair-is-one-inline-member.md).
     void Hide() {
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
@@ -359,12 +330,7 @@ public:
     }
 
 public:
-    // Two entities, same tag type.  The out-of-line one at 0x11160 EXPANDS its
-    // CUserLogic base (it stamps ??_7CUserBase and `call`s ??0zBitVec);
-    // CTileSecretTrigger and CGiantRock reach it.
     CTileTrigger();
-    // The inline sibling, whose CUserLogic base stays a `call`: `new CTileTrigger`
-    // and CCoveredPowerup expand this body.
     CTileTrigger(CUserLogic::EInlineBase) {}
     CTileTrigger(CGameObject* obj);
     virtual void FireActivation(i32 id) OVERRIDE;

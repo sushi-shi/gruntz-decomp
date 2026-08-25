@@ -62,14 +62,6 @@ i32 CGameObject::IsLoaded() {
     return 0;
 }
 
-// The pinned half of the two-entity split (docs/patterns/two-shapes-need-two-entities.md).
-// Retail `call`s this from exactly three sites - CDDrawChildGroup::CreateContainerObject
-// (through CWwdGameObject -> CWwdSpriteObject), CDDrawWorkerHost::ReadPlaneObjects and
-// CWwdGameObject::CreateObject - and expands CGameObject(..., INLINE_BASE) in
-// CreateSpriteObject / CreateDotObject / CreateDeferredObject.
-// Retail's body calls neither 0x15b270 nor 0x15b2b0, so m_region and m_shadow take the
-// INLINE_SEED siblings here; the expanded CGameObject(..., INLINE_BASE) leaves both as
-// the `call`s the three factories show.
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
     : CResolveNode(owner, id, objectFlags, CResolveNode::INLINE_SEED),
@@ -79,8 +71,6 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
 }
 
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
-// The header's `~WwdRegion() {}` COMDAT - inlined away at every call site,
-// but the unwind funclet for the member at +0x9c jumps to this address.
 
 RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
@@ -195,16 +185,6 @@ LoadableClassId CWwdGameObject::GetClassId() {
 
 RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 // @early-stop
-// Residue: one nested inlining step. Retail expands ~CResolveNode's body here -
-// `walls vptrscan` reads the ??_7CResolveNode@@6B@ stamp inside this function,
-// which no other channel does - and then CALLS ??1CWapObj; ours calls
-// ??1CResolveNode instead. `walls inline-model --gap 0x15bd10` reports
-// ??1CResolveNode a /Ob1 CANDIDATE whose site the budget declined, correcting
-// this note's earlier "not a candidate at all" - the earlier measurement was
-// taken under a TU state that no longer exists. Writing m_dirty.Reset()'s
-// stores directly in ~CResolveNode does not flip it, so the member-call
-// spelling stands; ~WwdDirtyRect's user-declared empty dtor is retail-real
-// (0x15b290).
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();
@@ -332,12 +312,6 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
 }
 
 // @early-stop
-// The AT_FIRST/AT_LAST/AFTER_FIRST arms carry their own COPIES of the advance
-// body (retail emits all four; a shared `goto loop_restart` under-counted by
-// ~150 insns - the copies survive cl's cross-jumper because each arm's entry
-// register state differs), and the m_useElapsedTime mask is computed at u8
-// width (`mov cl,[edi+4]; not cl`). Residue: per-copy register rotations, the
-// WWDPOS arm seat swaps, and jump-table churn behind them.
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_animation == NULL) {
@@ -802,10 +776,6 @@ static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
 }
 
 // @early-stop
-// Residue is one address-CSE too many: cl enregisters `&m_index` in EBP, so the
-// four member addresses the tail still needs after EBX is rebound to m_element
-// all spill, and the frame grows by a dword. Retail rematerialises m_index off
-// the live `this` and gives EBP to `&m_pendingDraw`.
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {

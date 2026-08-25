@@ -57,9 +57,6 @@ i32 CGrunt::StepObjectGuardBehavior() {
         if (m_combatActive != 0) {
             goto tail;
         }
-        // Retail spells the stand-down twice, once per stamina arm (two
-        // ResetEntranceAnimation calls and two `mov eax,1` epilogues at
-        // 0xf1d36 and 0xf1d7e).
         if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 goto tail;
@@ -118,9 +115,6 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
                 i32 gx = m_defenderPx.m_x >> TILE_SHIFT_PX;
                 i32 gy = m_defenderPx.m_y >> TILE_SHIFT_PX;
-                // Four FLAT `if (a && b)` statements, not two nested tests: retail
-                // re-compares tx against gx before each pair (0xf1ebe / 0xf1ef6 /
-                // 0xf1f2e / 0xf1f6a) and chains the redundant compares itself.
                 if (tx < gx && ty < gy) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x + 0x40,

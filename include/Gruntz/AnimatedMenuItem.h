@@ -20,8 +20,6 @@ class CMenuPage;
 class CAnimatedMenuItem : public CMenuItem {
 public:
     CAnimatedMenuItem();
-    // 0x1847e0 (RVA_COMPGEN pin at the keeper, MenuPage.cpp - an RVA() here
-    // would annotate BOTH cl dtor variants and collide with the deleting dtor at 0x1847c0).
     virtual ~CAnimatedMenuItem() OVERRIDE {
         Cleanup();
     }
@@ -72,8 +70,6 @@ public:
     i32 m_framePeriodMs;
 };
 
-// The constructor calls this header-visible body; the vtable also retains the
-// standalone COMDAT emitted from MenuItem.cpp.
 inline void CAnimatedMenuItem::SetFramePeriod(i32 framePeriodMs) {
     m_framePeriodMs = framePeriodMs;
 }

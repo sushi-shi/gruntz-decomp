@@ -25,8 +25,6 @@ static inline Coord ScanCell(CGrunt* g) {
 }
 
 // @early-stop
-// The two signed/unsigned twins are fixed (`hits` is unsigned - retail spells the
-// range guards `ja`/`jae`); what is left is register/spill colouring.
 RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= STAMINA_FULL) {

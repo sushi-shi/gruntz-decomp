@@ -33,8 +33,6 @@ CHashElement* CHashElement::Next() {
 }
 
 // @early-stop
-// One SIB byte, pointer-from-a-member sub-family.
-// docs/patterns/sib-base-index-follows-local-decl-order.md
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184900, 0x43)
@@ -82,8 +80,6 @@ void CHashBase::RemoveAll() {
 }
 
 // @early-stop
-// One SIB byte, pointer-from-a-member sub-family.
-// docs/patterns/sib-base-index-follows-local-decl-order.md
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashElement* node) {
     node->m_hash = this;
@@ -111,8 +107,6 @@ CHashElement* CHashBase::First() {
 }
 
 // @early-stop
-// The only differing byte is the commuted scale-1 SIB encoding of the tail
-// address: [eax+ecx+0xc] here and [ecx+eax+0xc] in retail.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184b10, 0x29)
@@ -135,9 +129,6 @@ CHashElement* CHashBase::Last() {
 }
 
 // @early-stop
-// The only differing byte is the commuted scale-1 SIB encoding of the bucket
-// address: [ecx+eax+8] here and [eax+ecx+8] in retail. A natural bucket-pointer
-// local is byte-flat.
 RVA(0x00184b40, 0x1d)
 CHashElement* CHashBase::Lookup(u32 bucketIndex) {
     return FromLink(m_buckets[bucketIndex].m_chain.m_head);

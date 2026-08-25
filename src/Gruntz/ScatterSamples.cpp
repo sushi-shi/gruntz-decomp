@@ -43,8 +43,6 @@ have_prime:
         for (k = 0; k < prime; k++) {
             used[k] = 0;
         }
-        // The residue is loop-carried: retail keeps it in edx across the idiv,
-        // so each step multiplies the PREVIOUS residue, seeded with `count`.
         r = count;
         for (k = 0; k < prime - 1; k++) {
             r = (s * r) % prime;

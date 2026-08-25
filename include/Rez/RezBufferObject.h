@@ -12,8 +12,6 @@ struct RezElem40 {
     float m_scale;
 };
 
-// Retail's per-element construction helper (0x17f300): a bare `mov eax,ecx; ret`
-// __fastcall identity called from CRezBufferObject::Serialize's construct loop.
 RezElem40* __fastcall InitRezElem(RezElem40* p);
 
 struct CRezBufferObject : public CObject {

@@ -39,7 +39,6 @@
 
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
-    // Retail holds the strcmp result in a `bool` (`sete cl / test cl,cl`).
     bool isI = ANIMATION_ACT_EQUALS("I");
     if (isI) {
         return 1;

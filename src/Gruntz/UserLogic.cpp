@@ -53,8 +53,6 @@ void CUserLogic::FinalizeStep(char*) {
 }
 
 // @early-stop
-// 96.36: only instruction scheduling around the CMapStringToPtr::Lookup call
-// (retail pushes &val before computing the name `lea`).
 RVA(0x00008c00, 0x152)
 i32 CWapX::SerializeAnimationState(
     CFileMemBase* archive,

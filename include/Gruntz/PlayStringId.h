@@ -3,9 +3,6 @@
 
 #include <Enums.h>
 
-// String-table resource ids consumed by CPlay's loading and level-title UI.
-// They are a constant bag because CString::LoadString takes an integer resource
-// boundary; no runtime object stores a PlayStringId value.
 GZ_ENUM_CONST_BEGIN(PlayStringId)
     IDS_CONTINUE_PROMPT = 0x8128,
 

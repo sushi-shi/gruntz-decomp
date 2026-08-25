@@ -41,8 +41,6 @@ DATA(0x0024e35c)
 i32 g_playActive;
 
 // @early-stop
-// One scratch register: retail keeps esi live and uses edx for the drawTarget chain.
-// Caching menuRoot() in a local is strictly worse; no local spelling reaches it.
 RVA(0x000fa1f0, 0xc6)
 i32 CState::LoadTitlePage(
     const char* titleName,
@@ -89,8 +87,6 @@ i32 CState::LoadTitlePage(
 }
 
 // @early-stop
-// One scratch register on the frontPair->m_surface chain; a local for the pair or
-// for the surface is byte-identical.
 RVA(0x000fa300, 0x3a)
 i32 CState::PresentTitlePage(
     const char* unusedTitleName,
@@ -245,9 +241,6 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 }
 
 // @early-stop
-// Whole-function esi/edi role swap. Declaration order is not the lever: all three
-// orders of the two surface locals (including declare-then-assign, which keeps the
-// load order) emit the identical registers.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000fa790, 0x104)
@@ -375,8 +368,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-// @early-stop: complete; menuRoot() fixes call setup, leaving the known frontPair
-// scratch register.
+// @early-stop
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == NULL) {

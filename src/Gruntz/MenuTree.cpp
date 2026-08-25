@@ -290,8 +290,6 @@ i32 CMenuTree::DrawFocusCursors(
     return 1;
 }
 
-// Both PlayFocusSound and PlayActivationSound inline this: cl5 defers the callee-save
-// pushes into the inlined region, which is what gives the guard its own epilogue.
 static __inline i32 PlayMenuCue(SoundCueRegistry* soundRegistry, const char* cueKey) {
     if (!soundRegistry->m_silentMode) {
         SoundCue* foundCue = NULL;

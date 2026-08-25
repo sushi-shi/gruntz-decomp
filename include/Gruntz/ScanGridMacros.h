@@ -6,16 +6,6 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/FreeNodePool.h>
 
-// The grunt scan/step compilands share these force-inline devices; MSVC 5.0
-// macros are the faithful model of the always-inlined expansion.
-
-// CMapMgr::Clip(src) expanded in place -- the shape cl emits when it inlines the
-// 0x2b340 body with a non-constant src: the (0,0,w,h) rect is built by the
-// out-of-line CRect ctor, the src rect is copied and its right/bottom bumped,
-// and the NULL arm re-runs the ctor into a temporary.
-// Folding these two sites onto GRID_CLIP_INL costs StepDefenderUnit
-// 78.02 -> 76.28, so the out-of-line CRect ctor really is what retail built the
-// (0,0,w,h) rect with here.
 #define GRID_CLIP(grid, srcRect)                                                                   \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \
@@ -35,11 +25,6 @@
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
-// Same expansion as GRID_CLIP, but at the sites where cl builds the (0,0,w,h) rect
-// with field stores instead of the out-of-line CRect ctor; only the NULL arm's
-// temporary keeps its ctor call. The bounds rect is reached through one pointer:
-// retail reads back m_bounds.right/left/bottom/top through the same register it
-// handed IntersectRect, never re-deriving them from the grid.
 #define GRID_CLIP_INL(grid, srcRect)                                                               \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \
@@ -64,9 +49,6 @@
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
-// Same expansion with field stores in both the bounds rect and the NULL arm.
-// StepBrickLayerBehavior's retail relocation stream contains no CRect constructor
-// at this site; its NULL arm writes the four fields directly.
 #define GRID_CLIP_INL_FIELDS(grid, srcRect)                                                        \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \
@@ -94,10 +76,6 @@
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
-// CMapMgr::Clip(NULL) expanded in place: the constant-NULL source folds the
-// `src != NULL` arm away, so both rects are built by the out-of-line CRect ctor
-// -- rb directly, ra by assignment from a second, temporary CRect (a four-field
-// copy off the ctor's return register).  m_bounds is reached through one pointer.
 #define GRID_CLIP_NULL(grid)                                                                       \
     {                                                                                              \
         CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
@@ -111,9 +89,6 @@
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
-// Absorbed the pointer-tail twin 2026-08-22 (byte-neutral): reading m_bounds
-// back through the register handed to IntersectRect and re-deriving it from the
-// grid are the same code, so StepBrickLayerBehavior shares this spelling.
 #define GRID_RECT_INLINE(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -133,8 +108,6 @@
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
-// StepDefenderBehavior's retail tail reads the LOCAL rect (four frame fields), not
-// m_bounds - the intersection of (0,0,w,h) with itself makes them equal.
 #define GRID_RECT_INLINE_LOCAL(grid)                                                               \
     {                                                                                              \
         RECT ra;                                                                                   \

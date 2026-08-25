@@ -74,6 +74,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdSpriteAnimationInline.h>
 
 #include <math.h>
 #include <new>
@@ -154,7 +155,6 @@ static char s_SafeFlashTime[] = "SafeFlashTime";
 DATA(0x0020dfd0)
 static char s_FadeTransparency[] = "FadeTransparency";
 
-// damage% by [entrance reason][attack kind]; retail .rdata 23x23 matrix
 DATA(0x001e9788)
 const u8 g_hitTable[23][23] = {
     {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
@@ -234,11 +234,6 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         cue = out;                                                                                 \
     } while (0)
 
-// The knockback cell is the direction the ATTACKER lies in, i.e. the opposite of
-// the pixel delta the same site applies: pushed west => faces east.
-// newPos comes FIRST so the cell copy is each arm's TAIL: retail's arms are not
-// cross-jumped (0x5a304, 0x5a33f, ... each end `mov [<lea 0x43c>+8],r; jmp 0x5a6d6`),
-// which only holds while the arm's last instructions are the per-arm cell stores.
 #define SETDIR(cell, nx, ny)                                                                       \
     do {                                                                                           \
         newPos.m_y = (ny);                                                                         \
@@ -394,8 +389,6 @@ void CGrunt::ComputeFacing(double dt) {
 
 RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
-    // `forced` arrives from m_moveVariant, which also carries a raw cue-variant
-    // index, so the spell domain is entered here.
     SpellzEffect idx = static_cast<SpellzEffect>(forced);
     if (forced == 0) {
         i32 m = 3;
@@ -765,8 +758,6 @@ void CGrunt::DestroyAnims() {
 }
 
 // @early-stop
-// The start and tail tiles are complete Coord values; keeping each pair aggregated
-// is required for the retail C1 cleanup-frame layout.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -946,9 +937,6 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
 
-                    // Retail parks ONE `Clip(0); ~CPtrList; return 0` at 0x58686, AFTER the
-                    // success `mov eax,1` at 0x5867c, and both count gates (0x584a5, 0x584d3)
-                    // `je` forward into it.  Nested positive gates put it there.
                     if (s.GetCount() != 0) {
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
@@ -1084,8 +1072,6 @@ void CGrunt::OnStruck(i32 wasHit) {
     }
 }
 
-#include <Wwd/WwdSpriteAnimationInline.h>
-
 RVA(0x00058b60, 0x2d)
 void CWwdSpriteObject::SetAnimation(CAniElement* animation, i32 advanceImmediately){
     SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
@@ -1126,11 +1112,6 @@ void CMotionState::SetZ(double z) {
     m_maxStep.z = z;
 }
 
-// The pinned half of the two-entity split (docs/patterns/two-shapes-need-two-entities.md).
-// Retail `call`s this from exactly three sites - CGrunt::CGrunt and
-// CProjectile::CProjectile (both through CMovingLogic's ctor) and
-// DispatchDoNothingNormalLogic (through CDoNothingNormal's) - and expands
-// CUserLogic(obj, INLINE_BASE) everywhere else.
 RVA(0x00058cd0, 0x195)
 CUserLogic::CUserLogic(CGameObject* obj) {
     USERLOGIC_ATTACH_TO_OBJECT(obj);
@@ -1167,8 +1148,6 @@ i32 CGrunt::HandleCombatContact(
 ) {
     if (isAttacker == 0) {
         switch (m_arrivalState) {
-            // Retail's dense range starts at 0 with its own jump-table entry:
-            // an empty AI_NONE arm, distinct from the default (slot 8).
             case AI_NONE:
                 break;
             case AI_SMARTCHASER:
@@ -1223,7 +1202,6 @@ i32 CGrunt::HandleCombatContact(
                     }
                     applied = m_triggerMgr->UseEquippedToolAt(m_playerIndex, m_unitIndex, sx, sy);
                 }
-                // The outer test is redundant with the inner one; retail emits both.
                 if (applied == 0 || applied == 1) {
                     if (applied == 1) {
                         SetEntrancePos(1, 1);
@@ -1234,14 +1212,6 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
-        // out of line at the first and expanded it at the other two.
-        // The SLOT is what survives the grown-slot construction, not the buffer it
-        // currently points at: retail parks the record pointer in ebx across
-        // ActNameConstructGrownSlots and only then loads `[ebx]` (0x5941fe `mov
-        // ebx,eax` / 0x59420 `mov eax,[ebx]`).  Dereferencing before the call reads
-        // a pointer the reconstruction can replace - and it is also what the two
-        // sibling sites below already do.
         char** rec0 = g_typeColl.GetNameRecordRaw(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool neH = (strcmp(*rec0, "H") != 0);
@@ -1624,7 +1594,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         } else if (srcPxY < this->m_object->m_screenY) {
             SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
         }
-        // No else: equal coordinates continue with the destination untouched.
     } else {
         float slope = static_cast<float>(dy) / dx;
         if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
@@ -1663,7 +1632,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
                     );
                 }
             }
-            // No else: the boundary case has the same fall-through as dx == 0.
         } else {
             if (srcPxX > this->m_object->m_screenX) {
                 SETDIR(s_gruntDirEast, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
@@ -1700,7 +1668,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 dxt = nxt - oxt;
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
-                // Four independent quadrant guards preserve the repeated delta tests.
                 if (dxt > 0 && dyt > 0) {
                     if (((ocell + 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
                         || ((cell - 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
@@ -1753,7 +1720,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         this->m_lastTilePx = newPos;
         SET_ANIMATION_ACT("O");
-        // Derive motion from the committed member coordinates, not the source local.
         double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
         double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
@@ -1883,10 +1849,6 @@ i32 CGrunt::CommitNeighbor(
 }
 
 // @early-stop
-// Residue is two register choices in the inlined strcmp: retail lands its result
-// in eax and the bool in cl (`test eax,eax / sete cl`), ours in ecx and al and so
-// needs an extra `xor eax,eax` before the sete; and the GetNameRecord loop's
-// ebx/ebp are swapped.  Branch sequence and block topology are identical.
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != 0) {
@@ -2003,8 +1965,6 @@ void CGrunt::FireActivation(i32 id) {
 }
 
 // @early-stop
-// Only the last (DERIVED) entry differs: retail pushes the operator= argument
-// before evaluating SlotOf(); cl emits the object expression first. 3 bytes.
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
@@ -2131,11 +2091,6 @@ DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
 // @early-stop
-// The `0x10000 x7` mask_immediates row is NOT a value defect: retail materialises the
-// same 0x10000 in edi and spells all seven sprite releases `or ecx,edi` (0x5def0,
-// 0x5dfc2, 0x5e482, 0x5e4a2, 0x5e60f, 0x5e627, 0x5e643) where cl gives us the immediate
-// form. Store multiset and offsets are equal to retail's; only their ORDER differs
-// (retail sinks the combat-timeout else-arm to 0x5e58f, past the kind dispatch).
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
     if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
@@ -2342,9 +2297,6 @@ void CGrunt::StepBehavior(char*) {
                     hazard = DEATH_SINK;
                     break;
                 case TILEKIND_SPIKES:
-                    // Unrecovered: a tile COLUMN into a death-cause slot is not a
-                    // real conversion, and gate=0 keeps it from StartUnitDeath - but
-                    // dropping the store changes .text, so the assignment is real.
                     hazard = static_cast<GruntDeathType>(cx);
                     gate = 0;
                     break;
@@ -2819,9 +2771,6 @@ kindDispatch:
 }
 
 // @early-stop
-// Control flow now agrees (55/55 branches, 2/2 rets, every target). Residue is
-// register naming: retail loads the object into edx/ecx where cl picks eax/ecx,
-// so every operand in the clamp blocks reads one register over.
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
@@ -2848,9 +2797,6 @@ void CGrunt::FinalizeStep(char* name) {
         }
     }
     bool eqO = ANIMATION_ACT_EQUALS("O");
-    // Retail 0x5ee48 sends the already-at-tile case to 0x5efc1 - the ScratchResolve
-    // block below - not to a `ret`, so the guard is part of the arm's condition and
-    // the arm is SKIPPED (falls into the "S" handling), it does not return.
     if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = c.row;
@@ -2938,11 +2884,6 @@ void CGrunt::FinalizeStep(char* name) {
 }
 
 // @early-stop
-// Control flow agrees (119/119 branches, 5/5 rets, every target). Residue is a
-// frame-slot redistribution in the two mirrored spans at 0x5f772..0x5f804 and
-// 0x5f8xx: retail keeps 14i where cl emits 12i and gives the following arms 2i
-// fewer, i.e. it reloads the pair from the frame at the join where cl reloads it
-// per arm. The instruction multiset is otherwise equal.
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
@@ -3029,10 +2970,6 @@ void CGrunt::AdvanceMotion() {
                                 }
                             }
 
-                            // 0x5f7ca reads the UNMASKED screen pair back out of its
-                            // homes ([esp+0x10]/[esp+0x14], written at 0x5f74a before
-                            // the `and`), and 0x5f939 runs `mov ecx,ebx` - the snap is
-                            // on `other`, not on this.
                             i32 lastX = other->m_lastTilePx.m_x;
                             i32 lastY = other->m_lastTilePx.m_y;
                             i32 targetX = lastX;
@@ -3041,11 +2978,6 @@ void CGrunt::AdvanceMotion() {
                                 targetX = otherPxX;
                                 targetY = otherPxY;
                             } else if (RectContains(lastX, lastY) != 0) {
-                                // 0x5f7f2 `mov eax,edi / mov ecx,ebp` - retail
-                                // carries the PRE-snap pair into UseEquippedToolAt;
-                                // it never re-reads m_lastTilePx after the snap,
-                                // and 0x5f7dc pushes the same two registers into
-                                // this very probe.
                                 other->SnapToLastTile(0);
                             } else {
                                 targetX = m_arrivalTargetPx.m_x;
@@ -3162,19 +3094,12 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    // Four separate EntranceCell() calls, as in FinalizeStep: retail re-copies the
-    // 12-byte m_entranceCell to the frame and recomputes 3*row+column before EACH of
-    // the four m_cells reads (0x5fcfd/0x5fd25/0x5fd8f/0x5fdba), which is what the
-    // by-value accessor lowers to.
     double dirX = EntranceCell()->m_motion.m_direction.x;
     double dirY = EntranceCell()->m_motion.m_direction.y;
     m_movePosX = static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosX;
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
     i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.x + m_movePosX);
     i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.y + m_movePosY);
-    // Retail 0x5fde1/0x5fde3 pops the compared double INSIDE the positive arm and
-    // leaves it by `jle`, i.e. the two directions are an if / else-if, not one `||`
-    // - the same spelling FinalizeStep already carries at 0x5ef30.
     if (dirX > s_fpZero) {
         if (x > m_lastTilePx.m_x) {
             x = m_lastTilePx.m_x;

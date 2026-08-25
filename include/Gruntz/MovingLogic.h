@@ -44,17 +44,8 @@ public:
     char m_pad34[0x38 - 0x34];
 
 public:
-    // Two entities, same tag type.  The out-of-line 0x13940 EXPANDS both its
-    // CUserLogic base (??_7CUserBase stamp + the single `call ??0zBitVec`) and
-    // its CMotionState member; CProjectile `call`s it.  The inline sibling leaves
-    // both a `call`, which is what CGrunt's construction shows in retail's
-    // GameSerializationCallback: `call ??0CUserLogic`, `call ??0CMotionState`, then the
-    // ??_7CMovingLogic stamp.
     CMovingLogic();
     CMovingLogic(CUserLogic::EInlineBase);
-    // The same body as the out-of-line 0x13940, as an inline sibling: retail's
-    // ??0CProjectile (0x126e0) expands the whole chain down to the single
-    // `call ??0zBitVec`.
     CMovingLogic(CMotionState::EInlineBase);
 
     CMovingLogic(CGameObject* owner);
@@ -77,19 +68,11 @@ private:
     void BeginMotion();
 };
 
-// The untagged default ctor is out of line in GameSerializationCallback.cpp (0x13940); it
-// expands CMotionState's body, while the owner-taking one below leaves it a call -
-// the 0x13940-vs-0x47a10 split retail shows.
 inline CMovingLogic::CMovingLogic(CUserLogic::EInlineBase) {}
 
 inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
     : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
-// Two entities, one divergent statement (two-shapes-need-two-entities.md):
-// CMotionState::SetZ is out of line in GruntCombat.cpp (0x58ca0, cb 48-50 so
-// never exemption-inlined) and only CGrunt::CGrunt reaches it - the tagged
-// sibling below.  CProjectile::CProjectile seeds m_maxStep in place, so the
-// untagged ctor spells the three stores itself.
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     InitOwner(0.001);
     CMotionState* m = Motion();

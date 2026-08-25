@@ -287,10 +287,6 @@ i32 CGruntVoice::BeginPlayback(
     m_stream = stream;
     m_duration.m_v = stream->GetDurationMs();
     m_startStamp.m_v = g_frameTime;
-    // Retail loads priority into ECX at +0x27 (right after GetDurationMs) yet
-    // stores it at +0x47, and defers the m_logicRecord read to +0x44. Swapping these
-    // two statements moves the ECX load onto retail's slot but hoists the member
-    // read to +0x2b (81.50); neither order reproduces both. Schedule coin.
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_priority = priority;
     m_logicRecord->SetEventCode(ActFindId("B"));

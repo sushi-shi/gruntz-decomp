@@ -8,8 +8,6 @@
 #include <Enums.h>
 #include <Ints.h>
 
-// Per-line behavior stored in FontItem::flags. AddItem consumes the queue-order
-// bits; DrawTextLines consumes the rendering bits.
 GZ_ENUM_FLAGS_BEGIN(FontItemFlags, i32)
     FONT_ITEM_FLAGS_NONE = 0,
     FONT_ITEM_PREPEND = 0x02,

@@ -41,10 +41,6 @@ public:
     );
     CRezArchiveType(i32 typeTag, CRezArchiveDir* directory, i32 resourceNameBucketCount);
 
-    // No class-level operator new/delete: retail's unwind funclet for
-    // `new CRezArchiveType` calls the GLOBAL ??3@YAXPAX@Z, which a class-level
-    // forwarder cannot produce (cl emits a class-specific deleting operator and the
-    // funclet calls that).
     ~CRezArchiveType();
 
     i32 m_typeTag;

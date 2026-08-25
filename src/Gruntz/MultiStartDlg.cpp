@@ -4,18 +4,31 @@
 
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/CustomMapSelection.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/MultiStartDlgCtrlId.h>
+#include <Ints.h>
 #include <MsgParam.h>
+#include <Net/KeyedList.h>
 #include <Net/LatencyList.h>
+#include <Net/NetLobbyCtrlId.h>
 #include <Net/NetMgr.h>
+#include <Net/NetProviderNode.h>
+#include <Rez/RezArchive.h>
+#include <Rez/RezArchiveDir.h>
+#include <Rez/RezArchiveEntry.h>
+#include <Utils/RegistryHelper.h>
 
+#include <stdio.h>
 #include <string.h>
 
 RVA_DYNINIT(0x000c1690, 0xa, g_defaultPlayerNames)
@@ -38,38 +51,8 @@ i32 g_netStatsTick;
 DATA(0x0024bdcc)
 i32 g_latencyDisplayTick;
 
-#include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/GruntzCmdMgr.h>
-#include <Net/KeyedList.h>
-#include <Ints.h>
-#include <Net/NetLobbyCtrlId.h>
-
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
-
-#include <rva.h>
-
-#include <Gruntz/MultiStartDlg.h>
-
-#include <Rez/RezArchive.h>
-#include <Rez/RezArchiveDir.h>
-#include <Enums.h>
-#include <Gruntz/CustomMapSelection.h>
-#include <Gruntz/Dialogs.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Multi.h>
-#include <Rez/RezArchiveEntry.h>
-#include <MsgParam.h>
-#include <Net/NetProviderNode.h>
-#include <Net/LatencyList.h>
-#include <Net/NetMgr.h>
-#include <Utils/RegistryHelper.h>
-
-#include <stdio.h>
-#include <string.h>
 
 enum {
     NUM_PLAYER_SLOTS = 4
@@ -707,8 +690,6 @@ i32 CMultiStartDlg::PaintPlayerColorControls() {
         screenToClient(m_hWnd, &rect.TopLeft());
         screenToClient(m_hWnd, &rect.BottomRight());
         CBrush brush;
-        // Two Attach sites, not one hoisted `color`: retail pushes the argument
-        // INSIDE each arm and cross-jumps only the shared `call CreateSolidBrush`.
         if (colorControl->IsWindowEnabled()) {
             GetRandomNumber();
             GetRandomNumber();
@@ -1198,8 +1179,6 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                 ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
             }
             CWnd* maxGruntzControl = GetMaxGruntzControl(slotIndex);
-            // The &&-chain as the ARGUMENT, not an if/else round two calls: retail
-            // materialises the flag (mov edx,1 / jmp / xor edx,edx) and pushes it once.
             maxGruntzControl->EnableWindow(
                 g_multiState->m_isHost && player->m_active && localReadyFlag == 0
             );
@@ -1217,10 +1196,6 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
                     force = 0;
                     GetPlayerNameControl(slotIndex)->SetWindowTextA(player->GetName());
                 }
-                // The combo is fetched into a local FIRST at each of the three sites -
-                // retail calls GetPlayerTypeControl inside both arms and only then pushes the
-                // message args. Written inline the constants push first, which lets cl
-                // cross-jump the two arms onto ONE GetPlayerTypeControl call (retail has two).
                 if (player->m_humanControlled) {
                     CWnd* typeCombo = GetPlayerTypeControl(slotIndex);
                     ::SendMessageA(typeCombo->m_hWnd, CB_SETCURSEL, 4, 0);
@@ -1476,8 +1451,6 @@ void CMultiStartDlg::OnPlayerNameChange3() {
     HandlePlayerNameChange(3);
 }
 
-// Defined after its four callers so cl cannot inline the empty body away -
-// retail keeps the `push <slot>; call` at every EN_CHANGE site.
 RVA(0x000c4ec0, 0x3)
 void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
 

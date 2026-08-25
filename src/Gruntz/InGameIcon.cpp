@@ -104,9 +104,6 @@ static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
 }
 
 // @early-stop
-// Frame, saved-register set and every call/string referent now agree with retail.
-// Residue is which register carries the re-materialised m_object in each ladder arm
-// (retail edx where cl picks eax and vice versa) plus one load-or-store vs `or [mem],imm`.
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
@@ -508,8 +505,6 @@ void RegisterIconState() {
 }
 
 // @early-stop
-// Scheduling: cl issues the m_object load and the final vptr stamp ahead of the
-// m_startClock/m_countdown zero stores; retail issues them after.
 RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startClock.m_v = 0;
@@ -562,8 +557,6 @@ i32 CToyPeek::SerializeDispatch(
 }
 
 // @early-stop
-// Calls, branches, returns, and relocations agree. Retail re-reads grid width
-// for the second bounds test; cl keeps it in ebp across both tests here.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -618,11 +611,6 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 }
 
 // @early-stop
-// Branch sequences AGREE (30/30, 4/4 rets); what is left is register-constant
-// assignment.  Retail pins 1 in ebx and spells the sprite-id test with the
-// immediate (`cmp [eax+0x124],0x55`, then re-loads it into ebp for the second
-// test); ours pins 0x55 in ebx and 1 in edi, so the pair of tests and everything
-// downstream carries a different register in every operand.
 RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {

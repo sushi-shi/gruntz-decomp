@@ -242,9 +242,6 @@ L_clear: {
 #undef MOVE_RECYCLE
 
 // @early-stop
-// cl keeps the hidden return pointer in eax and writes through it; retail parks
-// it in edx and copies (`mov eax,edx`) at the end. The member load order
-// (m_screenX then m_screenY) only comes out right in the by-value form.
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;

@@ -28,8 +28,6 @@ class CMouseDevice;
 
 class CInputState {
 public:
-    // Inline: `new CInputState` in CGruntzMgr::Run expands these six zero stores
-    // through the raw allocation, then phis the null arm (0x83450 @ 0xf0d).
     CInputState();
 
     i32 Init(DirectInputMgr2* manager, InputDeviceSel selection);

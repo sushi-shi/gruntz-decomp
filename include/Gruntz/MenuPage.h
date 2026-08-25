@@ -16,9 +16,6 @@ class CDDrawWorker;
 class CMenuTree;
 class CAnimatedMenuItem;
 
-// Layout, cursor, and focus-wrapping options retained by CMenuPage::Configure.
-// Forced-off wrapping takes precedence when both wrap bits are present; with
-// neither bit set, the page inherits CMenuTree's wrap setting.
 GZ_ENUM_FLAGS_BEGIN(MenuPageFlags, i32)
     MENU_PAGE_FLAGS_NONE = 0,
     MENU_PAGE_FORCE_WRAP = 0x1,

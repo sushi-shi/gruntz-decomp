@@ -107,11 +107,6 @@ const Coord g_bootyLetterCoords[16] = {
 
 DATA(0x001e9068)
 const i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
-// Eight SEPARATE arrays, not one 8x4 table: retail addresses every row with an
-// absolute `[i*8 + &row]`, which is only forced when the rows are distinct symbols
-// (the inter-row distance is then a link-time value, so cl cannot fold the twelve
-// row accesses of LoadGameAssetNamespaces onto one cursor the way it does for a
-// single 2-D object). One row per sprite kind, which is also what the code reads.
 DATA(0x001e9078)
 const Coord g_bootyMiscPos[4] = {{190, 437}, {306, 437}, {422, 437}, {538, 437}};
 DATA(0x001e9098)
@@ -128,11 +123,6 @@ DATA(0x001e9138)
 const Coord g_bootyFlagPos[4] = {{218, 180}, {334, 180}, {450, 180}, {566, 180}};
 DATA(0x001e9158)
 const Coord g_bootyTabPos[4] = {{218, 138}, {334, 138}, {450, 138}, {566, 138}};
-// Retail put these eight arrays at 0x1e9178..0x1e93a8, inside `.rdata` - whose
-// section characteristics are 0x40000040, READ with no WRITE bit. Read-only
-// storage is only reachable for a `const` object, so retail declared them const;
-// spelled non-const they landed in our `.data`, the storage classes disagreed
-// and all 560 bytes went unenrolled, hence uncompared (`audit.data_coverage`).
 DATA(0x001e9178)
 const RECT g_col1Rects[4] =
     {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
@@ -242,8 +232,6 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
         AddrWord<char> cur;
         AddrWord<char> last;
-        // Retail compares against 0x22aef0 - the 26th row's strB, one row past the
-        // array, which lands in the GruntDirStatics copies that follow it.
         last.m_addr = g_secretMsgRows[24].strB + sizeof(SecretMsgRow);
         char* p = g_secretMsgRows[0].strB;
         do {
@@ -333,8 +321,6 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 }
 
 // @early-stop
-// Extent, calls, CFG, constants, and ordered referents are exact; only the
-// scratch-register rotation across the member re-reads remains.
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     SoundStream* r = m_world->m_soundRegistry->m_soundStream;
@@ -427,8 +413,6 @@ i32 CBootyState::ShowSecretBonusMessage() {
         CString title;
         RECT rTitle;
         SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
-        // Retail branches on the tier here and calls Format on both arms with a literal that
-        // pools to one address (0x60babc): the singular/plural texts came out identical.
         if (category == SECRET_BONUS_TIER_ONE) {
             title.Format("Secret Bonus Acquired:");
         } else {
@@ -621,10 +605,6 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 }
 
 // @early-stop
-// Every arm body and both loops now agree instruction-for-instruction with retail; what
-// is left is one whole-function register permutation (retail esi/ecx/edx/edi/ebx/eax for
-// e/x/y/p/i/1, ours edx/eax/ecx/esi/edi/ebx), which also picks `add ecx,0x204` over
-// retail's `lea edx,[ecx+0x204]` for the cursor.
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
@@ -700,19 +680,11 @@ Coord g_levelMsgIconPos[8] = {
 };
 
 // @early-stop
-#include <Gruntz/GlyphStringDraw.h>
-#include <Mfc.h>
-#include <Gruntz/GruntDirection.h>
-#include <Wap32/ScreenGeometry.h>
-#include <Gruntz/SpriteStateFlags.h>
-// @early-stop
 RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
     }
-    // the coin flip is latched into a local; retail spills it to the (now dead)
-    // outX parameter slot in each of the three arms that take it.
     i32 flip;
     switch (sel) {
         case DIR_NORTH:
@@ -1614,9 +1586,6 @@ i32 CBootyState::InputVirtual() {
 }
 
 // @early-stop
-// The eight-element g_levelMsgStrings walk relocates its one-past bound at the
-// following static guard byte; the address agrees and only the delinked symbol
-// name differs.
 RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
@@ -1692,8 +1661,6 @@ i32 CBootyState::OnPaint() {
 }
 
 // @early-stop
-// One scheduling slot in the m_initOnce dispatch; both shape bugs (the separate second
-// `if`, and `<` not `!=` on the letter-coords walk) are settled.
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     BootySeqPhase state = m_activation;
@@ -1746,8 +1713,6 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         }
                     }
                 }
-                // The bound is a SIGNED int compare (`jl`), so the loop counts the table
-                // index rather than comparing pointers.
                 CWwdSpriteObject** ap = m_trailSprites;
                 for (i32 k = 0; k < 4; k++) {
                     (*ap)->m_screenX = g_bootyLetterCoords[k].m_x;
@@ -1826,10 +1791,6 @@ i32 CBootyState::OnKeyDown(i32, i32) {
 }
 
 // @early-stop
-// The 42-branch, 74-block CFG and referent multiset agree. Retail spills `tint`,
-// `best`, `bestIdx` and the tally cursor
-// where cl enregisters them - it burns ebx on the constant 1 and keeps `this` in ebp,
-// cl does the opposite - so retail's frame is 0x14 wider and the registers rotate.
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -2256,8 +2217,6 @@ i32 CMultiBootyState::LeaveState(GameStateId nextState) {
 RVA(0x0001e720, 0x400)
 void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ_";
-    // Callers hand in <category base> + <index within the category>, so the id is
-    // formed by arithmetic and enters the domain here.
     switch (static_cast<PickupType>(key)) {
         case PICKUP_BOMB:
             *reg += "TOOLZ_BOMBZ";

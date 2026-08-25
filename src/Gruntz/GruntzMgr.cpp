@@ -107,8 +107,6 @@
 #include <string.h>
 #include <time.h>
 
-// owner-TU unproven: bss sits in the pre-gruntzmgr window (before g_buteMgr)
-
 DATA(0x00211054)
 static char s_dataPath[] = "%c:\\DATA\\%s";
 
@@ -177,16 +175,6 @@ DATA(0x0020fa70)
 i32 g_localVersion = 1;
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1;
-// 64 B of initialized .data no instruction in the image reaches. The reloc
-// table is a complete index of the absolute references, and it holds no entry
-// anywhere in [0x20fa78, 0x20fab8) - so this is not a "we have not found the
-// reader yet": there is no reader, and the payload carries no stride, so its
-// MEANING is not recoverable. What IS proven is
-// that the bytes exist and belong here: the run is bounded on both sides by a
-// gruntzmgr datum (g_remoteVersion below it, g_dplayAppGuid above it) and a
-// .data contribution is contiguous, and every one of the 16 words is a small
-// signed dword with -1 as its sentinel. Left unmodelled it is 64 bytes objdiff
-// never looks at, which is the one thing a claim can fix.
 DATA(0x0020fa78)
 i32 g_unreferencedGruntzMgrValues[16] = {1, 2, -1, 3, -1, 4, -1, 5, -1, 6, -1, 7, -1, 8, 9, 10};
 DATA(0x0020fab8)
@@ -327,8 +315,6 @@ void CGruntzMgr::Close() {
         }
         m_settings->SetValueDword("Resolution", IDX(res));
         m_settings->SetValueDword("Checkpoint Prompts", m_isCheckpointPrompts);
-        // if/else, not `?:` - retail branches (cmp/jne/push 1/jmp/push 0) and lets cl
-        // tail-merge the two calls; the ternary lowers to a branchless xor/sete/push.
         if (m_colorDepth == BPP_RGB_16) {
             m_settings->SetValueDword("Enable HiColor", 1);
         } else {
@@ -546,20 +532,6 @@ i32 PumpIdleFrame() {
 }
 
 // @early-stop
-// Each arm assigns `m_curState` directly and there is no `default:`; the
-// out-of-range path proves it, because retail's `ja` from the jump-table guard
-// lands on `cmp DWORD PTR [edi+0x2c],ebx` and never stores. A `CState* obj`
-// local would need the store on that path and a second zeroing ahead of the
-// switch, which is what the earlier spelling emitted.
-// The residue is one nested inline-budget decision, in both directions at once:
-// retail expands all nine `ClockInterval` ctors inside the inlined
-// `CPlay::CPlay` and then, further down the tuple, has too little budget left to
-// expand `CRgn::CRgn()` into CCreditsState - so it emits that COMDAT (0x8c3b0,
-// one caller: this) and calls it, where we expand it and call its base
-// `CGdiObject::CGdiObject()` instead. cl 5.0 gives a nested expansion
-// budget/sites-remaining (gruntz walls inline-model), so both sides of the
-// difference follow from one budget, and nothing in this body's own statements
-// moves it.
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
@@ -593,8 +565,6 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
 
     TRACE("creating state %d\n", stateId);
     switch (stateId) {
-        // arm order is byte-proven by the retail bodies' allocation sizes
-        // (0x1c0, 0x520, 0x660, 0x528, 0x1c0, 0x1b8, 0x1bc, 0x320, 0x218, 0x244)
         case GAMESTATE_ATTRACT:
             m_curState = new CAttract;
             break;
@@ -1449,13 +1419,6 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 }
 
 // @early-stop
-// Retail folds the two arms into `cmp eax,4 / jne +1 / dec / dec`, i.e. neither arm
-// is a constant-foldable `count - N`. cl constant-propagates the guard's known value
-// into the arm it guards, so every decrement spelling collapses to `mov eax,<k>`.
-// Guarding on `idx` (the copy) reproduces retail's copy-then-compare-the-copy;
-// guarding on `count` does not, and re-reads the size into the compare instead.
-// `idx -= 2` is WRONG - it leaves idx == count for every other plane count, which
-// the bounds check then rejects.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008efe0, 0x54)
@@ -1463,9 +1426,6 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            // The object layer is the TOP plane, except on a 4-plane level where
-            // it is the one below it. `cmp 4 / jne +1 / dec / dec` is the shared
-            // tail cl folds the two arms into.
             i32 idx = view->m_planes.GetSize();
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
                 idx--;
@@ -1739,10 +1699,6 @@ void CGruntzMgr::RecomputeViewScale() {
         return;
     }
     CGameLevel* view = m_world->m_level;
-    // The extent arrives as a whole-rect COPY: that is what materializes its address
-    // (`lea eax,[esi+0x10]`) and reads (0)/(4)/(8)/(0xc) off it, where a RECT* folds
-    // the displacements onto the CGameLevel. Each span converts to float only at its
-    // first use, so `fsts` keeps it in st(0) for the multiply instead of `fstps`+reload.
     LevelCoordRect ext = view->m_viewportRect;
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
@@ -1861,12 +1817,6 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     return 1;
 }
 
-// Emit TU, wall-blocked: retail's CGruntzMgr::PlayMovieEntry calls this ctor
-// out-of-line (via the inlined CMoviePlayer ctor, m_decodeStore member), and our
-// PlayMovieEntry already references it as extern - but converting the body to a
-// header inline makes our cl flatten it into PlayMovieEntry (caller-budget inline
-// divergence, docs/patterns/msvc5-variable-ctor-inline-depth.md), losing this
-// label. Dissolves into FecCrypt.h + a gruntzmgr pin when that wall breaks.
 RVA(0x0008fea0, 0x6d)
 CFecFile::CFecFile() {
     m_openGate = 0;
@@ -2403,10 +2353,6 @@ i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
 }
 
 // @early-stop
-// One byte: the switch normalises to `sub eax,2` where retail has `cmp eax,2`. The
-// arm order and the `mov eax,[eax+0x14]` load both match, and every if/else spelling
-// scores worse - `if (== )` reverses the arms (97.22) and folds the load into
-// `cmp dword ptr [eax+0x14],2`, `if (!=)` over a named local likewise (98.00).
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00091250, 0x100)
@@ -2439,8 +2385,6 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
                         SoundCue* found = NULL;
                         MapLookup(registry->m_cues, "GAME_MINORCHEAT", found);
-                        // SoundCue::PlayIfElapsed inlined: the call's `this` copy
-                        // holds the cue in a register across the store.
                         SoundCue* cue = found;
                         if (cue) {
                             i32 volumePercent = g_soundVolumePercent;
@@ -2457,7 +2401,6 @@ void CGruntzMgr::CheatSkeletonToggle() {
             }
         }
     }
-    // Deliberately leave the return register unchanged.
 }
 
 // @dead-code
@@ -2491,8 +2434,6 @@ void CGruntzMgr::CheatEclipseToggle() {
 
                         SoundCue* found = NULL;
                         MapLookup(registry->m_cues, "GAME_MINORCHEAT", found);
-                        // SoundCue::PlayIfElapsed inlined: the call's `this` copy
-                        // holds the cue in a register across the store.
                         SoundCue* cue = found;
                         if (cue) {
                             i32 volumePercent = g_soundVolumePercent;
@@ -2509,7 +2450,6 @@ void CGruntzMgr::CheatEclipseToggle() {
             }
         }
     }
-    // Deliberately leave the return register unchanged.
 }
 
 RVA(0x00091500, 0x42)
@@ -2631,8 +2571,6 @@ i32 CGruntzMgr::MakeRezPath() {
     i32 movFound = 1;
     CString fecHi(s_fecName);
     CString fecLo(s_fecLoName);
-    // Retail selects Gruntz.FEC when HQ movies are DISABLED and GruntzLo.FEC
-    // when they are enabled - inverted, but that is what 0x91779 branches on.
     CString fec(g_disableHqMovie ? fecHi : fecLo);
 
     m_haveMoviez = false;
@@ -2740,9 +2678,6 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     m_resourceArchive = new CRezArchive;
 
-    // The argument is spelled on the returned temporary, not on a named CString:
-    // retail reads the buffer through the return register (`mov ecx,[eax]`), which a
-    // named local turns into a direct frame-slot load.
     bool parseFailed =
         m_resourceArchive->Open(const_cast<char*>(static_cast<const char*>(GetRezPath())), 1, 0)
         == 0;

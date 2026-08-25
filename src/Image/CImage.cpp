@@ -280,9 +280,6 @@ i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
 }
 
 // @early-stop
-// Frame is 4 B short of retail's 0x4c: retail leaves an unused dword hole at the
-// dtop slot and spills `bottom` into the dead incoming param home, where cl gives
-// us the reverse. Every [esp+N] in the body is that one displacement apart.
 RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
@@ -306,9 +303,6 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     i32 mirrorX = HAS(mode, SPRITE_STATE_MIRROR_X);
     i32 mirrorY = HAS(mode, SPRITE_STATE_MIRROR_Y);
-    // Four sibling arms, not a nested if/else: retail re-tests mirrorX at the head of
-    // the second arm (docs/patterns/redundant-sibling-guard-retest.md), which only
-    // survives when the arms are written as separate statements.
     if (mirrorX && mirrorY) {
         if (m_owned) {
             BlitShadeNorm(info, dst);
@@ -416,9 +410,6 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-// The instructions and retail addresses are exact. cl emits the static-dtor
-// thunk as a separate anonymous COMDAT, while the delinked image names the same
-// bytes as this function's EH registration span; source cannot name that thunk.
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, clip)
@@ -430,7 +421,6 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
 }
 
 // @early-stop
-// Same compiler-generated static-dtor-thunk identity seam as RenderFrame.
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(
     CDDrawSurfacePair* target,

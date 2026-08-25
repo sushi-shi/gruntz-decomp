@@ -95,17 +95,6 @@ void CMovingLogic::AdvanceMotion() {
     }
 }
 
-// The velocity update is the ArrivalVel<axis> shape written INLINE: an if/else
-// that YIELDS a value, so retail's `a == 0` arm reloads and re-stores the
-// velocity in place (`fld [ecx+0x38]; fstp [ecx+0x38]`).  It is fed an ABSOLUTE
-// target and subtracts the position back off - the first site builds
-// `s + c` and the body immediately computes `target - s` again
-// (`fadd [ecx+0x50]` ... `fsub [ecx+0x50]`); FP is not associative so cl keeps
-// both.  ArrivalVelX/Y/Z sit BELOW Step at 0x16f3c0/0x16f430, so retail's cl
-// could not have inlined them either - this is the same body, spelled out.
-// The two velocity clamps share ONE arrival block in retail (both arms build c
-// and reach 0x16ed56), so the update is written once and the no-clamp case
-// leaves the inner do/while(0) - two textual copies compile to two blocks.
 #define ARRIVAL_V(v, a, s, target)                                                                 \
     do {                                                                                           \
         double nv;                                                                                 \

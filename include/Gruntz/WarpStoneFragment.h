@@ -3,8 +3,6 @@
 
 #include <Enums.h>
 
-// The four progressively collected Warp Stone fragments. The HUD checks them
-// in order and uses the same value to select the fragment's fly target.
 GZ_ENUM_BEGIN(WarpStoneFragment)
     WARPSTONE_FRAGMENT_FIRST = 1,
     WARPSTONE_FRAGMENT_SECOND = 2,

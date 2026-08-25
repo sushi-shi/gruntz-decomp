@@ -13,9 +13,6 @@ template<class T> inline T* ElementFromLink(IntrusiveLink* link) {
     return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
 }
 
-// The shared list head: retail carries exactly one copy of each operation below
-// (InsertHead 0x1390e0 .. Unlink 0x1391e0), reached from SoundBuffer,
-// SoundDevice, SoundStream, CRezArchive, CHashBase and CWwdGrid.
 struct IntrusiveList {
     IntrusiveLink* m_head;
     IntrusiveLink* m_tail;

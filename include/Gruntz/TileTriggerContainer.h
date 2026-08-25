@@ -23,8 +23,6 @@ public:
         m_initialized = 0;
     }
 
-    // Retail loads `this` into ecx at both call sites (`mov ecx,edi`), so these
-    // are __thiscall members that ignore the receiver, not free functions.
     i32 SerializeSwitchLogic(
         CFileMemBase* archive,
         SerialMode mode,
@@ -48,11 +46,6 @@ public:
 
     i32 RemoveActionEvent(CTileActionEvent* evt);
 
-    // Inline, like the ctor above: retail's out-of-line copy is a COMDAT emitted by
-    // play.obj - 0xc8640 is interleaved between CPlay::LoadGameAssetNamespaces
-    // (0xc7ec0+0x5f5) and CPlay::ReleaseResources (0xc8700), which are also its only
-    // two direct callers.  The 0x70 body is mostly compiler-generated: the four
-    // CPtrList member dtors plus the /GX unwind states around them.
     RVA(0x000c8640, 0x70)
     ~CTileTriggerContainer() {
         Shutdown();
@@ -91,10 +84,6 @@ public:
 
     void AddLogicFromRecord(TileCollisionKind tileType, TrigLogicId logicType, CGameObject* object);
 
-    // A brick's four per-player flags reach the event in the level record's
-    // extent rect, which the caller passes by value: retail's call site builds
-    // one 16-byte block (`lea edi,[obj+0x134]` / `sub esp,0x10` / four dword
-    // copies) rather than pushing four fields.
     CTileActionEvent*
     AddActionEvent(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, RECT playerFlags);
 
@@ -139,10 +128,6 @@ public:
 
     i32 Serialize(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    // Heterogeneous factory: switch arms return CTileTriggerSwitchLogic-family
-    // objects for m_switchLogics; trigger arms return the incompatible CTileTriggerLogic
-    // family for m_idleLogics/m_timedLogics. Their vtable slot zero signatures differ, so
-    // there is no common polymorphic base to substitute for this void* seam.
     void* DeserializeLogic(CFileMemBase* archive, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     i32 LoadInitialized(CFileMemBase* archive);

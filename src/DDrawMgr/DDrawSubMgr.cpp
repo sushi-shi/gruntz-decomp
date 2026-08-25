@@ -54,8 +54,6 @@
 DATA(0x001eff2c)
 const float c_volumePercentUnitScale = 0.009999999776482582f;
 
-// The pinned half of the CWapObj two-entity split; the tagged inline sibling
-// lives in Wap32/WapObj.h.
 RVA(0x00156cb0, 0x20)
 CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
     m_id = id;
@@ -122,11 +120,6 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezArchive* parser, const char* key) {
 }
 
 // @early-stop
-// retail loads the Lookup out-slot ONCE straight into edi (`mov edi,[esp+0xc]`)
-// and tests the copy; our cl live-range-splits it (`mov eax,[mem]; test eax;
-// mov edi,eax`). Flat across: test-w/test-val, assignment-in-condition,
-// register, w-in-body, w-decl-first, typed out-param via a union helper (that
-// one also re-loads + re-emits delete's null check), and the generated AST tree.
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = NULL;
@@ -480,11 +473,6 @@ void SoundCueRegistry::Unload() {
 }
 
 // @early-stop
-// The CString local and the POSITION local hold each other's stack slots. Not
-// steered by: all decl orders, renames, guard shape, scope block, for/while,
-// uninit-decl + late assign, or TU-state islands (measured on the 0x152660 twin).
-// The exact sibling CDDrawPaletteRegistry::RemovePalette (0x165c40) gets the retail
-// layout from this same shape; the coin is allocator state outside the body text.
 RVA(0x00157b00, 0xb2)
 void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     if (cue == NULL) {

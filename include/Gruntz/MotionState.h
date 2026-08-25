@@ -15,16 +15,11 @@ extern const double g_motionNegTwo;
 
 class CMotionState {
 public:
-    // Tag type: picks the inline sibling of the out-of-line 0x136d0 ctor.
     enum EInlineBase {
         INLINE_BASE
     };
 
-    // Out of line at 0x136d0.  Retail `call`s it from CGrunt::CGrunt,
-    // CProjectile::CProjectile and GameSerializationCallback.
     CMotionState();
-    // The expanded sibling: CMovingLogic's and CProjectile's default ctors carry
-    // this body inline.
     CMotionState(EInlineBase);
     ~CMotionState();
 
@@ -71,7 +66,6 @@ inline CMotionState::CMotionState(EInlineBase) {
     InitBounds();
 }
 
-// The one textual copy of the ctor body.  Both CMotionState ctor entities expand it.
 inline void CMotionState::InitBounds() {
     m_position.x = 0.0;
     m_position.y = 0.0;

@@ -54,8 +54,6 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
 }
 
 // @early-stop
-// The GetAt(i) return is the CString temporary consumed directly by Lookup, and
-// the comma expression keeps it alive through the m_cues[i] store.
 RVA(0x00168d00, 0x14c)
 void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (owner == NULL || str == NULL) {

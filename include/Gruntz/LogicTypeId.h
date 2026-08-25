@@ -5,8 +5,6 @@
 
 GZ_ENUM_BEGIN(LogicTypeId)
     LOGIC_NONE = -1,
-    // Serialized object snapshots use 0 when the animation worker has no
-    // attached CUserLogic instance.
     LOGIC_UNSET = 0,
     LOGIC_STATUSBARSPRITE = 0x3ff,
     LOGIC_TILETRIGGERSWITCH = 0x400,

@@ -1,13 +1,6 @@
 #ifndef GRUNTZ_GRUNTMOVEMENTMACROS_H
 #define GRUNTZ_GRUNTMOVEMENTMACROS_H
 
-// CGrunt::IsAtSavedScreenPos (0x29a80) expanded at the sites where retail
-// inlined it, plus the partial one-axis tests.  The call/expand split itself is
-// documented at <Gruntz/GruntMovementInline.h>, which owns the twin.
-// The receiver-only variants (GRUNT_SELF_*, PIXEL_PAIR_NOT_AT_SELF_*) were
-// folded onto the parameterized forms 2026-08-22 by passing `this`, byte-neutral
-// (0 rows moved); nine further variants had no use site at all.
-
 #define GRUNT_AT_SAVED_SCREEN_POS(grunt)                                                           \
     grunt->m_object->m_screenX == grunt->m_lastTilePx.m_x                                          \
         && grunt->m_object->m_screenY == grunt->m_lastTilePx.m_y
@@ -34,11 +27,6 @@
 #define PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, savedX, savedY)                                 \
     pixelX != savedX || pixelY != savedY
 
-// The two LastTilePx() calls are load-bearing, not style: each materialises a
-// by-value Coord temp whose read half cl folds back into a member re-load and
-// whose unread half's store is emitted dead, which is retail's 8-byte frame home
-// at every one of these sites.  A named `Coord c = target->m_lastTilePx;` copy is
-// eliminated by C2 instead, and the home disappears.
 #define COMMIT_GRUNT_NEIGHBOR(target)                                                              \
     CommitNeighbor(                                                                                \
         target->m_playerIndex,                                                                     \

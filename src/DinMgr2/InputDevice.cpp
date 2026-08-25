@@ -84,10 +84,7 @@ DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00134e30, 0x36)
 DIDEVCAPS* CInputDevRoot::GetCapabilities() {
-    // RETAIL BUG, preserved: 0x244 is sizeof(DIDEVICEINSTANCEA), copied down
-    // from GetDeviceInfo above. DIDEVCAPS is not that size, and DirectInput
-    // validates dwSize - so this call cannot succeed. Byte-identical to retail;
-    // writing sizeof(m_caps) here would move bytes AND silently fix the game.
+    // Preserved bug: the DIDEVICEINSTANCEA size makes this DIDEVCAPS query fail.
     m_caps.dwSize = 0x244;
     i32 hr = m_device2->GetCapabilities(&m_caps);
     if (hr != 0) {
@@ -101,8 +98,6 @@ DIDEVCAPS* CInputDevRoot::GetCapabilities() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00134e70, 0x3f)
 DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
-    // Same copied size, same consequence - DIPROPHEADER is 0x10 bytes. See the
-    // note in GetCapabilities.
     m_prop.dwSize = 0x244;
     i32 hr = m_device2->GetProperty(rguid, &m_prop);
     if (hr != 0) {

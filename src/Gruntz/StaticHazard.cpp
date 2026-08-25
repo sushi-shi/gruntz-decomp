@@ -106,10 +106,6 @@ i32 DispatchStaticHazardLogic(CGameObject* owner) {
 }
 
 // @early-stop
-// Calls, branches, instruction count, constants, and referents agree. Retail
-// reuses the dead constructor-argument home for Lookup's output while the typed
-// MapLookup boundary retains a separate slot; the rest is equivalent byte-vs-
-// dword masking, add-vs-sub encoding, and register scheduling.
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -199,8 +195,6 @@ i32 CStaticHazard::UpdateIdleState() {
 }
 
 // @early-stop
-// One instruction: retail compares the HitTestCell pointer against its cached zero
-// register (`cmp eax,ebx`) where cl emits `test eax,eax`.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::UpdateActiveState() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);

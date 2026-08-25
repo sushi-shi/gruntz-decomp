@@ -7,9 +7,6 @@
 
 class SoundBuffer;
 
-// Tag 1 identifies a volume-ramp voice: SoundBuffer::RampVolumeTo cancels the
-// buffer's outstanding ramp with RemoveMatching(this, VOICE_TAG_RAMP) before
-// constructing the replacement.
 struct SoundVolumeRamp : public SoundTask {
 
     virtual i32 Tick(i32 now) OVERRIDE;

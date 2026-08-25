@@ -27,9 +27,6 @@ struct WwdRect {
 struct WwdGridNode : IntrusiveLink {
     WwdGridNode();
 
-    // Retail's 0x15b2b0 seeds this base's two fields INLINE, so WwdRegion cannot
-    // reach the base through the called ctor above. Same no-seed tag idiom as
-    // WwdDirtyRect::WwdDirtyRect(ENoSeed).
     enum ENoSeed {
         NO_SEED
     };
@@ -43,9 +40,6 @@ struct WwdGridNode : IntrusiveLink {
 struct WwdRegion : WwdGridNode {
     WwdRegion();
 
-    // The same seed, INLINE: CGameObject's out-of-line ctor (0x15b390) expands m_region
-    // in place - it calls neither 0x15b2a0 nor 0x15b2b0 - while the three factories that
-    // expand CGameObject's body still reach the pinned ctor above.
     enum EInlineSeed {
         INLINE_SEED
     };
@@ -53,9 +47,6 @@ struct WwdRegion : WwdGridNode {
         SeedFields();
     }
 
-    // Expanded, but reaching the base through the pinned 0x15b2a0: CreateDotObject
-    // (0x1592b5) and CreateDeferredObject (0x1594a5) emit `call ??0WwdGridNode`
-    // followed by the lone m_object store, where CreateSpriteObject calls 0x15b2b0.
     enum EBaseCall {
         BASE_CALL
     };
@@ -73,11 +64,6 @@ struct WwdRegion : WwdGridNode {
     ~WwdRegion() {}
     struct CGameObject* m_object;
 };
-
-// Both ctors are out-of-line in retail: CDDrawChildGroup's factories CALL them
-// (0x15b2a0 from 0x1592b5/0x1594a5, 0x15b2b0 from 0x159663) while the derived
-// object's own ctor is inlined into the factory. The bodies live in
-// src/Wwd/WwdObjMgr.cpp and src/Wwd/WwdFactoryObject.cpp.
 
 class CWwdGridIter : public CObject {
 public:

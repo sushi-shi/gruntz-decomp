@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/WallProject.h>
 #include <Enums.h>
@@ -25,16 +26,6 @@
 #include <string.h>
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
-
-// TU-STATE FINGERPRINT (diagnostic; probes are never shipped). Sweeping a
-// throwaway file-scope declaration above the first definition - N = 1..16 graded
-// prototypes, and one each of fwd-decl / typedef / empty class / class with a
-// member / class with inline member bodies / static function with a body /
-// file-scope float / string literal - moves only ShadeBlt (-0.42, always down)
-// and ShadeRect (-0.26 at most N, +2.08 at N = 13..15). Blit168, Blit1624,
-// Blit816, Blit824, FlipVertical and BuildColorChannelTables are dead flat to the
-// entire axis, so their residue is intra-function and no amount of TU state
-// reaches it. Do not re-run the sweep on this file.
 
 RVA_DYNINIT(0x0013e060, 0xa, g_imageCache)
 RVA_DYNINIT(0x0013e070, 0xa, g_imageCache)
@@ -67,10 +58,6 @@ static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
     return p.m_words;
 }
 
-// The by-value u8 parameters are load-bearing (docs/patterns/
-// pixel-pack-is-a-byvalue-u8-helper.md): they pin the channel evaluation order
-// to r, g, b, and the plain i32 shift counts keep the single truncation at the
-// return.
 static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
     return static_cast<u16>(
         ((static_cast<u8>(r >> g_rDown) << g_rUp)
@@ -461,8 +448,6 @@ void CDDSurface::ReloadImageCache() {
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     IDirectDrawSurface* payload = NULL;
-    // The HRESULT must land in a named local: testing the call result inline gives
-    // `test eax,eax` where retail compares against the live zero (`cmp eax,edi`).
     HRESULT hr = surf->QueryInterface(IID_IDirectDrawSurface3, PtrOut(&payload));
     if (hr == 0) {
         CDDSurface* item = new CDDSurface;
@@ -610,9 +595,6 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    // The parameter itself is the walking cursor (retail re-reads and
-    // advances its stack slot per arm; a local hoists and rotates the frame) -
-    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
@@ -723,8 +705,6 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans)
 }
 
 // @early-stop
-// The u8 division/multiplication spelling preserves retail's separate bank shifts.
-// A single cached red shift is reused by both format arms, as in retail.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f020, 0x43f)
@@ -965,17 +945,6 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-// g_clut is the 3 x 32768-entry alpha-blend LUT: index (alpha:5, dst:5, src:5)
-// -> (alpha*dst + (32-alpha)*src) / 32, pre-shifted per channel into region
-// entry region 0 green (<<5), region 1 blue (<<g_bUp), region 2 red (<<0xa).
-// The typed table's byte cursor advances AFTER the three stores: retail carries
-// the g_clut DIR32 with addends -2 / 0xfffe / 0x1fffe against an esi cl has
-// already advanced, so the first entry of each region lands at index 0. With the
-// increment first, every entry sat one slot high and the last red store ran two
-// bytes past g_clut into g_lut16[0]. objdiff masks the DIR32 displacement, so
-// that scored clean.
-#include <DDrawMgr/PixelFormatMacros.h>
-
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
     if (PIXEL_FORMAT_IS_RGB555) {
@@ -1046,9 +1015,6 @@ void BuildColorChannelTables() {
     }
 }
 
-// `type` is Resolve's FileImageFormat: only FMT_BMP is implemented (the one
-// caller, SaveScreenshot, writes "Gruntz%04i.BMP"), and SaveDispatch then picks
-// the container by bit depth - .BMP at 8bpp, RLE16 at 16, .TGA at 24.
 RVA(0x0013f910, 0x4a)
 i32 CDDSurface::SaveFile(char* buf, FileImageFormat type, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
@@ -1157,10 +1123,6 @@ i32 CDDSurface::Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, Raster
 }
 
 // @early-stop
-// The LUT-build pack's first-channel coin (red vs green first) flips with the
-// function's own content: the reinterpret_cast<u8*&> cursor spelling scored
-// byte-exact, the ratchet-mandated static_cast use-site spelling leaves the
-// two LUT loads swapped. All pack spellings tie under the current content.
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
@@ -1174,9 +1136,6 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    // The parameter itself is the walking cursor (retail re-reads and
-    // advances its stack slot per arm; a local hoists and rotates the frame) -
-    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
@@ -1199,18 +1158,12 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
 }
 
 // @early-stop
-// Whole-function coloring: cl picks ebp for `this` where retail picks edi; the
-// swap cascades (dst esi<->edi, acc bp<->si, arm2's col register vs memory).
-// Renames and depth-1 trees are inert on cl5's coloring here.
 RVA(0x0013fce0, 0x17f)
 i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
-    // The parameter itself is the walking cursor (retail re-reads and
-    // advances its stack slot per arm; a local hoists and rotates the frame) -
-    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
@@ -1255,9 +1208,6 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    // The parameter itself is the walking cursor (retail re-reads and
-    // advances its stack slot per arm; a local hoists and rotates the frame) -
-    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
@@ -1332,9 +1282,6 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    // The parameter itself is the walking cursor (retail writes the
-    // advanced cursor back to the parameter slot each pixel) -
-    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;

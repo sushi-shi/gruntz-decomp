@@ -68,7 +68,6 @@ public:
     CString FindCueKey(SoundCue* target);
     i32 ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary);
 
-    // The registered-cue count; retail expands it at every use.
     i32 CueCount() const {
         return m_cues.GetCount();
     }

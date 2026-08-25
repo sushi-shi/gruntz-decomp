@@ -18,7 +18,6 @@
 
 DATA(0x001efb10)
 const float g_rasterZero = 0.0f;
-// Degrees -> radians, NEGATED: ImageRotateBlit rotates clockwise.
 DATA(0x001efb14)
 const float g_degToRadNeg = -0.01745329238474369f;
 DATA(0x001efb18)
@@ -74,8 +73,6 @@ i32 WarpIsPow2(i32 x) {
 }
 
 // @early-stop
-// Retail spills dx1/dy1 as float temps and keeps v0->x on the x87 stack across
-// the two idivs; cl computes the cross product entirely in x87 registers.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00145e30, 0x125)
@@ -114,8 +111,6 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     return dir == POLYGON_WINDING_CLOCKWISE;
 }
 
-// sq[] is the source-texture rectangle. The quads use winding order TL, TR,
-// BR, BL, so index 2 is the bottom-right corner.
 RVA(0x00145f60, 0x242)
 void ImageRotateBlit(
     i32 destX,
@@ -189,8 +184,6 @@ void ImageRotateBlit(
 }
 
 // @early-stop
-// One scheduling slot in the third clip pass; the whole edge/intersect skeleton
-// is exact. Mixed-kind TU-state sweep flat (12 states): C2-anchored.
 RVA(0x001461b0, 0x399)
 i32 ImagePolyClipRect(
     ClipVtx* poly,
@@ -299,11 +292,6 @@ i32 ImagePolyClipRect(
 }
 
 // @early-stop
-// The extent, CFG and all 29 fcom branch polarities agree. Retail keeps the bottom bound
-// live through the first pointer setup and batches the last two interpolation
-// multiplies before the component adds. Named weighted-delta locals force a
-// frame, while commutative operand and independent-store orders do not reach
-// that remaining x87 schedule.
 RVA(0x00146550, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
@@ -708,8 +696,6 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
 }
 
 // @early-stop
-// Register coloring: retail keeps topX in edi across the three ftol calls and
-// lets `cur` die into its frame slot; cl holds `cur` in ebx and spills topX.
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     i32 minYi = 0x1001;
@@ -802,10 +788,6 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
 }
 
 // @early-stop
-// Residue is x87 stack scheduling in the quad-store block: retail loads
-// `halfWidth` and the two `g_rasterZero` constants up front, after `fcos`, where cl
-// hoists the `fild` ahead of `fsqrt`.  Frame, both loops and the whole block
-// skeleton agree.
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
@@ -819,16 +801,6 @@ i32 ProjectWallQuad(
 ) {
     i32 dx = x1 - x0;
     i32 dy = y1 - y0;
-    // atan2's arguments are (dx, dy), not (dy, dx): retail's `fpatan` takes the
-    // FIRST-loaded operand as the numerator, and it loads dx first.  g_negativePi is
-    // -pi, so `ang - g_negativePi` is the angle turned half a revolution - it belongs
-    // to the angle, NOT to the length under the sqrt.
-    //
-    // fabs takes the FLOAT conversion, not the double one: retail `fild`s each
-    // int slot a second time for the magnitudes, which only happens when the
-    // conversion is a different expression from the atan2 argument.  With
-    // `(double)` on both, cl CSEs them and spills two qwords across `fpatan`,
-    // costing a `sub esp,0x10` frame retail does not have.
     double ang = atan2(static_cast<double>(dx), static_cast<double>(dy));
     float adx = static_cast<float>(fabs(static_cast<float>(dx)));
     float ady = static_cast<float>(fabs(static_cast<float>(dy)));
@@ -838,13 +810,6 @@ i32 ProjectWallQuad(
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);
 
-    // The quad in wall-local space, wound: (-hw/2, len) (hw/2, len) (hw/2, 0)
-    // (-hw/2, 0).  The two x's are LOCALS: retail keeps each in a float stack
-    // temp and copies it into the second vertex as a 4-byte integer move
-    // (`mov ecx,[esp+0x18]; mov [g],ecx`), which re-reading g_rasterEvenClipPassBuffer[0].x
-    // cannot produce.  The rotate/translate loops index the array directly -
-    // a `ClipVtx* v = &g_rasterEvenClipPassBuffer[i]` cursor costs an extra `lea` per
-    // iteration and moves the induction base off retail's +4 bias.
     float xLeft = -(hw * g_wallHalf);
     float xRight = xLeft + hw;
     g_rasterEvenClipPassBuffer[0].x = xLeft;

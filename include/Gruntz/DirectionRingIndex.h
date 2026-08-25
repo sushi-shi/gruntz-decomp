@@ -3,9 +3,6 @@
 
 #include <Enums.h>
 
-// Zero-based positions in a clockwise eight-direction ring. This is the index
-// space used by CBootyState::m_sprintSprites; GruntDirection itself is one-based
-// because zero means the centre/no-move cell there.
 GZ_ENUM_BEGIN(DirectionRingIndex)
     DIRECTION_RING_NORTH = 0,
     DIRECTION_RING_NORTHEAST = 1,

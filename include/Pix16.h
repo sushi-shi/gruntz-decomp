@@ -3,22 +3,7 @@
 
 #include <Ints.h>
 
-// TWO seams, both re-reading ONE allocation at a different element width.
-//
-// Pix16Ptr / Pix16CPtr: a locked DirectDraw surface. DirectDraw hands back a
-// byte pointer and a byte pitch, and the same rows are stepped as u16 at 16bpp
-// and as i32 for the two-pixel-at-a-time paths - so the width is a property of
-// the loop, not of the surface. Every member is in use; the const twin exists
-// because a source cursor is const and a union has no const-conversion.
-//
-// RecordBytes: a `new u8[len]` file blob whose head is a fixed record
-// (PcxHeader, PidHeader, BITMAPINFOHEADER, WwdHeader, DeviceState). The byte
-// allocation is byte-forced - retail's operator new[] takes the byte count - so
-// the record view cannot be moved into the allocation's own type.
-//
-// Neither is a licence for a byte cursor in general: an u8*/char* that walks a
-// TYPED array is an unmodelled type, and the fix is that type, not a member
-// here.
+// Byte-forced views of raw surface and record allocations.
 
 union Pix16Ptr {
     u8* m_bytes;
@@ -43,8 +28,6 @@ union Pix16CPtr {
     const i32* m_dwords;
 };
 
-// A 16-bit-pixel view of a raw pixel cursor. Retail expands these at every use;
-// they were transcribed per site in LightFxRender, DDrawShadeBlit, ShadeTableCache.
 static inline u16* Pix16(u8* p) {
     Pix16Ptr view;
     view.m_bytes = p;

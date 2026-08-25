@@ -245,11 +245,7 @@ WwdRegion* CWwdGridIter::GetNext() {
             m_next = static_cast<WwdRegion*>(m_cur->m_next);
             if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
                 || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
-                // This `continue` re-tests m_cur without advancing it, so a rejected
-                // region would spin forever - an era bug, faithfully reproduced. It is
-                // unreachable: Init's only caller is Start, which passes the grid's own
-                // m_bounds (0x191ae0 `lea edx,[eax+0x28]`), so the clamps below are the
-                // identity and every region Add indexed into m_buckets is in rect.
+                // Unreachable era bug: a rejected region repeats without advancing m_cur.
                 continue;
             }
             if (m_remove) {
@@ -262,10 +258,6 @@ WwdRegion* CWwdGridIter::GetNext() {
     }
 }
 
-// The ctor+dtor pair the vector-ctor iterator is handed at Setup's `new
-// BucketHead[]` (retail pushes 0x191d00 then 0x191d10); FLIRT had claimed the
-// ctor as LIBCMT `??0DNameNode@@IAE@XZ`, byte-identical though it is to cl's
-// own `??0BucketHead@@QAE@XZ` COMDAT here.
 RVA_COMPGEN(0x00191d00, 0x10, ??0BucketHead@@QAE@XZ)
 RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}

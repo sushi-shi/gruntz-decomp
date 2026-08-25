@@ -147,8 +147,6 @@ i32 CGameLevel::SetViewportRect(LevelCoordRect* coords) {
     return 1;
 }
 
-// Dead in retail: no .text or .data reference reaches 0x15d170. The six sites that
-// set the parameter block expand SetSpatialDefaults instead.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015d170, 0x73)
@@ -233,7 +231,6 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         cursor += 0xa0;
     }
 
-    // `> 0` on the unsigned field, not `!= 0`: retail's guard is `cmp off,0 / jbe`.
     if (source->tileDescriptionsOffset > 0) {
 
         WwdTileDescTable* rec = // Byte-forced view of packed WWD storage.
@@ -756,11 +753,6 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 }
 
 // @early-stop
-// residue is 3 insns. (1) retail keeps BOTH `mid = destX` else-arms (0x15e20c
-// with a jmp, 0x15e27f falling through) where cl merges them; naming `col` in
-// one or both arms only merges more (-10 / 96.32, measured). (2) retail computes
-// the moveFlags&2 limit as `lea ecx,[ecx+ebp+1]; inc ecx`, i.e. the +2 is NOT
-// folded; `+1+1`, `limit++` as its own statement and `+1` twice all re-fold.
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
@@ -933,10 +925,6 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
 }
 
 // @early-stop
-// instruction-exact; residue is which callee-saved register takes `this` (retail
-// edi, cl ebp) and where `push edi` lands. Writing back through `&destX` instead
-// of the `coord` copy costs 7 insns (75.37, measured) - cl must reload the
-// parameter after every call.
 RVA(0x0015e5b0, 0x162)
 i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
@@ -1243,9 +1231,6 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
 }
 
 // @early-stop
-// The 143 instructions, four calls, CFG and three relocations match. In one
-// block retail schedules `screenY - y` before forming `head2`; cl canonicalizes
-// direct reassociation and split-accumulator spellings to the opposite order.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f610, 0x191)
@@ -1328,8 +1313,6 @@ i32 CGameLevel::SpanCheck(i32 x, i32 yEndExclusive, i32 yBegin, i32* outY) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015f9f0, 0x11a)
 i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
-    // The foot row; both probes take the row BELOW it, and retail's two separate
-    // `+ 1`s are visible as `lea eax,[edx+eax+1]` + a detached `inc eax`.
     i32 footY = t->m_extent.bottom + y + 1;
     TileCollisionKind result;
     PROBE_TILE(this, x, footY + 1, result);

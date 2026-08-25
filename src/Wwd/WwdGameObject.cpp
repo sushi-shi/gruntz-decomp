@@ -37,6 +37,7 @@
 #include <Wap32/WapObj.h>
 #include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdSpriteAnimationInline.h>
 
 #include <ddraw.h>
 #include <stdlib.h>
@@ -78,8 +79,6 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     MapLookup(map, name, result);
     return result;
 }
-
-#include <Wwd/WwdSpriteAnimationInline.h>
 
 RVA(0x001505b0, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
@@ -451,9 +450,6 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 // @early-stop
-// Residue is the shared notify block: cl passes `&notifyRecord->m_eventCode` across
-// the goto edge instead of the record pointer, and binds savedEvent/notifyEvent to
-// EBX/EDI there where the two inline arms (and retail everywhere) use EDI/EBX.
 RVA(0x00151150, 0x190)
 i32 CGameObject::SerializeDispatch(
     CFileMemBase* ar,
@@ -799,8 +795,6 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
 
     record = m_logicRecord;
     CUserLogic* logic = record->m_userLogic;
-    // Seeded with 0, NOT LOGIC_NONE(-1): retail writes 0 into the record when
-    // the record has no user logic, and 0 is not a member of this domain.
     LogicTypeId logicTypeId = LOGIC_UNSET;
     if (logic != NULL) {
         logicTypeId = logic->GetTypeTag();

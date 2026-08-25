@@ -136,11 +136,6 @@ class CImage;
     m_optionsPresenceCounted = 0;                                                                  \
     m_latency.Clear()
 
-// The header-inline `~PlayerLatency() {}` (GruntzPlayer.h) emitted out of line:
-// the unwind funclets of ??0GruntzPlayer and ??1GruntzPlayer take its address, so
-// cl gives it a COMDAT. Retail keeps one 1-byte `ret` copy, isolated by 0xcc
-// linker fill on both sides, reached through the ILT thunk at 0x000011f4.
-
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
     m_playerIndex = -1;

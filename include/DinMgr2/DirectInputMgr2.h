@@ -18,9 +18,6 @@ class CJoystickDevice;
 class CKeyboardDevice;
 class CMouseDevice;
 
-// Options accepted by DirectInputMgr2::Create. The public call site combines
-// these bits; the u32 API type is retained because it is part of the proven
-// retail mangling.
 GZ_ENUM_FLAGS_BEGIN(DirectInputCreateFlags, u32)
     DIN_CREATE_ASYNC_KEYBOARD = 0x01,
     DIN_CREATE_NO_MOUSE = 0x02,
@@ -29,7 +26,6 @@ GZ_ENUM_FLAGS_BEGIN(DirectInputCreateFlags, u32)
 GZ_ENUM_FLAGS_END(DirectInputCreateFlags, u32)
 GZ_ENUM_FLAGS_OPS(DirectInputCreateFlags)
 
-// Shared button/direction bit format emitted by the device implementations.
 GZ_ENUM_FLAGS_BEGIN(InputButtonFlags, u32)
     INPUT_BUTTON0 = 0x00000001,
     INPUT_BUTTON1 = 0x00000002,
@@ -127,9 +123,6 @@ public:
     CPtrList m_deviceGroups;
 };
 
-// Inline in retail: CGruntzMgr::Run expands it (Shutdown plus both container
-// members, in reverse declaration order) at its delete site, and CGruntzMgr::Close
-// calls the COMDAT copy the same object file emits at 0x85fc0.
 inline DirectInputMgr2::~DirectInputMgr2() {
     Shutdown();
 }
@@ -214,9 +207,6 @@ public:
     virtual i32 ResetState();
 };
 
-// The device's 32 key bindings. Owning the fill + the element access here is what
-// reproduces retail's emission order in CKeyboardDevice::ConfigureDefaultBindings (a raw member
-// array with a hand-written loop is one instruction off; see that function).
 class CKeyboardBindings {
 public:
     void Clear() {

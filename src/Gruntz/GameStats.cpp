@@ -388,9 +388,6 @@ void CGameStats::UpdateLevelRecord(i32 levelNumber, i32 writeAvailableCounts) {
 }
 
 // @early-stop
-// retail allocates one extra dword (`push ecx`) and spills `this` into it so it can
-// reuse ebp as the last loop counter; cl keeps `this` in ebp and counts in ebx, so the
-// whole frame sits 4 bytes higher.
 RVA(0x000fd3f0, 0x425)
 i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
     i32* p;

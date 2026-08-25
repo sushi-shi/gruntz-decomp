@@ -89,8 +89,7 @@ i32 DispatchLightFxLogic(CGameObject* obj) {
     return 1;
 }
 
-// @early-stop the same out-parameter `= NULL` store schedule as Activate; the only
-// other diff rows are the `fs:0` reloc-masking artifact. FLAT across 24 TU states.
+// @early-stop
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_shadeTableIndex = 2;

@@ -9,9 +9,6 @@
 
 class CMulti;
 
-// HWND is void* here on purpose: TimeSplit.cpp is a <Win32.h> TU, where
-// windows.h leaves STRICT off and HWND *is* void*, so the definition mangles
-// PAX.  Spelling HWND in this MFC (STRICT) header would resolve to nothing.
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 namespace NetLobby {
 

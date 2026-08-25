@@ -112,8 +112,6 @@ void CNetSession::ResetRound() {
 }
 
 // @early-stop
-// Keep case bodies in retail's jump-table target order: wp 2 through 0x16,
-// followed by the default 0x17 arm. The remaining frame delta is two loop-IV spills.
 RVA(0x000bf1d0, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];

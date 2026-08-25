@@ -39,8 +39,6 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 
 RVA(0x0009bab0, 0x35)
 CTimer::CTimer() {
-    // Halves, not the i64: cl5 batches a RUN of 64-bit stores as all-lo-then-all-hi,
-    // so four `m_v = 0` in a row emit lo x4 / hi x4. Retail pairs them two at a time.
     m_baseTime.m_lo = 0;
     m_accum.m_lo = 0;
     m_baseTime.m_hi = 0;
@@ -109,8 +107,6 @@ i32 CTimer::Tick(i32 elapsedMs) {
 
     if (v == 0) {
 
-        // Halves, not the i64: cl5 batches a RUN of 64-bit stores as all-lo-then-
-        // all-hi.  Retail pairs them, as the ctor above does.
         m_unusedStamp.m_lo = 0;
         m_unusedStamp.m_hi = 0;
         m_accum.m_lo = 0;

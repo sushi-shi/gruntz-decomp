@@ -3,13 +3,6 @@
 
 #include <Enums.h>
 
-// Failures exposed by CDDrawSurfaceMgr while constructing the game world.
-// Each value is written immediately after the named operation fails. The
-// 0x80e9 bank is the same five DirectDraw-device stages re-banked by
-// CDDrawFrontSurface::SetGeometry for the outer manager.
-// Retail's dispatch switch is UNSIGNED: CGruntzMgr::ReportWorldStatus lowers its
-// binary search with `ja`, not `jg` (`sema disasm 0x00090ac0 --branches --diff`),
-// so the field and the switch key are u32.
 GZ_ENUM_BEGIN_SPLIT(WorldInitError, u32)
     WORLDERR_NONE = 0,
     WORLDERR_CHILD_GROUP = 0x3e9,
@@ -38,17 +31,11 @@ GZ_ENUM_BEGIN_SPLIT(WorldInitError, u32)
     WORLDERR_DDRAW_COLOR_MASKS = 0x80ed
 GZ_ENUM_END_SPLIT(WorldInitError, u32)
 
-// Identifies the outer operation whose world initialization failed. Used only
-// when CDDrawSurfaceMgr has no more specific WorldInitError to report.
 GZ_ENUM_BEGIN(WorldInitReportTag)
     WORLD_REPORT_STARTUP_INIT = 0x407,
     WORLD_REPORT_COLOR_DEPTH_REINIT = 0x43f
 GZ_ENUM_END(WorldInitReportTag)
 
-// The inner DirectDraw wrapper's error bank before SetGeometry translates it
-// into WorldInitError. DDRAWERR_CAPABILITIES is retained because the outer
-// translation has a retail arm for that stage, even though the current GetCaps
-// reconstruction only logs its HRESULT.
 GZ_ENUM_BEGIN(DDrawDeviceError)
     DDRAWERR_NONE = 0,
     DDRAWERR_CREATE = 0x3e9,

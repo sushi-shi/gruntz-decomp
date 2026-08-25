@@ -31,10 +31,6 @@ DATA(0x002852f0)
 static PALETTEENTRY s_palPcxData[0x100];
 
 // @early-stop
-// Calls, CFG, extent, relocations and the palette-copy loop match retail. The
-// residue is only the order of the independent manager/image reloads at the loop
-// join. Thirty-two TU states, 256 syntax-aware shapes and 28 reviewed boundary,
-// view-placement, pointer and call spellings did not reverse that pair.
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::CreateFromBmpData(
     CDDrawDeviceManager* manager,
@@ -334,9 +330,6 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
 }
 
 // @early-stop
-// residue: which dead parameter home slot each spill lands in.  Retail parks the row
-// counter in `flag`'s and the packed-byte temp in `path`'s; cl picks the other way
-// round, and the register names rotate with it.
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
@@ -382,18 +375,11 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
 
     CFile file;
     if (flag != 0) {
-        // The name is `path`, NOT `pal`: retail reloads the FIRST argument in both
-        // arms (`mov eax,[esp+0x78]` at 0x14471d and `mov edx,[esp+0x78]` at
-        // 0x1448b6, each 4 bytes above the `push 0` it just made, i.e. the slot the
-        // NULL guard above already read).  The one caller that reaches this arm is
-        // SaveScreenshot, which passes pal = 0, so opening `pal` could never write a
-        // save-game preview and CSaveGame::Save failed after a COMPLETE snapshot.
         if (file.Open(path, 0x2001, NULL) == 0) {
             this->m_ddSurface->Unlock(NULL);
             delete[] line;
             return 0;
         }
-        // modeNoTruncate: only the append open repositions to the end.
         file.Seek(0, 2);
     } else {
         if (file.Open(path, 0x1001, NULL) == 0) {
@@ -919,9 +905,6 @@ i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height)
 #pragma optimize("", on)
 
 // @early-stop
-// Code bytes match. The palette loop's end bound is `&s_palPcxData[0x100]`, which
-// is also `&g_warpU`, so the target-side relocation resolves to the neighbouring
-// symbol and objdiff scores the referent name.
 RVA(0x001457a0, 0x22c)
 i32 CDDSurface::DecodePcxData(
     CDDrawDeviceManager* manager,
@@ -1045,8 +1028,6 @@ i32 CDDSurface::DecodePcxEx(
 }
 
 // @early-stop
-// Calls, branches, returns, and referents match; only the image/hasPalette register
-// rotation remains after cursor, guard-shape, and declaration-order controls.
 RVA(0x00145b10, 0x1b5)
 i32 CDDSurface::DecodePid(
     CDDrawDeviceManager* manager,

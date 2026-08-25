@@ -413,9 +413,6 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
     if (grunt->m_gruntKind == GRUNT_CONVERSION) {
         return VOICE_CUES_PER_BAND * 13 + cueId;
     }
-    // The UNSIGNED key is codegen steering, not a widening for its own sake:
-    // cl emits the unsigned `ja` range check only for an unsigned switch key
-    // (docs/patterns/switch-key-unsigned-ja-vs-jg.md).
     switch (static_cast<u32>(IDX(grunt->m_entranceReason))) {
         case IDX(PICKUP_NONE):
             return VOICE_CUES_PER_BAND * 17 + cueId;

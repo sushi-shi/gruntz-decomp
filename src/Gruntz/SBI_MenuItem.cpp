@@ -132,9 +132,6 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 
     if (state == MENUITEM_SELECTED) {
         m_owner->ClearTabGroup();
-        // The domain ingest: CSBI_MenuItem::m_cmd is a general command id, but a
-        // TAB menu item's command IS its tab - CStatusBarMgr bounds it at
-        // `cmd <= 0 || cmd > TAB_LAST` before dispatching. Converted once, here.
         m_owner->m_activeTab = static_cast<StatusBarTab>(IDX(m_cmd));
         m_owner->LoadTabSprites();
         m_owner->Deactivate();

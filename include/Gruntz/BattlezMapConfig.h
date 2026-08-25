@@ -59,8 +59,6 @@ public:
     i32 StepBoard();
     i32 ChooseIdleBehavior(CGrunt*);
 
-    // A member whose body never reads its receiver: `CBattlezMapConfig::Step`
-    // hands it `this` in ECX (`mov ecx,edi`, dead) at the sole call site.
     void RerouteIdleUnit(
         CGrunt* unit,
         i32 col,
@@ -117,8 +115,6 @@ public:
     i32 m_reserved03c;
     i32 m_reserved040;
     i32 m_reserved044;
-    // Unsigned: the two `now - last > interval` guards in StepBoard (0x25dc4,
-    // 0x25e56) are `jbe`, and both intervals come straight from GetDwordDef.
     u32 m_gruntCreationTime;
     u32 m_spawnTimer;
     u32 m_spawnLastFire;
@@ -132,10 +128,6 @@ public:
     i32 m_gooberzChance;
     u32 m_gruntRatio;
 
-    // One 16-byte block read three ways. SerializeState walks it as the pair
-    // m_routeTimers[0..1] (retail materialises this+0x78 once and reaches the
-    // second element as +8 off it); the route throttle reads the named halves;
-    // the ctor and the re-arm write the lo/hi dwords separately.
     union {
         Clock64 m_routeTimers[2];
         struct {
@@ -202,10 +194,6 @@ public:
     i32 m_scrollzPct;
     i32 m_squeakToyzPct;
     i32 m_yoyozPct;
-    // The tool CDF. Every entry is the running total through its own key, so
-    // the LAST one (m_wingzPct) doubles as the divisor for the roll. The names
-    // are pinned by CBattlezMapConfig::ChooseIdleBehavior, whose arms return
-    // exactly the PickupType id of the key each slot accumulates.
     i32 m_bombzPct;
     i32 m_boomerangzPct;
     i32 m_toolBrickzPct;

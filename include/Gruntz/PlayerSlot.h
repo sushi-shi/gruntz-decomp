@@ -3,8 +3,6 @@
 
 #include <Enums.h>
 
-// The four player slots shared by dialog rows, map ownership and per-player
-// tables. Tile actions additionally accept the explicit all-player sentinel.
 GZ_ENUM_BEGIN(PlayerSlot)
     PLAYER_SLOT_0 = 0,
     PLAYER_SLOT_1 = 1,

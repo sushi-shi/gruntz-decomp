@@ -77,16 +77,6 @@ i32 g_stepRow;
 DATA(0x0022b738)
 i32 g_diffTier;
 
-// The tenth `.CRT$XC` slot of this compiland (0x2085ec -> 0x0002d7e0, a bare
-// `ret`). GruntDirectionCell's DEFAULT ctor is empty, and cl 5.0 emits one XC
-// slot with a body of exactly `c3` for an array of such objects - the loop is
-// deleted, so array and single object are byte-indistinguishable in .text and
-// only the .bss extent separates them. 3 * 0xc = 0x24 = 0x0022b73c..0x0022b760
-// exactly, and the slot is last, so the definition follows the scalars above.
-// The next compiland's own cell block starts at 0x0022b760, which closes the
-// extent from the far side. Nothing references it - like the nine singles above
-// it is dead data that only its initializer touches - so the name claims only
-// the family and that it is spare, not a purpose the evidence does not prove.
 RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
 RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
@@ -153,10 +143,6 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 }
 
 // @early-stop
-// ebx and edi are transposed against retail (retail keeps the object cursor in
-// ebx and the shared 0 in edi); that accounts for about two thirds of the
-// residual. The rest is the g_diffScale multiply, which retail folds into
-// `fmul m32` while cl preloads it with fld/fmulp.
 RVA(0x00025020, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty) {
 
@@ -283,12 +269,10 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_toolzPct = g_buteMgr.GetInt("Battlez", "ToolzPercent");
     m_toyzPct = m_toolzPct + g_buteMgr.GetInt("Battlez", "ToyzPercent");
     m_brickzPct = m_toyzPct + g_buteMgr.GetInt("Battlez", "BrickzPercent");
-    // The brick CDF: RedBrick through BlackBrick.
     m_redBrickPct = g_buteMgr.GetInt("Battlez", "RedBrick");
     m_blueBrickPct = m_redBrickPct + g_buteMgr.GetInt("Battlez", "BlueBrick");
     m_goldBrickPct = m_blueBrickPct + g_buteMgr.GetInt("Battlez", "GoldBrick");
     m_blackBrickPct = m_goldBrickPct + g_buteMgr.GetInt("Battlez", "BlackBrick");
-    // The toy CDF: one running total per key, from BabyWalkerz to Yoyoz.
     m_babyWalkerzPct = g_buteMgr.GetInt("Battlez", "BabyWalkerz");
     m_beachBallzPct = m_babyWalkerzPct + g_buteMgr.GetInt("Battlez", "BeachBallz");
     m_bigWheelzPct = m_beachBallzPct + g_buteMgr.GetInt("Battlez", "BigWheelz");
@@ -300,7 +284,6 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_squeakToyzPct = m_scrollzPct + g_buteMgr.GetInt("Battlez", "SqueakToyz");
     m_yoyozPct = m_squeakToyzPct + g_buteMgr.GetInt("Battlez", "Yoyoz");
 
-    // The tool CDF: Bombz through Wingz, the last entry being the grand total.
     m_bombzPct = g_buteMgr.GetInt("Battlez", "Bombz");
     m_boomerangzPct = m_bombzPct + g_buteMgr.GetInt("Battlez", "Boomerangz");
     m_toolBrickzPct = m_boomerangzPct + g_buteMgr.GetInt("Battlez", "Brickz");
@@ -367,10 +350,6 @@ void CBattlezMapConfig::FreeArrays() {
 }
 
 // @early-stop
-// Instruction count, branch sequence and branch targets all agree; the residue is
-// call-setup scheduling - retail loads `ecx = &g_typeColl` BETWEEN the two argument
-// loads at each of the seven GetNameRecord sites, and interleaves the three trailing
-// `timer += g_frameDelta` reads differently.
 RVA(0x00025d90, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
     if (m_active == 0) {
@@ -412,9 +391,6 @@ i32 CBattlezMapConfig::StepBoard() {
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition == 0) {
             forced = 1;
         }
-        // ONE if/else: retail enters the retask loop for `forced` OR for the 1-in-10
-        // idle roll (two `j.. 0x25f31` into the same block), which is why `forced` is
-        // still unknown inside it and the `unit = forcedUnit` override survives.
         if (!forced && rand() % 10 != 0) {
             i32 r2 = rand() % 15;
             CGrunt* u2 = m_triggerMgr->m_units[m_playerIndex * 15 + r2];
@@ -508,9 +484,6 @@ i32 CBattlezMapConfig::StepBoard() {
                     }
                 }
 
-                // One decrement of THIS unit's queue position per still-returning
-                // row-mate, floored at 0 (retail `dec eax; jns; xor eax,eax`), then
-                // an immediate return - the row step and the clocks are skipped.
                 for (i32 c = 0; c < 15; c++) {
                     CGrunt* mate = m_triggerMgr->m_units[m_playerIndex * 15 + c];
                     if (mate != NULL && mate->m_defenderState == AISTATE_RETURN) {
@@ -534,9 +507,6 @@ i32 CBattlezMapConfig::StepBoard() {
 }
 
 // @early-stop
-// Two residues: retail keeps the candidate index in ebp and the cursor on the
-// stack (cl does the reverse), and its budget product is A*(B*C) - written that
-// way cl folds A into an `fimul`, which is further from retail than (A*B)*C.
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     i32 occupied = 0;
@@ -664,12 +634,6 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 }
 
 // @early-stop
-// Retail carries `this` in ecx across the outer loop and reloads it in the latch
-// where we reload it at the loop head, and its frame is two dwords larger.  The
-// CFG lead is the reroll/clamp tail: the four perimeter-hit label blocks are
-// textually identical, cl cross-jumps all four into ONE `m_gridH` store + `ret`,
-// and retail keeps TWO (one on ebp, one on esi) - so retail's row pair and column
-// pair each merged on their own.
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -1350,10 +1314,6 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 i32 gy = gc->m_y;
                 i32 sx = unit->m_object->m_screenX >> TILE_SHIFT_PX;
                 i32 sy = unit->m_object->m_screenY >> TILE_SHIFT_PX;
-                // Retail 0x2874d-0x287c8.  The out-of-range arm is the ELSE of the
-                // proximity test (`jge 0x287ca` twice), not a `cell & 2` target, and
-                // the WINGZ gate is ONE ArrivalPickup select every predecessor jumps
-                // to - not a split entranceReason/toolId pair with opposite polarity.
                 if (abs(gx - sx) >= 2 || abs(gy - sy) >= 2) {
                     goto dropCoords;
                 }
@@ -1534,9 +1494,6 @@ spellHit: {
 
 flagsArm: {
     i32 ok = 1;
-    // Both gates load m_entranceReason ONCE and keep it live across the pair:
-    // retail's first select is `cmp er,0x16 / mov p,er / jle / mov p,tool`
-    // (a second register), the second overwrites er in place because it is dead.
     if (cell & 8) {
         PickupType er = unit->m_entranceReason;
         PickupType held = ArrivalPickupOf(unit, er);
@@ -1801,9 +1758,6 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
             return 0;
         }
-        // Retail re-tests `pathHeadFlags & 0x8000` here (the CSE'd `and` is
-        // re-`test`ed at
-        // 0x29fbb), so the two guards are separate statements, not one nesting.
         if ((pathHeadFlags & 0x8000) && PathCrossesMarkedTile(unit) == 0
             && unit->m_defenderState == AISTATE_BATTLEZ_FINAL_ROUTE) {
             CoordNode* head = unit->CoordHead();
@@ -1962,7 +1916,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         box.right = center.m_x + 6;
         box.bottom = center.m_y + 6;
 
-        // CMapMgr::Clip(&box) expanded in place.
         const RECT* src = &box;
         RECT a;
         if (src != NULL) {
@@ -1998,8 +1951,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         }
         CPtrList list(10);
         i32 flags = 0;
-        // One load of m_entranceReason, kept live across all three gates: retail
-        // guards on IT (`cmp er,0x16`) and lands the select in a second register.
         PickupType er = unit->m_entranceReason;
         PickupType prim = ArrivalPickupOf(unit, er);
         if (prim == PICKUP_TOOB) {
@@ -2040,9 +1991,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 while (node != NULL) {
                     CoordNode* remaining = node;
                     node = node->m_next;
-                    // Spelled through the global at every use: the stores via `copy`
-                    // may alias it, so retail RELOADS g_coordPool.m_freeHead for the
-                    // unlink (3 refs at this site, not 2).
                     Coord* copy = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
                         copy = &g_coordPool.m_freeHead->m_coord;
@@ -2072,9 +2020,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     }
                 }
 
-                // Only ONE CRect ctor call here in retail (the other two Clip
-                // expansions have two): the full-board rect is written field by
-                // field, sharing the m_width/m_height loads with the ctor args.
                 RECT hitFull;
                 hitFull.left = 0;
                 hitFull.top = 0;
@@ -2114,8 +2059,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 // @early-stop
-// Retail spills the strength-reduced grid byte offset and gives ebp to cx; cl does
-// the reverse, so retail's frame carries one extra local (0x20 vs 0x1c).
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
@@ -2196,11 +2139,6 @@ void CBattlezMapConfig::Clear() {
 }
 
 // @early-stop
-// Measured and REJECTED, so nobody re-runs them: spelling the trailing m_board
-// read as `m_board->Clip(0)` loses ground - esi is reloaded from the `this` spill
-// for the adjacent RouteUnitTo receiver, so that load is a rematerialisation, not
-// a re-read; and making CMapMgr::Clip a header inline makes cl 5.0 expand BOTH
-// sites and no obj emits the 0x2b340 COMDAT (docs/patterns/inline-budget-emits-ool-comdat.md).
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->m_entranceCommitted == 0) {
@@ -2282,8 +2220,6 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     box.right = right;
     box.bottom = bottom;
 
-    // CMapMgr::Clip(&box) expanded in place: retail calls the out-of-line Clip only
-    // for the trailing NULL argument, so this arm is a copy of its body.
     const RECT* src = &box;
     RECT a, bounds;
     i32 w = board->m_width;
@@ -2571,8 +2507,6 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
             break;
     }
 
-    // retail materialises this+0x78 once, ahead of the dispatch, and reaches
-    // the second timer as +8 off that cursor rather than off `this`.
     Clock64* p = m_routeTimers;
     switch (mode) {
         case SERIAL_SAVE:
@@ -2646,8 +2580,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     box.top = top - 3;
     box.right = right + 4;
     box.bottom = bottom + 4;
-    // CMapMgr::Clip(&box) expanded; cl5 does not fold `&box != NULL`, so both
-    // arms survive and the `+1` belongs to Clip's true arm, not to box.
     {
         const RECT* src = &box;
         CMapMgr* board = m_board;
@@ -2728,8 +2660,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
-                        // CMapMgr::Clip(NULL): the constant src folds, leaving
-                        // only the else arm's second CRect construction.
                         CMapMgr* bd = m_board;
                         RECT b;
                         b.left = 0;
@@ -2767,9 +2697,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
 
-        // CDDrawChildGroup::Drain's first iteration, inlined by cl: the NULL arm
-        // is its own `xor eax,eax; jmp` block behind a positive gate, and the
-        // node is read with ONE GetNext (pNext first, then data), not GetAt+GetNext.
         CDDrawChildGroup* c = m_ctx->m_world->m_childGroup;
         if (c->m_scanCursor == NULL) {
             g = NULL;
@@ -2861,9 +2788,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     i32 maskFlags = ownFlags & BRICKZ_CELL_UNOCCUPIED_MASK;
-    // Retail spells THIS one with the `<=` arm first: its two stores to the
-    // `type` slot are ordered entranceReason-then-toolId behind a `jg`, which
-    // is the arm order only the `<=` condition produces.
     PickupType type = ARRIVAL_PICKUP_TERNARY_LE(g);
 
     if ((dest.m_flags & 0x400) && g->m_defenderState == AISTATE_RETURN
@@ -2882,7 +2806,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     box.left = (c.m_x >> TILE_SHIFT_PX) - 1;
                 }
 
-                // CMapMgr::Clip(&box) expanded; cl5 keeps both arms of `&box != NULL`.
                 {
                     const RECT* src = &box;
                     CMapMgr* board = m_board;
@@ -2952,8 +2875,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                         nt->m_x,
                                         nt->m_y
                                     )
-                                    // CMapMgr::Clip(NULL): the constant src folds to the
-                                    // else arm alone.
                                     CMapMgr* bd = m_board;
                                     RECT pathFull;
                                     pathFull.left = 0;
@@ -2977,7 +2898,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             }
         }
 
-        // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
         {
             CMapMgr* bd = m_board;
             CRect b(0, 0, bd->m_width, bd->m_height);
@@ -3283,9 +3203,6 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             } else if (cell != NULL) {
                 BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
                 i32 occ = cell->m_playerFlags[m_playerIndex];
-                // TWO separate ifs, not if/else-if: retail re-tests `occ`
-                // (`test eax,eax; jne ladder` / `test eax,eax; mov edx,1; je done`)
-                // and keeps two distinct `special = 1` stores.
                 i32 special = 0;
                 if (occ == 0) {
                     special = 1;
@@ -3314,9 +3231,6 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                             0
                         )
                         != 0) {
-                        // Only this third block gates on the count: retail reads
-                        // list3+0xc (m_nCount) and skips the whole store/recycle
-                        // when it is 0, before it touches m_pNodeHead at +4.
                         if (list3.GetCount() != 0) {
                             CoordNode* head =
                                 MfcNodeFromPosition<CoordNode>(list3.GetHeadPosition());
@@ -3433,8 +3347,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     {
         CGameObject* lvl = unit->m_object;
         bottom = lvl->m_screenY >> TILE_SHIFT_PX;
-        // Same seed-the-last-probe idiom as RouteToNearbyEnemy: retail stores
-        // probe 1's unused half into g2's slot before g2 is probed.
         Coord g0;
         Coord g1;
         Coord g2;
@@ -3447,16 +3359,11 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         (static_cast<CUserLogic*>(unit))->GetScreenTile(&g2);
         left = g2.m_x;
     }
-    // The +-8 belongs to the RECT, not to the probes: retail's `add r,8` /
-    // `add r,-8` pairs sit immediately before the CRect ctor call, not next to
-    // the `sar r,5` that produced each edge.
     RECT box;
     box.left = left - 8;
     box.top = top - 8;
     box.right = right + 8;
     box.bottom = bottom + 8;
-    // CMapMgr::Clip(&box) expanded: cl declines to inline the 170-byte body, but
-    // it does NOT fold `&box != NULL`, so the else arm survives here.
     {
         const RECT* src = &box;
         CMapMgr* board = m_board;
@@ -3511,8 +3418,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         } while (--w != 0);
     }
 
-    // CMapMgr::Clip(NULL) expanded: with a constant-NULL src cl folds the test
-    // away and only the else arm - a struct copy of the board rect - survives.
     {
         CMapMgr* board = m_board;
         RECT b;
@@ -3541,9 +3446,6 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     i32 top;
     i32 left;
     {
-        // Each probe seeds leftProbe's other axis before leftProbe is itself probed: retail
-        // stores the unused half of probes 1..3 into the slot probe 4 later
-        // overwrites (the same idiom CGrunt::StepTimeBomberBehavior spells).
         Coord bottomProbe;
         Coord rightProbe;
         Coord topProbe;
@@ -3641,7 +3543,6 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     }
     if (best != NULL) {
         if (static_cast<u32>(unit->m_dwell) > 0x64) {
-            // CMapMgr::Clip(&box) expanded; cl5 keeps both arms of `&box != NULL`.
             {
                 const RECT* src = &box;
                 CMapMgr* board = m_board;
@@ -3698,12 +3599,6 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                             g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
-                        // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
-                        // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the
-                        // clock) - and we emitted only six.  The zero pass has to go through the
-                        // ARRAY alias: written as `m_routeWindow.m_v = 0` cl proves the store
-                        // dead against the 0x1388 that follows and drops it, and the re-arm has
-                        // to stay two i32 halves for the same reason.
                         m_routeTimers[0].m_v = 0;
                         m_routeTimers[1].m_v = 0;
                         m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
@@ -3726,7 +3621,6 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 }
                 unit->m_dwell = 0;
             } else {
-                // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
                 CMapMgr* board = m_board;
                 CRect b(0, 0, board->m_width, board->m_height);
                 RECT a;
@@ -3758,10 +3652,6 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     if (unit->CoordCount() == 0) {
         return 0;
     }
-    // The target cell is a Coord OBJECT, not two ints: retail keeps it in a
-    // real 8-byte stack slot ([esp+0x14]/[esp+0x18]) written by a whole-object
-    // copy on the found path, and leaves it uninitialised otherwise - it is
-    // only read on the found == 1 path.
     Coord target;
     i32 found = 0;
     if (useArg == 0) {
@@ -3781,13 +3671,6 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             }
         }
 
-        // Everything from here to the join lives INSIDE the useArg == 0 arm:
-        // retail's else arm (0x2ef2d) is entered only by the `jne` at the top
-        // and falls straight into the FOURTH `found` gate at 0x2ef42, so the
-        // three gates below are unreachable when the caller supplied the cell.
-        // Each gate is a guarded BLOCK, not an early return: cl threads every
-        // false edge onto the final `return 0`, which is what retail's three
-        // `test esi,esi; je <ret0>` rows are.
         if (found != 0) {
             if (unit->m_defenderState == AISTATE_RETURN) {
                 return 1;
@@ -3827,8 +3710,6 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
         return 0;
     }
 
-    // Bottom-tested count loop: retail's back-edge is `jl <top>` with the exit
-    // as the fall-through, which a `break` on `scanned >= 15` inverts.
     i32 r = rand() % 15;
     for (i32 scanned = 0; scanned < 15; scanned++) {
         CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * 15 + r];
@@ -4059,8 +3940,6 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll = rand() % rollPct;
         }
         roll++;
-        // Every arm yields the PickupType id of the key its bucket accumulates;
-        // 0x14 is not a droppable tool, so the chain skips straight to Wingz.
         PickupType mode = PICKUP_WINGZ;
         if (roll <= m_bombzPct) {
             mode = PICKUP_BOMB;
@@ -4103,7 +3982,6 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         } else if (roll <= m_welderzPct) {
             mode = PICKUP_WELDER;
         }
-        // 0x14 has no Battlez bute key of its own; retail folds it onto Gauntletz.
         if (mode == PICKUP_WARPSTONE) {
             mode = PICKUP_GAUNTLETZ;
         }
@@ -4149,8 +4027,6 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
         }
-        // Retail 0x2f9xx: `cmp eax,0x12 / je <sunk>` sends the TOOB copy AWAY and
-        // lets the WINGZ copy own the fall-through, which is the else-arm order.
         if (mode != PICKUP_TOOB) {
             if (mode == PICKUP_WINGZ) {
                 if (unit->CoordCount() != 0) {
@@ -4347,12 +4223,6 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
         if (n != NULL) {
             CoordNode* h = unit->CoordHead();
             if (h != NULL) {
-                // Retail 0x303e0-0x303fa: the payload pointer is hoisted OUT of
-                // this loop (`lea ecx,[unit+0x31c]`) and nothing in the body
-                // advances h or n, so the `jne 0x303e6` back-edge only falls
-                // through when the earlier search broke at the list HEAD.  Its
-                // `test ecx,ecx` on a member address is also unfolded.  Both are
-                // retail's, transcribed as-is.
                 do {
                     CPtrList* listPayload = &unit->m_coordList;
                     if (listPayload != NULL) {
@@ -4470,9 +4340,6 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         return 0;
     }
     if (src->m_battleState == BZTASK_ADVANCE) {
-        // Retail loads BOTH fields and spills m_y to a slot it never reads - the
-        // extra 4 bytes of frame (0xc vs our 0x8).  A struct copy is what keeps
-        // the second load alive.
         if (src->ArrivalCell().m_x != m_playerIndex) {
             return 0;
         }
@@ -4528,10 +4395,6 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
 }
 
 // @early-stop
-// ebx/ebp are transposed: retail parks the shared 0 in ebx and `occupied` in
-// ebp, we do the reverse, and every store that uses either follows. Declaration
-// order of `occupied`/`row` does not move it. The argument order to PlaceObject
-// and the store order are both retail's now.
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     i32 occupied = 0;

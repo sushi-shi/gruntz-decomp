@@ -16,8 +16,6 @@ GZ_ENUM_CONST_END(ClutTableLayout)
 
 extern u16 g_clut[CLUT_ENTRY_COUNT];
 
-// The owner is a word table, while retail's raster loops carry byte displacements
-// so the three channel-region addresses remain link-time DIR32 addends.
 union ClutByteCursor {
     u8* m_bytes;
     u16* m_words;

@@ -17,10 +17,6 @@ GZ_ENUM_FORWARD(FaderMode);
 class CDDSurface;
 struct CDDPalette;
 
-// m_pixel is a BYTE, not an i32: CFaderRadial::RenderFrame reads it with
-// `mov al,BYTE PTR [ebx+0xc]` (0x17fd2a) and ApplyInit writes it with a byte
-// store (0x17fbc9).  The three trailing pad bytes are why ApplyInit's cell
-// write is a 4-dword struct copy - it carries the padding too.
 struct CFaderRadialCell {
     float m_vx;
     float m_vy;
@@ -50,21 +46,11 @@ public:
 
 class CFaderSine : public CFader {
 public:
-    // The fader module's own revision of Monolith's GetRandomNumber. In-class so
-    // the static's mangled name differs from the game header's - three distinct
-    // names are the only mechanism for retail's three guard/seed pairs (same-name
-    // COMMONs fold, `static __inline` layout disproven):
-    // docs/patterns/header-inline-local-static-three-copies.md. This module's
-    // GetRandom below builds on it where the game's builds on rand() - the
-    // diverged-revision proof.
     i32 GetRandomNumber() {
         static long holdrand = timeGetTime();
         return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
     }
 
-    // Monolith's inclusive-range companion. Retail's three call sites all show the
-    // `dec` of the loaded bound before the seed guard and the matching `inc` before
-    // `idiv` - i.e. `hi - lo + 1` with a folded-away `lo == 0`.
     i32 GetRandom(i32 lo, i32 hi) {
         return lo + GetRandomNumber() % (hi - lo + 1);
     }

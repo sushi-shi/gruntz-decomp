@@ -72,7 +72,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                 r++;
             }
             i32 band = r % 4;
-            // retail emits this guard (test edi,edi); SP3 folds it - era residue
             CBattlezMapConfig* b = &m_ctx->m_players[band].m_battlezConfig;
             if (b != NULL) {
                 i32 cnt = b->m_attackWaypoints.GetSize();

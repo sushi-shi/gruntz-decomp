@@ -31,10 +31,6 @@ struct CNetGameConfigPacket;
 class GruntzPlayer;
 struct CNetSession;
 
-// HWND is void* here on purpose: HeapDiag.cpp is a <Win32.h> TU, where
-// windows.h leaves STRICT off and HWND *is* void*, so its definition mangles
-// PAX.  Spelling HWND in this MFC (STRICT) header would emit PAUHWND__ and
-// resolve to nothing.
 void SetActiveAndFocus(void* hWnd);
 void FillSessionList(HWND hList, CNetMgr* manager);
 BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -49,7 +45,6 @@ class CMulti;
 
 class CMulti : public CPlay {
 public:
-    // inline: retail expands this whole ctor into CGruntzMgr::TransitionState
     CMulti() {
         m_session = NULL;
         m_netMgr = NULL;

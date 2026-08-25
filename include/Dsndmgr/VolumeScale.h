@@ -3,16 +3,6 @@
 
 #include <Enums.h>
 
-// The two volume scales the sound code converts between.
-//
-// Both directions are written out in MidiManager, which is what fixes the
-// pair - percent to MIDI is `volume * MIDI_VOLUME_MAX / VOLUME_PCT_MAX` with a
-// `>= VOLUME_PCT_MAX -> MIDI_VOLUME_MAX` clamp, and MIDI to percent is the
-// exact inverse with the clamp the other way round. SoundBuffer carries the
-// same 100 as a double (c_volumePercentScale) for the attenuation curve.
-//
-// Spelled 100/0x64 and 127/0x7f interchangeably before this header.
-//
 GZ_ENUM_CONST_BEGIN(VolumeScale)
     VOLUME_PCT_MAX = 100,
     MIDI_VOLUME_MAX = 127
@@ -28,15 +18,6 @@ inline i32 MidiVolumeToPercent(i32 midiVolume) {
     return midiVolume * VOLUME_PCT_MAX / MIDI_VOLUME_MAX;
 }
 
-// DirectSound's playback-rate limits, as clamped by
-// SoundBuffer::SetFrequencyOffsetPercent. It computes a rate from a percentage
-// offset and then pins it strictly INSIDE the range - `>= MAX` becomes MAX - 1
-// and `<= MIN` becomes MIN + 1 - which is why the constants are the bounds
-// themselves rather than the values assigned.
-//
-// These are DSBFREQUENCY_MIN and DSBFREQUENCY_MAX in the DirectX SDK, but the
-// dsound.h that MSVC 5.0 ships predates those macros, so they are spelled out
-// here rather than included.
 GZ_ENUM_CONST_BEGIN(DSoundFrequency)
     DSOUND_FREQUENCY_MIN = 100,
     DSOUND_FREQUENCY_MAX = 100000

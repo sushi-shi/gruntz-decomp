@@ -215,8 +215,6 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
     if (g_cdPromptResult != 0) {
         item->SetState(MENUSTATE_DISABLED);
     }
-    // Retail pushes 0x5f11b0 here (`a137c: push 0x6111b0`), which is HelpState's
-    // own `g_titleBuf` - there is no private "HELP" datum in this TU.
     page->AddItem(g_titleBuf, s_MENU_MAINMENU_HELP, 0x8035, NULL, MENU_ITEM_FLAGS_NONE);
     page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, NULL, MENU_ITEM_FLAGS_NONE);
     if (menuTree->AddPage(page) == 0) {

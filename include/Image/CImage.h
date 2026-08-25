@@ -83,8 +83,6 @@ public:
     CDDrawShadeBlit* m_owned;
 };
 
-// 0xd5e80 (RVA_COMPGEN pin at the emitting keeper, Play.cpp - an RVA() here
-// would annotate BOTH cl dtor variants and collide with ??_GCImage@0xd5e50).
 inline CImage::~CImage() {
     Unload();
 }

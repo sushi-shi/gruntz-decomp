@@ -25,7 +25,6 @@ GZ_ENUM_BEGIN(InGameIconGlitter)
     ICON_GLITTER_POWERUP_RED = 2
 GZ_ENUM_END(InGameIconGlitter)
 
-// The help-box WWD Health field is a visibility policy for CInGameText.
 GZ_ENUM_BEGIN(InGameTextVisibility)
     INGAME_TEXT_ALWAYS = 0,
     INGAME_TEXT_EASY_ONLY = 1,

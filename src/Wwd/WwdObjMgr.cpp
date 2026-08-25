@@ -43,9 +43,6 @@ i32 g_soundEnabled = 1;
 DATA(0x0021ab24)
 i32 g_soundVolumePercent = 100;
 
-// CMapStringToOb::Lookup leaves `out` untouched on a miss, so the clear belongs
-// with the lookup: as the inline body's first statement cl schedules it after the
-// caller's argument setup, which is retail's order.
 inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
     CObject* ob = NULL;
     map.Lookup(name, ob);
@@ -303,8 +300,6 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 }
 
 // @early-stop
-// Both static queues emit real atexit thunks as separate anonymous COMDATs;
-// the delinked image names those same bytes as this function's EH span.
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
     RVA_DYNINIT(0x00159c80, 0xa, killQueue)
@@ -497,9 +492,6 @@ void CDDrawChildGroup::ClearChildren() {
 }
 
 // @early-stop
-// Residue is the frame-slot ORDER: retail lays the scalars out this/ip/pos/mask1
-// from esp+0, we get mask1/this/ip/pos. Hoisting the mask decls to function scope
-// does not move it (measured).
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     POSITION pos = m_list.GetHeadPosition();
@@ -1073,10 +1065,6 @@ void CDDrawChildGroup::PruneList() {
 }
 
 // @early-stop
-// cl canonicalises the four-term sum's operand order from the operands: source
-// order, every parenthesization, per-term statement splits and the distributed
-// i*a+i*b+... all emit the identical order. The TU-state probe does NOT flip it.
-// docs/patterns/commutative-operand-order-is-canonical.md
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015aaf0, 0x35)
@@ -1254,8 +1242,6 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
             case CLASSID_CALLBACKOBJ: {
 
                 CWwdGameObject* rec = NULL;
-                // m_serialTypeId is NOT a LogicTypeId: this phase keys off the
-                // record's own serial type id.
                 if (OwnerMgr()->DispatchSerializationCallback(
                         reader,
                         SERIAL_CREATE_BY_SERIAL_ID,
@@ -1368,8 +1354,6 @@ i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeI
         if (obj->m_logicRecord == NULL) {
             return 0;
         }
-        // Release-dead TRACE (`1 ? (void)0 : ::AfxTrace`). Only "one CString
-        // temporary lived here" is byte-proven; the arm itself is gone.
         if ((typeId & 1) != LOGIC_UNSET) {
             TRACE("%s\n", static_cast<LPCTSTR>(CString(obj->m_name)));
         }
@@ -1416,12 +1400,6 @@ WwdDirtyRect::WwdDirtyRect() {
     m_armed = -1;
 }
 
-// The header's `~WwdDirtyRect() {}` COMDAT, and where retail put it. cl inlines
-// the empty body away at every call site (retail's ~CGameObject has no call to
-// it) but must still give it an ADDRESS, because the /GX unwind funclet for the
-// member at +0xb8 jumps there. Without the pin that funclet's target is an
-// unnamed byte and the reference cannot be compared at all.
-
 RVA(0x0015b2a0, 0xb)
 WwdGridNode::WwdGridNode() {
     m_bucket = NULL;
@@ -1433,11 +1411,6 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
     SeedFields();
 }
 
-// The three creators above call both three-argument ctors; these are the
-// out-of-line homes.  CGameObject's 0x15b390 (WwdFactoryObject.cpp) expands
-// CResolveNode's seed via the tagged inline sibling and CLogicRecord's via
-// the opt-in <DDrawMgr/LogicRecordCtorInline.h> view (see the docs/patterns/comdat-home-adjudicates-inline-spelling.md
-// dossier: the creators' budget slices refute a single visible body for both).
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {

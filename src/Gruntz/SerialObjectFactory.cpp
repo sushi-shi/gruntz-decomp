@@ -95,8 +95,6 @@ i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
     if (mgr->m_world == NULL) {
         return 0;
     }
-    // Filter seeded with 0, NOT LOGIC_NONE(-1): retail pushes 0 here, the same
-    // "no filter" idiom as CGameSave::Save's SnapshotChildren call.
     return mgr->m_world->RestoreChildren(&GameSerializationCallback, path, LOGIC_UNSET)
            != LOGIC_UNSET;
 }
@@ -342,44 +340,23 @@ i32 __cdecl GameSerializationCallback(
     return g_gameReg->SerializeGameState(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
-// The pinned halves of the four ctor pairs declared in UserLogic.h,
-// GruntHealthSprite.h, PathHazard.h and MovingLogic.h.  Each body EXPANDS its
-// CUserLogic base - it stamps ??_7CUserBase and carries the single
-// `call ??0zBitVec` - and the classes derived from it `call` the body, while
-// the class's own `new` arm above expands the tagged inline sibling.
 RVA_COMPGEN(0x00011160, 0x4b, ??0CTileTrigger@@QAE@XZ)
 CTileTrigger::CTileTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
 RVA_COMPGEN(0x00011ef0, 0x4b, ??0CGruntHealthSprite@@QAE@XZ)
 CGruntHealthSprite::CGruntHealthSprite() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-// CMovingLogic/CProjectile realization group. Retail inlines CProjectile::CProjectile()
-// into the LOGIC_PROJECTILE arm at depth 1: its base ??0CMovingLogic call stays
-// out-of-line (the LOGIC_BOOMERANG arm likewise calls ??0CProjectile as its base).
 RVA_COMPGEN(0x000126e0, 0x1fc, ??0CProjectile@@QAE@XZ)
 CProjectile::CProjectile() : CMovingLogic(CMotionState::INLINE_BASE) {}
 
 RVA_COMPGEN(0x00013170, 0x7b, ??0CPathHazard@@QAE@XZ)
 CPathHazard::CPathHazard() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-// The pinned half of CMotionState's two-entity split: CGrunt::CGrunt,
-// CProjectile::CProjectile and GameSerializationCallback above all `call` it, while the
-// CMovingLogic()/CProjectile() COMDATs beside it expand CMotionState(INLINE_BASE).
-// The COMPGEN form is the accurate one and not a workaround: retail's 0x136d0 IS a
-// compiler-emitted out-of-line copy of an inline ctor cl declined to expand, exactly
-// like the six siblings pinned around it.  The definition below is only how we make
-// our cl emit that same body.  It also keeps this unit's tu_order span honest - the
-// span is measured from RVA() rows, and a real claim at 0x136d0 would stretch
-// GameSerializationCallback across the carved SerializeSyncMarker (0x13610).
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
 CMotionState::CMotionState() {
     InitBounds();
 }
 
-// The pinned half of CUserLogic's default-ctor pair: GameSerializationCallback above
-// `call`s it at 45 of its 57 direct-derived sites and expands the CUserLogic(EInlineBase)
-// sibling at the other 11.  Same COMPGEN reasoning as CMotionState below - a real RVA()
-// claim here would stretch this unit's tu_order span across the carved 0x13610.
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
 CUserLogic::CUserLogic() {}
 

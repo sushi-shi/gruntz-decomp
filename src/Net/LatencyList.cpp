@@ -149,8 +149,6 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
         POSITION pos = m_list.GetHeadPosition();
         while (pos != NULL) {
             CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
-            // * 0x10000 (not << 16): keeps both 0xffff masks - cl folds the
-            // shifted mask at C1, but strength-reduces the multiply only after.
             i32 data =
                 ((rec->m_resendInterval & 0xffff) * 0x10000) | (rec->m_commandDelay & 0xffff);
             i32 idx;

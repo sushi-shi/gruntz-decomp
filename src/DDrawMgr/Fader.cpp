@@ -21,7 +21,6 @@
 #include <math.h>
 #include <string.h>
 
-// GetTickCount is in milliseconds; m_measuredFps is frames per second.
 DATA(0x001f07bc)
 static const float kMsToSeconds = 0.001f;
 
@@ -48,11 +47,6 @@ void CFader::Wait(i32 delay) {
 }
 
 // @early-stop
-// Code bytes are exact; the residue is the kMsToSeconds reloc NAME. cl pools the
-// static const float with the TU's $T FP literals (1.0f, 0.0) in ONE .rdata
-// section, the delinked retail fragment holds the datum alone, and the
-// normalizer's $S rename hashes the whole section - so the referent names can
-// never agree from source. Same artifact on RunFade.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017e540, 0xd8)
@@ -87,7 +81,6 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
 }
 
 // @early-stop
-// Same kMsToSeconds section-hash reloc-name artifact as RunFadeStepped above.
 RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 frame = 0;
@@ -316,7 +309,6 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
                 i32 idx = mesh->m_nSize;
                 i32 newSize = idx + 1;
-                // Reserve raw capacity: unused serialized mesh slots are zero-filled explicitly.
                 if (newSize == 0) {
                     if (mesh->m_pData) {
                         delete[] mesh->m_pData;
@@ -334,8 +326,6 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                     if (newSize > idx) {
                         memset(&mesh->m_pData[idx], 0, (newSize - idx) * sizeof(RezElem40));
                     } else if (idx > newSize) {
-                        // The shrink arm's element-destruction walk: RezElem40 is POD, so
-                        // the loop dies and only retail's dead count store survives.
                         RezElem40* gone = &mesh->m_pData[newSize];
                         i32 nGone = idx - newSize;
                         for (; nGone--; gone++) {
@@ -382,10 +372,6 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 }
 
 // @early-stop
-// Residue is an ebx<->ebp rotation: retail hands the zero constant the first
-// callee-saved register and `this` the second; the instruction stream is otherwise
-// the same. Not steerable by TU declaration count (swept 0..16) nor by the
-// identifier-rename forest (400 depth-2 cells, all flat).
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
     if (m_primeSurface != NULL) {
@@ -449,10 +435,5 @@ i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
 
-// CRezBufferObject's dtor is inline-in-header, so cl emits its ??1/??_G COMDATs
-// HERE - the TU that expands the ctor, through CFaderMesh::m_meshBuf - and not in
-// rezbufferobject, which never instantiates one. Retail agrees: ??_G is 0x1e bytes
-// (a call to ??1, never an inline expansion) while ??1CFaderMesh carries the member
-// dtor inlined.
 RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x0017f330, 0x51, ??1CRezBufferObject@@UAE@XZ)

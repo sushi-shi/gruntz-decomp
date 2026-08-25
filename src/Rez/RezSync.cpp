@@ -93,11 +93,6 @@ DATA(0x002455e4)
 i32 g_enableEmulation = 0;
 
 // @early-stop
-// Two residues remain. The frame is 8 B larger than retail's (`add esp,0x43c` vs
-// `0x434`) - the cmd-line scratch buffers land at different offsets, so every
-// [esp+N] operand in the parse block shifts. And cl cross-jumps the `xor eax,eax`
-// that precedes the shared epilogue, so each early `return 0` reaches it with a
-// bare `jmp` where retail materialises the zero at every site.
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
@@ -177,12 +172,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     i32 vInterlaced = m_settings->GetValueDword("Interlaced", m_isInterlaced);
     i32 vHigh1 = m_settings->GetValueDword("High Detail", m_isHighDetail);
     i32 vHigh2 = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
-    // Every probe above defaults from - and is written back to - its OWN member;
-    // "Easy Mode" is the one retail applies immediately (0x0837e5
-    // `mov [ebp+0x118],eax`, scheduled between the Resolution call's two pushes),
-    // while the other seven are held in locals until after subsystem init.
-    // "Resolution" is consumed only by the m_savedModeSize ladder below - retail
-    // stores its result to no member at all.
     m_isEasyMode = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
     i32 resolutionRaw = m_settings->GetValueDword("Resolution", IDX(RES_640X480));
     Resolution resolution = static_cast<Resolution>(resolutionRaw);
@@ -462,8 +451,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_gameplayInput = new CInputState;
     if (!g_gameplayInput->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
-        // The zeroing runs off a cached pointer and skips m_mouse - retail's own
-        // hand-written teardown, not the constructor's six stores replayed.
         CInputState* dead = g_gameplayInput;
         if (dead) {
             dead->m_primaryDevice = NULL;

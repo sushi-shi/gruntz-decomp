@@ -3,20 +3,6 @@
 
 #include <Enums.h>
 
-// Which row of the level-complete stat panel to format, as passed to
-// CBootyState::FormatHudText and iterated by its callers.
-//
-// Retail names every one of them itself - each arm reads the group accessor of
-// the same name:
-//
-//   0 SumElapsedTimeForCurrentArea      4 SumToyzAvailable/CollectedForGroup
-//   1 SumGruntzExitedForCurrentArea     5 SumPowerupzAvailable/CollectedForGroup
-//   2 SumGruntzLostForCurrentArea       6 SumCoinsAvailable/CollectedForGroup
-//   3 SumToolzAvailable/CollectedForGroup
-//                                 7 SumSecretsAvailable/FoundForGroup
-//
-// Rows 3..7 all format "%d of %d" from an available/collected pair; 0 formats
-// mm:ss and 1..2 a bare count, which is why they have no _AVAILABLE half.
 GZ_ENUM_BEGIN(BootyStatRow)
     BOOTYSTAT_TIME = 0,
     BOOTYSTAT_GRUNTZ_EXITED = 1,

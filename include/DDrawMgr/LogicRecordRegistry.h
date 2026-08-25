@@ -42,12 +42,6 @@ public:
     virtual CLogicRecord*
     RegisterLogicType(LogicRecordDispatchFn dispatch, const char* key, i32 flags);
 
-    // Out of line at 0x9cab0 in StreamRecordLoaders.cpp;
-    // <DDrawMgr/LogicRecordRegistryFindInline.h> is the opt-in inline view - a
-    // workaround for caller-side modelling error with a stated removal
-    // condition, NOT a proven era structure.  The "an in-class body leaves
-    // 0x9cab0 with no emitter" claim is falsified (2026-08-22): a declining TU
-    // does emit the COMDAT.  See that header for the retest and the condition.
     CLogicRecord* FindTemplate(const char* key);
 
     CString FindLogicTypeKey(CLogicRecord* record);

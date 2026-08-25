@@ -185,8 +185,6 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     }
 
     PROCESSENTRY32 pe;
-    // Retail zeroes past dwSize only (0x49 dwords from pe+4) and then stores
-    // the full SDK sizeof.
     memset(&pe.cntUsage, 0, sizeof(pe) - sizeof(pe.dwSize));
     pe.dwSize = sizeof(pe);
     i32 matchCount = 0;

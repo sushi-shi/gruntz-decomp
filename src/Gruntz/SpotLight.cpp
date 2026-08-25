@@ -49,9 +49,6 @@ RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
 // @early-stop
-// Residue: the object pointer and the snapped y land in the opposite pair of
-// scratch registers to retail, and the constant arm lowers `ax - 0x20` as
-// `add eax,-0x20` where retail emits `sub eax,0x20`.
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_previousAnimationActId = m_logicRecord->m_eventCode;
@@ -60,10 +57,6 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 
     i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 centerY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    // Both converted coordinates stay live in x87 registers: retail `fst`s
-    // m_center.y / m_position.x (keeping them on the stack), copies the y one
-    // with `fld st(1)` for m_position.y, and reuses st(2)/st(3) for the m_offset
-    // subtraction.  Re-reading the members instead costs the two-dword copy.
     m_center.x = static_cast<double>(ax);
     double cy = static_cast<double>(centerY);
     m_center.y = cy;
@@ -166,8 +159,6 @@ i32 CSpotLight::Tick() {
                 SoundCueRegistry* obj = g_gameReg->m_world->m_soundRegistry;
                 if (obj->m_silentMode == 0) {
                     SoundCue* found = obj->FindCue(name);
-                    // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds
-                    // the cue in a register across the m_lastPlayTimeMs store.
                     SoundCue* cue = found;
                     if (cue != NULL) {
                         i32 soundEnabled = g_soundEnabled;

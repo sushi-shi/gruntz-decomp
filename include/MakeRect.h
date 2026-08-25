@@ -5,8 +5,6 @@
 
 #include <Ints.h>
 
-// A RECT built from its four edges and returned by value. Retail expands this at
-// every use; it was transcribed per site in DDSurface.cpp and Grunt.cpp.
 static __inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
     RECT rc;
     rc.left = l;

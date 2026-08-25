@@ -12,40 +12,7 @@
 
 #include <stddef.h>
 
-// Unreferenced in retail: only the incremental-link thunk names this body, and
-// the thunk has no callers. Its five out-of-line inline helpers likewise have
-// no other callers; that does not identify the live movement path that replaced
-// this implementation.
-//
-// Test the four neighbours at +/-45 and +/-90 degrees from dir. Diagonal steps
-// additionally require both orthogonal cells to carry the route bit. The two
-// unused parameters are not read.
 // @early-stop
-// The control flow is PROVEN exact: `--branches --diff` reports 556 branches and
-// 96 rets on both sides with every symbolic target agreeing, and the registers
-// agree everywhere. The whole residue is post-RA SCHEDULING: 20 sites where one
-// ESP-relative load sits one slot LATER than retail puts it (plus one block where
-// retail duplicates `mov ecx,[esp+0x24]` into both predecessors of a join):
-//   A (9 sites) `mov edi,[esp+0x2d8]` after vs before the `mov edx,[eax]` of the
-//     Coord copy at `*pCell = *stepN.Set(...)`
-//   B (9 sites) `mov eax,[esp+0x1c]` after vs before the `mov ecx,[g_gameReg]`
-//     of the sideX CellFlagsAt
-//   C (2 sites) the same, on `[esp+0x2c4]`, in `goalX - g->EntrancePx().m_x`
-// Every site is in the OOL-call region (the /Ob budget makes Coord::Set and
-// CellFlagsAt out-of-line from the SOUTHEAST arm onward, on BOTH sides); the
-// identical statements in the earlier, inlined arms are byte-exact. Retail
-// uniformly schedules the ESP-relative load FIRST at these sites and cl does not.
-// Measured dead levers: a 24-cell TU-declaration-count sweep, `extern int`
-// declarations, added typedefs and an extra `#include <string.h>` are ALL flat to
-// four decimals - this TU's regalloc/scheduling does not respond to TU state at
-// all, so "bank the max by perturbing the TU" is not available here. Compiling the
-// unit with /G5, /G4, /G3 or /GB is likewise byte-identical (the processor flag does
-// not reach this function's scheduling), and /Ob2 is byte-identical to the /O2
-// default - so the out-of-line Coord::Set/CellFlagsAt calls are not an inline-budget
-// artifact we can move either. /Oa and /Ow crater it to 84.71. Splitting
-// the copy into `Coord* c = stepN.Set(...); *pCell = *c;` is byte-identical, and
-// hoisting `sideX` to function scope (matching `sideY`) is byte-identical.
-// Rewriting all 96 out-param copies field-wise takes the diff from 23 to 30 hunks.
 RVA(0x0006f2f0, 0x5227)
 GruntDirectionCell __stdcall TmDeflectStep(
     CGrunt* g,
@@ -2215,15 +2182,6 @@ GruntDirectionCell __stdcall TmDeflectStep(
 }
 
 // @early-stop
-// Instruction-for-instruction identical to retail; the residue is one callee-save
-// ROTATION in the prologue. Retail materialises the `x` parameter into esi (the
-// register that falls free right after `push esi`) and defers `g_gameReg` to edi;
-// cl loads the global into esi and pushes `x` down to edi, and that esi<->edi swap
-// then propagates through the whole body. Measured dead: swapping the ix/iy decls
-// (94.14), hoisting the `plane` decl above them (90.78), reordering the RECT box
-// stores into address order (88.49), collapsing `attr` to an initialiser + one-armed
-// `if` (48.22), and inlining `g_gameReg->m_tileGrid` at all three uses (identical).
-// TU-state devices do not reach this unit at all (see TmDeflectStep above).
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
     i32 ix = x >> TILE_SHIFT_PX;
@@ -2271,15 +2229,6 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
 }
 
 // @early-stop
-// Three source-order defects were found and fixed here (the frame was 4 B short
-// because of them): the owner-id decode must extract `playerIndex` from `ah` BEFORE `unitIndex`
-// masks `eax` (otherwise cl copies `val` to a scratch first), `sx + 0xe` / `sy + 0xe`
-// must be named locals so both are live before the first compare, and `x` must be
-// declared BEFORE `xEnd` - retail loads `span->left` before `span->right` and
-// computes x straight into its own register. What is left is the same callee-save
-// rotation as HitTestCell: retail puts `span` in esi and `trow` in edi, cl swaps
-// them, and the naming propagates. `RECT rc` declared first is byte-identical;
-// declaring `trow` before `tcol` is worse (88.46).
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(
     i32 px,

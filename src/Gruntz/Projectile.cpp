@@ -73,7 +73,6 @@ const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
 const double g_movingLogicMax = 2147483646.0;
 DATA(0x001f04e8)
-// retail 0x001f04e8 holds 0x18 in .rdata, so the default is 24 and const.
 const u32 g_defaultZ = 24;
 
 RVA_DYNINIT(0x000df900, 0xa, CActRegPool<CProjectile>::s_table)
@@ -97,15 +96,9 @@ RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
 
-// The header-inline `~CMotionState() {}` (MotionState.h) emitted out of line: the
-// unwind funclets of ??0CProjectile (this-0x18 +0x38) and ??0CGrunt take its
-// address, so cl gives it a COMDAT. Retail keeps one 1-byte `ret` copy, isolated
-// by 0xcc linker fill on both sides, reached through the ILT thunk at 0x00003819.
 RVA_COMPGEN(0x00058ba0, 0x1, ??1CMotionState@@QAE@XZ)
 
 // @early-stop
-// residue: one instruction, the vptr stamp, which cl schedules after the first
-// m_wwdObject load instead of before it.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
     SET_OBJECT_FLAGS_AND_HIDE_INLINE(0x2000002)
@@ -315,8 +308,6 @@ void CProjectile::RegisterType() {
 }
 
 // @early-stop
-// Keep the FALL/IMPACT null checks in their switch arms and share only the
-// animation tail. A ternary pointer selection makes cl merge the checks.
 RVA(0x000dfd00, 0x70c)
 void CProjectile::AdvanceMotion() {
     if (m_arrived != 0) {
@@ -540,7 +531,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 }
 
 // @early-stop
-// Keep the converted duration live: it is reused for the Grunt hold window.
 RVA(0x000e0690, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(
     PickupType kind,
@@ -595,8 +585,6 @@ i32 CBoomerang::LoadProjectileSprites(
 }
 
 // @early-stop
-// Keep each rotated pair grouped before its origin add, then store X/Y before
-// phase. This matches retail's x87 operations; cl spills five slots versus four.
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     if (m_launched == 0 && m_phase > g_boomerangHalfTurnRadians) {

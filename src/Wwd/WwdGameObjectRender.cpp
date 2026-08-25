@@ -132,11 +132,6 @@ i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate
 }
 
 // @early-stop
-// Ctor chain byte-exact.  Residue: retail sinks the AddTail-failure block below the
-// `ret` (`je <tail>`, success falls through) where cl lays it inline (`jne <success>`).
-// Both `if (node != NULL) {...}` and a `goto fail` label after the return were measured
-// and are worse (78.65 / 80.70) - cl cross-jumps the two `delete result; return 0`
-// copies retail keeps apart.  tail-block-placement-cross-jump-wall.md.
 RVA(0x00166640, 0x13b)
 CWwdGameObject* CWwdGameObject::CreateObject(
     int id,

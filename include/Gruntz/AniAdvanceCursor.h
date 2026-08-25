@@ -22,10 +22,6 @@ GZ_ENUM_CONST_END(AniAdvanceValue)
 
 class CAniAdvanceCursor : public CWapObj {
 public:
-    // Tag type: picks the expanded sibling of the out-of-line 0x15b730 ctor.
-    // Retail calls 0x15b730 from exactly one site (CreateSpriteObject, whose
-    // CGameObject base is itself expanded); every other construction carries the
-    // body inline - `call ??0CLoadable`, then the vptr and the three NULLs.
     enum EInlineCursor {
         INLINE_CURSOR
     };
@@ -38,10 +34,6 @@ public:
         m_animation = NULL;
         m_element = NULL;
     }
-    // The third shape: body inline AND CWapObj's three stores inline, so the tag
-    // is CWapObj's own.  CWwdGameObject::CreateObject (0x166640) writes
-    // id/flags/owner straight to [esi+0x1a4/0x1a8/0x1ac] with no `call 0x156cb0`,
-    // where the two other users of the same CWwdSpriteObject ctor keep the call.
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 id, i32 flags, CWapObj::ENoSeed)
         : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
         m_boundObject = NULL;

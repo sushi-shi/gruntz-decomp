@@ -223,9 +223,6 @@ i32 CAttract::OnLButtonDown(i32, i32, i32) {
 }
 
 // @early-stop
-// Extent, calls, CFG, and ordered referents are exact; only the EAX/ECX/EDX
-// rotation in the two page-presentation chains differs. Scoped page-manager
-// locals change the lifetime and regress, while 32 mixed TU states are flat.
 RVA(0x000147b0, 0x6a)
 i32 CAttract::OnPaint() {
     if (!IsActive()) {

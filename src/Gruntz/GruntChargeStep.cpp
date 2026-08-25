@@ -39,15 +39,6 @@
 #include <string.h>
 
 // @early-stop
-// Three cl-vs-cl differences, none of them steerable from source so far (80 of retail's
-// 83 blocks):
-//   * the `stamina < FULL` arm's `if (m_neighborValid != 0) return 1;` is deleted here -
-//     cl knows the member is 0 from the entry test at 0xef724 - while retail keeps the
-//     compare against the eax that load left behind (0xef7bc);
-//   * the powered-up block's two ResetEntranceAnimation tails are byte-identical in
-//     retail (0xef77c and 0xef7c4) and cl cross-jumps ours into one;
-//   * conversely retail SHARES the SEEK and ATTACK CommitNeighbor tails (0xef8?? jmps
-//     into B58) where cl emits both.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::StepDumbChaserBehavior() {
     m_defenderPx = m_lastTilePx;

@@ -97,9 +97,6 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_masterVolume = kSoundVolumeMax;
 }
 
-// Inline in retail: CGruntzMgr::LoadWorldMode expands it (Deactivate + the m_list
-// CPtrList dtor) at both of its delete sites, while CGruntzMgr::Close calls the
-// COMDAT copy the same object file emits at 0x85ed0.
 inline CWorldSoundSet::~CWorldSoundSet() {
     Deactivate();
 }

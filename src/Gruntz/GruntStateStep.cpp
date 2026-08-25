@@ -122,8 +122,6 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 Coord none;
                 g->m_arrivalCell = *none.Set(-1, -1);
                 {
-                    // retail re-runs the act-key lookup for every letter; each
-                    // comparison is materialised as a 0/1 before it is branched on.
                     bool eq;
                     if (g == NULL) {
                         goto seek;
@@ -272,7 +270,6 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        // cur == NULL falls out of the target block into the reset path.
         Coord none;
         g->m_arrivalCell = *none.Set(-1, -1);
         g->m_defenderState = AISTATE_SEEK;

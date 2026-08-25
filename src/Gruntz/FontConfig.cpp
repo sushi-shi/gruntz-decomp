@@ -57,10 +57,6 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
         faceTF
     );
     if (!m_trainingFont) {
-        // The retry deliberately asks for DIFFERENT default metrics - 24x16
-        // rather than 28x14 - so the two GetIntDef defaults for
-        // "TrainingFontHeight"/"TrainingFontWidth" disagreeing is retail's
-        // fallback, not a transcription slip.
         m_trainingFont = CreateFontA(
             g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x18),
             g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0x10),
@@ -271,8 +267,6 @@ void CFontConfig::EndInput() {
 }
 
 // @early-stop
-// residue: one eax/ecx swap in the width pair. The EH cleanup is exact - retail's
-// funclet destroys the CPen through this TU's own ??1CPen@@UAE@XZ.
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
@@ -303,15 +297,9 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     return 1;
 }
 
-// MeasureLabel's CPen local forces this MFC header inline; this TU defines it
-// first, so the linker kept THIS copy and its /GX funclet group. Its bytes equal
-// ??1CGdiObject@@UAE@XZ - see identical-derived-dtor-comdat-is-named-by-link-order.
 RVA_COMPGEN(0x000220f0, 0x46, ??1CPen@@UAE@XZ)
 
 // @early-stop
-// Residue is the second DrawTextA setup: cl hoists the string load above the
-// RECT copy and then has EAX free for the `setle`, where retail loads the string
-// last and lands the format in ECX with a copy to EAX.
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc == NULL) {
@@ -569,8 +557,6 @@ i32 CFontConfig::Draw3DText(
     }
     HGDIOBJ selPrev = NULL;
     RECT rc = *dst;
-    // Retail tests each font for NULL in its own arm and lets cl tail-merge the
-    // shared SelectObject; selecting the handle first collapses the two tests.
     if (fontFlag == 0) {
         if (m_trainingFont) {
             selPrev = SelectObject(hdc, m_trainingFont);

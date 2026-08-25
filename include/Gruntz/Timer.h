@@ -15,7 +15,6 @@ class CDDrawSurfacePair;
 class CTimer {
 public:
     CTimer();
-    // (originX, originY) - stored straight into m_baseX/m_baseY.
     i32 LoadTimerSprite(i32 originX, i32 originY);
     void Reset();
     i32 Tick(i32 elapsedMs);

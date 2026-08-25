@@ -573,9 +573,6 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
 }
 
 // @early-stop
-// The fixed-arrow and current-direction switches repeat the cardinal cases;
-// cl folds their identical bodies so both jump tables target one set of loads.
-// The toy probes narrow flags to bytes while the fallback keeps dwords.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -705,7 +702,6 @@ i32 CGrunt::StepCompassMove() {
 
     if (m_toyTileIndex > 0) {
         CString str;
-        // The bias is LOAD-BEARING: switching on the domain directly and using
         switch (m_entranceReason) {
             case PICKUP_BABYWALKER:
                 str = "BABYWALKERGRUNT";
@@ -794,8 +790,6 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 7);
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
-            // retail keeps the degenerate empty-bag arm: cl cannot prove
-            // count != 0 here, so both rand() calls survive
             i32 last = bag.GetUpperBound();
             i32 count = last + 1;
             i32 idx;
@@ -890,13 +884,6 @@ commit:
 // @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
-    // Every arm assigns BOTH coordinates: retail 0x52c7f keeps the tile pair in
-    // ebx/edi across the switch and pure N/S land mid-block past the x-step
-    // (N at 0x52cbd, S at 0x52cb0) with x intact - cl CSEs the unchanged
-    // tile.m_x term onto the preloaded register.  The earlier fall-through
-    // spelling assigned only nextY in the N/S arms, and OUR cl homed nextX to a
-    // never-written stack slot: a due-north/south claim read garbage, sending
-    // m_lastTilePx off-map or spuriously killing the grunt.
     Coord tile = m_lastTilePx;
     i32 nextX;
     i32 nextY;

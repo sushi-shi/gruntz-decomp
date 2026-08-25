@@ -3,8 +3,6 @@
 #include <Enums.h>
 #include <Gruntz/PickupType.h>
 
-// The two action chips are either absent, drawable, selected, or greyed out.
-// These values also select the normal/highlight/grey sprite set in Refresh.
 GZ_ENUM_BEGIN(ActionOptionButtonState)
     ACTIONOPTION_HIDDEN = 0,
     ACTIONOPTION_NORMAL = 1,
@@ -12,8 +10,6 @@ GZ_ENUM_BEGIN(ActionOptionButtonState)
     ACTIONOPTION_DISABLED = 3
 GZ_ENUM_END(ActionOptionButtonState)
 
-// HitHover identifies which of the two action chips contains the cursor.  The
-// values are the retail return codes consumed by CTriggerMgr::HandleActionOptionsPointer.
 GZ_ENUM_BEGIN(ActionOptionHit)
     ACTIONOPTION_HIT_NONE = 0,
     ACTIONOPTION_HIT_PRIMARY = 2,

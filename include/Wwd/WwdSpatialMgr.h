@@ -56,10 +56,6 @@ struct CWwdSpatialMgr {
     CGameObject* GetNextObject();
 };
 
-// Both are inline in retail: RebuildPlanes (0x1628f0) inlines the ctor's five
-// NULL stores after `operator new`, and inlines the dtor (FreeGrids + the
-// m_iter sub-object dtor, which is what raises its /GX trylevel). The one
-// out-of-line COMDAT copy of the dtor is emitted by LevelPlane.cpp for Unload.
 inline CWwdSpatialMgr::CWwdSpatialMgr() {
     m_activeGroup = NULL;
     m_defaultRegionGrid = NULL;

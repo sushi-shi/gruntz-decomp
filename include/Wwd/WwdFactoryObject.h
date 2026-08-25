@@ -14,12 +14,6 @@ struct CDDrawRect {
     i32 bottom;
 };
 
-// The inline sibling of CResolveNode's out-of-line 0x15b2c0 (WwdObjMgr.cpp):
-// only CGameObject's out-of-line 0x15b390 expands the seed, so the tag rides
-// the inline entity (two-shapes-need-two-entities.md, ctor recipe).  A single
-// visible 3-arg body is refuted: the creators' budget slice at its site
-// affords cb 96+ (ASSERT x2 measured insufficient to make them decline), yet
-// retail calls there.
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;

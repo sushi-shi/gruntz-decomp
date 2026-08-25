@@ -534,9 +534,6 @@ void CRezImage::Fill(i32 value) {
 }
 
 // @early-stop
-// One SIB byte, `[esi+edx+0x400]` against retail's `[edx+esi+0x400]`. The
-// declaration-order lever does not reach it: the index is a MEMBER LOAD, not a
-// second local (docs/patterns/sib-base-index-follows-local-decl-order.md).
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
@@ -585,8 +582,6 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 }
 
 // @early-stop
-// Exact 158-instruction skeleton and all three referents; only the long-lived
-// width and scan-buffer EDI/EBP assignments differ.
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
@@ -675,8 +670,6 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
 
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
-    // The RID head is read through one sequential cursor: each field read is
-    // followed by its own advance, so the skipped fields cost only an add.
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += 2 * sizeof(u32);
@@ -953,7 +946,7 @@ i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
     return 0;
 }
 
-// @early-stop: complete; one equivalent EBX/EBP role swap leaves one disp8-zero byte.
+// @early-stop
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     if (paletteObj == NULL) {

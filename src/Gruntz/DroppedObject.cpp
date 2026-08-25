@@ -200,8 +200,6 @@ i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
 }
 
 // @early-stop
-// only residue: cl schedules the CObjectDropper vptr store one pair of i64 zero-stores
-// earlier than retail, which renames two registers downstream.
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

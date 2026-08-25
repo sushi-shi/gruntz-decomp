@@ -54,7 +54,6 @@ RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 
 // @early-stop
-// Regalloc colour only: retail keeps m_object in eax across the sortKey block.
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
@@ -139,7 +138,6 @@ void RegisterPathHazardActions() {
 }
 
 // @early-stop
-// Scheduling only: retail hoists the ActFindId("B") push above the m_leg stores.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -327,9 +325,6 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
         if (registry->m_silentMode == 0) {
             SoundCue* found = NULL;
             MapLookup(registry->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
-            // SoundCue::PlayIfElapsed inlined: the call's `this` copy is what holds
-            // the cue in a register across the m_lastPlayTimeMs store - reading the
-            // escaped lookup out-param directly makes cl reload it from its home.
             SoundCue* cue = found;
             if (cue != NULL) {
                 i32 soundEnabled = g_soundEnabled;
@@ -446,10 +441,6 @@ i32 CUFO::SerializeDispatch(
     if (mode == SERIAL_POSTLOAD) {
         CWwdSpriteObject* o = m_object;
         o->m_drawActive = 1;
-        // Two domains, one slot, and the SHAPE is byte-evidenced: retail stores
-        // the register holding `mode` (`mov [eax+0x50],edi`), not an immediate.
-        // SERIAL_POSTLOAD and SHADE_ALPHA_16 are both 8, and CUFO's ctor sets
-        // that same SHADE_ALPHA_16 / 0x80 pair on this object.
         o->m_drawFillCmd = static_cast<ShadeMode>(mode);
         o->m_fillFraction = 0x80;
     }

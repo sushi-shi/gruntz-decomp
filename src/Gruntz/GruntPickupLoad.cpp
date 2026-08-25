@@ -220,9 +220,6 @@ i32 CGrunt::LoadPickupSprites(
         case PICKUP_HEALTH3:
             PICKUP("GRUNTZ_PICKUPS_HEALTH3", 0x3e6);
             break;
-        // The seven timed powerupz take their duration from the pickup object's
-        // own parameter; Grunt.cpp's arm-the-powerup switch only falls back to the
-        // "Powerupz" bute default when this is still 0.
         case PICKUP_CONVERSION:
             PICKUP("GRUNTZ_PICKUPS_CONVERSION", 0x3e7);
             m_powerupDuration = pickupParam;

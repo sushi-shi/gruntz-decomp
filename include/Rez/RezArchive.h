@@ -17,8 +17,6 @@ struct CRezStorageList : public CObjList {
     virtual void UnusedListHook() OVERRIDE;
     RVA(0x0013aaf0, 0x7)
     ~CRezStorageList() {}
-    // Unsigned: CRezArchiveDir::PreloadData compares it with `ja`, not `jg`
-    // (`sema disasm 0x0013a0f0 --branches --diff`).
     u32 m_storageCount;
 };
 
@@ -28,10 +26,6 @@ struct CRezEntryPoolBlock : public IntrusiveLink {
     CRezArchiveEntry* m_entries;
 };
 
-// CRezArchive::m_entryPoolBlocks (this+0x88). Its own empty destructor COMDAT - the lone
-// `c3` at 0x13abb0, fenced by nop fill on both sides and reached from the unwind
-// funclets of CRezArchive(char*,i32,i32) and ~CRezArchive - so it is a distinct
-// class from IntrusiveList, whose own `~IntrusiveList()` lives elsewhere.
 struct CRezEntryPoolBlockList : public IntrusiveList {
     RVA(0x0013abb0, 0x1)
     ~CRezEntryPoolBlockList() {}

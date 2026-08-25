@@ -16,9 +16,6 @@ class CGruntzMgr;
 
 class CGruntzCmdMgr {
 public:
-    // Inline: `new CGruntzCmdMgr` in CGruntzMgr::Run expands both CPtrList
-    // constructions, the null manager and the pending-list drain in place
-    // (0x83450 @ 0xf9c).
     CGruntzCmdMgr();
 
     void RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot);

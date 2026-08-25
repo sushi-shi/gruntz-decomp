@@ -22,28 +22,16 @@ struct SmackTag;
 class CWnd;
 struct DDModeInfo;
 
-// How CMoviePlayer::Configure places the decoded Smacker frame on the screen.
-// Recovered from Configure's own arms (src/DDrawMgr/DDPageMgr.cpp): each value
-// picks a different m_tilesAcross/m_tilesDown/m_destRect setup. Advance() then
-// reads it back: only MOVIE_SINGLE skips the per-dirty-rect BlitRegion loop.
 GZ_ENUM_BEGIN(MovieLayout)
-// A full grid of copies, screenW/frameW by screenH/frameH, centred - or at
-// `origin` when the caller passes MOVIE_OPEN_USE_ORIGIN.
     MOVIE_TILE = 0,
 
-    // Exactly one copy, centred (or at `origin`).
     MOVIE_SINGLE = 1,
 
-    // MOVIE_TILE when the frame size divides the screen exactly; otherwise one
-    // copy stretched through a whole-screen m_destRect, and m_blitMode is
-    // rewritten to MOVIE_SINGLE because that is what the layout has become.
     MOVIE_TILE_OR_STRETCH = 2,
 
-    // One copy blitted into the caller's explicit `rect`.
     MOVIE_DEST_RECT = 3
 GZ_ENUM_END(MovieLayout)
 
-// Open and layout options: interlaced Smacker Y scaling and caller positioning.
 GZ_ENUM_FLAGS_BEGIN(MovieOpenFlags, i32)
     MOVIE_OPEN_DEFAULT = 0,
     MOVIE_OPEN_INTERLACED = 0x1,
@@ -51,7 +39,6 @@ GZ_ENUM_FLAGS_BEGIN(MovieOpenFlags, i32)
 GZ_ENUM_FLAGS_END(MovieOpenFlags, i32)
 GZ_ENUM_FLAGS_OPS(MovieOpenFlags)
 
-// Input events which may terminate Pump.
 GZ_ENUM_FLAGS_BEGIN(MoviePumpFlags, i32)
     MOVIE_PUMP_SKIP_ON_KEY = 0x1,
     MOVIE_PUMP_SKIP_ON_MOUSE = 0x100

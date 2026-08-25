@@ -75,9 +75,6 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    // The two members are addressed through locals: retail's store schedule (the
-    // m_duration constant AFTER the m_phase flip) only reproduces with the
-    // pointer-local spelling; direct member access lets cl hoist the constant store.
     i64* ts = &m_timestamp;
     i32* phase = &m_phase;
     if (static_cast<i64>(g_frameTime) - *ts >= m_duration) {

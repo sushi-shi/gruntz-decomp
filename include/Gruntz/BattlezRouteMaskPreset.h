@@ -3,15 +3,6 @@
 
 #include <Enums.h>
 
-// Masks used while Battlez AI retries a route to an enemy base.  They are
-// presets over the pathfinder's raw cell-mask domain:
-// CGrunt::m_routePassableMask is also ORed with dynamic map state, so it is not
-// itself a preset enum.
-//
-// The two base bits are distinguished by HandleUnitContact: 0x40 handles the
-// Wingz/Shovel route, while 0x20 handles Bomb, Gauntlet, Brick, Spy, and the
-// remaining tools.  The retry sequence progressively broadens those masks and
-// finally admits the trigger/ownership bit 0x4000.
 GZ_ENUM_CONST_BEGIN(BattlezRouteMaskPreset)
     BATTLEZ_ROUTE_OTHER_TOOLS = 0x20,
     BATTLEZ_ROUTE_WINGZ_SHOVEL = 0x40,

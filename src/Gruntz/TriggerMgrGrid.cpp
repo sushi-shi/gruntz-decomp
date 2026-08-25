@@ -144,9 +144,6 @@ i32 CTriggerMgr::PlaceObject(
         CGrunt* logic = static_cast<CGrunt*>(sprite->m_logicRecord->m_userLogic);
         CGruntzMgr* game = g_gameReg;
 
-        // NOT a PickupType local: the AI-type switch fills it with tool ids,
-        // but the player-slot path below overwrites it with m_color, so it
-        // carries two domains. Converted explicitly where it enters Place().
         i32 kindId;
         if (game->m_gameMode == GAMEMODE_QUESTZ) {
             switch (aiType) {
@@ -354,8 +351,6 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
 }
 
 // @early-stop
-// The call, size, 28-instruction skeleton, and all loads agree. Retail only
-// schedules the view-rectangle left load across the completed y expression.
 RVA(0x0006be30, 0x47)
 CGrunt* CTriggerMgr::ScreenToCell(
     i32 sx,
@@ -458,9 +453,6 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
 }
 
 // @early-stop
-// The fixed RIGHT arm and CURRENT/EAST arm are source-distinct. Depending on
-// unrelated header state, cl either emits both calls or cross-jumps RIGHT into
-// CURRENT/EAST as retail does; local source-shape probes do not steer it.
 RVA(0x0006c130, 0xe38)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
@@ -493,7 +485,6 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         tag = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
-        // Ingest: the raw WWD attribute byte for this cell.
         tag = ts->GetCollisionAt(subX, subY);
     }
 
@@ -841,8 +832,6 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 sw->SwitchDown();
             } else {
                 PickupType gruntKind = ArrivalPickup(g);
-                // m_checkpointType is a PickupType stored as i32 (declared in
-                // TileTriggerSwitchLogic.h, fed from LevelTileValidation).
                 if (IDX(gruntKind) == sw->m_checkpointType
                     || sw->m_checkpointType == IDX(g->m_vehiclePickupType)) {
                     sw->SwitchDown();
@@ -922,7 +911,6 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         kind = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
-        // Ingest: the raw WWD attribute byte for this cell.
         kind = ts->GetCollisionAt(subX, subY);
     }
     switch (kind) {
@@ -1332,8 +1320,6 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         }
     }
 
-    // Retail holds each strcmp result in a `bool` before testing it (`sete cl /
-    // test cl,cl`), five times over this function.
     isG = (ANIMATION_ACT_EQUALS_FOR(hit, "G"));
     if (isG) {
         return 0;
@@ -1455,10 +1441,6 @@ i32 CTriggerMgr::ClearCell(
 }
 
 // @early-stop
-// residue: cl colours the inline-strcmp result into ecx (retail eax) and closes the
-// bool with `cmp al,bl` against the zero register where retail writes `test cl,cl`;
-// and it interleaves the two i64 zero stores (0x40,0x30,0x44,0x34) where retail keeps
-// each pair contiguous. Every store ordering scores the same or lower.
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 

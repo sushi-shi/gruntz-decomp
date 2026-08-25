@@ -40,7 +40,6 @@
 #include <string.h>
 
 // @early-stop
-// Block topology is 150 of retail's 153; the residue is instruction-level.
 RVA(0x000ee800, 0x971)
 i32 CGrunt::StepDefenderBehavior() {
     i32 defTX = m_defenderPx.m_x >> TILE_SHIFT_PX;

@@ -3,9 +3,6 @@
 
 #include <Enums.h>
 
-// Tile-image ids used by the bridge switch and easy-mode remap paths. The two
-// ALT ids are only evidenced by their deterministic remap to the corresponding
-// raised bridge; no stronger visual identity is asserted.
 GZ_ENUM_BEGIN(BridgeTileId)
     BRIDGETILE_WATER_UP = 0x101,
     BRIDGETILE_WATER_DOWN = 0x102,

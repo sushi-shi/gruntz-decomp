@@ -41,10 +41,6 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
     return new CDoNothingNormal();
 }
 
-// Realization device (see RealizeCDoNothingNormal): the CGameObject* ctor lives
-// in FrontCandyAni.cpp, but retail kept this class's ??_G/??1 COMDATs inside
-// this TU's contribution, so this TU still realizes the vtable (the header's
-// inline default ctor stamps ??_7 here).
 CDoNothing* RealizeCDoNothing() {
     return new CDoNothing();
 }

@@ -17,15 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TU-STATE FINGERPRINT (diagnostic; probes are never shipped). Sweeping a
-// throwaway file-scope declaration above the first definition - N = 1..16 graded
-// prototypes, and one each of fwd-decl / typedef / empty class / class with a
-// member / class with inline member bodies / static function with a body /
-// file-scope float / string literal - moves exactly ONE of this unit's functions
-// (CompareLuma, by 0.03) and, at N = 4, GammaTable. Every other function here is
-// dead flat to the whole axis. So this unit's residue is intra-function, not TU
-// composition - which is where the CompareLuma/CompareHue/FindNearestColor/
-// GammaTable body fixes came from. Do not re-run the sweep on this file.
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -101,16 +92,6 @@ void CShadeTableCache::FreeNodes() {
 }
 
 // @early-stop
-// Block skeleton is aligned (60 blocks both sides). Residue is confined to the k-loop
-// channel expressions: both addends share `pal[i].pe<C>` as a factor, and cl applies the
-// distributive law (`c*inv + c*K*uu` -> `c*(inv + K*uu)`, one `fmul st,st(1)` per channel)
-// where retail emits the two products and a `faddp`. Commutative respellings (operand
-// order inside the product, addend order) are canonical here and byte-identical - the
-// factorisation is not reachable by reassociating the source. The j-loop, whose addends
-// have different leading operands, is byte-aligned. Re-measured: all 12 factor orders of
-// the second product (x endPct / g_percentScale / uu, both addend orders) are byte-identical, and
-// five named-float-temp forms (two temps + a sum, one sum temp, a hoisted c, a hoisted
-// scale) all score 3-12 points WORSE - the temps defeat the ternary's own CSE instead.
 RVA(0x0014df40, 0x5f4)
 CShadeTable* CShadeTableCache::FlashTable(
     PALETTEENTRY* pal,
@@ -258,9 +239,6 @@ CShadeTable* CShadeTableCache::FlashTable(
 }
 
 // @early-stop
-// Whole-function coloring: retail keeps the new table in ebp with edi as the
-// zero scratch; cl swaps them and memory-homes the table pointer. Permuter
-// exhausted at this shape.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e540, 0x2ea)
@@ -307,9 +285,6 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
 }
 
 // @early-stop
-// The MFC array growth, loop structure, calls, and referents are complete; only
-// one x87 scheduling choice remains TU-state-sensitive.
-// docs/patterns/mfc-array-setsize-is-constructelements.md
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
@@ -347,12 +322,6 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
 }
 
 // @early-stop
-// The `PALETTEENTRY* pr/pc` element-address locals are gone (docs/patterns/
-// element-address-local-hides-the-memory-homed-index.md) - subscripting pal[i]
-// and pal[j] at every field read is what retail does, and keeping either local
-// scores between the extremes (pr only / pc only / neither, measured). The
-// residue is the commutative-sum coin: retail evaluates each channel's row term
-// first, cl the column term, and swap/split/nesting spellings all canonicalize.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e9f0, 0x208)
@@ -473,16 +442,6 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
 }
 
 // @early-stop
-// Both arms' block skeletons and the arm-local epilogues match; the residue is
-// the widen idiom - retail widens all three nibble terms with `movzx cx,cl`
-// (u8 -> u16 in a byte register) where cl masks two of them 32-bit
-// (`and edx,0xff` / `and eax,0xf`) and only the store-side term gets movzx.
-// Every u16-typed spelling of the accumulator or the terms DOES emit the three
-// movzx, but costs a fourth register (an extra ebx save) that retail does not
-// have, so it scores 80-84 against 92.9 here; retail's loop lives in
-// eax/ecx/edx/esi only. Applying the u16 shape to ONE arm scores 93.6, but
-// retail's two arms are byte-identical, so an asymmetric source is fabricated
-// and was rejected.
 RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
     CShadeTable* t = new CShadeTable;
@@ -517,10 +476,6 @@ CShadeTable* CShadeTableCache::GreyTable() {
 }
 
 // @early-stop
-// cl hoists the invariant (float)v * scale product to the v-loop preheader and
-// keeps it on the x87 stack across the r/g/b nest (fstp at loop end); retail
-// recomputes the whole f = v*scale*inv255-negone per pixel. Six spellings of f
-// (inline-per-channel, split, pre-clamp) all CSE back to the hoist.
 RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
     CShadeTable* t = new CShadeTable;
@@ -608,9 +563,6 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
                 u8 gn = static_cast<u8>((((g * level / 0xf) << 4) + subg));
                 for (i32 b = 0; b < 0x10; b++) {
                     u8 bn = static_cast<u8>((((b * level / 0xf) << 4) + subb));
-                    // Accumulated channel by channel: one OR expression lets cl
-                    // reassociate the loop-invariant red|green pair and hoist it
-                    // into a b-loop preheader retail does not have.
                     u16 v = static_cast<u8>(bn >> g_bDown);
                     v |= static_cast<u16>(static_cast<u8>(rn >> g_rDown) << g_rUp);
                     v |= static_cast<u16>(static_cast<u8>(gn >> g_gDown) << g_gUp);

@@ -1040,11 +1040,6 @@ SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags
 
     {
         SoundSample* sample = new SoundSample(directSoundBuffer, this);
-        // Retail 0x136808 `mov edx,[esp+0x14]` reads bufferFormat+4, NOT
-        // bufferFormat+0: the pUnkOuter
-        // `push esi` at 0x13674b is consumed by the CreateSoundBuffer call, so esp is
-        // 4 higher here than in the copy block above. m_baseFrequency is the buffer's base
-        // playback rate - see docs/patterns/early-arg-push-reaims-an-esp-displacement.md
         sample->m_baseFrequency = bufferFormat.nSamplesPerSec;
         m_samples.InsertHead(sample ? &sample->m_link : NULL);
         sample->m_baseSampleRate = format->nAvgBytesPerSec;

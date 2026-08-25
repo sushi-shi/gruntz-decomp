@@ -74,10 +74,6 @@ i32 CMenuSparkle::SerializeDispatch(
         if (mode != SERIAL_LOAD) {
             return 1;
         }
-        // Retail's SERIAL_LOAD arm reads INTO storage it placed in read-only
-        // `.rdata` (0x5ea3d4/0x5ea3d8, pushed verbatim at 0xae222/0xae230), so
-        // the cast is retail's own: the section characteristics prove the const,
-        // and this arm would fault if it ever ran.
         arc->Read(const_cast<i32*>(&g_menuSparkleLo), sizeof(g_menuSparkleLo));
         arc->Read(const_cast<i32*>(&g_menuSparkleHi), sizeof(g_menuSparkleHi));
         return 1;
@@ -108,8 +104,6 @@ i32 CMenuSparkle::AdvanceAnim() {
     }
     return 0;
 }
-// Const (retail .rdata): AdvanceAnim's rand() % 0xfa1 + 0x3e8 is the folded
-// hi-lo+1 / lo pair, which only a known const value produces.
 DATA(0x001ea3d4)
 const i32 g_menuSparkleLo = 1000;
 

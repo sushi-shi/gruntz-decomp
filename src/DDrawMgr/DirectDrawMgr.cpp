@@ -166,7 +166,6 @@ void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DDERR_NORASTEROPHW");
             strcpy(szMsg, "No message");
             break;
-        // retail prints "DDERR_NOROTATEHW" here; the value is the SDK's DDERR_NOROTATIONHW.
         case static_cast<i32>(DDERR_NOROTATIONHW):
             strcpy(szCode, "DDERR_NOROTATEHW");
             strcpy(szMsg, "No message");
@@ -231,7 +230,6 @@ void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DDERR_VERTICALBLANKINPROGRESS");
             strcpy(szMsg, "No message");
             break;
-        // retail prints "DDERR_WASTILLDRAWING" here; the value is the SDK's DDERR_WASSTILLDRAWING.
         case static_cast<i32>(DDERR_WASSTILLDRAWING):
             strcpy(szCode, "DDERR_WASTILLDRAWING");
             strcpy(
@@ -272,7 +270,6 @@ void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DDERR_EXCLUSIVEMODEALREADYSET");
             strcpy(szMsg, "No message");
             break;
-        // retail prints "DDERR_LOCKEDSURFACES" here; the value is the SDK's DDERR_NOTLOCKED.
         case static_cast<i32>(DDERR_NOTLOCKED):
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");

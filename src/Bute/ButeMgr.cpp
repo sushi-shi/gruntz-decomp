@@ -838,9 +838,6 @@ void CButeMgr::AcceptTransition(i16 state, char c) {
 
 RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
-    // `kind` is 16-bit: retail copies GetTransitionTarget's result with a plain `mov edi,eax`
-    // (cl's cheap 2-byte 16-bit copy - the upper half is dead because every consumer
-    // reads `WORD PTR [esp+4]`), where an `i32` forces a real `movsx edi,ax`.
     const i16 kLexStartState = 0x11;
     i16 kind = kLexStartState;
     g_tokenLen = 0;
@@ -934,8 +931,6 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
 }
 
 // @early-stop
-// Retail keeps separate copies of scalar allocation tails that cl cross-jumps.
-// The 13-state EH map, frame size, cleanup targets, and frame operands agree.
 RVA(0x00170750, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
     i32 a, b, c, d;
@@ -1001,8 +996,6 @@ bool ButeMgr::ParseAttributeFile() {
                     m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, v));
                 }
             } else {
-                // float, not a hand-widened double: retail's `mov [eax+4],1` is
-                // x_floatused = 1 from ostream's inline operator<<(float).
                 ((*m_pText) << s_strFloat) << GetFloat(m_tagName, m_attributeName);
             }
             break;
@@ -1127,8 +1120,6 @@ bool CButeMgr::SkipToTag() {
         if (!Parse()) {
             return false;
         }
-        // Retail compares the 16-bit member (`cmpw`); widening it into an i32
-        // enum local newModifiedTag every test a 32-bit `cmpl`.
         if (m_tokType == BUTETOK_TAG_OPEN || m_tokType == BUTETOK_END) {
             return true;
         }
@@ -1163,13 +1154,6 @@ bool CButeMgr::ParseTagLine() {
 }
 
 // @early-stop
-// Retail spends a fourth callee-saved register on `value` (push/pop edi, every arm
-// reading `[edi+4]`), which shifts every esp displacement by 4; our cl keeps it in
-// eax.  It needs edi because the BUTE_RECT chain outputs '(' BEFORE loading the
-// rect pointer - so `value` is live across a call - while our cl hoists the load
-// above the first `operator<<`.  A 24-cell matrix over the RECT and STRING arm
-// spellings (pointer local / reference local / inline cast, and dropping the
-// `value` local entirely) is flat at 87.48: no legal spelling defers that load.
 RVA(0x001712b0, 0x228)
 void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
@@ -1185,11 +1169,6 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
             output << s_strDword << *value->payload.m_dword;
             break;
 
-        // Retail emits this arm's body BEFORE BUTE_DOUBLE's (cl lays arm bodies out
-        // in source order; the jump table at 0x1714b4 still routes 2 -> the double
-        // body at 0x17134c and 3 -> this one at 0x17131c), and the `mov [eax+4],1`
-        // at 0x17133a is `x_floatused = 1` from ostream's INLINE operator<<(float)
-        // - so the value goes in as a float, not a hand-widened double.
         case BUTE_FLOAT: {
             float scalar = *value->payload.m_float;
             output << s_strFloat << scalar;
@@ -1207,9 +1186,6 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
             break;
         }
 
-        // One chained expression: retail feeds each operator<< the PREVIOUS call's
-        // return (`mov ecx,eax` at 0x1713ac and 0x1713df), where three separate
-        // statements would reload the stream (`mov ecx,esi`) at each one.
         case BUTE_RECT: {
             ButeIntRect* ref = value->payload.m_rect;
             output << static_cast<unsigned char>('(') << static_cast<long>(ref->a) << s_strComma
@@ -1253,9 +1229,6 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
     static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, NULL);
 }
 
-// cl5 inlines endl's body (`_outs << '\n' << flush`) but stops before the
-// manipulator operator<< and `flush` themselves - so both land here as
-// out-of-line COMDATs, in this TU, between ButeTag_Apply and ParseGroup.
 RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
 RVA_COMPGEN(0x00171570, 0x9, ?flush@@YAAAVostream@@AAV1@@Z)
 
@@ -1265,8 +1238,6 @@ bool CButeMgr::ParseGroup() {
     if (!Parse()) {
         return false;
     }
-    // Retail compares the 16-bit member (`cmpw`); an i32 enum local newModifiedTag every
-    // test a 32-bit `cmpl`.
     if (m_tokType == BUTETOK_END) {
         return true;
     }
@@ -1303,11 +1274,6 @@ bool CButeMgr::ParseGroup() {
 }
 
 // @early-stop
-// Structure is retail-exact (stack strstream, statement order, every callee).
-// The residue is one regalloc decision: retail pins the constant 1 in ebx
-// (`mov [esi+0x10d],bl`, `push ebx` for each virtual-base ctor flag,
-// `test [..],bl`, `mov al,bl`) where cl gives us the immediate form and one
-// fewer callee-saved push, shifting every esp displacement by 4.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00171640, 0x3f2)
@@ -1326,10 +1292,6 @@ bool CButeMgr::Save() {
     input.clear();
     input.seekg(0);
 
-    // The parse stream is a STACK local: retail's frame is 0x64 bytes bigger
-    // than a heap spelling's, its ctor takes `lea ecx,[esp+0x84]`, and scope
-    // exit runs ~strstream + ~ios on that same address (0x1719e9 / 0x1719f5) -
-    // the two-part teardown of a class with a virtual `ios` base.
     strstream source(new char[length], length, ios::in | ios::out);
     if (m_encrypted) {
         m_crypt.Decode(&input, &source);
@@ -1367,11 +1329,6 @@ bool CButeMgr::Save() {
     return true;
 }
 
-// The vbase destructor for Save's stack `strstream source`, not iostream's:
-// 0x171a40 calls 0x169be0 then 0x169d70 (`??1ios`), and 0x169be0 stamps
-// ??_7strstream@@6B@ (0x1f0394) into the ios vbase before tail-jmping the shared
-// ~iostream body at 0x16c950 - i.e. 0x169be0 IS ??1strstream.  The real
-// ??_Diostream is the library COMDAT at 0x169bc0 (it calls 0x16c950 + ??1ios).
 RVA_COMPGEN(0x00171a40, 0x14, ??_Dstrstream@@QAEXXZ)
 
 RVA(0x00171a60, 0x34)
@@ -1724,13 +1681,9 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
 }
 
 // @early-stop
-// Byte-exact body; only the generated atexit thunk's canonical name differs
-// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x001731d0, 0xb6)
 
 CString* CButeMgr::GetString(const char* tag, const char* key) {
-    // Retail 0x2bf698; its guard byte (cl's `?$S45..@4EA`, no source
-    // spelling) is 0x2bf6b8 and stays unenrolled like Play's s_ambientCoin guard.
     RVA_DYNINIT(0x00173290, 0xa, s_empty)
     DATA(0x002bf698)
     static CString s_empty("");
@@ -1793,8 +1746,6 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
 }
 
 RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
-// `delete payload.m_string` in the inlined ~CButeValue string arm: SetString is the
-// only caller, and it CALLS the helper instead of expanding it.
 RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
 
 // @dead-code
@@ -1815,11 +1766,8 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
 }
 
 // @early-stop
-// Byte-exact body; only the generated atexit thunk's canonical name differs
-// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x00173770, 0xc6)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
-    // Guard byte 0x2bf688.
     DATA(0x002bf6d0)
     RVA_DYNINIT(0x00173840, 0x1, s_default)
     static ButeIntRect s_default;
@@ -1900,11 +1848,8 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
 }
 
 // @early-stop
-// Byte-exact body; only the generated atexit thunk's canonical name differs
-// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x00173d00, 0xbb)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
-    // Guard byte 0x2bf67c.
     DATA(0x002bf690)
     RVA_DYNINIT(0x00173dc0, 0x1, s_default)
     static ButeIntPoint s_default;
@@ -1984,11 +1929,8 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoub
 }
 
 // @early-stop
-// Byte-exact body; only the generated atexit thunk's canonical name differs
-// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x00174240, 0xe3)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
-    // Guard byte 0x2bf684.
     DATA(0x002bf6a0)
     RVA_DYNINIT(0x00174330, 0x1, s_default)
     static ButeDoubleVector s_default;
@@ -2068,11 +2010,8 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDouble
 }
 
 // @early-stop
-// Byte-exact body; only the generated atexit thunk's canonical name differs
-// (`$anon_data_*` vs `__ehreg$*`), while its linked-image target is identical.
 RVA(0x001747c0, 0xcf)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
-    // Guard byte 0x2bf680.
     DATA(0x002bf6c0)
     RVA_DYNINIT(0x00174890, 0x1, s_default)
     static ButeDoubleRange s_default;
@@ -2138,8 +2077,6 @@ RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@
 RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
-// CBSecStream's inline dtor: cl emits the deleting-dtor COMDAT here because the
-// CButeMgr ctor above is what instantiates the three CBSecStream members.
 RVA_COMPGEN(0x00174d30, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)

@@ -101,8 +101,6 @@ void CRangeSet::AddFromString(char* str) {
 }
 
 // @early-stop
-// Same one SIB byte as MonoClear, at all three of its address sites.
-// docs/patterns/sib-base-index-follows-local-decl-order.md
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184d50, 0x5f)
@@ -132,8 +130,6 @@ void MonoNewline() {
 }
 
 // @early-stop
-// One SIB byte; docs/patterns/sib-base-index-follows-local-decl-order.md (the
-// single-local corollary). MonoNewline carries the same inversion at 3 sites.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184db0, 0x28)
@@ -158,7 +154,6 @@ void DebugOutputString(char* line) {
     OutputDebugStringA(line);
 }
 
-// retail: a 1-byte ret - debug output literally discarded
 RVA(0x00184df0, 0x1)
 void DiscardDebugOutput(char* line) {}
 

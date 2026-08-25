@@ -1,9 +1,25 @@
+#include <rva.h>
+
 #include <Mfc.h>
 #include <MfcWin.h>
-#include <Ints.h>
-#include <rva.h>
+
 #include <ComOutRef.h>
+#include <Crypto/FecCrypt.h>
+#include <DDrawMgr/ColorDepth.h>
+#include <DDrawMgr/DDScreen.h>
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelShift.h>
+#include <Ints.h>
+#include <Io/FileStream.h>
+#include <Io/MoviePlayer.h>
+#include <Wap32/ScreenGeometry.h>
+
+#include <ddraw.h>
 #include <smack.h>
+#include <stdio.h>
+#include <string.h>
+
 #undef u8
 #undef u16
 #undef u32
@@ -12,18 +28,6 @@
 #undef s16
 #undef s32
 #undef s64
-#include <ddraw.h>
-#include <Io/MoviePlayer.h>
-#include <Crypto/FecCrypt.h>
-#include <Io/FileStream.h>
-#include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDScreen.h>
-#include <DDrawMgr/PixelShift.h>
-#include <stdio.h>
-#include <string.h>
-#include <Wap32/ScreenGeometry.h>
-#include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/PaletteSize.h>
 
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
@@ -654,9 +658,6 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 }
 
 // @early-stop
-// Scoring artifact, not a source defect: the switch's case bodies compile into a
-// SECOND symbol next to the jump table, so objdiff pairs only the dispatch prologue
-// against retail's whole function (delinker jump-table dup-symbol undercount).
 RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect) {
     if (origin) {

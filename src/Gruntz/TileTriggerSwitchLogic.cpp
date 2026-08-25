@@ -104,8 +104,6 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
-    // write through the un-cached global: defeats the address-CSE so the store
-    // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
@@ -144,8 +142,6 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
-    // write through the un-cached global: defeats the address-CSE so the store
-    // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
@@ -213,7 +209,6 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
         return TILEKIND_PASSABLE;
     }
 
-    // Ingest: the raw WWD attribute byte for this cell.
     CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
     return set->GetCollisionAt(0, 0);
 }
@@ -233,7 +228,6 @@ static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, 
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
-    // Ingest: the raw WWD attribute byte for this cell.
     CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
     return set->GetCollisionAt(0, 0);
 }
@@ -248,9 +242,6 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     CGruntzMgr* gameMgr;
     SoundCueRegistry* registry;
     switch (type) {
-        // The retail byte index table starts at 15 (0x0f). The explicit goto
-        // keeps all four empty cases on slot 0; break folds the last three into
-        // the default slot 7.
         case TILEKIND_ARROW_UP_B:
         case TILEKIND_ARROW_DOWN_B:
         case TILEKIND_ARROW_LEFT_B:
@@ -341,9 +332,6 @@ done:
 }
 
 // @early-stop
-// referent set matches retail exactly; residue is a this=ebp/edi swap and a
-// zero-register phase (retail pins 0 in ebx and compares against it where cl
-// uses test reg,reg).
 RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
@@ -911,8 +899,6 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 i32 tx = m_tileX;
                 i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
-                // write through the un-cached global: defeats the address-CSE so the
-                // store re-walks m_world->m_level->m_mainPlane exactly as retail does
                 CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
                 SET_WORKER_HOST_CELL(L2, tx, ty, v);
                 (reg->m_tileGrid)->ComputeCellFlags(tx, ty, v);
@@ -1002,8 +988,6 @@ i32 CTileSecretTriggerLogic::Tick() {
     CDDrawWorkerHost* layer = mgr->m_world->m_level->m_mainPlane;
     i32 grp = m_tileX;
     i32 newTok = layer->m_tileHandles[grp + layer->m_tileRowOffsets[idx]];
-    // write through the un-cached global: defeats the address-CSE so the store
-    // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, grp, idx, oldTok);
     mgr->m_tileGrid->ComputeCellFlags(grp, idx, oldTok);
@@ -1110,8 +1094,6 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
-    // write through the un-cached global: defeats the address-CSE so the store
-    // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
@@ -1127,8 +1109,6 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
     i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
-    // write through the un-cached global: defeats the address-CSE so the store
-    // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
@@ -1232,8 +1212,6 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     if (layer->m_tileHandles[tx + layer->m_tileRowOffsets[ty]] == IDX(code)) {
         return 0;
     }
-    // walk2 through the cached local: the layer-init chain hangs off the raw
-    // global-load tree, so the two walks stay distinct while the global load CSEs
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tx, ty, IDX(code));
     g_gameReg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));
@@ -1241,16 +1219,10 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
 }
 
 // @early-stop
-// three residues: the px/py + g_gameReg schedule, an eax/edx swap on the player
-// flag stores, and `add edi,-0x132` where retail keeps edi with `lea eax,[edi-0x132]`.
 RVA(0x00112ee0, 0x42b)
 i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     BrickTileId newCode = m_actionCode;
     i32 effect = 0;
-    // Arm order is proven by the retail jump table at 0x113278: the tiers are
-    // written across the four colours (all the 1s, then the 2-TOPs, the 2-LOWs,
-    // the 3-TOPs), the plain 3-LOW/3-MID demotions follow, and the brown chain
-    // sits last - cl suffix-merges each brown arm into the black arm above it.
     switch (m_actionCode) {
         case BRICKTILE_RED_1:
             effect = IDX(BRICKTILE_RED_1);
@@ -1440,9 +1412,6 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
 }
 
 // @early-stop
-// commit block is byte-correct except the literal 1: cl hoists it into esi
-// above the playerSlot test, retail keeps it an immediate at the else store
-// and the return and materializes it inside the taken arm.
 RVA(0x00113420, 0x358)
 i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {

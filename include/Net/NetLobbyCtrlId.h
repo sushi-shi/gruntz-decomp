@@ -3,10 +3,6 @@
 
 #include <Enums.h>
 
-// Dialog control ids shared by the multiplayer lobby dialogs. The captions of
-// the controls present in the retail PE establish Restart, Continue, Abort,
-// Resume, Drop Player, and Send. The remaining dialog-specific actions are
-// named from the procedures that consume them.
 GZ_ENUM_BEGIN(NetLobbyCtrlId)
     IDC_NETCHAT_SEND = 0x4c6,
     IDC_NET_RESTART = 0x4cc,

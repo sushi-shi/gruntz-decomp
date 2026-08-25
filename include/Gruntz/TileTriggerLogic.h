@@ -15,8 +15,6 @@ class CTileTriggerContainer;
 struct tagRECT;
 
 GZ_ENUM_BEGIN(TrigLogicId)
-// Wildcard: the container lookups read `if (k2 == 0 || m_typeId == k2)`,
-// so 0 means "any type" rather than a type of its own.
     TRIGID_ANY = 0,
     TRIGID_SWITCH_1 = 1,
     TRIGID_SWITCH_2 = 2,
@@ -34,9 +32,6 @@ GZ_ENUM_BEGIN(TrigLogicId)
     TRIGID_COVERED_POWERUP_26 = 0x1a
 GZ_ENUM_END(TrigLogicId)
 
-// The diagnostic ids CGruntzMgr::ReportError takes. Its parameter is NOT
-// this domain - the WARP macro passes 0x46c-range ids through the same
-// slot - so these leave the type system with IDX() at the call.
 GZ_ENUM_BEGIN(TrigErrClass)
     TRIGERR_LOOKUP_MISS = 0x80dd,
     TRIGERR_LINK_BROKEN = 0x80de

@@ -22,9 +22,6 @@ struct CDDrawPaletteResource : public CWapObj {
         m_palette = NULL;
     }
 
-    // 0x165dd0 (RVA_COMPGEN pin at the keeper, DDrawSurfacePair.cpp - an RVA()
-    // here would annotate BOTH cl dtor variants and collide with
-    // ??_GCDDrawPaletteResource@0x165db0).
     virtual ~CDDrawPaletteResource() OVERRIDE {
         Unload();
     }

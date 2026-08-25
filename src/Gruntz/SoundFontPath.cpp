@@ -47,9 +47,6 @@ i32 SfDeviceInitKeys() {
 }
 
 // @early-stop
-// g_sfDir[len - 1] makes cl relocate against g_sfDir - 1; that resolved byte
-// lies in the independently proven preceding g_sfRouterId datum, so the
-// delinked image necessarily gives the same address a different symbol name.
 RVA(0x000f8f30, 0x160)
 i32 BuildSoundFontPath(char drive) {
     if (g_sfReady == 0) {

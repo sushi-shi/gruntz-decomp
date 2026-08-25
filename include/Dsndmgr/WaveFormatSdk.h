@@ -7,8 +7,6 @@
 
 #include <mmsystem.h>
 
-// WaveFormatX is the retail custom signature type; DirectSound's ABI names the
-// layout WAVEFORMATEX. Both are the same proven packed 18-byte record.
 union WaveFormatSdkPtr {
     WaveFormatX* m_format;
     LPWAVEFORMATEX m_sdk;

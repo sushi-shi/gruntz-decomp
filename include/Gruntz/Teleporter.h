@@ -11,9 +11,6 @@
 
 class CFileMemBase;
 
-// The Teleporter WWD object's Smarts field selects its lifetime and destination
-// behavior. The shared WWD field remains raw because other logic classes give
-// Smarts unrelated meanings.
 GZ_ENUM_BEGIN(TeleporterKind)
     TELEPORTER_NORMAL = 0,
     TELEPORTER_SINGLE_USE = 1,

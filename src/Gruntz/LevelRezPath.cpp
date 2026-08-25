@@ -14,12 +14,6 @@
 #include <string.h>
 
 // @early-stop
-// One residue: cl materialises the EH state 1 as an immediate where retail claims a
-// 4th callee-saved register for it (`push ebx` / `mov bl,1` / `mov [esp+N],bl` x3),
-// which is the uniform +4 on every [esp+N].  See const-materialize-into-reg-vs-immediate.
-// Each arm owns its OWN `WwdHeader buf` - that is what stops cl cross-jumping the
-// BATTLEZ and MULTI arms into one shared tail (docs/patterns/identical-arms-need-
-// distinct-locals.md).
 RVA(0x00093d40, 0x473)
 
 i32 CGruntzMgr::ResolveLevelChecksum(
@@ -87,8 +81,6 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             return buf.checksum;
         }
     } else {
-        // `scratch` shares the CFile slot ([esp+0x18]) and the union region is 0x20
-        // wide (buf lands at [esp+0x38]) - so it is a 32-byte buffer local to this arm.
         WwdHeader buf;
         char scratch[32];
         sprintf(scratch, "AREA%i_WORLDZ", ((levelId - 1) % 0x24) / 4 + 1);

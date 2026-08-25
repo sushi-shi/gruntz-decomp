@@ -18,8 +18,6 @@ struct SoundBufferNode : public IntrusiveLink {
     SoundBuffer* m_buffer;
 };
 
-// These two typed list heads have distinct empty destructor COMDATs in retail.
-// One untyped list class could emit only one destructor.
 struct SoundSampleList : public IntrusiveList {
     RVA(0x001364e0, 0x1)
     ~SoundSampleList() {}

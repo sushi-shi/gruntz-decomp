@@ -88,10 +88,6 @@ i32 CFaderFlat::ApplyInit(CFaderConfig* desc) {
 }
 
 // @early-stop
-// Calls, branches, frame, constants, and referents agree. The retail schedule
-// requires base to be declared before span; the remaining two instructions are
-// the height/width/span register coloring. Natural declaration orders and a
-// bounded TU-state forest leave that coloring unchanged.
 RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(NULL));
@@ -300,12 +296,6 @@ RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
 // @early-stop
-// The width/height hunk is fixed: retail assigns m_width from the surface width FIRST
-// ([eax+0x1c] -> [this+0x50]) then height; the source now spells that order.
-// Residue: retail loads the desc param into edx BETWEEN the prologue pushes and
-// keeps it there (ours claims ecx after `mov ebx,ecx`), swapping ecx/edx at every
-// desc deref; plus the inlined GetRandom's `inc` sits beside the idiv in retail
-// where ours hoists it above the `and 0x7fff`. 180 forest cells flat on both.
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     CSineFaderConfig* cfg = static_cast<CSineFaderConfig*>(desc);
@@ -353,14 +343,6 @@ fail:
 }
 
 // @early-stop
-// Structure fixed: the else-arm copy sites carry no `if (bpp > 0)` of their own
-// (retail has one test per site, cl would not fold two), they index off srcRow/
-// dstRow so cl sinks the address arithmetic into the loop preheader the way retail
-// does, the y-loop's span copy is `while (span-- > 0)` (retail's dec/lea trip-count
-// dance), and its memset destination is computed above the guard. Branch sequence
-// now 40/40. Residue: our frame carries one extra dword because cl spills `delta`
-// across the __ftol pair where retail keeps it in a register, and the taken arm of
-// `whole < want` pops the x87 `whole` immediately where retail carries it.
 RVA(0x0017ff30, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {
     if (frame == 0) {
@@ -505,12 +487,6 @@ CFaderLight::~CFaderLight() {
 }
 
 // @early-stop
-// Two hunks fixed: the guard tests the MEMBER m_palette (retail's `mov eax,edx`
-// is store-forwarding of the just-stored member, not the local), and m_width/
-// m_height are assigned member-first with the RECT fields copied from them.
-// Residue: retail hoists `lea &rect` above the centre loads before PtInRect,
-// stores m_ownsTable = 1 as an immediate instead of sharing the return value's
-// register, and hoists the m_palette load above the HueRampTable arg pushes.
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     CLightFaderConfig* d = static_cast<CLightFaderConfig*>(desc);
@@ -587,21 +563,10 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::ReleaseBuffers() {}
 
-// A min(max(v, 0), w) clamp written as nested macros - the double expansion of v
-// is retail's (both arms recompute the branchless max0), and the `<` order puts
-// the max0 arm first in memory, which is retail's block layout.
 #define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
 #define FADER_CLAMPW(v, w) (FADER_MAX0(v) < (w) ? FADER_MAX0(v) : (w))
 
 // @early-stop
-// Three source bugs fixed: the width clamp is min(max0(v),w) - the `<` order puts
-// the max0 arm first, where the old `>=` spelling inverted both jcc polarities
-// (branch diff rows #9/#48); each memset destination is computed UNCONDITIONALLY
-// above its `n > 0` guard, as retail does at all three sites; the two span copies
-// are `while (n-- > 0) { *dst++ = *src++; }` (retail's two-pointer walk with the
-// dec/lea trip-count dance). Branch sequences now agree. Residue: the
-// m_spanStarts/m_spanEnds row-pointer CSE picks the second array as its base where
-// retail picks the first, and one join block is split in retail.
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_previousFrame;
@@ -867,10 +832,6 @@ void CFaderLight::RenderFrame(i32 frame) {
 }
 
 // @early-stop
-// two frame-slot pairings (0x14/0x18) plus the row-pointer add-chain association
-// (retail accumulates srcBits+row+srcCol left-to-right, cl reassociates product-
-// first); groupings/splits are canonicalised. A preceding class-with-inline-
-// methods island lifts it (proof banked at MAX); shape correct.
 RVA(0x00180fb0, 0x534)
 
 void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
@@ -1020,10 +981,6 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
 
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
-    // The furthest corner from (m_centerX, m_centerY) sets the frame count.
-    // windef.h's `max` macro, left-folded TL / BR / TR / BL: the ternary
-    // duplicates its operands, which is why retail carries eight `fld` reloads
-    // of dTopLeft and three separate __ftol/epilogue tails, not an if-chain.
     double pLeft = pow(static_cast<double>(m_centerX), g_faderPowK);
     double pTop = pow(static_cast<double>(m_centerY), g_faderPowK);
     double dTopLeft = sqrt(pLeft + pTop);
@@ -1091,17 +1048,6 @@ CFaderShape::~CFaderShape() {
 }
 
 // @early-stop
-// Exit regime fixed: retail's shared `return 0` is SUNK past the success return
-// (the ||/total regime), so the guards are structured returns with the mode-range
-// pair as `||` - not `goto fail`, which parks the block mid-body after the last
-// goto. The shade-table arm assigns m_ownsTable BEFORE m_table, which is what lets cl
-// cross-jump it onto the _access arm's `mov [this+0x1c],eax; jne` pair the way
-// retail does. The six dimension guards are stated in retail's compare order
-// (height/width per surface) but cl canonicalises them - all six return 0, so it
-// reorders them freely. Residue: retail claims a callee-saved register for
-// `&m_cache` across the three cache calls where cl claims it for the zero
-// constant, so every `cmp reg,0` here reads `cmp mem,ebp` on our side; an explicit
-// pointer local does not move it.
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     CShapeFaderConfig* pInit = static_cast<CShapeFaderConfig*>(desc);
@@ -1240,12 +1186,6 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
 }
 
 // @early-stop
-// The old "cross-switch tail-merge" reading was a mislabelled source bug: retail
-// RE-TESTS m_stripCopy instead of taking an else arm (the RenderTile calls can
-// store to it), and the min clamp is a ternary, not an if-assign. Both are fixed.
-// Residue is two instructions in the Unlock tail: retail chains the surface deref
-// through one register (`mov eax,[esi+0x38]; mov eax,[eax+8]`) where cl stages it
-// in edx first, and picks edx/ecx for the two vtable loads in the opposite order.
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
     m_dstBase = static_cast<u8*>(m_targetSurface->Lock(NULL));
@@ -1316,9 +1256,6 @@ void CFaderShape::RenderFrame(i32 frame) {
             }
         }
     }
-    // Retail re-tests the member here rather than taking an `else` arm: the
-    // RenderTile/RenderWarpTile calls above can store to it, so cl reloads and
-    // emits the second `cmp [this+..],0; jne <join>` that an else would not have.
     if (m_stripCopy == 0) {
         if (seam + frame > static_cast<u32>(arc - m_halfWidth)) {
             switch (m_mode) {
@@ -1582,10 +1519,6 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
 }
 
 // @early-stop
-// two frame slots swapped: rowBytes and the spilled targetRow get esp+0x34/0x30
-// where retail assigns 0x30/0x34; six operand bytes total. Decl order/position,
-// source-entity splits, sum-inlining and the complete parser-state forest are inert - an
-// intra-function slot-coloring choice.
 RVA(0x00182610, 0x2eb)
 
 void CFaderShape::RenderTile(i32 col, i32 stripWidth) {

@@ -17,24 +17,6 @@
 #include <ddraw.h>
 #include <string.h>
 
-// The whole CDDrawShadeBlit compiland: 0x148ce0..0x14de04, one gapless .text run
-// of 21 CDDrawShadeBlit methods with no foreign body inside it and no method of
-// the class outside it. It used to be split three ways - src/Image/ImageOwned.cpp
-// (0x148ce0..0x1495ca) and src/Image/ImageRle16Encode.cpp (0x1495d0..0x149776)
-// were holding TUs invented by an earlier wave, not a retail partition; their
-// "Image" library assignment in config/retail/link-order.tsv was derived from the
-// src/ directory they sat in, so it was circular. Merging them back restores the
-// preceding compiler state the blit half is compiled under.
-//
-// TU-STATE FINGERPRINT (diagnostic; probes are never shipped). A throwaway
-// declaration above the first definition moves BlitShaded{Forward,Mirrored},
-// ConvertRow{,Flip,Double,DoubleFwd} by several points and leaves BlitAt,
-// Blit, BlitCopy{Forward,Mirrored} and the whole ImageOwned half untouched; the
-// window is aperiodic over N = 1..16 and never reaches 100, and the kind of the
-// probe (fwd-decl / typedef / empty class / class with members / static function
-// with a body / file-scope float / string literal / class with inline members)
-// only selects which subset moves. So the blit half's residue is genuinely
-// TU-composition-sensitive, but it is not one missing declaration.
 DATA(0x002bed08)
 u8 g_scratch[1280];
 
@@ -297,13 +279,7 @@ i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
     return 1;
 }
 
-// header.flags is written directly as the MEMBER, never through a local: cl 5.0
-// registerises the field in esi, keeps the 0x3d/0xbd/0x100/0x80 chain live, and
-// never spills it back before the by-value argument copy (`lea esi,[esp+0x2c]`
-// clobbers it) - so retail ships an UNINITIALISED flags field and the arithmetic
-// survives as its ghost. A local cannot reproduce that: stored, it emits a real field
-// write; deleted, the whole chain folds away. See docs/patterns/
-// registerized-member-miscompile-ships-uninitialized-field.md.
+// Preserved compiler bug: direct member writes leave header.flags uninitialized.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001493b0, 0xfd)
@@ -369,10 +345,6 @@ i32 CDDrawShadeBlit::Decompress(u8* dest) {
 }
 
 // @early-stop
-// 147/147 instructions on retail's frame (0x20c); the residue is one register
-// coloring flip - cl gives srcidx edi and k esi where retail has them the other
-// way round - plus `add ecx,2` for the two `outidx++` retail splits into two `inc`s
-// (spelling them apart costs more than it saves).
 RVA(0x001495d0, 0x1a6)
 u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     u16 table[256];
@@ -426,8 +398,6 @@ u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                     x2 += static_cast<i32>(m_rleData[srcidx]) - 0x80;
                     srcidx++;
                 } else {
-                    // Re-read the run length rather than naming it: a local is live
-                    // across the loop and costs a spill slot retail does not have.
                     outidx++;
                     if (src[srcidx] > 0) {
                         const u8* run = src + srcidx + 1;
@@ -513,10 +483,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     }
     if (drawType == SHADE_ALPHA_16 || drawType == SHADE_PAL_ALPHA_16) {
         i32 bank = (m_light >> 3) * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
-        // The channel offset is a link-time DIR32 addend on g_clut and the bank is
-        // the run-time index, so the two must be added in that order: folding the
-        // bank in first makes cl derive the other two channels from it and loses
-        // one of the three relocations.
+        // Keep the link-time channel offset separate from the runtime bank index.
         ClutByteCursor red;
         red.m_words = g_clut;
         red.m_bytes += CLUT_RED_OFFSET * sizeof(u16);
@@ -2303,8 +2270,6 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
     }
 }
 
-// The SHADE_DST_BY_LEVEL arm intentionally uses m_light for dst[0] and the
-// unadvanced source byte for dst[rowDelta].
 RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {

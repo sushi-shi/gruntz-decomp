@@ -40,7 +40,6 @@
 #include <string.h>
 
 // @early-stop
-// One dead spill of the candidate's tile x at 0xf778f remains unreached.
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
@@ -51,9 +50,6 @@ i32 CGrunt::StepToolThiefBehavior() {
         this->m_arrivalCell.m_x = 0;
     }
 
-    // NOT a PickupType local: it is seeded from m_entranceReason/m_toolId but
-    // then REUSED to hold a cell x-coordinate below, so it carries two
-    // domains. Left as i32 until the reuse is untangled.
     i32 reason = IDX(this->m_entranceReason);
     if (reason > 0x16) {
         reason = IDX(this->m_toolId);

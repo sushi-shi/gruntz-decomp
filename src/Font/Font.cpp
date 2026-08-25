@@ -1,9 +1,3 @@
-// MFC's inlines are ON in this TU and must stay on: retail's font compiland owns
-// the COMDAT band 0x17b4f0 (?GetAt@CString@@QBEDH@Z) + 0x17b500
-// (?Width@CRect@@QBEHXZ), and only a TU that parses afxwin1.inl can emit them.
-// NAFXCW.LIB (release) defines neither - suppressing the inlines here orphans
-// both and `ninja candidate` dies with LNK1120.
-
 #include <rva.h>
 
 #include <Font/Font.h>
@@ -213,9 +207,6 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
-// The run's right edge in SURFACE coordinates: the clip rect is in glyph-run
-// space, so `x` moves its origin.  A function, not an expression, because that
-// is the term order retail evaluates.
 static inline LONG RunRightEdge(const CRect& rc, i32 x) {
     return x - rc.left + rc.right;
 }
@@ -539,9 +530,6 @@ TextExtent FontRenderer::MeasureText(CString text) {
 }
 
 // @early-stop
-// Instruction selection is byte-identical to retail; the residue is a 4-byte
-// frame delta (retail `sub esp,0x54`, ours 0x50) that shifts every esp
-// displacement.
 RVA(0x0017ad10, 0x402)
 TextExtent FontRenderer::MeasureWrapped(CString text, CRect rc) {
     i32 y = rc.top;

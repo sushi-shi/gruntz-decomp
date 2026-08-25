@@ -33,8 +33,6 @@ public:
     void ClearPages();
 
     CMenuPage* FindPage(const char* pageKey);
-    // Retail's ctor body at 0x9ff85 sets unwind state 3 after the
-    // last CString member and then calls InitializeMembers() inside the same protected region.
     CMenuTree() {
         InitializeMembers();
     }

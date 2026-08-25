@@ -60,10 +60,6 @@ public:
 
     void Init();
 
-    // Empty in retail (0x170370 is a bare `ret`) and called exactly once, on the
-    // `CButeMgr bute;` stack local in CChatBoxOwner::HandleTextInputKey right after
-    // its ctor.  It is emitted between Init() and SetErrCallback(), i.e. it is
-    // Init()'s counterpart whose real teardown lives in ~CButeMgr.
     void Term();
 
     void SetErrCallback(ErrCallback cb);
@@ -82,7 +78,6 @@ public:
 
     void SetPoint(const char* tag, const char* key, struct ButeIntPoint* val);
 
-    // The Set<T> family; retail lays each one out directly after its Get<T>.
     void SetInt(const char* tag, const char* key, i32 val);
     void SetDword(const char* tag, const char* key, DWORD val);
     void SetFloat(const char* tag, const char* key, float val);
@@ -94,9 +89,6 @@ public:
 
     bool Exists(const char* tag, const char* key);
 
-    // Inline in retail: HandleTextInputKey 0x205c0 expands the member teardown on its
-    // normal path (3x ~zErrHandling + 3x ~zPtrColl) and only its EH funclet calls the
-    // out-of-line COMDAT at 0x213c0.
     RVA(0x000213c0, 0x14c)
     ~CButeMgr() {}
 
@@ -137,7 +129,7 @@ public:
     char m_writeMode;
 
     char m_encrypted;
-    CButeTail m_crypt; // Blowfish stream codec (Decode/Encode are its members)
+    CButeTail m_crypt;
 
     ButeIntRect* GetRect(const char* tag, const char* key);
     ButeIntPoint* GetPoint(const char* tag, const char* key);

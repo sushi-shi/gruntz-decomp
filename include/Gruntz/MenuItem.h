@@ -11,9 +11,6 @@
 
 GZ_ENUM_FORWARD(MenuItemState);
 
-// Options retained by CMenuItem::Init. The low bit selects the initial state;
-// the high bit is consumed by CAnimatedMenuItem when it advances beyond the
-// last frame.
 GZ_ENUM_FLAGS_BEGIN(MenuItemFlags, i32)
     MENU_ITEM_FLAGS_NONE = 0,
     MENU_ITEM_INITIAL_DISABLED = 0x1,
@@ -124,9 +121,6 @@ inline CMenuItem::~CMenuItem() {
     Cleanup();
 }
 
-// Retail expands Reset in three CMenuPage factories, then calls its COMDAT in
-// the extended AddAnimatedItem overload after later inline setter sites exhaust that caller's
-// budget.
 inline void CMenuItem::Reset() {
     m_menuTree = NULL;
     m_page = NULL;

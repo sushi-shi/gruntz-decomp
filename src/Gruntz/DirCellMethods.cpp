@@ -39,8 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Indexed by row * 3 + column over the 3x3 neighbour grid; each element is the
-// cell one step around the ring from that one.
 DATA(0x0020d008)
 CTriRecord g_directionClockwiseTable[9] = {
     {0, 1, DIR_NORTH},

@@ -37,9 +37,6 @@
 #include <Gruntz/VoiceTrigger.h>
 #include <Gruntz/WarpStonePad.h>
 
-// CProjActObj has no state and no vtable: it exists only to own the
-// `A`-action registrar that installs CActionArea::Tick. Its body lives in
-// ActionArea.cpp beside the method it registers.
 struct CProjActObj {
     static void RegisterType();
 };

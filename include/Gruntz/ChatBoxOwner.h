@@ -8,8 +8,6 @@
 #include <Enums.h>
 #include <Ints.h>
 
-// Chat-box geometry follows the status-bar layout, but its retail values are
-// one-based and therefore form a distinct domain from StatusBarDock.
 GZ_ENUM_BEGIN(ChatBoxLayout)
     CHATBOX_WITH_RIGHT_STATUSBAR = 1,
     CHATBOX_WITH_LEFT_STATUSBAR = 2,

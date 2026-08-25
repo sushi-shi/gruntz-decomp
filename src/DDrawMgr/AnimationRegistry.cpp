@@ -24,12 +24,6 @@ void AnimationRegistry::Unload() {
 }
 
 // @early-stop
-// Same swapped CString/POSITION stack slots as SoundCueRegistry::RemoveCue;
-// not steered by: all decl orders, renames, nested-if/early-return guard, scope
-// block, for/while, uninit-decl + late assign, or 48 TU-state islands. The exact
-// sibling CDDrawPaletteRegistry::RemovePalette (0x165c40) gets the retail layout
-// (pos->esp+8, CString->recycled arg slot) from this same shape, so the layout is
-// reachable; the coin is allocator state outside the body text.
 RVA(0x00152660, 0xb2)
 void AnimationRegistry::RemoveAnimation(CAniElement* target) {
     if (target == NULL) {

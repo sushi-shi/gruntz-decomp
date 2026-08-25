@@ -38,8 +38,6 @@
 #include <string.h>
 
 // @early-stop
-// cl folds the second `occ == NULL` test that retail re-emits after the
-// GruntInRadius/m_entranceCommitted guards, so we are two branches short.
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepScrollGruntBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -55,8 +53,6 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (occ == NULL) {
                 goto seek;
             }
-            // the CHASE-and-shout arm is the FALL-THROUGH: forward gotos would
-            // hoist it above the scroll arm, which retail emits first.
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->m_entranceCommitted != 0) {
                 if (m_neighborValid != 0) {
@@ -214,8 +210,6 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
-            // retail lays the reroll arm LAST: the window-still-open arm is the
-            // fall-through of the negated test.
             if (IsArrivalRerollPending() != 0) {
                 CWwdSpriteObject* h = m_object;
                 SELECT_RANDOM_EXTENT_POINT(h, outX, spanX, outY, spanY)

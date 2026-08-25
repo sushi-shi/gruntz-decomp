@@ -120,9 +120,4 @@ char GetGruntzDriveLetter() {
     return g_cdDriveLetter;
 }
 
-// cl emits the header-inline `~RegistryHelper() { Close(); }` out of line here
-// (a 5-byte `jmp ?Close@...`), because the three unwind funclets that clean up a
-// stack RegistryHelper take its address: winapicdrom CheckCdRomRegistry /
-// GetGruntzDriveLetter and gruntzmgr LaunchPortalExe. Retail keeps the one copy
-// right after this TU's band, reached through the ILT thunk at 0x00004115.
 RVA_COMPGEN(0x000201f0, 0x5, ??1RegistryHelper@Utils@@QAE@XZ)

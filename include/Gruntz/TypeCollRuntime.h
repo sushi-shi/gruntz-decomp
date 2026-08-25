@@ -17,8 +17,6 @@ public:
         return NameOf(SlotOf(key));
     }
 
-    // The raw _zvec resolve: `_zdvec::IndexToPtr` minus its trailing
-    // grown-slot construction, which the caller then runs itself.
     char** GetNameRecordRaw(i32 key) {
         return NameOf(ScratchResolve(key));
     }

@@ -146,38 +146,6 @@
     }
 
 // @early-stop
-// The frame matches retail exactly (`sub esp,0x94`) and so does every parameter
-// displacement, and the single `ret` is retail's. What is left is dominated by
-// ONE cl decision we have not been able to steer: which duplicate blocks get
-// cross-jumped. Retail folds far more `return 1;`
-// sites into a shared `mov eax,1` block than we do (110 `mov eax,1` in retail vs 122
-// here), so at a dozen guards retail emits `je <shared ret-1>` where cl emits
-// `jne <continue> / mov eax,1 / jmp <epilogue>` inline - and it goes the OTHER way for
-// `ReportError`, which retail leaves inline at two sites (6 call relocs vs our 4).
-// The branch polarity that follows from it is also why retail can `push eax` for a
-// known-zero argument where we must `push 0`.
-// Smaller residue, each re-derived from the current build:
-//   * `(g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING_ALTERNATE)
-//     & ~DEBUG_DISPLAY_TIMING` at CHEAT_BRICK_TEXT_ALT_DISPLAY is
-//     emitted `and`-then-`xor`: cl sorts the two disjoint bit operations by constant
-//     magnitude (the sibling arm's timing/alternate-timing expression is already in
-//     that order and matches). Splitting it into two statements on the global is
-//     byte-identical.
-//   * CMD_SCREENSHOT: retail loads `m_modeSize.cx` TWICE (once for the push, once for
-//     the temp's home slot) where cl reuses the one register for both.
-//   * three of the thirteen `_cell` grid-index sites (BRICKPICKUP(0x39) and the last
-//     two BRICKABILITY arms) use retail's `add edx,edi` instead of `add ecx,edx`. It is
-//     not the source order - swapping the addends flips all thirteen and costs 0.04 -
-//     and it is what makes the diff misalign eight near-identical macro expansions.
-// Note that the last two diff hunks are NOT code: they are the jump table, the byte
-// index table and the pooled string literals disassembled as instructions.
-// Measured and REJECTED, so nobody re-runs them: rewriting the CHEAT_MONOLITH early
-// returns into nested `if`s (`if (X) { rest } return 1;`) takes the branch count to
-// 315 vs retail's 313 - a structural difference, so the early-return spelling is the
-// right one and the four polarity flips are layout, not shape. Compiling the unit with
-// /G5, /G4, /G3 or /GB is byte-identical (the processor flag does not reach this
-// function's scheduling at all), /Ob2 is byte-identical to the /O2 default, and /Oa,
-// /Ow and /Ox are all worse.
 
 RVA(0x000862f0, 0x4369)
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
@@ -214,12 +182,6 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             // fall through to default
         default:
             if (m_curState->Update() == GAMESTATE_PLAY) {
-                // The four `Lookup`/`MapLookup` out-parameters below live HERE, at the
-                // scope that encloses the cheat switch, not inside their own arms:
-                // retail gives each of them its own dword slot, and cl packs locals
-                // declared in disjoint nested scopes onto the same slot. Together with
-                // the tagSIZE temp in CMD_SCREENSHOT they are the 0x10 bytes that make
-                // the frame `sub esp,0x94` instead of `0x84`.
                 CGameObject* _dr;
                 SoundCue* _cueMiniature;
                 SoundCue* _cueSpace;
@@ -357,11 +319,6 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         ITEMCHEAT(0x12, "Toobz are cool!");
                     case CHEAT_GIVE_MAGIC_WAND:
                         ITEMCHEAT(0x13, "Magic Wandz are cool!");
-                    // 0x14 == PICKUP_WARPSTONE. The private CHEATZ.TXT names this
-                    // code MPWARPSTONEZ, and the item list is alphabetical, so 0x14
-                    // sits exactly between Wandz (0x13) and Welder's Kitz (0x15).
-                    // Retail's message is the developers acknowledging that the code
-                    // for it was withheld from the shipped ATTRIBUTEZ cheat table.
                     case CHEAT_GIVE_WARPSTONE:
                         ITEMCHEAT(0x14, "Hey, how did you get this cheat?");
                     case CHEAT_GIVE_WELDERS_KIT:

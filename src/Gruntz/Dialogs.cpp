@@ -96,10 +96,6 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* gameManager, CWnd* pParent) : CDialog(0xc0,
     m_customNameFlag = 0;
 }
 
-// The five MFC inline bodies cl emits as COMDATs here, and that this TU wins:
-// `ret 4` / `ret` / `ret 4`, then EnableWindow(m_hWnd, FALSE/TRUE). Each is
-// byte-identical to dialogs.obj's own COMDAT and sits inside this unit's band,
-// so they are cl's output, not NAFXCW's.
 RVA_COMPGEN(0x00014bc0, 0x3, ?Serialize@CObject@@UAEXAAVCArchive@@@Z)
 RVA_COMPGEN(0x00014be0, 0x1, ?AssertValid@CObject@@UBEXXZ)
 RVA_COMPGEN(0x00014c00, 0x3, ?Dump@CObject@@UBEXAAVCDumpContext@@@Z)
@@ -109,8 +105,6 @@ RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
 RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
 // @early-stop
-// Instruction counts agree exactly; the residue is one `lea` where retail folds the
-// slot stride with a destructive `add`, and the block sizes it shifts around it.
 RVA(0x00014d00, 0xa68)
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = g_gameReg->m_settings;
@@ -149,9 +143,6 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             CString upper(entry->m_name);
             upper.MakeUpper();
             CString display;
-            // The extension is cut by carrying the last character into the loop
-            // guard, so the '.' is seen twice: once to skip the append and once,
-            // on the next turn, to leave.
             char c = 0;
             for (i = 0; i < upper.GetLength() && c != '.'; i++) {
                 c = upper[i];
@@ -289,8 +280,6 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 sprintf(key, "custom\\%s", mapName);
                 FILE* file = fopen(key, "rb");
                 if (file != NULL) {
-                    // Retail re-walks the combo down to its edit child here rather than
-                    // reusing the one it took at the top of the branch.
                     CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
                     if (child == NULL) {
                         return;
@@ -346,8 +335,6 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
         for (i = 0; i < 4; i++) {
-            // Spelled out rather than through GetPlayerTypeSelection: retail
-            // expands the combo query here and calls the accessor elsewhere.
             i32 selection =
                 static_cast<i32>(GetPlayerTypeControl(i)->SendMessageA(CB_GETCURSEL, 0, 0));
             if (selection != 0) {
@@ -598,10 +585,6 @@ void CBattlezDlg::PaintPlayerColorControls() {
         screenToClient(m_hWnd, &rect.TopLeft());
         screenToClient(m_hWnd, &rect.BottomRight());
         CBrush brush;
-        // Two Attach sites, not one hoisted `color`: retail pushes the argument
-        // INSIDE each arm and cross-jumps only the shared `call CreateSolidBrush`
-        // (`push eax / jmp` against `push 0x808080`). Hoisting the colour into a
-        // local is what parks 0 in ebx and costs ScreenToClient its register.
         if (colorControl->IsWindowEnabled()) {
             GetRandomNumber();
             GetRandomNumber();

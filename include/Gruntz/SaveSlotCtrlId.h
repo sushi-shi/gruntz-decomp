@@ -3,25 +3,8 @@
 
 #include <Enums.h>
 
-// The load-game dialog's per-save-slot buttons: three contiguous banks of ten,
-// laid out 0x490 + 0x0a * bank + slot.
-//
-// Both halves are proved by the code, not inferred. The SLOT is the `idx = N`
-// each arm assigns; the BANK is the action the switch runs afterwards:
-//
-//   0x490..0x499  VerifySlot(slot), then load it            -> LOAD
-//   0x49a..0x4a3  RunModalDialog("GAME_INFO", ...)          -> INFO
-//   0x4a4..0x4ad  RunModalDialog("GAME_DELETE", ...)        -> DELETE
-//
-// A control-id bag, never a variable's type: the carriers are MFC's `int nID`
-// (WM_COMMAND's wParam, GetDlgItem), same as DialogCtrlId in <Gruntz/Dialogs.h>,
-// which holds the other half of this 0x4xx-0x5xx dialog space.
 GZ_ENUM_CONST_BEGIN(SaveSlotCtrlId)
     CTRL_SAVESLOT_NAME = 0x40d,
-    // The SAVE dialog's own per-slot buttons. CSaveGame translates each one to the
-    // load dialog's slot control of the same index (0x435 + n -> 0x490 + n), which
-    // is what pins the band: the mapping is linear across all ten and the target is
-    // already CTRL_SAVESLOT_LOAD0..9.
     CTRL_SAVEDLG_SLOT0 = 0x435,
     CTRL_SAVEDLG_SLOT1 = 0x436,
     CTRL_SAVEDLG_SLOT2 = 0x437,

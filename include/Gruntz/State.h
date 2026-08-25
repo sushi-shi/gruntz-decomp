@@ -223,7 +223,6 @@ public:
     i32 m_cursorBufferIndex;
 };
 
-// retail copy 0x0008c750 (emitted by gruntzmgr; pin there)
 inline CState::CState() {
     m_mgr = NULL;
     m_resourceArchive = NULL;

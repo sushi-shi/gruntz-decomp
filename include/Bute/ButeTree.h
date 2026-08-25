@@ -41,8 +41,6 @@ struct CButeTreeNode {
     CButeTreeNode* m_child[2];
     i32 m_bit;
     char* m_key;
-    // Generic payload: the tag tables store CButeNode*, group nodes store
-    // CButeValue*, g_buteTree stores an id packed into the pointer.
     char* m_value;
 };
 
@@ -51,7 +49,6 @@ public:
     CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
 
-// g_buteTree's teardown callback; the tree owns no node payloads.
 void ButeTreeNopFree(void*);
 
 extern CButeTree g_buteTree;

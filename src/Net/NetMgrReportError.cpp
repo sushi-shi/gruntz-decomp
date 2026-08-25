@@ -20,7 +20,7 @@ b32 g_debugOutputEnabled = FALSE;
 DATA(0x002bf6f8)
 HRESULT g_hr = 0;
 DATA(0x002bf6fc)
-i32 g_code = 0; // should be a DWORD
+i32 g_code = 0;
 DATA(0x002bf700)
 char g_szCode[0x40];
 DATA(0x002bf740)
@@ -236,7 +236,4 @@ void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
 
         MessageBoxA(hWnd, szLine, "Net Manager", MB_ICONEXCLAMATION);
     }
-
-    // The release build retains this option in the common gate, but its debug-output action emits no
-    // code.
 }

@@ -75,7 +75,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// owner-TU unproven: bss sits in the gametext..gruntzcmdmgr window
 DATA(0x00245550)
 i32 g_cfgWord;
 
@@ -144,10 +143,6 @@ CNetMgr* g_netMgr;
 DATA(0x00248cf8)
 CMulti* g_connectRptMgr;
 
-// cl's CPtrList default-constructor closure: emitted as a COMDAT by every TU that
-// default-constructs a CPtrList array element (multi, play, rezsync). Retail kept one
-// copy at 0x85460 and routes `push OFFSET <closure>` through ILT thunk 0x3774; without
-// the pin the delinker spells that address as `?GetMaxAckLatency@CMulti@@QAEIXZ+5`.
 RVA_COMPGEN(0x00085460, 0x8, ??_FCPtrList@@QAEXXZ)
 
 RVA(0x0008d270, 0x124)
@@ -165,18 +160,6 @@ DATA(0x002467d8)
 char g_recvBuffer[0x800];
 
 // @early-stop
-// Residue is one register-allocation tie-break that cascades: retail homes `this`
-// in ebx and the constant 0 in ebp, cl does the reverse, so almost every line of
-// the diff is that swap.
-//
-// The m_tileTriggers cleanup here is NOT a content gap and NOT an inline-vs-not
-// question about the header. ~CTileTriggerContainer is one inline definition that
-// retail EXPANDS at this site and DECLINES at CPlay::LoadGameAssetNamespaces
-// (0xc7ec0 holds a rel32 call to 0xc8640), so forcing it out of line satisfies
-// CPlay by breaking this caller - measured and rejected. It is not the /Ob1
-// budget either: cb(callee) titrated 22 -> ~134 and cb(caller) +336 leave the site
-// expanded in BOTH callers, so what splits the two decisions in retail is still
-// unidentified. Do not re-derive the budget reading; it is closed.
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
@@ -708,10 +691,6 @@ i32 CMulti::AdvanceGameFrame() {
 }
 
 // @early-stop
-// Residue is two `cmp dword ptr [eax],imm` that cl CSEs into one `mov ecx,[eax]`,
-// plus where cl schedules the second `rc.top` store. NOTE: the local
-// `CDDrawSurfaceMgr* mgr = m_world;` this used to open with was an invented local -
-// retail reloads m_world at every use - and removing it took the function 83.4 -> 92.4.
 RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == 0 && Mgr()->m_frameGate != 0) {
@@ -812,9 +791,6 @@ void CMulti::RenderGameFrame() {
 }
 
 // @early-stop
-// Two-instruction schedule: retail keeps m_netMgr in eax and materialises the
-// strcpy destination address before the m_selectedSession store; cl uses edx and sinks
-// the lea past it.
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
     Mgr()->m_lobbyResult = 0;
@@ -1088,9 +1064,6 @@ void CMulti::ReportStatusId(u32 strId, i32 level) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError(i32 level) {
     char buf[512];
-    // g_code is the HRESULT's LOW WORD (NetMgrReportError sets it with
-    // `hr & 0xffff`), so the comparison masks the SDK constant the same way.
-    // The guard reads: report the failure unless the user cancelled it.
     if (Mgr() && g_code != (DPERR_USERCANCEL & 0xffff)) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, level);
@@ -1284,8 +1257,6 @@ i32 CMulti::ShowMultiStartDlg() {
         if (reg->m_silentMode == 0) {
             SoundCue* found = NULL;
             MapLookup(reg->m_cues, s_GameKey, found);
-            // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
-            // in a register across the m_lastPlayTimeMs store.
             SoundCue* rec = found;
             if (rec != NULL) {
                 i32 soundEnabled = g_soundEnabled;
@@ -1308,9 +1279,6 @@ i32 CMulti::ShowMultiStartDlg() {
 RVA_COMPGEN(0x000b8960, 0x59, ??1CMultiStartDlg@@UAE@XZ)
 
 // @early-stop
-// Declined CSE in the loop tail: retail re-reads m_sessionCursor for GetNext's
-// reference parameter where cl shares the guard's load. Flat across a local guard
-// copy and a local inside the arm.
 RVA(0x000b89e0, 0xc8)
 void FillSessionList(HWND hList, CNetMgr* manager) {
     char buf[256];
@@ -1360,9 +1328,6 @@ RVA(0x000b8af0, 0x1)
 void RefreshSessionSelection(HWND hDlg, HWND hList) {}
 
 // @early-stop
-// Calls, CFG, and relocations agree. Retail keeps the enumeration result in EBP
-// and the final failure flag in EBX; cl currently coalesces the flag onto dead
-// ESI and keeps the result in EBX. Declaration splitting is byte-identical.
 RVA(0x000b8b10, 0x175)
 CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     char buf[0x100];
@@ -1612,13 +1577,6 @@ i32 CMulti::SendValueMessageToId(i32 recipientId, NetMsgId messageId, i32 value,
 }
 
 // @early-stop
-// The loop shape is now retail's (`hr == 0` as a loop condition, the success path as
-// the else of the ReportError arm). What is left is the second `LocalPlayer() == NULL`
-// test, which retail keeps and cl folds away: retail re-compares the SAME already-null-
-// checked ecx (`cmp ecx,edi / jne / xor ebx,ebx / jmp`), which makes `count` a phi and
-// forces the extra `cmp ebx,edi` before the early return. The operand-swap lever of
-// docs/patterns/redundant-test-elimination-is-syntactic.md does not reach it - swapping
-// the loop test, the pre-loop test and Yoda-spelling the pointer compare were measured.
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == NULL) {
@@ -1644,9 +1602,6 @@ i32 CMulti::PollSession() {
     sender = 0;
     dispatched = 0;
 
-    // `hr == 0` is a LOOP CONDITION in retail, not a `break`: the top tests only
-    // `count > 0` and the back edge is `test edi,edi / je <top>` on the receive
-    // status, with the error arm falling into the same re-test.
     i32 hr = 0;
     while (hr == 0 && count > 0) {
         if (m_pollAbort) {
@@ -2035,10 +1990,6 @@ i32 CMulti::HandleSystemMessage(LPDPMSG_GENERIC message, i32 unusedMessageSize) 
         return 0;
     }
 
-    // DirectPlay system message ids, from the SDK's dplay.h. The retail byte
-    // index table (0xba238) maps code 0x101 -> the +0x528 arm and 0x31 -> the
-    // +0x52c arm, so DPSYS_HOST sets m_isHost and DPSYS_SESSIONLOST sets
-    // m_sessionTerminated - the labels, not the member names, were transposed.
     switch (message->dwType) {
         case DPSYS_DESTROYPLAYERORGROUP: {
             CNetWireMsg wire;
@@ -2159,8 +2110,6 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
         if (registry->m_silentMode == 0) {
             SoundCue* found = NULL;
             MapLookup(registry->m_cues, "GAME_MENUS_SELECT", found);
-            // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
-            // in a register across the m_lastPlayTimeMs store.
             SoundCue* cue = found;
             if (cue != NULL) {
                 i32 soundEnabled = g_soundEnabled;
@@ -2565,10 +2514,6 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
     return 1;
 }
 
-// Retail's two call sites (DispatchRecvMsg 0xb98e2, BroadcastChatLine 0xbb290)
-// both load ecx with the CMulti before `call 0x3e31`, so this is a __thiscall
-// member, not the free __stdcall it was reconstructed as. The body never
-// touches `this`, which is why it byte-matched either way.
 RVA(0x000bb3e0, 0xe5)
 void CMulti::AppendEditLine(HWND edit, char* str) {
     if (!edit || !str || !str[0]) {
@@ -2911,9 +2856,6 @@ CNetCmdSlot::CNetCmdSlot() {
 }
 
 // @early-stop
-// Strength reduction: retail biases the slot cursor by +8 and the record cursor
-// by +8, and spills the outer loop counter to the stack; cl keeps the counter in
-// edi and anchors both cursors at offset 0.
 RVA(0x000bbf80, 0xb7)
 void CNetSession::InitializeFields() {
     m_mgr = NULL;
@@ -3286,7 +3228,6 @@ i32 CMulti::ApplyGameConfig(CNetGameConfigPacket* config) {
 }
 
 // @early-stop
-// Register renaming plus one hoisted load in the per-slot reset loop.
 RVA(0x000bcf20, 0xaf)
 i32 CMulti::ResetPlayerCommands(i32 playerId) {
     if (m_connected == 0) {
@@ -3377,7 +3318,6 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
 }
 
 // @early-stop
-// Register renaming plus a two-push reorder in the SendPacket argument setup.
 RVA(0x000bd180, 0x66)
 void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
     CNetVersionPacket packet;

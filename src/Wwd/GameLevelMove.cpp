@@ -107,7 +107,6 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                // Ingest: the raw WWD attribute byte for this cell.
                 result = set->GetCollisionAt(subX, subY);
             }
         }
@@ -190,7 +189,6 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                // Ingest: the raw WWD attribute byte for this cell.
                 result = set->GetCollisionAt(subX, subY);
             }
         }
@@ -273,7 +271,6 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                // Ingest: the raw WWD attribute byte for this cell.
                 result = set->GetCollisionAt(subX, subY);
             }
         }
@@ -356,7 +353,6 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 result = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-                // Ingest: the raw WWD attribute byte for this cell.
                 result = set->GetCollisionAt(subX, subY);
             }
         }

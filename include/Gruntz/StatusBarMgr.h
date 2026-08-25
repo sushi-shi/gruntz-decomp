@@ -36,8 +36,6 @@ class CSBI_GruntMachine;
 class SoundBuffer;
 GZ_ENUM_BEGIN(SbiSlotState)
     SLOT_ARMED = 0,
-    // Entered when the slot is activated; the progress animation runs from
-    // here until its frame reaches kSlotCommitLevel, which sets SLOT_READY.
     SLOT_FILLING = 1,
     SLOT_READY = 2
 GZ_ENUM_END(SbiSlotState)
@@ -60,9 +58,6 @@ struct CSbiSlot {
     i64 m_interval;
 };
 
-// A 64-bit timestamp paired with its 64-bit interval - the unit `SyncClockPair`
-// serializes and the shape CSbiHlRow carries in its own tail. Its constructor writes
-// lastLo, intervalLo, lastHi, intervalHi, which is retail's +0/+8/+4/+0xc store order.
 struct SbiClockPair {
     SbiClockPair() : m_last(0), m_interval(0) {}
 
@@ -81,18 +76,8 @@ struct SbiClockPair {
 };
 
 struct CSbiHlRow {
-    // Inline: retail's out-of-line copy has NO rel32 caller at all - it exists only
-    // because cl 5.0 hands its ADDRESS to `??_H` (`vector constructor iterator`) for
-    // CStatusBarMgr's m_conveyorSlots[3] and m_resourceSlots[12].  That address-take is what
-    // emits the COMDAT, while every scalar/small-array site expands the body in
-    // place.  See docs/patterns/inline-ctor-comdat-via-vector-ctor-iterator.md.
     RVA(0x000c86d0, 0x11)
     CSbiHlRow() {
-        // DELIBERATE DIVERGENCE (retail body is the four clock stores only):
-        // retail never writes m_state/m_value before SetHlCell reads them on the
-        // fresh-level path and only survives because virgin heap pages are zero
-        // (HLROW_OFF == 0); a recycled chunk breaks the drop animation. Zeroing
-        // here pins the value retail's luck supplied. User-ruled fix 2026-08-22.
         m_state = IDX(HLROW_OFF);
         m_value = 0;
         m_lastLo = 0;
@@ -367,26 +352,7 @@ public:
     i32 m_tabCycle;
 };
 
-// SETTLED (re-read against the current layout, in the ctor's only expansion,
-// CPlay::LoadGameAssetNamespaces 0xc7ec0). The zero-store quadruples ARE at their
-// members' declaration positions, interleaved into the neighbouring member-ctor call
-// setup, so they are mem-init-run stores and not body statements:
-//   0xc8046  m_reserved2a0 / m_reserved2b0, scheduled into the argument pushes of
-//            `??_H(m_conveyorSlots, 0x18, 3)`
-//   0xc808b  m_rightMachine / m_leftMachine clocks, into the pushes of `??_H(m_resourceSlots,0x18,12)`
-//   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_rewardQueue)`
-//   0xc8106  m_destructWarningClock, straight AFTER it
-// Body assignments land after every member ctor instead - measured, all six sat past
-// `??0CPtrArray` at base+0x218. Mem-initializers put them back where retail has them
-// at no cost (CMulti::LoadGameAssetNamespaces 91.88 -> 94.30).
-//
-// The store ORDER (+0/+8/+4/+0xc, i.e. lastLo/intervalLo/lastHi/intervalHi) proves
-// that these three pairs are complete SbiClockPair objects like the four above them.
 inline CStatusBarMgr::CStatusBarMgr() {
-    // m_reserved2a0/2b0 and m_leftMachine/B zero themselves in the mem-init run, which is
-    // where retail's stores are - between the m_slots[5] and m_conveyorSlots[3] ctor loops
-    // and between m_conveyorSprites and m_machineDisplay. Writing them again here only
-    // produced the same stores in the wrong PLACE and the wrong ORDER.
     m_statzTabButton = NULL;
     m_resourceTabButton = NULL;
     m_gruntzTabButton = NULL;
@@ -413,12 +379,6 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_quitConfirmationActive = 0;
     m_barFrameGate = 0x1e0;
     m_tabCycle = 0;
-    // Seven memsets in ASCENDING member order, which is what retail emits:
-    // 0x114 / 0x150 / 0x18c as `rep stosd`, then 0x204 (5), 0x308 (3), 0x498 (12)
-    // and 0x61c (4).  A short memset unrolls to stores through ONE `lea` base
-    // (0xc81b8 `lea eax,[esi+0x204]`, 0xc8203 `lea edx,[esi+0x308]`, 0xc8220
-    // `lea ecx,[esi+0x61c]`); per-element `= NULL` assignments emit a disp32
-    // store each instead, and land in source order rather than ascending.
     memset(m_statFlags, 0, sizeof(m_statFlags));
     memset(m_hitRects, 0, sizeof(m_hitRects));
     memset(m_statObj, 0, sizeof(m_statObj));

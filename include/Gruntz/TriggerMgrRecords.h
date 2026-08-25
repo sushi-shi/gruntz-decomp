@@ -20,8 +20,6 @@ class CGruntPuddle;
 class CGrunt;
 struct Coord;
 
-// Test whether a cell's flags admit the caller's route masks. TmDeflectStep is
-// the only retail caller and the reason the out-of-line COMDAT exists.
 RVA(0x00075a90, 0x27)
 inline i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
     i32 m = b & a;
@@ -34,7 +32,6 @@ inline i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
     return 1;
 }
 
-// The eight-way step deflector. Unreferenced in retail.
 GruntDirectionCell __stdcall TmDeflectStep(
     CGrunt* g,
     i32 goalX,

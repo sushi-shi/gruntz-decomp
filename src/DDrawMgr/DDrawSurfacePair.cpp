@@ -90,9 +90,6 @@ void CDDrawWorkerList::ClearWorkers() {
 }
 
 // @early-stop
-// one scheduling slot: retail computes `cmp m_id,1` BEFORE the geometry stores
-// (flags live across the flag-neutral movs), ours places it at the branch. A
-// comparison-valued local (`front = m_id == 1`) materializes and scores lower.
 RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
@@ -215,12 +212,6 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 }
 
 // @early-stop
-// The site-1 offset is now the FIRST statement of each bpp arm, which is what makes
-// cl hoist the common surface load above the branch the way retail does (the `n =
-// 2 * w` doubling has to follow it, not precede it). Term order inside the sum is
-// still inert - cl canonicalises a 2-term sum, re-confirmed here. Residue: cl
-// hoists m_pitch out of the arms where retail hoists m_bytesPerPixel, and the
-// frame slot for the row count lands at 0x1c instead of 0x14.
 RVA(0x00163f40, 0x23e)
 void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
@@ -292,8 +283,6 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 }
 
 // @early-stop
-// Register-rotation cursor phase at the Unlock tail; the streams are otherwise
-// identical (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
@@ -427,11 +416,6 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 }
 
 // @early-stop
-// one block placement: the shared CREATE_DEVICE (0xbb9) arm - reached by both
-// the switch fall-out and the err==NONE path - sits INLINE right after the five
-// jump-table arms in retail; our cl sinks the merged copy to the end of the
-// function. Duplicated arms, a deduplicated fall-through, and an explicit
-// `default:` arm all produce the same sunk layout (over-merge placement family).
 RVA(0x001644a0, 0x1b0)
 i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceMgr* surfaceManager = OwnerMgr();
@@ -447,7 +431,6 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(surfaceManager->m_flags),
             SURFACEMGR_EMULATION_ONLY)) {
 
-        // DirectDrawCreate takes its two emulation selectors AS the lpGUID.
         AddrWord<GUID> emulationOnly;
         emulationOnly.m_word = DDCREATE_EMULATIONONLY;
         hr = deviceManager
@@ -580,10 +563,6 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 }
 
 // @early-stop
-// retail loads OwnerMgr() into eax right after the zero block, which keeps the
-// const 1 un-CSE'd (imm stores for m_flashInterval/m_drawFillCmd, late
-// `mov eax,1`); our cl loads the owner into edx after the screenY store and
-// CSEs the 1. An owner-local hoist compiles byte-identically; permuter flat.
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
@@ -621,13 +600,6 @@ i32 CResolveNode::Init(
 }
 
 // @early-stop
-// Two coupled scratch-register swaps, both measured inert against a 3x5 spelling
-// matrix (res/out order x logic/obj/result locals): the POSTLOAD lookup chain is
-// coloured ecx/edx (retail edx/ecx; same MapLookupById family wall as
-// ResolveTarget below), and the SerializeDispatch call transports param d in eax
-// where retail uses edx (vtbl edx vs eax). res-before-out sank the out=0 store
-// into retail's slot; the rest is the coupled coloring. Tail rows past the last
-// ret are the delinker jump-table artifact.
 RVA(0x00164830, 0xec)
 i32 CLogicRecord::SerializeDispatch(
     CFileMemBase* archive,
@@ -850,13 +822,6 @@ i32 CLogicRecord::Load(CFileMemBase* ar) {
 }
 
 // @early-stop
-// MapLookupById out-param family (same wall as CTriggerMgr::ScanGroup): the two
-// scratch registers and the `out = 0` store slot are COUPLED through one knob.
-// Precomputing any link of the chain (res/grp/mgr, any decl order, 6 spellings
-// measured) keeps the store sunk below the pushes but colours the chain ecx/edx
-// (retail edx/ecx); evaluating the chain in-call flips the registers to retail's
-// but lifts the store above the pushes. No spelling decouples them; islands and
-// depth-1 trees inert.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001651b0, 0x5d)
@@ -928,11 +893,6 @@ CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
 }
 
 // @early-stop
-// head register derivation: retail loads src into ebp, copies ebx, then
-// ADVANCES ebp (`mov ebx,ebp; add ebp,0x20`) and folds src->m_flags through
-// the cursor ([ebp-0x18]); ours derives the cursor with one lea from ebx.
-// Downstream ecx/edx/eax rotation follows. Cursor-init reorder and 250
-// generated variants are flat.
 #define DELETE_ANI_ELEMENT_CONTENTS(index)                                                         \
     for (index = 0; index < m_records.GetSize(); index++) {                                        \
         CObject* item = m_records.GetAt(index);                                                    \
@@ -947,16 +907,6 @@ CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
     m_records.SetSize(0, -1)
 
 // @early-stop
-// Every instruction, offset and constant agrees; both loops and the whole tail from
-// the SetAtGrow call to the `ret 0xc` are exact. What differs is which register the
-// `src` parameter is materialized into. Retail reads it into EBP one push later
-// (`push ebx / push ebp / mov ebp,[esp+0x10]`), copies it to EBX and bumps EBP by
-// 0x20, so `src->m_flags` reads as `[ebp-0x18]`; cl reads it into EBX one push
-// earlier and derives the cursor with `lea ebp,[ebx+0x20]`, one instruction shorter,
-// and then keeps EBX as the base for every `src->` load. Same final assignment
-// (EBX = src, EBP = cursor), opposite derivation. Declaring `cursor` as the first
-// statement was measured and the prologue does not move - the scheduler absorbs the
-// statement order, so the binding is not reachable from this body.
 RVA(0x00165460, 0x156)
 i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
@@ -1040,8 +990,6 @@ void CAniElement::DeleteAll() {
     DELETE_ANI_ELEMENT_CONTENTS(i);
 }
 
-// CAniRecordView header inlines this TU materializes: link.exe kept the
-// copies inside ddrawsurfacepair.obj's contribution.
 RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
 RVA_COMPGEN(0x001657a0, 0x66, ??1CAniRecordView@@UAE@XZ)
 
@@ -1215,7 +1163,6 @@ i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
     return 1;
 }
 
-// CDDrawPaletteResource header inlines this TU materializes (same mechanism).
 RVA_COMPGEN(0x00165db0, 0x1e, ??_GCDDrawPaletteResource@@UAEPAXI@Z)
 RVA_COMPGEN(0x00165dd0, 0x5b, ??1CDDrawPaletteResource@@UAE@XZ)
 

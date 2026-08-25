@@ -78,8 +78,6 @@ GZ_ENUM_BEGIN(GruntzCommandId)
     CHEAT_ABILITY_TELEPORT = 0x813f,
     CHEAT_ABILITY_ROLL = 0x813b,
     CHEAT_DEBUG_FLAG400 = 0x816f,
-    // The built-in `MPWILDWACKY` code posts this; no handler is reconstructed
-    // and no other site names it.
     CHEAT_WILD_WACKY = 0x80be,
     CHEAT_WAWA = 0x8175,
     CHEAT_KEVIN_LAMBERT = 0x807a,

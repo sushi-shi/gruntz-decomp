@@ -103,10 +103,6 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
     vp = &view->m_mainPlane->m_planeViewRect;
     r.right += vp->left - view->m_viewportRect.left;
     r.bottom += vp->top - view->m_viewportRect.top;
-    // Retail walks ONE pointer across the whole 4x15 grid: `lea eax,[ebp+0x1c]`
-    // (&m_units[0]) outside, `mov ebx,eax` at the outer head, `add ebx,4` per inner
-    // step and `mov eax,ebx` at the outer tail - so the row base carries forward and
-    // the cell is m_units[i * TM_UNITS_PER_PLAYER + j], not m_units[j].
     for (i32 i = 0; i < TM_PLAYER_COUNT; i++) {
         for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
             CGrunt* g = m_units[i * TM_UNITS_PER_PLAYER + j];
@@ -415,9 +411,6 @@ void CTriggerMgr::CloseActionOptionsMenu() {
     }
 }
 
-// The 16-bit path-preview colour: retail packs all THREE channels through the
-// runtime shift globals even when green/blue are zero (cl5 does not fold
-// `0 >> var`, so the zero channels are visible as xor/sar/shl).
 static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
     SoundCue* found = NULL;
     MapLookup(cues, name, found);
@@ -429,20 +422,6 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 }
 
 // @early-stop
-// One duplicated call: cl emits the vehicle preview's two LoadCursorSprites in
-// full where retail shares one (both arms `push` the argument and jump to a
-// common `mov ebp,<world>; mov ecx,ebp; call`). Ours differs by one instruction
-// - the true arm materialises world in EBP BEFORE its call while the false arm
-// loads the receiver straight into ECX and reloads EBP after - so the tail
-// matcher correctly declines. Not budget: `inline-model --gap` reports
-// LoadCursorSprites UNDEFINED in this obj, so /Ob1 excludes it at any budget.
-// Open, measured lead: retail reads m_pendingFxKind FIVE times (+0x2a8 at
-// 0x78a93, 0x78b09, the hitFlag preview, the final tail, the vehicle preview)
-// and this body reads it four - the hitFlag preview's else arm should read the
-// member, not `pfk`. Spelling it costs 8 points on its own (90.84 -> 82.54):
-// with both previews reading the member, cl cross-jumps three more arms into
-// shared tails, giving 12 LoadCursorSprites and 13 rets against retail's 14 and
-// 16. Needs a terminator lever at each of those three arms to compose.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -476,10 +455,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         hitFlag = 1;
     }
 
-    // No function-lifetime `view` local: retail re-derives m_world->m_level per
-    // region (the level dies in ecx here) and the full chain at each preview
-    // site - a spanning local claims a callee-saved register and cascades ty,
-    // pfk and `alt` into memory homes across the whole switch.
     CGameLevel* level = m_world->m_level;
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
@@ -499,7 +474,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
         CTileImageSet* tc = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(cval & 0xffff));
-        // Ingest: the raw WWD attribute byte for this cell.
         collision = tc->GetCollisionAt(0, 0);
     } else {
         collision = TILEKIND_PASSABLE;
@@ -530,8 +504,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             return 1;
         }
         {
-            // Retail's compare order is rock, welder, boomerang, gunhat,
-            // nerfgun, wingz; the positive spelling is byte-identical here.
             if (gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_BOOMERANG
                 && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
                 && gruntKind != GRUNT_WINGZ) {
@@ -541,8 +513,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
             POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
             m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
-            // Retail-proven ABI seam: WorldToViewport receives the two by-value i32
-            // argument slots directly; Win32 LONG has the same 32-bit storage.
             m_world->m_level->m_mainPlane->WorldToViewport(
                 reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
                 reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
@@ -636,7 +606,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     return 1;
                 }
-                // the spy also lights up over a hidden object parked on this cell
                 CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
                 i32 occupantId;
                 if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
@@ -670,11 +639,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 if (pfk != 0) {
                     POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
                     m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
-                    // The destination wrap is OPEN-CODED on the scalars (retail
-                    // 0x79126-0x791b0: dx/dy never leave edi/ebx, the plane chain
-                    // is re-derived, and the final adjust is the re-associated
-                    // bounds50-viewRect difference) - the same wrap the source
-                    // POINT goes through by call above.
                     CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
                     i32 dx = x;
                     i32 dy = y;
@@ -742,12 +706,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 }
 
 // @early-stop
-// One block differs (B25, the TARGET_SELECTION_TOY arm): retail cross-jumps its
-// `Activate(...,3,1)` tail into the block the other two arms share; cl duplicates
-// it. NOT a merge-policy difference - cl hoisted the m_logicRecord reload above the
-// pushes in that ONE arm (`mov eax,[esi+0x7c]` / `mov ecx,[eax+0x18]`), so its tail
-// is not identical to the others and the suffix matcher correctly declines. The
-// other 45 blocks are byte-identical.
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::HandleTargetSelection(
     i32 targetX,
@@ -1288,11 +1246,6 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
 }
 
 // @early-stop
-// Block topology and branch sequence agree exactly (31/31 blocks, 20 branches,
-// 4 rets). Residue is two scheduling hunks around the MapLookupById out-param
-// store. Transcribing retail's store order (`found = 0` ahead of the m_objectId
-// load) was measured WORSE (99.19 -> 98.73), so the sink is a scheduler choice,
-// not statement order.
 RVA(0x0007a760, 0x373)
 i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -1695,7 +1648,6 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             } else {
                 CTileImageSet* o =
                     static_cast<CTileImageSet*>(board->m_imageSets.GetAt(cell & 0xffff));
-                // Ingest: the raw WWD attribute byte for this cell.
                 type = o->GetCollisionAt(0, 0);
             }
 
@@ -1765,8 +1717,6 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 
                 SoundCue* found = NULL;
                 MapLookup(registry->m_cues, "LEVEL_ROCKBREAK", found);
-                // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the
-                // cue in a register across the m_lastPlayTimeMs store.
                 SoundCue* cue = found;
                 if (cue != NULL) {
                     i32 soundEnabled = g_soundEnabled;

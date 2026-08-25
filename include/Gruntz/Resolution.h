@@ -3,10 +3,7 @@
 
 #include <Enums.h>
 
-// Display-mode selection, as stored in the video config and the registry.
 GZ_ENUM_BEGIN(Resolution)
-// Initial value before the saved mode is read back; the display modes
-// themselves start at 1.
     RES_UNSET = 0,
     RES_640X480 = 1,
     RES_800X600 = 2,

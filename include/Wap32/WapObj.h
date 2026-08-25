@@ -44,22 +44,8 @@ GZ_ENUM_CONST_END(WapObjId)
 
 class CDDrawSurfaceMgr;
 
-// ONE class, not two.  `??_7CLoadable@@6B@` was our name for the vtable at
-// 0x1efc30, whose nine slots are CObject's five plus IsLoaded / IsReady /
-// Unload / GetClassId - i.e. exactly the union of what we had split across an
-// abstract "CWapObj" and a concrete "CLoadable".  Three independent readings
-// agree there is no class between them:
-//   * `??_GCLoadable@@UAEPAXI@Z` (0x155720) calls 0xd5d70 DIRECTLY as its own
-//     destructor - no intermediate teardown exists to call.
-//   * 0xd5d70 is also what retail's `??1CImage` unwind funclet calls, and
-//     CImage's RTTI base array is CImage -> CWapObj -> CObject.
-//   * the 31 `??1CLoadable -> ??1CWapObj` rows in `eh_band --census`: retail
-//     destroys every derived base sub-object as CWapObj.
-// RTTI names it CWapObj (`.?AVCWapObj@@` is present, `.?AVCLoadable@@` is not),
-// so CWapObj is the surviving name and 0x1efc30 is `??_7CWapObj@@6B@`.
 class CWapObj : public CObject {
 public:
-    // Slots 5..8 of 0x1efc30, in vtable order.
     virtual i32 IsLoaded();
     virtual i32 IsReady();
     virtual void Unload();
@@ -69,10 +55,6 @@ public:
     i32 m_flags;
     CDDrawSurfaceMgr* m_ownerCtx;
 
-    // 0xd5d70 (RVA_COMPGEN pin at the emitting keeper, Play.cpp - an RVA() here
-    // would annotate BOTH cl dtor variants and collide with ??_GCWapObj@0x155720).
-    // Retail's ??1CImage EH funclet CALLS it and ??_GCLoadable (=
-    // ??_GCWapObj) tail-calls it, so the three-field reset is this class's own.
     virtual ~CWapObj() OVERRIDE {
         m_id = WAPOBJ_ID_NONE;
         m_flags = 0;
@@ -83,15 +65,6 @@ public:
         m_ownerCtx = NULL;
     }
 
-    // Two entities for the two shapes retail shows (docs/patterns/
-    // two-shapes-need-two-entities.md).  `sema xref 0x156cb0` lists exactly four
-    // retail `call` sites - CDDrawSurfaceMgr::Init, CDDrawSubMgrPages::
-    // CreateChildren, CDDrawChildGroup::CreateContainerObject and
-    // CDDrawWorkerHost::ReadPlaneObjects - while every other derived ctor
-    // expands the three stores.  The pinned body (0x156cb0, DDrawSubMgr.cpp)
-    // serves the callers; the tagged sibling serves the expansions.  The tag
-    // must stay on the SIBLING: on the pinned body it would turn `ret 0xc`
-    // into `ret 0x10`.
     CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     enum ENoSeed {

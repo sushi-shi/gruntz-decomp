@@ -393,10 +393,6 @@ static inline void LookupCue(CMapStringToPtr& cues, const char* name, SoundCue*&
 }
 
 // @early-stop
-// CFG, size, and all 64 relocations agree. The only residue is the scratch
-// pair for (m_world load, &out lea): retail rotates ecx/eax -> edx/ecx ->
-// eax/edx across consecutive LookupCue sites, ours pins eax/edx, so every
-// third site already matches.
 RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     SoundCue* d;

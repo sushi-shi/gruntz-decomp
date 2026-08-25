@@ -3,9 +3,6 @@
 
 #include <Enums.h>
 
-// Per-tileset WWD image ids whose shoreline art determines the direction in
-// which a sinking actor moves. The visual variants within one direction are
-// distinct tile images but have identical gameplay semantics.
 GZ_ENUM_BEGIN(MovingDeathTileSetAId)
     MOVING_DEATH_A_SE_1 = 0x68,
     MOVING_DEATH_A_S_1 = 0x69,

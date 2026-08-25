@@ -159,9 +159,6 @@ i32 CFecFile::CreateArchive(const char* name) {
 }
 
 // @early-stop
-// residue is 2 insns in the name-fill loop: retail masks the modulo result
-// (`and edx,ecx` reusing the 0xff divisor) and copies it into dh, both provably
-// dead. No spelling of the byte expression reproduces them.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b950, 0x380)

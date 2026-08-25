@@ -3,12 +3,6 @@
 
 #include <Enums.h>
 
-// Scroll/Wand spell subtype, held in the WWD `Face Dir` field (offset not yet
-// pinned) and dispatched in CGruntCombat. Cast by a Scroll (Toy 30) or a Magic
-// Wand (Tool 19); 0 picks one of 1-6 at random.
-//
-// The 1-6 names are the live ones from the dispatch switch; SPELLZ_RANDOM comes
-// from docs/domain/powerupz.md (editor/AppendixB/Spellz/0-RandomSpell.html).
 GZ_ENUM_BEGIN(SpellzEffect)
     SPELLZ_RANDOM = 0,
     SPELLZ_FREEZE = 1,

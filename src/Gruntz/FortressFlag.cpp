@@ -91,8 +91,6 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     CWwdSpriteObject* o = m_object;
     i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, v)
-    // The WWD `Smarts` slot is per-logic; for a fortress flag it carries the
-    // owning warlord (docs/domain: Smarts is the team number 0-3).
     switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
         case WARLORDZ_KING:
             SetImageSetByName("GAME_FORTRESSFLAGZ_KING");
@@ -259,8 +257,6 @@ i32 DispatchExplosionLogic(CGameObject* owner) {
 }
 
 // @early-stop
-// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
-// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");

@@ -4,9 +4,6 @@
 #include <DDrawMgr/LogicRecordFlags.h>
 #include <Wwd/WwdGameObjectFlags.h>
 
-// The receiver-direct twin, which re-read m_object->m_frameImage instead of caching
-// it, was folded onto this form 2026-08-22 by passing m_object->m_frameImage as the
-// height layer - byte-neutral (0 rows moved).
 #define NORMALIZE_BIG_ANIMATION_WITH_AUX(heightLayer)                                              \
     CImage* aux = m_object->m_frameImage;                                                          \
     if (aux != NULL) {                                                                             \

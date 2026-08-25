@@ -3,8 +3,6 @@
 
 #include <Enums.h>
 
-// What CTriggerMgr::HandleTargetSelection targets. The three explicit arms either record
-// a map point, record a Grunt, or enqueue a toy command against the point/Grunt.
 GZ_ENUM_BEGIN(TargetSelectionKind)
     TARGET_SELECTION_AUTO = 0,
     TARGET_SELECTION_POINT = 1,

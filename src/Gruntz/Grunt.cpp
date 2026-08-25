@@ -33,13 +33,17 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStats.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -56,12 +60,14 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
+#include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -96,13 +102,6 @@ DATA(0x001e9760)
 const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
 const double g_slopeNegTwo = -2.0;
-
-// The four-store, base-register rect fill retail emits ~25x inside
-// LoadGruntTypeTable. grunt.cpp compiles with MFC inlines OFF
-// (docs/patterns/out-of-line-crect-ctor-means-mfcnoinline-tu.md), so an inline
-// `CRect(l,t,r,b)` here would be a `call ??0CRect@@QAE@HHHH@Z`; retail has none.
-// A pointer-taking inline is what produces the `lea <reg>,[esi+off]` base plus
-// one register per value that the retail schedule shows.
 
 i32 g_movingSeed;
 
@@ -254,8 +253,6 @@ RVA(0x0000f430, 0x10)
 CGruntCellRec::~CGruntCellRec() {}
 
 // @early-stop
-// Residual is register assignment: retail parks `owner` in ebp and CSEs the constant 7
-// into ebx; ours holds owner in ebx and re-materialises 7 as an immediate.
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(CGameObject* owner)
     : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE),
@@ -369,14 +366,6 @@ CGrunt::CGrunt(CGameObject* owner)
     m_wingzEnabled = 0;
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
-    // Retail assigns each of the four rects as a WHOLE object: the values sit in
-    // eax/ecx/edx/edi and go out through one `lea ebx,[esi+0x2a0]` base, first
-    // store direct and the other three at [ebx+4/8/c] (0x47cd6..0x47d20). That is
-    // a struct copy from a source whose fields cl has already folded to constants,
-    // i.e. a plain RECT local - not `CRect(0,0,0,0)`, which materialises a real
-    // temp and calls the ctor (measured 85.82 against 92.39 here), and not the
-    // sixteen field-by-field stores this used to be, which cl schedules in among
-    // its neighbours and spells with the 6-byte `[esi+0x2xx]` form throughout.
     RECT reach;
     reach.left = -1;
     reach.top = -1;
@@ -622,10 +611,6 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 #undef LOAD_POSE
 
 // @early-stop
-// residue is 2 insns: retail loads BOTH operands of the second difference
-// (fld/fld/fxch/fsubp) where cl folds one into a single fsubr. Follows from the
-// ebx/edi coalescing choice - retail puts the first ftol result in `other`'s
-// register, we pick ebx.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0004a780, 0x1ec)
@@ -751,16 +736,6 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 }
 
 // @early-stop
-// Block skeleton is now identical to retail (70/70, every edge `==`).  The
-// residue is a register PERMUTATION at six of the seven act probes: retail
-// takes the m_logicRecord temp in edx, sets ecx to &g_typeColl BEFORE the argument
-// load, and pushes from eax; cl takes the temp in eax, leaves the argument in
-// ecx and therefore has to reload ecx with the receiver after the push.  The
-// first probe ("F") colours retail's way on both sides, so it is an
-// allocator preference and not a shape difference - same instruction count,
-// same operands, same size.  The three `m_value = ...; Setup(...)` sites carry
-// the same ecx/edx swap plus a store scheduled before rather than after the
-// receiver `lea`.
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
@@ -845,10 +820,6 @@ store:
 }
 
 // @early-stop
-// Sole residue: where the m_arrivalFlags load is scheduled. Retail sinks it
-// below the two i64 zero-stores and above `m_tileClaimed = 0`; cl hoists it to
-// the top of the store group. Splitting the read-modify-write into a named
-// temp is byte-identical (cl folds it back).
 RVA(0x0004b130, 0xc8)
 i32 CGrunt::CommitArrival() {
     if (m_arrived != 0) {
@@ -1032,9 +1003,6 @@ i32 CGrunt::StepArrivalDrop(
                     passableMask
                 ) != 0
                 && probe.GetCount() != 0) {
-                // Retail falls through into the splice arm and jumps away on
-                // `jg` (0x4b681), so the SHORT-path count is the `if` and the
-                // free-everything walk is the `else`.
                 if (probe.GetCount() <= cnt + 3) {
                     PushFreeNode(&g_coordPool, probe.RemoveHead());
                     if (CoordCount() != 0) {
@@ -1285,11 +1253,6 @@ reProbe:
     return arrivalPhase != 0;
 }
 
-#include <Gruntz/GruntCoordRecycleMacros.h>
-#include <Gruntz/GruntMovementMacros.h>
-#include <Gruntz/SortKeyMacros.h>
-#include <Gruntz/TileCoordMacros.h>
-
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1406,11 +1369,6 @@ i32 CGrunt::StepGruntMovement() {
             }
         }
     }
-    // The two `goto 0x4c68b` sites made that body cl 5.0's fall-through for its LAST
-    // predecessor (0x323 in the base, with the gate inverted to `je`); retail reaches
-    // it with two forward `jne 0x4c68b` and keeps it at its source position.  Nesting
-    // the guards gives the body one join instead of two predecessors - see
-    // docs/patterns/goto-chain-of-distinct-bodies-is-a-nested-if.md.
     if (m_entranceActive == 0) {
         i32 ltx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 lty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
@@ -1518,7 +1476,6 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
 
-    // 0x4c68b - reached only by falling out of the two guards above.
     if ((flagHead & 0x20000000) && !(flagHead & 0x80)) {
         i32 owner;
         if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width)
@@ -1726,11 +1683,6 @@ label_4cb4b:
         bd2->m_rows[tgtTileY][tgtTileX].m_flags |= BRICKZ_CELL_OCCUPIED;
         bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_playerIndex << 8) | m_unitIndex;
 
-        // Retail 0x4cc52: `mov eax,[esp+0x3c]` / `mov ecx,[esp+0x40]` with esp 8 below
-        // the frame base (the two `push`es of the 1.0 double at 0x4cbea/0x4cbf2), i.e.
-        // frame slots 0x34/0x38 - the SAME slots read at 0x4cbca/0x4cbdc and shifted by
-        // TILE_SHIFT_PX to index m_rows just above, so they are tgtPxX/tgtPxY.  `rec`
-        // lives at 0x3c..0x44 (the by-value GruntDirectionCell pushed to SetFacing).
         m_lastTilePx.m_x = tgtPxX;
         m_lastTilePx.m_y = tgtPxY;
         ComputeFacing(1.0);
@@ -1814,14 +1766,6 @@ i32 CGrunt::CreateHealthSprite() {
 }
 
 // @early-stop
-// 2-arg sibling of the BindToGrunt family: retail pushes m_unitIndex,
-// THEN computes reg=inner->m_userLogic, THEN loads m_playerIndex into the register
-// inner has just vacated; cl loads m_playerIndex into edx up front and pushes
-// both arguments together. Refuted in an isolated harness that reproduces this
-// body byte-for-byte: ten tail spellings (inner/reg folded, either argument as
-// a local, the call result as a local, a positive gate, the failure arm's
-// stores swapped). The one probe that DID produce retail's interleave needed a
-// third use of reg before the call, which retail does not have.
 RVA(0x0004d220, 0x9c)
 i32 CGrunt::CreateToySprite() {
     if (m_toySprite) {
@@ -1873,9 +1817,6 @@ i32 CGrunt::CreateStaminaSprite() {
     }
     return 1;
 }
-
-#include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpriteMacros.h>
 
 // @early-stop
 RVA(0x0004d3e0, 0xf5)
@@ -1937,7 +1878,6 @@ i32 CGrunt::CreateWingzTimeSprite() {
 }
 
 // @early-stop
-// four bytes: ecx and edx are swapped for the powerupId / m_unitIndex argument pair.
 RVA(0x0004d650, 0xa1)
 i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
     if (m_powerupSprite) {
@@ -1965,8 +1905,6 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
 }
 
 // @early-stop
-// Same wall as CreateToySprite and its sole residue: retail loads
-// m_playerIndex into eax after reg=inner->m_userLogic has freed it, we take edx.
 RVA(0x0004d730, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {
@@ -2107,11 +2045,6 @@ i32 CGrunt::Place(
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
     ResetEntranceAnimation(1, 0, 0);
-    // `kind` is the EnemyAiType. These four are the types that own a post: the
-    // guards keep theirs where they spawned, and the Object Guard reads its
-    // guarded address out of the WWD X Min / Y Min pair (defenderQueuePosition,
-    // defenderPickupType), degenerating
-    // to a Post Guard when the level gives it none.
     switch (kind) {
         case AI_POSTGUARD:
             m_defenderPx = m_lastTilePx;
@@ -2136,12 +2069,6 @@ i32 CGrunt::Place(
 }
 
 // @early-stop
-// Residue is cross-jump DEPTH, not a missing statement: the three identical
-// PICKUP_HEALTH{1,2,3} arms end in the same GetIntDef/clamp tail, and retail
-// merges only arms 2 and 3 while cl merges all three (one `Powerupz` /
-// `GetIntDef` reference short, one branch and one return short). The `flags |=`
-// arm-tail selection this feeds is
-// docs/patterns/switch-arm-tail-crossjump-vs-duplicate.md.
 RVA(0x0004dd50, 0x2400)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;

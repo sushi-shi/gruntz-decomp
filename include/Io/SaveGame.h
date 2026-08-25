@@ -94,9 +94,6 @@ public:
     SaveSlot m_slots[SAVE_SLOT_COUNT];
 };
 
-// Inline in retail: CGruntzMgr::Run expands it (Reset plus the two CString members
-// in reverse declaration order) at its delete site, and CGruntzMgr::Close calls the
-// COMDAT copy the same object file emits at 0x85b50.
 inline CSaveGame::~CSaveGame() {
     Reset();
 }

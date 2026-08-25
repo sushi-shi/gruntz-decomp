@@ -40,8 +40,6 @@
 #include <string.h>
 
 // @early-stop
-// Referent set is exact (52/52 in order) since the CRT-rand fix; the residue is
-// block placement inside the reroll arm.
 RVA(0x000ed9f0, 0x900)
 i32 CGrunt::StepHitAndRunnerBehavior() {
     m_defenderPx = m_lastTilePx;

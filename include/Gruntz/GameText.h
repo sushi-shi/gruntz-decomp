@@ -6,7 +6,6 @@
 #include <Gruntz/String.h>
 #include <Wap32/zBitVec.h>
 
-// The eight Questz area names, indexed (levelId - 1) / 4.
 extern CString g_areaNames[8];
 
 class CWinApp;

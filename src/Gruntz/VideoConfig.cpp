@@ -240,15 +240,12 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 }
 
 // @early-stop
-// Register-rotation cursor phase on the g_gameReg re-read, as SaveVideoCheckboxes
-// (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;
     }
     g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
-    // The slider position IS the mode index the dialog offers.
     i32 resIndex = GetDialogScrollPosition(hDlg, 0x52c);
     if (resIndex >= IDX(RES_UNSET) && resIndex <= 100) {
         g_videoResolutionMode = static_cast<Resolution>(resIndex);
@@ -402,7 +399,6 @@ RVA(0x000370a0, 0xf1)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
     CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
     if (pCtrl) {
-        // The slider position arrives from Windows as a raw LRESULT.
         g_videoResolutionMode =
             static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, TBM_GETPOS, 0, 0));
 
@@ -501,8 +497,6 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         }
         SoundCue* found = NULL;
         MapLookup(registry->m_cues, "GAME_VOICE", found);
-        // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
-        // a register across the m_lastPlayTimeMs store.
         SoundCue* cue = found;
         if (!cue) {
             return;
@@ -529,8 +523,6 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         }
         SoundCue* found = NULL;
         MapLookup(registry->m_cues, "GAME_CHIPFALLOUT", found);
-        // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
-        // a register across the m_lastPlayTimeMs store.
         SoundCue* cue = found;
         if (!cue) {
             return;

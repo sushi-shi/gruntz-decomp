@@ -293,9 +293,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     return 1;
 }
 
-// @early-stop commutative pitch/bpp term order inside the PixOffset expansions
-// (canonical operand order, TU-state class); the side-edge loop itself matches -
-// stepping each cursor directly after its store keeps both IVs live.
+// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a3a20, 0xe2)
@@ -419,11 +417,6 @@ i32 CMinimap::SetAreaPalette(LevelArea area) {
 }
 
 // @early-stop
-// One member store sits one push earlier in retail inside the FillSpan argument
-// setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
-// recovers only 2 of those - the cursor is retail's own.
-// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a3dc0, 0x85f)
 i32 CMinimap::BuildRockyRoadzPalette() {
     u16* buf = m_tileColors;
@@ -546,11 +539,6 @@ void CMinimap::FillSpan(u32 x1, u32 x2, u16 color) {
 }
 
 // @early-stop
-// One member store sits one push earlier in retail inside the FillSpan argument
-// setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
-// recovers only 2 of those - the cursor is retail's own.
-// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a4890, 0x852)
 i32 CMinimap::BuildGruntziclezPalette() {
     u16* buf = m_tileColors;
@@ -661,11 +649,6 @@ i32 CMinimap::BuildGruntziclezPalette() {
     return 1;
 }
 // @early-stop
-// One member store sits one push earlier in retail inside the FillSpan argument
-// setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
-// recovers only 2 of those - the cursor is retail's own.
-// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a5310, 0x855)
 i32 CMinimap::BuildTropiczPalette() {
     u16* buf = m_tileColors;
@@ -887,11 +870,6 @@ i32 CMinimap::BuildHighOnSweetzPalette() {
     return 1;
 }
 // @early-stop
-// One member store sits one push earlier in retail inside the FillSpan argument
-// setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
-// recovers only 2 of those - the cursor is retail's own.
-// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a67d0, 0x864)
 i32 CMinimap::BuildHighRollerzPalette() {
     u16* buf = m_tileColors;
@@ -1238,11 +1216,6 @@ i32 CMinimap::BuildMiniatureMasterzPalette() {
     return 1;
 }
 // @early-stop
-// One member store sits one push earlier in retail inside the FillSpan argument
-// setup. Swapping or moving the two stores is byte-identical; dropping the
-// `u16* buf = m_tileColors` cursor costs 80 diff lines and the container-object shape
-// recovers only 2 of those - the cursor is retail's own.
-// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a8900, 0x926)
 i32 CMinimap::BuildSpacePalette() {
     u16* buf = m_tileColors;

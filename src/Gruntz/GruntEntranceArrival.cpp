@@ -138,11 +138,6 @@ i32 CGrunt::UpdateGruntStatus() {
 }
 
 // @early-stop
-// cl hoists `idx = 1` out of the two switch arms and then re-uses that ebx as the
-// function's constant-1 register (m_combatActive, m_entranceActive, the rand()%2
-// mask all read ebx where retail uses immediates); retail's constant register holds
-// 0 instead, shared by the two i64 high-dword stores. 9 arm/timer spellings and 13
-// graded declaration counts measured, all 88.50.
 RVA(0x00061940, 0x200)
 i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
     if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
@@ -378,15 +373,6 @@ i32 CGrunt::StepAttackFire() {
 }
 
 // @early-stop
-// The `sel` decision is a FLAT four-arm else-if chain over the two excess
-// durations, not a nested ?: - retail's 0x625d4/0x625d8 lattice is cl threading
-// the known-value edges of that chain, its blocks are jumped ONTO past their own
-// first test, and the last arm's compare is UNSIGNED
-// (`cmp edi,eax / sbb edi,edi / inc edi`).
-// Branch counts now agree 47/47.
-// Residue: the pose test. Retail compares the member in place (`cmp DWORD PTR
-// [edx+0x1b4],ecx`) and then RE-LOADS m_animation inside the if body for m_value,
-// where cl materialises the load once for the compare and reuses it.
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
@@ -493,8 +479,6 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
     i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
-    // Retail 0x62568: (m_toyDuration - now) + m_toyClock - the toy-time REMAINING
-    // until the deadline, not the elapsed time (which is always <= 0 here).
     i64 remainingMs = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
     i32 availableMs = static_cast<i32>(remainingMs);
     if (remainingMs < 0) {
@@ -606,8 +590,6 @@ i32 CGrunt::RecordFrameTick() {
 }
 
 // @early-stop
-// Regalloc only: retail spills the RECT* param and reloads it for the x-edge
-// blocks (frame 0x10), cl keeps it in edx and recycles the arg slot (frame 0xc).
 RVA(0x00062b70, 0x205)
 i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     i32 e1y = e1->y;
@@ -661,21 +643,6 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 }
 
 // @early-stop
-// g_gameReg is loaded once per PointInBounds BLOCK (the bounds test and the
-// PlayGruntVoiceCue call in each block share ONE load; retail 0x6300d, 0x63041)
-// - `reloc_multiset` counts four loads in retail and six with a per-use spelling.
-// Two observed residues, both small and both regalloc-shaped:
-//  1. GetRandom(1, count)'s degenerate arm.  Retail selects with a branch between
-//     the literal lo and the register holding hi (0x62f72 `test al,1 / je / mov
-//     edi,1`); our cl additionally proves `count == 0` from `n == 0`, folds hi to
-//     the literal 0, and collapses `(rand()&1) ? 1 : 0` to `and edi,ebx` - two
-//     instructions shorter, so no source spelling of the shared <GameRand.h>
-//     inline reaches it.
-//  2. retail parks g_gameReg in EBP inside each PointInBounds block (0x6300d,
-//     0x63041) so the shared PlayVoice tail is 3 instructions; ours holds
-//     0 in EBP for the whole function and reloads ds:0x64556c per site, making
-//     that tail 8.
-// Block skeleton is otherwise aligned 59/59.
 RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
     m_resetApplied = 0;
@@ -885,11 +852,6 @@ tail:
 }
 
 // @early-stop
-// The two flag arms and their join (B34/B40/B41) now carry retail's shape: the
-// tail is duplicated into both arms rather than sunk, because each arm's LAST
-// statement differs (see docs/patterns/trailing-statement-blocks-arm-tail-sink.md).
-// Residue is +-1 instruction in B29/B31/B34/B35/B40 - CSE around the coord head
-// read, not control flow.
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
@@ -958,8 +920,6 @@ i32 CGrunt::StepEntranceReinit() {
 }
 
 // @early-stop
-// Register-coloring wall: retail colours `this` ebx and the timeGetTime import
-// pointer ebp; cl swaps the pair. Size, relocs and instruction selection match.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1097,9 +1057,6 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     return 0;
 }
 
-// Retail keeps all three bounds tests below as out-of-line calls (0x641b0 has three
-// `call` sites and no expansion), so they take CGameLevel::PointInBounds rather than
-// the inline PointInRect sibling.
 RVA(0x000641b0, 0x2c1)
 i32 CGrunt::BuildGruntExitAnimation() {
     if (m_deathAnimStarted != 0) {
@@ -1173,8 +1130,6 @@ i32 CGrunt::BuildGruntExitAnimation() {
 }
 
 // @early-stop
-// instruction stream is identical; retail holds `this` in edi and the sunk save
-// in esi, cl picks them the other way round - callee-saved allocation order only.
 RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
@@ -1482,13 +1437,6 @@ i32 CGrunt::FinishKnockbackAnimation() {
 }
 
 // @early-stop
-// Two observed residues.  (1) Retail parks the constant 1 in edi across the whole
-// tail - both arms of the powered-up reset write `mov edi,1` (0x6572a, 0x65752)
-// and the PICKUP_BOMB compare, m_entranceActive and m_bombRunActive all read it;
-// cl spells each as an immediate, so its version of that block is 9 instructions
-// against retail's 11 and there is no separate merge block.  (2) Retail moves the
-// `rand() % 100 < 80` ELSE arm to the end of the function (0x6596f) and keeps the
-// THEN arm as the fall-through; cl lays them adjacent.
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     bool eq = ANIMATION_ACT_EQUALS("I");
@@ -1626,12 +1574,6 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 }
 
 // @early-stop
-// One branch differs (#10, the m_registeredGameObjectsById lookup at base +0x160). Retail leaves the
-// failure value in the BOOL return - `test eax,eax / je 0x65d86 / mov eax,[esp+0xc]`
-// - so `found` never touches memory on that path; passing `found` itself as the
-// out-reference forces the extra `mov [esp+0xc],eax` store cl emits.  Splitting it
-// into a separate out variable plus a register `found` is what retail's shape
-// implies but scores WORSE here (98.22 -> 95.86), so the spelling is not the lever.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));

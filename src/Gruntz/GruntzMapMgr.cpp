@@ -70,9 +70,6 @@ i32 CGruntzMapMgr::SerializeDispatch(
     return CMapMgr::SerializeDispatch(ar, mode, typeId, payload) != 0;
 }
 
-// A CGameLevel accessor the map-manager compiland defined: its retail copy sits
-// inside gruntzmapmgr's contribution (band 0x82430-0x85db7), called from
-// brickzload and tileswitchlogic through ILT thunk 0x4228.
 RVA(0x00082600, 0x73)
 TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     CDDrawWorkerHost* mp;

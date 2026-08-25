@@ -7,12 +7,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/VideoConfig.h>
 
-// The tail of retail's video-options dialog code is a SECOND translation unit:
-// the region carries its own GruntDirStatics $E initializer at 0x375d2 (between
-// ScrollDialog and VideoOptionsDlgProc) constructing a second direction-cell
-// copy at 0x22be40, and one TU can only ever emit one. Split out of
-// VideoConfig.cpp 2026-08-09; the retail filename is unrecovered.
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000377e0, 0x6a)
@@ -46,8 +40,6 @@ void DialogInit(HWND hDlg) {
 }
 
 // @early-stop
-// Register-rotation cursor phase on the second g_gameReg re-read; the streams are
-// otherwise identical (docs/patterns/register-colour-is-cursor-phase-not-a-work-item.md).
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == NULL) {

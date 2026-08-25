@@ -47,11 +47,6 @@ static inline CRezEntryPoolBlock* FirstEntryPoolBlock(IntrusiveList& list) {
     return static_cast<CRezEntryPoolBlock*>(list.m_head);
 }
 
-// These three are inline-expansion boundaries for cl 5.0's list scheduler. An
-// access written out at statement level is a hoist candidate, so the neighbour
-// with no successors - a loop-head load, the next call's receiver, an epilogue
-// pop - floats past it; the same access inside an expansion pins the neighbour
-// (docs/patterns/inline-expansion-boundary-pins-a-neighbour.md).
 static inline CRezItmBase* FirstStorage(CObjList& list) {
     return list.m_head;
 }
@@ -64,9 +59,6 @@ static inline void SetArchiveDirectory(CRezArchiveDirHashNode& node, CRezArchive
     node.m_archiveDirectory = directory;
 }
 
-// Retail's CRezArchive::ImportDirectoryTree frame (0x1674 via __chkstk) lays out six
-// path buffers of exactly 0x308 bytes; the three _splitpath component buffers
-// are _MAX_PATH.
 static const i32 REZ_SCAN_PATH_MAX = 0x308;
 
 // Byte-forced view of packed serialized storage.
@@ -152,8 +144,6 @@ void CRezArchiveEntry::Reset() {
 
 RVA(0x00139800, 0x6)
 GZ_ENUM_RETURN(RezTypeTag, u32) CRezArchiveEntry::GetTypeTag() {
-    // CRezArchiveType::m_typeTag is the generic symbol key; for a REZ entry it holds the
-    // entry tag, which is what this accessor exists to expose.
     return static_cast<RezTypeTag>(m_type->m_typeTag);
 }
 
@@ -332,9 +322,6 @@ CRezArchiveType::CRezArchiveType(
     m_typeTag = typeTag;
 }
 
-// cl's unwind helper for the member-init list above: an out-of-line copy of the
-// inline ~CRezEntryIdHash(), which is just `RemoveAll()` and so tail-jumps to the base.
-
 RVA(0x00139c80, 0x6c)
 CRezArchiveType::CRezArchiveType(
     i32 typeTag,
@@ -369,9 +356,6 @@ CRezArchiveType::~CRezArchiveType() {
     SetArchiveType(m_typeNode, NULL);
 }
 
-// ~CRezArchiveType is the first function to unwind m_nameIndex (this+0x24), so cl emits
-// that member's inline destructor here - a second, distinct `jmp RemoveAll`.
-
 RVA(0x00139de0, 0xd4)
 CRezArchiveDir::CRezArchiveDir(
     CRezArchive* archive,
@@ -398,9 +382,6 @@ CRezArchiveDir::CRezArchiveDir(
     m_parent = parent;
     SetArchiveDirectory(m_nameNode, this);
 }
-
-// The CRezArchiveDir ctor unwinds m_subdirectories (this+0x38) then m_types (this+0x40), and
-// cl emits both members' inline destructors behind it, in that order.
 
 RVA(0x00139ee0, 0x11e)
 CRezArchiveDir::~CRezArchiveDir() {
@@ -952,8 +933,6 @@ CRezArchive::CRezArchive(char* path, i32 readOnly, i32 createNew) : m_freeEntrie
     Open(path, readOnly, createNew);
 }
 
-// CRezArchive::m_entryPoolBlocks (this+0x88) - an empty inline destructor, so a lone `c3`.
-
 RVA(0x0013abc0, 0x13f)
 CRezArchive::~CRezArchive() {
 
@@ -1008,9 +987,6 @@ CRezArchive::~CRezArchive() {
 }
 
 // @early-stop
-// 300/300 instructions at 952/952 bytes with every block boundary on retail's offset;
-// the residue is 18 register NAMES in arm 1 (cl reuses the freed edi as the m_bucketCount
-// scratch where retail keeps eax/ecx/edx). 472 variants found nothing.
 RVA(0x0013ad00, 0x3b8)
 i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
     m_readOnly = readOnly;
@@ -1099,8 +1075,6 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
     m_largestResourceNameSize = header.m_largestResourceNameSize;
     m_largestCommentSize = header.m_largestCommentSize;
     m_isDataContiguous = header.m_isDataContiguous;
-    // Four separate guards: retail emits four inline `xor eax,eax; jmp ret` blocks,
-    // not the single short-circuit target a `||` chain produces.
     if (header.m_initialCarriageReturn != REZ_ARCHIVE_MAGIC_CR) {
         return 0;
     }
@@ -1358,9 +1332,6 @@ void CRezArchive::UnpackTag(RezTypeTag tag, char* destination) {
     if (!destination) {
         return;
     }
-    // The tag's four characters, most significant byte first. Byte-evidenced: retail
-    // addresses the PARAMETER's own slot (`mov cx,[esp+6]`, `mov cl,[esp+eax+3]`), so
-    // this is a view of `tag`, never the copy a union local would make.
     RecordBytes<RezTypeTag> tagBytes;
     tagBytes.m_rec = &tag;
     const u8* bytes = tagBytes.m_bytes;

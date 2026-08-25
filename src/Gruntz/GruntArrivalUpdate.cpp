@@ -39,20 +39,9 @@
 #include <string.h>
 
 // @early-stop
-// Residue is the second copy of the powered-up reset tail: retail emits the
-// stamina>=FULL arm (0xf0238, members RE-read because FindGridNeighbor sits in
-// front of it) and the stamina<FULL arm (0xf0288, the cached ecx/eax) as two
-// full `m_entranceActive/m_combatActive/m_neighborValid/m_poweredUp = 0` blocks
-// with their own epilogues; cl proves the second arm's two guards redundant
-// against the enclosing `poweredUp != 0` gate, drops them and cross-jumps what
-// is left onto the first block. Local outer guards + MEMBER inner re-tests
-// keep the second arm's guards (local-guard-member-retest-blocks-fold).
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
     char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
-    // POLARITY: retail's `sete cl` (0xf0184) leaves the body on the strcmp!=0 path -
-    // the arrival AI is SKIPPED for act "I". We had `!=`, which ran it only for "I".
-    // Same spelling as CBattlezMapConfig::ChooseIdleBehavior's four name gates.
     bool eqI = (strcmp(name, "I") == 0);
     if (eqI) {
         return 1;
@@ -62,10 +51,6 @@ i32 CGrunt::StepGauntletGruntBehavior() {
 
     i32 poweredUp = this->m_poweredUp;
     if (poweredUp != 0) {
-        // The gate pair is m_neighborValid (+0x21c) then m_combatActive (+0x218) -
-        // retail tests 0x21c and clears 0x21c (0xf01f8 / 0xf02c8). The two names were
-        // swapped here; the rest of the tree agrees with Grunt.h (store_offsets shows
-        // no other 0x218/0x21c divergence).
         i32 neighborValid = this->m_neighborValid;
         if (neighborValid == 0) {
             if (this->m_combatActive != 0) {
@@ -219,14 +204,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 CGrunt* slot =
                     m_triggerMgr
                         ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-                // The null test is the FIRST term of the &&-chain and is repeated after
-                // the block: retail jump-threads the leading `slot == NULL` straight to
-                // the SEEK store (0xf056c) and threads the in-block failures PAST the
-                // repeat (0xf03ce vs 0xf03d6). Hoisting it to its own early `break`
-                // loses the second copy.
                 if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
                     && slot->m_entranceCommitted != 0) {
-                    // 0x21c (m_neighborValid) is tested first here too - see above.
                     if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
                         break;
                     }
@@ -242,9 +221,6 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 }
                 m_defenderState = AISTATE_CHASE;
                 {
-                    // Retail expands the bounds test here (0xf03f8) and CALLS it
-                    // from the AISTATE_SEEK arm above (0xf06a0), so this arm takes
-                    // the inline PointInRect sibling.
                     CGruntzMgr* reg = g_gameReg;
                     const RECT& view = reg->m_world->m_level->m_mainPlane->m_planeViewRect;
                     i32 px = m_object->m_screenX;

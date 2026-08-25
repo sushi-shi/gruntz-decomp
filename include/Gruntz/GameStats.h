@@ -9,28 +9,12 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 
-// The four Battlez players. It is the dimension of every per-player table on
-// CGameStats - m_gruntzByPlayer, and the m_killsByPlayer /
-// m_flagCapturesByPlayer matrices - and the stride
-// the accessors index those matrices with.
-//
-// RETAIL OFF-BY-ONE, deliberately preserved. RecordFlagCapture, GetFlagCapture
-// and CountAllFlagCaptures all bound their arguments with `<= BZ_PLAYER_COUNT`
-// where the array needs `<`, so an index of 4 is accepted and written. The
-// generated code confirms it and our reconstruction is byte-identical to retail:
-// `cmp edx, 0x4; jg` for each axis, then `lea eax, [eax + edx*4]` - stride 4 -
-// and a store at [ecx + eax*4 + 0x98]. With both indices allowed to reach 4 the
-// linear index runs to 20 in a 16-entry table, so the shipped game overruns
-// m_flagCapturesByPlayer by up to five dwords. The guards keep the `<=` spelling
-// on purpose: writing `<` would move bytes AND hide the defect.
 GZ_ENUM_CONST_BEGIN(BattlezPlayerCount)
     BZ_PLAYER_COUNT = 4
 GZ_ENUM_CONST_END(BattlezPlayerCount)
 
 class CGameStats {
 public:
-    // Inline: `new CGameStats` in CGruntzMgr::Run expands to the allocation's
-    // null guard around a bare `call ?Reset@CGameStats@@QAEXXZ` (0x83450 @ 0xeb1).
     CGameStats();
 
     i32 ResetWithLevelRecords(QuestLevelStats* levelRecords);

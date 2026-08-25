@@ -285,12 +285,6 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 }
 
 // @early-stop
-// retail shares ONE return block for the first two guards and keeps a separate
-// inline `xor eax,eax; pop esi; ret` for each of the other three. `||` and the
-// mid-function `fail:` label (`goto L; if (b) goto ok; L:`) both enter the TOTAL
-// cross-jump regime (-> 50.13); with goto-fail our cl elides the second guard's
-// xor (IsLoaded's result sits in eax) and splits the pair - all seven xor levers
-// measured in docs/patterns/goto-fail-shares-one-exit-block.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
     CDDrawSurfacePair* a;

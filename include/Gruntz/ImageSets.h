@@ -10,21 +10,13 @@
 
 #include <stddef.h>
 
-// Serialized tile-collision image encodings. Their payload layouts prove the
-// names: one value for the whole image, inside/outside values for a rectangle,
-// or a full byte-per-tile pixel map.
 GZ_ENUM_CONST_BEGIN(TileImageSetKind)
     TILE_IMAGESET_UNIFORM = 1,
     TILE_IMAGESET_RECT = 2,
     TILE_IMAGESET_PIXELS = 3
 GZ_ENUM_CONST_END(TileImageSetKind)
 
-// Every kind's record opens with the same header and dimensions; `m_fields` is
-// the kind-specific tail, and for TILE_IMAGESET_PIXELS the w*h pixel payload
-// follows it. Each GetStride returns its own record's serialized size, so the
-// sizes below come out of this layout rather than out of literals.
 struct WwdTileImageRecord {
-    // CGameLevel::ReadImageSet dispatches on the first dword.
     i32 m_kind;
     i32 m_reserved4;
     i32 m_width;

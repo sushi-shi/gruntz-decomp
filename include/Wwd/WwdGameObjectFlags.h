@@ -26,8 +26,6 @@ GZ_ENUM_FLAGS_BEGIN(WwdGameObjectFlags, i32)
     WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION = 0x00800000,
     WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION = 0x01000000,
     WWD_GAME_OBJECT_FLAG_CULL_SOUND_WHEN_NOT_DRAWN = 0x02000000,
-    // Omitted from the child group's active passes: counting, dispatch,
-    // snapshot probing, and serialization.
     WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES = 0x04000000
 GZ_ENUM_FLAGS_END(WwdGameObjectFlags, i32)
 GZ_ENUM_FLAGS_OPS(WwdGameObjectFlags)

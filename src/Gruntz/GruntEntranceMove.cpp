@@ -132,13 +132,6 @@ DATA(0x0020ee64)
 static char s_MovingDeathTime[] = "MovingDeathTime";
 
 // @early-stop
-// Retail keeps a provably-dead arm that cl removes. After `cmp eax,0x22` it emits
-// BOTH `jl <toyCheck>` and a bare `jge <brick>` on the same live flags (0x67a16)
-// and then a second `xor eax,eax` / ret block for the unreachable fall-through;
-// cl proves the pair complementary and drops the jge and the block. Swapping the
-// two tests to retail's order does not reproduce it (cl still folds, and the brick
-// block moves to the tail), and re-reading m_entrancePickup in the second test is
-// worse still - it defeats the CSE that puts both compares on one register.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
@@ -206,9 +199,6 @@ clearMove:
 }
 
 // @early-stop
-// Retail defers the `sum` operand loads until after the two imuls; cl hoists
-// m_defenderRadius above the coordinate shifts. Size exact, 5 tail spellings
-// measured. (The dx/dy declaration order was a real bug: 80.39 -> 90.94.)
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
@@ -227,17 +217,6 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
 }
 
 // @early-stop
-// The animation-set name is assigned to `key` INSIDE each arm, not collected into a
-// `const char* base` and assigned once after the chain: retail pushes the literal in
-// the arm (0x67e2f `push 0x60e944`, 0x67e45 `push 0x60e034`) and tail-merges only
-// the `lea ecx,[esp+0x14] / call CString::operator=` pair, and it loads `found` into
-// edi in each arm rather than reading its home at the merge.
-// The wormhole block reads g_gameReg at each use, not through one hoisted local -
-// retail loads the global four times (`reloc_multiset` is what shows this).
-// Regalloc residue: retail takes EBP as a fourth callee-saved register and reserves
-// ONE frame dword (`push ecx`), cl takes three and reserves two (`sub esp,8`), so
-// retail has a spare register to park the constant 1 in (`mov [esi+0x25c],ebp`,
-// `cmp eax,ebp`) where cl spells every such site as an immediate.
 static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     CAniElement* result = NULL;
     MapLookup(map, name, result);
@@ -336,10 +315,6 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 }
 
 // @early-stop
-// Regalloc colour only: retail pins the tile flags in edi where cl uses ebp,
-// so retail cannot CSE grid->m_width across the two range checks. The tile-cell
-// read-modify-writes now go through a materialised BrickzCell* the way retail
-// addresses them (docs/patterns/rmw-byte-field-materialises-the-cell-pointer.md).
 RVA(0x00067f80, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
@@ -530,10 +505,6 @@ i32 CGrunt::StartBombGruntRun() {
 }
 
 // @early-stop
-// Branch sequences AGREE (24/24, 1/1 ret).  Residue is the frame: retail opens
-// `sub esp,0xc` where cl emits `push ecx`, so retail carries two 4-byte slots it
-// never reads (only [esp+0x20], the reused `enable` arg slot, is live) and every
-// local reference is 8 bytes higher.
 RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     if (enable != 0) {
@@ -929,13 +900,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     i32 xbound = b->m_width;
     i32 tileY = h->m_screenY >> TILE_SHIFT_PX;
     i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
-    // NOT a direction and NOT a TileCollisionKind: BrickzCell int 3 is m_tileId,
-    // the raw WWD tile-image index. That is why the same numbers are dispatched
-    // twice below - CState::m_levelType is the AREA number (levelIndex / 4 + 1,
-    // "AREA%i"), so areas 1-4 and 5-8 ship different tilesets and the id space is
-    // per-tileset with no engine-side names. The DIRECTION lives in the arms: each
-    // shoreline image nudges the dying grunt half a tile toward its own edge. The
-    // area-1-4 half agrees value-for-value with CRollingBall::Update's sink table.
     i32 tileId;
     if (static_cast<u32>(tileX) >= static_cast<u32>(xbound)
         || static_cast<u32>(tileY) >= static_cast<u32>(b->m_height)) {
@@ -1090,12 +1054,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 }
 
 // @early-stop
-// 144 blocks, retail's 144, and the branch MNEMONICS now agree; what differs is
-// where four of them land - #4, #9, #64 and #65 go to retail's blk82 and to our
-// blk79, i.e. cl merged two of the shared `return 0` exits that retail keeps
-// apart.  Constant-register allocation also differs: retail enregisters -1 in
-// ebp from the second strcmp on (`sbb eax,ebp`, `push ebp`, `mov [esi+0x1a0],ebp`)
-// where cl spells the immediate and reuses the ebx zero-register.
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
@@ -1323,9 +1281,6 @@ void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
     }
 }
 
-// The out-of-line half of the bounds test: 30 retail call sites reach it through ILT
-// thunk 0x1127, while the inline PointInRect sibling expands at the rest. Defined
-// here with the AtChecked/FindAnimation/Apply group this TU's tail contributes.
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     return PointInRect(r, x, y);

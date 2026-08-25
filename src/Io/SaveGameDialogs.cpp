@@ -158,8 +158,6 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
     switch (msg) {
         case WM_INITDIALOG:
             if (g_slotState == NULL) {
-                // EndDialog's nResult is an int; retail passes the slot pointer
-                // through it.
                 MsgParam ret;
                 ret.m_slot = g_slotState;
                 EndDialog(hDlg, ret.m_lparam);
@@ -189,8 +187,6 @@ BOOL CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     switch (msg) {
         case WM_INITDIALOG:
             if (g_slotState == NULL) {
-                // EndDialog's nResult is an int; retail passes the slot pointer
-                // through it.
                 MsgParam ret;
                 ret.m_slot = g_slotState;
                 EndDialog(hDlg, ret.m_lparam);

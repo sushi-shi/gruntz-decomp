@@ -59,10 +59,6 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 // @early-stop
-// residue is 4 insns at the scroll-origin conversion: retail loads both ints into
-// registers and SPILLS them to frame slots before `fild`, where cl filds straight
-// from `pd->scroll{X,Y}`. Reading them earlier reproduces the spill but at the wrong
-// place (count matches, 95.43); a POINT aggregate is scalar-replaced away.
 RVA(0x00161640, 0x3a2)
 i32 CDDrawWorkerHost::Read(
     const WwdPlaneHeader* pd,
@@ -173,9 +169,6 @@ i32 CDDrawWorkerHost::Read(
 }
 
 // @early-stop
-// scheduler placement of the tileGrid new[]'s `shl edx,2; push edx`: retail slots
-// the pair between m_scrollScaleX's fmul and fstp, cl after m_scrollScaleY's fmul. Count-local
-// hoists, dim order, statement order and islands all inert; size already equal.
 RVA(0x001619f0, 0x1f7)
 i32 CDDrawWorkerHost::InitGeometry(
     i32 tileColumns,
@@ -259,11 +252,6 @@ void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
 }
 
 // @early-stop
-// scratch-register rotation from the head: cl caches m_flags in ecx (freed by
-// `mov esi,ecx`) where retail picks edx, so wrapX/wrapY color ebx/ebp instead of
-// retail's ebp/ebx and the wrapY `and` is destructive (`and ecx,8; mov ebp,ecx`)
-// vs retail's cache-preserving `mov ebx,edx; and ebx,8`. Islands, decl orders,
-// renames and member-read spellings all inert on the rotation.
 RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::UpdatePlaneViewRect() {
     CDDrawWorkerHost* p = this;
@@ -359,9 +347,6 @@ void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
 }
 
 // @early-stop
-// Register/schedule residue only: retail computes the first product after the
-// callee-save pushes (edi) where cl hoists it above them (edx), and the halving
-// loop counts in esi vs our edi. No reloc or branch divergence.
 RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     m_planePixelWidth = m_tileColumns * tileWidthPx;
@@ -420,9 +405,6 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     } while (0)
 
 // @early-stop
-// 105/105 blocks align; eight setup/DRAW_CELL blocks carry 1-5 extra insns of
-// slot/colouring drift (cl packs the scroll-window setup tighter than retail).
-// Pure register/slot residue spread across the whole frame.
 RVA(0x00162010, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
@@ -532,10 +514,6 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
 }
 #undef DRAW_CELL
 
-// The by-value u8 parameters are load-bearing.  Reading the channels off a
-// PALETTEENTRY& inside the helper makes cl evaluate green before red; passing
-// them in restores retail's red/green/blue order.  Leaving the shift COUNTS as
-// plain i32 (no (u8) cast) is what keeps the truncation single, at the return.
 static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
     return static_cast<u16>(
         (static_cast<u8>(r >> g_rDown) << g_rUp) | (static_cast<u8>(g >> g_gDown) << g_gUp)
@@ -552,12 +530,6 @@ i32 CDDrawWorkerHost::Prune() {
 }
 
 // @early-stop
-// at the first delete site retail CALLS ??1CWwdGridIter (0x163a10) for the m_iter
-// sub-object where cl inlines the ??_7CObject stamp; at the second (Init-fail) site
-// BOTH inline the stamp, so the body was header-visible and the call form is an
-// inliner-internal choice. Out-of-lining the dtor breaks site2 and the CObject
-// vtable ownership (wwdspatialmgr, vtables_library.csv); a FreeScroll() wrapper
-// regresses further.
 RVA(0x001628f0, 0x1fc)
 i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     if (base == NULL) {
@@ -636,12 +608,6 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 }
 
 // @early-stop
-// cl tail-merges our three identical early-exit arms (xy-range, empty-logic,
-// logicTemplate-null) into ONE `delete obj; return used` block; retail kept TWO copies
-// (0x162dc3 shared by the logic pair via jump-threading, 0x163281 for xy) whose
-// schedules differ only in the vtbl-load slot. Guarded-lookup restructures drop
-// 110 B (arm dedup goes further) and ptrdiff/delete-first respellings are inert
-// or worse; the downstream reg rotation follows from the merge.
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
@@ -877,14 +843,6 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     return scroll->ActivateAt(x, y);
 }
 
-// TU-completeness: retail defined a CLASS TYPE in this slot. The .text is gapless
-// (ActivateVisibleObjects 0x163300+0x70 abuts this fn; functions.tsv agrees), so the
-// definition emitted zero bytes and its content is unrecoverable. Probe matrix against
-// the TU's three parity victims (this fn / Save / Load, baseline wrong/exact/exact):
-// `struct X {};` or `struct X { i32 a; };` here flips ONLY this fn -> all three
-// byte-exact simultaneously; a `struct X;` fwd-decl or typedef instead flips Load,
-// a static fn flips Save+Load. Shipping any probe is banned (.cpp-local-views
-// ratchet / fitted artifact), so this parks until the real type is recovered.
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
@@ -1096,10 +1054,6 @@ i32 CDDrawWorkerHost::CanSave(CFileMemBase* s) {
     return s != NULL;
 }
 
-// canonical-imul parity note: the gridW*gridH imul pair is TU-state sensitive
-// (docs/patterns/commutative-operand-order-is-canonical.md) and rides the same
-// missing class-type definition as DeactivateDistantObjects (see its dossier);
-// the struct probe there keeps this fn exact while fixing that one.
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == NULL) {

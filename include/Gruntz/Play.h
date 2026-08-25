@@ -392,8 +392,6 @@ public:
     i32 m_stepCountdown;
     i32 m_focusPlayerIndex;
     MidiSequence* m_savedMusicSequence;
-    // retail `new CPlay` is push 0x520 (CGruntzMgr::TransitionState @0x8b960);
-    // the ctor never touches this tail word.
     i32 m_reserved51c;
 
     i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
@@ -410,7 +408,6 @@ void SetPlayerColorAvailable(ColorTint color, i32 available);
 i32 IsPlayerColorAvailable(ColorTint color);
 void ResetPlayerColorAvailability();
 
-// Per-world death cause for pit/liquid tiles, set from the AREA%i bank.
 extern GruntDeathType g_areaPitDeath;
 
 extern i32 g_playActive;
@@ -419,8 +416,6 @@ extern i32 g_flipProfileMs;
 extern i32 g_playerColorAvailable[TINT_COUNT];
 
 extern i32 g_lastLevelNum;
-// Per-world death cause a StaticHazard inflicts; copied into the hazard
-// object's WWD `Smarts` slot at construction.
 extern GruntDeathType g_areaHazardDeath;
 extern i32 g_levelBias100;
 extern char* g_colorNames[];
@@ -470,18 +465,6 @@ inline CPlay::~CPlay() {
 }
 
 // @early-stop
-// retail copy 0x0008c9d0 (emitted by gruntzmgr; pin there).
-// The nine ClockInterval members recover retail's +0,+8,+4,+0xc zero-store
-// order. The remaining residue is scheduling around the three following
-// member ctors: retail issues each receiver LEA between the interval's low and
-// high stores, while this TU schedules the LEA before all four stores. Only the
-// intervals FOLLOWED BY a member-ctor call split that way; two consecutive
-// intervals stay whole on both sides, so the moved instruction is the next
-// receiver's setup, not the expansion.
-// Measured byte-identical, so nobody re-runs it: writing the ctor as two chained
-// assignments (`m_interval.m_lo = m_start.m_lo = 0;`) instead of four statements.
-// The front end normalizes them, so the four-statement form carries no cost and
-// the two-statement form buys no inline budget either.
 inline CPlay::CPlay() {
     m_returnToMenuOnComplete = 0;
     m_completedFinalLevel = 0;

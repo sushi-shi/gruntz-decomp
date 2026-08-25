@@ -40,10 +40,6 @@
 #include <string.h>
 
 // @early-stop
-// Keeping the entry power state as a distinct local preserves retail's low-stamina
-// re-test; reading the member directly lets cl fold it.  We still emit seven returns
-// against retail's six because the first empty DRAIN_COORDS path gets a duplicate
-// epilogue, and the frame is one dword wider than retail's.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = ANIMATION_ACT_EQUALS("I");

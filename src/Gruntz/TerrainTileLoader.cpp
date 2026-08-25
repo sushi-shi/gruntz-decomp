@@ -62,7 +62,6 @@ i32 CTriggerMgr::LoadTileArrivalFx(
         cellType = TILEKIND_PASSABLE;
     } else {
         CTileImageSet* tc = static_cast<CTileImageSet*>(grid->m_imageSets.GetAt(cell & 0xffff));
-        // Ingest: the raw WWD attribute byte for this cell.
         cellType = tc->GetCollisionAt(0, 0);
     }
 
@@ -103,9 +102,6 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     state->m_tileTriggers->RemoveIdleLogic(found);
                     return 1;
                 }
-                // Retail re-reads the cell off the plane rather than reusing the
-                // value the head classified, and writes through g_gameReg's copy
-                // of the world while reading through this->m_world.
                 CGruntzMgr* reg = g_gameReg;
                 i32 uncovered = m_world->m_level->m_mainPlane->m_tileHandles
                                     [m_world->m_level->m_mainPlane->m_tileRowOffsets[tileY] + tileX]
@@ -218,8 +214,6 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
         case PICKUP_GOOBER:
             if (cue == WWDDRAW_TOOL_APPLIES || cue == WWDDRAW_NO_ANIMATION) {
-                // Retail primes the award with CTriggerMgr::PlacePuddle's own
-                // default, so a puddle-less arrival still credits 25.
                 i32 gaugePoints = 25;
                 i32 removed = 0;
                 POSITION pos = m_baseList.GetHeadPosition();
@@ -626,7 +620,6 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             i32 waterX = unit->m_object->m_screenX;
             i32 waterY = unit->m_object->m_screenY;
-            // Retail spells the viewport test out here rather than calling PtInRect.
             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
                 CWwdSpriteObject* splash = m_world->m_childGroup->CreateSprite(
                     0,

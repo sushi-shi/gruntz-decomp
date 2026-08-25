@@ -83,9 +83,6 @@ DATA(0x00244c54)
 i32 g_curPlayer = 0;
 
 // @early-stop
-// The three cumulative runs are settled (retail restarts the running total at [3],
-// [7] and [17]).  What is left is the rotating temp register of the accumulate chain:
-// retail cycles edx/ebp/ecx where cl cycles ebp/ecx/edx, one phase out of step.
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
@@ -260,8 +257,6 @@ i32 CStatusBarMgr::RestoreStatusBar() {
 }
 
 // @early-stop
-// One register-choice rotation; flips to exact under TU-state (hist 99.82 at
-// the same fingerprint, reproduced by leading-declaration probe states).
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != STATUSBAR_HIDDEN) {
@@ -375,10 +370,6 @@ static __inline void HiPost(i32 cmdId) {
 }
 
 // @early-stop
-// Retail loads `y` into esi in the prologue region and reloads m_barSprite into edx;
-// cl swaps the pair (sprite in esi, y loaded late into edx). Same 45 bytes, same
-// instruction selection. Permuter exhausted: 25 graded declaration counts, 80
-// tu_state_* islands and 7 body spellings, every cell 96.6875.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == NULL) {
@@ -406,9 +397,6 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 }
 
 // @early-stop
-// Cross-jumping: retail shares one more PostMessageA tail than cl does, because it
-// schedules the `g_gameReg->m_gameWnd` load AFTER the two argument pushes and cl
-// hoists it above them, so cl's shareable suffix starts one instruction later.
 RVA(0x000fe910, 0xc30)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     CStatusBarItem* w = HitTestRects(x, y);
@@ -778,7 +766,6 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
 }
 
 // @early-stop
-// Sub-point scheduling residue only; probe-inert (C1 state).
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     if (g_gameReg->m_soundEnabled != 0) {
@@ -910,10 +897,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     AddTabItem(0, dockLeft);
 
-    // Same vertical band as dockLeft: retail does not recompute the pair here, it
-    // RELOADS the two frame slots dockLeft's `by + 0xad` / `by + 0xb9` were CSE'd into
-    // (`mov eax,[esp+0x34]` / `[esp+0x3c]` at +0x138), so the two dock buttons sit side
-    // by side rather than stacked.
     CSBI_RectOnly* dockRight = new CSBI_RectOnly;
     if (!dockRight->Setup(
             this,
@@ -944,9 +927,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     AddTabItem(0, hide);
 
-    // The five tab buttons share ONE band, `by + 0x82 .. by + 0xad` - retail computes
-    // `by + 0x82` once here and reloads dockLeft's `by + 0xad` slot for the bottom, and
-    // `by + 0x99` appears in no immediate anywhere in the function (immediates sieve).
     CSBI_MenuItem* statzTab = new CSBI_MenuItem;
     if (!statzTab->SetupImage(
             this,
@@ -1845,8 +1825,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(2, it);
-            // CSBI_WellGoo overrides the 7-arg base Setup (vtable slot 2), not
-            // CSBI_Image::SetupImage - retail dispatches through [edx+0x8] here.
             goo = new CSBI_WellGoo;
             if (!goo->Setup(
                     this,
@@ -2078,9 +2056,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(3, mach);
 
             it = new CSBI_Image;
-            // Retail does not compute this one: at +0xea8 it RELOADS the slot the first
-            // TAB_RESOURCE image's `by + 0x135` was CSE'd into, and `by + 0x1a6` (what
-            // used to stand here) appears in no immediate anywhere in the function.
             if (!it->SetupImage(
                     this,
                     code,
@@ -2245,11 +2220,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 CSBI_WarlordHead** slot = m_warlordHead;
                 i32 pi = 0;
                 do {
-                    // Indexed, not a walking pointer: retail's exit test is the
-                    // strength-reduced BYTE offset (`add eax,0x238; cmp eax,0x8e0;
-                    // jl`), which cl only produces from `m_players[pi]` - a
-                    // `p < m_players + 4` pointer guard reloads g_gameReg and
-                    // compares unsigned against a computed limit instead.
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
@@ -2343,11 +2313,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                     m_statObj[i] = arrow;
                     AddTabItem(1, arrow);
-                    // Both arms take the same `0` (retail pushes it BEFORE the
-                    // branch); only the entry point differs - a sampled stat gets
-                    // the alternate arrow art (0xea170), an unsampled one the
-                    // plain one (0xea0f0).  This arm was empty, so a sampled stat
-                    // toggle kept whatever direction the ctor left.
                     if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
                         arrow->SetSampledDirection(m_position, 0);
                     } else {
@@ -2664,7 +2629,6 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
 }
 
 // @early-stop
-// Sub-point scheduling residue only; probe-inert (C1 state).
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 
@@ -2779,9 +2743,6 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     }
     sp->m_state = SLOT_FILLING;
 
-    // The slot tail is the {startTime, interval} clock pair SyncClockPair walks;
-    // retail arms it through one pair pointer (a fresh `&m_slots[idx]` lea with
-    // the member offset index-folded), not through sp's member displacements.
     i64* clock = &m_slots[idx].m_startTime;
     clock[1] = INT_MAX;
     clock[0] = g_frameTime;
@@ -2849,8 +2810,6 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
 }
 
 // @early-stop
-// One scheduling slot: retail emits `mov ecx,edi` (the LoadCameraSprite receiver)
-// after the first m_cameraTargetIdentity store, cl before it. 5 spellings measured.
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
@@ -3195,8 +3154,6 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     rowClock[1] = g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltDelay", 0x64);
                     rowClock[0] = static_cast<u32>(g_frameTime);
                 }
-                // Retail's `cmp eax,0x26 / jne 0x1063e8` skips ONLY the release block:
-                // the counter re-read and this if/else are common to both paths.
                 if (leftMachine->m_counter > 0x2a) {
                     SetLeftRezMachineAnimation(
                         1,
@@ -3404,9 +3361,6 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
 }
 
 // @early-stop
-// Frame 0xc against retail's 0x10: the BELT_FALLING_OFF cue block spills its
-// g_soundVolumePercent copy and binds both replay-clock fields, where the two earlier
-// copies of the same source keep them in registers - arm-local pressure.
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 rectFlag = 0;
@@ -3541,10 +3495,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
         case BELT_FALLING_OFF: {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
                 m_machineItemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                // RETAIL'S TYPO, kept: the shipped EXE's string table carries both
-                // "(FallingItemSpeed" and "FallingItemSpeed" as separate strings, so
-                // this lookup always misses and takes the default. Correcting it would
-                // drop a string from .rdata and stop matching.
                 m_machineItemRect.bottom +=
                     g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 rectFlag = 1;
@@ -3560,10 +3510,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             i32 row;
             CSbiHlRow* cell = &m_resourceSlots[col * 4 + 3];
-            // The row guard is the LOOP CONDITION, not a trailing `if (row < 0) break;`:
-            // cl rotates `for (row = 3; row >= 0; ...)` into retail's `jne exit` / `jge
-            // top` pair, where a `while (state == IDLE)` head duplicates the state test
-            // at the bottom (the extra branch).
             for (row = 3; row >= 0; row--, cell--) {
                 if (cell->m_state != IDX(HLROW_IDLE_CYCLE)) {
                     break;
@@ -3617,9 +3563,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 }
 
 // @early-stop
-// Frame and instruction selection are retail's; the residue is which callee-saved
-// pair the x/y parameters take (retail edi/ebx, cl ebx/ebp), which rotates every
-// operand below the GetDwordDef call.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     m_fallingItem = item;
@@ -3713,9 +3656,6 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             clock[1] = delay;
             clock[0] = g_frameTime;
         }
-        // Retail's `mov ecx,1` at +0x1d5 is the JOIN of the timer test's taken and
-        // fall-through edges, so the flag is set whenever the item is active - not
-        // only when the step ran.  That is why it never needs a frame slot.
         stepped = 1;
     }
 
@@ -3831,16 +3771,6 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     TryActivate();
 }
 // @early-stop
-// The four `range == 0` WapRand expansions shift the LCG seed with `sar` where retail
-// uses `shr`, against the same `holdrand` relocation as the four `% range` arms, which
-// are `sar` on both sides. NO spelling of the arm can produce that: cl 5.0 takes the
-// shift's signedness from the shifted operand's declared type only, and 16 measured
-// spellings (result casts, an unsigned return type, an unsigned intermediate, `& 1u`,
-// `% 2u`, the macro form, a mask discarding every sign bit) all keep `sar` - see
-// docs/patterns/shift-signedness-is-the-operands-declared-type.md. So retail's coin
-// site reads the seed through an UNSIGNED lvalue, which needs the seed to leave
-// GetRandomNumber's function-local static that 12 game TUs share. The rest is register
-// rotation around the SetRect call.
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
@@ -3992,9 +3922,6 @@ insert:
     return 1;
 }
 
-// Retail serializes every {i64 last; i64 interval} pair through one inlined
-// helper: the base address is hoisted into a register before the mode test and
-// the second field reached with `add reg,8`.
 static inline void SyncClockPair(CFileMemBase* s, SerialMode mode, i64* pair) {
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
@@ -4008,13 +3935,6 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode mode, i64* pair) {
 }
 
 // @early-stop
-// Nothing is missing: `--branches --diff` reports the same branch and ret counts, and
-// the only reloc delta is the __except_list/fs:0 typing artifact. Retail spills `this`
-// to [esp+0x10] and re-reads typeId/payload from their parameter homes at every
-// SerializeFields site, which leaves ebp for the loop counters; cl instead enregisters
-// payload in ebp and
-// spills the counters. Reusing one counter variable across the loops is byte-neutral
-// (measured), so the allocation choice is not decl-scope-driven.
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::SerializeDispatch(
     CFileMemBase* s,
@@ -4451,9 +4371,6 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 // @early-stop
-// Frame and branch skeleton are retail's; the residue is the register pair the
-// fragment table's two constants are materialised into (retail ecx/edx, cl edx/edi)
-// across all four arms.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = owner;
@@ -4678,7 +4595,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
 
     if (m_quitConfirmationActive != 0) {
-        // every child rect below is relative to this dialog's top-left corner
         cx -= 0x5e;
         cy -= 0x3c;
 
@@ -4734,7 +4650,6 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    // every child rect below is relative to this dialog's top-left corner
     cx -= 0x8e;
     cy -= 0x48;
 

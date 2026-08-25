@@ -54,12 +54,6 @@ static const i32 TILE_CLEAR = -1;
         }                                                                                          \
     } while (0)
 
-// Same probe, but the grid fetch goes through the out-of-line accessor instead of
-// expanding the two-level index in place.  Retail mixes the two spellings inside one
-// body: CGameLevel::FreeMove (0x15eb00) expands the index at its first two probes and
-// `call`s CDDrawWorkerHost::GetTileHandle at the third.  cl 5.0 cannot produce both
-// from one spelling - an inline GetTileHandle expands at every site and emits no
-// out-of-line copy at all, which is why both forms exist here.
 #define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
     do {                                                                                           \
         i32 py_ = (Y);                                                                             \
@@ -108,8 +102,6 @@ struct LevelDims {
 };
 
 GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)
-// ToggleObjectLayer selects the penultimate plane only in this layout;
-// layouts with fewer planes select their final plane.
     LEVEL_EXTENDED_PLANE_COUNT = 4
 GZ_ENUM_CONST_END(LevelPlaneLayout)
 
@@ -119,9 +111,6 @@ public:
 
     i32 ReadWwdHeaderName(const char* name, char* nameOut);
 
-    // A member: LoadWwd passes its own `this` in ECX (`mov ecx,ebp` with
-    // ebp = the prologue's `mov ebp,ecx`) at the sole call site, and the body
-    // never reads it - so the receiver is invisible in the callee's own bytes.
     Bytef* InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
 
     virtual ~CGameLevel() OVERRIDE;
@@ -144,11 +133,6 @@ public:
 
     CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
-    // The scroll/zoom parameter block's defaults. TWO entities, both in retail:
-    // this inline (expanded at the six sites in GameLevel.cpp) and the dead
-    // out-of-line ResetSpatialDefaults below (0x15d170, zero callers in the image).
-    // cl 5 cannot produce both shapes from one definition - see
-    // docs/patterns/two-shapes-need-two-entities.md.
     void SetSpatialDefaults() {
         m_defaultActiveGridCellSize[0] = 500;
         m_defaultActiveGridCellSize[1] = 250;
@@ -164,20 +148,8 @@ public:
         m_smallActiveRegionSize.h = 576;
     }
 
-    // Out-of-line, and retail's copy is never called: nothing in .text or .data
-    // references 0x15d170. Kept because /INCREMENTAL (the ILT thunk band) implies
-    // /OPT:NOREF, so retail's linker shipped it.
     void ResetSpatialDefaults();
 
-    // Half-open bounds test. Retail expands this inline and, separately, calls the
-    // out-of-line PointInBounds below (0x6b330, 30 call sites through ILT thunk
-    // 0x1127). LoadGruntDeathAnimations holds 12 calls AND one expansion in one
-    // body, which one inline definition cannot produce: cl 5 never declines this
-    // body (60 sites probed) and emits no COMDAT when it inlines everywhere.
-    // The &&-chain, not `if (...) return 1; return 0;`: the chain is what cl
-    // MATERIALIZES into retail's `mov reg,1 / jmp / xor reg,reg` at an inlined
-    // call site (CStatusBarMgr::HitTestRects 0xffcb0), where the if-form
-    // collapses into bare branches.
     static i32 PointInRect(const LevelCoordRect* r, i32 x, i32 y) {
         return x < r->right && x >= r->left && y < r->bottom && y >= r->top;
     }

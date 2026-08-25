@@ -271,11 +271,6 @@ struct CNetSession {
 
     void BuildGruntzCrcInfo();
 
-    // No class-level operator new/delete: retail's unwind funclet for the
-    // `new CNetSession()` in CMulti::CreateSession calls the GLOBAL
-    // ??3@YAXPAX@Z, which a class-level forwarder cannot produce - cl emits
-    // ??3CNetSession@@SAXPAX@Z and points the funclet at that instead.
-
     CNetSession() {
         InitializeFields();
     }
@@ -420,8 +415,6 @@ public:
 
     i32 EnumerateSessions(DWORD timeoutMs, DWORD flags);
 
-    // Retail mangles the lobby argument as PAX; the body recovers the
-    // IDirectPlayLobby identity before dispatching Connect.
     i32 Initialize(void* lobby, NetGuid appGuid);
 
     CNetSessionListNode* AddSessionListing(LPCDPSESSIONDESC2 sessionDesc);

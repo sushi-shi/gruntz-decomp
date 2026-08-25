@@ -87,15 +87,10 @@ public:
 
     void Post(i32 code);
     i32 OpenBattlezSetup();
-    // wParam is an ErrorStringId (a string-table resource id - ShowError feeds
-    // it to LoadStringA); lParam is a bare per-call-site tag that ShowError
-    // prints verbatim as "(%i)", so it has no domain. See ErrorStringId.h for
-    // the CMD_*/IDS_* conflation the call sites currently carry.
     void ReportError(WPARAM wParam, LPARAM lParam);
 
     void XorLiveObjectFlags(i32 mask);
 
-    // TmDeflectStep is the only retail caller of the out-of-line COMDAT.
     RVA(0x00075ad0, 0x4)
     CGruntzMapMgr* GetTileGrid() {
         return m_tileGrid;
@@ -277,22 +272,12 @@ public:
 
     i32 PlayMovieEntry(i32 entryId);
 
-    // A member: HandleCommand's only call site materialises `this` in ecx
-    // (`push <url> / mov ecx,esi / call`), which is the __thiscall sequence; the body
-    // never reads `this`, and __thiscall with one stack argument returns `ret 4` just
-    // as the __stdcall spelling did.
     i32 LaunchWebBrowser(char* url);
 
-    // Retail reproduces the whole tagSIZE at every `.cx`/`.cy` use - an 8-byte frame
-    // temp whose unread half is a dead store - so the size arrives by value.
     tagSIZE GetModeSize() {
         return m_modeSize;
     }
 
-    // Retail reaches m_cheatMgr through this accessor, not the member: cl emits it
-    // out of line as the 4-byte COMDAT `mov eax,[ecx+0x44]; ret` (0x20f20, won by
-    // chatboxowner) and CChatBoxOwner::HandleTextInputKey calls it through the ILT
-    // thunk 0x167c. One call site in the whole game.
     RVA(0x00020f20, 0x4)
     CCheatMgr* CheatMgr() {
         return m_cheatMgr;

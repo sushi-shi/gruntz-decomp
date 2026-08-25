@@ -445,7 +445,6 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
             break;
         case PLAYER_SLOT_ALL:
             c = b = a = 1;
-            // falls through to PLAYER_SLOT_0's d = 1
         case PLAYER_SLOT_0:
             d = 1;
             break;
@@ -887,8 +886,6 @@ i32 CTileTriggerContainer::SerializeTriggerLogic(
 }
 
 // @early-stop
-// residue: two switch arms whose identical tails cl emits in full where retail
-// cross-jumps them into the family's single copy.
 RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::DeserializeLogic(
     CFileMemBase* reader,
@@ -902,7 +899,6 @@ void* CTileTriggerContainer::DeserializeLogic(
     if (mode != SERIAL_LOAD) {
         return NULL;
     }
-    // Ingest: the archive stores the logic tag as a raw dword.
     TrigLogicId id;
     reader->Read(&id, sizeof(id));
     switch (id) {
@@ -1008,7 +1004,6 @@ void* CTileTriggerContainer::DeserializeLogic(
 
                 CTileImageSet* rec =
                     static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
-                // Ingest: the raw WWD attribute byte for this cell.
                 tileKind = rec->GetCollisionAt(0, 0);
             }
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {

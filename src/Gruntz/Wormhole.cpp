@@ -306,10 +306,6 @@ i32 CGruntPuddle::SerializeDispatch(
 }
 
 // @early-stop
-// Sole residue: the two tile-snap statements. Retail colours the m_object
-// pointer ecx and the loaded coordinate eax, which lets cl pick the 2-byte
-// `and al,0xe0`; we get the pair the other way round and spend `and ecx,-0x20`.
-// docs/patterns/inplace-tile-snap-register-pair-is-canonical.md.
 RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_armClock = 0;
@@ -367,8 +363,6 @@ i32 CTeleporter::SerializeDispatch(
     CGameObject* object
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
-    // one cursor over the adjacent m_armClock/m_interval pair - retail hoists it
-    // above the arms and advances it, rather than re-lea'ing each member.
     i64* clocks = &m_armClock;
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {

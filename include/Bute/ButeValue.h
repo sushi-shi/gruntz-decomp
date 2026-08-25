@@ -83,9 +83,6 @@ struct CButeValue {
         payload.m_point = new ButeIntPoint(*src);
     }
 
-    // Parse-arm ctors: ParseAttributeFile's retail arms are `new CButeValue(type, v)`
-    // new-expressions - each EH state guards the outer cell across the inlined
-    // inner allocation (unwind map @0x604d90: ten alloc states, one per arm).
     CButeValue(ButeType t, i32 v) {
         type = t;
         payload.m_int = new i32(v);
@@ -126,14 +123,6 @@ struct CButeValue {
 
 RVA(0x00172040, 0x120)
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
-    // One arm per ButeType, each through the payload's REAL type - the retail jump
-    // table (0x17213c) has nine entries over eight bodies, and the one shared pair
-    // is cl's own fold of BUTE_FLOAT onto BUTE_DWORD (a float-to-float assignment
-    // lowers to the same integer `mov`, so writing the arm as `DWORD` only erases
-    // the type).  Each body owns its return epilogue; a shared return is C2-equivalent
-    // here but changes the caller's C1 inline accounting.  Every payload is copied as
-    // a whole object so both pointers stay in registers - a per-field copy makes cl
-    // reload other->payload for each word.
     switch (type) {
         case BUTE_INT:
             *payload.m_int = *other->payload.m_int;
@@ -166,13 +155,6 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     return this;
 }
 
-// One `delete` per ButeType, each through the payload's REAL type.  Retail's arm
-// bodies prove both halves of this shape: only the BUTE_STRING arm null-tests the
-// pointer, so the other eight payload types have TRIVIAL destructors, and cl
-// tail-merges the eight identical arms back into the 4-body / 9-entry jump table
-// at 0x1721b4.  Transcribing that FOLD as four merged arms is what cost the whole
-// Set<T> family ~11 points of /Ob1 inline accounting.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 inline CButeValue::~CButeValue() {
     switch (type) {
         case BUTE_INT:

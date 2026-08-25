@@ -44,15 +44,10 @@ class SoundStream;
 class CDDrawSurfaceMgr;
 class CFileMemBase;
 
-// The archive's per-object callback: (ctx, stream, phase, type id, payload).
 typedef i32(__cdecl* HP_Callback)(CDDrawSurfaceMgr*, CFileMemBase*, SerialMode, LogicTypeId, void*);
 
 typedef i32(__cdecl* SurfaceRestoreFn)();
 
-// Options retained by CDDrawSurfaceMgr::Init and consumed by the renderer,
-// sound setup, animation cursor, and worker loader. The bit positions are
-// recovered from those consumers; 0x200 and above remain unenumerated because
-// no surface-manager consumer establishes their meaning.
 GZ_ENUM_FLAGS_BEGIN(DDrawSurfaceMgrFlags, i32)
     SURFACEMGR_SKIP_OVERLAY = 0x01,
     SURFACEMGR_TRIPLE_BUFFER = 0x02,

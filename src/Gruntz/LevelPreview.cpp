@@ -183,8 +183,6 @@ void CPreviewState::LoadLevelPreviewScreen() {
         if (h->m_silentMode == 0) {
             SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", found);
-            // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
-            // in a register across the m_lastPlayTimeMs store.
             SoundCue* p = found;
             if (p != NULL) {
                 i32 volumePercent = g_soundVolumePercent;

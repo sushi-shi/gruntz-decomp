@@ -121,7 +121,6 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD)
     SetObjectFlags(0x2000002);
 
-    // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
     i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].m_color);
     if (cfg < 0 || cfg >= TINT_COUNT) {
@@ -518,8 +517,6 @@ i32 CWarlord::SerializeDispatch(
     }
 
     {
-        // retail walks each stamp/window pair with one cursor (`add edi,8` /
-        // `add ebp,8` between the two calls), not two member addresses.
         i64* cooldown = &m_cooldownTimer.m_start;
         switch (mode) {
             case SERIAL_LOAD:

@@ -42,7 +42,6 @@ RVA_DYNINIT(0x000afdb0, 0x1f, CActRegPool<CRollingBall>::s_table)
 template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-// Half a tile per RollingBallTimePerTile ms - retail's divisor at 0x5ea3e8.
 DATA(0x001ea3e8)
 static const double kRollingBallSpeedNum = 16.0;
 
@@ -211,7 +210,6 @@ i32 CRollingBall::Update() {
             }
             CDDrawWorkerHost* pl = lvl->m_mainPlane;
             i32 raw = pl->m_tileHandles[pl->m_tileRowOffsets[tileY] + tileX];
-            // A TileCollisionKind: the devirtualised CTileImageSet::GetCollisionAt(0, 0).
             i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
                 act = VtblResolve(static_cast<CTileImageSet*>(lvl->m_imageSets[raw & 0xffff]));
@@ -281,12 +279,6 @@ i32 CRollingBall::Update() {
                     } else {
                         sink = 0;
                     }
-                    // NOT a TileCollisionKind and NOT a direction: BrickzCell int 3
-                    // is m_tileId, the raw WWD tile-image index, so this value space
-                    // is per-tileset (AREA1-4 vs AREA5-8) and has no engine-side
-                    // names. The DIRECTION is what the arms carry - each shoreline
-                    // image sinks the ball toward its own edge. The same ids with
-                    // the same offsets drive CGrunt::LoadGruntMovingDeathConfig.
                     switch (static_cast<MovingDeathTileSetAId>(sink)) {
                         case MOVING_DEATH_A_SE_1:
                             m_target.m_x += 0x10;
@@ -566,8 +558,6 @@ i32 CRollingBall::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    // Retail walks one pointer over the two adjacent i64 clocks (lea + add 8),
-    // so it stays live across the call in a callee-saved register.
     i64* explode = &m_explodeStart;
     switch (mode) {
         case SERIAL_SAVE:

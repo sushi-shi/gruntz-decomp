@@ -68,25 +68,6 @@ public:
     CHashSlot* m_buckets;
 };
 
-// FOUR typed heads over the one CHashBase. Each carries its own inline
-// `~X() { RemoveAll(); }`, so cl emits four 5-byte `jmp CHashBase::RemoveAll`
-// COMDATs - 0x139c70, 0x139dd0, 0x139ec0 and 0x139ed0, all interleaved inside
-// rezarchive.obj's contribution. One class can only produce ONE such COMDAT per TU,
-// so four addresses prove four classes. The unwind funclets bind each address to
-// a member, and the hash/lookup bodies split the same way:
-//
-//   0x139c70  CRezEntryIdHash   CRezArchiveType::m_idIndex     (this+0x1c)  ctor 0x184950
-//   0x139dd0  CRezEntryNameHash  CRezArchiveType::m_nameIndex   (this+0x24)  HashStr 0x13c240 FindByName 0x13c270
-//                     CRezArchive::m_freeEntries     (this+0x80)
-//   0x139ec0  CRezDirectoryNameHash  CRezArchiveDir::m_subdirectories (this+0x38) HashStr 0x13c3c0 FindByName 0x13c3f0
-//   0x139ed0  CRezTypeTagHash  CRezArchiveDir::m_types        (this+0x40)  HashTypeTag 0x13c350 FindTypeByTag 0x13c360
-//
-// The original source spellings are unrecoverable, so the names below state the
-// proven key and value roles rather than preserving letter placeholders.
-
-// CRezArchiveType::m_idIndex. Only the out-of-line default ctor and the inline dtor are
-// reachable in the image - the resource-id index is populated only when
-// CRezArchive::m_useIdIndex is set, which nothing in retail does.
 class CRezEntryIdHash : public CHashBase {
 public:
     CRezEntryIdHash();
@@ -99,7 +80,6 @@ public:
     }
 };
 
-// CRezArchiveDir::m_subdirectories - archive directories keyed by name.
 class CRezDirectoryNameHash : public CHashBase {
 public:
     CRezDirectoryNameHash(i32 bucketCount) : CHashBase(bucketCount) {}
@@ -112,7 +92,6 @@ public:
     CRezArchiveDir* FindByName(const char* name, i32 caseInsensitive);
 };
 
-// CRezArchiveType::m_nameIndex and CRezArchive::m_freeEntries - archive entries keyed by name.
 class CRezEntryNameHash : public CHashBase {
 public:
     CRezEntryNameHash(i32 bucketCount) : CHashBase(bucketCount) {}
@@ -125,7 +104,6 @@ public:
     CRezArchiveEntry* FindByName(const char* name, i32 caseInsensitive);
 };
 
-// CRezArchiveDir::m_types - archive resource types keyed by the integer type tag.
 class CRezTypeTagHash : public CHashBase {
 public:
     CRezTypeTagHash(i32 bucketCount) : CHashBase(bucketCount) {}

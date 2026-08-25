@@ -3,28 +3,6 @@
 
 #include <Enums.h>
 
-// The status bar's own widget command ids, as dispatched by CStatusBarMgr's
-// `cmd` switches.
-//
-// Each one is named by what its arm DOES, and most of them do it by posting a
-// GruntzCommandId that is already named - so the widget takes the name of the
-// command it raises:
-//
-//   0x1f4 -> CMD_PAUSE_TOGGLE        0x1f8 -> CMD_SHOW_BOOTY_STATE
-//   0x1f5 -> CMD_LOAD_GAME_DIALOG    0x324 -> CMD_RELOAD_LEVEL
-//   0x1f6 -> CMD_QUICK_SAVE_PROMPT   0x325 -> CMD_MAIN_MENU
-//   0x1f7 -> CMD_CONFIG_SETTINGS     0x327 -> CMD_MAIN_MENU
-//
-// The three dock commands name themselves - their arms call DockStatusBarLeft(),
-// DockStatusBarRight() and HideRect(), which are the three StatusBarDock states.
-//
-// SBICMD_DESTRUCT is retail's own word: its arm reads the bute key
-// "StatusBar" / "DestructButtonWarningDelay".
-//
-// NOTE this space also holds the five tabs. CStatusBarMgr bounds `cmd` with
-// `cmd <= 0 || cmd > 5` and hands it to SetTabState, so StatusBarTab's 1..5 are
-// the low end of THIS domain - which is why those call sites convert rather
-// than compare.
 GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_NONE = 0,
     SBICMD_TAB_STATZ = 1,
@@ -52,7 +30,6 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_RESOURCE_BELT_TOYS = 0xcc,
     SBICMD_RESOURCE_BELT_BRICKS = 0xcd,
 
-    // Resource-tab conveyor widgets. DropFallingItemAt accepts either belt segment.
     SBICMD_CONVEYOR_TOP = 0xce,
     SBICMD_CONVEYOR_BOTTOM = 0xd0,
     SBICMD_RESOURCE_MACHINE_BACKGROUND = 0xd1,
@@ -77,9 +54,6 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_MISSION_STATUS = 0x1fb,
     SBICMD_DESTRUCT = 0x1fc,
 
-    // The dock trio is dispatched as a binary split - `cmd > SBICMD_DOCK_FIRST`
-    // selects the other two - so the boundary gets its own name at the value the
-    // test actually compares against.
     SBICMD_DOCK_LEFT = 0x259,
     SBICMD_DOCK_FIRST = SBICMD_DOCK_LEFT,
     SBICMD_DOCK_RIGHT = 0x25a,
@@ -94,43 +68,17 @@ GZ_ENUM_BEGIN(SbiCommandId)
 
     SBICMD_DIALOG_FRAME = 0x321,
     SBICMD_DIALOG_MISSION_STATUS = 0x322,
-    // The displayed labels vary by level and game mode: next/replay/observe on
-    // the primary button and main-menu/statz on the secondary button.
     SBICMD_DIALOG_PRIMARY = 0x324,
     SBICMD_DIALOG_SECONDARY = 0x325,
     SBICMD_DIALOG_REASON = 0x326,
     SBICMD_DIALOG_YES = 0x327,
     SBICMD_DIALOG_NO = 0x328,
 
-    // Three BANDS of per-slot widgets. Each band's base is proven by the
-    // subtraction its own arm performs - the id is turned straight back into a
-    // 0-based index - and each band's outer bounds by the guard that rejects
-    // everything outside it before the split.
-    //
-    //   `cmd < 0x12c || cmd > 0x149` then
-    //     cmd <= 0x13a -> ToggleStat(cmd - 0x12c)
-    //     else            PlaceCursorTarget(cmd - 0x13b, 0)
     SBICMD_STAT_TOGGLE_FIRST = 0x12c,
     SBICMD_STAT_TOGGLE_LAST = 0x13a,
     SBICMD_CURSOR_TARGET_FIRST = 0x13b,
     SBICMD_CURSOR_TARGET_LAST = 0x149,
 
-    //   `cmd < 0xd3 || cmd > 0xde` then a three-way split, each arm
-    //   re-basing on its own group's first id.
-    //
-    //   The three groups are the HUD's three inventory rows, and four separate
-    //   sites in CStatusBarMgr say which is which by tiering a PickupType the
-    //   same way every time: `>= PICKUP_BRICKZ_FIRST` picks 2, else
-    //   `>= PICKUP_TOYZ_FIRST` picks 1, else 0. So the lanes are Toolz, Toyz,
-    //   and Brickz - which is also the order they are drawn in, at
-    //   m_machineItemTargetX 0x1d, 0x45 and 0x6d.
-    //
-    //   Each lane holds FOUR ids because the index the arm produces is fed to the
-    //   matching Select*Resource(StatusBarHighlightRow) method. The four members
-    //   therefore ARE that inventory domain's four rows, in order. The dispatch is a 12-label
-    //   jump table (`lea eax,[ebx-0xd3]; cmp eax,0xb; ja; mov cl,[eax+lut]`,
-    //   lut `00 00 00 00 01 01 01 01 02 02 02 02` at 0xff51c), which is what
-    //   needs the twelve ids spelled out rather than just their bounds.
     SBICMD_TOOL_RESOURCE_CATEGORY = 0xd3,
     SBICMD_TOOL_RESOURCE_FIRST = SBICMD_TOOL_RESOURCE_CATEGORY,
     SBICMD_TOOL_RESOURCE_UPPER = 0xd4,
@@ -151,11 +99,6 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_BRICK_RESOURCE_LAST = SBICMD_BRICK_RESOURCE_LOWER
 GZ_ENUM_END(SbiCommandId)
 
-// The bands above are INDEXED, not enumerated: four separate arms in
-// CStatusBarMgr::UpdateStatusBarTabHighlight turn an id straight back into a
-// 0-based offset from its band's first id. That makes `SBICMD_X_FIRST + n` the
-// domain's own spelling for "the n'th member of band X", which the STATZ
-// dispatch needs as case labels (30 of them, one per id in 0x12c..0x149).
 GZ_ENUM_STEPPED(SbiCommandId)
 
 #endif // GRUNTZ_GRUNTZ_SBICOMMANDID_H

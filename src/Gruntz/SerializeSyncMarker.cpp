@@ -13,10 +13,6 @@ char g_syncErrMsgBuf[0x80];
 DATA(0x00229ad0)
 i32 g_serialCounter;
 
-// The base of the save/load sync marker. Nothing decodes it - the writer emits
-// g_serialCounter + this and the reader recomputes the same sum - so its only
-// job is to be a value a stray stream position is unlikely to hold. Both sites
-// spell it out; naming it is what makes the pair obviously one constant.
 GZ_ENUM_CONST_BEGIN(SerialSyncMarker)
     SERIAL_SYNC_MARKER_BASE = 0x1234666
 GZ_ENUM_CONST_END(SerialSyncMarker)

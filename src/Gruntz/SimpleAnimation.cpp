@@ -40,10 +40,6 @@ template<> DATA(0x00246038)
 CActReg CActRegPool<CSimpleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @early-stop
-// Extent, calls, CFG, and ordered referents are exact. Retail materializes
-// g_buteMgr before loading the second layer height; this TU schedules those
-// independent loads in the opposite order, then chooses one different scratch.
-// Thirty-two mixed declaration-kind TU states are byte-flat.
 RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

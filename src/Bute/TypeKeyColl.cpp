@@ -1,12 +1,22 @@
-#include <Enums.h>
-#include <Gruntz/UserLogic.h>
+#include <rva.h>
+
 #include <Mfc.h>
+
+#include <AddrWord.h>
+#include <Bute/ButeStore.h>
 #include <Bute/ButeTree.h>
 #include <Bute/PTreeNode.h>
-#include <Bute/ButeStore.h>
+#include <Enums.h>
+#include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/LogicEventDispatch.h>
+#include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TypeKeyCollStr.h>
+#include <Gruntz/UserLogic.h>
+#include <Utils/BitArrayWord.h>
 #include <Wap32/zBitVec.h>
-#include <rva.h>
-#include <AddrWord.h>
+#include <Wap32/ZVec.h>
+
 #include <ctype.h>
 #include <iostream.h>
 #include <stdlib.h>
@@ -15,14 +25,6 @@
 #undef isspace
 #undef isdigit
 #pragma function(memcpy)
-
-#include <Gruntz/GameObjectLogicTypes.h>
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TypeKeyCollStr.h>
-#include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/LogicEventDispatch.h>
-#include <Wap32/ZVec.h>
-#include <Utils/BitArrayWord.h>
 
 DATA(0x002bf428)
 void* g_retAddrBreadcrumb;
@@ -75,10 +77,6 @@ RVA_DYNINIT(0x0016dfe0, 0x10, g_rezArchiveErrorSlot)
 DATA(0x002bf480)
 CVariantSlot g_rezArchiveErrorSlot("zSymTab: ");
 
-// TypeKeyRec's declared constructor is what puts this array in `.CRT$XC` at all;
-// the body optimises to a bare `ret`, which is why the pin is 1 byte. It is the
-// fifth and last of this compiland's initializers, so the definition has to stay
-// below the four CVariantSlots.
 RVA_DYNINIT(0x0016e180, 0x5, g_variantOverrides)
 RVA_DYNINIT(0x0016e190, 0x1, g_variantOverrides)
 DATA(0x002bf498)
@@ -157,8 +155,6 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 }
 
 // @early-stop
-// Calls, CFG and referents agree; root/mask/b scopes and a 32-island TU-state
-// sweep all emit the same residual register-coloring rotation.
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
     if (key == NULL) {
@@ -210,8 +206,6 @@ zBitVec::~zBitVec() {
 
 RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 // @early-stop
-// One scratch register on the capacity copy (retail eax, cl ecx); naming the value
-// in a local does not move it.
 RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {
@@ -241,7 +235,6 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
 }
 
 // @early-stop
-// The 43-branch CFG agrees; residue is constructor register coloring and spills.
 RVA(0x0016d3a0, 0x344)
 zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
     i32 maxv = 0;

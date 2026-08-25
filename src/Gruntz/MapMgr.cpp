@@ -252,17 +252,10 @@ i32 CMapMgr::FindPath(
     m_diagonalMask = diagonalMask;
     m_blockedMask = blockedMask;
     i32 goalFlags = m_rows[goalY][goalX].m_flags;
-    // Retail 0x9ed26: `test ecx,eax` (blockedMask & flags) `je` continue, then
-    // `mov ecx,[esp+0x30]` (passableMask) `test ecx,eax` `je 0x9eedc` -> return 0. The
-    // SECOND test bails when passableMask does NOT hit, i.e. the goal is blocked
-    // and the passable-override does not clear it - the same polarity CMapMgr::ExpandNeighbor
-    // uses at 0x9f0a2 for a neighbour.
     if ((blockedMask & goalFlags) != 0 && (passableMask & goalFlags) == 0) {
         return 0;
     }
 
-    // Retail rotates a `for` (`cmp ecx,edx` against the zeroed i, `jbe`), not a
-    // `!= 0` guard over a do-while (which lowers to `test`/`jne`).
     for (u32 i = 0; i < m_cellCount; i++) {
         m_cellPool[i].m_count = 0;
     }
@@ -274,14 +267,6 @@ i32 CMapMgr::FindPath(
     m_goal.m_y = goalY;
     m_start.m_y = startY;
 
-    // Retail 0x9ed7d nulls the SEED, not the free list: `mov ecx,[esi+0x30]` /
-    // `mov eax,[ecx+0x14]` / `cmp eax,edx` / `jne` -> `xor ecx,ecx` (seed = NULL).
-    // The free-list head is only rewritten on the taken path (0x9ed8b).  That keeps
-    // the pool's last node as a permanent SENTINEL - the same invariant ExpandNeighbor
-    // (0x9f2b6) and LinkClosedNode (0x9f48d) enforce.  Nulling m_freeList instead left
-    // `seed` non-NULL, so the `seed == NULL` bail became dead: FindPath ran on the
-    // sentinel while m_nodePool.m_freeList was NULL, and the next ExpandNeighbor / RecycleOpenNodes /
-    // RecycleClosedNodes dereferenced that NULL head.
     BrickzNode* seed = m_nodePool.m_freeList;
     BrickzNode* slot = seed->m_openNext;
     if (slot == NULL) {
@@ -334,8 +319,6 @@ i32 CMapMgr::FindPath(
 
 reached:
     BrickzNode* p = node;
-    // `while`, not `do-while`: retail guards the loop with its own entry test
-    // (block B25 at the `reached:` label carries a jcc past the body).
     while (p != NULL) {
         CoordPoolNode* rec = g_coordPool.m_freeHead;
         i32 cellX = p->m_col;
@@ -651,9 +634,6 @@ RVA(0x0009f710, 0xa7)
 void CMapMgr::UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
     BrickzCellNode* slot = node->m_cellLink;
-    // The same three-arm `&&` chain CMapMgr::UnlinkOpenNode uses, but with the arms in retail's
-    // emission order: the FIRST body retail lays down is `*head = NULL` (0x9f73e), then
-    // the two-sided unlink (0x9f74e), then the head-advance (0x9f761).
     if (slot->m_cellPrev == NULL && slot->m_cellNext == NULL) {
         *head = NULL;
     } else if (slot->m_cellPrev != NULL && slot->m_cellNext != NULL) {
@@ -755,10 +735,6 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// cl gives the MFC CRect ctor no constant folding, so this object is built by a
-// `.CRT$XC` initializer rather than a .data image. It is the last of mapmgr's
-// initializers, so it has to stay below the GruntDirStatics include. The only
-// reader, CMenuState::Render 0x000a0750, uses it through GameMode.h's extern.
 RVA_DYNINIT(0x0009fdf0, 0x5, g_versionRect)
 RVA_DYNINIT(0x0009fe10, 0x29, g_versionRect)
 DATA(0x00245cc8)

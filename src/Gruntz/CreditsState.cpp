@@ -55,7 +55,6 @@ static const double kScrollRate = 0.025;
 DATA(0x001e96f8)
 static const double kScreenH = 480.0;
 
-// g_frameDelta is in milliseconds; m_scrollStep is pixels per second.
 DATA(0x001e9700)
 static const double kMsToSeconds = 0.001;
 DATA(0x001e9708)
@@ -141,8 +140,6 @@ void CCreditsState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-// Deleting m_videoHandle ODR-uses the inline destructor, so retail emits both
-// destructor COMDATs in this translation unit.
 RVA_COMPGEN(0x00038fc0, 0xa5, ??1CMoviePlayer@@QAE@XZ)
 RVA_COMPGEN(0x000390a0, 0x5d, ??1CFecFile@@QAE@XZ)
 

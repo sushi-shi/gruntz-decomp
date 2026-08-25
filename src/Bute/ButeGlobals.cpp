@@ -14,14 +14,6 @@
 
 #include <strstrea.h>
 
-// The two container globals the whole Bute/act layer runs on.  They live in their
-// own compiland because retail's `$E` dynamic-init helpers for them carry the
-// constructor and destructor bodies INLINE (0x16e6a0 / 0x16e6e0 / 0x16e730 /
-// 0x16e7a0), and MSVC 5 only inlines a ctor/dtor into a `$E` helper when the TU is
-// compiled WITHOUT /GX - every function in TypeKeyColl.cpp's own compiland carries
-// an EH frame, so that one is /GX and cannot be the source of these four bodies.
-// See docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md.
-
 inline CTypeCollRuntime::CTypeCollRuntime()
 
     : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {

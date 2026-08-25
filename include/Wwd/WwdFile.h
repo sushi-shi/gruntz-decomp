@@ -22,17 +22,7 @@ GZ_ENUM_CONST_BEGIN(WwdFormatConstants)
     WWD_PLANE_HEADER_SIZE = 0xa0
 GZ_ENUM_CONST_END(WwdFormatConstants)
 
-// The 1524-byte WWD file header, verified field by field against retail's four
-// readers and all 63 shipped levels - docs/formats/wwd-v1.md. The six string
-// slots each hold a NUL-terminated name zero-padded to the end of its slot in
-// every shipped file, which is what fixes their boundaries independently of the
-// disassembly; the author/created splits are additionally forced by
-// FillLevelInfoDialog and CustomWorldInfoDlgProc, which set dialog controls
-// 0x428 and 0x429 from them.
 struct WwdHeader {
-    // NOT a signature: LoadWwd @0x15d29b rejects only values GREATER than
-    // sizeof(WwdHeader) (`cmp eax,0x5f4; jbe`), then WwdFile_InflateMainBlock
-    // uses it as both the memcpy length and the offset of the compressed bytes.
     u32 headerSize;
     u32 reserved04;
     u32 flags;
@@ -40,12 +30,8 @@ struct WwdHeader {
     char levelName[0x40];
     char author[0x40];
     char created[0x40];
-    // Proven unread: "C:\PROJ\GRUNTZ\GRUNTZ.REZ" in all 63.
     char rezFile[0x100];
-    // Proven unread - CPlay hardcodes the three image-set roots instead; the
-    // editor recorded what it used and the game re-derives the same thing.
     char tileDirectory[0x80];
-    // Proven unread; the empty string in all 63.
     char palette[0x80];
     i32 startX;
     i32 startY;
@@ -54,11 +40,8 @@ struct WwdHeader {
     u32 planesOffset;
     u32 tileDescriptionsOffset;
     u32 mainBlockLength;
-    // Stored and never verified: retail returns it from
-    // CGruntzMgr::ResolveLevelChecksum as the level's multiplayer identity token.
     u32 checksum;
     u32 reserved2f0;
-    // The remaining four slots are all proven unread, like tileDirectory.
     char launchApp[0x80];
     char imageDirectory[4][0x80];
     char imagePrefix[4][0x20];
@@ -149,15 +132,7 @@ struct PlaneObjectRecord {
     char m_strings[1];
 };
 
-// The tile-attribute table at WwdHeader::tileDescriptionsOffset, running to EOF:
-// this header then a packed array of variable-stride records indexed by a tile
-// handle's low word. Every shipped record is tag 1 (uniform, 32x32) - 63 files x
-// 910 records, no exceptions - and the cursor lands exactly on EOF in all of
-// them, which is what validates the strides. See docs/formats/wwd-v1.md.
 struct WwdTileDescTable {
-    // Proven unread. It is 0x20 in all 63 shipped levels and IS this header's
-    // size, but LoadWwd hardcodes that: `lea ebx,[eax+0x20]` @0x15d3ba walks to
-    // the first record without ever loading the field.
     u32 m_headerSize;
     u32 m_reserved04;
     u32 m_count;

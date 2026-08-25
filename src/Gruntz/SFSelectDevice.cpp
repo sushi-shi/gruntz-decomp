@@ -10,12 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// The Creative SoundFont router-select MIDI SysEx template: F0, manufacturer
-// 00 20 21 (Creative), 5F, four 7-bit payload bytes, F7. Retail keeps it
-// initialized in .data at 0x213df8; SFManager_SelectBestDevice pokes
-// SF_GetRouterID's value into the payload [7..10] as 7-bit chunks. Modeling
-// the four payload bytes as separate globals is impossible: cl 4-aligns
-// separate chars, while retail's are 1-aligned inside this nonzero block.
 DATA(0x00213df8)
 unsigned char g_routerSysEx[12] = {
     0xf0,

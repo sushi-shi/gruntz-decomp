@@ -62,9 +62,6 @@ struct PidHeader {
     u8 pixels[1];
 };
 
-// The format CDDSurface::Resolve decodes. CImage picks it from the REZ entry
-// tag: IMGTAG_PMB('BMP')->FMT_BMP, IMGTAG_XCP('PCX')->FMT_PCX,
-// IMGTAG_DIR('RID')->FMT_RID, IMGTAG_DIP('PID')->FMT_PID.
 GZ_ENUM_BEGIN(FileImageFormat)
     FMT_BMP = 1,
     FMT_PCX = 2,

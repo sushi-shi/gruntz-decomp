@@ -11,10 +11,6 @@
 #include <new.h>
 #include <string.h>
 
-// MFC CArray's storage idiom: a RAW BYTE buffer, elements built later by the
-// placement-new loop below. Retail allocates exactly n*0x28 with no ??0RezElem40
-// after `call ??2`, so this is NOT `new RezElem40[n]` (that emits a vector-ctor
-// loop + a /GX frame). See docs/patterns/msvc5-has-no-array-new-read-the-vector-ctor.md.
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
@@ -26,7 +22,6 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
 
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
-    // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
     if (ar.IsStoring()) {
         ar.WriteCount(m_nSize);
     } else {
@@ -88,16 +83,9 @@ RezElem40* __fastcall InitRezElem(RezElem40* p) {
     return p;
 }
 
-// ??1CRezBufferObject / ??_GCRezBufferObject are pinned in Fader.cpp: the dtor is
-// inline-in-header, so cl emits both COMDATs in the TU that expands the ctor
-// (fader, via CFaderMesh::m_meshBuf) and none here.
-
 // @early-stop
-// pure edi<->esi zero-register rotation through all four growth arms; the
-// structure and both allocation paths match byte-shape exactly.
 RVA(0x0017f390, 0x164)
 void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
-    // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
     if (nGrowBy != -1) {
         m_nGrowBy = nGrowBy;
     }
