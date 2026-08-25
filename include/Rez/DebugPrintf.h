@@ -35,7 +35,7 @@ extern DebugPrintMode g_debugPrintMode;
 
 void DebugSetCursorXY(i32 x, i32 y);
 
-void DebugSetCursor(i32, i32, i32);
+void DebugSetCursor(i32 channel, i32 x, i32 y);
 void DebugClear();
 void DebugClearChannel(i32 channel);
 int vsprintf(char* buf, const char* fmt, char* va);

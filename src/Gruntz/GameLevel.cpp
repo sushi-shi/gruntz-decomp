@@ -684,67 +684,66 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
         return ApplyMove(target, destX, destY, moveFlags);
     }
 
-    CGameObject* s = target;
-    i32 eax = 0;
-    MoveMode kind = s->m_moveMode;
-    i32 prevX = s->m_screenX;
-    i32 prevY = s->m_screenY;
+    i32 result = 0;
+    MoveMode moveMode = target->m_moveMode;
+    i32 prevX = target->m_screenX;
+    i32 prevY = target->m_screenY;
 
-    switch (kind) {
+    switch (moveMode) {
         case MOVE_GROUNDED:
         case MOVE_GROUNDED_2:
         case MOVE_GROUNDED_5:
-            eax = MoveGrounded(s, destX, destY, moveFlags);
+            result = MoveGrounded(target, destX, destY, moveFlags);
             break;
         case MOVE_RISING:
-            eax = MoveRising(s, destX, destY, moveFlags);
-            if (s->m_moveMode == MOVE_FALLING) {
-                eax |= 0x800000;
+            result = MoveRising(target, destX, destY, moveFlags);
+            if (target->m_moveMode == MOVE_FALLING) {
+                result |= 0x800000;
             }
             break;
         case MOVE_FALLING:
-            eax = MoveFalling(s, destX, destY, moveFlags);
-            if (s->m_moveMode == MOVE_GROUNDED) {
-                eax |= 0x1000000;
+            result = MoveFalling(target, destX, destY, moveFlags);
+            if (target->m_moveMode == MOVE_GROUNDED) {
+                result |= 0x1000000;
             }
             break;
         case MOVE_AUTO_VERTICAL:
             if (destY < prevY) {
-                eax = MoveRising(s, destX, destY, moveFlags);
-                if (s->m_moveMode == MOVE_FALLING) {
-                    eax |= 0x800000;
-                    s->m_moveMode = MOVE_AUTO_VERTICAL;
+                result = MoveRising(target, destX, destY, moveFlags);
+                if (target->m_moveMode == MOVE_FALLING) {
+                    result |= 0x800000;
+                    target->m_moveMode = MOVE_AUTO_VERTICAL;
                 }
             } else {
-                eax = MoveFalling(s, destX, destY, moveFlags);
-                if (s->m_moveMode == MOVE_GROUNDED) {
-                    eax |= 0x1000000;
+                result = MoveFalling(target, destX, destY, moveFlags);
+                if (target->m_moveMode == MOVE_GROUNDED) {
+                    result |= 0x1000000;
                 }
             }
             break;
         case MOVE_CLIMBING:
-            eax = MoveClimbing(s, destX, destY, moveFlags);
+            result = MoveClimbing(target, destX, destY, moveFlags);
             break;
         case MOVE_DIRECT:
-            s->m_screenX = destX;
-            s->m_screenY = destY;
+            target->m_screenX = destX;
+            target->m_screenY = destY;
             break;
     }
 
-    if (eax & 0x1820000) {
-        eax |= 0x10000;
+    if (result & 0x1820000) {
+        result |= 0x10000;
     }
-    u32 f = s->m_flags;
-    if (f & 0x400000) {
-        eax |= 0x100000;
+    u32 objectFlags = target->m_flags;
+    if (objectFlags & 0x400000) {
+        result |= 0x100000;
     }
-    if (f & 0x10) {
-        eax |= 0x200000;
+    if (objectFlags & 0x10) {
+        result |= 0x200000;
     }
-    if (s->m_screenX == prevX && s->m_screenY == prevY) {
-        eax |= 0x400000;
+    if (target->m_screenX == prevX && target->m_screenY == prevY) {
+        result |= 0x400000;
     }
-    return eax;
+    return result;
 }
 
 // @early-stop
@@ -1298,19 +1297,19 @@ i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
 }
 
 RVA(0x0015f8d0, 0x113)
-i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
-    if (b <= c) {
+i32 CGameLevel::SpanCheck(i32 x, i32 yEndExclusive, i32 yBegin, i32* outY) {
+    if (yEndExclusive <= yBegin) {
         return 0;
     }
-    i32 cur = b - 1;
-    while (cur >= c) {
+    i32 y = yEndExclusive - 1;
+    while (y >= yBegin) {
         TileCollisionKind result;
-        PROBE_TILE(this, a, cur, result);
+        PROBE_TILE(this, x, y, result);
         if (result != TILEKIND_CLIMB) {
-            *out = cur + 1;
+            *outY = y + 1;
             return 1;
         }
-        --cur;
+        --y;
     }
 
     return 0;

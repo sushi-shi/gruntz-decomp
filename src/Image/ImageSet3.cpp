@@ -6,7 +6,7 @@
 #include <Ints.h>
 
 RVA(0x00166e00, 0x60)
-i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
+i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     while (x > 0) {
@@ -14,7 +14,7 @@ i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
         --off;
         if ((m_pixels)[off] != target) {
             *outX = x;
-            *outVal = (m_pixels)[off];
+            *outValue = (m_pixels)[off];
             return 1;
         }
     }
@@ -22,12 +22,12 @@ i32 CImageSet3::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal) {
 }
 
 RVA(0x00166e60, 0x48)
-i32 CImageSet3::ScanRunLeftForValue(i32 x, i32 y, i32 val, i32* outX) {
+i32 CImageSet3::ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX) {
     i32 off = (y << m_heightLog2) + x;
     while (x > 0) {
         --x;
         --off;
-        if (m_pixels[off] == val) {
+        if (m_pixels[off] == value) {
             *outX = x;
             return 1;
         }

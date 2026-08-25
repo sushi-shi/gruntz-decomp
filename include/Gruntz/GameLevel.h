@@ -235,7 +235,7 @@ public:
     i32 LoadName(CFileMemBase* sink);
 
     i32 MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags);
-    i32 ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
+    i32 ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
     i32 MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags);
     i32 MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags);
@@ -262,7 +262,7 @@ private:
     i32 FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
     i32 StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags);
     i32 ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);
-    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);
+    i32 SpanCheck(i32 x, i32 yEndExclusive, i32 yBegin, i32* outY);
     TileCollisionKind AxisProbe(i32 coord, i32 limit);
 
     i32 AltStepValidate(

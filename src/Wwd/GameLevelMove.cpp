@@ -14,38 +14,37 @@
 #include <Wwd/WwdSpatialMgr.h>
 
 RVA(0x00167130, 0x83)
-i32 CGameLevel::ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
-    CGameObject* s = obj;
-    i32 eax = 0;
-    i32 prevX = s->m_screenX;
-    i32 prevY = s->m_screenY;
-    MoveMode kind = s->m_moveMode;
+i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
+    i32 result = 0;
+    i32 prevX = target->m_screenX;
+    i32 prevY = target->m_screenY;
+    MoveMode moveMode = target->m_moveMode;
 
-    if (kind > MOVE_NONE) {
-        if (kind > MOVE_GROUNDED_LAST) {
-            if (kind == MOVE_DIRECT) {
-                s->m_screenX = a;
-                s->m_screenY = b;
+    if (moveMode > MOVE_NONE) {
+        if (moveMode > MOVE_GROUNDED_LAST) {
+            if (moveMode == MOVE_DIRECT) {
+                target->m_screenX = destX;
+                target->m_screenY = destY;
             }
         } else {
-            eax = MoveAxisAligned(s, a, b, c);
+            result = MoveAxisAligned(target, destX, destY, moveFlags);
         }
     }
 
-    if (eax & 0x20000) {
-        eax |= 0x10000;
+    if (result & 0x20000) {
+        result |= 0x10000;
     }
-    u32 f = s->m_flags;
-    if (f & 0x400000) {
-        eax |= 0x100000;
+    u32 objectFlags = target->m_flags;
+    if (objectFlags & 0x400000) {
+        result |= 0x100000;
     }
-    if (f & 0x10) {
-        eax |= 0x200000;
+    if (objectFlags & 0x10) {
+        result |= 0x200000;
     }
-    if (s->m_screenX == prevX && s->m_screenY == prevY) {
-        eax |= 0x400000;
+    if (target->m_screenX == prevX && target->m_screenY == prevY) {
+        result |= 0x400000;
     }
-    return eax;
+    return result;
 }
 
 RVA(0x001671c0, 0x97)

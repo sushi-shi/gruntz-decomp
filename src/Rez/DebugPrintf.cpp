@@ -219,12 +219,12 @@ void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
 }
 
 RVA(0x00184fb0, 0x15)
-void DebugSetCursorXY(i32 a, i32 b) {
-    DebugSetCursor(0, a, b);
+void DebugSetCursorXY(i32 x, i32 y) {
+    DebugSetCursor(0, x, y);
 }
 
 RVA(0x00184fd0, 0x1)
-void DebugSetCursor(i32, i32, i32) {}
+void DebugSetCursor(i32 channel, i32 x, i32 y) {}
 
 // @identity-TODO: the default-channel wrapper relationship is proven; the names are inferred.
 // @dead-code

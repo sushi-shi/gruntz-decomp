@@ -58,7 +58,7 @@ struct CImageSet1 : public CTileImageSet {
     }
 
     RVA(0x00161380, 0x6)
-    virtual TileCollisionKind GetCollisionAt(i32, i32) OVERRIDE {
+    virtual TileCollisionKind GetCollisionAt(i32 x, i32 y) OVERRIDE {
         return static_cast<TileCollisionKind>(m_collisionValue);
     }
     RVA(0x00161410, 0x6)
@@ -67,35 +67,35 @@ struct CImageSet1 : public CTileImageSet {
     }
 
     RVA(0x00161390, 0x5)
-    virtual i32 ScanRunLeft(i32, i32, i32*, i32*) {
+    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue) {
         return 0;
     }
     RVA(0x001613a0, 0x5)
-    virtual i32 ScanRunLeftForValue(i32, i32, i32, i32*) {
+    virtual i32 ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX) {
         return 0;
     }
     RVA(0x001613b0, 0x5)
-    virtual i32 ScanUp(i32, i32, i32*, i32*) {
+    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outValue) {
         return 0;
     }
     RVA(0x001613c0, 0x5)
-    virtual i32 ScanUpForValue(i32, i32, i32, i32*) {
+    virtual i32 ScanUpForValue(i32 x, i32 y, i32 value, i32* outY) {
         return 0;
     }
     RVA(0x001613d0, 0x7)
-    virtual i32 ScanRight(i32, i32, i32*, i32*) {
+    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outValue) {
         return m_width - 1;
     }
     RVA(0x001613e0, 0x5)
-    virtual i32 ScanRightForValue(i32, i32, i32, i32*) {
+    virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX) {
         return 0;
     }
     RVA(0x001613f0, 0x7)
-    virtual i32 ScanDown(i32, i32, i32*, i32*) {
+    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outValue) {
         return m_height - 1;
     }
     RVA(0x00161400, 0x5)
-    virtual i32 ScanDownForValue(i32, i32, i32, i32*) {
+    virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY) {
         return 0;
     }
     CImageSet1() {
@@ -132,13 +132,13 @@ struct CImageSet2 : public CTileImageSet {
         return offsetof(WwdTileImageRecord, m_fields) + 6 * sizeof(i32);
     }
 
-    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue);
     virtual i32 ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX);
-    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outValue);
     virtual i32 ScanUpForValue(i32 x, i32 y, i32 value, i32* outY);
-    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outValue);
     virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX);
-    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outValue);
     virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
     CImageSet2() {
         m_width = 0;
@@ -171,16 +171,16 @@ struct CImageSet3 : public CTileImageSet {
     virtual TileCollisionKind GetCollisionAt(i32 x, i32 y) OVERRIDE;
     virtual i32 GetStride() OVERRIDE;
 
-    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue);
 
     virtual i32 ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX);
 
-    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanUp(i32 x, i32 y, i32* outY, i32* outValue);
 
     virtual i32 ScanUpForValue(i32 x, i32 y, i32 value, i32* outY);
-    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outVal);
+    virtual i32 ScanRight(i32 x, i32 y, i32* outX, i32* outValue);
     virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX);
-    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outVal);
+    virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outValue);
     virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
 
     CImageSet3() {
