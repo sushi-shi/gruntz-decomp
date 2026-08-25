@@ -97,7 +97,7 @@ i32 CActionOptionsMenuBar::Init(
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = (g_gameReg->m_world->m_level->m_mainPlane)->m_wrapW;
+        i32 limit = (g_gameReg->m_world->m_level->m_mainPlane)->m_planePixelWidth;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -195,18 +195,18 @@ i32 CActionOptionsMenuBar::Render() {
     CGameLevel* level = g_gameReg->m_world->m_level;
     LONG sx = m_screenX;
     LONG sy = m_screenY;
-    level->m_mainPlane->WrapCoord(&sx, &sy);
+    level->m_mainPlane->WorldToViewport(&sx, &sy);
 
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-    LevelCoordRect r = g_gameReg->m_world->m_level->m_planeCtx;
+    LevelCoordRect r = g_gameReg->m_world->m_level->m_viewportRect;
     m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
 
     if (m_buttonFrame[0]) {
-        r = g_gameReg->m_world->m_level->m_planeCtx;
+        r = g_gameReg->m_world->m_level->m_viewportRect;
         m_buttonFrame[0]->RenderFrameClipped(ctx, sx - 0xc, sy + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
-        r = g_gameReg->m_world->m_level->m_planeCtx;
+        r = g_gameReg->m_world->m_level->m_viewportRect;
         m_buttonFrame[1]->RenderFrameClipped(ctx, sx + 0x10, sy + 2, &r, 0);
     }
     return 1;
@@ -458,33 +458,33 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 }
 
 RVA(0x0000a000, 0xac)
-void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
+void CDDrawWorkerHost::WorldToViewport(LONG* px, LONG* py) {
     if (m_flags & 0x4) {
         if (*px < 0) {
-            *px += m_wrapW;
-        } else if (*px >= m_wrapW) {
-            *px -= m_wrapW;
+            *px += m_planePixelWidth;
+        } else if (*px >= m_planePixelWidth) {
+            *px -= m_planePixelWidth;
         }
-        if (m_viewRect.right >= m_wrapW && *px < m_viewRect.left
-            && *px <= m_viewRect.right - m_wrapW) {
-            *px = m_wrapW + *px;
+        if (m_planeViewRect.right >= m_planePixelWidth && *px < m_planeViewRect.left
+            && *px <= m_planeViewRect.right - m_planePixelWidth) {
+            *px = m_planePixelWidth + *px;
         }
     }
 
     if (m_flags & 0x8) {
         if (*py < 0) {
-            *py += m_wrapH;
-        } else if (*py >= m_wrapH) {
-            *py -= m_wrapH;
+            *py += m_planePixelHeight;
+        } else if (*py >= m_planePixelHeight) {
+            *py -= m_planePixelHeight;
         }
-        if (m_viewRect.bottom >= m_wrapH && *py < m_viewRect.top
-            && *py <= m_viewRect.bottom - m_wrapH) {
-            *py = m_wrapH + *py;
+        if (m_planeViewRect.bottom >= m_planePixelHeight && *py < m_planeViewRect.top
+            && *py <= m_planeViewRect.bottom - m_planePixelHeight) {
+            *py = m_planePixelHeight + *py;
         }
     }
 
-    *px = *px - m_viewRect.left;
-    *py = *py - m_viewRect.top;
-    *px = *px + m_bounds50.left;
-    *py = *py + m_bounds50.top;
+    *px = *px - m_planeViewRect.left;
+    *py = *py - m_planeViewRect.top;
+    *px = *px + m_viewportRect.left;
+    *py = *py + m_viewportRect.top;
 }

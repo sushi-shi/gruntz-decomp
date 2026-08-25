@@ -58,16 +58,16 @@ void CExitTrigger::RegisterActs() {
 
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* trig = m_object;
+        CWwdSpriteObject* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
         g_gameReg->m_triggerMgr->HitTestApply(trig->m_screenX, trig->m_screenY, span);
     } else if (m_resolved != 0) {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
-        CWwdGameObjectA* obj = m_object;
+        CWwdSpriteObject* obj = m_object;
         CGrunt* hit = g_gameReg->m_triggerMgr->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
@@ -196,11 +196,11 @@ i32 CExitTrigger::AdvanceAnim() {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
                         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
-                            CWwdGameObjectA* fx =
+                            CWwdSpriteObject* fx =
                                 g_gameReg->m_world->m_childGroup
                                     ->CreateSprite(0, x, y, SORTKEY_OVERLAY, "Explosion", 0x40003);
                             if (fx != NULL) {
-                                fx->ApplyLookupGeometry("GAME_EXPLOSION3", 0);
+                                fx->SetAnimationByName("GAME_EXPLOSION3", 0);
                                 fx->m_smarts = 0;
                                 fx->m_score = 0;
                             }

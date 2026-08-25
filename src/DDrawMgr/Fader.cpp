@@ -9,10 +9,10 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Fader.h>
+#include <Gruntz/FaderConfig.h>
 #include <Gruntz/FaderMode.h>
 #include <Gruntz/FaderSubtypes.h>
-#include <Gruntz/FxModeDesc.h>
-#include <Gruntz/FxModeT1.h>
+#include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
 #include <Utils/RecordFill.h>
 #include <Wap32/ScreenGeometry.h>
@@ -147,13 +147,13 @@ RVA(0x0017e7a0, 0x1)
 void CFader::EndFade() {}
 
 RVA(0x0017e7b0, 0x9)
-CFxModeDesc::CFxModeDesc() {
-    m_type = FXMODE_UNTAGGED;
+CFaderConfig::CFaderConfig() {
+    m_kind = FADER_CONFIG_UNTAGGED;
 }
 
 RVA(0x0017e7c0, 0x7a)
-CFxModeT1::CFxModeT1() {
-    m_type = FXMODE_SHAPE;
+CShapeFaderConfig::CShapeFaderConfig() {
+    m_kind = FADER_CONFIG_SHAPE;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_warpSourceSurface = NULL;
@@ -167,9 +167,9 @@ CFxModeT1::CFxModeT1() {
 }
 
 RVA(0x0017e840, 0x37)
-CFxModeT2::CFxModeT2() {
+CLightFaderConfig::CLightFaderConfig() {
     m_centerX = SCREEN_HALF_W_PX;
-    m_type = FXMODE_LIGHT;
+    m_kind = FADER_CONFIG_LIGHT;
     m_sourceSurface = NULL;
     m_targetSurface = NULL;
     m_clearMode = 1;
@@ -179,8 +179,8 @@ CFxModeT2::CFxModeT2() {
 }
 
 RVA(0x0017e880, 0x28)
-CFxModeT3::CFxModeT3() {
-    m_type = FXMODE_SINE;
+CSineFaderConfig::CSineFaderConfig() {
+    m_kind = FADER_CONFIG_SINE;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_clearToBlack = 1;
@@ -188,8 +188,8 @@ CFxModeT3::CFxModeT3() {
 }
 
 RVA(0x0017e8b0, 0x27)
-CFxModeT4::CFxModeT4() {
-    m_type = FXMODE_RADIAL;
+CRadialFaderConfig::CRadialFaderConfig() {
+    m_kind = FADER_CONFIG_RADIAL;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_palette = NULL;
@@ -198,8 +198,8 @@ CFxModeT4::CFxModeT4() {
 }
 
 RVA(0x0017e8e0, 0x27)
-CFxModeT5::CFxModeT5() {
-    m_type = FXMODE_FLAT;
+CFlatFaderConfig::CFlatFaderConfig() {
+    m_kind = FADER_CONFIG_FLAT;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_unusedOption = 0;
@@ -208,8 +208,8 @@ CFxModeT5::CFxModeT5() {
 }
 
 RVA(0x0017e910, 0x29)
-CFxModeT6::CFxModeT6() {
-    m_type = FXMODE_MESH;
+CMeshFaderConfig::CMeshFaderConfig() {
+    m_kind = FADER_CONFIG_MESH;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_flipTarget = NULL;
@@ -227,9 +227,9 @@ RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
 RVA(0x0017ea00, 0x4fc)
-i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
+i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
-    CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
+    CMeshFaderConfig* cfg = static_cast<CMeshFaderConfig*>(descOpaque);
 
     if (cfg->m_targetSurface == NULL) {
         m_dstSurface = m_primarySurface;

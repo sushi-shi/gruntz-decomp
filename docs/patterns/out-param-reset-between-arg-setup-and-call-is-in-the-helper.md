@@ -116,18 +116,18 @@ change alone, each having been a one-instruction-position diff before it:
 | `CPlay::DrawStateMessage` | 0x000cfef0 | 95.1807 | **100.0000** |
 | `CPlay::DrawMessageFrame` | 0x000d1650 | 95.6452 | **100.0000** |
 | `CPlay::LoadLoadingBarSprite` | 0x000d7440 | 95.8064 | **100.0000** |
-| `CWwdGameObjectA::ApplyLookupGeometry` | 0x001505b0 | 93.9394 | **100.0000** |
-| `CWwdGameObjectA::ApplyName` | 0x00150540 | 94.1176 | **100.0000** |
+| `CWwdSpriteObject::SetAnimationByName` | 0x001505b0 | 93.9394 | **100.0000** |
+| `CWwdSpriteObject::SetImageSetByName` | 0x00150540 | 94.1176 | **100.0000** |
 | `CDDrawChildGroup::CreateSprite` | 0x001597b0 | 94.1176 | **100.0000** |
 | `CMenuState::LoadGameAssetNamespaces` | 0x0009fe50 | 95.2863 | **100.0000** |
 | `CTimer::LoadTimerSprite` | 0x0009bb00 | 96.5217 | **100.0000** |
 | `CInGameText::Update` | 0x000997c0 | 93.4731 | **96.7066** |
 
-`ApplyLookupGeometry` is the `CMapStringToPtr` counterpart: its wrapper owns a
+`SetAnimationByName` is the `CMapStringToPtr` counterpart: its wrapper owns a
 typed `CAniElement* result = NULL`, calls `MapLookup`, and returns the pointer.
 Its size, call set, CFG, and four referents already agreed before the change;
 moving the reset across the inline boundary closed the sole scheduling residue.
-`ApplyName` and `CreateSprite` were the `CMapStringToOb` single-site controls:
+`SetImageSetByName` and `CreateSprite` were the `CMapStringToOb` single-site controls:
 both differed only by `push name` versus the zero store, and both became exact
 by returning the typed worker from the wrapper.
 
@@ -205,7 +205,7 @@ the two epilogues are not byte-identical; ours merges them.
 | function | rva | before | after |
 |---|---|---|---|
 | `CMenuPage::ResolveSubPage` | 0x001833f0 | 90.48 | **100.0000** |
-| `CDDrawWorkerHost::RegisterNamed` | 0x00161c50 | 90.48 | **100.0000** |
+| `CDDrawWorkerHost::SetImageSetByName` | 0x00161c50 | 90.48 | **100.0000** |
 
 Both were the residual "one insn" wall: the whole body is `CObject* v = NULL;
 map.Lookup(key, v);` and retail's zero store lands AFTER BOTH `Lookup` pushes

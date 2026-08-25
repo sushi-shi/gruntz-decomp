@@ -1,5 +1,5 @@
-#ifndef GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
-#define GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
+#ifndef GRUNTZ_DDRAWMGR_DDRAWPLACEDWORKER_H
+#define GRUNTZ_DDRAWMGR_DDRAWPLACEDWORKER_H
 
 #include <rva.h>
 
@@ -16,9 +16,9 @@ class CDDrawWorker;
 
 class CDDrawSurfacePair;
 
-class CDDrawWorkerBase : public CResolveNode {
+class CDDrawPlacedWorker : public CResolveNode {
 public:
-    virtual ~CDDrawWorkerBase() OVERRIDE {
+    virtual ~CDDrawPlacedWorker() OVERRIDE {
         m_dirty.Reset();
     }
 
@@ -33,14 +33,14 @@ public:
     i32 m_refCount;
 
     union {
-        i32 m_frameValue;
+        i32 m_contentValue;
         class CImage* m_frame;
         char m_pixelValue;
     };
 
-    CDDrawWorkerBase() {}
+    CDDrawPlacedWorker() {}
 
-    CDDrawWorkerBase(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
+    CDDrawPlacedWorker(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
         m_id = 0;
         m_ownerCtx = ctx;
         m_flags = 0;
@@ -53,32 +53,32 @@ public:
     }
 };
 
-// +0x78 holds a raw pixel VALUE, not a CImage*, so the three CDDrawWorkerBase
+// +0x78 holds a raw pixel VALUE, not a CImage*, so the three CDDrawPlacedWorker
 // virtuals that treat it as a pointer are overridden back (retail vtable
 // 0x1efea0 slots 5/7/8 point at 0x157060/0x157130/0x1570a0, not the base's
 // 0x157200/0x157310/0x157210).
-struct CDDrawWorkerA : public CDDrawWorkerBase {
-    virtual ~CDDrawWorkerA() OVERRIDE;
+struct CDDrawPixelWorker : public CDDrawPlacedWorker {
+    virtual ~CDDrawPixelWorker() OVERRIDE;
 
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
-    CDDrawWorkerA() {}
-    CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
+    CDDrawPixelWorker() {}
+    CDDrawPixelWorker(CDDrawSurfaceMgr* ctx) : CDDrawPlacedWorker(ctx) {
         m_pixelValue = 0;
     }
     virtual i32 PlacePixel(i32 x, i32 y, i32 pixelValue);
 };
 
-struct CDDrawWorkerB : public CDDrawWorkerBase {
-    virtual ~CDDrawWorkerB() OVERRIDE;
+struct CDDrawFrameWorker : public CDDrawPlacedWorker {
+    virtual ~CDDrawFrameWorker() OVERRIDE;
 
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) OVERRIDE;
-    CDDrawWorkerB() {}
-    CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
-        m_frameValue = 0;
+    CDDrawFrameWorker() {}
+    CDDrawFrameWorker(CDDrawSurfaceMgr* ctx) : CDDrawPlacedWorker(ctx) {
+        m_contentValue = 0;
     }
     virtual i32 PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex);
     virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex);
@@ -87,4 +87,4 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     i32 ResolveFrame(const char* workerName, i32 frameIndex);
 };
 
-#endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
+#endif // GRUNTZ_DDRAWMGR_DDRAWPLACEDWORKER_H

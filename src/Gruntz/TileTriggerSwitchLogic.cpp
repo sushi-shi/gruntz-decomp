@@ -103,7 +103,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
-    i32 v = layer->m_tileGrid[tileX + layer->m_rowOffsets[tileY]] + 1;
+    i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
@@ -143,7 +143,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
-    i32 v = layer->m_tileGrid[tileX + layer->m_rowOffsets[tileY]] - 1;
+    i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
@@ -199,16 +199,16 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
     if (x < 0) {
         x = 0;
-    } else if (x >= level->m_mainPlane->m_gridW) {
-        x = level->m_mainPlane->m_gridW - 1;
+    } else if (x >= level->m_mainPlane->m_tileColumns) {
+        x = level->m_mainPlane->m_tileColumns - 1;
     }
     if (y < 0) {
         y = 0;
-    } else if (y >= level->m_mainPlane->m_gridH) {
-        y = level->m_mainPlane->m_gridH - 1;
+    } else if (y >= level->m_mainPlane->m_tileRows) {
+        y = level->m_mainPlane->m_tileRows - 1;
     }
     CDDrawWorkerHost* plane = level->m_mainPlane;
-    i32 cell = plane->m_tileGrid[plane->m_rowOffsets[y] + x];
+    i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
@@ -221,13 +221,13 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
 static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
     if (x < 0) {
         x = 0;
-    } else if (x >= level->m_mainPlane->m_gridW) {
-        x = level->m_mainPlane->m_gridW - 1;
+    } else if (x >= level->m_mainPlane->m_tileColumns) {
+        x = level->m_mainPlane->m_tileColumns - 1;
     }
     if (y < 0) {
         y = 0;
-    } else if (y >= level->m_mainPlane->m_gridH) {
-        y = level->m_mainPlane->m_gridH - 1;
+    } else if (y >= level->m_mainPlane->m_tileRows) {
+        y = level->m_mainPlane->m_tileRows - 1;
     }
     i32 cell = level->m_mainPlane->GetTileHandle(x, y);
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
@@ -429,9 +429,9 @@ i32 CTileTriggerLogic::Tick() {
         case TILEKIND_REDPYRAMID_DOWN:
         case TILEKIND_REDPYRAMID_UP: {
             i32 pxX = 0x10;
-            for (i32 gx = 0; gx < world->m_level->m_mainPlane->m_gridW; gx++, pxX += 0x20) {
+            for (i32 gx = 0; gx < world->m_level->m_mainPlane->m_tileColumns; gx++, pxX += 0x20) {
                 i32 pxY = 0x10;
-                for (i32 gy = 0; gy < world->m_level->m_mainPlane->m_gridH; gy++, pxY += 0x20) {
+                for (i32 gy = 0; gy < world->m_level->m_mainPlane->m_tileRows; gy++, pxY += 0x20) {
                     i32 hit = 0;
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
@@ -710,8 +710,8 @@ i32 CTileTriggerLogic::Tick() {
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 x, i32 y, i32 value) {
     CDDrawWorkerHost* grid = m_world->m_level->m_mainPlane;
-    i32 idx = grid->m_rowOffsets[y] + x;
-    grid->m_tileGrid[idx] = value;
+    i32 idx = grid->m_tileRowOffsets[y] + x;
+    grid->m_tileHandles[idx] = value;
 
     m_tileGrid->ComputeCellFlags(x, y, value);
 }
@@ -841,12 +841,12 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 sx = ((i + m_tileX) << TILE_SHIFT_PX) - 0x10;
             i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
-                CWwdGameObjectA* spr =
+                CWwdSpriteObject* spr =
                     gameMgr->m_childGroup
                         ->CreateSprite(0, sx, sy, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
                 if (spr != NULL) {
-                    spr->ApplyName("LEVEL_ROCKBREAK");
-                    spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
+                    spr->SetImageSetByName("LEVEL_ROCKBREAK");
+                    spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
                 }
             }
         }
@@ -910,7 +910,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 i32 tx = m_tileX;
-                i32 v = L->m_tileGrid[tx + L->m_rowOffsets[ty]] + 1;
+                i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
                 // write through the un-cached global: defeats the address-CSE so the
                 // store re-walks m_world->m_level->m_mainPlane exactly as retail does
                 CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
@@ -1007,7 +1007,7 @@ i32 CTileSecretTriggerLogic::Tick() {
     CGruntzMgr* mgr = g_gameReg;
     CDDrawWorkerHost* layer = mgr->m_world->m_level->m_mainPlane;
     i32 grp = m_tileX;
-    i32 newTok = layer->m_tileGrid[grp + layer->m_rowOffsets[idx]];
+    i32 newTok = layer->m_tileHandles[grp + layer->m_tileRowOffsets[idx]];
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
@@ -1094,14 +1094,14 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (checkpointType != 0) {
-        CWwdGameObjectA* spr =
+        CWwdSpriteObject* spr =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
         if (!spr) {
             return 0;
         }
         spr->m_logicRecord->m_dispatch(spr);
-        spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
-        if (spr->m_layer == NULL) {
+        spr->SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
+        if (spr->m_frameImage == NULL) {
             return 0;
         }
     }
@@ -1115,7 +1115,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
-    i32 v = layer->m_tileGrid[tileX + layer->m_rowOffsets[tileY]] + 1;
+    i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
@@ -1132,7 +1132,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 tileX = m_tileX;
-    i32 v = layer->m_tileGrid[tileX + layer->m_rowOffsets[tileY]] - 1;
+    i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     // write through the un-cached global: defeats the address-CSE so the store
     // re-walks m_world->m_level->m_mainPlane exactly as retail does
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
@@ -1235,7 +1235,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     CDDrawWorkerHost* layer = g_gameReg->m_world->m_level->m_mainPlane;
     i32 tx = m_tileX;
     i32 ty = m_tileY;
-    if (layer->m_tileGrid[tx + layer->m_rowOffsets[ty]] == IDX(code)) {
+    if (layer->m_tileHandles[tx + layer->m_tileRowOffsets[ty]] == IDX(code)) {
         return 0;
     }
     // walk2 through the cached local: the layer-init chain hangs off the raw
@@ -1410,28 +1410,28 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
-        CWwdGameObjectA* spr =
+        CWwdSpriteObject* spr =
             g_gameReg->m_world->m_childGroup
                 ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
         if (spr != NULL) {
-            spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
+            spr->SetAnimationByName("GAME_BRICKBREAK", 0);
 
             switch (brickEffect) {
                 case BRICKTILE_RED_1:
-                    spr->ApplyName("GAME_REDBRICKBREAK");
+                    spr->SetImageSetByName("GAME_REDBRICKBREAK");
                     break;
                 case BRICKTILE_BLUE_1:
-                    spr->ApplyName("GAME_BLUEBRICKBREAK");
+                    spr->SetImageSetByName("GAME_BLUEBRICKBREAK");
                     break;
                 case BRICKTILE_GOLD_1:
-                    spr->ApplyName("GAME_GOLDBRICKBREAK");
+                    spr->SetImageSetByName("GAME_GOLDBRICKBREAK");
                     break;
                 case BRICKTILE_BLACK_1:
-                    spr->ApplyName("GAME_BLACKBRICKBREAK");
+                    spr->SetImageSetByName("GAME_BLACKBRICKBREAK");
                     break;
                 default:
-                    spr->ApplyName("GAME_BRICKBREAK");
-                    if (spr->m_layer == NULL) {
+                    spr->SetImageSetByName("GAME_BRICKBREAK");
+                    if (spr->m_frameImage == NULL) {
                         spr->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     }
                     break;

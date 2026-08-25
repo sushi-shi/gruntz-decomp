@@ -65,7 +65,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     SetObjectFlags(0x2000002);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME)
     m_tilePosition.m_y = snapY;
     m_tilePosition.m_x = snapX;
@@ -95,7 +95,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     }
     m_object->m_extent.bottom = exBottom;
 
-    CDDrawWorker* frameSet = Anim()->m_frameSet;
+    CDDrawWorker* frameSet = Anim()->m_imageSet;
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
@@ -116,7 +116,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
         SetObjectFlags(0x10000);
     }
     SET_ANIMATION_ACT("A");
-    SwitchGeometry("GAME_CYCLE100", 0);
+    SwitchAnimationByName("GAME_CYCLE100", 0);
     CLEAR_OBJECT_AREA
 }
 
@@ -139,7 +139,7 @@ void CKitchenSlime::RegisterType() {
 // @early-stop
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -330,7 +330,7 @@ i32 CKitchenSlime::LoadSprites() {
             m_dirY = -1.0;
             m_posY = -m_stepMag;
             if (changed) {
-                Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
+                Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case CARDINAL_EAST:
@@ -338,7 +338,7 @@ i32 CKitchenSlime::LoadSprites() {
             m_dirY = 0.0;
             m_posX = m_stepMag;
             if (changed) {
-                Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
+                Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case CARDINAL_SOUTH:
@@ -346,7 +346,7 @@ i32 CKitchenSlime::LoadSprites() {
             m_dirY = 1.0;
             m_posY = m_stepMag;
             if (changed) {
-                Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
+                Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case CARDINAL_WEST:
@@ -354,7 +354,7 @@ i32 CKitchenSlime::LoadSprites() {
             m_dirY = 0.0;
             m_posX = -m_stepMag;
             if (changed) {
-                Anim()->ApplyName("LEVEL_KITCHENSLIME_WEST");
+                Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
@@ -373,18 +373,18 @@ i32 CKitchenSlime::LoadSprites() {
     m_speed = g_slimeSpeedNum / static_cast<double>(time);
 
     if (changed != 0) {
-        CWwdGameObjectA* player = Anim();
-        CDDrawWorker* spr = player->m_frameSet;
+        CWwdSpriteObject* player = Anim();
+        CDDrawWorker* spr = player->m_imageSet;
         if (spr != NULL) {
             if (DDRAW_WORKER_CONTAINS_FRAME(spr, 1)) {
                 CImage* img = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1);
                 player->m_frameIndex = 1;
-                player->m_layer = img;
+                player->m_frameImage = img;
                 m_stepMag = 0.0;
                 return 1;
             }
             player->m_frameIndex = 1;
-            player->m_layer = NULL;
+            player->m_frameImage = NULL;
             m_stepMag = 0.0;
             return 1;
         }

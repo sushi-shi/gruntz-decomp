@@ -8,12 +8,12 @@
     if (coords->left != COORD_UNSET) {                                                             \
         LevelCoordRect local;                                                                      \
         CopyRect((&local), (coords));                                                              \
-        m_bounds50 = local;                                                                        \
-        m_viewW = m_bounds50.right - m_bounds50.left + 1;                                          \
-        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;                                          \
-        m_anchorX = m_viewW / 2;                                                                   \
-        m_anchorY = m_viewH / 2;                                                                   \
-        RecomputePlaneCoords();                                                                    \
+        m_viewportRect = local;                                                                    \
+        m_viewportWidth = m_viewportRect.right - m_viewportRect.left + 1;                          \
+        m_viewportHeight = m_viewportRect.bottom - m_viewportRect.top + 1;                         \
+        m_viewHalfWidth = m_viewportWidth / 2;                                                     \
+        m_viewHalfHeight = m_viewportHeight / 2;                                                   \
+        UpdatePlaneViewRect();                                                                     \
     }
 
 #define SET_TILE_SIZE_FROM_IMAGE(image) SetTileSize((image)->m_width, (image)->m_height)

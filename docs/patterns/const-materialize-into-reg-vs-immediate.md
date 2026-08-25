@@ -17,7 +17,7 @@ offset order, cl keeps immediates + groups the zero-stores; (2) a function reusi
 ```cpp
 // nothing reproduces it: store order, `int w=0x140;` locals, and `void* z=0;`
 // reused for the null ops all fold back to cl's immediate/test choice.
-m_18 = 0x140; m_1c = 0xf0;          // CFxModeT2 ctor 0x17e840 ~72%
+m_18 = 0x140; m_1c = 0xf0;          // CLightFaderConfig ctor 0x17e840 ~72%
 if (rec->m_00) { free(rec->m_00); rec->m_00 = 0; }  // CDDPageMgr::RemoveAt 0x17d600 ~86%
 ```
 ```asm
@@ -26,10 +26,10 @@ mov [esi+0x18],eax ; mov [esi+0x1c],ecx       ; ...stored in offset order
 xor edi,edi ; cmp [ebp+4],edi ; mov [ebx],edi ; retail: 0 held in edi, reused
 ```
 WALL — not source-steerable; the register-vs-immediate + reuse decision is MSVC5's
-constant scheduler. Sibling ctors with <=1 large constant (CFxModeT3/4/5/6) match
+constant scheduler. Sibling ctors with <=1 large constant (CSineFaderConfig/4/5/6) match
 100%; FreeAll (no reused-0 store) matches 100%. Logic/layout are byte-correct.
 
-The 2026-08-20 personal re-audit of `CFxModeT2::CFxModeT2` tightened the
+The 2026-08-20 personal re-audit of `CLightFaderConfig::CLightFaderConfig` tightened the
 boundary. Base and retail have the same base-constructor call, no branches, one
 return, one relocation, and the same eight member values. A local `POINT`
 initialized to `(0x140,0xf0)` folds back to the same immediate stores, so the

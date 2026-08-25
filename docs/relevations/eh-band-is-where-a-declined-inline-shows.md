@@ -106,11 +106,11 @@ expand at **every** site is a textual macro:
 -
 -inline void CUserLogic::AttachToObject(CGameObject* obj) {
 -    m_logicObject = obj;
--    m_object = static_cast<CWwdGameObjectA*>(obj);
+-    m_object = static_cast<CWwdSpriteObject*>(obj);
 -    m_logicRecord = obj->m_logicRecord;
 +#define USERLOGIC_ATTACH_TO_OBJECT(obj)                                        \
 +    m_logicObject = (obj);                                                     \
-+    m_object = static_cast<CWwdGameObjectA*>(obj);                             \
++    m_object = static_cast<CWwdSpriteObject*>(obj);                             \
 +    m_logicRecord = (obj)->m_logicRecord;                                            \
      {                                                                          \
          zBitVec tmp("", 0);                                                    \

@@ -35,7 +35,7 @@ BEFORE reading an exclusive as a missing statement:
    where the address has multiple uses (`RECT* view = &cam->m_viewRect` in
    OnLButtonDown/OnKeyDown, the GRID_RECT_INLINE_PTR tail) and is
    copy-propagated into nothing at single-use sites (CStaticHazard's
-   `m_animCursor.m_consumeDraw` store) - measure, don't assume.
+   `m_animationCursor.m_consumeDraw` store) - measure, don't assume.
 
 4. **AL-accumulator peephole.** `imm 0xe0 target` paired with
    `imm 0xffffffe0 base` (and kin: 0xef/0xffffefff, 0xfa/0xfffffffa) is

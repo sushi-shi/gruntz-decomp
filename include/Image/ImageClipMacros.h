@@ -10,7 +10,7 @@
     rect.right = right;                                                                            \
     rect.bottom = bottom;                                                                          \
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {                                   \
-        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;                                          \
+        BlitRect clipA = m_ownerCtx->m_level->m_viewportRect;                                      \
         RECT clip;                                                                                 \
         CopyRect(&clip, static_cast<const RECT*>(&clipA));                                         \
         if (x < clip.left) {                                                                       \

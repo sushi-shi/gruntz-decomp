@@ -77,12 +77,12 @@ i32 CGrunt::StepPeerTracking() {
         if (m_blockedVoicePending == 0) {
             return 1;
         }
-        CWwdGameObjectA* c = m_object;
+        CWwdSpriteObject* c = m_object;
         CGruntzMgr* g = g_gameReg;
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;
         CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
-        if (CGameLevel::PointInRect(&r->m_viewRect, x, y)) {
+        if (CGameLevel::PointInRect(&r->m_planeViewRect, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
     }

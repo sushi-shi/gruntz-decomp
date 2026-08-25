@@ -12,7 +12,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
-#include <Gruntz/TypeColl2.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
@@ -30,7 +29,7 @@ RVA_COMPGEN(0x00010670, 0x44, ??1CGruntStartingPoint@@UAE@XZ)
 RVA(0x0003df30, 0x161)
 CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("GAME_EXIT");
+    SetImageSetByName("GAME_EXIT");
     SET_ANIMATION_ACT("A");
     SetObjectFlags(1);
     SetObjectFlags(2);

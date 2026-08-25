@@ -61,9 +61,9 @@ first argument; `ret N` gives the argument count; a lone `e9` is a tail call and
 names the callee; `add ecx,N` before a call is a member sub-object's method.
 
 The two thunks are worth their own note: an inline destructor whose whole body is one call
-(`~CHash() { RemoveAll(); }`) gets an out-of-line COMDAT emitted alongside the inlined
+(`~CRezEntryIdHash() { RemoveAll(); }`) gets an out-of-line COMDAT emitted alongside the inlined
 copies, and it lands next to the function whose member-init list needs it for unwinding.
-Our obj already emitted `??1CHash@@QAE@XZ` and `??1CHashB@@QAE@XZ` — they were simply never
+Our obj already emitted `??1CRezEntryIdHash@@QAE@XZ` and `??1CRezDirectoryNameHash@@QAE@XZ` — they were simply never
 pinned, so the delinker never carved them. `RVA_COMPGEN` binds them with no source change.
 
 On the 2026-08-19 tree the first edge-only scan reported 90 gaps and 6,958 bytes, but that

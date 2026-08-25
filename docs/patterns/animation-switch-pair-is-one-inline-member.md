@@ -18,7 +18,7 @@ INSIDE the expansion, which means the member is declared on the class that owns 
 POINTER (`CWapX`, which owns `m_wwdObject` and `m_value`).
 
 **The pair must be ONE member.** Splitting it into a `CacheAnimation()` plus a plain
-`ApplyLookupGeometry()` forwarder is WORSE than not converting: the boundary does move the
+`SetAnimationByName()` forwarder is WORSE than not converting: the boundary does move the
 load inside, but the call that follows still needs the receiver in ECX, so cl allocates
 EDX inside the expansion and pays a `mov ecx,edx` (`CStaticHazard::LoadAttributes2`
 97.857 -> 93.929, function grew 0xb2 -> 0xb4). With both statements in one member the call
@@ -26,29 +26,29 @@ inside the expansion pins the register and the extra move disappears.
 
 ## The devs' shape, from the site census
 
-`m_value = m_wwdObject->m_animCursor.m_animation;` has **116** textual sites, and **109**
+`m_value = m_wwdObject->m_animationCursor.m_animation;` has **116** textual sites, and **109**
 of them are immediately followed by exactly one of three calls:
 
 | next statement | sites | member |
 |---|---|---|
-| `m_wwdObject->m_animCursor.Setup(a)` | 48 | `void SwitchAnimation(CAniElement*)` |
-| `m_wwdObject->ApplyLookupGeometry(k, f)` | 46 | `i32 SwitchGeometry(const char*, i32)` |
-| `m_wwdObject->ApplyGeometryDirect(a, d)` | 15 | `void SwitchGeometryDirect(CAniElement*, i32)` |
+| `m_wwdObject->m_animationCursor.Setup(a)` | 48 | `void SwitchAnimation(CAniElement*)` |
+| `m_wwdObject->SetAnimationByName(k, f)` | 46 | `i32 SwitchAnimationByName(const char*, i32)` |
+| `m_wwdObject->SetAnimation(a, d)` | 15 | `void SwitchAnimationAndMaybeAdvance(CAniElement*, i32)` |
 
 ```cpp
 class CWapX {
-    CWwdGameObjectA* m_wwdObject;
+    CWwdSpriteObject* m_wwdObject;
     class CAniElement* m_value;
 
     void SwitchAnimation(CAniElement* anim) {
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(anim);
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_wwdObject->m_animationCursor.Setup(anim);
     }
 };
 
 // CStaticHazard::LoadAttributes2
 m_fired = 1;
-SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
+SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
 ```
 ```asm
 ; retail 0xfc0f9                    ; cl, written out

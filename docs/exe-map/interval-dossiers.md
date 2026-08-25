@@ -318,11 +318,11 @@ Seam fns (unit-dissolves, all stay):
   content (below).
 - **Plane/render TU** (LevelPlane.cpp) `[0x161350 .. 0x163a00]` — `CLevelPlane`
   + `CPlaneRender` (incl. the 2237-B `Draw`) + `WwdFile::RebuildPlanes`/
-  `ReadPlaneObjects` + the CImageSet3 helpers — heavily woven, one obj; zero
+  `ReadPlaneObjects` + the CPixelTileImageSet helpers — heavily woven, one obj; zero
   `CGameLevel` fns after `0x161322`.
 
 Boundary: between `0x161322` (end `?AxisProbe@CGameLevel`) and `0x1615a0`
-(`??0CDDrawWorkerHost`); the `0x161350-0x161558` pocket of CImageSet1/2/3
+(`??0CDDrawWorkerHost`); the `0x161350-0x161558` pocket of CUniformTileImageSet/2/3
 scalar/vector dtors is COMDAT-at-usage emission (class homes elsewhere,
 cf. imageset cores in `0x1504d0`) so the nominal boundary is `0x161350`.
 
@@ -337,10 +337,10 @@ Seam fns:
 - `0x00160790` — `_WwdFile_InflateMainBlock@12` — wwdfile -> GameLevel TU — same.
 - `0x00160870` — `?WwdFile_CompressMainBlock@@YGHPAEK0K@Z` — wwdfile -> GameLevel TU — same.
 - `0x001615a0`/`0x00161640`/`0x00161c50` — CDDrawWorkerHost ctor/Gap/
-  `RegisterNamed` — ddrawworkerhost -> Plane TU — woven into the plane block
+  `SetImageSetByName` — ddrawworkerhost -> Plane TU — woven into the plane block
   (medium: identity placeholder).
 - `0x00161bf0`/`0x001628d0`/`0x001633e0` — `Cleanup_161bf0`/`Prune_1628d0`/
-  `GetSize_1633e0@CImageSet3` — imageset3 -> Plane TU — RVA-suffixed
+  `GetSize_1633e0@CPixelTileImageSet` — imageset3 -> Plane TU — RVA-suffixed
   placeholders compiled in the plane obj.
 
 ## 9. `0x154aa0-0x15ccc8` ddraw-submgr region — partial (weak; boundaries only)
@@ -364,7 +364,7 @@ class-family transitions:
    (CreateObject/CreateNamed factories, find/foreach/serialize family,
    `0x159250-0x15b2b0`; `CDDrawChildGroup` walk dispatchers woven in).
 4. **`0x15b2c0`** — → the `CWwdGameObject`/factory-object file
-   (`CWwdGameObjectA-F` dtors + `CWwdFactoryObject` Release/Reset +
+   (`CWwdSpriteObject-F` dtors + `CWwdFactoryObject` Release/Reset +
    `CDDrawBlitParam` + `CAniAdvanceCursor::Advance`, to `0x15ccc8`).
 
 Note: the CFileMem pocket `0x157850-0x157a66` is COMDAT-at-usage emission
@@ -374,7 +374,7 @@ Note: the CFileMem pocket `0x157850-0x157a66` is COMDAT-at-usage emission
 
 ## 10a. `0x09e700-0x09fe39` mapmgr + brickz — ONE TU (strong)
 
-**Verdict: merge** (MapMgr.cpp: `CMapMgr` + `CMapArrayA/B` + `CBrickzGrid`).
+**Verdict: merge** (MapMgr.cpp: `CMapMgr` + `CBrickzNodePool/B` + `CBrickzGrid`).
 
 Evidence:
 - Weave A-B-A-B-A: `?Reset@CMapMgr` @`0x9ec30` between the two CBrickzGrid
@@ -672,7 +672,7 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   throughout (`CRezArchiveEntry`/`CRezArchiveDir`/`CRezArchive` ctors+dtors,
   ReadDirectoryBody, AcquireEntry) -> /GX; the cremusreadstream base profile was a
   seam artifact.
-* **B (hash pocket).** One contiguous CHash/CHashB block directly after A; no
+* **B (hash pocket).** One contiguous CRezEntryIdHash/CRezDirectoryNameHash block directly after A; no
   frags, no private cells, no EH sites, no weave -> cannot bind to A or prove
   its own obj. Left split (conservative partial).
 * **C (rez file = ONE TU).** DECISIVE shared private cells: the "r+b"/"w+b"
@@ -686,14 +686,14 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   compiled in the window file (stays D). EH sites only in E
   (InitializeGameWindow/Manager) - D base, E eh, exactly the current profiles.
   The five "rezmgr" timing fns are E's: text A-B-A (UpdateClock@0x13ddc0
-  between Close@CGameMgr@0x13ddb0 and InitTimeFields@CGameMgr@0x13de70;
-  SpinWaitUntil/SetFrameRate/TrySetFrameRate/WaitKeyEdge 0x13dec0-0x13df30
-  after InitializeTimeGlobal@0x13dea0). Identity: the "RezMgr" receiver view
+  between Close@CGameMgr@0x13ddb0 and ResetFpsSampleWindow@CGameMgr@0x13de70;
+  SpinWaitForMs/SetFrameRate/TrySetFrameRate/WaitKeyEdge 0x13dec0-0x13df30
+  after ResetFrameTiming@0x13dea0). Identity: the "RezMgr" receiver view
   == WAP32::CGameMgr (m_fps@0x18/m_pauseFlag@0x1c/m_elapsedMs@0x20/
   m_startTick@0x24 == the view's m_smoothedFrameCount/m_pacingGate/
-  m_frameCounter/m_windowStartTick; UpdateClock calls InitTimeFields ==
+  m_frameCounter/m_windowStartTick; UpdateClock calls ResetFpsSampleWindow ==
   0x13de70), and its duplicate frame-clock statics are the canonical
-  g_wap32Now/FrameDelta/ClockReset/Run7c/Run80 cells (0x253c70-0x253c80,
+  g_gameAppNowMs/FrameDelta/ClockReset/Run7c/Run80 cells (0x253c70-0x253c80,
   Globals.cpp) - the statics dissolve onto the canonicals with the move.
   Full RezMgr->CGameMgr method fold deferred to the gruntzmgr package (its
   other methods live at 0x8b740/0x8e470/0x91670, outside this band).
@@ -854,7 +854,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   Open/Read/Write) | workers | helper | workers. Sizes up to 1KB with EH => a
   real TU (not a COMDAT pool): the family's "runtime meat" file, sitting after
   levelplane (its own obj per dossier #8). Vtable corroboration: ??_7CAniRecordView
-  (0x1f02c0, first-stamp Build_165460) and ??_7CAniRecordBase2 (0x1f02d8,
+  (0x1f02c0, first-stamp Build_165460) and ??_7CDDrawPaletteResource (0x1f02d8,
   first-stamp 0x1658c0) are kept HERE, in .rdata order right after levelplane's
   vtables - monotone with T as the next obj.
 * **Vtable .rdata run (order oracle).** 0x1efb80..0x1f02d8 is one unbroken
@@ -883,7 +883,8 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   R holding file -> `src/Wwd/WwdGameObjectRender.cpp` (NEW unit). 22 units dissolved, 2 added.
   Shared class hierarchies hoisted to headers so split method sets can live in their objs:
   WwdGameObjectFamily.h, WwdGameObjCtor.h, WwdFactoryObject.h, ResolveNode.h, CLogicRecord.h,
-  LogicRecordRegistry.h, DDrawWorkerList.h, DDrawWorkerMapSmall.h, AnimationRegistry.h, AniAdvance.h.
+  LogicRecordRegistry.h, DDrawWorkerList.h, DDrawPaletteRegistry.h, AnimationRegistry.h,
+  AniAdvanceCursor.h.
 * **Held correct-partials (documented, NOT merged):** DDrawSurfaceMgrSerialize.cpp stays a
   separate F-block file (its CFileMem/CDDrawSurfaceMgr/CDDrawSubMgrPages local views clash with
   F's; fold deferred); WwdSpatialMgr.cpp keeps the 0x163a40 dtor (co-located with FreeGrids);

@@ -55,7 +55,7 @@ struct CUserBaseLink {
 // include/Gruntz/UserLogic.h
 class CUserLogic {
     ...
-    CWwdGameObjectA* m_object;
+    CWwdSpriteObject* m_object;
     CLogicRecord*   m_logicRecord;
     CUserBaseLink    m_link;      // <- one member, holding one member
     i32              m_gatedCallbackCode;
@@ -118,7 +118,7 @@ path** could tell the two apart — which is exactly what the funclets did.
 -#include <Gruntz/UserBaseLink.h>
 +#include <Wap32/zBitVec.h>
 
-     CWwdGameObjectA* m_object;
+     CWwdSpriteObject* m_object;
      CLogicRecord* m_logicRecord;
 -    CUserBaseLink m_link;
 +    zBitVec m_actBits;

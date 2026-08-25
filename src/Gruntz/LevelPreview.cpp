@@ -98,7 +98,7 @@ i32 CPreviewState::AcceptPreviewCommand(i32 unused) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
+    IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (surf == NULL || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
@@ -106,10 +106,10 @@ i32 CPreviewState::Tick() {
         }
     }
     TickSoundVolumeRamps(m_world->m_soundRegistry);
-    if (static_cast<u32>(g_wap32FrameDelta) >= m_previewCountdownMs) {
+    if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_previewCountdownMs) {
         m_previewCountdownMs = 0;
     } else {
-        m_previewCountdownMs = m_previewCountdownMs - g_wap32FrameDelta;
+        m_previewCountdownMs = m_previewCountdownMs - g_gameAppFrameDeltaMs;
     }
     return 1;
 }

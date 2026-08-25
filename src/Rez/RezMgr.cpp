@@ -22,15 +22,15 @@ u32 g_frameTime = 0;
 DATA(0x0024558c)
 i32 g_frameTicks = 0;
 DATA(0x00245590)
-i32 g_timer32 = 0;
+i32 g_period50CountdownMs = 0;
 DATA(0x00245598)
-i32 g_timer200 = 0;
+i32 g_period200CountdownMs = 0;
 DATA(0x0024559c)
-i32 g_timer400 = 0;
+i32 g_period400CountdownMs = 0;
 DATA(0x002455a0)
-i32 g_timer500 = 0;
+i32 g_period500CountdownMs = 0;
 DATA(0x00245594)
-i32 g_timer100 = 0;
+i32 g_period100CountdownMs = 0;
 
 RVA(0x0008b740, 0x12d)
 i32 CGruntzMgr::PerFrameTick() {
@@ -42,8 +42,8 @@ i32 CGruntzMgr::PerFrameTick() {
 
     GameStateId r = m_curState->Update();
     if (r != GAMESTATE_MULTI) {
-        u32 dt = g_wap32FrameDelta;
-        g_lastNow = g_wap32Now;
+        u32 dt = g_gameAppFrameDeltaMs;
+        g_lastNow = g_gameAppNowMs;
         g_frameDelta = dt;
         if (dt > 0x64) {
             dt = 0x64;
@@ -52,35 +52,35 @@ i32 CGruntzMgr::PerFrameTick() {
         g_frameTime += dt;
 
         u32 v;
-        v = (g_timer32 == 0) ? 0x32 : g_timer32;
+        v = (g_period50CountdownMs == 0) ? FRAME_CLOCK_PERIOD_50_MS : g_period50CountdownMs;
         if (dt >= v) {
-            g_timer32 = 0;
+            g_period50CountdownMs = 0;
         } else {
-            g_timer32 = v - dt;
+            g_period50CountdownMs = v - dt;
         }
-        v = (g_timer100 == 0) ? 0x64 : g_timer100;
+        v = (g_period100CountdownMs == 0) ? FRAME_CLOCK_PERIOD_100_MS : g_period100CountdownMs;
         if (dt >= v) {
-            g_timer100 = 0;
+            g_period100CountdownMs = 0;
         } else {
-            g_timer100 = v - dt;
+            g_period100CountdownMs = v - dt;
         }
-        v = (g_timer200 == 0) ? 0xc8 : g_timer200;
+        v = (g_period200CountdownMs == 0) ? FRAME_CLOCK_PERIOD_200_MS : g_period200CountdownMs;
         if (dt >= v) {
-            g_timer200 = 0;
+            g_period200CountdownMs = 0;
         } else {
-            g_timer200 = v - dt;
+            g_period200CountdownMs = v - dt;
         }
-        v = (g_timer400 == 0) ? 0x190 : g_timer400;
+        v = (g_period400CountdownMs == 0) ? FRAME_CLOCK_PERIOD_400_MS : g_period400CountdownMs;
         if (dt >= v) {
-            g_timer400 = 0;
+            g_period400CountdownMs = 0;
         } else {
-            g_timer400 = v - dt;
+            g_period400CountdownMs = v - dt;
         }
-        v = (g_timer500 == 0) ? 0x1f4 : g_timer500;
+        v = (g_period500CountdownMs == 0) ? FRAME_CLOCK_PERIOD_500_MS : g_period500CountdownMs;
         if (dt >= v) {
-            g_timer500 = 0;
+            g_period500CountdownMs = 0;
         } else {
-            g_timer500 = v - dt;
+            g_period500CountdownMs = v - dt;
         }
 
         g_frameTicks++;

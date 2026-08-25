@@ -373,7 +373,7 @@ had no part in. `a15276c63` (remove artificial COMDAT emitters) created a batch 
 these; `fef59116a` and `30a9b5ec9` gave most of them real emitters again.
 
 This is what the original 12-LOST report was made of. **Every single row it named is
-at 100.00% today** — `?PointInBounds@CGameLevel`, `?ResetParamBlock@CGameLevel`,
+at 100.00% today** — `?PointInBounds@CGameLevel`, `?ResetSpatialDefaults@CGameLevel`,
 `??0WwdRegion`, `??0WwdDirtyRect`, `??0WwdGridNode`, `??1CWorldSoundSet`,
 `??0CUserLogic` (best 89.04 → 100.00), `??0CGameObject` (91.06 → 100.00) — some in
 their original unit, some transferred. **Not one was a loss.** Read a LOST row as

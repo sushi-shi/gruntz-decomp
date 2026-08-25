@@ -128,7 +128,7 @@ single-`static`-definition probe only, not about the mechanism.
 
 ## A shared header growing MEMBERS is a TU-state perturbation too - and it pays
 
-`CImageSet3::GetStride` 0x00161590 (`m_height * m_width + K`, offsets 0x8 and 0x4)
+`CPixelTileImageSet::GetStride` 0x00161590 (`m_height * m_width + K`, offsets 0x8 and 0x4)
 carried the exact residue this document describes, and reproduced its refutations:
 both operand orders, an inline `GetArea()` accessor, moving the definition into the
 header `inline` beside its two siblings, and a named local for the first operand are
@@ -152,6 +152,6 @@ Two consequences for the sieve:
   and the parity comes along.
 
 Caveat measured on the way: keep retail's pointer WALK in the readers. Reading
-`rec->m_width` / `rec->m_height` as named members cost `CImageSet3::Parse` 100.00 ->
+`rec->m_width` / `rec->m_height` as named members cost `CPixelTileImageSet::Parse` 100.00 ->
 77.47 and both siblings with it; anchoring the same walk at `&rec->m_width` is
 byte-neutral.

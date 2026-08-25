@@ -196,9 +196,9 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     m_streamBase = streamBase;
     m_filename = filename;
 
-    m_tree.Reset();
-    m_tree48.Reset();
-    m_tree74.Reset();
+    m_tags.Reset();
+    m_modifiedTags.Reset();
+    m_addedTags.Reset();
 
     bool result = true;
     if (!ParseGroup()) {

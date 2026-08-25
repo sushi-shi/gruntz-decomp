@@ -72,7 +72,7 @@ The same audit applies when a call lands inside a larger function rather than
 in the ILT band. A named destination at an internal shared tail is not evidence
 for a standalone helper. Chase the tail's calls and receiver instead. The
 Grunt entrance-animation tails both resolve to
-`CWwdGameObjectA::ApplyLookupSprite`; replacing the invented
+`CWwdSpriteObject::SetImageFrameByName`; replacing the invented
 `EntranceApplyFrame` declaration with the real member call removed another
 declared-only function.
 

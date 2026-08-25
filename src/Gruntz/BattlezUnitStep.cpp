@@ -248,7 +248,7 @@ L_clear: {
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     out.m_x = h->m_screenX >> TILE_SHIFT_PX;
     out.m_y = h->m_screenY >> TILE_SHIFT_PX;
     return out;

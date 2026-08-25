@@ -9,13 +9,13 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
+#include <DDrawMgr/DDrawPaletteRegistry.h>
+#include <DDrawMgr/DDrawPlacedWorker.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerCtx.h>
 #include <DDrawMgr/DDrawWorkerList.h>
-#include <DDrawMgr/DDrawWorkerMapSmall.h>
-#include <DDrawMgr/DDrawWorkerNode.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -44,7 +44,7 @@ RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::Unload() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
         if (child) {
             delete child;
         }
@@ -60,7 +60,7 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
         POSITION cur = pos;
-        CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
         child->RenderFrame(backBuffer, overlay);
         child->m_refCount--;
         if ((overlay->m_surface != NULL
@@ -81,7 +81,7 @@ RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::ClearWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
-        CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
+        CDDrawPlacedWorker* child = static_cast<CDDrawPlacedWorker*>(m_workers.GetNext(pos));
         if (child) {
             delete child;
         }
@@ -122,7 +122,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (kind == DDRAW_PAGE_BACK) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->m_deviceManager->WrapAttachedSurface(
-            mgr->m_drawTarget->m_frontPair->m_surface,
+            mgr->m_drawTarget->m_frontSurface->m_surface,
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
@@ -357,7 +357,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = mgr->m_deviceManager->WrapAttachedSurface(
-                mgr->m_drawTarget->m_frontPair->m_surface,
+                mgr->m_drawTarget->m_frontSurface->m_surface,
                 DDSCAPS_BACKBUFFER
             );
             if (m_surface == NULL) {
@@ -433,7 +433,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // function. Duplicated arms, a deduplicated fall-through, and an explicit
 // `default:` arm all produce the same sunk layout (over-merge placement family).
 RVA(0x001644a0, 0x1b0)
-i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
+i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceMgr* surfaceManager = OwnerMgr();
     m_width = w;
     m_height = h;
@@ -541,7 +541,7 @@ i32 CDrawSubWorker::Probe() {
 }
 
 RVA(0x001646b0, 0xde)
-i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
+i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }
@@ -1046,32 +1046,32 @@ RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
 RVA_COMPGEN(0x001657a0, 0x66, ??1CAniRecordView@@UAE@XZ)
 
 RVA(0x00165810, 0xa9)
-void CDDrawWorkerMapSmall::Unload() {
+void CDDrawPaletteRegistry::Unload() {
     CObject* val = NULL;
-    POSITION pos = m_map1.GetStartPosition();
+    POSITION pos = m_palettesByName.GetStartPosition();
     CString key;
     if (pos != NULL) {
         do {
-            m_map1.GetNextAssoc(pos, key, val);
+            m_palettesByName.GetNextAssoc(pos, key, val);
             if (val != NULL) {
-                delete (static_cast<CAniRecordBase2*>(val));
+                delete (static_cast<CDDrawPaletteResource*>(val));
             }
         } while (pos != NULL);
     }
-    m_map1.RemoveAll();
-    m_cachedWorker = NULL;
+    m_palettesByName.RemoveAll();
+    m_activePalette = NULL;
 }
 
 RVA(0x001658c0, 0xcc)
-CAniRecordBase2*
-CDDrawWorkerMapSmall::LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags) {
+CDDrawPaletteResource*
+CDDrawPaletteRegistry::LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags) {
     RecordBytes<char> source;
     source.m_chars = src->LoadData();
     u8* data = source.m_bytes;
     if (data == NULL) {
         return NULL;
     }
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         src->ReleaseData();
         if (w != NULL) {
@@ -1086,40 +1086,41 @@ CDDrawWorkerMapSmall::LoadPaletteFromSource(CRezArchiveEntry* src, const char* k
     } else {
         strcpy(buf, src->m_name);
     }
-    m_map1[buf] = static_cast<CObject*>(w);
+    m_palettesByName[buf] = static_cast<CObject*>(w);
     return w;
 }
 
 RVA(0x00165990, 0x77)
-CAniRecordBase2* CDDrawWorkerMapSmall::CreateWorkerFromData(u8* data, const char* key, i32 flags) {
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
+CDDrawPaletteResource*
+CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags) {
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    m_map1[key] = static_cast<CObject*>(w);
+    m_palettesByName[key] = static_cast<CObject*>(w);
     return w;
 }
 
 RVA(0x00165a10, 0x77)
-CAniRecordBase2*
-CDDrawWorkerMapSmall::CreateWorkerFromFile(char* path, const char* key, i32 flags) {
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
+CDDrawPaletteResource*
+CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flags) {
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
     if (w->LoadPaletteFromFile(path, flags) == 0) {
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    m_map1[key] = static_cast<CObject*>(w);
+    m_palettesByName[key] = static_cast<CObject*>(w);
     return w;
 }
 
 RVA(0x00165a90, 0xf4)
-CAniRecordBase2*
-CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CRezArchiveEntry* src, i32 key, i32 flags) {
+CDDrawPaletteResource*
+CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezArchiveEntry* src, i32 key, i32 flags) {
     if (src->GetTypeTag() != IMGTAG_XCP) {
         return NULL;
     }
@@ -1129,7 +1130,7 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CRezArchiveEntry* src, i32 key,
     }
 
     i32 length = static_cast<i32>(src->m_size);
-    CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
+    CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
         if (w != NULL) {
             delete w;
@@ -1145,44 +1146,44 @@ CDDrawWorkerMapSmall::LoadSizedPaletteFromSource(CRezArchiveEntry* src, i32 key,
     } else {
         strcpy(buf, src->m_name);
     }
-    m_map1[buf] = static_cast<CObject*>(w);
+    m_palettesByName[buf] = static_cast<CObject*>(w);
     return w;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165b90, 0xa9)
-void CDDrawWorkerMapSmall::ResetSlots() {
+void CDDrawPaletteRegistry::ClearPalettes() {
     CObject* val = NULL;
-    POSITION pos = m_map1.GetStartPosition();
+    POSITION pos = m_palettesByName.GetStartPosition();
     CString key;
     if (pos != NULL) {
         do {
-            m_map1.GetNextAssoc(pos, key, val);
+            m_palettesByName.GetNextAssoc(pos, key, val);
             if (val != NULL) {
-                delete (static_cast<CAniRecordBase2*>(val));
+                delete (static_cast<CDDrawPaletteResource*>(val));
             }
         } while (pos != NULL);
     }
-    m_map1.RemoveAll();
-    m_cachedWorker = NULL;
+    m_palettesByName.RemoveAll();
+    m_activePalette = NULL;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165c40, 0xe7)
-i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
-    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(obj);
-    if (m_cachedWorker == w) {
-        m_cachedWorker = NULL;
+i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
+    CDDrawPaletteResource* w = static_cast<CDDrawPaletteResource*>(obj);
+    if (m_activePalette == w) {
+        m_activePalette = NULL;
     }
     CObject* val = NULL;
-    POSITION pos = m_map1.GetStartPosition();
+    POSITION pos = m_palettesByName.GetStartPosition();
     CString key;
     while (pos != NULL) {
-        m_map1.GetNextAssoc(pos, key, val);
+        m_palettesByName.GetNextAssoc(pos, key, val);
         if (val == obj) {
-            m_map1.RemoveKey(key);
+            m_palettesByName.RemoveKey(key);
             if (w != NULL) {
                 delete w;
             }
@@ -1192,31 +1193,31 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
     return 0;
 }
 
-static inline CAniRecordBase2* LookupRecord(CMapStringToOb& map, LPCTSTR name) {
+static inline CDDrawPaletteResource* LookupRecord(CMapStringToOb& map, LPCTSTR name) {
     CObject* found = NULL;
     map.Lookup(name, found);
-    return static_cast<CAniRecordBase2*>(found);
+    return static_cast<CDDrawPaletteResource*>(found);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165d30, 0x5f)
-i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
-    CAniRecordBase2* w = LookupRecord(m_map1, key);
+i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
+    CDDrawPaletteResource* w = LookupRecord(m_palettesByName, key);
     if (w == NULL) {
         return 0;
     }
-    if (m_cachedWorker == w) {
-        m_cachedWorker = NULL;
+    if (m_activePalette == w) {
+        m_activePalette = NULL;
     }
-    m_map1.RemoveKey(key);
+    m_palettesByName.RemoveKey(key);
     delete w;
     return 1;
 }
 
-// CAniRecordBase2 header inlines this TU materializes (same mechanism).
-RVA_COMPGEN(0x00165db0, 0x1e, ??_GCAniRecordBase2@@UAEPAXI@Z)
-RVA_COMPGEN(0x00165dd0, 0x5b, ??1CAniRecordBase2@@UAE@XZ)
+// CDDrawPaletteResource header inlines this TU materializes (same mechanism).
+RVA_COMPGEN(0x00165db0, 0x1e, ??_GCDDrawPaletteResource@@UAEPAXI@Z)
+RVA_COMPGEN(0x00165dd0, 0x5b, ??1CDDrawPaletteResource@@UAE@XZ)
 
 RVA(0x00165e30, 0x27)
 i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
@@ -1290,7 +1291,7 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 }
 
 RVA(0x00165fa0, 0x93)
-void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     {
 
         char c = m_pixelValue;
@@ -1323,7 +1324,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 RVA(0x00166040, 0x66)
-i32 CDDrawWorkerB::ResolveFrame(const char* workerName, i32 frameIndex) {
+i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
     CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;
@@ -1331,7 +1332,7 @@ i32 CDDrawWorkerB::ResolveFrame(const char* workerName, i32 frameIndex) {
 }
 
 RVA(0x001660b0, 0x33)
-void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
+void CDDrawFrameWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     m_frame->RenderImage(this, backBuffer);
     if (overlay->m_surface != NULL
         && !HAS(

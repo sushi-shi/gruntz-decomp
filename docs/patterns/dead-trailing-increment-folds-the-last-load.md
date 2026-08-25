@@ -9,7 +9,7 @@ confidence: 8/10 (three sibling functions, one of them EXACT as the control)
 
 ## The shape
 
-`CImageSet1::Parse` 0x166d40 reads a serialized tile-image record through a
+`CUniformTileImageSet::Parse` 0x166d40 reads a serialized tile-image record through a
 cursor. Retail:
 
     mov eax,[esp+0x4]     ; record
@@ -34,7 +34,7 @@ Ours, from source that is already the pointer walk:
     mov [ecx+0xc],eax
 
 One instruction, 12 against 11, and the function reads 86.67%. The sibling
-`CImageSet2::Parse` 0x166990 has the identical residue over eight fields
+`CRectTileImageSet::Parse` 0x166990 has the identical residue over eight fields
 (94.07%).
 
 ## Why, and the control that proves it
@@ -44,7 +44,7 @@ an `add` whose only remaining use is the final load and folds it into the
 addressing mode. Retail did not, so retail's cursor was **not dead at that
 load**.
 
-The control is the third sibling. `CImageSet3::Parse` 0x166d70 uses the SAME
+The control is the third sibling. `CPixelTileImageSet::Parse` 0x166d70 uses the SAME
 `READ_TILE_IMAGE_DIMENSIONS` macro and is **EXACT** — because it ends with
 `memcpy(dst, p, m_byteSize)`, so its cursor is live past the last read and the
 fold never becomes available. Same source idiom, opposite outcome, decided

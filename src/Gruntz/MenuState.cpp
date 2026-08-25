@@ -279,7 +279,7 @@ void CMenuState::StopMusicChain() {
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::LeaveState(GameStateId) {
     m_world->m_drawTarget->TransExit();
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_activateCueDurationMs)

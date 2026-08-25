@@ -408,17 +408,17 @@ flags = "cpp"
 
 [[unit]]
 unit = "imageset1"
-source = "src/Gruntz/ImageSet1.cpp"
+source = "src/Gruntz/UniformTileImageSet.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
 unit = "imageset2"
-source = "src/Gruntz/ImageSet2.cpp"
+source = "src/Gruntz/RectTileImageSet.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
 unit = "imageset3g"
-source = "src/Gruntz/ImageSet3.cpp"
+source = "src/Gruntz/PixelTileImageSet.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1214,7 +1214,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "fxmodedesc"
-source = "src/Gruntz/FxModeDesc.cpp"
+source = "src/Gruntz/ButeSectionKey.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1310,7 +1310,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "imageset3"
-source = "src/Image/ImageSet3.cpp"
+source = "src/Image/PixelTileImageSet.cpp"
 flags = "cpp"
 
 [[unit]]

@@ -166,7 +166,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
         return 0;
     }
 
-    ColorDepth fmt = m_ownerCtx->m_drawTarget->m_frontPair->m_bpp;
+    ColorDepth fmt = m_ownerCtx->m_drawTarget->m_frontSurface->m_bpp;
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
@@ -341,7 +341,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -350,7 +350,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 dright = right;
     i32 dbottom = bottom;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        BlitRect srcClip = m_ownerCtx->m_level->m_planeCtx;
+        BlitRect srcClip = m_ownerCtx->m_level->m_viewportRect;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
@@ -456,7 +456,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -486,7 +486,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -516,7 +516,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -546,7 +546,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
     LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -574,7 +574,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -602,7 +602,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
     LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
@@ -630,7 +630,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WrapCoord(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;

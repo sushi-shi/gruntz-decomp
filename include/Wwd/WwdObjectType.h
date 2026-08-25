@@ -3,7 +3,7 @@
 
 #include <Enums.h>
 
-// Proven bits in CWwdGameObjectFamily::m_objectType. The field is a collision
+// Proven bits in CGameObject::m_objectType. The field is a collision
 // category mask loaded from WWD data, so it remains an integer at the ABI
 // boundary and only evidence-backed bits are named here.
 GZ_ENUM_CONST_BEGIN(WwdObjectType)

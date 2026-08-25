@@ -87,7 +87,7 @@ void CDDrawChildGroup::DestroyChildren() {
 }
 
 RVA(0x00159250, 0x185)
-CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
+CWwdDotObject* CDDrawChildGroup::CreateDotObject(
     int id,
     int x,
     int y,
@@ -96,8 +96,8 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     int dotColor,
     int objectFlags
 ) {
-    CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, objectFlags);
-    if (result->SetupFlagged(x, y, sortKey, logicTemplate, dotColor) == 0) {
+    CWwdDotObject* result = new CWwdDotObject(OwnerMgr(), id, objectFlags);
+    if (result->SetupDot(x, y, sortKey, logicTemplate, dotColor) == 0) {
         if (result != NULL) {
             delete result;
         }
@@ -115,7 +115,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001593e0, 0x53)
-CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
+CWwdDotObject* CDDrawChildGroup::CreateNamedDotObject(
     int id,
     int x,
     int y,
@@ -136,13 +136,13 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
 }
 
 RVA(0x00159440, 0x170)
-CWwdGameObjectF* CDDrawChildGroup::CreateDeferredObject(
+CWwdDeferredObject* CDDrawChildGroup::CreateDeferredObject(
     int id,
     int sortKey,
     CLogicRecord* logicTemplate,
     int objectFlags
 ) {
-    CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, objectFlags);
+    CWwdDeferredObject* result = new CWwdDeferredObject(OwnerMgr(), id, objectFlags);
     if (result->SetupDeferred(sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -160,7 +160,7 @@ CWwdGameObjectF* CDDrawChildGroup::CreateDeferredObject(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001595b0, 0x44)
-CWwdGameObjectF* CDDrawChildGroup::CreateNamedDeferredObject(
+CWwdDeferredObject* CDDrawChildGroup::CreateNamedDeferredObject(
     int id,
     int sortKey,
     const char* name,
@@ -175,7 +175,7 @@ CWwdGameObjectF* CDDrawChildGroup::CreateNamedDeferredObject(
 }
 
 RVA(0x00159600, 0x1ab)
-CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
+CWwdSpriteObject* CDDrawChildGroup::CreateSpriteObject(
     i32 id,
     i32 x,
     i32 y,
@@ -183,8 +183,8 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     CLogicRecord* logicTemplate,
     i32 objectFlags
 ) {
-    CWwdGameObjectA* result =
-        new CWwdGameObjectA(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);
+    CWwdSpriteObject* result =
+        new CWwdSpriteObject(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);
     if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -200,7 +200,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
 }
 
 RVA(0x001597b0, 0x57)
-CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
+CWwdSpriteObject* CDDrawChildGroup::CreateSprite(
     i32 id,
     i32 x,
     i32 y,
@@ -661,8 +661,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     rc.top = obj->m_area.top + oy;
                     rc.right = obj->m_area.right + ox;
                     rc.bottom = obj->m_area.bottom + oy;
-                    view->WrapCoord(&rc.left, &rc.top);
-                    view->WrapCoord(&rc.right, &rc.bottom);
+                    view->WorldToViewport(&rc.left, &rc.top);
+                    view->WorldToViewport(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
             } while (pos != NULL);
@@ -683,8 +683,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     rc.top = obj->m_switchRect.top + oy;
                     rc.right = obj->m_switchRect.right + ox;
                     rc.bottom = obj->m_switchRect.bottom + oy;
-                    view->WrapCoord(&rc.left, &rc.top);
-                    view->WrapCoord(&rc.right, &rc.bottom);
+                    view->WorldToViewport(&rc.left, &rc.top);
+                    view->WorldToViewport(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
             } while (pos != NULL);
@@ -705,8 +705,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     rc.top = obj->m_extent.top + oy;
                     rc.right = obj->m_extent.right + ox;
                     rc.bottom = obj->m_extent.bottom + oy;
-                    view->WrapCoord(&rc.left, &rc.top);
-                    view->WrapCoord(&rc.right, &rc.bottom);
+                    view->WorldToViewport(&rc.left, &rc.top);
+                    view->WorldToViewport(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
             } while (pos != NULL);
@@ -725,32 +725,32 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
                     i32 y = obj->m_screenY;
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = view->m_wrapW;
+                        i32 w = view->m_planePixelWidth;
                         if (x < 0) {
                             x = x + w;
                         } else if (x >= w) {
                             x = x - w;
                         }
-                        i32 farEdge = view->m_viewRect.right;
-                        if (farEdge >= w && x < view->m_viewRect.left && x <= farEdge - w) {
+                        i32 farEdge = view->m_planeViewRect.right;
+                        if (farEdge >= w && x < view->m_planeViewRect.left && x <= farEdge - w) {
                             x = x + w;
                         }
                     }
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = view->m_wrapH;
+                        i32 h = view->m_planePixelHeight;
                         if (y < 0) {
                             y = y + h;
                         } else if (y >= h) {
                             y = y - h;
                         }
-                        i32 farEdge = view->m_viewRect.bottom;
-                        if (farEdge >= h && y < view->m_viewRect.top && y <= farEdge - h) {
+                        i32 farEdge = view->m_planeViewRect.bottom;
+                        if (farEdge >= h && y < view->m_planeViewRect.top && y <= farEdge - h) {
                             y = y + h;
                         }
                     }
                     drawHost->DrawCross(
-                        view->m_bounds50.left - view->m_viewRect.left + x,
-                        view->m_bounds50.top - view->m_viewRect.top + y
+                        view->m_viewportRect.left - view->m_planeViewRect.left + x,
+                        view->m_viewportRect.top - view->m_planeViewRect.top + y
                     );
                 }
             } while (pos != NULL);
@@ -769,7 +769,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (obj->GetClassId() != CLASSID_SERIALREF) {
                     continue;
                 }
-                CImage* fr = obj->m_layer;
+                CImage* fr = obj->m_frameImage;
                 if (fr == NULL) {
                     continue;
                 }
@@ -778,8 +778,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 RECT box;
                 SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
                 RECT rc = box;
-                view->WrapCoord(&rc.left, &rc.top);
-                view->WrapCoord(&rc.right, &rc.bottom);
+                view->WorldToViewport(&rc.left, &rc.top);
+                view->WorldToViewport(&rc.right, &rc.bottom);
                 if (fr->m_owned != NULL) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
                 } else {
@@ -841,33 +841,33 @@ void CDDrawChildGroup::DrawObjectCounts() {
         i32 wt = box.top;
         WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-            i32 w = view->m_wrapW;
+            i32 w = view->m_planePixelWidth;
             if (box.left < 0) {
                 wl = box.left + w;
             } else if (box.left >= w) {
                 wl = box.left - w;
             }
-            i32 farEdge = view->m_viewRect.right;
-            if (farEdge >= w && wl < view->m_viewRect.left && wl <= farEdge - w) {
+            i32 farEdge = view->m_planeViewRect.right;
+            if (farEdge >= w && wl < view->m_planeViewRect.left && wl <= farEdge - w) {
                 wl += w;
             }
         }
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-            i32 h = view->m_wrapH;
+            i32 h = view->m_planePixelHeight;
             if (box.top < 0) {
                 wt = box.top + h;
             } else if (box.top >= h) {
                 wt = box.top - h;
             }
-            i32 farEdge = view->m_viewRect.bottom;
-            if (farEdge >= h && wt < view->m_viewRect.top && wt <= farEdge - h) {
+            i32 farEdge = view->m_planeViewRect.bottom;
+            if (farEdge >= h && wt < view->m_planeViewRect.top && wt <= farEdge - h) {
                 wt += h;
             }
         }
-        rc.left = wl - view->m_viewRect.left + view->m_bounds50.left;
-        rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
+        rc.left = wl - view->m_planeViewRect.left + view->m_viewportRect.left;
+        rc.top = wt - view->m_planeViewRect.top + view->m_viewportRect.top;
 
-        view->WrapCoord(&rc.right, &rc.bottom);
+        view->WorldToViewport(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != NULL);
 }
@@ -968,7 +968,7 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     while (pos != NULL) {
         CGameObject* obj = NextChild(pos);
         LoadableClassId tag = obj->GetClassId();
-        if (tag == CLASSID_WWDOBJA && obj->m_id == id
+        if (tag == CLASSID_WWD_SPRITE_OBJECT && obj->m_id == id
             && obj->m_logicRecord->m_dispatch == logicTemplate->m_dispatch) {
             return obj;
         }
@@ -1201,7 +1201,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         g_wwdObjIdCounter = desc.m_objectId;
 
         switch (desc.m_classId) {
-            case CLASSID_WWDOBJF: {
+            case CLASSID_WWD_DEFERRED_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
                 i32 id = desc.m_id;
                 createdObj = CreateDeferredObject(
@@ -1215,7 +1215,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 );
                 break;
             }
-            case CLASSID_WWDOBJA: {
+            case CLASSID_WWD_SPRITE_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
                 i32 y = desc.m_screenY;
                 i32 x = desc.m_screenX;
@@ -1231,7 +1231,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 }
                 break;
             }
-            case CLASSID_WWDOBJB: {
+            case CLASSID_WWD_CONTAINER_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
                 i32 y = desc.m_screenY;
                 i32 x = desc.m_screenX;

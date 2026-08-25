@@ -140,7 +140,7 @@ structure.
 
 * **`default: break;`** on either inline `switch` — completely inert (identical census
   in all four cells; it only flips one unrelated function via ripple).
-* **Routing the callers through the inline `Tree()`/`Tree48()` accessors** (the `Get<T>`
+* **Routing the callers through the inline `Tags()`/`ModifiedTags()` accessors** (the `Get<T>`
   functions already do) moves the count the **wrong way**: 3/4 -> 2/4 on all nine. So the
   budget *grows* with the caller's front-end size — a bigger caller buys more expansions.
   Shrinking the caller — the half untried here — is since PROVEN and quantified on

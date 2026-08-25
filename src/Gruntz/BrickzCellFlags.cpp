@@ -24,16 +24,16 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     i32 cx = x;
     if (x < 0) {
         cx = 0;
-    } else if (x >= level->m_mainPlane->m_gridW) {
-        cx = level->m_mainPlane->m_gridW - 1;
+    } else if (x >= level->m_mainPlane->m_tileColumns) {
+        cx = level->m_mainPlane->m_tileColumns - 1;
     }
     i32 cy = y;
     if (y < 0) {
         cy = 0;
-    } else if (y >= level->m_mainPlane->m_gridH) {
-        cy = level->m_mainPlane->m_gridH - 1;
+    } else if (y >= level->m_mainPlane->m_tileRows) {
+        cy = level->m_mainPlane->m_tileRows - 1;
     }
-    i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_rowOffsets[cy] + cx];
+    i32 id = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     TileCollisionKind typeCode;
     if (id == UNINIT_FILL || id == -1) {
         typeCode = TILEKIND_PASSABLE;

@@ -8,14 +8,14 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
+#include <DDrawMgr/DDrawPaletteRegistry.h>
+#include <DDrawMgr/DDrawPlacedWorker.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerList.h>
-#include <DDrawMgr/DDrawWorkerMapSmall.h>
-#include <DDrawMgr/DDrawWorkerNode.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
@@ -64,7 +64,7 @@ CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
 }
 
 RVA(0x00156cd0, 0x16)
-i32 CDDrawWorkerMapSmall::IsLoaded() {
+i32 CDDrawPaletteRegistry::IsLoaded() {
     if (m_ownerCtx == NULL) {
         goto fail;
     }
@@ -77,18 +77,18 @@ fail:
 }
 
 RVA(0x00156cf0, 0x6)
-LoadableClassId CDDrawWorkerMapSmall::GetClassId() {
-    return CLASSID_WORKERMAPSMALL;
+LoadableClassId CDDrawPaletteRegistry::GetClassId() {
+    return CLASSID_PALETTE_REGISTRY;
 }
 
-RVA_COMPGEN(0x00156d00, 0x1e, ??_GCDDrawWorkerMapSmall@@UAEPAXI@Z)
+RVA_COMPGEN(0x00156d00, 0x1e, ??_GCDDrawPaletteRegistry@@UAEPAXI@Z)
 RVA(0x00156d20, 0x82)
-CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
+CDDrawPaletteRegistry::~CDDrawPaletteRegistry() {
     Unload();
 }
 
 RVA(0x00156db0, 0x6)
-i32 CDDrawWorkerMapSmall::IsReady() {
+i32 CDDrawPaletteRegistry::IsReady() {
     return 1;
 }
 
@@ -168,8 +168,8 @@ i32 CDDrawWorkerList::IsReady() {
 }
 
 RVA(0x00156fd0, 0x8b)
-CDDrawWorkerA* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
-    CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
+CDDrawPixelWorker* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
+    CDDrawPixelWorker* w = new CDDrawPixelWorker(OwnerMgr());
     if (w->PlacePixel(x, y, pixelValue) == 0) {
         if (w != NULL) {
             delete w;
@@ -181,7 +181,7 @@ CDDrawWorkerA* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue)
 }
 
 RVA(0x00157060, 0x16)
-i32 CDDrawWorkerA::IsLoaded() {
+i32 CDDrawPixelWorker::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
@@ -193,30 +193,30 @@ i32 CDDrawWorkerA::IsLoaded() {
     return CResolveNode::SetPosition(x, y)
 
 RVA(0x00157080, 0x19)
-i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
+i32 CDDrawPlacedWorker::SetPosition(i32 x, i32 y) {
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001570a0, 0x6)
-LoadableClassId CDDrawWorkerA::GetClassId() {
-    return CLASSID_WORKERPIXEL;
+LoadableClassId CDDrawPixelWorker::GetClassId() {
+    return CLASSID_PIXEL_WORKER;
 }
 
-RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
+RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawPixelWorker@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
-CDDrawWorkerA::~CDDrawWorkerA() {
+CDDrawPixelWorker::~CDDrawPixelWorker() {
     m_pixelValue = 0;
     m_dirty.Reset();
 }
 
 RVA(0x00157110, 0x20)
-i32 CDDrawWorkerA::PlacePixel(i32 x, i32 y, i32 pixelValue) {
+i32 CDDrawPixelWorker::PlacePixel(i32 x, i32 y, i32 pixelValue) {
     m_pixelValue = static_cast<char>(pixelValue);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x00157130, 0x17)
-void CDDrawWorkerA::Unload() {
+void CDDrawPixelWorker::Unload() {
 
     i32 v = COORD_UNSET;
     m_pixelValue = 0;
@@ -226,14 +226,14 @@ void CDDrawWorkerA::Unload() {
 }
 
 RVA(0x00157150, 0xa5)
-CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(
+CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     i32 x,
     i32 y,
     const char* workerName,
     i32 frameIndex,
     i32 addHead
 ) {
-    CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
+    CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
     if (w->PlaceFrame(x, y, workerName, frameIndex) == 0) {
         if (w != NULL) {
             delete w;
@@ -249,60 +249,60 @@ CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(
 }
 
 RVA(0x00157200, 0xb)
-i32 CDDrawWorkerBase::IsLoaded() {
-    return m_frameValue != 0;
+i32 CDDrawPlacedWorker::IsLoaded() {
+    return m_contentValue != 0;
 }
 
 RVA(0x00157210, 0x6)
-LoadableClassId CDDrawWorkerBase::GetClassId() {
-    return CLASSID_WORKERNODE;
+LoadableClassId CDDrawPlacedWorker::GetClassId() {
+    return CLASSID_PLACED_WORKER;
 }
 
-RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawFrameWorker@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
-CDDrawWorkerB::~CDDrawWorkerB() {
-    m_frameValue = 0;
+CDDrawFrameWorker::~CDDrawFrameWorker() {
+    m_contentValue = 0;
     m_dirty.Reset();
 }
 
 RVA(0x00157280, 0x30)
-i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
+i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
     ResolveFrame(workerName, frameIndex);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001572b0, 0x38)
-i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
+i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
     CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x001572f0, 0x20)
-i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CImage* frame) {
+i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImage* frame) {
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
 RVA(0x00157310, 0x1a)
-void CDDrawWorkerBase::Unload() {
+void CDDrawPlacedWorker::Unload() {
 
     i32 v = COORD_UNSET;
-    m_frameValue = 0;
+    m_contentValue = 0;
     m_screenX = v;
     m_dirty.m_rect.left = v;
     m_dirty.m_armed = -1;
 }
 
 RVA(0x00157330, 0xa5)
-CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(
+CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     i32 x,
     i32 y,
     CDDrawWorker* source,
     i32 frameIndex,
     i32 addHead
 ) {
-    CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
+    CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
     if (w->PlaceFrame(x, y, source, frameIndex) == 0) {
         if (w != NULL) {
             delete w;
@@ -318,8 +318,8 @@ CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(
 }
 
 RVA(0x001573e0, 0xa0)
-CDDrawWorkerB* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
-    CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
+CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
+    CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
     if (w->PlaceFrame(x, y, frame) == 0) {
         if (w != NULL) {
             delete w;
@@ -342,7 +342,7 @@ i32 CDDrawSubMgrPages::IsLoaded() {
     if (m_overlayPair == NULL) {
         goto fail;
     }
-    if (m_frontPair != NULL) {
+    if (m_frontSurface != NULL) {
         return 1;
     }
 
@@ -483,7 +483,7 @@ void SoundCueRegistry::Unload() {
 // The CString local and the POSITION local hold each other's stack slots. Not
 // steered by: all decl orders, renames, guard shape, scope block, for/while,
 // uninit-decl + late assign, or TU-state islands (measured on the 0x152660 twin).
-// The exact sibling CDDrawWorkerMapSmall::RemoveByValue (0x165c40) gets the retail
+// The exact sibling CDDrawPaletteRegistry::RemovePalette (0x165c40) gets the retail
 // layout from this same shape; the coin is allocator state outside the body text.
 RVA(0x00157b00, 0xb2)
 void SoundCueRegistry::RemoveCue(SoundCue* cue) {
@@ -882,13 +882,13 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         return 0;
     }
     if (listenerX <= 0) {
-        listenerX = OwnerMgr()->m_level->m_mainPlane->m_snappedX;
+        listenerX = OwnerMgr()->m_level->m_mainPlane->m_scrollPixelX;
     }
     if (maxPanOffsetPx <= 0) {
-        maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontPair->m_width << 2;
+        maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->m_width << 2;
     }
     if (fullPanOffsetPx <= 0) {
-        fullPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontPair->m_width / 3;
+        fullPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->m_width / 3;
     }
 
     i32 panOffsetPx = sourceX - listenerX;

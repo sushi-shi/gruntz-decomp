@@ -126,8 +126,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "name": "?Init@CWwdGameObject@@QAEHHHHH@Z",
+  "file": "src/Wwd/WwdFactoryObject.cpp",
+  "name": "?Setup@CWwdSpriteObject@@UAEHHHHPAUCLogicRecord@@@Z",
   "rva": 1423680,
   "demo_rva": 1415152,
   "retail_dist": 39910,
@@ -135,8 +135,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "name": "?SetupFlagged@CWwdGameObject@@QAEHHHHHH@Z",
+  "file": "src/Wwd/WwdFactoryObject.cpp",
+  "name": "?SetupDot@CWwdDotObject@@UAEHHHHPAUCLogicRecord@@H@Z",
   "rva": 1425872,
   "demo_rva": 1417344,
   "retail_dist": 39910,
@@ -144,8 +144,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "name": "?RenderDot@CWwdGameObject@@QAEXPAUWwdRenderCtx@@@Z",
+  "file": "src/Wwd/WwdGameObjectRender.cpp",
+  "name": "?Render@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@@Z",
   "rva": 1466608,
   "demo_rva": 1458080,
   "retail_dist": 82838,
@@ -153,8 +153,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "name": "?Slot30@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0@Z",
+  "file": "src/Wwd/WwdGameObjectRender.cpp",
+  "name": "?BltDirty@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@0@Z",
   "rva": 1466832,
   "demo_rva": 1458304,
   "retail_dist": 82838,
@@ -162,8 +162,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "name": "?Slot34@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0H@Z",
+  "file": "src/Wwd/WwdGameObjectRender.cpp",
+  "name": "?BltDirtyEx@CWwdDotObject@@UAEXPAVCDrawSubWorker@@PAVCDDrawSurfacePair@@1@Z",
   "rva": 1467040,
   "demo_rva": 1458512,
   "retail_dist": 82838,
@@ -171,8 +171,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "name": "?Slot38@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0H@Z",
+  "file": "src/Wwd/WwdGameObjectRender.cpp",
+  "name": "?BltDirtyRegions@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@00@Z",
   "rva": 1467552,
   "demo_rva": 1459024,
   "retail_dist": 82838,
@@ -631,7 +631,7 @@
  },
  {
   "file": "src/Bute/Hash.cpp",
-  "name": "?FindTypeByTag@CHashD@@QAEPAVCRezArchiveType@@I@Z",
+  "name": "?FindTypeByTag@CRezTypeTagHash@@QAEPAVCRezArchiveType@@I@Z",
   "rva": 1295200,
   "demo_rva": 1286672,
   "retail_dist": 296214,
@@ -739,7 +739,7 @@
  },
  {
   "file": "src/Gruntz/SpriteResource.cpp",
-  "name": "?ApplyGeometryDirect@CGameObject@@QAEXHH@Z",
+  "name": "?SetAnimation@CGameObject@@QAEXHH@Z",
   "rva": 363360,
   "demo_rva": 356800,
   "retail_dist": 1014083,
@@ -1009,7 +1009,7 @@
  },
  {
   "file": "src/Wwd/WwdFile.cpp",
-  "name": "?WrapCoord@CPlaneRender@@QAEXPAH0@Z",
+  "name": "?WorldToViewport@CPlaneRender@@QAEXPAH0@Z",
   "rva": 40960,
   "demo_rva": 40928,
   "retail_dist": 1390628,
@@ -1360,7 +1360,7 @@
  },
  {
   "file": "src/DDrawMgr/DDrawWorkers.cpp",
-  "name": "?PlotMarker_165fa0@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@",
+  "name": "?PlotMarker_165fa0@CDDrawPixelWorker@@UAEXPAVCDDrawSurfacePair@@",
   "rva": 1466272,
   "demo_rva": 1457744,
   "retail_dist": 60560,
@@ -1369,7 +1369,7 @@
  },
  {
   "file": "src/DDrawMgr/DDrawWorkers.cpp",
-  "name": "?Slot10_1660b0@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z",
+  "name": "?Slot10_1660b0@CDDrawFrameWorker@@UAEXPAVCDDrawSurfacePair@@0@Z",
   "rva": 1466544,
   "demo_rva": 1458016,
   "retail_dist": 60560,
@@ -1476,7 +1476,7 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Gruntz/FxModeDesc.cpp",
+  "file": "src/Gruntz/ButeSectionKey.cpp",
   "name": "?MakeButeSectionKey@@YAHPADPBD1@Z",
   "rva": 1020544,
   "demo_rva": 1012032,
@@ -1576,7 +1576,7 @@
  },
  {
   "file": "src/DDrawMgr/DDrawSubMgrPages.cpp",
-  "name": "?SetGeom_1646b0@CDDrawSurfaceChildA@@UAEHHHH@Z",
+  "name": "?SetGeom_1646b0@CDDrawFrontSurface@@UAEHHHH@Z",
   "rva": 1459888,
   "demo_rva": 1451360,
   "retail_dist": 46311,
@@ -1593,8 +1593,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Gruntz/ImageSet3.cpp",
-  "name": "?FreePixels@CImageSet3@@UAEXXZ",
+  "file": "src/Gruntz/PixelTileImageSet.cpp",
+  "name": "?FreePixels@CPixelTileImageSet@@UAEXXZ",
   "rva": 1447088,
   "demo_rva": 1438560,
   "retail_dist": 22692,
@@ -1602,8 +1602,8 @@
   "verdict": "FAR-IN-BOTH"
  },
  {
-  "file": "src/Gruntz/ImageSet2.cpp",
-  "name": "?GetCollisionAt@CImageSet2@@UAEHHH@Z",
+  "file": "src/Gruntz/RectTileImageSet.cpp",
+  "name": "?GetCollisionAt@CRectTileImageSet@@UAEHHH@Z",
   "rva": 1447024,
   "demo_rva": 1438496,
   "retail_dist": 21748,

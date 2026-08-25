@@ -36,7 +36,7 @@ are misattributions. Find the real owner by xref / vtable slot (`gruntz sema xre
 |---|---|---|---|
 | `ddrawsubmgr` | `SoundCueRegistry::PlayCueIfElapsed` | `0x114120` | `0x156cb0..0x1591d0` (118 fns) |
 | `animationregistry` | `AnimationRegistry::FindAnimation` | `0x06b2a0` | `0x152640..0x152e30` |
-| `wwdgameobject` | `CWwdGameObjectA::ApplyGeometryDirect` | `0x058b60` | `0x1504d0..0x1525c0` |
+| `wwdgameobject` | `CWwdSpriteObject::SetAnimation` | `0x058b60` | `0x1504d0..0x1525c0` |
 | `levelpreview` | `CPreviewState::LoadScreen` | `0x0fab90` | `0x0de030..0x0de590` |
 | `gamelevel` | 2 strays (`0x06b330`, `0x082600`) | — | `0x15ccd0..0x1614e0` (73 fns) |
 | `ddrawsurfacepair` | 2 strays (`0x03a1d0`, `0x06b270`) | — | `0x163bc0..0x1660b0` |

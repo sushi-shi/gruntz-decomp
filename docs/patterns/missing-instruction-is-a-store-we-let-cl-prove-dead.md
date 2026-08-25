@@ -19,7 +19,7 @@ reg->m_imageRegistry->m_workersByName.Lookup(buf, outOb);
 go through the SAME expression, and keeps it when they do not — so retail keeping the
 pair tells you the intervening store reached the object by a different path.
 ```cpp
-CWwdGameObjectA* h = m_object;
+CWwdSpriteObject* h = m_object;
 i32 keep = h->m_drawFillCmd;
 m_object->m_drawActive = 1;   // through the MEMBER, not `h` -> the pair survives
 h->m_drawFillCmd = keep;      // retail: mov ecx,[esi+0x50] … mov [esi+0x50],ecx

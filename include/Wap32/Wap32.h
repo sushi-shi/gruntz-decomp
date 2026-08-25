@@ -108,10 +108,10 @@ public:
     virtual i32 PerFrameTick();
     virtual i32 HandleCommand(i32, GruntzCommandId, i32);
 
-    void InitTimeFields(i32 reset);
-    void InitializeTimeGlobal();
+    void ResetFpsSampleWindow(i32 reset);
+    void ResetFrameTiming();
 
-    void SpinWaitUntil(i32 ms);
+    void SpinWaitForMs(i32 ms);
     void SetFrameRate(i32 fps);
     i32 TrySetFrameRate(i32 fps);
 
@@ -122,11 +122,11 @@ public:
     i32 m_musicEnabled;
     i32 m_fps;
 
-    i32 m_pacingGate;
+    i32 m_targetFps;
 
-    i32 m_frameCounter;
+    i32 m_fpsSampleFrameCount;
 
-    i32 m_windowStartTick;
+    i32 m_fpsSampleStartMs;
     i32 m_frameBudgetMs;
 };
 

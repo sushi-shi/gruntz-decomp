@@ -517,10 +517,10 @@ and four `??_G` scalar-deleting destructors (`CResolveNode`, `CRgn`, `CSBI_SideT
 `CSBI_StatzTabArrow`) are **byte-identical compiler-generated COMDATs of OUR classes** with
 no claim on their retail rva — so `CGameWnd` slots 1–3 and `CGameApp` **+0x30** (not +0x34)
 are NOT model defects, they are missing `RVA_COMPGEN` pins; `vtable_slot_labels` prints them
-under `home = src-RVA_COMPGEN`. The one real model defect left is `CDDrawWorkerA` slots
+under `home = src-RVA_COMPGEN`. The one real model defect left is `CDDrawPixelWorker` slots
 5/7/8, which point at `0x157060`/`0x157130`/`0x1570a0` while our model inherits
-`CDDrawWorkerBase::IsLoaded`/`Unload`/`GetClassId` (claimed at `0x157200`/`0x157310`/
-`0x157210`) — three unreconstructed `CDDrawWorkerA` overrides. `??_7CGruntzCommand@@6B@` is
+`CDDrawPlacedWorker::IsLoaded`/`Unload`/`GetClassId` (claimed at `0x157200`/`0x157310`/
+`0x157210`) — three unreconstructed `CDDrawPixelWorker` overrides. `??_7CGruntzCommand@@6B@` is
 now clean, confirming its `__purecall` fix. The last COL site is
 `??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@`, which has no primary-vtable slot map.
 
@@ -1029,7 +1029,8 @@ is absorbed structurally rather than by a heuristic.
 **Windowing is per SYMBOL, not per section.** That is the necessary deviation from
 homm2's `coff_reloc_topology`, whose site key is `(section, offset)`: that works
 there because its delink target is candidate-shaped, ours packs, and
-`?g_projPhase0@@3NB` is `.rdata`+0 for cl and `.rdata$r`+0x28 for the delinker.
+`?g_boomerangHalfTurnRadians@@3NB` is `.rdata`+0 for cl and `.rdata$r`+0x28 for the
+delinker.
 The first symbol in a section also owns the bytes BEFORE it — a `/GR` vtable
 COMDAT opens with the `??_R4` COL pointer four bytes ahead of the `??_7`.
 

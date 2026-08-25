@@ -12,11 +12,11 @@
 DATA(0x00253c6c)
 i32 g_gameAppInstanceCount = 0;
 DATA(0x00253c70)
-i32 g_wap32Now = 0;
+i32 g_gameAppNowMs = 0;
 DATA(0x00253c74)
-i32 g_wap32FrameDelta = 0;
+i32 g_gameAppFrameDeltaMs = 0;
 DATA(0x00253c78)
-i32 g_wap32ClockReset = 0;
+i32 g_framePacingEpochMs = 0;
 DATA(0x00253c7c)
 i32 g_gameAppTimerRemainingMs = 0;
 DATA(0x00253c80)
@@ -338,9 +338,9 @@ CGameMgr::CGameMgr() {
     m_musicEnabled = 1;
     CLEAR_GAME_MANAGER_WINDOW;
     m_frameGate = 0;
-    m_pacingGate = 0;
-    InitTimeFields(1);
-    InitializeTimeGlobal();
+    m_targetFps = 0;
+    ResetFpsSampleWindow(1);
+    ResetFrameTiming();
 }
 
 RVA(0x0013dd50, 0x54)
@@ -354,9 +354,9 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_gameWnd = pGameWnd;
     m_owner = pGameWnd->m_owner;
-    m_pacingGate = 0;
-    InitTimeFields(1);
-    InitializeTimeGlobal();
+    m_targetFps = 0;
+    ResetFpsSampleWindow(1);
+    ResetFrameTiming();
     g_gameAppTimerPeriodMs = GAMEAPP_PERIODIC_TIMER_MS;
     g_gameAppTimerRemainingMs = GAMEAPP_PERIODIC_TIMER_MS;
     return 1;
@@ -372,9 +372,9 @@ i32 CGameMgr::PerFrameTick() {
 
     DWORD(WINAPI * pTGT)(void) = timeGetTime;
     u32 now = pTGT();
-    u32 delta = now - static_cast<u32>(g_wap32Now);
-    g_wap32Now = now;
-    g_wap32FrameDelta = delta;
+    u32 delta = now - static_cast<u32>(g_gameAppNowMs);
+    g_gameAppNowMs = now;
+    g_gameAppFrameDeltaMs = delta;
     u32 timerRemainingMs = static_cast<u32>(g_gameAppTimerRemainingMs);
     if (timerRemainingMs == 0) {
         g_gameAppTimerRemainingMs = g_gameAppTimerPeriodMs;
@@ -384,44 +384,44 @@ i32 CGameMgr::PerFrameTick() {
         g_gameAppTimerRemainingMs = timerRemainingMs - delta;
     }
 
-    if (m_pacingGate > 0) {
-        if (static_cast<u32>(g_wap32ClockReset) > 0) {
-            u32 elapsed = pTGT() - static_cast<u32>(g_wap32ClockReset);
+    if (m_targetFps > 0) {
+        if (static_cast<u32>(g_framePacingEpochMs) > 0) {
+            u32 elapsed = pTGT() - static_cast<u32>(g_framePacingEpochMs);
             if (elapsed < static_cast<u32>(m_frameBudgetMs)) {
-                SpinWaitUntil(m_frameBudgetMs - elapsed);
+                SpinWaitForMs(m_frameBudgetMs - elapsed);
             }
         }
-        g_wap32ClockReset = pTGT();
+        g_framePacingEpochMs = pTGT();
     }
 
-    u32 count = m_frameCounter + 1;
-    m_frameCounter = count;
-    if (static_cast<u32>(g_wap32Now) - static_cast<u32>(m_windowStartTick)
+    u32 count = m_fpsSampleFrameCount + 1;
+    m_fpsSampleFrameCount = count;
+    if (static_cast<u32>(g_gameAppNowMs) - static_cast<u32>(m_fpsSampleStartMs)
         >= GAMEAPP_FPS_SAMPLE_INTERVAL_MS) {
         m_fps = count / GAMEAPP_FPS_SAMPLE_SECONDS;
-        InitTimeFields(0);
+        ResetFpsSampleWindow(0);
     }
     return 1;
 }
 
 RVA(0x0013de70, 0x26)
-void CGameMgr::InitTimeFields(i32 reset) {
-    m_frameCounter = 0;
-    m_windowStartTick = timeGetTime();
+void CGameMgr::ResetFpsSampleWindow(i32 reset) {
+    m_fpsSampleFrameCount = 0;
+    m_fpsSampleStartMs = timeGetTime();
     if (reset) {
         m_fps = GAMEAPP_FPS_UNAVAILABLE;
     }
 }
 
 RVA(0x0013dea0, 0x18)
-void CGameMgr::InitializeTimeGlobal() {
-    g_wap32Now = timeGetTime();
-    g_wap32FrameDelta = 0;
-    g_wap32ClockReset = 0;
+void CGameMgr::ResetFrameTiming() {
+    g_gameAppNowMs = timeGetTime();
+    g_gameAppFrameDeltaMs = 0;
+    g_framePacingEpochMs = 0;
 }
 
 RVA(0x0013dec0, 0x20)
-void CGameMgr::SpinWaitUntil(i32 ms) {
+void CGameMgr::SpinWaitForMs(i32 ms) {
     DWORD(WINAPI * fn)(void) = timeGetTime;
     u32 now = fn();
     u32 end = now + static_cast<u32>(ms);
@@ -434,7 +434,7 @@ void CGameMgr::SpinWaitUntil(i32 ms) {
 
 RVA(0x0013dee0, 0x1b)
 void CGameMgr::SetFrameRate(i32 fps) {
-    m_pacingGate = fps;
+    m_targetFps = fps;
     if (fps > 0) {
         m_frameBudgetMs = MILLIS_PER_SECOND / fps;
     }
@@ -444,7 +444,7 @@ void CGameMgr::SetFrameRate(i32 fps) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013df00, 0x25)
 i32 CGameMgr::TrySetFrameRate(i32 fps) {
-    if (m_pacingGate > 0) {
+    if (m_targetFps > 0) {
         SetFrameRate(0);
         return 0;
     }

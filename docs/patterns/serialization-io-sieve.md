@@ -107,8 +107,8 @@ abort is at index 133..136 and after 181's Chain.
 Then walk the per-object `SERIAL_LOAD` path and keep only the guards that can return 0 for a
 reason other than `ar == NULL`:
 
-    CWwdGameObjectA::Play      CAniAdvanceCursor::Find/Deserialize   -- ar only
-                               SerializeSpriteName                   -- ar only
+    CWwdSpriteObject::Play      CAniAdvanceCursor::Find/Deserialize   -- ar only
+                               ReadSpriteState                   -- ar only
     CGameObject::Play          SerializeObjectState                  -- THREE real guards
                                m_logicRecord == NULL
     CLogicRecord::Dispatch    Load                                  -- ar only

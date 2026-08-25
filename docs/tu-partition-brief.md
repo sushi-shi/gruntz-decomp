@@ -381,14 +381,14 @@ files; these 12 movement fns are birth-positioned in their own obj (wave1-C).
 ### levelplane
 The plane/render module (original TU at [0x161350..0x163a00], @identity-TODO;
 interval dossier 0x15ccd0, wave1-C): CLevelPlane + CPlaneRender + the WwdFile
-plane methods (RebuildPlanes/ReadPlaneObjects) + the CImageSet3-helper and
+plane methods (RebuildPlanes/ReadPlaneObjects) + the CPixelTileImageSet-helper and
 CDDrawWorkerHost bodies woven into that range. The imageset1/2/3g TUs below
 carry the CImageSet variant records' out-of-line bodies; their vtables are
 still emitted (and VTBL-bound) in gamelevel via ReadImageSet's `new CImageSetN`.
 
 ### imageset3g
-imageset3g: the small (size-0x18) CImageSet3 variant record's bodies. Named
-distinctly from the existing `imageset3` unit (src/Image/ImageSet3.cpp), which
+imageset3g: the small (size-0x18) CPixelTileImageSet variant record's bodies. Named
+distinctly from the existing `imageset3` unit (src/Image/PixelTileImageSet.cpp), which
 models a DIFFERENT grid-owning object under the same reconstruction name.
 
 ### savegame

@@ -12,7 +12,7 @@ compiler, so the propagation must be source-sensitive, but nothing found so far
 moves it:
 
 * a local for the tested value (`CAniElement* cur = p->f; if (cur == NULL)`);
-* a local for the RECEIVER (`CWwdGameObjectA* w = m_wwdObject;` used for all three uses);
+* a local for the RECEIVER (`CWwdSpriteObject* w = m_wwdObject;` used for all three uses);
 * `!p->f` instead of `p->f == NULL`;
 * re-spelling the guarded read through the OTHER member that holds the same
   pointer (`m_object` vs `m_wwdObject`) — this DOES defeat the propagation but

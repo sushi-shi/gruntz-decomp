@@ -90,7 +90,7 @@ public:
 
 extern const float g_one;
 extern const float g_255;
-extern const float g_p01;
+extern const float g_percentScale;
 extern const float g_lumaR;
 extern const float g_lumaG;
 extern const float g_lumaB;

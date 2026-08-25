@@ -69,7 +69,7 @@ i32 LayerBlitFrame(
 
     CDrawSubWorker* node;
     if (useFront) {
-        node = surfaceMgr->m_drawTarget->m_frontPair;
+        node = surfaceMgr->m_drawTarget->m_frontSurface;
         if (!node) {
             return 0;
         }
@@ -112,7 +112,7 @@ i32 EngStr_DrawText(
     i32 b,
     i32 flag
 ) {
-    CDDrawSurfaceChildA* pair = obj->m_drawTarget->m_frontPair;
+    CDDrawFrontSurface* pair = obj->m_drawTarget->m_frontSurface;
 
     if (pair == NULL) {
         return 0;

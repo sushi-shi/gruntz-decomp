@@ -246,10 +246,10 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             m_arrivalCell.m_y = o->m_unitIndex;
             m_defenderState = AISTATE_CHASE;
             {
-                CWwdGameObjectA* h = m_object;
+                CWwdSpriteObject* h = m_object;
                 i32 x = h->m_screenX;
                 i32 y = h->m_screenY;
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInRect(rect, x, y)) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }

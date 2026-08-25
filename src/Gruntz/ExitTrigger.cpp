@@ -34,10 +34,10 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SetObjectFlags(2);
     SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)
     SET_OBJECT_AREA(1)
-    SwitchGeometry("GAME_CYCLE100", 0);
+    SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
     if (slot->m_active == 0) {

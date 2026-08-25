@@ -56,7 +56,7 @@ CHashElement* CHashElement::Prev() {
 }
 
 RVA(0x00184950, 0x10)
-CHash::CHash() {
+CRezEntryIdHash::CRezEntryIdHash() {
     m_bucketCount = 0;
     m_buckets = NULL;
 }

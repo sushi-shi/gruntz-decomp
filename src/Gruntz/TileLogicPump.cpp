@@ -362,8 +362,8 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     SetObjectFlags(2);
     SetObjectFlags(1);
 
-    CWwdGameObjectA* o = m_object;
-    i32 zk = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
+    CWwdSpriteObject* o = m_object;
+    i32 zk = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, zk)
     memset(m_state, 0, sizeof(m_state));
     if (m_object->m_extent.left == COORD_UNSET) {
@@ -447,7 +447,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     SET_ANIMATION_ACT("B");
-    SwitchGeometry("GAME_CHECKPOINTFLAGSET", 0);
+    SwitchAnimationByName("GAME_CHECKPOINTFLAGSET", 0);
 
     if (play->m_levelTimer != NULL) {
         i32 minutes = m_object->m_score;
@@ -513,7 +513,7 @@ i32 CCheckpointTrigger::Act() {
 
     i32 sy = g->m_object->m_screenY;
     i32 sx = g->m_object->m_screenX;
-    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
     if (sx >= view->right) {
         return 0;
     }
@@ -532,7 +532,7 @@ i32 CCheckpointTrigger::Act() {
 
 RVA(0x0010f970, 0x17)
 i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -591,7 +591,7 @@ void CTileTriggerTransition::RegisterActs() {
 
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    if (SwitchGeometry(geom, 0) == 0) {
+    if (SwitchAnimationByName(geom, 0) == 0) {
         return 0;
     }
     APPLY_CURRENT_ANIMATION_FRAME_SPRITE(sprite, desc, elem)
@@ -601,7 +601,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
     return 0;
 }

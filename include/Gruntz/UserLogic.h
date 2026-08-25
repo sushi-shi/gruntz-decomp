@@ -120,7 +120,7 @@ public:
     ActCallback m_gatedCallback;
     CGameObject* m_logicObject;
 
-    CWwdGameObjectA* m_object;
+    CWwdSpriteObject* m_object;
 
     CLogicRecord* m_logicRecord;
     zBitVec m_actBits;
@@ -146,13 +146,13 @@ public:
 #define ANIMATION_ACT_DIFFERS_FOR(logic, key)                                                      \
     (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) != 0)
 
-#define APPLY_NAME_INLINE(name) m_wwdObject->ApplyName(name)
+#define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
 
-#define APPLY_LOOKUP_SPRITE_INLINE(name, frame) m_wwdObject->ApplyLookupSprite(name, frame)
+#define APPLY_LOOKUP_SPRITE_INLINE(name, frame) m_wwdObject->SetImageFrameByName(name, frame)
 
 #define ADVANCE_CURRENT_ANIMATION_CURSOR(cursor, elapsed)                                          \
-    m_wwdObject->m_animCursor.Advance(elapsed);                                                    \
-    CAniAdvanceCursor* cursor = &m_wwdObject->m_animCursor;
+    m_wwdObject->m_animationCursor.Advance(elapsed);                                               \
+    CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
 
 #define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                        \
     (logic)->GetScreenPos((&out));                                                                 \
@@ -160,7 +160,7 @@ public:
     out.m_x >>= TILE_SHIFT_PX;
 
 #define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
-    CAniElement* animation = m_wwdObject->m_animCursor.m_animation;                                \
+    CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
     CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
     i32 frame = record->m_param;
 
@@ -174,8 +174,8 @@ public:
 
 #define INITIALIZE_DEFAULT_CYCLE_ANIMATION                                                         \
     SET_ANIMATION_ACT("A");                                                                        \
-    if (m_wwdObject->m_animCursor.m_animation == NULL) {                                           \
-        SwitchGeometry("GAME_CYCLE100", 0);                                                        \
+    if (m_wwdObject->m_animationCursor.m_animation == NULL) {                                      \
+        SwitchAnimationByName("GAME_CYCLE100", 0);                                                 \
     }
 
 #define MARK_OBJECT_COMPLETE_IF(condition)                                                         \
@@ -184,7 +184,7 @@ public:
     }
 
 #define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
-    CAniElement* animation = m_wwdObject->m_animCursor.m_animation;                                \
+    CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
     CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
 
@@ -252,7 +252,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // (docs/patterns/inline-expanded-twice-costs-a-register.md).
 #define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                            \
     m_logicObject = (obj);                                                                         \
-    m_object = static_cast<CWwdGameObjectA*>(obj);                                                 \
+    m_object = static_cast<CWwdSpriteObject*>(obj);                                                \
     m_logicRecord = (obj)->m_logicRecord;                                                          \
     {                                                                                              \
         zBitVec tmp("", 0);                                                                        \
@@ -280,7 +280,7 @@ public:
     CWapX() {}
     CWapX(CGameObject* obj) {
         m_gameObject = obj;
-        m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+        m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
         m_ownerLogicRecord = obj->m_logicRecord;
     }
     RVA(0x00008be0, 0x1)
@@ -288,10 +288,10 @@ public:
 
     i32 Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj);
 
-    void ApplyAnimation(class CAniElement* animation, i32 advanceNow);
+    void ApplyAnimation(class CAniElement* animation, i32 advanceImmediately);
 
     CGameObject* m_gameObject;
-    CWwdGameObjectA* m_wwdObject;
+    CWwdSpriteObject* m_wwdObject;
 
     CLogicRecord* m_ownerLogicRecord;
 
@@ -311,27 +311,27 @@ public:
         m_wwdObject->m_flags |= bits;
     }
 
-    void ApplyLookupSprite(const char* name, i32 flag) {
-        m_wwdObject->ApplyLookupSprite(name, flag);
+    void SetImageFrameByName(const char* name, i32 flag) {
+        m_wwdObject->SetImageFrameByName(name, flag);
     }
 
-    void ApplyName(const char* name) {
-        m_wwdObject->ApplyName(name);
+    void SetImageSetByName(const char* name) {
+        m_wwdObject->SetImageSetByName(name);
     }
 
     void SwitchAnimation(CAniElement* anim) {
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(anim);
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_wwdObject->m_animationCursor.SetAnimation(anim);
     }
 
-    void SwitchGeometryDirect(CAniElement* anim, i32 applyDefault) {
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyGeometryDirect(anim, applyDefault);
+    void SwitchAnimationAndMaybeAdvance(CAniElement* anim, i32 advanceImmediately) {
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        m_wwdObject->SetAnimation(anim, advanceImmediately);
     }
 
-    i32 SwitchGeometry(const char* key, i32 flag) {
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        return m_wwdObject->ApplyLookupGeometry(key, flag);
+    i32 SwitchAnimationByName(const char* key, i32 advanceImmediately) {
+        m_value = m_wwdObject->m_animationCursor.m_animation;
+        return m_wwdObject->SetAnimationByName(key, advanceImmediately);
     }
 };
 

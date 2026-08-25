@@ -14,11 +14,11 @@ nothing here is re-read across a call, and the offsets — not the loads — dif
 
 ```cpp
 // folds K into every displacement:
-if (m_wwdObject->m_animCursor.m_finished != 0
-    && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+if (m_wwdObject->m_animationCursor.m_finished != 0
+    && m_wwdObject->m_animationCursor.m_frameTicksLeft == 0) {
 
 // retail: the interior pointer is its own local
-CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
 if (cur->m_finished != 0 && cur->m_frameTicksLeft == 0) {
 ```
 ```asm

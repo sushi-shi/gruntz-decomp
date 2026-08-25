@@ -111,7 +111,7 @@ i32 CState::PresentTitlePage(
     if (!m_stateResources) {
         return 0;
     }
-    menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
+    menuRoot()->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     return 1;
 }
 
@@ -149,12 +149,12 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* surface = m_resChain->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* surface = m_resChain->m_drawTarget->m_frontSurface->m_surface;
     if (surface == NULL) {
         return 0;
     }
 
-    CFxModeT2 t;
+    CLightFaderConfig t;
     t.m_clearMode = 1;
     t.m_centerX = centerX;
     t.m_centerY = centerY;
@@ -168,7 +168,7 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontPair->m_surface->Fill(0);
+        m_resChain->m_drawTarget->m_frontSurface->m_surface->Fill(0);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -189,7 +189,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontSurface->m_surface;
     if (chanA == NULL) {
         return 0;
     }
@@ -198,7 +198,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
         return 0;
     }
 
-    CFxModeT2 t;
+    CLightFaderConfig t;
     t.m_centerX = centerX;
     t.m_clearMode = 0;
     t.m_centerY = centerY;
@@ -212,7 +212,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead) {
     m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
+        m_resChain->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -226,7 +226,7 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == NULL) {
         return 0;
     }
-    CDDSurface* s = m_world->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* s = m_world->m_drawTarget->m_frontSurface->m_surface;
     if (s == NULL) {
         return 0;
     }
@@ -257,7 +257,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontSurface->m_surface;
     if (chanA == NULL) {
         return 0;
     }
@@ -266,7 +266,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
         return 0;
     }
 
-    CFxModeT3 t;
+    CSineFaderConfig t;
     t.m_clearToBlack = 0;
     t.m_intensityPercent = pct;
     t.m_targetSurface = chanA;
@@ -279,7 +279,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
+        m_resChain->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -298,7 +298,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_world->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* chanA = m_world->m_drawTarget->m_frontSurface->m_surface;
     if (chanA == NULL) {
         return 0;
     }
@@ -313,7 +313,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
         return 0;
     }
 
-    CFxModeT3 t;
+    CSineFaderConfig t;
     t.m_clearToBlack = 0;
     t.m_intensityPercent = pct;
     t.m_targetSurface = chanA;
@@ -325,7 +325,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
 
     if (g_disableFades != 0) {
         ActiveWait(dur);
-        m_world->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -344,12 +344,12 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* surface = m_resChain->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* surface = m_resChain->m_drawTarget->m_frontSurface->m_surface;
     if (surface == NULL) {
         return 0;
     }
 
-    CFxModeT3 t;
+    CSineFaderConfig t;
     t.m_clearToBlack = 1;
     t.m_intensityPercent = pct;
     t.m_targetSurface = surface;
@@ -362,7 +362,7 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     m_gameMgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(dur);
-        m_resChain->m_drawTarget->m_frontPair->m_surface->Fill(0);
+        m_resChain->m_drawTarget->m_frontSurface->m_surface->Fill(0);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -396,7 +396,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
         return 0;
     }
     if (doFlip != 0) {
-        menuRoot()->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
+        menuRoot()->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     }
     return 1;
 }
@@ -462,7 +462,7 @@ void CState::Present(i32 pct) {
     }
     m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
     m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, static_cast<RECT*>(0));
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
+    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(static_cast<CDDSurface*>(0));
     m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 }
 

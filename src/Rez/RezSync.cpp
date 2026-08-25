@@ -295,7 +295,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         rect.bottom = 0x1df;
         m_modeSize.cx = SCREEN_W_PX;
         m_modeSize.cy = SCREEN_H_PX;
-        world->m_level->BuildAllPlanes(&rect);
+        world->m_level->UpdatePlaneViewports(&rect);
     }
     world->SetRestoreHandler(&PumpIdleFrame);
     world->m_level->m_maxStepX = 0xe;
@@ -536,18 +536,18 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             delete snk;
             stream->ReleaseData();
             g_buteMgr.Init();
-            g_buteMgr.m_tree.ClearRecursive(NULL);
-            g_buteMgr.m_tree.m_root = NULL;
-            g_buteMgr.m_tree.m_lookupPending = 0;
-            g_buteMgr.m_tree.m_nodeCount = 0;
-            g_buteMgr.m_tree48.ClearRecursive(NULL);
-            g_buteMgr.m_tree48.m_root = NULL;
-            g_buteMgr.m_tree48.m_lookupPending = 0;
-            g_buteMgr.m_tree48.m_nodeCount = 0;
-            g_buteMgr.m_tree74.ClearRecursive(NULL);
-            g_buteMgr.m_tree74.m_root = NULL;
-            g_buteMgr.m_tree74.m_lookupPending = 0;
-            g_buteMgr.m_tree74.m_nodeCount = 0;
+            g_buteMgr.m_tags.ClearRecursive(NULL);
+            g_buteMgr.m_tags.m_root = NULL;
+            g_buteMgr.m_tags.m_lookupPending = 0;
+            g_buteMgr.m_tags.m_nodeCount = 0;
+            g_buteMgr.m_modifiedTags.ClearRecursive(NULL);
+            g_buteMgr.m_modifiedTags.m_root = NULL;
+            g_buteMgr.m_modifiedTags.m_lookupPending = 0;
+            g_buteMgr.m_modifiedTags.m_nodeCount = 0;
+            g_buteMgr.m_addedTags.ClearRecursive(NULL);
+            g_buteMgr.m_addedTags.m_root = NULL;
+            g_buteMgr.m_addedTags.m_lookupPending = 0;
+            g_buteMgr.m_addedTags.m_nodeCount = 0;
             ok = true;
             if (!g_buteMgr.ParseGroup()) {
                 g_buteMgr.m_parseFailed = 1;

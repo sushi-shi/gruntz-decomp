@@ -78,7 +78,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     double px = static_cast<double>(nx);
     m_position.x = px;
     m_position.y = cy;
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
     m_offset.x = m_center.x - px;
     m_offset.y = m_center.y - cy;
@@ -99,7 +99,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
         m_angle = 0;
     }
     CShadeTable* looked = g_gameReg->m_lightFxMgr->m_tables[m_object->m_powerup];
-    CWwdGameObjectA* d = m_object;
+    CWwdSpriteObject* d = m_object;
     d->m_drawActive = 1;
     d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     d->m_drawFillArg = looked;
@@ -197,7 +197,7 @@ i32 CSpotLight::Tick() {
     double ox = m_offset.x;
     double oy = -m_offset.y;
     double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
-    CWwdGameObjectA* mv = m_focus;
+    CWwdSpriteObject* mv = m_focus;
     m_position.x = ox * c + oy * s;
     m_position.y = ox * s - oy * c;
     if (mv != NULL) {
@@ -300,7 +300,7 @@ i32 CSpotLight::SerializeMove(
                 } else {
                     resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
                 }
-                m_focus = static_cast<CWwdGameObjectA*>(resolved);
+                m_focus = static_cast<CWwdSpriteObject*>(resolved);
                 if (m_focus == NULL && id != 0) {
                     return 0;
                 }
@@ -310,7 +310,7 @@ i32 CSpotLight::SerializeMove(
             s->Read(&m_storyMode, sizeof(m_storyMode));
             break;
         case SERIAL_POSTLOAD: {
-            CWwdGameObjectA* o = m_object;
+            CWwdSpriteObject* o = m_object;
             CShadeTable* fill = reg->m_lightFxMgr->m_tables[o->m_powerup];
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;

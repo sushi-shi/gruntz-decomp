@@ -29,13 +29,13 @@ inline void Worker::BlitDirtyRect(SurfacePair* src, i32* pos, i32* size) {
 }
 ```
 
-`CWwdGameObjectA::BltDirtyEx` at 0x1506b0 and
-`CWwdGameObjectC::BltDirtyEx` at 0x1662a0 are the controlled pair. Their exact
+`CWwdSpriteObject::BltDirtyEx` at 0x1506b0 and
+`CWwdDotObject::BltDirtyEx` at 0x1662a0 are the controlled pair. Their exact
 `BltDirtyRegions` siblings prove the caller CFG and arguments; the static receiver
 type selects the base inline helper for `CDrawSubWorker*` and the derived
 out-of-line empty helper for `CDDrawSurfacePair*`. The dead retail
 `CDDrawSubMgrPages::BltDirtyChildrenEx` caller passes its
-`CDDrawSurfaceChildA*` front pair, independently proving that the first argument
+`CDDrawFrontSurface*` front pair, independently proving that the first argument
 uses the shared `CDrawSubWorker*` base rather than `CDDrawSurfacePair*`; names in
 the generated target COFF are reconstructed labels and are not ABI evidence.
 With direct field stores,

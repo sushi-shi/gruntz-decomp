@@ -125,11 +125,11 @@ i32 CGrunt::ChargeStep() {
                         != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
                         m_defenderState = AISTATE_CHASE;
-                        CWwdGameObjectA* mp = m_object;
+                        CWwdSpriteObject* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
 
                         i32 los = CGameLevel::PointInBounds(
-                            &mgr->m_world->m_level->m_mainPlane->m_viewRect,
+                            &mgr->m_world->m_level->m_mainPlane->m_planeViewRect,
                             mp->m_screenX,
                             mp->m_screenY
                         );
@@ -142,7 +142,7 @@ i32 CGrunt::ChargeStep() {
                 }
             }
             if (m_resetApplied == 0 && m_hasExtent != 0 && static_cast<u32>(m_dwell) > 3000) {
-                CWwdGameObjectA* mp = m_object;
+                CWwdSpriteObject* mp = m_object;
                 SELECT_RANDOM_EXTENT_POINT(mp, baseX, spanX, baseY, spanY)
                 CGruntzMgr* mgr = g_gameReg;
                 if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)

@@ -13,13 +13,13 @@
 // @early-stop
 RVA(0x000476b0, 0x69)
 i32 CExplosion::Update() {
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 1) {
-        CWwdGameObjectA* t = m_object;
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
+        CWwdSpriteObject* t = m_object;
         if (t->m_score == 1) {
             g_gameReg->m_triggerMgr
                 ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_smarts);
         }
     }
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
     return 0;
 }

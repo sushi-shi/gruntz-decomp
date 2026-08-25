@@ -118,11 +118,11 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     source->ReleaseData();
 
                     bute.Init();
-                    bute.m_tree.Reset();
+                    bute.m_tags.Reset();
                     // Retail expands Reset() only for m_tree and CALLS the out-of-line
                     // copy (0x212a0) for the other two.
-                    bute.m_tree48.ResetCopy();
-                    bute.m_tree74.ResetCopy();
+                    bute.m_modifiedTags.ResetCopy();
+                    bute.m_addedTags.ResetCopy();
                     bute.m_stream = parseStream;
                     parsed = true;
                     if (!bute.ParseGroup()) {

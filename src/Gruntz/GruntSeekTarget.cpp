@@ -171,7 +171,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_blockedVoicePending != 0) {
             i32 r = CGameLevel::PointInBounds(
-                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
                 this->m_object->m_screenX,
                 this->m_object->m_screenY
             );
@@ -235,7 +235,7 @@ i32 CGrunt::SeekTarget() {
                     != 0) {
                     i32 by = this->m_object->m_screenY;
                     i32 bx = this->m_object->m_screenX;
-                    CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                     if (CGameLevel::PointInRect(board, bx, by)) {
                         g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }

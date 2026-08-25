@@ -54,7 +54,7 @@ near-neighbours in the same family were re-measured and neither moves:
   DIFFERENT literal argument per arm. Break form is **byte-neutral** (90.7352 before
   and after): cl had already merged on the shared `Activate` suffix, which the
   break form does not touch.
-* `CDDrawSurfaceChildA::SetGeometry` 0x1644a0 — arms each store a different
+* `CDDrawFrontSurface::SetGeometry` 0x1644a0 — arms each store a different
   `WORLDERR_*` and return. Break form **91.37 -> 69.81**: retail's arms return
   directly, so routing them through the trailing block is the wrong shape as well
   as a worse score.

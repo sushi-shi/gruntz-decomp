@@ -100,12 +100,12 @@ public:
     RVA(0x000213c0, 0x14c)
     ~CButeMgr() {}
 
-    CBSecStream* Tree() {
-        return &m_tree;
+    CBSecStream* Tags() {
+        return &m_tags;
     }
 
-    CBSecStream* Tree48() {
-        return &m_tree48;
+    CBSecStream* ModifiedTags() {
+        return &m_modifiedTags;
     }
 
     i32 m_streamBase;
@@ -117,11 +117,11 @@ public:
     char m_pad0e[0x10 - 0xe];
     CString m_errStr;
     ErrCallback m_errCallback;
-    CBSecStream m_tree;
+    CBSecStream m_tags;
 
-    zPTree* m_pNode;
-    CBSecStream m_tree48;
-    CBSecStream m_tree74;
+    zPTree* m_currentTag;
+    CBSecStream m_modifiedTags;
+    CBSecStream m_addedTags;
     istream* m_stream;
 
     iostream* m_pText;

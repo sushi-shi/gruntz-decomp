@@ -36,7 +36,7 @@ struct CGameObject;
 class CDDrawSurfaceMgr;
 class SoundBuffer;
 struct CTmOverlay;
-class CWwdGameObjectA;
+class CWwdSpriteObject;
 class CActionOptionsMenuBar;
 
 class CGruntPuddle;
@@ -281,7 +281,7 @@ public:
     i32 m_armed;
     // A registry identity pair: m_x is playerIndex and m_y is unitIndex.
     Coord m_cameraTargetIdentity;
-    CWwdGameObjectA* m_goal;
+    CWwdSpriteObject* m_goal;
 
     CPtrList m_recList;
 

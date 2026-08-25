@@ -114,10 +114,10 @@ RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
+    SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
     {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)}
 
-    SNAP_OBJECT_TO_TILE_CENTER(m_object) CWwdGameObjectA* o = m_object;
+    SNAP_OBJECT_TO_TILE_CENTER(m_object) CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, 0)
     m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
     m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
@@ -138,7 +138,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_object->m_area.bottom = m_object->m_area.top + 14;
     SET_ANIMATION_ACT("A");
     SetObjectFlags(0x2000002);
-    m_object->m_animCursor.m_consumeDraw = 0;
+    m_object->m_animationCursor.m_consumeDraw = 0;
     m_object->m_smarts = IDX(g_areaHazardDeath);
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
@@ -193,7 +193,7 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     m_fired = 1;
-    SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
+    SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
     {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} SET_ANIMATION_ACT("B");
     return 0;
 }
@@ -211,18 +211,18 @@ i32 CStaticHazard::LoadAttributes() {
 
             if (m_object->m_damage == 0) {
 
-                SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
+                SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
                 {
                     APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
-                } CWwdGameObjectA* o = m_object;
+                } CWwdSpriteObject* o = m_object;
                 SET_SORT_KEY_IF_CHANGED(o, 0)
                 m_fired = 0;
                 return 0;
             }
 
             SET_ANIMATION_ACT("A");
-            SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
-            {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdGameObjectA* o =
+            SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
+            {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
                 m_object;
             SET_SORT_KEY_IF_CHANGED(o, 0)
 
@@ -237,15 +237,15 @@ i32 CStaticHazard::LoadAttributes() {
         }
     } else if (m_fired == 0 && m_object->m_damage == 0) {
 
-        SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
-        {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdGameObjectA* o =
+        SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
+        {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
             m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
         m_fired = 1;
         return 0;
     }
 
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
         if (g_gameReg->m_triggerMgr
                 ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 0)
@@ -257,7 +257,7 @@ i32 CStaticHazard::LoadAttributes() {
                 -1
             );
         }
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, o->m_health)
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 row = m_tileRow;
@@ -274,13 +274,13 @@ i32 CStaticHazard::LoadAttributes() {
             && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
         }
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
     }
     {
-        CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+        CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
         if (IsAniCursorComplete(sub)) {
-            SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
+            SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
                 g_gameReg->m_tileGrid;
             i32 row = m_tileRow;

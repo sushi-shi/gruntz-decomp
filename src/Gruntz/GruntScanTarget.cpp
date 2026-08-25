@@ -205,7 +205,7 @@ i32 CGrunt::ScanNearestTarget() {
                             m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
-                                    &reg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
                                     m_object->m_screenX,
                                     m_object->m_screenY
                                 )
@@ -227,7 +227,7 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 if (IsArrivalRerollPending() != 0) {
 
-                    CWwdGameObjectA* object = m_object;
+                    CWwdSpriteObject* object = m_object;
                     SELECT_RANDOM_EXTENT_POINT(object, baseCol, spanX, baseRow, spanY)
                     CMapMgr* grid = g_gameReg->m_tileGrid;
                     if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)

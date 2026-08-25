@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-class CWwdGameObjectA;
+class CWwdSpriteObject;
 struct CGameObject;
 class CAniRecordView;
 class CAniElement;
@@ -41,7 +41,7 @@ public:
     // The third shape: body inline AND CWapObj's three stores inline, so the tag
     // is CWapObj's own.  CWwdGameObject::CreateObject (0x166640) writes
     // id/flags/owner straight to [esi+0x1a4/0x1a8/0x1ac] with no `call 0x156cb0`,
-    // where the two other users of the same CWwdGameObjectA ctor keep the call.
+    // where the two other users of the same CWwdSpriteObject ctor keep the call.
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 id, i32 flags, CWapObj::ENoSeed)
         : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
         m_boundObject = NULL;
@@ -58,19 +58,19 @@ public:
 
     virtual void Unload() OVERRIDE;
 
-    void Construct(CWwdGameObjectA* src);
-    void Setup(CAniElement* src);
-    void Recompute(i32 resetGate);
+    void BindSprite(CWwdSpriteObject* src);
+    void SetAnimation(CAniElement* animation);
+    void RestartAnimation(i32 resetElapsedTime);
 
     i32 CanSerialize(CFileMemBase* ar);
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
     i32 CanDeserialize(CFileMemBase* ar);
 
-    i32 Find(CFileMemBase* ar, SerialMode type, LogicTypeId typeId, CGameObject* self);
+    i32 ProcessSerialMode(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self);
     i32 Advance(u32 elapsed);
 
-    CWwdGameObjectA* m_boundObject;
+    CWwdSpriteObject* m_boundObject;
     CAniElement* m_animation;
 
     CAniRecordView* m_element;

@@ -117,14 +117,14 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
     CDDrawWorker* en =
         LookupWorker(m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName, spec);
     g_gameReg->m_lightFxMgr->ApplyShadeTable(en, anchorA, SHADE_DST_BY_SRC_16);
-    CWwdGameObjectA* o = m_wwdObject;
+    CWwdSpriteObject* o = m_wwdObject;
     if (en != NULL) {
 
         i32 key = en->m_minIndex;
 
-        o->m_frameSet = en;
+        o->m_imageSet = en;
         CImage* val = en->GetAt(key);
-        o->m_layer = val;
+        o->m_frameImage = val;
         o->m_frameIndex = key;
     }
     CAniElement* node = NULL;
@@ -162,7 +162,7 @@ i32 CLightFx::SerializeMove(
             g_gameReg
                 ->m_lightFxMgr
 
-                ->ApplyShadeTable(m_wwdObject->m_frameSet, m_anchorA, SHADE_DST_BY_SRC_16);
+                ->ApplyShadeTable(m_wwdObject->m_imageSet, m_anchorA, SHADE_DST_BY_SRC_16);
             break;
     }
     return 1;
@@ -176,7 +176,7 @@ i32 CLightFx::RebindNode() {
 
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor) && m_anchorB)
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor) && m_anchorB)
     return 0;
 }

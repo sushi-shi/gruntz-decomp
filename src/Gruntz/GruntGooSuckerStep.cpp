@@ -168,7 +168,7 @@ L_ed006b:
                 i32 y = m_object->m_screenY;
                 CGruntzMgr* game = g_gameReg;
                 if (CGameLevel::PointInBounds(
-                        &game->m_world->m_level->m_mainPlane->m_viewRect,
+                        &game->m_world->m_level->m_mainPlane->m_planeViewRect,
                         x,
                         y
                     )

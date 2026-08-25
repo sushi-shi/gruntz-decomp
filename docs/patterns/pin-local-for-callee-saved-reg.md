@@ -10,7 +10,7 @@ callee-saved reg and pick the target's schedule. Variants of the lever:
 
 - **Pin `int x = h->m_5c; int y = h->m_60;`** to force the 4th callee-saved reg (+ the matching
   `push ebp`) for a multi-compare visible-bounds gate.
-- **Pin `char* tok = m_token; CButeTree* t = Tree();`** reused across two calls to make cl
+- **Pin `char* tok = m_token; CButeTree* t = Tags();`** reused across two calls to make cl
   allocate ebp (used as a GP reg under /O2) like the target.
 - **Split a pointer chain into a named intermediate** (`CSpriteInner* inner = sprite->m_7c;
   CSpriteRegistrar* reg = inner->m_18;`) to flip cl to the eax-in-place + interleaved-load schedule.

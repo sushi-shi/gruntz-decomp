@@ -16,8 +16,8 @@ merge.
 
 ```cpp
 switch (owner) {                        // retail: the arm owns the call
-    case WARLORDZ_KING:   ApplyName("GAME_FORTRESSFLAGZ_KING");   break;
-    case WARLORDZ_VIKING: ApplyName("GAME_FORTRESSFLAGZ_VIKING"); break;
+    case WARLORDZ_KING:   SetImageSetByName("GAME_FORTRESSFLAGZ_KING");   break;
+    case WARLORDZ_VIKING: SetImageSetByName("GAME_FORTRESSFLAGZ_VIKING"); break;
     default: SetObjectFlags(0x10000); return;
 }
 ```
@@ -26,7 +26,7 @@ switch (owner) {                        // retail: the arm owns the call
         jmp  L_call
         push 0x0
 L_call: mov  ecx,DWORD PTR [esi+0x38]
-        call <ApplyName>
+        call <SetImageSetByName>
 ```
 STEERABLE. `CFortressFlag::CFortressFlag` 92.82 -> 97.00 and the residue class
-moved `selection` -> `regname` by moving `ApplyName(name)` into the four arms.
+moved `selection` -> `regname` by moving `SetImageSetByName(name)` into the four arms.

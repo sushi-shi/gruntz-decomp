@@ -90,7 +90,7 @@ downstream effect measured, documented, historical MAX preserved, and the bank e
 adjudicated. A useful abstraction need not be duplicated merely to protect current fuzzy.
 
 A third A/B demonstrates why macro fallback remains the preferred final lever.
-`CWwdGameObjectA::ApplyGeometryDirect` is standalone at 100.000% and fully expanded inside
-the exact `ApplyLookupGeometry`. A narrow real inline kept both exact but moved the later
+`CWwdSpriteObject::SetAnimation` is standalone at 100.000% and fully expanded inside
+the exact `SetAnimationByName`. A narrow real inline kept both exact but moved the later
 exact `CDDrawWorker::GetMemoryUsage` to 99.9623%; the token-preserving macro restored all
 three to 100.000%.

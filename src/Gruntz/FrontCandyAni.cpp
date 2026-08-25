@@ -74,9 +74,9 @@ RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 // m_ownerLogicRecord receiver reloads use {ECX,EDX} here instead of retail's {EAX,ECX}.
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 // @early-stop
@@ -85,7 +85,7 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(1);
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 // @early-stop
@@ -94,9 +94,9 @@ CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, 0)
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 // @early-stop
@@ -105,12 +105,12 @@ CBehindCandy::CBehindCandy(CGameObject* obj)
 // docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey == 0 && o->m_layer != NULL) {
-        i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
+    CWwdSpriteObject* o = m_object;
+    if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
+        i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(o, v)
     }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 // @early-stop
@@ -120,12 +120,12 @@ RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
-    CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey == 0 && o->m_layer != NULL) {
-        i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
+    CWwdSpriteObject* o = m_object;
+    if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
+        i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(o, v)
     }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 RVA(0x000acbb0, 0x102)
@@ -145,7 +145,7 @@ void CEyeCandyAni::RegisterActs() {
 
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -153,7 +153,7 @@ RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
 }
 
@@ -175,6 +175,6 @@ void CFrontCandyAni::RegisterActs() {
 
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }

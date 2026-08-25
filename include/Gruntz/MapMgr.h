@@ -22,10 +22,10 @@ class CFileMemBase;
 // funclets call; the body at 0x9e7e0 is a separate member CMapMgr::Reset calls
 // DIRECTLY, so it is not the destructor. Its retail name is unrecoverable - it
 // releases the storage and re-zeroes the head, hence Free.
-class CMapArrayA {
+class CBrickzNodePool {
 public:
-    CMapArrayA();
-    ~CMapArrayA();
+    CBrickzNodePool();
+    ~CBrickzNodePool();
     i32 Allocate(u32 count);
     void Free();
 
@@ -34,10 +34,10 @@ public:
     u32 m_count;
 };
 
-class CMapArrayB {
+class CBrickzCellNodePool {
 public:
-    CMapArrayB();
-    ~CMapArrayB();
+    CBrickzCellNodePool();
+    ~CBrickzCellNodePool();
     i32 Allocate(u32 count);
     void Free();
 
@@ -98,8 +98,8 @@ public:
     Coord m_start;
     Coord m_goal;
 
-    CMapArrayA m_colA;
-    CMapArrayB m_colB;
+    CBrickzNodePool m_nodePool;
+    CBrickzCellNodePool m_cellNodePool;
     void (*m_stepCb)();
     i32 m_edgeMask;
     i32 m_maskA;

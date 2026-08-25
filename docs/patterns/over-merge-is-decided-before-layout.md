@@ -69,9 +69,9 @@ still splits them but remains structurally wrong at 74.1176. See
 | function | edit | result |
 |---|---|---|
 | `CPlay::OnRButtonDown` 0xceae0 | `A && B && C && D` -> four nested positive-gate `if`s | 89.98 -> **89.98** (byte-identical) |
-| `CWwdGameObjectA::BltDirtyEx` 0x1506b0 | `else if` chain -> separate `if`s each ending `return;` | 73.77 -> **73.77** |
-| `CWwdGameObjectA::BltDirtyEx` | `RECT ir` hoisted to function scope ahead of `i32 rc[4]` | no change (slot order is not declaration order) |
-| `CWwdGameObjectA::BltDirtyEx` | `rc[2] = rc[0] + w` instead of `ir.left + w` | no change (cl forwards the store, still folds to `right+1`) |
+| `CWwdSpriteObject::BltDirtyEx` 0x1506b0 | `else if` chain -> separate `if`s each ending `return;` | 73.77 -> **73.77** |
+| `CWwdSpriteObject::BltDirtyEx` | `RECT ir` hoisted to function scope ahead of `i32 rc[4]` | no change (slot order is not declaration order) |
+| `CWwdSpriteObject::BltDirtyEx` | `rc[2] = rc[0] + w` instead of `ir.left + w` | no change (cl forwards the store, still folds to `right+1`) |
 | `CDDrawSurfacePair::SetGeom` 0x164250 | positive changed-body with a late unchanged `return 1` versus the inverse early-return guard | 78.5294 -> **78.5294** (byte-identical); retain the positive body because it expresses retail's `jne`, `jne`, `je late-return` topology |
 | `CDDrawSurfacePair::SetGeom` | move the used `DDSCAPS` beside `sysmem` at function scope, in either declaration order | **78.5126** in both orders; a real C1 island, but still 3 returns versus retail's 5 |
 | `CProjectile::ScanTargets` 0xe0b10 | explicit trailing `return;` after the `do/while` | no change |

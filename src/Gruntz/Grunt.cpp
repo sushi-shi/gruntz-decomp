@@ -450,7 +450,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_defenderState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
     {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         i32 lim = h->m_screenY + 0x186a0;
         if (h->m_sortKey != lim) {
             h->m_sortKey = lim;
@@ -570,7 +570,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), kind);
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
     SET_DRAW_FILL_SPLIT(m_object, h, fillCmd, sel);
@@ -785,14 +785,14 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
 
                     SwitchAnimation(m_poseAttackIdle);
                     {
-                        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
+                        CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
                         CAniRecordView* elem =
                             desc->m_records.GetSize() > 0
                                 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                 : NULL;
                         i32 frame = elem->m_param;
                         const char* nm = EntranceCell()->AttackName().GetBuffer(0);
-                        ApplyLookupSprite(nm, frame);
+                        SetImageFrameByName(nm, frame);
                     }
                     goto store;
                 }
@@ -811,9 +811,9 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
             }
         }
 
-        SwitchGeometryDirect(AT(m_poseIdle, GRUNT_IDLE1), 0);
+        SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
-            CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
+            CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
             CAniRecordView* elem = desc->m_records.GetSize() > 0
                                        ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                        : NULL;
@@ -823,7 +823,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
             i32 index = 3 * row + column;
 
             const char* nm = m_cells[index].IdleName().GetBuffer(0);
-            ApplyLookupSprite(nm, frame);
+            SetImageFrameByName(nm, frame);
         }
         goto store;
     }
@@ -837,7 +837,7 @@ walk:
         i32 index = 3 * row + column;
 
         const char* nm = m_cells[index].WalkName().GetBuffer(0);
-        ApplyName(nm);
+        SetImageSetByName(nm);
     }
 
 store:
@@ -1558,7 +1558,7 @@ label_4c6e4:
         }
         i32 hudY = m_object->m_screenY;
         i32 hudX = m_object->m_screenX;
-        CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+        CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(rr, hudX, hudY)) {
             g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
@@ -3158,7 +3158,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
 
         eq = (strcmp(*rec, "H") == 0);
         if (eq) {
-            CAniElement* el = m_wwdObject->m_animCursor.m_animation;
+            CAniElement* el = m_wwdObject->m_animationCursor.m_animation;
             CAniRecordView* first;
             if (el->m_records.GetSize() > 0) {
                 first = static_cast<CAniRecordView*>(el->m_records[0]);
@@ -3167,7 +3167,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             i32 handle = first->m_param;
             GruntDirectionCell cell = m_entranceCell;
-            ApplyLookupSprite(m_cells[cell.row * 3 + cell.column].m_names[1].GetBuffer(0), handle);
+            SetImageFrameByName(
+                m_cells[cell.row * 3 + cell.column].m_names[1].GetBuffer(0),
+                handle
+            );
         } else {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
                 RESET_GRUNT_POWERED_STATE(this)
@@ -3192,7 +3195,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(*rec2, "D") == 0);
             if (eq) {
                 GruntDirectionCell cell2 = m_entranceCell;
-                ApplyName(m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0));
+                SetImageSetByName(m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0));
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);

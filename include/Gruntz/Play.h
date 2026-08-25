@@ -38,7 +38,7 @@ class CStatusBarMgr;
 class CMinimap;
 class CTileTriggerContainer;
 struct CGameObject;
-class CWwdGameObjectA;
+class CWwdSpriteObject;
 
 class CMulti;
 
@@ -378,7 +378,7 @@ public:
     i32 m_cursorFrameCountdownMs;
     i32 m_cursorFrameIndex;
 
-    CWwdGameObjectA* m_cursorSnapSprite;
+    CWwdSpriteObject* m_cursorSnapSprite;
     i32 m_cursorAnimationActive;
     i32 m_renderDisabled;
     i32 m_playerCommandPending;
@@ -414,8 +414,8 @@ void ResetPlayerColorAvailability();
 extern GruntDeathType g_areaPitDeath;
 
 extern i32 g_playActive;
-extern i32 g_profAccA;
-extern i32 g_profAccB;
+extern i32 g_deactivateProfileMs;
+extern i32 g_flipProfileMs;
 extern i32 g_playerColorAvailable[TINT_COUNT];
 
 extern i32 g_lastLevelNum;

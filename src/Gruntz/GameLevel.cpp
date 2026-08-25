@@ -77,29 +77,29 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
-    m_pairA[1] = 250;
-    m_pairB[0] = 1000;
-    m_pairB[1] = 1000;
-    m_pairC[0] = 250;
+    m_defaultActiveGridCellSize[1] = 250;
+    m_largeActiveGridCellSize[0] = 1000;
+    m_largeActiveGridCellSize[1] = 1000;
+    m_smallActiveGridCellSize[0] = 250;
 
-    m_planeCtx.left = COORD_UNSET;
+    m_viewportRect.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
     m_checksum = 0;
-    m_pairA[0] = 500;
-    m_pairC[1] = 125;
-    m_rectA.w = 1600;
-    m_rectA.h = 1200;
-    m_rectB.w = 2560;
-    m_rectB.h = 1920;
-    m_rectC.w = 768;
-    m_rectC.h = 576;
+    m_defaultActiveGridCellSize[0] = 500;
+    m_smallActiveGridCellSize[1] = 125;
+    m_defaultActiveRegionSize.w = 1600;
+    m_defaultActiveRegionSize.h = 1200;
+    m_largeActiveRegionSize.w = 2560;
+    m_largeActiveRegionSize.h = 1920;
+    m_smallActiveRegionSize.w = 768;
+    m_smallActiveRegionSize.h = 576;
 }
 
 RVA(0x0015cdf0, 0xb8)
 i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
-    m_planeCtx = *coords;
-    SetParamBlockDefaults();
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
     if (LoadFromFile(path) == 0) {
         Unload();
         return 0;
@@ -109,8 +109,8 @@ i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
 
 RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::LoadSourceWithCoords(CRezArchiveEntry* src, LevelCoordRect* coords) {
-    m_planeCtx = *coords;
-    SetParamBlockDefaults();
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
     if (LoadFromSource(src) == 0) {
         Unload();
         return 0;
@@ -120,8 +120,8 @@ i32 CGameLevel::LoadSourceWithCoords(CRezArchiveEntry* src, LevelCoordRect* coor
 
 RVA(0x0015cf70, 0xb8)
 i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
-    m_planeCtx = *coords;
-    SetParamBlockDefaults();
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
     if (LoadWwd(hdr) == 0) {
         Unload();
         return 0;
@@ -131,29 +131,29 @@ i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
 
 // @early-stop
 RVA(0x0015d030, 0x92)
-i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
-    m_planeCtx.left = 0;
-    m_planeCtx.top = 0;
-    m_planeCtx.right = w - 1;
-    m_planeCtx.bottom = h - 1;
-    SetParamBlockDefaults();
+i32 CGameLevel::SetViewportSize(i32 w, i32 h) {
+    m_viewportRect.left = 0;
+    m_viewportRect.top = 0;
+    m_viewportRect.right = w - 1;
+    m_viewportRect.bottom = h - 1;
+    SetSpatialDefaults();
     return 1;
 }
 
 RVA(0x0015d0d0, 0x99)
-i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
-    m_planeCtx = *coords;
-    SetParamBlockDefaults();
+i32 CGameLevel::SetViewportRect(LevelCoordRect* coords) {
+    m_viewportRect = *coords;
+    SetSpatialDefaults();
     return 1;
 }
 
 // Dead in retail: no .text or .data reference reaches 0x15d170. The six sites that
-// set the parameter block expand SetParamBlockDefaults instead.
+// set the parameter block expand SetSpatialDefaults instead.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015d170, 0x73)
-void CGameLevel::ResetParamBlock() {
-    SetParamBlockDefaults();
+void CGameLevel::ResetSpatialDefaults() {
+    SetSpatialDefaults();
 }
 
 RVA(0x0015d1f0, 0x87)
@@ -173,7 +173,7 @@ void CGameLevel::Unload() {
         }
     }
     m_imageSets.SetSize(0, -1);
-    m_planeCtx.left = COORD_UNSET;
+    m_viewportRect.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
     memset(&m_header, 0, 1524);
@@ -226,7 +226,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     for (u32 i = 0; i < source->numPlanes; ++i) {
         // Byte-forced view of packed WWD storage.
 
-        if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_planeCtx)
+        if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_viewportRect)
             == NULL) {
             goto fail;
         }
@@ -273,8 +273,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         CDDrawWorkerHost* mp = m_mainPlane;
         SET_SCROLL_POSITION_RAW_FIRST(mp, startX, startY);
 
-        i32 ox = m_mainPlane->m_snappedX;
-        i32 oy = m_mainPlane->m_snappedY;
+        i32 ox = m_mainPlane->m_scrollPixelX;
+        i32 oy = m_mainPlane->m_scrollPixelY;
         i32 i2 = 0;
         while (i2 < m_planes.GetSize()) {
             if (i2 != m_mainIndex) {
@@ -342,7 +342,7 @@ void CGameLevel::ReleaseChildren() {
 }
 
 RVA(0x0015d700, 0x81)
-i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
+i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
     if (w <= 0) {
         return 0;
     }
@@ -356,11 +356,11 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     rect.top = 0;
     rect.right = maxX;
     rect.bottom = maxY;
-    m_planeCtx = rect;
+    m_viewportRect = rect;
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->Build(&rect);
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->SetViewportRect(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -400,13 +400,13 @@ CTileImageSet* CGameLevel::ReadImageSet(WwdTileImageRecord* record) {
     CTileImageSet* set;
     switch (record->m_kind) {
         case TILE_IMAGESET_UNIFORM:
-            set = new CImageSet1;
+            set = new CUniformTileImageSet;
             break;
         case TILE_IMAGESET_RECT:
-            set = new CImageSet2;
+            set = new CRectTileImageSet;
             break;
         case TILE_IMAGESET_PIXELS:
-            set = new CImageSet3;
+            set = new CPixelTileImageSet;
             break;
         default:
             return NULL;
@@ -426,7 +426,7 @@ CDDrawWorkerHost*
 CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RECT*) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
-    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
+    if (plane->Read(planeData, blockBase, &m_viewportRect) == 0) {
         if (plane) {
             delete plane;
         }
@@ -455,8 +455,16 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
 ) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
-    if (plane
-            ->InitGeometry(w, h, tileW, tileH, depthX, depthY, &m_planeCtx, const_cast<char*>(name))
+    if (plane->InitGeometry(
+            w,
+            h,
+            tileW,
+            tileH,
+            depthX,
+            depthY,
+            &m_viewportRect,
+            const_cast<char*>(name)
+        )
         == 0) {
         if (plane) {
             delete plane;
@@ -475,10 +483,10 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
 }
 
 RVA(0x0015da80, 0x47)
-void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
-    m_planeCtx = *coords;
+void CGameLevel::UpdatePlaneViewports(LevelCoordRect* coords) {
+    m_viewportRect = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->Build(coords);
+        (static_cast<CDDrawWorkerHost*>(m_planes[i]))->SetViewportRect(coords);
     }
 }
 
@@ -564,7 +572,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
                 CDDrawWorkerHost* p = (i >= 0 && i < m_planes.GetSize())
                                           ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
                                           : NULL;
-                i32 zBound = p->m_zBound;
+                i32 zBound = p->m_zCoord;
                 i32 blocked = 0;
                 while (pos != NULL && blocked == 0) {
                     POSITION cur = pos;
@@ -601,7 +609,7 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
         CDDrawWorkerHost* p =
             (i >= 0 && i < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[i]) : NULL;
-        if (_strcmpi(name, p->m_name) == 0) {
+        if (_strcmpi(name, p->m_planeName) == 0) {
             return static_cast<CDDrawWorkerHost*>(p);
         }
     }
@@ -1499,23 +1507,23 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (x < 0) {
         x = 0;
     } else {
-        if (x >= m_mainPlane->m_wrapW) {
-            x = m_mainPlane->m_wrapW - 1;
+        if (x >= m_mainPlane->m_planePixelWidth) {
+            x = m_mainPlane->m_planePixelWidth - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
-        if (y >= m_mainPlane->m_wrapH) {
-            y = m_mainPlane->m_wrapH - 1;
+        if (y >= m_mainPlane->m_planePixelHeight) {
+            y = m_mainPlane->m_planePixelHeight - 1;
         }
     }
     CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = x >> pl->m_shiftX;
     i32 alignedX = qx << pl->m_shiftX;
     i32 qy = y >> pl->m_shiftY;
-    i32 idx = pl->m_rowOffsets[qy] + qx;
-    i32 tile = pl->m_tileGrid[idx];
+    i32 idx = pl->m_tileRowOffsets[qy] + qx;
+    i32 tile = pl->m_tileHandles[idx];
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return 0;
     }
@@ -1732,7 +1740,7 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     PROBE_TILE(this, px, row, result);
 
     i32 startRow = row;
-    i32 wrapH = m_mainPlane->m_wrapH;
+    i32 wrapH = m_mainPlane->m_planePixelHeight;
     while (result != TILEKIND_SOLID) {
         if (result == TILEKIND_GROUND || result == TILEKIND_CLIMB) {
             break;
@@ -1779,7 +1787,7 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != NULL) {
-        m_mainPlane->InitScrollRects();
+        m_mainPlane->UpdateActiveRegionSizes();
     }
 }
 
@@ -1888,7 +1896,7 @@ i32 CGameLevel::CanLoadName(CFileMemBase* s) {
 
 RVA(0x00161190, 0x1f)
 i32 CGameLevel::IsLoaded() {
-    if (m_planeCtx.left == COORD_UNSET) {
+    if (m_viewportRect.left == COORD_UNSET) {
         goto fail;
     }
     if (m_ownerCtx == NULL) {
@@ -1916,16 +1924,16 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (px < 0) {
         px = 0;
     } else {
-        if (px >= m_mainPlane->m_wrapW) {
-            px = m_mainPlane->m_wrapW - 1;
+        if (px >= m_mainPlane->m_planePixelWidth) {
+            px = m_mainPlane->m_planePixelWidth - 1;
         }
     }
     i32 py = limit;
     if (py < 0) {
         py = 0;
     } else {
-        if (py >= m_mainPlane->m_wrapH) {
-            py = m_mainPlane->m_wrapH - 1;
+        if (py >= m_mainPlane->m_planePixelHeight) {
+            py = m_mainPlane->m_planePixelHeight - 1;
         }
     }
     CDDrawWorkerHost* pl = m_mainPlane;
@@ -1933,9 +1941,9 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     i32 qy = py >> pl->m_shiftY;
     i32 col = qx;
     i32 subX = px - (qx << pl->m_shiftX);
-    i32 idx = pl->m_rowOffsets[qy] + col;
+    i32 idx = pl->m_tileRowOffsets[qy] + col;
     i32 subY = py - (qy << pl->m_shiftY);
-    i32 tile = pl->m_tileGrid[idx];
+    i32 tile = pl->m_tileHandles[idx];
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
@@ -1943,9 +1951,9 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-RVA_COMPGEN(0x00161350, 0x1e, ??_GCImageSet1@@UAEPAXI@Z)
-RVA_COMPGEN(0x00161370, 0x7, ??1CImageSet1@@UAE@XZ)
-RVA_COMPGEN(0x00161440, 0x1e, ??_GCImageSet2@@UAEPAXI@Z)
-RVA_COMPGEN(0x00161460, 0x7, ??1CImageSet2@@UAE@XZ)
-RVA_COMPGEN(0x001614e0, 0x1e, ??_GCImageSet3@@UAEPAXI@Z)
-RVA_COMPGEN(0x00161500, 0x58, ??1CImageSet3@@UAE@XZ)
+RVA_COMPGEN(0x00161350, 0x1e, ??_GCUniformTileImageSet@@UAEPAXI@Z)
+RVA_COMPGEN(0x00161370, 0x7, ??1CUniformTileImageSet@@UAE@XZ)
+RVA_COMPGEN(0x00161440, 0x1e, ??_GCRectTileImageSet@@UAEPAXI@Z)
+RVA_COMPGEN(0x00161460, 0x7, ??1CRectTileImageSet@@UAE@XZ)
+RVA_COMPGEN(0x001614e0, 0x1e, ??_GCPixelTileImageSet@@UAEPAXI@Z)
+RVA_COMPGEN(0x00161500, 0x58, ??1CPixelTileImageSet@@UAE@XZ)

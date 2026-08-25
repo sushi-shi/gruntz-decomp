@@ -9,10 +9,10 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Fader.h>
+#include <Gruntz/FaderConfig.h>
 #include <Gruntz/FaderMode.h>
 #include <Gruntz/FaderSubtypes.h>
-#include <Gruntz/FxModeDesc.h>
-#include <Gruntz/FxModeT1.h>
+#include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
 #include <Utils/RecordFill.h>
 #include <Wap32/ScreenGeometry.h>
@@ -64,8 +64,8 @@ CFaderFlat::~CFaderFlat() {
 }
 
 RVA(0x0017f5e0, 0x7d)
-i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT5* s = static_cast<CFxModeT5*>(desc);
+i32 CFaderFlat::ApplyInit(CFaderConfig* desc) {
+    CFlatFaderConfig* s = static_cast<CFlatFaderConfig*>(desc);
     if (s->m_targetSurface == NULL) {
         m_dstSurface = m_primarySurface;
     } else {
@@ -194,8 +194,8 @@ CFaderRadial::~CFaderRadial() {
 }
 
 RVA(0x0017fa40, 0x1f3)
-i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
+i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
+    CRadialFaderConfig* cfg = static_cast<CRadialFaderConfig*>(desc);
     if (cfg->m_targetSurface == NULL) {
         m_dstSurface = m_primarySurface;
     } else {
@@ -307,8 +307,8 @@ CFaderSine::~CFaderSine() {}
 // desc deref; plus the inlined GetRandom's `inc` sits beside the idiv in retail
 // where ours hoists it above the `and 0x7fff`. 180 forest cells flat on both.
 RVA(0x0017fe00, 0x12d)
-i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT3* cfg = static_cast<CFxModeT3*>(desc);
+i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
+    CSineFaderConfig* cfg = static_cast<CSineFaderConfig*>(desc);
     i32 w;
     i32 p;
     i32 i;
@@ -512,8 +512,8 @@ CFaderLight::~CFaderLight() {
 // stores m_ownsTable = 1 as an immediate instead of sharing the return value's
 // register, and hoists the m_palette load above the HueRampTable arg pushes.
 RVA(0x001804a0, 0x182)
-i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT2* d = static_cast<CFxModeT2*>(desc);
+i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
+    CLightFaderConfig* d = static_cast<CLightFaderConfig*>(desc);
     m_previousFrame = 0;
     if (d->m_targetSurface == NULL) {
         m_targetSurface = m_primarySurface;
@@ -1103,8 +1103,8 @@ CFaderShape::~CFaderShape() {
 // constant, so every `cmp reg,0` here reads `cmp mem,ebp` on our side; an explicit
 // pointer local does not move it.
 RVA(0x001817e0, 0x315)
-i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
-    CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
+i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
+    CShapeFaderConfig* pInit = static_cast<CShapeFaderConfig*>(desc);
     i32 i;
     i32 mx;
     m_previousFrame = 0;

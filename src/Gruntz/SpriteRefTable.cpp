@@ -2,9 +2,9 @@
 
 #include <Gruntz/SpriteRefTable.h>
 
-#include <DDrawMgr/AniRecordBase2.h>
+#include <DDrawMgr/DDrawPaletteRegistry.h>
+#include <DDrawMgr/DDrawPaletteResource.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Enums.h>
@@ -273,20 +273,21 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezArchive* src) {
     return 1;
 }
 
-static inline CAniRecordBase2* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+static inline CDDrawPaletteResource* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     CObject* found = NULL;
     map.Lookup(name, found);
-    return static_cast<CAniRecordBase2*>(found);
+    return static_cast<CDDrawPaletteResource*>(found);
 }
 
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
-    CAniRecordBase2* rec = LookupWorker(m_spriteMgrHolder->m_workerMap->m_map1, szName);
+    CDDrawPaletteResource* rec =
+        LookupWorker(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, szName);
     if (!rec) {
         return NULL;
     }
 
-    PALETTEENTRY* entries = rec->m_buf->m_cacheA;
+    PALETTEENTRY* entries = rec->m_palette->m_cacheA;
     if (!entries) {
         return NULL;
     }
@@ -336,7 +337,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CRezArchive* src, const char* name) {
         return 0;
     }
 
-    if (LookupWorker(m_spriteMgrHolder->m_workerMap->m_map1, name)) {
+    if (LookupWorker(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, name)) {
         return 1;
     }
 
@@ -346,5 +347,5 @@ i32 CSpriteRefTable::LoadGruntzPalette(CRezArchive* src, const char* name) {
     if (!pal) {
         return 0;
     }
-    return m_spriteMgrHolder->m_workerMap->LoadPaletteFromSource(pal, NULL, 0) != NULL;
+    return m_spriteMgrHolder->m_paletteRegistry->LoadPaletteFromSource(pal, NULL, 0) != NULL;
 }

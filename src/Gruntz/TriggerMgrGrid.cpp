@@ -135,7 +135,8 @@ i32 CTriggerMgr::PlaceObject(
             goto fail;
         }
 
-        CWwdGameObjectA* sprite = m_world->m_childGroup->CreateSprite(0, x, y, z, "Grunt", 0x40003);
+        CWwdSpriteObject* sprite =
+            m_world->m_childGroup->CreateSprite(0, x, y, z, "Grunt", 0x40003);
         if (sprite == NULL) {
             goto fail;
         }
@@ -242,7 +243,7 @@ i32 CTriggerMgr::PlaceObject(
             }
 
             if (mode == GRUNT_ENTRANCE_WORMHOLE) {
-                CWwdGameObjectA* hole =
+                CWwdSpriteObject* hole =
                     m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
                 if (hole == NULL) {
                     logic->SetObjectFlags(0x10000);
@@ -364,9 +365,9 @@ CGrunt* CTriggerMgr::ScreenToCell(
     i32 startPlayerIndex
 ) {
     CGameLevel* view = m_world->m_level;
-    RECT* r = &view->m_mainPlane->m_viewRect;
-    i32 px = r->left - view->m_planeCtx.left + sx;
-    i32 py = r->top - view->m_planeCtx.top + sy;
+    RECT* r = &view->m_mainPlane->m_planeViewRect;
+    i32 px = r->left - view->m_viewportRect.left + sx;
+    i32 py = r->top - view->m_viewportRect.top + sy;
     return CellHitTest(px, py, outPlayerIndex, outUnitIndex, startPlayerIndex);
 }
 
@@ -393,8 +394,8 @@ CGrunt* CTriggerMgr::CellHitTest(
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
                 CGrunt* g = cell[unitIndex];
                 if (g != NULL && g->m_entranceCommitted != 0) {
-                    CWwdGameObjectA* o = g->m_object;
-                    if (o->m_layer != NULL) {
+                    CWwdSpriteObject* o = g->m_object;
+                    if (o->m_frameImage != NULL) {
                         i32 x0 = o->m_screenX - 15;
                         i32 y0 = o->m_screenY - 15;
                         i32 x1 = x0 + 30;
@@ -474,19 +475,19 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     i32 cy = y;
     if (cx < 0) {
         cx = 0;
-    } else if (cx >= level->m_mainPlane->m_wrapW) {
-        cx = level->m_mainPlane->m_wrapW - 1;
+    } else if (cx >= level->m_mainPlane->m_planePixelWidth) {
+        cx = level->m_mainPlane->m_planePixelWidth - 1;
     }
     if (cy < 0) {
         cy = 0;
-    } else if (cy >= level->m_mainPlane->m_wrapH) {
-        cy = level->m_mainPlane->m_wrapH - 1;
+    } else if (cy >= level->m_mainPlane->m_planePixelHeight) {
+        cy = level->m_mainPlane->m_planePixelHeight - 1;
     }
     i32 tx = cx >> level->m_mainPlane->m_shiftX;
     i32 ty = cy >> level->m_mainPlane->m_shiftY;
     i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);
     i32 subY = cy - (ty << level->m_mainPlane->m_shiftY);
-    i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_rowOffsets[ty] + tx];
+    i32 raw = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[ty] + tx];
     TileCollisionKind tag;
     if (raw == UNINIT_FILL || raw == -1) {
         tag = TILEKIND_PASSABLE;
@@ -846,7 +847,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     || sw->m_checkpointType == IDX(g->m_vehiclePickupType)) {
                     sw->SwitchDown();
                 } else {
-                    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                     i32 gx = g->m_object->m_screenX;
                     i32 gy = g->m_object->m_screenY;
                     if (CGameLevel::PointInRect(view, gx, gy)) {
@@ -895,7 +896,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (x < 0) {
         x = 0;
     } else {
-        i32 w = view->m_mainPlane->m_wrapW;
+        i32 w = view->m_mainPlane->m_planePixelWidth;
         if (x >= w) {
             x = w - 1;
         }
@@ -903,7 +904,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (y < 0) {
         y = 0;
     } else {
-        i32 h = view->m_mainPlane->m_wrapH;
+        i32 h = view->m_mainPlane->m_planePixelHeight;
         if (y >= h) {
             y = h - 1;
         }
@@ -915,7 +916,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     i32 ty = y >> sw;
     i32 subX = x - (tx << sh);
     i32 subY = y - (ty << sw);
-    i32 attr = scroll->m_tileGrid[scroll->m_rowOffsets[ty] + tx];
+    i32 attr = scroll->m_tileHandles[scroll->m_tileRowOffsets[ty] + tx];
     TileCollisionKind kind;
     if (attr == UNINIT_FILL || attr == -1) {
         kind = TILEKIND_PASSABLE;
@@ -1194,8 +1195,8 @@ i32 CTriggerMgr::ApplyTriggerA(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
                 if (cand->m_pending == 0 && cand->m_tileX == argTileX
                     && cand->m_tileY == argTileY) {
                     cell->RunMoveConfig(argTileX, argTileY);
-                    cand->m_value = cand->m_wwdObject->m_animCursor.m_animation;
-                    cand->m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                    cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
+                    cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                     cand->m_pending = 1;
                     return 1;
                 }
@@ -1383,7 +1384,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
             CGameObject* obj = cell->m_object;
             i32 sy = obj->m_screenY;
             i32 sx = obj->m_screenX;
-            RECT* vr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            RECT* vr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
             if (sx < vr->right && sx >= vr->left && sy < vr->bottom && sy >= vr->top) {
                 g_gameReg->m_voiceManager->PlayVoice(cell, 0x38e, -1, 0, -1, -1);
             }

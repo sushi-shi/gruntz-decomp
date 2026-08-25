@@ -50,7 +50,7 @@ m_1c = &g_vtbl; m_30 = 0; m_34 = 0; m_10 = 0; m_0 = 0; m_30 = this;  // -> 100%
 - Mark the *minimal* set. Over-volatiling neighbours (e.g. the worker reset's
   `m_78`/`m_5c`) pins THEM in source order too but leaves the truly-redundant
   pair floating between the volatiles, and can move the constant materialization
-  — it regressed `CDDrawWorkerA::Reset` 90%→72%. Volatilize the duplicated
+  — it regressed `CDDrawPixelWorker::Reset` 90%→72%. Volatilize the duplicated
   offsets, leave the rest plain.
 - Inline-helper folding (a `Clear()`/`resetTimer()` member called N times) does
   **not** survive DCE — our cl inlines then eliminates. Only `volatile` holds.
@@ -61,6 +61,6 @@ m_1c = &g_vtbl; m_30 = 0; m_34 = 0; m_10 = 0; m_0 = 0; m_30 = this;  // -> 100%
 ## Evidence
 
 `C1396f0::Init` (0x1396f0) 75%→**100%** with `m_1c`/`m_30` volatile.
-`CDDrawWorkerA/B::Reset` (0x1570d0 / 0x157240): the three redundant
+`CDDrawPixelWorker/B::Reset` (0x1570d0 / 0x157240): the three redundant
 `m_20`/`m_38` timer-reset pairs reproduce with `m_20`/`m_38` volatile (90%, the
 residual is the float of the *non*-volatile `m_78`/`m_5c` — a scheduling wall).

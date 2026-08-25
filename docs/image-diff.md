@@ -355,7 +355,7 @@ the reverse spelling can emit more operands while every one still names an ident
 present on the other side.  `CGrunt::LoadGruntTypeTable` is the compact control:
 retail shares three health cases across two `GetIntDef("Powerupz", ...)` call sites,
 while our build shares all three across one.  `CShadeTableCache::FlashTable` similarly
-factors repeated `g_p01` loads.  Call/load count can matter, so these regions are not
+factors repeated `g_percentScale` loads.  Call/load count can matter, so these regions are not
 discarded: `--multiplicity N` lists them and the integrity gate ratchets them
 separately.  They are no longer called wrong-target evidence.  On the authoritative
 candidate this partitions the 72-region bucket into **34 genuinely different

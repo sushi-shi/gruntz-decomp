@@ -63,7 +63,7 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 
 The wrapper inlines its sibling, so the emitted COMDAT is byte-identical to retail's
 standalone body - verified for `CGameLevel::PointInBounds` (0x6b330, 42 B) and
-`CGameLevel::ResetParamBlock` (0x15d170, 115 B, including retail's `edx`/`eax` constant
+`CGameLevel::ResetSpatialDefaults` (0x15d170, 115 B, including retail's `edx`/`eax` constant
 CSE). **One textual copy of the logic**, so no clone signature appears.
 
 Split the sites by evidence, never by guess. Scan `.text` for the two shapes and attribute
@@ -138,7 +138,7 @@ it directly:
     llvm-nm build/objdiff/base/*.obj | grep '<mangled>'
 
 Six rows in `config/match_baseline.tsv` were in this state (all recovered to 100.00):
-`?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z`, `?ResetParamBlock@CGameLevel@@QAEXXZ`,
+`?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z`, `?ResetSpatialDefaults@CGameLevel@@QAEXXZ`,
 `??0WwdDirtyRect@@QAE@XZ`, `??0WwdGridNode@@QAE@XZ`, `??0WwdRegion@@QAE@XZ`,
 `??1CWorldSoundSet@@QAE@XZ`. Two remain: `??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z`
 (0x15b390) and `??0CUserLogic@@QAE@PAUCGameObject@@@Z` (0x58cd0).
@@ -152,8 +152,8 @@ standalone body. The retained two-entity form is a shared statement macro plus t
 one-line wrapper: one textual body, all four retail site shapes, and no address-taking or
 TU switch.
 
-`CWwdGameObjectA::ApplyGeometryDirect` is the zero-direct-caller form. Its exact standalone
-body is wholly expanded in exact `ApplyLookupGeometry`; a narrow inline sibling reproduces
+`CWwdSpriteObject::SetAnimation` is the zero-direct-caller form. Its exact standalone
+body is wholly expanded in exact `SetAnimationByName`; a narrow inline sibling reproduces
 both, while a macro fallback avoids a later C1-state perturbation. A missing direct retail
 call therefore does not disprove the relationship when the complete semantic body and
 referents occur inside another function and the standalone COMDAT identity is retained.

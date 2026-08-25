@@ -64,9 +64,9 @@ already holding `m_world` — and only the final `->m_mainPlane` load targets
 
 `CActionOptionsMenuBar::Render` 0x0094c0 supplies the address-taken-argument
 extension (2026-08-21). Moving the back-buffer local before the clip-rectangle
-copy first reproduced retail's post-`WrapCoord` statement order and raised
+copy first reproduced retail's post-`WorldToViewport` statement order and raised
 82.31% to 90.12%. Binding `m_world->m_level` before passing `&sx` and `&sy`
-then made the complete opening through `WrapCoord` byte-exact and raised the
+then made the complete opening through `WorldToViewport` byte-exact and raised the
 function to 94.48%. Binding the last link (`CDDrawWorkerHost*`) and leaving the
 full chain inline both stop at 90.12%. A 33-state forest and all 256 depth-1/2
 source variants each produced one compiler island; the remaining residue is

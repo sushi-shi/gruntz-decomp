@@ -44,8 +44,8 @@ i32 CMenuTree::Configure(
     }
     m_bounds.left = 0;
     m_bounds.top = 0;
-    m_bounds.right = world->m_drawTarget->m_frontPair->m_width - 1;
-    m_bounds.bottom = world->m_drawTarget->m_frontPair->m_height - 1;
+    m_bounds.right = world->m_drawTarget->m_frontSurface->m_width - 1;
+    m_bounds.bottom = world->m_drawTarget->m_frontSurface->m_height - 1;
     return 1;
 }
 

@@ -83,7 +83,7 @@ i32 CSplashState::LeaveState(GameStateId nextState) {
 
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
-    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
+    IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
             m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x447);
@@ -93,10 +93,10 @@ i32 CSplashState::Render() {
 
     TickSoundVolumeRamps(m_world->m_soundRegistry);
 
-    if (static_cast<u32>(g_wap32FrameDelta) >= m_splashCountdownMs) {
+    if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_splashCountdownMs) {
         m_splashCountdownMs = 0;
     } else {
-        m_splashCountdownMs = m_splashCountdownMs - g_wap32FrameDelta;
+        m_splashCountdownMs = m_splashCountdownMs - g_gameAppFrameDeltaMs;
     }
 
     {

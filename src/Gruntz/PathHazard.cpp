@@ -61,7 +61,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetObjectFlags(0x2000002);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
     m_wp[0].x = m_object->m_screenX;
@@ -115,7 +115,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         SetObjectFlags(0x10000);
     } else {
         SET_ANIMATION_ACT("A");
-        SwitchGeometry("GAME_CYCLE100", 0);
+        SwitchAnimationByName("GAME_CYCLE100", 0);
     }
 }
 
@@ -142,15 +142,15 @@ void RegisterPathHazardActions() {
 // Scheduling only: retail hoists the ActFindId("B") push above the m_leg stores.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
-    CWwdGameObjectA* obj = m_object;
+    CWwdSpriteObject* obj = m_object;
 
     RECT rect;
-    rect.left = obj->m_screenX - obj->m_layer->m_anchorX + 7;
-    rect.right = obj->m_layer->m_anchorX + obj->m_screenX - 7;
-    rect.top = obj->m_screenY - obj->m_layer->m_anchorY + 7;
-    rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
+    rect.left = obj->m_screenX - obj->m_frameImage->m_anchorX + 7;
+    rect.right = obj->m_frameImage->m_anchorX + obj->m_screenX - 7;
+    rect.top = obj->m_screenY - obj->m_frameImage->m_anchorY + 7;
+    rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -173,7 +173,7 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    CWwdGameObjectA* m10 = m_object;
+    CWwdSpriteObject* m10 = m_object;
     if (m10->m_screenX == m_wpX) {
         i32 wy = m_wpY;
         if (m10->m_screenY == wy) {
@@ -235,14 +235,14 @@ i32 CRainCloud::Tick() {
     if (m_strikeArmed != 0) {
         i32 idx = 5;
         if (static_cast<i64>(g_frameTime) - m_strike.m_deadline < m_strike.m_window) {
-            if (static_cast<u32>(g_timer200) >= 0x64) {
+            if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 idx = 0;
             }
         } else {
             m_strikeArmed = 0;
         }
         CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[idx];
-        CWwdGameObjectA* spr = m_object;
+        CWwdSpriteObject* spr = m_object;
         SET_DRAW_FILL_REVERSED(spr, SHADE_DST_BY_SRC_16, frame);
     }
     CPathHazard::Tick();
@@ -256,25 +256,25 @@ i32 CPathHazard::SiblingTick() {
         i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_deadline;
 
         if (elapsed < m_strike.m_window) {
-            if (static_cast<u32>(g_timer200) >= 0x64) {
+            if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 sel = 0;
             }
         } else {
             m_strikeArmed = 0;
         }
         CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[sel];
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
     }
 
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
-    CWwdGameObjectA* obj = m_object;
+    CWwdSpriteObject* obj = m_object;
     RECT rect;
-    rect.left = obj->m_screenX - obj->m_layer->m_anchorX + 7;
-    rect.right = obj->m_layer->m_anchorX + obj->m_screenX - 7;
-    rect.top = obj->m_screenY - obj->m_layer->m_anchorY + 7;
-    rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
+    rect.left = obj->m_screenX - obj->m_frameImage->m_anchorX + 7;
+    rect.right = obj->m_frameImage->m_anchorX + obj->m_screenX - 7;
+    rect.top = obj->m_screenY - obj->m_frameImage->m_anchorY + 7;
+    rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -303,7 +303,7 @@ i32 CPathHazard::SiblingTick() {
     i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
     if (legElapsed >= m_leg.m_window) {
         CShadeTable* frame = tableReg->m_lightFxMgr->m_tables[5];
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
         this->BeginLeg();
         SET_ANIMATION_ACT("A");
@@ -320,7 +320,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strike.m_deadline = static_cast<i64>(g_frameTime);
     g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 
-    CWwdGameObjectA* obj = m_object;
+    CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
@@ -360,7 +360,7 @@ i32 CPathHazard::Arrive() {
 
 RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
-    CWwdGameObjectA* obj = m_object;
+    CWwdSpriteObject* obj = m_object;
     i32 idx = m_wpIndex;
     i32 wx = m_wp[idx].x;
     m_wpX = wx;
@@ -399,10 +399,10 @@ i32 CPathHazard::BeginLeg() {
 
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     CShadeTable* n = g_gameReg->m_lightFxMgr->m_tables[5];
     SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, n);
-    SwitchGeometry("LEVEL_RAINCLOUD", 0);
+    SwitchAnimationByName("LEVEL_RAINCLOUD", 0);
     SET_OBJECT_AREA(1)
 }
 
@@ -410,12 +410,12 @@ RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     i32 sx = m_object->m_screenX;
     i32 sy = m_object->m_screenY;
-    SwitchGeometry("LEVEL_UFO", 0);
+    SwitchAnimationByName("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CWwdGameObjectA* sl =
+        CWwdSpriteObject* sl =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, sy, 0, "SpotLight", 0x40003);
         if (sl != NULL) {
-            sl->ApplyName("LEVEL_SPOTLIGHT");
+            sl->SetImageSetByName("LEVEL_SPOTLIGHT");
             CLogicRecord* sub = sl->m_logicRecord;
             sl->m_score = 1;
             sl->m_direction = 0;
@@ -428,7 +428,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             (static_cast<CSpotLight*>(sl->m_logicRecord->m_userLogic))->m_focus = m_object;
         }
     }
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_DRAW_FILL_FRACTION(o, SHADE_ALPHA_16, 0x80);
     CLEAR_OBJECT_AREA
 }
@@ -444,7 +444,7 @@ i32 CUFO::SerializeMove(
         return 0;
     }
     if (mode == SERIAL_POSTLOAD) {
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         o->m_drawActive = 1;
         // Two domains, one slot, and the SHAPE is byte-evidenced: retail stores
         // the register holding `mode` (`mov [eax+0x50],edi`), not an immediate.
@@ -468,7 +468,7 @@ i32 CRainCloud::SerializeMove(
     }
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* x = g_gameReg->m_lightFxMgr->m_tables[5];
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, x);
     }
     return 1;

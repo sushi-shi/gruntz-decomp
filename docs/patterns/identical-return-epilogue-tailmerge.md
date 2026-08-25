@@ -115,5 +115,5 @@ The companion STEERABLE finding from the same TU: an engine helper whose disasm
 calls it with a bare `call` and the operand object already in `ecx` (and which
 ends in plain `ret`, no `ret N`) is `__thiscall` with `this` = that object — model
 it as a method on the object's view struct, NOT as `Owner::Helper(Obj*)`. Doing so
-for `RecomputePlaneCoords` (this = the CPlane, not CGameLevel) fixed both the
+for `UpdatePlaneViewRect` (this = the CPlane, not CGameLevel) fixed both the
 helper AND its two call sites in `LoadWwd` (matcher.md §4).

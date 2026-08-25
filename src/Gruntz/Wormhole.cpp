@@ -73,9 +73,9 @@ RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(0x2000002);
-    ApplyName("GAME_WORMHOLE");
-    SwitchGeometry("GAME_WORMHOLE", 0);
-    CWwdGameObjectA* o = m_object;
+    SetImageSetByName("GAME_WORMHOLE");
+    SwitchAnimationByName("GAME_WORMHOLE", 0);
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
     SET_ANIMATION_ACT("A");
     i32 kind = m_object->m_smarts;
@@ -86,7 +86,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     } else {
         color = g_gameReg->m_lightFxMgr->m_tables[kind];
     }
-    CWwdGameObjectA* s = m_object;
+    CWwdSpriteObject* s = m_object;
     SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
 }
 
@@ -110,7 +110,7 @@ i32 CWormhole::SerializeMove(
             color = g_gameReg->m_lightFxMgr->m_tables[kind];
         }
 
-        CWwdGameObjectA* s = m_object;
+        CWwdSpriteObject* s = m_object;
         SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
     }
     return 1;
@@ -134,10 +134,10 @@ void RegisterWormholeLogic() {
 RVA(0x000403b0, 0xa5)
 i32 CWormhole::SpawnPartners() {
 
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
-    CWwdGameObjectA* g = m_wwdObject;
-    if (!IsAniCursorComplete(&g->m_animCursor)) {
+    CWwdSpriteObject* g = m_wwdObject;
+    if (!IsAniCursorComplete(&g->m_animationCursor)) {
         return 0;
     }
     g->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -173,10 +173,10 @@ RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
-    ApplyName("GRUNTZ_GRUNTPUDDLE");
-    SwitchGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
+    SetImageSetByName("GRUNTZ_GRUNTPUDDLE");
+    SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     SET_ANIMATION_ACT("A");
     Hide();
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -211,21 +211,21 @@ i32 CGruntPuddle::Idle() {
 
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32 gaugePoints) {
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
     m_tileY = o->m_screenY >> TILE_SHIFT_PX;
     m_gaugePoints = gaugePoints;
     m_playerIndex = playerIndex;
     m_moveIcon = moveIcon;
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(moveIcon, 0);
-    CWwdGameObjectA* sprite = m_object;
+    CWwdSpriteObject* sprite = m_object;
     SET_DRAW_FILL(sprite, SHADE_PAL_16, shade);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("B");
     if (animatePlacement == 0) {
         m_placed = 1;
         m_pending = 0;
-        SwitchGeometry(g_puddleSpriteKey, 0);
+        SwitchAnimationByName(g_puddleSpriteKey, 0);
     }
     return 1;
 }
@@ -251,11 +251,11 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* o = m_wwdObject;
-    if (IsAniCursorComplete(&o->m_animCursor)) {
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    CWwdSpriteObject* o = m_wwdObject;
+    if (IsAniCursorComplete(&o->m_animationCursor)) {
         if (m_placed == 0) {
-            SwitchGeometry(g_puddleSpriteKey, 0);
+            SwitchAnimationByName(g_puddleSpriteKey, 0);
             m_placed = 1;
             m_pending = 0;
         } else {
@@ -315,7 +315,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_armClock = 0;
     m_interval = 0;
     SetObjectFlags(0x2000002);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     LoadColors();
@@ -343,15 +343,15 @@ void CTeleporter::LoadColors() {
         }
     }
 
-    CWwdGameObjectA* s = m_object;
+    CWwdSpriteObject* s = m_object;
     CShadeTable* colorEntry = g_gameReg->m_lightFxMgr->m_tables[s->m_health];
     SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, colorEntry);
 }
 
 RVA(0x000412c0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
-    ApplyName("GAME_WORMHOLE");
-    SwitchGeometry("GAME_TELEPORTEROPEN", 0);
+    SetImageSetByName("GAME_WORMHOLE");
+    SwitchAnimationByName("GAME_TELEPORTEROPEN", 0);
     SET_ANIMATION_ACT("A");
     m_armed = 1;
     m_tickHandled = 0;
@@ -427,16 +427,16 @@ i32 CTeleporter::Begin() {
 
     m_interval = static_cast<u32>(m_object->m_logicRecord->m_speed);
     m_armClock = static_cast<u32>(g_frameTime);
-    SwitchGeometry("GAME_TELEPORTER", 0);
+    SwitchAnimationByName("GAME_TELEPORTER", 0);
     SET_ANIMATION_ACT("B");
     return 0;
 }
 
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* a = m_wwdObject;
-    if (IsAniCursorComplete(&a->m_animCursor)) {
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    CWwdSpriteObject* a = m_wwdObject;
+    if (IsAniCursorComplete(&a->m_animationCursor)) {
         if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
             a->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else {
@@ -447,7 +447,7 @@ i32 CTeleporter::Update() {
 
     CGruntzMgr* mgr;
     if (m_tickHandled == 0) {
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
@@ -460,11 +460,11 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     if (o->m_logicRecord->m_speed != 0) {
         i64 delta = static_cast<i64>(g_frameTime) - m_armClock;
         if (delta >= m_interval) {
-            SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
+            SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
             m_object->m_logicRecord->m_speed = 0;
             m_tickHandled = 1;
             return 0;
@@ -482,9 +482,9 @@ i32 CTeleporter::Update() {
     if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 1, 1);
         g_gameReg->m_gameStats->m_secretsFound++;
-        SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
-        CWwdGameObjectA* s = m_object;
-        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
+        CWwdSpriteObject* s = m_object;
+        CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_powerup * 32 + 16,
             s->m_damage * 32 + 16,
@@ -500,8 +500,8 @@ i32 CTeleporter::Update() {
             spawned->m_logicRecord->m_speed = 0;
         }
     } else {
-        CWwdGameObjectA* s = m_object;
-        CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* s = m_object;
+        CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             s->m_speedX * 32 + 16,
             s->m_speedY * 32 + 16,
@@ -513,7 +513,7 @@ i32 CTeleporter::Update() {
         spawned->m_speedY = m_object->m_screenY;
         spawned->m_smarts = m_object->m_health;
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 0, 0);
-        SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
+        SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
     }
 
     m_armed = 0;

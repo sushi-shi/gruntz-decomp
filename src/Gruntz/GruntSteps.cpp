@@ -335,7 +335,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 }
 RVA(0x000511b0, 0x246)
 void CGrunt::FaceTowardPixel(i32 x, i32 y) {
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     i32 dy = y - h->m_screenY;
     i32 dx = x - h->m_screenX;
     i32 cx = h->m_screenX;
@@ -415,7 +415,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         }
     }
 
-    CWwdGameObjectA* object = m_object;
+    CWwdSpriteObject* object = m_object;
     i32 lastX = m_lastTilePx.m_x;
     if (object->m_screenX == lastX) {
         i32 lastY = m_lastTilePx.m_y;
@@ -480,7 +480,7 @@ RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     m_object->m_screenX = m_lastTilePx.m_x;
     m_object->m_screenY = m_lastTilePx.m_y;
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
     SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != 0) {
@@ -984,7 +984,7 @@ i32 CGrunt::SetArrivalTarget(
 // @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 clearArrivalState) {
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     Coord tile = m_lastTilePx;
     i32 tx = tile.m_x;
     i32 ty = tile.m_y;
@@ -1071,7 +1071,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                         i32 col = cell.column + cell.row * 2;
                         i32 base = cell.row + col;
                         char* nm = m_cells[base].WalkName().GetBuffer(0);
-                        ApplyName(nm);
+                        SetImageSetByName(nm);
                     } else {
                         ResetEntranceAnimation(1, 0, 0);
                     }
@@ -1103,7 +1103,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 }
                 if (eq) {
 
-                    CWwdGameObjectA* h = m_object;
+                    CWwdSpriteObject* h = m_object;
                     i32 savedX = m_lastTilePx.m_x;
                     i32 savedY = m_lastTilePx.m_y;
                     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
@@ -1144,7 +1144,7 @@ idleReseed:
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
         i32 z = m_object->m_screenY + 0x186a0;
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, z)
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
@@ -1182,7 +1182,7 @@ applyTail:
             m_routeMaskC = 0;
         }
         if (spawnWormhole != 0) {
-            CWwdGameObjectA* spawned =
+            CWwdSpriteObject* spawned =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, spawnPx, spawnPy, 0, "Wormhole", 0x40003);
             if (spawned != NULL) {
@@ -1264,7 +1264,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_selectedSprite;
+        CWwdSpriteObject* sprite = m_selectedSprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }
@@ -1273,7 +1273,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_toySprite;
+        CWwdSpriteObject* sprite = m_toySprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }
@@ -1282,7 +1282,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_healthSprite;
+        CWwdSpriteObject* sprite = m_healthSprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }
@@ -1291,7 +1291,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_staminaSprite;
+        CWwdSpriteObject* sprite = m_staminaSprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }
@@ -1300,7 +1300,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_toyTimeSprite;
+        CWwdSpriteObject* sprite = m_toyTimeSprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }
@@ -1309,7 +1309,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_wingzTimeSprite;
+        CWwdSpriteObject* sprite = m_wingzTimeSprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }
@@ -1318,7 +1318,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 spriteObjectId = 0;
-        CWwdGameObjectA* sprite = m_powerupSprite;
+        CWwdSpriteObject* sprite = m_powerupSprite;
         if (sprite) {
             spriteObjectId = sprite->m_objectId;
         }

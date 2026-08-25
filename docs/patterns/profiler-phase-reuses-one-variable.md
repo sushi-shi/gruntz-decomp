@@ -27,7 +27,7 @@ call esi | mov [esp+0x18],eax | ... | call esi | sub eax,[esp+0x18] | mov [esp+0
 ```
 
 STEERABLE. The same file already used the idiom for the cross-frame globals
-(`g_profAccB = (i32)(tg() - (u32)g_profAccB)`), which is the corroboration that the locals
+(`g_flipProfileMs = (i32)(tg() - (u32)g_flipProfileMs)`), which is the corroboration that the locals
 were spelled inconsistently. Evidence: `CPlay::ProfileInputFrame` @0x0c9e40 99.90 → **100%
 EXACT** (seven phases rewritten), filed as a "profiler-scheduling wall … the slot-reuse
 schedule diverges despite identical logic".

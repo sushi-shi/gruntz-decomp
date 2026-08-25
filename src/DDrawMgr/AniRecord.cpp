@@ -4,9 +4,9 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/AniRecordBase2.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
+#include <DDrawMgr/DDrawPaletteResource.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -109,10 +109,10 @@ i32 CAniRecordView::GetDurationMs() {
 RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
-i32 CAniRecordBase2::LoadPaletteFromFile(char* path, i32 flag) {
+i32 CDDrawPaletteResource::LoadPaletteFromFile(char* path, i32 flag) {
     CDDPalette* buf =
         OwnerMgr()->m_deviceManager->LoadPaletteFromFile(path, DDPCAPS_8BIT | DDPCAPS_ALLOW256);
-    m_buf = buf;
+    m_palette = buf;
     if (buf == NULL) {
         return 0;
     }
@@ -124,10 +124,10 @@ i32 CAniRecordBase2::LoadPaletteFromFile(char* path, i32 flag) {
 }
 
 RVA(0x00168ee0, 0x40)
-i32 CAniRecordBase2::CreatePaletteFromRgb(u8* data, i32 flag) {
+i32 CDDrawPaletteResource::CreatePaletteFromRgb(u8* data, i32 flag) {
     CDDPalette* buf =
         OwnerMgr()->m_deviceManager->CreateRgbPalette(data, DDPCAPS_8BIT | DDPCAPS_ALLOW256);
-    m_buf = buf;
+    m_palette = buf;
     if (buf == NULL) {
         return 0;
     }
@@ -139,12 +139,12 @@ i32 CAniRecordBase2::CreatePaletteFromRgb(u8* data, i32 flag) {
 }
 
 RVA(0x00168f20, 0x40)
-i32 CAniRecordBase2::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
+i32 CDDrawPaletteResource::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_deviceManager->CreatePaletteFromEntries(
         entries,
         DDPCAPS_8BIT | DDPCAPS_ALLOW256
     );
-    m_buf = buf;
+    m_palette = buf;
     if (buf == NULL) {
         return 0;
     }
@@ -156,13 +156,13 @@ i32 CAniRecordBase2::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
 }
 
 RVA(0x00168f60, 0x45)
-i32 CAniRecordBase2::CreatePaletteFromTrailingData(void* data, i32 size, i32 flag) {
+i32 CDDrawPaletteResource::CreatePaletteFromTrailingData(void* data, i32 size, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_deviceManager->CreatePaletteFromTrailingData(
         data,
         size,
         DDPCAPS_8BIT | DDPCAPS_ALLOW256
     );
-    m_buf = buf;
+    m_palette = buf;
     if (buf == NULL) {
         return 0;
     }
@@ -174,19 +174,19 @@ i32 CAniRecordBase2::CreatePaletteFromTrailingData(void* data, i32 size, i32 fla
 }
 
 RVA(0x00168fb0, 0x1f)
-void CAniRecordBase2::Unload() {
-    CDDPalette* buf = m_buf;
+void CDDrawPaletteResource::Unload() {
+    CDDPalette* buf = m_palette;
     if (buf != NULL) {
         OwnerMgr()->m_deviceManager->RemovePalette(buf);
-        m_buf = NULL;
+        m_palette = NULL;
     }
 }
 
 RVA(0x00168fd0, 0x24)
-i32 CAniRecordBase2::PushPalette() {
-    CDDrawSurfaceChildA* sd = OwnerMgr()->m_drawTarget->m_frontPair;
+i32 CDDrawPaletteResource::ApplyToFrontSurface() {
+    CDDrawFrontSurface* sd = OwnerMgr()->m_drawTarget->m_frontSurface;
     if (sd->m_bpp != BPP_PALETTED_8) {
         return 1;
     }
-    return sd->m_surface->SetPalette(m_buf, 0);
+    return sd->m_surface->SetPalette(m_palette, 0);
 }

@@ -393,8 +393,8 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
 
 RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
-    CWwdGameObjectA* r = m_barSprite;
-    CImage* L = r->m_layer;
+    CWwdSpriteObject* r = m_barSprite;
+    CImage* L = r->m_frameImage;
     i32 xlo = r->m_screenX - L->m_anchorX;
     i32 ylo = r->m_screenY - L->m_anchorY;
     i32 xhi = L->m_width + xlo;
@@ -4301,13 +4301,13 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&seq, sizeof(seq));
 
     CGameObject* obj = NULL;
-    CWwdGameObjectA* m8;
+    CWwdSpriteObject* m8;
     if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == 0) {
         m8 = NULL;
     } else if (obj == NULL) {
         m8 = NULL;
     } else {
-        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : NULL;
+        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
     }
     m_barSprite = m8;
     if (m8 == NULL && seq != 0) {
@@ -4652,7 +4652,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     i32 cx;
     i32 cy;
     {
-        RECT src = w->m_level->m_planeCtx;
+        RECT src = w->m_level->m_viewportRect;
         RECT dst;
         CopyRect(&dst, &src);
         cx = dst.left + (dst.right - dst.left) / 2;

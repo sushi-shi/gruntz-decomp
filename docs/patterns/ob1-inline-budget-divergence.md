@@ -65,7 +65,7 @@ expands it for four others, and the eight are eight distinct classes:
 
 | child (by its `??_7` stamp) | retail |
 |---|---|
-| `CDDrawSubMgrPages` 0x1efe08, `CDDrawChildGroup` 0x1efdc0, `CDDrawWorkerList` 0x1efd88, `CDDrawWorkerMapSmall` 0x1efcc8 | **call** |
+| `CDDrawSubMgrPages` 0x1efe08, `CDDrawChildGroup` 0x1efdc0, `CDDrawWorkerList` 0x1efd88, `CDDrawPaletteRegistry` 0x1efcc8 | **call** |
 | `CDDrawWorkerRegistry` 0x1efd28, `CLogicRecordRegistry` 0x1efd00, `SoundCueRegistry` 0x1efca0, `AnimationRegistry` 0x1efc78 | expand |
 
 Pinning `CLoadable(CDDrawSurfaceMgr*,i32,i32)` out of line in DDrawSubMgr.cpp and
@@ -80,8 +80,8 @@ So the five disproofs recorded on the old ack row were all aimed at the wrong ob
 they perturbed `CWapObj`, which is downstream of the real defect. **Before recording a
 budget wall, run the xref on the callee one level UP the chain and check whether retail
 splits it by class.** A residual per-site conflict survives - `CWwdGameObject::CreateObject`
-(0x166640) expands the same `CWwdGameObjectA::m_animCursor` chain that
-`CreateContainerObject`/`ReadPlaneObjects` call, and `CDDrawSurfaceChildA` expands where
+(0x166640) expands the same `CWwdSpriteObject::m_animationCursor` chain that
+`CreateContainerObject`/`ReadPlaneObjects` call, and `CDDrawFrontSurface` expands where
 its `CDrawSubWorker` sibling's other user `CDDrawSurfacePair` calls - those two are the
 genuine budget residue, and they cost 10.50 and ~5 points respectively.
 
@@ -113,7 +113,7 @@ differs. Disproved as causes, each by a rebuild of `wwdobjmgr.obj`:
 - moving the three member stores into a `CWapObj(CDDrawSurfaceMgr*,i32,i32)` so the
   declined body has a different size (cl then emits *that* ctor instead);
 - deleting the TU's unused placement `operator new`;
-- deleting the fabricated `char _p18d[]` tail padding of `CWwdGameObjectC`;
+- deleting the fabricated `char _p18d[]` tail padding of `CWwdDotObject`;
 - `#pragma inline_depth(2)` (no effect at all; `(1)` works, so the pragma is live).
 
 `inline_depth(3)` would put the cut on `??0CLoadable` - the symbol retail's obj
@@ -222,7 +222,7 @@ Historical 2026-08-09 classifications (the two StatusBar rows were retracted on
 | recorded wall | what the xref showed | result |
 |---|---|---|
 | `??0CLoadable` 0x156cb0 | 4 callers; `CDDrawSurfaceMgr::Init` alone calls it for 4 child classes and expands it for 4 | +7 exact tree-wide |
-| `CAniAdvanceCursor` in `CWwdGameObject::CreateObject` 0x166640 | 3 users of ONE `CWwdGameObjectA` ctor; two call, one expands | 76.90 -> 87.40 |
+| `CAniAdvanceCursor` in `CWwdGameObject::CreateObject` 0x166640 | 3 users of ONE `CWwdSpriteObject` ctor; two call, one expands | 76.90 -> 87.40 |
 | `??0CStatusBarItem` 0x1005d0 | 4 callers, 38 `new` sites; depth-2 classes 6/6 inline, `CSBI_Image` 10/14 call | routing evidence only; the tagged-entity conclusion was retracted 2026-08-14 |
 | `??0CSBI_RectOnly` 0x101fa0 | the depth-5 chains are 8/8 `call` | routing evidence only; natural cost titration emits the exact COMDAT but selects wrong caller referents |
 

@@ -42,7 +42,7 @@ mov  [eax+0x10],ebp           ; m_width = 0 ...
 ```
 STEERABLE (the big win: regalloc). The real ctor recovers retail's register roles and lifts
 the family ~65→99% (CImageSet::CreateFrame24/28/30 0x151fb0/152060/152110 65→99.4,
-CSprite::InsertFrame 0x151f00 84→99.4, CDDrawWorkerMapSmall CreateWorker28/2C 0x165990/165a10
+CSprite::InsertFrame 0x151f00 84→99.4, CDDrawPaletteRegistry CreateWorker28/2C 0x165990/165a10
 62→96.7, Factory_1658c0/165a90 →92–96).
 
 **Vptr position — where the last ~1% lives, and how to get it (→ 100 EXACT):** the residual is
@@ -53,7 +53,7 @@ derived-ctor body*. So look at which fields retail sets BEFORE the single vptr s
   (`Derived(args) : Base(args) { m_derivedField = …; }`). cl emits: base seed, derived vptr,
   derived field — retail's exact order. **This reaches 100 EXACT** (CDDrawWorkerList
   CreateWorkerA/B28/B2C/B30 0x156fd0/1573e0/157330/157150, 55–61→**100**: the 9 pre-vptr fields
-  are all CDDrawWorkerBase's, only m_78 is derived).
+  are all CDDrawPlacedWorker's, only m_78 is derived).
 - **pre-vptr fields look like the DERIVED class's own** → do NOT settle for ~99: that reading is
   usually a MIS-MODEL, and the retail stamp position is the evidence that disproves it. Only a
   base ctor can emit a store *before* the derived stamp, so retail stamping Nth PROVES those N-1

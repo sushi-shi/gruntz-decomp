@@ -77,7 +77,7 @@ rows flagged. All fifteen resolve, and none is a defect:
 * **one needed reading by hand**: `CMulti::AdvanceGameFrame` reports 39 referents against
   38, which looks like a count difference and is not. Both sides reference
   `g_frameTicks` exactly twice, load and store. cl hoists the NEXT global's load
-  into the middle of the increment (`mov edx,g_frameTicks; mov eax,g_timer32;
+  into the middle of the increment (`mov edx,g_frameTicks; mov eax,g_period50CountdownMs;
   inc edx; cmp eax,ebp; mov g_frameTicks,edx`) where retail completes the `++`
   first and loads afterwards. Interleaving, not identity.
 
@@ -197,7 +197,7 @@ claim. Now normalized to `?unnamed`.
 **9. A referent COUNT difference on a symbol both sides name.** Retail reads
 `g_gameReg` twice back-to-back where cl keeps one copy
 (`CTriggerMgr::LoadGruntResurrectTuning` 0x7be60: `mov ecx,ds:g_gameReg; mov
-edx,ds:g_gameReg`), and retail reads `g_p01` five times inside the k-loop where
+edx,ds:g_gameReg`), and retail reads `g_percentScale` five times inside the k-loop where
 cl hoists it (`CShadeTableCache::FlashTable` 0x14df40). That is CSE and
 rematerialization, not identity: **both sides NAME the symbol.** The test now
 compares symbol SETS over the whole stream, so only a symbol the other side
@@ -238,7 +238,7 @@ numbers. Reclassified: `CImage::RenderImage` 0x153470 (a four-dword RECT at
 (`lea [r+r*8+0x188]` then `[r+0xd4]` against `[r+r*8+0x25c]`),
 `CSBI_WellGoo::Setup`, `CTriggerMgr::CellHitTest`,
 `CGruntzMgr::InitializeBattlezPlayers` (the 0x238-stride walk),
-`CImageSet1/2::Parse`. `CMenuSparkle::AdvanceAnim` 0xae2a0 and
+`CUniformTileImageSet/2::Parse`. `CMenuSparkle::AdvanceAnim` 0xae2a0 and
 `CStaticHazard`'s `[eax+0x1cc]` vs `add eax,0x1a0; [eax+0x2c]` were the
 original two.
 

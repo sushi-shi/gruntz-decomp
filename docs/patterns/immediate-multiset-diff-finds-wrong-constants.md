@@ -100,7 +100,7 @@ Two more benign shapes:
   (`CDDSurface::Blit168`) or `0x400` (`CDDSurface::DecodeBmp`).
 - **A cross-jump.** cl merges two identical arms retail keeps apart, so a
   constant retail stores twice appears once on our side —
-  `CDDrawSurfaceChildA::SetGeometry` 0x1644a0 has two `WORLDERR_CREATE_DEVICE`
+  `CDDrawFrontSurface::SetGeometry` 0x1644a0 has two `WORLDERR_CREATE_DEVICE`
   (`0xbb9`) blocks in retail (the switch `default:` reached by the jump-table
   range check, and the `err == NONE` path) and one in ours. Writing the explicit
   `default:` arm does **not** split them (measured byte-identical), which is the

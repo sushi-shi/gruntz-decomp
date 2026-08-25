@@ -39,7 +39,7 @@ Exhausted without a lever:
 [ctor-body-first-statement-is-an-inline-member.md](ctor-body-first-statement-is-an-inline-member.md).**
 Every spelling listed above keeps the statement in the ctor body, where its receiver load is
 a hoist candidate. Move the statement into an inline member of the class that OWNS the
-receiver (`CWapX::Hide()` / `SetObjectFlags()` / `ApplyName()` / `ApplyLookupSprite()`, NOT
+receiver (`CWapX::Hide()` / `SetObjectFlags()` / `SetImageSetByName()` / `SetImageFrameByName()`, NOT
 `m_wwdObject->Hide()` on the object class) and the load is inside the expansion. Of the list
 below, CSingleAnimation 0xae7f0, CTileTriggerTransition 0x10faf0, CGruntToySprite 0x7f350,
 CGruntHealthSprite 0x7eb00, CCursorSnapSprite 0x3a340 and CGruntStartingPoint 0x3df30 are

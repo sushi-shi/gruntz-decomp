@@ -28,8 +28,8 @@ RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("MENU_SPARKLE");
-    SwitchGeometry("MENU_FORWARD100", 0);
+    SetImageSetByName("MENU_SPARKLE");
+    SwitchAnimationByName("MENU_FORWARD100", 0);
     SET_ANIMATION_ACT("A");
     m_logicRecord->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
 }
@@ -92,12 +92,12 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_logicRecord->m_sparkleDelay -= delta;
     }
     if (m_logicRecord->m_sparkleDelay == 0) {
-        m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+        m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     }
-    CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
+    CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
     if (IsAniCursorComplete(anim)) {
         if (anim != NULL) {
-            anim->Recompute(1);
+            anim->RestartAnimation(1);
         }
         m_ownerLogicRecord->m_timeDelay = rand() % 0xfa1 + 0x3e8;
     }

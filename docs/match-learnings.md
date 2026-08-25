@@ -233,9 +233,9 @@ byte-exact (validate the 0x5F4 header; first u32 == sizeof ≤ 0x5F4). ReadPlane
 **CMapMgr** (unit `mapmgr`, 7/7 byte-exact; vftable `??_7CMapMgr@@6B@` @0x5ea3b4): ≥0x60 B —
 vftable@+0 (6 slots: slot0 Reset @0x09ec30, slots 1-5 @0x09f7f0/0x09f840/0x09f9a0/0x09eca0/
 0x4853f0), m_4@+4 / m_8@+8 (heap ptrs Reset frees), +0xc/+0x10/+0x18/+0x1c=0, embedded
-array @+0x30 (CMapArrayA: block@+0x04, stride 0x24, next@+0x14/prev@+0x18) and @+0x3c
-(CMapArrayB: block@+0x00, stride 0x0c, data@+0/prev@+4/next@+8), +0x4c=0, **+0x50=-1**,
-+0x58=0, **+0x5c=1**. Allocate@CMapArrayA @0x09e740 / @CMapArrayB @0x09e860 DEFERRED
+array @+0x30 (CBrickzNodePool: block@+0x04, stride 0x24, next@+0x14/prev@+0x18) and @+0x3c
+(CBrickzCellNodePool: block@+0x00, stride 0x0c, data@+0/prev@+4/next@+8), +0x4c=0, **+0x50=-1**,
++0x58=0, **+0x5c=1**. Allocate@CBrickzNodePool @0x09e740 / @CBrickzCellNodePool @0x09e860 DEFERRED
 (strength-reduction reg-alloc divergence ~64-70%).
 
 ---

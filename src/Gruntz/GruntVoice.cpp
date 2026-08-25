@@ -177,8 +177,8 @@ RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;
-    ApplyName("GAME_EXCLAMATION");
-    CWwdGameObjectA* o = m_object;
+    SetImageSetByName("GAME_EXCLAMATION");
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE)
     m_stream = NULL;
     m_startStamp.m_v = 0;
@@ -367,7 +367,7 @@ i32 CGruntVoice::UpdateIndicator() {
         if (resolved != NULL) {
             m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             i32 dx = 0, dy = 0;
-            CImage* layer = static_cast<CWwdGameObjectA*>(resolved)->m_layer;
+            CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->m_frameImage;
             if (layer != NULL) {
                 dx = layer->m_originX;
                 dy = layer->m_originY;

@@ -117,7 +117,7 @@ public:
         class CDDrawDeviceManager* manager
     );
     void FreeAll();
-    CFader* Add(FaderKind nFaderType, class CFxModeDesc* pInit);
+    CFader* Add(FaderKind nFaderType, class CFaderConfig* pInit);
 
     void Remove(CFader* pFader);
     void DeleteAll();

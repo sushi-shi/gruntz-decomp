@@ -37,10 +37,11 @@ public:
     i32 m_launched;
 };
 
-extern const double g_boomHalf;
-extern const double g_boomTimeScale;
-extern const double g_boomRetC3;
-extern const double g_boomRetC4;
+extern const double g_boomerangMidpointScale;
+extern const double g_boomerangPixelToTileScale;
+extern const double g_boomerangHoldScale;
+extern const double g_boomerangHoldBiasMs;
 
-extern const double g_projPhase0;
+extern const double g_boomerangHalfTurnRadians;
+extern const double g_boomerangFullTurnRadians;
 #endif // GRUNTZ_BOOMERANG_H

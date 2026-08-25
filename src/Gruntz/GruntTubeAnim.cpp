@@ -50,7 +50,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         i32 col = cell.column + cell.row * 2;
         i32 base = cell.row + col;
         char* buf = m_cells[base].WalkName().GetBuffer(0);
-        ApplyName(buf);
+        SetImageSetByName(buf);
         SwitchAnimation(m_poseWalk);
         return 1;
     }

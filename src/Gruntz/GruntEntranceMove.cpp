@@ -164,7 +164,7 @@ i32 CGrunt::RunEntranceMove() {
         i32 col = cell.column + cell.row * 2;
         i32 base = cell.row + col;
         char* nm = m_cells[base].WalkName().GetBuffer(0);
-        ApplyName(nm);
+        SetImageSetByName(nm);
     } else {
         ResetEntranceAnimation(1, 0, 0);
     }
@@ -251,7 +251,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
     m_entranceActive = 1;
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
     ClearAllSprites();
@@ -342,9 +342,9 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 // addresses them (docs/patterns/rmw-byte-field-materialises-the-cell-pointer.md).
 RVA(0x00067f80, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
-    if (m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
+    if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGruntzMgr* g = g_gameReg;
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         CMapMgr* grid = g->m_tileGrid;
         i32 tx = h->m_screenX >> TILE_SHIFT_PX;
         i32 ty = h->m_screenY >> TILE_SHIFT_PX;
@@ -403,9 +403,9 @@ i32 CGrunt::LoadEntranceConfig() {
         m_entranceCommitted = 1;
         SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
 
-        CWwdGameObjectA* p = m_wwdObject;
+        CWwdSpriteObject* p = m_wwdObject;
         CAniElement* found = NULL;
-        CAniElement* cached = p->m_animCursor.m_animation;
+        CAniElement* cached = p->m_animationCursor.m_animation;
         MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_GRUNTZ_ENTRANCEZ_DROP, found);
         if (cached == found) {
             if (m_playerIndex == g_curPlayer) {
@@ -430,7 +430,7 @@ i32 CGrunt::LoadEntranceConfig() {
         LoadAnimNameTable(0, 0);
     }
 
-    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
     if (cur->m_finished == 0 || cur->m_frameTicksLeft != 0) {
         return 0;
     }
@@ -452,7 +452,7 @@ i32 CGrunt::RearmEntranceDrop() {
         i32 column = cell.column;
 
         const char* name = m_cells[3 * row + column].ItemName().GetBuffer(0);
-        ApplyLookupSprite(name, frame);
+        SetImageFrameByName(name, frame);
     }
 
     if (m_bombRunActive == 0) {
@@ -490,7 +490,7 @@ i32 CGrunt::StartBombGruntRun() {
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
     if (LoadGruntTypeTable(PICKUP_BOMB, 1, 0, 1) == 0) {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         m_triggerMgr->LoadExplosionSprites(h->m_screenX, h->m_screenY, -1, 0);
         return 0;
     }
@@ -500,7 +500,7 @@ i32 CGrunt::StartBombGruntRun() {
         dx = 1;
     }
     {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         dy += h->m_screenY >> TILE_SHIFT_PX;
         dx += h->m_screenX >> TILE_SHIFT_PX;
     }
@@ -512,10 +512,10 @@ i32 CGrunt::StartBombGruntRun() {
         static_cast<i32>(g_buteMgr.GetDwordDef("BOMBGRUNT", "RunningTimePerTile", 0x64));
     m_bombRunActive = 1;
     {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
-        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(rect, vx, vy)) {
             g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
@@ -525,7 +525,7 @@ i32 CGrunt::StartBombGruntRun() {
     i32 col = cell.column + cell.row * 2;
     i32 base = cell.row + col;
     char* cn = m_cells[base].ItemName().GetBuffer(0);
-    ApplyName(cn);
+    SetImageSetByName(cn);
     return 0;
 }
 
@@ -577,7 +577,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         CGruntzMgr* g = g_gameReg;
         i32 y = m_object->m_screenY;
         i32 x = m_object->m_screenX;
-        CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
+        CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(r, x, y)) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
@@ -629,7 +629,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         GruntDirectionCell cell = m_entranceCell;
         i32 idx = 3 * cell.row + cell.column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
-        ApplyLookupSprite(buf, frame);
+        SetImageFrameByName(buf, frame);
         return 1;
     }
 
@@ -642,7 +642,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         GruntDirectionCell cell = m_entranceCell;
         i32 idx = 3 * cell.row + cell.column;
         char* buf = m_cells[idx].IdleName().GetBuffer(0);
-        ApplyLookupSprite(buf, frame);
+        SetImageFrameByName(buf, frame);
     }
     return 1;
 }
@@ -660,7 +660,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
         char* buf = (&m_frameSetName)->GetBuffer(0);
-        ApplyLookupSprite(buf, frame);
+        SetImageFrameByName(buf, frame);
 
         m_entranceStamped = 1;
         i32 v = m_moveVariant;
@@ -693,7 +693,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         return 0;
     }
 
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     i32 z = h->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(h, z)
     return 0;
@@ -803,7 +803,7 @@ idleReseed:
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     {
         i32 z = m_object->m_screenY + 0x186a0;
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, z)
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
@@ -847,10 +847,10 @@ finalize:
     SET_ANIMATION_ACT("Q");
     {
         i32 z = m_object->m_screenY + 0x186a0;
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, z)
     }
-    SwitchGeometry("GRUNTZ_DEATHZ_FREEZE", 0);
+    SwitchAnimationByName("GRUNTZ_DEATHZ_FREEZE", 0);
     {
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", frame);
@@ -880,18 +880,18 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             }
             return 0;
         }
-        SwitchGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
+        SwitchAnimationByName(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelay = g_buteMgr.GetDwordDef("Spellz", s_FreezeDelay, 0x2710);
         m_idleAnchor = g_frameTime;
         m_freezeDelayDone = 0;
     }
     if (m_freezeDelayDone == 0) {
         if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay) {
-            SwitchGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
-            CWwdGameObjectA* h = m_object;
+            SwitchAnimationByName(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
+            CWwdSpriteObject* h = m_object;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
-            const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
             if (CGameLevel::PointInRect(rect, vx, vy)) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x35c, -1, 0, -1, -1);
             }
@@ -925,7 +925,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;
     CGruntzMapMgr* b = g->m_tileGrid;
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     i32 xbound = b->m_width;
     i32 tileY = h->m_screenY >> TILE_SHIFT_PX;
     i32 tileX = h->m_screenX >> TILE_SHIFT_PX;
@@ -1149,7 +1149,7 @@ i32 CGrunt::FinishActiveAction() {
             i32 col = cell.column + cell.row * 2;
             i32 base = cell.row + col;
             char* nm = m_cells[base].WalkName().GetBuffer(0);
-            ApplyName(nm);
+            SetImageSetByName(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
         }
@@ -1225,7 +1225,7 @@ i32 CGrunt::FinishActiveAction() {
         SET_SORT_KEY_IF_CHANGED(m_object, sortKey)
 
         CAniElement* found = NULL;
-        CAniElement* cached = m_wwdObject->m_animCursor.m_animation;
+        CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_GRUNTZ_ENTRANCEZ_DROP,
@@ -1261,7 +1261,7 @@ idleReseed:
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
         i32 sortKey = m_object->m_screenY + 0x186a0;
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, sortKey)
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
@@ -1314,11 +1314,11 @@ CAniElement* AnimationRegistry::FindAnimation(const char* key) {
 }
 
 RVA(0x0006b2e0, 0x39)
-void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceNow) {
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
-    anim->Setup(animation);
-    if (advanceNow != 0) {
+void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
+    m_value = m_wwdObject->m_animationCursor.m_animation;
+    CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
+    anim->SetAnimation(animation);
+    if (advanceImmediately != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));
     }
 }

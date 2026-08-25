@@ -35,10 +35,10 @@ RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 RVA(0x0007f350, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", 0);
+    SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", 0);
     SET_ANIMATION_ACT("A");
     Hide();
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_lastLayer = PICKUP_NONE;
 }
@@ -74,13 +74,13 @@ i32 CGruntToySprite::Update() {
     }
     PickupType layer = e->m_vehiclePickupType;
     if (m_lastLayer != layer) {
-        CWwdGameObjectA* r = m_object;
+        CWwdSpriteObject* r = m_object;
         m_lastLayer = layer;
-        CDDrawWorker* h = r->m_frameSet;
+        CDDrawWorker* h = r->m_imageSet;
         if (h != NULL) {
             i32 layerIndex = IDX(layer);
             CImage* mapped = h->GetAt(layerIndex);
-            r->m_layer = mapped;
+            r->m_frameImage = mapped;
             r->m_frameIndex = layerIndex;
         }
     }

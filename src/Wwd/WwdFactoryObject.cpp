@@ -64,7 +64,7 @@ i32 CGameObject::IsLoaded() {
 
 // The pinned half of the two-entity split (docs/patterns/two-shapes-need-two-entities.md).
 // Retail `call`s this from exactly three sites - CDDrawChildGroup::CreateContainerObject
-// (through CWwdGameObject -> CWwdGameObjectA), CDDrawWorkerHost::ReadPlaneObjects and
+// (through CWwdGameObject -> CWwdSpriteObject), CDDrawWorkerHost::ReadPlaneObjects and
 // CWwdGameObject::CreateObject - and expands CGameObject(..., INLINE_BASE) in
 // CreateSpriteObject / CreateDotObject / CreateDeferredObject.
 // Retail's body calls neither 0x15b270 nor 0x15b2b0, so m_region and m_shadow take the
@@ -118,30 +118,30 @@ CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 RVA(0x0015b760, 0x6)
-LoadableClassId CWwdGameObjectA::GetClassId() {
-    return CLASSID_WWDOBJA;
+LoadableClassId CWwdSpriteObject::GetClassId() {
+    return CLASSID_WWD_SPRITE_OBJECT;
 }
 
-RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdGameObjectA@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdSpriteObject@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdGameObjectA@@UAE@XZ)
+RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdSpriteObject@@UAE@XZ)
 
 RVA(0x0015b940, 0x38)
-i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
+i32 CWwdSpriteObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_soundCue = NULL;
-    m_animCursor.Construct(this);
+    m_animationCursor.BindSprite(this);
     return CGameObject::Setup(x, y, sortKey, logicTemplate);
 }
 
 RVA(0x0015ba20, 0x1c)
-void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
-    if (m_layer) {
-        m_layer->RenderImage(this, pair);
+void CWwdSpriteObject::Render(CDDrawSurfacePair* pair) {
+    if (m_frameImage) {
+        m_frameImage->RenderImage(this, pair);
     }
 }
 
 RVA(0x0015ba40, 0x1d)
-i32 CWwdGameObjectF::IsLoaded() {
+i32 CWwdDeferredObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
     }
@@ -152,30 +152,34 @@ i32 CWwdGameObjectF::IsLoaded() {
 }
 
 RVA(0x0015ba60, 0x6)
-LoadableClassId CWwdGameObjectF::GetClassId() {
-    return CLASSID_WWDOBJF;
+LoadableClassId CWwdDeferredObject::GetClassId() {
+    return CLASSID_WWD_DEFERRED_OBJECT;
 }
 
 RVA(0x0015ba70, 0x3)
-void CWwdGameObjectF::Render(CDDrawSurfacePair*) {}
+void CWwdDeferredObject::Render(CDDrawSurfacePair*) {}
 
 RVA(0x0015ba80, 0x3)
-void CWwdGameObjectF::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+void CWwdDeferredObject::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 RVA(0x0015ba90, 0x3)
-void CWwdGameObjectF::BltDirtyEx(CDrawSubWorker*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+void CWwdDeferredObject::BltDirtyEx(CDrawSubWorker*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 RVA(0x0015baa0, 0x3)
-void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
+void CWwdDeferredObject::BltDirtyRegions(
+    CDDrawSurfacePair*,
+    CDDrawSurfacePair*,
+    CDDrawSurfacePair*
+) {}
 
-RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdGameObjectF@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdDeferredObject@@UAEPAXI@Z)
 RVA(0x0015bad0, 0x153)
-CWwdGameObjectF::~CWwdGameObjectF() {
+CWwdDeferredObject::~CWwdDeferredObject() {
     Unload();
 }
 
 RVA(0x0015bc30, 0x16)
-i32 CWwdGameObjectF::SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate) {
+i32 CWwdDeferredObject::SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate) {
     return CGameObject::Setup(0, 0, sortKey, logicTemplate);
 }
 
@@ -186,7 +190,7 @@ i32 CWwdGameObject::IsLoaded() {
 
 RVA(0x0015bce0, 0x6)
 LoadableClassId CWwdGameObject::GetClassId() {
-    return CLASSID_WWDOBJB;
+    return CLASSID_WWD_CONTAINER_OBJECT;
 }
 
 RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
@@ -221,7 +225,7 @@ i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
 }
 
 RVA(0x0015c000, 0x1d)
-i32 CWwdGameObjectC::IsLoaded() {
+i32 CWwdDotObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
     }
@@ -232,41 +236,35 @@ i32 CWwdGameObjectC::IsLoaded() {
 }
 
 RVA(0x0015c020, 0x6)
-LoadableClassId CWwdGameObjectC::GetClassId() {
-    return CLASSID_WWDOBJC;
+LoadableClassId CWwdDotObject::GetClassId() {
+    return CLASSID_WWD_DOT_OBJECT;
 }
 
 RVA(0x0015c030, 0x7)
-u8 CWwdGameObjectC::GetDotColor() {
+u8 CWwdDotObject::GetDotColor() {
     return m_dotColor;
 }
 
 RVA(0x0015c040, 0xd)
-void CWwdGameObjectC::SetDotColor(u8 c8) {
-    m_dotColor = c8;
+void CWwdDotObject::SetDotColor(u8 dotColor) {
+    m_dotColor = dotColor;
 }
 
-RVA_COMPGEN(0x0015c050, 0x1e, ??_GCWwdGameObjectC@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015c050, 0x1e, ??_GCWwdDotObject@@UAEPAXI@Z)
 RVA(0x0015c070, 0x159)
-CWwdGameObjectC::~CWwdGameObjectC() {
+CWwdDotObject::~CWwdDotObject() {
     Unload();
 }
 
 RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObjectC::SetupFlagged(
-    i32 x,
-    i32 y,
-    i32 sortKey,
-    CLogicRecord* logicTemplate,
-    i32 flag
-) {
-    m_dotColor = static_cast<u8>(flag);
+i32 CWwdDotObject::SetupDot(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate, i32 dotColor) {
+    m_dotColor = static_cast<u8>(dotColor);
     return CGameObject::Setup(x, y, sortKey, logicTemplate);
 }
 
 // @early-stop
 RVA(0x0015c290, 0x2f)
-void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
+void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_boundObject = src;
     m_finished = 1;
     m_animation = NULL;
@@ -283,7 +281,7 @@ void CAniAdvanceCursor::Unload() {
 }
 
 RVA(0x0015c2d0, 0x45)
-void CAniAdvanceCursor::Setup(CAniElement* src) {
+void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
     CAniRecordView* e;
     i32 v;
     m_animation = src;
@@ -310,7 +308,7 @@ void CAniAdvanceCursor::Setup(CAniElement* src) {
 
 RVA(0x0015c320, 0x40)
 
-void CAniAdvanceCursor::Recompute(i32 resetGate) {
+void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     CAniElement* src = m_animation;
     if (src == NULL) {
         return;
@@ -328,7 +326,7 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
     m_scale = 1.0f;
     m_pendingDraw = v;
     m_curDraw = v;
-    if (resetGate != 0) {
+    if (resetElapsedTime != 0) {
         m_frameTicksLeft = 0;
     }
 }
@@ -364,28 +362,28 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     if (m_finished == 0) {
-        CWwdGameObjectA* ctx = m_boundObject;
+        CWwdSpriteObject* ctx = m_boundObject;
         CAniRecordView* d = m_element;
 
         switch (d->m_stepMode) {
             case WWDSTEP_NEXT: {
-                CWwdGameObjectA* c = m_boundObject;
-                CDDrawWorker* seq = c->m_frameSet;
+                CWwdSpriteObject* c = m_boundObject;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
                 c->m_frameIndex = c->m_frameIndex + 1;
-                c->m_layer = seq->GetFrame(c->m_frameIndex);
-                if (c->m_layer == NULL) {
-                    i32 first = c->m_frameSet->m_minIndex;
+                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
+                if (c->m_frameImage == NULL) {
+                    i32 first = c->m_imageSet->m_minIndex;
                     c->m_frameIndex = first;
-                    c->m_layer = c->m_frameSet->GetFrame(first);
+                    c->m_frameImage = c->m_imageSet->GetFrame(first);
                 }
                 break;
             }
             case WWDSTEP_PREV: {
-                CWwdGameObjectA* c = m_boundObject;
-                CDDrawWorker* seq = c->m_frameSet;
+                CWwdSpriteObject* c = m_boundObject;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
@@ -395,67 +393,67 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 } else {
                     c->m_frameIndex = idx - 1;
                 }
-                c->m_layer = seq->GetFrame(c->m_frameIndex);
+                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
                 break;
             }
             case WWDSTEP_SET: {
-                CWwdGameObjectA* c = m_boundObject;
+                CWwdSpriteObject* c = m_boundObject;
                 i32 frame = d->m_param;
-                CDDrawWorker* seq = c->m_frameSet;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
-                c->m_layer = seq->GetFrame(frame);
+                c->m_frameImage = seq->GetFrame(frame);
                 c->m_frameIndex = frame;
                 break;
             }
             case WWDSTEP_FIRST: {
-                CWwdGameObjectA* c = m_boundObject;
-                CDDrawWorker* seq = c->m_frameSet;
+                CWwdSpriteObject* c = m_boundObject;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
                 i32 first = seq->m_minIndex;
                 c->m_frameIndex = first;
-                c->m_layer = seq->GetFrame(first);
+                c->m_frameImage = seq->GetFrame(first);
                 break;
             }
             case WWDSTEP_LAST: {
-                CWwdGameObjectA* c = m_boundObject;
-                CDDrawWorker* seq = c->m_frameSet;
+                CWwdSpriteObject* c = m_boundObject;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
                 i32 last = seq->m_maxIndex;
                 c->m_frameIndex = last;
-                c->m_layer = seq->GetFrame(last);
+                c->m_frameImage = seq->GetFrame(last);
                 break;
             }
             case WWDSTEP_FORWARD_BY: {
-                CWwdGameObjectA* c = m_boundObject;
+                CWwdSpriteObject* c = m_boundObject;
                 i32 step = d->m_param;
-                CDDrawWorker* seq = c->m_frameSet;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
                 c->m_frameIndex = c->m_frameIndex + step;
-                c->m_layer = seq->GetFrame(c->m_frameIndex);
-                if (c->m_layer == NULL) {
-                    c->ClampLast();
+                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
+                if (c->m_frameImage == NULL) {
+                    c->ClampToLastFrame();
                 }
                 break;
             }
             case WWDSTEP_BACK_BY: {
-                CWwdGameObjectA* c = m_boundObject;
+                CWwdSpriteObject* c = m_boundObject;
                 i32 step = d->m_param;
-                CDDrawWorker* seq = c->m_frameSet;
+                CDDrawWorker* seq = c->m_imageSet;
                 if (seq == NULL) {
                     break;
                 }
                 c->m_frameIndex = c->m_frameIndex - step;
-                c->m_layer = seq->GetFrame(c->m_frameIndex);
-                if (c->m_layer == NULL) {
-                    c->ClampFirst();
+                c->m_frameImage = seq->GetFrame(c->m_frameIndex);
+                if (c->m_frameImage == NULL) {
+                    c->ClampToFirstFrame();
                 }
                 break;
             }
@@ -469,14 +467,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         switch (m_element->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
                 CAniRecordView* pd = m_element;
-                CWwdGameObjectA* c = m_boundObject;
+                CWwdSpriteObject* c = m_boundObject;
                 c->m_plotDX = pd->m_positionDeltaX;
                 c->m_plotDY = pd->m_positionDeltaY;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
                 CAniRecordView* pd = m_element;
-                CWwdGameObjectA* c = m_boundObject;
+                CWwdSpriteObject* c = m_boundObject;
                 i32 x = c->m_screenX;
                 i32 dy = pd->m_positionDeltaY;
                 i32 dx = pd->m_positionDeltaX;
@@ -497,7 +495,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
         }
 
-        CWwdGameObjectA* c = m_boundObject;
+        CWwdSpriteObject* c = m_boundObject;
         i32 shouldPlayCue = 1;
         if (HAS(static_cast<WwdGameObjectFlags>(c->m_flags),
                 WWD_GAME_OBJECT_FLAG_CULL_SOUND_WHEN_NOT_DRAWN)
@@ -593,8 +591,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case WWDLOOP_AT_FIRST: {
-                CWwdGameObjectA* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_frameSet;
+                CWwdSpriteObject* c2 = m_boundObject;
+                CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_minIndex) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* anim = m_animation;
@@ -615,8 +613,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case WWDLOOP_AT_LAST: {
-                CWwdGameObjectA* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_frameSet;
+                CWwdSpriteObject* c2 = m_boundObject;
+                CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_maxIndex) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* anim = m_animation;
@@ -637,8 +635,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case WWDLOOP_AFTER_FIRST: {
-                CWwdGameObjectA* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_frameSet;
+                CWwdSpriteObject* c2 = m_boundObject;
+                CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_minIndex + 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* anim = m_animation;
@@ -675,8 +673,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             case WWDLOOP_BEFORE_LAST: {
-                CWwdGameObjectA* c2 = m_boundObject;
-                CDDrawWorker* seq = c2->m_frameSet;
+                CWwdSpriteObject* c2 = m_boundObject;
+                CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_maxIndex - 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
@@ -725,16 +723,16 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 }
 
 RVA(0x0015c900, 0x5c)
-i32 CAniAdvanceCursor::Find(
+i32 CAniAdvanceCursor::ProcessSerialMode(
     CFileMemBase* ar,
-    SerialMode type,
+    SerialMode mode,
     LogicTypeId typeId,
     CGameObject* self
 ) {
     if (ar == NULL) {
         return 0;
     }
-    switch (type) {
+    switch (mode) {
         case SERIAL_PRESAVE:
             return 1;
         case SERIAL_SAVE:
@@ -864,23 +862,23 @@ CImage* CDDrawWorker::GetFrame(i32 n) {
 }
 
 RVA(0x0015cc50, 0x38)
-void CWwdGameObjectA::ClampFirst() {
-    CDDrawWorker* seq = m_frameSet;
+void CWwdSpriteObject::ClampToFirstFrame() {
+    CDDrawWorker* seq = m_imageSet;
     if (seq != NULL) {
         i32 n = seq->m_minIndex;
         m_frameIndex = n;
         CImage* layer = seq->GetAt(n);
-        m_layer = layer;
+        m_frameImage = layer;
     }
 }
 
 RVA(0x0015cc90, 0x38)
-void CWwdGameObjectA::ClampLast() {
-    CDDrawWorker* seq = m_frameSet;
+void CWwdSpriteObject::ClampToLastFrame() {
+    CDDrawWorker* seq = m_imageSet;
     if (seq != NULL) {
         i32 n = seq->m_maxIndex;
         m_frameIndex = n;
         CImage* layer = seq->GetAt(n);
-        m_layer = layer;
+        m_frameImage = layer;
     }
 }

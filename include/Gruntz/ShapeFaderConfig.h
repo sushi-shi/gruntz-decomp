@@ -1,17 +1,17 @@
-#ifndef GRUNTZ_FXMODET1_H
-#define GRUNTZ_FXMODET1_H
+#ifndef GRUNTZ_GRUNTZ_SHAPEFADERCONFIG_H
+#define GRUNTZ_GRUNTZ_SHAPEFADERCONFIG_H
 
 #include <rva.h>
 
 #include <Mfc.h>
 
-#include <Gruntz/FxModeDesc.h>
+#include <Gruntz/FaderConfig.h>
 
 GZ_ENUM_FORWARD(FaderMode);
 
-class CFxModeT1 : public CFxModeDesc {
+class CShapeFaderConfig : public CFaderConfig {
 public:
-    CFxModeT1();
+    CShapeFaderConfig();
     class CDDSurface* m_warpSourceSurface;
     i32 m_halfWidth;
     GZ_ENUM_STORAGE(FaderMode, u32) m_mode;
@@ -22,4 +22,4 @@ public:
     class CDDPalette* m_palette;
 };
 
-#endif // GRUNTZ_FXMODET1_H
+#endif // GRUNTZ_GRUNTZ_SHAPEFADERCONFIG_H

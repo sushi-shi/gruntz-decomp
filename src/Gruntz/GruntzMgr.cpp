@@ -981,7 +981,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         if (m_world->m_level != NULL) {
             CDDrawWorkerHost* f = m_world->m_level->m_mainPlane;
             if (f != NULL) {
-                if (w > f->m_wrapW || h > f->m_wrapH) {
+                if (w > f->m_planePixelWidth || h > f->m_planePixelHeight) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
                     if (st->m_statusBar != NULL) {
@@ -1101,7 +1101,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
         *out = local;
         return out;
     }
-    local = m_world->m_level->m_planeCtx;
+    local = m_world->m_level->m_viewportRect;
     *out = local;
     return out;
 }
@@ -1129,8 +1129,8 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
         case WM_INITDIALOG: {
 
             CDDrawWorkerHost* warp = g_gameReg->m_world->m_level->m_mainPlane;
-            i32 seedX = warp->m_snappedX;
-            i32 seedY = warp->m_snappedY;
+            i32 seedX = warp->m_scrollPixelX;
+            i32 seedY = warp->m_scrollPixelY;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
             SetDlgItemInt(hDlg, 0x40f, seedY, 0);
             return 1;
@@ -1662,15 +1662,15 @@ void CGruntzMgr::RefreshGameClock() {
         return;
     }
 
-    InitializeTimeGlobal();
+    ResetFrameTiming();
 
     if (m_world) {
         g_soundCueTimeMs = timeGetTime();
         g_engineFrameDelta = 0;
     }
 
-    g_lastNow = g_wap32Now;
-    g_frameDelta = g_wap32FrameDelta;
+    g_lastNow = g_gameAppNowMs;
+    g_frameDelta = g_gameAppFrameDeltaMs;
 }
 
 RVA(0x0008f6a0, 0x7d)
@@ -1741,34 +1741,34 @@ void CGruntzMgr::RecomputeViewScale() {
     // (`lea eax,[esi+0x10]`) and reads (0)/(4)/(8)/(0xc) off it, where a RECT* folds
     // the displacements onto the CGameLevel. Each span converts to float only at its
     // first use, so `fsts` keeps it in st(0) for the multiply instead of `fstps`+reload.
-    LevelCoordRect ext = view->m_planeCtx;
+    LevelCoordRect ext = view->m_viewportRect;
     i32 iw = ext.right - ext.left + 1;
     i32 ih = ext.bottom - ext.top + 1;
     float fw = static_cast<float>(iw);
     float fh = static_cast<float>(ih);
 
-    view->m_rectA.w = static_cast<i32>((fw * 1.4f));
-    view->m_rectA.h = static_cast<i32>((fh * 1.4f));
+    view->m_defaultActiveRegionSize.w = static_cast<i32>((fw * 1.4f));
+    view->m_defaultActiveRegionSize.h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectB.w = static_cast<i32>((fw * 5.3f));
-    view->m_rectB.h = static_cast<i32>((fh * 5.3f));
+    view->m_largeActiveRegionSize.w = static_cast<i32>((fw * 5.3f));
+    view->m_largeActiveRegionSize.h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectC.w = static_cast<i32>((fw * 1.12f));
-    view->m_rectC.h = static_cast<i32>((fh * 1.12f));
+    view->m_smallActiveRegionSize.w = static_cast<i32>((fw * 1.12f));
+    view->m_smallActiveRegionSize.h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;
     if (v->m_mainPlane == NULL) {
         return;
     }
-    m_viewBounds.left = (v->m_mainPlane)->m_viewRect.left - 0x60;
-    m_viewBounds.top = (m_world->m_level->m_mainPlane)->m_viewRect.top - 0x60;
-    m_viewBounds.right = (m_world->m_level->m_mainPlane)->m_viewRect.right + 0x60;
-    m_viewBounds.bottom = (m_world->m_level->m_mainPlane)->m_viewRect.bottom + 0x60;
+    m_viewBounds.left = (v->m_mainPlane)->m_planeViewRect.left - 0x60;
+    m_viewBounds.top = (m_world->m_level->m_mainPlane)->m_planeViewRect.top - 0x60;
+    m_viewBounds.right = (m_world->m_level->m_mainPlane)->m_planeViewRect.right + 0x60;
+    m_viewBounds.bottom = (m_world->m_level->m_mainPlane)->m_planeViewRect.bottom + 0x60;
 }
 
 // @dead-code
@@ -1830,7 +1830,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CMoviePlayer player;
     IDirectSound* dsound = NULL;
 
-    CDDSurface* front = m_world->m_drawTarget->m_frontPair->m_surface;
+    CDDSurface* front = m_world->m_drawTarget->m_frontSurface->m_surface;
     IDirectDraw2* dd2 = m_world->m_deviceManager->m_device;
 
     if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
@@ -2289,12 +2289,12 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         if (spr == NULL) {
             return 0;
         }
-        spr->m_frameSets.SetAtGrow(0, static_cast<CObject*>(rec));
+        spr->m_imageSets.SetAtGrow(0, static_cast<CObject*>(rec));
         spr->m_flags |= IDX(WWD_PLANE_FLAG_WRAP_X | WWD_PLANE_FLAG_WRAP_Y);
-        spr->m_zBound = 0xf4241;
+        spr->m_zCoord = 0xf4241;
         i32 parity = 1;
-        for (i32 i = 0; i < spr->m_gridH; i++) {
-            for (i32 j = 0; j < spr->m_gridW; j++) {
+        for (i32 i = 0; i < spr->m_tileRows; i++) {
+            for (i32 j = 0; j < spr->m_tileColumns; j++) {
                 i32 val = parity ? savedIdx : -1;
                 parity ^= 1;
                 SET_WORKER_HOST_CELL(spr, j, i, val);
@@ -3448,11 +3448,11 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&g_frameDelta, sizeof(g_frameDelta));
     ar->Write(&g_frameTime, sizeof(g_frameTime));
     ar->Write(&g_frameTicks, sizeof(g_frameTicks));
-    ar->Write(&g_timer32, sizeof(g_timer32));
-    ar->Write(&g_timer100, sizeof(g_timer100));
-    ar->Write(&g_timer200, sizeof(g_timer200));
-    ar->Write(&g_timer400, sizeof(g_timer400));
-    ar->Write(&g_timer500, sizeof(g_timer500));
+    ar->Write(&g_period50CountdownMs, sizeof(g_period50CountdownMs));
+    ar->Write(&g_period100CountdownMs, sizeof(g_period100CountdownMs));
+    ar->Write(&g_period200CountdownMs, sizeof(g_period200CountdownMs));
+    ar->Write(&g_period400CountdownMs, sizeof(g_period400CountdownMs));
+    ar->Write(&g_period500CountdownMs, sizeof(g_period500CountdownMs));
     ar->Write(&g_traitorMode, sizeof(g_traitorMode));
     ar->Write(&g_gruntCreation, sizeof(g_gruntCreation));
     ar->Write(&g_gruntDestruction, sizeof(g_gruntDestruction));
@@ -3495,11 +3495,11 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&g_frameDelta, sizeof(g_frameDelta));
     ar->Read(&g_frameTime, sizeof(g_frameTime));
     ar->Read(&g_frameTicks, sizeof(g_frameTicks));
-    ar->Read(&g_timer32, sizeof(g_timer32));
-    ar->Read(&g_timer100, sizeof(g_timer100));
-    ar->Read(&g_timer200, sizeof(g_timer200));
-    ar->Read(&g_timer400, sizeof(g_timer400));
-    ar->Read(&g_timer500, sizeof(g_timer500));
+    ar->Read(&g_period50CountdownMs, sizeof(g_period50CountdownMs));
+    ar->Read(&g_period100CountdownMs, sizeof(g_period100CountdownMs));
+    ar->Read(&g_period200CountdownMs, sizeof(g_period200CountdownMs));
+    ar->Read(&g_period400CountdownMs, sizeof(g_period400CountdownMs));
+    ar->Read(&g_period500CountdownMs, sizeof(g_period500CountdownMs));
     ar->Read(&g_traitorMode, sizeof(g_traitorMode));
     ar->Read(&g_gruntCreation, sizeof(g_gruntCreation));
     ar->Read(&g_gruntDestruction, sizeof(g_gruntDestruction));

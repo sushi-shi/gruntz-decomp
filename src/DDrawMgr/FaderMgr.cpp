@@ -2,11 +2,11 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/FaderConfigKind.h>
 #include <Gruntz/FaderKind.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSubtypes.h>
-#include <Gruntz/FxModeKind.h>
-#include <Gruntz/FxModeT1.h>
+#include <Gruntz/ShapeFaderConfig.h>
 
 #include <string.h>
 
@@ -41,12 +41,12 @@ void CFaderMgr::FreeAll() {
 }
 
 RVA(0x0017d9c0, 0x7a0)
-CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
+CFader* CFaderMgr::Add(FaderKind nFaderType, CFaderConfig* pInit) {
     CFader* fader = NULL;
 
     switch (nFaderType) {
         case FADERKIND_SHAPE: {
-            if (pInit != NULL && pInit->m_type != FXMODE_SHAPE) {
+            if (pInit != NULL && pInit->m_kind != FADER_CONFIG_SHAPE) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -58,7 +58,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
             f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
-                CFxModeT1 init;
+                CShapeFaderConfig init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
@@ -74,7 +74,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case FADERKIND_LIGHT: {
-            if (pInit != NULL && pInit->m_type != FXMODE_LIGHT) {
+            if (pInit != NULL && pInit->m_kind != FADER_CONFIG_LIGHT) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -86,7 +86,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
             f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
-                CFxModeT2 init;
+                CLightFaderConfig init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
@@ -102,7 +102,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case FADERKIND_SINE: {
-            if (pInit != NULL && pInit->m_type != FXMODE_SINE) {
+            if (pInit != NULL && pInit->m_kind != FADER_CONFIG_SINE) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -114,7 +114,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
             f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
-                CFxModeT3 init;
+                CSineFaderConfig init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
@@ -130,7 +130,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case FADERKIND_RADIAL: {
-            if (pInit != NULL && pInit->m_type != FXMODE_RADIAL) {
+            if (pInit != NULL && pInit->m_kind != FADER_CONFIG_RADIAL) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -142,7 +142,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
             f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
-                CFxModeT4 init;
+                CRadialFaderConfig init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
@@ -158,7 +158,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case FADERKIND_FLAT: {
-            if (pInit != NULL && pInit->m_type != FXMODE_FLAT) {
+            if (pInit != NULL && pInit->m_kind != FADER_CONFIG_FLAT) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -170,7 +170,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
             f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
-                CFxModeT5 init;
+                CFlatFaderConfig init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
@@ -186,7 +186,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             break;
         }
         case FADERKIND_MESH: {
-            if (pInit != NULL && pInit->m_type != FXMODE_MESH) {
+            if (pInit != NULL && pInit->m_kind != FADER_CONFIG_MESH) {
                 Trace(
                     "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
                     "class"
@@ -198,7 +198,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
             f->SetDefaultSurfaces(m_primarySurface, m_secondarySurface);
             f->SetDeviceManager(m_deviceManager);
             if (pInit == NULL) {
-                CFxModeT6 init;
+                CMeshFaderConfig init;
                 if (f->ApplyInit(&init) == 0) {
                     Trace("CFaderMgr::Add (...) - Invalid init class");
                     delete fader;
@@ -224,7 +224,7 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
     return fader;
 }
 
-RVA_COMPGEN(0x0017e160, 0x8, ??1CFxModeT1@@QAE@XZ)
+RVA_COMPGEN(0x0017e160, 0x8, ??1CShapeFaderConfig@@QAE@XZ)
 
 RVA(0x0017e170, 0x5b)
 void CFaderMgr::Remove(CFader* pFader) {

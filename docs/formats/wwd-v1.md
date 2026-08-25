@@ -133,7 +133,7 @@ back out of that copy.
 | 0x08 | 4 | **`flags`** | **P** | `mov eax,[edx+0x8]` @0x161721, re-read at 0x161864. Observed: **1** (63 planes) and **0xc** (18) |
 | | | bit 0 — *main plane* | **P** | `CGameLevel::ReadPlane` @0x15d8d0 sets `m_mainPlane`/`m_mainIndex` on it; and `test al,0x1` @0x161989 suppresses the parallax multiply for the scroll origin. Every file has exactly one |
 | | | bit 1 — *no draw* | **P** | `CDDrawWorkerHost::Draw` @0x162010 returns immediately. Never set in shipped data |
-| | | bit 2 — *wrap X* | **P** | `CDDrawWorkerHost::WrapCoord` @0xa000 `m_flags & 0x4`; also `ActivateVisibleObjects` @0x163300 |
+| | | bit 2 — *wrap X* | **P** | `CDDrawWorkerHost::WorldToViewport` @0xa000 `m_flags & 0x4`; also `ActivateVisibleObjects` @0x163300 |
 | | | bit 3 — *wrap Y* | **P** | same, `& 0x8` |
 | | | bit 4 — *auto tile size* | **P** | `test al,0x10` @0x1617ad — take the tile size from the first frame of image set 0 instead of 0x58/0x5c. Never set in shipped data |
 | 0x0c | 4 | **`reserved0c`** | **U** | never loaded; 0 in all 81 |
@@ -235,9 +235,9 @@ better:
 
 | Tag | Class | Stride | Payload after `+0x08 width`, `+0x0c height` | |
 |---|---|---|---|---|
-| 1 | `CImageSet1` — **uniform** | 0x14 | `+0x10` one attribute for the whole tile | **P** `Parse` @0x166d40, `GetStride` @0x161410, `GetCollisionAt` @0x161380 |
-| 2 | `CImageSet2` — **rect** | 0x28 | `+0x10` outside, `+0x14` inside, `+0x18..0x24` l/t/r/b | **P** `Parse` @0x166990, `GetStride` @0x1614a0, `GetCollisionAt` @0x161470 |
-| 3 | `CImageSet3` — **pixel map** | `0x10 + w*h` | `+0x10` one attribute byte per pixel; `Parse` requires `1 << log2(height) == width` | **P** `Parse` @0x166d70, `GetStride` @0x161590, `GetCollisionAt` @0x161570 |
+| 1 | `CUniformTileImageSet` — **uniform** | 0x14 | `+0x10` one attribute for the whole tile | **P** `Parse` @0x166d40, `GetStride` @0x161410, `GetCollisionAt` @0x161380 |
+| 2 | `CRectTileImageSet` — **rect** | 0x28 | `+0x10` outside, `+0x14` inside, `+0x18..0x24` l/t/r/b | **P** `Parse` @0x166990, `GetStride` @0x1614a0, `GetCollisionAt` @0x161470 |
+| 3 | `CPixelTileImageSet` — **pixel map** | `0x10 + w*h` | `+0x10` one attribute byte per pixel; `Parse` requires `1 << log2(height) == width` | **P** `Parse` @0x166d70, `GetStride` @0x161590, `GetCollisionAt` @0x161570 |
 
 Record `+0x04` is skipped by all three `Parse` bodies (`m_fields` starts at
 `+0x08`) — **U**; 0 in all 57 330 shipped records.
@@ -292,7 +292,7 @@ them, and an earlier draft of this table wrongly said value 3 had no consumer in
 ## Object records
 
 `objectsCount` records at `objectsOffset`, each a **0x11c-byte fixed part
-followed by four packed strings**. Scattered into a fresh `CWwdGameObjectA` by
+followed by four packed strings**. Scattered into a fresh `CWwdSpriteObject` by
 `CDDrawWorkerHost::ReadPlaneObjects` @0x162af0, which returns
 `0x11c + <string bytes consumed>` as the stride — **P**.
 
@@ -301,10 +301,10 @@ map. Selected rows (offsets proven by the store sequence at 0x162e9c onward):
 
 | Record | Field | Lands at | |
 |---|---|---|---|
-| 0x00 | object id | `CWwdGameObjectA` ctor arg | **P** |
+| 0x00 | object id | `CWwdSpriteObject` ctor arg | **P** |
 | 0x04..0x10 | byte lengths of the four strings: name, logic, image set, animation | consumed in order from `record + 0x11c` | **P** |
 | 0x14 / 0x18 / 0x1c | x / y / z | `Setup(x, y, z, template)`; out-of-range x/y drops the object | **P** |
-| 0x20 | grid index | selects `ApplyLookupSprite` vs `ApplyName`; -1 = no index | **P** |
+| 0x20 | grid index | selects `SetImageFrameByName` vs `SetImageSetByName`; -1 = no index | **P** |
 | 0x24 | `flags_add` | **nothing** | **U** |
 | 0x28 | `flags_dynamic` | OR-ed into `CGameObject::m_flags` | **P** |
 | 0x2c | `flags_draw` | `CGameObject::m_stateFlags` | **P** |
@@ -326,8 +326,8 @@ of all 54 retail files is in
 |---|---|---|---|---|
 | 0 | **`name`** | `obj->m_name` — `lea ecx,[ebx+0xdc]` @0x162f05 + `CString::operator=` | **P** | Present on **14 of 27 110** objects, all `WEENIE_SWITCH` in `AREA2\WORLDZ\LEVEL7`. The only reader of `m_name` in the tree is the release-dead `TRACE` in `CDDrawChildGroup::Deserialize` @0x15b0e0, so it is a designer annotation the shipped build never looks at |
 | 1 | **`logic`** | `m_workerCache->m_workers.Lookup(logic)`; a miss **drops the object** | **P** | 34 distinct, every one registered by `RegisterGameObjectLogicTypes` @0xa3b0 |
-| 2 | **`image_set`** | `ApplyLookupSprite(s, gridIndex)` when `gridIndex != -1`, else `ApplyName(s)` | **P** | 186 distinct; all 27 110 references resolve to a real `<NS>\IMAGEZ` path |
-| 3 | **`animation`** | `ApplyLookupGeometry(s, 0)` **and** `SetSoundCueByName(s)` | **P** | 29 distinct. Resolves in **two** registries — 2 945 references name an `<NS>\ANIZ` resource, 211 an `<NS>\SOUNDZ\AMBIENT` WAV (the `GlobalAmbientSound` objects). One reference in the corpus dangles |
+| 2 | **`image_set`** | `SetImageFrameByName(s, gridIndex)` when `gridIndex != -1`, else `SetImageSetByName(s)` | **P** | 186 distinct; all 27 110 references resolve to a real `<NS>\IMAGEZ` path |
+| 3 | **`animation`** | `SetAnimationByName(s, 0)` **and** `SetSoundCueByName(s)` | **P** | 29 distinct. Resolves in **two** registries — 2 945 references name an `<NS>\ANIZ` resource, 211 an `<NS>\SOUNDZ\AMBIENT` WAV (the `GlobalAmbientSound` objects). One reference in the corpus dangles |
 
 The third-party spec calls field 3 "animation" and earlier revisions of this
 document called it "sound". Both are half right: it is a **registry key that may

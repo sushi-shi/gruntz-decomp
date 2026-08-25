@@ -97,12 +97,12 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
     CGameLevel* view = m_world->m_level;
-    const RECT* vp = &view->m_mainPlane->m_viewRect;
-    r.left += vp->left - view->m_planeCtx.left;
-    r.top += vp->top - view->m_planeCtx.top;
-    vp = &view->m_mainPlane->m_viewRect;
-    r.right += vp->left - view->m_planeCtx.left;
-    r.bottom += vp->top - view->m_planeCtx.top;
+    const RECT* vp = &view->m_mainPlane->m_planeViewRect;
+    r.left += vp->left - view->m_viewportRect.left;
+    r.top += vp->top - view->m_viewportRect.top;
+    vp = &view->m_mainPlane->m_planeViewRect;
+    r.right += vp->left - view->m_viewportRect.left;
+    r.bottom += vp->top - view->m_viewportRect.top;
     // Retail walks ONE pointer across the whole 4x15 grid: `lea eax,[ebp+0x1c]`
     // (&m_units[0]) outside, `mov ebx,eax` at the outer head, `add ebx,4` per inner
     // step and `mov eax,ebx` at the outer tail - so the row base carries forward and
@@ -176,7 +176,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             i32 removedUnitIndex = p->m_y;
             if (removedPlayerIndex == m_cameraTargetIdentity.m_x
                 && removedUnitIndex == m_cameraTargetIdentity.m_y) {
-                CWwdGameObjectA* goal = m_goal;
+                CWwdSpriteObject* goal = m_goal;
                 if (goal != NULL) {
                     goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     m_goal = NULL;
@@ -217,7 +217,7 @@ void CTriggerMgr::ResetAll() {
     }
     m_recList.RemoveAll();
     StopPendingFx();
-    CWwdGameObjectA* goal = m_goal;
+    CWwdSpriteObject* goal = m_goal;
     if (goal != NULL) {
         goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         m_goal = NULL;
@@ -397,10 +397,10 @@ i32 CTriggerMgr::LoadCameraSprite() {
     }
 
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* spr = fac->CreateSprite(0, ax, cx, SORTKEY_OVERLAY, "DoNothing", 1);
+    CWwdSpriteObject* spr = fac->CreateSprite(0, ax, cx, SORTKEY_OVERLAY, "DoNothing", 1);
     m_goal = spr;
     spr->m_logicRecord->m_dispatch(spr);
-    m_goal->ApplyName("GAME_CAMERASPRITE");
+    m_goal->SetImageSetByName("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -483,17 +483,17 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     i32 cx = tx;
     if (tx < 0) {
         cx = 0;
-    } else if (tx >= level->m_mainPlane->m_gridW) {
-        cx = level->m_mainPlane->m_gridW - 1;
+    } else if (tx >= level->m_mainPlane->m_tileColumns) {
+        cx = level->m_mainPlane->m_tileColumns - 1;
     }
     i32 cy = ty;
     if (ty < 0) {
         cy = 0;
-    } else if (ty >= level->m_mainPlane->m_gridH) {
-        cy = level->m_mainPlane->m_gridH - 1;
+    } else if (ty >= level->m_mainPlane->m_tileRows) {
+        cy = level->m_mainPlane->m_tileRows - 1;
     }
     TileCollisionKind collision;
-    i32 cval = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_rowOffsets[cy] + cx];
+    i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
         CTileImageSet* tc = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(cval & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
@@ -537,10 +537,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             }
 
             POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-            m_world->m_level->m_mainPlane->WrapCoord(&source.x, &source.y);
-            // Retail-proven ABI seam: WrapCoord receives the two by-value i32
+            m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
+            // Retail-proven ABI seam: WorldToViewport receives the two by-value i32
             // argument slots directly; Win32 LONG has the same 32-bit storage.
-            m_world->m_level->m_mainPlane->WrapCoord(
+            m_world->m_level->m_mainPlane->WorldToViewport(
                 reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
                 reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
             );
@@ -666,7 +666,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_WINGZ:
                 if (pfk != 0) {
                     POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-                    m_world->m_level->m_mainPlane->WrapCoord(&source.x, &source.y);
+                    m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
                     // The destination wrap is OPEN-CODED on the scalars (retail
                     // 0x79126-0x791b0: dx/dy never leave edi/ebx, the plane chain
                     // is re-derived, and the final adjust is the re-associated
@@ -677,31 +677,31 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     i32 dy = y;
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = plane->m_wrapW;
+                        i32 w = plane->m_planePixelWidth;
                         if (dx < 0) {
                             dx = dx + w;
                         } else if (dx >= w) {
                             dx = dx - w;
                         }
-                        if (plane->m_viewRect.right >= w && dx < plane->m_viewRect.left
-                            && dx <= plane->m_viewRect.right - w) {
+                        if (plane->m_planeViewRect.right >= w && dx < plane->m_planeViewRect.left
+                            && dx <= plane->m_planeViewRect.right - w) {
                             dx = dx + w;
                         }
                     }
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = plane->m_wrapH;
+                        i32 h = plane->m_planePixelHeight;
                         if (dy < 0) {
                             dy = dy + h;
                         } else if (dy >= h) {
                             dy = dy - h;
                         }
-                        if (plane->m_viewRect.bottom >= h && dy < plane->m_viewRect.top
-                            && dy <= plane->m_viewRect.bottom - h) {
+                        if (plane->m_planeViewRect.bottom >= h && dy < plane->m_planeViewRect.top
+                            && dy <= plane->m_planeViewRect.bottom - h) {
                             dy = dy + h;
                         }
                     }
-                    dx += plane->m_bounds50.left - plane->m_viewRect.left;
-                    dy += plane->m_bounds50.top - plane->m_viewRect.top;
+                    dx += plane->m_viewportRect.left - plane->m_planeViewRect.left;
+                    dy += plane->m_viewportRect.top - plane->m_planeViewRect.top;
                     u16 color;
                     if (cell->RectContains(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
@@ -928,9 +928,9 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
         return 0;
     }
     CGameLevel* view = m_world->m_level;
-    RECT* vr = &view->m_mainPlane->m_viewRect;
-    i32 ox = vr->left - view->m_planeCtx.left + worldX;
-    i32 oy = vr->top - view->m_planeCtx.top + worldY;
+    RECT* vr = &view->m_mainPlane->m_planeViewRect;
+    i32 ox = vr->left - view->m_viewportRect.left + worldX;
+    i32 oy = vr->top - view->m_viewportRect.top + worldY;
     this->PlaceObjectFull(ox, oy);
     return 1;
 }
@@ -975,7 +975,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     CGameLevel* plane = g_gameReg->m_world->m_level;
     LONG outR = col;
     LONG outC = row;
-    plane->m_mainPlane->WrapCoord(&outR, &outC);
+    plane->m_mainPlane->WorldToViewport(&outR, &outC);
     CStatusBarMgr* sbi = lvl->m_statusBar;
     if (sbi->m_hlBusy == 0) {
         if (sbi->m_position == STATUSBAR_HIDDEN) {
@@ -1118,7 +1118,7 @@ i32 CTriggerMgr::SpawnPuddle(
     i32 gaugePoints
 ) {
     CDDrawChildGroup* childGroup = m_world->m_childGroup;
-    CWwdGameObjectA* sprite = childGroup->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+    CWwdSpriteObject* sprite = childGroup->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == NULL) {
 
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x400);
@@ -1200,12 +1200,12 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
         }
     }
 
-    CWwdGameObjectA* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    CWwdSpriteObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x402);
         return 0;
     }
-    spr->ApplyName("GAME_TOYBOX");
+    spr->SetImageSetByName("GAME_TOYBOX");
     spr->m_points = IDX(kind);
     spr->m_score = col;
     spr->m_faceDirection = moveKind;
@@ -1335,7 +1335,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         list++;
         k--;
     } while (k != 0);
-    CWwdGameObjectA* goal = m_goal;
+    CWwdSpriteObject* goal = m_goal;
     i32 objId = 0;
     if (goal != NULL) {
         objId = goal->m_objectId;
@@ -1479,12 +1479,12 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found) != 0) {
                 looked = found;
             }
-            CWwdGameObjectA* obj;
+            CWwdSpriteObject* obj;
             if (looked == NULL) {
                 obj = NULL;
             } else {
                 obj = (looked->GetClassId() == CLASSID_SERIALREF)
-                          ? static_cast<CWwdGameObjectA*>(looked)
+                          ? static_cast<CWwdSpriteObject*>(looked)
                           : NULL;
             }
             m_goal = obj;
@@ -1622,7 +1622,7 @@ RVA(0x0007b330, 0xc6)
 
 i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* spr = fac->CreateSprite(0, x, y, 0, "Explosion", 0x40003);
+    CWwdSpriteObject* spr = fac->CreateSprite(0, x, y, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = kind;
         if (v == 0) {
@@ -1630,7 +1630,7 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
         }
         CString key;
         key.Format("GAME_EXPLOSION%d", v);
-        spr->ApplyLookupGeometry(key, 0);
+        spr->SetAnimationByName(key, 0);
         spr->m_smarts = id;
         spr->m_score = 1;
     }
@@ -1653,20 +1653,22 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 continue;
             }
             CGameLevel* board = m_world->m_level;
-            if (tx >= board->m_mainPlane->m_wrapW || ty >= board->m_mainPlane->m_wrapH) {
+            if (tx >= board->m_mainPlane->m_planePixelWidth
+                || ty >= board->m_mainPlane->m_planePixelHeight) {
                 continue;
             }
             i32 col = tx;
             i32 row = ty;
             if (pxX < 0x10) {
                 col = 0;
-            } else if (tx >= board->m_mainPlane->m_gridW) {
-                col = board->m_mainPlane->m_gridW - 1;
+            } else if (tx >= board->m_mainPlane->m_tileColumns) {
+                col = board->m_mainPlane->m_tileColumns - 1;
             }
-            if (ty >= board->m_mainPlane->m_gridH) {
-                row = board->m_mainPlane->m_gridH - 1;
+            if (ty >= board->m_mainPlane->m_tileRows) {
+                row = board->m_mainPlane->m_tileRows - 1;
             }
-            i32 cell = board->m_mainPlane->m_tileGrid[board->m_mainPlane->m_rowOffsets[row] + col];
+            i32 cell =
+                board->m_mainPlane->m_tileHandles[board->m_mainPlane->m_tileRowOffsets[row] + col];
             TileCollisionKind type;
             if (cell == UNINIT_FILL || cell == -1) {
                 type = TILEKIND_PASSABLE;
@@ -1713,12 +1715,12 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             } else {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* wg = reg->m_world->m_level->m_mainPlane;
-                i32 off = wg->m_rowOffsets[ty];
+                i32 off = wg->m_tileRowOffsets[ty];
                 if (type == TILEKIND_GAUNTLET_ROCK_A) {
-                    wg->m_tileGrid[off + tx] = 0x5a;
+                    wg->m_tileHandles[off + tx] = 0x5a;
                     (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
-                    wg->m_tileGrid[off + tx] = 0x5b;
+                    wg->m_tileHandles[off + tx] = 0x5b;
                     (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }
@@ -1729,14 +1731,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
-            CWwdGameObjectA* spr =
+            CWwdSpriteObject* spr =
                 m_world->m_childGroup
                     ->CreateSprite(0, pxX, pxY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
             if (spr == NULL) {
                 continue;
             }
-            spr->ApplyName("LEVEL_ROCKBREAK");
-            spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
+            spr->SetImageSetByName("LEVEL_ROCKBREAK");
+            spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
 
             SoundCueRegistry* registry = m_world->m_soundRegistry;
             if (registry->m_silentMode == 0) {
@@ -1772,8 +1774,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
     area.right = x + r + 7;
     area.top = y - r - 7;
     area.bottom = y + r + 7;
-    i32 rangeA = m_world->m_level->m_mainPlane->m_gridW - 2;
-    i32 rangeB = m_world->m_level->m_mainPlane->m_gridH - 2;
+    i32 rangeA = m_world->m_level->m_mainPlane->m_tileColumns - 2;
+    i32 rangeB = m_world->m_level->m_mainPlane->m_tileRows - 2;
 
     CGrunt** units = m_units;
     for (i32 playerIndex = 0; playerIndex < TM_PLAYER_COUNT; playerIndex++) {
@@ -1877,7 +1879,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         }
                         g->StepArrivalCommit();
                         CGameObject* h = g->m_object;
-                        CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                             0,
                             h->m_screenX,
                             h->m_screenY,
@@ -2040,7 +2042,7 @@ i32 CTriggerMgr::SpawnGrunt(
     PickupType vis = src->m_vehiclePickupType;
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    CWwdSpriteObject* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == NULL) {
         return 0;
     }
@@ -2350,12 +2352,12 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             return 0;
     }
 
-    CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
-                               ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+    CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup
+                                ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }
-    spr->ApplyName(name);
+    spr->SetImageSetByName(name);
     spr->m_damage = m120;
     spr->m_score = 0;
     spr->m_points = 0;
@@ -2418,8 +2420,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     bbox.right = 0;
     bbox.bottom = 0;
     CDDrawWorkerHost* grid = g_gameReg->m_world->m_level->m_mainPlane;
-    bbox.left = grid->m_wrapW - 1;
-    bbox.top = grid->m_wrapH - 1;
+    bbox.left = grid->m_planePixelWidth - 1;
+    bbox.top = grid->m_planePixelHeight - 1;
     do {
         POSITION cur = pos;
         Coord* payload = static_cast<Coord*>(m_selLists[slot].GetNext(pos));
@@ -2474,8 +2476,8 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     RECT bbox;
     i32 count = 0;
     CDDrawWorkerHost* dims = g_gameReg->m_world->m_level->m_mainPlane;
-    bbox.left = dims->m_wrapW - 1;
-    bbox.top = dims->m_wrapH - 1;
+    bbox.left = dims->m_planePixelWidth - 1;
+    bbox.top = dims->m_planePixelHeight - 1;
     bbox.right = 0;
     bbox.bottom = 0;
     do {

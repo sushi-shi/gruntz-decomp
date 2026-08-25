@@ -16,7 +16,7 @@ inline, even when its definition precedes the use in the same TU. So the compile
 `~CDerived` emits a `call ??1CFoo@@UAE@XZ` where retail, whose `~CFoo` was written in the
 class, splices the whole base body (vptr stamp, member clears, its own base chain) in.
 
-The same applies to a destructible *member*: `CWwdGameObjectA::m_animCursor`'s
+The same applies to a destructible *member*: `CWwdSpriteObject::m_animationCursor`'s
 `~CAniAdvanceCursor` is inlined into every owner's dtor only when it is an in-class body.
 
 ## The fix
@@ -25,11 +25,11 @@ Move the body into the class and pin the out-of-line copy with `RVA_COMPGEN` in 
 
 ```cpp
 // header
-virtual ~CWwdGameObjectA() OVERRIDE {
+virtual ~CWwdSpriteObject() OVERRIDE {
     Unload();
 }
 // owner .cpp - the COMDAT still exists (the vtable references it)
-RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdGameObjectA@@UAE@XZ)
+RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdSpriteObject@@UAE@XZ)
 ```
 
 **Do NOT put `RVA(...)` on the in-class dtor.** A dtor defined in a header also emits
@@ -37,14 +37,14 @@ RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdGameObjectA@@UAE@XZ)
 `labels.py` then sees two symbols claiming one rva:
 
 ```
-[labels] ERROR duplicate RVA 0x15b790: ... (??_GCWwdGameObjectA@@UAEPAXI@Z), ... (??1CWwdGameObjectA@@UAE@XZ)
+[labels] ERROR duplicate RVA 0x15b790: ... (??_GCWwdSpriteObject@@UAEPAXI@Z), ... (??1CWwdSpriteObject@@UAE@XZ)
 ```
 
 `RVA_COMPGEN` in the single owner TU has no such ambiguity — the same device
 `~CGameObject` already used.
 
-Evidence: `CWwdGameObject::~CWwdGameObject` 48.2 -> 86.3 from the `~CWwdGameObjectA` move;
-`CWwdGameObjectA::~CWwdGameObjectA` 86.8 -> 92.9 from the `~CAniAdvanceCursor` move.
+Evidence: `CWwdGameObject::~CWwdGameObject` 48.2 -> 86.3 from the `~CWwdSpriteObject` move;
+`CWwdSpriteObject::~CWwdSpriteObject` 86.8 -> 92.9 from the `~CAniAdvanceCursor` move.
 
 ## Caveat
 

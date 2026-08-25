@@ -35,7 +35,7 @@ class CDDrawWorkerList;
 class CDDrawChildGroup;
 class CDDrawWorkerRegistry;
 class CLogicRecordRegistry;
-class CDDrawWorkerMapSmall;
+class CDDrawPaletteRegistry;
 class SoundCueRegistry;
 class AnimationRegistry;
 class CDDrawDeviceManager;
@@ -101,7 +101,7 @@ public:
     CDDrawWorkerRegistry* m_imageRegistry;
 
     CLogicRecordRegistry* m_logicRegistry;
-    CDDrawWorkerMapSmall* m_workerMap;
+    CDDrawPaletteRegistry* m_paletteRegistry;
     CDDrawDeviceManager* m_deviceManager;
     SoundStream* m_soundStream;
 

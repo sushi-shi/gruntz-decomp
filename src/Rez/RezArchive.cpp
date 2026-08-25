@@ -333,7 +333,7 @@ CRezArchiveType::CRezArchiveType(
 }
 
 // cl's unwind helper for the member-init list above: an out-of-line copy of the
-// inline ~CHash(), which is just `RemoveAll()` and so tail-jumps to the base.
+// inline ~CRezEntryIdHash(), which is just `RemoveAll()` and so tail-jumps to the base.
 
 RVA(0x00139c80, 0x6c)
 CRezArchiveType::CRezArchiveType(
@@ -776,7 +776,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
             cursor += sizeof(i32);
             char* name = cursor;
             cursor += strlen(name) + 1;
-            CHashB* subdirectories = &m_subdirectories;
+            CRezDirectoryNameHash* subdirectories = &m_subdirectories;
             CRezArchiveDir* existing =
                 subdirectories->FindByName(name, m_archive->m_caseSensitive == 0);
             if (existing == NULL) {

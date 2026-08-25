@@ -17,10 +17,10 @@ struct CLogicRecord;
 struct CGameObject;
 
 struct CGameObject;
-class CWwdGameObjectA;
+class CWwdSpriteObject;
 class CWwdGameObject;
-class CWwdGameObjectC;
-class CWwdGameObjectF;
+class CWwdDotObject;
+class CWwdDeferredObject;
 class CDrawSubWorker;
 
 class CDDrawChildGroup : public CWapObj {
@@ -52,7 +52,7 @@ public:
     virtual void DestroyChildren();
     virtual void CollideBroadcast();
 
-    CWwdGameObjectC* CreateDotObject(
+    CWwdDotObject* CreateDotObject(
         int id,
         int x,
         int y,
@@ -61,9 +61,9 @@ public:
         int dotColor,
         int objectFlags
     );
-    CWwdGameObjectF*
+    CWwdDeferredObject*
     CreateDeferredObject(int id, int sortKey, CLogicRecord* logicTemplate, int objectFlags);
-    CWwdGameObjectA* CreateSpriteObject(
+    CWwdSpriteObject* CreateSpriteObject(
         int id,
         int x,
         int y,
@@ -80,7 +80,7 @@ public:
         int objectFlags
     );
 
-    CWwdGameObjectC* CreateNamedDotObject(
+    CWwdDotObject* CreateNamedDotObject(
         int id,
         int x,
         int y,
@@ -89,7 +89,7 @@ public:
         int dotColor,
         int objectFlags
     );
-    CWwdGameObjectF*
+    CWwdDeferredObject*
     CreateNamedDeferredObject(int id, int sortKey, const char* name, int objectFlags);
     CWwdGameObject* CreateNamedContainerObject(
         int id,
@@ -100,7 +100,7 @@ public:
         int objectFlags
     );
 
-    CWwdGameObjectA*
+    CWwdSpriteObject*
     CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
 
     i32 AddObject(CGameObject* obj);

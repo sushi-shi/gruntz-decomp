@@ -9,7 +9,7 @@
 
 RVA(0x00163a90, 0x17)
 i32 CDDrawWorkerHost::IsLoaded() {
-    if (m_tileGrid != NULL && m_rowOffsets != NULL) {
+    if (m_tileHandles != NULL && m_tileRowOffsets != NULL) {
         return 1;
     }
     return 0;
@@ -26,19 +26,19 @@ void CDDrawWorkerHost::UnusedPlaneHook(i32) {}
 RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {
-    if (m_scroll != NULL) {
-        m_scroll->PruneCount();
+    if (m_spatialMgr != NULL) {
+        m_spatialMgr->PruneCount();
     }
-    if (m_scroll != NULL) {
-        CWwdSpatialMgr* w = m_scroll;
+    if (m_spatialMgr != NULL) {
+        CWwdSpatialMgr* w = m_spatialMgr;
         delete w;
     }
-    if (m_tileGrid != NULL) {
-        delete[] m_tileGrid;
-        m_tileGrid = NULL;
+    if (m_tileHandles != NULL) {
+        delete[] m_tileHandles;
+        m_tileHandles = NULL;
     }
-    if (m_rowOffsets != NULL) {
-        delete[] m_rowOffsets;
-        m_rowOffsets = NULL;
+    if (m_tileRowOffsets != NULL) {
+        delete[] m_tileRowOffsets;
+        m_tileRowOffsets = NULL;
     }
 }

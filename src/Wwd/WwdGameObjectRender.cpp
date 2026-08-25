@@ -21,7 +21,7 @@
 
 // @early-stop
 RVA(0x001660f0, 0xd1)
-void CWwdGameObjectC::Render(CDDrawSurfacePair* dst) {
+void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {
         if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->m_width
             || m_screenY >= dst->m_height) {
@@ -45,7 +45,7 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* dst) {
 }
 
 RVA(0x001661d0, 0xc2)
-void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
     if (m_shadow.m_armed != -1) {
@@ -56,7 +56,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 }
 
 RVA(0x001662a0, 0x1fa)
-void CWwdGameObjectC::BltDirtyEx(
+void CWwdDotObject::BltDirtyEx(
     CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
@@ -86,7 +86,7 @@ void CWwdGameObjectC::BltDirtyEx(
 }
 
 RVA(0x001664a0, 0x133)
-void CWwdGameObjectC::BltDirtyRegions(
+void CWwdDotObject::BltDirtyRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
@@ -146,7 +146,7 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     CLogicRecord* logicTemplate,
     int objectFlags
 ) {
-    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, objectFlags, CWapObj::NO_SEED);
+    CWwdSpriteObject* result = new CWwdSpriteObject(OwnerMgr(), id, objectFlags, CWapObj::NO_SEED);
     if (result == NULL) {
         return NULL;
     }

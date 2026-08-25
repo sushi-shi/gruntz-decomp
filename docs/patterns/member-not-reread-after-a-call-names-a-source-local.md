@@ -51,13 +51,13 @@ it spelled the array element again; when retail loads it ONCE for a run of conse
 stores, the source did carry a local. Both directions cost real points on the same file:
 
 ```cpp
-// retail reloads slot[i] after ApplyLookupSprite (`mov eax,[ebx]` where the cursor
+// retail reloads slot[i] after SetImageFrameByName (`mov eax,[ebx]` where the cursor
 // already advanced), so the last statement is the ARRAY ELEMENT, not the local `a`:
-a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
+a->SetImageFrameByName("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
 slot[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;      // 86.23 -> 91.42
 
 // retail loads [esi] ONCE and stores three fields off it, so these three are a LOCAL:
-{ CWwdGameObjectA* o = m_sprintSprites[i];
+{ CWwdSpriteObject* o = m_sprintSprites[i];
   o->m_drawActive = 1; o->m_drawFillCmd = SHADE_PAL_16; o->m_drawFillArg = h; }
                                                     // 94.31 -> 98.40
 ```

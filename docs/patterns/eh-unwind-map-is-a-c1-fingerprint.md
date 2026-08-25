@@ -97,7 +97,7 @@ The authentic release-elided `TRACE("%s\\n", node->GetName())` supplies retail's
 NULL-action state and makes the full map exact; its longer-lived zero register
 drops the primary score. Keep the structurally complete source rather than the
 old exact-body local minimum. The all-function census also catches an analogous
-inline-cut residue in exact-primary `CImageSet3::~CImageSet3`: retail expands the
+inline-cut residue in exact-primary `CPixelTileImageSet::~CPixelTileImageSet`: retail expands the
 empty `CTileImageSet` layer to `CObject::~CObject`, while the current TU calls the
 implicit base destructor COMDAT.
 

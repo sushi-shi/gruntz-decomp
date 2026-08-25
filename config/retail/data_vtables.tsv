@@ -176,7 +176,7 @@ rva	size	name	kind	note
 0x1efc58	0x20	??_7CDDrawSurfaceMgr@@6B@	primary	
 0x1efc78	0x24	??_7AnimationRegistry@@6B@	primary	animation registry
 0x1efca0	0x24	??_7SoundCueRegistry@@6B@	primary	sound-cue registry
-0x1efcc8	0x34	??_7CDDrawWorkerMapSmall@@6B@	primary	
+0x1efcc8	0x34	??_7CDDrawPaletteRegistry@@6B@	primary	palette registry
 0x1efd00	0x28	??_7CLogicRecordRegistry@@6B@	primary	
 0x1efd28	0x5c	??_7CDDrawWorkerRegistry@@6B@	primary	
 0x1efd88	0x38	??_7CDDrawWorkerList@@6B@	primary	
@@ -184,26 +184,26 @@ rva	size	name	kind	note
 0x1efe08	0x28	??_7CDDrawSubMgrPages@@6B@	primary	
 0x1efe30	0x34	??_7CFileMem@@6B@	primary	
 0x1efe68	0x34	??_7CFileMemBase@@6B@	primary	
-0x1efea0	0x30	??_7CDDrawWorkerA@@6B@	primary	
-0x1efed0	0x38	??_7CDDrawWorkerB@@6B@	primary	
+0x1efea0	0x30	??_7CDDrawPixelWorker@@6B@	primary	pixel worker
+0x1efed0	0x38	??_7CDDrawFrameWorker@@6B@	primary	frame worker
 0x1eff08	0x24	??_7SoundCue@@6B@	primary	sound cue
 0x1eff30	0x3c	??_7CDDrawSurfacePair@@6B@	primary	
-0x1eff70	0x2c	??_7CDDrawSurfaceChildA@@6B@	primary	
+0x1eff70	0x2c	??_7CDDrawFrontSurface@@6B@	primary	front surface
 0x1effa0	0x2c	??_7CDrawSubWorker@@6B@	primary	
-0x1effd0	0x4c	??_7CWwdGameObjectC@@6B@	primary	
+0x1effd0	0x4c	??_7CWwdDotObject@@6B@	primary	dot object
 0x1f0020	0x40	??_7CGameObject@@6B@	primary	
-0x1f0060	0x44	??_7CWwdGameObjectF@@6B@	primary	
-0x1f00a8	0x40	??_7CWwdGameObjectA@@6B@	primary	
+0x1f0060	0x44	??_7CWwdDeferredObject@@6B@	primary	deferred object
+0x1f00a8	0x40	??_7CWwdSpriteObject@@6B@	primary	sprite object
 0x1f00e8	0x40	??_7CWwdGameObject@@6B@	primary	
 0x1f0128	0x24	??_7CAniAdvanceCursor@@6B@	primary	
 0x1f0150	0x48	??_7CGameLevel@@6B@	primary	
-0x1f0198	0x48	??_7CImageSet1@@6B@	primary	
-0x1f01e0	0x48	??_7CImageSet2@@6B@	primary	
-0x1f0228	0x48	??_7CImageSet3@@6B@	primary	
+0x1f0198	0x48	??_7CUniformTileImageSet@@6B@	primary	uniform tile image set
+0x1f01e0	0x48	??_7CRectTileImageSet@@6B@	primary	rect tile image set
+0x1f0228	0x48	??_7CPixelTileImageSet@@6B@	primary	pixel tile image set
 0x1f0270	0x30	??_7CDDrawWorkerHost@@6B@	primary	
 0x1f02a8	0x14	??_7CWwdGridIter@@6B@	primary	
 0x1f02c0	0x14	??_7CAniRecordView@@6B@	primary	
-0x1f02d8	0x38	??_7CAniRecordBase2@@6B@	primary	
+0x1f02d8	0x38	??_7CDDrawPaletteResource@@6B@	primary	palette resource
 0x1f0310	0x18	??_7CWwdGridShell@@6B@	primary	
 0x1f0328	0x18	??_7CWwdGrid@@6B@	primary	
 0x1f04c8	0x4	??_7zBitVec@@6B@	primary	

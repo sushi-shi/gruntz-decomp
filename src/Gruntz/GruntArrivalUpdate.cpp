@@ -139,7 +139,7 @@ i32 CGrunt::UpdateArrival() {
                             this->m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             i32 r = CGameLevel::PointInBounds(
-                                &reg->m_world->m_level->m_mainPlane->m_viewRect,
+                                &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
                                 this->m_object->m_screenX,
                                 this->m_object->m_screenY
                             );
@@ -246,7 +246,7 @@ i32 CGrunt::UpdateArrival() {
                     // from the AISTATE_SEEK arm above (0xf06a0), so this arm takes
                     // the inline PointInRect sibling.
                     CGruntzMgr* reg = g_gameReg;
-                    const RECT& view = reg->m_world->m_level->m_mainPlane->m_viewRect;
+                    const RECT& view = reg->m_world->m_level->m_mainPlane->m_planeViewRect;
                     i32 px = m_object->m_screenX;
                     i32 py = m_object->m_screenY;
                     if (CGameLevel::PointInRect(&view, px, py)) {

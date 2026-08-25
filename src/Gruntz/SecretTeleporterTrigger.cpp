@@ -102,7 +102,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
         SetObjectFlags(0x10000);
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
         SetObjectFlags(2);
         Hide();
@@ -133,7 +133,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == 0) {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
         SetObjectFlags(2);
         Hide();
@@ -162,7 +162,7 @@ void CSecretLevelTrigger::RegisterActs() {
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 playerIndex, unitIndex;
-    CWwdGameObjectA* spr = m_object;
+    CWwdSpriteObject* spr = m_object;
     CGrunt* hit = g_gameReg->m_triggerMgr
                       ->HitTestCell(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
@@ -188,12 +188,12 @@ i32 CSecretLevelTrigger::Tick() {
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 playerIndex, unitIndex;
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     CGrunt* hit = g_gameReg->m_triggerMgr
                       ->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         o = m_object;
-        CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             (o->m_score << TILE_SHIFT_PX) + TILE_HALF_PX,
             (o->m_points << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -211,12 +211,12 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_score = m_object->m_score;
             spr->m_points = m_object->m_points;
             spr->m_health = 0;
-            CWwdGameObjectA* eo = hit->m_object;
+            CWwdSpriteObject* eo = hit->m_object;
             CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
-            if (CGameLevel::PointInRect(&rc->m_viewRect, ex, ey)) {
+            if (CGameLevel::PointInRect(&rc->m_planeViewRect, ex, ey)) {
                 g->m_voiceManager->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
             }
         }

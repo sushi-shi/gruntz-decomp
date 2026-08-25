@@ -13,7 +13,7 @@
 class CDDrawSurfaceMgr;
 class CDDSurface;
 class CDDrawSurfacePair;
-class CDDrawSurfaceChildA;
+class CDDrawFrontSurface;
 
 GZ_ENUM_BEGIN(DDrawPageKind)
     DDRAW_PAGE_BACK = 1,
@@ -23,7 +23,7 @@ GZ_ENUM_END(DDrawPageKind)
 class CDDrawSubMgrPages : public CWapObj {
 public:
     CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
-        m_frontPair = NULL;
+        m_frontSurface = NULL;
         m_backPair = NULL;
         m_overlayPair = NULL;
     }
@@ -54,7 +54,7 @@ public:
     i32 TransTitle();
     i32 TransExit();
 
-    CDDrawSurfaceChildA* m_frontPair;
+    CDDrawFrontSurface* m_frontSurface;
     CDDrawSurfacePair* m_backPair;
     CDDrawSurfacePair* m_overlayPair;
 };
@@ -95,14 +95,14 @@ public:
     CDDSurface* m_surface;
 };
 
-class CDDrawSurfaceChildA : public CDrawSubWorker {
+class CDDrawFrontSurface : public CDrawSubWorker {
 public:
-    CDDrawSurfaceChildA(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    CDDrawFrontSurface(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
         : CDrawSubWorker(owner, id, flags) {
         m_surface = NULL;
     }
 
-    virtual ~CDDrawSurfaceChildA() OVERRIDE;
+    virtual ~CDDrawFrontSurface() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;

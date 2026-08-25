@@ -52,24 +52,24 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 RVA(0x001504d0, 0x6c)
-void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
+void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
     CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
-    m_frameSet = spr;
+    m_imageSet = spr;
     if (spr) {
         CImage* f = spr->GetAt(frame);
         m_frameIndex = frame;
-        m_layer = f;
+        m_frameImage = f;
     }
 }
 
 RVA(0x00150540, 0x65)
-void CWwdGameObjectA::ApplyName(const char* name) {
+void CWwdSpriteObject::SetImageSetByName(const char* name) {
     CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
-    m_frameSet = spr;
+    m_imageSet = spr;
     if (spr) {
         i32 n = spr->m_minIndex;
         m_frameIndex = n;
-        m_layer = spr->GetAt(n);
+        m_frameImage = spr->GetAt(n);
     }
 }
 
@@ -79,15 +79,15 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
-#include <Wwd/WwdGameObjectGeometryInline.h>
+#include <Wwd/WwdSpriteAnimationInline.h>
 
 RVA(0x001505b0, 0x5e)
-i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
-    CAniElement* spr = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
-    if (!spr) {
+i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
+    CAniElement* animation = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
+    if (!animation) {
         return 0;
     }
-    APPLY_GEOMETRY_DIRECT(this, spr, applyDefault)
+    SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
     return 1;
 }
 
@@ -98,7 +98,7 @@ static inline SoundCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
 }
 
 RVA(0x00150610, 0x41)
-i32 CWwdGameObjectA::SetSoundCueByName(const char* name) {
+i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
     SoundCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
     if (cue == NULL) {
         return 0;
@@ -108,7 +108,7 @@ i32 CWwdGameObjectA::SetSoundCueByName(const char* name) {
 }
 
 RVA(0x00150660, 0x49)
-void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
+void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
     if (m_dirty.m_armed != -1) {
@@ -119,7 +119,7 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 }
 
 RVA(0x001506b0, 0x1ec)
-void CWwdGameObjectA::BltDirtyEx(
+void CWwdSpriteObject::BltDirtyEx(
     CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
@@ -148,7 +148,7 @@ void CWwdGameObjectA::BltDirtyEx(
 }
 
 RVA(0x001508a0, 0x117)
-void CWwdGameObjectA::BltDirtyRegions(
+void CWwdSpriteObject::BltDirtyRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
     CDDrawSurfacePair* restoreSrc
@@ -180,21 +180,21 @@ void CWwdGameObjectA::BltDirtyRegions(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001509c0, 0xab)
-i32 CWwdGameObjectA::Test() {
-    if (m_layer == NULL) {
+i32 CWwdSpriteObject::IntersectsViewport() {
+    if (m_frameImage == NULL) {
         return 0;
     }
     i32 sx = m_screenX;
-    i32 ax = m_layer->m_anchorX;
+    i32 ax = m_frameImage->m_anchorX;
     i32 right = sx + ax;
     i32 left = sx - ax;
     i32 sy = m_screenY;
-    i32 ay = m_layer->m_anchorY;
+    i32 ay = m_frameImage->m_anchorY;
     i32 top = sy - ay;
     i32 bottom = sy + ay;
     if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
-        RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_viewRect;
+        RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_planeViewRect;
         if (right < r->left) {
             return 0;
         }
@@ -207,7 +207,7 @@ i32 CWwdGameObjectA::Test() {
         return top <= r->bottom;
     } else {
 
-        CDDrawSurfaceChildA* g = OwnerMgr()->m_drawTarget->m_frontPair;
+        CDDrawFrontSurface* g = OwnerMgr()->m_drawTarget->m_frontSurface;
 
         i32 gw = g->m_width;
         i32 gh = g->m_height;
@@ -225,7 +225,7 @@ i32 CWwdGameObjectA::Test() {
 }
 
 RVA(0x00150a70, 0x89)
-i32 CWwdGameObjectA::Play(
+i32 CWwdSpriteObject::Play(
     CFileMemBase* ar,
     SerialMode mode,
     LogicTypeId typeId,
@@ -234,17 +234,17 @@ i32 CWwdGameObjectA::Play(
     if (ar == NULL) {
         return 0;
     }
-    if (m_animCursor.Find(ar, mode, typeId, self) == 0) {
+    if (m_animationCursor.ProcessSerialMode(ar, mode, typeId, self) == 0) {
         return 0;
     }
     switch (mode) {
         case SERIAL_SAVE:
-            if (ReadState(ar) == 0) {
+            if (WriteSpriteState(ar) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
-            if (SerializeSpriteName(ar) == 0) {
+            if (ReadSpriteState(ar) == 0) {
                 return 0;
             }
             break;
@@ -253,23 +253,23 @@ i32 CWwdGameObjectA::Play(
 }
 
 RVA(0x00150b00, 0x12b)
-i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
-    CFileMemBase* ar = src;
+i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
+    CFileMemBase* ar = stream;
     if (ar == NULL) {
         return 0;
     }
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_frameIndex, sizeof(m_frameIndex));
     i32 flag = 0;
-    if (m_layer != NULL) {
+    if (m_frameImage != NULL) {
         flag = 1;
     }
     ar->Write(&flag, sizeof(flag));
 
     char tmp[0x100];
     memset(tmp, 0, SERIAL_NAME_LEN);
-    if (m_frameSet != NULL) {
-        strcpy(tmp, m_frameSet->m_name);
+    if (m_imageSet != NULL) {
+        strcpy(tmp, m_imageSet->m_name);
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
@@ -282,8 +282,8 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
 }
 
 RVA(0x00150c30, 0x130)
-i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
-    CFileMemBase* ar = src;
+i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
+    CFileMemBase* ar = stream;
     if (ar == NULL) {
         return 0;
     }
@@ -291,7 +291,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     ar->Read(&m_frameIndex, sizeof(m_frameIndex));
     i32 flag;
     ar->Read(&flag, sizeof(flag));
-    m_frameSet = NULL;
+    m_imageSet = NULL;
 
     char name[0x100];
     ar->Read(name, SERIAL_NAME_LEN);
@@ -302,11 +302,11 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         mgr->m_imageRegistry->m_workersByName.Lookup(name, foundOb);
         found = static_cast<CDDrawWorker*>(foundOb);
-        m_frameSet = found;
+        m_imageSet = found;
         if (found != NULL && flag == 1) {
             i32 idx = m_frameIndex;
             CImage* frame = found->GetAt(idx);
-            m_layer = frame;
+            m_frameImage = frame;
         }
     }
 

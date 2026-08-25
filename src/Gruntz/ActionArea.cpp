@@ -19,7 +19,6 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
-#include <Gruntz/TypeColl2.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Image/ImageSet.h>
@@ -46,9 +45,9 @@ RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_timestamp = 0;
     m_duration = 0;
-    ApplyName("GAME_ACTIONAREA_RED");
+    SetImageSetByName("GAME_ACTIONAREA_RED");
     SET_ANIMATION_ACT("A");
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA)
     m_phase = 1;
     m_duration = 0;
@@ -89,13 +88,13 @@ i32 CActionArea::Tick() {
     if (*phase != 0) {
         i64 d2 = static_cast<i64>(g_frameTime) - *ts;
         double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
-        m_wwdObject->m_frameSet->SetAllLightLevels(
+        m_wwdObject->m_imageSet->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
         i64 d2 = static_cast<i64>(g_frameTime) - *ts;
         double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
-        m_wwdObject->m_frameSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
+        m_wwdObject->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }
@@ -106,16 +105,16 @@ RVA(0x00008580, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
     switch (static_cast<ActionAreaOwner>(owner)) {
         case ACTION_AREA_BLUE_OWNER: {
-            ApplyName("GAME_ACTIONAREA_BLUE");
+            SetImageSetByName("GAME_ACTIONAREA_BLUE");
 
-            CDDrawWorker* rec = m_wwdObject->m_frameSet;
+            CDDrawWorker* rec = m_wwdObject->m_imageSet;
             rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
         case ACTION_AREA_RED_OWNER: {
-            ApplyName("GAME_ACTIONAREA_RED");
+            SetImageSetByName("GAME_ACTIONAREA_RED");
 
-            CDDrawWorker* rec = m_wwdObject->m_frameSet;
+            CDDrawWorker* rec = m_wwdObject->m_imageSet;
             rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }

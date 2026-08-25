@@ -4,7 +4,7 @@
 
 // @early-stop
 RVA(0x00166d40, 0x24)
-i32 CImageSet1::Parse(WwdTileImageRecord* record) {
+i32 CUniformTileImageSet::Parse(WwdTileImageRecord* record) {
     READ_TILE_IMAGE_DIMENSIONS(record, p)
     m_collisionValue = *p++;
     return 1;

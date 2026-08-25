@@ -444,7 +444,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (id != 0) {
-        CWwdGameObjectA* object = m_object;
+        CWwdSpriteObject* object = m_object;
         CGruntzMgr* g = g_gameReg;
         if ((CGameLevel::PointInRect(&g->m_viewBounds, object->m_screenX, object->m_screenY))
             || forced != 0) {
@@ -460,6 +460,6 @@ i32 CGrunt::LoadPickupSprites(
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     SwitchAnimation(m_pickupGeoSrc);
-    ApplyName("GRUNTZ_PICKUPS");
+    SetImageSetByName("GRUNTZ_PICKUPS");
     return 1;
 }

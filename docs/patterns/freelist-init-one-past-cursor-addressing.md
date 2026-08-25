@@ -7,7 +7,7 @@ current element's stores as NEGATIVE displacements off the NEXT cursor
 cur-relative (`mov [eax+0x18],...`); compare/value arithmetic still uses cur
 confidence: mechanism proven by A/B; the source construct is UNMAPPED
 
-## The composed A/B ladder (CMapArrayA::Allocate 0x9e740, 2026-08-22)
+## The composed A/B ladder (CBrickzNodePool::Allocate 0x9e740, 2026-08-22)
 
 | spelling | score |
 |---|---|
@@ -32,7 +32,7 @@ must be written `next[-1]`, which no dev writes (user ruling).
 ## Disposition
 
 Parked at the banked humane spelling (87.52). The 95.80 composed state is
-evidence, not source. Sibling with identical state: CMapArrayB::Allocate
+evidence, not source. Sibling with identical state: CBrickzCellNodePool::Allocate
 0x9e860 (87.65 banked). If the RTM toolchain lands (provenance test), retry
 the banked spelling under it before any further source work. The earlier
 inlined-link-helper hypothesis is DEMOTED: the composed probe explains the

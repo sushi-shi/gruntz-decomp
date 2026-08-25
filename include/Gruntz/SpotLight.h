@@ -33,7 +33,7 @@ public:
     DoubleVector2 m_center;
     DoubleVector2 m_offset;
     double m_angle;
-    CWwdGameObjectA* m_focus;
+    CWwdSpriteObject* m_focus;
 
     i32 m_targetPlayerIndex;
     i32 m_targetUnitIndex;

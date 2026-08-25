@@ -24,9 +24,9 @@ case DEATH_QUICKFALL:
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_poseDeath = Lookup(s_DEATHZ_QUICKFALL);
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
-    m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+    m_value = m_wwdObject->m_animationCursor.m_animation;
+    m_wwdObject->SetAnimation(m_poseDeath, 0);
+    m_wwdObject->SetImageFrameByName(s_DEATHZ_FALL, DEATH_FRAME());
     DEATH_CUE(0x357);
     goto finalize;
 ```

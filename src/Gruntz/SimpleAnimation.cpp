@@ -48,7 +48,7 @@ RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_layer)
+    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
 RVA(0x000abc10, 0x102)
@@ -68,6 +68,6 @@ void RegisterSimpleAnimLogic() {
 
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }

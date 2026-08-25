@@ -31,14 +31,14 @@ RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_CREATION) {
         o->m_sortKey = SORTKEY_GRUNT_CREATION;
         i32 f = o->m_flags;
         f |= 0x20000;
         o->m_flags = f;
     }
-    SwitchGeometry("GAME_CYCLE100", 0);
+    SwitchAnimationByName("GAME_CYCLE100", 0);
 
     i32 idx = m_object->m_smarts;
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -89,7 +89,7 @@ i32 CGruntCreationPoint::SerializeMove(
         if (sel == NULL) {
             sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
-        CWwdGameObjectA* obj = m_object;
+        CWwdSpriteObject* obj = m_object;
         SET_DRAW_FILL(obj, SHADE_PAL_16, sel);
     }
     return 1;
@@ -113,6 +113,6 @@ void CGruntCreationPoint::RegisterActs() {
 
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }

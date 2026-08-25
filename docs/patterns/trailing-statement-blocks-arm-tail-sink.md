@@ -30,14 +30,14 @@ a new statement.
 if (!(targetCellFlags & 0x20000000)) {
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->m_eventCode = ActFindId(s_codeD);
-    m_value            = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(m_poseWalk);
+    m_value            = m_wwdObject->m_animationCursor.m_animation;
+    m_wwdObject->m_animationCursor.Setup(m_poseWalk);
 } else {
     if (!(currentCellFlags & 0x80)) { return 0; }
     m_entranceActive = 1;                       // arm-only, at the HEAD
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     /* ...identical... */
-    m_wwdObject->m_animCursor.Setup(m_poseWalk);
+    m_wwdObject->m_animationCursor.Setup(m_poseWalk);
 }
 GruntDirectionCell cell = m_entranceCell;
 

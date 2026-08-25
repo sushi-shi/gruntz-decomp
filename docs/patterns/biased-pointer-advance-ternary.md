@@ -24,6 +24,6 @@ SETNULL: xor eax,eax     ; e = 0
 TEST:    test eax,eax
 jne  TOP                 ; while(e)
 ```
-STEERABLE. Evidence: CHash FindByName (0x13c270/0x13c3f0) + FindTypeByTag
+STEERABLE. Evidence: CRezEntryIdHash FindByName (0x13c270/0x13c3f0) + FindTypeByTag
 (0x13c360) each 94%→100% / 92%→100% on the ternary rewrite
 (`src/Bute/Hash.cpp`); the four chain-walks went exact.

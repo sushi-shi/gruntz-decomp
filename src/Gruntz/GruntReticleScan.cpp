@@ -132,7 +132,7 @@ i32 CGrunt::ArrivalReticleScan() {
 
         if (radius < m_defenderRadius + m_reachRect.right) {
             if (m_blockedVoicePending != 0) {
-                const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(view, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);

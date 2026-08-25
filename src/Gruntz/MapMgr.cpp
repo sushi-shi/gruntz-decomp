@@ -40,18 +40,18 @@ RVA_DYNINIT(0x0009fdc0, 0x1a, s_gruntDirCenter)
     m_count = 0
 
 RVA(0x0009e700, 0xd)
-CMapArrayA::CMapArrayA() {
+CBrickzNodePool::CBrickzNodePool() {
     RESET_MAP_ARRAY_STORAGE;
 }
 
 RVA(0x0009e720, 0x5)
-CMapArrayA::~CMapArrayA() {
+CBrickzNodePool::~CBrickzNodePool() {
     Free();
 }
 
 // @early-stop
 RVA(0x0009e740, 0x76)
-i32 CMapArrayA::Allocate(u32 count) {
+i32 CBrickzNodePool::Allocate(u32 count) {
     m_storage = new BrickzNode[count];
     if (m_storage == NULL) {
         return 0;
@@ -78,7 +78,7 @@ i32 CMapArrayA::Allocate(u32 count) {
 }
 
 RVA(0x0009e7e0, 0x29)
-void CMapArrayA::Free() {
+void CBrickzNodePool::Free() {
     if (m_storage) {
         delete[] m_storage;
     }
@@ -86,18 +86,18 @@ void CMapArrayA::Free() {
 }
 
 RVA(0x0009e820, 0xd)
-CMapArrayB::CMapArrayB() {
+CBrickzCellNodePool::CBrickzCellNodePool() {
     RESET_MAP_ARRAY_STORAGE;
 }
 
 RVA(0x0009e840, 0x5)
-CMapArrayB::~CMapArrayB() {
+CBrickzCellNodePool::~CBrickzCellNodePool() {
     Free();
 }
 
 // @early-stop
 RVA(0x0009e860, 0x7a)
-i32 CMapArrayB::Allocate(u32 count) {
+i32 CBrickzCellNodePool::Allocate(u32 count) {
     m_storage = new BrickzCellNode[count];
     if (m_storage == NULL) {
         return 0;
@@ -125,7 +125,7 @@ i32 CMapArrayB::Allocate(u32 count) {
 }
 
 RVA(0x0009e900, 0x28)
-void CMapArrayB::Free() {
+void CBrickzCellNodePool::Free() {
     if (m_storage) {
         delete[] m_storage;
     }
@@ -174,10 +174,10 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
         m_rows[i] = m_cellPool + off;
         off += stride;
     }
-    if (m_colA.Allocate(count * 5) == 0) {
+    if (m_nodePool.Allocate(count * 5) == 0) {
         return 0;
     }
-    if (m_colB.Allocate(count * 5) == 0) {
+    if (m_cellNodePool.Allocate(count * 5) == 0) {
         return 0;
     }
     m_stepCb = callback;
@@ -210,8 +210,8 @@ void CMapMgr::Reset() {
         delete[] m_rows;
     }
 
-    m_colA.Free();
-    m_colB.Free();
+    m_nodePool.Free();
+    m_cellNodePool.Free();
 
     m_cellPool = NULL;
     m_rows = NULL;
@@ -280,14 +280,14 @@ i32 CMapMgr::Search(
     // the pool's last node as a permanent SENTINEL - the same invariant Expand
     // (0x9f2b6) and CellPush (0x9f48d) enforce.  Nulling m_freeList instead left
     // `seed` non-NULL, so the `seed == NULL` bail became dead: Search ran on the
-    // sentinel while m_colA.m_freeList was NULL, and the next Expand / Drain /
+    // sentinel while m_nodePool.m_freeList was NULL, and the next Expand / Drain /
     // ResetCells dereferenced that NULL head.
-    BrickzNode* seed = m_colA.m_freeList;
+    BrickzNode* seed = m_nodePool.m_freeList;
     BrickzNode* slot = seed->m_openNext;
     if (slot == NULL) {
         seed = NULL;
     } else {
-        m_colA.m_freeList = slot;
+        m_nodePool.m_freeList = slot;
         slot->m_openPrev = NULL;
     }
     if (seed == NULL) {
@@ -355,9 +355,9 @@ reached:
         m_stepCb();
     }
     node->m_openPrev = NULL;
-    node->m_openNext = m_colA.m_freeList;
-    m_colA.m_freeList->m_openPrev = node;
-    m_colA.m_freeList = node;
+    node->m_openNext = m_nodePool.m_freeList;
+    m_nodePool.m_freeList->m_openPrev = node;
+    m_nodePool.m_freeList = node;
     Drain();
     ResetCells();
     return 1;
@@ -450,12 +450,12 @@ relax:
     if (open != NULL) {
         return 1;
     }
-    BrickzNode* rec = m_colA.m_freeList;
+    BrickzNode* rec = m_nodePool.m_freeList;
     BrickzNode* nx = rec->m_openNext;
     if (nx == NULL) {
         rec = NULL;
     } else {
-        m_colA.m_freeList = nx;
+        m_nodePool.m_freeList = nx;
         nx->m_openPrev = NULL;
     }
     if (rec == NULL) {
@@ -533,12 +533,12 @@ BrickzNode* CMapMgr::PopFront() {
 RVA(0x0009f470, 0x62)
 void CMapMgr::CellPush(BrickzNode* node) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
-    BrickzCellNode* slot = m_colB.m_freeList;
+    BrickzCellNode* slot = m_cellNodePool.m_freeList;
     BrickzCellNode* nx = slot->m_cellNext;
     if (nx == NULL) {
         slot = NULL;
     } else {
-        m_colB.m_freeList = nx;
+        m_cellNodePool.m_freeList = nx;
         nx->m_cellPrev = NULL;
     }
     BrickzCellNode* old = *head;
@@ -593,10 +593,10 @@ void CMapMgr::Drain() {
         do {
             BrickzNode* cur = p;
             p = cur->m_openNext;
-            cur->m_openNext = m_colA.m_freeList;
+            cur->m_openNext = m_nodePool.m_freeList;
             cur->m_openPrev = NULL;
-            m_colA.m_freeList->m_openPrev = cur;
-            m_colA.m_freeList = cur;
+            m_nodePool.m_freeList->m_openPrev = cur;
+            m_nodePool.m_freeList = cur;
         } while (p != NULL);
     }
     m_openList = NULL;
@@ -613,14 +613,14 @@ void CMapMgr::ResetCells() {
             BrickzCellNode** link = &cur->m_cellNext;
             node = *link;
             BrickzNode* child = cur->m_searchNode;
-            child->m_openNext = m_colA.m_freeList;
+            child->m_openNext = m_nodePool.m_freeList;
             child->m_openPrev = NULL;
-            m_colA.m_freeList->m_openPrev = child;
-            m_colA.m_freeList = child;
+            m_nodePool.m_freeList->m_openPrev = child;
+            m_nodePool.m_freeList = child;
             cur->m_cellPrev = NULL;
-            *link = m_colB.m_freeList;
-            m_colB.m_freeList->m_cellPrev = cur;
-            m_colB.m_freeList = cur;
+            *link = m_cellNodePool.m_freeList;
+            m_cellNodePool.m_freeList->m_cellPrev = cur;
+            m_cellNodePool.m_freeList = cur;
         }
         cell->m_head = NULL;
         cell++;
@@ -671,15 +671,15 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     node->m_openPrev = NULL;
     node->m_openNext = NULL;
     node->m_cellLink = NULL;
-    slot->m_cellNext = m_colB.m_freeList;
+    slot->m_cellNext = m_cellNodePool.m_freeList;
     slot->m_cellPrev = NULL;
-    m_colB.m_freeList->m_cellPrev = slot;
-    m_colB.m_freeList = slot;
+    m_cellNodePool.m_freeList->m_cellPrev = slot;
+    m_cellNodePool.m_freeList = slot;
     if (flag != 0) {
-        node->m_openNext = m_colA.m_freeList;
+        node->m_openNext = m_nodePool.m_freeList;
         node->m_openPrev = NULL;
-        m_colA.m_freeList->m_openPrev = node;
-        m_colA.m_freeList = node;
+        m_nodePool.m_freeList->m_openPrev = node;
+        m_nodePool.m_freeList = node;
     }
 }
 

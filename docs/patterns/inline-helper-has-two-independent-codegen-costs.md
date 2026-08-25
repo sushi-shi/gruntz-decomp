@@ -16,7 +16,7 @@ VC5's front end. The inlined IL retains ownership and lifetime information which
 recolor a caller even when the emitted function has the same size, instruction count,
 call set, branch skeleton, and referents.
 
-`CImageSet3::Parse` is the controlled example. Its shared parser prefix was:
+`CPixelTileImageSet::Parse` is the controlled example. Its shared parser prefix was:
 
 ```cpp
 i32* p = &record->m_width;

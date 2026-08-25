@@ -5,7 +5,7 @@
 #include <string.h>
 
 RVA(0x001614b0, 0x1c)
-void CImageSet3::FreePixels() {
+void CPixelTileImageSet::FreePixels() {
     if (m_pixels) {
         delete[] m_pixels;
     }
@@ -13,22 +13,22 @@ void CImageSet3::FreePixels() {
 }
 
 RVA(0x001614d0, 0x6)
-i32 CImageSet3::GetKind() {
+i32 CPixelTileImageSet::GetKind() {
     return TILE_IMAGESET_PIXELS;
 }
 
 RVA(0x00161570, 0x1d)
-TileCollisionKind CImageSet3::GetCollisionAt(i32 x, i32 y) {
+TileCollisionKind CPixelTileImageSet::GetCollisionAt(i32 x, i32 y) {
     return static_cast<TileCollisionKind>(m_pixels[(y << m_heightLog2) + x]);
 }
 
 RVA(0x00161590, 0xb)
-i32 CImageSet3::GetStride() {
+i32 CPixelTileImageSet::GetStride() {
     return m_height * m_width + offsetof(WwdTileImageRecord, m_fields);
 }
 
 RVA(0x00166d70, 0x8d)
-i32 CImageSet3::Parse(WwdTileImageRecord* record) {
+i32 CPixelTileImageSet::Parse(WwdTileImageRecord* record) {
     READ_TILE_IMAGE_DIMENSIONS(record, p)
     i32 h = m_height;
     m_heightLog2 = 0;
@@ -51,7 +51,7 @@ i32 CImageSet3::Parse(WwdTileImageRecord* record) {
 }
 
 RVA(0x00166eb0, 0x6a)
-i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outValue) {
+i32 CPixelTileImageSet::ScanUp(i32 x, i32 y, i32* outY, i32* outValue) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     while (y > 0) {
@@ -67,7 +67,7 @@ i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outValue) {
 }
 
 RVA(0x00166f20, 0x52)
-i32 CImageSet3::ScanUpForValue(i32 x, i32 y, i32 value, i32* outY) {
+i32 CPixelTileImageSet::ScanUpForValue(i32 x, i32 y, i32 value, i32* outY) {
     i32 off = (y << m_heightLog2) + x;
     while (y > 0) {
         off -= m_width;
@@ -81,7 +81,7 @@ i32 CImageSet3::ScanUpForValue(i32 x, i32 y, i32 value, i32* outY) {
 }
 
 RVA(0x00166f80, 0x68)
-i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outValue) {
+i32 CPixelTileImageSet::ScanRight(i32 x, i32 y, i32* outX, i32* outValue) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     while (x < m_width - 1) {
@@ -97,7 +97,7 @@ i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outValue) {
 }
 
 RVA(0x00166ff0, 0x52)
-i32 CImageSet3::ScanRightForValue(i32 x, i32 y, i32 value, i32* outX) {
+i32 CPixelTileImageSet::ScanRightForValue(i32 x, i32 y, i32 value, i32* outX) {
     i32 off = (y << m_heightLog2) + x;
     while (x < m_width - 1) {
         ++x;
@@ -111,7 +111,7 @@ i32 CImageSet3::ScanRightForValue(i32 x, i32 y, i32 value, i32* outX) {
 }
 
 RVA(0x00167050, 0x74)
-i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outValue) {
+i32 CPixelTileImageSet::ScanDown(i32 x, i32 y, i32* outY, i32* outValue) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
     while (y < m_height - 1) {
@@ -127,7 +127,7 @@ i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outValue) {
 }
 
 RVA(0x001670d0, 0x5d)
-i32 CImageSet3::ScanDownForValue(i32 x, i32 y, i32 value, i32* outY) {
+i32 CPixelTileImageSet::ScanDownForValue(i32 x, i32 y, i32 value, i32* outY) {
     i32 off = (y << m_heightLog2) + x;
     while (y < m_height - 1) {
         off += m_width;

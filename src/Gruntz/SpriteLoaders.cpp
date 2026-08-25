@@ -194,7 +194,7 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, i32 forceVisible) {
         return 1;
     }
     if (forceVisible == 0 && static_cast<u32>(m_currentMs) < 0x2710
-        && static_cast<u32>(g_timer500) >= 0xfa) {
+        && static_cast<u32>(g_period500CountdownMs) >= 0xfa) {
         return 1;
     }
     if (m_frameMinTens) {

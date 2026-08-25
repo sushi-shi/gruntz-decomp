@@ -26,7 +26,7 @@ be COMDAT scatter or a mis-group. Confirm before splitting.
 - `src/Gruntz/GruntzMgr.cpp` — 2 blocks: 7@0x083030(game)  133@0x08b8c0(game)
 - `src/Gruntz/Multi.cpp` — 2 blocks: 23@0x08c490(game)  95@0x0b5460(game)
 - `src/Gruntz/Wormhole.cpp` — 2 blocks: 10@0x0088d0(game)  17@0x03fc70(game)
-- `src/Gruntz/ImageSet3.cpp` — 2 blocks: 4@0x1614b0(engine)  7@0x166d70(engine)
+- `src/Gruntz/PixelTileImageSet.cpp` — 2 blocks: 4@0x1614b0(engine)  7@0x166d70(engine)
 
 ## C. RE-HOME HINTS — unknown-class / bucket functions (10) · low confidence
 

@@ -75,36 +75,36 @@ public:
 // so four addresses prove four classes. The unwind funclets bind each address to
 // a member, and the hash/lookup bodies split the same way:
 //
-//   0x139c70  CHash   CRezArchiveType::m_idIndex     (this+0x1c)  ctor 0x184950
-//   0x139dd0  CHashC  CRezArchiveType::m_nameIndex   (this+0x24)  HashStr 0x13c240 FindByName 0x13c270
+//   0x139c70  CRezEntryIdHash   CRezArchiveType::m_idIndex     (this+0x1c)  ctor 0x184950
+//   0x139dd0  CRezEntryNameHash  CRezArchiveType::m_nameIndex   (this+0x24)  HashStr 0x13c240 FindByName 0x13c270
 //                     CRezArchive::m_freeEntries     (this+0x80)
-//   0x139ec0  CHashB  CRezArchiveDir::m_subdirectories (this+0x38) HashStr 0x13c3c0 FindByName 0x13c3f0
-//   0x139ed0  CHashD  CRezArchiveDir::m_types        (this+0x40)  HashTypeTag 0x13c350 FindTypeByTag 0x13c360
+//   0x139ec0  CRezDirectoryNameHash  CRezArchiveDir::m_subdirectories (this+0x38) HashStr 0x13c3c0 FindByName 0x13c3f0
+//   0x139ed0  CRezTypeTagHash  CRezArchiveDir::m_types        (this+0x40)  HashTypeTag 0x13c350 FindTypeByTag 0x13c360
 //
-// The retail NAMES are unrecoverable (each is an inline whose only image trace is
-// the dtor COMDAT); the letters follow the CMapArrayA/CMapArrayB house convention.
+// The original source spellings are unrecoverable, so the names below state the
+// proven key and value roles rather than preserving letter placeholders.
 
 // CRezArchiveType::m_idIndex. Only the out-of-line default ctor and the inline dtor are
 // reachable in the image - the resource-id index is populated only when
 // CRezArchive::m_useIdIndex is set, which nothing in retail does.
-class CHash : public CHashBase {
+class CRezEntryIdHash : public CHashBase {
 public:
-    CHash();
+    CRezEntryIdHash();
 
-    CHash(i32 bucketCount) : CHashBase(bucketCount) {}
+    CRezEntryIdHash(i32 bucketCount) : CHashBase(bucketCount) {}
 
     RVA(0x00139c70, 0x5)
-    ~CHash() {
+    ~CRezEntryIdHash() {
         RemoveAll();
     }
 };
 
 // CRezArchiveDir::m_subdirectories - archive directories keyed by name.
-class CHashB : public CHashBase {
+class CRezDirectoryNameHash : public CHashBase {
 public:
-    CHashB(i32 bucketCount) : CHashBase(bucketCount) {}
+    CRezDirectoryNameHash(i32 bucketCount) : CHashBase(bucketCount) {}
     RVA(0x00139ec0, 0x5)
-    ~CHashB() {
+    ~CRezDirectoryNameHash() {
         RemoveAll();
     }
 
@@ -113,11 +113,11 @@ public:
 };
 
 // CRezArchiveType::m_nameIndex and CRezArchive::m_freeEntries - archive entries keyed by name.
-class CHashC : public CHashBase {
+class CRezEntryNameHash : public CHashBase {
 public:
-    CHashC(i32 bucketCount) : CHashBase(bucketCount) {}
+    CRezEntryNameHash(i32 bucketCount) : CHashBase(bucketCount) {}
     RVA(0x00139dd0, 0x5)
-    ~CHashC() {
+    ~CRezEntryNameHash() {
         RemoveAll();
     }
 
@@ -126,11 +126,11 @@ public:
 };
 
 // CRezArchiveDir::m_types - archive resource types keyed by the integer type tag.
-class CHashD : public CHashBase {
+class CRezTypeTagHash : public CHashBase {
 public:
-    CHashD(i32 bucketCount) : CHashBase(bucketCount) {}
+    CRezTypeTagHash(i32 bucketCount) : CHashBase(bucketCount) {}
     RVA(0x00139ed0, 0x5)
-    ~CHashD() {
+    ~CRezTypeTagHash() {
         RemoveAll();
     }
 

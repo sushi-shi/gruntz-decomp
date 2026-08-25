@@ -88,34 +88,34 @@ RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 RVA(0x00045d30, 0x220)
 CFortressFlag::CFortressFlag(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdGameObjectA* o = m_object;
-    i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
+    CWwdSpriteObject* o = m_object;
+    i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, v)
     // The WWD `Smarts` slot is per-logic; for a fortress flag it carries the
     // owning warlord (docs/domain: Smarts is the team number 0-3).
     switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
         case WARLORDZ_KING:
-            ApplyName("GAME_FORTRESSFLAGZ_KING");
+            SetImageSetByName("GAME_FORTRESSFLAGZ_KING");
             break;
         case WARLORDZ_NAPOLEAN:
-            ApplyName("GAME_FORTRESSFLAGZ_NAPOLEAN");
+            SetImageSetByName("GAME_FORTRESSFLAGZ_NAPOLEAN");
             break;
         case WARLORDZ_PATTON:
-            ApplyName("GAME_FORTRESSFLAGZ_PATTON");
+            SetImageSetByName("GAME_FORTRESSFLAGZ_PATTON");
             break;
         case WARLORDZ_VIKING:
-            ApplyName("GAME_FORTRESSFLAGZ_VIKING");
+            SetImageSetByName("GAME_FORTRESSFLAGZ_VIKING");
             break;
         default:
             SetObjectFlags(0x10000);
             return;
     }
     SET_ANIMATION_ACT("A");
-    SwitchGeometry("GAME_CYCLE100", 0);
+    SwitchAnimationByName("GAME_CYCLE100", 0);
     SetObjectFlags(3);
     i32 idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
-    CWwdGameObjectA* spr = m_object;
+    CWwdSpriteObject* spr = m_object;
     SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
 }
 
@@ -137,7 +137,7 @@ void CFortressFlag::RegisterActs() {
 
 RVA(0x000463e0, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
@@ -150,7 +150,7 @@ i32 CFortressFlag::SerializeMove(
 ) {
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
-        CWwdGameObjectA* spr = m_object;
+        CWwdSpriteObject* spr = m_object;
         i32 idx = IDX(g_gameReg->m_players[spr->m_smarts].m_color);
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
@@ -265,7 +265,7 @@ RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
     SetObjectFlags(0x2000002);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
     m_object->m_dirty.m_armed = 0;
 }
@@ -287,9 +287,9 @@ void CParticlez::RegisterActs() {
 
 RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* o = m_wwdObject;
-    if (IsAniCursorComplete(&o->m_animCursor)) {
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    CWwdSpriteObject* o = m_wwdObject;
+    if (IsAniCursorComplete(&o->m_animationCursor)) {
         o->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 0;
@@ -298,10 +298,10 @@ i32 CParticlez::Update() {
 // @early-stop
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("GAME_EXPLOSION");
+    SetImageSetByName("GAME_EXPLOSION");
     SET_ANIMATION_ACT("A");
     SetObjectFlags(0x2000002);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
     m_object->m_dirty.m_armed = 0;
 }

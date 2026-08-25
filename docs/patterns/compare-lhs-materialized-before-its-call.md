@@ -15,13 +15,13 @@ first.
 ```cpp
 // ours - 2 instructions short, the compare reads memory AFTER the call
 if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
-    || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
+    || m_object->m_frameImage->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
 
 // retail - each LHS is materialised before its call
 i32 bigW = aux->m_width;
 i32 bigH;
 if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-    || (bigH = m_object->m_layer->m_height)
+    || (bigH = m_object->m_frameImage->m_height)
         >= g_buteMgr.GetInt("World", "BigActHeight")) {
 ```
 ```asm

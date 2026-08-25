@@ -70,10 +70,10 @@ i32 DispatchStatusBarSpriteLogic(CGameObject* obj) {
 RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("GAME_STATUSBARSPRITE");
-    SwitchGeometry("GAME_SINGLEIMAGEANI", 0);
+    SetImageSetByName("GAME_STATUSBARSPRITE");
+    SwitchAnimationByName("GAME_SINGLEIMAGEANI", 0);
     SET_ANIMATION_ACT("A");
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
 }
 
@@ -95,6 +95,6 @@ void CStatusBarSprite::RegisterActs() {
 
 RVA(0x0010c810, 0x17)
 i32 CStatusBarSprite::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }

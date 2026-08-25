@@ -22,7 +22,7 @@
 // one declines on its own budget and homes the COMDAT; then one visible body
 // in Grunt.h reproduces the split.
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
-    CWwdGameObjectA* object = grunt->m_object;
+    CWwdSpriteObject* object = grunt->m_object;
     i32 x = grunt->m_lastTilePx.m_x;
     if (object->m_screenX == x && object->m_screenY == grunt->m_lastTilePx.m_y) {
         return 1;

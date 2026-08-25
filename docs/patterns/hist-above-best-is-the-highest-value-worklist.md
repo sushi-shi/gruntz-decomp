@@ -43,7 +43,7 @@ compiler never saw:
 | `StreamFeeder::FillBuffer` | 100 -> 86.66 | type audio buffers `void*`->`u8*` | `= NULL` seeds on Lock out-pointers | **100 EXACT** |
 | `SoundBuffer::LockConvert` | 100 -> 90.09 | same | same | **100 EXACT** |
 | `SoundBuffer::LoadFromFile` | 100 -> 97.73 | same | same | **100 EXACT** |
-| `CDDrawWorkerMapSmall::LoadSizedPaletteFromSource` | 100 -> 91.28 | "model parse source length directly" | deleted a union pun's frame slot | **100 EXACT** |
+| `CDDrawPaletteRegistry::LoadSizedPaletteFromSource` | 100 -> 91.28 | "model parse source length directly" | deleted a union pun's frame slot | **100 EXACT** |
 
 The first three shared ONE cause: the typing pass seeded every
 `IDirectSoundBuffer::Lock` out-pointer with `= NULL`, two stores retail does not
@@ -88,7 +88,7 @@ copy, so the escaped sink is reloaded at every use
 ([inlined-member-this-copy-survives-the-escaped-out-param](inlined-member-this-copy-survives-the-escaped-out-param.md)).
 
 Classified as deliberate and left alone: `CRezImage::FlipVertical`,
-`CSBI_ImageSet::SetupImage`, `CWwdGameObjectA::BltDirtyEx`,
+`CSBI_ImageSet::SetupImage`, `CWwdSpriteObject::BltDirtyEx`,
 `UpdateChipGrinderStatusBar`, `CMinimap::Draw`,
 `ConvertRowDoubleFwd`, `CTileSecretTriggerLogic::Tick`,
 `FontRenderer::DrawGlyphRun` (its commit message even prints the 71.74 -> 68.10

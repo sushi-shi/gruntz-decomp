@@ -115,9 +115,9 @@ Four false-positive classes, each observed on a flagged row:
 * **Shared-inline expansion.** The run comes from an inline expanded at N
   sites. If any sibling expansion is EXACT the order is already proven.
   `CGameLevel::SetCoordExtents` (84.28) flags on the scroll-parameter block,
-  but `SetCoords`, `ResetParamBlock`, `LoadFileWithCoords`,
+  but `SetCoords`, `ResetSpatialDefaults`, `LoadFileWithCoords`,
   `LoadSourceWithCoords` and `LoadWwdWithCoords` all expand the same
-  `SetParamBlockDefaults()` at 100.00 - so the block's declaration order is
+  `SetSpatialDefaults()` at 100.00 - so the block's declaration order is
   correct and the residue is one immediate store filling a load-use shadow.
 * **Regalloc serialization.** Retail keeps two constants live in two
   registers; ours funnels both through EAX, which FORCES the group reorder.

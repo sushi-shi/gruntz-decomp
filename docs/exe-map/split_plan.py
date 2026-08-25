@@ -134,7 +134,7 @@ def main():
     # ---- HEADER-INLINE: any method scattered from its own CLASS body, when the class
     # is otherwise all in ONE file (correctly grouped). The scattered RVA is the linker's
     # deduped copy of an inline/template/static member defined in a header -> reconstruct
-    # it INLINE in the class header, not moved to any .cpp. (No size gate: WrapCoord 172B,
+    # it INLINE in the class header, not moved to any .cpp. (No size gate: WorldToViewport 172B,
     # _zvec::GrowTo 267B and the WwdFile statics are inline too, just larger.) ----
     inline = []
     for c, ms in by_class.items():

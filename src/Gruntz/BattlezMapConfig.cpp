@@ -1626,7 +1626,7 @@ void*& CGruntCoordList::NextData(POSITION& pos) {
 
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(Coord* out) {
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     i32 y = o->m_screenY;
     i32 x = o->m_screenX;
     out->m_x = x;
@@ -3686,7 +3686,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         unit->m_blockedVoicePending = 0;
                         CGameObject* lvl = unit->m_object;
 
-                        RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                        RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                         if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                             g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
@@ -4788,8 +4788,8 @@ void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     result.m_y = y >> sy;
     result.m_x <<= sx;
     result.m_y <<= sy;
-    result.m_x += m_tilePxW / 2;
-    result.m_y += m_tilePxH / 2;
+    result.m_x += m_tileWidthPx / 2;
+    result.m_y += m_tileHeightPx / 2;
     *out = result;
 }
 

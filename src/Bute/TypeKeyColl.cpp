@@ -79,12 +79,12 @@ CVariantSlot g_rezArchiveErrorSlot("zSymTab: ");
 // the body optimises to a bare `ret`, which is why the pin is 1 byte. It is the
 // fifth and last of this compiland's initializers, so the definition has to stay
 // below the four CVariantSlots.
-RVA_DYNINIT(0x0016e180, 0x5, g_recs23)
-RVA_DYNINIT(0x0016e190, 0x1, g_recs23)
+RVA_DYNINIT(0x0016e180, 0x5, g_variantOverrides)
+RVA_DYNINIT(0x0016e190, 0x1, g_variantOverrides)
 DATA(0x002bf498)
-TypeKeyRec g_recs23[32];
+TypeKeyRec g_variantOverrides[32];
 DATA(0x002bf618)
-i32 g_recCount23;
+i32 g_variantOverrideCount;
 
 RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
@@ -418,7 +418,7 @@ void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
         return;
     }
     i32 idx;
-    if (g_recCount23 != 0) {
+    if (g_variantOverrideCount != 0) {
 
         AddrWord<zErrHandling> k;
         k.m_addr = key;
@@ -439,9 +439,9 @@ void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
         }
     } else {
         if (m_typeTag == VARIANT_SLOT_CALLBACK) {
-            g_recs23[idx].m_callback(name, value);
+            g_variantOverrides[idx].m_callback(name, value);
         } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
-            g_recs23[idx].m_value = static_cast<short>(value);
+            g_variantOverrides[idx].m_value = static_cast<short>(value);
         }
     }
 }
@@ -761,12 +761,12 @@ RVA(0x0016e1d0, 0x4b)
 i32 CVariantSlot::Find(i32 key) {
 
     i32 lo = 0;
-    i32 hi = g_recCount23 - 1;
+    i32 hi = g_variantOverrideCount - 1;
     if (hi >= 0) {
         do {
             i32 mid = (hi + lo) / 2;
             m_searchIndex = mid;
-            i32 d = g_recs23[mid].m_key - key;
+            i32 d = g_variantOverrides[mid].m_key - key;
             if (d < 0) {
                 lo = mid + 1;
             } else if (d <= 0) {
@@ -848,7 +848,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 // @early-stop
 RVA(0x0016e360, 0x11a)
 VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
-    int count = g_recCount23;
+    int count = g_variantOverrideCount;
     if (val != NULL && count >= 0x20) {
         return NULL;
     }
@@ -865,32 +865,32 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
         if (val == NULL) {
             return NULL;
         }
-        if (g_recCount23 != 0) {
+        if (g_variantOverrideCount != 0) {
             memcpy(
-                &g_recs23[m_searchIndex + 1],
-                &g_recs23[m_searchIndex],
-                (g_recCount23 - m_searchIndex) * sizeof(TypeKeyRec)
+                &g_variantOverrides[m_searchIndex + 1],
+                &g_variantOverrides[m_searchIndex],
+                (g_variantOverrideCount - m_searchIndex) * sizeof(TypeKeyRec)
             );
         }
-        g_recs23[m_searchIndex].m_callback = val;
+        g_variantOverrides[m_searchIndex].m_callback = val;
         AddrWord<zErrHandling> nk;
         nk.m_addr = key;
-        g_recs23[m_searchIndex].m_key = nk.m_word;
-        g_recCount23 = g_recCount23 + 1;
-        g_recs23[m_searchIndex].m_value = 0;
+        g_variantOverrides[m_searchIndex].m_key = nk.m_word;
+        g_variantOverrideCount = g_variantOverrideCount + 1;
+        g_variantOverrides[m_searchIndex].m_value = 0;
         return NULL;
     }
-    VariantCallback old = g_recs23[idx].m_callback;
+    VariantCallback old = g_variantOverrides[idx].m_callback;
     if (val != NULL) {
-        g_recs23[idx].m_callback = val;
+        g_variantOverrides[idx].m_callback = val;
         return old;
     }
     memcpy(
-        &g_recs23[m_searchIndex],
-        &g_recs23[m_searchIndex + 1],
-        (g_recCount23 - m_searchIndex - 1) * sizeof(TypeKeyRec)
+        &g_variantOverrides[m_searchIndex],
+        &g_variantOverrides[m_searchIndex + 1],
+        (g_variantOverrideCount - m_searchIndex - 1) * sizeof(TypeKeyRec)
     );
-    g_recCount23 = g_recCount23 - 1;
+    g_variantOverrideCount = g_variantOverrideCount - 1;
     return old;
 }
 

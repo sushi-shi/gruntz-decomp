@@ -26,11 +26,11 @@ argument), so it still hoists. In the bottom row it is inside `CWapX::Hide`'s ex
 
 ```cpp
 class CWapX {
-    CWwdGameObjectA* m_wwdObject;          // the receiver the ctor body reads first
+    CWwdSpriteObject* m_wwdObject;          // the receiver the ctor body reads first
     void Hide() { m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN; }
     void SetObjectFlags(i32 bits) { m_wwdObject->m_flags |= bits; }
-    void ApplyName(const char* n) { m_wwdObject->ApplyName(n); }
-    void ApplyLookupSprite(const char* n, i32 f) { m_wwdObject->ApplyLookupSprite(n, f); }
+    void SetImageSetByName(const char* n) { m_wwdObject->SetImageSetByName(n); }
+    void SetImageFrameByName(const char* n, i32 f) { m_wwdObject->SetImageFrameByName(n, f); }
 };
 
 CWayPoint::CWayPoint(CGameObject* o) : CUserLogic(o, CUserLogic::INLINE_BASE), CWapX(o) {
@@ -64,9 +64,9 @@ header) reached EXACT, and only moved when its own first statement was converted
 Sites found by scanning every `CWapX`-derived ctor for a first body statement still
 written out through `m_wwdObject`, converting only that statement:
 
-`CBoomerang` 97.23 -> **100.000 EXACT**, `CExplosion` 92.30 -> 95.77 (`ApplyName`),
-`CTeleporter` 92.02 -> 96.03, `CGruntVoice` 94.75 -> 97.58 (`ApplyName`),
-`CActionArea` 96.55 -> 99.54 (`ApplyName`), `CTimeBomb` 88.21 -> 91.02,
+`CBoomerang` 97.23 -> **100.000 EXACT**, `CExplosion` 92.30 -> 95.77 (`SetImageSetByName`),
+`CTeleporter` 92.02 -> 96.03, `CGruntVoice` 94.75 -> 97.58 (`SetImageSetByName`),
+`CActionArea` 96.55 -> 99.54 (`SetImageSetByName`), `CTimeBomb` 88.21 -> 91.02,
 `CPathHazard` -> 98.95, `CWormhole` 94.24 -> 94.54, `CGruntPuddle` 55.87 -> 56.17.
 Sibling `CGameObject` destructors take the same lever from the other side —
 [dtor-cleanup-writes-are-inline-members-that-pin-the-member-dtor-lea.md](dtor-cleanup-writes-are-inline-members-that-pin-the-member-dtor-lea.md).
@@ -91,7 +91,7 @@ measured negative controls, one build each:
 * `CUserLogic::SnapToTileCenter()` for the 14-site `m_object->m_screenX/Y =
   (… & ~TILE_MASK_PX) + TILE_HALF_PX` pair: inert at CVoiceTrigger / CExitTrigger /
   CGruntCreationPoint (98.32 / 97.76 / 81.97 unchanged), 8 fresh sub-bank rows.
-* `CWapX::SaveAnimation()` for the 121-site `m_value = m_wwdObject->m_animCursor.
+* `CWapX::SaveAnimation()` for the 121-site `m_value = m_wwdObject->m_animationCursor.
   m_animation;`: at `CAniCycle`'s site - which is inside an `if`, not the ctor's first
   statement - it made things WORSE, 94.62 -> 93.23.
 

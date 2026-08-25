@@ -11,43 +11,43 @@ class CWwdGrid;
 class CWwdGameObject;
 
 struct CWwdSpatialMgr {
-    CDDrawChildGroup* m_mgr;
-    CWwdGrid* m_grid0;
-    CWwdGrid* m_grid1;
-    CWwdGrid* m_grid2;
+    CDDrawChildGroup* m_activeGroup;
+    CWwdGrid* m_defaultRegionGrid;
+    CWwdGrid* m_largeRegionGrid;
+    CWwdGrid* m_smallRegionGrid;
 
-    RECT m_rect0;
-    RECT m_rect2;
-    RECT m_rect1;
-    i32 m_org0x, m_org0y;
-    i32 m_org1x, m_org1y;
-    i32 m_org2x, m_org2y;
-    RECT m_bounds;
-    i32 m_scrollX;
-    i32 m_scrollY;
+    RECT m_defaultRegionRect;
+    RECT m_smallRegionRect;
+    RECT m_largeRegionRect;
+    i32 m_defaultRegionHalfWidth, m_defaultRegionHalfHeight;
+    i32 m_largeRegionHalfWidth, m_largeRegionHalfHeight;
+    i32 m_smallRegionHalfWidth, m_smallRegionHalfHeight;
+    RECT m_levelBounds;
+    i32 m_activeCenterX;
+    i32 m_activeCenterY;
     CWwdGridIter m_iter;
-    CWwdGrid* m_curGrid;
+    CWwdGrid* m_iterationGrid;
 
     CWwdSpatialMgr();
     ~CWwdSpatialMgr();
 
     i32 Init(
         CDDrawChildGroup* owner,
-        RECT* rc,
-        i32* cellA,
-        i32* cellB,
-        i32* cellC,
-        i32* sizeA,
-        i32* sizeB,
-        i32* sizeC
+        RECT* levelBounds,
+        i32* defaultGridCellSize,
+        i32* largeGridCellSize,
+        i32* smallGridCellSize,
+        i32* defaultRegionSize,
+        i32* largeRegionSize,
+        i32* smallRegionSize
     );
     void FreeGrids();
-    i32 ScrollTo(i32 dx, i32 dy);
-    i32 GetSize();
-    i32 CountInRect(CWwdGrid* grid);
-    i32 Relocate(i32 newX, i32 newY);
+    i32 ActivateAt(i32 centerX, i32 centerY);
+    i32 ActivateKeepActiveObjects();
+    i32 ActivateKeepActiveFromGrid(CWwdGrid* grid);
+    i32 DeactivateOutside(i32 centerX, i32 centerY);
     i32 PruneCount();
-    void RemoveObject(CWwdGameObject* obj);
+    void ParkObject(CWwdGameObject* obj);
     i32 FlushAll();
     i32 FlushGrid(CWwdGrid* grid);
     i32 ForEach(void(__cdecl* cb)(CGameObject*));
@@ -61,11 +61,11 @@ struct CWwdSpatialMgr {
 // m_iter sub-object dtor, which is what raises its /GX trylevel). The one
 // out-of-line COMDAT copy of the dtor is emitted by LevelPlane.cpp for Unload.
 inline CWwdSpatialMgr::CWwdSpatialMgr() {
-    m_mgr = NULL;
-    m_grid0 = NULL;
-    m_grid1 = NULL;
-    m_grid2 = NULL;
-    m_curGrid = NULL;
+    m_activeGroup = NULL;
+    m_defaultRegionGrid = NULL;
+    m_largeRegionGrid = NULL;
+    m_smallRegionGrid = NULL;
+    m_iterationGrid = NULL;
 }
 
 inline CWwdSpatialMgr::~CWwdSpatialMgr() {

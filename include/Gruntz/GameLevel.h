@@ -26,15 +26,15 @@ static const i32 TILE_CLEAR = -1;
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            if (px_ >= (LVL)->m_mainPlane->m_wrapW) {                                              \
-                px_ = (LVL)->m_mainPlane->m_wrapW - 1;                                             \
+            if (px_ >= (LVL)->m_mainPlane->m_planePixelWidth) {                                    \
+                px_ = (LVL)->m_mainPlane->m_planePixelWidth - 1;                                   \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            if (py_ >= (LVL)->m_mainPlane->m_wrapH) {                                              \
-                py_ = (LVL)->m_mainPlane->m_wrapH - 1;                                             \
+            if (py_ >= (LVL)->m_mainPlane->m_planePixelHeight) {                                   \
+                py_ = (LVL)->m_mainPlane->m_planePixelHeight - 1;                                  \
             }                                                                                      \
         }                                                                                          \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
@@ -42,9 +42,9 @@ static const i32 TILE_CLEAR = -1;
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
         i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 idx_ = pl_->m_rowOffsets[qy_] + col_;                                                  \
+        i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
-        i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
+        i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
         if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
@@ -66,15 +66,15 @@ static const i32 TILE_CLEAR = -1;
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            if (px_ >= (LVL)->m_mainPlane->m_wrapW) {                                              \
-                px_ = (LVL)->m_mainPlane->m_wrapW - 1;                                             \
+            if (px_ >= (LVL)->m_mainPlane->m_planePixelWidth) {                                    \
+                px_ = (LVL)->m_mainPlane->m_planePixelWidth - 1;                                   \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            if (py_ >= (LVL)->m_mainPlane->m_wrapH) {                                              \
-                py_ = (LVL)->m_mainPlane->m_wrapH - 1;                                             \
+            if (py_ >= (LVL)->m_mainPlane->m_planePixelHeight) {                                   \
+                py_ = (LVL)->m_mainPlane->m_planePixelHeight - 1;                                  \
             }                                                                                      \
         }                                                                                          \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
@@ -134,8 +134,8 @@ public:
     virtual i32 LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords);
     virtual i32 LoadSourceWithCoords(CRezArchiveEntry* src, LevelCoordRect* coords);
     virtual i32 LoadFileWithCoords(const char* path, LevelCoordRect* coords);
-    virtual i32 SetCoords(LevelCoordRect* coords);
-    virtual i32 SetCoordExtents(i32 w, i32 h);
+    virtual i32 SetViewportRect(LevelCoordRect* coords);
+    virtual i32 SetViewportSize(i32 w, i32 h);
     virtual i32 LoadWwd(WwdHeader* hdr);
     virtual i32 LoadFromSource(CRezArchiveEntry* source);
     virtual i32 LoadFromFile(const char* path);
@@ -145,28 +145,28 @@ public:
 
     // The scroll/zoom parameter block's defaults. TWO entities, both in retail:
     // this inline (expanded at the six sites in GameLevel.cpp) and the dead
-    // out-of-line ResetParamBlock below (0x15d170, zero callers in the image).
+    // out-of-line ResetSpatialDefaults below (0x15d170, zero callers in the image).
     // cl 5 cannot produce both shapes from one definition - see
     // docs/patterns/two-shapes-need-two-entities.md.
-    void SetParamBlockDefaults() {
-        m_pairA[0] = 500;
-        m_pairA[1] = 250;
-        m_pairB[0] = 1000;
-        m_pairB[1] = 1000;
-        m_pairC[0] = 250;
-        m_pairC[1] = 125;
-        m_rectA.w = 1600;
-        m_rectA.h = 1200;
-        m_rectB.w = 2560;
-        m_rectB.h = 1920;
-        m_rectC.w = 768;
-        m_rectC.h = 576;
+    void SetSpatialDefaults() {
+        m_defaultActiveGridCellSize[0] = 500;
+        m_defaultActiveGridCellSize[1] = 250;
+        m_largeActiveGridCellSize[0] = 1000;
+        m_largeActiveGridCellSize[1] = 1000;
+        m_smallActiveGridCellSize[0] = 250;
+        m_smallActiveGridCellSize[1] = 125;
+        m_defaultActiveRegionSize.w = 1600;
+        m_defaultActiveRegionSize.h = 1200;
+        m_largeActiveRegionSize.w = 2560;
+        m_largeActiveRegionSize.h = 1920;
+        m_smallActiveRegionSize.w = 768;
+        m_smallActiveRegionSize.h = 576;
     }
 
     // Out-of-line, and retail's copy is never called: nothing in .text or .data
     // references 0x15d170. Kept because /INCREMENTAL (the ILT thunk band) implies
     // /OPT:NOREF, so retail's linker shipped it.
-    void ResetParamBlock();
+    void ResetSpatialDefaults();
 
     // Half-open bounds test. Retail expands this inline and, separately, calls the
     // out-of-line PointInBounds below (0x6b330, 30 call sites through ILT thunk
@@ -189,11 +189,11 @@ public:
     i32 DeactivateDistantObjectsOnMainPlane();
     void MainPlaneNotify();
 
-    void BuildAllPlanes(LevelCoordRect* coords);
+    void UpdatePlaneViewports(LevelCoordRect* coords);
 
     i32 ValidateAllPlanes(char* errOut);
 
-    i32 SetExtentsAndBuildAll(i32 w, i32 h);
+    i32 SetViewportSizeAndUpdatePlanes(i32 w, i32 h);
 
     void SyncToMainIndex(CDDrawSurfacePair* visitor);
 
@@ -298,7 +298,7 @@ private:
     i32 ResolveTopY(CGameObject* t, i32 x, i32 y);
 
 public:
-    LevelCoordRect m_planeCtx;
+    LevelCoordRect m_viewportRect;
     CObArray m_array20;
     CObArray m_planes;
     CObArray m_imageSets;
@@ -309,13 +309,13 @@ public:
     char m_levelName[0xac - 0x6c];
     u32 m_checksum;
 
-    i32 m_pairA[2];
-    i32 m_pairB[2];
-    i32 m_pairC[2];
+    i32 m_defaultActiveGridCellSize[2];
+    i32 m_largeActiveGridCellSize[2];
+    i32 m_smallActiveGridCellSize[2];
 
-    LevelDims m_rectA;
-    LevelDims m_rectB;
-    LevelDims m_rectC;
+    LevelDims m_defaultActiveRegionSize;
+    LevelDims m_largeActiveRegionSize;
+    LevelDims m_smallActiveRegionSize;
     WwdHeader m_header;
 };
 

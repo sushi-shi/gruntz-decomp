@@ -36,7 +36,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x008710` | `??0?$zDArray@P8CUserLogic@@AEHXZ@@QAE@HH@Z` | zdarrayderived | `0x8710` ? |
 | `0x008a40` | `?BuildLogicTypeTable@CUserLogic@@QAEXPAUCGameObject@@@Z` | userlogic | `0x8a40` ? |
 | `0x008c00` | `?Chain@CWapX@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicType` | userlogic | `0x8c00` ? |
-| `0x00a000` | `?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z` | wwdfile | `0xa000` ? |
+| `0x00a000` | `?WorldToViewport@CDDrawWorkerHost@@QAEXPAJ0@Z` | wwdfile | `0xa000` ? |
 | `0x00a3b0` | `?RegisterGameObjectLogicTypes@@YAXPAVCDDrawSurfaceMgr@@@Z` | gameobjectlogictypes | `0xa3b0` ? |
 | `0x00d170` | `?SaveGame@@YAHPAVCGruntzMgr@@PAD@Z` | gamesave | `0xd170` ? |
 | `0x00d210` | `?ParseSerial@@YAHPAVCGruntzMgr@@PAD@Z` | serialobjectfactory | `0xd210` ? |
@@ -80,7 +80,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x050a50` | `?SetupTubeAnim@CGrunt@@QAEHH@Z` | grunttubeanim | `0x50a50` ? |
 | `0x0555e0` | `?LoadStateRecord@CGrunt@@QAEHPAVCFileMemBase@@@Z` | gamestaterecordload | `0x555e0` ? |
 | `0x056eb0` | `?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z` | gruntdatarecord | `0x56eb0` ? |
-| `0x058b60` | `?ApplyGeometryDirect@CWwdGameObjectA@@QAEXPAVCAniElement@@H@` | wwdgeometryapply | `0x56f80` gruntcombat |
+| `0x058b60` | `?SetAnimation@CWwdSpriteObject@@QAEXPAVCAniElement@@H@` | wwdgeometryapply | `0x56f80` gruntcombat |
 | `0x060150` | `?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z` | gruntassetloaders | `0x60150` ? |
 | `0x0612a0` | `?LoadGruntDecayConfig@CGrunt@@QAEHXZ` | gruntbehaviorleaf | `0x612a0` ? |
 | `0x061570` | `?LoadGruntDecayConfig2@CGrunt@@QAEHXZ` | gruntbehaviorleaf | `0x61570` ? |
@@ -402,9 +402,9 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - gamelevel (`cpp`) — src/Gruntz/GameLevel.cpp
 - gamelevelmove (`cpp`) — src/Wwd/GameLevelMove.cpp
 - levelplane (`cpp`) — src/DDrawMgr/LevelPlane.cpp
-- imageset1 (`cpp-rtti`) — src/Gruntz/ImageSet1.cpp
-- imageset2 (`cpp-rtti`) — src/Gruntz/ImageSet2.cpp
-- imageset3g (`cpp-rtti`) — src/Gruntz/ImageSet3.cpp
+- imageset1 (`cpp-rtti`) — src/Gruntz/UniformTileImageSet.cpp
+- imageset2 (`cpp-rtti`) — src/Gruntz/RectTileImageSet.cpp
+- imageset3g (`cpp-rtti`) — src/Gruntz/PixelTileImageSet.cpp
 - filestream (`cpp`) — src/Io/FileStream.cpp
 - savegame (`cpp`) — src/Io/SaveGame.cpp
 - savegamedialogs (`cpp-rtti`) — src/Io/SaveGameDialogs.cpp
@@ -565,7 +565,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - fader (`cpp`) — src/DDrawMgr/Fader.cpp
 - fadereffects (`cpp`) — src/DDrawMgr/FaderEffects.cpp
 - engstrrendertext (`cpp`) — src/Wap32/EngStrRenderText.cpp
-- fxmodedesc (`cpp-rtti`) — src/Gruntz/FxModeDesc.cpp
+- fxmodedesc (`cpp-rtti`) — src/Gruntz/ButeSectionKey.cpp
 - blowfish (`cpp`) — src/Crypto/Blowfish.cpp
 - simpleanimation (`cpp-rtti`) — src/Gruntz/SimpleAnimation.cpp
 - behindcandyani (`cpp-rtti`) — src/Gruntz/BehindCandyAni.cpp
@@ -584,7 +584,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - buteglobals (`cpp-noeh`) — src/Bute/ButeGlobals.cpp
 - feccrypt (`cpp`) — src/Crypto/FecCrypt.cpp
 - ddpagemgr (`cpp`) — src/DDrawMgr/DDPageMgr.cpp
-- imageset3 (`cpp`) — src/Image/ImageSet3.cpp
+- imageset3 (`cpp`) — src/Image/PixelTileImageSet.cpp
 - netcmdslot (`cpp`) — src/Net/NetCmdSlot.cpp
 - netsessionmgr (`cpp-rtti`) — src/Net/NetSessionMgr.cpp
 - netlobbydialogs (`cpp-rtti`) — src/Net/LobbyDialogs.cpp

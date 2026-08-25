@@ -39,7 +39,7 @@ EnsureHitLogic(LookupObj(OwnerMgr()->m_workerCache->m_workers, key));
 ```
 
 Retail's own source clearly used such helpers: in `WwdGameObject.cpp` the two
-functions that were already EXACT (`ApplyName`, `ApplyLookupGeometry`) are the
+functions that were already EXACT (`SetImageSetByName`, `SetAnimationByName`) are the
 two that call a helper, and the four below 100 were the ones with the local
 inline. That asymmetry inside one TU is the detection signature.
 
@@ -64,14 +64,14 @@ at where the zero-store lands relative to that call's pushes. Two shortcuts:
 | function | before | after |
 |---|---|---|
 | `CGameObject::AddLogicHit/Attack/Bump` 0x150f50/0x151030/0x151110 | 89.47 | **100.00** |
-| `CWwdGameObjectA::ApplyLookupSprite` 0x1504d0 | 94.29 | **100.00** |
+| `CWwdSpriteObject::SetImageFrameByName` 0x1504d0 | 94.29 | **100.00** |
 | `CGrunt::BuildEntranceAnimation` 0x67bd0 (5 sites) | 83.82 | **100.00** |
 | `CGrunt::LoadWingzGruntSprites` 0x68880 (8 sites) | 89.80 | 93.75 |
 | `CWarlord::CWarlord` 0x42d40 (11 sites, was a block macro) | 78.84 | 93.08 |
 | `CWarpStoneFly::Init` 0x109bd0 | 91.33 | 96.62 |
 | `CDDrawChildGroup::PruneOrphans` 0x15b1d0 | 93.75 | **100.00** |
 
-`ApplyLookupSprite` had carried an `@early-stop` reading "96 mixed TU states and
+`SetImageFrameByName` had carried an `@early-stop` reading "96 mixed TU states and
 35 local variants were byte-identical at this remaining slot" - none of those
 variants moved the local's OWNERSHIP, which is the only lever that reaches it.
 
@@ -145,8 +145,8 @@ This refines the `LoadCursorAnimation` counter-example in
 under (b) (`LookupWorker(m_world, key)`), so "no literal push to schedule behind"
 was the wrong reading - the receiver shape was.
 
-More sites closed with the same two shapes: `CDDrawWorkerMapSmall::RemoveByKey`
-0x165d30 77.66 -> **100.00**, `CDDrawWorkerB::Helper` 0x166040 95.00 -> **100.00**,
+More sites closed with the same two shapes: `CDDrawPaletteRegistry::RemovePaletteByName`
+0x165d30 77.66 -> **100.00**, `CDDrawFrameWorker::Helper` 0x166040 95.00 -> **100.00**,
 `CWwdGameObject::CreateNamed` 0x166780 94.12 -> **100.00**,
 `CSpriteRefTable::LoadGruntzPalette` 0xe2d10 96.92 -> **100.00**,
 `CDDrawWorkerHost::Read` 0x161640 96.72 -> 97.36,

@@ -11,9 +11,9 @@ RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)
 
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
-    ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
+    SetImageFrameByName("GAME_GRUNTTOYTIMESPRITE", 1);
     SET_ANIMATION_ACT("A");
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_displayedValue = 0;
     m_yOffset = -0x20;

@@ -8,12 +8,12 @@ REGALLOC or CFG with matching call and branch counts
 confidence: 9/10 (CFrontCandyAni::CFrontCandyAni 0xacf40 91.19 -> 100.00 EXACT,
 CBehindCandyAni::CBehindCandyAni 0xad540 94.54 -> 97.64)
 
-`CUserLogic::SwitchGeometry` is
+`CUserLogic::SwitchAnimationByName` is
 
 ```cpp
-i32 SwitchGeometry(const char* key, i32 flag) {
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    return m_wwdObject->ApplyLookupGeometry(key, flag);
+i32 SwitchAnimationByName(const char* key, i32 flag) {
+    m_value = m_wwdObject->m_animationCursor.m_animation;
+    return m_wwdObject->SetAnimationByName(key, flag);
 }
 ```
 
@@ -24,14 +24,14 @@ rather than through a value the caller already has in a register.
 
 ```cpp
 // ours - reads the guard's zero, stores after the call
-if (m_wwdObject->m_animCursor.m_animation == NULL) {
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_value = m_wwdObject->m_animCursor.m_animation;
+if (m_wwdObject->m_animationCursor.m_animation == NULL) {
+    m_wwdObject->SetAnimationByName("GAME_CYCLE100", 0);
+    m_value = m_wwdObject->m_animationCursor.m_animation;
 }
 
 // retail
-if (m_wwdObject->m_animCursor.m_animation == NULL) {
-    SwitchGeometry("GAME_CYCLE100", 0);
+if (m_wwdObject->m_animationCursor.m_animation == NULL) {
+    SwitchAnimationByName("GAME_CYCLE100", 0);
 }
 ```
 
@@ -43,4 +43,4 @@ different C1 construct, not a different statement order — the same distinction
 
 Detection: a `Apply*`/`Setup` call whose logically-following member store retail
 emits BEFORE it. Sieve the tree for hand expansions with
-`rg -A1 'ApplyLookupGeometry\(' src | rg 'm_value ='`.
+`rg -A1 'SetAnimationByName\(' src | rg 'm_value ='`.

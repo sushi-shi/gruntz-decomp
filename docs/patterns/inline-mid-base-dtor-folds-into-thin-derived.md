@@ -9,7 +9,7 @@ folds. This is its **non-trivial, self-RVA-keyed** sibling: the mid level `Mid`
 (here `CWwdGameObject`, vtable 0x5f0020) is a real instantiated class whose dtor at
 RVA 0x15b4f0 does the full teardown (four worker scalar-deletes + a CString member
 + two sentinel-handle members). Thin factory variants `A`/`C`/`F` derive from it
-(`CWwdGameObjectF : Mid`, own vtable 0x5f0060), and retail's `~F` STAMPS F's vtable,
+(`CWwdDeferredObject : Mid`, own vtable 0x5f0060), and retail's `~F` STAMPS F's vtable,
 re-runs the worker pass, then **inlines** Mid's entire teardown (re-stamp 0x5f0020,
 second worker pass, CString dtor, sentinel folds, grand-base 0x5e8cb4 stamp).
 
@@ -36,9 +36,9 @@ inline CWwdGameObjectE::~CWwdGameObjectE() {             // <-- INLINE is load-b
     m_20.c = (i32)0x80000000; m_20.a = (i32)0x80000000; m_20.b = -1;
 }                                                        // CString + edges + severus fold
 
-class CWwdGameObjectF : public CWwdGameObjectE { ~CWwdGameObjectF(); };  // own vtable 0x5f0060
+class CWwdDeferredObject : public CWwdGameObjectE { ~CWwdDeferredObject(); };  // own vtable 0x5f0060
 RVA(0x0015bad0, 0x153)
-CWwdGameObjectF::~CWwdGameObjectF() { WORKER_FREE(m_7c); /*…*/ }          // folds Mid inline
+CWwdDeferredObject::~CWwdDeferredObject() { WORKER_FREE(m_7c); /*…*/ }          // folds Mid inline
 ```
 
 Two further sub-points the WWD family pins down:

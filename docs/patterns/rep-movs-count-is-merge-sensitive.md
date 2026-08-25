@@ -37,7 +37,7 @@ current inline-state dip, not evidence for a missing insertion arm.
 
 Controlled source-shaped negatives were byte-identical at 77.0314: explicit
 shared `goto` exits for the two hit paths, an `else` around the second miss,
-an inner lexical scope for the first lookup, one use of the real `Tree()`
+an inner lexical scope for the first lookup, one use of the real `Tags()`
 accessor, and per-arm `return` rather than `break` in `~CButeValue`.  None moves
 the generated deleting-destructor cutoff.  Keep the typed payload union and
 both temporary expressions; weakening the type or collapsing the authored

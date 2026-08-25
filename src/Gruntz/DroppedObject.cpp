@@ -207,15 +207,15 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    SwitchGeometry("LEVEL_OBJECTDROPPER", 0);
+    SwitchAnimationByName("LEVEL_OBJECTDROPPER", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(0x2000002);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
 
-    CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
+    CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
@@ -272,12 +272,12 @@ RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-            CWwdGameObjectA* o = m_object;
+            CWwdSpriteObject* o = m_object;
             RECT box;
-            box.left = o->m_screenX - o->m_layer->m_anchorX + 7;
-            box.right = o->m_screenX + o->m_layer->m_anchorX - 7;
-            box.top = o->m_screenY - o->m_layer->m_anchorY + 7;
-            box.bottom = o->m_screenY + o->m_layer->m_anchorY - 7;
+            box.left = o->m_screenX - o->m_frameImage->m_anchorX + 7;
+            box.right = o->m_screenX + o->m_frameImage->m_anchorX - 7;
+            box.top = o->m_screenY - o->m_frameImage->m_anchorY + 7;
+            box.bottom = o->m_screenY + o->m_frameImage->m_anchorY - 7;
             i32 playerIndex;
             i32 unitIndex;
             CGrunt* found = g_gameReg->m_triggerMgr->FindGruntAt(
@@ -313,12 +313,13 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     double drift = static_cast<double>(g_frameDelta) * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
-        if (m_posX >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW)) {
+        if (m_posX
+            >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelWidth)) {
             m_posX = 0.0;
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -326,14 +327,17 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX = static_cast<double>((g_gameReg->m_world->m_level->m_mainPlane->m_wrapW - 1));
+            m_posX = static_cast<double>(
+                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelWidth - 1)
+            );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
-        if (m_posY > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapH)) {
+        if (m_posY
+            > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelHeight)) {
             m_posY = 0.0;
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
@@ -341,7 +345,9 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY = static_cast<double>((g_gameReg->m_world->m_level->m_mainPlane->m_wrapH - 1));
+            m_posY = static_cast<double>(
+                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelHeight - 1)
+            );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
         }
@@ -386,7 +392,7 @@ i32 CObjectDropper::SerializeMove(
             break;
         case SERIAL_POSTLOAD: {
             CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
-            CWwdGameObjectA* o = m_object;
+            CWwdSpriteObject* o = m_object;
             SET_DRAW_FILL_REVERSED(o, SHADE_DST_BY_SRC_16, fill);
             break;
         }
@@ -399,15 +405,15 @@ RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    SwitchGeometry("LEVEL_DROPPEDOBJECT", 0);
+    SetImageSetByName("LEVEL_OBJECTDROPPER_OBJECT");
+    SwitchAnimationByName("LEVEL_DROPPEDOBJECT", 0);
     SetObjectFlags(0x2000002);
     i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
     m_object->m_screenX = adjX;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     m_fallY = static_cast<double>(o->m_screenY);
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
     m_timePerTile =
@@ -438,7 +444,7 @@ void CDroppedObject::RegisterActs() {
 
 RVA(0x000c7090, 0x230)
 i32 CDroppedObject::AdvanceFall() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
@@ -464,17 +470,18 @@ i32 CDroppedObject::AdvanceFall() {
                         case AREA_MINIATURE_MASTERZ:
                         default:
                             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                                CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
-                                    0,
-                                    x,
-                                    m_landY,
-                                    SORTKEY_ACTOR_BEHIND,
-                                    "Particlez",
-                                    0x40003
-                                );
+                                CWwdSpriteObject* s =
+                                    g_gameReg->m_world->m_childGroup->CreateSprite(
+                                        0,
+                                        x,
+                                        m_landY,
+                                        SORTKEY_ACTOR_BEHIND,
+                                        "Particlez",
+                                        0x40003
+                                    );
                                 if (s != NULL) {
-                                    s->ApplyName("LEVEL_DEATHSPLASH");
-                                    s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                    s->SetImageSetByName("LEVEL_DEATHSPLASH");
+                                    s->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
                                 }
                             }
                             break;
@@ -485,16 +492,16 @@ i32 CDroppedObject::AdvanceFall() {
             }
         } else {
             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                CWwdGameObjectA* s =
+                CWwdSpriteObject* s =
                     g_gameReg->m_world->m_childGroup
                         ->CreateSprite(0, x, m_landY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
                 if (s != NULL) {
-                    s->ApplyName("GAME_WATER");
-                    s->ApplyLookupGeometry("GAME_WATER", 0);
+                    s->SetImageSetByName("GAME_WATER");
+                    s->SetAnimationByName("GAME_WATER", 0);
                 }
             }
         }
-        SwitchGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
+        SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);
         SET_ANIMATION_ACT("B");
         g_gameReg->m_triggerMgr->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
         return 0;
@@ -505,8 +512,8 @@ i32 CDroppedObject::AdvanceFall() {
 
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
     return 0;
 }
 
@@ -537,13 +544,13 @@ RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
-    SwitchGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
+    SetImageSetByName("LEVEL_OBJECTDROPPER_SHADOW");
+    SwitchAnimationByName("LEVEL_DROPPEDOBJECTSHADOW", 0);
     SetObjectFlags(0x2000002);
     CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
-    CWwdGameObjectA* draw = m_object;
+    CWwdSpriteObject* draw = m_object;
     SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
 }
 
@@ -564,12 +571,12 @@ void CDroppedObjectShadow::RegisterActs() {
 // @early-stop
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
-        CWwdGameObjectA* o = m_object;
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
+        CWwdSpriteObject* o = m_object;
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
     }
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animCursor))
+    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
     return 0;
 }
 
@@ -583,7 +590,7 @@ i32 CDroppedObjectShadow::SerializeMove(
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, fill);
     }
     return 1;

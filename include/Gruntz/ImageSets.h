@@ -45,8 +45,8 @@ public:
     i32 m_height;
 };
 
-struct CImageSet1 : public CTileImageSet {
-    virtual ~CImageSet1() OVERRIDE {}
+struct CUniformTileImageSet : public CTileImageSet {
+    virtual ~CUniformTileImageSet() OVERRIDE {}
 
     virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     RVA(0x00161330, 0x1)
@@ -98,7 +98,7 @@ struct CImageSet1 : public CTileImageSet {
     virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY) {
         return 0;
     }
-    CImageSet1() {
+    CUniformTileImageSet() {
         m_width = 0;
     }
     void* operator new(size_t n) {
@@ -110,8 +110,8 @@ struct CImageSet1 : public CTileImageSet {
 
     i32 m_collisionValue;
 };
-struct CImageSet2 : public CTileImageSet {
-    virtual ~CImageSet2() OVERRIDE {}
+struct CRectTileImageSet : public CTileImageSet {
+    virtual ~CRectTileImageSet() OVERRIDE {}
 
     virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     RVA(0x00161420, 0x1)
@@ -140,7 +140,7 @@ struct CImageSet2 : public CTileImageSet {
     virtual i32 ScanRightForValue(i32 x, i32 y, i32 value, i32* outX);
     virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outValue);
     virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
-    CImageSet2() {
+    CRectTileImageSet() {
         m_width = 0;
     }
     void* operator new(size_t n) {
@@ -157,8 +157,8 @@ struct CImageSet2 : public CTileImageSet {
     i32 m_right;
     i32 m_bottom;
 };
-struct CImageSet3 : public CTileImageSet {
-    virtual ~CImageSet3() OVERRIDE {
+struct CPixelTileImageSet : public CTileImageSet {
+    virtual ~CPixelTileImageSet() OVERRIDE {
         if (m_pixels) {
             delete[] m_pixels;
         }
@@ -183,7 +183,7 @@ struct CImageSet3 : public CTileImageSet {
     virtual i32 ScanDown(i32 x, i32 y, i32* outY, i32* outValue);
     virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
 
-    CImageSet3() {
+    CPixelTileImageSet() {
         m_width = 0;
         m_pixels = NULL;
     }

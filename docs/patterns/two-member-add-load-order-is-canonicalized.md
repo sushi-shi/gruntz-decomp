@@ -75,6 +75,6 @@ So retail's higher-offset-first sites are NOT reachable by re-spelling the expre
 either retail's source had a store between the two reads that our reconstruction has
 dropped (nothing in these bodies is missing - the sizes match), or the pick is the
 TU-cumulative back-end state this file already documents. Same wall in
-`CCheckpointTrigger::CCheckpointTrigger` @0x10ee20 (99.87 %, `m_layer->m_anchorY +
+`CCheckpointTrigger::CCheckpointTrigger` @0x10ee20 (99.87 %, `m_frameImage->m_anchorY +
 m_screenY`) and `CDDrawChildGroup::SumWeighted` @0x15aaf0 (99.93 %, a 4-member sum
 whose 1st and 3rd loads swap) - both measured against real objdiff %, not diff lines.

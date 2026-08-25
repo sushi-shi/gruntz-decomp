@@ -325,7 +325,7 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
 
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     double dx = static_cast<double>(m_lastTilePx.m_x) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePx.m_y) - static_cast<double>(h->m_screenY);
 
@@ -533,7 +533,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, 1);
 
-            CWwdGameObjectA* n = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y - 0x20,
@@ -541,7 +541,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
+            n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
             CLogicRecord* ni = n->m_logicRecord;
             ni->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
@@ -549,7 +549,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_points =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
 
-            CWwdGameObjectA* e = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x + 0x20,
                 m_lastTilePx.m_y,
@@ -557,7 +557,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            e->ApplyName("LEVEL_ROLLINGBALL_EAST");
+            e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
             CLogicRecord* ei = e->m_logicRecord;
             ei->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
@@ -565,7 +565,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_points =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
 
-            CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y + 0x20,
@@ -573,7 +573,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
+            s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
             CLogicRecord* si = s->m_logicRecord;
             si->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
@@ -581,7 +581,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_points =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
 
-            CWwdGameObjectA* w = g_gameReg->m_world->m_childGroup->CreateSprite(
+            CWwdSpriteObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x - 0x20,
                 m_lastTilePx.m_y,
@@ -589,7 +589,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            w->ApplyName("LEVEL_ROLLINGBALL_WEST");
+            w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
             CLogicRecord* wi = w->m_logicRecord;
             wi->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
@@ -614,7 +614,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
     }
     CShadeTable* sel =
         g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     SET_DRAW_FILL(h, SHADE_PAL_16, sel);
 }
 
@@ -626,7 +626,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+    CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
         m_object->m_screenX,
         m_object->m_screenY,
@@ -634,13 +634,13 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         "SingleAnimation",
         0x40003
     );
-    spr->ApplyName("GRUNTZ_" + m_animSetName + s__LOSEITEM);
-    spr->ApplyLookupGeometry("GRUNTZ_" + m_animSetName + s__LOSEITEM, 0);
+    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s__LOSEITEM);
+    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s__LOSEITEM, 0);
 
     CGruntzMgr* g = g_gameReg;
     i32 y = m_object->m_screenY;
     i32 x = m_object->m_screenX;
-    CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_viewRect;
+    CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
     if (CGameLevel::PointInRect(rc, x, y)) {
         g->m_voiceManager->PlayGruntVoiceCue(this, 0xe, -1, -1, -1);
     }
@@ -656,7 +656,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_FIRST) {
         return 0;
     }
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     i32 mx = h->m_screenX;
     i32 my = h->m_screenY;
     i32 px = (mx & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1037,14 +1037,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_object->m_screenX;
         if (c < 5) {
             CGruntzMgr* g = g_gameReg;
-            const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
+            const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
             if (CGameLevel::PointInRect(vr, x, y)) {
                 g->m_voiceManager->PlayVoice(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
+        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x371, -1, 0, -1, -1);
         }
@@ -1056,7 +1056,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_object->m_screenY;
         i32 x = m_object->m_screenX;
         CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
+        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x320, -1, 0, -1, -1);
         }
@@ -1066,7 +1066,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_object->m_screenY;
         i32 x = m_object->m_screenX;
         CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
+        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x321, -1, 0, -1, -1);
         }
@@ -1077,18 +1077,18 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_object->m_screenX;
         m_struckCount = 0;
         CGruntzMgr* g = g_gameReg;
-        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
+        const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x322, -1, 0, -1, -1);
         }
     }
 }
 
-#include <Wwd/WwdGameObjectGeometryInline.h>
+#include <Wwd/WwdSpriteAnimationInline.h>
 
 RVA(0x00058b60, 0x2d)
-void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault){
-    APPLY_GEOMETRY_DIRECT(this, srcSprite, applyDefault)
+void CWwdSpriteObject::SetAnimation(CAniElement* animation, i32 advanceImmediately){
+    SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
 }
 
 RVA(0x00058bc0, 0xa1)
@@ -2083,7 +2083,7 @@ void CGrunt::Activate() {
     m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_step.x = 0.0;
     m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_step.y = 0.0;
 
-    CWwdGameObjectA* h = m_object;
+    CWwdSpriteObject* h = m_object;
     i32 px = h->m_screenX;
     m_commitPx.m_x = px;
     m_lastTilePx.m_x = px;
@@ -2154,7 +2154,7 @@ void CGrunt::StepBehavior(char*) {
 
         if (static_cast<i64>(g_frameTime) - m_entranceClock64 >= m_entranceSafeTime64) {
         dropExpire: {
-            CWwdGameObjectA* obj = m_object;
+            CWwdSpriteObject* obj = m_object;
             m_entranceDropActive = 0;
             obj->m_drawActive = 1;
             obj->m_drawFillCmd = SHADE_PAL_16;
@@ -2162,13 +2162,13 @@ void CGrunt::StepBehavior(char*) {
             m_entranceSafeTimeLo = 0;
             m_entranceSafeTimeHi = 0;
         } else if (static_cast<i64>(g_frameTime) - m_flashClock64 >= m_flashWindow64) {
-            CWwdGameObjectA* obj = m_object;
+            CWwdSpriteObject* obj = m_object;
             if (obj->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
                 obj->m_drawActive = 1;
                 obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
                 i32 fade = g_buteMgr.GetIntDef("Grunt", s_FadeTransparency, 0xc0);
-                CWwdGameObjectA* o2 = m_object;
+                CWwdSpriteObject* o2 = m_object;
                 SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
             }
             i32 flash = g_buteMgr.GetIntDef("Grunt", s_SafeFlashTime, 0x32);
@@ -2196,7 +2196,7 @@ void CGrunt::StepBehavior(char*) {
     }
 
     {
-        CWwdGameObjectA* obj = m_object;
+        CWwdSpriteObject* obj = m_object;
         if (GRUNT_OBJECT_NOT_AT_SELF_SAVED_SCREEN_POS(obj)) {
             goto afterTile;
         }
@@ -2310,16 +2310,17 @@ void CGrunt::StepBehavior(char*) {
             i32 cx = ptx;
             if (cx < 0) {
                 cx = 0;
-            } else if (cx >= level->m_mainPlane->m_gridW) {
-                cx = level->m_mainPlane->m_gridW - 1;
+            } else if (cx >= level->m_mainPlane->m_tileColumns) {
+                cx = level->m_mainPlane->m_tileColumns - 1;
             }
             i32 cy = pty;
             if (cy < 0) {
                 cy = 0;
-            } else if (cy >= level->m_mainPlane->m_gridH) {
-                cy = level->m_mainPlane->m_gridH - 1;
+            } else if (cy >= level->m_mainPlane->m_tileRows) {
+                cy = level->m_mainPlane->m_tileRows - 1;
             }
-            i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_rowOffsets[cy] + cx];
+            i32 raw =
+                level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
             TileCollisionKind kind;
             if (raw == UNINIT_FILL || raw == -1) {
                 kind = TILEKIND_PASSABLE;
@@ -2425,11 +2426,11 @@ void CGrunt::StepBehavior(char*) {
                 }
             }
             {
-                CWwdGameObjectA* obj = m_object;
+                CWwdSpriteObject* obj = m_object;
                 CGruntzMgr* reg3 = g_gameReg;
                 i32 sy = obj->m_screenY;
                 i32 sx = obj->m_screenX;
-                const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_viewRect;
+                const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInRect(vr, sx, sy)) {
                     reg3->m_voiceManager->PlayVoice(this, 0x348, -1, 0, -1, -1);
                 }
@@ -2459,7 +2460,7 @@ void CGrunt::StepBehavior(char*) {
 
 afterTile:
     if (m_entranceActive == 0 && m_entranceCommitted != 0) {
-        CWwdGameObjectA* obj = m_object;
+        CWwdSpriteObject* obj = m_object;
         i32 sx = obj->m_screenX;
         if (sx != m_lastTilePx.m_x) {
             goto afterArrival;
@@ -2720,7 +2721,7 @@ kindDispatch:
                 }
                 CShadeTable* sel =
                     g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
-                CWwdGameObjectA* obj = m_object;
+                CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
                 SET_DRAW_FILL(obj, cmd, sel);
             }
@@ -2739,10 +2740,10 @@ kindDispatch:
                     topaque * static_cast<double>(remMs)
                     * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
                     );
-                CWwdGameObjectA* obj = m_object;
+                CWwdSpriteObject* obj = m_object;
                 SET_DRAW_FILL_FRACTION(obj, SHADE_PAL_ALPHA_16, frac);
             } else {
-                CWwdGameObjectA* obj = m_object;
+                CWwdSpriteObject* obj = m_object;
                 if (!HAS(obj->m_stateFlags, SPRITE_STATE_FLASHING)) {
                     obj->m_flashInterval = 0x7d;
                     obj->m_flashCountdown = 0;
@@ -2752,7 +2753,7 @@ kindDispatch:
             if (leftMs == 0) {
                 switch (m_gruntKind) {
                     case PICKUP_GHOST: {
-                        CWwdGameObjectA* obj = m_object;
+                        CWwdSpriteObject* obj = m_object;
                         m_gruntKind = GRUNT_NORMAL;
                         obj->m_drawActive = 1;
                         obj->m_drawFillCmd = SHADE_PAL_16;
@@ -2764,7 +2765,7 @@ kindDispatch:
                     case PICKUP_SUPERSPEED:
                     case PICKUP_ROIDZ:
                     case PICKUP_REACTIVEARMOR: {
-                        CWwdGameObjectA* ps = m_powerupSprite;
+                        CWwdSpriteObject* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
                         if (ps != NULL) {
                             ps->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -2773,7 +2774,7 @@ kindDispatch:
                         break;
                     }
                     case PICKUP_DEATHTOUCH: {
-                        CWwdGameObjectA* ps = m_powerupSprite;
+                        CWwdSpriteObject* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
                         if (ps != NULL) {
                             ps->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -2897,7 +2898,7 @@ void CGrunt::FinalizeStep(char* name) {
         }
         m_object->m_screenX = nx;
         m_object->m_screenY = ny;
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenY + 0x186a0;
         SET_SORT_KEY_IF_CHANGED(h, v)
         return;
@@ -3188,7 +3189,7 @@ void CGrunt::AdvanceMotion() {
     }
     m_object->m_screenX = x;
     m_object->m_screenY = y;
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     i32 sortKey = o->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(o, sortKey)
 }

@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/DDrawPlacedWorker.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerNode.h>
 #include <Gruntz/ObList.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
@@ -24,12 +24,12 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual CDDrawWorkerA* CreatePixelWorker(i32 x, i32 y, i32 pixelValue);
-    virtual CDDrawWorkerB*
+    virtual CDDrawPixelWorker* CreatePixelWorker(i32 x, i32 y, i32 pixelValue);
+    virtual CDDrawFrameWorker*
     CreateFrameWorker(i32 x, i32 y, const char* workerName, i32 frameIndex, i32 addHead);
-    virtual CDDrawWorkerB*
+    virtual CDDrawFrameWorker*
     CreateFrameWorker(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex, i32 addHead);
-    virtual CDDrawWorkerB* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
+    virtual CDDrawFrameWorker* CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead);
 
     virtual void RenderAndPruneWorkers(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 

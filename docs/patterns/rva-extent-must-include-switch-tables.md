@@ -116,7 +116,7 @@ Confirm each hit before touching it: the function body must literally contain th
 hundred bytes and it turns "these DWORDs look like pointers" into proof of ownership. In the
 2026-08-01 second sweep it confirmed **65 of 65** candidates and rejected none, and every
 extent it produced landed exactly on `0x90`/`0xcc` padding or exactly on the next function
-start (`CDDrawSurfaceChildA::SetGeometry`'s table runs right up to 0x164650 with no padding).
+start (`CDDrawFrontSurface::SetGeometry`'s table runs right up to 0x164650 with no padding).
 
 What the base-side test missed, measured on the same tree after its 43-function sweep:
 

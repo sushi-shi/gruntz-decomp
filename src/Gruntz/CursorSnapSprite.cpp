@@ -65,8 +65,8 @@ i32 DispatchCursorSnapSpriteLogic(CGameObject* owner) {
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("GAME_CURSORSNAPSPRITE");
-    SwitchGeometry("GAME_SINGLEIMAGEANI", 0);
+    SetImageSetByName("GAME_CURSORSNAPSPRITE");
+    SwitchAnimationByName("GAME_SINGLEIMAGEANI", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(2);
     Hide();

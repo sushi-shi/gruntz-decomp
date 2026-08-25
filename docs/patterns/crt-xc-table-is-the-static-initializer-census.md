@@ -115,8 +115,8 @@ byte-indistinguishable in `.text`. Only the `.bss` extent separates them.
 The rule that survives is narrower: a bare-`ret` body means the object's class has a
 *declared* constructor (which is what put it in XC at all) whose body optimises to
 nothing. Worked case - typekeycoll's fifth initializer `0x0016e190` (thunk
-`0x0016e180`, delta `+0x10`) is `TypeKeyRec g_recs23[32]` at `0x002bf498` plus
-`i32 g_recCount23`, `0x184 B`, which is exactly the `.bss` the probe measures; giving
+`0x0016e180`, delta `+0x10`) is `TypeKeyRec g_variantOverrides[32]` at `0x002bf498` plus
+`i32 g_variantOverrideCount`, `0x184 B`, which is exactly the `.bss` the probe measures; giving
 `TypeKeyRec` its constructor reproduces retail's five-slot `.CRT$XCU` in the base obj
 slot for slot, the fifth being `c3`.
 

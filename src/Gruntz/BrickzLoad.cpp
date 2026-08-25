@@ -116,7 +116,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     BrickzCell* cell = m_cellPool;
     for (u32 tileY = 0; tileY < m_height; tileY++) {
         for (u32 tileX = 0; tileX < m_width; tileX++, cell++) {
-            i32 tileId = grid->m_tileGrid[grid->m_rowOffsets[tileY] + tileX];
+            i32 tileId = grid->m_tileHandles[grid->m_tileRowOffsets[tileY] + tileX];
             if (tileId != -1) {
                 tileId &= 0xffff;
             }

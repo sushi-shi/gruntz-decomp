@@ -8,7 +8,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Gruntz/Fader.h>
-#include <Gruntz/FxModeDesc.h>
+#include <Gruntz/FaderConfig.h>
 #include <Ints.h>
 #include <Rez/RezBufferObject.h>
 
@@ -35,7 +35,7 @@ public:
     virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    i32 ApplyInit(CFxModeDesc* src);
+    i32 ApplyInit(CFaderConfig* src);
 
     CDDSurface* m_sourceSurface;
     CDDSurface* m_dstSurface;
@@ -73,7 +73,7 @@ public:
     virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    i32 ApplyInit(CFxModeDesc* src);
+    i32 ApplyInit(CFaderConfig* src);
 
     CDDSurface* m_targetSurface;
     CDDSurface* m_restoreSurface;
@@ -99,7 +99,7 @@ public:
     virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    i32 ApplyInit(CFxModeDesc* src);
+    i32 ApplyInit(CFaderConfig* src);
     void PrepareFrame();
     void FinishFrame();
 
@@ -120,7 +120,7 @@ public:
     virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    i32 ApplyInit(CFxModeDesc* src);
+    i32 ApplyInit(CFaderConfig* src);
     void ReleaseBuffers();
 
     void Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits);
@@ -151,7 +151,7 @@ public:
     virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    i32 ApplyInit(CFxModeDesc* src);
+    i32 ApplyInit(CFaderConfig* src);
     void FreeBuffer();
 
     CDDSurface* m_srcSurface;
@@ -173,7 +173,7 @@ public:
     virtual void RenderFrame(i32 frame) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    i32 ApplyInit(CFxModeDesc* src);
+    i32 ApplyInit(CFaderConfig* src);
 
     void RenderTile(i32 baseRow, i32 leadWidth);
     void RenderWarpTile(i32 baseRow, i32 leadWidth);

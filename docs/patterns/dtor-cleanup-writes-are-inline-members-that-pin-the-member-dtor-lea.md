@@ -52,15 +52,15 @@ call CString::~CString
 
 ## Measured, one build each
 
-`CGameObject::~CGameObject` 90.26, `CWwdGameObjectA::~CWwdGameObjectA` 92.92,
-`CWwdGameObjectF::~CWwdGameObjectF` 93.57, `CWwdGameObjectC::~CWwdGameObjectC`
+`CGameObject::~CGameObject` 90.26, `CWwdSpriteObject::~CWwdSpriteObject` 92.92,
+`CWwdDeferredObject::~CWwdDeferredObject` 93.57, `CWwdDotObject::~CWwdDotObject`
 93.63 - **all four to 100.000 EXACT**. All six `Unload()` overrides (which are real
 out-of-line functions of their own) stayed at 100.000, so the callee itself is
 unaffected.
 
 Negative control that pins the mechanism to BOTH boundaries, not one: keeping
 `m_dirty.Reset()` but writing `m_shadow` longhand dropped
-`CWwdGameObjectA::~CWwdGameObjectA` 100.000 -> 97.35 and left the others where the
+`CWwdSpriteObject::~CWwdSpriteObject` 100.000 -> 97.35 and left the others where the
 full form had already put them. The `lea`'s position is decided by the unit list,
 so a half-converted run is not a half-fix.
 

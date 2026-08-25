@@ -658,35 +658,35 @@ i32 CMulti::AdvanceGameFrame() {
     Mgr()->m_commandMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;
-    u32 t1 = g_timer32 ? g_timer32 : 0x32;
+    u32 t1 = g_period50CountdownMs ? g_period50CountdownMs : FRAME_CLOCK_PERIOD_50_MS;
     if (g_frameDelta >= t1) {
-        g_timer32 = 0;
+        g_period50CountdownMs = 0;
     } else {
-        g_timer32 = t1 - g_frameDelta;
+        g_period50CountdownMs = t1 - g_frameDelta;
     }
-    u32 t2 = g_timer100 ? g_timer100 : 0x64;
+    u32 t2 = g_period100CountdownMs ? g_period100CountdownMs : FRAME_CLOCK_PERIOD_100_MS;
     if (g_frameDelta >= t2) {
-        g_timer100 = 0;
+        g_period100CountdownMs = 0;
     } else {
-        g_timer100 = t2 - g_frameDelta;
+        g_period100CountdownMs = t2 - g_frameDelta;
     }
-    u32 t3 = g_timer200 ? g_timer200 : 0xc8;
+    u32 t3 = g_period200CountdownMs ? g_period200CountdownMs : FRAME_CLOCK_PERIOD_200_MS;
     if (g_frameDelta >= t3) {
-        g_timer200 = 0;
+        g_period200CountdownMs = 0;
     } else {
-        g_timer200 = t3 - g_frameDelta;
+        g_period200CountdownMs = t3 - g_frameDelta;
     }
-    u32 t4 = g_timer400 ? g_timer400 : 0x190;
+    u32 t4 = g_period400CountdownMs ? g_period400CountdownMs : FRAME_CLOCK_PERIOD_400_MS;
     if (g_frameDelta >= t4) {
-        g_timer400 = 0;
+        g_period400CountdownMs = 0;
     } else {
-        g_timer400 = t4 - g_frameDelta;
+        g_period400CountdownMs = t4 - g_frameDelta;
     }
-    u32 t5 = g_timer500 ? g_timer500 : 0x1f4;
+    u32 t5 = g_period500CountdownMs ? g_period500CountdownMs : FRAME_CLOCK_PERIOD_500_MS;
     if (g_frameDelta >= t5) {
-        g_timer500 = 0;
+        g_period500CountdownMs = 0;
     } else {
-        g_timer500 = t5 - g_frameDelta;
+        g_period500CountdownMs = t5 - g_frameDelta;
     }
     m_world->m_childGroup->TickKillCues(0);
     m_world->m_childGroup->CollideBroadcast();
@@ -728,7 +728,7 @@ void CMulti::RenderGameFrame() {
         }
         AdvanceCursorAnimation(g_frameDelta);
         DrawCursorSaveUnder(h);
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
         return;
     }
     StepInputA();
@@ -746,8 +746,8 @@ void CMulti::RenderGameFrame() {
     }
     StepScroll();
     Mgr()->m_worldSounds->SetListenerPosition(
-        (m_world->m_level->m_mainPlane)->m_snappedX,
-        (m_world->m_level->m_mainPlane)->m_snappedY
+        (m_world->m_level->m_mainPlane)->m_scrollPixelX,
+        (m_world->m_level->m_mainPlane)->m_scrollPixelY
     );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
@@ -792,7 +792,7 @@ void CMulti::RenderGameFrame() {
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
     }
-    m_world->m_drawTarget->m_frontPair->m_surface->Flip(NULL);
+    m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
     if (m_world->m_level->m_mainPlane != NULL) {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();

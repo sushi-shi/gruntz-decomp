@@ -34,7 +34,7 @@
         } else {                                                                                   \
             r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
         }                                                                                          \
-        (field) = static_cast<CWwdGameObjectA*>(r);                                                \
+        (field) = static_cast<CWwdSpriteObject*>(r);                                               \
         if (r == NULL && id != 0) {                                                                \
             return 0;                                                                              \
         }                                                                                          \
@@ -273,11 +273,11 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     i32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
     CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), flag);
-    CWwdGameObjectA* cb = m_object;
+    CWwdSpriteObject* cb = m_object;
     SET_DRAW_FILL(cb, SHADE_PAL_16, r);
 
     if (m_gruntKind == GRUNT_GHOST) {
-        CWwdGameObjectA* cb2 = m_object;
+        CWwdSpriteObject* cb2 = m_object;
         i32 v = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
         SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);
     }

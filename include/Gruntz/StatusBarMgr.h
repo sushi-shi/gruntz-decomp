@@ -267,7 +267,7 @@ public:
     StatusBarDock m_position;
     StatusBarDock m_restorePosition;
 
-    class CWwdGameObjectA* m_barSprite;
+    class CWwdSpriteObject* m_barSprite;
 
     CDDrawSurfaceMgr* m_world;
 

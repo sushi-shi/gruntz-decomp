@@ -92,7 +92,7 @@ static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
     return found;
 }
 
-static inline CWwdGameObjectA* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
+static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
     CGameObject* found = NULL;
     if (MapLookupById(byId, id, found) == 0) {
         return NULL;
@@ -100,7 +100,7 @@ static inline CWwdGameObjectA* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
     if (found == NULL) {
         return NULL;
     }
-    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(found) : NULL;
+    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(found) : NULL;
 }
 
 // @early-stop
@@ -121,11 +121,11 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SNAP_OBJECT_TO_TILE_CENTER_COPY(m_object, snapX, snapY)
 
-    CWwdGameObjectA* snapped = m_object;
+    CWwdSpriteObject* snapped = m_object;
     SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_INGAME_INFO)
 
     SET_ANIMATION_ACT("A");
-    SwitchGeometry("GAME_CYCLE100", 0);
+    SwitchAnimationByName("GAME_CYCLE100", 0);
 
     SetObjectFlags(2);
     SetupSprite(NULL);
@@ -137,7 +137,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekWindow.m_hi = 0;
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
-    CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
+    CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
@@ -375,12 +375,12 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         CString warpName;
         i32 target = g_buteMgr.GetInt("WarpStone", levelStr);
         warpName.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
-        m_object->ApplyName(warpName);
+        m_object->SetImageSetByName(warpName);
         m_object->m_health = target;
     }
 
     if (glitter != ICON_GLITTER_NONE) {
-        CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+        CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             m_object->m_screenX,
             m_object->m_screenY,
@@ -390,12 +390,12 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         );
         m_glitterSprite = fx;
         if (glitter == ICON_GLITTER_POWERUP_RED) {
-            fx->ApplyName("GAME_GLITTERRED");
+            fx->SetImageSetByName("GAME_GLITTERRED");
         }
         if (glitter == ICON_GLITTER_CURSE_GREEN) {
-            m_glitterSprite->ApplyName("GAME_GLITTERGREEN");
+            m_glitterSprite->SetImageSetByName("GAME_GLITTERGREEN");
         }
-        m_glitterSprite->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        m_glitterSprite->SetAnimationByName("GAME_CYCLE100", 0);
     }
 
     if (HandleInput() == 0) {
@@ -421,7 +421,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x00097680, 0x110)
 i32 CInGameIcon::HandleInput() {
-    CWwdGameObjectA* obj = m_object;
+    CWwdSpriteObject* obj = m_object;
     PickupType cmd = static_cast<PickupType>(obj->m_smarts);
     CShadeTable* rec;
     if (cmd == PICKUP_TOYBOX) {
@@ -470,7 +470,7 @@ i32 CInGameIcon::HandleInput() {
     } else {
         return 1;
     }
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_DRAW_FILL(o, SHADE_PAL_16, rec);
     return 1;
 }
@@ -515,9 +515,9 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_startClock.m_v = 0;
     m_countdown.m_v = 0;
     m_object->m_screenY -= 0x18;
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
-    ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
+    SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
     m_countdown.m_v = 0x1388;
     m_startClock.m_v = static_cast<u32>(g_frameTime);
     SET_ANIMATION_ACT("A");
@@ -525,7 +525,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
-    CWwdGameObjectA* obj = m_object;
+    CWwdSpriteObject* obj = m_object;
     i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
     i32 tileY = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
@@ -543,7 +543,7 @@ i32 CInGameIcon::RefreshCell() {
             return 0;
         }
     }
-    CWwdGameObjectA* r = m_wwdObject;
+    CWwdSpriteObject* r = m_wwdObject;
     r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     return 0;
 }
@@ -566,8 +566,8 @@ i32 CToyPeek::SerializeMove(
 // for the second bounds test; cl keeps it in ebp across both tests here.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* obj = m_object;
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    CWwdSpriteObject* obj = m_object;
     PickupType cmd = static_cast<PickupType>(obj->m_smarts);
     if (cmd == PICKUP_TOYBOX) {
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
@@ -592,7 +592,7 @@ i32 CInGameIcon::PeekCycle() {
     }
     if (static_cast<i64>(g_frameTime) - m_peekTimer.m_v >= m_peekWindow.m_v) {
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_PAL_16, rec);
         m_peekWindow.m_lo = 0xfa;
         m_peekWindow.m_hi = 0;
@@ -626,11 +626,11 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
-    CWwdGameObjectA* obj;
-    CWwdGameObjectA* o;
-    CWwdGameObjectA* r;
-    CWwdGameObjectA* owner;
-    CWwdGameObjectA* rend;
+    CWwdSpriteObject* obj;
+    CWwdSpriteObject* o;
+    CWwdSpriteObject* r;
+    CWwdSpriteObject* owner;
+    CWwdSpriteObject* rend;
     CGrunt* cell;
     CGrunt* placed;
     CLogicRecord* logicRecord;
@@ -741,15 +741,15 @@ fail:
 // @early-stop
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta >= m_driftThresh.m_v) {
-        CWwdGameObjectA* r = m_wwdObject;
+        CWwdSpriteObject* r = m_wwdObject;
         r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         SET_ANIMATION_ACT("A");
 
         CGruntzMgr* reg = g_gameReg;
-        CWwdGameObjectA* obj = m_object;
+        CWwdSpriteObject* obj = m_object;
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
@@ -819,7 +819,7 @@ i32 CInGameIcon::SerializeMove(
             ar->Read(aniName, SERIAL_NAME_LEN);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
             m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(aniName) == 0) {
                 m_value = NULL;
@@ -905,7 +905,7 @@ i32 CInGameIcon::SerializeMove(
             g_serialCounter++;
             i32 id;
             ar->Read(&id, sizeof(id));
-            CWwdGameObjectA* sprite = LookupSerialRef(
+            CWwdSpriteObject* sprite = LookupSerialRef(
                 m_ownerLogicRecord->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
                 id
             );
@@ -936,8 +936,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         return;
     }
     SET_ANIMATION_ACT("A");
-    SwitchGeometry("GAME_CYCLE100", 0);
-    ApplyName("GAME_HELPBOX");
+    SwitchAnimationByName("GAME_CYCLE100", 0);
+    SetImageSetByName("GAME_HELPBOX");
     SetObjectFlags(2);
 
     InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
@@ -955,7 +955,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO)
     m_cachedPlayerIndex = -1;
     m_cachedUnitIndex = -1;
@@ -979,7 +979,7 @@ void RegisterTextLogic() {
 // @early-stop
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
+    m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     i32 playerIndex;
     i32 unitIndex;
@@ -1015,7 +1015,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;

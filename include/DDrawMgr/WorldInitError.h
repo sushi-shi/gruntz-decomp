@@ -6,7 +6,7 @@
 // Failures exposed by CDDrawSurfaceMgr while constructing the game world.
 // Each value is written immediately after the named operation fails. The
 // 0x80e9 bank is the same five DirectDraw-device stages re-banked by
-// CDDrawSurfaceChildA::SetGeometry for the outer manager.
+// CDDrawFrontSurface::SetGeometry for the outer manager.
 // Retail's dispatch switch is UNSIGNED: CGruntzMgr::ReportWorldStatus lowers its
 // binary search with `ja`, not `jg` (`sema disasm 0x00090ac0 --branches --diff`),
 // so the field and the switch key are u32.

@@ -57,8 +57,8 @@ includes that. Adding `#include <mmsystem.h>` to `AniRecordView.h`:
 
 ```
 Grunt.cpp(827) : error C2228: left of '.GetBuffer' must have class/struct/union type
-Grunt.cpp(828) : error C2227: left of '->ApplyLookupSprite' must point to class/struct/union
-Grunt.cpp(835) : error C2227: left of '->m_animCursor' must point to class/struct/union
+Grunt.cpp(828) : error C2227: left of '->SetImageFrameByName' must point to class/struct/union
+Grunt.cpp(835) : error C2227: left of '->m_animationCursor' must point to class/struct/union
 Grunt.cpp(836) : error C2065: 'm_poseWalk' : undeclared identifier
 Grunt.cpp(842) : error C2109: subscript requires array or pointer type
 Grunt.cpp(847) : error C2679: binary '=' : no operator defined which takes a
@@ -68,13 +68,13 @@ Grunt.cpp(847) : error C2679: binary '=' : no operator defined which takes a
 against source that is unchanged and that compiles without the include:
 
 ```cpp
-    m_value = m_wwdObject->m_animCursor.m_animation;        // line 814 - FINE
+    m_value = m_wwdObject->m_animationCursor.m_animation;        // line 814 - FINE
     ...
     const char* nm = m_cells[index].IdleName().GetBuffer(0); // line 827 - C2228
-    m_wwdObject->ApplyLookupSprite(nm, frame);               // line 828 - C2227
+    m_wwdObject->SetImageFrameByName(nm, frame);               // line 828 - C2227
 ```
 
-Line 814 resolves `m_wwdObject->m_animCursor`; line 835 does not. The class
+Line 814 resolves `m_wwdObject->m_animationCursor`; line 835 does not. The class
 context is intact at the top of the body and gone at the bottom.
 
 ### Negative controls (same slot, same TU)

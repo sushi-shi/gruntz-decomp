@@ -25,6 +25,6 @@ void RegisterCursorSnapActions() {
 
 RVA(0x0003a910, 0x17)
 i32 CCursorSnapSprite::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }

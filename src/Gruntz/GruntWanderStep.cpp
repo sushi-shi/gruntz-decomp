@@ -102,7 +102,7 @@ i32 CGrunt::WanderStep() {
                             m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
-                                    &reg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
                                     m_object->m_screenX,
                                     m_object->m_screenY
                                 )
@@ -219,7 +219,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 return 1;
             }
-            CWwdGameObjectA* base = m_object;
+            CWwdSpriteObject* base = m_object;
             i32 clip = 1;
             i32 baseTileY = base->m_screenY >> TILE_SHIFT_PX;
             i32 baseTileX = base->m_screenX >> TILE_SHIFT_PX;
@@ -268,7 +268,7 @@ timeout:
     if (m_resetApplied == 0 && m_hasExtent != 0
         && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
         if (IsArrivalRerollPending() != 0) {
-            CWwdGameObjectA* base = m_object;
+            CWwdSpriteObject* base = m_object;
             SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lx, ax, ly, ay)
             if (lx < g_gameReg->m_tileGrid->m_width && ly < g_gameReg->m_tileGrid->m_height) {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);

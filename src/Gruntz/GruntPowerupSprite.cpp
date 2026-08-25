@@ -34,9 +34,9 @@ RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("GAME_LIGHTING_POWERUP");
-    SwitchGeometry("GAME_CYCLE100", 0);
-    CWwdGameObjectA* o = m_object;
+    SetImageSetByName("GAME_LIGHTING_POWERUP");
+    SwitchAnimationByName("GAME_CYCLE100", 0);
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_POWERUP)
     Hide();
 }
@@ -61,7 +61,7 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
     m_gruntIdentity.m_unitIndex = unitIndex;
     m_powerupId = powerupId;
     CShadeTable* rec = g_gameReg->m_lightFxMgr->m_tables[powerupId];
-    CWwdGameObjectA* r = m_object;
+    CWwdSpriteObject* r = m_object;
     SET_DRAW_FILL(r, SHADE_DST_BY_SRC_16, rec);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("A");
@@ -70,7 +70,7 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
 
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CGrunt* e = g_gameReg->m_triggerMgr
                     ->m_units[m_gruntIdentity.m_playerIndex * 15 + m_gruntIdentity.m_unitIndex];
     if (e != NULL) {
@@ -97,7 +97,7 @@ i32 CGruntPowerupSprite::SerializeMove(
             ar->Read(&m_gruntIdentity, sizeof(m_gruntIdentity));
             ar->Read(&m_powerupId, sizeof(m_powerupId));
             i32 id = m_powerupId;
-            CWwdGameObjectA* r = m_object;
+            CWwdSpriteObject* r = m_object;
             CShadeTable* v = g_gameReg->m_lightFxMgr->m_tables[id];
             SET_DRAW_FILL_REVERSED(r, SHADE_DST_BY_SRC_16, v);
             break;

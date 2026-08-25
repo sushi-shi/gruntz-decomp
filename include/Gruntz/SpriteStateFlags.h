@@ -29,7 +29,7 @@
 //   0x10000000 FLASH_VISIBLE. CImage toggles this at every flashing interval
 //        and suppresses drawing during the clear phase.
 //
-// NOT to be confused with CWwdGameObjectA::m_flags, the separate
+// NOT to be confused with CWwdSpriteObject::m_flags, the separate
 // WwdGameObjectFlags word on the same objects.
 GZ_ENUM_FLAGS_BEGIN(SpriteStateFlags, i32)
     SPRITE_STATE_NONE = 0,

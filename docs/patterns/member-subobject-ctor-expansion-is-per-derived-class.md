@@ -12,11 +12,11 @@ leaf contributes different members. So the *same* member sub-object constructor 
 
 `CDDrawChildGroup`'s four object factories, all `new CWwdGameObject*(owner,id,flags)`:
 
-| factory | `CGameObject` base ctor | `WwdRegion m_region` | `CAniAdvanceCursor m_animCursor` |
+| factory | `CGameObject` base ctor | `WwdRegion m_region` | `CAniAdvanceCursor m_animationCursor` |
 |---|---|---|---|
-| `CreateSpriteObject` 0x159600 (`CWwdGameObjectA`) | EXPANDED | `call ??0WwdRegion` 0x15b2b0 | `call ??0CAniAdvanceCursor` 0x15b730 |
-| `CreateDotObject` 0x159250 (`CWwdGameObjectC`) | EXPANDED | EXPANDED: `call ??0WwdGridNode` 0x15b2a0 + one `m_object` store | n/a |
-| `CreateDeferredObject` 0x159440 (`CWwdGameObjectF`) | EXPANDED | EXPANDED, same shape | n/a |
+| `CreateSpriteObject` 0x159600 (`CWwdSpriteObject`) | EXPANDED | `call ??0WwdRegion` 0x15b2b0 | `call ??0CAniAdvanceCursor` 0x15b730 |
+| `CreateDotObject` 0x159250 (`CWwdDotObject`) | EXPANDED | EXPANDED: `call ??0WwdGridNode` 0x15b2a0 + one `m_object` store | n/a |
+| `CreateDeferredObject` 0x159440 (`CWwdDeferredObject`) | EXPANDED | EXPANDED, same shape | n/a |
 | `CreateContainerObject` 0x1598d0 (`CWwdGameObject`) | `call` 0x15b390 | (inside the base call) | EXPANDED: `call ??0CLoadable` + vptr + three NULLs |
 
 `0x15b730` has exactly **one** retail caller (`sema xref`), and `0x15b2b0` exactly one —
@@ -38,8 +38,8 @@ struct WwdRegion : WwdGridNode {
 };
 
 struct CGameObject : CResolveNode {
-    enum EInlineBase { INLINE_BASE };                        // CWwdGameObjectA takes this
-    enum EInlineBaseAndRegion { INLINE_BASE_AND_REGION };    // CWwdGameObjectC/F take this
+    enum EInlineBase { INLINE_BASE };                        // CWwdSpriteObject takes this
+    enum EInlineBaseAndRegion { INLINE_BASE_AND_REGION };    // CWwdDotObject/F take this
     CGameObject(CDDrawSurfaceMgr*, i32, i32, EInlineBaseAndRegion);
 };
 inline CGameObject::CGameObject(CDDrawSurfaceMgr* o, i32 id, i32 f, EInlineBaseAndRegion)

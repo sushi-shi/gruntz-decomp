@@ -62,7 +62,7 @@ i32 DrawPageDebugText(
     }
     CDrawSubWorker* page;
     if (useFrontPage != 0) {
-        page = mgr->m_drawTarget->m_frontPair;
+        page = mgr->m_drawTarget->m_frontSurface;
         if (page == NULL) {
             return 0;
         }
@@ -991,16 +991,16 @@ void* CTileTriggerContainer::LoadLogic(
             i32 y = obj->m_tileY;
             if (x < 0) {
                 x = 0;
-            } else if (x >= level->m_mainPlane->m_gridW) {
-                x = level->m_mainPlane->m_gridW - 1;
+            } else if (x >= level->m_mainPlane->m_tileColumns) {
+                x = level->m_mainPlane->m_tileColumns - 1;
             }
             if (y < 0) {
                 y = 0;
-            } else if (y >= level->m_mainPlane->m_gridH) {
-                y = level->m_mainPlane->m_gridH - 1;
+            } else if (y >= level->m_mainPlane->m_tileRows) {
+                y = level->m_mainPlane->m_tileRows - 1;
             }
-            i32 cell = level->m_mainPlane->m_rowOffsets[y] + x;
-            i32 tile = level->m_mainPlane->m_tileGrid[cell];
+            i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
+            i32 tile = level->m_mainPlane->m_tileHandles[cell];
             TileCollisionKind tileKind;
             if (tile == UNINIT_FILL || tile == -1) {
                 tileKind = TILEKIND_PASSABLE;

@@ -20,7 +20,7 @@ cl must re-read `[this+0x10]` after the sort-key store and then folds the OR int
 memory. Bind the receiver once and the whole block collapses onto retail's shape:
 
 ```cpp
-CWwdGameObjectA* o = m_object;
+CWwdSpriteObject* o = m_object;
 if (o->m_sortKey != K) {
     o->m_sortKey = K;                // mov ecx,[eax+8] is hoisted ABOVE this
     o->m_flags |= 0x20000;           // or ecx,0x20000 / mov [eax+8],ecx

@@ -38,19 +38,19 @@ sibling leaves the member's ctor a `call`, with the body still shared.
 For 0x58cd0 it happens to: the three retail callers all arrive through `CMovingLogic` or
 `CDoNothingNormal`, so 56 initialiser lists take the tag and two do not.
 
-For 0x15b390 it does **not**. `CWwdGameObjectA` (0x1dc from `operator new`) is created at three
+For 0x15b390 it does **not**. `CWwdSpriteObject` (0x1dc from `operator new`) is created at three
 sites - `CreateSpriteObject` **expands** the base, `ReadPlaneObjects` and
-`CWwdGameObject::CreateObject` **call** it. So `CWwdGameObjectA` needs *both* ctors and the
+`CWwdGameObject::CreateObject` **call** it. So `CWwdSpriteObject` needs *both* ctors and the
 `new`-site picks:
 
 ```cpp
-new CWwdGameObjectA(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);  // expands
-new CWwdGameObjectA(OwnerMgr(), id, 0);                                     // calls 0x15b390
+new CWwdSpriteObject(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);  // expands
+new CWwdSpriteObject(OwnerMgr(), id, 0);                                     // calls 0x15b390
 ```
 
 Read the call site to be sure it is the *base* and not the derived ctor: at 0x162bad the
 `call 0x15b390` is followed by `lea esi,[ebx+0x1a0]; call <CAniAdvanceCursor ctor>`, the
-`[ebx] = ??_7CWwdGameObjectA` stamp and the five +0x18c..+0x19c stores - the derived ctor is
+`[ebx] = ??_7CWwdSpriteObject` stamp and the five +0x18c..+0x19c stores - the derived ctor is
 expanded *around* a called base.
 
 ## The ctors NESTED inside the pinned body: a TU split, not an inline

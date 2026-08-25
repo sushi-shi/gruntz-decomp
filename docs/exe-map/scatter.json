@@ -247,7 +247,7 @@
   "spread": 1.6723425065575956
  },
  {
-  "file": "src/Gruntz/ImageSet3.cpp",
+  "file": "src/Gruntz/PixelTileImageSet.cpp",
   "n": 11,
   "bytes": 797,
   "lo": 1447088,
@@ -2834,7 +2834,7 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/FxModeDesc.cpp",
+  "file": "src/Gruntz/ButeSectionKey.cpp",
   "n": 1,
   "bytes": 228,
   "lo": 1020544,
@@ -3510,7 +3510,7 @@
   "spread": 1.082306554953179
  },
  {
-  "file": "src/Gruntz/ImageSet2.cpp",
+  "file": "src/Gruntz/RectTileImageSet.cpp",
   "n": 9,
   "bytes": 860,
   "lo": 1468816,
@@ -3523,7 +3523,7 @@
   "spread": 1.086046511627907
  },
  {
-  "file": "src/Gruntz/ImageSet1.cpp",
+  "file": "src/Gruntz/UniformTileImageSet.cpp",
   "n": 1,
   "bytes": 36,
   "lo": 1469760,
@@ -3536,7 +3536,7 @@
   "spread": 1.0
  },
  {
-  "file": "src/Image/ImageSet3.cpp",
+  "file": "src/Image/PixelTileImageSet.cpp",
   "n": 2,
   "bytes": 168,
   "lo": 1469952,

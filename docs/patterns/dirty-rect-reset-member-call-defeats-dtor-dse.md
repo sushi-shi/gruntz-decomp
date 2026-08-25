@@ -7,9 +7,9 @@ flattened transcription needs volatile pointers to keep the duplicates; the
 honest per-level plain-store chain gets dead-store-eliminated to one pair
 confidence: 9/10
 
-The CDDrawWorkerA/B dtors (0x1570d0/0x157240) write the WwdDirtyRect reset pair
+The CDDrawPixelWorker/B dtors (0x1570d0/0x157240) write the WwdDirtyRect reset pair
 (`m_rect.left = COORD_UNSET; m_armed = -1`) THREE times: once in the derived
-dtor body, once in ~CDDrawWorkerBase, once in ~CResolveNode - the classic
+dtor body, once in ~CDDrawPlacedWorker, once in ~CResolveNode - the classic
 copy-paste-per-level dev shape, all inlined into one emitted function. Two
 reconstructions fail:
 
@@ -29,8 +29,8 @@ struct WwdDirtyRect {
         m_armed = -1;
     }
 };
-~CDDrawWorkerA()    { m_pixelValue = 0; m_dirty.Reset(); }
-~CDDrawWorkerBase() { m_dirty.Reset(); }        // new inline level
+~CDDrawPixelWorker()    { m_pixelValue = 0; m_dirty.Reset(); }
+~CDDrawPlacedWorker() { m_dirty.Reset(); }        // new inline level
 ~CResolveNode()     { m_screenX = COORD_UNSET; m_dirty.Reset(); }
 ```
 

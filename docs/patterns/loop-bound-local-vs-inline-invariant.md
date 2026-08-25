@@ -8,7 +8,7 @@ confidence: 9/10
 
 ## Symptom
 
-A family of tiny sibling loops (`CImageSet3::ScanUp/ScanRight/ScanDown/…ForValue`,
+A family of tiny sibling loops (`CPixelTileImageSet::ScanUp/ScanRight/ScanDown/…ForValue`,
 0x00166eb0..0x001670d0) splits cleanly in two:
 
 | shape | score |
@@ -64,7 +64,7 @@ Re-reading the member each iteration is NOT a cost: cl5 hoists it either way.
 
 ## Evidence
 
-`imageset3g` 87.62% -> 100.00% in one change. `CImageSet3::ScanRight` 78.43,
+`imageset3g` 87.62% -> 100.00% in one change. `CPixelTileImageSet::ScanRight` 78.43,
 `ScanRightForValue` 72.2 -> 79.4 (the pointer-form fix) -> 100, `ScanDown` 67.11,
 `ScanDownForValue` 94.43 — all four to 100% EXACT, all four previously carrying
 `// @early-stop`. The four siblings that were already 100% are precisely the four

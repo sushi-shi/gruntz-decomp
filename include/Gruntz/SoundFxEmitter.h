@@ -6,8 +6,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Gruntz/FaderConfig.h>
 #include <Gruntz/FaderMgr.h>
-#include <Gruntz/FxModeDesc.h>
 #include <Gruntz/GameRegistry.h>
 #include <Ints.h>
 

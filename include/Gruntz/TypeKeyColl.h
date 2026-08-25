@@ -10,7 +10,7 @@ extern CTypeCollRuntime g_typeColl;
 
 extern i32 g_typeCounter;
 
-extern i32 g_recCount23;
+extern i32 g_variantOverrideCount;
 
 void TmErrorHandler(char* prefix, i32 errNum);
 

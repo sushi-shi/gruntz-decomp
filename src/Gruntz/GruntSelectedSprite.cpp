@@ -32,10 +32,10 @@ RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    SwitchGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
+    SetImageSetByName("GAME_GRUNTSELECTEDSPRITE");
+    SwitchAnimationByName("GAME_GRUNTSELECTEDSPRITE", 0);
     SET_ANIMATION_ACT("A");
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_SELECTED)
 }
 
@@ -67,7 +67,7 @@ i32 CGruntSelectedSprite::Update() {
     CGrunt* e = reg->m_triggerMgr
                     ->m_units[m_gruntIdentity.m_unitIndex + m_gruntIdentity.m_playerIndex * 15];
     if (e != NULL && e->m_arrived != 0) {
-        m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+        m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;
     }

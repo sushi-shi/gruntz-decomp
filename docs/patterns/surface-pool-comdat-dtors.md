@@ -41,7 +41,7 @@ by the pool, so their dtors live only in the ddraw region.
 A library-class body found inside a game's RVA band is not automatically a
 misattribution. At 0x00161560, the seven-byte body
 `mov [ecx],0x5e8cb4; ret` re-stamps `CObject`'s vtable. Its only incoming
-reference is the `CImageSet3` destructor's unwind metadata, and the corresponding
+reference is the `CPixelTileImageSet` destructor's unwind metadata, and the corresponding
 object emits the same `CObject::~CObject` COMDAT. The linker retained that inline
 base-destructor copy beside the game TU that needed it.
 

@@ -263,7 +263,7 @@ every key is checkable against the archive.
 | `animation` | 3 157 | 3 156 | 2 945 `<NS>\ANIZ`, 211 `<NS>\SOUNDZ` |
 
 `animation` resolving in **two** registries is not sloppiness: retail calls both
-`ApplyLookupGeometry(s, 0)` and `SetSoundCueByName(s)` on it, and the
+`SetAnimationByName(s, 0)` and `SetSoundCueByName(s)` on it, and the
 `GlobalAmbientSound` objects use it for a `<NS>\SOUNDZ\AMBIENT\<X>` WAV while
 water/candy objects use it for an ANI. `wwd-v1.md` calls the field "sound"; the
 third-party spec calls it "animation". Both are half right — it is a
@@ -289,7 +289,7 @@ player), i.e. an editor annotation.
 
 It is nonetheless a live field, not padding: `ReadPlaneObjects` @0x162af0 stores
 it into the object at **+0xdc** (`lea ecx,[ebx+0xdc]; call <CString::operator=>`
-in the target disassembly), which is `CWwdGameObjectA::m_name`. The only reader
+in the target disassembly), which is `CWwdSpriteObject::m_name`. The only reader
 in the tree is a release-dead `TRACE` in `CDDrawChildGroup::Deserialize`
 @0x15b0e0. So: **read, stored, and consumed only by debug output**.
 

@@ -29,7 +29,7 @@ extern RECT g_levelMsgRectsB[8];
 struct SoundCue;
 class CMoviePlayer;
 struct CGameObject;
-class CWwdGameObjectA;
+class CWwdSpriteObject;
 
 class CMenuState : public CState {
 public:
@@ -227,30 +227,30 @@ public:
     i32 m_angleStep;
     i32 m_scratchX;
     i32 m_scratchY;
-    CWwdGameObjectA* m_trailSprites[4];
+    CWwdSpriteObject* m_trailSprites[4];
 
-    CWwdGameObjectA* m_cursorLetter;
+    CWwdSpriteObject* m_cursorLetter;
     i32 m_levelCompleteGate;
 
-    CWwdGameObjectA* m_sprintSprites[8];
+    CWwdSpriteObject* m_sprintSprites[8];
 
-    CWwdGameObjectA* m_bomb[8];
-    CWwdGameObjectA* m_gokart[8];
-    CWwdGameObjectA* m_expl[8];
+    CWwdSpriteObject* m_bomb[8];
+    CWwdSpriteObject* m_gokart[8];
+    CWwdSpriteObject* m_expl[8];
 
     i32 m_readyFlags[8];
     i32 m_templateFlags[8];
     i32 m_slot;
-    CWwdGameObjectA* m_visSprites[4];
-    CWwdGameObjectA* m_animSprites[WARPLETTER_COUNT];
+    CWwdSpriteObject* m_visSprites[4];
+    CWwdSpriteObject* m_animSprites[WARPLETTER_COUNT];
     i32 m_stepIndex;
     i32 m_walkStarted;
     i32 m_soundStarted;
     i32 m_secretGate;
 
-    CWwdGameObjectA* m_bootyPerfectSprite;
+    CWwdSpriteObject* m_bootyPerfectSprite;
 
-    CWwdGameObjectA* m_icons[8];
+    CWwdSpriteObject* m_icons[8];
 
     char m_pad31c[0x320 - 0x31c];
 };
@@ -298,16 +298,16 @@ public:
 
     i32 m_reserved1b4;
     BootySeqPhase m_sequenceState;
-    CWwdGameObjectA* m_puddleSprites[4];
-    CWwdGameObjectA* m_gruntSprites[4];
-    CWwdGameObjectA* m_weaponIcons[4];
-    CWwdGameObjectA* m_toyIcons[4];
-    CWwdGameObjectA* m_powerupIcons[4];
-    CWwdGameObjectA* m_miscIcons[4];
-    CWwdGameObjectA* m_tabSprites[4];
-    CWwdGameObjectA* m_flagSprites[4];
-    CWwdGameObjectA* m_warlordBooty;
-    CWwdGameObjectA* m_fortSprite;
+    CWwdSpriteObject* m_puddleSprites[4];
+    CWwdSpriteObject* m_gruntSprites[4];
+    CWwdSpriteObject* m_weaponIcons[4];
+    CWwdSpriteObject* m_toyIcons[4];
+    CWwdSpriteObject* m_powerupIcons[4];
+    CWwdSpriteObject* m_miscIcons[4];
+    CWwdSpriteObject* m_tabSprites[4];
+    CWwdSpriteObject* m_flagSprites[4];
+    CWwdSpriteObject* m_warlordBooty;
+    CWwdSpriteObject* m_fortSprite;
 };
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

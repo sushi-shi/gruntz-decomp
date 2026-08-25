@@ -68,7 +68,7 @@ Same shape, same wave: `??1RegistryHelper@Utils@@QAE@XZ` at 0x201f0 (an
 `??1CMotionState@@QAE@XZ` at 0x58ba0 (`c3`, 2 groups) and
 `??1PlayerLatency@@QAE@XZ` at 0x832e0 (`c3`, 2 groups) were all merely unpinned;
 one `RVA_COMPGEN` line each closed them. Still open under this rule:
-`CHash` (`include/Bute/Hash.h`) is ONE modelled type where retail has TWO, at
+`CRezEntryIdHash` (`include/Bute/Hash.h`) is ONE modelled type where retail has TWO, at
 0x139dd0 and 0x139ed0 — both 5-byte `jmp 0x184a40`.
 
 variants: [eh-funclet-names-the-type.md](eh-funclet-names-the-type.md),

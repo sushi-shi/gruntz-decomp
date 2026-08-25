@@ -116,7 +116,7 @@ state0: {
     if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
-        CWwdGameObjectA* hit = nb->m_object;
+        CWwdSpriteObject* hit = nb->m_object;
         m_arrivalCell.m_x = hit->m_screenX >> TILE_SHIFT_PX;
         m_arrivalCell.m_y = hit->m_screenY >> TILE_SHIFT_PX;
         m_defenderState = AISTATE_ATTACK;
@@ -153,7 +153,7 @@ state0: {
         goto common;
     }
     if (CGameLevel::PointInBounds(
-            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+            &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
             m_object->m_screenX,
             m_object->m_screenY
         )

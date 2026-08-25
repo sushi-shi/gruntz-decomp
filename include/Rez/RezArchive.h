@@ -151,7 +151,7 @@ public:
     i32 m_resourceIdBucketCount;
     i32 m_subdirectoryBucketCount;
     i32 m_typeBucketCount;
-    CHashC m_freeEntries;
+    CRezEntryNameHash m_freeEntries;
     CRezEntryPoolBlockList m_entryPoolBlocks;
     i32 m_entriesPerPoolBlock;
 };

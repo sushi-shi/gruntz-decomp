@@ -78,7 +78,7 @@ vs `if (p == NULL) { return 0; }` (identical); routing the deep sites through
 explicit `case <zero>:` arm, which additionally re-lowers the switch from a jump
 table to a compare chain (91.37 -> 66.42). Sites:
 `CStatusBarMgr::SetTabState` 0x100d70 - **CLOSED 100.00 by the `break` form above**,
-`CDDrawSurfaceChildA::SetGeometry` 0x1644a0 (retail emits the
+`CDDrawFrontSurface::SetGeometry` 0x1644a0 (retail emits the
 `WORLDERR_CREATE_DEVICE` block twice - once for the switch default, once for the
 `err == 0` else - we fold them and both branches target one address, 91.37),
 `CTriggerMgr::ResetGroup` 0x79520 (retail merges all three cursor-spawn arms into

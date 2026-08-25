@@ -38,15 +38,15 @@ public:
     };
 
     // Same expansion, but m_region's ctor is expanded too (`call ??0WwdGridNode`
-    // + the m_object store).  CWwdGameObjectC / CWwdGameObjectF take this one;
-    // CWwdGameObjectA, whose m_animCursor eats the rest of the inline budget,
+    // + the m_object store).  CWwdDotObject / CWwdDeferredObject take this one;
+    // CWwdSpriteObject, whose m_animationCursor eats the rest of the inline budget,
     // keeps the plain `call ??0WwdRegion` and takes INLINE_BASE above.
     enum EInlineBaseAndRegion {
         INLINE_BASE_AND_REGION
     };
 
     // Out of line at 0x15b390.  Retail `call`s it from CWwdGameObject's chain and
-    // from the two CWwdGameObjectA sites in LevelPlane / WwdGameObjectRender.
+    // from the two CWwdSpriteObject sites in LevelPlane / WwdGameObjectRender.
     CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags);
     // The expanded sibling: CreateSpriteObject / CreateDotObject /
     // CreateDeferredObject carry this body inline.
@@ -206,38 +206,39 @@ inline CGameObject::CGameObject(
     AttachToOwner(owner, id);
 }
 
-class CWwdGameObjectA : public CGameObject {
+class CWwdSpriteObject : public CGameObject {
 public:
     // Calls the pinned base ctor: CWwdGameObject's chain and LevelPlane's
     // ReadPlaneObjects take this one.  These sites carry CAniAdvanceCursor's ctor
     // EXPANDED (`call ??0CLoadable`, then the 0x5f0128 vptr and the three NULLs) -
     // 0x15b730 has exactly one retail caller, CreateSpriteObject, which is the
     // INLINE_BASE overload below.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdSpriteObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
         : CGameObject(owner, id, objectFlags),
-          m_animCursor(owner, id, objectFlags, CAniAdvanceCursor::INLINE_CURSOR) {
+          m_animationCursor(owner, id, objectFlags, CAniAdvanceCursor::INLINE_CURSOR) {
         ResetSpriteFields();
     }
     // Same, except the cursor's own CWapObj base is expanded too - the one site
     // that shows it is CWwdGameObject::CreateObject.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, CWapObj::ENoSeed)
+    CWwdSpriteObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, CWapObj::ENoSeed)
         : CGameObject(owner, id, objectFlags),
-          m_animCursor(owner, id, objectFlags, CWapObj::NO_SEED) {
+          m_animationCursor(owner, id, objectFlags, CWapObj::NO_SEED) {
         ResetSpriteFields();
     }
     // Expands the base ctor: CDDrawChildGroup::CreateSpriteObject takes this one.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
-        : CGameObject(owner, id, objectFlags, INLINE_BASE), m_animCursor(owner, id, objectFlags) {
+    CWwdSpriteObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
+        : CGameObject(owner, id, objectFlags, INLINE_BASE),
+          m_animationCursor(owner, id, objectFlags) {
         ResetSpriteFields();
     }
     void ResetSpriteFields() {
         m_reserved18c = -1;
         m_frameIndex = -1;
-        m_layer = NULL;
-        m_frameSet = NULL;
+        m_frameImage = NULL;
+        m_imageSet = NULL;
         m_soundCue = NULL;
     }
-    virtual ~CWwdGameObjectA() OVERRIDE {
+    virtual ~CWwdSpriteObject() OVERRIDE {
         Unload();
     }
 
@@ -245,8 +246,8 @@ public:
     virtual void Unload() OVERRIDE {
         m_reserved18c = -1;
         m_frameIndex = -1;
-        m_layer = NULL;
-        m_frameSet = NULL;
+        m_frameImage = NULL;
+        m_imageSet = NULL;
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
@@ -261,30 +262,30 @@ public:
     virtual i32 Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self)
         OVERRIDE;
 
-    void ApplyLookupSprite(const char* key, i32 frame);
-    void ApplyName(const char* name);
-    i32 ApplyLookupGeometry(const char* key, i32 flag);
+    void SetImageFrameByName(const char* key, i32 frame);
+    void SetImageSetByName(const char* name);
+    i32 SetAnimationByName(const char* key, i32 advanceImmediately);
     i32 SetSoundCueByName(const char* name);
-    void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault);
-    i32 Test();
+    void SetAnimation(CAniElement* animation, i32 advanceImmediately);
+    i32 IntersectsViewport();
 
-    void ClampFirst();
-    void ClampLast();
-    i32 SerializeSpriteName(CFileMemBase* ar);
-    i32 ReadState(CFileMemBase* src);
+    void ClampToFirstFrame();
+    void ClampToLastFrame();
+    i32 ReadSpriteState(CFileMemBase* stream);
+    i32 WriteSpriteState(CFileMemBase* stream);
 
     i32 m_reserved18c; // reset to -1 with m_frameIndex; never read
     i32 m_frameIndex;
-    CDDrawWorker* m_frameSet;
-    CImage* m_layer;
+    CDDrawWorker* m_imageSet;
+    CImage* m_frameImage;
     SoundCue* m_soundCue;
-    CAniAdvanceCursor m_animCursor;
+    CAniAdvanceCursor m_animationCursor;
 };
 
-class CWwdGameObject : public CWwdGameObjectA {
+class CWwdGameObject : public CWwdSpriteObject {
 public:
     CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
-        : CWwdGameObjectA(owner, id, objectFlags), m_children(0xa) {
+        : CWwdSpriteObject(owner, id, objectFlags), m_children(0xa) {
         m_reserved1f8 = 0;
     }
     virtual ~CWwdGameObject() OVERRIDE;
@@ -296,8 +297,8 @@ public:
         m_reserved1f8 = 0;
         m_reserved18c = -1;
         m_frameIndex = -1;
-        m_layer = NULL;
-        m_frameSet = NULL;
+        m_frameImage = NULL;
+        m_imageSet = NULL;
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
@@ -326,12 +327,12 @@ public:
     i32 m_reserved1f8; // zeroed in ctor/Unload only
 };
 
-class CWwdGameObjectF : public CGameObject {
+class CWwdDeferredObject : public CGameObject {
 public:
     // Only created by CDDrawChildGroup::CreateDeferredObject, which expands the base.
-    CWwdGameObjectF(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdDeferredObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
         : CGameObject(owner, id, objectFlags, INLINE_BASE_AND_REGION) {}
-    virtual ~CWwdGameObjectF() OVERRIDE;
+    virtual ~CWwdDeferredObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
     RVA(0x0015bc50, 0x7c)
@@ -350,14 +351,14 @@ public:
     virtual i32 SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate);
 };
 
-class CWwdGameObjectC : public CGameObject {
+class CWwdDotObject : public CGameObject {
 public:
     // Only created by CDDrawChildGroup::CreateDotObject, which expands the base.
-    CWwdGameObjectC(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    CWwdDotObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
         : CGameObject(owner, id, objectFlags, INLINE_BASE_AND_REGION) {
         m_dotColor = 0;
     }
-    virtual ~CWwdGameObjectC() OVERRIDE;
+    virtual ~CWwdDotObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
     RVA(0x0015c200, 0x82)
@@ -374,9 +375,9 @@ public:
     BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
 
-    virtual i32 SetupFlagged(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate, i32 flag);
+    virtual i32 SetupDot(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate, i32 dotColor);
     virtual u8 GetDotColor();
-    virtual void SetDotColor(u8 c8);
+    virtual void SetDotColor(u8 dotColor);
 
     u8 m_dotColor;
     char _p18d[0x190 - 0x18d];

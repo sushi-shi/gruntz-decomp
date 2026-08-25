@@ -50,7 +50,7 @@ With no zero left over to pin, the two positive-extent guards fall back to `test
 
 ## Evidence
 
-`CGameLevel::SetExtentsAndBuildAll` @0x15d700 — **68.29 % → 100 % EXACT**, having been filed
+`CGameLevel::SetViewportSizeAndUpdatePlanes` @0x15d700 — **68.29 % → 100 % EXACT**, having been filed
 a "regalloc/zero-pin wall … not steerable on a function this small". Fourteen orderings of
 the interleaved-store form, a `LevelCoordRect&` alias and a `LevelCoordRect*` local were all
 byte-identical to the baseline; only the struct assignment moved it.

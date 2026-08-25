@@ -416,7 +416,7 @@ therefore token-preserving macros, including separate retail-observed source sha
 | animation-act transition (`m_previousAnimationActId` then `ActFindId`) | 110 sites |
 | draw-fill table setup | 57 sites |
 | draw-fill fraction setup | 7 sites |
-| scaled/raw plane scroll plus `RecomputePlaneCoords` | 9 sites |
+| scaled/raw plane scroll plus `UpdatePlaneViewRect` | 9 sites |
 | arrival-target reset/copy | 5 sites |
 | same-target `CommitNeighbor` argument expansion | 29 sites |
 
@@ -462,7 +462,7 @@ New real inline abstractions retained by this pass:
   inline. No typed raw child-group traversal remains.
 - `CDDrawWorker::GetAt`: every remaining complete bounds-check/frame-access body was
   folded. Real calls are retained where VC5 reproduces the retail expansion, including
-  `CWwdGameObjectA::SwitchGeometry` (which became exact), serializers, glyph loaders,
+  `CWwdSpriteObject::SwitchAnimationByName` (which became exact), serializers, glyph loaders,
   status widgets, and the worker's own `GetFrame`/`ReloadFrame` wrappers.
 
 New exact-expansion macro fallbacks:
@@ -477,8 +477,8 @@ New exact-expansion macro fallbacks:
   bodies; the real inline moved an exact later `CSBI_ImageSetAni::Render` to 99.8667%;
 - `READ_TILE_IMAGE_DIMENSIONS` covers the three tile-image parsers. The shared
   `m_height` field was moved from all three derived classes to `CTileImageSet`, keeping
-  every object layout unchanged. A real helper left `CImageSet1/2::Parse` unchanged
-  and moved exact `CImageSet3::Parse` to 70.3051%; the token macro restores exact;
+  every object layout unchanged. A real helper left `CUniformTileImageSet/2::Parse` unchanged
+  and moved exact `CPixelTileImageSet::Parse` to 70.3051%; the token macro restores exact;
 - the existing caller-shape macros cover the last `NextChild`, pickup, lookup,
   object-flag, and frame-selection sites where a real helper changed a caller or later
   TU state.
@@ -540,14 +540,14 @@ open-coded. A semicolon-separated list means multiple expansion sites or source 
 | `CDDrawChildGroup::RegisterObjectId` | 100.000% | `CDDrawChildGroup::InsertSorted` |
 | `Font::SetGlyph` | 100.000% | `Font::AllocateMemory` |
 | `CDDrawSurfacePair::BltSelf` | 100.000% | `CreateOverlay`, `TransTitle`, `TransExit`, `CCreditsState::StepVideo` |
-| `CDDrawWorkerBase::SetPosition` | 100.000% | `CDDrawWorkerA::PlaceFrameValue`; three `CDDrawWorkerB::Place*` functions |
+| `CDDrawPlacedWorker::SetPosition` | 100.000% | `CDDrawPixelWorker::PlaceFrameValue`; three `CDDrawFrameWorker::Place*` functions |
 | `CGameMgr::Close` | 100.000% | `CGameMgr::CGameMgr` |
-| `CWwdGameObjectA::ApplyGeometryDirect` | 100.000% | `CWwdGameObjectA::ApplyLookupGeometry` |
-| `CMapArrayA/B` zero-state bodies | 100.000% | both constructors and both `Free` tails |
+| `CWwdSpriteObject::SetAnimation` | 100.000% | `CWwdSpriteObject::SetAnimationByName` |
+| `CBrickzNodePool/B` zero-state bodies | 100.000% | both constructors and both `Free` tails |
 
 Every family is represented once by a named macro because a real helper either changed
 the retail source shape or could not retain both the expansion and the pinned standalone
-COMDAT. `ApplyGeometryDirect` is a controlled example: a narrow real inline preserved the
+COMDAT. `SetAnimation` is a controlled example: a narrow real inline preserved the
 two target functions but moved the later exact `CDDrawWorker::GetMemoryUsage` to 99.9623%.
 The macro fallback restored all three to 100.000%.
 

@@ -23,8 +23,8 @@ extern ScrollPace g_scrollPace;
 extern u32 g_scrollClock;
 extern u32 g_scrollTimer;
 
-extern i32 g_scrollSave18;
-extern i32 g_scrollSave1c;
+extern i32 g_serializedScrollReservedFirst;
+extern i32 g_serializedScrollReservedSecond;
 extern i32 g_lastScrollX;
 extern i32 g_lastScrollY;
 

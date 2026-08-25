@@ -199,7 +199,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, i32 forceRefresh) {
                             *pixel = spriteRef->m_teamColor1;
                             break;
                     }
-                } else if (static_cast<u32>(g_timer100) < 0x32) {
+                } else if (static_cast<u32>(g_period100CountdownMs) < 0x32) {
 
                     i32 tileId = TileIdAt(m_mapMgr, x, y);
                     if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
@@ -269,7 +269,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         return 0;
     }
 
-    RECT* vr = &m_world->m_level->m_mainPlane->m_viewRect;
+    RECT* vr = &m_world->m_level->m_mainPlane->m_planeViewRect;
     RECT box;
     box.left = vr->left >> TILE_SHIFT_PX;
     box.top = vr->top >> TILE_SHIFT_PX;

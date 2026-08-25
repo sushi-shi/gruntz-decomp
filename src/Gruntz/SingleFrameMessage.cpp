@@ -41,7 +41,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     RECT r;
     SET_ANIMATION_ACT("A");
-    m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_wwdObject->m_id);
+    m_object->SetImageFrameByName("GAME_MESSAGEZ", m_wwdObject->m_id);
     {
         RECT bounds;
         CopyRect(&r, g_gameReg->GetRect(&bounds));

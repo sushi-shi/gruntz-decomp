@@ -9,7 +9,7 @@ confidence: 9/10
 
 ## Symptom
 
-`CDDrawWorkerHost::WrapCoord` 0xa000, one axis of a two-axis wrap:
+`CDDrawWorkerHost::WorldToViewport` 0xa000, one axis of a two-axis wrap:
 
 ```
  ours                              retail
@@ -50,7 +50,7 @@ if (*px < 0)             *px += m_wrapW;
 else if (*px >= m_wrapW) *px -= m_wrapW;
 ```
 
-**Measured: `CDDrawWorkerHost::WrapCoord` 0xa000, 91.49 -> 100.0000 EXACT**, both axes, in
+**Measured: `CDDrawWorkerHost::WorldToViewport` 0xa000, 91.49 -> 100.0000 EXACT**, both axes, in
 one change. Swapping the add's operand order (`x + m_wrapW` vs `m_wrapW + x`) is byte-flat
 and does NOT reach it — cl canonicalizes commutative operands, so the operand order in the
 source is not the lever; the presence of the LOCAL is.

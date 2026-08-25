@@ -48,7 +48,7 @@ now-identical exits and lose a whole block.
 
 ## 2. The penultimate `*p++` folds into the final read's displacement
 
-Retail, `CImageSet2::Parse` 0x166990 — every bump materialised except the last:
+Retail, `CRectTileImageSet::Parse` 0x166990 — every bump materialised except the last:
 
 ```asm
 mov edx,[eax]  /  add eax,0x4  /  mov [ecx+0x1c],edx
@@ -56,8 +56,8 @@ mov eax,[eax]                                       ; final read, no bump
 ```
 
 Ours folds one bump further, `mov eax,[eax+0x4]`, costing exactly one
-instruction (86.67% on the 0x24-byte `CImageSet1::Parse`, 94.07% on
-`CImageSet2::Parse`). Four spellings of the walk are byte-identical under cl
+instruction (86.67% on the 0x24-byte `CUniformTileImageSet::Parse`, 94.07% on
+`CRectTileImageSet::Parse`). Four spellings of the walk are byte-identical under cl
 5.0 — `*p++` throughout, a final `*p` with no bump, `++p` then `p[-1]`, and
 `*p; p++;` split into two statements — so the walk's spelling is not the
 lever. Do not rewrite `READ_TILE_IMAGE_DIMENSIONS`-style macros chasing it.

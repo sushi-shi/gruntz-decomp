@@ -31,7 +31,7 @@ RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, 0)
     NORMALIZE_BIG_ANIMATION_WITH_AUX(aux)
 }
@@ -53,6 +53,6 @@ void CBehindCandyAni::RegisterActs() {
 
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }

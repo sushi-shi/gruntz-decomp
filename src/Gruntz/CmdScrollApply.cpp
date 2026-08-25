@@ -36,8 +36,8 @@ void Cmd_ResetScroll() {
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
-    i32 scrollX = v->m_snappedX;
-    i32 scrollY = v->m_snappedY;
+    i32 scrollX = v->m_scrollPixelX;
+    i32 scrollY = v->m_scrollPixelY;
 
     if (g_scrollClock > g_frameTime) {
         if (g_frameDelta >= g_scrollTimer) {
@@ -69,14 +69,14 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         scrollX = cx - 1;
     }
     CDDrawWorkerHost* v2 = pm->m_world->m_level->m_mainPlane;
-    if (scrollX > v2->m_wrapW - cx) {
-        scrollX = v2->m_wrapW - cx;
+    if (scrollX > v2->m_planePixelWidth - cx) {
+        scrollX = v2->m_planePixelWidth - cx;
     }
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > v2->m_wrapH - cy) {
-        scrollY = v2->m_wrapH - cy;
+    if (scrollY > v2->m_planePixelHeight - cy) {
+        scrollY = v2->m_planePixelHeight - cy;
     }
 
     i32 deltaX = scrollX - g_lastScrollX;
@@ -89,8 +89,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
-        i32 nx = gm->m_snappedX;
-        i32 ny = gm->m_snappedY;
+        i32 nx = gm->m_scrollPixelX;
+        i32 ny = gm->m_scrollPixelY;
         if (deltaX != 0 || deltaY != 0) {
             nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
             ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
@@ -106,10 +106,10 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     }
 
     CDDrawSurfaceMgr* o = pm->m_world;
-    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_viewRect.left - 0x60;
-    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_viewRect.top - 0x60;
-    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_viewRect.right + 0x60;
-    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_viewRect.bottom + 0x60;
+    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_planeViewRect.left - 0x60;
+    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_planeViewRect.top - 0x60;
+    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_planeViewRect.right + 0x60;
+    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60;
 }
 
 RVA(0x000ec1c0, 0x43)
@@ -143,10 +143,10 @@ DATA(0x0024cfc4)
 u32 g_scrollTimer;
 
 DATA(0x0024cfc8)
-i32 g_scrollSave18;
+i32 g_serializedScrollReservedFirst;
 
 DATA(0x0024cfcc)
-i32 g_scrollSave1c;
+i32 g_serializedScrollReservedSecond;
 
 DATA(0x0024cfd0)
 i32 g_lastScrollX;

@@ -17,9 +17,9 @@ GZ_ENUM_CONST_BEGIN(AsyncKeyStateMask)
     ASYNC_KEYSTATE_DOWN = 0x80000000
 GZ_ENUM_CONST_END(AsyncKeyStateMask)
 
-extern i32 g_wap32Now;
-extern i32 g_wap32FrameDelta;
-extern i32 g_wap32ClockReset;
+extern i32 g_gameAppNowMs;
+extern i32 g_gameAppFrameDeltaMs;
+extern i32 g_framePacingEpochMs;
 extern i32 g_gameAppTimerRemainingMs;
 extern i32 g_gameAppTimerPeriodMs;
 #endif // GRUNTZ_WAP32_GAMEAPP_H

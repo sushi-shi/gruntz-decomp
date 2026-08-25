@@ -117,7 +117,7 @@ RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
 
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD)
     SetObjectFlags(0x2000002);
 
@@ -131,7 +131,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     if (sel == NULL) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    CWwdGameObjectA* d = m_object;
+    CWwdSpriteObject* d = m_object;
     SET_DRAW_FILL(d, SHADE_PAL_16, sel);
 
     switch (owner) {
@@ -233,7 +233,7 @@ i32 CWarlord::SerializeMove(
             ar->Read(hdr, SERIAL_NAME_LEN);
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
             m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(hdr) == 0) {
                 m_value = NULL;
@@ -511,7 +511,7 @@ i32 CWarlord::SerializeMove(
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
 
-            CWwdGameObjectA* sprite = m_object;
+            CWwdSpriteObject* sprite = m_object;
             SET_DRAW_FILL(sprite, SHADE_PAL_16, sel);
             break;
         }
@@ -586,13 +586,13 @@ i32 CWarlord::RearmMoving() {
 
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_gameMode != GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         i32 dist = reg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -613,12 +613,12 @@ i32 CWarlord::LoadAttributes() {
 
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) != 1) {
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         i32 dist = g_gameReg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
@@ -669,16 +669,16 @@ RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
-            CWwdGameObjectA* fx =
+            CWwdSpriteObject* fx =
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, x - 30, y + 10, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
             if (fx != NULL) {
-                fx->ApplyName("LEVEL_FORTSPLASH");
-                fx->ApplyLookupGeometry("LEVEL_FORTSPLASH", 0);
+                fx->SetImageSetByName("LEVEL_FORTSPLASH");
+                fx->SetAnimationByName("LEVEL_FORTSPLASH", 0);
             }
         }
 
@@ -705,7 +705,7 @@ i32 CWarlord::ResolveMovingAnimation() {
         return 0;
     }
 
-    ApplyName("GRUNTZ_" + m_warlordName + s__MOVING);
+    SetImageSetByName("GRUNTZ_" + m_warlordName + s__MOVING);
 
     SwitchAnimation(m_animMoving);
 
@@ -751,7 +751,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
 
             SwitchAnimation(m_animPanic);
 
-            ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
+            SetImageSetByName("GRUNTZ_" + m_warlordName + s__PANIC);
 
             SET_ANIMATION_ACT("D");
             return 1;
@@ -769,7 +769,7 @@ i32 CWarlord::ResolveDeathAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
@@ -781,7 +781,7 @@ i32 CWarlord::ResolveDeathAnimation() {
 
     SwitchAnimation(m_animDeath);
 
-    ApplyName("GRUNTZ_" + m_warlordName + "_DEATH");
+    SetImageSetByName("GRUNTZ_" + m_warlordName + "_DEATH");
 
     SET_ANIMATION_ACT("C");
     return 1;
@@ -795,7 +795,7 @@ i32 CWarlord::RaiseBattleAlert() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
@@ -808,7 +808,7 @@ i32 CWarlord::RaiseBattleAlert() {
     CAniElement* anim = m_animJoy;
     SwitchAnimation(anim);
 
-    ApplyName("GRUNTZ_" + m_warlordName + s__JOY);
+    SetImageSetByName("GRUNTZ_" + m_warlordName + s__JOY);
 
     SET_ANIMATION_ACT("E");
     return 1;
@@ -824,7 +824,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
 
         i32 cue = idx + 0x431;
         i32 x = h->m_screenX;
@@ -841,7 +841,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-    ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);
+    SetImageFrameByName("GRUNTZ_" + m_warlordName + s__IDLE, frame);
 
     SET_ANIMATION_ACT("A");
     return 1;
@@ -857,7 +857,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdGameObjectA* h = m_object;
+        CWwdSpriteObject* h = m_object;
         i32 cue = idx + 0x42e;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -871,7 +871,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     CAniElement* anim = m_battlecryAnims[idx];
     SwitchAnimation(anim);
 
-    ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
+    SetImageSetByName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
 
     SET_ANIMATION_ACT("F");
     return 1;

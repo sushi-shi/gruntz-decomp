@@ -61,9 +61,9 @@ arm carries its own control flow, retail duplicated the tail and folding is wron
 ```cpp
 if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
     CImage* img = (CImage*)spr->m_items.GetAt(1);
-    player->m_frameIndex = 1; player->m_layer = img; m_stepMag = 0.0; return 1;
+    player->m_frameIndex = 1; player->m_frameImage = img; m_stepMag = 0.0; return 1;
 }
-player->m_frameIndex = 1; player->m_layer = NULL; m_stepMag = 0.0; return 1;
+player->m_frameIndex = 1; player->m_frameImage = NULL; m_stepMag = 0.0; return 1;
 ```
 even though the two arms differ only in the stored value: each has its OWN `return`.
 
@@ -76,7 +76,7 @@ even though the two arms differ only in the stored value: each has its OWN `retu
 4. Each arm has its own `return` / control flow -> **NOT `GetAt`.** Leave it.
 
 A receiver null-test in a SEPARATE enclosing block (`if (spr) { ...GetAt shape... }`) does not
-disqualify - that is `CWwdGameObjectA::ApplyName`, 89.41 -> **94.12**.
+disqualify - that is `CWwdSpriteObject::SetImageSetByName`, 89.41 -> **94.12**.
 
 ## Corollary: the argument null-guard order is readable, and cl preserves it
 
@@ -111,14 +111,14 @@ is conditional:
 * **It moves bytes when the out-of-range path JOINS the in-range path at a shared store/use**,
   because that is where retail's `return 0` falls into the caller's tail:
   `CSBI_MenuItem::ResolveFrame` 70.38 -> 92.45, `CSBI_GruntMachine::BuildResourceTabStatusBar`
-  93.17 -> 97.84, `CWwdGameObjectA::ApplyName` 89.41 -> 94.12.
+  93.17 -> 97.84, `CWwdSpriteObject::SetImageSetByName` 89.41 -> 94.12.
 * **It is byte-neutral when the result goes to a plain local that is tested afterwards** - cl
   emits the same code either way. All 20 sites below were of this kind. Still worth doing (20
   casts and 40 raw `m_minIndex`/`m_maxIndex` comparisons removed, the real accessor used), but
   do not queue them expecting score.
 
 Applied, byte-neutral: `SBI_StatzTabArrow` x5, `SBI_WarlordHead::Render` x3,
-`CSBI_GruntMachine::Render` x2, `WwdFactoryObject` ClampFirst/ClampLast, `SBI_ImageSetAni::Render`,
+`CSBI_GruntMachine::Render` x2, `WwdFactoryObject` ClampToFirstFrame/ClampToLastFrame, `SBI_ImageSetAni::Render`,
 `CAniPlayer::RenderCel`, `ChatBox` x2, `GruntToySprite`, `GruntHealthSprite`, `LightFx`,
 `CSBI_MenuItem::SetState`.
 

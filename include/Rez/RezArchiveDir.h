@@ -49,8 +49,8 @@ public:
 
     i32 m_typeTag;
     CRezArchiveTypeHashNode m_typeNode;
-    CHash m_idIndex;
-    CHashC m_nameIndex;
+    CRezEntryIdHash m_idIndex;
+    CRezEntryNameHash m_nameIndex;
     CRezArchiveDir* m_directory;
 };
 
@@ -125,8 +125,8 @@ public:
     CRezArchiveDir* m_parent;
 
     CRezArchiveDirHashNode m_nameNode;
-    CHashB m_subdirectories;
-    CHashD m_types;
+    CRezDirectoryNameHash m_subdirectories;
+    CRezTypeTagHash m_types;
     char* m_preloadedData;
 };
 

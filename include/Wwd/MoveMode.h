@@ -4,7 +4,7 @@
 #include <Enums.h>
 
 // How CGameLevel::DispatchMove propels an object this step, as carried by
-// CWwdGameObjectFamily::m_moveMode.
+// CGameObject::m_moveMode.
 //
 // NOT the same field as CGrunt::m_moveMode (Grunt.h), which shares the name but
 // holds a PickupType - see the comment there.

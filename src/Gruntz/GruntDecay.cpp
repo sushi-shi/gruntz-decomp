@@ -13,7 +13,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     if (m_deathType == DEATH_DROP) {
         return 0;
     }
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 1) {
+    if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
         if (m_entranceReason == PICKUP_BOMB && m_deathType != DEATH_MELT) {
             m_triggerMgr->BuildRockBreakParticles(
                 m_object->m_screenX,
@@ -32,7 +32,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
             );
         }
     }
-    CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
+    CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
     if (sub->m_finished == 0) {
         return 0;
     }
@@ -65,7 +65,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
             (static_cast<double>(elapsed) * 256.0
              / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
         );
-        CWwdGameObjectA* o = m_object;
+        CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
         return 0;
     }
@@ -91,7 +91,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
     i64 now = static_cast<i64>(g_frameTime);
     if (now - m_idleTimer >= m_idleWindow) {
         Hide();
-        m_wwdObject->m_frameSet->SetAllTypes(SHADE_COPY);
+        m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
         if (m_cellRemovalNotified == 0) {
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
@@ -100,7 +100,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
     }
     i64 e = now - m_idleTimer;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     i32 r = static_cast<i32>(
         (static_cast<double>(elapsed) * 256.0
          / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))

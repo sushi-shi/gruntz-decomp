@@ -623,7 +623,7 @@ i32 DispatchGlobalAmbientSoundLogic(CGameObject* obj) {
 RVA(0x0000c840, 0x13d)
 i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
-    CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
+    CWwdSpriteObject* sprite = static_cast<CWwdSpriteObject*>(obj);
     if (record->m_eventCode == 0) {
         obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION);
         obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -678,7 +678,7 @@ i32 DispatchAmbientPosSoundLogic(CGameObject* obj) {
 RVA(0x0000ca00, 0xf0)
 i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
-    CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
+    CWwdSpriteObject* sprite = static_cast<CWwdSpriteObject*>(obj);
     i32 state = record->m_eventCode;
     if (state != 0) {
         if (state != AMBIENT_SOUND_ACTIVE) {

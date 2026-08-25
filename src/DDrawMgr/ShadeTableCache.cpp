@@ -37,7 +37,7 @@ const float g_one = 1.0f;
 DATA(0x001efb44)
 const float g_255 = 255.0f;
 DATA(0x001efb48)
-const float g_p01 = 0.01f;
+const float g_percentScale = 0.01f;
 DATA(0x001efb4c)
 const float g_lumaR = 0.5859375f;
 DATA(0x001efb50)
@@ -108,7 +108,7 @@ void CShadeTableCache::FreeNodes() {
 // order inside the product, addend order) are canonical here and byte-identical - the
 // factorisation is not reachable by reassociating the source. The j-loop, whose addends
 // have different leading operands, is byte-aligned. Re-measured: all 12 factor orders of
-// the second product (x endPct / g_p01 / uu, both addend orders) are byte-identical, and
+// the second product (x endPct / g_percentScale / uu, both addend orders) are byte-identical, and
 // five named-float-temp forms (two temps + a sum, one sum temp, a hoisted c, a hoisted
 // scale) all score 3-12 points WORSE - the temps defeat the ternary's own CSE instead.
 RVA(0x0014df40, 0x5f4)
@@ -214,29 +214,32 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             float inv = g_one - uu;
             u8 rn = static_cast<u8>(
                 (static_cast<float>(pal[i].peRed) * inv
-                 + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct) * g_p01 * uu)
+                 + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct) * g_percentScale
+                       * uu)
                         < g_255
                     ? static_cast<float>(pal[i].peRed) * inv
-                          + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct) * g_p01
-                                * uu
+                          + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct)
+                                * g_percentScale * uu
                     : g_255
             );
             u8 gn = static_cast<u8>(
                 (static_cast<float>(pal[i].peGreen) * inv
-                 + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct) * g_p01 * uu)
+                 + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct) * g_percentScale
+                       * uu)
                         < g_255
                     ? static_cast<float>(pal[i].peGreen) * inv
-                          + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct) * g_p01
-                                * uu
+                          + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct)
+                                * g_percentScale * uu
                     : g_255
             );
             u8 bn = static_cast<u8>(
                 (static_cast<float>(pal[i].peBlue) * inv
-                 + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct) * g_p01 * uu)
+                 + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct) * g_percentScale
+                       * uu)
                         < g_255
                     ? static_cast<float>(pal[i].peBlue) * inv
-                          + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct) * g_p01
-                                * uu
+                          + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct)
+                                * g_percentScale * uu
                     : g_255
             );
             ramp[k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
@@ -277,7 +280,7 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float factor =
                 static_cast<float>(pow(static_cast<double>(x), static_cast<double>(gamma)));
             float scale = static_cast<float>(j) / static_cast<float>(steps)
-                              * (factor * static_cast<float>((pct - 100)) * g_p01)
+                              * (factor * static_cast<float>((pct - 100)) * g_percentScale)
                           - g_negone;
             u8 rn = static_cast<u8>(
                 HSV_MIN(static_cast<float>(((baseArg & 0xff) + pal[i].peRed)) * scale, g_255)

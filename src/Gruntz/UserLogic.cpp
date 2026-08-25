@@ -68,7 +68,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
             arc->Read(name, SERIAL_NAME_LEN);
             arc->Read(m_blob, 0x10);
             m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
             m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(name) == 0) {
                 m_value = NULL;

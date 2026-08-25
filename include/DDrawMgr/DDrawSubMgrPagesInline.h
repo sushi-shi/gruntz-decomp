@@ -6,7 +6,7 @@
 #include <DDrawMgr/DDSurface.h>
 
 inline void FlipFrontAndRestoreOverlay(CDDrawSubMgrPages* pages) {
-    pages->m_frontPair->m_surface->Flip(0);
+    pages->m_frontSurface->m_surface->Flip(0);
     pages->m_backPair->m_surface->BltFast(
         0,
         0,

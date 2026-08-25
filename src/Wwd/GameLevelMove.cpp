@@ -82,8 +82,8 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 cx = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_wrapW) {
-                    cx = pc->m_wrapW - 1;
+                if (cx >= pc->m_planePixelWidth) {
+                    cx = pc->m_planePixelWidth - 1;
                 }
             }
             i32 cy = yLo;
@@ -91,8 +91,8 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 cy = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_wrapH) {
-                    cy = pc->m_wrapH - 1;
+                if (cy >= pc->m_planePixelHeight) {
+                    cy = pc->m_planePixelHeight - 1;
                 }
             }
             CDDrawWorkerHost* pl = m_mainPlane;
@@ -100,9 +100,9 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 col = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_rowOffsets[qy] + col;
+            i32 idx = pl->m_tileRowOffsets[qy] + col;
             i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileGrid[idx];
+            i32 tile = pl->m_tileHandles[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
@@ -165,8 +165,8 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 cx = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_wrapW) {
-                    cx = pc->m_wrapW - 1;
+                if (cx >= pc->m_planePixelWidth) {
+                    cx = pc->m_planePixelWidth - 1;
                 }
             }
             i32 cy = yLo;
@@ -174,8 +174,8 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 cy = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_wrapH) {
-                    cy = pc->m_wrapH - 1;
+                if (cy >= pc->m_planePixelHeight) {
+                    cy = pc->m_planePixelHeight - 1;
                 }
             }
             CDDrawWorkerHost* pl = m_mainPlane;
@@ -183,9 +183,9 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 col = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_rowOffsets[qy] + col;
+            i32 idx = pl->m_tileRowOffsets[qy] + col;
             i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileGrid[idx];
+            i32 tile = pl->m_tileHandles[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
@@ -248,8 +248,8 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 cx = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_wrapW) {
-                    cx = pc->m_wrapW - 1;
+                if (cx >= pc->m_planePixelWidth) {
+                    cx = pc->m_planePixelWidth - 1;
                 }
             }
             i32 cy = fixedY;
@@ -257,8 +257,8 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 cy = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_wrapH) {
-                    cy = pc->m_wrapH - 1;
+                if (cy >= pc->m_planePixelHeight) {
+                    cy = pc->m_planePixelHeight - 1;
                 }
             }
             CDDrawWorkerHost* pl = m_mainPlane;
@@ -266,9 +266,9 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 c = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_rowOffsets[qy] + c;
+            i32 idx = pl->m_tileRowOffsets[qy] + c;
             i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileGrid[idx];
+            i32 tile = pl->m_tileHandles[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
@@ -331,8 +331,8 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 cx = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_wrapW) {
-                    cx = pc->m_wrapW - 1;
+                if (cx >= pc->m_planePixelWidth) {
+                    cx = pc->m_planePixelWidth - 1;
                 }
             }
             i32 cy = fixedY;
@@ -340,8 +340,8 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 cy = 0;
             } else {
                 CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_wrapH) {
-                    cy = pc->m_wrapH - 1;
+                if (cy >= pc->m_planePixelHeight) {
+                    cy = pc->m_planePixelHeight - 1;
                 }
             }
             CDDrawWorkerHost* pl = m_mainPlane;
@@ -349,9 +349,9 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             i32 qy = cy >> pl->m_shiftY;
             i32 c = qx;
             i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_rowOffsets[qy] + c;
+            i32 idx = pl->m_tileRowOffsets[qy] + c;
             i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileGrid[idx];
+            i32 tile = pl->m_tileHandles[idx];
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
@@ -527,42 +527,51 @@ RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
 i32 CWwdSpatialMgr::Init(
     CDDrawChildGroup* owner,
-    RECT* rc,
-    i32* cellA,
-    i32* cellB,
-    i32* cellC,
-    i32* sizeA,
-    i32* sizeB,
-    i32* sizeC
+    RECT* levelBounds,
+    i32* defaultGridCellSize,
+    i32* largeGridCellSize,
+    i32* smallGridCellSize,
+    i32* defaultRegionSize,
+    i32* largeRegionSize,
+    i32* smallRegionSize
 ) {
     if (owner) {
-        m_grid0 = new CWwdGridShell;
-        m_grid1 = new CWwdGridShell;
-        m_grid2 = new CWwdGridShell;
-        if (m_grid0 && m_grid1 && m_grid2 && m_grid0->Setup(*rc, cellA[0], cellA[1])
-            && m_grid1->Setup(*rc, cellB[0], cellB[1]) && m_grid2->Setup(*rc, cellC[0], cellC[1])) {
-            m_rect0.left = 0;
-            m_rect0.top = 0;
-            m_rect0.right = sizeA[0] - 1;
-            m_rect0.bottom = sizeA[1] - 1;
-            m_org0x = sizeA[0] / 2;
-            m_org0y = sizeA[1] / 2;
-            m_rect1.left = 0;
-            m_rect1.top = 0;
-            m_rect1.right = sizeB[0] - 1;
-            m_rect1.bottom = sizeB[1] - 1;
-            m_org1x = sizeB[0] / 2;
-            m_org1y = sizeB[1] / 2;
-            m_rect2.left = 0;
-            m_rect2.top = 0;
-            m_rect2.right = sizeC[0] - 1;
-            m_rect2.bottom = sizeC[1] - 1;
-            m_org2x = sizeC[0] / 2;
-            m_org2y = sizeC[1] / 2;
-            m_mgr = owner;
-            SetRect(&m_bounds, rc->left, rc->top, rc->right, rc->bottom);
-            m_scrollX = static_cast<i32>(0xffffa932);
-            m_scrollY = static_cast<i32>(0xffffa932);
+        m_defaultRegionGrid = new CWwdGridShell;
+        m_largeRegionGrid = new CWwdGridShell;
+        m_smallRegionGrid = new CWwdGridShell;
+        if (m_defaultRegionGrid && m_largeRegionGrid && m_smallRegionGrid
+            && m_defaultRegionGrid
+                   ->Setup(*levelBounds, defaultGridCellSize[0], defaultGridCellSize[1])
+            && m_largeRegionGrid->Setup(*levelBounds, largeGridCellSize[0], largeGridCellSize[1])
+            && m_smallRegionGrid->Setup(*levelBounds, smallGridCellSize[0], smallGridCellSize[1])) {
+            m_defaultRegionRect.left = 0;
+            m_defaultRegionRect.top = 0;
+            m_defaultRegionRect.right = defaultRegionSize[0] - 1;
+            m_defaultRegionRect.bottom = defaultRegionSize[1] - 1;
+            m_defaultRegionHalfWidth = defaultRegionSize[0] / 2;
+            m_defaultRegionHalfHeight = defaultRegionSize[1] / 2;
+            m_largeRegionRect.left = 0;
+            m_largeRegionRect.top = 0;
+            m_largeRegionRect.right = largeRegionSize[0] - 1;
+            m_largeRegionRect.bottom = largeRegionSize[1] - 1;
+            m_largeRegionHalfWidth = largeRegionSize[0] / 2;
+            m_largeRegionHalfHeight = largeRegionSize[1] / 2;
+            m_smallRegionRect.left = 0;
+            m_smallRegionRect.top = 0;
+            m_smallRegionRect.right = smallRegionSize[0] - 1;
+            m_smallRegionRect.bottom = smallRegionSize[1] - 1;
+            m_smallRegionHalfWidth = smallRegionSize[0] / 2;
+            m_smallRegionHalfHeight = smallRegionSize[1] / 2;
+            m_activeGroup = owner;
+            SetRect(
+                &m_levelBounds,
+                levelBounds->left,
+                levelBounds->top,
+                levelBounds->right,
+                levelBounds->bottom
+            );
+            m_activeCenterX = static_cast<i32>(0xffffa932);
+            m_activeCenterY = static_cast<i32>(0xffffa932);
             return 1;
         }
     }

@@ -67,10 +67,10 @@ i32 CGrunt::StepArrivalDefenseLean() {
                     return 1;
                 }
                 {
-                    CWwdGameObjectA* h = m_object;
+                    CWwdSpriteObject* h = m_object;
                     i32 vx = h->m_screenX;
                     i32 vy = h->m_screenY;
-                    const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                     if (CGameLevel::PointInRect(rect, vx, vy)) {
                         g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
@@ -85,10 +85,10 @@ i32 CGrunt::StepArrivalDefenseLean() {
             m_defenderState = AISTATE_CHASE;
             m_dwell = DWELL_REPATH_MS;
             {
-                CWwdGameObjectA* h = m_object;
+                CWwdSpriteObject* h = m_object;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInRect(rect, vx, vy)) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
@@ -164,7 +164,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             }
             if (IsArrivalRerollPending() != 0) {
                 {
-                    CWwdGameObjectA* h = m_object;
+                    CWwdSpriteObject* h = m_object;
                     SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(
                         h,
                         baseX,

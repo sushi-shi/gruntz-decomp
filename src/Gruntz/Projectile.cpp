@@ -57,17 +57,17 @@
 #include <string.h>
 
 DATA(0x001eaad8)
-const double g_boomHalf = 0.5;
+const double g_boomerangMidpointScale = 0.5;
 DATA(0x001eaae0)
-const double g_boomTimeScale = 0.03125;
+const double g_boomerangPixelToTileScale = 0.03125;
 DATA(0x001eaae8)
-const double g_projPhase0 = 3.1415927;
+const double g_boomerangHalfTurnRadians = 3.1415927;
 DATA(0x001eaaf0)
-const double g_boomRetC3 = 0.0625;
+const double g_boomerangHoldScale = 0.0625;
 DATA(0x001eaaf8)
-const double g_boomRetC4 = -500.0;
+const double g_boomerangHoldBiasMs = -500.0;
 DATA(0x001eab00)
-const double g_projPhase1 = 6.2831854;
+const double g_boomerangFullTurnRadians = 6.2831854;
 DATA(0x001f04b0)
 const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
@@ -109,7 +109,7 @@ RVA_COMPGEN(0x00058ba0, 0x1, ??1CMotionState@@QAE@XZ)
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
     SET_OBJECT_FLAGS_AND_HIDE_INLINE(0x2000002)
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
     memset(&m_frames[0], 0, 0x1c);
     m_sound = NULL;
@@ -138,7 +138,7 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
     return found;
 }
 
-static inline CWwdGameObjectA* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
+static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
     CGameObject* found = NULL;
     if (MapLookupById(byId, id, found) == 0) {
         return NULL;
@@ -146,7 +146,7 @@ static inline CWwdGameObjectA* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
     if (found == NULL) {
         return NULL;
     }
-    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(found) : NULL;
+    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(found) : NULL;
 }
 
 // @early-stop
@@ -238,7 +238,7 @@ i32 CProjectile::LoadProjectileSprites(
         LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
 
     SwitchAnimation(m_frames[0]);
-    ApplyName(key + "_OBJECT");
+    SetImageSetByName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
     double len = sqrt(dx * dx + dy * dy);
@@ -321,7 +321,7 @@ void CProjectile::AdvanceMotion() {
     }
 
     if (m_kind == PICKUP_WINGZ) {
-        CWwdGameObjectA* owner = m_object;
+        CWwdSpriteObject* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
         if (CGameLevel::PointInRect(&reg->m_viewBounds, owner->m_screenX, owner->m_screenY)) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
@@ -372,46 +372,46 @@ void CProjectile::AdvanceMotion() {
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
+                if (m_wwdObject->m_animationCursor.m_animation != m_frames[0]) {
                     SwitchAnimation(m_frames[0]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animCursor.Setup(m_frames[0]);
+                        m_shadow->m_animationCursor.SetAnimation(m_frames[0]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
+                if (m_wwdObject->m_animationCursor.m_animation != m_frames[1]) {
                     SwitchAnimation(m_frames[1]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animCursor.Setup(m_frames[1]);
+                        m_shadow->m_animationCursor.SetAnimation(m_frames[1]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
+                if (m_wwdObject->m_animationCursor.m_animation != m_frames[2]) {
                     SwitchAnimation(m_frames[2]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animCursor.Setup(m_frames[2]);
+                        m_shadow->m_animationCursor.SetAnimation(m_frames[2]);
                     }
                 }
             } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {
+                if (m_wwdObject->m_animationCursor.m_animation != m_frames[3]) {
                     SwitchAnimation(m_frames[3]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animCursor.Setup(m_frames[3]);
+                        m_shadow->m_animationCursor.SetAnimation(m_frames[3]);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_wwdObject->m_animCursor.m_animation != m_frames[4]) {
+                if (m_wwdObject->m_animationCursor.m_animation != m_frames[4]) {
                     SwitchAnimation(m_frames[4]);
                     if (m_shadow != NULL) {
-                        m_shadow->m_animCursor.Setup(m_frames[4]);
+                        m_shadow->m_animationCursor.SetAnimation(m_frames[4]);
                     }
                 }
             }
@@ -462,7 +462,7 @@ void CProjectile::AdvanceMotion() {
                                     m_targetPxX,
                                     m_targetPxY
                                 )) {
-                                CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
+                                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
                                     0,
                                     m_targetPxX,
                                     m_targetPxY,
@@ -471,8 +471,8 @@ void CProjectile::AdvanceMotion() {
                                     0x40003
                                 );
                                 if (fx != NULL) {
-                                    fx->ApplyName("LEVEL_DEATHSPLASH");
-                                    fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                    fx->SetImageSetByName("LEVEL_DEATHSPLASH");
+                                    fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
                                 }
                             }
                             SetObjectFlags(0x10000);
@@ -482,7 +482,7 @@ void CProjectile::AdvanceMotion() {
             }
         } else {
             if (CGameLevel::PointInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
-                CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
+                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_targetPxX,
                     m_targetPxY,
@@ -491,8 +491,8 @@ void CProjectile::AdvanceMotion() {
                     0x40003
                 );
                 if (fx != NULL) {
-                    fx->ApplyName("GAME_WATER");
-                    fx->ApplyLookupGeometry("GAME_WATER", 0);
+                    fx->SetImageSetByName("GAME_WATER");
+                    fx->SetAnimationByName("GAME_WATER", 0);
                 }
             }
             SetObjectFlags(0x10000);
@@ -511,9 +511,9 @@ RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CWwdGameObjectA* r = m_wwdObject;
-    if (IsAniCursorComplete(&r->m_animCursor)) {
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
+    CWwdSpriteObject* r = m_wwdObject;
+    if (IsAniCursorComplete(&r->m_animationCursor)) {
         r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 0;
@@ -550,14 +550,15 @@ i32 CBoomerang::LoadProjectileSprites(
         return 0;
     }
     double duration = static_cast<double>(static_cast<u32>(m_timePerTile));
-    double d = g_projPhase0 / (duration * (g_boomTimeScale * m_flightDist));
-    CWwdGameObjectA* owner = m_object;
+    double d =
+        g_boomerangHalfTurnRadians / (duration * (g_boomerangPixelToTileScale * m_flightDist));
+    CWwdSpriteObject* owner = m_object;
     m_launchX = owner->m_screenX;
     m_launchY = owner->m_screenY;
-    double originY =
-        (static_cast<double>(m_targetPxY) + static_cast<double>(owner->m_screenY)) * g_boomHalf;
-    m_originX =
-        (static_cast<double>(m_targetPxX) + static_cast<double>(owner->m_screenX)) * g_boomHalf;
+    double originY = (static_cast<double>(m_targetPxY) + static_cast<double>(owner->m_screenY))
+                     * g_boomerangMidpointScale;
+    m_originX = (static_cast<double>(m_targetPxX) + static_cast<double>(owner->m_screenX))
+                * g_boomerangMidpointScale;
     m_originY = originY;
     m_dirX = m_originX - static_cast<double>(m_launchX);
     m_dirY = originY - static_cast<double>(m_launchY);
@@ -565,7 +566,9 @@ i32 CBoomerang::LoadProjectileSprites(
     m_velScale = d;
     CGrunt* g = g_gameReg->m_triggerMgr->m_units[15 * sourcePlayerIndex + sourceUnitIndex];
     if (g != NULL) {
-        g->m_holdWindowLo = static_cast<i32>((duration * m_flightDist * g_boomRetC3 - g_boomRetC4));
+        g->m_holdWindowLo = static_cast<i32>(
+            (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+        );
         g->m_holdWindowHi = 0;
         g->m_holdAnchorLo = g_frameTime;
         g->m_holdAnchorHi = 0;
@@ -582,7 +585,7 @@ i32 CBoomerang::LoadProjectileSprites(
 // 0x20-byte x87 frame; the equivalent local form below currently uses 0x18.
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
-    if (m_launched == 0 && m_phase > g_projPhase0) {
+    if (m_launched == 0 && m_phase > g_boomerangHalfTurnRadians) {
         m_object->m_screenX = m_targetPxX;
         m_object->m_screenY = m_targetPxY;
         if (m_shadow != NULL) {
@@ -590,7 +593,7 @@ void CBoomerang::AdvanceMotion() {
             m_shadow->m_screenY = m_targetPxY;
         }
         m_launched = 1;
-    } else if (m_phase > g_projPhase1 && m_launched != 0) {
+    } else if (m_phase > g_boomerangFullTurnRadians && m_launched != 0) {
         ScanTargets(1);
         if (m_shadow != NULL) {
             m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -835,7 +838,7 @@ i32 CProjectile::SerializeMove(
             s->Read(m_blob, 0x10);
             CGameObject* obj = object;
             m_gameObject = obj;
-            m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
+            m_wwdObject = static_cast<CWwdSpriteObject*>(obj);
             m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(buf) == 0) {
                 m_value = NULL;
@@ -921,18 +924,18 @@ RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
     SetObjectFlags(0x2000002);
-    CWwdGameObjectA* o = m_object;
+    CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
-    ApplyName("GAME_TIMEBOMB");
+    SetImageSetByName("GAME_TIMEBOMB");
     SET_ANIMATION_ACT("A");
-    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_value = m_wwdObject->m_animationCursor.m_animation;
     if (m_object->m_damage > 0) {
-        m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
+        m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
         m_duration = static_cast<u32>(m_object->m_damage);
         m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 1;
     } else {
-        m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
+        m_wwdObject->SetAnimationByName("GAME_TIMEBOMBSLOW", 0);
         m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
         m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 0;
@@ -976,11 +979,11 @@ i32 CTimeBomb::LoadAttributes() {
         TBombGridClear(m_object);
         return 0;
     }
-    m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
     if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
         if (m_fastPhase == 0) {
-            SwitchGeometry("GAME_TIMEBOMBFAST", 0);
+            SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
             m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
             m_startTime = g_frameTime;
             m_fastPhase = 1;

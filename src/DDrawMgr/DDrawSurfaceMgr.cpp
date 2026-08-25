@@ -6,10 +6,10 @@
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
+#include <DDrawMgr/DDrawPaletteRegistry.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerList.h>
-#include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <Dsndmgr/SoundStream.h>
@@ -34,7 +34,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_workerList = NULL;
     m_imageRegistry = NULL;
     m_logicRegistry = NULL;
-    m_workerMap = NULL;
+    m_paletteRegistry = NULL;
     m_deviceManager = NULL;
     m_soundStream = NULL;
     m_level = NULL;
@@ -63,7 +63,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_workerList = new CDDrawWorkerList(this);
     m_imageRegistry = new CDDrawWorkerRegistry(this);
     m_logicRegistry = new CLogicRecordRegistry(this);
-    m_workerMap = new CDDrawWorkerMapSmall(this);
+    m_paletteRegistry = new CDDrawPaletteRegistry(this);
     m_level = new CGameLevel(this, 0, 0);
     m_soundRegistry = new SoundCueRegistry(this);
     m_animRegistry = new AnimationRegistry(this);
@@ -94,7 +94,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    if (!m_workerMap->IsReady()) {
+    if (!m_paletteRegistry->IsReady()) {
         if (m_lastError == WORLDERR_NONE) {
             m_lastError = WORLDERR_WORKER_MAP;
         }
@@ -106,7 +106,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    if (!m_level->SetCoordExtents(w, h)) {
+    if (!m_level->SetViewportSize(w, h)) {
         if (m_lastError == WORLDERR_NONE) {
             m_lastError = WORLDERR_LEVEL_EXTENTS;
         }
@@ -184,9 +184,9 @@ void CDDrawSurfaceMgr::Cleanup() {
         delete m_logicRegistry;
         m_logicRegistry = NULL;
     }
-    if (m_workerMap) {
-        delete m_workerMap;
-        m_workerMap = NULL;
+    if (m_paletteRegistry) {
+        delete m_paletteRegistry;
+        m_paletteRegistry = NULL;
     }
     if (m_animRegistry) {
         delete m_animRegistry;
@@ -236,7 +236,7 @@ void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
 
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
-    CDDrawSurfaceChildA* child = m_drawTarget->m_frontPair;
+    CDDrawFrontSurface* child = m_drawTarget->m_frontSurface;
 
     if (child->m_width != x || child->m_height != y) {
         if (m_drawTarget->ResizePages(x, y, bpp) == BPP_UNSET) {
@@ -244,7 +244,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
         }
         if (m_level != NULL) {
 
-            if (m_level->SetExtentsAndBuildAll(x, y) == 0) {
+            if (m_level->SetViewportSizeAndUpdatePlanes(x, y) == 0) {
                 return 0;
             }
         }

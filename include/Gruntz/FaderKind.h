@@ -16,9 +16,9 @@
 //   5  new CFaderMesh
 //
 // Corroborated a second way by the init descriptor each arm demands. Add takes
-// a CFxModeDesc* and rejects it unless its self-tag is the kind PLUS ONE (see
-// FxModeKind), so kind and descriptor pin each other: the CFaderLight arm only
-// accepts FXMODE_LIGHT, whose class is CFxModeT2, whose ctor sets m_type = 2.
+// a CFaderConfig* and rejects it unless its self-tag is the kind PLUS ONE (see
+// FaderConfigKind), so kind and descriptor pin each other: the CFaderLight arm only
+// accepts FADER_CONFIG_LIGHT, whose class is CLightFaderConfig, whose ctor sets m_kind = 2.
 GZ_ENUM_BEGIN(FaderKind)
     FADERKIND_SHAPE = 0,
     FADERKIND_LIGHT = 1,

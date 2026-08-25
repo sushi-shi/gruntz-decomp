@@ -22,9 +22,9 @@ dismiss as a layout wall.
 
 ```cpp
 // before
-if (g_frameDelta < t1) { g_timer32 = t1 - g_frameDelta; } else { g_timer32 = 0; }
+if (g_frameDelta < t1) { g_period50CountdownMs = t1 - g_frameDelta; } else { g_period50CountdownMs = 0; }
 // after
-if (g_frameDelta >= t1) { g_timer32 = 0; } else { g_timer32 = t1 - g_frameDelta; }
+if (g_frameDelta >= t1) { g_period50CountdownMs = 0; } else { g_period50CountdownMs = t1 - g_frameDelta; }
 ```
 
 ```asm
