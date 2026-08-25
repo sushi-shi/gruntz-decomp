@@ -42,17 +42,17 @@ Put the call inside both branches:
 ```cpp
 // NO - one call, one push, arms are short
 COLORREF color;
-if (item->type & FONTITEM_COLORED) {
-    switch (item->data) { case ...: color = TCLR_NAVY; break; ... }
+if (HAS(item->flags, FONT_ITEM_COLORED)) {
+    switch (item->payload) { case ...: color = TCLR_NAVY; break; ... }
 } else {
     color = TCLR_WHITE;
 }
 SetTextColor(hdc, color);
 
 // YES - two call sites; cl cross-jumps them and the arms keep their push
-if (item->type & FONTITEM_COLORED) {
+if (HAS(item->flags, FONT_ITEM_COLORED)) {
     COLORREF color;
-    switch (item->data) { case ...: color = TCLR_NAVY; break; ... }
+    switch (item->payload) { case ...: color = TCLR_NAVY; break; ... }
     SetTextColor(hdc, color);
 } else {
     SetTextColor(hdc, TCLR_WHITE);

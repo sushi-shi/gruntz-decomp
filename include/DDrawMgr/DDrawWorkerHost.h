@@ -9,6 +9,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
+#include <Wwd/WwdPlaneFlags.h>
 
 #include <ddraw.h>
 
@@ -131,7 +132,7 @@ public:
 };
 
 #define SET_SCROLL_POSITION_SCALED_FIRST(plane, x, y)                                              \
-    if ((plane->m_flags & 1) == 0) {                                                               \
+    if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
         plane->m_scaledX = static_cast<float>(x) * plane->m_scaleX;                                \
         plane->m_scaledY = static_cast<float>(y) * plane->m_scaleY;                                \
     } else {                                                                                       \
@@ -141,7 +142,7 @@ public:
     plane->RecomputePlaneCoords()
 
 #define SET_SCROLL_POSITION_RAW_FIRST(plane, x, y)                                                 \
-    if (plane->m_flags & 1) {                                                                      \
+    if (HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                  \
         plane->m_scaledX = static_cast<float>(x);                                                  \
         plane->m_scaledY = static_cast<float>(y);                                                  \
     } else {                                                                                       \
@@ -151,7 +152,7 @@ public:
     plane->RecomputePlaneCoords()
 
 #define SET_SCROLL_POSITION_PRODUCT_CAST(plane, x, y)                                              \
-    if (!(plane->m_flags & 1)) {                                                                   \
+    if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
         plane->m_scaledX = static_cast<float>(x * plane->m_scaleX);                                \
         plane->m_scaledY = static_cast<float>(y * plane->m_scaleY);                                \
     } else {                                                                                       \
@@ -161,7 +162,7 @@ public:
     plane->RecomputePlaneCoords()
 
 #define SET_SCROLL_POSITION_ZERO(plane)                                                            \
-    if ((plane->m_flags & 1) == 0) {                                                               \
+    if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
         plane->m_scaledX = 0.0f * plane->m_scaleX;                                                 \
         plane->m_scaledY = 0.0f * plane->m_scaleY;                                                 \
     } else {                                                                                       \

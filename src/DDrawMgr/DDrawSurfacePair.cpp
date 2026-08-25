@@ -236,7 +236,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     if (rect->bottom < 0 || rect->bottom >= m_height) {
         return;
     }
-    char* base = static_cast<char*>(m_surface->Lock(0));
+    char* base = static_cast<char*>(m_surface->Lock(NULL));
     if (base == NULL) {
         return;
     }
@@ -308,7 +308,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (y + 4 >= m_height) {
         return;
     }
-    char* base = static_cast<char*>(m_surface->Lock(0));
+    char* base = static_cast<char*>(m_surface->Lock(NULL));
     if (base == NULL) {
         return;
     }
@@ -589,7 +589,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
     m_plotDX = 0;
     m_plotDY = 0;
-    m_stateFlags = 0;
+    m_stateFlags = SPRITE_STATE_NONE;
     m_flashCountdown = 0;
     m_drawFillArg = NULL;
     m_drawActive = 0;
@@ -606,7 +606,7 @@ i32 CResolveNode::Init(
     i32 id,
     i32 resolveX,
     i32 resolveY,
-    i32 stateFlags,
+    GZ_ENUM_PARAM(SpriteStateFlags, i32) stateFlags,
     i32 flags
 ) {
     m_ownerCtx = owner;
@@ -961,7 +961,7 @@ RVA(0x00165460, 0x156)
 i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
-    m_total = 0;
+    m_durationMs = 0;
     const char* cursor = src->m_data;
     m_flags = src->m_flags | flags;
 
@@ -988,7 +988,7 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
         }
         m_records.SetAtGrow(m_records.GetSize(), static_cast<CObject*>(rec));
         cursor += g_aniParsedNameLen + 0x14;
-        m_total += rec->GetSize();
+        m_durationMs += rec->GetDurationMs();
     }
     return 1;
 
@@ -1297,7 +1297,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair
         i32 y = m_screenY;
         i32 x = m_screenX;
         CDDSurface* s = overlay->m_surface;
-        char* base = static_cast<char*>(s->Lock(0));
+        char* base = static_cast<char*>(s->Lock(NULL));
         if (base != NULL) {
             base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
             s->m_ddSurface->Unlock(NULL);
@@ -1308,7 +1308,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair
         i32 y = m_screenY;
         i32 x = m_screenX;
         CDDSurface* s = backBuffer->m_surface;
-        char* base = static_cast<char*>(s->Lock(0));
+        char* base = static_cast<char*>(s->Lock(NULL));
         if (base != NULL) {
             base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
             s->m_ddSurface->Unlock(NULL);

@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
+#include <Gruntz/DebugDisplayFlags.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -401,7 +402,7 @@ extern u32 g_gooPuddlez;
 extern u32 g_explosionz;
 extern u32 g_resolutionChanged;
 
-extern i32 g_debugDisplayFlags;
+extern DebugDisplayFlags g_debugDisplayFlags;
 
 extern i32 g_warpX;
 extern i32 g_warpY;

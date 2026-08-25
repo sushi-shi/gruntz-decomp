@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/DDrawChildGroupFlags.h>
 #include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -58,17 +59,17 @@ public:
         int sortKey,
         CLogicRecord* logicTemplate,
         int dotColor,
-        int stateFlags
+        int objectFlags
     );
     CWwdGameObjectF*
-    CreateDeferredObject(int id, int sortKey, CLogicRecord* logicTemplate, int stateFlags);
+    CreateDeferredObject(int id, int sortKey, CLogicRecord* logicTemplate, int objectFlags);
     CWwdGameObjectA* CreateSpriteObject(
         int id,
         int x,
         int y,
         int sortKey,
         CLogicRecord* logicTemplate,
-        int stateFlags
+        int objectFlags
     );
     CWwdGameObject* CreateContainerObject(
         int id,
@@ -76,7 +77,7 @@ public:
         int y,
         int sortKey,
         CLogicRecord* logicTemplate,
-        int stateFlags
+        int objectFlags
     );
 
     CWwdGameObjectC* CreateNamedDotObject(
@@ -86,19 +87,25 @@ public:
         int sortKey,
         const char* name,
         int dotColor,
-        int stateFlags
+        int objectFlags
     );
     CWwdGameObjectF*
-    CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags);
-    CWwdGameObject*
-    CreateNamedContainerObject(int id, int x, int y, int sortKey, const char* name, int stateFlags);
+    CreateNamedDeferredObject(int id, int sortKey, const char* name, int objectFlags);
+    CWwdGameObject* CreateNamedContainerObject(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        const char* name,
+        int objectFlags
+    );
 
     CWwdGameObjectA*
-    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
+    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
 
     i32 AddObject(CGameObject* obj);
     i32
-    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
+    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 objectFlags);
 
     i32 LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused);
 

@@ -49,7 +49,7 @@ extern NetGuid g_dplayAppGuid;
 extern i32 g_cfgWord;
 
 struct CNetVersionPacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
 
     NetMsgId m_messageId;
@@ -63,7 +63,7 @@ struct CNetVersionPacket {
 class CNetPlayerNode;
 
 struct CNetValuePacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
@@ -71,7 +71,7 @@ struct CNetValuePacket {
 };
 
 struct CNetOptionsStatePacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
@@ -79,7 +79,7 @@ struct CNetOptionsStatePacket {
 
 #pragma pack(push, 1)
 struct CNetPlayerRegistrationPacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad01[3];
     NetMsgId m_messageId;
     u8 m_active;
@@ -95,7 +95,7 @@ struct CNetPlayerRegistrationPacket {
 };
 
 struct CNetPlayerUpdatePacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad01[3];
     NetMsgId m_messageId;
     i32 m_playerIndex;
@@ -125,7 +125,7 @@ struct CNetPlayerRecord {
 };
 
 struct CNetPlayerTablePacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad01[3];
     NetMsgId m_messageId;
     CNetPlayerRecord m_rows[4];
@@ -350,7 +350,7 @@ extern CNetOptionsStatePacket g_optionsOpenedPacket;
 extern CNetOptionsStatePacket g_optionsClosedPacket;
 
 struct CNetChatPacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;

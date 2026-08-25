@@ -90,7 +90,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         loser->GetName() + " was conquered by " + winner->GetName()
                             + DATA_COMPGEN(0x0020d168, "!")
                         ),
-                        0,
+                        FONT_ITEM_FLAGS_NONE,
                         0x11
                 );
                 loser->m_clearedRound = 1;
@@ -205,7 +205,7 @@ i32 CExitTrigger::AdvanceAnim() {
                                 fx->m_score = 0;
                             }
                         }
-                        cur->m_flags |= 0x10000;
+                        cur->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     }
                 }
             }

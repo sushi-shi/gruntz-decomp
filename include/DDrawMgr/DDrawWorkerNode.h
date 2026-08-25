@@ -49,7 +49,7 @@ public:
         m_screenX = COORD_UNSET;
         m_clip.left = COORD_UNSET;
         m_level = NULL;
-        m_stateFlags = 0;
+        m_stateFlags = SPRITE_STATE_NONE;
     }
 };
 

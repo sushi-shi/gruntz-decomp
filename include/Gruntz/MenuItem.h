@@ -11,6 +11,16 @@
 
 GZ_ENUM_FORWARD(MenuItemState);
 
+// Options retained by CMenuItem::Init. The low bit selects the initial state;
+// the high bit is consumed by CAnimatedMenuItem when it advances beyond the
+// last frame.
+GZ_ENUM_FLAGS_BEGIN(MenuItemFlags, i32)
+    MENU_ITEM_FLAGS_NONE = 0,
+    MENU_ITEM_INITIAL_DISABLED = 0x1,
+    MENU_ITEM_HOLD_FINAL_ANIMATION_FRAME = 0x10000
+GZ_ENUM_FLAGS_END(MenuItemFlags, i32)
+GZ_ENUM_FLAGS_OPS(MenuItemFlags)
+
 class CMenuPage;
 class CMenuItem;
 class CMenuTree;
@@ -29,7 +39,7 @@ public:
         const char* animationKey,
         i32 commandId,
         const char* targetPageKey,
-        i32 flags
+        GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     );
 
     virtual void Cleanup();
@@ -91,7 +101,7 @@ public:
     CString m_targetPageKey;
     i32 m_commandId;
     i32 m_secondaryCommandId;
-    i32 m_flags;
+    MenuItemFlags m_flags;
     MenuItemState m_state;
     CObject* m_animation;
 

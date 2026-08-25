@@ -31,7 +31,7 @@ public:
         const char* animationKey,
         i32 commandId,
         const char* targetPageKey,
-        i32 flags
+        GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     ) OVERRIDE;
     RVA(0x00184890, 0x1a)
     virtual void Reset() OVERRIDE {

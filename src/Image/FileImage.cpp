@@ -302,7 +302,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     fh.m_hdr.bfSize = height * m_width + 0x436;
     fh.m_hdr.bfOffBits = 0x436;
 
-    u8* buf = static_cast<u8*>(Lock(0));
+    u8* buf = static_cast<u8*>(Lock(NULL));
     if (buf == NULL) {
         return 0;
     }
@@ -374,7 +374,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         return 0;
     }
 
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         delete[] line;
         return 0;
@@ -461,7 +461,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
     fh.m_hdr.bfOffBits = 0x3a;
 
-    u8* buf = static_cast<u8*>(Lock(0));
+    u8* buf = static_cast<u8*>(Lock(NULL));
     if (buf == NULL) {
         return 0;
     }

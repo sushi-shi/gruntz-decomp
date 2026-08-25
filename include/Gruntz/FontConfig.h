@@ -8,6 +8,17 @@
 #include <Enums.h>
 #include <Ints.h>
 
+// Per-line behavior stored in FontItem::flags. AddItem consumes the queue-order
+// bits; DrawTextLines consumes the rendering bits.
+GZ_ENUM_FLAGS_BEGIN(FontItemFlags, i32)
+    FONT_ITEM_FLAGS_NONE = 0,
+    FONT_ITEM_PREPEND = 0x02,
+    FONT_ITEM_CLEAR_EXISTING = 0x04,
+    FONT_ITEM_COLORED = 0x10,
+    FONT_ITEM_SHADOW = 0x20
+GZ_ENUM_FLAGS_END(FontItemFlags, i32)
+GZ_ENUM_FLAGS_OPS(FontItemFlags)
+
 class CFontConfig {
 public:
     CFontConfig() {
@@ -21,7 +32,7 @@ public:
     i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
     void FreeNodes();
     void Reset();
-    i32 AddItem(const char* str, i32 type, i32 data);
+    i32 AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload);
     void Scroll(i32 delta);
 
     i32 HandleInputChar(i32 charCode, i32 keyData);
@@ -67,8 +78,8 @@ extern i32 g_caretBlinkOn;
 extern i32 g_lastDrawTextFormat;
 
 struct FontItem {
-    i32 type;
-    i32 data;
+    FontItemFlags flags;
+    i32 payload;
     CString name;
 };
 

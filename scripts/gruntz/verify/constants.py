@@ -6,8 +6,9 @@ and separates all genuinely numeric source spellings from the small set whose
 context proves a semantic replacement:
 
   * integer zero implicitly converted to a pointer -> NULL
-  * integer zero/one converted to, or compared with, bool -> false/true
-  * integer equality against an enum with one uniquely named value -> member
+  * integer zero/one converted to, or directly compared with, bool -> false/true
+  * integer equality whose other direct operand is an enum with one uniquely
+    named value -> member
 
 Everything else remains a review row.  In particular, the scanner never calls
 an integer status, index, serialized width, mask, table payload, or arithmetic
@@ -132,7 +133,16 @@ def _explicit_cast_ancestor(cidx, stack) -> bool:
         cidx.CursorKind.CXX_DYNAMIC_CAST_EXPR,
         cidx.CursorKind.CXX_FUNCTIONAL_CAST_EXPR,
     }
-    return any(node.kind in kinds for node in stack[-4:])
+    transparent = {
+        cidx.CursorKind.PAREN_EXPR,
+        cidx.CursorKind.UNEXPOSED_EXPR,
+        cidx.CursorKind.UNARY_OPERATOR,
+    }
+    for node in reversed(stack):
+        if node.kind in transparent:
+            continue
+        return node.kind in kinds
+    return False
 
 
 def _enum_values(cidx, root) -> dict[str, dict[int, set[str]]]:
@@ -148,39 +158,83 @@ def _enum_values(cidx, root) -> dict[str, dict[int, set[str]]]:
     return out
 
 
-def _binary_enum_context(cidx, literal, stack, enum_values):
-    if not stack or stack[-1].kind != cidx.CursorKind.BINARY_OPERATOR:
-        return None
-    binary = stack[-1]
-    tokens = list(binary.get_tokens())
-    if not any(tok.spelling in ("==", "!=") for tok in tokens):
-        return None
-    siblings = list(binary.get_children())
-    for sibling in siblings:
-        if sibling.location.file == literal.location.file \
-                and sibling.location.offset == literal.location.offset:
+def _same_cursor(left, right) -> bool:
+    left_file = left.location.file
+    right_file = right.location.file
+    return (left.kind == right.kind
+            and left_file is not None and right_file is not None
+            and left_file.name == right_file.name
+            and left.location.offset == right.location.offset)
+
+
+def _comparison_sibling(cidx, literal, stack):
+    """Return the other direct operand of an equality containing *literal*.
+
+    Parentheses and Clang's implicit-expression wrappers do not change which
+    operand owns the literal.  Any real expression on the path does: a zero in
+    ``LoadConfig(kind) == 0`` is a call argument, not an equality operand.
+    """
+    transparent = {
+        cidx.CursorKind.PAREN_EXPR,
+        cidx.CursorKind.UNEXPOSED_EXPR,
+    }
+    for pos in range(len(stack) - 1, -1, -1):
+        binary = stack[pos]
+        if binary.kind != cidx.CursorKind.BINARY_OPERATOR:
             continue
-        for node in sibling.walk_preorder():
-            ty = node.type.get_canonical()
-            if ty.kind == cidx.TypeKind.ENUM:
-                return ty.spelling, enum_values.get(ty.spelling, {})
+        path = stack[pos + 1:]
+        if any(node.kind not in transparent for node in path):
+            return None
+        if binary.spelling not in ("==", "!="):
+            return None
+        owner = path[0] if path else literal
+        children = list(binary.get_children())
+        if len(children) != 2:
+            return None
+        if _same_cursor(children[0], owner):
+            return children[1]
+        if _same_cursor(children[1], owner):
+            return children[0]
+        return None
+    return None
+
+
+def _direct_operand_type(cidx, operand):
+    """Recover an operand's semantic type without entering its subexpressions."""
+    transparent = {
+        cidx.CursorKind.PAREN_EXPR,
+        cidx.CursorKind.UNEXPOSED_EXPR,
+    }
+    node = operand
+    while True:
+        ty = node.type.get_canonical()
+        if ty.kind in (cidx.TypeKind.ENUM, cidx.TypeKind.BOOL):
+            return ty
+        if node.kind not in transparent:
+            return ty
+        children = list(node.get_children())
+        if len(children) != 1:
+            return ty
+        node = children[0]
+
+
+def _binary_enum_context(cidx, literal, stack, enum_values):
+    sibling = _comparison_sibling(cidx, literal, stack)
+    if sibling is None:
+        return None
+    ty = _direct_operand_type(cidx, sibling)
+    if ty.kind == cidx.TypeKind.ENUM:
+        return ty.spelling, enum_values.get(ty.spelling, {})
     return None
 
 
 def _binary_bool_context(cidx, literal, stack):
-    if not stack or stack[-1].kind != cidx.CursorKind.BINARY_OPERATOR:
+    sibling = _comparison_sibling(cidx, literal, stack)
+    if sibling is None:
         return None
-    binary = stack[-1]
-    tokens = list(binary.get_tokens())
-    if not any(tok.spelling in ("==", "!=") for tok in tokens):
-        return None
-    for sibling in binary.get_children():
-        if sibling.location.file == literal.location.file \
-                and sibling.location.offset == literal.location.offset:
-            continue
-        for node in sibling.walk_preorder():
-            if node.type.get_canonical().kind == cidx.TypeKind.BOOL:
-                return node.type.spelling or "bool"
+    ty = _direct_operand_type(cidx, sibling)
+    if ty.kind == cidx.TypeKind.BOOL:
+        return ty.spelling or "bool"
     return None
 
 

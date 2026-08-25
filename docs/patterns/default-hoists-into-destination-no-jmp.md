@@ -55,13 +55,25 @@ value **inside** the else costs you the hoist AND lets cl reuse that freshly-zer
 an unrelated member store in the same arm, where retail writes an immediate:
 
 ```cpp
-// NO  - `flags = 0` in the else: cl emits `xor eax,eax; mov [esi+0x538],eax`
-u32 flags;
-if (useDS == 1) { m_useDS = useDS; flags = 0x100000; } else { m_useDS = 0; flags = 0; }
+// NO  - `smackOpenFlags = 0` in the else: cl emits
+//       `xor eax,eax; mov [esi+0x538],eax`
+u32 smackOpenFlags;
+if (openFlags == MOVIE_OPEN_INTERLACED) {
+    m_interlaced = IDX(openFlags);
+    smackOpenFlags = SMACKYINTERLACE;
+} else {
+    m_interlaced = 0;
+    smackOpenFlags = 0;
+}
 
 // YES - retail: `xor eax,eax` above the cmp, then `mov DWORD PTR [esi+0x538],0x0`
-u32 flags = 0;
-if (useDS == 1) { m_useDS = useDS; flags = 0x100000; } else { m_useDS = 0; }
+u32 smackOpenFlags = 0;
+if (openFlags == MOVIE_OPEN_INTERLACED) {
+    m_interlaced = IDX(openFlags);
+    smackOpenFlags = SMACKYINTERLACE;
+} else {
+    m_interlaced = 0;
+}
 ```
 
 ## The assign-then-CANCEL direction

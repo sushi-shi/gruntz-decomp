@@ -1,4 +1,4 @@
-use gruntz_codec::ani::{self, AniError, FLAG_HAS_CUES, HEADER_SIZE};
+use gruntz_codec::ani::{self, AniError, FLAG_FRAME_COUNT, FLAG_HAS_CUES, HEADER_SIZE};
 
 fn resource(records: &[[i16; 10]], cues: &[Option<&[u8]>]) -> Vec<u8> {
     let mut out = vec![0u8; HEADER_SIZE];
@@ -28,6 +28,7 @@ fn parses_records_cues_and_roundtrips() {
     a[4] = 12;
     a[5] = 44;
     let mut b = [0i16; 10];
+    b[0] = i16::from_le_bytes(FLAG_FRAME_COUNT.to_le_bytes());
     b[1] = 1;
     b[5] = 2;
     let bytes = resource(&[a, b], &[Some(b"STEP1  STEP2\tSTEP3"), None]);
@@ -42,6 +43,7 @@ fn parses_records_cues_and_roundtrips() {
         [b"STEP1", b"STEP2", b"STEP3"]
     );
     assert!(records[1].cue_text.is_none());
+    assert_eq!(records[1].duration_ms(), 44);
     let mut encoded = vec![0u8; parsed.encoded_len()];
     let n = parsed.encode_into(&mut encoded).unwrap();
     assert_eq!(&encoded[..n], bytes);

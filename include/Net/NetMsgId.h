@@ -3,7 +3,15 @@
 
 #include <Enums.h>
 
-// The multiplayer lobby/session message id (CNetCmdPacket::m_messageId). Every name
+// Marks an application-defined multiplayer packet. DirectPlay system messages
+// share the receive buffer but do not carry this bit; every engine packet
+// writer sets it and DispatchRecvMsg rejects packets without it.
+GZ_ENUM_FLAGS_BEGIN(NetPacketFlags, u8)
+    NET_PACKET_APPLICATION = 0x80
+GZ_ENUM_FLAGS_END(NetPacketFlags, u8)
+GZ_ENUM_FLAGS_OPS(NetPacketFlags)
+
+// The multiplayer lobby/session message id (CNetMsg::m_messageId). Every name
 // below is read off what its arm in CMulti's dispatch DOES - the handler it
 // calls or the flag it sets - so the domain is recovered from behaviour, not
 // invented. Ids the dispatch does not handle are deliberately absent.

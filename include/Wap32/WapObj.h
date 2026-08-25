@@ -43,12 +43,6 @@ GZ_ENUM_BEGIN(LoadableClassId)
     CLASSID_CALLBACKOBJ = 0x1c
 GZ_ENUM_END(LoadableClassId)
 
-// Objects carrying this bit are omitted from the child group's active passes:
-// counting, dispatch, snapshot probing, and serialization.
-GZ_ENUM_CONST_BEGIN(WapObjFlagMask)
-    WAPOBJ_FLAG_SKIP_ACTIVE_PASSES = 0x04000000
-GZ_ENUM_CONST_END(WapObjFlagMask)
-
 GZ_ENUM_CONST_BEGIN(WapObjId)
     WAPOBJ_ID_NONE = -1
 GZ_ENUM_CONST_END(WapObjId)

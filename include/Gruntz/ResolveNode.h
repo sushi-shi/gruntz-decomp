@@ -74,8 +74,14 @@ public:
         NO_SEED
     };
     CResolveNode(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
-    i32
-    Init(CDDrawSurfaceMgr* owner, i32 id, i32 resolveX, i32 resolveY, i32 stateFlags, i32 flags);
+    i32 Init(
+        CDDrawSurfaceMgr* owner,
+        i32 id,
+        i32 resolveX,
+        i32 resolveY,
+        GZ_ENUM_PARAM(SpriteStateFlags, i32) stateFlags,
+        i32 flags
+    );
 
     virtual ~CResolveNode() OVERRIDE {
         m_screenX = COORD_UNSET;

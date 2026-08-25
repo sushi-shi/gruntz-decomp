@@ -126,7 +126,7 @@ i32 CRollingBall::Update() {
 
     CWwdGameObjectA* anim = m_wwdObject;
     if (IsAniCursorComplete(&anim->m_animCursor)) {
-        anim->m_flags |= 0x10000;
+        anim->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 0;
     }
     if (m_explodeLatch != 0) {

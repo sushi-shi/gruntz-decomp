@@ -165,7 +165,7 @@ u32 g_explosionz;
 DATA(0x00245600)
 u32 g_resolutionChanged;
 DATA(0x002455f4)
-i32 g_debugDisplayFlags;
+DebugDisplayFlags g_debugDisplayFlags;
 
 DATA(0x00245570)
 DirectInputMgr2* g_inputMgr = NULL;
@@ -1473,8 +1473,8 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             CDDrawWorkerHost* layer = (idx < 0 || idx >= count)
                                           ? NULL
                                           : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
-            if (layer && !(layer->m_flags & 1)) {
-                layer->m_flags ^= 2;
+            if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
+                layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
             }
         }
@@ -1491,7 +1491,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
         if (view) {
             CDDrawWorkerHost* layer = view->m_mainPlane;
             if (layer) {
-                layer->m_flags ^= 2;
+                layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
             }
         }
@@ -1509,8 +1509,8 @@ i32 CGruntzMgr::ToggleBaseLayer() {
             CDDrawWorkerHost* layer = (view->m_planes.GetSize() > 0)
                                           ? static_cast<CDDrawWorkerHost*>(view->m_planes[0])
                                           : NULL;
-            if (layer && !(layer->m_flags & 1)) {
-                layer->m_flags ^= 2;
+            if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
+                layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
             }
         }
@@ -1620,7 +1620,7 @@ void CGruntzMgr::ResetClockGlobals() {
     g_gruntCreation = 0;
     g_gooPuddlez = 0;
     g_explosionz = 0;
-    g_debugDisplayFlags = 0;
+    g_debugDisplayFlags = DEBUG_DISPLAY_NONE;
 }
 
 static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
@@ -1787,7 +1787,7 @@ i32 CGruntzMgr::AppendChatMessage(char* msg) {
     if (log == NULL) {
         return 0;
     }
-    return log->AddItem(msg, 0, 0x11);
+    return log->AddItem(msg, FONT_ITEM_FLAGS_NONE, 0x11);
 }
 
 RVA(0x0008f9f0, 0x3e)
@@ -1848,9 +1848,10 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
         dsound = m_world->m_soundStream->m_device;
     }
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
-        if (player.Open(m_strMoviePath, entryId, MOVIE_TILE, m_isInterlaced != 0, NULL, NULL)) {
+        MovieOpenFlags openFlags = m_isInterlaced != 0 ? MOVIE_OPEN_INTERLACED : MOVIE_OPEN_DEFAULT;
+        if (player.Open(m_strMoviePath, entryId, MOVIE_TILE, openFlags, NULL, NULL)) {
             m_modalBusy = 1;
-            player.Pump(1, 1);
+            player.Pump(MOVIE_PUMP_SKIP_ON_KEY, 1);
             m_modalBusy = 0;
         }
     }
@@ -2289,7 +2290,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             return 0;
         }
         spr->m_frameSets.SetAtGrow(0, static_cast<CObject*>(rec));
-        spr->m_flags |= 0xc;
+        spr->m_flags |= IDX(WWD_PLANE_FLAG_WRAP_X | WWD_PLANE_FLAG_WRAP_Y);
         spr->m_zBound = 0xf4241;
         i32 parity = 1;
         for (i32 i = 0; i < spr->m_gridH; i++) {
@@ -3048,7 +3049,7 @@ i32 CGruntzMgr::Quicksave() {
         EnterModalUI("ERROR - Cannot Save Game.");
         return 1;
     }
-    m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
+    m_chatLog->AddItem("Game Quicksaved successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
     return 1;
 }
 
@@ -3066,7 +3067,7 @@ i32 CGruntzMgr::Quickload() {
             return 1;
         }
         PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
-        m_chatLog->AddItem("Game Quickloaded successfully.", 0, 0x11);
+        m_chatLog->AddItem("Game Quickloaded successfully.", FONT_ITEM_FLAGS_NONE, 0x11);
         return 1;
     }
     return RunLoadGameDialog();
@@ -3314,7 +3315,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
             matched = 1;
         }
     }
-    srand(static_cast<u32>(time(0)));
+    srand(static_cast<u32>(time(NULL)));
     g_battlezTurnPlayerIndex = 0;
 
     i32 idx = 0;

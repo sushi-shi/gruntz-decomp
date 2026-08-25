@@ -7,7 +7,7 @@
 #include <Net/NetMsgId.h>
 
 struct CNetGameConfigPacket {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_usesCustomLevel;
@@ -20,7 +20,7 @@ struct CNetGameConfigPacket {
 };
 
 struct CNetMsg {
-    u8 m_flags;
+    GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;

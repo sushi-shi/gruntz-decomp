@@ -1,13 +1,15 @@
 #ifndef IMAGE_IMAGECLIPMACROS_H
 #define IMAGE_IMAGECLIPMACROS_H
 
+#include <Wwd/WwdGameObjectFlags.h>
+
 #define DECLARE_CLIPPED_IMAGE_RECT(rectType, rect, info, dst, x, y, right, bottom, width, height)  \
     rectType rect;                                                                                 \
     rect.left = x;                                                                                 \
     rect.top = y;                                                                                  \
     rect.right = right;                                                                            \
     rect.bottom = bottom;                                                                          \
-    if (info->m_flags & 0x40000) {                                                                 \
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {                                   \
         BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;                                          \
         RECT clip;                                                                                 \
         CopyRect(&clip, static_cast<const RECT*>(&clipA));                                         \

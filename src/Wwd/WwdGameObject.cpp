@@ -192,7 +192,7 @@ i32 CWwdGameObjectA::Test() {
     i32 ay = m_layer->m_anchorY;
     i32 top = sy - ay;
     i32 bottom = sy + ay;
-    if (m_flags & 0x40000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
         RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_viewRect;
         if (right < r->left) {
@@ -367,13 +367,13 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_region.m_object = this;
     m_region.m_x = m_screenX;
     m_region.m_y = m_screenY;
-    i32 logicFlags = m_logicRecord->m_flags;
-    if (logicFlags & 1) {
-        m_flags |= 0x800000;
+    LogicRecordFlags logicFlags = static_cast<LogicRecordFlags>(m_logicRecord->m_flags);
+    if (HAS(logicFlags, LOGIC_RECORD_FLAG_LARGE_ACTIVE_REGION)) {
+        m_flags |= IDX(WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION);
         return 1;
     }
-    if (logicFlags & 2) {
-        m_flags |= 0x1000000;
+    if (HAS(logicFlags, LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)) {
+        m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION);
     }
     return 1;
 }

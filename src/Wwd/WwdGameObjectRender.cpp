@@ -144,9 +144,9 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     int y,
     int sortKey,
     CLogicRecord* logicTemplate,
-    int stateFlags
+    int objectFlags
 ) {
-    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CWapObj::NO_SEED);
+    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, objectFlags, CWapObj::NO_SEED);
     if (result == NULL) {
         return NULL;
     }
@@ -160,7 +160,8 @@ CWwdGameObject* CWwdGameObject::CreateObject(
         return NULL;
     }
     result->m_posCache = node;
-    if (result->m_flags & 0x200000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(result->m_flags),
+            WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
         result->m_logicRecord->m_dispatch(result);
     }
     return static_cast<CWwdGameObject*>(result);
@@ -176,13 +177,13 @@ static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR nam
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
-CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
+CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags) {
     CLogicRecord* logicTemplate =
         LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }
-    return CreateObject(id, x, y, sortKey, logicTemplate, stateFlags);
+    return CreateObject(id, x, y, sortKey, logicTemplate, objectFlags);
 }
 
 // @dead-code

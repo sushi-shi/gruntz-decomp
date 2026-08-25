@@ -111,7 +111,8 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND
+            && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
@@ -193,7 +194,8 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND
+            && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
@@ -275,7 +277,8 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND
+            && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
@@ -357,7 +360,8 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND
+            && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
@@ -462,15 +466,16 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167ea0, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
-    if (!(t->m_flags & 0x100)) {
+    if (!(t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))) {
         return 0;
     }
     CDDrawChildGroup* children = OwnerMgr()->m_childGroup;
     POSITION pos = children->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
-        if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_objectType)
-            && t->m_extent.left != COORD_UNSET && obj->m_extent.left != COORD_UNSET) {
+        if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
+            && (t->m_collMask & obj->m_objectType) && t->m_extent.left != COORD_UNSET
+            && obj->m_extent.left != COORD_UNSET) {
             i32 tLeft = t->m_extent.left + t->m_screenX;
             i32 tBot = t->m_extent.top + t->m_screenY;
             i32 tRight = t->m_screenX + t->m_extent.right;

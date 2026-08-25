@@ -155,14 +155,14 @@ void CFontConfig::FreeNodes() {
 RVA_COMPGEN(0x00021c40, 0x8, ??1FontItem@@QAE@XZ)
 
 RVA(0x00021c60, 0xde)
-i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
+i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
     if (!str) {
         return 0;
     }
     if (!*str) {
         return 0;
     }
-    if (type & 4) {
+    if (HAS(flags, FONT_ITEM_CLEAR_EXISTING)) {
         POSITION pos = m_list.GetHeadPosition();
         while (pos) {
             FontItem* item = static_cast<FontItem*>(m_list.GetNext(pos));
@@ -174,9 +174,9 @@ i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
     }
     FontItem* item = new FontItem;
     item->name = str;
-    item->type = type;
-    item->data = data;
-    if (type & 2) {
+    item->flags = flags;
+    item->payload = payload;
+    if (HAS(flags, FONT_ITEM_PREPEND)) {
         m_list.AddHead(item);
     } else {
         m_list.AddTail(item);
@@ -253,7 +253,7 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
         m_inputText.GetBufferSetLength(len - 1);
         return 0;
     }
-    if (charCode < 0x20 || charCode > 0xff) {
+    if (charCode < ' ' || charCode > 0xff) {
         return 0;
     }
     if (m_inputText.GetLength() < 0x50) {
@@ -283,7 +283,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
         g_chatTextWidth = 0;
     } else {
         RECT rc = *rect;
-        DrawTextA(hdc, text, text.GetLength(), &rc, 0x420);
+        DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
         i32 textW = rc.right - rc.left;
         i32 provW = rect->right - rect->left;
         g_chatTextWidth = provW;
@@ -318,7 +318,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         return 0;
     }
     CString text(m_inputText);
-    if (GetAsyncKeyState(0x11) & 0x8000) {
+    if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
         for (i32 i = 0; i < text.GetLength(); i++) {
             text.SetAt(i, '*');
         }
@@ -347,8 +347,8 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     }
     int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
     RECT rc = *rect;
-    pDraw(hdc, text, text.GetLength(), &rc, 0x420);
-    i32 fmt = ((rc.right - rc.left) > maxWidth) ? 0x22 : 0x20;
+    pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
+    i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
     g_lastDrawTextFormat = fmt;
     pDraw(hdc, text, text.GetLength(), rect, fmt);
     if (prev) {
@@ -356,11 +356,6 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     }
     return 1;
 }
-
-typedef enum FontItemFlag {
-    FONTITEM_COLORED = 0x10,
-    FONTITEM_SHADOW = 0x20,
-} FontItemFlag;
 
 typedef enum TextColorId {
     TEXTCOLOR_ORANGE = 0,
@@ -435,7 +430,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         }
         FontItem* item = static_cast<FontItem*>(m_list.GetAt(m_list.FindIndex(i)));
         if (item != NULL) {
-            if (item->type & FONTITEM_SHADOW) {
+            if (HAS(item->flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
                 work.left = cur.left + 1;
                 work.right = cur.right + 1;
@@ -443,9 +438,9 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
                 work.bottom = cur.bottom + 1;
                 DrawTextA(hdc, item->name, strlen(item->name), &work, format);
             }
-            if (item->type & FONTITEM_COLORED) {
+            if (HAS(item->flags, FONT_ITEM_COLORED)) {
                 COLORREF color;
-                switch (item->data) {
+                switch (item->payload) {
                     case TEXTCOLOR_NAVY:
                         color = TCLR_NAVY;
                         break;
@@ -585,10 +580,10 @@ i32 CFontConfig::Draw3DText(
             selPrev = SelectObject(hdc, m_messageFont);
         }
     }
-    SetBkMode(hdc, 1);
-    SetBkColor(hdc, 0);
+    SetBkMode(hdc, TRANSPARENT);
+    SetBkColor(hdc, RGB(0, 0, 0));
     CString text(*strSrc);
-    DrawTextA(hdc, text, strlen(text), &rc, 0x411);
+    DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
     rc.left += hoff;
@@ -601,14 +596,14 @@ i32 CFontConfig::Draw3DText(
         rc.top += dy;
         rc.right += dx;
         rc.bottom += dy;
-        DrawTextA(hdc, text, strlen(text), &rc, 0x11);
+        DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
         rc.right -= dx;
         rc.left -= dx;
         rc.bottom -= dy;
         rc.top -= dy;
     }
     SetTextColor(hdc, RGB(r, g, b));
-    DrawTextA(hdc, text, strlen(text), &rc, 0x11);
+    DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
     if (selPrev) {
         SelectObject(hdc, selPrev);
     }

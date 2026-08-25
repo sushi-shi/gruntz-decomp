@@ -2107,7 +2107,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         CTriggerMgr* h68 = mgr->m_triggerMgr;
         CWwdGameObjectA* n = h68->m_goal;
         if (n != NULL) {
-            n->m_flags |= 0x10000;
+            n->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             h68->m_goal = NULL;
         }
         h68->m_armed = 0;
@@ -3324,7 +3324,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         m_statusBar->ClearStat(idx);
         CTriggerMgr* w = m_mgr->m_triggerMgr;
         if (w->m_goal != NULL) {
-            w->m_goal->m_flags |= 0x10000;
+            w->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             w->m_goal = NULL;
         }
         w->m_armed = 0;
@@ -3471,7 +3471,7 @@ i32 CPlay::DrawWorldPresent() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000cf0a0, 0x567)
 void CPlay::DrawDebugStatsFull() {
-    if (g_debugDisplayFlags & 0x20) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_SUPPRESS)) {
         return;
     }
 
@@ -3484,38 +3484,38 @@ void CPlay::DrawDebugStatsFull() {
     strcat(buf, fpsScratch);
 
     CDDrawChildGroup* group = m_world->m_childGroup;
-    if (group->m_flags & 0x10000) {
+    if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
         strcat(buf, " rcHit ");
     }
-    if (group->m_flags & 0x20000) {
+    if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ATTACK_RECT)) {
         strcat(buf, " rcAttack ");
     }
-    if (group->m_flags & 0x40000) {
+    if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_MOVE_RECT)) {
         strcat(buf, " rcMove ");
     }
-    if (group->m_flags & 0x100000) {
+    if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ORIGIN)) {
         strcat(buf, " ptOrg ");
     }
-    if (group->m_flags & 0x200000) {
+    if (group->m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY)) {
         strcat(buf, " Z = On");
     }
 
-    if (g_debugDisplayFlags & 0x1) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
         sprintf(scratch, " Sprites = %i ", m_world->m_childGroup->m_list.GetCount());
         strcat(buf, scratch);
     }
-    if (g_debugDisplayFlags & 0x4) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
         sprintf(scratch, " Pos = %i,%i", p->m_snappedX, p->m_snappedY);
         strcat(buf, scratch);
     }
-    if (g_debugDisplayFlags & 0x80) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
         CString t = FormatElapsedTime(g_frameTime);
         t += DATA_COMPGEN(0x00212754, " ");
         strcat(buf, t);
         t += " ";
     }
-    if (g_debugDisplayFlags & 0x2) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_NETWORK_COUNTERS)) {
         sprintf(
             scratch,
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
@@ -3526,7 +3526,7 @@ void CPlay::DrawDebugStatsFull() {
         );
         strcat(buf, scratch);
     }
-    if (g_debugDisplayFlags & 0x200) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE_LIMIT)) {
         sprintf(scratch, " FpsLimit = %i ", m_mgr->m_pacingGate);
         strcat(buf, scratch);
     }
@@ -3537,9 +3537,9 @@ void CPlay::DrawDebugStatsFull() {
     if (hdc == NULL) {
         return;
     }
-    SetBkMode(hdc, 1);
-    SetTextColor(hdc, 0xffffff);
-    SetBkColor(hdc, 0);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, RGB(255, 255, 255));
+    SetBkColor(hdc, RGB(0, 0, 0));
     PostSetup(hdc);
 
     // Whole-struct copy: retail still writes `lr.top` to its own slot (0xcf4bd
@@ -3553,11 +3553,11 @@ void CPlay::DrawDebugStatsFull() {
         dr.top = lr.bottom - 0x1c;
         dr.right = lr.right;
         dr.bottom = lr.bottom;
-        DrawTextA(hdc, buf, -1, &dr, 0x20);
+        DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
     }
 
-    if (g_debugDisplayFlags & 0x8) {
-        SetBkMode(hdc, 2);
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_PROFILE_TEXT)) {
+        SetBkMode(hdc, OPAQUE);
         if (g_brickText1.GetLength() != 0) {
             TextOutA(hdc, 0, 0x00, g_brickText1, g_brickText1.GetLength());
         }
@@ -3588,7 +3588,7 @@ void CPlay::DrawDebugStatsFull() {
 
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {
-    if (g_debugDisplayFlags & 0x20) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_SUPPRESS)) {
         return;
     }
 
@@ -3596,30 +3596,30 @@ void CPlay::DrawDebugStats() {
     char scratch[0x40];
     buf[0] = 0;
 
-    if (g_debugDisplayFlags & 0x10) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE)) {
         sprintf(scratch, "Fps = %i ", m_mgr->m_fps);
         strcat(buf, scratch);
     }
-    if (g_debugDisplayFlags & 0x1) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)) {
         sprintf(scratch, " Objs = %i ", m_world->m_childGroup->m_list.GetCount());
         strcat(buf, scratch);
     }
-    if (g_debugDisplayFlags & 0x4) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
 
         sprintf(scratch, " Pos = %i,%i", p->m_snappedX, p->m_snappedY);
         strcat(buf, scratch);
     }
-    if (g_debugDisplayFlags & 0x40) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_TIMING)) {
         strcat(buf, " Timing = On ");
     }
-    if (g_debugDisplayFlags & 0x80) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
         CString t = FormatElapsedTime(g_frameTime);
         t += " ";
         strcat(buf, t);
         t += " ";
     }
-    if (g_debugDisplayFlags & 0x2) {
+    if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_NETWORK_COUNTERS)) {
         sprintf(
             scratch,
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
@@ -3637,9 +3637,9 @@ void CPlay::DrawDebugStats() {
     if (hdc == NULL) {
         return;
     }
-    SetBkMode(hdc, 1);
-    SetTextColor(hdc, 0xffffff);
-    SetBkColor(hdc, 0);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, RGB(255, 255, 255));
+    SetBkColor(hdc, RGB(0, 0, 0));
     PostSetup(hdc);
 
     if (buf[0] != 0) {
@@ -3654,7 +3654,7 @@ void CPlay::DrawDebugStats() {
         dr.right = lr.right;
         dr.bottom = lr.bottom;
         if (lr.left > 0) {
-            DrawTextA(hdc, buf, -1, &dr, 0x20);
+            DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
         } else {
             TextOutA(hdc, 0, dr.top, buf, strlen(buf));
         }
@@ -5155,7 +5155,7 @@ b32 CPlay::PlaceStartGruntz() {
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return false;
                 }
-                obj->m_flags |= 0x10000;
+                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ
                        && dispatch == DispatchGruntCreationPointLogic
                        && obj->m_smarts == g_curPlayer) {
@@ -5298,7 +5298,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_EXCLUSIVE_SWITCH:
                 case TILEKIND_EXCLUSIVE_SWITCH_UP:
@@ -5327,7 +5327,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_SECRET_SWITCH:
                     // Only the DOWN variant counts: an UP secret switch has already
@@ -5363,7 +5363,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_TIME_SWITCH:
                 case TILEKIND_TIME_SWITCH_UP:
@@ -5388,7 +5388,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_CHECKPOINT:
                 case TILEKIND_CHECKPOINT_UP:
@@ -5417,7 +5417,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_SWITCH_A:
                 case TILEKIND_SWITCH_A_UP:
@@ -5448,7 +5448,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_SWITCH_B:
                 case TILEKIND_SWITCH_B_UP:
@@ -5475,7 +5475,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 case TILEKIND_SWITCH_C:
                 case TILEKIND_SWITCH_C_UP:
@@ -5506,7 +5506,7 @@ i32 CPlay::ValidateLevelTiles() {
                         return 0;
                     }
                     validCount++;
-                    obj->m_flags |= 0x10000;
+                    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 default: {
                     CString s;
@@ -5611,7 +5611,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 validCount++;
-                obj->m_flags |= 0x10000;
+                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
                 if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
@@ -5636,7 +5636,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 validCount++;
-                obj->m_flags |= 0x10000;
+                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             }
         } else if (dispatch == DispatchTileSecretTriggerLogic) {
             TileCollisionKind type =
@@ -5664,7 +5664,7 @@ i32 CPlay::ValidateLevelTiles() {
                 return 0;
             }
             validCount++;
-            obj->m_flags |= 0x10000;
+            obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchLevelTimeLogic) {
 
             if (m_levelTimer != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
@@ -5679,7 +5679,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 m_levelTimer->SetTime(minutes, seconds);
             }
-            obj->m_flags |= 0x10000;
+            obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchInGameIconLogic) {
             if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
 
@@ -5716,7 +5716,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
                 validCount++;
-                obj->m_flags |= 0x10000;
+                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
                 CString s;
                 s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
@@ -5867,7 +5867,7 @@ i32 CPlay::ScanBuildTiles() {
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
                 m_statusBar->QueuePickupReward(p->m_points, p->m_score);
             }
-            p->m_flags |= 0x10000;
+            p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
             i32 x = p->m_screenX;
@@ -5931,7 +5931,7 @@ i32 CPlay::ScanBuildTiles() {
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
                 m_statusBar->QueuePickupReward(p->m_points, p->m_score);
             }
-            p->m_flags |= 0x10000;
+            p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         }
     }
     return 1;
@@ -5988,7 +5988,7 @@ i32 CPlay::AddLevelGruntz() {
             (g_gameReg)->EnterModalUI(msg);
             return 0;
         }
-        g->m_flags |= 0x10000;
+        g->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 1;
 }
@@ -6043,7 +6043,7 @@ done:
     if (m_mgr->m_triggerMgr->m_goal != NULL) {
         CTriggerMgr* g = m_mgr->m_triggerMgr;
         if (g->m_goal != NULL) {
-            g->m_goal->m_flags |= 0x10000;
+            g->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             g->m_goal = NULL;
         }
         m_mgr->m_triggerMgr->LoadCameraSprite();
@@ -6085,7 +6085,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->m_triggerMgr;
     if (g->m_goal != NULL) {
-        g->m_goal->m_flags |= 0x10000;
+        g->m_goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         g->m_goal = NULL;
     }
     g->m_armed = 0;

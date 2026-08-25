@@ -264,7 +264,7 @@ public:
 };
 
 inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
-    u8* bits = static_cast<u8*>(Lock(0));
+    u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
         u8 color = bits[m_bytesPerPixel * x + m_pitch * y];
         m_ddSurface->Unlock(NULL);
@@ -274,7 +274,7 @@ inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
 }
 
 inline void CDDSurface::PutPixel(i32 x, i32 y, u8 color) {
-    u8* bits = static_cast<u8*>(Lock(0));
+    u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
         bits[m_bytesPerPixel * x + m_pitch * y] = color;
         m_ddSurface->Unlock(NULL);

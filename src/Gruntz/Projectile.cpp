@@ -431,7 +431,7 @@ void CProjectile::AdvanceMotion() {
     }
     ScanTargets(0);
     if (m_shadow != NULL) {
-        m_shadow->m_flags |= 0x10000;
+        m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         m_shadow = NULL;
     }
     m_arrived = 1;
@@ -514,7 +514,7 @@ i32 CProjectile::DetachRenderObj() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* r = m_wwdObject;
     if (IsAniCursorComplete(&r->m_animCursor)) {
-        r->m_flags |= 0x10000;
+        r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 0;
 }
@@ -593,7 +593,7 @@ void CBoomerang::AdvanceMotion() {
     } else if (m_phase > g_projPhase1 && m_launched != 0) {
         ScanTargets(1);
         if (m_shadow != NULL) {
-            m_shadow->m_flags |= 0x10000;
+            m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             m_shadow = NULL;
         }
         SetObjectFlags(0x10000);

@@ -156,10 +156,12 @@
 // The branch polarity that follows from it is also why retail can `push eax` for a
 // known-zero argument where we must `push 0`.
 // Smaller residue, each re-derived from the current build:
-//   * `(g_debugDisplayFlags ^ 0x100) & ~0x40` at CHEAT_BRICK_TEXT_ALT_DISPLAY is
+//   * `(g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING_ALTERNATE)
+//     & ~DEBUG_DISPLAY_TIMING` at CHEAT_BRICK_TEXT_ALT_DISPLAY is
 //     emitted `and`-then-`xor`: cl sorts the two disjoint bit operations by constant
-//     magnitude (the sibling arm's `(x ^ 0x40) & ~0x100` is already in that order and
-//     matches). Splitting it into two statements on the global is byte-identical.
+//     magnitude (the sibling arm's timing/alternate-timing expression is already in
+//     that order and matches). Splitting it into two statements on the global is
+//     byte-identical.
 //   * CMD_SCREENSHOT: retail loads `m_modeSize.cx` TWICE (once for the push, once for
 //     the temp's home slot) where cl reuses the one register for both.
 //   * three of the thirteen `_cell` grid-index sites (BRICKPICKUP(0x39) and the last
@@ -241,39 +243,53 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         ShowToggleMessage("Traitor Mode", g_traitorMode);
                         return 1;
                     case CHEAT_OBJECT_COUNT_DISPLAY:
-                        g_debugDisplayFlags ^= 1;
+                        g_debugDisplayFlags ^= DEBUG_DISPLAY_OBJECT_COUNT;
                         PLAYCUE("GAME_MINORCHEAT");
-                        ShowToggleMessage("Object Count Display", g_debugDisplayFlags & 1);
+                        ShowToggleMessage(
+                            "Object Count Display",
+                            HAS(g_debugDisplayFlags, DEBUG_DISPLAY_OBJECT_COUNT)
+                        );
                         return 1;
                     case CHEAT_WORLD_POSITION_DISPLAY:
-                        g_debugDisplayFlags ^= 4;
+                        g_debugDisplayFlags ^= DEBUG_DISPLAY_WORLD_POSITION;
                         PLAYCUE("GAME_MINORCHEAT");
-                        ShowToggleMessage("World Position Display", g_debugDisplayFlags & 4);
+                        ShowToggleMessage(
+                            "World Position Display",
+                            HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)
+                        );
                         return 1;
                     case CHEAT_FRAME_RATE_DISPLAY:
-                        g_debugDisplayFlags ^= 0x10;
+                        g_debugDisplayFlags ^= DEBUG_DISPLAY_FRAME_RATE;
                         PLAYCUE("GAME_MINORCHEAT");
-                        ShowToggleMessage("Frame Rate Display", g_debugDisplayFlags & 0x10);
+                        ShowToggleMessage(
+                            "Frame Rate Display",
+                            HAS(g_debugDisplayFlags, DEBUG_DISPLAY_FRAME_RATE)
+                        );
                         return 1;
                     case CHEAT_DEBUG_FLAG20:
-                        g_debugDisplayFlags ^= 0x20;
+                        g_debugDisplayFlags ^= DEBUG_DISPLAY_SUPPRESS;
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_BRICK_TEXT_DISPLAY:
-                        g_debugDisplayFlags = (g_debugDisplayFlags ^ 0x40) & ~0x100;
+                        g_debugDisplayFlags = (g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING)
+                                              & ~DEBUG_DISPLAY_TIMING_ALTERNATE;
                         g_brickText1.Empty();
                         g_brickText2.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_BRICK_TEXT_ALT_DISPLAY:
-                        g_debugDisplayFlags = (g_debugDisplayFlags ^ 0x100) & ~0x40;
+                        g_debugDisplayFlags = (g_debugDisplayFlags ^ DEBUG_DISPLAY_TIMING_ALTERNATE)
+                                              & ~DEBUG_DISPLAY_TIMING;
                         g_brickText1.Empty();
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_ELAPSED_TIME_DISPLAY:
-                        g_debugDisplayFlags ^= 0x80;
+                        g_debugDisplayFlags ^= DEBUG_DISPLAY_ELAPSED_TIME;
                         PLAYCUE("GAME_MINORCHEAT");
-                        ShowToggleMessage("Elapsed Time Display", g_debugDisplayFlags & 0x80);
+                        ShowToggleMessage(
+                            "Elapsed Time Display",
+                            HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)
+                        );
                         return 1;
                     case CHEAT_MONOLITH: {
                         CPlay* playState = PickPlayOrPausedState();
@@ -491,7 +507,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     case CHEAT_ABILITY_ROLL:
                         BRICKABILITY(6, "Rollin, rollin, rollin.");
                     case CHEAT_DEBUG_FLAG400:
-                        g_debugDisplayFlags ^= 0x400;
+                        g_debugDisplayFlags ^= DEBUG_DISPLAY_BUILD_INFO;
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_WAWA:

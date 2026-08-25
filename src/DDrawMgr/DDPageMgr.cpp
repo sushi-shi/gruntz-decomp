@@ -214,7 +214,13 @@ void CMoviePlayer::Teardown() {
 }
 
 RVA(0x0017c570, 0xc0)
-i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenLo(
+    const char* src,
+    MovieLayout mode,
+    MovieOpenFlags openFlags,
+    POINT* origin,
+    RECT* rect
+) {
     if (!m_initialized) {
         return 0;
     }
@@ -222,20 +228,20 @@ i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* or
     m_blitMode = mode;
     SmackSoundUseDirectSound(m_directSound);
 
-    u32 flags = 0;
-    if (useDS == 1) {
-        m_useDS = useDS;
-        flags = 0x100000;
+    u32 smackOpenFlags = 0;
+    if (openFlags == MOVIE_OPEN_INTERLACED) {
+        m_interlaced = IDX(openFlags);
+        smackOpenFlags = SMACKYINTERLACE;
     } else {
-        m_useDS = 0;
+        m_interlaced = 0;
     }
-    flags |= 0xfe000;
-    m_smackHandle = SmackOpen(src, flags, -1);
+    smackOpenFlags |= SMACKTRACKS;
+    m_smackHandle = SmackOpen(src, smackOpenFlags, SMACKAUTOEXTRA);
     if (!m_smackHandle) {
         return 0;
     }
     m_streamOpen = 1;
-    i32 r = Configure(mode, useDS, origin, rect);
+    i32 r = Configure(mode, openFlags, origin, rect);
     if (!r) {
         if (m_srcSurf) {
             m_srcSurf->Release();
@@ -251,7 +257,13 @@ i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* or
 }
 
 RVA(0x0017c630, 0xc0)
-i32 CMoviePlayer::OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenHi(
+    i32 srcHandle,
+    MovieLayout mode,
+    MovieOpenFlags openFlags,
+    POINT* origin,
+    RECT* rect
+) {
     if (!m_initialized) {
         return 0;
     }
@@ -259,23 +271,23 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* orig
     m_blitMode = mode;
     SmackSoundUseDirectSound(m_directSound);
 
-    u32 flags = 0;
-    if (useDS == 1) {
-        flags = 0x100000;
-        m_useDS = useDS;
+    u32 smackOpenFlags = 0;
+    if (openFlags == MOVIE_OPEN_INTERLACED) {
+        smackOpenFlags = SMACKYINTERLACE;
+        m_interlaced = IDX(openFlags);
     } else {
-        m_useDS = 0;
+        m_interlaced = 0;
     }
-    flags |= 0xff000;
+    smackOpenFlags |= SMACKFILEHANDLE | SMACKTRACKS;
 
     SmackSource src;
     src.m_handle = srcHandle;
-    m_smackHandle = SmackOpen(src.m_path, flags, -1);
+    m_smackHandle = SmackOpen(src.m_path, smackOpenFlags, SMACKAUTOEXTRA);
     if (!m_smackHandle) {
         return 0;
     }
     m_streamOpen = 1;
-    i32 r = Configure(mode, useDS, origin, rect);
+    i32 r = Configure(mode, openFlags, origin, rect);
     if (!r) {
         if (m_srcSurf) {
             m_srcSurf->Release();
@@ -295,7 +307,7 @@ i32 CMoviePlayer::Open(
     const char* path,
     i32 entryId,
     MovieLayout mode,
-    i32 useDS,
+    MovieOpenFlags openFlags,
     POINT* origin,
     RECT* rect
 ) {
@@ -314,7 +326,7 @@ i32 CMoviePlayer::Open(
         m_decodeStore.Close();
         return 0;
     }
-    if (!OpenHi(hi, mode, useDS, origin, rect)) {
+    if (!OpenHi(hi, mode, openFlags, origin, rect)) {
         m_decodeStore.Close();
         return 0;
     }
@@ -322,7 +334,7 @@ i32 CMoviePlayer::Open(
 }
 
 RVA(0x0017c790, 0x14a)
-MoviePlaybackResult CMoviePlayer::Pump(i32 flags, i32 count) {
+MoviePlaybackResult CMoviePlayer::Pump(MoviePumpFlags pumpFlags, i32 count) {
     if (!m_initialized || count < -1 || count == 0) {
         return MOVIE_RESULT_ERROR;
     }
@@ -337,14 +349,14 @@ MoviePlaybackResult CMoviePlayer::Pump(i32 flags, i32 count) {
                 continue;
             }
             if (msg.message == WM_KEYDOWN) {
-                if (flags & 1) {
+                if (HAS(pumpFlags, MOVIE_PUMP_SKIP_ON_KEY)) {
                     return MOVIE_RESULT_KEY_SKIP;
                 }
                 continue;
             }
             if (msg.message == WM_LBUTTONDOWN || msg.message == WM_RBUTTONDOWN
                 || msg.message == WM_LBUTTONDBLCLK || msg.message == WM_RBUTTONDBLCLK) {
-                if (flags & 0x100) {
+                if (HAS(pumpFlags, MOVIE_PUMP_SKIP_ON_MOUSE)) {
                     return MOVIE_RESULT_MOUSE_SKIP;
                 }
                 continue;
@@ -646,7 +658,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 // SECOND symbol next to the jump table, so objdiff pairs only the dispatch prologue
 // against retail's whole function (delinker jump-table dup-symbol undercount).
 RVA(0x0017cfc0, 0x2f0)
-i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect) {
     if (origin) {
         if (origin->x > m_screenWidth) {
             return 0;
@@ -683,7 +695,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
         case MOVIE_TILE:
             m_tilesAcross = m_screenWidth / m_smackHandle->Width;
             m_tilesDown = m_screenHeight / m_smackHandle->Height;
-            if (flags & 0x10) {
+            if (HAS(openFlags, MOVIE_OPEN_USE_ORIGIN)) {
                 if (!origin) {
                     return 0;
                 }
@@ -697,7 +709,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
         case MOVIE_SINGLE:
             m_tilesAcross = 1;
             m_tilesDown = 1;
-            if (flags & 0x10) {
+            if (HAS(openFlags, MOVIE_OPEN_USE_ORIGIN)) {
                 if (!origin) {
                     return 0;
                 }
@@ -713,7 +725,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
                 && m_screenHeight % m_smackHandle->Height == 0) {
                 m_tilesAcross = m_screenWidth / m_smackHandle->Width;
                 m_tilesDown = m_screenHeight / m_smackHandle->Height;
-                if (flags & 0x10) {
+                if (HAS(openFlags, MOVIE_OPEN_USE_ORIGIN)) {
                     if (!origin) {
                         return 0;
                     }
@@ -819,10 +831,10 @@ i32 CMoviePlayer::AddToPlaylist(
     const char* src,
     i32 openArg,
     MovieLayout mode,
-    i32 useDS,
+    MovieOpenFlags openFlags,
     POINT* origin,
     RECT* rect,
-    i32 flags,
+    MoviePumpFlags pumpFlags,
     i32 count
 ) {
     if (!m_initialized) {
@@ -837,7 +849,7 @@ i32 CMoviePlayer::AddToPlaylist(
     strcpy(rec->m_src, src);
     rec->m_openArg = openArg;
     rec->m_blitMode = mode;
-    rec->m_useDS = useDS;
+    rec->m_openFlags = openFlags;
     if (origin != NULL) {
         rec->m_origin = new POINT;
         *rec->m_origin = *origin;
@@ -850,7 +862,7 @@ i32 CMoviePlayer::AddToPlaylist(
     } else {
         rec->m_rect = NULL;
     }
-    rec->m_flags = flags;
+    rec->m_pumpFlags = pumpFlags;
     rec->m_count = count;
     m_playlist.Add(rec);
     return 1;
@@ -918,11 +930,11 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
                 if (OpenLo(
                         clip->m_src,
                         clip->m_blitMode,
-                        clip->m_useDS,
+                        clip->m_openFlags,
                         clip->m_origin,
                         clip->m_rect
                     )
-                    == MOVIE_TILE) {
+                    == 0) {
                     return MOVIE_RESULT_ERROR;
                 }
             } else {
@@ -930,16 +942,16 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
                         clip->m_src,
                         clip->m_openArg,
                         clip->m_blitMode,
-                        clip->m_useDS,
+                        clip->m_openFlags,
                         clip->m_origin,
                         clip->m_rect
                     )
-                    == MOVIE_TILE) {
+                    == 0) {
                     return MOVIE_RESULT_ERROR;
                 }
             }
             PLAYLISTINFOSTRUCT* c2 = m_playlist[i];
-            MoviePlaybackResult result = Pump(c2->m_flags, c2->m_count);
+            MoviePlaybackResult result = Pump(c2->m_pumpFlags, c2->m_count);
             if (result != MOVIE_RESULT_FINISHED) {
                 CloseSmacker();
                 return result;

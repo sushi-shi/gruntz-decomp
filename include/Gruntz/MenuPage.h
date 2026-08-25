@@ -16,6 +16,18 @@ class CDDrawWorker;
 class CMenuTree;
 class CAnimatedMenuItem;
 
+// Layout, cursor, and focus-wrapping options retained by CMenuPage::Configure.
+// Forced-off wrapping takes precedence when both wrap bits are present; with
+// neither bit set, the page inherits CMenuTree's wrap setting.
+GZ_ENUM_FLAGS_BEGIN(MenuPageFlags, i32)
+    MENU_PAGE_FLAGS_NONE = 0,
+    MENU_PAGE_FORCE_WRAP = 0x1,
+    MENU_PAGE_DISABLE_WRAP = 0x2,
+    MENU_PAGE_MULTI_COLUMN = 0x4,
+    MENU_PAGE_HIDE_FOCUS_CURSORS = 0x8
+GZ_ENUM_FLAGS_END(MenuPageFlags, i32)
+GZ_ENUM_FLAGS_OPS(MenuPageFlags)
+
 class CMenuPage {
 public:
     CMenuPage() {
@@ -23,7 +35,7 @@ public:
         m_menuTree = NULL;
         m_headerAnimation = NULL;
         m_focusedItem = NULL;
-        m_flags = 0;
+        m_flags = MENU_PAGE_FLAGS_NONE;
     }
 
     RVA(0x00183250, 0x71)
@@ -37,7 +49,7 @@ public:
         const char* pageKey,
         const char* headerAnimationKey,
         const char* parentPageKey,
-        i32 flags
+        GZ_ENUM_PARAM(MenuPageFlags, i32) flags
     );
     void Reset();
     void ClearItems();
@@ -49,7 +61,7 @@ public:
         const char* animationKey,
         i32 commandId,
         const char* targetPageKey,
-        i32 flags
+        GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     );
 
     CMenuItem* AddItem(
@@ -59,7 +71,7 @@ public:
         i32 commandParam,
         i32 secondaryCommandId,
         const char* targetPageKey,
-        i32 flags
+        GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     );
     i32 PrepareForActivation();
     i32 FocusInitialItem();
@@ -82,7 +94,7 @@ public:
         const char* animationKey,
         i32 commandId,
         const char* targetPageKey,
-        i32 flags,
+        GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
         i32 framePeriodMs
     );
 
@@ -93,7 +105,7 @@ public:
         i32 commandParam,
         i32 secondaryCommandId,
         const char* targetPageKey,
-        i32 flags,
+        GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
         i32 framePeriodMs
     );
     i32 ReturnToParentPage(i32 playActivationSound);
@@ -116,7 +128,7 @@ public:
     CMenuItem* PrevItem(POSITION& position) {
         return static_cast<CMenuItem*>(m_items.GetPrev(position));
     }
-    i32 m_flags;
+    MenuPageFlags m_flags;
     RECT m_bounds;
 
     i32 m_headerGap;

@@ -52,8 +52,11 @@ namespace NetLobby {
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_RESUME) || wParam == IDCANCEL) {
                     KillTimer(hWnd, 1);
-                    g_curMulti
-                        ->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
+                    g_curMulti->BroadcastValueMessage(
+                        NETMSG_WAIT_DIALOG_REPLY,
+                        IDX(IDC_NET_RESUME),
+                        DPSEND_GUARANTEED
+                    );
                     EndDialog(hWnd, IDX(IDC_NET_RESUME));
                     return 1;
                 }
@@ -195,7 +198,11 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_RESTART)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(
+                            NETMSG_WAIT_DIALOG_REPLY,
+                            wParam,
+                            DPSEND_GUARANTEED
+                        );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_RESTART));
                     return 1;
@@ -203,7 +210,11 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_CONTINUE)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(
+                            NETMSG_WAIT_DIALOG_REPLY,
+                            wParam,
+                            DPSEND_GUARANTEED
+                        );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_CONTINUE));
                     return 1;
@@ -211,7 +222,11 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(
+                            NETMSG_WAIT_DIALOG_REPLY,
+                            wParam,
+                            DPSEND_GUARANTEED
+                        );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_ABORT));
                     return 1;
@@ -261,19 +276,31 @@ namespace NetLobby {
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_DROP_PLAYER)) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                    g_curMulti->BroadcastValueMessage(
+                        NETMSG_WAIT_DIALOG_REPLY,
+                        wParam,
+                        DPSEND_GUARANTEED
+                    );
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
                 if (wParam == IDX(IDC_NET_CONTINUE)) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                    g_curMulti->BroadcastValueMessage(
+                        NETMSG_WAIT_DIALOG_REPLY,
+                        wParam,
+                        DPSEND_GUARANTEED
+                    );
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                    g_curMulti->BroadcastValueMessage(
+                        NETMSG_WAIT_DIALOG_REPLY,
+                        wParam,
+                        DPSEND_GUARANTEED
+                    );
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
@@ -368,7 +395,11 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_DROPIN_ACCEPT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(
+                            NETMSG_WAIT_DIALOG_REPLY,
+                            wParam,
+                            DPSEND_GUARANTEED
+                        );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_DROPIN_ACCEPT));
                     return 1;
@@ -376,7 +407,11 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_DROPIN_REJECT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(
+                            NETMSG_WAIT_DIALOG_REPLY,
+                            wParam,
+                            DPSEND_GUARANTEED
+                        );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_DROPIN_REJECT));
                     return 1;
@@ -384,7 +419,11 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(
+                            NETMSG_WAIT_DIALOG_REPLY,
+                            wParam,
+                            DPSEND_GUARANTEED
+                        );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_ABORT));
                     return 1;

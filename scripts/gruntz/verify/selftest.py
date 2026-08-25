@@ -213,10 +213,58 @@ class ConstantControls(unittest.TestCase):
                   "#define NULL 0\n"
                   "bool B() { return false; }\n"
                   "int* P() { return NULL; }\n"
-                  "Kind K(int n) { return static_cast<Kind>(0); }\n")
+                  "Kind K(int n) { return static_cast<Kind>(0); }\n"
+                  "Kind KN(int n) { return static_cast<Kind>(-1); }\n")
         sites, errors = self._scan(source)
         self.assertEqual(errors, [])
         self.assertEqual([s for s in sites if s.proven], [])
+
+    def test_outer_result_cast_does_not_hide_pointer_call_argument(self):
+        source = ("#define NULL 0\n"
+                  "struct Node {};\n"
+                  "void* Create(int* context);\n"
+                  "Node* Probe() {\n"
+                  "  return static_cast<Node*>(Create(0));\n"
+                  "}\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        pointer_zeroes = [s for s in sites
+                          if s.function.startswith("Probe") and s.value == 0]
+        self.assertEqual(len(pointer_zeroes), 1)
+        self.assertEqual(pointer_zeroes[0].replacement, "NULL")
+
+    def test_call_arguments_do_not_supply_comparison_operand_type(self):
+        source = ("enum Kind { KIND_NONE = 0 };\n"
+                  "int IntResult(Kind kind);\n"
+                  "int IntWithBool(bool value);\n"
+                  "void Probe(Kind kind, bool value) {\n"
+                  "  if (IntResult(kind) == 0) {}\n"
+                  "  if (IntWithBool(value) != 1) {}\n"
+                  "}\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        comparisons = [s for s in sites
+                       if s.function.startswith("Probe") and s.value in (0, 1)]
+        self.assertEqual(len(comparisons), 2)
+        self.assertEqual([s for s in comparisons if s.proven], [])
+
+    def test_direct_enum_and_bool_operands_survive_expression_wrappers(self):
+        source = ("enum Kind { KIND_NONE = 0, KIND_ONE = 1 };\n"
+                  "Kind KindResult();\n"
+                  "bool BoolResult();\n"
+                  "void Probe(Kind kind, int value) {\n"
+                  "  if (KindResult() == 0) {}\n"
+                  "  if ((kind) != 1) {}\n"
+                  "  if (static_cast<Kind>(value) == 0) {}\n"
+                  "  if (BoolResult() == 0) {}\n"
+                  "}\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        replacements = [s.replacement for s in sites
+                        if s.function.startswith("Probe") and s.proven]
+        self.assertEqual(replacements.count("KIND_NONE"), 2)
+        self.assertEqual(replacements.count("KIND_ONE"), 1)
+        self.assertEqual(replacements.count("false"), 1)
 
     def test_pointer_zero_without_visible_null_is_not_a_fix(self):
         sites, errors = self._scan("int* P() { return 0; }\n")

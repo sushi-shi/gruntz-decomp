@@ -11,7 +11,7 @@ document.
 Two sources, both checked here:
 
 * **Retail** — `CAniElement::Build` @0x165460, `CAniRecordView::Parse`
-  @0x168c60, `CAniRecordView::GetSize` @0x168e50,
+  @0x168c60, `CAniRecordView::GetDurationMs` @0x168e50,
   `CAniAdvanceCursor::Advance` @0x15c360. Assembly only.
 * **The corpus** — every ANI resource in both archives: 660 in `Gruntz.REZ`
   + 378 in `GRUNTDEM.REZ` = **1038 files, 13 480 records**. The record walk
@@ -89,14 +89,14 @@ meaning; a re-encoder must preserve it verbatim, which `ani.rs` does.
 
 | Bit | `ani.rs` name | Occurs? | | Evidence |
 |---|---|---|---|---|
-| 0x01 | `FLAG_TICK_DURATION` | **never** | **P** | `CAniRecordView::GetSize` @0x168e50: set means `duration` counts engine updates and is scaled by 22 ms; clear means `duration` is already ms |
+| 0x01 | `FLAG_FRAME_COUNT` | **never** | **P** | `CAniAdvanceCursor::Advance` decrements the set form by one update; `CAniRecordView::GetDurationMs` @0x168e50 scales it by 22 ms. Clear means `duration` is already ms and is decremented by elapsed time |
 | 0x02 | `FLAG_HAS_CUES` | 785 records | **P** | `Parse` @0x168cd3 `test 0x2` — a NUL-terminated cue string follows the fixed 20 bytes |
-| 0x04 | `FLAG_POSITIONAL_CUE` | **never** | **?** | named in `ani.rs`; no consumer identified in this pass |
-| 0x08 | `FLAG_FORCE_CUE` | **never** | **P** | `CAniAdvanceCursor::Advance`: with it (or object flag 0x2000000) set, the cue fires even when the object's dirty-rect is unarmed |
+| 0x04 | `FLAG_POSITIONAL_CUE` | **never** | **P** | `CAniAdvanceCursor::Advance` calls `PlaySpatialized` when set and `PlayIfElapsed` when clear |
+| 0x08 | `FLAG_CULL_CUE_WHEN_NOT_DRAWN` | **never** | **P** | `CAniAdvanceCursor::Advance` suppresses the cue when this bit (or object flag 0x2000000) is set and the object's dirty rectangle is unarmed |
 
-So **every shipped duration is already in milliseconds** and the tick-scaling
-path is unexercised. `duration <= 0` falls back to 22 ms (`GetSize` returns
-0x16), which 15 records rely on.
+So **every shipped duration is already in milliseconds** and the frame-count
+conversion path is unexercised. `duration <= 0` falls back to 22 ms
+(`GetDurationMs` returns `ANI_FRAME_QUANTUM_MS`), which 15 records rely on.
 
 Cue strings are whitespace-separated token lists resolved against the sound
 registry by `CAniRecordView::ResolveIndices` @0x168d00: 785 records carry 986
@@ -194,8 +194,6 @@ function's mangled name moved from `W4TileArrivalFxCue@@` to
 * `draw_value` 3 and 100. Present on disk, no consumer found in `src/`. Our
   reconstruction is incomplete, so "no consumer" here means "not located",
   not "does not exist".
-* `FLAG_POSITIONAL_CUE` (0x04). Named in `ani.rs`, never set in shipped data,
-  no consumer identified in this pass.
 * Whether header `+0x00` (`0x20`) was meant as a header size. Unchanged from
   `ani.rs`'s reading: the sibling PID/RID header is also 0x20 bytes and carries
   **10** in the same slot across 29 798 sprites, so both cannot be sizes, and
@@ -204,9 +202,10 @@ function's mangled name moved from `W4TileArrivalFxCue@@` to
 
 ## `src/` follow-ups
 
-Applied (`lane/wwd-renames`): `WWDSTEP_HOLD = 0` and `WWDPOS_NONE = 0` now name
-the two switch-default arms, and `WwdAniDrawValue` is the single `draw_value`
-domain. All three are declaration-only and were measured byte-neutral.
+Applied: `WWDSTEP_HOLD = 0` and `WWDPOS_NONE = 0` name the two switch-default
+arms, `WwdAniDrawValue` is the single `draw_value` domain, and `AniRecordFlags`
+names all four record bits. The record duration method and accumulated animation
+duration are explicitly named in milliseconds.
 
 Still open:
 

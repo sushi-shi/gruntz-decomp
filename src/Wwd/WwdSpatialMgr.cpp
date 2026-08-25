@@ -74,7 +74,11 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
         CGameObject* record = obj->m_object;
-        if ((record->m_flags & 0x2) || (record->m_logicRecord->m_flags & 0x4)) {
+        if (HAS(static_cast<WwdGameObjectFlags>(record->m_flags), WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE)
+            || HAS(
+                static_cast<LogicRecordFlags>(record->m_logicRecord->m_flags),
+                LOGIC_RECORD_FLAG_KEEP_ACTIVE
+            )) {
             m_mgr->InsertSorted(record, 1);
             grid->Remove(obj);
             ++count;
@@ -104,11 +108,13 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
     while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_mgr->NextChild(pos));
-        if (obj->m_flags & 0x40) {
+        if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
+                WWD_GAME_OBJECT_FLAG_DELETE_IF_VIEW_OUTSIDE_LEVEL)) {
 
             if (newX < m_bounds.left - 0x140 || newX > m_bounds.right + 0x140
                 || newY < m_bounds.top - 0xdc || newY > m_bounds.bottom + 0xdc) {
-                if (obj->m_flags & 0x80000) {
+                if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
+                        WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
                     CLogicRecord* record = obj->m_logicRecord;
                     record->SetLogicEvent(ACT_OBJECT_REMOVED);
                     record->m_dispatch(obj);
@@ -120,7 +126,12 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                 obj = NULL;
             }
         }
-        if (obj != NULL && !(obj->m_flags & 0x2) && (obj->m_flags & 0x40000)) {
+        if (obj != NULL
+            && !HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE)
+            && HAS(
+                static_cast<WwdGameObjectFlags>(obj->m_flags),
+                WWD_GAME_OBJECT_FLAG_WORLD_SPACE
+            )) {
             i32 x = obj->m_screenX;
             i32 y = obj->m_screenY;
             WwdRegion* r = &obj->m_region;
@@ -138,14 +149,14 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
             }
             r->m_x = x;
             r->m_y = y;
-            i32 flags = obj->m_flags;
+            WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
             i32 result;
-            if (flags & 0x800000) {
+            if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
                 CWwdGrid* grid = m_grid1;
                 if (x >= lo1x && y >= lo1y && x <= hi1x && y <= hi1y) {
                     result = 0;
-                } else if (flags & 0x20) {
-                    if (flags & 0x80000) {
+                } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
+                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
                         CLogicRecord* record = obj->m_logicRecord;
                         record->SetLogicEvent(ACT_OBJECT_REMOVED);
                         record->m_dispatch(obj);
@@ -154,7 +165,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     delete obj;
                     result = 1;
                 } else {
-                    if (flags & 0x100000) {
+                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
                         CLogicRecord* record = obj->m_logicRecord;
                         i32 saved = record->EventCode();
                         record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
@@ -167,12 +178,12 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     grid->Add(r);
                     result = 1;
                 }
-            } else if (flags & 0x1000000) {
+            } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION)) {
                 CWwdGrid* grid = m_grid2;
                 if (x >= lo2x && y >= lo2y && x <= hi2x && y <= hi2y) {
                     result = 0;
-                } else if (flags & 0x20) {
-                    if (flags & 0x80000) {
+                } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
+                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
                         CLogicRecord* record = obj->m_logicRecord;
                         record->SetLogicEvent(ACT_OBJECT_REMOVED);
                         record->m_dispatch(obj);
@@ -181,7 +192,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     delete obj;
                     result = 1;
                 } else {
-                    if (flags & 0x100000) {
+                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
                         CLogicRecord* record = obj->m_logicRecord;
                         i32 saved = record->EventCode();
                         record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
@@ -198,8 +209,8 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                 CWwdGrid* grid = m_grid0;
                 if (x >= lo0x && y >= lo0y && x <= hi0x && y <= hi0y) {
                     result = 0;
-                } else if (flags & 0x20) {
-                    if (flags & 0x80000) {
+                } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
+                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
                         CLogicRecord* record = obj->m_logicRecord;
                         record->SetLogicEvent(ACT_OBJECT_REMOVED);
                         record->m_dispatch(obj);
@@ -208,7 +219,7 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     delete obj;
                     result = 1;
                 } else {
-                    if (flags & 0x100000) {
+                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
                         CLogicRecord* record = obj->m_logicRecord;
                         i32 saved = record->EventCode();
                         record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
@@ -248,11 +259,11 @@ i32 CWwdSpatialMgr::PruneCount() {
 
 RVA(0x001688f0, 0x6d)
 void CWwdSpatialMgr::RemoveObject(CWwdGameObject* obj) {
-    i32 flags = obj->m_flags;
-    if (flags & 0x800000) {
+    WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
+    if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
         m_grid1->Add(&obj->m_region);
         m_mgr->RegisterObjectId(obj);
-    } else if (flags & 0x1000000) {
+    } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION)) {
         m_grid2->Add(&obj->m_region);
         m_mgr->RegisterObjectId(obj);
     } else {

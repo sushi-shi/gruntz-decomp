@@ -94,9 +94,9 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     int sortKey,
     CLogicRecord* logicTemplate,
     int dotColor,
-    int stateFlags
+    int objectFlags
 ) {
-    CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, stateFlags);
+    CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, objectFlags);
     if (result->SetupFlagged(x, y, sortKey, logicTemplate, dotColor) == 0) {
         if (result != NULL) {
             delete result;
@@ -104,7 +104,8 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
         return NULL;
     }
     InsertSorted(result, 1);
-    if (stateFlags & 0x200000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
+            WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
 
         result->m_logicRecord->m_dispatch(result);
     }
@@ -121,7 +122,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     int sortKey,
     const char* name,
     int dotColor,
-    int stateFlags
+    int objectFlags
 ) {
     return CreateDotObject(
         id,
@@ -130,7 +131,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
         sortKey,
         LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name),
         dotColor,
-        stateFlags
+        objectFlags
     );
 }
 
@@ -139,9 +140,9 @@ CWwdGameObjectF* CDDrawChildGroup::CreateDeferredObject(
     int id,
     int sortKey,
     CLogicRecord* logicTemplate,
-    int stateFlags
+    int objectFlags
 ) {
-    CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, stateFlags);
+    CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, objectFlags);
     if (result->SetupDeferred(sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -149,7 +150,8 @@ CWwdGameObjectF* CDDrawChildGroup::CreateDeferredObject(
         return NULL;
     }
     InsertSorted(result, 1);
-    if (stateFlags & 0x200000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
+            WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
         result->m_logicRecord->m_dispatch(result);
     }
     return result;
@@ -158,13 +160,17 @@ CWwdGameObjectF* CDDrawChildGroup::CreateDeferredObject(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001595b0, 0x44)
-CWwdGameObjectF*
-CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags) {
+CWwdGameObjectF* CDDrawChildGroup::CreateNamedDeferredObject(
+    int id,
+    int sortKey,
+    const char* name,
+    int objectFlags
+) {
     return CreateDeferredObject(
         id,
         sortKey,
         LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name),
-        stateFlags
+        objectFlags
     );
 }
 
@@ -175,10 +181,10 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     i32 y,
     i32 sortKey,
     CLogicRecord* logicTemplate,
-    i32 stateFlags
+    i32 objectFlags
 ) {
     CWwdGameObjectA* result =
-        new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CGameObject::INLINE_BASE);
+        new CWwdGameObjectA(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);
     if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -186,7 +192,8 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
         return NULL;
     }
     InsertSorted(result, 1);
-    if (stateFlags & 0x200000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
+            WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
         result->m_logicRecord->m_dispatch(result);
     }
     return result;
@@ -199,7 +206,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     i32 y,
     i32 sortKey,
     const char* name,
-    i32 stateFlags
+    i32 objectFlags
 ) {
     CLogicRecord* logicTemplate =
         LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
@@ -207,7 +214,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
         return NULL;
     }
 
-    return CreateSpriteObject(id, x, y, sortKey, logicTemplate, stateFlags);
+    return CreateSpriteObject(id, x, y, sortKey, logicTemplate, objectFlags);
 }
 
 // @dead-code
@@ -228,7 +235,7 @@ i32 CDDrawChildGroup::AttachSprite(
     i32 y,
     i32 sortKey,
     const char* name,
-    i32 stateFlags
+    i32 objectFlags
 ) {
     if (!obj) {
         return 0;
@@ -238,13 +245,14 @@ i32 CDDrawChildGroup::AttachSprite(
     if (!logicTemplate) {
         return 0;
     }
-    obj->m_flags = stateFlags;
+    obj->m_flags = objectFlags;
     if (!obj->Setup(x, y, sortKey, logicTemplate)) {
         return 0;
     }
 
     this->InsertSorted(obj, 1);
-    if (stateFlags & 0x200000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
+            WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
 
         obj->m_logicRecord->m_dispatch(static_cast<CGameObject*>(obj));
     }
@@ -258,9 +266,9 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int y,
     int sortKey,
     CLogicRecord* logicTemplate,
-    int stateFlags
+    int objectFlags
 ) {
-    CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, stateFlags);
+    CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, objectFlags);
     if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
@@ -268,7 +276,8 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
         return NULL;
     }
     InsertSorted(result, 1);
-    if (stateFlags & 0x200000) {
+    if (HAS(static_cast<WwdGameObjectFlags>(objectFlags),
+            WWD_GAME_OBJECT_FLAG_DISPATCH_ON_CREATE)) {
         result->m_logicRecord->m_dispatch(result);
     }
     return result;
@@ -283,14 +292,14 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int y,
     int sortKey,
     const char* name,
-    int stateFlags
+    int objectFlags
 ) {
     CLogicRecord* logicTemplate =
         LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }
-    return CreateContainerObject(id, x, y, sortKey, logicTemplate, stateFlags);
+    return CreateContainerObject(id, x, y, sortKey, logicTemplate, objectFlags);
 }
 
 // @early-stop
@@ -326,10 +335,10 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
                 record->m_dispatch(static_cast<CGameObject*>(obj));
             }
         }
-        i32 flags = obj->m_flags;
-        if (flags & 0x10000) {
+        WwdGameObjectFlags objectFlags = static_cast<WwdGameObjectFlags>(obj->m_flags);
+        if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_PENDING_DELETE)) {
             killQueue.Add(static_cast<CObject*>(obj));
-        } else if (flags & 0x20000) {
+        } else if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_SORT_PENDING)) {
             sortQueue.Add(static_cast<CObject*>(obj));
         }
     }
@@ -337,12 +346,13 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     i32 i;
     for (i = 0; i < killQueue.GetSize(); i++) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
-        if (obj->m_flags & 0x80000) {
+        if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
+                WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->m_logicRecord;
             record->SetLogicEvent(ACT_OBJECT_REMOVED);
             record->m_dispatch(static_cast<CGameObject*>(obj));
         }
-        if (obj->m_flags & 0x800) {
+        if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
             if (obj != NULL) {
                 delete obj;
             }
@@ -358,7 +368,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 
     for (i = 0; i < sortQueue.GetSize(); i++) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(sortQueue.GetData()[i]);
-        obj->m_flags &= ~0x20000;
+        obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
         m_list.RemoveAt(obj->m_posCache);
         InsertSorted(obj, 0);
     }
@@ -433,7 +443,7 @@ void CDDrawChildGroup::InvalidateChildShadows() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159db0, 0x5e)
 void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
-    if (obj->m_flags & 0x800) {
+    if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
         delete obj;
         return;
     }
@@ -447,7 +457,7 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00159e10, 0x2e)
 void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
-    obj->m_flags &= 0xfffdffff;
+    obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
     m_list.RemoveAt(obj->m_posCache);
     InsertSorted(obj, 0);
 }
@@ -456,7 +466,7 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
 
 RVA(0x00159e40, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
-    if (obj->m_flags & 0x800) {
+    if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
         obj->m_posCache = NULL;
         return;
     }
@@ -469,7 +479,11 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* data = static_cast<CWwdGameObject*>(NextChild(pos));
-        if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
+        if (data->m_sortKey > key
+            && !HAS(
+                static_cast<WwdGameObjectFlags>(data->m_flags),
+                WWD_GAME_OBJECT_FLAG_SORT_PENDING
+            )) {
             obj->m_posCache = (m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
             return;
         }
@@ -491,20 +505,21 @@ void CDDrawChildGroup::CollideBroadcast() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* oi = NextChild(pos);
-        if (!(oi->m_flags & 1)) {
+        if (!(oi->m_flags & IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION))) {
             POSITION ip = pos;
             while (ip != NULL) {
                 CGameObject* oj = NextChild(ip);
                 i32 fj = oj->m_flags;
-                if (fj & 1) {
+                if (fj & IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)) {
                     continue;
                 }
                 i32 fi = oi->m_flags;
-                if ((fi ^ fj) & 0x40000) {
+                if ((fi ^ fj) & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
                     continue;
                 }
 
-                if (!(fi & 4) && !(fj & 0x80)) {
+                if (!(fi & IDX(WWD_GAME_OBJECT_FLAG_IGNORE_HITS))
+                    && !(fj & IDX(WWD_GAME_OBJECT_FLAG_DISABLE_ATTACKS))) {
                     i32 mask1 = static_cast<i32>(oj->m_objectType) & oi->m_hitTypeFlags;
                     i32 mask2 = static_cast<i32>(oi->m_objectType) & oj->m_attackTypeMask;
                     if (mask1 || mask2) {
@@ -539,7 +554,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                                 }
                             }
                             if (mask1) {
-                                if (oi->m_flags & 8) {
+                                if (oi->m_flags
+                                    & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
                                     i32 v = oi->m_health - oj->m_damage;
                                     oi->m_health = v;
                                     if (v <= 0) {
@@ -558,10 +574,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                     }
                 }
 
-                if (oj->m_flags & 4) {
+                if (oj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_IGNORE_HITS)) {
                     continue;
                 }
-                if (oi->m_flags & 0x80) {
+                if (oi->m_flags & IDX(WWD_GAME_OBJECT_FLAG_DISABLE_ATTACKS)) {
                     continue;
                 }
                 i32 mask1b = oj->m_hitTypeFlags & static_cast<i32>(oi->m_objectType);
@@ -630,7 +646,7 @@ static char s_dbgSys[] = "SYS";
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a210, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
-    if (m_flags & 0x10000) {
+    if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
@@ -652,7 +668,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
             } while (pos != NULL);
         }
     }
-    if (m_flags & 0x20000) {
+    if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ATTACK_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
@@ -674,7 +690,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
             } while (pos != NULL);
         }
     }
-    if (m_flags & 0x40000) {
+    if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_MOVE_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
@@ -696,7 +712,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
             } while (pos != NULL);
         }
     }
-    if (m_flags & 0x100000) {
+    if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_ORIGIN)) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
@@ -706,9 +722,9 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 i32 x = obj->m_screenX;
                 if (x != COORD_UNSET) {
 
-                    i32 fl = view->m_flags;
+                    WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
                     i32 y = obj->m_screenY;
-                    if (fl & 4) {
+                    if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
                         i32 w = view->m_wrapW;
                         if (x < 0) {
                             x = x + w;
@@ -720,7 +736,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                             x = x + w;
                         }
                     }
-                    if (fl & 8) {
+                    if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
                         i32 h = view->m_wrapH;
                         if (y < 0) {
                             y = y + h;
@@ -740,7 +756,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
             } while (pos != NULL);
         }
     }
-    if (m_flags & 0x1000000) {
+    if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SURFACE_MEMORY)) {
         POSITION pos = m_list.GetHeadPosition();
         CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
         CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
@@ -803,7 +819,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
-    if (!(m_flags & 0x200000)) {
+    if (!(m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY))) {
         return;
     }
     POSITION pos = m_list.GetHeadPosition();
@@ -823,8 +839,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
         rc.bottom = box.bottom;
         i32 wl = box.left;
         i32 wt = box.top;
-        i32 fl = view->m_flags;
-        if (fl & 4) {
+        WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
+        if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
             i32 w = view->m_wrapW;
             if (box.left < 0) {
                 wl = box.left + w;
@@ -836,7 +852,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
                 wl += w;
             }
         }
-        if (fl & 8) {
+        if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
             i32 h = view->m_wrapH;
             if (box.top < 0) {
                 wt = box.top + h;
@@ -863,7 +879,11 @@ i32 CDDrawChildGroup::CheckSortOrder() {
     POSITION node = m_list.GetHeadPosition();
     CWwdGameObject* anchor = static_cast<CWwdGameObject*>(NextChild(node));
     if (anchor != NULL) {
-        while (node != NULL && anchor != NULL && (anchor->m_flags & 0x20000) != 0) {
+        while (node != NULL && anchor != NULL
+               && HAS(
+                   static_cast<WwdGameObjectFlags>(anchor->m_flags),
+                   WWD_GAME_OBJECT_FLAG_SORT_PENDING
+               )) {
             anchor = static_cast<CWwdGameObject*>(NextChild(node));
         }
         if (anchor != NULL) {
@@ -871,7 +891,10 @@ i32 CDDrawChildGroup::CheckSortOrder() {
             while (node != NULL) {
                 CGameObject* cur_obj = NextChild(node);
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-                if ((obj->m_flags & 0x20000) == 0) {
+                if (!HAS(
+                        static_cast<WwdGameObjectFlags>(obj->m_flags),
+                        WWD_GAME_OBJECT_FLAG_SORT_PENDING
+                    )) {
                     i32 curKey = obj->m_sortKey;
                     if (key > curKey) {
                         anchor->GetClassId();
@@ -1040,7 +1063,7 @@ void CDDrawChildGroup::PruneList() {
     while (pos != NULL) {
         POSITION cur = pos;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        if (obj != NULL && !(obj->m_flags & 0x200)) {
+        if (obj != NULL && !(obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_PRESERVE_ON_PRUNE))) {
             m_list.RemoveAt(cur);
             m_activeGameObjectsById.RemoveKey(WwdKey(obj));
             m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
@@ -1099,7 +1122,11 @@ i32 CDDrawChildGroup::CountActive() {
             void* key = NULL;
             CWwdGameObject* val = NULL;
             MapGetNext(m_registeredGameObjectsById, pos, key, val);
-            if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
+            if (val != NULL
+                && !HAS(
+                    static_cast<WwdGameObjectFlags>(val->m_flags),
+                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                )) {
                 ++n;
             }
         } while (pos != NULL);
@@ -1118,7 +1145,11 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, SerialMode mode, LogicTy
             void* key = NULL;
             CWwdGameObject* val = NULL;
             MapGetNext(m_registeredGameObjectsById, pos, key, val);
-            if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
+            if (val != NULL
+                && !HAS(
+                    static_cast<WwdGameObjectFlags>(val->m_flags),
+                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                )) {
                 val->Play(ar, mode, typeId, val);
             }
         } while (pos != NULL);
@@ -1137,7 +1168,11 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
             void* key = NULL;
             CWwdGameObject* val = NULL;
             MapGetNext(m_registeredGameObjectsById, pos, key, val);
-            if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
+            if (val != NULL
+                && !HAS(
+                    static_cast<WwdGameObjectFlags>(val->m_flags),
+                    WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+                )) {
 
                 val->WriteSnapshot(ar, typeId);
             }
@@ -1288,7 +1323,11 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, LogicTypeId typeId) {
         void* key = NULL;
         CWwdGameObject* val = NULL;
         MapGetNext(m_registeredGameObjectsById, pos, key, val);
-        if (val != NULL && !(val->m_flags & WAPOBJ_FLAG_SKIP_ACTIVE_PASSES)) {
+        if (val != NULL
+            && !HAS(
+                static_cast<WwdGameObjectFlags>(val->m_flags),
+                WWD_GAME_OBJECT_FLAG_SKIP_ACTIVE_PASSES
+            )) {
             i32 objectId = val->m_objectId;
             ar->Write(&objectId, sizeof(objectId));
             if (val->Play(ar, SERIAL_SAVE, typeId, val) == 0) {
@@ -1405,7 +1444,7 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 RVA(0x0015b300, 0x40)
-CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CWapObj(owner, id, stateFlags, CWapObj::NO_SEED) {
+CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags)
+    : CWapObj(owner, id, logicFlags, CWapObj::NO_SEED) {
     ResetLogicFields();
 }

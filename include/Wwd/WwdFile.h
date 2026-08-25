@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
 #include <Ints.h>
+#include <Wwd/WwdPlaneFlags.h>
 
 class CDDrawWorker;
 
@@ -64,7 +65,7 @@ struct WwdHeader {
 struct WwdPlaneHeader {
     u32 headerSize;
     u32 reserved04;
-    u32 flags;
+    GZ_ENUM_STORAGE(WwdPlaneFlags, u32) flags;
 
     u32 reserved0c;
     char name[0x50 - 0x10];

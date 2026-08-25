@@ -31,7 +31,7 @@ i32 CMenuItem::Init(
     const char* animationKey,
     i32 commandId,
     const char* targetPageKey,
-    i32 flags
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     if (!page) {
         return 0;
@@ -45,7 +45,7 @@ i32 CMenuItem::Init(
     m_commandId = commandId;
     m_secondaryCommandId = 0;
     m_commandParam = 0;
-    if (m_flags & 1) {
+    if (HAS(m_flags, MENU_ITEM_INITIAL_DISABLED)) {
         m_state = MENUSTATE_DISABLED;
     } else {
         m_state = MENUSTATE_NORMAL;
@@ -184,7 +184,7 @@ i32 CAnimatedMenuItem::Init(
     const char* animationKey,
     i32 commandId,
     const char* targetPageKey,
-    i32 flags
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     if (!page) {
         return 0;
@@ -289,7 +289,7 @@ i32 CAnimatedMenuItem::AdvanceFrame() {
         return 0;
     }
     m_frameIndex = m_frameIndex + 1;
-    if (m_flags & 0x10000) {
+    if (HAS(m_flags, MENU_ITEM_HOLD_FINAL_ANIMATION_FRAME)) {
         CDDrawWorker* animation = GetStateAnimation();
         if (animation) {
             if (m_frameIndex > animation->m_maxIndex) {

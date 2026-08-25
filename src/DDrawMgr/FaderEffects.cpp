@@ -94,8 +94,8 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
 // bounded TU-state forest leave that coloring unchanged.
 RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
-    u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(0));
-    u16* dstBits = static_cast<u16*>(m_dstSurface->Lock(0));
+    u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(NULL));
+    u16* dstBits = static_cast<u16*>(m_dstSurface->Lock(NULL));
     i32 h = m_srcSurface->m_height;
     i32 w = m_srcSurface->m_width;
     i32 base = h - frame - 1;
@@ -367,10 +367,10 @@ void CFaderSine::RenderFrame(i32 frame) {
         return;
     }
     if (m_targetSurface != NULL) {
-        m_targetBits = static_cast<u8*>(m_targetSurface->Lock(0));
+        m_targetBits = static_cast<u8*>(m_targetSurface->Lock(NULL));
     }
     if (m_restoreSurface != NULL) {
-        m_restoreBits = static_cast<u8*>(m_restoreSurface->Lock(0));
+        m_restoreBits = static_cast<u8*>(m_restoreSurface->Lock(NULL));
     }
     i32 bpp = m_targetSurface->m_bytesPerPixel;
     float step = static_cast<float>(m_width) / m_fadeRowCount;
@@ -606,10 +606,10 @@ RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_previousFrame;
     if (m_targetSurface != NULL) {
-        m_targetBits = static_cast<u8*>(m_targetSurface->Lock(0));
+        m_targetBits = static_cast<u8*>(m_targetSurface->Lock(NULL));
     }
     if (m_restoreSurface != NULL) {
-        m_restoreBits = static_cast<u8*>(m_restoreSurface->Lock(0));
+        m_restoreBits = static_cast<u8*>(m_restoreSurface->Lock(NULL));
     }
     i32 bpp = m_targetSurface->m_bytesPerPixel;
     u8* lut = NULL;
@@ -619,7 +619,7 @@ void CFaderLight::RenderFrame(i32 frame) {
     if (m_clearMode != 0) {
         u8* ovlBits = NULL;
         if (m_overlay != NULL) {
-            ovlBits = static_cast<u8*>(m_overlay->Lock(0));
+            ovlBits = static_cast<u8*>(m_overlay->Lock(NULL));
         }
         i32 r = m_frameCount - frame;
         i32 rr = r * r;
@@ -1242,11 +1242,11 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 // in edx first, and picks edx/ecx for the two vtable loads in the opposite order.
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
-    m_dstBase = static_cast<u8*>(m_targetSurface->Lock(0));
-    u8* gather = static_cast<u8*>(m_sourceSurface->Lock(0));
+    m_dstBase = static_cast<u8*>(m_targetSurface->Lock(NULL));
+    u8* gather = static_cast<u8*>(m_sourceSurface->Lock(NULL));
     m_straightBase = gather;
     if (m_sourceSurface != m_warpSourceSurface) {
-        gather = static_cast<u8*>(m_warpSourceSurface->Lock(0));
+        gather = static_cast<u8*>(m_warpSourceSurface->Lock(NULL));
     }
     m_gatherBase = gather;
 

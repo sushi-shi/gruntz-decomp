@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/LogicRecordFlags.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
@@ -36,7 +37,7 @@ struct CLogicRecord : public CWapObj {
     // Out of line at 0x15b300 in WwdObjMgr.cpp; <DDrawMgr/LogicRecordCtorInline.h>
     // is the opt-in inline view for the one TU that expands it - a workaround
     // whose cost and removal condition are measured in that header.
-    CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
+    CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags);
 
     CLogicRecord(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         ResetLogicFields();

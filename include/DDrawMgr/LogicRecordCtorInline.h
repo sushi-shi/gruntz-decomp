@@ -27,8 +27,8 @@
 // accurately enough that cl 5.0 declines the depth-3 site on its own budget and
 // homes 0x15b300 in wwdobjmgr; then one visible body reproduces both shapes.
 // Ledger: docs/patterns/comdat-home-adjudicates-inline-spelling.md.
-inline CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CWapObj(owner, id, stateFlags, CWapObj::NO_SEED) {
+inline CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags)
+    : CWapObj(owner, id, logicFlags, CWapObj::NO_SEED) {
     ResetLogicFields();
 }
 

@@ -1432,7 +1432,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                 default:
                     spr->ApplyName("GAME_BRICKBREAK");
                     if (spr->m_layer == NULL) {
-                        spr->m_flags |= 0x10000;
+                        spr->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     }
                     break;
             }

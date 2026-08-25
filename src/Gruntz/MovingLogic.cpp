@@ -33,7 +33,7 @@ void CMovingLogic::AdvanceMotion() {
     m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.y);
     Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_time);
 
-    if ((m_object->m_flags & 0x10) && m_object->m_carrier != NULL) {
+    if ((m_object->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) && m_object->m_carrier != NULL) {
         m_object->m_screenX += m_object->m_carrier->m_deltaX;
         Motion()->m_position.x = static_cast<double>(m_object->m_screenX);
         m_object->m_screenY += m_object->m_carrier->m_deltaY;
@@ -49,7 +49,7 @@ void CMovingLogic::AdvanceMotion() {
         );
         Motion()->m_velocity.y = 0.0;
     } else {
-        m_object->m_flags &= ~0x10;
+        m_object->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
         m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
             static_cast<i32>(Motion()->m_position.x),

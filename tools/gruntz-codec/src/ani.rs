@@ -39,10 +39,10 @@ use gruntz_cast::AsUsize;
 
 pub const HEADER_SIZE: usize = 0x20;
 pub const RECORD_SIZE: usize = 0x14;
-pub const FLAG_TICK_DURATION: u16 = 0x01;
+pub const FLAG_FRAME_COUNT: u16 = 0x01;
 pub const FLAG_HAS_CUES: u16 = 0x02;
 pub const FLAG_POSITIONAL_CUE: u16 = 0x04;
-pub const FLAG_FORCE_CUE: u16 = 0x08;
+pub const FLAG_CULL_CUE_WHEN_NOT_DRAWN: u16 = 0x08;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AniHeader {
@@ -81,14 +81,14 @@ impl AniRecord<'_> {
         }
     }
 
-    /// Retail converts tick-count durations to about 22 ms per update in
-    /// `CAniRecordView::GetSize` @0x168e50. Time durations are already ms.
+    /// Retail converts frame-count durations to 22 ms per update in
+    /// `CAniRecordView::GetDurationMs` @0x168e50. Time durations are already ms.
     pub fn duration_ms(self) -> u32 {
         if self.duration <= 0 {
             return 22;
         }
         let n = u32::try_from(self.duration).unwrap_or(1);
-        if self.flags & FLAG_TICK_DURATION != 0 {
+        if self.flags & FLAG_FRAME_COUNT != 0 {
             n.saturating_mul(22)
         } else {
             n

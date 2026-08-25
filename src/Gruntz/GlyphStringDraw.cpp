@@ -58,7 +58,7 @@ i32 LayerBlitFrame(
     i32 x,
     i32 y,
     i32 useFront,
-    i32 mode
+    i32 useColorKey
 ) {
     if (!surfaceMgr) {
         return 0;
@@ -92,9 +92,9 @@ i32 LayerBlitFrame(
     RECT rc;
     SetRect(&rc, 0, 0, src->m_width - 1, src->m_height - 1);
     RECT rc2 = rc;
-    i32 flags = 0x10;
-    if (mode) {
-        flags = 0x11;
+    u32 flags = DDBLTFAST_WAIT;
+    if (useColorKey) {
+        flags |= DDBLTFAST_SRCCOLORKEY;
     }
     dst->BltFast(dx, dy, srcHandle, &rc2, flags);
     return 1;

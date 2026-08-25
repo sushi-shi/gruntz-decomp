@@ -543,7 +543,7 @@ void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
         return;
     }
-    u8* buf = static_cast<u8*>(Lock(0));
+    u8* buf = static_cast<u8*>(Lock(NULL));
     if (buf == NULL) {
         return;
     }
@@ -606,7 +606,7 @@ void CDDSurface::FlipVertical() {
 
 RVA(0x0013ece0, 0xc7)
 i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -777,7 +777,7 @@ i32 CDDSurface::ShadeBlt(
         }
     }
 
-    u16 *dstPtr = static_cast<u16*>(Lock(0)), *srcPtr = static_cast<u16*>(src->Lock(0));
+    u16 *dstPtr = static_cast<u16*>(Lock(NULL)), *srcPtr = static_cast<u16*>(src->Lock(NULL));
     i32 dstStride = m_pitch / 2;
     dstPtr += dr.top * dstStride + dr.left;
     i32 srcStride = src->m_pitch / 2;
@@ -900,7 +900,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         rc = MakeRect(0, 0, m_width, m_height);
     }
     pct = pct * 32 / 100;
-    u16* src = static_cast<u16*>(Lock(0));
+    u16* src = static_cast<u16*>(Lock(NULL));
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;
@@ -1170,7 +1170,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         g_lut16[i] = PackPalEntry16(pal[i].peRed, pal[i].peGreen, pal[i].peBlue);
     }
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -1204,7 +1204,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
 // Renames and depth-1 trees are inert on cl5's coloring here.
 RVA(0x0013fce0, 0x17f)
 i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -1251,7 +1251,7 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -1285,7 +1285,7 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
 
 RVA(0x0013ff80, 0x184)
 i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -1328,7 +1328,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -1407,7 +1407,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
     }
-    u8* locked = static_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
         return 0;
     }
@@ -1662,7 +1662,7 @@ i32 CDDSurface::DecodeRun8(u8* src) {
     height = this->GetHeight();
     hold = 0;
     sp = src;
-    pbits = static_cast<u8*>(this->Lock(0));
+    pbits = static_cast<u8*>(this->Lock(NULL));
     if (pbits == NULL) {
         return 0;
     }
@@ -1718,7 +1718,7 @@ i32 CDDSurface::DecodeRun24(u8* src) {
     if (src == NULL) {
         return 0;
     }
-    ln = static_cast<u8*>(this->Lock(0));
+    ln = static_cast<u8*>(this->Lock(NULL));
     if (ln == NULL) {
         return 0;
     }

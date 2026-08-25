@@ -544,7 +544,7 @@ i32 CInGameIcon::RefreshCell() {
         }
     }
     CWwdGameObjectA* r = m_wwdObject;
-    r->m_flags |= 0x10000;
+    r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     return 0;
 }
 
@@ -682,7 +682,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         }
         ClearTileBit(reg, m_object);
         r = m_wwdObject;
-        r->m_flags |= 0x10000;
+        r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 1;
     }
 
@@ -727,11 +727,11 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         }
         rend = m_glitterSprite;
         if (rend != NULL) {
-            rend->m_flags |= 0x10000;
+            rend->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             m_glitterSprite = NULL;
         }
         r = m_wwdObject;
-        r->m_flags |= 0x10000;
+        r->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 1;
     }
 fail:
@@ -769,7 +769,7 @@ i32 CInGameIcon::Reposition() {
                     found
                 )
                 && found != NULL) {
-                found->m_flags |= 0x10000;
+                found->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             }
         }
         reg = g_gameReg;

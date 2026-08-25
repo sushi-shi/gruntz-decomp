@@ -35,12 +35,12 @@ i32 g_surfaceColorKey = 0;
 
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
-    i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
-    i32 capArg = 0;
+    i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
+    i32 surfaceCaps = 0;
     if (g_resourceInstallActive != 0) {
-        capArg = 0x800;
+        surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item = m_ownerCtx->m_deviceManager->LoadFileSurface(path, capArg, flagsArg);
+    CDDSurface* item = m_ownerCtx->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -51,9 +51,9 @@ i32 CImage::Create(char* path, i32 keyed) {
     m_anchorX = m_width >> 1;
     m_anchorY = m_height >> 1;
     if (item->m_hasColorKey != 0) {
-        m_loadResult = 0x11;
+        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
-        m_loadResult = 0x10;
+        m_bltFastFlags = DDBLTFAST_WAIT;
     }
     m_originX = 0;
     m_originY = 0;
@@ -94,7 +94,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         }
         return 1;
     }
-    i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
+    i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     if (mode == FMT_PID || mode == FMT_RID) {
         i32 g10 = desc->offsetX;
         i32 g14 = desc->offsetY;
@@ -104,13 +104,13 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         m_originX = 0;
         m_originY = 0;
     }
-    i32 capArg = 0;
+    i32 surfaceCaps = 0;
     if (g_resourceInstallActive != 0) {
-        capArg = 0x800;
+        surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
 
     CDDSurface* item =
-        m_ownerCtx->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, capArg, flagsArg);
+        m_ownerCtx->m_deviceManager->LoadSurfaceFromPid(desc, mode, size, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -122,22 +122,22 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
     if (item->m_hasColorKey != 0) {
-        m_loadResult = 0x11;
+        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
         return 1;
     }
-    m_loadResult = 0x10;
+    m_bltFastFlags = DDBLTFAST_WAIT;
     return 1;
 }
 
 RVA(0x001530e0, 0x92)
 i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
-    i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
-    i32 capArg = 0;
+    i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
+    i32 surfaceCaps = 0;
     if (g_resourceInstallActive != 0) {
-        capArg = 0x800;
+        surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
-    CDDSurface* item =
-        m_ownerCtx->m_deviceManager->CreateKeyedSurface(width, height, BPP_UNSET, capArg, flagsArg);
+    CDDSurface* item = m_ownerCtx->m_deviceManager
+                           ->CreateKeyedSurface(width, height, BPP_UNSET, surfaceCaps, colorKey);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -149,9 +149,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
     if (item->m_hasColorKey != 0) {
-        m_loadResult = 0x11;
+        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
-        m_loadResult = 0x10;
+        m_bltFastFlags = DDBLTFAST_WAIT;
     }
     m_originX = 0;
     m_originY = 0;
@@ -174,7 +174,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     m_width = w;
     i32 h = m_owned->m_height;
     m_height = h;
-    m_loadResult = 0x11;
+    m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
     m_originX = desc->offsetX;
@@ -285,31 +285,31 @@ i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
 // us the reverse. Every [esp+N] in the body is that one displacement apart.
 RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 mode = info->m_stateFlags;
-    if (mode & 1) {
+    SpriteStateFlags mode = info->m_stateFlags;
+    if (HAS(mode, SPRITE_STATE_HIDDEN)) {
         info->m_dirty.m_armed = -1;
         return;
     }
-    if (mode & 8) {
+    if (HAS(mode, SPRITE_STATE_FLASHING)) {
         if (g_engineFrameDelta >= info->m_flashCountdown) {
             info->m_flashCountdown = info->m_flashInterval;
-            mode ^= 0x10000000;
+            mode ^= SPRITE_STATE_FLASH_VISIBLE;
             info->m_stateFlags = mode;
         } else {
             info->m_flashCountdown -= g_engineFrameDelta;
         }
         mode = info->m_stateFlags;
-        if (!(mode & 0x10000000)) {
+        if (!HAS(mode, SPRITE_STATE_FLASH_VISIBLE)) {
             info->m_dirty.m_armed = -1;
             return;
         }
     }
-    i32 vFlip = mode & 2;
-    i32 hFlip = mode & 4;
-    // Four sibling arms, not a nested if/else: retail re-tests vFlip at the head of
+    i32 mirrorX = HAS(mode, SPRITE_STATE_MIRROR_X);
+    i32 mirrorY = HAS(mode, SPRITE_STATE_MIRROR_Y);
+    // Four sibling arms, not a nested if/else: retail re-tests mirrorX at the head of
     // the second arm (docs/patterns/redundant-sibling-guard-retest.md), which only
     // survives when the arms are written as separate statements.
-    if (vFlip && hFlip) {
+    if (mirrorX && mirrorY) {
         if (m_owned) {
             BlitShadeNorm(info, dst);
         } else {
@@ -317,7 +317,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         }
         return;
     }
-    if (vFlip) {
+    if (mirrorX) {
         if (m_owned) {
             BlitShadeFlipV(info, dst);
         } else {
@@ -325,7 +325,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         }
         return;
     }
-    if (hFlip) {
+    if (mirrorY) {
         if (m_owned) {
             BlitShadeFlipH(info, dst);
         } else {
@@ -340,7 +340,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 
     LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -349,7 +349,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 dtop = y;
     i32 dright = right;
     i32 dbottom = bottom;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         BlitRect srcClip = m_ownerCtx->m_level->m_planeCtx;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
@@ -403,7 +403,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.top = dtop - y;
     s.right = s.left + w;
     s.bottom = s.top + h;
-    dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_loadResult);
+    dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_bltFastFlags);
     info->m_dirty.m_lastX = dleft;
     info->m_dirty.m_rect.left = dleft;
     info->m_dirty.m_lastY = dtop;
@@ -455,7 +455,7 @@ RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -469,7 +469,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN;
     d.right += 1;
     d.bottom += 1;
-    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
+    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_dirty.m_lastX = d.left;
@@ -485,7 +485,7 @@ RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -499,7 +499,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT;
-    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
+    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_dirty.m_lastX = d.left;
@@ -515,7 +515,7 @@ RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -529,7 +529,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN;
-    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
+    dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
     info->m_dirty.m_lastX = d.left;
@@ -545,7 +545,7 @@ RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
     LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -573,7 +573,7 @@ RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -601,7 +601,7 @@ RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
     LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;
@@ -629,7 +629,7 @@ RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
-    if (info->m_flags & 0x40000) {
+    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
     i32 right = m_width + x - 1;

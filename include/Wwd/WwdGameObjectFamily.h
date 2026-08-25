@@ -16,6 +16,7 @@
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
+#include <Wwd/WwdGameObjectFlags.h>
 #include <Wwd/WwdObjMgr.h>
 
 GZ_ENUM_FORWARD(MoveMode);
@@ -46,11 +47,11 @@ public:
 
     // Out of line at 0x15b390.  Retail `call`s it from CWwdGameObject's chain and
     // from the two CWwdGameObjectA sites in LevelPlane / WwdGameObjectRender.
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
+    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags);
     // The expanded sibling: CreateSpriteObject / CreateDotObject /
     // CreateDeferredObject carry this body inline.
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, EInlineBase);
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, EInlineBaseAndRegion);
+    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase);
+    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBaseAndRegion);
     virtual ~CGameObject() OVERRIDE {
         Unload();
     }
@@ -190,18 +191,18 @@ inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
 
-inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, EInlineBase)
-    : CResolveNode(owner, id, stateFlags) {
+inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
+    : CResolveNode(owner, id, objectFlags) {
     AttachToOwner(owner, id);
 }
 
 inline CGameObject::CGameObject(
     CDDrawSurfaceMgr* owner,
     i32 id,
-    i32 stateFlags,
+    i32 objectFlags,
     EInlineBaseAndRegion
 )
-    : CResolveNode(owner, id, stateFlags), m_region(WwdRegion::BASE_CALL) {
+    : CResolveNode(owner, id, objectFlags), m_region(WwdRegion::BASE_CALL) {
     AttachToOwner(owner, id);
 }
 
@@ -212,21 +213,21 @@ public:
     // EXPANDED (`call ??0CLoadable`, then the 0x5f0128 vptr and the three NULLs) -
     // 0x15b730 has exactly one retail caller, CreateSpriteObject, which is the
     // INLINE_BASE overload below.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags),
-          m_animCursor(owner, id, stateFlags, CAniAdvanceCursor::INLINE_CURSOR) {
+    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+        : CGameObject(owner, id, objectFlags),
+          m_animCursor(owner, id, objectFlags, CAniAdvanceCursor::INLINE_CURSOR) {
         ResetSpriteFields();
     }
     // Same, except the cursor's own CWapObj base is expanded too - the one site
     // that shows it is CWwdGameObject::CreateObject.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, CWapObj::ENoSeed)
-        : CGameObject(owner, id, stateFlags),
-          m_animCursor(owner, id, stateFlags, CWapObj::NO_SEED) {
+    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, CWapObj::ENoSeed)
+        : CGameObject(owner, id, objectFlags),
+          m_animCursor(owner, id, objectFlags, CWapObj::NO_SEED) {
         ResetSpriteFields();
     }
     // Expands the base ctor: CDDrawChildGroup::CreateSpriteObject takes this one.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, EInlineBase)
-        : CGameObject(owner, id, stateFlags, INLINE_BASE), m_animCursor(owner, id, stateFlags) {
+    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags, EInlineBase)
+        : CGameObject(owner, id, objectFlags, INLINE_BASE), m_animCursor(owner, id, objectFlags) {
         ResetSpriteFields();
     }
     void ResetSpriteFields() {
@@ -282,8 +283,8 @@ public:
 
 class CWwdGameObject : public CWwdGameObjectA {
 public:
-    CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CWwdGameObjectA(owner, id, stateFlags), m_children(0xa) {
+    CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+        : CWwdGameObjectA(owner, id, objectFlags), m_children(0xa) {
         m_reserved1f8 = 0;
     }
     virtual ~CWwdGameObject() OVERRIDE;
@@ -316,9 +317,9 @@ public:
     i32 WalkChildWorkers();
 
     CWwdGameObject*
-    CreateObject(int id, int x, int y, int sortKey, CLogicRecord* logicTemplate, int stateFlags);
+    CreateObject(int id, int x, int y, int sortKey, CLogicRecord* logicTemplate, int objectFlags);
     CWwdGameObject*
-    CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags);
+    CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags);
 
     CObList m_children;
 
@@ -328,8 +329,8 @@ public:
 class CWwdGameObjectF : public CGameObject {
 public:
     // Only created by CDDrawChildGroup::CreateDeferredObject, which expands the base.
-    CWwdGameObjectF(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags, INLINE_BASE_AND_REGION) {}
+    CWwdGameObjectF(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+        : CGameObject(owner, id, objectFlags, INLINE_BASE_AND_REGION) {}
     virtual ~CWwdGameObjectF() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
@@ -352,8 +353,8 @@ public:
 class CWwdGameObjectC : public CGameObject {
 public:
     // Only created by CDDrawChildGroup::CreateDotObject, which expands the base.
-    CWwdGameObjectC(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags, INLINE_BASE_AND_REGION) {
+    CWwdGameObjectC(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+        : CGameObject(owner, id, objectFlags, INLINE_BASE_AND_REGION) {
         m_dotColor = 0;
     }
     virtual ~CWwdGameObjectC() OVERRIDE;

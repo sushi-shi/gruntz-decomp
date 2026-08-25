@@ -28,7 +28,7 @@ struct DDModeInfo;
 // reads it back: only MOVIE_SINGLE skips the per-dirty-rect BlitRegion loop.
 GZ_ENUM_BEGIN(MovieLayout)
 // A full grid of copies, screenW/frameW by screenH/frameH, centred - or at
-// `origin` when the caller passes flags & 0x10.
+// `origin` when the caller passes MOVIE_OPEN_USE_ORIGIN.
     MOVIE_TILE = 0,
 
     // Exactly one copy, centred (or at `origin`).
@@ -43,6 +43,21 @@ GZ_ENUM_BEGIN(MovieLayout)
     MOVIE_DEST_RECT = 3
 GZ_ENUM_END(MovieLayout)
 
+// Open and layout options: interlaced Smacker Y scaling and caller positioning.
+GZ_ENUM_FLAGS_BEGIN(MovieOpenFlags, i32)
+    MOVIE_OPEN_DEFAULT = 0,
+    MOVIE_OPEN_INTERLACED = 0x1,
+    MOVIE_OPEN_USE_ORIGIN = 0x10
+GZ_ENUM_FLAGS_END(MovieOpenFlags, i32)
+GZ_ENUM_FLAGS_OPS(MovieOpenFlags)
+
+// Input events which may terminate Pump.
+GZ_ENUM_FLAGS_BEGIN(MoviePumpFlags, i32)
+    MOVIE_PUMP_SKIP_ON_KEY = 0x1,
+    MOVIE_PUMP_SKIP_ON_MOUSE = 0x100
+GZ_ENUM_FLAGS_END(MoviePumpFlags, i32)
+GZ_ENUM_FLAGS_OPS(MoviePumpFlags)
+
 GZ_ENUM_BEGIN(MoviePlaybackResult)
     MOVIE_RESULT_ERROR = 0,
     MOVIE_RESULT_KEY_SKIP = 1,
@@ -54,10 +69,10 @@ struct PLAYLISTINFOSTRUCT {
     char* m_src;
     i32 m_openArg;
     MovieLayout m_blitMode;
-    i32 m_useDS;
+    MovieOpenFlags m_openFlags;
     POINT* m_origin;
     RECT* m_rect;
-    i32 m_flags;
+    MoviePumpFlags m_pumpFlags;
     i32 m_count;
 };
 
@@ -96,10 +111,10 @@ public:
         const char* src,
         i32 openArg,
         MovieLayout mode,
-        i32 useDS,
+        MovieOpenFlags openFlags,
         POINT* origin,
         RECT* rect,
-        i32 flags,
+        MoviePumpFlags pumpFlags,
         i32 count
     );
     i32 RemoveAt(i32 idx);
@@ -109,7 +124,7 @@ public:
     void ResetPalette();
     void Snapshot(HWND hWnd);
     i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);
-    i32 Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* rect);
+    i32 Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect);
     i32 CheckGrid();
     void UploadPalette();
 
@@ -121,14 +136,23 @@ public:
         struct IDirectSound* dsound
     );
 
-    i32 Open(const char* path, i32 entryId, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
+    i32 Open(
+        const char* path,
+        i32 entryId,
+        MovieLayout mode,
+        MovieOpenFlags openFlags,
+        POINT* origin,
+        RECT* rect
+    );
     ~CMoviePlayer();
 
     int CreateVideoWindow(DDModeInfo* mode, u32 coopFlags);
     void Teardown();
-    i32 OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
-    i32 OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
-    MoviePlaybackResult Pump(i32 flags, i32 count);
+    i32
+    OpenLo(const char* src, MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect);
+    i32
+    OpenHi(i32 srcHandle, MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect);
+    MoviePlaybackResult Pump(MoviePumpFlags pumpFlags, i32 count);
 
     i32 Advance(IDirectDrawSurface* target, i32 loops);
     i32 CloseSmacker();
@@ -176,7 +200,7 @@ public:
     };
     union {
         i32 m_forceSingleRow;
-        i32 m_useDS;
+        i32 m_interlaced;
     };
     CWnd* m_videoWnd;
     CFecFile m_decodeStore;

@@ -17,13 +17,13 @@ i32 GameIconFlashEffect(CGameObject* obj) {
             CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_animCursor;
             a->Advance(g_engineFrameDelta);
             if (IsAniCursorComplete(a)) {
-                obj->m_flags |= 0x10000;
+                obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                 return 1;
             }
         }
         return 1;
     }
-    obj->m_flags |= 1;
+    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION);
     static_cast<CWwdGameObjectA*>(obj)->ApplyLookupGeometry("GAME_ICONFLASH", 0);
     record->SetEventCode(IDX(GAME_ICON_FLASH_ACTIVE));
     return 1;

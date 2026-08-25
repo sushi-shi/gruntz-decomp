@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Wwd/WwdAnimStepMode.h>
 
@@ -13,6 +14,20 @@ class CDDrawSurfaceMgr;
 struct SoundCue;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
+
+// The on-disk ANI record flag word is stored as u16. The parser, duration
+// calculation, and animation cursor establish these four behaviors.
+GZ_ENUM_FLAGS_BEGIN(AniRecordFlags, u16)
+    ANI_RECORD_FLAG_FRAME_COUNT = 0x01,
+    ANI_RECORD_FLAG_HAS_CUES = 0x02,
+    ANI_RECORD_FLAG_POSITIONAL_CUE = 0x04,
+    ANI_RECORD_FLAG_CULL_CUE_WHEN_NOT_DRAWN = 0x08
+GZ_ENUM_FLAGS_END(AniRecordFlags, u16)
+GZ_ENUM_FLAGS_OPS(AniRecordFlags)
+
+GZ_ENUM_CONST_BEGIN(AniRecordTiming)
+    ANI_FRAME_QUANTUM_MS = 22
+GZ_ENUM_CONST_END(AniRecordTiming)
 
 struct CAniRecordView : public CObject {
     // 0x1657a0 (RVA_COMPGEN pin at the keeper, DDrawSurfacePair.cpp - an RVA()
@@ -29,7 +44,7 @@ struct CAniRecordView : public CObject {
     }
 
     i32 Parse(SoundCueRegistry* ctx, const i16* src);
-    i32 GetSize();
+    i32 GetDurationMs();
     void ResolveIndices(SoundCueRegistry* owner, const char* str);
 
     // A __thiscall whose body never touches `this` (it steps the two globals at
@@ -55,13 +70,13 @@ struct CAniRecordView : public CObject {
         m_loopMode = WWDLOOP_INVALID;
     }
 
-    u16 m_flags;
+    GZ_ENUM_STORAGE(AniRecordFlags, u16) m_flags;
     u16 m_pad06;
     WwdAnimStepMode m_stepMode;
     WwdAnimLoopMode m_loopMode;
     WwdAnimPositionMode m_positionMode;
     i32 m_param;
-    i32 m_frameTime;
+    i32 m_duration;
     i32 m_drawValue;
     i32 m_positionDeltaX;
     i32 m_positionDeltaY;

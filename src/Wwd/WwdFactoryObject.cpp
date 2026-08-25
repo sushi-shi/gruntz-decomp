@@ -71,8 +71,8 @@ i32 CGameObject::IsLoaded() {
 // INLINE_SEED siblings here; the expanded CGameObject(..., INLINE_BASE) leaves both as
 // the `call`s the three factories show.
 RVA(0x0015b390, 0x128)
-CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CResolveNode(owner, id, stateFlags, CResolveNode::INLINE_SEED),
+CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
+    : CResolveNode(owner, id, objectFlags, CResolveNode::INLINE_SEED),
       m_region(WwdRegion::INLINE_SEED),
       m_shadow(WwdDirtyRect::INLINE_SEED) {
     AttachToOwner(owner, id);
@@ -86,7 +86,7 @@ RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify(CGameObject* p) {
-    if (m_flags & 0x8) {
+    if (m_flags & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
         m_health -= p->m_damage;
         if (m_health <= 0) {
             m_logicRecord->SetLogicEvent(ACT_HEALTH_DEPLETED);
@@ -499,14 +499,16 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
         CWwdGameObjectA* c = m_boundObject;
         i32 shouldPlayCue = 1;
-        if ((c->m_flags & 0x2000000) || (m_element->m_flags & 0x8)) {
+        if (HAS(static_cast<WwdGameObjectFlags>(c->m_flags),
+                WWD_GAME_OBJECT_FLAG_CULL_SOUND_WHEN_NOT_DRAWN)
+            || HAS(m_element->m_flags, ANI_RECORD_FLAG_CULL_CUE_WHEN_NOT_DRAWN)) {
             if (c->m_dirty.m_armed == -1) {
                 shouldPlayCue = 0;
             }
         }
         if (shouldPlayCue) {
             CAniRecordView* dd = m_element;
-            if (dd->m_flags & 0x4) {
+            if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
                 i32 sourceX = c->m_screenX;
                 SoundCue* soundCue;
                 if (dd->m_cueCount == 0) {
@@ -531,9 +533,9 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         CAniRecordView* rd = m_element;
-        i32 reload = rd->m_frameTime;
+        i32 reload = rd->m_duration;
         m_frameTicksLeft = reload;
-        m_useElapsedTime = static_cast<u8>(~rd->m_flags) & 1;
+        m_useElapsedTime = static_cast<u8>(!HAS(rd->m_flags, ANI_RECORD_FLAG_FRAME_COUNT));
 
         if (m_scaleBits != ANI_SCALE_ONE_BITS) {
             m_frameTicksLeft =

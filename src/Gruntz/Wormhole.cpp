@@ -140,7 +140,7 @@ i32 CWormhole::SpawnPartners() {
     if (!IsAniCursorComplete(&g->m_animCursor)) {
         return 0;
     }
-    g->m_flags |= 0x10000;
+    g->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
 
     i32 tx = m_object->m_speedX;
     i32 ty = m_object->m_speedY;
@@ -438,7 +438,7 @@ i32 CTeleporter::Update() {
     CWwdGameObjectA* a = m_wwdObject;
     if (IsAniCursorComplete(&a->m_animCursor)) {
         if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
-            a->m_flags |= 0x10000;
+            a->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else {
             a->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }

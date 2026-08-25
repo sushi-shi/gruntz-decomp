@@ -78,7 +78,7 @@ public:
     i32 m_anchorY;
     i32 m_originX;
     i32 m_originY;
-    i32 m_loadResult;
+    i32 m_bltFastFlags;
     CDDSurface* m_surface;
     CDDrawShadeBlit* m_owned;
 };

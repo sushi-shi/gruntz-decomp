@@ -547,8 +547,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
 
     ClipVtx* lrow = &g_rasterEdgeL[minY];
     ClipVtx* rrow = &g_rasterEdgeR[minY];
-    g_warpTexBase = static_cast<i16*>(src->Lock(0));
-    u8* destBase = static_cast<u8*>(dst->Lock(0));
+    g_warpTexBase = static_cast<i16*>(src->Lock(NULL));
+    u8* destBase = static_cast<u8*>(dst->Lock(NULL));
     i32 dstPitch = dst->m_pitch;
     g_rasterDestRow = destBase + dstPitch * minY;
     g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
@@ -761,7 +761,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     ClipVtx* pDesc = &g_rasterEdgeL[minYi];
     ClipVtx* pAsc = &g_rasterEdgeR[minYi];
     i32 stride = surf->m_pitch;
-    u8* bits = static_cast<u8*>(surf->Lock(0));
+    u8* bits = static_cast<u8*>(surf->Lock(NULL));
     u8* rowPtr = bits + stride * minYi;
     g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {

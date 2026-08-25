@@ -378,10 +378,11 @@ i32 CGrunt::StepAttackFire() {
 }
 
 // @early-stop
-// The `sel` decision is a FLAT four-arm else-if chain over (d0!=0, d1!=0), not a
-// nested ?: - retail's 0x625d4/0x625d8 lattice is cl threading the known-value
-// edges of that chain, its blocks are jumped ONTO past their own first test, and
-// the last arm's compare is UNSIGNED (`cmp edi,eax / sbb edi,edi / inc edi`).
+// The `sel` decision is a FLAT four-arm else-if chain over the two excess
+// durations, not a nested ?: - retail's 0x625d4/0x625d8 lattice is cl threading
+// the known-value edges of that chain, its blocks are jumped ONTO past their own
+// first test, and the last arm's compare is UNSIGNED
+// (`cmp edi,eax / sbb edi,edi / inc edi`).
 // Branch counts now agree 47/47.
 // Residue: the pose test. Retail compares the member in place (`cmp DWORD PTR
 // [edx+0x1b4],ecx`) and then RE-LOADS m_animation inside the if body for m_value,
@@ -490,33 +491,33 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 z = h->m_screenY + 0xc3500;
     SET_SORT_KEY_IF_CHANGED(h, z)
 
-    i32 t0 = AT(m_poseToy, GRUNT_TOY1)->m_total;
-    i32 t1 = AT(m_poseToy, GRUNT_TOY2)->m_total;
+    i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
+    i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
     // Retail 0x62568: (m_toyDuration - now) + m_toyClock - the toy-time REMAINING
     // until the deadline, not the elapsed time (which is always <= 0 here).
-    i64 remaining = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
-    i32 cap = static_cast<i32>(remaining);
-    if (remaining < 0) {
-        cap = 0;
+    i64 remainingMs = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
+    i32 availableMs = static_cast<i32>(remainingMs);
+    if (remainingMs < 0) {
+        availableMs = 0;
     }
-    i32 d0 = 0;
-    if (static_cast<u32>(t0) > static_cast<u32>(cap)) {
-        d0 = t0 - cap;
+    i32 toy1ExcessMs = 0;
+    if (static_cast<u32>(toy1DurationMs) > static_cast<u32>(availableMs)) {
+        toy1ExcessMs = toy1DurationMs - availableMs;
     }
-    i32 d1 = 0;
-    if (static_cast<u32>(t1) > static_cast<u32>(cap)) {
-        d1 = t1 - cap;
+    i32 toy2ExcessMs = 0;
+    if (static_cast<u32>(toy2DurationMs) > static_cast<u32>(availableMs)) {
+        toy2ExcessMs = toy2DurationMs - availableMs;
     }
     i32 sel;
-    if (d0 == 0 && d1 == 0) {
+    if (toy1ExcessMs == 0 && toy2ExcessMs == 0) {
         i32 r = rand() % 0x64 + 1;
         sel = (r >= m_toyBlendPct) ? 1 : 0;
-    } else if (d0 != 0 && d1 == 0) {
+    } else if (toy1ExcessMs != 0 && toy2ExcessMs == 0) {
         sel = 0;
-    } else if (d1 != 0 && d0 == 0) {
+    } else if (toy2ExcessMs != 0 && toy1ExcessMs == 0) {
         sel = 1;
     } else {
-        sel = (static_cast<u32>(d0) < static_cast<u32>(d1)) ? 0 : 1;
+        sel = (static_cast<u32>(toy1ExcessMs) < static_cast<u32>(toy2ExcessMs)) ? 0 : 1;
     }
 
     CAniElement* want = m_poseToy[sel];

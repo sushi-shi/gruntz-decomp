@@ -1131,7 +1131,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
         if (m_barSprite) {
 
             m_barSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
-            m_barSprite->m_flags |= 0x10000;
+            m_barSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         }
     }
     m_tabSprite0 = NULL;

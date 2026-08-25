@@ -34,7 +34,7 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     m_loopMode = static_cast<WwdAnimLoopMode>(*p++);
     m_positionMode = static_cast<WwdAnimPositionMode>(*p++);
     m_param = *p++;
-    m_frameTime = *p++;
+    m_duration = *p++;
     m_drawValue = *p++;
     m_positionDeltaX = *p++;
     m_positionDeltaY = *p++;
@@ -42,7 +42,7 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     m_cues = NULL;
     m_cueCount = 0;
     g_aniParsedNameLen = 0;
-    if (m_flags & 0x2) {
+    if (HAS(m_flags, ANI_RECORD_FLAG_HAS_CUES)) {
 
         Pix16CPtr np;
         np.m_swords = p;
@@ -67,7 +67,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     const char* s = str;
     while (*s != 0) {
         char c = *s;
-        if (c > 0x21) {
+        if (c > '!') {
             tok[n++] = c;
         } else {
             tok[n] = 0;
@@ -93,17 +93,17 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
 }
 
 RVA(0x00168e50, 0x1e)
-i32 CAniRecordView::GetSize() {
-    i32 n = m_frameTime;
-    i32 size = 0x16;
-    if (n > 0) {
-        if (m_flags & 0x1) {
-            size = n * 22;
+i32 CAniRecordView::GetDurationMs() {
+    i32 duration = m_duration;
+    i32 durationMs = ANI_FRAME_QUANTUM_MS;
+    if (duration > 0) {
+        if (HAS(m_flags, ANI_RECORD_FLAG_FRAME_COUNT)) {
+            durationMs = duration * ANI_FRAME_QUANTUM_MS;
         } else {
-            size = n;
+            durationMs = duration;
         }
     }
-    return size;
+    return durationMs;
 }
 
 RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)

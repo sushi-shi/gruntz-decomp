@@ -48,7 +48,8 @@
     m_mainIndex = -1;                                                                              \
     m_mainPlane = NULL;                                                                            \
     for (i32 index = 0; index < m_planes.GetSize(); index++) {                                     \
-        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index])->m_flags &= ~1;                  \
+        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index])->m_flags &=                      \
+            ~IDX(WWD_PLANE_FLAG_MAIN);                                                             \
     }
 
 #define RELEASE_LEVEL_CHILDREN                                                                     \
@@ -434,7 +435,7 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
 
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
 
-    if (plane->m_flags & 1) {
+    if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
         m_mainPlane = plane;
         m_mainIndex = m_planes.GetSize() - 1;
     }
@@ -465,7 +466,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
 
     m_planes.SetAtGrow(m_planes.GetSize(), static_cast<CObject*>(plane));
 
-    if (plane->m_flags & 1) {
+    if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
         m_mainPlane = plane;
         m_mainIndex = m_planes.GetSize() - 1;
     }
@@ -501,7 +502,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
     if (p == NULL) {
         return 0;
     }
-    i32 wasMain = p->m_flags & 1;
+    i32 wasMain = HAS(static_cast<WwdPlaneFlags>(p->m_flags), WWD_PLANE_FLAG_MAIN);
     delete p;
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
@@ -513,7 +514,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
             RESET_MAIN_PLANE_SELECTION(i)
             m_mainIndex = last;
             m_mainPlane = lp;
-            lp->m_flags |= 1;
+            lp->m_flags |= IDX(WWD_PLANE_FLAG_MAIN);
         }
     }
     return 1;
@@ -553,7 +554,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
 
     if ((m_flags & 1) && chain != NULL
         && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : NULL) != NULL) {
-        (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
+        (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : NULL)))
             ->Draw(visitor);
         POSITION pos = chain->GetHeadPosition();
 
@@ -622,7 +623,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
         }
     }
 
-    if (t->m_flags & 0x10) {
+    if (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
         return DispatchMove(target, destX, destY, moveFlags);
     }
 
@@ -805,7 +806,7 @@ i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         }
     }
 
-    if (t->m_flags & 0x10) {
+    if (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
         if (HoldMove(t, t->m_carrier, destX, destY, moveFlags) == 0) {
             t->m_moveMode = MOVE_FALLING;
         }
@@ -1385,7 +1386,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32
             if (AltStepValidate(t, pl, destX, destY, outY, moveFlags) != 0) {
                 t->m_moveMode = MOVE_GROUNDED;
                 t->m_carrier = pl;
-                t->m_flags |= 0x10;
+                t->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
                 return 1;
             }
         }

@@ -39,7 +39,7 @@ i32 CMenuPage::Configure(
     const char* pageKey,
     const char* headerAnimationKey,
     const char* parentPageKey,
-    i32 flags
+    GZ_ENUM_PARAM(MenuPageFlags, i32) flags
 ) {
     if (!menuTree) {
         return 0;
@@ -64,7 +64,7 @@ void CMenuPage::Reset() {
     m_menuTree = NULL;
     m_headerAnimation = NULL;
     m_focusedItem = NULL;
-    m_flags = 0;
+    m_flags = MENU_PAGE_FLAGS_NONE;
 }
 
 RVA(0x001833c0, 0x2b)
@@ -101,7 +101,7 @@ CMenuItem* CMenuPage::AddItem(
     const char* animationKey,
     i32 commandId,
     const char* targetPageKey,
-    i32 flags
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     CMenuItem* item = new CMenuItem();
 
@@ -122,7 +122,7 @@ CMenuItem* CMenuPage::AddItem(
     i32 commandParam,
     i32 secondaryCommandId,
     const char* targetPageKey,
-    i32 flags
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags
 ) {
     CMenuItem* item = new CMenuItem();
     if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
@@ -144,7 +144,7 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* animationKey,
     i32 commandId,
     const char* targetPageKey,
-    i32 flags,
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
     i32 framePeriodMs
 ) {
     CAnimatedMenuItem* item = new CAnimatedMenuItem();
@@ -168,7 +168,7 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     i32 commandParam,
     i32 secondaryCommandId,
     const char* targetPageKey,
-    i32 flags,
+    GZ_ENUM_PARAM(MenuItemFlags, i32) flags,
     i32 framePeriodMs
 ) {
     CAnimatedMenuItem* item = new CAnimatedMenuItem();
@@ -266,7 +266,7 @@ i32 CMenuPage::UpdateItems(u32 deltaMs) {
 
 RVA(0x00183b60, 0xe8)
 i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
-    if (m_flags & 4) {
+    if (HAS(m_flags, MENU_PAGE_MULTI_COLUMN)) {
         return DrawMultiColumn(target);
     }
     i32 left = m_bounds.left;
@@ -289,7 +289,8 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
         if (item) {
             drawY += item->GetFrameHeight() / 2;
             item->DrawAt(target, centerX, drawY);
-            if (item->m_state == MENUSTATE_SELECTED && !(m_flags & 8)) {
+            if (item->m_state == MENUSTATE_SELECTED
+                && !HAS(m_flags, MENU_PAGE_HIDE_FOCUS_CURSORS)) {
                 m_menuTree->DrawFocusCursors(target, item, centerX, drawY);
             }
             drawY += item->GetFrameHeight() / 2;
@@ -441,11 +442,11 @@ i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
 
 RVA(0x00183e30, 0x1f)
 i32 CMenuPage::CanWrap() {
-    i32 pageFlags = m_flags;
-    if (pageFlags & 2) {
+    MenuPageFlags pageFlags = m_flags;
+    if (HAS(pageFlags, MENU_PAGE_DISABLE_WRAP)) {
         return 0;
     }
-    if (pageFlags & 1) {
+    if (HAS(pageFlags, MENU_PAGE_FORCE_WRAP)) {
         return 1;
     }
     i32 treeWrapFlags = static_cast<char>(m_menuTree->m_wrapFlags);
@@ -480,7 +481,8 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
         if (item) {
             drawY += item->GetFrameHeight() / 2;
             item->DrawAt(target, columnX, drawY);
-            if (item->m_state == MENUSTATE_SELECTED && !(m_flags & 8)) {
+            if (item->m_state == MENUSTATE_SELECTED
+                && !HAS(m_flags, MENU_PAGE_HIDE_FOCUS_CURSORS)) {
                 m_menuTree->DrawFocusCursors(target, item, columnX, drawY);
             }
             drawY += item->GetFrameHeight() / 2;
@@ -503,7 +505,7 @@ i32 CMenuPage::MoveFocusRightColumn() {
     if (!currentItem) {
         return 0;
     }
-    if (!(m_flags & 4)) {
+    if (!HAS(m_flags, MENU_PAGE_MULTI_COLUMN)) {
         return 0;
     }
 
@@ -542,7 +544,7 @@ i32 CMenuPage::MoveFocusLeftColumn() {
     if (!currentItem) {
         return 0;
     }
-    if (!(m_flags & 4)) {
+    if (!HAS(m_flags, MENU_PAGE_MULTI_COLUMN)) {
         return 0;
     }
 

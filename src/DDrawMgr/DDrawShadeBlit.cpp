@@ -173,7 +173,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
         return 0;
     }
     m_colorKey = keyVal;
-    u8* bits = static_cast<u8*>(surf->Lock(0));
+    u8* bits = static_cast<u8*>(surf->Lock(NULL));
     if (bits == NULL) {
         return 0;
     }
@@ -550,7 +550,7 @@ void CDDrawShadeBlit::BlitCopyForward(
     i32 vflip
 ) {
     i32 pitch = surf->m_pitch;
-    u8* base = static_cast<u8*>(surf->Lock(0));
+    u8* base = static_cast<u8*>(surf->Lock(NULL));
 
     i32 pos = 0;
     i32 row = 0;
@@ -689,7 +689,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     i32 vflip
 ) {
     i32 pitch = surf->m_pitch;
-    u8* base = static_cast<u8*>(surf->Lock(0));
+    u8* base = static_cast<u8*>(surf->Lock(NULL));
 
     i32 pos = 0;
     i32 row = 0;
@@ -886,7 +886,7 @@ void CDDrawShadeBlit::BlitShadedForward(
     i32 vflip
 ) {
     i32 pitch = src->m_pitch;
-    u8* base = static_cast<u8*>(src->Lock(0));
+    u8* base = static_cast<u8*>(src->Lock(NULL));
 
     u32 pos = 0;
     i32 row = 0, x = 0;
@@ -1456,7 +1456,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     i32 vflip
 ) {
     i32 pitch = surf->m_pitch;
-    u8* base = static_cast<u8*>(surf->Lock(0));
+    u8* base = static_cast<u8*>(surf->Lock(NULL));
 
     i32 pos = 0, row = 0, x = 0;
 

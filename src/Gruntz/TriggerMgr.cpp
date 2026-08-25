@@ -178,7 +178,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 && removedUnitIndex == m_cameraTargetIdentity.m_y) {
                 CWwdGameObjectA* goal = m_goal;
                 if (goal != NULL) {
-                    goal->m_flags |= 0x10000;
+                    goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     m_goal = NULL;
                 }
                 m_armed = 0;
@@ -219,7 +219,7 @@ void CTriggerMgr::ResetAll() {
     StopPendingFx();
     CWwdGameObjectA* goal = m_goal;
     if (goal != NULL) {
-        goal->m_flags |= 0x10000;
+        goal->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         m_goal = NULL;
     }
 }
@@ -675,8 +675,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
                     i32 dx = x;
                     i32 dy = y;
-                    i32 wflags = plane->m_flags;
-                    if (wflags & 0x4) {
+                    WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
+                    if (HAS(wflags, WWD_PLANE_FLAG_WRAP_X)) {
                         i32 w = plane->m_wrapW;
                         if (dx < 0) {
                             dx = dx + w;
@@ -688,7 +688,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                             dx = dx + w;
                         }
                     }
-                    if (wflags & 0x8) {
+                    if (HAS(wflags, WWD_PLANE_FLAG_WRAP_Y)) {
                         i32 h = plane->m_wrapH;
                         if (dy < 0) {
                             dy = dy + h;

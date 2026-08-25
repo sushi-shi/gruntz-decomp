@@ -625,12 +625,12 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
     if (record->m_eventCode == 0) {
-        obj->m_flags |= 1;
+        obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION);
         obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
         if (record->m_dispatch == DispatchGlobalAmbientSoundLogic) {
-            obj->m_flags |= 2;
+            obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
         } else {
-            obj->m_flags &= ~2;
+            obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE);
         }
         SoundCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {
@@ -663,7 +663,7 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
                 }
             }
         }
-        obj->m_flags |= 0x10000;
+        obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         record->SetEventCode(5);
     }
     return 1;
@@ -704,7 +704,11 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     }
 
     obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
-    obj->m_flags = (obj->m_flags & ~2) | 0x100001;
+    obj->m_flags =
+        (obj->m_flags & ~IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE))
+        | IDX(
+            WWD_GAME_OBJECT_FLAG_SKIP_COLLISION | WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION
+        );
     record->m_positionedSound = NULL;
     SoundCue* layer = sprite->m_soundCue;
     if (layer != NULL && g_gameReg != NULL) {

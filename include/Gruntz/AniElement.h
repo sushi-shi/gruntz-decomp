@@ -39,7 +39,7 @@ public:
     CObArray m_records;
     char* m_name;
     float m_scale;
-    i32 m_total;
+    i32 m_durationMs;
 };
 
 #endif // GRUNTZ_CANIELEMENT_H

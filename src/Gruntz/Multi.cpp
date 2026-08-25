@@ -82,15 +82,21 @@ i32 g_cfgWord;
 DATA(0x002455fc)
 i32 g_battlezTurnPlayerIndex = 0;
 
-typedef enum NetServiceId {
-    NETSERVICE_NONE = 999,
-} NetServiceId;
+GZ_ENUM_CONST_BEGIN(NetSentinels)
+    NET_SERVICE_NONE = 999,
+    NET_PLAYER_ID_NONE = -999,
+    NET_PREFERRED_PLAYER_INDEX_ANY = 99
+GZ_ENUM_CONST_END(NetSentinels)
+
+GZ_ENUM_CONST_BEGIN(NetPlayerDefaults)
+    NET_DEFAULT_MAX_GRUNTZ = 15
+GZ_ENUM_CONST_END(NetPlayerDefaults)
 
 DATA(0x00211d88)
-i32 g_dropPlayerId = -999;
+i32 g_dropPlayerId = NET_PLAYER_ID_NONE;
 DATA(0x00211d8c)
 
-i32 g_serviceId = NETSERVICE_NONE;
+i32 g_serviceId = NET_SERVICE_NONE;
 DATA(0x00211ec4)
 char s_GameKey[] = "GAME_KEY";
 DATA(0x00246378)
@@ -359,8 +365,8 @@ CNetMgr::~CNetMgr() {
 RVA(0x000b6110, 0xc7)
 void CMulti::ReleaseResources() {
     if (m_netMgr && m_localPlayer && m_session && m_connected) {
-        BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
-        BroadcastPlayerIdMessage(NETMSG_PLAYER_LEFT, 1);
+        BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), DPSEND_GUARANTEED);
+        BroadcastPlayerIdMessage(NETMSG_PLAYER_LEFT, DPSEND_GUARANTEED);
     }
 
     CNetSession* session = m_session;
@@ -415,7 +421,7 @@ i32 CMulti::EnterState(GameStateId previousState) {
     m_accumTime = 0;
     m_lastFrameSyncTime = tg();
     if (m_connected != 0) {
-        BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
+        BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), DPSEND_GUARANTEED);
     }
     return 1;
 }
@@ -590,13 +596,13 @@ i32 CMulti::Render() {
     if (fin != 0) {
         if (m_session->VerifyChecksums() == 0 && m_outOfSync == 0) {
             if (m_isHost != 0) {
-                BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC, 1);
+                BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC, DPSEND_GUARANTEED);
                 OnOutOfSync();
                 AdvanceGameFrame();
                 m_drainTimer = 0;
                 return 1;
             }
-            BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC_REPORT, 1);
+            BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC_REPORT, DPSEND_GUARANTEED);
         }
         AdvanceGameFrame();
         m_drainTimer = 0;
@@ -931,7 +937,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
     if (g_hostServicesMode != 0) {
         if (RunErrorDialog("MULTI_HOSTSERVICES", NetSetupDlgProc, 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
-            if (store != NULL && g_serviceId != NETSERVICE_NONE) {
+            if (store != NULL && g_serviceId != NET_SERVICE_NONE) {
                 store->SetValueDword("Service", g_serviceId);
                 {
                     store->SetValueString(
@@ -951,7 +957,7 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
         if (RunErrorDialog("MULTI_JOINSERVICES", NetSetupDlgProc, 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
             if (store != NULL) {
-                if (g_serviceId != NETSERVICE_NONE) {
+                if (g_serviceId != NET_SERVICE_NONE) {
                     store->SetValueDword("Service", g_serviceId);
                 }
                 store->SetValueString(
@@ -984,7 +990,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             HWND combo = GetDlgItem(hDlg, 0x3fc);
             g_netMgr->m_selectedProvider = NULL;
             g_netMgr->PopulateProviderList(combo, 0);
-            if (g_serviceId == NETSERVICE_NONE) {
+            if (g_serviceId == NET_SERVICE_NONE) {
                 SendMessageA(combo, LB_SETCURSEL, 0, 0);
             } else if (static_cast<i32>(SendMessageA(combo, LB_SETCURSEL, g_serviceId, 0)) == -1) {
                 SendMessageA(combo, LB_SETCURSEL, 0, 0);
@@ -1096,7 +1102,7 @@ i32 CMulti::JoinSession() {
     if (RunErrorDialog("MULTI_JOIN", MultiJoinDlgProc, 0) == 0) {
         return 0;
     }
-    BroadcastPlayerIdMessage(NETMSG_REQUEST_PLAYER_TABLE, 1);
+    BroadcastPlayerIdMessage(NETMSG_REQUEST_PLAYER_TABLE, DPSEND_GUARANTEED);
     return 1;
 }
 
@@ -1266,7 +1272,7 @@ i32 CMulti::ShowMultiStartDlg() {
             BroadcastPlayerTable(NULL);
         }
         if (m_isHost == 0 && m_removedByHost == 0) {
-            BroadcastPlayerIdMessage(NETMSG_PLAYER_LEFT, 1);
+            BroadcastPlayerIdMessage(NETMSG_PLAYER_LEFT, DPSEND_GUARANTEED);
         }
         return 0;
     }
@@ -1373,7 +1379,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
         return NULL;
     }
 
-    CNetPlayerNode* node = Network()->CreatePlayer(const_cast<char*>("Host"), "", 0);
+    CNetPlayerNode* node = Network()->CreatePlayer(const_cast<char*>("Host"), "", NULL);
     m_localPlayer = node;
     if (node == NULL) {
         ReportNetError(0);
@@ -1402,7 +1408,8 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     }
 
     m_localPlayer =
-        Network()->JoinSessionAndCreatePlayer(sel, static_cast<const char*>(PlayerName()), "", 0);
+        Network()
+            ->JoinSessionAndCreatePlayer(sel, static_cast<const char*>(PlayerName()), "", NULL);
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -1428,7 +1435,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
 
     CNetPlayerRegistrationPacket packet;
     memset(&packet, 0, sizeof(packet));
-    packet.m_flags |= 0x80;
+    packet.m_flags |= NET_PACKET_APPLICATION;
     packet.m_messageId = NETMSG_REGISTER_PLAYER;
 
     packet.m_networkPlayerId = m_localPlayerId;
@@ -1436,11 +1443,11 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     packet.m_color = TINT_BLACK;
     packet.m_humanControlled = 1;
     packet.m_difficulty = BZDIFF_EASY;
-    packet.m_preferredPlayerIndex = 0x63;
+    packet.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
     packet.m_ready = 0;
-    packet.m_maxGruntz = 0xf;
+    packet.m_maxGruntz = NET_DEFAULT_MAX_GRUNTZ;
     strcpy(packet.m_name, PlayerName());
-    BroadcastPacket(&packet, sizeof(packet), 1);
+    BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED);
     return 1;
 }
 
@@ -1504,15 +1511,15 @@ i32 CMulti::PollSessionGated(i32 sessionGate, i32 pollGate) {
 
 RVA(0x000b91f0, 0x31)
 i32 CMulti::BroadcastValuePacket(CNetValuePacket* packet, i32 flags) {
-    packet->m_flags |= 0x80;
-    i32 hr = Network()->BroadcastFrom(LocalPlayer(), flags, packet, 0x10);
+    packet->m_flags |= NET_PACKET_APPLICATION;
+    i32 hr = Network()->BroadcastFrom(LocalPlayer(), flags, packet, sizeof(*packet));
     return hr == 0;
 }
 
 RVA(0x000b9240, 0x38)
 void CMulti::BroadcastPlayerIdMessage(NetMsgId id, i32 flag) {
     CNetValuePacket pkt;
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = id;
     pkt.m_value = LocalPlayer()->m_playerId;
     BroadcastValuePacket(&pkt, flag);
@@ -1521,7 +1528,7 @@ void CMulti::BroadcastPlayerIdMessage(NetMsgId id, i32 flag) {
 RVA(0x000b9290, 0x32)
 void CMulti::BroadcastValueMessage(NetMsgId id, u32 value, i32 flag) {
     CNetValuePacket pkt;
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = id;
     pkt.m_value = value;
     BroadcastValuePacket(&pkt, flag);
@@ -1541,8 +1548,8 @@ i32 CMulti::SendValuePacketTo(CNetPlayerNode* recipient, CNetValuePacket* packet
     if (recipient == NULL) {
         return 0;
     }
-    packet->m_flags |= 0x80;
-    i32 hr = Network()->Send(LocalPlayer(), recipient, flags, packet, 0x10);
+    packet->m_flags |= NET_PACKET_APPLICATION;
+    i32 hr = Network()->Send(LocalPlayer(), recipient, flags, packet, sizeof(*packet));
     return hr == 0;
 }
 
@@ -1552,7 +1559,7 @@ i32 CMulti::SendPlayerIdMessageTo(CNetPlayerNode* recipient, NetMsgId messageId,
         return 0;
     }
     CNetValuePacket pkt;
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = messageId;
     pkt.m_value = LocalPlayer()->m_playerId;
     return SendValuePacketTo(recipient, &pkt, flags);
@@ -1561,10 +1568,10 @@ i32 CMulti::SendPlayerIdMessageTo(CNetPlayerNode* recipient, NetMsgId messageId,
 RVA(0x000b9410, 0x51)
 i32 CMulti::SendPlayerIdMessageToId(i32 recipientId, NetMsgId messageId, i32 flags) {
     CNetValuePacket pkt;
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = messageId;
     pkt.m_value = LocalPlayer()->m_playerId;
-    i32 hr = Network()->SendById(LocalPlayer()->m_playerId, recipientId, flags, &pkt, 0x10);
+    i32 hr = Network()->SendById(LocalPlayer()->m_playerId, recipientId, flags, &pkt, sizeof(pkt));
     return hr == 0;
 }
 
@@ -1576,7 +1583,7 @@ i32 CMulti::SendValueMessageTo(CNetPlayerNode* recipient, i32 messageId, u32 val
         return 0;
     }
     CNetValuePacket pkt;
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = static_cast<NetMsgId>(messageId);
     pkt.m_value = value;
     return SendValuePacketTo(recipient, &pkt, flags);
@@ -1597,10 +1604,10 @@ i32 CMulti::SendPacketTo(CNetPlayerNode* recipient, void* packet, i32 packetSize
 RVA(0x000b9570, 0x53)
 i32 CMulti::SendValueMessageToId(i32 recipientId, NetMsgId messageId, i32 value, i32 flags) {
     CNetValuePacket pkt;
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = messageId;
     pkt.m_value = value;
-    i32 hr = Network()->SendById(LocalPlayer()->m_playerId, recipientId, flags, &pkt, 0x10);
+    i32 hr = Network()->SendById(LocalPlayer()->m_playerId, recipientId, flags, &pkt, sizeof(pkt));
     return hr == 0;
 }
 
@@ -1690,7 +1697,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
         }
     }
 
-    if ((msg->m_flags & 0x80) == 0) {
+    if (!HAS(msg->m_flags, NET_PACKET_APPLICATION)) {
         return 0;
     }
 
@@ -1759,7 +1766,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                 return 1;
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-                ->AddItem(text, 0x30, IDX(player->m_color));
+                ->AddItem(text, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->m_color));
             SoundCueRegistry* registry = m_world->m_soundRegistry;
             if (registry->m_silentMode != 0) {
                 break;
@@ -1845,7 +1852,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (player->TrySetColor(static_cast<ColorTint>(update->m_color)) == 0) {
                 ColorTint color = static_cast<ColorTint>(player->m_color);
                 update->m_color = color;
-                SendPlayerIdMessageTo(senderPlayer, NETMSG_COLOR_REJECTED, 1);
+                SendPlayerIdMessageTo(senderPlayer, NETMSG_COLOR_REJECTED, DPSEND_GUARANTEED);
             }
             ApplyPlayerUpdate(update);
             BroadcastPlayerTable(NULL);
@@ -1950,7 +1957,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (m_allPlayersReady == 0) {
                 break;
             }
-            BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC, 1);
+            BroadcastPlayerIdMessage(NETMSG_OUT_OF_SYNC, DPSEND_GUARANTEED);
             OnOutOfSync();
             break;
 
@@ -2002,7 +2009,8 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
                     const_cast<char*>(static_cast<const char*>(result))
                 );
             } else {
-                (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))->AddItem(result, 0, 0x11);
+                (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
+                    ->AddItem(result, FONT_ITEM_FLAGS_NONE, 0x11);
             }
             break;
         }
@@ -2086,7 +2094,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
 
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-        ->AddItem(const_cast<char*>(static_cast<const char*>(line)), 0x20, 0x11);
+        ->AddItem(const_cast<char*>(static_cast<const char*>(line)), FONT_ITEM_SHADOW, 0x11);
 
     if (player != NULL) {
         Network()->RemovePlayer(player);
@@ -2131,7 +2139,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
             message->dpId,
             message->dpnName.lpszShortNameA,
             message->dpnName.lpszLongNameA,
-            0
+            NULL
         );
         if (player == NULL) {
             return 0;
@@ -2140,7 +2148,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
     if (m_customLevelVerificationPending == 0 && m_connected == 0) {
         if (m_isHost != 0) {
             if (Mgr()->CountActivePlayers(1) >= 4) {
-                SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_FULL, 1);
+                SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_FULL, DPSEND_GUARANTEED);
                 return 0;
             }
             if (m_isHost != 0) {
@@ -2169,7 +2177,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
         }
         return 1;
     }
-    SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_CLOSED, 1);
+    SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_CLOSED, DPSEND_GUARANTEED);
     return 1;
 }
 
@@ -2186,7 +2194,7 @@ RVA(0x000ba810, 0x11c)
 i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
     CNetPlayerTablePacket packet;
     memset(&packet, 0, sizeof(packet));
-    packet.m_flags |= 0x80;
+    packet.m_flags |= NET_PACKET_APPLICATION;
     packet.m_messageId = STAT_PLAYER_TABLE;
 
     for (i32 i = 0; i < 4; i++) {
@@ -2210,11 +2218,11 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
     }
 
     if (recipient != NULL) {
-        if (SendPacketTo(recipient, &packet, sizeof(packet), 1) == 0) {
+        if (SendPacketTo(recipient, &packet, sizeof(packet), DPSEND_GUARANTEED) == 0) {
             return 0;
         }
     } else {
-        if (BroadcastPacket(&packet, sizeof(packet), 1) == 0) {
+        if (BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED) == 0) {
             return 0;
         }
     }
@@ -2346,7 +2354,7 @@ i32 CMulti::RequestMultiplayerPause() {
     if (m_connected == 0) {
         return 0;
     }
-    BroadcastPlayerIdMessage(STAT_PAUSE, 1);
+    BroadcastPlayerIdMessage(STAT_PAUSE, DPSEND_GUARANTEED);
     ShowMultiplayerPauseDialog();
     return 1;
 }
@@ -2415,8 +2423,8 @@ void CMulti::OnOutOfSync() {
 RVA(0x000baf00, 0xb2)
 i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     CNetPlayerUpdatePacket packet;
-    memset(&packet, 0, 0x2c);
-    packet.m_flags |= 0x80;
+    memset(&packet, 0, sizeof(packet));
+    packet.m_flags |= NET_PACKET_APPLICATION;
     packet.m_messageId = STAT_PLAYER_UPDATE;
     packet.m_playerIndex = player->m_playerIndex;
 
@@ -2435,7 +2443,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     packet.m_networkPlayerId = v;
     strcpy(packet.m_name, static_cast<const char*>(player->GetName()));
 
-    return BroadcastPacket(&packet, 0x2c, 1);
+    return BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED);
 }
 
 RVA(0x000baff0, 0x88)
@@ -2470,20 +2478,28 @@ i32 CMulti::ApplyPlayerUpdate(CNetPlayerUpdatePacket* packet) {
 RVA(0x000bb0b0, 0x44)
 i32 CMulti::AnnounceOptionsOpened() {
     g_optionsOpenedPacket.m_messageId = NETMSG_OPTIONS_OPENED;
-    g_optionsOpenedPacket.m_flags |= 0x80;
+    g_optionsOpenedPacket.m_flags |= NET_PACKET_APPLICATION;
     g_optionsOpenedPacket.m_value = 0;
-    Network()
-        ->BroadcastFrom(LocalPlayer(), 1, &g_optionsOpenedPacket, sizeof(g_optionsOpenedPacket));
+    Network()->BroadcastFrom(
+        LocalPlayer(),
+        DPSEND_GUARANTEED,
+        &g_optionsOpenedPacket,
+        sizeof(g_optionsOpenedPacket)
+    );
     return 1;
 }
 
 RVA(0x000bb120, 0x44)
 i32 CMulti::AnnounceOptionsClosed() {
     g_optionsClosedPacket.m_messageId = NETMSG_OPTIONS_CLOSED;
-    g_optionsClosedPacket.m_flags |= 0x80;
+    g_optionsClosedPacket.m_flags |= NET_PACKET_APPLICATION;
     g_optionsClosedPacket.m_value = 0;
-    Network()
-        ->BroadcastFrom(LocalPlayer(), 1, &g_optionsClosedPacket, sizeof(g_optionsClosedPacket));
+    Network()->BroadcastFrom(
+        LocalPlayer(),
+        DPSEND_GUARANTEED,
+        &g_optionsClosedPacket,
+        sizeof(g_optionsClosedPacket)
+    );
     return 1;
 }
 
@@ -2502,11 +2518,11 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
         len = 0x80;
     }
 
-    if (len > 0 && text[len - 1] < 0x20) {
+    if (len > 0 && text[len - 1] < ' ') {
         text[len - 1] = 0;
         len--;
     }
-    if (len > 0 && text[len - 1] < 0x20) {
+    if (len > 0 && text[len - 1] < ' ') {
         text[len - 1] = 0;
     }
 
@@ -2536,16 +2552,16 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
             return 0;
         }
         (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-            ->AddItem(line, 0x30, IDX(player->m_color));
+            ->AddItem(line, FONT_ITEM_COLORED | FONT_ITEM_SHADOW, IDX(player->m_color));
     }
 
     g_netChatPacket.m_messageId = STAT_CHAT;
 
-    i32 packetLen = strlen(line) + 0xd;
+    i32 packetLen = strlen(line) + offsetof(CNetChatPacket, m_text) + 1;
     g_netChatPacket.m_value = 0;
     strcpy(g_netChatPacket.m_text, line);
-    g_netChatPacket.m_flags |= 0x80;
-    Network()->BroadcastFrom(LocalPlayer(), 1, &g_netChatPacket, packetLen);
+    g_netChatPacket.m_flags |= NET_PACKET_APPLICATION;
+    Network()->BroadcastFrom(LocalPlayer(), DPSEND_GUARANTEED, &g_netChatPacket, packetLen);
     return 1;
 }
 
@@ -2599,7 +2615,7 @@ i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
             return 0;
         }
     } else if (humanControlled != 0) {
-        SendPlayerIdMessageTo(player, STAT_REMOVED_BY_HOST, 1);
+        SendPlayerIdMessageTo(player, STAT_REMOVED_BY_HOST, DPSEND_GUARANTEED);
     }
 
     if (DeactivatePlayer(slotIndex) == 0) {
@@ -2659,8 +2675,8 @@ void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
         return;
     }
 
-    BroadcastPlayerIdMessage(STAT_ALL_PLAYERS_READY, 1);
-    BroadcastPlayerIdMessage(STAT_ALL_PLAYERS_READY, 1);
+    BroadcastPlayerIdMessage(STAT_ALL_PLAYERS_READY, DPSEND_GUARANTEED);
+    BroadcastPlayerIdMessage(STAT_ALL_PLAYERS_READY, DPSEND_GUARANTEED);
     m_allPlayersReady = 1;
 }
 
@@ -2684,7 +2700,7 @@ i32 CMulti::WaitForOtherPlayers() {
             slot++;
         }
         if (count != 0) {
-            BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, 1);
+            BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, DPSEND_GUARANTEED);
             CString waitStr("Waiting for other playerz...");
             CGruntzMgr* g = g_gameReg;
 
@@ -2729,7 +2745,7 @@ i32 CMulti::WaitForOtherPlayers() {
                 if (resend == 0) {
                     resend = 0x1388;
                     SendLobbyKeepAlive();
-                    BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, 1);
+                    BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, DPSEND_GUARANTEED);
                 }
             }
 
@@ -2752,7 +2768,7 @@ ready:
 RVA(0x000bba10, 0x1fb)
 i32 CMulti::Poll(i32 token) {
     if (m_isHost == 0) {
-        BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, 1);
+        BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
         i32 resend = 0x1388;
         i32 abort = 0x3a98;
         m_verifyDone = 0;
@@ -2778,7 +2794,7 @@ i32 CMulti::Poll(i32 token) {
             if (resend == 0) {
                 resend = 0x1388;
                 SendLobbyKeepAlive();
-                BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, 1);
+                BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
             }
         }
         return 1;
@@ -2820,11 +2836,11 @@ i32 CMulti::Poll(i32 token) {
         }
         if (allAcked != 0) {
             if (allAgree != 0) {
-                BroadcastPlayerIdMessage(STAT_VERIFY_AGREE, 1);
+                BroadcastPlayerIdMessage(STAT_VERIFY_AGREE, DPSEND_GUARANTEED);
                 m_levelVerifyResult = 1;
                 m_verifyDone = 1;
             } else {
-                BroadcastPlayerIdMessage(STAT_VERIFY_DISAGREE, 1);
+                BroadcastPlayerIdMessage(STAT_VERIFY_DISAGREE, DPSEND_GUARANTEED);
                 m_levelVerifyResult = 0;
                 m_verifyDone = 1;
             }
@@ -2975,12 +2991,16 @@ void CMulti::ShowDropPlayerDialog() {
             break;
         }
         case IDC_NET_DROP_PLAYER:
-            if (g_dropPlayerId != -999) {
+            if (g_dropPlayerId != NET_PLAYER_ID_NONE) {
                 if (Network()->FindPlayerById(g_dropPlayerId)) {
-                    SendPlayerIdMessageToId(g_dropPlayerId, STAT_YOU_WERE_DROPPED, 1);
+                    SendPlayerIdMessageToId(
+                        g_dropPlayerId,
+                        STAT_YOU_WERE_DROPPED,
+                        DPSEND_GUARANTEED
+                    );
                 }
             }
-            BroadcastValueMessage(STAT_APPLY_PLAYER_DROP, g_dropPlayerId, 1);
+            BroadcastValueMessage(STAT_APPLY_PLAYER_DROP, g_dropPlayerId, DPSEND_GUARANTEED);
             ApplyPlayerDrop(g_dropPlayerId);
             Session()->ResetLatencies();
             break;
@@ -3014,7 +3034,7 @@ void CMulti::CheckDropTimeout() {
     }
     g_dropPlayerId = slot->m_player->m_networkPlayerId;
     g_sessionName = slot->GetPlayerName();
-    BroadcastValueMessage(NETMSG_DROP_TIMEOUT, g_dropPlayerId, 1);
+    BroadcastValueMessage(NETMSG_DROP_TIMEOUT, g_dropPlayerId, DPSEND_GUARANTEED);
     ShowDropPlayerDialog();
 }
 
@@ -3026,7 +3046,7 @@ CString CNetCmdSlot::GetPlayerName() {
 RVA(0x000bc420, 0x2b)
 void CMulti::SendLobbyKeepAlive() {
     if (m_netMgr && m_localPlayer && m_connected) {
-        BroadcastPlayerIdMessage(NETMSG_KEEP_ALIVE, 1);
+        BroadcastPlayerIdMessage(NETMSG_KEEP_ALIVE, DPSEND_GUARANTEED);
     }
 }
 
@@ -3057,7 +3077,7 @@ i32 CMulti::SetupTcpIpConfig() {
     m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
         const_cast<char*>(static_cast<const char*>(hostPlayer->GetName())),
         "",
-        0
+        NULL
     ));
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
@@ -3080,7 +3100,7 @@ i32 CMulti::CreateLocalPlayer() {
         m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(PlayerName())),
             "",
-            0
+            NULL
         ));
     }
     if (LocalPlayer() == NULL) {
@@ -3094,9 +3114,9 @@ i32 CMulti::CreateLocalPlayer() {
     }
 
     CNetPlayerRegistrationPacket pkt;
-    memset(&pkt, 0, 0x28);
+    memset(&pkt, 0, sizeof(pkt));
 
-    pkt.m_flags |= 0x80;
+    pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = STAT_REGISTER_PLAYER;
     pkt.m_active = 1;
     pkt.m_color = TINT_BLACK;
@@ -3104,13 +3124,13 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_difficulty = BZDIFF_EASY;
 
     pkt.m_ready = 0;
-    pkt.m_maxGruntz = 0xf;
-    pkt.m_preferredPlayerIndex = 0x63;
+    pkt.m_maxGruntz = NET_DEFAULT_MAX_GRUNTZ;
+    pkt.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
     pkt.m_networkPlayerId = m_localPlayerId;
     {
         strcpy(pkt.m_name, static_cast<const char*>(PlayerName()));
     }
-    BroadcastPacket(&pkt, 0x28, 1);
+    BroadcastPacket(&pkt, sizeof(pkt), DPSEND_GUARANTEED);
     return 1;
 }
 
@@ -3134,8 +3154,11 @@ i32 CMulti::CreateHostPlayer(
     m_resendInterval = resend;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_localPlayer =
-        Network()->CreatePlayer(const_cast<char*>(static_cast<const char*>(PlayerName())), "", 0);
+    m_localPlayer = Network()->CreatePlayer(
+        const_cast<char*>(static_cast<const char*>(PlayerName())),
+        "",
+        NULL
+    );
     if (m_localPlayer == NULL) {
         ReportNetError(0);
         return 0;
@@ -3153,7 +3176,7 @@ i32 CMulti::WaitForConnect() {
         return 0;
     }
 
-    BroadcastPlayerIdMessage(STAT_REQUEST_CONFIG, 1);
+    BroadcastPlayerIdMessage(STAT_REQUEST_CONFIG, DPSEND_GUARANTEED);
     m_connectAccepted = 0;
 
     u32 deadline = timeGetTime() + 60000;
@@ -3224,7 +3247,7 @@ RVA(0x000bccd0, 0x141)
 i32 CMulti::SendGameConfig(CNetPlayerNode* recipient) {
     CNetGameConfigPacket blob;
     memset(&blob, 0, sizeof(blob));
-    blob.m_flags |= 0x80;
+    blob.m_flags |= NET_PACKET_APPLICATION;
     blob.m_messageId = STAT_CONFIG;
     blob.m_usesCustomLevel = m_usesCustomLevel;
     {
@@ -3239,9 +3262,9 @@ i32 CMulti::SendGameConfig(CNetPlayerNode* recipient) {
     blob.m_rngSeed = m_rngSeed;
 
     if (recipient != NULL) {
-        SendPacketTo(recipient, &blob, 0x11c, 1);
+        SendPacketTo(recipient, &blob, sizeof(blob), DPSEND_GUARANTEED);
     } else {
-        BroadcastPacket(&blob, 0x11c, 1);
+        BroadcastPacket(&blob, sizeof(blob), DPSEND_GUARANTEED);
     }
     return 1;
 }
@@ -3348,7 +3371,7 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
         }
     }
     if (mismatch) {
-        BroadcastPlayerIdMessage(STAT_VERSION_MISMATCH, 1);
+        BroadcastPlayerIdMessage(STAT_VERSION_MISMATCH, DPSEND_GUARANTEED);
         Sleep(0xfa);
     }
 }
@@ -3360,14 +3383,14 @@ void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
 
-    packet.m_flags |= 0x80;
+    packet.m_flags |= NET_PACKET_APPLICATION;
     packet.m_remoteVersion = g_remoteVersion;
     packet.m_cfgWord = g_cfgWord;
     packet.m_butePos = g_buteMgr.m_pos;
     packet.m_localVersion = g_localVersion;
     packet.m_messageId = STAT_VERSION_CHECK;
 
-    SendPacketTo(recipient, &packet, 0x20, 1);
+    SendPacketTo(recipient, &packet, sizeof(packet), DPSEND_GUARANTEED);
 }
 
 RVA(0x000bd210, 0x14d)

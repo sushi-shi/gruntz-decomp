@@ -2767,7 +2767,7 @@ kindDispatch:
                         CWwdGameObjectA* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
                         if (ps != NULL) {
-                            ps->m_flags |= 0x10000;
+                            ps->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                             m_powerupSprite = NULL;
                         }
                         break;
@@ -2776,7 +2776,7 @@ kindDispatch:
                         CWwdGameObjectA* ps = m_powerupSprite;
                         m_gruntKind = GRUNT_NORMAL;
                         if (ps != NULL) {
-                            ps->m_flags |= 0x10000;
+                            ps->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                             m_powerupSprite = NULL;
                         }
                         PickupType typeId = m_toolId;

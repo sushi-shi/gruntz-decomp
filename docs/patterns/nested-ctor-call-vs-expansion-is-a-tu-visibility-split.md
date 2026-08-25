@@ -44,7 +44,7 @@ sites - `CreateSpriteObject` **expands** the base, `ReadPlaneObjects` and
 `new`-site picks:
 
 ```cpp
-new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CGameObject::INLINE_BASE);  // expands
+new CWwdGameObjectA(OwnerMgr(), id, objectFlags, CGameObject::INLINE_BASE);  // expands
 new CWwdGameObjectA(OwnerMgr(), id, 0);                                     // calls 0x15b390
 ```
 

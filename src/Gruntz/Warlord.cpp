@@ -738,7 +738,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         static_cast<LPCTSTR>(
                             *g_buteMgr.GetStringDef("Warlordz", "NotifyString", &s_alert)
                         ),
-                        0,
+                        FONT_ITEM_FLAGS_NONE,
                         0x11
                     );
                     m_notifyTimer.m_window =

@@ -223,7 +223,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
             slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
             m_attackWaypoints.SetAtGrow(m_attackWaypoints.GetSize(), slot);
-            cur3->m_flags |= 0x10000;
+            cur3->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         }
     }
 

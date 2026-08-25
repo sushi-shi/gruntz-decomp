@@ -290,7 +290,7 @@ i32 CParticlez::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_wwdObject;
     if (IsAniCursorComplete(&o->m_animCursor)) {
-        o->m_flags |= 0x10000;
+        o->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 0;
 }

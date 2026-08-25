@@ -93,7 +93,7 @@ i32 CDDrawWorkerHost::Read(
         }
     }
 
-    m_flags = pd->flags;
+    m_flags = IDX(pd->flags);
     m_movementXPercent = pd->movementXPercent;
     m_movementYPercent = pd->movementYPercent;
     m_scaledX = 0;
@@ -115,7 +115,7 @@ i32 CDDrawWorkerHost::Read(
     m_wrapW = m_tilePxW * m_gridW;
     m_wrapH = m_tilePxH * m_gridH;
 
-    if (m_flags & 0x10) {
+    if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
         CDDrawWorker* set = (m_frameSets.GetSize() > 0) ? FrameSetAt(0) : NULL;
         for (i32 f = 0; f < set->m_items.GetSize(); f++) {
@@ -131,7 +131,7 @@ i32 CDDrawWorkerHost::Read(
 
     strcpy(m_name, pd->name);
     m_bltFx.dwFillColor = pd->fillColor;
-    m_flags = pd->flags;
+    m_flags = IDX(pd->flags);
 
     APPLY_WORKER_HOST_BOUNDS(bounds);
 
@@ -156,7 +156,7 @@ i32 CDDrawWorkerHost::Read(
     i32 originX = pd->scrollX;
     float sy = static_cast<float>(originY);
     float sx = static_cast<float>(originX);
-    if ((m_flags & 1) == 0) {
+    if ((m_flags & IDX(WWD_PLANE_FLAG_MAIN)) == 0) {
         sx *= m_scaleX;
         sy *= m_scaleY;
     }
@@ -267,9 +267,9 @@ void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
 RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::RecomputePlaneCoords() {
     CDDrawWorkerHost* p = this;
-    u32 flags = p->m_flags;
+    WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(p->m_flags);
     i32 wrapX, wrapY;
-    wrapX = flags & 4;
+    wrapX = HAS(flags, WWD_PLANE_FLAG_WRAP_X);
 
     if (wrapX) {
         if (p->m_scaledX < 0.0f) {
@@ -292,7 +292,7 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
         }
     }
 
-    wrapY = flags & 8;
+    wrapY = HAS(flags, WWD_PLANE_FLAG_WRAP_Y);
     if (wrapY) {
         if (p->m_scaledY < 0.0f) {
             do {
@@ -415,7 +415,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             CDDrawWorker* fr_ = FrameSetAt(h_ >> 16);                                              \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
             CImage* e_ = fr_->GetAt(idx_);                                                         \
-            surf->BltFast((xp), (yp), e_->m_surface, (srcp), e_->m_loadResult);                    \
+            surf->BltFast((xp), (yp), e_->m_surface, (srcp), e_->m_bltFastFlags);                  \
         }                                                                                          \
     } while (0)
 
@@ -425,7 +425,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
 // Pure register/slot residue spread across the whole frame.
 RVA(0x00162010, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
-    if ((m_flags & 2) != 0) {
+    if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
     CDDSurface* surf = ctx->m_surface;
@@ -714,7 +714,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    obj->m_flags |= 0x40000;
+    obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE);
 
     CLogicRecord* anim = obj->m_logicRecord;
     if (anim == NULL) {
@@ -840,13 +840,13 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     u32 flags = m_flags;
 
     i32 x, y;
-    if (flags & 0x4) {
+    if (flags & IDX(WWD_PLANE_FLAG_WRAP_X)) {
         x = static_cast<i32>(m_scaledX);
     } else {
         i32 right = m_viewRect.right;
         x = (right + m_viewRect.left) / 2 + 1;
     }
-    if (flags & 0x8) {
+    if (flags & IDX(WWD_PLANE_FLAG_WRAP_Y)) {
         y = static_cast<i32>(m_scaledY);
     } else {
         i32 bottom = m_viewRect.bottom;
@@ -873,13 +873,13 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     u32 flags = m_flags;
 
     i32 x, y;
-    if (flags & 0x4) {
+    if (flags & IDX(WWD_PLANE_FLAG_WRAP_X)) {
         x = static_cast<i32>(m_scaledX);
     } else {
         i32 right = m_viewRect.right;
         x = (right + m_viewRect.left) / 2 + 1;
     }
-    if (flags & 0x8) {
+    if (flags & IDX(WWD_PLANE_FLAG_WRAP_Y)) {
         y = static_cast<i32>(m_scaledY);
     } else {
         i32 bottom = m_viewRect.bottom;

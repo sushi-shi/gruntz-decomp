@@ -1418,7 +1418,7 @@ void CMultiStartDlg::OnOK() {
     if (&CMulti::GetResendDelay == NULL) {
         return;
     }
-    g_multiState->BroadcastPlayerIdMessage(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
+    g_multiState->BroadcastPlayerIdMessage(NETMSG_VERIFY_CUSTOM_LEVEL, DPSEND_GUARANTEED);
     i32 customLevel = g_multiState->m_usesCustomLevel;
     i32 verificationToken = g_gameReg->ResolveLevelChecksum(
         0,
