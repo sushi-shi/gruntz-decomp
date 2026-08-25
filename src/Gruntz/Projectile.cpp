@@ -595,8 +595,8 @@ i32 CBoomerang::LoadProjectileSprites(
 }
 
 // @early-stop
-// Retail keeps the two rotated components and the phase increment live in a
-// 0x20-byte x87 frame; the equivalent local form below currently uses 0x18.
+// Keep each rotated pair grouped before its origin add, then store X/Y before
+// phase. This matches retail's x87 operations; cl spills five slots versus four.
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     if (m_launched == 0 && m_phase > g_boomerangHalfTurnRadians) {
@@ -623,9 +623,9 @@ void CBoomerang::AdvanceMotion() {
     double amp = static_cast<double>(g_frameDelta);
     double vx = m_dirX;
     double vy = -m_dirY;
+    m_posX = m_originX + (vy * s - vx * c);
+    m_posY = m_originY + (vx * s + vy * c);
     m_phase += amp * m_velScale;
-    m_posX = m_originX + vy * s - vx * c;
-    m_posY = m_originY + vx * s + vy * c;
     m_object->m_screenX = static_cast<i32>(m_posX);
     m_object->m_screenY = static_cast<i32>(m_posY);
     if (m_shadow != NULL) {
