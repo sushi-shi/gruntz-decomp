@@ -47,7 +47,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0183d0` | `?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ` | customleveldlg | `0x183d0` ? |
 | `0x0183f0` | `?PickIfSelected@CBattlezDlgCustom@@QAEXXZ` | customleveldlg | `0x183f0` ? |
 | `0x01f450` | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | multistartdlg | `0x18f00` bootystateactivate |
-| `0x01f940` | `?PlayIfElapsed@LeafCue@@QAEHHHHH@Z` | leafcueplay | `0x1f940` ? |
+| `0x01f940` | `?PlayIfElapsed@SoundCue@@QAEHHHHH@Z` | leafcueplay | `0x1f940` ? |
 | `0x01f9b0` | `?StartUpPrompt@@YAHPAUHWND__@@@Z` | startupprompt | `0x1f9b0` ? |
 | `0x0310f0` | `?IndexToPtr@_zdvec@@QAEPADH@Z` | zvec | `0x310f0` ? |
 | `0x0311b0` | `?Push@FreeNodePool@@QAEXPAX@Z` | freenodepool | `0x311b0` ? |
@@ -156,7 +156,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0f93b0` | `?AppendInt@@YAXPADPBDH@Z` | netsession | `0xf93b0` ? |
 | `0x0fb660` | `_CreateStaticHazard` | logicrecorddispatch | `0xfb660` ? |
 | `0x10bc30` | `?StartDestructWarning@CStatusBarMgr@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
-| `0x114120` | `?RefreshAsset@CDDrawSubMgrLeafScan@@QAEHPBD@Z` | ddrawsubmgrrefresh | `0x114120` ? |
+| `0x114120` | `?PlayCueIfElapsed@SoundCueRegistry@@QAEHPBD@Z` | ddrawsubmgrrefresh | `0x114120` ? |
 | `0x114ec0` | `?SaveFrontBufferShot@@YAXPAVRegistryHelper@Utils@@PAVCGruntz` | savefrontbuffershot | `0x114ec0` ? |
 | `0x114f00` | `?SaveFrontBufferShotImpl@@YAHPAVRegistryHelper@Utils@@PAVCGr` | savefrontbuffershot | `0x114f00` ? |
 | `0x114f50` | `?ChainForward14@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@` | chainforward | `0x114f50` ? |
@@ -519,7 +519,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - wwdfactoryobject (`cpp`) — src/Wwd/WwdFactoryObject.cpp
 - wwdgameobjectrender (`cpp`) — src/Wwd/WwdGameObjectRender.cpp
 - ddrawsubmgr (`cpp`) — src/DDrawMgr/DDrawSubMgr.cpp
-- leafcueplay (`cpp-rtti`) — src/Gruntz/LeafCuePlay.cpp
+- leafcueplay (`cpp-rtti`) — src/Gruntz/SoundCuePlay.cpp
 - queuedrainhost (`cpp-rtti`) — src/Gruntz/QueueDrainHost.cpp
 - wwdobjmgr (`cpp`) — src/Wwd/WwdObjMgr.cpp
 - ddrawptrcollections (`cpp`) — src/DDrawMgr/DDrawDeviceManager.cpp

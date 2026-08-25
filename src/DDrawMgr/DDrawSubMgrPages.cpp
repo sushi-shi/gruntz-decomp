@@ -12,7 +12,6 @@
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorker.h>
@@ -30,9 +29,10 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StateId.h>

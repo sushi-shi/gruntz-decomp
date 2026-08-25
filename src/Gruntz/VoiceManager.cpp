@@ -6,6 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Enums.h>

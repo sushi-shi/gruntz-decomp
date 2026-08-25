@@ -26,7 +26,7 @@ class CWwdGameObject;
 class CDDrawWorker;
 
 class CImage;
-struct LeafCue;
+struct SoundCue;
 class CAniElement;
 
 struct CGameObject : public CResolveNode {
@@ -276,7 +276,7 @@ public:
     i32 m_frameIndex;
     CDDrawWorker* m_frameSet;
     CImage* m_layer;
-    LeafCue* m_soundCue;
+    SoundCue* m_soundCue;
     CAniAdvanceCursor m_animCursor;
 };
 

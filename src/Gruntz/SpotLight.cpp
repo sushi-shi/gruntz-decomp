@@ -17,13 +17,14 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLightActReg.h>
 #include <Gruntz/TriggerMgr.h>
@@ -162,12 +163,12 @@ i32 CSpotLight::Tick() {
                 i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                CDDrawSubMgrLeafScan* obj = g_gameReg->m_world->m_soundRegistry;
-                if (obj->m_emitGate == 0) {
-                    LeafCue* found = obj->FindCue(name);
-                    // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds
+                SoundCueRegistry* obj = g_gameReg->m_world->m_soundRegistry;
+                if (obj->m_silentMode == 0) {
+                    SoundCue* found = obj->FindCue(name);
+                    // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds
                     // the cue in a register across the m_lastPlayTimeMs store.
-                    LeafCue* cue = found;
+                    SoundCue* cue = found;
                     if (cue != NULL) {
                         i32 soundEnabled = g_soundEnabled;
                         i32 volumePercent = g_soundVolumePercent;

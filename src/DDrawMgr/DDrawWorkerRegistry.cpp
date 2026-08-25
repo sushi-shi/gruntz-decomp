@@ -257,9 +257,9 @@ void CDDrawWorkerRegistry::MapTeardown() {
 }
 
 RVA(0x00155360, 0xf8)
-i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
-    CString match(base);
-    match += str;
+i32 CDDrawWorkerRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
+    CString match(prefix);
+    match += separator;
     i32 len = match.GetLength();
     CString key;
     CObject* val = NULL;
@@ -299,14 +299,14 @@ i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
 }
 
 RVA(0x00155550, 0xdc)
-i32 CDDrawWorkerRegistry::HasKeyEqual(const char* str) {
-    i32 len = strlen(str);
+i32 CDDrawWorkerRegistry::HasWithPrefix(const char* prefix) {
+    i32 len = strlen(prefix);
     CString key;
     CObject* val = NULL;
     POSITION pos = m_workersByName.GetStartPosition();
     while (pos != NULL) {
         m_workersByName.GetNextAssoc(pos, key, val);
-        if (strncmp(key, str, len) == 0) {
+        if (strncmp(key, prefix, len) == 0) {
             return 1;
         }
     }

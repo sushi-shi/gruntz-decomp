@@ -253,7 +253,7 @@ object the `damage` slot **is a volume percentage** — another arm of the
 The engine installs REZ subtrees into named registries with `_` as the
 separator: `InstallTree(GAME\IMAGEZ, "GAME", "_")` in
 `CState::LoadGameAssetNamespaces` @0xf9ea0, and
-`ScanTree(AREA<n>\{IMAGEZ,SOUNDZ,ANIZ}, "LEVEL", "_")` in `PlayAssetLoad.cpp`.
+`LoadFromTree(AREA<n>\{IMAGEZ,SOUNDZ,ANIZ}, "LEVEL", "_")` in `PlayAssetLoad.cpp`.
 So `GAME_WAPWORLDONLY_TRIGGER` **is** `GAME\IMAGEZ\WAPWORLDONLY\TRIGGER`, and
 every key is checkable against the archive.
 

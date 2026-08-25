@@ -13,11 +13,11 @@ parks depends on the static TYPE of the condition expression, not on how it is u
 
 ```cpp
 // NO - `x != 0` is a bool, so cl normalises to 0/1 before spilling, then tests the BYTE
-if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) { … }
+if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name) != 0) { … }
 //   mov ebx,eax / neg ebx / sbb ebx,ebx / neg ebx   … call <~CString> …   test bl,bl
 
 // YES - a bare int condition is parked raw and tested at full width
-if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name)) { … }
+if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name)) { … }
 //   mov ebx,eax                                     … call <~CString> …   test ebx,ebx
 ```
 

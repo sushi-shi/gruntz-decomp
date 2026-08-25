@@ -10,6 +10,7 @@
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuPage.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
@@ -291,11 +292,11 @@ i32 CMenuTree::DrawFocusCursors(
 
 // Both PlayFocusSound and PlayActivationSound inline this: cl5 defers the callee-save
 // pushes into the inlined region, which is what gives the guard its own epilogue.
-static __inline i32 PlayMenuCue(CDDrawSubMgrLeafScan* soundRegistry, const char* cueKey) {
-    if (!soundRegistry->m_emitGate) {
-        LeafCue* foundCue = NULL;
+static __inline i32 PlayMenuCue(SoundCueRegistry* soundRegistry, const char* cueKey) {
+    if (!soundRegistry->m_silentMode) {
+        SoundCue* foundCue = NULL;
         MapLookup(soundRegistry->m_cues, cueKey, foundCue);
-        LeafCue* cue = foundCue;
+        SoundCue* cue = foundCue;
         if (cue != NULL) {
             i32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;

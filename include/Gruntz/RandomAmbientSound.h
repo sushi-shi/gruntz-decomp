@@ -10,11 +10,6 @@
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 
-struct AmbSoundRecord {
-    char m_pad00[0x10];
-    SoundBuffer* m_mgr;
-};
-
 class CRandomAmbientSound : public CAmbientSound {
 public:
     CRandomAmbientSound() {}

@@ -574,7 +574,7 @@ ONE original TU (wave3-J): the 0x041e90-0x042cd3 text is a T-L-T sandwich
 (adjacent frag run i40/i41); absorbs the ex secretleveltrigger unit.
 
 ### leafcueplay
-Foreign lone methods carved out of ddrawsubmgr (operation REHOME D8): LeafCue and
+Foreign lone methods carved out of ddrawsubmgr (operation REHOME D8): SoundCue and
 CQueueDrainHost sit ~1.2 MB before the DDraw submgr block - each its own obj.
 
 ### ddrawptrcollections

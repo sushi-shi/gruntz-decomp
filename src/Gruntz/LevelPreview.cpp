@@ -6,8 +6,6 @@
 
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
@@ -18,9 +16,10 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/PreviewState.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/State.h>
 #include <Rez/FrameClock.h>
@@ -54,7 +53,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (g_disableAudio == 0 && g_disableSound == 0) {
         CSymTab* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != NULL) {
-            m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
+            m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(set), "PREVIEW", "_");
         }
     }
     m_previewName = "PREVIEW0";
@@ -67,11 +66,11 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
-    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream != NULL) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->RemoveKeysEqual("PREVIEW", "_");
+    m_world->m_soundRegistry->RemoveWithPrefix("PREVIEW", "_");
     CState::ReleaseResources();
 }
 
@@ -105,7 +104,7 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    PurgeVoices(m_world->m_soundRegistry);
+    TickSoundVolumeRamps(m_world->m_soundRegistry);
     if (static_cast<u32>(g_wap32FrameDelta) >= m_previewCountdownMs) {
         m_previewCountdownMs = 0;
     } else {
@@ -179,13 +178,13 @@ void CPreviewState::LoadLevelPreviewScreen() {
         == 0) {
         failed = 1;
     } else {
-        CDDrawSubMgrLeafScan* h = m_world->m_soundRegistry;
-        if (h->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* h = m_world->m_soundRegistry;
+        if (h->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", found);
-            // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
+            // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
             // in a register across the m_lastPlayTimeMs store.
-            LeafCue* p = found;
+            SoundCue* p = found;
             if (p != NULL) {
                 i32 volumePercent = g_soundVolumePercent;
                 if (g_soundEnabled != 0

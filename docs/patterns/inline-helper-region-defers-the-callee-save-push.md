@@ -40,7 +40,7 @@ The body after the guard was an **inlined helper**, and cl 5.0 emits the callee-
 top of the inlined REGION rather than in the prologue. Extract it:
 
 ```cpp
-static __inline i32 PlayMenuCue(CDDrawSubMgrLeafScan* soundRegistry, const char* cueKey) {
+static __inline i32 PlayMenuCue(SoundCueRegistry* soundRegistry, const char* cueKey) {
     /* ...the whole body... */
     return 0;
 }

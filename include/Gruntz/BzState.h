@@ -6,10 +6,10 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/LeafCue.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 

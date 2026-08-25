@@ -1,13 +1,13 @@
 #include <rva.h>
 
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
+#include <Dsndmgr/SoundBuffer.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/ErrorStringId.h>
@@ -19,6 +19,8 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/String.h>
 #include <Rez/FrameClock.h>
@@ -53,7 +55,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         return 0;
     }
 
-    menuRoot()->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sound), "ATTRACT", "_");
+    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -72,11 +74,11 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
+    SoundCueRegistry* reg = menuRoot()->m_soundRegistry;
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    menuRoot()->m_soundRegistry->RemoveKeysEqual("ATTRACT", "_");
+    menuRoot()->m_soundRegistry->RemoveWithPrefix("ATTRACT", "_");
 
     CState::ReleaseResources();
 }
@@ -102,7 +104,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    LeafCue* found = NULL;
+    SoundCue* found = NULL;
     MapLookup(menuRoot()->m_soundRegistry->m_cues, buf, found);
     m_host = found;
     if (found != NULL && m_activeFlag != 0) {
@@ -134,7 +136,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
         return 1;
     }
     do {
-        PurgeVoices(menuRoot()->m_soundRegistry);
+        TickSoundVolumeRamps(menuRoot()->m_soundRegistry);
     } while (m_host->m_sound->IsPlaying());
     return 1;
 }
@@ -149,7 +151,7 @@ i32 CAttract::Render() {
         }
     }
 
-    PurgeVoices(menuRoot()->m_soundRegistry);
+    TickSoundVolumeRamps(menuRoot()->m_soundRegistry);
 
     if (g_frameDelta >= m_idleTimer) {
         m_idleTimer = 0;

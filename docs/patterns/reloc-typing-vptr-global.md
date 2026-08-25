@@ -21,7 +21,7 @@ OR a `??_7` vtable (`data_vtables.tsv`) flips **NOTHING**. Three independent pro
    those functions could not be 100%.
 2. **Controlled test:** renaming a near-miss's SOLE unnamed DIR32 referent so base==target left the
    fuzzy% **byte-identical** — `GruntzPlayer::Serialize` 98.13333%→**98.13333%** after
-   `g_serialCount`→`g_serialCounter`; `CDDrawSubMgrLeafScan::CreateEntry`/`CreateEntry2`
+   `g_serialCount`→`g_serialCounter`; `SoundCueRegistry::LoadCueFromSource`/`LoadCueFromFile`
    **99.809525% unchanged** after DATA-binding their sole `g_leafElemVtbl` referent (relocdiff
    confirmed the DIR32 mismatch vanished; the score did not move).
 3. **High-fan-out target-rename (2026-07-04):** the game-mgr singleton at RVA `0x24556c` is

@@ -13,6 +13,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/MidiManager.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
@@ -34,10 +35,10 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -1273,13 +1274,13 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != 0) {
         ApplyCmdDelayDefaults();
     } else {
-        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-        if (reg->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* reg = m_world->m_soundRegistry;
+        if (reg->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(reg->m_cues, s_GameKey, found);
-            // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
+            // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
             // in a register across the m_lastPlayTimeMs store.
-            LeafCue* rec = found;
+            SoundCue* rec = found;
             if (rec != NULL) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
@@ -1756,11 +1757,11 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
                 ->AddItem(text, 0x30, IDX(player->m_colorIndex));
-            CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
-            if (host->m_emitGate != 0) {
+            SoundCueRegistry* host = m_world->m_soundRegistry;
+            if (host->m_silentMode != 0) {
                 break;
             }
-            LeafCue* e = NULL;
+            SoundCue* e = NULL;
             MapLookup(host->m_cues, "GAME_CHAT", e);
             if (e == NULL) {
                 break;
@@ -2140,13 +2141,13 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
                 AnnounceVersion(player);
             }
         }
-        CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* host = m_world->m_soundRegistry;
+        if (host->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(host->m_cues, "GAME_MENUS_SELECT", found);
-            // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
+            // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
             // in a register across the m_lastPlayTimeMs store.
-            LeafCue* e = found;
+            SoundCue* e = found;
             if (e != NULL) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;

@@ -8,7 +8,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -23,6 +22,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameObject.h>
@@ -91,15 +91,15 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     return 1;
 }
 
-static inline LeafCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
-    LeafCue* result = NULL;
+static inline SoundCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
+    SoundCue* result = NULL;
     MapLookup(map, name, result);
     return result;
 }
 
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
-    LeafCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
+    SoundCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
     if (cue == NULL) {
         return 0;
     }
@@ -275,7 +275,7 @@ i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
 
     memset(tmp, 0, SERIAL_NAME_LEN);
     {
-        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_soundCue));
+        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindCueKey(m_soundCue));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -314,7 +314,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        LeafCue* found = NULL;
+        SoundCue* found = NULL;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         MapLookup(mgr->m_soundRegistry->m_cues, name, found);
         m_soundCue = found;

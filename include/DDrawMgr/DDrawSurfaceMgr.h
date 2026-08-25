@@ -36,7 +36,7 @@ class CDDrawChildGroup;
 class CDDrawWorkerRegistry;
 class CDDrawWorkerCache;
 class CDDrawWorkerMapSmall;
-class CDDrawSubMgrLeafScan;
+class SoundCueRegistry;
 class CDDrawSubMgrLeaf;
 class CDDrawDeviceManager;
 class SoundStream;
@@ -89,7 +89,7 @@ public:
     SoundStream* m_soundStream;
 
     class CGameLevel* m_level;
-    CDDrawSubMgrLeafScan* m_soundRegistry;
+    SoundCueRegistry* m_soundRegistry;
 
     CDDrawSubMgrLeaf* m_animRegistry;
 

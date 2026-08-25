@@ -8,8 +8,6 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -17,6 +15,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Dsndmgr/MidiManager.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
@@ -33,6 +32,8 @@
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
@@ -83,7 +84,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     if (!sounds) {
         return 0;
     }
-    m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
+    m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(sounds), "CREDITZ", "_");
 
     CSymTab* midiTable = SymTab2c()->ResolvePath("MIDIZ");
     if (midiTable) {
@@ -122,14 +123,14 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_world) {
-        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        SoundCueRegistry* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream) {
             reg->m_soundStream->StopAllStreams();
         }
-        m_world->m_soundRegistry->RemoveKeysEqual("CREDITZ", "_");
-        m_world->m_imageRegistry->RemoveKeysEqual("CREDITZ", "_");
+        m_world->m_soundRegistry->RemoveWithPrefix("CREDITZ", "_");
+        m_world->m_imageRegistry->RemoveWithPrefix("CREDITZ", "_");
 
-        m_world->m_animRegistry->RemoveKeysEqual("CREDITZ", "_");
+        m_world->m_animRegistry->RemoveWithPrefix("CREDITZ", "_");
     }
 
     CMoviePlayer* vh = m_videoHandle;
@@ -174,7 +175,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    PurgeVoices(m_world->m_soundRegistry);
+    TickSoundVolumeRamps(m_world->m_soundRegistry);
 
     {
         CFixedPtrArray32* L = g_actorList;

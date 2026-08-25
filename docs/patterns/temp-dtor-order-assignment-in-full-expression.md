@@ -77,7 +77,7 @@ The single expression
 ```cpp
 void* v;
 v = 0;
-m_cues[i] = (map.Lookup(tokens.GetAt(i), v), static_cast<LeafCue*>(v));
+m_cues[i] = (map.Lookup(tokens.GetAt(i), v), static_cast<SoundCue*>(v));
 ```
 
 puts the unnamed temporary and output pointer in retail's homes and makes both unwind

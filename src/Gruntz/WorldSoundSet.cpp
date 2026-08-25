@@ -4,13 +4,14 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/RandomAmbientSound.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/RezMgr.h>
@@ -25,11 +26,11 @@ DATA(0x0022990c)
 i32 g_posSoundReq;
 
 RVA(0x0000b5e0, 0x29)
-i32 CWorldSoundSet::Init(CDDrawSubMgrLeafScan* world, i32 volume) {
-    if (world == NULL) {
+i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 volume) {
+    if (cueRegistry == NULL) {
         return 0;
     }
-    m_world = world;
+    m_cueRegistry = cueRegistry;
     m_volume = volume;
     m_active = 1;
     m_listenerX = 0;
@@ -39,11 +40,11 @@ i32 CWorldSoundSet::Init(CDDrawSubMgrLeafScan* world, i32 volume) {
 
 RVA(0x0000b620, 0x26)
 void CWorldSoundSet::Deactivate() {
-    if (m_world != NULL && m_world->m_soundStream != NULL) {
-        m_world->m_soundStream->ClearVolumeRamps();
+    if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
+        m_cueRegistry->m_soundStream->ClearVolumeRamps();
     }
     Teardown();
-    m_world = NULL;
+    m_cueRegistry = NULL;
 }
 
 RVA(0x0000b660, 0x2b)
@@ -72,7 +73,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromKey(m_cueRegistry, key, level, m_volume, box, scaleB) == 0) {
         delete obj;
         return NULL;
     }
@@ -118,7 +119,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromKey(m_world, key, level, m_volume, pos, scaleB) == 0) {
+    if (obj->InitFromKey(m_cueRegistry, key, level, m_volume, pos, scaleB) == 0) {
         delete obj;
         return NULL;
     }
@@ -174,7 +175,7 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
     if (obj == NULL) {
         return NULL;
     }
-    if (obj->InitFromKey(m_world, key, level, m_volume, box, scaleB) == 0) {
+    if (obj->InitFromKey(m_cueRegistry, key, level, m_volume, box, scaleB) == 0) {
         delete obj;
         return NULL;
     }
@@ -214,8 +215,8 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandom(
 RVA(0x0000bc30, 0x3a)
 void CWorldSoundSet::Restart(i32 volume) {
     m_volume = volume;
-    if (m_world->m_soundStream != NULL) {
-        m_world->m_soundStream->ClearVolumeRamps();
+    if (m_cueRegistry->m_soundStream != NULL) {
+        m_cueRegistry->m_soundStream->ClearVolumeRamps();
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -228,8 +229,8 @@ void CWorldSoundSet::Restart(i32 volume) {
 
 RVA(0x0000bc80, 0x44)
 void CWorldSoundSet::Stop() {
-    if (m_world != NULL && m_world->m_soundStream != NULL) {
-        m_world->m_soundStream->ClearVolumeRamps();
+    if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
+        m_cueRegistry->m_soundStream->ClearVolumeRamps();
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -252,7 +253,7 @@ void CWorldSoundSet::Resume() {
         }
     }
 
-    PurgeVoices(m_world);
+    TickSoundVolumeRamps(m_cueRegistry);
 }
 
 RVA(0x0000bd60, 0x4b)
@@ -267,24 +268,24 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
         }
     }
 
-    PurgeVoices(m_world);
+    TickSoundVolumeRamps(m_cueRegistry);
 }
 
 RVA(0x0000bdd0, 0x53)
 i32 CAmbientSound::InitFromKey(
-    CDDrawSubMgrLeafScan* world,
+    SoundCueRegistry* cueRegistry,
     const char* key,
     i32 level,
     i32 master,
     RECT* box,
     i32 scaleB
 ) {
-    AmbSoundRecord* out = NULL;
-    MapLookup(world->m_cues, key, out);
-    if (out == NULL) {
+    SoundCue* cue = NULL;
+    MapLookup(cueRegistry->m_cues, key, cue);
+    if (cue == NULL) {
         return 0;
     }
-    return InitFromSound(out->m_mgr, level, master, box, scaleB);
+    return InitFromSound(cue->m_sound, level, master, box, scaleB);
 }
 
 RVA(0x0000be50, 0x8f)
@@ -502,19 +503,19 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
 
 RVA(0x0000c4b0, 0x53)
 i32 CAmbientPosSound::InitFromKey(
-    CDDrawSubMgrLeafScan* world,
+    SoundCueRegistry* cueRegistry,
     const char* key,
     i32 level,
     i32 master,
     AmbientPoint* pos,
     i32 scaleB
 ) {
-    AmbSoundRecord* out = NULL;
-    MapLookup(world->m_cues, key, out);
-    if (out == NULL) {
+    SoundCue* cue = NULL;
+    MapLookup(cueRegistry->m_cues, key, cue);
+    if (cue == NULL) {
         return 0;
     }
-    return InitFromSound(out->m_mgr, level, master, pos, scaleB);
+    return InitFromSound(cue->m_sound, level, master, pos, scaleB);
 }
 
 RVA(0x0000c530, 0x51)
@@ -619,7 +620,7 @@ i32 CreateAmbientSound(CGameObject* obj) {
         } else {
             obj->m_flags &= ~2;
         }
-        LeafCue* layer = sprite->m_soundCue;
+        SoundCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {
             RECT rc;
             CopyRect(&rc, &obj->m_area);
@@ -693,7 +694,7 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
     obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
     obj->m_flags = (obj->m_flags & ~2) | 0x100001;
     aux->m_positionedSound = NULL;
-    LeafCue* layer = sprite->m_soundCue;
+    SoundCue* layer = sprite->m_soundCue;
     if (layer != NULL && g_gameReg != NULL) {
 
         CWorldSoundSet* set = g_gameReg->m_worldSounds;

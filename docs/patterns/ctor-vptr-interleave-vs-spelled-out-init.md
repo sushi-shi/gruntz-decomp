@@ -62,8 +62,8 @@ derived-ctor body*. So look at which fields retail sets BEFORE the single vptr s
   ONLY other direct child of CWapObj, declared the identical triple at the identical offsets with
   the identical roles. One inherited header modelled twice. Folding it onto CWapObj + delegating
   took CDDrawWorker::CreateFrame24/28/30 + InsertFrame 99.4 → **100 EXACT**, and the same fix on
-  the CLoadable side — LeafCue delegating instead of spelling the triple in its own body — took
-  CDDrawSubMgrLeafScan::CreateEntry/CreateEntry2 99.3 → **100 EXACT**. +11 exact overall.)
+  the CLoadable side — SoundCue delegating instead of spelling the triple in its own body — took
+  SoundCueRegistry::LoadCueFromSource/LoadCueFromFile 99.3 → **100 EXACT**. +11 exact overall.)
   Two tells that the fields are really a base's: a SIBLING class declares the same prefix at the
   same offsets, and the leaf's SIZE minus the base's leaves no room for them to be new.
 

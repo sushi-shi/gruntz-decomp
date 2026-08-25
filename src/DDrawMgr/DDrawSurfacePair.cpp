@@ -951,7 +951,7 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
 // statement was measured and the prologue does not move - the scheduler absorbs the
 // statement order, so the binding is not reachable from this body.
 RVA(0x00165460, 0x156)
-i32 CAniElement::Build(CDDrawSubMgrLeafScan* ctx, CAniSource* src, i32 flags) {
+i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
     m_total = 0;
@@ -994,7 +994,7 @@ fail:
 }
 
 RVA(0x001655c0, 0x53)
-i32 CAniElement::Configure(CDDrawSubMgrLeafScan* ctx, CParseSource* entry, i32 flags) {
+i32 CAniElement::Configure(SoundCueRegistry* ctx, CParseSource* entry, i32 flags) {
     if (entry->GetEntryTag() != REZ_TAG_ANI) {
         return 0;
     }
@@ -1010,7 +1010,7 @@ i32 CAniElement::Configure(CDDrawSubMgrLeafScan* ctx, CParseSource* entry, i32 f
 }
 
 RVA(0x00165620, 0x101)
-i32 CAniElement::LoadFile(CDDrawSubMgrLeafScan* ctx, const char* filename, i32 unused) {
+i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
     CFile fr;
     if (fr.Open(filename, 0, NULL) == 0) {
         return 0;

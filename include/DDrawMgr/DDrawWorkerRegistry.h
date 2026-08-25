@@ -69,10 +69,10 @@ public:
 
     CMapStringToOb m_workersByName;
 
-    i32 RemoveKeysEqual(const char* base, const char* str);
+    i32 RemoveWithPrefix(const char* prefix, const char* separator);
 
     i32 SumSizesEqual(const char* str, i32 raw);
-    i32 HasKeyEqual(const char* str);
+    i32 HasWithPrefix(const char* prefix);
 
     i32 AnyValueMatches(CImage* frame, char* outName, i32* outIndex);
 

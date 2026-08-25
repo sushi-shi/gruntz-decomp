@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/BrickTileId.h>
@@ -21,9 +20,9 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -114,11 +113,11 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
-        CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
+        if (h->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_SWITCHDOWN", found);
-            LeafCue* spr = found;
+            SoundCue* spr = found;
             if (spr) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
@@ -154,11 +153,11 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
-        CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
+        if (h->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_SWITCHUP", found);
-            LeafCue* spr = found;
+            SoundCue* spr = found;
             if (spr) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
@@ -247,7 +246,7 @@ RVA(0x00110860, 0x2e6)
 void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     i32 px, py;
     CGruntzMgr* r;
-    CDDrawSubMgrLeafScan* set;
+    SoundCueRegistry* set;
     switch (type) {
         // The retail byte index table starts at 15 (0x0f). The explicit goto
         // keeps all four empty cases on slot 0; break folds the last three into
@@ -276,8 +275,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             r = g_gameReg;
             if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
                 set = r->m_world->m_soundRegistry;
-                if (set->m_emitGate == 0) {
-                    LeafCue* e = static_cast<LeafCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
+                if (set->m_silentMode == 0) {
+                    SoundCue* e = static_cast<SoundCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
                     if (e) {
                         e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
@@ -291,8 +290,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             r = g_gameReg;
             if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
                 set = r->m_world->m_soundRegistry;
-                if (set->m_emitGate == 0) {
-                    LeafCue* e = static_cast<LeafCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
+                if (set->m_silentMode == 0) {
+                    SoundCue* e = static_cast<SoundCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
                     if (e) {
                         e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
@@ -305,7 +304,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_WATERBRIDGEMOVE");
+                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
             }
             return;
         case TILEKIND_DEATHBRIDGE_DOWN:
@@ -314,7 +313,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
+                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_TOGGLEDEATHBRIDGE_DOWN:
@@ -323,7 +322,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
+                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_CRUMBLEWATERBRIDGE:
@@ -332,7 +331,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
             if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->RefreshAsset("LEVEL_CRUMBLE");
+                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_CRUMBLE");
             }
             return;
     }
@@ -872,11 +871,11 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         || by >= g_gameReg->m_viewBounds.bottom || by < g_gameReg->m_viewBounds.top) {
         return 0;
     }
-    CDDrawSubMgrLeafScan* sreg = g_gameReg->m_world->m_soundRegistry;
-    if (sreg->m_emitGate == 0) {
-        LeafCue* found = NULL;
+    SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
+    if (sreg->m_silentMode == 0) {
+        SoundCue* found = NULL;
         MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
-        LeafCue* out = found;
+        SoundCue* out = found;
         if (out != NULL) {
             i32 volumePercent = g_soundVolumePercent;
             if (g_soundEnabled != 0) {
@@ -1376,8 +1375,8 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)
-                && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
-                LeafCue* snd = static_cast<LeafCue*>(
+                && g_gameReg->m_world->m_soundRegistry->m_silentMode == 0) {
+                SoundCue* snd = static_cast<SoundCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
                 );
                 if (snd != NULL) {
@@ -1897,11 +1896,11 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
 }
 
 RVA(0x00114120, 0x70)
-i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
-    if (m_emitGate != 0) {
+i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
+    if (m_silentMode != 0) {
         return 0;
     }
-    LeafCue* found = NULL;
+    SoundCue* found = NULL;
     MapLookup(m_cues, key, found);
     if (found == NULL) {
         return 0;
@@ -1911,7 +1910,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     if (soundEnabled == 0) {
         return 0;
     }
-    LeafCue* cue = found;
+    SoundCue* cue = found;
 
     if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
         >= static_cast<u32>(cue->m_replayDelayMs)) {

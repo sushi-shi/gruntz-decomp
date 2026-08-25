@@ -5,7 +5,6 @@
 #include <AddrWord.h>
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
@@ -20,6 +19,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileTriggerContainer.h>

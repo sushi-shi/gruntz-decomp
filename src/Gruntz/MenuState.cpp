@@ -7,8 +7,6 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -17,6 +15,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
@@ -29,14 +28,16 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
 #include <Gruntz/MenuTree.h>
 #include <Gruntz/MenuVersion.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
@@ -63,8 +64,8 @@ i32 g_versionMid = 0;
 DATA(0x00251610)
 i32 g_versionMinor = 0;
 
-static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* foundCue = NULL;
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* foundCue = NULL;
     MapLookup(cues, name, foundCue);
     return foundCue;
 }
@@ -89,7 +90,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    if (!m_world->m_imageRegistry->HasKeyEqual("MENU")) {
+    if (!m_world->m_imageRegistry->HasWithPrefix("MENU")) {
         CSymTab* imageSymbols = SymTab2c()->ResolvePath("IMAGEZ");
         if (imageSymbols == NULL) {
             return 0;
@@ -99,12 +100,12 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         g_resourceInstallActive = 0;
     }
 
-    if (!m_world->m_soundRegistry->HasKeyEqual("MENU")) {
+    if (!m_world->m_soundRegistry->HasWithPrefix("MENU")) {
         CSymTab* soundSymbols = SymTab2c()->ResolvePath("SOUNDZ");
         if (soundSymbols == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundSymbols), "MENU", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(soundSymbols), "MENU", "_");
     }
 
     if (!m_world->m_drawTarget->HasOverlay()) {
@@ -132,7 +133,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        LeafCue* activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        SoundCue* activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         if (activationCue != NULL) {
             activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
             m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
@@ -145,8 +146,8 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    LeafCue* menuMusicCue = LookupCue(
-        (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
+    SoundCue* menuMusicCue = LookupCue(
+        (static_cast<SoundCueRegistry*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU"
     );
     m_menuMusicCue = menuMusicCue;
@@ -161,11 +162,11 @@ void CMenuTree::InitializeMembers() {
 RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
 
-    m_world->m_imageRegistry->RemoveKeysEqual("MENU", "_");
-    m_world->m_soundRegistry->RemoveKeysEqual("MENU", "_");
+    m_world->m_imageRegistry->RemoveWithPrefix("MENU", "_");
+    m_world->m_soundRegistry->RemoveWithPrefix("MENU", "_");
     if (m_world) {
 
-        CDDrawSubMgrLeafScan* soundRegistry = m_world->m_soundRegistry;
+        SoundCueRegistry* soundRegistry = m_world->m_soundRegistry;
         if (soundRegistry->m_soundStream) {
             soundRegistry->m_soundStream->StopAllStreams();
         }
@@ -250,7 +251,7 @@ void CMenuState::StartMusic() {
         g_soundEnabled = 1;
     }
     i32 item = g_gameReg->m_soundVolume;
-    PlayLeafCueIfElapsed(m_menuMusicCue, item, 0, 0, 1);
+    PlaySoundCueIfElapsed(m_menuMusicCue, item, 0, 0, 1);
     if (!saved) {
         g_soundEnabled = saved;
     }
@@ -261,7 +262,7 @@ void CMenuState::StopMusicChain() {
     if (m_menuMusicCue == NULL) {
         return;
     }
-    LeafCue* mus = m_menuMusicCue;
+    SoundCue* mus = m_menuMusicCue;
     if (!mus->m_sound->IsPlaying()) {
         return;
     }
@@ -270,7 +271,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        PurgeVoices(m_world->m_soundRegistry);
+        TickSoundVolumeRamps(m_world->m_soundRegistry);
     } while (m_menuMusicCue->m_sound->IsPlaying());
 }
 

@@ -39,7 +39,7 @@ class CGruntzCmdMgr;
 
 class CFileMemBase;
 
-class CDDrawSubMgrLeafScan;
+class SoundCueRegistry;
 
 class CDDrawWorkerRegistry;
 

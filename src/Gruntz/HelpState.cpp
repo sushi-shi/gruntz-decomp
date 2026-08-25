@@ -6,7 +6,6 @@
 
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
@@ -22,6 +21,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SplashState.h>
 
 #include <ddraw.h>
@@ -106,7 +106,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    PurgeVoices(m_world->m_soundRegistry);
+    TickSoundVolumeRamps(m_world->m_soundRegistry);
 
     CFixedPtrArray32* list = g_actorList;
     i32 i;

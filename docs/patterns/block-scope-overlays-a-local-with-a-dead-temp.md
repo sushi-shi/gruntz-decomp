@@ -98,22 +98,22 @@ navigation metric, proves the scope.
 `CGiantRockLogic::BuildRockBreakInGameText` @0x1122a0 **99.96 -> 100.00 EXACT**.
 Its whole body was already byte-identical under masking; the only residue was
 `sub esp,0x18` against retail's `0x14`. The entity is a four-byte ESCAPED SCALAR:
-a `LeafCue*` out-parameter passed by reference to an inlined map lookup at the
+a `SoundCue*` out-parameter passed by reference to an inlined map lookup at the
 very end of the function. At function scope it got a sixth frame word; retail
 reuses the dead outer loop counter's home for it. Nesting the tail — which the
 common `return 0` already implied — puts it in a scope disjoint from the loops:
 
 ```cpp
 // NO - `found` is function-scope, so it cannot reuse the loop counter's home
-if (sreg->m_emitGate != 0) { return 0; }
-LeafCue* found = NULL;
+if (sreg->m_silentMode != 0) { return 0; }
+SoundCue* found = NULL;
 MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
 ...
 return 0;
 
 // YES - sub esp,0x18 -> 0x14
-if (sreg->m_emitGate == 0) {
-    LeafCue* found = NULL;
+if (sreg->m_silentMode == 0) {
+    SoundCue* found = NULL;
     MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
     ...
 }
@@ -132,7 +132,7 @@ counts exactly like a `RECT`.
 * **Do not brace speculatively.** `CMenuState::LoadGameAssetNamespaces` @0x9fe50 also
   read UNIFORM (+0x28). Scoping its `RECT rc` cost 95.14 -> 92.02 for zero funclets because
   the rectangle was not the overlapping entity. The decisive A/B scoped only the earlier
-  `LeafCue* e` lookup region: cl then overlaid the construction spill and `e` in the dead
+  `SoundCue* e` lookup region: cl then overlaid the construction spill and `e` in the dead
   `areaArg` home, removed the surplus frame word, and closed all four funclets. Declaring
   `e` at function scope instead rotated the same entities into three homes and left a
   UNIFORM +0x4 row. Confirm the exact entities and their disjoint scopes in disassembly;

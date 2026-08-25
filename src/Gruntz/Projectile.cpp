@@ -27,7 +27,6 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
@@ -37,6 +36,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/State.h>
@@ -1022,7 +1022,7 @@ RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
     CGruntzMgr* reg;
     CDDrawSurfaceMgr* world;
-    LeafCue* entry;
+    SoundCue* entry;
     if (m_sound != NULL) {
         goto fail;
     }

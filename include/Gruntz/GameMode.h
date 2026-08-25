@@ -26,7 +26,7 @@ GZ_ENUM_FORWARD(GruntDirection);
 
 extern RECT g_levelMsgRectsB[8];
 
-struct LeafCue;
+struct SoundCue;
 class CMoviePlayer;
 struct CGameObject;
 class CWwdGameObjectA;
@@ -63,7 +63,7 @@ public:
 
     CMenuTree* m_menuTree;
     i32 m_activateCueDurationMs;
-    LeafCue* m_menuMusicCue;
+    SoundCue* m_menuMusicCue;
 
     void BuildVersionString(CRect r);
 };

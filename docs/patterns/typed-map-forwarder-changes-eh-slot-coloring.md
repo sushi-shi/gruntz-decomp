@@ -12,7 +12,7 @@ an adjacent destructible object's unwind receiver.
 source
 
 ```cpp
-LeafCue* cue = NULL;
+SoundCue* cue = NULL;
 MapLookup(map, name, cue);
 ```
 
@@ -23,7 +23,7 @@ string at `[ebp-0x24]`. Restoring the native boundary closes the funclet:
 ```cpp
 void* found = NULL;
 map.Lookup(name, found);
-LeafCue* cue = static_cast<LeafCue*>(found);
+SoundCue* cue = static_cast<SoundCue*>(found);
 ```
 
 The primary function moved 78.8750% to 80.2379%, while the EH census moved one group from

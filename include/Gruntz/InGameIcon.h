@@ -17,7 +17,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/UserLogic.h>
 
-class LeafCue;
+class SoundCue;
 
 GZ_ENUM_BEGIN(InGameIconGlitter)
     ICON_GLITTER_NONE = 0,
@@ -59,7 +59,7 @@ public:
     i32 PlaceAt(i32 playerIndex, i32 unitIndex);
     i32 Reposition();
 
-    LeafCue* m_cue;
+    SoundCue* m_cue;
     Clock64 m_driftPos;
     Clock64 m_driftThresh;
     Clock64 m_peekTimer;

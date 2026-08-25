@@ -61,6 +61,7 @@ char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/ParseSource.h>
 #include <MsgParam.h>
 #include <Net/NetProviderNode.h>
 #include <Net/LatencyList.h>

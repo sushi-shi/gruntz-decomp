@@ -7,7 +7,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
@@ -19,6 +18,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/Object.h>
@@ -65,7 +65,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_workerCache = new CDDrawWorkerCache(this);
     m_workerMap = new CDDrawWorkerMapSmall(this);
     m_level = new CGameLevel(this, 0, 0);
-    m_soundRegistry = new CDDrawSubMgrLeafScan(this);
+    m_soundRegistry = new SoundCueRegistry(this);
     m_animRegistry = new CDDrawSubMgrLeaf(this);
     m_deviceManager = new CDDrawDeviceManager();
     m_soundStream = new SoundStream();
@@ -261,7 +261,7 @@ void CDDrawSurfaceMgr::FreeContext() {
         if (inner != NULL) {
             inner->StopAllStreams();
         }
-        m_soundRegistry->ClearMap();
+        m_soundRegistry->ClearCues();
     }
     if (m_soundStream != NULL) {
         m_soundStream->ShutdownStreams();

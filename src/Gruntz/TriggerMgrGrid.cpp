@@ -1,6 +1,5 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
@@ -22,11 +21,12 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -582,9 +582,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             {
                 g_gameReg->m_scoreHud->m_secretsFound++;
                 {
-                    CDDrawSubMgrLeafScan* set = m_world->m_soundRegistry;
-                    if (set->m_emitGate == 0) {
-                        LeafCue* found = NULL;
+                    SoundCueRegistry* set = m_world->m_soundRegistry;
+                    if (set->m_silentMode == 0) {
+                        SoundCue* found = NULL;
                         MapLookup(set->m_cues, "GAME_SECRETSWITCH", found);
                         if (found != NULL) {
                             found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);

@@ -4,7 +4,6 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -22,6 +21,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/PreviewState.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>

@@ -36,11 +36,11 @@ function:
 ```cpp
 // ours - 64.21%
 void CInGameIcon::SetupSprite(const char* category) {
-    LeafCue* cue = 0;
+    SoundCue* cue = 0;
     if (category != NULL) {
         void* found = 0;
         g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
-        cue = static_cast<LeafCue*>(found);
+        cue = static_cast<SoundCue*>(found);
     }
     m_cue = cue;
 }
@@ -53,7 +53,7 @@ void CInGameIcon::SetupSprite(const char* category) {
     }
     void* found = 0;
     g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
-    m_cue = static_cast<LeafCue*>(found);
+    m_cue = static_cast<SoundCue*>(found);
 }
 ```
 

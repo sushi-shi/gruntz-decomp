@@ -3,7 +3,6 @@
 #include <Gruntz/TileLogicPump.h>
 
 #include <DDrawMgr/AniAdvance.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
@@ -24,12 +23,13 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileTrigger.h>
@@ -463,7 +463,7 @@ i32 CCheckpointTrigger::Act() {
 
     CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
     if (cue != NULL) {
-        static_cast<LeafCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+        static_cast<SoundCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
     }
     g_gameReg->OnCheckpointReached();
 

@@ -23,7 +23,7 @@ struct AmbientPoint {
     i32 y;
 };
 
-struct CDDrawSubMgrLeafScan;
+struct SoundCueRegistry;
 
 class CAmbientSound : public CUserBase {
 public:
@@ -68,7 +68,7 @@ public:
     void Recompute(i32 master);
 
     i32 InitFromKey(
-        CDDrawSubMgrLeafScan* world,
+        SoundCueRegistry* cueRegistry,
         const char* key,
         i32 level,
         i32 master,
@@ -96,7 +96,7 @@ public:
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;
 
     i32 InitFromKey(
-        CDDrawSubMgrLeafScan* world,
+        SoundCueRegistry* cueRegistry,
         const char* key,
         i32 level,
         i32 master,

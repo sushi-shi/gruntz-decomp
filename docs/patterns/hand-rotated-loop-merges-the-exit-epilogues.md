@@ -102,7 +102,7 @@ carrying the exact shape this page's "Cause" section calls the bug:
 - `CSpawnList::ClearFlags` 0x9a420, `CMenuState::StopMusicChain` 0xa0640 (both `void`)
 - `CWormhole::SpawnPartners` 0x403b0, `CAttract::LeaveState` 0x14340
 - `CDDrawChildGroup::RenderChildren` / `BltDirtyChildren` / `BltDirtyChildrenEx`,
-  `CDDrawSubMgrLeafScan::RemoveKeysEqual` and its two twins — the MFC `POSITION` walk,
+  `SoundCueRegistry::RemoveWithPrefix` and its two twins — the MFC `POSITION` walk,
   `if (pos != NULL) { do { GetNext(pos); ... } while (pos != NULL); }`, verbatim
 
 So **do not grep for the source shape**. Screen only on the asm fingerprint at the top of this

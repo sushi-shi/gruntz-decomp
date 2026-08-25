@@ -49,7 +49,7 @@ the target is the delinker's; their relocation tables differ in presence and spe
 objdiff scores 100.00. Every paired sieve filters on `Line.ref`, so an asymmetric referent reads
 as a residual on a function that is already byte-perfect.
 
-Running it found one: `zPTree::Walk` (0x193340) and `CDDrawSubMgrLeaf::ScanTree` (0x152ad0) are
+Running it found one: `zPTree::Walk` (0x193340) and `CDDrawSubMgrLeaf::LoadFromTree` (0x152ad0) are
 both recursive and both byte-identical to retail, and both read as a one-instruction `selection`
 residual — because our object spells the recursive call as a `call rel32` with a relocation
 naming the function, and the delinked target resolves it inside its own section with no

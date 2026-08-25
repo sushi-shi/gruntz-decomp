@@ -10,8 +10,6 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSubMgrPagesInline.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -51,8 +49,6 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/PickupType.h>
@@ -61,6 +57,9 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -283,13 +282,14 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         if (!soundz) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
 
         CSymTab* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
+        m_world->m_soundRegistry
+            ->LoadFromTree(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
         CSymTab* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {
@@ -340,10 +340,10 @@ void CBootyState::ReleaseResources() {
     if (r) {
         r->StopAllStreams();
     }
-    m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
-    m_world->m_soundRegistry->RemoveKeysEqual("GRUNTZ_WANDGRUNT", "_");
-    m_world->m_imageRegistry->RemoveKeysEqual("BOOTY", "_");
-    m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_GOKARTGRUNT", "_");
+    m_world->m_soundRegistry->RemoveWithPrefix("BOOTY", "_");
+    m_world->m_soundRegistry->RemoveWithPrefix("GRUNTZ_WANDGRUNT", "_");
+    m_world->m_imageRegistry->RemoveWithPrefix("BOOTY", "_");
+    m_world->m_imageRegistry->RemoveWithPrefix("GRUNTZ_GOKARTGRUNT", "_");
     CState::ReleaseResources();
 }
 
@@ -359,31 +359,31 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     RetireScene(0x50, 0x3e8, 0, 1);
 
     CGruntzMgr* reg = g_gameReg;
-    CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
+    SoundCueRegistry* set = reg->m_world->m_soundRegistry;
     i32 token = reg->m_soundVolume;
-    if (set->m_emitGate == 0) {
-        LeafCue* found = NULL;
+    if (set->m_silentMode == 0) {
+        SoundCue* found = NULL;
         MapLookup(set->m_cues, "BOOTY_LOOP", found);
         if (found != NULL) {
-            PlayLeafCueIfElapsed(found, token, 0, 0, 1);
+            PlaySoundCueIfElapsed(found, token, 0, 0, 1);
         }
     }
     return 1;
 }
 
-static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* found = NULL;
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* found = NULL;
     MapLookup(cues, name, found);
     return found;
 }
 
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
-    LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
+    SoundCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
-            PurgeVoices(m_world->m_soundRegistry);
+            TickSoundVolumeRamps(m_world->m_soundRegistry);
         }
     }
     return 1;
@@ -996,9 +996,9 @@ i32 CBootyState::LevelMsgHudDriver() {
                     (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
 
-                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
-                        LeafCue* cue = NULL;
+                    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
+                        SoundCue* cue = NULL;
                         MapLookup(host->m_cues, "GAME_EXPLOSION1", cue);
                         if (cue != NULL) {
                             cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -1065,11 +1065,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 MapLookup(host->m_cues, "GAME_EXPLOSION1", found);
-                LeafCue* cue = found;
+                SoundCue* cue = found;
                 if (cue != NULL) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
@@ -1278,9 +1278,9 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
         if ((g_gameReg->m_scoreHud)->GetWarpLetterScore(m_stepIndex) == 0) {
             m_soundStarted = 1;
-            CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-            if (ss->m_emitGate == 0) {
-                LeafCue* res = NULL;
+            SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+            if (ss->m_silentMode == 0) {
+                SoundCue* res = NULL;
                 MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
                 if (res != NULL) {
                     res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -1290,8 +1290,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted != 0) {
-        CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-        LeafCue* res = NULL;
+        SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+        SoundCue* res = NULL;
         MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
         if (res == NULL) {
             return 1;
@@ -1323,12 +1323,12 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != NULL) {
                 if ((g_gameReg->m_scoreHud)->GetWarpLetterScore(m_stepIndex) != 0) {
-                    CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-                    if (ss->m_emitGate == 0) {
-                        LeafCue* res = NULL;
+                    SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+                    if (ss->m_silentMode == 0) {
+                        SoundCue* res = NULL;
                         MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
                         if (res != NULL) {
-                            PlayLeafCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
+                            PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
                         }
                     }
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_PICKUPS");
@@ -1412,12 +1412,12 @@ i32 CBootyState::CheckPerfectBonus() {
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume;
-        CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
-        if (m28->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* m28 = host->m_soundRegistry;
+        if (m28->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(m28->m_cues, "BOOTY_PERFECT", found);
             if (found) {
-                PlayLeafCueIfElapsed(found, item, 0, 0, 0);
+                PlaySoundCueIfElapsed(found, item, 0, 0, 0);
             }
         }
     }
@@ -1458,9 +1458,9 @@ i32 CBootyState::Render() {
     switch (m_activation) {
         case BOOTYSEQ_WARP_CUE: {
             m_activation = BOOTYSEQ_GLITTER;
-            CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
-            if (set->m_emitGate == 0) {
-                LeafCue* cue = NULL;
+            SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
+            if (set->m_silentMode == 0) {
+                SoundCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_WARP", cue);
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -1474,9 +1474,9 @@ i32 CBootyState::Render() {
                 break;
             }
             m_activation = BOOTYSEQ_LETTERS;
-            CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
-            if (set->m_emitGate == 0) {
-                LeafCue* cue = NULL;
+            SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
+            if (set->m_silentMode == 0) {
+                SoundCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_BOOM", cue);
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -1565,7 +1565,7 @@ i32 CBootyState::Render() {
     m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
-    PurgeVoices(m_world->m_soundRegistry);
+    TickSoundVolumeRamps(m_world->m_soundRegistry);
     return 1;
 }
 
@@ -1701,9 +1701,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         if (m_initOnce == 0) {
             if (rec->m_allDone != 0) {
                 m_initOnce = 1;
-                CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-                if (ss->m_emitGate == 0) {
-                    LeafCue* res = NULL;
+                SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
+                if (ss->m_silentMode == 0) {
+                    SoundCue* res = NULL;
                     MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
                     if (res != NULL) {
                         res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -1855,7 +1855,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (!soundz) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
     }
     {
         int(WINAPI * sc)(BOOL) = ShowCursor;
@@ -2202,11 +2202,11 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
 
-    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
+    m_world->m_soundRegistry->RemoveWithPrefix("BOOTY", "_");
 
     m_mgr->m_voiceManager->PauseAllVoices();
     CState::ReleaseResources();
@@ -2223,12 +2223,12 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_soundVolume;
-    CDDrawSubMgrLeafScan* m28 = host->m_soundRegistry;
-    if (m28->m_emitGate == 0) {
-        LeafCue* found = NULL;
+    SoundCueRegistry* m28 = host->m_soundRegistry;
+    if (m28->m_silentMode == 0) {
+        SoundCue* found = NULL;
         MapLookup(m28->m_cues, "BOOTY_LOOP", found);
         if (found) {
-            PlayLeafCueIfElapsed(found, item, 0, 0, 1);
+            PlaySoundCueIfElapsed(found, item, 0, 0, 1);
         }
     }
     return 1;
@@ -2236,11 +2236,11 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
-    LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
+    SoundCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, 1);
         while (found->m_sound->IsPlaying()) {
-            PurgeVoices(m_world->m_soundRegistry);
+            TickSoundVolumeRamps(m_world->m_soundRegistry);
         }
     }
     return 1;
@@ -2709,7 +2709,7 @@ i32 CMultiBootyState::Render() {
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
-    PurgeVoices(m_world->m_soundRegistry);
+    TickSoundVolumeRamps(m_world->m_soundRegistry);
     return 1;
 }
 
@@ -2796,13 +2796,13 @@ i32 CMultiBootyState::OnKeyDown(i32, i32) {
 }
 
 RVA(0x0001f940, 0x4c)
-i32 LeafCue::PlayIfElapsed(
+i32 SoundCue::PlayIfElapsed(
     i32 volumePercent,
     i32 panPercent,
     i32 frequencyOffsetPercent,
     i32 looping
 ) {
-    return PlayLeafCueIfElapsed(this, volumePercent, panPercent, frequencyOffsetPercent, looping);
+    return PlaySoundCueIfElapsed(this, volumePercent, panPercent, frequencyOffsetPercent, looping);
 }
 
 RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)

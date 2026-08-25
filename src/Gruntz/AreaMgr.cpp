@@ -6,11 +6,11 @@
 
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
 #include <Gruntz/QuestLevel.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Image/CImage.h>
 #include <Utils/MapTyped.h>
 
@@ -372,7 +372,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        LeafCue* value = NULL;
+        SoundCue* value = NULL;
         MapGetNext(*srcMap, pos, key, value);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
@@ -386,8 +386,8 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 
     pos = toAdd.GetHeadPosition();
     while (pos != NULL) {
-        LeafCue* obj = static_cast<LeafCue*>(toAdd.GetNext(pos));
-        entry->m_soundRegistry->RemoveByValue(obj);
+        SoundCue* obj = static_cast<SoundCue*>(toAdd.GetNext(pos));
+        entry->m_soundRegistry->RemoveCue(obj);
     }
     toAdd.RemoveAll();
 
@@ -407,7 +407,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == NULL) {
                 return 0;
             }
-            entry->m_soundRegistry->ScanTree(
+            entry->m_soundRegistry->LoadFromTree(
                 static_cast<CSymTab*>(handle),
                 const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
                 "_"
@@ -475,7 +475,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             if (handle == NULL) {
                 return 0;
             }
-            entry->m_animRegistry->ScanTree(
+            entry->m_animRegistry->LoadFromTree(
                 static_cast<CSymTab*>(handle),
                 const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
                 "_"

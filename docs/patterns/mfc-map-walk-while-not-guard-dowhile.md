@@ -46,7 +46,7 @@ Two more load-bearing details for the exact match:
    (`repne scasb`) → `mov [esp+N], eax`, a 1-instruction miss (~96% instead of 100%).
 
 **Accumulate/side-effect variant** (a `RemoveKey`+count loop with NO early return, e.g.
-`RemoveKeysEqual_*`): the `while` conversion still applies (no peel here, but keeps the CFG), and the
+`RemoveWithPrefix_*`): the `while` conversion still applies (no peel here, but keeps the CFG), and the
 init-scheduling levers matter even more. Retail schedules the `int n = 0` accumulator into the
 middle of the inlined `GetStartPosition` (between `sbb` and `test`), and `val = 0` as an immediate.
 To reproduce, declare the locals in this order and MSVC schedules each init exactly where retail
@@ -60,7 +60,7 @@ int n = 0;                    // AFTER pos → n=0 (xorl ebp) lands after the EH
 ```
 
 `n` declared before `pos` puts `xorl ebp,ebp` ahead of the compiler's `mov byte [esp+N],1` EH-state
-store (a 2-instruction order swap, ~98%); moving it after `pos` fixes it. `RemoveKeysEqual_1527d0/
+store (a 2-instruction order swap, ~98%); moving it after `pos` fixes it. `RemoveWithPrefix_1527d0/
 157c70/155360` 91.67% → 100%.
 
 **By-value `CString` return variant** (a reverse-lookup returning the found key, e.g.
@@ -74,7 +74,7 @@ levers close what was mis-filed as an "NRVO wall":
 
 `KeyOfValue_152d30`/`FindKeyOfValue_158570`/`FindKeyOfValue_165360` 68.77/70.77/79.06% → 100%.
 
-**Accumulate-with-predicate variant** (`SumField_1580b0`, `SumSizesEqual_155460`: walk the map, and
+**Accumulate-with-predicate variant** (`SumAudioBytes_1580b0`, `SumSizesEqual_155460`: walk the map, and
 for each entry that passes a key predicate add something to a running total). Two extra levers, both
 measured 66.2/65.6% → **100%**:
 
@@ -98,7 +98,7 @@ measured 66.2/65.6% → **100%**:
    ahead of the ctor call.
 
 **Which register becomes the function-wide zero is a readable consequence, not a coin flip.**
-`SumField` pins the zero in **ebx** and compares `cmp byte ptr [esi],bl`; `SumSizesEqual` pins it in
+`SumAudioBytes` pins the zero in **ebx** and compares `cmp byte ptr [esi],bl`; `SumSizesEqual` pins it in
 **edi** and compares `cmp byte ptr [esi],0x0` — because `dil` does not exist in 32-bit x86, so a
 byte compare against an edi-held zero has to become an immediate. The two differ because
 `SumSizesEqual` has an extra `int raw` parameter that retail enregisters in ebx for the loop; that
@@ -109,7 +109,7 @@ also what the duplicated `add ebp,eax` blocks in retail say — consumes ebx and
 edi. Use the arm count in the target as the oracle.
 
 STEERABLE — supersedes the old "optimizer loop-peel wall / zero-register-pinning / NRVO wall"
-@early-stop on these. Evidence: `CDDrawSubMgrLeaf::HasKeyPrefix_152c50`, `CDDrawSubMgrLeafScan::HasKeyEqual_1583c0`,
-`CDDrawWorkerRegistry::HasKeyEqual_155550` — all 61.36% → 100%. Same peel family as
+@early-stop on these. Evidence: `CDDrawSubMgrLeaf::HasKeyPrefix_152c50`, `SoundCueRegistry::HasWithPrefix_1583c0`,
+`CDDrawWorkerRegistry::HasWithPrefix_155550` — all 61.36% → 100%. Same peel family as
 [linked-list-advance-before-process](linked-list-advance-before-process.md) and
 [retry-loop-bail-while-goto-no-peel](retry-loop-bail-while-goto-no-peel.md).

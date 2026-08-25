@@ -4,7 +4,6 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -12,12 +11,13 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -39,8 +39,8 @@ static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
-static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* found = NULL;
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* found = NULL;
     MapLookup(cues, name, found);
     return found;
 }
@@ -140,14 +140,14 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
         m_owner->Deactivate();
     } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 
-        CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
-        if (mh->m_emitGate == 0) {
-            LeafCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
+        SoundCueRegistry* mh = g_gameReg->m_world->m_soundRegistry;
+        if (mh->m_silentMode == 0) {
+            SoundCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
                 if (soundEnabled != 0) {
-                    LeafCue* p = found;
+                    SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;

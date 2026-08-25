@@ -7,7 +7,6 @@
 #include <DDrawMgr/AniRecordBase2.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -15,6 +14,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Enums.h>
 #include <Gruntz/AniRecordView.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Ints.h>
 #include <Pix16.h>
 #include <Utils/MapTyped.h>
@@ -27,7 +27,7 @@ DATA(0x002bf3c4)
 i32 g_aniParsedNameLen = 0;
 
 RVA(0x00168c60, 0xa0)
-i32 CAniRecordView::Parse(CDDrawSubMgrLeafScan* ctx, const i16* src) {
+i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
     m_stepMode = static_cast<WwdAnimStepMode>(*p++);
@@ -57,7 +57,7 @@ i32 CAniRecordView::Parse(CDDrawSubMgrLeafScan* ctx, const i16* src) {
 // The GetAt(i) return is the CString temporary consumed directly by Lookup, and
 // the comma expression keeps it alive through the m_cues[i] store.
 RVA(0x00168d00, 0x14c)
-void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str) {
+void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (owner == NULL || str == NULL) {
         return;
     }
@@ -84,9 +84,9 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
     }
     m_cueCount = tokens.GetSize();
     if (m_cueCount > 0) {
-        m_cues = new LeafCue*[m_cueCount];
+        m_cues = new SoundCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-            LeafCue* v = NULL;
+            SoundCue* v = NULL;
             m_cues[i] = (MapLookup(owner->m_cues, tokens.GetAt(i), v), v);
         }
     }

@@ -38,9 +38,9 @@ new member declaration still lives in a widely included class header.
 
 Two measured controls:
 
-- Adding `CDDrawSubMgrLeafScan::PurgeVoices` to the class header rebuilt roughly half
+- Adding `SoundCueRegistry::TickSoundVolumeRamps` to the class header rebuilt roughly half
   the program and produced eleven fresh regressions (3,737 exact, 95.11%). Removing the
-  member declaration and defining `PurgeVoices(CDDrawSubMgrLeafScan*)` only in the eight
+  member declaration and defining `TickSoundVolumeRamps(SoundCueRegistry*)` only in the eight
   caller TUs restored 3,741 exact and zero fresh regressions while retaining all thirteen
   conversions.
 - A member `CTileImageSet::ReadDimensions` declaration produced thirteen fresh

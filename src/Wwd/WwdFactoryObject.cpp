@@ -17,9 +17,9 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -502,7 +502,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             CAniRecordView* dd = m_element;
             if (dd->m_flags & 0x4) {
                 i32 sourceX = c->m_screenX;
-                LeafCue* soundCue;
+                SoundCue* soundCue;
                 if (dd->m_cueCount == 0) {
                     soundCue = NULL;
                 } else {
@@ -512,7 +512,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     soundCue->PlaySpatialized(sourceX, 0, 0, 0);
                 }
             } else {
-                LeafCue* soundCue;
+                SoundCue* soundCue;
                 if (dd->m_cueCount == 0) {
                     soundCue = NULL;
                 } else {

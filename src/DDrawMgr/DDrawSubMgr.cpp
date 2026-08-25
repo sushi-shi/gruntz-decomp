@@ -11,7 +11,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -31,9 +30,10 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/StateId.h>
@@ -357,10 +357,10 @@ CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     Unload();
 }
 
-RVA_COMPGEN(0x00157550, 0x1e, ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157550, 0x1e, ??_GSoundCueRegistry@@UAEPAXI@Z)
 
 RVA(0x00157570, 0x68)
-CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
+SoundCueRegistry::~SoundCueRegistry() {
 
     Unload();
 }
@@ -449,13 +449,13 @@ void CFileMemBase::Reset() {
 }
 
 RVA(0x00157a80, 0x51)
-i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
+i32 SoundCueRegistry::BindSoundStream(i32 allowUnavailable) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
     if (mgr == NULL) {
         return 0;
     }
     SoundStream* stream = mgr->m_soundStream;
-    if (force == 0) {
+    if (allowUnavailable == 0) {
         if (stream == NULL) {
             return 0;
         }
@@ -464,9 +464,9 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
         }
     }
     if (stream == NULL) {
-        m_emitGate = 1;
+        m_silentMode = 1;
     } else {
-        m_emitGate = 0;
+        m_silentMode = 0;
     }
     m_soundStream = stream;
     g_soundVolumePercent = VOLUME_PCT_MAX;
@@ -474,8 +474,8 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
 }
 
 RVA(0x00157ae0, 0x11)
-void CDDrawSubMgrLeafScan::Unload() {
-    ClearMap();
+void SoundCueRegistry::Unload() {
+    ClearCues();
     m_soundStream = NULL;
 }
 
@@ -486,28 +486,28 @@ void CDDrawSubMgrLeafScan::Unload() {
 // The exact sibling CDDrawWorkerMapSmall::RemoveByValue (0x165c40) gets the retail
 // layout from this same shape; the coin is allocator state outside the body text.
 RVA(0x00157b00, 0xb2)
-void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
-    if (p == NULL) {
+void SoundCueRegistry::RemoveCue(SoundCue* cue) {
+    if (cue == NULL) {
         return;
     }
     POSITION pos = m_cues.GetStartPosition();
     CString key;
-    LeafCue* value = NULL;
+    SoundCue* value = NULL;
     while (pos != static_cast<POSITION>(0)) {
         MapGetNext(m_cues, pos, key, value);
-        if (p == value) {
+        if (cue == value) {
             m_cues.RemoveKey(key);
-            delete p;
+            delete cue;
             break;
         }
     }
 }
 
 RVA(0x00157bc0, 0xa2)
-void CDDrawSubMgrLeafScan::ClearMap() {
+void SoundCueRegistry::ClearCues() {
     POSITION pos = m_cues.GetStartPosition();
     CString key;
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     if (pos != NULL) {
         do {
             MapGetNext(m_cues, pos, key, val);
@@ -520,12 +520,12 @@ void CDDrawSubMgrLeafScan::ClearMap() {
 }
 
 RVA(0x00157c70, 0xf8)
-i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
-    CString match(base);
-    match += str;
+i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
+    CString match(prefix);
+    match += separator;
     i32 len = match.GetLength();
     CString key;
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     POSITION pos = m_cues.GetStartPosition();
     i32 n = 0;
     while (pos != NULL) {
@@ -546,15 +546,15 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     elem->m_replayDelayMs = m_defaultReplayDelayMs
 
 RVA(0x00157d70, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
-    if (m_emitGate != 0) {
+SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CParseSource* source) {
+    if (m_silentMode != 0) {
         return NULL;
     }
-    LeafCue* e = new LeafCue(CueCount(), m_ownerCtx);
+    SoundCue* e = new SoundCue(CueCount(), m_ownerCtx);
     if (e == NULL) {
         return NULL;
     }
-    if (e->Configure(src) == 0) {
+    if (e->LoadFromSource(source) == 0) {
         delete e;
         return NULL;
     }
@@ -565,15 +565,15 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e00, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
-    if (m_emitGate != 0) {
+SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
+    if (m_silentMode != 0) {
         return NULL;
     }
-    LeafCue* e = new LeafCue(CueCount(), m_ownerCtx);
+    SoundCue* e = new SoundCue(CueCount(), m_ownerCtx);
     if (e == NULL) {
         return NULL;
     }
-    if (e->LoadSoundB(src) == 0) {
+    if (e->LoadFromFile(path) == 0) {
         delete e;
         return NULL;
     }
@@ -584,26 +584,26 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, char* src) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e90, 0x23)
-LeafCue* CDDrawSubMgrLeafScan::AddFromSource(CParseSource* src) {
-    if (m_emitGate != 0) {
+SoundCue* SoundCueRegistry::LoadNamedCue(CParseSource* source) {
+    if (m_silentMode != 0) {
         return NULL;
     }
-    if (src == NULL) {
+    if (source == NULL) {
         return NULL;
     }
-    return CreateEntry(src->m_name, src);
+    return LoadCueFromSource(source->m_name, source);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157ec0, 0x20)
-void CDDrawSubMgrLeafScan::AddEntry(LeafCue* elem, const char* key) {
-    ADD_SOUND_CUE_ENTRY(elem, key);
+void SoundCueRegistry::AddCue(SoundCue* cue, const char* key) {
+    ADD_SOUND_CUE_ENTRY(cue, key);
 }
 
 RVA(0x00157ee0, 0x1c6)
-i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
-    if (m_emitGate != 0) {
+i32 SoundCueRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char* separator) {
+    if (m_silentMode != 0) {
         return 0;
     }
     i32 count = 0;
@@ -615,11 +615,11 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
     CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
-            sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
+            sprintf(buf, "%s%s%s", prefix, separator, node->m_name);
         } else {
             strcpy(buf, node->m_name);
         }
-        count += ScanTree(node, buf, suffix);
+        count += LoadFromTree(node, buf, separator);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
 
@@ -630,14 +630,14 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
             while (fn != NULL) {
                 if (fn->GetEntryTag() == PARSETAG_VAW) {
                     if (prefix != NULL && *prefix != 0) {
-                        sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
+                        sprintf(buf, "%s%s%s", prefix, separator, fn->m_name);
                     } else {
                         strcpy(buf, fn->m_name);
                     }
-                    LeafCue* val = NULL;
+                    SoundCue* val = NULL;
                     MapLookup(m_cues, buf, val);
                     if (val == NULL) {
-                        if (CreateEntry(buf, fn) != NULL) {
+                        if (LoadCueFromSource(buf, fn) != NULL) {
                             ++count;
                         }
                     }
@@ -652,21 +652,21 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
 }
 
 RVA(0x001580b0, 0xf6)
-i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
-    if (m_emitGate != 0) {
+i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
+    if (m_silentMode != 0) {
         return 0;
     }
     POSITION pos = m_cues.GetStartPosition();
     i32 sum = 0;
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     CString key;
     while (pos != NULL) {
         val = NULL;
         MapGetNext(m_cues, pos, key, val);
         if (val != NULL) {
-            if (str == NULL || *str == 0) {
+            if (prefix == NULL || *prefix == 0) {
                 sum += val->m_sound->m_sampleCount;
-            } else if (strncmp(key, str, strlen(str)) == 0) {
+            } else if (strncmp(key, prefix, strlen(prefix)) == 0) {
                 sum += val->m_sound->m_sampleCount;
             }
         }
@@ -676,15 +676,15 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001581b0, 0x5b)
-i32 CDDrawSubMgrLeafScan::PlaySpatializedCue(
+i32 SoundCueRegistry::PlaySpatializedCue(
     const char* key,
     i32 sourceX,
     i32 maxPanOffsetPx,
     i32 fullPanOffsetPx
 ) {
     CGameLevel* lvl = OwnerMgr()->m_level;
-    if (lvl != NULL && lvl->m_mainPlane != NULL && m_emitGate == 0) {
-        LeafCue* val = NULL;
+    if (lvl != NULL && lvl->m_mainPlane != NULL && m_silentMode == 0) {
+        SoundCue* val = NULL;
         MapLookup(m_cues, key, val);
         if (val != NULL) {
             return val->PlaySpatialized(sourceX, -1, maxPanOffsetPx, fullPanOffsetPx);
@@ -694,15 +694,15 @@ i32 CDDrawSubMgrLeafScan::PlaySpatializedCue(
 }
 
 RVA(0x00158210, 0xaa)
-LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
-    if (m_emitGate != 0) {
+SoundCue* SoundCueRegistry::GetFirstCue() {
+    if (m_silentMode != 0) {
         return NULL;
     }
     POSITION pos = m_cues.GetStartPosition();
     if (pos == NULL) {
         return NULL;
     }
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     CString key;
     MapGetNext(m_cues, pos, key, val);
     return val;
@@ -711,18 +711,18 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001582c0, 0xf6)
-LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
+SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
     if (target == NULL) {
         return NULL;
     }
-    if (m_emitGate != 0) {
+    if (m_silentMode != 0) {
         return NULL;
     }
     POSITION pos = m_cues.GetStartPosition();
     if (pos == NULL) {
         return NULL;
     }
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     CString key;
     while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);
@@ -739,14 +739,14 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
 }
 
 RVA(0x001583c0, 0xdc)
-i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
-    i32 len = strlen(str);
+i32 SoundCueRegistry::HasWithPrefix(const char* prefix) {
+    i32 len = strlen(prefix);
     CString key;
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     POSITION pos = m_cues.GetStartPosition();
     while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);
-        if (strncmp(key, str, len) == 0) {
+        if (strncmp(key, prefix, len) == 0) {
             return 1;
         }
     }
@@ -756,11 +756,11 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001584a0, 0x43)
-i32 CDDrawSubMgrLeafScan::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
+i32 SoundCueRegistry::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
     if (m_soundStream == NULL) {
         return 0;
     }
-    LeafCue* val = GetFirstValue();
+    SoundCue* val = GetFirstCue();
     if (val == NULL) {
         return 0;
     }
@@ -772,7 +772,7 @@ i32 CDDrawSubMgrLeafScan::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
 }
 
 RVA(0x001584f0, 0x80)
-i32 CDDrawSubMgrLeafScan::ConfigurePrimaryFromCue(LeafCue* cue, i32 startPrimary) {
+i32 SoundCueRegistry::ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary) {
     if (cue == NULL) {
         return 0;
     }
@@ -796,12 +796,12 @@ i32 CDDrawSubMgrLeafScan::ConfigurePrimaryFromCue(LeafCue* cue, i32 startPrimary
 }
 
 RVA(0x00158570, 0xd4)
-CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
+CString SoundCueRegistry::FindCueKey(SoundCue* target) {
     CString key;
     if (target == NULL) {
         return key;
     }
-    LeafCue* val = NULL;
+    SoundCue* val = NULL;
     POSITION pos = m_cues.GetStartPosition();
     while (pos != NULL) {
         MapGetNext(m_cues, pos, key, val);
@@ -813,16 +813,16 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
     return key;
 }
 
-RVA_COMPGEN(0x00158660, 0x1e, ??_GLeafCue@@UAEPAXI@Z)
+RVA_COMPGEN(0x00158660, 0x1e, ??_GSoundCue@@UAEPAXI@Z)
 RVA(0x00158680, 0x5b)
-LeafCue::~LeafCue() {
+SoundCue::~SoundCue() {
     Unload();
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001586e0, 0x34)
-i32 LeafCue::LoadSoundA(RiffWaveHeader* riff) {
+i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
         return 0;
@@ -832,18 +832,18 @@ i32 LeafCue::LoadSoundA(RiffWaveHeader* riff) {
 }
 
 RVA(0x00158720, 0x34)
-i32 LeafCue::LoadSoundB(char* src) {
+i32 SoundCue::LoadFromFile(char* path) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
         return 0;
     }
-    m_sound = dev->LoadSampleFile(src, 0x100ea, 0);
+    m_sound = dev->LoadSampleFile(path, 0x100ea, 0);
     return m_sound != NULL;
 }
 
 RVA(0x00158760, 0x59)
-i32 LeafCue::Configure(CParseSource* src) {
-    char* blob = src->BeginParse();
+i32 SoundCue::LoadFromSource(CParseSource* source) {
+    char* blob = source->BeginParse();
     if (blob == NULL) {
         return 0;
     }
@@ -857,12 +857,12 @@ i32 LeafCue::Configure(CParseSource* src) {
         m_sound = dev->LoadSample(riff.m_rec, 0x100ea, 0);
         ok = m_sound != NULL;
     }
-    src->EndParse();
+    source->EndParse();
     return ok;
 }
 
 RVA(0x001587c0, 0x23)
-void LeafCue::Unload() {
+void SoundCue::Unload() {
     if (m_sound != NULL) {
         SoundDevice* dev = OwnerMgr()->m_soundStream;
         if (dev != NULL) {
@@ -873,7 +873,7 @@ void LeafCue::Unload() {
 }
 
 RVA(0x001587f0, 0xf1)
-i32 LeafCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx) {
+i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx) {
     if (g_soundEnabled == 0) {
         return 0;
     }

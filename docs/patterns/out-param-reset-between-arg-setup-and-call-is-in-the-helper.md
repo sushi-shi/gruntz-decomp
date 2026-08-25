@@ -40,7 +40,7 @@ the FIRST STATEMENT OF THE INLINE BODY is emitted after the argument computation
 exactly retail's schedule. The dev shape is a tiny lookup wrapper:
 
 ```cpp
-static inline void LookupCue(CMapStringToPtr& cues, const char* name, LeafCue*& out) {
+static inline void LookupCue(CMapStringToPtr& cues, const char* name, SoundCue*& out) {
     out = NULL;               // MFC Lookup does not clear out on failure
     MapLookup(cues, name, out);
 }
@@ -131,7 +131,7 @@ moving the reset across the inline boundary closed the sole scheduling residue.
 both differed only by `push name` versus the zero store, and both became exact
 by returning the typed worker from the wrapper.
 
-`LoadGameAssetNamespaces` is the three-site `LeafCue*` control. Returning a typed
+`LoadGameAssetNamespaces` is the three-site `SoundCue*` control. Returning a typed
 pointer from one file-local helper moved both `MENU_ACTIVATE` resets and the final
 `MENU_MENU` reset after argument setup. It also recovered retail's distinct final
 temporary slot. The complete 0x343-byte function then matched exactly: 260
@@ -145,7 +145,7 @@ the 0x119-byte body exact: 116 instructions, 1 call, 21 branches, 7 returns, and
 referents. The base pointer is not a generic-erasure workaround here; `CMapStringToOb`
 stores `CObject*` and its retail signature requires `CObject*&`.
 
-`CInGameText::Update` is the bounded `CMapStringToPtr` control. Moving its `LeafCue*`
+`CInGameText::Update` is the bounded `CMapStringToPtr` control. Moving its `SoundCue*`
 temporary inside a typed-return helper removes the adapter union's extra lifetime and
 restores equal size and instruction count: 168 instructions, 7 calls, 23 branches,
 2 returns, and 19 ordered referents on both sides. It does not close the function:

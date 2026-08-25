@@ -35,7 +35,7 @@ public:
     virtual i32 OnLButtonDown(i32, i32, i32) OVERRIDE;
 
     u32 m_idleTimer;
-    struct LeafCue* m_host;
+    struct SoundCue* m_host;
     i32 m_activeFlag;
 };
 

@@ -9,7 +9,6 @@
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -21,6 +20,7 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/MidiManager.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>
@@ -57,7 +57,6 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
@@ -74,6 +73,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -163,9 +163,9 @@ GZ_ENUM_END(ToolCursorId)
 
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
-        CDDrawSubMgrLeafScan* _s = (sndHost);                                                      \
-        if (_s->m_emitGate == 0) {                                                                 \
-            LeafCue* found = NULL;                                                                 \
+        SoundCueRegistry* _s = (sndHost);                                                      \
+        if (_s->m_silentMode == 0) {                                                                 \
+            SoundCue* found = NULL;                                                                 \
             MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
             if (found != NULL)                                                                     \
                 found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                       \
@@ -1732,7 +1732,7 @@ void CPlay::FreeListTeardown() {
     ForwardReady();
     {
 
-        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        SoundCueRegistry* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream != NULL) {
             reg->m_soundStream->StopAllStreams();
         }
@@ -1802,12 +1802,12 @@ void CPlay::ModeCleanup() {
     if (m_world) {
         {
 
-            CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+            SoundCueRegistry* reg = m_world->m_soundRegistry;
             if (reg->m_soundStream) {
                 reg->m_soundStream->StopAllStreams();
             }
         }
-        m_world->m_soundRegistry->ClearMap();
+        m_world->m_soundRegistry->ClearCues();
     }
     if (m_mgr) {
         m_mgr->m_midi->ClearSequences();
@@ -3168,9 +3168,9 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     if (m_guts->m_position == STATUSBAR_HIDDEN && m_guts->HitTestLayer(x, y)) {
-        CDDrawSubMgrLeafScan* set = m_mgr->m_world->m_soundRegistry;
-        if (set->m_emitGate == 0) {
-            LeafCue* e = NULL;
+        SoundCueRegistry* set = m_mgr->m_world->m_soundRegistry;
+        if (set->m_silentMode == 0) {
+            SoundCue* e = NULL;
             MapLookup(set->m_cues, "GAME_TABHIGHLIGHT1", e);
             if (e != NULL) {
                 e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -3670,7 +3670,7 @@ i32 CPlay::CompleteLevel() {
         m_completedFinalLevel = 1;
         m_notifyLatch = 1;
 
-        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        SoundCueRegistry* reg = m_world->m_soundRegistry;
         if (reg->m_soundStream) {
             reg->m_soundStream->StopAllStreams();
         }
@@ -4616,9 +4616,9 @@ i32 CPlay::ExecuteCommand(
                 NULL
             );
             if (r == -1) {
-                if (m_world->m_soundRegistry->m_emitGate == 0) {
-                    LeafCue* cue =
-                        static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup("GAME_BADSELECT"));
+                if (m_world->m_soundRegistry->m_silentMode == 0) {
+                    SoundCue* cue =
+                        static_cast<SoundCue*>(m_world->m_soundRegistry->Lookup("GAME_BADSELECT"));
                     if (cue != NULL) {
                         cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }

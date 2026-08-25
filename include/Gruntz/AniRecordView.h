@@ -8,9 +8,9 @@
 #include <Ints.h>
 #include <Wwd/WwdAnimStepMode.h>
 
-class CDDrawSubMgrLeafScan;
+class SoundCueRegistry;
 class CDDrawSurfaceMgr;
-struct LeafCue;
+struct SoundCue;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
 
@@ -28,9 +28,9 @@ struct CAniRecordView : public CObject {
         r->m_cues = NULL;
     }
 
-    i32 Parse(CDDrawSubMgrLeafScan* ctx, const i16* src);
+    i32 Parse(SoundCueRegistry* ctx, const i16* src);
     i32 GetSize();
-    void ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str);
+    void ResolveIndices(SoundCueRegistry* owner, const char* str);
 
     // A __thiscall whose body never touches `this` (it steps the two globals at
     // 0x6c2798/0x6c278c).  The receiver is proved by the call sites in
@@ -68,7 +68,7 @@ struct CAniRecordView : public CObject {
     u16 m_reserved28; // parsed from ANI frame record; never read
     u16 m_pad2a;
     i32 m_cueCount;
-    LeafCue** m_cues;
+    SoundCue** m_cues;
 };
 
 #endif // GRUNTZ_CANIRECORDVIEW_H

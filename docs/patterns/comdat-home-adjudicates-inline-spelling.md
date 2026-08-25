@@ -182,7 +182,7 @@ was costing match, not buying it.
 
 **The "an in-class body leaves the RVA with NO emitter" premise is FALSE in
 three of the seven survivors.** Collapsed, `Find` was still homed (by
-guardpoint, then droppedobject) at 100.00 EXACT, `LeafCue::PlayIfElapsed`
+guardpoint, then droppedobject) at 100.00 EXACT, `SoundCue::PlayIfElapsed`
 rehomed bootystateactivate -> sbi_rectonly at 100.00 EXACT, and
 `CUserLogic::BuildLogicTypeTable` was homed by actionarea - at 65.58 alone, and
 at **100.00 EXACT** when the Find device is collapsed at the same time. The
@@ -198,7 +198,7 @@ REMOVAL CONDITION in its own header:
 |---|---|---|
 | `AnimWorkerObjCtorInline.h` | 0x15b300 loses every emitter (unique-names FATAL) | the three wwdobjmgr creators expand it: 100.00 -> 86.14 / 84.92 / 83.04 plus ten unwind funclets |
 | `LogicTypeTableInline.h` | homed by actionarea | ~11 point-logic ctors expand it: CBehindCandy 99.83 -> 66.44, CTileTriggerTransition 100.00 -> 44.76 (-676) |
-| `LeafCueInline.h` | rehomed, 100.00 EXACT | ~15 callers expand it: CRezImage::FillRectAt 100.00 -> 66.44, CSBI_MenuItem::Render -> 74.04 (-221, -12 exact) |
+| `SoundCueInline.h` | rehomed, 100.00 EXACT | ~15 callers expand it: CRezImage::FillRectAt 100.00 -> 66.44, CSBI_MenuItem::Render -> 74.04 (-221, -12 exact) |
 | `AniElementInline.h` | 0x6b270 loses every emitter | CAniAdvanceCursor::Advance 92.75 -> 77.28 (-118, -2 exact) |
 | `GruntMovementInline.h` | 0x29a80 and 0x343f0 both lose every emitter | -122 and -111; all 86 Grunt.h TUs expand, none declines |
 | `FreeNodePoolInline.h` | 0x311b0 loses every emitter | ~20 grunt/battlez steps drop 1-10 points (-175) |

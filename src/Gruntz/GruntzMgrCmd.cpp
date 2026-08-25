@@ -4,8 +4,8 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/MidiManager.h>
+#include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/ErrorStringId.h>
@@ -18,11 +18,12 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -38,15 +39,15 @@
 #include <string.h>
 
 #define PLAYCUE(TAG)                                                                               \
-    if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
-        LeafCue* _c = static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(TAG));                \
+    if (m_world->m_soundRegistry->m_silentMode == 0) {                                             \
+        SoundCue* _c = static_cast<SoundCue*>(m_world->m_soundRegistry->Lookup(TAG));              \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                      \
     }
 #define PLAYCUE_MAP(TAG, VAR)                                                                      \
     {                                                                                              \
-        CDDrawSubMgrLeafScan* _reg = m_world->m_soundRegistry;                                     \
-        if (_reg->m_emitGate == 0) {                                                               \
+        SoundCueRegistry* _reg = m_world->m_soundRegistry;                                         \
+        if (_reg->m_silentMode == 0) {                                                             \
             VAR = 0;                                                                               \
             MapLookup(_reg->m_cues, TAG, VAR);                                                     \
             if (VAR)                                                                               \
@@ -215,14 +216,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 // the tagSIZE temp in CMD_SCREENSHOT they are the 0x10 bytes that make
                 // the frame `sub esp,0x94` instead of `0x84`.
                 CGameObject* _dr;
-                LeafCue* _cueMiniature;
-                LeafCue* _cueSpace;
-                LeafCue* _c;
+                SoundCue* _cueMiniature;
+                SoundCue* _cueSpace;
+                SoundCue* _c;
                 switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
                     case CHEAT_PROGRAMMING_GOD: {
-                        if (m_world->m_soundRegistry->m_emitGate == 0) {
-                            LeafCue* _c = static_cast<LeafCue*>(
-                                (static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
+                        if (m_world->m_soundRegistry->m_silentMode == 0) {
+                            SoundCue* _c = static_cast<SoundCue*>(
+                                (static_cast<SoundCueRegistry*>(m_world->m_soundRegistry))
                                     ->Lookup("GAME_MINORCHEAT")
                             );
                             if (_c) {
@@ -491,9 +492,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_WAWA:
-                        if (m_world->m_soundRegistry->m_emitGate == 0) {
-                            LeafCue* _c = static_cast<LeafCue*>(
-                                (static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
+                        if (m_world->m_soundRegistry->m_silentMode == 0) {
+                            SoundCue* _c = static_cast<SoundCue*>(
+                                (static_cast<SoundCueRegistry*>(m_world->m_soundRegistry))
                                     ->Lookup("GAME_WAWA")
                             );
                             if (_c) {
@@ -599,12 +600,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
                         g_explosionz ^= 1;
-                        CDDrawSubMgrLeafScan* _reg = m_world->m_soundRegistry;
-                        if (_reg->m_emitGate == 0) {
+                        SoundCueRegistry* _reg = m_world->m_soundRegistry;
+                        if (_reg->m_silentMode == 0) {
                             _c = NULL;
                             MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
                             if (_c) {
-                                PlayLeafCueIfElapsed(_c, g_soundVolumePercent, 0, 0, 0);
+                                PlaySoundCueIfElapsed(_c, g_soundVolumePercent, 0, 0, 0);
                             }
                         }
                         ShowToggleMessage("Explosionz", g_explosionz);

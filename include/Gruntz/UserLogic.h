@@ -16,7 +16,7 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 struct CGameObject;
-struct LeafCue;
+struct SoundCue;
 class CDDrawSurfacePair;
 class CUserLogic;
 

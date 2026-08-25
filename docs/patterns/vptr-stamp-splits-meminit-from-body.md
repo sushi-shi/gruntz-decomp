@@ -37,7 +37,7 @@ mem-init an inherited member) — and cl then dead-store-eliminates the base's o
 stamp, leaving exactly retail's single stamp:
 ```cpp
 CLoadable(i32 id, CDDrawSurfaceMgr* owner) { m_id = id; m_flags = 0; m_ownerCtx = owner; }
-LeafCue(i32 count, CDDrawSurfaceMgr* h) : CLoadable(count, h) { m_10 = 0; m_18 = 0; m_14 = 0; }
+SoundCue(i32 count, CDDrawSurfaceMgr* h) : CLoadable(count, h) { m_10 = 0; m_18 = 0; m_14 = 0; }
 ```
 STEERABLE, and it pays far beyond the ctor's own call sites. 2026-07-28: the partial
 `CImage` init list took `CDDrawWorker::InsertFrame`/`CreateFrame24`/`CreateFrame28`/

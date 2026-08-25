@@ -12,6 +12,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
 #include <Image/CImage.h>
@@ -44,7 +45,7 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (node == NULL) {
         return 0;
     }
-    if (m_world->m_imageRegistry->HasKeyEqual("GAME") == 0) {
+    if (m_world->m_imageRegistry->HasWithPrefix("GAME") == 0) {
         CSymTab* img = m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == NULL) {
             return 0;
@@ -53,19 +54,19 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
-    if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
+    if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
         CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (m_world->m_animRegistry->HasKeyPrefix("GAME") == 0) {
         CSymTab* aniz = m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == NULL) {
             return 0;
         }
-        m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(aniz), "GAME", "_");
+        m_world->m_animRegistry->LoadFromTree(static_cast<CSymTab*>(aniz), "GAME", "_");
     }
 
     if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_symParser) == 0) {

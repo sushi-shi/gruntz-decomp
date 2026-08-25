@@ -37,7 +37,7 @@ have made:
 
 ```cpp
 // NO - the store through the escaped out-param forces a reload
-LeafCue* cue = NULL;
+SoundCue* cue = NULL;
 MapLookup(host->m_cues, "GAME_MINORCHEAT", cue);
 if (cue != NULL && g_soundEnabled) {
     if (g_soundCueTimeMs - cue->m_lastPlayTimeMs >= cue->m_replayDelayMs) {
@@ -47,13 +47,13 @@ if (cue != NULL && g_soundEnabled) {
 }
 
 // YES - `cue` is the inlined member's `this`, and it is not the lookup's sink
-LeafCue* found = NULL;
+SoundCue* found = NULL;
 MapLookup(host->m_cues, "GAME_MINORCHEAT", found);
-LeafCue* cue = found;
+SoundCue* cue = found;
 if (cue != NULL && g_soundEnabled) { ... }
 ```
 
-A file-local `static inline LeafCue* LookupCue(CMapStringToPtr&, LPCTSTR)` that
+A file-local `static inline SoundCue* LookupCue(CMapStringToPtr&, LPCTSTR)` that
 returns the pointer is the same device (`src/Gruntz/InGameIcon.cpp` already uses
 it) - the return value is the non-aliasing temp.
 
@@ -83,15 +83,15 @@ remaining residue is only an ESI/EDI swap between `this` and the returned cue.
 
 The boundary, not a spelling accident, is what matters. Taking the map by
 reference versus taking its sound-registry owner by pointer was byte-identical;
-using a `CObject*` sink and casting the returned value to `LeafCue*` was also
+using a `CObject*` sink and casting the returned value to `SoundCue*` was also
 byte-identical. Passing the whole `CState*` into the helper was worse (85.32),
 and a named sound-registry local was byte-flat. Moving the existing
-`CDDrawSubMgrLeafScan::Lookup` body into the header was rejected even though it
+`SoundCueRegistry::Lookup` body into the header was rejected even though it
 gave the same caller shape: our compiler then emitted no standalone body, while
 retail has the exact 0x5b7e0 body and five TUs with out-of-line references.
 Preserve that real symbol until the missing inline-budget context is recovered.
 
-STEERABLE. Measured 2026-08-20, all on the LeafCue play-cue transcription:
+STEERABLE. Measured 2026-08-20, all on the SoundCue play-cue transcription:
 `CRainCloud::HitTest` 94.93 -> **100.00 EXACT**,
 `CPreviewState::LoadLevelPreviewScreen` 94.74 -> **100.00 EXACT** (unit to 100%),
 `CMulti::HandlePlayerCreated` 95.79 -> **100.00 EXACT**,

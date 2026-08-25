@@ -10,7 +10,6 @@
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
@@ -41,6 +40,7 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/Resolution.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
@@ -589,15 +589,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isInterlaced = vInterlaced;
     m_isHighDetail = vHigh1;
     m_isEffectsEnabled = vHigh2;
-    if (!m_world->m_soundRegistry->HasKeyEqual("GAME")) {
+    if (!m_world->m_soundRegistry->HasWithPrefix("GAME")) {
         CSymTab* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(sz), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(sz), "GAME", "_");
     }
     {
-        LeafCue* movieCue = NULL;
+        SoundCue* movieCue = NULL;
         MapLookup(m_world->m_soundRegistry->m_cues, "GAME_MOVIE", movieCue);
         m_world->m_soundRegistry->ConfigurePrimaryFromCue(movieCue, 0);
     }

@@ -8,7 +8,6 @@
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
@@ -24,8 +23,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InGameText.h>
-#include <Gruntz/LeafCue.h>
-#include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -33,6 +30,9 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpellId.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -80,8 +80,8 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
-static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* found = NULL;
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* found = NULL;
     MapLookup(cues, name, found);
     return found;
 }
@@ -879,7 +879,7 @@ i32 CInGameIcon::SerializeMove(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue)
+                        m_animWorker->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue)
                     )
                 );
             }
@@ -1018,11 +1018,11 @@ i32 CInGameText::Update() {
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
         if (CGameLevel::PointInRect(&reg->m_viewBounds, x, y)) {
-            CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
-            if (set->m_emitGate == 0) {
-                LeafCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
+            SoundCueRegistry* set = reg->m_world->m_soundRegistry;
+            if (set->m_silentMode == 0) {
+                SoundCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
-                    PlayLeafCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
+                    PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
                 }
             }
         }
@@ -1063,7 +1063,7 @@ i32 CInGameText::SerializeMove(
 
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
-    LeafCue* found = NULL;
+    SoundCue* found = NULL;
     if (category != NULL) {
         found = NULL;
         MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, category, found);

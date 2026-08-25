@@ -25,7 +25,6 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -36,6 +35,7 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarDock.h>
@@ -415,8 +415,8 @@ void CTriggerMgr::OverlayTick() {
 // The 16-bit path-preview colour: retail packs all THREE channels through the
 // runtime shift globals even when green/blue are zero (cl5 does not fold
 // `0 >> var`, so the zero channels are visible as xor/sar/shl).
-static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* found = NULL;
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* found = NULL;
     MapLookup(cues, name, found);
     return found;
 }
@@ -1731,14 +1731,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             spr->ApplyName("LEVEL_ROCKBREAK");
             spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
-            CDDrawSubMgrLeafScan* set = m_world->m_soundRegistry;
-            if (set->m_emitGate == 0) {
+            SoundCueRegistry* set = m_world->m_soundRegistry;
+            if (set->m_silentMode == 0) {
 
-                LeafCue* found = NULL;
+                SoundCue* found = NULL;
                 MapLookup(set->m_cues, "LEVEL_ROCKBREAK", found);
-                // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the
+                // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the
                 // cue in a register across the m_lastPlayTimeMs store.
-                LeafCue* e = found;
+                SoundCue* e = found;
                 if (e != NULL) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
@@ -2101,11 +2101,11 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                LeafCue* p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                SoundCue* p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_timerWindow = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_timerBase = g_frameTime;
-                if (m_world->m_soundRegistry->m_emitGate == 0) {
-                    LeafCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                if (m_world->m_soundRegistry->m_silentMode == 0) {
+                    SoundCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {
                         i32 volumePercent = g_soundVolumePercent;
                         if (g_soundEnabled != 0

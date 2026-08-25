@@ -4,13 +4,15 @@
 
 #include <Mfc.h>
 
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Resolution.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/State.h>
@@ -493,15 +495,15 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_emitGate) {
+        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+        if (host->m_silentMode) {
             return;
         }
-        LeafCue* found = NULL;
+        SoundCue* found = NULL;
         MapLookup(host->m_cues, "GAME_VOICE", found);
-        // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
+        // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
         // a register across the m_lastPlayTimeMs store.
-        LeafCue* cue = found;
+        SoundCue* cue = found;
         if (!cue) {
             return;
         }
@@ -521,15 +523,15 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_emitGate) {
+        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+        if (host->m_silentMode) {
             return;
         }
-        LeafCue* found = NULL;
+        SoundCue* found = NULL;
         MapLookup(host->m_cues, "GAME_CHIPFALLOUT", found);
-        // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
+        // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
         // a register across the m_lastPlayTimeMs store.
-        LeafCue* cue = found;
+        SoundCue* cue = found;
         if (!cue) {
             return;
         }

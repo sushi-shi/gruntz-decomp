@@ -21,7 +21,7 @@ public:
     CObject* LookupValue(const char* key);
     void RemoveValue(CAniElement* target);
     void FreeAll();
-    i32 RemoveKeysEqual(const char* base, const char* str);
+    i32 RemoveWithPrefix(const char* prefix, const char* separator);
     i32 HasKeyPrefix(const char* str);
     CString KeyOfValue(CObject* target);
     virtual ~CDDrawSubMgrLeaf() OVERRIDE;
@@ -30,7 +30,7 @@ public:
     class CAniElement* CreateAniEntry2(const char* key, const char* entry);
     CAniElement* AddFromSource(CParseSource* src);
     void AddEntry(CAniElement* elem, const char* key);
-    i32 ScanTree(class CSymTab* tree, const char* prefix, const char* suffix);
+    i32 LoadFromTree(class CSymTab* tree, const char* prefix, const char* separator);
 
     CMapStringToPtr m_animations;
 };

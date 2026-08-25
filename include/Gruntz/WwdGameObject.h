@@ -31,7 +31,7 @@ class CDDrawWorker;
 
 class CImage;
 class CDDrawSurfacePair;
-struct LeafCue;
+struct SoundCue;
 
 // @identity-TODO
 // The live callback-object snapshot branch proves slot 16, but the concrete owner

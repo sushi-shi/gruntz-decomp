@@ -28,7 +28,7 @@ Tooling, not codegen: the local-label predicate is now the single
 predicate (`^\$(?:L\d+|\w+\$\d+)$`), shared by `gruntz walls diagnose --asm`,
 `insn_seq`, `insn_count` and `branches.parse_objdump`. It reported
 `CAniAdvanceCursor::Advance` as 320 instructions against 457 and as never
-calling `LeafCue::PlayIfElapsed` / never reading `g_soundVolumePercent`; the real numbers
+calling `SoundCue::PlayIfElapsed` / never reading `g_soundVolumePercent`; the real numbers
 were 440 and two live call sites. Only two labels tree-wide
 (`$loop_restart$32243`, `$tail$29776`) — but a base-side "we never call this" is
 a strong enough lead that it cost two lanes.

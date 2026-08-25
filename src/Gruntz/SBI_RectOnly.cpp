@@ -3,7 +3,6 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -26,7 +25,6 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -47,6 +45,7 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -331,19 +330,19 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 }
 
 static __inline void HiCueFind() {
-    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-    if (host->m_emitGate == 0) {
+    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+    if (host->m_silentMode == 0) {
         CObject* obj = ((host))->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
-            static_cast<LeafCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            static_cast<SoundCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
         }
     }
 }
 
 static __inline void HiCueLookup() {
-    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-    if (host->m_emitGate == 0) {
-        LeafCue* out = NULL;
+    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+    if (host->m_silentMode == 0) {
+        SoundCue* out = NULL;
         MapLookup(host->m_cues, "GAME_TABHIGHLIGHT1", out);
         if (out) {
             out->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
@@ -352,15 +351,15 @@ static __inline void HiCueLookup() {
 }
 
 static __inline void HiCueTimed() {
-    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-    if (host->m_emitGate == 0) {
-        LeafCue* found = NULL;
+    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+    if (host->m_silentMode == 0) {
+        SoundCue* found = NULL;
         MapLookup(host->m_cues, "GAME_TABHIGHLIGHT1", found);
         if (found) {
             i32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;
             if (soundEnabled != 0) {
-                LeafCue* p = found;
+                SoundCue* p = found;
                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                     >= static_cast<u32>(p->m_replayDelayMs)) {
                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -705,16 +704,16 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     SbiCommandId cmd = r->m_cmd;
     if (r->m_tab == TAB_STATZ && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
-        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+        if (host->m_silentMode == 0) {
+            SoundCue* found = NULL;
             CMapStringToPtr* map = &host->m_cues;
             MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
             if (found) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
                 if (soundEnabled != 0) {
-                    LeafCue* p = found;
+                    SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -780,9 +779,9 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
         if (m_destructWarningState != DESTRUCT_WARNING_INACTIVE && m_destructButtonLocked == 0) {
             if (m_destructWarningSound == NULL) {
 
-                CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+                SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
                 CMapStringToPtr* map = &host->m_cues;
-                LeafCue* found = NULL;
+                SoundCue* found = NULL;
                 MapLookup(*map, "GAME_DESTRUCT", found);
                 if (found) {
                     SoundSample* sample = found->m_sound;
@@ -2546,16 +2545,16 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetDirectionAlt(m_position, 1);
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_STATZTABTOGGLE", found);
                 if (found) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
-                        LeafCue* p = found;
+                        SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -2579,16 +2578,16 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetDirection(m_position, 1);
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_STATZTABTOGGLE", found);
                 if (found) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
-                        LeafCue* p = found;
+                        SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -2676,16 +2675,16 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_state = SLOT_READY;
                 frame = 0x1a;
-                CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                if (host->m_emitGate == 0) {
-                    LeafCue* found = NULL;
+                SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                if (host->m_silentMode == 0) {
+                    SoundCue* found = NULL;
                     CMapStringToPtr* map = &host->m_cues;
                     MapLookup(*map, "GAME_COOKINGCOMPLETE", found);
                     if (found) {
                         i32 soundEnabled = g_soundEnabled;
                         i32 volumePercent = g_soundVolumePercent;
                         if (soundEnabled != 0) {
-                            LeafCue* p = found;
+                            SoundCue* p = found;
                             if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                 >= static_cast<u32>(p->m_replayDelayMs)) {
                                 p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -2781,16 +2780,16 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     clock[1] = INT_MAX;
     clock[0] = g_frameTime;
     if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
-        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+        if (host->m_silentMode == 0) {
+            SoundCue* found = NULL;
             CMapStringToPtr* map = &host->m_cues;
             MapLookup(*map, "GAME_GOOCOOKING1", found);
             if (found) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
                 if (soundEnabled != 0) {
-                    LeafCue* p = found;
+                    SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -2955,15 +2954,15 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case HLROW_HOLD_HIGH:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                        if (host->m_emitGate == 0) {
-                            LeafCue* found = NULL;
+                        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                        if (host->m_silentMode == 0) {
+                            SoundCue* found = NULL;
                             MapLookup(host->m_cues, "GAME_REZBELTRETURN", found);
                             if (found) {
                                 i32 soundEnabled = g_soundEnabled;
                                 i32 volumePercent = g_soundVolumePercent;
                                 if (soundEnabled != 0) {
-                                    LeafCue* p = found;
+                                    SoundCue* p = found;
                                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                         >= static_cast<u32>(p->m_replayDelayMs)) {
                                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -2979,15 +2978,15 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
             case HLROW_HOLD_LOW:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                        if (host->m_emitGate == 0) {
-                            LeafCue* found = NULL;
+                        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                        if (host->m_silentMode == 0) {
+                            SoundCue* found = NULL;
                             MapLookup(host->m_cues, "GAME_REZBELTBACKUP", found);
                             if (found) {
                                 i32 soundEnabled = g_soundEnabled;
                                 i32 volumePercent = g_soundVolumePercent;
                                 if (soundEnabled != 0) {
-                                    LeafCue* p = found;
+                                    SoundCue* p = found;
                                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                         >= static_cast<u32>(p->m_replayDelayMs)) {
                                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3078,15 +3077,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                     belt[0] = static_cast<u32>(g_frameTime);
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                        if (host->m_emitGate == 0) {
-                            LeafCue* found = NULL;
+                        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                        if (host->m_silentMode == 0) {
+                            SoundCue* found = NULL;
                             MapLookup(host->m_cues, "GAME_REZMACHINE", found);
                             if (found) {
                                 i32 soundEnabled = g_soundEnabled;
                                 i32 volumePercent = g_soundVolumePercent;
                                 if (soundEnabled != 0) {
-                                    LeafCue* p = found;
+                                    SoundCue* p = found;
                                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                         >= static_cast<u32>(p->m_replayDelayMs)) {
                                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3144,15 +3143,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_groupSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
                         m_groupSlots[col].m_counter = 0x13;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                            if (host->m_emitGate == 0) {
-                                LeafCue* fnd = NULL;
+                            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                            if (host->m_silentMode == 0) {
+                                SoundCue* fnd = NULL;
                                 MapLookup(host->m_cues, "GAME_REZBELTRETRACT", fnd);
                                 if (fnd) {
                                     i32 soundEnabled = g_soundEnabled;
                                     i32 volumePercent = g_soundVolumePercent;
                                     if (soundEnabled != 0) {
-                                        LeafCue* p = fnd;
+                                        SoundCue* p = fnd;
                                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                             >= static_cast<u32>(p->m_replayDelayMs)) {
                                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3166,15 +3165,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_groupSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
                         m_groupSlots[col].m_counter = 0xa;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                            if (host->m_emitGate == 0) {
-                                LeafCue* fnd = NULL;
+                            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                            if (host->m_silentMode == 0) {
+                                SoundCue* fnd = NULL;
                                 MapLookup(host->m_cues, "GAME_REZBELTDROP", fnd);
                                 if (fnd) {
                                     i32 soundEnabled = g_soundEnabled;
                                     i32 volumePercent = g_soundVolumePercent;
                                     if (soundEnabled != 0) {
-                                        LeafCue* p = fnd;
+                                        SoundCue* p = fnd;
                                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                             >= static_cast<u32>(p->m_replayDelayMs)) {
                                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3441,16 +3440,16 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
                 m_machinePhase = BELT_FALLING;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
-                        LeafCue* found = NULL;
+                    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
+                        SoundCue* found = NULL;
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_CHIPFALLOUT", found);
                         if (found) {
                             i32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
                             if (soundEnabled != 0) {
-                                LeafCue* p = found;
+                                SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3477,16 +3476,16 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRect.top = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
-                        LeafCue* found = NULL;
+                    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
+                        SoundCue* found = NULL;
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_CHIPLAND", found);
                         if (found) {
                             i32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
                             if (soundEnabled != 0) {
-                                LeafCue* p = found;
+                                SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3564,16 +3563,16 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             }
             if (m_itemRect.top >= row * 0x20 + 0x13e) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
-                        LeafCue* found = NULL;
+                    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
+                        SoundCue* found = NULL;
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_CHIPLAND", found);
                         if (found) {
                             i32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
                             if (soundEnabled != 0) {
-                                LeafCue* p = found;
+                                SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -3662,16 +3661,16 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         } else if (m_fallRect.bottom >= 0x1bf) {
             if (m_fallActive != FALLING_ITEM_GRINDING) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
-                        LeafCue* found = NULL;
+                    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
+                        SoundCue* found = NULL;
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_REZGRINDING", found);
                         if (found) {
                             i32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
                             if (soundEnabled != 0) {
-                                LeafCue* p = found;
+                                SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -4495,12 +4494,12 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_xDirection = static_cast<double>(deltaX) / dist;
     m_yDirection = static_cast<double>(dyv) / dist;
 
-    CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
-    if (h->m_emitGate == 0) {
-        LeafCue* found = NULL;
+    SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
+    if (h->m_silentMode == 0) {
+        SoundCue* found = NULL;
         MapLookup(h->m_cues, "GAME_WARPSTONEFLY", found);
         if (found) {
-            LeafCue* fly = found;
+            SoundCue* fly = found;
             i32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;
             if (soundEnabled != 0
@@ -5081,16 +5080,16 @@ i32 CStatusBarMgr::HlClickGroup0(StatusBarHighlightRow row) {
         i32 handle = m_hlGrid[rowIndex].m_value;
         i32* slot = &m_hlGrid[rowIndex].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
-                        LeafCue* p = found;
+                        SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -5116,16 +5115,16 @@ i32 CStatusBarMgr::HlClickGroup1(StatusBarHighlightRow row) {
         i32 handle = m_hlGrid[rowIndex + 4].m_value;
         i32* slot = &m_hlGrid[rowIndex + 4].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
-                        LeafCue* p = found;
+                        SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -5151,16 +5150,16 @@ i32 CStatusBarMgr::HlClickGroup2(StatusBarHighlightRow row) {
         i32 handle = m_hlGrid[rowIndex + 8].m_value;
         i32* slot = &m_hlGrid[rowIndex + 8].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
-                        LeafCue* p = found;
+                        SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -5197,16 +5196,16 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
             goto notActivated;
         }
-        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+        if (host->m_silentMode == 0) {
+            SoundCue* found = NULL;
             CMapStringToPtr* map = &host->m_cues;
             MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
             if (found) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
                 if (soundEnabled != 0) {
-                    LeafCue* p = found;
+                    SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
@@ -5227,16 +5226,16 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             goto notActivated;
         }
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_emitGate == 0) {
-                LeafCue* found = NULL;
+            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_silentMode == 0) {
+                SoundCue* found = NULL;
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
-                        LeafCue* p = found;
+                        SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;

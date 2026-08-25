@@ -55,7 +55,7 @@ front of the flag test (`CDDrawChildGroup::Deserialize`: `test bl,1` on the
 Put the `TRACE` back, at the statement position where the guarded dtor sits:
 
 ```cpp
-registry->ScanTree(handle, const_cast<char*>((LPCTSTR)e->GetName()), "_");
+registry->LoadFromTree(handle, const_cast<char*>((LPCTSTR)e->GetName()), "_");
 TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));   // release-dead
 e->m_flag = 1;
 ```

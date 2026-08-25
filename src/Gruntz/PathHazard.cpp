@@ -4,6 +4,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -13,7 +14,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PathHazardActReg.h>
@@ -23,6 +23,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
 #include <Gruntz/TileSnapMacros.h>
@@ -322,14 +323,14 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
-        CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            LeafCue* found = NULL;
+        SoundCueRegistry* host = reg->m_world->m_soundRegistry;
+        if (host->m_silentMode == 0) {
+            SoundCue* found = NULL;
             MapLookup(host->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
-            // LeafCue::PlayIfElapsed inlined: the call's `this` copy is what holds
+            // SoundCue::PlayIfElapsed inlined: the call's `this` copy is what holds
             // the cue in a register across the m_lastPlayTimeMs store - reading the
             // escaped lookup out-param directly makes cl reload it from its home.
-            LeafCue* cue = found;
+            SoundCue* cue = found;
             if (cue != NULL) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;

@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Dsndmgr/SoundDevice.h>
+#include <Gruntz/SoundCueRegistry.h>
 
 class CAmbientSound;
 
@@ -20,7 +20,7 @@ enum {
 
 class CWorldSoundSet {
 public:
-    i32 Init(CDDrawSubMgrLeafScan* world, i32 volume);
+    i32 Init(SoundCueRegistry* cueRegistry, i32 volume);
     void Teardown();
     void Restart(i32 volume);
     void Stop();
@@ -68,7 +68,7 @@ public:
         i32 unused
     );
 
-    CDDrawSubMgrLeafScan* m_world;
+    SoundCueRegistry* m_cueRegistry;
     i32 m_volume;
     CPtrList m_list;
     i32 m_active;
@@ -78,7 +78,7 @@ public:
 };
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
-    m_world = NULL;
+    m_cueRegistry = NULL;
     m_volume = kSoundVolumeMax;
 }
 

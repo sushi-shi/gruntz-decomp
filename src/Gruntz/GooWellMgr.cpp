@@ -11,10 +11,10 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Warlord.h>
@@ -30,7 +30,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
-                LeafCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("LEVEL_ROLLINGBALL");
+                SoundCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("LEVEL_ROLLINGBALL");
                 if (out && out->m_sound) {
                     m_rollingballLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_rollingballLoop) {
@@ -45,7 +45,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
-                LeafCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("GAME_TELEPORTLOOP");
+                SoundCue* out = g_gameReg->m_world->m_soundRegistry->FindCue("GAME_TELEPORTLOOP");
                 if (out && out->m_sound) {
                     m_teleportLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_teleportLoop) {

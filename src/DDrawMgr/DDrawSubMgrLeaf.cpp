@@ -5,10 +5,10 @@
 #include <Mfc.h>
 
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/ParseSource.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 
@@ -25,7 +25,7 @@ void CDDrawSubMgrLeaf::Unload() {
 }
 
 // @early-stop
-// Same swapped CString/POSITION stack slots as CDDrawSubMgrLeafScan::RemoveByValue;
+// Same swapped CString/POSITION stack slots as SoundCueRegistry::RemoveCue;
 // not steered by: all decl orders, renames, nested-if/early-return guard, scope
 // block, for/while, uninit-decl + late assign, or 48 TU-state islands. The exact
 // sibling CDDrawWorkerMapSmall::RemoveByValue (0x165c40) gets the retail layout
@@ -66,9 +66,9 @@ void CDDrawSubMgrLeaf::FreeAll() {
 }
 
 RVA(0x001527d0, 0xf8)
-i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
-    CString match(base);
-    match += str;
+i32 CDDrawSubMgrLeaf::RemoveWithPrefix(const char* prefix, const char* separator) {
+    CString match(prefix);
+    match += separator;
     i32 len = match.GetLength();
     CString key;
     CAniElement* val = NULL;
@@ -139,7 +139,7 @@ void CDDrawSubMgrLeaf::AddEntry(CAniElement* elem, const char* key) {
 }
 
 RVA(0x00152ad0, 0x17f)
-i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
+i32 CDDrawSubMgrLeaf::LoadFromTree(CSymTab* tree, const char* prefix, const char* separator) {
     i32 count = 0;
     char* buf = new char[0x100];
     if (buf == NULL) {
@@ -149,11 +149,11 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
     CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
-            sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
+            sprintf(buf, "%s%s%s", prefix, separator, node->m_name);
         } else {
             strcpy(buf, node->m_name);
         }
-        count += ScanTree(node, buf, suffix);
+        count += LoadFromTree(node, buf, separator);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
     CSymRec* grp = tree->FirstSym();
@@ -164,7 +164,7 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
             while (fn != NULL) {
                 if (fn->GetEntryTag() == REZ_TAG_ANI) {
                     if (prefix != NULL && *prefix != 0) {
-                        sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
+                        sprintf(buf, "%s%s%s", prefix, separator, fn->m_name);
                     } else {
                         strcpy(buf, fn->m_name);
                     }

@@ -31,7 +31,7 @@ the two-entity mechanism documented in
 
 Other especially strong findings:
 
-- `LeafCue::PlayIfElapsed`: 34 caller functions. Its body is currently out-of-line
+- `SoundCue::PlayIfElapsed`: 34 caller functions. Its body is currently out-of-line
   in `src/Gruntz/BootyStateActivate.cpp`, while retail repeatedly contains its
   expansion.
 - `CAniElement::AtChecked(0)`: nine callers contain the guarded `GetAt(0)`
@@ -59,7 +59,7 @@ The names below are descriptive labels, not claims about the original spelling.
 |---|---|
 | `FP` | `FreeNodePool::Push` free-list splice |
 | `CR` | coordinate-list recycle loop, with `Push` retained as a call |
-| `LC` | `LeafCue::PlayIfElapsed` |
+| `LC` | `SoundCue::PlayIfElapsed` |
 | `AD` | Grunt has arrived at its stored pixel destination |
 | `RX` | select random point inside object extent |
 | `HE` | 64-bit hold timer has elapsed |
@@ -234,7 +234,7 @@ RVA     current  function                                         inlinees
 110570   93.598  CTileTriggerSwitchLogic::SwitchDown              LC
 1106b0   93.598  CTileTriggerSwitchLogic::SwitchUp                LC
 1122a0   99.459  CGiantRockLogic::BuildRockBreakInGameText        LC
-114120  100.000  CDDrawSubMgrLeafScan::RefreshAsset               LC
+114120  100.000  SoundCueRegistry::PlayCueIfElapsed               LC
 1145c0   96.453  CToobSpikez::CToobSpikez                         SK
 119b50   98.317  CVoiceTrigger::CVoiceTrigger                     SO
 13f020   70.144  CDDSurface::ShadeBlt                             R5
@@ -315,7 +315,7 @@ Kept real inline abstractions, counted at call sites:
 - `IsGruntAtSavedScreenPos`: two arrival predicates.
 - `IsAniCursorComplete`: 17 animation-complete predicates.
 - `GetAniElementAt`: nine guarded animation-element lookups.
-- `PlayLeafCueIfElapsed`: eight elapsed-cue bodies in the green subset of callers.
+- `PlaySoundCueIfElapsed`: eight elapsed-cue bodies in the green subset of callers.
 - `ScaleAmbientVolume`: seven volume calculations.
 - `ResetGruntArrivalReroll`: five full reroll resets.
 - `IsGruntArrivalRerollPending`: six 64-bit reroll-window predicates.
@@ -363,7 +363,7 @@ Rejected or bounded candidates:
 - `HS` sprite retirement as a pointer-reference function: `ClearAllSprites` stays
   exact, but exact `BuildGruntExitAnimation` moves to 98.4167% through register
   scheduling. The macro fallback above preserves the expansion.
-- Broad `LeafCue` conversion: several exact callers regress despite local include
+- Broad `SoundCue` conversion: several exact callers regress despite local include
   scoping. Only the eight green sites are retained.
 
 ## Exhaustion pass
@@ -378,7 +378,7 @@ reveal another inline.
 |---|---|
 | `FP` | `PushFreeNode` plus the inline-pool recycle macro variants preserve both observed free-list spellings. |
 | `CR` | Five real `RecycleGruntCoords` call sites and 50 recycle-macro invocations cover the call, inline-push, direct-pool, and MFC `POSITION` traversals. The explicit `StepArrivalDrop` traversal is the load-bearing nested-inline control. |
-| `LC` | Seven caller expansions plus the standalone wrapper use `PlayLeafCueIfElapsed`; the wrapper also uses the call-preserving `PLAY_LEAF_CUE_INLINE_HELPER` macro. The remaining direct callers are bounded by measured exact-caller regressions. |
+| `LC` | Seven caller expansions plus the standalone wrapper use `PlaySoundCueIfElapsed`; the wrapper also uses the call-preserving `PLAY_LEAF_CUE_INLINE_HELPER` macro. The remaining direct callers are bounded by measured exact-caller regressions. |
 | `AD` | Two real-helper sites and 67 movement-predicate macro sites cover the detected and broader source population. `StepArrivalDrop` and `StepDiggerBehavior` retain their direct predicate spelling because placing the definition boundary above them breaks MAX. |
 | `RX` | All seven source-visible random-extent variants use one of the six exact-expansion macros. |
 | `HE` | All seven detected hold/reroll predicates use `IsGruntHoldPending` or `IsGruntArrivalRerollPending`. |
@@ -449,8 +449,8 @@ New real inline abstractions retained by this pass:
 
 - `FlipFrontAndRestoreOverlay`: three identical page flip plus overlay-restore bodies
   in both booty renderers and `CMenuTree::PresentFrame`.
-- `PurgeVoices`: thirteen guarded sound-stream purge bodies. A member declaration in
-  the widely included `CDDrawSubMgrLeafScan` header produced eleven fresh regressions;
+- `TickSoundVolumeRamps`: thirteen guarded sound-stream purge bodies. A member declaration in
+  the widely included `SoundCueRegistry` header produced eleven fresh regressions;
   the free inline in a narrow definition header retained the caller bodies and restored
   the full gate.
 - `CMapMgr::CellFlagsAt`: four final guarded flag reads in
@@ -521,7 +521,7 @@ open-coded. A semicolon-separated list means multiple expansion sites or source 
 | `CVoiceManager::ClearVoiceIndicatorSlots` | 100.000% | `CVoiceManager::Init` |
 | `CDDrawChildGroup::RemoveByPosition` | 100.000% | `CDDrawChildGroup::RemoveAll` |
 | `CDDrawSubMgrLeaf::AddEntry` | 100.000% | both `CreateAniEntry` variants |
-| `CDDrawSubMgrLeafScan::AddEntry` | 100.000% | `CreateEntry`, `CreateEntry2` |
+| `SoundCueRegistry::AddCue` | 100.000% | `LoadCueFromSource`, `LoadCueFromFile` |
 | `CGameApp::FreeGameManager` | 100.000% | `CGameApp::CloseResources` |
 | `CGrunt::DestroyAnims` | 100.000% | `LoadGruntDeathAnimations`, `BuildGruntExitAnimation` |
 | `CGameLevel::SyncToMainIndex` | 100.000% | first half of `VisitVisible` |

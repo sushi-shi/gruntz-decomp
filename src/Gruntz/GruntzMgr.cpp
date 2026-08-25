@@ -11,7 +11,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -19,6 +18,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <DinMgr2/DirectInputMgr2.h>
+#include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/AssetRoot.h>
@@ -51,7 +51,6 @@
 #include <Gruntz/HelpState.h>
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LoadGameMenu.h>
 #include <Gruntz/LogicTypeId.h>
@@ -65,6 +64,8 @@
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SplashState.h>
@@ -908,9 +909,9 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
         return;
     }
 
-    CDDrawSubMgrLeafScan* snd = w->m_soundRegistry;
+    SoundCueRegistry* snd = w->m_soundRegistry;
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
-    snd->SumField(NULL);
+    snd->SumAudioBytes(NULL);
     w->m_deviceManager->GetCapsChecked();
     w->m_deviceManager->GetCapsChecked();
     w->m_imageRegistry->SumSizesEqual(NULL, 1);
@@ -918,10 +919,10 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     w->m_imageRegistry->SumSizesEqual("GAME", 1);
     w->m_imageRegistry->SumSizesEqual("LEVEL", 1);
     w->m_imageRegistry->SumSizesEqual("ACTION", 1);
-    w->m_soundRegistry->SumField(NULL);
-    w->m_soundRegistry->SumField("GRUNTZ");
-    w->m_soundRegistry->SumField("GAME");
-    w->m_soundRegistry->SumField("LEVEL");
+    w->m_soundRegistry->SumAudioBytes(NULL);
+    w->m_soundRegistry->SumAudioBytes("GRUNTZ");
+    w->m_soundRegistry->SumAudioBytes("GAME");
+    w->m_soundRegistry->SumAudioBytes("LEVEL");
 }
 
 RVA(0x0008dd80, 0x31)
@@ -1258,7 +1259,7 @@ i32 CGruntzMgr::FinishLevel(i32 pauseGame, i32 pauseMusic) {
             m_worldSounds->Stop();
         }
         if (m_world) {
-            CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
+            SoundCueRegistry* sub = m_world->m_soundRegistry;
             if (sub && sub->m_soundStream) {
                 sub->m_soundStream->StopAllStreams();
             }
@@ -1619,8 +1620,8 @@ void CGruntzMgr::ResetClockGlobals() {
     g_debugDisplayFlags = 0;
 }
 
-static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* found = NULL;
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* found = NULL;
     MapLookup(cues, name, found);
     return found;
 }
@@ -1632,7 +1633,7 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_delayedQuitPending = 1;
-    LeafCue* out = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+    SoundCue* out = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
     i32 base;
     if (out != NULL) {
         out = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
@@ -1703,7 +1704,7 @@ void CGruntzMgr::HandleAppActivation(i32 active, i32 unused) {
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::StopAudioPlayback() {
     if (m_world) {
-        CDDrawSubMgrLeafScan* soundRegistry = m_world->m_soundRegistry;
+        SoundCueRegistry* soundRegistry = m_world->m_soundRegistry;
         if (soundRegistry) {
             SoundStream* soundStream = soundRegistry->m_soundStream;
             if (soundStream) {
@@ -1829,12 +1830,12 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     CDDSurface* front = m_world->m_drawTarget->m_frontPair->m_surface;
     IDirectDraw2* dd2 = m_world->m_deviceManager->m_device;
 
-    if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
+    if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
         CSymTab* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (front == NULL || dd2 == NULL) {
         return 0;
@@ -2427,14 +2428,14 @@ void CGruntzMgr::CheatSkeletonToggle() {
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
-                    CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
+                    SoundCueRegistry* host = m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
 
-                        LeafCue* found = NULL;
+                        SoundCue* found = NULL;
                         MapLookup(host->m_cues, "GAME_MINORCHEAT", found);
-                        // LeafCue::PlayIfElapsed inlined: the call's `this` copy
+                        // SoundCue::PlayIfElapsed inlined: the call's `this` copy
                         // holds the cue in a register across the store.
-                        LeafCue* cue = found;
+                        SoundCue* cue = found;
                         if (cue) {
                             i32 volumePercent = g_soundVolumePercent;
                             if (g_soundEnabled) {
@@ -2479,14 +2480,14 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
-                    CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
-                    if (host->m_emitGate == 0) {
+                    SoundCueRegistry* host = m_world->m_soundRegistry;
+                    if (host->m_silentMode == 0) {
 
-                        LeafCue* found = NULL;
+                        SoundCue* found = NULL;
                         MapLookup(host->m_cues, "GAME_MINORCHEAT", found);
-                        // LeafCue::PlayIfElapsed inlined: the call's `this` copy
+                        // SoundCue::PlayIfElapsed inlined: the call's `this` copy
                         // holds the cue in a register across the store.
-                        LeafCue* cue = found;
+                        SoundCue* cue = found;
                         if (cue) {
                             i32 volumePercent = g_soundVolumePercent;
                             if (g_soundEnabled) {

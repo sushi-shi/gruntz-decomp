@@ -9,7 +9,6 @@
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -53,7 +52,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
-#include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/LogicTypeId.h>
@@ -69,6 +67,7 @@
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
@@ -113,9 +112,9 @@ class CImage;
 
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
-        CDDrawSubMgrLeafScan* _s = (sndHost);                                                      \
-        if (_s->m_emitGate == 0) {                                                                 \
-            LeafCue* found = NULL;                                                                 \
+        SoundCueRegistry* _s = (sndHost);                                                          \
+        if (_s->m_silentMode == 0) {                                                               \
+            SoundCue* found = NULL;                                                                \
             MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
             if (found != NULL)                                                                     \
                 found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                               \

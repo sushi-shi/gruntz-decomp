@@ -6,8 +6,6 @@
 
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>
-#include <DDrawMgr/DDrawSubMgrLeafScanInline.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -25,6 +23,8 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
 #include <Wap32/GameApp.h>
@@ -50,18 +50,18 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
 
     CSymTab* soundz = SymTab2c()->FindSub("SOUNDZ");
     if (soundz) {
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CSymTab*>(soundz), "", "_");
     }
     return 1;
 }
 
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
-    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    SoundCueRegistry* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream != NULL) {
         reg->m_soundStream->StopAllStreams();
     }
-    m_world->m_soundRegistry->ClearMap();
+    m_world->m_soundRegistry->ClearCues();
     CState::ReleaseResources();
 }
 
@@ -91,7 +91,7 @@ i32 CSplashState::Render() {
         }
     }
 
-    PurgeVoices(m_world->m_soundRegistry);
+    TickSoundVolumeRamps(m_world->m_soundRegistry);
 
     if (static_cast<u32>(g_wap32FrameDelta) >= m_splashCountdownMs) {
         m_splashCountdownMs = 0;
