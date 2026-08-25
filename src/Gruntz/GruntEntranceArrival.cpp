@@ -676,13 +676,13 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 //     that tail 8.
 // Block skeleton is otherwise aligned 59/59.
 RVA(0x00062e10, 0x4a0)
-void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
+void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
     m_resetApplied = 0;
 
     bool notIdle = ANIMATION_ACT_DIFFERS("A");
     i32 applied = 0;
 
-    if (notIdle && cycle == 0) {
+    if (notIdle && chooseIdleVariant == 0) {
 
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
@@ -692,14 +692,14 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_idleAnchor = g_frameTime;
         applied = 1;
     } else if (AT(m_poseIdle, GRUNT_IDLE2) != NULL) {
-        if (cycle != 0) {
+        if (chooseIdleVariant != 0) {
 
             i32 count = 1;
             if (AT(m_poseIdle, GRUNT_IDLE3) != NULL) {
                 count = 2;
             }
             i32 idx = GetRandom(1, count);
-            if (cue != 0) {
+            if (playVoiceCue != 0) {
                 g_gameReg->Rand();
                 i32 focused = (m_playerIndex == g_curPlayer);
                 if (focused && idx > 0x5a) {
@@ -767,7 +767,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
 latch:
     SET_ANIMATION_ACT("A");
 
-    if (!applied && apply == 0) {
+    if (!applied && refreshFrame == 0) {
         return;
     }
 

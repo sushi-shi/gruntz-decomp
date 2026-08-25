@@ -58,16 +58,17 @@ void CGruntToySprite::RegisterActs() {
 }
 
 RVA(0x0007f920, 0x21)
-i32 CGruntToySprite::SetCell(i32 x, i32 y) {
-    m_cell.m_x = x;
-    m_cell.m_y = y;
+i32 CGruntToySprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
+    m_gruntIdentity.m_playerIndex = playerIndex;
+    m_gruntIdentity.m_unitIndex = unitIndex;
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 1;
 }
 
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGrunt* e = g_gameReg->m_cmdGrid->m_units[m_cell.m_x * 15 + m_cell.m_y];
+    CGrunt* e = g_gameReg->m_cmdGrid
+                    ->m_units[m_gruntIdentity.m_playerIndex * 15 + m_gruntIdentity.m_unitIndex];
     if (e == NULL) {
         return 0;
     }
@@ -97,11 +98,11 @@ i32 CGruntToySprite::SerializeMove(
 ) {
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cell, sizeof(m_cell));
+            ar->Write(&m_gruntIdentity, sizeof(m_gruntIdentity));
             ar->Write(&m_lastLayer, sizeof(m_lastLayer));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cell, sizeof(m_cell));
+            ar->Read(&m_gruntIdentity, sizeof(m_gruntIdentity));
             ar->Read(&m_lastLayer, sizeof(m_lastLayer));
             break;
     }

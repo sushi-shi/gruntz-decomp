@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/CoordNode.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -22,9 +22,9 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
 
-    i32 SetCell(i32 x, i32 y);
+    i32 BindToGrunt(i32 playerIndex, i32 unitIndex);
     i32 Update();
-    Coord m_cell;
+    GruntIdentity m_gruntIdentity;
 };
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

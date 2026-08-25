@@ -17,7 +17,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
     SET_ANIMATION_ACT("A");
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
-    m_health = HEALTH_FULL;
+    m_displayedValue = HEALTH_FULL;
     m_yOffset = -0x20;
 }
 

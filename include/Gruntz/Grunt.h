@@ -246,12 +246,12 @@ public:
     i32 CreateStaminaSprite();
     i32 CreateToyTimeSprite();
     i32 CreateWingzTimeSprite();
-    i32 CreatePowerupSprite(i32 a);
+    i32 CreatePowerupSprite(i32 powerupId);
     i32 CreateSelectedSprite();
 
     void ReadConfigFromButeMgr();
     i32 LoadGruntMovingDeathConfig();
-    void LoadAnimNameTable(i32 a, i32 b);
+    void LoadAnimNameTable(i32 kind, i32 toyOnly);
 
     i32 RectContains(i32 x, i32 y);
 
@@ -297,11 +297,11 @@ public:
     i32 LoadTypeTableClearMove(PickupType typeId);
 
     void FaceTowardTile(i32 tileX, i32 tileY);
-    void SnapToLastTile(i32 a);
+    void SnapToLastTile(i32 clearArrivalState);
     i32 ClaimSwitchTile();
     i32 SetArrivalTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
-    void ConsiderArrival(i32 a);
-    void SelectMoveIcon(i32 a);
+    void ConsiderArrival(i32 clearArrivalState);
+    void SelectMoveIcon(i32 moveIconId);
     i32 TryPowerupAtTile();
 
     i32 PathScan();
@@ -775,8 +775,8 @@ public:
     }
     CGrunt(CGameObject* owner);
 
-    void LoadCellAnimNames(i32 a, i32 b);
-    void ResetEntranceAnimation(i32 a, i32 b, i32 c);
+    void LoadCellAnimNames(i32 kind, i32 directionOnly);
+    void ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
         return static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64;
@@ -819,6 +819,8 @@ public:
 
     void EnsureStruckVoice(const char* key);
 
+    // @identity-TODO: no definition, caller, retail binding, or baseline row has
+    // established this declaration's role yet.
     void ArrivalClaim(i32 a, i32 b);
     void ArrivalHook0();
     void ArrivalHook1();
@@ -871,7 +873,7 @@ public:
 
     i32 StepWarpExit();
 
-    i32 IsDropReady(i32 a = 0);
+    i32 IsDropReady(i32 clearArrivalState = 0);
 
     i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 

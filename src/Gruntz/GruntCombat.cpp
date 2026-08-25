@@ -605,12 +605,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 }
 
 RVA(0x00057800, 0x64)
-void CGrunt::SelectMoveIcon(i32 a) {
-    if (IDX(m_moveIcon) == a) {
+void CGrunt::SelectMoveIcon(i32 moveIconId) {
+    if (IDX(m_moveIcon) == moveIconId) {
         return;
     }
-    m_moveIcon = static_cast<PickupType>(a);
-    if (a < 0 || a >= IDX(PICKUP_TIMEBOMB)) {
+    m_moveIcon = static_cast<PickupType>(moveIconId);
+    if (moveIconId < 0 || moveIconId >= IDX(PICKUP_TIMEBOMB)) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* sel =

@@ -221,7 +221,7 @@ public:
 
     // No retail ctor symbol: cl inlines this at the one `new CTriggerMgr`, in
     // CGruntzMgr::Run.  The member set and the three non-zero defaults are read
-    // off those bytes.  m_armed, m_cameraTargetUnit, m_reserved274,
+    // off those bytes.  m_armed, m_cameraTargetIdentity, m_reserved274,
     // m_groupInitialized, m_phase, m_pendingFx, m_pendingFxKind and
     // m_finishReasonFrame are deliberately NOT initialized here; SetLevel runs
     // immediately after and supplies m_armed/m_pendingFx.  The embedded
@@ -279,7 +279,7 @@ public:
 
     i32 m_armed;
     // A registry identity pair: m_x is playerIndex and m_y is unitIndex.
-    Coord m_cameraTargetUnit;
+    Coord m_cameraTargetIdentity;
     CWwdGameObjectA* m_goal;
 
     CPtrList m_recList;

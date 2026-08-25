@@ -2844,7 +2844,7 @@ void CStatusBarMgr::SetGauge(i32 value) {
 
 // @early-stop
 // One scheduling slot: retail emits `mov ecx,edi` (the LoadCameraSprite receiver)
-// after the first m_cameraTargetUnit store, cl before it. 5 spellings measured.
+// after the first m_cameraTargetIdentity store, cl before it. 5 spellings measured.
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
@@ -2858,8 +2858,8 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_cmdGrid;
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
-                    obj->m_cameraTargetUnit.m_x = playerIndex;
-                    obj->m_cameraTargetUnit.m_y = unitIndex;
+                    obj->m_cameraTargetIdentity.m_x = playerIndex;
+                    obj->m_cameraTargetIdentity.m_y = unitIndex;
                     obj->m_armed = 1;
                     obj->LoadCameraSprite();
                 }

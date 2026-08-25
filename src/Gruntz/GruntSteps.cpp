@@ -398,7 +398,7 @@ void CGrunt::FaceTowardTile(i32 tileX, i32 tileY) {
 
 // @early-stop
 RVA(0x00051510, 0x20f)
-i32 CGrunt::IsDropReady(i32 a) {
+i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
         i32 x = m_commitPx.m_x >> TILE_SHIFT_PX;
@@ -468,7 +468,7 @@ i32 CGrunt::IsDropReady(i32 a) {
     m_commitPx = m_entrancePx;
     m_tileMoveCommitted = 1;
 
-    SetEntrancePos(a, 1);
+    SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != 0) {
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         m_arrivalPending = 0;
@@ -477,12 +477,12 @@ i32 CGrunt::IsDropReady(i32 a) {
 }
 
 RVA(0x000517b0, 0x7d)
-void CGrunt::SnapToLastTile(i32 a) {
+void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     m_object->m_screenX = m_lastTilePx.m_x;
     m_object->m_screenY = m_lastTilePx.m_y;
     CWwdGameObjectA* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
-    SetEntrancePos(a, 1);
+    SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != 0) {
 
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -983,18 +983,18 @@ i32 CGrunt::SetArrivalTarget(
 
 // @early-stop
 RVA(0x00052f40, 0x4b)
-void CGrunt::ConsiderArrival(i32 a) {
+void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     CWwdGameObjectA* h = m_object;
     Coord tile = m_lastTilePx;
     i32 tx = tile.m_x;
     i32 ty = tile.m_y;
     DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
     if (PIXEL_PAIR_NOT_AT_POSITION(px, py, tx, ty)) {
-        if (IsDropReady(a)) {
+        if (IsDropReady(clearArrivalState)) {
             return;
         }
     }
-    SnapToLastTile(a);
+    SnapToLastTile(clearArrivalState);
 }
 
 // @early-stop

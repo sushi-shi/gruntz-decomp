@@ -1765,7 +1765,7 @@ i32 CGrunt::CreateHealthSprite() {
 
     AnimWorkerObj* inner = m_healthSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_health)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_health)) {
         reg->SetObjectFlags(0x10000);
         m_healthSprite = NULL;
         return 0;
@@ -1774,7 +1774,7 @@ i32 CGrunt::CreateHealthSprite() {
 }
 
 // @early-stop
-// 2-arg sibling of the SetHealthGlyph family: retail pushes m_unitIndex,
+// 2-arg sibling of the BindToGrunt family: retail pushes m_unitIndex,
 // THEN computes reg=inner->m_logic, THEN loads m_playerIndex into the register
 // inner has just vacated; cl loads m_playerIndex into edx up front and pushes
 // both arguments together. Refuted in an isolated harness that reproduces this
@@ -1799,7 +1799,7 @@ i32 CGrunt::CreateToySprite() {
     m_toySprite->m_animWorker->m_notify(m_toySprite);
 
     CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_animWorker->m_logic);
-    if (!reg->SetCell(m_playerIndex, m_unitIndex)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(0x10000);
         m_toySprite = NULL;
         return 0;
@@ -1826,7 +1826,7 @@ i32 CGrunt::CreateStaminaSprite() {
 
     AnimWorkerObj* inner = m_staminaSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_stamina)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_stamina)) {
         reg->SetObjectFlags(0x10000);
         m_staminaSprite = NULL;
         return 0;
@@ -1859,7 +1859,7 @@ i32 CGrunt::CreateToyTimeSprite() {
 
     AnimWorkerObj* inner = m_toyTimeSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_toyTime)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_toyTime)) {
         reg->SetObjectFlags(0x10000);
         m_toyTimeSprite = NULL;
         return 0;
@@ -1888,7 +1888,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 
     AnimWorkerObj* inner = m_wingzTimeSprite->m_animWorker;
     CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
-    if (!reg->SetHealthGlyph(m_playerIndex, m_unitIndex, m_wingzTime)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_wingzTime)) {
         reg->SetObjectFlags(0x10000);
         m_wingzTimeSprite = NULL;
         return 0;
@@ -1897,9 +1897,9 @@ i32 CGrunt::CreateWingzTimeSprite() {
 }
 
 // @early-stop
-// four bytes: ecx and edx are swapped for the a / m_unitIndex argument pair.
+// four bytes: ecx and edx are swapped for the powerupId / m_unitIndex argument pair.
 RVA(0x0004d650, 0xa1)
-i32 CGrunt::CreatePowerupSprite(i32 a) {
+i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
     if (m_powerupSprite) {
         return 0;
     }
@@ -1916,7 +1916,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
 
     AnimWorkerObj* inner = m_powerupSprite->m_animWorker;
     CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->m_logic);
-    if (!reg->SetCell(m_playerIndex, m_unitIndex, a)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, powerupId)) {
         reg->SetObjectFlags(0x10000);
         m_powerupSprite = NULL;
         return 0;
@@ -1945,7 +1945,7 @@ i32 CGrunt::CreateSelectedSprite() {
 
     CGruntSelectedSprite* reg =
         static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_animWorker->m_logic);
-    if (!reg->SetCell(m_playerIndex, m_unitIndex)) {
+    if (!reg->BindToGrunt(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(0x10000);
         m_selectedSprite = NULL;
         return 0;

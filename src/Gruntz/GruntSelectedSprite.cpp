@@ -54,9 +54,9 @@ void CGruntSelectedSprite::RegisterActs() {
 }
 
 RVA(0x0007e9c0, 0x16)
-i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
-    m_cell.m_x = x;
-    m_cell.m_y = y;
+i32 CGruntSelectedSprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
+    m_gruntIdentity.m_playerIndex = playerIndex;
+    m_gruntIdentity.m_unitIndex = unitIndex;
     return 1;
 }
 
@@ -64,7 +64,8 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;
-    CGrunt* e = reg->m_cmdGrid->m_units[m_cell.m_y + m_cell.m_x * 15];
+    CGrunt* e =
+        reg->m_cmdGrid->m_units[m_gruntIdentity.m_unitIndex + m_gruntIdentity.m_playerIndex * 15];
     if (e != NULL && e->m_arrived != 0) {
         m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
@@ -84,10 +85,10 @@ i32 CGruntSelectedSprite::SerializeMove(
 
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
-            sa->Read(&m_cell, sizeof(m_cell));
+            sa->Read(&m_gruntIdentity, sizeof(m_gruntIdentity));
         }
     } else {
-        sa->Write(&m_cell, sizeof(m_cell));
+        sa->Write(&m_gruntIdentity, sizeof(m_gruntIdentity));
     }
     SERIALIZE_USER_LOGIC_AND_CHAIN_FROM(arc, sa, mode, typeId, object)
 }

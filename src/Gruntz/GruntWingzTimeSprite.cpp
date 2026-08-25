@@ -16,7 +16,7 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
     SET_ANIMATION_ACT("A");
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
-    m_health = 0;
+    m_displayedValue = 0;
     m_yOffset = -0x26;
 }
 

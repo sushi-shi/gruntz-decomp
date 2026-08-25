@@ -36,7 +36,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     SET_ANIMATION_ACT("A");
-    m_health = HEALTH_FULL;
+    m_displayedValue = HEALTH_FULL;
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     m_yOffset = -0x19;
@@ -57,10 +57,10 @@ void CGruntHealthSprite::RegisterActs() {
 }
 
 RVA(0x0007f0d0, 0x6e)
-i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
-    m_cell.m_x = x;
-    m_cell.m_y = y;
-    i32 slot = 0x15 - static_cast<i32>((static_cast<double>(health) * 0.2 + 0.5));
+i32 CGruntHealthSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displayedValue) {
+    m_gruntIdentity.m_playerIndex = playerIndex;
+    m_gruntIdentity.m_unitIndex = unitIndex;
+    i32 slot = 0x15 - static_cast<i32>((static_cast<double>(displayedValue) * 0.2 + 0.5));
     CWwdGameObjectA* obj = m_object;
     CDDrawWorker* map = obj->m_frameSet;
     if (map) {
@@ -68,7 +68,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
         obj->m_layer = glyph;
         obj->m_frameIndex = slot;
     }
-    m_health = health;
+    m_displayedValue = displayedValue;
     return 1;
 }
 
@@ -80,12 +80,12 @@ i32 CGruntHealthSprite::GetDisplayedValue(CGrunt* g) {
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
 
-    CGrunt* e = GruntAtCell(g_gameReg, m_cell);
+    CGrunt* e = FindGruntByIdentity(g_gameReg, m_gruntIdentity);
     if (e == NULL) {
         return 0;
     }
     i32 result = GetDisplayedValue(e);
-    if (m_health != result) {
+    if (m_displayedValue != result) {
         i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
         CWwdGameObjectA* obj = m_object;
         CDDrawWorker* holder = obj->m_frameSet;
@@ -94,7 +94,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
             obj->m_layer = glyph;
             obj->m_frameIndex = slot;
         }
-        m_health = result;
+        m_displayedValue = result;
     }
     m_object->m_screenX = e->m_object->m_screenX;
     m_object->m_screenY = m_yOffset + e->m_object->m_screenY;
@@ -110,13 +110,13 @@ i32 CGruntHealthSprite::SerializeMove(
 ) {
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cell, sizeof(m_cell));
-            ar->Write(&m_health, sizeof(m_health));
+            ar->Write(&m_gruntIdentity, sizeof(m_gruntIdentity));
+            ar->Write(&m_displayedValue, sizeof(m_displayedValue));
             ar->Write(&m_yOffset, sizeof(m_yOffset));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_cell, sizeof(m_cell));
-            ar->Read(&m_health, sizeof(m_health));
+            ar->Read(&m_gruntIdentity, sizeof(m_gruntIdentity));
+            ar->Read(&m_displayedValue, sizeof(m_displayedValue));
             ar->Read(&m_yOffset, sizeof(m_yOffset));
             break;
     }

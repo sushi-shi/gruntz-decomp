@@ -31,13 +31,16 @@ distinguishable in the emitted code:
 
 ```cpp
 // BASE, 95.07 - the deref chain written out
-CGrunt* e = g_gameReg->m_cmdGrid->m_units[m_cell.m_x * TM_UNITS_PER_PLAYER + m_cell.m_y];
+CGrunt* e = g_gameReg->m_cmdGrid
+                ->m_units[m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER
+                          + m_gruntIdentity.m_unitIndex];
 
 // TARGET - an inline accessor, and the cell passed BY REFERENCE
-inline CGrunt* GruntAtCell(CGruntzMgr* reg, const Coord& cell) {
-    return reg->m_cmdGrid->m_units[cell.m_y + cell.m_x * TM_UNITS_PER_PLAYER];
+inline CGrunt* FindGruntByIdentity(CGruntzMgr* reg, const GruntIdentity& identity) {
+    return reg->m_cmdGrid
+        ->m_units[identity.m_unitIndex + identity.m_playerIndex * TM_UNITS_PER_PLAYER];
 }
-CGrunt* e = GruntAtCell(g_gameReg, m_cell);
+CGrunt* e = FindGruntByIdentity(g_gameReg, m_gruntIdentity);
 ```
 
 ## The reference parameter is the load-bearing half

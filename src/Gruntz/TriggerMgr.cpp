@@ -174,8 +174,8 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             }
             i32 removedPlayerIndex = p->m_x;
             i32 removedUnitIndex = p->m_y;
-            if (removedPlayerIndex == m_cameraTargetUnit.m_x
-                && removedUnitIndex == m_cameraTargetUnit.m_y) {
+            if (removedPlayerIndex == m_cameraTargetIdentity.m_x
+                && removedUnitIndex == m_cameraTargetIdentity.m_y) {
                 CWwdGameObjectA* goal = m_goal;
                 if (goal != NULL) {
                     goal->m_flags |= 0x10000;
@@ -366,7 +366,8 @@ void CTriggerMgr::ClearRecords() {
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src =
-        m_units[m_cameraTargetUnit.m_x * TM_UNITS_PER_PLAYER + m_cameraTargetUnit.m_y]->m_object;
+        m_units[m_cameraTargetIdentity.m_x * TM_UNITS_PER_PLAYER + m_cameraTargetIdentity.m_y]
+            ->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
@@ -1364,7 +1365,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(&m_armed, sizeof(m_armed));
     ar->Write(&m_groupInitialized, sizeof(m_groupInitialized));
     ar->Write(&m_phase, sizeof(m_phase));
-    ar->Write(&m_cameraTargetUnit, sizeof(m_cameraTargetUnit));
+    ar->Write(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Write(&m_countdownActive, sizeof(m_countdownActive));
     ar->Write(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
     ar->Write(&m_groupFlag, sizeof(m_groupFlag));
@@ -1551,7 +1552,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_armed, sizeof(m_armed));
     ar->Read(&m_groupInitialized, sizeof(m_groupInitialized));
     ar->Read(&m_phase, sizeof(m_phase));
-    ar->Read(&m_cameraTargetUnit, sizeof(m_cameraTargetUnit));
+    ar->Read(&m_cameraTargetIdentity, sizeof(m_cameraTargetIdentity));
     ar->Read(&m_countdownActive, sizeof(m_countdownActive));
     ar->Read(&m_finishReasonFrame, sizeof(m_finishReasonFrame));
     ar->Read(&m_groupFlag, sizeof(m_groupFlag));
@@ -2506,8 +2507,8 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             i32 playerIndex = cell2->m_playerIndex;
             i32 unitIndex = cell2->m_unitIndex;
             if (RecordListHas(playerIndex, unitIndex)) {
-                m_cameraTargetUnit.m_x = playerIndex;
-                m_cameraTargetUnit.m_y = unitIndex;
+                m_cameraTargetIdentity.m_x = playerIndex;
+                m_cameraTargetIdentity.m_y = unitIndex;
                 m_armed = 1;
                 LoadCameraSprite();
             }

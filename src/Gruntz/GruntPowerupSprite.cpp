@@ -56,11 +56,11 @@ void CGruntPowerupSprite::RegisterActs() {
 }
 
 RVA(0x00080380, 0x6c)
-i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
-    m_cell.m_x = x;
-    m_cell.m_y = y;
-    m_powerupId = powerup;
-    CShadeTable* rec = g_gameReg->m_logicPump->m_tables[powerup];
+i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerupId) {
+    m_gruntIdentity.m_playerIndex = playerIndex;
+    m_gruntIdentity.m_unitIndex = unitIndex;
+    m_powerupId = powerupId;
+    CShadeTable* rec = g_gameReg->m_logicPump->m_tables[powerupId];
     CWwdGameObjectA* r = m_object;
     SET_DRAW_FILL(r, SHADE_DST_BY_SRC_16, rec);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
@@ -71,7 +71,8 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    CGrunt* e = g_gameReg->m_cmdGrid->m_units[m_cell.m_x * 15 + m_cell.m_y];
+    CGrunt* e = g_gameReg->m_cmdGrid
+                    ->m_units[m_gruntIdentity.m_playerIndex * 15 + m_gruntIdentity.m_unitIndex];
     if (e != NULL) {
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;
@@ -89,11 +90,11 @@ i32 CGruntPowerupSprite::SerializeMove(
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_cell, sizeof(m_cell));
+            ar->Write(&m_gruntIdentity, sizeof(m_gruntIdentity));
             ar->Write(&m_powerupId, sizeof(m_powerupId));
             break;
         case SERIAL_LOAD: {
-            ar->Read(&m_cell, sizeof(m_cell));
+            ar->Read(&m_gruntIdentity, sizeof(m_gruntIdentity));
             ar->Read(&m_powerupId, sizeof(m_powerupId));
             i32 id = m_powerupId;
             CWwdGameObjectA* r = m_object;

@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/CoordNode.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -23,7 +23,7 @@ public:
     static void RegisterActs();
 
     i32 HealthUpdate();
-    i32 SetHealthGlyph(i32 x, i32 y, i32 health);
+    i32 BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displayedValue);
 
     virtual i32 GetDisplayedValue(CGrunt* grunt);
     // Two entities, same tag type.  The out-of-line 0x11ef0 EXPANDS its CUserLogic
@@ -34,8 +34,8 @@ public:
     CGruntHealthSprite(CUserLogic::EInlineBase) {}
     CGruntHealthSprite(CGameObject* obj);
 
-    Coord m_cell;
-    i32 m_health;
+    GruntIdentity m_gruntIdentity;
+    i32 m_displayedValue;
     i32 m_yOffset;
 };
 
