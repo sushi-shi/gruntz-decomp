@@ -164,8 +164,8 @@ public:
     void UpdateStatusSystems();
     void Reset();
     void ToggleStat(i32 idx);
-    void SetHudRectA(i32 y0, SbiMachineState x0, i32 z);
-    void SetHudRectB(i32 y0, SbiMachineState x0, i32 z);
+    void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
+    void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void CommitSlot(i32 active);
     void ClearHlCell(i32 group, StatusBarHighlightRow row);
     i32 SetHlCell(i32 row, i32 handle, i32 group);

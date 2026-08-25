@@ -813,7 +813,8 @@ int t8(char x) { return x ? 1 : 0; }   // ... test cl,cl ...
    the schedule is the consequence, not the cause.
 6. **WORKED EXAMPLE.** The established one stands:
    `CStatusBarMgr::UpdateDestructWarningAnimation` `0x0010b320` 94.67 -> 100.00
-   EXACT by storing through an `SbiClockPair*`, with `SetHudRectA/B`
+   EXACT by storing through an `SbiClockPair*`, with
+   `SetLeftRezMachineAnimation`/`SetRightRezMachineAnimation`
    `0x001066f0`/`0x00106740` 71.83 -> 100.00 on the same change. The negative
    control is in that pattern file: converting `Sync`'s nested walk to a flowing
    cursor scored 90.43 -> 83.19.

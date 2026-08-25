@@ -3015,7 +3015,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_RIGHT_RUNNING:
             if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
                 if (++pA->m_counter > 0x34) {
-                    SetHudRectB(
+                    SetRightRezMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -3030,7 +3030,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_RIGHT_SPEWING:
             if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
                 if (++pA->m_counter > 0x44) {
-                    SetHudRectB(0x2b, MACHINE_STOPPED, INT_MAX);
+                    SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
                     pA->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
@@ -3044,7 +3044,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_SNOOZING:
             if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 8) {
-                    SetHudRectA(
+                    SetLeftRezMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -3059,12 +3059,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_WAKING:
             if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x13) {
-                    SetHudRectA(
+                    SetLeftRezMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
-                    SetHudRectB(
+                    SetRightRezMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -3106,7 +3106,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_TURNING_WHEEL:
             if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x1d) {
-                    SetHudRectA(
+                    SetLeftRezMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
@@ -3192,7 +3192,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 // Retail's `cmp eax,0x26 / jne 0x1063e8` skips ONLY the release block:
                 // the counter re-read and this if/else are common to both paths.
                 if (pB->m_counter > 0x2a) {
-                    SetHudRectA(
+                    SetLeftRezMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -3224,12 +3224,12 @@ void CStatusBarMgr::ResetGroupA() {
 
 RVA(0x00106660, 0x68)
 void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
-    SetHudRectA(
+    SetLeftRezMachineAnimation(
         1,
         MACHINE_SNOOZING,
         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 100)
     );
-    SetHudRectB(0x2b, MACHINE_STOPPED, INT_MAX);
+    SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
     if (m_machineDisplay) {
         m_machineDisplay->SetFrames(m_machineA.m_counter, m_machineB.m_counter);
     }
@@ -3238,20 +3238,28 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
 }
 
 RVA(0x001066f0, 0x3b)
-void CStatusBarMgr::SetHudRectA(i32 y0, SbiMachineState x0, i32 z) {
+void CStatusBarMgr::SetLeftRezMachineAnimation(
+    i32 initialFrame,
+    SbiMachineState state,
+    i32 frameDelayMs
+) {
     i64* clock = &m_machineA.m_last;
-    m_machineA.m_counter = y0;
-    m_machineA.m_state = IDX(x0);
-    clock[1] = static_cast<u32>(z);
+    m_machineA.m_counter = initialFrame;
+    m_machineA.m_state = IDX(state);
+    clock[1] = static_cast<u32>(frameDelayMs);
     clock[0] = g_frameTime;
 }
 
 RVA(0x00106740, 0x3b)
-void CStatusBarMgr::SetHudRectB(i32 y0, SbiMachineState x0, i32 z) {
+void CStatusBarMgr::SetRightRezMachineAnimation(
+    i32 initialFrame,
+    SbiMachineState state,
+    i32 frameDelayMs
+) {
     i64* clock = &m_machineB.m_last;
-    m_machineB.m_counter = y0;
-    m_machineB.m_state = IDX(x0);
-    clock[1] = static_cast<u32>(z);
+    m_machineB.m_counter = initialFrame;
+    m_machineB.m_state = IDX(state);
+    clock[1] = static_cast<u32>(frameDelayMs);
     clock[0] = g_frameTime;
 }
 
@@ -3419,7 +3427,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_SPEWING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                SetHudRectB(
+                SetRightRezMachineAnimation(
                     0x35,
                     MACHINE_RIGHT_SPEWING,
                     g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d)
@@ -3515,7 +3523,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRect.right = m_itemBaseX + 0x17;
                 rectFlag = 1;
                 ResetGroupA();
-                SetHudRectA(
+                SetLeftRezMachineAnimation(
                     0x1e,
                     MACHINE_LEVER,
                     g_buteMgr.GetDwordDef("StatusBar", "LeftMachineLeverDelay", 0x64)
@@ -3745,7 +3753,7 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
         if (m_extraNotifyArg0 == 0) {
             return 0;
         }
-        SetHudRectA(
+        SetLeftRezMachineAnimation(
             9,
             MACHINE_WAKING,
             g_buteMgr.GetDwordDef("StatusBar", "LeftMachineWakingDelay", 100)

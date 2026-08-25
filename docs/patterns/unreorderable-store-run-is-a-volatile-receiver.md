@@ -80,7 +80,7 @@ model is justified.
 
 ## Measurement
 
-`CStatusBarMgr::SetHudRectA` 0x1066f0 and `SetHudRectB` 0x106740 are byte-identical
+`CStatusBarMgr::SetLeftRezMachineAnimation` 0x1066f0 and `SetRightRezMachineAnimation` 0x106740 are byte-identical
 twins. Both remain at 71.83 through roughly 400 ordinary source-shape cells and
 become **100.00 EXACT** with the access-site qualifier. Their plain bodies have
 the same stores, offsets, values, size, and straight-line control flow as retail;

@@ -62,7 +62,8 @@ CONSTANT member offset where the address itself folds away:
    `i64*` device earns its keep through mechanisms 1 and 3.
    docs/relevations/wall-reasons-globalopt.md §1, §4.) This broke the whole single-store-sink
    family that had been misclassified as C1 handle-state (probe-inert,
-   /G3-/G6-invariant): SetHudRectA/B 0x1066f0/0x106740 71.83 -> 100.00
+   /G3-/G6-invariant): SetLeftRezMachineAnimation/SetRightRezMachineAnimation
+   0x1066f0/0x106740 71.83 -> 100.00
    EXACT, UpdateDestructWarningAnimation 0x10b320 94.67 -> 100.00 EXACT,
    LoadMultiplayerBattlezConfig 0x107ae0 98.06 -> 100.00 EXACT.
 3. IV ANCHOR: in an indexed walk, the bound pair address becomes the cursor
