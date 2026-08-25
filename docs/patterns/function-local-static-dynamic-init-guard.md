@@ -46,7 +46,7 @@ not `n` flags.
 
 **Recognition is by CODE SHAPE, never by data layout.** The conditional branch between the byte read
 and the byte OR-store is what separates a guard from an ordinary flags-byte update (`hdr.flags |=
-0x80` in `CMulti::SendChannelStat422` 0xbb0b0 reads/ORs/stores the same byte with no branch — not a
+0x80` in `CMulti::BroadcastOptionsPresent` 0xbb0b0 reads/ORs/stores the same byte with no branch — not a
 guard). The guard and its datum are two INDEPENDENT bss objects: measured across all 71 guards in
 `GRUNTZ.EXE` the guard→datum delta ranges from -0x88 to +0x258, and the datum sometimes precedes the
 guard. A "+0xc / 0x10-byte slot" reading is a three-sample coincidence, not a rule; nothing in .text

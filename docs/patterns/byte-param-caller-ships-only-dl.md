@@ -21,13 +21,13 @@ and no amount of `static_cast<u8>(...)` in the argument expression removes it.
 
 ```cpp
 // before - i32 param: the caller must widen
-void ArmSlot(void* node, i32 parity);        // callee: parity & 0xff
-… ArmSlot(node, static_cast<i32>(static_cast<u8>(static_cast<u8>(m_5a4) << 1)));
+void ScheduleCommand(void* command, i32 tickOffset); // callee: tickOffset & 0xff
+… ScheduleCommand(command, static_cast<i32>(static_cast<u8>(static_cast<u8>(m_autoCommandDelay) << 1)));
 //   mov dl,[esi+0x5a4] / shl dl,1 / and edx,0xff / push edx
 
 // after - u8 param: the caller ships dl and nothing else
-void ArmSlot(void* node, u8 parity);         // callee: (m_tick + parity) % 128
-… ArmSlot(node, static_cast<u8>(static_cast<u8>(m_5a4) << 1));
+void ScheduleCommand(void* command, u8 tickOffset); // callee: (m_commandTick + tickOffset) % 128
+… ScheduleCommand(command, static_cast<u8>(static_cast<u8>(m_autoCommandDelay) << 1));
 //   mov dl,[esi+0x5a4] / shl dl,1 / push edx
 ```
 
@@ -39,6 +39,6 @@ callee: mov edx,DWORD PTR [esp+0x8] | and edx,0xff | …
 STEERABLE, and it pays on BOTH sides of the call. Retyping the parameter changes the
 mangled name (`…@Z` gains `E` for `unsigned char`), which is byte-neutral here because
 call relocs are masked — but check every other call site first. Evidence (2026-07-28):
-`CNetSession::ArmSlot` @0x0c03f0 98.85 → **100 EXACT** (its residual had been filed a
+`CNetSession::ScheduleCommand` @0x0c03f0 98.85 → **100 EXACT** (its residual had been filed a
 "eax/edx role swap … not source-steerable") and its only caller `CMulti::Render`
 @0x0b6890 98.65 → 99.26 in the same change.

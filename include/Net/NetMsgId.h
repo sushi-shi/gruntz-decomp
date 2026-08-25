@@ -10,11 +10,11 @@
 GZ_ENUM_BEGIN(NetMsgId)
     NETMSG_ALL_PLAYERS_READY = 0x3e8,   // m_allPlayersReady = 1
     NETMSG_PLAYER_LEFT = 0x3ea,         // OnPlayerLeft + ResetPlayerCommands
-    NETMSG_DROP_PLAYER = 0x3ed,         // RecordDropPlayer2
+    NETMSG_DROP_PLAYER = 0x3ed,         // RecordDropAcknowledgement
     NETMSG_CHAT_LINE = 0x3f0,           // AppendEditLine
     NETMSG_LOBBY_TICK = 0x3f6,          // handled, no side effect
     NETMSG_REQUEST_CHANNELS = 0x3f7,    // BroadcastChannelTable (host)
-    NETMSG_CHANNEL_TABLE = 0x3f8,       // ParseChannelTable
+    NETMSG_CHANNEL_TABLE = 0x3f8,       // ApplyChannelTable
     NETMSG_READY_COUNT = 0x3f9,         // CountReadyOptionsSlots
     NETMSG_SWAP_CHANNEL = 0x3fa,        // SwapChannel, sets m_colorIndex
     NETMSG_REMOVED_BY_HOST = 0x3fb,     // m_removedByHost
@@ -25,7 +25,7 @@ GZ_ENUM_BEGIN(NetMsgId)
     NETMSG_OUT_OF_SYNC_REPORT = 0x403,  // SendStatFlag + OnOutOfSync
     NETMSG_OUT_OF_SYNC = 0x404,         // OnOutOfSync
     NETMSG_PAUSE = 0x407,               // OnMultiPause
-    NETMSG_DROP_TIMEOUT = 0x40c,        // DropTimeout notifies peers before OnDropPlayer
+    NETMSG_DROP_TIMEOUT = 0x40c,        // CheckDropTimeout notifies peers before OnDropPlayer
     NETMSG_SAVE_CONFIG = 0x415,         // SaveConfig
     NETMSG_LOAD_CONFIG = 0x416,         // LoadConfig, sets m_connectAccepted
     NETMSG_VERSION_CHECK = 0x417,       // HandleVersionCheck

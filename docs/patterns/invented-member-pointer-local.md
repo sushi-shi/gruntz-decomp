@@ -8,7 +8,7 @@ confidence: 9/10
 A long method that touches one member object a dozen times reads much better with a local:
 
 ```cpp
-void CMulti::PumpB() {
+void CMulti::RenderGameFrame() {
     CDDrawSurfaceMgr* mgr = m_world;          // <-- NOT in retail
     ...
     mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
@@ -24,7 +24,7 @@ first hunk of `gruntz walls diagnose --asm` shows a prologue `mov <callee-saved>
 the target does not have, followed by `[<callee-saved>+k]` where the target has `mov eax,[esi+N]` /
 `[eax+k]`. Sieve the source for `^\s+T\*\s+\w+\s*=\s*m_\w+;` in the functions the sieve names.
 
-**Fix:** delete the local, spell `m_member->` at every use. `CMulti::PumpB` 0xb6e90 **83.38 ->
+**Fix:** delete the local, spell `m_member->` at every use. `CMulti::RenderGameFrame` 0xb6e90 **83.38 ->
 92.36** on that edit alone; the `push ebx` and the whole register rotation went with it.
 
 Not every such local is invented — retail keeps `bx`/`by`/array-base locals in registers all the
@@ -49,7 +49,7 @@ mov [esp+0x18],eax   ; rc.top = cy      <-- store 2, same slot
 `&rc` escapes into `SetRect`, so cl can neither delete the dead first store nor prove the global's
 field unchanged across it. A duplicated store to the same escaped slot is therefore REAL SOURCE,
 not a scheduling artifact — transcribe it. Both stores plus two named `left`/`right` locals took
-PumpB 92.36 -> **98.32**; moving the second store between the two `cx` reads instead made it worse
+RenderGameFrame 92.36 -> **98.32**; moving the second store between the two `cx` reads instead made it worse
 (97.66), so place it where the byte order says, then stop.
 
 related: [redundant-local-becomes-the-zero-register.md](redundant-local-becomes-the-zero-register.md)

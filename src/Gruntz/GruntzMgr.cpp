@@ -442,7 +442,7 @@ void CGruntzMgr::Close() {
         m_lobby = NULL;
     }
     if (m_connSettings) {
-        RecordBytes<CNetLobbyConnection> settings;
+        RecordBytes<DPLCONNECTION> settings;
         settings.m_rec = m_connSettings;
         delete[] settings.m_bytes;
         m_connSettings = NULL;
@@ -692,7 +692,7 @@ i32 CMulti::UnusedPlayQuery() {
 
 RVA(0x0008d220, 0xa)
 i32 CMulti::GetFrame() {
-    return m_session->m_tick;
+    return m_session->m_commandTick;
 }
 
 RVA_COMPGEN(0x0008d240, 0x1e, ??_GCMulti@@UAEPAXI@Z)
@@ -1354,7 +1354,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     if (m_connSettings) {
 
-        RecordBytes<CNetLobbyConnection> settings;
+        RecordBytes<DPLCONNECTION> settings;
         settings.m_rec = m_connSettings;
         delete[] settings.m_bytes;
         m_connSettings = NULL;
@@ -1369,7 +1369,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
         return 0;
     }
 
-    RecordBytes<CNetLobbyConnection> settings;
+    RecordBytes<DPLCONNECTION> settings;
     settings.m_bytes = new u8[dwSize];
     m_connSettings = settings.m_rec;
     if (!m_connSettings) {

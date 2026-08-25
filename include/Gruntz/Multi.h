@@ -11,6 +11,8 @@
 #include <Gruntz/Play.h>
 #include <Net/NetMsgId.h>
 
+#include <dplay.h>
+
 class CGameApp;
 class CTileTriggerContainer;
 class MidiManager;
@@ -18,48 +20,29 @@ class CFontConfig;
 class CChatBoxOwner;
 class CWorldSoundSet;
 class CNetMgr;
-class CNetSessionNode;
+class CNetPlayerNode;
 struct CNetStatPacket;
-struct CNetCtrlMsg;
 struct CNetVersionMsg;
 struct CNetChannelPacket;
 struct CNetOneChannelPacket;
 struct CNetChannelTablePacket;
 struct CNetConfigBlob;
-struct MenuSelectEvent;
 class GruntzPlayer;
 struct CNetSession;
-
-struct CNetSessionDesc;
-
-struct CNetLobbyName {
-    u32 m_dwSize;
-    u32 m_dwFlags;
-    char* m_shortName;
-    char* m_longName;
-};
-
-struct CNetLobbyConnection {
-    u32 m_dwSize;
-
-    u32 m_dwFlags;
-    CNetSessionDesc* m_sessionDesc;
-    CNetLobbyName* m_playerName;
-};
 
 // HWND is void* here on purpose: HeapDiag.cpp is a <Win32.h> TU, where
 // windows.h leaves STRICT off and HWND *is* void*, so its definition mangles
 // PAX.  Spelling HWND in this MFC (STRICT) header would emit PAUHWND__ and
 // resolve to nothing.
 void SetActiveAndFocus(void* hWnd);
-void FillPlayerList(HWND hList, CNetMgr* session);
+void FillSessionList(HWND hList, CNetMgr* manager);
 BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-class CNetPlayerListNode;
+class CNetSessionListNode;
 
-struct InterfaceObject;
+struct CNetProviderNode;
 
 class CMulti;
 
@@ -68,7 +51,7 @@ public:
     // inline: retail expands this whole ctor into CGruntzMgr::TransitionState
     CMulti() {
         m_session = NULL;
-        m_netGate = NULL;
+        m_netMgr = NULL;
         m_savedEffectsEnabled = 1;
         m_customLevel = 0;
         m_autoCommandDelay = 1;
@@ -81,8 +64,8 @@ public:
     virtual GameStateId Update() OVERRIDE;
 
     virtual i32 Render() OVERRIDE;
-    virtual i32 EnterState(GameStateId) OVERRIDE;
-    virtual i32 LeaveState(GameStateId) OVERRIDE;
+    virtual i32 EnterState(GameStateId previousState) OVERRIDE;
+    virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnChar(i32 charCode, i32 keyData) OVERRIDE;
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 UnusedPlayQuery() OVERRIDE;
@@ -97,13 +80,13 @@ public:
         return m_mgr;
     }
 
-    CNetMgr* Peer() {
-        return m_netGate;
+    CNetMgr* Network() {
+        return m_netMgr;
     }
 
     void AppendEditLine(HWND edit, char* str);
 
-    CNetSessionNode* LocalPlayer() {
+    CNetPlayerNode* LocalPlayer() {
         return m_localPlayer;
     }
 
@@ -111,7 +94,7 @@ public:
         return m_mgr;
     }
 
-    i32& ResyncLParam() {
+    i32& SelectedLevelIndex() {
         return m_levelIndex;
     }
 
@@ -119,18 +102,18 @@ public:
         return m_session;
     }
 
-    CString GetString59c();
+    CString GameName();
     RVA(0x000b7ad0, 0x23)
-    CString GetString5a0() {
-        return m_hostName;
+    CString PlayerName() {
+        return m_playerName;
     }
 
     RVA(0x000b6090, 0x23)
-    CString GetConfigNameA() {
+    CString BuiltInLevelName() {
         return m_builtInLevelName;
     }
     RVA(0x000b60d0, 0x23)
-    CString GetConfigNameB() {
+    CString CustomLevelName() {
         return m_customLevelName;
     }
     i32 GetCommandDelay();
@@ -145,7 +128,7 @@ public:
 
     i32 Connect(i32 mode);
     i32 StartTitle();
-    void DropTimeout();
+    void CheckDropTimeout();
 
     i32 OpenHostChannel(
         void* hostToken,
@@ -162,82 +145,89 @@ public:
 
     void SendNetStat(NetMsgId id, u32 value, i32 flag);
 
-    i32 DropChannelPlayer(i32 idx);
+    i32 DropChannelPlayer(i32 slotIndex);
     i32 Poll(i32 token);
     i32 ResolveLocalPlayer();
     void ReportAckLatency();
-    i32 VerifyCustomLevel(CNetPlayerListNode* h, CNetSessionNode* token);
+    i32 VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* localPlayer);
     i32 PollSession();
     i32 AutoTuneCmdDelay();
 
     void OnDropPlayer();
 
-    i32 BroadcastChannelTable(CNetSessionNode* recipient);
-    i32 BroadcastOneChannel(GruntzPlayer* ch);
+    i32 BroadcastChannelTable(CNetPlayerNode* recipient);
+    i32 BroadcastOneChannel(GruntzPlayer* player);
 
-    i32 RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f);
+    i32 RegisterChannelFrom(const char* name, ColorTint color, i32 preferredIndex, i32 playerId);
 
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd);
     i32 ReadGroupSel();
-    i32 PumpA();
-    void PumpB();
+    i32 AdvanceGameFrame();
+    void RenderGameFrame();
     void OnOutOfSync();
 
     i32 Open();
     void Close();
-    InterfaceObject* SetupServices();
+    CNetProviderNode* SelectNetworkProvider();
     i32 DetectConnectionConfig();
     void ApplyCmdDelayDefaults();
 
     i32 ShowMultiStartDlg();
-    CNetPlayerListNode* JoinAndRegisterChannel();
+    CNetSessionListNode* JoinAndRegisterChannel();
     i32 OnJoinConfirm(HWND hDlg);
 
     i32 PollSessionGated(i32 sessionGate, i32 pollGate);
-    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
-    i32 SendStatFrom(void* pkt, i32 b, i32 c);
-    i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);
-    i32 SendStatTo(CNetSessionNode* recipient, NetMsgId id, i32 c);
-    i32 SendStat3(i32 id, NetMsgId statId, i32 flag);
-    i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
-    i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
-    i32 SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag);
-    i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);
-    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused);
+    i32 SendStatBuf(CNetStatPacket* packet, i32 flags);
+    i32 SendStatFrom(void* packet, i32 packetSize, i32 flags);
+    i32 SendStatPair(CNetPlayerNode* recipient, CNetStatPacket* packet, i32 flags);
+    i32 SendStatTo(CNetPlayerNode* recipient, NetMsgId messageId, i32 flags);
+    i32 SendStat3(i32 recipientId, NetMsgId messageId, i32 flags);
+    i32 SendNetStatTo(CNetPlayerNode* recipient, i32 messageId, u32 value, i32 flags);
+    i32 SendStatPairRaw(CNetPlayerNode* recipient, void* packet, i32 packetSize, i32 flags);
+    i32 SendStatValue(i32 recipientId, NetMsgId messageId, i32 value, i32 flags);
+    i32 DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize);
+    i32 HandleSystemMessage(LPDPMSG_GENERIC message, i32 unusedMessageSize);
     i32 OnPlayerLeft(i32 playerId);
-    void AckDropPlayer(i32 id);
+    void AckDropPlayer(i32 playerId);
     void WriteTag(const char*);
 
-    void RecordDropPlayer2(CNetSessionNode* a, i32 id);
+    void RecordDropAcknowledgement(CNetPlayerNode* unusedPlayer, i32 playerId);
     i32 WaitForOtherPlayers();
-    i32 LoadMenuSelectSprite(MenuSelectEvent* evp);
-    i32 ParseChannelTable(CNetChannelTablePacket* packet);
-    i32 RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e);
-    i32 RegisterChannelRec(CNetChannelPacket* rec);
-    i32 RemoveChannel(i32 idx);
+    i32 HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message);
+    i32 ApplyChannelTable(CNetChannelTablePacket* packet);
+    i32 RegisterChannel(
+        const char* name,
+        ColorTint color,
+        i32 humanControlled,
+        i32 configId,
+        i32 preferredIndex,
+        i32 playerId
+    );
+    i32 RegisterChannelFromPacket(CNetChannelPacket* packet);
+    i32 RemoveChannel(i32 slotIndex);
     i32 OnPauseChannel();
     void OnMultiPause();
     void OnMultiOptions();
-    i32 ParseOneChannel(CNetOneChannelPacket* rec);
-    i32 SendChannelStat422();
-    i32 SendChannelStat423();
+    i32 ApplyChannelUpdate(CNetOneChannelPacket* packet);
+    i32 BroadcastOptionsPresent();
+    i32 BroadcastOptionsAbsent();
     i32 CreateSession();
     u32 FrameSyncWait();
     i32 SetupTcpIpConfig();
     i32 CreateLocalPlayer();
     i32 WaitForConnect();
-    i32 SaveConfig(CNetSessionNode* recipient);
-    i32 LoadConfig(CNetConfigBlob* cfg);
-    i32 ResetPlayerCommands(i32 id);
+    i32 SaveConfig(CNetPlayerNode* recipient);
+    i32 LoadConfig(CNetConfigBlob* config);
+    i32 ResetPlayerCommands(i32 playerId);
     u32 GetMaxAckLatency();
     void HandleVersionCheck(CNetVersionMsg* msg);
-    void AnnounceVersion(CNetSessionNode* param);
+    void AnnounceVersion(CNetPlayerNode* recipient);
 
-    void ApplyDynSetting(CString s);
-    void SetServiceName(CString s);
+    void SetGameName(CString s);
+    void SetPlayerName(CString s);
 
     CNetSession* m_session;
-    CNetMgr* m_netGate;
+    CNetMgr* m_netMgr;
     i32 m_isHost;
     i32 m_sessionTerminated;
     i32 m_customLevelVerificationPending;
@@ -245,8 +235,8 @@ public:
     i32 m_removedByHost;
     i32 m_levelVerifyResult;
     i32 m_verifyDone;
-    i32 m_recordAcked[4];
-    i32 m_recordToken[4];
+    i32 m_levelChecksumReceived[4];
+    i32 m_levelChecksums[4];
     i32 m_pollAbort;
     i32 m_colorSelectionRejected;
     i32 m_gameFull;
@@ -261,19 +251,19 @@ public:
     i32 m_savedEffectsEnabled;
     i32 m_roundComplete;
     CString m_providerConfigPrefix;
-    CString m_groupName;
-    CString m_hostName;
+    CString m_gameName;
+    CString m_playerName;
     i32 m_commandDelay;
-    i32 m_drainReload;
+    i32 m_resendInterval;
     i32 m_gameClosed;
     i32 m_customLevel;
     CString m_builtInLevelName;
     CString m_customLevelName;
-    CNetSessionNode* m_localPlayer;
-    i32 m_hostIndex;
+    CNetPlayerNode* m_localPlayer;
+    i32 m_localPlayerId;
     i32 m_lastSenderId;
     char _p5c4[0x5cc - 0x5c8];
-    i32 m_curSlotId;
+    i32 m_processedCommandTick;
     i32 m_reserved5d0;
     i32 m_drainTimer;
     i32 m_frameDelta;
@@ -294,11 +284,11 @@ extern CMulti* g_multiState;
 extern CString g_sessionName;
 extern i32 g_optionsCursor;
 
-extern CNetMgr* g_groupEnumMgr;
+extern CNetMgr* g_netMgr;
 
 extern i32 g_hostServicesMode;
 
-extern HWND g_netPlayerListHwnd;
+extern HWND g_sessionListHwnd;
 
 void MultiJoinHandler();
 
@@ -307,7 +297,7 @@ class CFile;
 extern i32 g_serviceId;
 
 extern CMulti* g_connectRptMgr;
-void RefreshPlayerRow(HWND hDlg, HWND hList);
+void RefreshSessionSelection(HWND hDlg, HWND hList);
 
 extern HWND g_sharedFlag;
 

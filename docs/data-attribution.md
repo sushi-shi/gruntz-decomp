@@ -684,7 +684,7 @@ storage. `object_files.rs::with_sections` picks that section as
 `rdata_section_id`/`data_section_id` and `add_data_definition`'s legacy arm calls
 `append_section_data` on it. So every unplaced row grew a real COMDAT a phantom tail and
 shifted every extent behind it. `interfaceobject`'s `.rdata` came out as ONE 0x2c section
-(`??_7InterfaceObject@@6B@`, four bytes of pad, `??_7CObject@@6B@`) where cl emits two
+(`??_7CNetProviderNode@@6B@`, four bytes of pad, `??_7CObject@@6B@`) where cl emits two
 separate 0x14 COMDATs.
 
 **The delinker already models the fix.** A *section*-manifest row whose `rva` column is

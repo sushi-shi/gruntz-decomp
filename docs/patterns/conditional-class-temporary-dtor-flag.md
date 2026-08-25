@@ -19,16 +19,16 @@ offset below shifts — which reads as a whole-function EH/frame-layout wall.
 
 ```cpp
 // before - two per-branch scoped locals: no flag, no shared call
-if (m_5b0 != 0) { CString b = GetConfigNameB(); token = Build(0,0,m_5b0,0, b); }
-else            { CString a = GetConfigNameA(); token = Build(0,0,m_5b0,0, a); }
+if (m_5b0 != 0) { CString b = CustomLevelName(); token = Build(0,0,m_5b0,0, b); }
+else            { CString a = BuiltInLevelName(); token = Build(0,0,m_5b0,0, a); }
 
 // after - ONE call, conditional temporary
-i32 token = Build(0, 0, m_5b0, 0, m_5b0 != 0 ? GetConfigNameB() : GetConfigNameA());
+i32 token = Build(0, 0, m_5b0, 0, m_5b0 != 0 ? CustomLevelName() : BuiltInLevelName());
 ```
 
 ```asm
     ; arm B                         ; arm A
-    call GetConfigNameB             call GetConfigNameA
+    call CustomLevelName             call BuiltInLevelName
     mov  ebx,0x1                    mov  ebx,0x2
     mov  [esp+0x10],ebx             mov  [esp+0x10],ebx
     ; merge: copy-construct the by-value arg, call, then flagged teardown

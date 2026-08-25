@@ -94,7 +94,7 @@ Preserve that real symbol until the missing inline-budget context is recovered.
 STEERABLE. Measured 2026-08-20, all on the LeafCue play-cue transcription:
 `CRainCloud::HitTest` 94.93 -> **100.00 EXACT**,
 `CPreviewState::LoadLevelPreviewScreen` 94.74 -> **100.00 EXACT** (unit to 100%),
-`CMulti::LoadMenuSelectSprite` 95.79 -> **100.00 EXACT**,
+`CMulti::HandlePlayerCreated` 95.79 -> **100.00 EXACT**,
 `CMulti::ShowMultiStartDlg` 97.67 -> **100.00 EXACT**,
 `CGruntzMgr::CheatEclipseToggle` 96.70 -> **100.00 EXACT**,
 `CGruntzMgr::CheatSkeletonToggle` 95.50 -> 99.25,

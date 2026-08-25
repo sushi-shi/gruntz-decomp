@@ -20,4 +20,4 @@ return m_table[(c & 0xff) % 128];        // not abs(...)&0x7f, not (...)>>31
 83 e0 7f         and eax,0x7f
 33 c2 / 2b c2    xor eax,edx ; sub eax,edx     ; restore sign (reuse edx)
 ```
-STEERABLE → 100%. Evidence: CNetSession::GetSlotPtr 0xc0430 / ArmSlot 0xc03f0 (`(m_tick+(parity&0xff)) % 128`, src/Net/NetCmdSlot.cpp) — both 100%.
+STEERABLE → 100%. Evidence: CNetSession::GetCommandAtTick 0xc0430 / ScheduleCommand 0xc03f0 (`(m_commandTick+(tickOffset&0xff)) % 128`, src/Net/NetCmdSlot.cpp) — both 100%.

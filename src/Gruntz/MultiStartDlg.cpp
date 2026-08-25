@@ -62,7 +62,7 @@ char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
 #include <MsgParam.h>
-#include <Net/InterfaceObject.h>
+#include <Net/NetProviderNode.h>
 #include <Net/LatencyList.h>
 #include <Net/NetMgr.h>
 #include <Utils/RegistryHelper.h>
@@ -220,12 +220,12 @@ i32 CMultiStartDlg::UpdateColorItems() {
     ::SendMessageA(it4ff->m_hWnd, CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
     m_customWorldFlag = g_multiState->m_customLevel;
     if (m_customWorldFlag != 0) {
-        itChild->SetWindowTextA(g_multiState->GetConfigNameB());
+        itChild->SetWindowTextA(g_multiState->CustomLevelName());
     } else {
         CString cur;
         itChild->GetWindowTextA(cur);
-        if (strcmp(cur, g_multiState->GetConfigNameA())) {
-            itChild->SetWindowTextA(g_multiState->GetConfigNameA());
+        if (strcmp(cur, g_multiState->BuiltInLevelName())) {
+            itChild->SetWindowTextA(g_multiState->BuiltInLevelName());
         }
     }
     it4ff->EnableWindow(0);
@@ -239,20 +239,20 @@ i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
     CMulti* reg = g_multiState;
     i32 count = 5;
-    InterfaceObject* pi = reg->m_netGate->m_groupSel;
+    CNetProviderNode* provider = reg->m_netMgr->m_selectedProvider;
     if (reg->m_lobbyLaunch) {
         count = 2;
-    } else if (pi) {
-        if (pi->IsIpxProvider()) {
+    } else if (provider) {
+        if (provider->IsIpxProvider()) {
             count = 1;
         }
-        if (pi->IsTcpIpProvider()) {
+        if (provider->IsTcpIpProvider()) {
             count = 2;
         }
-        if (pi->IsModemProvider()) {
+        if (provider->IsModemProvider()) {
             count = 3;
         }
-        if (pi->IsSerialProvider()) {
+        if (provider->IsSerialProvider()) {
             count = 4;
         }
     }
@@ -284,7 +284,7 @@ i32 CMultiStartDlg::UpdateSlot() {
         m_slotList->SelectItem(v, IDX(IDC_MULTI_LATENCY), 0, 0);
     } else {
         m_slotList
-            ->SelectItem(v, IDX(IDC_MULTI_LATENCY), reg2->m_commandDelay, reg2->m_drainReload);
+            ->SelectItem(v, IDX(IDC_MULTI_LATENCY), reg2->m_commandDelay, reg2->m_resendInterval);
     }
     return 1;
 }
@@ -294,7 +294,7 @@ RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == 0) {
-        GetDlgItem(0x512)->SetWindowTextA(g_multiState->GetString59c());
+        GetDlgItem(0x512)->SetWindowTextA(g_multiState->GameName());
         NetLobby::g_curDlg = GetSafe1c();
         if (!SetupWorldCombo()) {
             return;
@@ -373,7 +373,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             CWnd* w = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
             g_sharedFlag = (w == NULL) ? NULL : w->m_hWnd;
         }
-        g_multiState->m_netGate->m_sessionSel = NULL;
+        g_multiState->m_netMgr->m_selectedPlayer = NULL;
         g_multiState->PollSession();
         if (!UpdateColorItems()) {
             return;
@@ -983,7 +983,7 @@ void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
     if ((mp->m_isHost == 0 || m_host->m_options[0].m_humanControlled != 0)
         && (m_host->m_options[0].m_readyFlag != 0
-            || m_host->m_options[0].m_slotKey != mp->m_hostIndex)) {
+            || m_host->m_options[0].m_slotKey != mp->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 0, 1, NULL);
@@ -1000,7 +1000,7 @@ void CMultiStartDlg::OnColorSlot1() {
     CMulti* mp = g_multiState;
     if ((mp->m_isHost == 0 || m_host->m_options[1].m_humanControlled != 0)
         && (m_host->m_options[1].m_readyFlag != 0
-            || m_host->m_options[1].m_slotKey != mp->m_hostIndex)) {
+            || m_host->m_options[1].m_slotKey != mp->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 1, 1, NULL);
@@ -1017,7 +1017,7 @@ void CMultiStartDlg::OnColorSlot2() {
     CMulti* mp = g_multiState;
     if ((mp->m_isHost == 0 || m_host->m_options[2].m_humanControlled != 0)
         && (m_host->m_options[2].m_readyFlag != 0
-            || m_host->m_options[2].m_slotKey != mp->m_hostIndex)) {
+            || m_host->m_options[2].m_slotKey != mp->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 2, 1, NULL);
@@ -1034,7 +1034,7 @@ void CMultiStartDlg::OnColorSlot3() {
     CMulti* mp = g_multiState;
     if ((mp->m_isHost == 0 || m_host->m_options[3].m_humanControlled != 0)
         && (m_host->m_options[3].m_readyFlag != 0
-            || m_host->m_options[3].m_slotKey != mp->m_hostIndex)) {
+            || m_host->m_options[3].m_slotKey != mp->m_localPlayerId)) {
         return;
     }
     CBattlezDlgColors dlg(m_host, 3, 1, NULL);
@@ -1111,12 +1111,12 @@ void CMultiStartDlg::OnChatSend() {
 
 RVA(0x000c40b0, 0x42)
 void CMultiStartDlg::Drive() {
-    CMulti* netMgr = g_multiState;
-    if (netMgr->m_isHost != 0) {
-        netMgr->BroadcastChannelTable(NULL);
+    CMulti* multi = g_multiState;
+    if (multi->m_isHost != 0) {
+        multi->BroadcastChannelTable(NULL);
         UpdatePlayers(1);
     } else {
-        g_multiState->BroadcastOneChannel(m_host->FindOptionsSlot(netMgr->m_hostIndex));
+        g_multiState->BroadcastOneChannel(m_host->FindOptionsSlot(multi->m_localPlayerId));
     }
 }
 
@@ -1148,26 +1148,26 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     for (i32 idx = 0; idx < 4; idx++) {
         GruntzPlayer* slot = &g_gameReg->m_options[idx];
         if (slot) {
-            if (slot->m_slotKey != g_multiState->m_hostIndex && slot->m_humanControlled
+            if (slot->m_slotKey != g_multiState->m_localPlayerId && slot->m_humanControlled
                 && slot->m_liveGate) {
                 f18 = 1;
             }
             CWnd* name = GetCtrlB(idx);
             if ((g_multiState->m_isHost && slot->m_humanControlled == 0)
-                || slot->m_slotKey == g_multiState->m_hostIndex) {
+                || slot->m_slotKey == g_multiState->m_localPlayerId) {
                 name->EnableWindow(1);
             } else {
                 name->EnableWindow(0);
             }
             CWnd* kind = GetCtrlE(idx);
             if (g_multiState->m_isHost && localColour == 0
-                && slot->m_slotKey != g_multiState->m_hostIndex) {
+                && slot->m_slotKey != g_multiState->m_localPlayerId) {
                 kind->EnableWindow(1);
             } else {
                 kind->EnableWindow(0);
             }
             CWnd* ready = GetCtrlA(idx);
-            if (slot->m_slotKey == g_multiState->m_hostIndex) {
+            if (slot->m_slotKey == g_multiState->m_localPlayerId) {
                 ready->EnableWindow(1);
             } else {
                 ready->EnableWindow(0);
@@ -1247,11 +1247,11 @@ void CMultiStartDlg::Watchdog() {
         return;
     }
     g_watchBusy = 1;
-    CNetPlayerListNode* h = g_multiState->m_netGate->m_playerSel;
+    CNetSessionListNode* h = g_multiState->m_netMgr->m_selectedSession;
     if (h == NULL) {
         return;
     }
-    g_multiState->m_netGate->EnumGroupsRange(h, 0);
+    g_multiState->m_netMgr->EnumerateSessionPlayers(h, 0);
     g_multiState->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
         u32 t = timeGetTime();
@@ -1368,7 +1368,7 @@ void CMultiStartDlg::Watchdog() {
 
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
-    GruntzPlayer* slot = m_host->FindOptionsSlot(g_multiState->m_hostIndex);
+    GruntzPlayer* slot = m_host->FindOptionsSlot(g_multiState->m_localPlayerId);
     if (slot == NULL) {
         return -1;
     }
@@ -1409,7 +1409,7 @@ void CMultiStartDlg::OnOK() {
         0,
         custom,
         0,
-        custom != 0 ? g_multiState->GetConfigNameB() : g_multiState->GetConfigNameA()
+        custom != 0 ? g_multiState->CustomLevelName() : g_multiState->BuiltInLevelName()
     );
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(token) == 0) {
@@ -1437,7 +1437,7 @@ i32 CMulti::GetCommandDelay() {
 
 RVA(0x000c4e20, 0x7)
 i32 CMulti::GetResendDelay() {
-    return m_drainReload;
+    return m_resendInterval;
 }
 
 RVA(0x000c4e40, 0x8)
@@ -1503,7 +1503,7 @@ void CMultiStartDlg::CommitLatencyOption() {
     m_slotList->GetSelItemData(h, IDX(IDC_MULTI_LATENCY), &lo, &hi);
     if (lo != 0 || hi != 0) {
         g_multiState->m_commandDelay = lo;
-        g_multiState->m_drainReload = hi;
+        g_multiState->m_resendInterval = hi;
         g_multiState->m_autoCommandDelay = 0;
         g_multiState->SaveConfig(NULL);
     } else {
@@ -1572,6 +1572,6 @@ i32 CMultiStartDlg::DestroyWindow() {
 RVA(0x000c52f0, 0x43)
 void CMultiStartDlg::EchoLatencySettings() {
     char buf[128];
-    wsprintfA(buf, s_UsingCmdDelay, g_multiState->m_commandDelay, g_multiState->m_drainReload);
+    wsprintfA(buf, s_UsingCmdDelay, g_multiState->m_commandDelay, g_multiState->m_resendInterval);
     AppendChatLine(buf);
 }

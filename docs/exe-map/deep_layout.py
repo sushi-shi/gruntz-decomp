@@ -670,7 +670,7 @@ def write_migration(out, units_map, itab):
              "two adjacent TUs glued by misattributed seam functions (re-home the "
              "seam and the boundary reappears — e.g. netmgr+font, where "
              "`FontInterfaceObject::IsInterface1-5` is really NetMgr's "
-             "InterfaceObject), or one TU with class-grouped sections (e.g. "
+             "CNetProviderNode), or one TU with class-grouped sections (e.g. "
              "ddpalette+dirpal, __FILE__-anchored as one DIRPAL.CPP). Decide by: "
              "__FILE__ anchors, init-fragment table runs (2 separate runs = 2 "
              "objs), and a seam-function xref audit.\n")

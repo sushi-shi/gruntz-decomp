@@ -20,10 +20,10 @@ class CGruntzCommand;
 #pragma pack(push, 1)
 struct NetCmdSendMsg {
     u8 m_flags;
-    i32 m_val;
-    i32 m_baseSeq;
+    i32 m_sequence;
+    i32 m_windowBase;
     i32 m_checksum;
-    u8 m_count;
+    u8 m_entryCount;
     u8 m_payload[0x3f2];
 };
 #pragma pack(pop)
@@ -32,10 +32,10 @@ struct NetCmdSendMsg {
 struct NetGruntRecMsg {
     u8 m_flags;
     u8 m_slot;
-    i32 m_seq;
+    i32 m_sequence;
     i32 m_windowBase;
     i32 m_checksum;
-    u8 m_count;
+    u8 m_entryCount;
     u8 m_payload[0x3f1];
 };
 #pragma pack(pop)

@@ -39,5 +39,5 @@ WALL→STEERABLE: a source spelling (`switch`) closes it. Evidence: CNetMgr::OnD
 (0xbc110) went 47%→100% the instant the `if/else-if` dispatch on the MULTI_DROPPLAYER result
 (0x4cd/0x4ce/0x4ea) was rewritten as a `switch` — same handler bodies, only the dispatch
 lowering changed. (Watch also that each case's call receiver is the RIGHT object: there the
-0x4ea handler calls FindPlayerById on `m_524` and ResetCmdBuffers on `m_520`, not `this`.)
+0x4ea handler calls FindPlayerById on `m_netMgr` and ResetLatencies on `m_session`, not `this`.)
 Also CNetMgr::OnOutOfSync 3-way result `switch(r){0x4cc;0x4cd;default}` = the same sub/dec ladder.

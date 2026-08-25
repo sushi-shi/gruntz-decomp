@@ -28,7 +28,7 @@ mov    DWORD PTR [ebx+0x7],edx      ; rows+8
 add    ebx,0x20
 ```
 STEERABLE. CMulti::BroadcastChannelTable 0x0ba810 98.69 -> 100 EXACT and its inverse
-CMulti::ParseChannelTable 0x0ba980 98.19 -> 100 EXACT — both had been filed
+CMulti::ApplyChannelTable 0x0ba980 98.19 -> 100 EXACT — both had been filed
 "retail anchors at rows+1, eight disp bytes, permute found nothing".
 
 ## The three forms do not span the bias space

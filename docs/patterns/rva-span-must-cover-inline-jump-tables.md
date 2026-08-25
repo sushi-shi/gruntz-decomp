@@ -37,7 +37,7 @@ start of the next real function, so the carve covers the tables the code jumps i
 ```cpp
 // before - 0x95 is the code length, function scores a flat 0
 RVA(0x000bf7c0, 0x95)
-i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 arg2) { ... }
+i32 CNetSession::DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize) { ... }
 
 // after - 0x1b0 also covers the 258-byte index LUT + the 5-entry jump table
 RVA(0x000bf7c0, 0x1b0)
@@ -58,7 +58,7 @@ Verify two things before you commit it:
 
 "Extend to the next function's start" is not the rule; it is one of two candidates.
 It is right only when the gap between the code and the next function holds **nothing but
-this function's own tables** (`DispatchMsg`, `ComputeCellFlags`). When the gap holds more,
+this function's own tables** (`DispatchSystemMessage`, `ComputeCellFlags`). When the gap holds more,
 carrying it in makes the two sides carve *different* content and the score collapses.
 
 Measured 2026-07-29, all three in `tileswitchlogic`, all three reverted:
@@ -119,8 +119,8 @@ cross-checked against base COMDAT size vs annotated size):
 
 | function | rva | span | before | after |
 |---|---|---|---|---|
-| `CNetSession::DispatchMsg` | 0xbf7c0 | 0x95 → 0x1b0 | 0 | **100.00 EXACT** |
-| `CMulti::HandleControlMsg` | 0xba1a0 | 0x83 → 0x1a0 | 0 | 96.66 |
+| `CNetSession::DispatchSystemMessage` | 0xbf7c0 | 0x95 → 0x1b0 | 0 | **100.00 EXACT** |
+| `CMulti::HandleSystemMessage` | 0xba1a0 | 0x83 → 0x1a0 | 0 | 96.66 |
 | `CMapMgr::ComputeCellFlags` | 0x77790 | 0x37d → 0x630 | 0 | 42.95 |
 | `CActionOptionsMenuBar::Refresh` | 0x9330 | 0x136 → 0x190 | 0 | 32.94 |
 

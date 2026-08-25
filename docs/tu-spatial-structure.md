@@ -105,8 +105,8 @@ The clusters are the "written in the same place" case and need no fixing:
 (7, `CGruntzMultiCommand` ↔ `CGruntzSingleCommand` in matched `Parse`/`Pack`/`Select`/
 `FreeAll` pairs), `Attract.cpp` (4, the state-class soup), `Multi.cpp` (4).
 
-`Multi.cpp` is the clearest **not-inlined** cluster: `CNetPlayerListNode::GroupName`,
-`CNetSessionNode::GetName`, `CNetSession::ResetAll` and `CNetCmdSlot::BuildHostName`
+`Multi.cpp` is the clearest **not-inlined** cluster: `CNetSessionListNode::GroupName`,
+`CNetPlayerNode::ShortName`, `CNetSession::InitializeFields` and `CNetCmdSlot::GetPlayerName`
 each sit alone inside a long `CMulti` run — four small node-class accessors emitted
 out-of-line at their use site. Same shape as `docs/exe-map/interleaved-comdats.md`,
 which has the reproduction and the fix recipe.

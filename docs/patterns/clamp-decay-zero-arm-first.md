@@ -33,7 +33,7 @@ base:   cmp eax,ecx | jae ZER | sub ecx,eax  | mov ds:g,ecx | jmp END | ZER: mov
 ```
 
 STEERABLE, and it multiplies: the same block usually repeats once per timer.
-Evidence (2026-07-28, `src/Gruntz/Multi.cpp`): `CMulti::PumpA` @0x0b6b40 91.4 → 98.0
+Evidence (2026-07-28, `src/Gruntz/Multi.cpp`): `CMulti::AdvanceGameFrame` @0x0b6b40 91.4 → 98.0
 with the five stat-timer decays swapped, `CMulti::Render` @0x0b6890 the m_drainTimer
 decay — both had been filed "MSVC5's register/branch choices … not steerable from
 source". The sibling shape for a value/value (not value/zero) select is

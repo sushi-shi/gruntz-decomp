@@ -52,7 +52,7 @@ that (see `retail-recomputes-a-shift-we-cse.md`).
 
 ## Evidence (2026-08-08)
 
-`CMulti::PumpB` @0xb6e90 **83.38 → 92.36** on deleting `mgr` alone (prologue
+`CMulti::RenderGameFrame` @0xb6e90 **83.38 → 92.36** on deleting `mgr` alone (prologue
 `push ebx` disappears, matching retail). A second, independent edit in the same
 function — restoring two dead `rc.top`/`rc.left` stores and spelling the SetRect
 arguments as direct `g_gameReg->m_modeSize.cx/cy` reads instead of two locals,

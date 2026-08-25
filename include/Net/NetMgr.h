@@ -18,6 +18,7 @@
 #include <Wap32/Object.h>
 
 #include <basetyps.h>
+#include <dplay.h>
 #include <string.h>
 #include <wtypes.h>
 
@@ -65,7 +66,7 @@ struct CNetVersionPacket {
     i32 m_localVersion;
 };
 
-class CNetSessionNode;
+class CNetPlayerNode;
 
 struct CNetStatPacket {
     u8 m_flags;
@@ -95,7 +96,7 @@ struct CNetChannelPacket {
     GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
     u8 m_humanControlled;
     char m_pad0f[1];
-    i32 m_hostIndex;
+    i32 m_playerId;
     char m_name[0x28 - 0x14];
 };
 
@@ -139,46 +140,46 @@ struct CNetChannelTablePacket {
 
 struct CNetCmdSlot {
     NetSlotState m_state;
-    i32 m_isRemote;
+    i32 m_isDraining;
 
-    i32 m_latchedSeq;
-    GruntzPlayer* m_desc;
+    i32 m_drainSequence;
+    GruntzPlayer* m_player;
 
     i32 m_latency;
 
-    i32 m_baseSeq;
-    i32 m_maxSeq;
+    i32 m_contiguousSequence;
+    i32 m_peerWindowBase;
 
     CMulti* m_owner;
 
-    CPtrList m_cmds;
-    i32 m_ackFlags[NET_SLOT_COUNT];
-    i32 m_rangeA[3];
-    i32 m_rangeB[3];
+    CPtrList m_records;
+    i32 m_drainAckFlags[NET_SLOT_COUNT];
+    i32 m_receivedAhead[3];
+    i32 m_peerReceivedAhead[3];
 
     CNetCmdSlot();
     ~CNetCmdSlot();
-    void ResetAll();
-    void AdvanceSeq(i32 id);
-    void RaiseMax(i32 v);
-    void ResetTriple(i32* p);
+    void ResetSlot();
+    void RecordReceivedSequence(i32 sequence);
+    void RecordPeerWindowBase(i32 sequence);
+    void ClearSequenceSet(i32* sequences);
 
-    i32 NetCmdIdFind(i32* arr, i32 v);
-    void NetCmdIdAdd(i32* arr, i32 v);
-    void NetCmdIdClear(i32* arr, i32 v);
-    void AddCmd(GruntRec* cmd);
-    void RemoveCmd(i32 seq);
-    void GetRange(i32* pMin, i32* pMax);
-    GruntRec* FindCmd(i32 seq);
-    void ClearCmds();
-    void Touch();
-    void FullReset();
-    void ClearAckFlags();
-    CString BuildHostName();
-    i32 Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state);
-    i32 ProcessCmd(i32 playerId, char* rec, i32 size);
+    i32 ContainsSequence(i32* sequences, i32 sequence);
+    void AddSequence(i32* sequences, i32 sequence);
+    void RemoveSequence(i32* sequences, i32 sequence);
+    void AddRecord(GruntRec* record);
+    void RemoveRecord(i32 sequence);
+    void GetRecordRange(i32* minimum, i32* maximum);
+    GruntRec* FindRecord(i32 sequence);
+    void ClearRecords();
+    void BeginDrain();
+    void ClearSyncState();
+    void ClearDrainAcks();
+    CString GetPlayerName();
+    i32 Initialize(CMulti* owner, GruntzPlayer* player, NetSlotState state);
+    i32 ProcessPacket(i32 playerId, char* packet, i32 packetSize);
 
-    i32 Ready();
+    i32 DrainAcknowledged();
 };
 
 #pragma pack(push, 1)
@@ -192,86 +193,87 @@ struct CNetCmdHdr {
 #pragma pack(pop)
 
 struct GruntRec {
-    i32 m_seq;
+    i32 m_sequence;
     i32 m_checksum;
-    unsigned char m_count;
-    char pad09[3];
-    i32 m_payloadLen;
+    unsigned char m_entryCount;
+    char m_pad09[3];
+    i32 m_payloadLength;
     char m_payload[0x410 - 0x10];
 };
 
 class CGruntzCommand;
-struct CNetCtrlMsg;
+struct CNetPacketPrefix;
 struct CNetMsg;
 struct CNetConfigBlob;
-struct MenuSelectEvent;
 
 union CNetWireMsg {
     char* m_bytes;
     CNetMsg* m_msg;
-    CNetCtrlMsg* m_ctrl;
+    CNetPacketPrefix* m_prefix;
+    LPDPMSG_GENERIC m_system;
+    LPDPMSG_CREATEPLAYERORGROUP m_playerCreated;
+    LPDPMSG_DESTROYPLAYERORGROUP m_playerDestroyed;
     CNetChannelPacket* m_chan;
     CNetOneChannelPacket* m_oneChannel;
     CNetChannelTablePacket* m_chanTable;
     CNetVersionMsg* m_version;
     CNetCmdHdr* m_cmdHdr;
     CNetConfigBlob* m_config;
-    MenuSelectEvent* m_menuSelect;
 };
 
 GruntRec* AllocateGruntRecord(i32 clear);
-void RecycleCmd(GruntRec* cmd);
+void RecycleGruntRecord(GruntRec* cmd);
 
 struct CNetSession {
 
     CGruntzMgr* m_mgr;
 
-    CMulti* m_session;
+    CMulti* m_owner;
     CNetMgr* m_netMgr;
-    CNetSessionNode* m_localDesc;
+    CNetPlayerNode* m_localPlayer;
 
-    i32 m_tick;
-    i32 m_snapshotDone;
-    i32 m_seq;
-    i32 m_period;
+    i32 m_commandTick;
+    i32 m_batchBuilt;
+    i32 m_sequence;
+    i32 m_commandPeriod;
     CNetCmdSlot m_slots[NET_SLOT_COUNT];
-    CGruntzCommand* m_idMap[0x80];
-    GruntRec m_records[0x80];
+    CGruntzCommand* m_commandByTick[0x80];
+    GruntRec m_commandRecords[0x80];
 
-    CNetCmdSlot* FindCmdSlot(i32 playerId);
-    void ResetCmdBuffers();
-    i32 AllSlotsReachedSeq(i32 seq);
-    void AdvanceAllSlots(i32 id);
-    void RaiseAllSlotsMax(i32 v);
-    i32 CheckLatency(i32 cap);
+    CNetCmdSlot* FindSlotByPlayerId(i32 playerId);
+    void ResetLatencies();
+    i32 AllPeerWindowsReached(i32 sequence);
+    void RecordSequenceForAllSlots(i32 sequence);
+    void RecordPeerWindowForAllSlots(i32 sequence);
+    i32 AllActiveLatenciesWithin(i32 latencyLimit);
     CNetCmdSlot* CreateSlot(i32 index, NetSlotState state);
-    i32 Verify();
-    void ResetAll();
-    void Reset();
-    i32 Verify(i32 n);
+    i32 VerifyChecksums();
+    void InitializeFields();
+    void ResetRound();
+    i32 ReadyForSequence(i32 sequence);
 
-    CNetCmdSlot* FindSlot(u32 key);
+    CNetCmdSlot* FindLaggingSlot(u32 latencyThreshold);
 
-    i32 Init(CGruntzMgr* mgr, class CMulti* owner, CNetMgr* netMgr);
+    i32 Initialize(CGruntzMgr* mgr, class CMulti* owner, CNetMgr* netMgr);
 
     ~CNetSession();
-    void ResetSync();
-    i32 Poll(i32 delta);
-    i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c);
-    i32 DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg);
-    i32 Tick();
-    i32 SendAll();
+    void Shutdown();
+    i32 Poll(i32 elapsedMs);
+    i32 Dispatch(i32 senderId, CNetPacketPrefix* message, i32 messageSize);
+    i32 DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize);
+    i32 SendTick();
+    i32 RelayDrainingRecords();
 
-    i32 SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo);
-    i32 SendBatch();
-    i32 SendOne(CNetCmdSlot* s, i32 v);
-    void Reconcile();
-    i32 Advance();
-    CGruntzCommand* GetSlotPtr(i32 v);
+    i32 SendGruntRecord(i32 sequence, GruntRec* record, u8 flags, i32 sourceSlot, i32 recipientId);
+    i32 SendPendingRecords();
+    i32 SendRecord(CNetCmdSlot* slot, i32 sequence);
+    void ReconcileDrainingSlots();
+    i32 AdvanceTick();
+    CGruntzCommand* GetCommandAtTick(i32 commandTick);
 
-    void ArmSlot(CGruntzCommand* node, u8 parity);
+    void ScheduleCommand(CGruntzCommand* command, u8 tickOffset);
 
-    i32 Checksum();
+    i32 ComputeChecksum();
 
     void BuildGruntzCrcInfo();
 
@@ -281,222 +283,77 @@ struct CNetSession {
     // ??3CNetSession@@SAXPAX@Z and points the funclet at that instead.
 
     CNetSession() {
-        ResetAll();
+        InitializeFields();
     }
 };
 
-struct NetDPName {
-    u32 dwSize;
-    u32 dwFlags;
-    char* lpszShortNameA;
-    char* lpszLongNameA;
-};
+class CNetSessionListNode;
 
-struct CNetSessionDesc;
-struct CNetCaps;
-
-typedef BOOL(__stdcall* NetEnumSessionsCallback)(
-    CNetSessionDesc* lpThisSD,
-    u32* lpdwTimeout,
-    DWORD dwFlags,
-    CNetMgr* lpContext
-);
-typedef BOOL(__stdcall* NetEnumPlayersCallback)(
-    u32 dpId,
-    DWORD dwPlayerType,
-    NetDPName* lpName,
-    DWORD dwFlags,
-    CNetMgr* lpContext
-);
-
-struct IDirectPlay4Z {
-
-    STDMETHOD(QueryInterface)(const GUID* riid, void** out) PURE;
-    STDMETHOD(AddRef)() PURE;
-    STDMETHOD(Release)() PURE;
-    STDMETHOD(v03)() PURE;
-    STDMETHOD(v04)() PURE;
-    STDMETHOD(v05)() PURE;
-
-    STDMETHOD(CreatePlayer)
-    (i32* lpidPlayer,
-     NetDPName* lpPlayerName,
-     i32 hEvent,
-     void* lpData,
-     u32 dwDataSize,
-     u32 dwFlags) PURE;
-    STDMETHOD(v07)() PURE;
-    STDMETHOD(v08)() PURE;
-    STDMETHOD(v09)() PURE;
-    STDMETHOD(v0a)() PURE;
-    STDMETHOD(v0b)() PURE;
-    STDMETHOD(EnumGroupsCb)
-    (GUID* lpguidInstance, NetEnumPlayersCallback callback, void* ctx, i32 flags) PURE;
-    STDMETHOD(EnumPlayers)(
-        CNetSessionDesc* lpsd,
-        u32 dwTimeout,
-        NetEnumSessionsCallback callback,
-        void* ctx,
-        u32 dwFlags
-    ) PURE;
-    STDMETHOD(Enum2)(CNetCaps* lpCaps, void* ctx) PURE;
-    STDMETHOD(v0f)() PURE;
-    STDMETHOD(v10)() PURE;
-    STDMETHOD(GetMessageCount)(i32 idPlayer, i32* lpCount) PURE;
-    STDMETHOD(v12)() PURE;
-    STDMETHOD(GetGroupData)(i32 id, CNetCaps* lpCaps, i32 flags) PURE;
-    STDMETHOD(GetData2)(i32 id, void* lpData, u32* lpSize, u32 fl) PURE;
-    STDMETHOD(v15)() PURE;
-    STDMETHOD(GetPlayerData2)(void* lpData, i32* lpdwDataSize) PURE;
-    STDMETHOD(v17)() PURE;
-    STDMETHOD(EnumGroups)(CNetSessionDesc* desc, i32 flags) PURE;
-    STDMETHOD(Receive)(i32* lpidFrom, i32* lpidTo, i32 flags, void* lpData, i32* lpSize) PURE;
-    STDMETHOD(SetData5)(i32 a, i32 b, i32 c, void* data, i32 size) PURE;
-    STDMETHOD(v1b)() PURE;
-    STDMETHOD(v1c)() PURE;
-    STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE;
-    STDMETHOD(v1e)() PURE;
-    STDMETHOD(v1f)() PURE;
-    STDMETHOD(v20)() PURE;
-    STDMETHOD(v21)() PURE;
-    STDMETHOD(v22)() PURE;
-    STDMETHOD(v23)() PURE;
-    STDMETHOD(v24)() PURE;
-    STDMETHOD(v25)() PURE;
-    STDMETHOD(v26)() PURE;
-    STDMETHOD(v27)() PURE;
-    STDMETHOD(v28)() PURE;
-    STDMETHOD(v29)() PURE;
-    STDMETHOD(v2a)() PURE;
-    STDMETHOD(v2b)() PURE;
-    STDMETHOD(v2c)() PURE;
-    STDMETHOD(v2d)() PURE;
-    STDMETHOD(v2e)() PURE;
-    STDMETHOD(v2f)() PURE;
-    STDMETHOD(v30)() PURE;
-    STDMETHOD(SendEx)(
-        i32 idFrom,
-        i32 idTo,
-        i32 flags,
-        LPVOID lpData,
-        i32 size,
-        i32 pri,
-        i32 timeout,
-        LPVOID ctx,
-        LPDWORD lpMsgId
-    ) PURE;
-};
-
-class CNetPlayerListNode;
-
-struct CNetSessionDesc {
-    i32 m_dwSize;
-    i32 m_dwFlags;
-    GUID m_guidInstance;
-    GUID m_guidApplication;
-    i32 m_dwMaxPlayers;
-    i32 m_dwCurrentPlayers;
-    char* m_lpszName;
-    char* m_lpszPassword;
-    i32 m_dwReserved1;
-    i32 m_dwReserved2;
-    i32 m_dwUser1;
-    i32 m_dwUser2;
-    i32 m_dwUser3;
-    i32 m_dwUser4;
-};
-
-struct CNetCaps {
-    i32 m_dwSize;
-    i32 m_dwFlags;
-    i32 m_dwMaxBufferSize;
-    i32 m_dwMaxQueueSize;
-    i32 m_dwMaxPlayers;
-    i32 m_dwHundredBaud;
-    i32 m_dwLatency;
-    i32 m_dwMaxLocalPlayers;
-    i32 m_dwHeaderLength;
-    i32 m_dwTimeout;
-};
-
-class CNetPlayerListNode : public CObject {
+class CNetSessionListNode : public CObject {
 public:
-    CNetSessionDesc m_desc;
+    DPSESSIONDESC2 m_sessionDesc;
 
     __POSITION* m_listPosition;
 
-    CNetPlayerListNode() {
-        memset(&m_desc, 0, sizeof(m_desc));
+    CNetSessionListNode() {
+        memset(&m_sessionDesc, 0, sizeof(m_sessionDesc));
         m_listPosition = NULL;
     }
-    virtual ~CNetPlayerListNode() OVERRIDE;
-    i32 Init(CNetSessionDesc* desc);
+    virtual ~CNetSessionListNode() OVERRIDE;
+    i32 Initialize(LPCDPSESSIONDESC2 sessionDesc);
 
-    void FreeStrings();
+    void FreeSessionStrings();
 
-    char* GroupName();
+    char* SessionName();
 };
 
-class CNetSessionNode : public CObject {
+class CNetPlayerNode : public CObject {
 public:
-    i32 m_id;
-    CString m_name;
+    DPID m_playerId;
+    CString m_shortName;
     CString m_longName;
-    i32 m_enumFlags;
+    DWORD m_flags;
     char* m_ownedBufferB;
     char* m_ownedBufferA;
     i32 m_reserved1c;
     __POSITION* m_listPosition;
 
-    CNetSessionNode() {
-        m_id = 0;
+    CNetPlayerNode() {
+        m_playerId = 0;
         m_listPosition = NULL;
         m_ownedBufferA = NULL;
         m_ownedBufferB = NULL;
     }
-    virtual ~CNetSessionNode() OVERRIDE;
+    virtual ~CNetPlayerNode() OVERRIDE;
 
-    i32 InitSession(i32 id, const char* nameA, const char* nameB, i32 flags);
+    i32 Initialize(DPID playerId, const char* shortName, const char* longName, DWORD flags);
 
-    CString GetName();
+    CString ShortName();
 };
 
-extern BOOL __stdcall
-NetEnumPlayerCb(CNetSessionDesc* lpThisSD, u32* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
+extern BOOL __stdcall NetEnumSessionCallback(
+    LPCDPSESSIONDESC2 sessionDesc,
+    LPDWORD timeoutMs,
+    DWORD flags,
+    LPVOID context
+);
 
 extern BOOL __stdcall
-NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
+NetEnumPlayerCallback(DPID playerId, DWORD playerType, LPCDPNAME name, DWORD flags, LPVOID context);
 
 struct IDirectPlay;
 
-struct CNetCtrlMsg {
-
-    union {
-        i32 m_code;
-        struct {
-            u8 m_routeFlags;
-            u8 m_routeSlot;
-        } m_route;
-    };
-    i32 m_subCode;
-    i32 m_playerId;
-};
-
-struct MenuSelectEvent {
-    char m_pad0[0x4];
-    i32 m_armed;
-    i32 m_id;
-    char m_pad0c[0x20 - 0xc];
-    char* m_nameA;
-    char* m_nameB;
+struct CNetPacketPrefix {
+    u8 m_routeFlags;
+    u8 m_routeSlot;
 };
 
 class CFontConfig;
 
 extern char g_recvBuffer[];
 
-extern CNetChannelStatPacket g_chanStat422;
-extern CNetChannelStatPacket g_chanStat423;
+extern CNetChannelStatPacket g_optionsPresentPacket;
+extern CNetChannelStatPacket g_optionsAbsentPacket;
 
 struct CChatPacket {
     u8 m_flag;
@@ -511,103 +368,124 @@ extern CChatPacket g_chatPacket;
 extern i32 g_playerLeftFlag;
 extern i32 g_activePlayerCount;
 
-struct InterfaceObject;
+struct CNetProviderNode;
 
 class CNetMgr : public CObject {
 public:
     virtual ~CNetMgr() OVERRIDE;
 
-    CNetSessionNode* FindPlayerById(i32 id);
-    struct InterfaceObject* Find(i32 kind);
+    CNetPlayerNode* FindPlayerById(DPID playerId);
+    struct CNetProviderNode* FindProvider(i32 providerKind);
 
-    i32 RemovePlayerObj(CNetSessionNode* obj);
-    i32 RemovePlayerById(i32 id);
-    i32 RemovePlayerNode(CNetPlayerListNode* node);
+    i32 RemovePlayer(CNetPlayerNode* player);
+    i32 RemovePlayerById(DPID playerId);
+    i32 RemoveSessionListing(CNetSessionListNode* node);
     i32 GetMaxPlayers();
-    i32 EnumSessions2(void* ctx);
-    CNetSessionNode* GetPlayerData(i32 id);
-    i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size);
+    i32 GetConnectionLatency(DWORD flags);
+    CNetPlayerNode* GetPlayerNodeData(DPID playerId);
+    i32 Send(
+        CNetPlayerNode* sender,
+        CNetPlayerNode* recipient,
+        DWORD flags,
+        void* message,
+        DWORD messageSize
+    );
 
     i32 SendEx(
-        i32 idFrom,
-        i32 idTo,
-        i32 flags,
-        LPVOID lpData,
-        i32 size,
-        i32 pri,
-        i32 timeout,
-        LPVOID ctx,
-        LPDWORD lpMsgId
+        DPID senderId,
+        DPID recipientId,
+        DWORD flags,
+        LPVOID message,
+        DWORD messageSize,
+        DWORD priority,
+        DWORD timeoutMs,
+        LPVOID context,
+        LPDWORD messageId
     );
-    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);
-    i32 Receive(CNetSessionNode* from, CNetSessionNode* to, i32 flags, void* lpData, i32* lpSize);
-    i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size);
-    i32 GetGroupInfo(CNetSessionNode* a, CNetCaps* caps, i32 flags);
-    i32 EnumSessions(CNetCaps* caps, void* ctx);
+    i32 SendById(DPID senderId, DPID recipientId, DWORD flags, void* message, DWORD messageSize);
+    i32 Receive(
+        CNetPlayerNode* sender,
+        CNetPlayerNode* recipient,
+        DWORD flags,
+        void* message,
+        LPDWORD messageSize
+    );
+    i32 BroadcastFrom(CNetPlayerNode* sender, DWORD flags, void* message, DWORD messageSize);
+    i32 GetPlayerCaps(CNetPlayerNode* player, LPDPCAPS caps, DWORD flags);
+    i32 GetCaps(LPDPCAPS caps, DWORD flags);
 
     void Destroy();
-    void ClearGroupList();
-    void ClearPlayerList();
-    void ClearSessionList();
+    void ClearProviders();
+    void ClearSessionListings();
+    void ClearPlayers();
 
-    i32 ReadGroupSel(HWND hList);
-    i32 ReadPlayerSel(HWND hList);
+    i32 ReadProviderSelection(HWND hList);
+    i32 ReadSessionSelection(HWND hList);
 
-    i32 EnumPlayersInto(u32 dwTimeout, u32 dwFlags);
+    i32 EnumerateSessions(DWORD timeoutMs, DWORD flags);
 
     // Retail mangles the lobby argument as PAX; the body recovers the
     // IDirectPlayLobby identity before dispatching Connect.
-    i32 Init(void* lobby, NetGuid appGuid);
+    i32 Initialize(void* lobby, NetGuid appGuid);
 
-    CNetPlayerListNode* AddPlayerNode(CNetSessionDesc* playerDesc);
-    void PopulatePlayerList(HWND hList);
-    CNetSessionNode*
-    EnumPlayersCb(CNetPlayerListNode* a, const char* name, const char* longName, i32 d);
-    i32 EnumGroupsAll();
-    i32 EnumGroupsRange(CNetPlayerListNode* rec, i32 flags);
-    CNetSessionNode* AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 flags);
-
-    CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c);
+    CNetSessionListNode* AddSessionListing(LPCDPSESSIONDESC2 sessionDesc);
     void PopulateSessionList(HWND hList);
+    CNetPlayerNode* JoinSessionAndCreatePlayer(
+        CNetSessionListNode* session,
+        const char* shortName,
+        const char* longName,
+        HANDLE eventHandle
+    );
+    i32 EnumerateAllPlayers();
+    i32 EnumerateSessionPlayers(CNetSessionListNode* session, DWORD flags);
+    CNetPlayerNode*
+    AddPlayer(DPID playerId, const char* shortName, const char* longName, DWORD flags);
 
-    i32 InitFromProvider(InterfaceObject* a, GUID appGuid);
-    i32 EnumServiceProviders(i32 validated);
-    InterfaceObject* AddGroupNode(GUID* guid, const char* name);
-    CNetPlayerListNode*
-    EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password);
+    CNetPlayerNode* CreatePlayer(char* shortName, const char* longName, HANDLE eventHandle);
+    void PopulatePlayerList(HWND hList);
+
+    i32 InitializeFromProvider(CNetProviderNode* provider, GUID appGuid);
+    i32 EnumServiceProviders(i32 validateProviders);
+    CNetProviderNode* AddProvider(GUID* providerGuid, const char* providerName);
+    CNetSessionListNode*
+    CreateSession(i32 maxPlayers, char* sessionName, i32 applicationData, const char* password);
 
     static void ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd);
 
     static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput);
-    void PopulateGroupList(HWND hList, i32 flag);
+    void PopulateProviderList(HWND hList, i32 excludedProviderKinds);
 
     NetGuid m_appGuid;
-    IDirectPlay* m_releaseIface;
-    IDirectPlay4Z* m_directPlay;
+    IDirectPlay* m_directPlayBase;
+    IDirectPlay4A* m_directPlay;
 
-    CObList m_groups;
+    CObList m_providers;
+    CObList m_sessionListings;
     CObList m_players;
-    CObList m_sessions;
 
-    InterfaceObject* m_groupSel;
+    CNetProviderNode* m_selectedProvider;
 
-    CNetPlayerListNode* m_playerSel;
-    CNetSessionNode* m_sessionSel;
-    POSITION m_groupSelId;
-    POSITION m_playerSelId;
-    POSITION m_sessionSelId;
+    CNetSessionListNode* m_selectedSession;
+    CNetPlayerNode* m_selectedPlayer;
+    POSITION m_providerCursor;
+    POSITION m_sessionCursor;
+    POSITION m_playerCursor;
     i32 m_reserved88;
 
     CNetMgr() {
-        m_releaseIface = NULL;
+        m_directPlayBase = NULL;
         m_directPlay = NULL;
     }
 };
 
-extern i32 g_spEnumValidated;
-class CNetMgr;
-struct NetDPName;
-static i32 __stdcall
-EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* lpContext);
+static BOOL __stdcall NetEnumProviderCallback(
+    LPGUID providerGuid,
+    LPSTR providerName,
+    DWORD majorVersion,
+    DWORD minorVersion,
+    LPVOID context
+);
+
+extern i32 g_validateProviders;
 
 #endif // NET_NETMGR_H

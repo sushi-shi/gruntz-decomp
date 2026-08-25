@@ -123,7 +123,7 @@ interface *may* later become a real abstract `__stdcall` class (as Dsndmgr's
 
 | form | RVA | base | sites |
 | :--- | :-- | :--- | :---- |
-| `g_wapObjectDtorVtbl` | 0x1e8cb4 (0x5e8cb4) | `??_7CObject@@6B@` (MFC) — the SHARED grand-base dtor vtable restamped at teardown | ~20 (WwdFile, CFaderMgr, GameLevel, CDDrawSubMgr*/Worker*, CImage, Net*, ReconBatch2, Boundary*, InterfaceObject, …). One shared datum — a per-class `VTBL` would dup-DATA. |
+| `g_wapObjectDtorVtbl` | 0x1e8cb4 (0x5e8cb4) | `??_7CObject@@6B@` (MFC) — the SHARED grand-base dtor vtable restamped at teardown | ~20 (WwdFile, CFaderMgr, GameLevel, CDDrawSubMgr*/Worker*, CImage, Net*, ReconBatch2, Boundary*, CNetProviderNode, …). One shared datum — a per-class `VTBL` would dup-DATA. |
 | `g_LogicRecordBaseVtbl` | 0x1e8cb4 | same `??_7CObject@@6B@` | LogicRecord dtor exit restamp |
 | `void* m_vtbl` @+0x00 | — | engine `CObArray` `{vtbl,data,count,max,grow}` base | `GruntLoadColl`, `CFaderArray`, embedded array subobjects |
 

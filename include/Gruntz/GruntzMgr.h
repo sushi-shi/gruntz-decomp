@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -11,6 +13,8 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileTriggerLogic.h>
+
+#include <dplay.h>
 
 GZ_ENUM_FORWARD(GameModeId);
 
@@ -44,7 +48,6 @@ class CDDrawWorker;
 class CDDrawSurfaceMgr;
 
 struct IDirectPlayLobby;
-struct CNetLobbyConnection;
 
 class CWorldSoundSet;
 
@@ -346,7 +349,7 @@ public:
     SaveSlot* m_saveInfoRec;
     struct IDirectPlayLobby* m_lobby;
 
-    CNetLobbyConnection* m_connSettings;
+    LPDPLCONNECTION m_connSettings;
     CString m_strWorldFile;
     i32 m_reservedcc;
     char m_driveLetter;

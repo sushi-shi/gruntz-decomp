@@ -12,7 +12,7 @@ base:                                retail:
   push edi                             (no extra push)
   xor edi,edi                          xor eax,eax
   mov [esi+0x00],edi  ... x8           mov [esi+0x00],eax ... x8
-  call ClearCmds                       call ClearCmds
+  call ClearRecords                       call ClearRecords
   mov [esi+0x3c],edi                   xor eax,eax          <- SECOND zero
   mov [esi+0x40],edi                   mov [esi+0x3c],eax
   ...                                  ...
@@ -27,7 +27,7 @@ What splits them is the **shape of the second group in the source**. Four consta
 member stores
 
 ```cpp
-m_ackFlags[0] = 0; m_ackFlags[1] = 0; m_ackFlags[2] = 0; m_ackFlags[3] = 0;
+m_drainAckFlags[0] = 0; m_drainAckFlags[1] = 0; m_drainAckFlags[2] = 0; m_drainAckFlags[3] = 0;
 ```
 
 are folded into the same constant node as the eight stores above them. Writing the group as
@@ -35,7 +35,7 @@ a **loop** gives it its own:
 
 ```cpp
 for (i32 i = 0; i < 4; i++) {
-    m_ackFlags[i] = 0;
+    m_drainAckFlags[i] = 0;
 }
 ```
 

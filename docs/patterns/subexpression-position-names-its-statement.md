@@ -28,10 +28,10 @@ call site.
 ```cpp
 // ours: repne scasb / not / dec ... rep movs ... add edx,0xd / push edx / call
 i32 n = strlen(line);
-Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket, n + 0xd);
+Network()->BroadcastFrom(LocalPlayer(), 1, &g_chatPacket, n + 0xd);
 // retail: repne scasb / not / dec / mov edx,ecx / add edx,0xd ... push edx / call
 i32 packetLen = strlen(line) + 0xd;
-Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket, packetLen);
+Network()->BroadcastFrom(LocalPlayer(), 1, &g_chatPacket, packetLen);
 ```
 
 ```asm

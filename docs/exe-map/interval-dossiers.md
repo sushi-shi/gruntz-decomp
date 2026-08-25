@@ -183,8 +183,9 @@ Evidence:
   seam-misattribution repair.
 - `c:\proj\incs\netmgr.h` header-inline assert emitted at `?PollSession@CNetMgr`
   @`0x0b95f0` → this TU includes netmgr.h (game side of the NetMgr module).
-- Semantics: `CMulti::StartSession/Tick/PumpA/PumpB` drive
-  `CNetMgr::CreateSession/DispatchRecvMsg/...` — one cooperating session layer.
+- Semantics: `CMulti::CreateSession/Render/AdvanceGameFrame/RenderGameFrame` drive
+  `CNetSession::SendTick/Dispatch` and `CNetMgr` transport calls — one cooperating
+  session layer.
 
 Seam fns (all -> this TU, position + lobby/net semantics):
 - `0x000b6330` — `?Vslot09@CMulti@@UAEHH@Z` — multiresumeslots -> Multi TU — a
@@ -194,10 +195,10 @@ Seam fns (all -> this TU, position + lobby/net semantics):
   — `CMulti` method.
 - `0x000b86c0` — `?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ` — showmultidlg ->
   Multi TU — launches the dialog from the session layer.
-- `0x000b89e0` — `?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z` — netsession ->
+- `0x000b89e0` — `?FillSessionList@@YAXPAUHWND__@@PAUSession@@@Z` — netsession ->
   Multi TU — lobby list-box helper.
-- `0x000ba620` — `?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z` — netmgrmenuselect ->
-  Multi TU — `CNetMgr` method.
+- `0x000ba620` — `?HandlePlayerCreated@CMulti@@QAEHPAUDPMSG_CREATEPLAYERORGROUP@@@Z`
+  — netmgrmenuselect -> Multi TU — a `CMulti` DirectPlay system-message handler.
 - `0x000bb3e0` — `?AppendEditLine@NetLobby@@YGXPAUHWND__@@PAD@Z` —
   netlobbydialogs -> Multi TU.
 - `0x000bb700` / `0x000bba10` — `?WaitForOtherPlayers@CNetMgr` / `?Poll@CNetMgr`
@@ -206,7 +207,7 @@ Seam fns (all -> this TU, position + lobby/net semantics):
   position (netcmdsession's core is the earlier `0x0bef80` interval; this one
   fn was compiled here).
 - `0x000b6220`/`0x000b62a0`/`0x000bc3f0` — `??1CLobbyObjB`/`??1CLobbySlot`/
-  `?BuildHostName@CLobbySlot` — lobbyobjb -> Multi TU or COMDAT-at-usage of
+  `?GetPlayerName@CLobbySlot` — lobbyobjb -> Multi TU or COMDAT-at-usage of
   inline lobby-class members (weak; dtors may be implicit).
 - `0x000b8960` — `??1CMultiStartDlg@@UAE@XZ` — showmultidlg — **leave**:
   implicit/inline dtor COMDAT-at-usage (the dialog's file is `0x0c16b0`;

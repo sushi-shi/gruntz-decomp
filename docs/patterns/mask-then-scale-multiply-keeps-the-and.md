@@ -19,9 +19,9 @@ run, so both masks survive:
 
 ```cpp
 // YES - and/and/shl/or, retail's multiset (CLatencyList::FillCombo 0x37ff0)
-i32 data = ((rec->m_drainReload & 0xffff) * 0x10000) | (rec->m_commandDelay & 0xffff);
+i32 data = ((rec->m_resendInterval & 0xffff) * 0x10000) | (rec->m_commandDelay & 0xffff);
 // NO  - one and + shl: the high half's mask folds into the shift
-i32 data = ((rec->m_drainReload & 0xffff) << 16) | (rec->m_commandDelay & 0xffff);
+i32 data = ((rec->m_resendInterval & 0xffff) << 16) | (rec->m_commandDelay & 0xffff);
 ```
 
 ```asm

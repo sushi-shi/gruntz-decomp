@@ -22,7 +22,7 @@ i32 h = *(i32*)((char*)g_64bd5c + 0x5c0);                      // offset-cast
 // AFTER (wall broken): real classes
 #include <Mfc.h>            // FIRST — superset of Win32.h
 #include <Gruntz/Multi.h>   // real CMulti
-i32 h = g_64bd5c->m_hostIndex;   // g_64bd5c is a real CMulti*; g_pool a real CPtrList
+i32 h = g_64bd5c->m_localPlayerId;   // g_64bd5c is a real CMulti*; g_pool a real CPtrList
 ```
 Matching-NEUTRAL (member/method access reloc-masks identically; real CString operator=
 == the view's Assign; OnReset 0xc3e30 even went 62%→100%). Two caveats: (1) MFC defines

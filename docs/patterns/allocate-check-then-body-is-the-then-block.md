@@ -77,7 +77,7 @@ constructor guard remained, but each candidate lost one of retail's returns and 
 matches. Restore the checks: the first test proves construction semantics; the second proves
 source control flow.
 
-The constructor-remodel heuristic is narrower. If source has `p = new T; if (p) p->Init();` and
+The constructor-remodel heuristic is narrower. If source has `p = new T; if (p) p->Initialize();` and
 `Init` is independently proven to be pure default construction returning `this`, remodeling
 `Init` as `T::T()` lets the compiler replace that wrapper with its generated constructor guard.
 It does not generalize to factory error handling after an already modeled constructor.

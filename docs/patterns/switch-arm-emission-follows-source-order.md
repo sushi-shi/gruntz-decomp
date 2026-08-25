@@ -30,7 +30,7 @@ The jump table and the byte index table are inside the function's own `.text`. D
 4. index-table slot `k` holds the arm number for `value = k + min`, which is the case
    value map — no guessing.
 
-On `CMulti::HandleControlMsg` @0xba1a0 this gave arms at 0xba1c5 / 0xba1ec / 0xba1fb /
+On `CMulti::HandleSystemMessage` @0xba1a0 this gave arms at 0xba1c5 / 0xba1ec / 0xba1fb /
 0xba20c / 0xba21d for codes 5 / 3 / 0x101 / 0x31 / default. Two independent defects fell
 out: `DESTROYPLAYERORGROUP` had to be written before `CREATEPLAYERORGROUP` (96.66 → 99.97),
 and the last 0.03 was the index table — the source had `DPSYS_SESSIONLOST` and `DPSYS_HOST`

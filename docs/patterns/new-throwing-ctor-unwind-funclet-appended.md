@@ -15,7 +15,7 @@ dtor dispatch (a declared-only polymorphic VIEW cast gives the `mov ecx,el; call
 
 ```cpp
 struct ElemBase {                          // the CObject grand-base at +0
-    ElemBase() { *(void**)this = &g_baseDtorVtbl; ((ElemBase*)((char*)this+8))->Init(); }
+    ElemBase() { *(void**)this = &g_baseDtorVtbl; ((ElemBase*)((char*)this+8))->Initialize(); }
     void Init();                           // the throwing base init (reloc-masked)
     void* m_vptr; i32 m_04; char m_pad08[0x14];
 };

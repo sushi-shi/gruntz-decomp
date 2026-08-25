@@ -8,7 +8,7 @@
 //
 // Read off the three things that write it and the sixteen that test it:
 //
-//   0  EMPTY   what CNetCmdSlot's constructor and ResetAll() leave behind.
+//   0  EMPTY   what CNetCmdSlot's constructor and ResetSlot() leave behind.
 //   1  INACTIVE/DONE  assigned to an unoccupied roster entry at creation and
 //                     after a participant leaves or is dropped.
 //   2  LOCAL          assigned when the roster entry's slot key is the host id.
@@ -26,7 +26,7 @@ GZ_ENUM_END(NetSlotState)
 
 // How many command slots a session has. CNetSession::m_slots is declared
 // [NET_SLOT_COUNT], every walk over it counts down from the same number, and
-// CNetCmdSlot::m_ackFlags is the same width because there is one ack per slot.
+// CNetCmdSlot::m_drainAckFlags is the same width because there is one ack per slot.
 GZ_ENUM_CONST_BEGIN(NetSlotCount)
     NET_SLOT_COUNT = 4
 GZ_ENUM_CONST_END(NetSlotCount)

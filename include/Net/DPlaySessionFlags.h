@@ -8,7 +8,7 @@
 // DPSESSION_* flags retail uses that the DPLAY.H shipped with MSVC 5.0 does not
 // define. Guarded, so a newer SDK on the include path wins.
 //
-// CNetMgr::EnumGroupsInto sets its session's dwFlags to 0xa044, which decomposes
+// CNetMgr::CreateSession sets its session's dwFlags to 0xa044, which decomposes
 // into exactly these four with nothing left over - and each is a decision a game
 // session would make: migrate the host if it drops, keep the connection alive,
 // use the DirectPlay protocol, optimise for latency.
@@ -23,10 +23,10 @@
 #define DPSESSION_KEEPALIVE 0x00000040
 #endif
 #ifndef DPSESSION_OPTIMIZELATENCY
-#define DPSESSION_OPTIMIZELATENCY 0x00002000
+#define DPSESSION_OPTIMIZELATENCY 0x00008000
 #endif
 #ifndef DPSESSION_DIRECTPLAYPROTOCOL
-#define DPSESSION_DIRECTPLAYPROTOCOL 0x00008000
+#define DPSESSION_DIRECTPLAYPROTOCOL 0x00002000
 #endif
 
 #endif // NET_DPLAYSESSIONFLAGS_H

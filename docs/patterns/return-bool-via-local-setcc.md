@@ -40,9 +40,9 @@ setne variant).
 
 ### The named result can also fix the ALLOCATION, not just the tail
 
-`CNetSession::SendOne` 0x0bfeb0 84.16 -> 88.74 on `i32 status = m_netMgr->SetData(...); return
+`CNetSession::SendRecord` 0x0bfeb0 84.16 -> 88.74 on `i32 status = m_netMgr->SetData(...); return
 status == 0;`. Beyond the expected tail flip (`neg/sbb/inc` -> `xor/test/sete/mov`), naming the
 result removed the extra long-lived value that had displaced the `val` parameter: the
-call-crossing set became retail's (`val` in ESI, `slot->m_baseSeq` in EDI) and the CSE'd
-`&slot->m_rangeA` address went back to being rematerialized per call site, as retail does. So
+call-crossing set became retail's (`val` in ESI, `slot->m_contiguousSequence` in EDI) and the CSE'd
+`&slot->m_receivedAhead` address went back to being rematerialized per call site, as retail does. So
 read a `neg/sbb` tail as a candidate even when the visible wall is the register roles.

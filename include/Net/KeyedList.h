@@ -9,12 +9,12 @@ struct CKeyedNode {
     CKeyedNode() {
         m_key.Empty();
         m_commandDelay = 0;
-        m_drainReload = 0;
+        m_resendInterval = 0;
     }
 
     CString m_key;
     i32 m_commandDelay;
-    i32 m_drainReload;
+    i32 m_resendInterval;
     CString GetName();
     ~CKeyedNode();
 };
@@ -30,7 +30,7 @@ public:
         Clear();
     }
 
-    CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 drainReload);
+    CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 resendInterval);
 
     void Clear();
 

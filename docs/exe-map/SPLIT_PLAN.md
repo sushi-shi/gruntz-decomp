@@ -47,8 +47,8 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | PlayAssetLoad.cpp | **GruntzMgr.cpp** (54 fns) | 291.3 KB |
 | `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord` | WwdFile.cpp | **BattlezMapConfig.cpp** (9 fns) | 156.3 KB |
 | `_CreateStaticHazard` | LogicRecordDispatch.cpp | **BattlezData.cpp** (29 fns) | 114.6 KB |
-| `?GetConfigNameA@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
-| `?GetConfigNameB@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
+| `?BuiltInLevelName@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
+| `?CustomLevelName@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
 
 ## D. HEADER-INLINE — reconstruct in the header (5) · not a move
 

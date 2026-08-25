@@ -316,11 +316,11 @@ if (NetFormatKeyed(buf + 4, p->m_desc.m_lpszName, "NAME")) {
 }
 ```
 
-`FillPlayerList` @0xb89e0 92.72 -> **95.41** (2026-07-28); the selected-pointer spelling also
+`FillSessionList` @0xb89e0 92.72 -> **95.41** (2026-07-28); the selected-pointer spelling also
 inverted the guard, which is how `jcc_sieve` surfaced it.
 
 **Cost check first.** Duplicating the call duplicates every cast in the argument list. In
-`FillPlayerList` that is a second `reinterpret_cast<LPARAM>`, which trips the
+`FillSessionList` that is a second `reinterpret_cast<LPARAM>`, which trips the
 `reinterpret_casts` ratchet (440 -> 441, FATAL) - so that one was reverted and the shape is
 recorded in its `@early-stop` instead. Apply this where the duplicated argument needs no
 cast; there the shape is free.

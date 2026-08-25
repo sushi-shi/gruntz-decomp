@@ -103,10 +103,10 @@ temporary's lifetime — do not chase it as a colouring coin-flip.
 
 | function | before → after | levers |
 |---|---|---|
-| `CNetMgr::PopulateSessionList` @0x178d40 | 78.60 → **100.00 EXACT** | temporary + latch |
-| `CNetMgr::PopulatePlayerList` @0x178790 | 93.27 → **100.00 EXACT** | latch |
-| `CNetMgr::Find` @0x179270 | 96.23 → **100.00 EXACT** | latch |
-| `CNetMgr::PopulateGroupList` @0x178470 | 78.60 → 97.30 | temporary + latch (x2) |
+| `CNetMgr::PopulatePlayerList` @0x178d40 | 78.60 → **100.00 EXACT** | temporary + latch |
+| `CNetMgr::PopulateSessionList` @0x178790 | 93.27 → **100.00 EXACT** | latch |
+| `CNetMgr::FindProvider` @0x179270 | 96.23 → **100.00 EXACT** | latch |
+| `CNetMgr::PopulateProviderList` @0x178470 | 78.60 → 97.30 | temporary + latch (x2) |
 
 All four had been filed as regalloc/aliasing-conservatism walls
 ("not source-steerable", "the recompile derefs both from one register"). The

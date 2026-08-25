@@ -35,7 +35,7 @@ Read the retail bytes at the boundary and the padding is visible:
 * `??_7CFader@@6B@` at `0x1f07a8` — five slots to `0x1f07bc`, and `0x1f07bc` holds
   `3a83126f`, i.e. the **float `0.001f`** from fader's own FP pool, not a sixth slot.
   Next vtable at `0x1f07c0`.
-* `??_7InterfaceObject@@6B@` at `0x1f0748` — five slots, `0x1f075c` is `0`, next
+* `??_7CNetProviderNode@@6B@` at `0x1f0748` — five slots, `0x1f075c` is `0`, next
   vtable at `0x1f0760`.
 * `?g_defaultZ@@3IB` at `0x1f04e8` (4 B, value 24) — `0x1f04ec` is four unreferenced
   zero bytes, then a `double` at `0x1f04f0`. Here retail's real gap IS 8 and it is the

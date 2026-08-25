@@ -195,7 +195,7 @@ RVA     current  function                                         inlinees
 0b1af0   83.298  CSpotLight::Tick                                 LC
 0b4640  100.000  CRainCloud::HitTest                              LC
 0b86c0  100.000  CMulti::ShowMultiStartDlg                        LC
-0ba620  100.000  CMulti::LoadMenuSelectSprite                     LC
+0ba620  100.000  CMulti::HandlePlayerCreated                      LC
 0c7350  100.000  CDroppedObject::AdvanceAnimation                 AC
 0c7490  100.000  CDroppedObjectShadow::CDroppedObjectShadow       SK
 0de420  100.000  CPreviewState::LoadLevelPreviewScreen            LC

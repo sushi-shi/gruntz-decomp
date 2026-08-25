@@ -221,9 +221,9 @@ rva	size	name	kind	note
 0x1f0518	0x4	??_7CButeNode@@6BzPtrColl@@@	secondary	
 0x1f051c	0x4	??_7CButeNode@@6B@	primary	
 0x1f051c	0x4	??_7CButeNode@@6BzErrHandling@@@	secondary	
-0x1f0748	0x14	??_7InterfaceObject@@6B@	primary	
-0x1f0760	0x14	??_7CNetPlayerListNode@@6B@	primary	
-0x1f0778	0x14	??_7CNetSessionNode@@6B@	primary	
+0x1f0748	0x14	??_7CNetProviderNode@@6B@	primary	DirectPlay provider node
+0x1f0760	0x14	??_7CNetSessionListNode@@6B@	primary	DirectPlay session listing
+0x1f0778	0x14	??_7CNetPlayerNode@@6B@	primary	DirectPlay player node
 0x1f0790	0x14	??_7CFaderArray@@6B@	primary	
 0x1f07a8	0x14	??_7CFader@@6B@	primary	
 0x1f07c0	0x14	??_7CFaderMesh@@6B@	primary	

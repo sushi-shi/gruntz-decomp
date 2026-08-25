@@ -289,7 +289,7 @@ namespace NetLobby {
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateDropWaitDialog(hWnd, g_curMulti);
-                if (g_curMulti->Session()->CheckLatency(0x2710)) {
+                if (g_curMulti->Session()->AllActiveLatenciesWithin(0x2710)) {
                     PostMessageA(hWnd, WM_COMMAND, IDX(IDC_NET_CONTINUE), 0);
                 }
                 return 1;

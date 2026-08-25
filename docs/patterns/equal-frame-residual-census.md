@@ -74,7 +74,7 @@ rows flagged. All fifteen resolve, and none is a defect:
   helper under two non-names plus §14's one-past-the-end addend, and the six
   ctors (`CTeleporter`, `CSecretTeleporterTrigger`, `CSecretLevelTrigger`,
   `CInGameText`, `CExitTrigger`, `CVoiceTrigger`) are §2's accumulator mirror;
-* **one needed reading by hand**: `CMulti::PumpA` reports 39 referents against
+* **one needed reading by hand**: `CMulti::AdvanceGameFrame` reports 39 referents against
   38, which looks like a count difference and is not. Both sides reference
   `g_frameTicks` exactly twice, load and store. cl hoists the NEXT global's load
   into the middle of the increment (`mov edx,g_frameTicks; mov eax,g_timer32;
@@ -233,7 +233,7 @@ numbers. Reclassified: `CImage::RenderImage` 0x153470 (a four-dword RECT at
 +0x20 written through `lea eax,[esi+0x20]`), `CGruntzMgr::RecomputeViewScale`
 0x8f7f0 (the same shape READ, `[esi+0x10..0x1c]` against `lea`+`[0,4,8,c]`),
 `CAniAdvanceCursor::Deserialize` 0x15ca70. Noted-only, all hand-confirmed:
-`CNetSession::SendOne` 0xbfeb0 (`lea [r+r+0x3b0]` then `[r+0x4]` against
+`CNetSession::SendRecord` 0xbfeb0 (`lea [r+r+0x3b0]` then `[r+0x4]` against
 `[r+r+0x3b4]`), `CBattlezMapConfig::ClaimCellFromRow` 0x30730
 (`lea [r+r*8+0x188]` then `[r+0xd4]` against `[r+r*8+0x25c]`),
 `CSBI_WellGoo::Setup`, `CTriggerMgr::CellHitTest`,
@@ -461,7 +461,7 @@ have been taken out, is three recurring shapes that no source edit reaches:
 
 * a **rematerialization count** - both sides read the same member set and only
   which copy stays in a register differs (`CEyeCandy`'s ctor, `CreateDemoMover`,
-  `CUFO`'s ctor before it was fixed, `FillPlayerList`, `BoxesOverlap`,
+  `CUFO`'s ctor before it was fixed, `FillSessionList`, `BoxesOverlap`,
   `LoadVehicleGruntSprites`, `CGrunt::LoadGruntDecayConfig2`, which recomputes a
   64-bit subtraction retail keeps and cl CSEs);
 * a **cross-jump merge degree** - one side shares an exit the other duplicates,
