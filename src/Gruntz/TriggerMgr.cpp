@@ -1109,68 +1109,75 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
 }
 
 RVA(0x0007a180, 0x86)
-i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
-    CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+i32 CTriggerMgr::SpawnPuddle(
+    i32 x,
+    i32 y,
+    i32 playerIndex,
+    i32 moveIcon,
+    i32 animatePlacement,
+    i32 gaugePoints
+) {
+    CDDrawChildGroup* childGroup = m_world->m_childGroup;
+    CWwdGameObjectA* sprite = childGroup->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == NULL) {
 
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x400);
         return 0;
     }
     sprite->m_logicRecord->m_dispatch(sprite);
-    sprite->m_smarts = f124;
-    sprite->m_score = f114;
-    sprite->m_points = f118;
-    return PlacePuddle(sprite, color);
+    sprite->m_smarts = playerIndex;
+    sprite->m_score = moveIcon;
+    sprite->m_points = gaugePoints;
+    return PlacePuddle(sprite, animatePlacement);
 }
 
 RVA(0x0007a240, 0x143)
-i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
-    CGruntPuddle* tgt = static_cast<CGruntPuddle*>(sprite->m_logicRecord->m_userLogic);
-    i32 d = sprite->m_points;
-    if (d == 0) {
-        d = 0x19;
+i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 animatePlacement) {
+    CGruntPuddle* puddle = static_cast<CGruntPuddle*>(sprite->m_logicRecord->m_userLogic);
+    i32 gaugePoints = sprite->m_points;
+    if (gaugePoints == 0) {
+        gaugePoints = 0x19;
     }
-    if (tgt->Place(sprite->m_smarts, sprite->m_score, color, d) == 0) {
-        tgt->SetObjectFlags(0x10000);
+    if (puddle->Place(sprite->m_smarts, sprite->m_score, animatePlacement, gaugePoints) == 0) {
+        puddle->SetObjectFlags(0x10000);
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
     }
     POSITION pos = m_baseList.GetHeadPosition();
     i32 stop = 0;
-    i32 manyFlag = stop;
-    i32 replaced = stop;
+    i32 overCapacity = stop;
+    i32 replacedExisting = stop;
     if (m_baseList.GetCount() > 0x3b) {
-        manyFlag = 1;
+        overCapacity = 1;
     }
     while (pos != NULL && stop == 0) {
         POSITION cur = pos;
-        CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-        if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
-            if (o->m_pending != 0) {
-                tgt->SetObjectFlags(0x10000);
+        CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+        if (existing->m_tileX == puddle->m_tileX && existing->m_tileY == puddle->m_tileY) {
+            if (existing->m_pending != 0) {
+                puddle->SetObjectFlags(0x10000);
                 return 0;
             }
-            o->SetObjectFlags(0x10000);
+            existing->SetObjectFlags(0x10000);
             m_baseList.RemoveAt(cur);
             stop = 1;
-            replaced = 1;
+            replacedExisting = 1;
         }
     }
-    if (manyFlag != 0 && replaced == 0) {
+    if (overCapacity != 0 && replacedExisting == 0) {
         pos = m_baseList.GetHeadPosition();
         stop = 0;
         while (pos != NULL && stop == 0) {
             POSITION cur = pos;
-            CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-            if (o->m_pending == 0) {
-                o->SetObjectFlags(0x10000);
+            CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+            if (existing->m_pending == 0) {
+                existing->SetObjectFlags(0x10000);
                 m_baseList.RemoveAt(cur);
                 stop = 1;
             }
         }
     }
-    m_baseList.AddTail(tgt);
+    m_baseList.AddTail(puddle);
     return 1;
 }
 
@@ -1927,24 +1934,24 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             continue;
         }
 
-        i32 type = g->m_gruntType;
-        GruntzPlayer* cfg = &g_gameReg->m_options[type];
+        i32 playerIndex = g->m_playerIndex;
+        GruntzPlayer* player = &g_gameReg->m_options[playerIndex];
         i32 aiType = 0;
         i32 ok = 0;
         i32 radius = 0;
 
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            if (cfg->m_humanControlled == 0) {
+            if (player->m_humanControlled == 0) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
             if (PlaceObject(
-                    type,
+                    playerIndex,
                     (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
                     (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                     0x186a0,
                     GRUNT_ENTRANCE_RESURRECT,
-                    g->m_placeIndex,
+                    g->m_moveIcon,
                     0,
                     0,
                     aiType,
@@ -1956,15 +1963,16 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 != -1) {
                 ok = 1;
             }
-        } else if (cfg->m_liveGate != 0 && cfg->m_doneFlag == 0 && cfg->m_clearedRound == 0) {
-            if (cfg->m_humanControlled != 0) {
+        } else if (player->m_liveGate != 0 && player->m_doneFlag == 0
+                   && player->m_clearedRound == 0) {
+            if (player->m_humanControlled != 0) {
                 if (PlaceObject(
-                        type,
+                        playerIndex,
                         (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                         0x186a0,
                         GRUNT_ENTRANCE_RESURRECT,
-                        g->m_placeIndex,
+                        g->m_moveIcon,
                         0,
                         0,
                         0,
@@ -1976,7 +1984,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                     != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_battlezConfig.TrySeedSpawnAt(tx, ty) != 0) {
+            } else if (player->m_battlezConfig.TrySeedSpawnAt(tx, ty) != 0) {
                 ok = 1;
             }
         }

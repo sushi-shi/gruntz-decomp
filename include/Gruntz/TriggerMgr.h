@@ -105,9 +105,10 @@ public:
 
     i32 RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection);
 
-    i32 SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118);
+    i32
+    SpawnPuddle(i32 x, i32 y, i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32 gaugePoints);
 
-    i32 PlacePuddle(CGameObject* sprite, i32 color);
+    i32 PlacePuddle(CGameObject* sprite, i32 animatePlacement);
 
     i32 PlaceObject(
         i32 playerIndex,

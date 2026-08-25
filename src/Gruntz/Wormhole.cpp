@@ -210,19 +210,19 @@ i32 CGruntPuddle::Idle() {
 }
 
 RVA(0x00040c30, 0xb3)
-i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 gaugePoints) {
+i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32 gaugePoints) {
     CWwdGameObjectA* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
     m_tileY = o->m_screenY >> TILE_SHIFT_PX;
     m_gaugePoints = gaugePoints;
-    m_gruntType = gruntType;
-    m_placeIndex = placeIndex;
-    CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(placeIndex, 0);
-    CWwdGameObjectA* obj = m_object;
-    SET_DRAW_FILL(obj, SHADE_PAL_16, rec);
+    m_playerIndex = playerIndex;
+    m_moveIcon = moveIcon;
+    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(moveIcon, 0);
+    CWwdGameObjectA* sprite = m_object;
+    SET_DRAW_FILL(sprite, SHADE_PAL_16, shade);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("B");
-    if (color == 0) {
+    if (animatePlacement == 0) {
         m_placed = 1;
         m_pending = 0;
         SwitchGeometry(g_puddleSpriteKey, 0);
@@ -280,8 +280,8 @@ i32 CGruntPuddle::SerializeMove(
             ar->Write(&m_pending, sizeof(m_pending));
             ar->Write(&m_placed, sizeof(m_placed));
             ar->Write(&m_gaugePoints, sizeof(m_gaugePoints));
-            ar->Write(&m_gruntType, sizeof(m_gruntType));
-            ar->Write(&m_placeIndex, sizeof(m_placeIndex));
+            ar->Write(&m_playerIndex, sizeof(m_playerIndex));
+            ar->Write(&m_moveIcon, sizeof(m_moveIcon));
             break;
         case SERIAL_LOAD:
             ar->Read(&m_tileX, sizeof(m_tileX));
@@ -289,11 +289,11 @@ i32 CGruntPuddle::SerializeMove(
             ar->Read(&m_pending, sizeof(m_pending));
             ar->Read(&m_placed, sizeof(m_placed));
             ar->Read(&m_gaugePoints, sizeof(m_gaugePoints));
-            ar->Read(&m_gruntType, sizeof(m_gruntType));
-            ar->Read(&m_placeIndex, sizeof(m_placeIndex));
+            ar->Read(&m_playerIndex, sizeof(m_playerIndex));
+            ar->Read(&m_moveIcon, sizeof(m_moveIcon));
             break;
         case SERIAL_POSTLOAD: {
-            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_placeIndex, 0);
+            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
             if (sel == NULL) {
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }

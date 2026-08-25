@@ -272,18 +272,18 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
 }
 
 RVA(0x00149250, 0x158)
-i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
+i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
     if (m_srcBpp != 1) {
         return 0;
     }
 
     CFile file;
-    if (file.Open(name, 0x9001, NULL) == 0) {
+    if (file.Open(path, 0x9001, NULL) == 0) {
         return 0;
     }
-    file.Write(&desc, sizeof(desc));
+    file.Write(&header, sizeof(header));
     file.Write(m_rleData, m_rleLen);
-    if (desc.f1 & 0x80) {
+    if (header.flags & 0x80) {
         if (m_palette == NULL) {
             return 0;
         }
@@ -297,41 +297,41 @@ i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     return 1;
 }
 
-// desc.f1 is written directly as the MEMBER, never through a `flags` local: cl 5.0
+// header.flags is written directly as the MEMBER, never through a local: cl 5.0
 // registerises the field in esi, keeps the 0x3d/0xbd/0x100/0x80 chain live, and
 // never spills it back before the by-value argument copy (`lea esi,[esp+0x2c]`
-// clobbers it) - so retail ships an UNINITIALISED f1 and the arithmetic survives
-// as its ghost. A `flags` local cannot reproduce that: stored, it emits a real f1
+// clobbers it) - so retail ships an UNINITIALISED flags field and the arithmetic
+// survives as its ghost. A local cannot reproduce that: stored, it emits a real field
 // write; deleted, the whole chain folds away. See docs/patterns/
 // registerized-member-miscompile-ships-uninitialized-field.md.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001493b0, 0xfd)
 
-i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
+i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
     if (m_srcBpp != 1) {
         return 0;
     }
-    CImageFrameRebuildDesc desc;
-    desc.f0 = 0;
-    desc.f1 = 0x3d;
+    PidWriteHeader header;
+    header.formatTag = 0;
+    header.flags = 0x3d;
     if (m_palette != NULL) {
-        desc.f1 = 0xbd;
+        header.flags = 0xbd;
     }
-    desc.f2 = m_width;
-    desc.f3 = m_height;
-    desc.f4 = offsetX;
-    desc.f5 = offsetY;
-    desc.f6 = 0;
-    desc.f7 = 0;
+    header.width = m_width;
+    header.height = m_height;
+    header.offsetX = offsetX;
+    header.offsetY = offsetY;
+    header.fill = 0;
+    header.reserved1c = 0;
     if (m_colorKey != -1) {
-        desc.f6 = static_cast<u8>(m_colorKey);
-        desc.f1 |= 0x100;
+        header.fill = static_cast<u8>(m_colorKey);
+        header.flags |= 0x100;
     }
     if (m_palette != NULL) {
-        desc.f1 |= 0x80;
+        header.flags |= 0x80;
     }
-    return DecodeFrame(name, desc);
+    return WritePidFile(path, header);
 }
 
 // @dead-code

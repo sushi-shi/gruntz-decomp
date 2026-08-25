@@ -15,15 +15,15 @@ typedef struct tagRECT ShadeRect;
 
 struct PidHeader;
 
-struct CImageFrameRebuildDesc {
-    i32 f0;
-    i32 f1;
-    i32 f2;
-    i32 f3;
-    i32 f4;
-    i32 f5;
-    i32 f6;
-    i32 f7;
+struct PidWriteHeader {
+    i32 formatTag;
+    i32 flags;
+    i32 width;
+    i32 height;
+    i32 offsetX;
+    i32 offsetY;
+    i32 fill;
+    i32 reserved1c;
 };
 
 class CDDrawShadeBlit {
@@ -37,9 +37,9 @@ public:
 
     u8* EncodeRle16(const u8* src);
     void Teardown();
-    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc);
+    i32 WritePidFile(CString path, PidWriteHeader header);
 
-    i32 Rebuild(CString name, i32 offsetX, i32 offsetY);
+    i32 SavePid(CString path, i32 offsetX, i32 offsetY);
     i32 Decompress(u8* dest);
 
     i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);
