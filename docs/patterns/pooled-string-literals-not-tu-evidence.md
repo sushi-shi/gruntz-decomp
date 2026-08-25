@@ -28,7 +28,7 @@ Three independent measurements, all on the retail image:
    gathering `??_C@` COMDATs, not per-object `.data` contributions.
 3. **Reference spread.** `"Grunt"` @`0x20a9ec` is referenced from **28** code
    sites between `0xa4b5` (`RegisterGameObjectTypes`, unit `gameobjectfactory`)
-   and `0xd1da9` (`CPlay::ExecCommand`, unit `playercommandstep`) — 0xc7000 of
+   and `0xd1da9` (`CPlay::ExecuteCommand`, unit `playercommandstep`) — 0xc7000 of
    `.text` apart. `"GRUNTZ_"` @`0x20d28c`: **104** sites, `CWarlord::CWarlord`
    (`0x42d40`) through `CState::BuildAssetNamespacePrefixes` (`0xdca70`). One
    `.obj` contributes one contiguous `.text` run, so these cannot be one object.

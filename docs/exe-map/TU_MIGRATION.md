@@ -117,7 +117,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0ae5f0` | `??0CGuardPoint@@QAE@PAUCGameObject@@@Z` | guardpoint | `0xae5f0` ? |
 | `0x0beb60` | `??0CMultiHelpDlg@@QAE@PAVCWnd@@@Z` | multihelpdlg | `0xbeb60` ? |
 | `0x0bec00` | `?GetMessageMap@CMultiHelpDlg@@MBEPBUAFX_MSGMAP@@XZ` | multihelpdlg | `0xbec00` ? |
-| `0x0d1b60` | `?ExecCommand@CPlay@@QAEHEDDFFDE@Z` | playercommandstep | `0xd1b60` ? |
+| `0x0d1b60` | `?ExecuteCommand@CPlay@@QAEHEDDFFDE@Z` | playercommandstep | `0xd1b60` ? |
 | `0x0d2b20` | `?PlaceStartGruntz@CPlay@@QAEHXZ` | leveltilevalidation | `0xd2b20` ? |
 | `0x0d2dd0` | `?ValidateLevelTiles@CPlay@@QAEHXZ` | leveltilevalidation | `0xd2dd0` ? |
 | `0x0d53a0` | `?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z` | wwdfile | `0xd53a0` ? |

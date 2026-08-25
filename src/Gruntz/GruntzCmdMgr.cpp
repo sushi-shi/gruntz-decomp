@@ -40,7 +40,7 @@ RVA_DYNINIT(0x00023860, 0x5, s_gruntDirCenter)
 RVA_DYNINIT(0x00023880, 0x1a, s_gruntDirCenter)
 
 DATA(0x001e9608)
-const u16 g_cmdBitTable[16] = {
+const u16 g_unitIndexBitTable[16] = {
     1,
     2,
     4,
@@ -69,54 +69,54 @@ static inline void PokeI16(char* p, i16 v) {
 }
 
 RVA(0x000239d0, 0xf)
-i32 CGruntzCmdMgr::SetMgr(CGruntzMgr* mgr) {
-    m_manager = mgr;
+i32 CGruntzCmdMgr::SetManager(CGruntzMgr* manager) {
+    m_manager = manager;
     return 1;
 }
 
 RVA(0x000239f0, 0xc)
-void CGruntzCmdMgr::ClearAndReset() {
+void CGruntzCmdMgr::Shutdown() {
     m_manager = NULL;
-    Clear();
+    ClearCommands();
 }
 
 RVA(0x00023a10, 0xe7)
-i32 CGruntzCmdMgr::ScanTargets(i32 param) {
-    i32 isPlay = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
-    CState* sp = m_manager->m_curState;
-    CGruntzCommand* table[4];
-    table[0] = NULL;
-    table[1] = NULL;
-    table[2] = NULL;
-    table[3] = NULL;
+i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
+    i32 isMultiplayer = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
+    CState* state = m_manager->m_curState;
+    CGruntzCommand* commandsByPlayer[4];
+    commandsByPlayer[0] = NULL;
+    commandsByPlayer[1] = NULL;
+    commandsByPlayer[2] = NULL;
+    commandsByPlayer[3] = NULL;
     i32 i;
-    for (i = 0; i < m_base.GetCount(); i++) {
-        POSITION pos = m_base.FindIndex(i);
-        CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
-        GruntzCommandSubmitFlags flags = obj->m_submitted;
+    for (i = 0; i < m_queuedCommands.GetCount(); i++) {
+        POSITION pos = m_queuedCommands.FindIndex(i);
+        CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.GetAt(pos));
+        GruntzCommandSubmitFlags flags = command->m_submitFlags;
         if (!(flags & COMMAND_SUBMIT_IMMEDIATE)) {
             if (!(flags & COMMAND_SUBMIT_SCHEDULED)) {
                 continue;
             }
-            if (static_cast<u8>(obj->m_targetType) != static_cast<u32>(param)) {
+            if (static_cast<u8>(command->m_scheduleSlot) != static_cast<u32>(scheduleSlot)) {
                 continue;
             }
         }
-        if (isPlay) {
-            table[obj->m_targetIndex] = obj;
+        if (isMultiplayer) {
+            commandsByPlayer[command->m_playerIndex] = command;
         } else {
-            obj->Select(sp);
-            obj->Deselect();
+            command->Execute(state);
+            command->Recycle();
         }
-        m_base.RemoveAt(pos);
+        m_queuedCommands.RemoveAt(pos);
         i--;
     }
-    if (isPlay) {
+    if (isMultiplayer) {
         for (i = 0; i < 4; i++) {
-            CGruntzCommand* obj = table[i % 4];
-            if (obj) {
-                obj->Select(sp);
-                obj->Deselect();
+            CGruntzCommand* command = commandsByPlayer[i % 4];
+            if (command) {
+                command->Execute(state);
+                command->Recycle();
             }
         }
     }
@@ -124,266 +124,309 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
 }
 
 RVA(0x00023b40, 0x53)
-void CGruntzCmdMgr::RemoveMatchingTarget(i32 indexByte, i32 typeByte) {
-    for (i32 i = 0; i < m_base.GetCount(); i++) {
-        POSITION pos = m_base.FindIndex(i);
-        CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
-        if (obj->m_targetType == static_cast<u8>(typeByte)
-            && obj->m_targetIndex == static_cast<u8>(indexByte)) {
-            m_base.RemoveAt(pos);
-            obj->Deselect();
+void CGruntzCmdMgr::RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot) {
+    for (i32 i = 0; i < m_queuedCommands.GetCount(); i++) {
+        POSITION pos = m_queuedCommands.FindIndex(i);
+        CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.GetAt(pos));
+        if (command->m_scheduleSlot == static_cast<u8>(scheduleSlot)
+            && command->m_playerIndex == static_cast<u8>(playerIndex)) {
+            m_queuedCommands.RemoveAt(pos);
+            command->Recycle();
             return;
         }
     }
 }
 
 RVA(0x00023bc0, 0x25)
-void CGruntzCmdMgr::DrainBase() {
-    while (m_base.GetCount()) {
-        CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.RemoveTail());
-        if (obj) {
-            obj->Deselect();
+void CGruntzCmdMgr::RecycleQueuedCommands() {
+    while (m_queuedCommands.GetCount()) {
+        CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.RemoveTail());
+        if (command) {
+            command->Recycle();
         }
     }
 }
 
 RVA(0x00023c00, 0x1c)
-void CGruntzCmdMgr::Clear() {
-    DrainBase();
-    m_pendingCommands.RemoveAll();
-    CGruntzSingleCommand::FreeAll();
-    CGruntzMultiCommand::FreeAll();
+void CGruntzCmdMgr::ClearCommands() {
+    RecycleQueuedCommands();
+    m_pendingLocalCommands.RemoveAll();
+    CGruntzSingleCommand::ReleasePool();
+    CGruntzMultiCommand::ReleasePool();
 }
 
 RVA(0x00023c30, 0x47)
 void CGruntzCmdMgr::EnqueueSingle(
-    i32 enqueueFlag,
-    char targetIndex,
-    char gruntIndex,
-    char cmdKind,
-    i16 posX,
-    i16 posY,
-    char extraByte,
-    char targetType
+    i32 isLocalCommand,
+    char playerIndex,
+    char unitIndex,
+    char commandKind,
+    i16 targetXOrPlayerIndex,
+    i16 targetYOrUnitIndex,
+    char pickupType,
+    char scheduleSlot
 ) {
-    CGruntzSingleCommand* cmd = CGruntzSingleCommand::Allocate();
-    cmd->SetParamsEx(targetIndex, cmdKind, targetType, posX, posY, gruntIndex, extraByte);
-    EnqueueCommand(enqueueFlag, cmd);
+    CGruntzSingleCommand* command = CGruntzSingleCommand::Allocate();
+    command->InitializeSingle(
+        playerIndex,
+        commandKind,
+        scheduleSlot,
+        targetXOrPlayerIndex,
+        targetYOrUnitIndex,
+        unitIndex,
+        pickupType
+    );
+    EnqueueCommand(isLocalCommand, command);
 }
 
 RVA(0x00023ca0, 0x47)
 void CGruntzCmdMgr::EnqueueMulti(
-    i32 enqueueFlag,
-    char targetIndex,
-    u8 count,
-    u8* gruntList,
-    char cmdKind,
-    i16 posX,
-    i16 posY,
-    char targetType
+    i32 isLocalCommand,
+    char playerIndex,
+    u8 unitCount,
+    u8* unitIndices,
+    char commandKind,
+    i16 targetXOrPlayerIndex,
+    i16 targetYOrUnitIndex,
+    char scheduleSlot
 ) {
-    CGruntzMultiCommand* cmd = CGruntzMultiCommand::Allocate();
-    cmd->SetMaskFromList(targetIndex, cmdKind, targetType, posX, posY, count, gruntList);
-    EnqueueCommand(enqueueFlag, cmd);
+    CGruntzMultiCommand* command = CGruntzMultiCommand::Allocate();
+    command->InitializeMulti(
+        playerIndex,
+        commandKind,
+        scheduleSlot,
+        targetXOrPlayerIndex,
+        targetYOrUnitIndex,
+        unitCount,
+        unitIndices
+    );
+    EnqueueCommand(isLocalCommand, command);
 }
 
 RVA(0x00023d10, 0x5a)
-void CGruntzCmdMgr::EnqueueCommand(i32 flag, CGruntzCommand* cmd) {
-    if (!cmd) {
+void CGruntzCmdMgr::EnqueueCommand(i32 isLocalCommand, CGruntzCommand* command) {
+    if (!command) {
         return;
     }
-    if (flag) {
+    if (isLocalCommand) {
         if (m_manager->m_curState->Update() == GAMESTATE_PLAY) {
-            cmd->m_submitted = COMMAND_SUBMIT_IMMEDIATE;
+            command->m_submitFlags = COMMAND_SUBMIT_IMMEDIATE;
         } else if (m_manager->m_curState->Update() == GAMESTATE_MULTI) {
-            cmd->m_submitted = COMMAND_SUBMIT_PENDING_SLOT;
+            command->m_submitFlags = COMMAND_SUBMIT_PENDING_SLOT;
         }
-        m_pendingCommands.AddTail(cmd);
+        m_pendingLocalCommands.AddTail(command);
     }
-    m_base.AddTail(cmd);
+    m_queuedCommands.AddTail(command);
 }
 
 RVA(0x00023d90, 0x64)
-void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
-    CGameLevel* p = m_manager->m_world->m_level;
-    const RECT* vr = &p->m_mainPlane->m_viewRect;
-    i32 sx = ((vr->left - p->m_planeCtx.left + static_cast<u16>(x)) & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 sy = ((vr->top - p->m_planeCtx.top + static_cast<u16>(y)) & ~TILE_MASK_PX) + TILE_HALF_PX;
+void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
+    i32 isLocalCommand,
+    i32 playerIndex,
+    i32 screenX,
+    i32 screenY,
+    i32 scheduleSlot
+) {
+    CGameLevel* level = m_manager->m_world->m_level;
+    const RECT* view = &level->m_mainPlane->m_viewRect;
+    i32 targetX =
+        ((view->left - level->m_planeCtx.left + static_cast<u16>(screenX)) & ~TILE_MASK_PX)
+        + TILE_HALF_PX;
+    i32 targetY = ((view->top - level->m_planeCtx.top + static_cast<u16>(screenY)) & ~TILE_MASK_PX)
+                  + TILE_HALF_PX;
     EnqueueSingle(
-        enqueueFlag,
-        static_cast<char>(targetIndex),
+        isLocalCommand,
+        static_cast<char>(playerIndex),
         0,
         0,
-        static_cast<i16>(sx),
-        static_cast<i16>(sy),
+        static_cast<i16>(targetX),
+        static_cast<i16>(targetY),
         0,
-        static_cast<char>(targetType)
+        static_cast<char>(scheduleSlot)
     );
 }
 
 RVA(0x00023e20, 0x2f)
-i32 CGruntzCommand::SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY) {
-    m_targetIndex = targetIndex;
-    m_commandKind = cmdKind;
-    m_targetType = targetType;
-    m_posX = posX;
-    m_posY = posY;
+i32 CGruntzCommand::InitializeCommon(
+    char playerIndex,
+    char commandKind,
+    char scheduleSlot,
+    i16 targetXOrPlayerIndex,
+    i16 targetYOrUnitIndex
+) {
+    m_playerIndex = playerIndex;
+    m_commandKind = commandKind;
+    m_scheduleSlot = scheduleSlot;
+    m_targetXOrPlayerIndex = targetXOrPlayerIndex;
+    m_targetYOrUnitIndex = targetYOrUnitIndex;
     return 1;
 }
 
 RVA(0x00023e60, 0x42)
-i32 CGruntzCommand::SetParamsEx(
-    char targetIndex,
-    char cmdKind,
-    char targetType,
-    i16 posX,
-    i16 posY,
-    char gruntIndex,
-    char extraByte
+i32 CGruntzCommand::InitializeSingle(
+    char playerIndex,
+    char commandKind,
+    char scheduleSlot,
+    i16 targetXOrPlayerIndex,
+    i16 targetYOrUnitIndex,
+    char unitIndex,
+    char pickupType
 ) {
-    if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
+    if (!CGruntzCommand::InitializeCommon(
+            playerIndex,
+            commandKind,
+            scheduleSlot,
+            targetXOrPlayerIndex,
+            targetYOrUnitIndex
+        )) {
         return 0;
     }
-    m_gruntIndex = gruntIndex;
-    m_extraByte = extraByte;
+    m_unitIndex = unitIndex;
+    m_pickupType = pickupType;
     return 1;
 }
 
 RVA(0x00023ed0, 0x83)
-i32 CGruntzCommand::SetMaskFromList(
-    char targetIndex,
-    char cmdKind,
-    char targetType,
-    i16 posX,
-    i16 posY,
-    u8 count,
-    u8* gruntList
+i32 CGruntzCommand::InitializeMulti(
+    char playerIndex,
+    char commandKind,
+    char scheduleSlot,
+    i16 targetXOrPlayerIndex,
+    i16 targetYOrUnitIndex,
+    u8 unitCount,
+    u8* unitIndices
 ) {
-    if (!gruntList) {
+    if (!unitIndices) {
         return 0;
     }
-    if (count > 0x10) {
+    if (unitCount > 0x10) {
         return 0;
     }
-    if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
+    if (!CGruntzCommand::InitializeCommon(
+            playerIndex,
+            commandKind,
+            scheduleSlot,
+            targetXOrPlayerIndex,
+            targetYOrUnitIndex
+        )) {
         return 0;
     }
 
-    m_gruntMask = 0;
-    for (i32 i = 0; i < count; i++) {
-        m_gruntMask |= g_cmdBitTable[gruntList[i]];
+    m_unitMask = 0;
+    for (i32 i = 0; i < unitCount; i++) {
+        m_unitMask |= g_unitIndexBitTable[unitIndices[i]];
     }
     return 1;
 }
 
 RVA(0x00023f90, 0x48)
-i32 CGruntzSingleCommand::Parse(char* data, i32) {
+i32 CGruntzSingleCommand::DecodePacket(char* data, i32) {
     char* start = data;
     ++data;
-    m_targetIndex = *data++;
+    m_playerIndex = *data++;
     m_commandKind = static_cast<PlayerCommandKind>(*data++);
-    m_targetType = *data++;
-    m_posX = PeekI16(data);
+    m_scheduleSlot = *data++;
+    m_targetXOrPlayerIndex = PeekI16(data);
     data += 2;
-    m_posY = PeekI16(data);
+    m_targetYOrUnitIndex = PeekI16(data);
     data += 2;
-    m_gruntIndex = *data++;
+    m_unitIndex = *data++;
 
     if (static_cast<u8>(IDX(m_commandKind)) >= 8) {
-        m_extraByte = *data++;
+        m_pickupType = static_cast<PickupType>(*data++);
     }
     return data - start;
 }
 
 RVA(0x00024000, 0x3e)
-i32 CGruntzMultiCommand::Parse(char* data, i32) {
+i32 CGruntzMultiCommand::DecodePacket(char* data, i32) {
     char* start = data;
     ++data;
-    m_targetIndex = *data++;
+    m_playerIndex = *data++;
     m_commandKind = static_cast<PlayerCommandKind>(*data++);
-    m_targetType = *data++;
-    m_posX = PeekI16(data);
+    m_scheduleSlot = *data++;
+    m_targetXOrPlayerIndex = PeekI16(data);
     data += 2;
-    m_posY = PeekI16(data);
+    m_targetYOrUnitIndex = PeekI16(data);
     data += 2;
-    m_gruntMask = static_cast<u16>(PeekI16(data));
+    m_unitMask = static_cast<u16>(PeekI16(data));
     data += 2;
     return data - start;
 }
 
 RVA(0x00024050, 0x57)
-i32 CGruntzSingleCommand::Pack(char* buf, i32) {
-    char* start = buf;
-    *buf = static_cast<char>(GetTag());
-    *++buf = m_targetIndex;
-    *++buf = static_cast<char>(IDX(m_commandKind));
-    *++buf = m_targetType;
-    char* w = buf + 1;
-    PokeI16(w, static_cast<i16>(m_posX));
+i32 CGruntzSingleCommand::EncodePacket(char* buffer, i32) {
+    char* start = buffer;
+    *buffer = static_cast<char>(GetRecordKind());
+    *++buffer = m_playerIndex;
+    *++buffer = static_cast<char>(IDX(m_commandKind));
+    *++buffer = m_scheduleSlot;
+    char* w = buffer + 1;
+    PokeI16(w, static_cast<i16>(m_targetXOrPlayerIndex));
     w += 2;
-    PokeI16(w, static_cast<i16>(m_posY));
+    PokeI16(w, static_cast<i16>(m_targetYOrUnitIndex));
     w += 2;
-    *w = m_gruntIndex;
+    *w = m_unitIndex;
     w++;
     if (static_cast<u8>(IDX(m_commandKind)) >= 8) {
-        *w = m_extraByte;
+        *w = static_cast<char>(IDX(m_pickupType));
         w++;
     }
     return w - start;
 }
 
 RVA(0x000240d0, 0x4d)
-i32 CGruntzMultiCommand::Pack(char* buf, i32) {
-    char* start = buf;
-    *buf = static_cast<char>(GetTag());
-    *++buf = m_targetIndex;
-    *++buf = static_cast<char>(IDX(m_commandKind));
-    *++buf = m_targetType;
-    char* w = buf + 1;
-    PokeI16(w, static_cast<i16>(m_posX));
+i32 CGruntzMultiCommand::EncodePacket(char* buffer, i32) {
+    char* start = buffer;
+    *buffer = static_cast<char>(GetRecordKind());
+    *++buffer = m_playerIndex;
+    *++buffer = static_cast<char>(IDX(m_commandKind));
+    *++buffer = m_scheduleSlot;
+    char* w = buffer + 1;
+    PokeI16(w, static_cast<i16>(m_targetXOrPlayerIndex));
     w += 2;
-    PokeI16(w, static_cast<i16>(m_posY));
+    PokeI16(w, static_cast<i16>(m_targetYOrUnitIndex));
     w += 2;
-    PokeI16(w, static_cast<i16>(m_gruntMask));
+    PokeI16(w, static_cast<i16>(m_unitMask));
     w += 2;
     return w - start;
 }
 
 RVA(0x00024140, 0x35)
-i32 CGruntzSingleCommand::Select(CState* state) {
+i32 CGruntzSingleCommand::Execute(CState* state) {
     CPlay* p = static_cast<CPlay*>(state);
     if (!p) {
         return 0;
     }
 
-    return p->ExecCommand(
-        m_targetIndex,
-        m_gruntIndex,
+    return p->ExecuteCommand(
+        m_playerIndex,
+        m_unitIndex,
         static_cast<PlayerCommandKind>(m_commandKind),
-        m_posX,
-        m_posY,
-        m_extraByte,
-        m_targetType
+        m_targetXOrPlayerIndex,
+        m_targetYOrUnitIndex,
+        static_cast<char>(IDX(m_pickupType)),
+        m_scheduleSlot
     );
 }
 
 RVA(0x00024190, 0x6c)
-i32 CGruntzMultiCommand::Select(CState* state) {
+i32 CGruntzMultiCommand::Execute(CState* state) {
     CPlay* p = static_cast<CPlay*>(state);
     if (!p) {
         return 0;
     }
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
-        if (g_cmdBitTable[i] & m_gruntMask) {
-            if (!p->ExecCommand(
-                    m_targetIndex,
+        if (g_unitIndexBitTable[i] & m_unitMask) {
+            if (!p->ExecuteCommand(
+                    m_playerIndex,
                     static_cast<char>(i),
                     static_cast<PlayerCommandKind>(m_commandKind),
-                    m_posX,
-                    m_posY,
+                    m_targetXOrPlayerIndex,
+                    m_targetYOrUnitIndex,
                     0,
-                    m_targetType
+                    m_scheduleSlot
                 )) {
                 ok = 0;
             }
@@ -407,12 +450,12 @@ i32 CGruntzSingleCommand::UnusedCommandQuery() {
 }
 
 RVA(0x00024280, 0x3)
-char CGruntzSingleCommand::GetTag() {
+char CGruntzSingleCommand::GetRecordKind() {
     return static_cast<char>(IDX(COMMAND_RECORD_SINGLE));
 }
 
 RVA(0x000242a0, 0xc)
-void CGruntzSingleCommand::Deselect() {
+void CGruntzSingleCommand::Recycle() {
     CPtrListPool<CGruntzSingleCommand>::s_freeList.AddHead(this);
 }
 
@@ -441,12 +484,12 @@ i32 CGruntzMultiCommand::UnusedCommandQuery() {
 }
 
 RVA(0x000243c0, 0x3)
-char CGruntzMultiCommand::GetTag() {
+char CGruntzMultiCommand::GetRecordKind() {
     return static_cast<char>(IDX(COMMAND_RECORD_MULTI));
 }
 
 RVA(0x000243e0, 0xc)
-void CGruntzMultiCommand::Deselect() {
+void CGruntzMultiCommand::Recycle() {
     CPtrListPool<CGruntzMultiCommand>::s_freeList.AddHead(this);
 }
 
@@ -454,7 +497,7 @@ RVA_COMPGEN(0x00024400, 0x1e, ??_GCGruntzMultiCommand@@UAEPAXI@Z)
 RVA_COMPGEN(0x00024430, 0x7, ??1CGruntzMultiCommand@@UAE@XZ)
 
 RVA(0x00024450, 0x29)
-void CGruntzSingleCommand::FreeAll() {
+void CGruntzSingleCommand::ReleasePool() {
     CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
     while (freeList.GetCount()) {
         CGruntzCommand* node = static_cast<CGruntzCommand*>(freeList.RemoveTail());
@@ -465,7 +508,7 @@ void CGruntzSingleCommand::FreeAll() {
 }
 
 RVA(0x00024490, 0x29)
-void CGruntzMultiCommand::FreeAll() {
+void CGruntzMultiCommand::ReleasePool() {
     CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
     while (freeList.GetCount()) {
         CGruntzCommand* node = static_cast<CGruntzCommand*>(freeList.RemoveTail());
@@ -503,14 +546,14 @@ i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Write(&m_targetIndex, sizeof(m_targetIndex));
+    s->Write(&m_playerIndex, sizeof(m_playerIndex));
     s->Write(&m_commandKind, sizeof(m_commandKind));
-    s->Write(&m_targetType, sizeof(m_targetType));
-    s->Write(&m_posX, sizeof(m_posX));
-    s->Write(&m_posY, sizeof(m_posY));
-    s->Write(&m_submitted, sizeof(m_submitted));
-    s->Write(&m_gruntIndex, sizeof(m_gruntIndex));
-    s->Write(&m_extraByte, sizeof(m_extraByte));
+    s->Write(&m_scheduleSlot, sizeof(m_scheduleSlot));
+    s->Write(&m_targetXOrPlayerIndex, sizeof(m_targetXOrPlayerIndex));
+    s->Write(&m_targetYOrUnitIndex, sizeof(m_targetYOrUnitIndex));
+    s->Write(&m_submitFlags, sizeof(m_submitFlags));
+    s->Write(&m_unitIndex, sizeof(m_unitIndex));
+    s->Write(&m_pickupType, sizeof(m_pickupType));
     return 1;
 }
 
@@ -522,14 +565,14 @@ i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Read(&m_targetIndex, sizeof(m_targetIndex));
+    s->Read(&m_playerIndex, sizeof(m_playerIndex));
     s->Read(&m_commandKind, sizeof(m_commandKind));
-    s->Read(&m_targetType, sizeof(m_targetType));
-    s->Read(&m_posX, sizeof(m_posX));
-    s->Read(&m_posY, sizeof(m_posY));
-    s->Read(&m_submitted, sizeof(m_submitted));
-    s->Read(&m_gruntIndex, sizeof(m_gruntIndex));
-    s->Read(&m_extraByte, sizeof(m_extraByte));
+    s->Read(&m_scheduleSlot, sizeof(m_scheduleSlot));
+    s->Read(&m_targetXOrPlayerIndex, sizeof(m_targetXOrPlayerIndex));
+    s->Read(&m_targetYOrUnitIndex, sizeof(m_targetYOrUnitIndex));
+    s->Read(&m_submitFlags, sizeof(m_submitFlags));
+    s->Read(&m_unitIndex, sizeof(m_unitIndex));
+    s->Read(&m_pickupType, sizeof(m_pickupType));
     return 1;
 }
 
@@ -561,13 +604,13 @@ i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Write(&m_targetIndex, sizeof(m_targetIndex));
+    s->Write(&m_playerIndex, sizeof(m_playerIndex));
     s->Write(&m_commandKind, sizeof(m_commandKind));
-    s->Write(&m_targetType, sizeof(m_targetType));
-    s->Write(&m_posX, sizeof(m_posX));
-    s->Write(&m_posY, sizeof(m_posY));
-    s->Write(&m_submitted, sizeof(m_submitted));
-    s->Write(&m_gruntMask, sizeof(m_gruntMask));
+    s->Write(&m_scheduleSlot, sizeof(m_scheduleSlot));
+    s->Write(&m_targetXOrPlayerIndex, sizeof(m_targetXOrPlayerIndex));
+    s->Write(&m_targetYOrUnitIndex, sizeof(m_targetYOrUnitIndex));
+    s->Write(&m_submitFlags, sizeof(m_submitFlags));
+    s->Write(&m_unitMask, sizeof(m_unitMask));
     return 1;
 }
 
@@ -579,13 +622,13 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     if (!g_gameReg->m_world) {
         return 0;
     }
-    s->Read(&m_targetIndex, sizeof(m_targetIndex));
+    s->Read(&m_playerIndex, sizeof(m_playerIndex));
     s->Read(&m_commandKind, sizeof(m_commandKind));
-    s->Read(&m_targetType, sizeof(m_targetType));
-    s->Read(&m_posX, sizeof(m_posX));
-    s->Read(&m_posY, sizeof(m_posY));
-    s->Read(&m_submitted, sizeof(m_submitted));
-    s->Read(&m_gruntMask, sizeof(m_gruntMask));
+    s->Read(&m_scheduleSlot, sizeof(m_scheduleSlot));
+    s->Read(&m_targetXOrPlayerIndex, sizeof(m_targetXOrPlayerIndex));
+    s->Read(&m_targetYOrUnitIndex, sizeof(m_targetYOrUnitIndex));
+    s->Read(&m_submitFlags, sizeof(m_submitFlags));
+    s->Read(&m_unitMask, sizeof(m_unitMask));
     return 1;
 }
 
@@ -605,10 +648,10 @@ i32 CGruntzCmdMgr::Serialize(
             return 1;
         }
 
-        if (!IsActive2(stream)) {
+        if (!CanLoadCommands(stream)) {
             return 0;
         }
-        Clear();
+        ClearCommands();
         i32 count;
         stream->Read(&count, sizeof(count));
         cursorOrCount = 0;
@@ -630,22 +673,22 @@ i32 CGruntzCmdMgr::Serialize(
             } else {
                 return 0;
             }
-            m_base.AddTail(cmd);
+            m_queuedCommands.AddTail(cmd);
             cursorOrCount++;
         }
         return 1;
     }
 
-    if (!IsActive(stream)) {
+    if (!CanSaveCommands(stream)) {
         return 0;
     }
-    cursorOrCount = m_base.GetCount();
+    cursorOrCount = m_queuedCommands.GetCount();
     stream->Write(&cursorOrCount, sizeof(cursorOrCount));
 
-    POSITION pos = m_base.GetHeadPosition();
+    POSITION pos = m_queuedCommands.GetHeadPosition();
     while (pos != NULL) {
-        CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
-        i32 tagWord = cmd->GetTag() & 0xff;
+        CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_queuedCommands.GetNext(pos));
+        i32 tagWord = cmd->GetRecordKind() & 0xff;
         stream->Write(&tagWord, sizeof(tagWord));
         if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, payload)) {
             return 0;
@@ -655,16 +698,16 @@ i32 CGruntzCmdMgr::Serialize(
 }
 
 RVA(0x00024a90, 0x20)
-i32 CGruntzCmdMgr::IsActive(CFileMemBase* enable) {
-    if (!enable) {
+i32 CGruntzCmdMgr::CanSaveCommands(CFileMemBase* stream) {
+    if (!stream) {
         return 0;
     }
     return g_gameReg->m_world != NULL;
 }
 
 RVA(0x00024ac0, 0x20)
-i32 CGruntzCmdMgr::IsActive2(CFileMemBase* enable) {
-    if (enable == NULL) {
+i32 CGruntzCmdMgr::CanLoadCommands(CFileMemBase* stream) {
+    if (stream == NULL) {
         return 0;
     }
     return g_gameReg->m_world != NULL;

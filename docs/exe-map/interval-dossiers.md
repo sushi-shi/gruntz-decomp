@@ -54,7 +54,7 @@ Verdict summary:
 Evidence:
 - Block order is a **sandwich**: cmdmgr (9 fns, `0x239d0-0x23d6a`) | command
   (22 fns, `0x23e20-0x2485b`) | cmdmgr again (`?Serialize@CGruntzCmdMgr` `0x24890`,
-  `IsActive`/`IsActive2` to `0x24ae0`). A-B-A is impossible for two objs at
+  `CanSaveCommands`/`CanLoadCommands` to `0x24ae0`). A-B-A is impossible for two objs at
   first link.
 - Init frags: gruntzcommand runs 18@`0x231d0` + 1@`0x24af0` + 7@`0x24b90`
   bracket the interval; **zero** gruntzcmdmgr frags → one obj owns the region.

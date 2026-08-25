@@ -386,7 +386,7 @@ i32 CNetSession::SendTick() {
 
                 RecordBytes<GruntRec> recordBytes;
                 recordBytes.m_rec = record;
-                payload += command->Pack(payload, recordBytes.m_chars - payload + 0x410);
+                payload += command->EncodePacket(payload, recordBytes.m_chars - payload + 0x410);
             }
         }
         m_owner->WriteTag("[end]\n");

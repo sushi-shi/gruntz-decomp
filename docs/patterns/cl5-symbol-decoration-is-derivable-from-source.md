@@ -17,7 +17,7 @@ Three rules, and nothing else, cover the corpus:
 | # | rule | clang | cl 5.0 |
 |---|------|-------|--------|
 | 1 | the i386 COFF global prefix | `s_MAIN` (IR value name, unprefixed) | `_s_MAIN` |
-| 2 | top-level array storage class | `?g_cmdBitTable@@3QBGB` | `?g_cmdBitTable@@3PBGB` |
+| 2 | top-level array storage class | `?g_unitIndexBitTable@@3QBGB` | `?g_unitIndexBitTable@@3PBGB` |
 | 3 | TU-local storage | `s_MAIN` / `?s_x@?1??F@@QAEHXZ@4HA` | `_s_MAIN$S<n>` / `_?s_x@?<m>??F@@QAEHXZ@4HA$S<n>` |
 
 Rule 1 is LLVM's, not cl's: the i386-windows-msvc backend prefixes `_` to every symbol

@@ -474,7 +474,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_cmdSubMgr = new CGruntzCmdMgr;
 
-    if (!m_cmdSubMgr->SetMgr(this)) {
+    if (!m_cmdSubMgr->SetManager(this)) {
         if (m_cmdSubMgr) {
             delete m_cmdSubMgr;
             m_cmdSubMgr = NULL;

@@ -176,8 +176,8 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         } else {
             continue;
         }
-        i32 consumed = command->Parse(cursor, remaining);
-        command->m_submitted = COMMAND_SUBMIT_SCHEDULED;
+        i32 consumed = command->DecodePacket(cursor, remaining);
+        command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
         remaining -= consumed;
         cursor += consumed;
         m_owner->m_mgr->m_cmdSubMgr->EnqueueCommand(0, command);

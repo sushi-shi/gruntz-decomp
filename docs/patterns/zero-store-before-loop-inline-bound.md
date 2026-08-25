@@ -32,6 +32,6 @@ STEERABLE. Two independent levers: (1) emit the `=0` member store *before* the l
 init so the optimizer can't collapse `i=0` and `member=0` into one register (gives `movw $0,[mem]`
 + separate `xor eax,eax`); (2) write the masked count `(count & 0xff)` *inline in the for-condition*
 (not a hoisted `int n=...`) so the AND targets a scratch copy and leaves the count in its original
-callee/arg register. Evidence: CGruntzCommand::SetMaskFromList (0x023ed0) — the hoisted-`n` +
+callee/arg register. Evidence: CGruntzCommand::InitializeMulti (0x023ed0) — the hoisted-`n` +
 member-zero-second form left a 4-instr permutation (~80%); zero-first + inline-bound closed it to
 byte-exact.

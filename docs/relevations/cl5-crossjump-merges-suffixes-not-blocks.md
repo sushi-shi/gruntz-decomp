@@ -15,7 +15,7 @@
 > predicate for expression factoring across predecessors, not the block cross-jumper.
 
 The standing "block-placement coin" hypothesis reads the merge/duplicate split in
-retail (`CPlay::ExecCommand` merges the whole `TOOL_AT` `res == -1` subtree into
+retail (`CPlay::ExecuteCommand` merges the whole `TOOL_AT` `res == -1` subtree into
 `TOY_AT`'s with per-predecessor `push 2/3` + `jmp`, yet leaves byte-identical ON-pair
 blocks duplicated; `CPlay::LoadCursorSprites` keeps 14 identical return epilogues)
 as one unexplained C2 decision. It is not one decision, and most of it is not a coin.
@@ -35,7 +35,7 @@ Probe: a `switch` with A arms whose bodies end in the same T-statement tail.
 (copies of the tail that survive; **1** = fully merged). From two statements up, cl
 merges every arm — and it does it by SPLITTING each arm at the divergence point,
 leaving the differing prefix in place followed by a jump into the survivor. That
-emitted shape is exactly retail's `ExecCommand` pattern:
+emitted shape is exactly retail's `ExecuteCommand` pattern:
 
 ```asm
 ; probe: four arms, arm 1 carries one extra store, arms 0/2/3 share the tail
@@ -113,7 +113,7 @@ failure path into one block at `0xd06bd` — the pass is running, and working.
 
 * **`CPlay::LoadCursorSprites` `0x000d0120`** — SOLVED, and not a defect: blocker 3.
   Do not chase the 14 epilogues.
-* **`CPlay::ExecCommand` `0x000d1b60`** — RECLASSIFIED. Scanning our fresh compile
+* **`CPlay::ExecuteCommand` `0x000d1b60`** — RECLASSIFIED. Scanning our fresh compile
   for repeated instruction runs, the AT-pair duplicates are **not common suffixes**:
   the longest repeats (14-26 instructions, at `0x0344`/`0x089c`, `0x0350`/`0x04ef`/
   `0x069c`/`0x08a8`, `0x0574`/`0x0939`) are identical PREFIXES that then diverge —

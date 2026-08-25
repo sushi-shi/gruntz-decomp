@@ -11,7 +11,7 @@ use. Their front-end value identities can therefore receive different
 instruction ordinals and lifetimes even when the final instruction selection is
 the same.
 
-`CGruntzCmdMgr::BlitTileMarker` is the control. Retail first resolves the level
+`CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint` is the control. Retail first resolves the level
 and view rectangle, keeps the level in ESI, and loads the two rectangle origins
 into EAX/EDX. Only then does it load the packed X/Y inputs into EDI/ESI and mask
 them with `0xffff`. The bitmask source instead scheduled X before the object

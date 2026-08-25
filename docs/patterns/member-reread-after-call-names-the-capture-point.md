@@ -31,8 +31,8 @@ imagepool and dword-flag-mask-narrows-to-byte-rmw.md).
 
 ## Measured
 
-- CGruntzCmdMgr::ScanTargets 0x23a10 93.84 -> 100.00 EXACT from moving the
-  `sp` capture below the `Update()` call.
+- CGruntzCmdMgr::ExecuteScheduledCommands 0x23a10 93.84 -> 100.00 EXACT from moving the
+  state capture below the `Update()` call.
 - CRezImage::FlipVertical 0x176840: all three row-copy loops re-load
   m_pixels (`[ebx+0x42c]`) inside the loop body - only member-direct
   indexing (`m_pixels[i*wid+x]`), not a cached `u8* top` local, reproduces

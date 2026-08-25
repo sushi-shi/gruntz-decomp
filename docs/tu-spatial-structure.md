@@ -102,8 +102,9 @@ disagrees with where retail put the code.
 
 The clusters are the "written in the same place" case and need no fixing:
 `ButeMgr.cpp` (8 rows, `CButeMgr` ↔ `CButeValue` alternating), `GruntzCmdMgr.cpp`
-(7, `CGruntzMultiCommand` ↔ `CGruntzSingleCommand` in matched `Parse`/`Pack`/`Select`/
-`FreeAll` pairs), `Attract.cpp` (4, the state-class soup), `Multi.cpp` (4).
+(7, `CGruntzMultiCommand` ↔ `CGruntzSingleCommand` in matched
+`DecodePacket`/`EncodePacket`/`Execute`/`ReleasePool` pairs), `Attract.cpp` (4, the
+state-class soup), `Multi.cpp` (4).
 
 `Multi.cpp` is the clearest **not-inlined** cluster: `CNetSessionListNode::GroupName`,
 `CNetPlayerNode::ShortName`, `CNetSession::InitializeFields` and `CNetCmdSlot::GetPlayerName`

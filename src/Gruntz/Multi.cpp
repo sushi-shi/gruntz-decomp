@@ -547,16 +547,16 @@ i32 CMulti::Render() {
         m_processedCommandTick = newId;
         CGruntzCmdMgr* mgr = Mgr()->m_cmdSubMgr;
         CGruntzCommand* node;
-        if (mgr->m_pendingCommands.GetCount() == 0) {
+        if (mgr->m_pendingLocalCommands.GetCount() == 0) {
             node = NULL;
         } else {
-            node = static_cast<CGruntzCommand*>(mgr->m_pendingCommands.RemoveHead());
+            node = static_cast<CGruntzCommand*>(mgr->m_pendingLocalCommands.RemoveHead());
         }
         if (node) {
-            node->m_submitted = COMMAND_SUBMIT_SCHEDULED;
+            node->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
 
             i32 v = m_processedCommandTick + static_cast<i32>(m_commandDelay) * 2;
-            node->m_targetType = static_cast<u8>(v % 128);
+            node->m_scheduleSlot = static_cast<u8>(v % 128);
         }
         m_session->ScheduleCommand(node, static_cast<u8>(static_cast<u8>(m_commandDelay) << 1));
     }
@@ -648,7 +648,7 @@ i32 CMulti::AdvanceGameFrame() {
             m_ambientInitDone = 1;
         }
     }
-    Mgr()->m_cmdSubMgr->ScanTargets(m_processedCommandTick % 128);
+    Mgr()->m_cmdSubMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;
@@ -3273,7 +3273,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     i32 end = seq + static_cast<i32>(m_commandDelay) * 3;
     for (; seq < end; seq++) {
 
-        NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(slot->m_player->m_playerIndex, seq);
+        NetGameMgr()->m_cmdSubMgr->RemoveScheduledCommand(slot->m_player->m_playerIndex, seq);
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
     slot->ClearSequenceSet(slot->m_receivedAhead);

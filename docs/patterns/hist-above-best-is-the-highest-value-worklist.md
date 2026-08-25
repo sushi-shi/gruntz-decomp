@@ -57,7 +57,8 @@ length as the callee's signed size through a union local instead of converting
 it. Restoring that pun LOCALLY (`AddrWord<char> h; h.m_uword = src->m_length;`
 then read `h.m_word`) is exact. Re-adding the union MEMBER to the shared header
 also reaches 100 but costs two other exact functions to the declaration ripple
-(`CSBI_Image::Render` 100 -> 74.04, `CGruntzCmdMgr::BlitTileMarker` 100 -> 83.79)
+(`CSBI_Image::Render` 100 -> 74.04,
+`CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint` 100 -> 83.79)
 - when a header and a local spelling both reach the same bytes, take the local.
 The later negative control goes one step further: a plain signed local
 (`i32 length = static_cast<i32>(src->m_length);` passed as the callee size)

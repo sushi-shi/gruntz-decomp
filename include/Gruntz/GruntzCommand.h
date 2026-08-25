@@ -32,20 +32,22 @@ class CState;
 
 class CGruntzCommand {
 public:
-    u8 m_targetIndex;
+    u8 m_playerIndex;
     GZ_ENUM_STORAGE(PlayerCommandKind, char) m_commandKind;
-    u8 m_targetType;
+    u8 m_scheduleSlot;
     char m_pad07;
-    i16 m_posX;
-    i16 m_posY;
-    GruntzCommandSubmitFlags m_submitted;
+
+    i16 m_targetXOrPlayerIndex;
+    i16 m_targetYOrUnitIndex;
+
+    GruntzCommandSubmitFlags m_submitFlags;
 
     union {
         struct {
-            char m_gruntIndex;
-            char m_extraByte;
+            char m_unitIndex;
+            char m_pickupType;
         };
-        u16 m_gruntMask;
+        u16 m_unitMask;
     };
     i16 m_pad12;
 
@@ -56,40 +58,46 @@ public:
     virtual i32 Save(CFileMemBase* s) = 0;
     virtual i32 Load(CFileMemBase* s) = 0;
 
-    virtual i32 SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY);
+    virtual i32 InitializeCommon(
+        char playerIndex,
+        char commandKind,
+        char scheduleSlot,
+        i16 targetXOrPlayerIndex,
+        i16 targetYOrUnitIndex
+    );
     virtual i32 UnusedCommandQuery();
 
-    virtual char GetTag() = 0;
+    virtual char GetRecordKind() = 0;
 
-    virtual i32 Parse(char* data, i32 len) = 0;
+    virtual i32 DecodePacket(char* data, i32 length) = 0;
 
-    virtual i32 Pack(char* buf, i32 unused) = 0;
+    virtual i32 EncodePacket(char* buffer, i32 capacity) = 0;
 
-    virtual i32 Select(CState* state) = 0;
+    virtual i32 Execute(CState* state) = 0;
 
-    virtual void Deselect() = 0;
+    virtual void Recycle() = 0;
 
-    i32 SetParamsEx(
-        char targetIndex,
-        char cmdKind,
-        char targetType,
-        i16 posX,
-        i16 posY,
-        char gruntIndex,
-        char extraByte
+    i32 InitializeSingle(
+        char playerIndex,
+        char commandKind,
+        char scheduleSlot,
+        i16 targetXOrPlayerIndex,
+        i16 targetYOrUnitIndex,
+        char unitIndex,
+        char pickupType
     );
-    i32 SetMaskFromList(
-        char targetIndex,
-        char cmdKind,
-        char targetType,
-        i16 posX,
-        i16 posY,
-        u8 count,
-        u8* gruntList
+    i32 InitializeMulti(
+        char playerIndex,
+        char commandKind,
+        char scheduleSlot,
+        i16 targetXOrPlayerIndex,
+        i16 targetYOrUnitIndex,
+        u8 unitCount,
+        u8* unitIndices
     );
 };
 
-extern const u16 g_cmdBitTable[16];
+extern const u16 g_unitIndexBitTable[16];
 
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
@@ -98,15 +106,15 @@ public:
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
-    virtual char GetTag() OVERRIDE;
-    virtual i32 Parse(char*, i32) OVERRIDE;
+    virtual char GetRecordKind() OVERRIDE;
+    virtual i32 DecodePacket(char*, i32) OVERRIDE;
 
-    virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
-    virtual i32 Select(CState* state) OVERRIDE;
-    virtual void Deselect() OVERRIDE;
+    virtual i32 EncodePacket(char* buffer, i32 capacity) OVERRIDE;
+    virtual i32 Execute(CState* state) OVERRIDE;
+    virtual void Recycle() OVERRIDE;
     CGruntzSingleCommand() {}
     static CGruntzSingleCommand* Allocate();
-    static void FreeAll();
+    static void ReleasePool();
 };
 
 class CGruntzMultiCommand : public CGruntzCommand {
@@ -116,15 +124,15 @@ public:
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 UnusedCommandQuery() OVERRIDE;
-    virtual char GetTag() OVERRIDE;
-    virtual i32 Parse(char*, i32) OVERRIDE;
+    virtual char GetRecordKind() OVERRIDE;
+    virtual i32 DecodePacket(char*, i32) OVERRIDE;
 
-    virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
-    virtual i32 Select(CState* state) OVERRIDE;
-    virtual void Deselect() OVERRIDE;
+    virtual i32 EncodePacket(char* buffer, i32 capacity) OVERRIDE;
+    virtual i32 Execute(CState* state) OVERRIDE;
+    virtual void Recycle() OVERRIDE;
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
-    static void FreeAll();
+    static void ReleasePool();
 };
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H

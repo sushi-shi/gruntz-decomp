@@ -236,14 +236,14 @@ public:
 
     i32 SetCursorFrame(i32 item);
 
-    i32 ExecCommand(
-        u8 targetIndex,
-        char gruntIndex,
-        GZ_ENUM_STORAGE(PlayerCommandKind, char) cmdKind,
-        i16 posX,
-        i16 posY,
-        char extraByte,
-        u8 targetType
+    i32 ExecuteCommand(
+        u8 playerIndex,
+        char unitIndex,
+        GZ_ENUM_STORAGE(PlayerCommandKind, char) commandKind,
+        i16 targetXOrPlayerIndex,
+        i16 targetYOrUnitIndex,
+        char pickupType,
+        u8 scheduleSlot
     );
     i32 Flip();
 

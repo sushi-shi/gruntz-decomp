@@ -33,7 +33,7 @@ y = AdvanceB(t, x, y, flags);            // -> y's incoming home, which is what 
 
 Do not infer the parameter's source width from the width of a later coalesced local.
 Every argument owns a four-byte ABI stack slot here, including `char` arguments, and cl
-may place an unrelated `i32` local into that dead home. `CPlay::ExecCommand` is the
+may place an unrelated `i32` local into that dead home. `CPlay::ExecuteCommand` is the
 negative control: two `CellHitTest` outputs occupy incoming command-argument homes, but
 changing the seven narrow parameters to `i32` destroys two byte-exact callers (61.55%
 and 72.67%). One function-scope pair of `i32` coordinate locals removes the synthetic
@@ -55,4 +55,4 @@ differing rows). Evidence (2026-07-28, `src/Gruntz/GameLevel.cpp`):
 `ResolveMoveUp` 93.51 -> **100 EXACT** (with the early-return shrink-wrap),
 `ResolveMoveDown` 83.49 -> **100 EXACT**, `MoveHandlerB`/`MoveHandlerA`/`MoveHandlerC`
 prologues. All were filed "register-scheduling wall ... not source-steerable". The
-source-identity boundary was confirmed by `CPlay::ExecCommand` (2026-08-12).
+source-identity boundary was confirmed by `CPlay::ExecuteCommand` (2026-08-12).

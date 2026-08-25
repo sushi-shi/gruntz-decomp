@@ -4,7 +4,7 @@
 #include <Enums.h>
 
 // The verb of a replicated player order - CGruntzCommand::m_commandKind, sent
-// over the wire and dispatched by CPlay::ExecCommand.
+// over the wire and dispatched by CPlay::ExecuteCommand.
 //
 //   0  PLACE_GRUNT
 //      Its arm's whole body is m_cmdGrid->PlaceObject(...). Both producers

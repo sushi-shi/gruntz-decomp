@@ -88,7 +88,7 @@ second form, `array + sizeof(array) + offsetof(member)`; accept it only when the
 declared array type proves the element stride and the addend stays within that one
 past element. The controls are uniqueness in both directions and agreement of every
 other known relocation anchor in a positionally paired function. This removed two
-false coverage roots: `g_cmdBitTable + 0x20` at 0x1e9628 and
+false coverage roots: `g_unitIndexBitTable + 0x20` at 0x1e9628 and
 `g_levelMsgRectsB + 0x8c` at 0x20b984. A different code relocation genuinely naming
 the same address remains a root because the oracle suppresses relocation sites, not
 target addresses.

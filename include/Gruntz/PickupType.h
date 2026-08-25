@@ -14,10 +14,11 @@
 //   0-22  Toolz     23-32 Toyz      35-39 Brickz
 //   50-60 PowerUpz  61-64 Cursez    75-99 Miscellaneous
 // SPLIT domain: the game passes it as the 4-byte domain, but
-// CGruntzCommand ships it as ONE wire byte (`s->Write(&m_extraByte, 1)`,
-// `m_extraByte = *buf++`), so narrow fields declare
-// GZ_ENUM_STORAGE(PickupType, i8) and keep retail's width. SIGNED, because
-// retail's field is `char` and the domain carries PICKUP_INVALID = -1.
+// CGruntzCommand ships it as ONE wire byte (`s->Write(&m_pickupType, 1)`,
+// `m_pickupType = *buf++`). Dedicated narrow fields use
+// GZ_ENUM_STORAGE(PickupType, i8); the command variant retains its evidenced
+// plain `char` declaration. Both keep the retail byte width, and the domain is
+// signed because it carries PICKUP_INVALID = -1.
 // Names follow retail's own image-set strings (`GAME_INGAMEICONZ_TOOLZ_BOMBZ`,
 // `..._TOYZ_BABYWALKERZ`, `..._POWERUPZ_MEGAPHONEZ`) - see docs/strings-analysis.md.
 GZ_ENUM_BEGIN_SPLIT(PickupType, i8)

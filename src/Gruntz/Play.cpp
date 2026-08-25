@@ -557,7 +557,7 @@ i32 CPlay::Render() {
     if (m_mgr->m_frameGate == 0
         && (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == 0)) {
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));
-        m_mgr->m_cmdSubMgr->ScanTargets(0);
+        m_mgr->m_cmdSubMgr->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
             if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
@@ -1178,8 +1178,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
     g_gameReg->m_scoreHud->Init();
-    g_gameReg->m_cmdSubMgr->m_pendingCommands.RemoveAll();
-    g_gameReg->m_cmdSubMgr->DrainBase();
+    g_gameReg->m_cmdSubMgr->m_pendingLocalCommands.RemoveAll();
+    g_gameReg->m_cmdSubMgr->RecycleQueuedCommands();
     g_frameTicks = 0;
     self->m_returnToMenuOnComplete = 0;
     self->m_mgr->m_isCustomLevel = 0;
@@ -2471,10 +2471,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        // BlitTileMarker takes i32; retail emits no sign-extension anywhere in
+        // EnqueuePlaceGruntAtScreenPoint takes i32; retail emits no sign-extension anywhere in
         // OnKeyDown.  The i16 casts made cl re-read the members as signed WORDs
         // (`movsx eax,word ptr [esi+0x154]`), clipping the cursor position.
-        h->m_cmdSubMgr->BlitTileMarker(1, g_curPlayer, mx, my, 0);
+        h->m_cmdSubMgr->EnqueuePlaceGruntAtScreenPoint(1, g_curPlayer, mx, my, 0);
         return 1;
     }
 
@@ -4578,14 +4578,14 @@ i32 CPlay::SetCursorFrame(i32 item) {
 }
 
 RVA(0x000d1b60, 0xc90)
-i32 CPlay::ExecCommand(
-    u8 targetIndex,
-    char gruntIndex,
-    GZ_ENUM_STORAGE(PlayerCommandKind, char) cmdKind,
-    i16 posX,
-    i16 posY,
-    char extraByte,
-    u8 targetType
+i32 CPlay::ExecuteCommand(
+    u8 playerIndex,
+    char unitIndex,
+    GZ_ENUM_STORAGE(PlayerCommandKind, char) commandKind,
+    i16 targetXOrPlayerIndex,
+    i16 targetYOrUnitIndex,
+    char pickupType,
+    u8 unusedScheduleSlot
 ) {
     CGruntzMgr* mgr = m_mgr;
     if (mgr->m_frameGate != 0) {
@@ -4595,14 +4595,14 @@ i32 CPlay::ExecCommand(
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
 
-    switch (static_cast<u8>(cmdKind)) {
+    switch (static_cast<u8>(commandKind)) {
         case PLAYERCMD_PLACE_GRUNT: {
             u32 currentPlayer = static_cast<u32>(g_curPlayer);
 
             i32 r = mgr->m_cmdGrid->PlaceObject(
-                static_cast<u8>(targetIndex),
-                static_cast<u16>(posX),
-                static_cast<u16>(posY),
+                static_cast<u8>(playerIndex),
+                static_cast<u16>(targetXOrPlayerIndex),
+                static_cast<u16>(targetYOrUnitIndex),
                 100000,
                 GRUNT_ENTRANCE_DROP,
                 g_groupSentinel,
@@ -4624,21 +4624,26 @@ i32 CPlay::ExecCommand(
                 }
                 return 0;
             }
-            if (static_cast<u8>(targetIndex) == currentPlayer) {
+            if (static_cast<u8>(playerIndex) == currentPlayer) {
                 g_gameReg->m_cmdGrid->ResetAll();
             }
             return 1;
         }
 
         case PLAYERCMD_MOVE: {
-            u32 player = static_cast<u8>(targetIndex);
-            u32 gi = static_cast<u8>(gruntIndex);
+            u32 player = static_cast<u8>(playerIndex);
+            u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
             if (g != NULL && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
-            if (!m_mgr->m_cmdGrid
-                     ->ClearCell(player, gi, static_cast<u16>(posX), static_cast<u16>(posY), 0)) {
+            if (!m_mgr->m_cmdGrid->ClearCell(
+                    player,
+                    gi,
+                    static_cast<u16>(targetXOrPlayerIndex),
+                    static_cast<u16>(targetYOrUnitIndex),
+                    0
+                )) {
                 if (player != static_cast<u32>(g_curPlayer) || g == NULL
                     || g->m_entranceCommitted == 0) {
                     return 0;
@@ -4657,7 +4662,7 @@ i32 CPlay::ExecCommand(
         case PLAYERCMD_GUARD_BEGIN: {
             CGrunt* g =
                 mgr->m_cmdGrid
-                    ->m_units[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
+                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             if (g != NULL) {
                 if (g->m_tileClaimed != 1) {
                     g->m_arrivalRerollLo = 0;
@@ -4706,7 +4711,7 @@ i32 CPlay::ExecCommand(
 
             CGrunt* g =
                 mgr->m_cmdGrid
-                    ->m_units[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
+                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             // Gate on m_tileClaimed (+0x420), NOT m_entranceCommitted (+0x1fc): retail
             // reads the SAME slot it is about to clear five instructions later, i.e.
             // "if this grunt is not guarding, do nothing".  Gating on the always-set
@@ -4728,8 +4733,8 @@ i32 CPlay::ExecCommand(
         }
 
         case PLAYERCMD_USE_TOOL_AT_POINT: {
-            u32 player = static_cast<u8>(targetIndex);
-            u32 gi = static_cast<u8>(gruntIndex);
+            u32 player = static_cast<u8>(playerIndex);
+            u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0) {
                 return 0;
@@ -4744,8 +4749,8 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            i32 px = static_cast<u16>(posX);
-            i32 py = static_cast<u16>(posY);
+            i32 px = static_cast<u16>(targetXOrPlayerIndex);
+            i32 py = static_cast<u16>(targetYOrUnitIndex);
 
             CGrunt* node =
                 m_mgr->m_cmdGrid
@@ -4790,8 +4795,8 @@ i32 CPlay::ExecCommand(
         }
 
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
-            u32 player = static_cast<u8>(targetIndex);
-            u32 gi = static_cast<u8>(gruntIndex);
+            u32 player = static_cast<u8>(playerIndex);
+            u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0) {
                 return 0;
@@ -4806,8 +4811,8 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            i32 targetPlayerIndex = static_cast<u16>(posX);
-            i32 targetUnitIndex = static_cast<u16>(posY);
+            i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
+            i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->m_cmdGrid
                              ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
             if (g2 == NULL || g->m_entranceActive != 0) {
@@ -4851,8 +4856,8 @@ i32 CPlay::ExecCommand(
         }
 
         case PLAYERCMD_USE_TOY_AT_POINT: {
-            u32 player = static_cast<u8>(targetIndex);
-            u32 gi = static_cast<u8>(gruntIndex);
+            u32 player = static_cast<u8>(playerIndex);
+            u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
@@ -4867,8 +4872,8 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            i32 px = static_cast<u16>(posX);
-            i32 py = static_cast<u16>(posY);
+            i32 px = static_cast<u16>(targetXOrPlayerIndex);
+            i32 py = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* node =
                 m_mgr->m_cmdGrid
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
@@ -4912,8 +4917,8 @@ i32 CPlay::ExecCommand(
         }
 
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
-            u32 player = static_cast<u8>(targetIndex);
-            u32 gi = static_cast<u8>(gruntIndex);
+            u32 player = static_cast<u8>(playerIndex);
+            u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_cmdGrid->m_units[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
@@ -4928,8 +4933,8 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
-            i32 targetPlayerIndex = static_cast<u16>(posX);
-            i32 targetUnitIndex = static_cast<u16>(posY);
+            i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
+            i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->m_cmdGrid
                              ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
             if (g2 == NULL || g->m_entranceActive != 0) {
@@ -4973,11 +4978,11 @@ i32 CPlay::ExecCommand(
         }
 
         case PLAYERCMD_GIVE_TOOL: {
-            u32 player = static_cast<u8>(targetIndex);
+            u32 player = static_cast<u8>(playerIndex);
             if (player == static_cast<u32>(g_curPlayer)) {
                 m_playerCommandPending = 0;
             }
-            u32 gi = static_cast<u8>(gruntIndex);
+            u32 gi = static_cast<u8>(unitIndex);
             i32 idx = gi + player * 0xf;
             CGrunt* g = mgr->m_cmdGrid->m_units[idx];
             if (g != NULL && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
@@ -4997,7 +5002,13 @@ i32 CPlay::ExecCommand(
             if (g2 == NULL || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
-                r = g2->LoadPickupSprites(static_cast<PickupType>(extraByte & 0xff), 0, 0, 0, live);
+                r = g2->LoadPickupSprites(
+                    static_cast<PickupType>(pickupType & 0xff),
+                    0,
+                    0,
+                    0,
+                    live
+                );
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {
@@ -5016,7 +5027,7 @@ i32 CPlay::ExecCommand(
         case PLAYERCMD_STOP: {
             CGrunt* g =
                 mgr->m_cmdGrid
-                    ->m_units[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
+                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }

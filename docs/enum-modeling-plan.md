@@ -40,9 +40,11 @@ supported by evidence."*
    (×145) and `case 7:` (×134) are the two most common case labels in the tree.
    The cheat IDs are dispatched by name in `GruntzMgrCmd.cpp` and registered as
    raw hex in `CheatMgr.cpp`, which never includes `GruntzCommandId.h`.
-3. **Width splits.** `CGruntzCommand` stores `char m_commandKind; u8 m_targetType;`
-   — serialized with `s->Write(&m_commandKind, 1)`, so the byte width is
-   load-bearing — while the setter takes `char` and comparisons cast to `u32`.
+3. **Width splits.** `CGruntzCommand` stores `char m_commandKind; char m_pickupType;`
+   — serialized with one-byte writes, so the byte widths are load-bearing — while
+   its initialization API takes `char` and comparisons cast to `u32`. The adjacent
+   `u8 m_scheduleSlot` is not a pickup domain: multiplayer assigns it modulo 128
+   and uses it to choose the command-execution tick.
    Same for `CButeMgr::m_tokType/m_lexState` (`i16`) and the `NetMgr` packet
    fields. Fragmentation is confined to the serialization/packet/palette
    boundaries; the game-logic core is uniformly `i32`.
@@ -99,10 +101,10 @@ macros exist only where retail's type differs from the domain type.
 
 ```cpp
 class CGruntzCommand {
-    GZ_ENUM_STORAGE(GruntzCommandKind, u8) m_commandKind;  // retail: u8, 1 byte
-    GZ_ENUM_STORAGE(PickupType, u8)        m_targetType;
+    GZ_ENUM_STORAGE(PlayerCommandKind, char) m_commandKind;  // retail: char, 1 byte
+    char                                      m_pickupType;
 };
-i32 SetParams(GZ_ENUM_PARAM(GruntzCommandKind, char) cmdKind, …);
+i32 InitializeCommon(GZ_ENUM_PARAM(PlayerCommandKind, char) commandKind, …);
 ```
 
 In retail that is exactly `u8` and `char` — zero bytes move. In the strict build

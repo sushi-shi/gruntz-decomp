@@ -21,64 +21,69 @@ public:
     // (0x83450 @ 0xf9c).
     CGruntzCmdMgr();
 
-    void RemoveMatchingTarget(i32 indexByte, i32 typeByte);
+    void RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot);
 
-    i32 SetMgr(CGruntzMgr* mgr);
+    i32 SetManager(CGruntzMgr* manager);
 
-    void ClearAndReset();
+    void Shutdown();
 
-    i32 ScanTargets(i32 param);
+    i32 ExecuteScheduledCommands(i32 scheduleSlot);
 
-    void DrainBase();
+    void RecycleQueuedCommands();
 
-    void Clear();
+    void ClearCommands();
 
-    void Report1(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);
     void EnqueueSingle(
-        i32 enqueueFlag,
-        char targetIndex,
-        char gruntIndex,
-        char cmdKind,
-        i16 posX,
-        i16 posY,
-        char extraByte,
-        char targetType
+        i32 isLocalCommand,
+        char playerIndex,
+        char unitIndex,
+        char commandKind,
+        i16 targetXOrPlayerIndex,
+        i16 targetYOrUnitIndex,
+        char pickupType,
+        char scheduleSlot
     );
 
     void EnqueueMulti(
-        i32 enqueueFlag,
-        char targetIndex,
-        u8 count,
-        u8* gruntList,
-        char cmdKind,
-        i16 posX,
-        i16 posY,
-        char targetType
+        i32 isLocalCommand,
+        char playerIndex,
+        u8 unitCount,
+        u8* unitIndices,
+        char commandKind,
+        i16 targetXOrPlayerIndex,
+        i16 targetYOrUnitIndex,
+        char scheduleSlot
     );
 
-    void EnqueueCommand(i32 flag, CGruntzCommand* cmd);
+    void EnqueueCommand(i32 isLocalCommand, CGruntzCommand* command);
 
-    i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
+    i32 Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 payload);
 
-    i32 IsActive(CFileMemBase* enable);
+    i32 CanSaveCommands(CFileMemBase* stream);
 
-    i32 IsActive2(CFileMemBase* enable);
+    i32 CanLoadCommands(CFileMemBase* stream);
 
-    void BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType);
+    void EnqueuePlaceGruntAtScreenPoint(
+        i32 isLocalCommand,
+        i32 playerIndex,
+        i32 screenX,
+        i32 screenY,
+        i32 scheduleSlot
+    );
 
     RVA(0x00085bd0, 0x56)
     ~CGruntzCmdMgr() {
-        ClearAndReset();
+        Shutdown();
     }
 
-    CPtrList m_base;
-    CPtrList m_pendingCommands;
+    CPtrList m_queuedCommands;
+    CPtrList m_pendingLocalCommands;
     CGruntzMgr* m_manager;
 };
 
 inline CGruntzCmdMgr::CGruntzCmdMgr() {
     m_manager = NULL;
-    m_pendingCommands.RemoveAll();
+    m_pendingLocalCommands.RemoveAll();
 }
 
 #endif // GRUNTZ_GRUNTZCMDMGR_H
