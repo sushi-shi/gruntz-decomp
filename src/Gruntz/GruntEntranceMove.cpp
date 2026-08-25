@@ -22,6 +22,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -326,7 +327,7 @@ i32 CGrunt::LoadEntranceConfig() {
 
         i32 flags = grid->CellFlagsAt(tx, ty);
 
-        if (flags & 0x20000000) {
+        if (flags & BRICKZ_CELL_OCCUPIED) {
             i32 owner;
             if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
                 || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -334,8 +335,9 @@ i32 CGrunt::LoadEntranceConfig() {
             } else {
                 owner = ((grid->m_rowInts[ty]))[tx * 7 + 1];
             }
-            i32 occupantPlayerIndex = (owner >> 8) & 0xff;
-            i32 occupantUnitIndex = owner & 0xff;
+            i32 occupantPlayerIndex =
+                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+            i32 occupantUnitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
             if (m_playerIndex != occupantPlayerIndex || m_unitIndex != occupantUnitIndex) {
                 m_triggerMgr->StartUnitDeath(
                     occupantPlayerIndex,
@@ -368,7 +370,8 @@ i32 CGrunt::LoadEntranceConfig() {
 
             BrickzCell* nc = &ng->m_rows[newTileY][newTileX];
             nc->m_flags |= BRICKZ_CELL_OCCUPIED;
-            ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_playerIndex << 8) | m_unitIndex;
+            ng->m_rowInts[newTileY][newTileX * 7 + 1] =
+                (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
         }
         m_lastTilePx.m_x = newPxX;
         m_lastTilePx.m_y = newPxY;
@@ -884,7 +887,7 @@ i32 CGrunt::FinishEntranceMove() {
 
         m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
     }
-    SetObjectFlags(0x10000);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
 
@@ -1142,7 +1145,7 @@ i32 CGrunt::FinishActiveAction() {
         i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
         i32 flags = grid->CellFlagsAt(tx, ty);
 
-        if (flags & 0x20000000) {
+        if (flags & BRICKZ_CELL_OCCUPIED) {
             i32 owner;
             if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
                 || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1150,8 +1153,9 @@ i32 CGrunt::FinishActiveAction() {
             } else {
                 owner = grid->m_rowInts[ty][tx * 7 + 1];
             }
-            i32 playerIndex = (owner >> 8) & 0xff;
-            i32 unitIndex = owner & 0xff;
+            i32 playerIndex =
+                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+            i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
             if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {
                 m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex);
             }
@@ -1173,7 +1177,8 @@ i32 CGrunt::FinishActiveAction() {
         CMapMgr* newGrid = g_gameReg->m_tileGrid;
         BrickzCell* nc = &newGrid->m_rows[newTy][newTx];
         nc->m_flags |= BRICKZ_CELL_OCCUPIED;
-        newGrid->m_rowInts[newTy][newTx * 7 + 1] = (m_playerIndex << 8) | m_unitIndex;
+        newGrid->m_rowInts[newTy][newTx * 7 + 1] =
+            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
         m_lastTilePx.m_x = newX;
         m_lastTilePx.m_y = newY;
         m_triggerMgr->WireTileSwitchLogic(this, newX, newY);

@@ -36,7 +36,7 @@ RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     SET_ANIMATION_ACT("A");
 }
 

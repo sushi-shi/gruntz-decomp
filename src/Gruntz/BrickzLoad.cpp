@@ -224,7 +224,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
             TileCollisionKind typeCode = m_attrMgr->m_level->LookupTile(tileX, tileY);
             i32 oldFlags = cell->m_flags;
             i32 keep = oldFlags & 0x1bf40000;
-            i32 edgeBit = oldFlags & 0x20000000;
+            i32 edgeBit = oldFlags & BRICKZ_CELL_OCCUPIED;
             switch (typeCode) {
                 case TILEKIND_SOLID:
                     cell->m_flags = 0x1;
@@ -384,7 +384,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     break;
             }
             if (edgeBit != 0) {
-                cell->m_flags |= 0x20000000;
+                cell->m_flags |= BRICKZ_CELL_OCCUPIED;
             }
             cell->m_flags |= keep;
             cell->m_tileId = tileId;

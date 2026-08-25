@@ -72,7 +72,7 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (m_cellRemovalNotified == 0) {
         m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
     }
-    SetObjectFlags(0x10000);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
 
@@ -86,7 +86,7 @@ i32 CGrunt::UpdateDecayFade() {
         if (m_cellRemovalNotified == 0) {
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
     i64 e = now - m_idleTimer;

@@ -23,7 +23,7 @@ RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     if (m_wwdObject->m_animationCursor.m_animation == NULL) {
         SwitchAnimationByName("GAME_CYCLE100", 0);
     }

@@ -272,6 +272,28 @@ class ConstantControls(unittest.TestCase):
         self.assertEqual([s for s in sites if s.proven], [])
         self.assertTrue(any("NULL is not visible" in s.reason for s in sites))
 
+    def test_numeric_review_groups_preserve_context_without_claiming_semantics(self):
+        source = ("void Sink(int value);\n"
+                  "int Probe(int value) {\n"
+                  "  int payload[] = { 10, 20 };\n"
+                  "  Sink(30);\n"
+                  "  Sink(0);\n"
+                  "  if (value < 40) return (value & 0xff) + 50;\n"
+                  "  return payload[value];\n"
+                  "}\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        groups = {s.value: s.review_group for s in sites
+                  if s.function.startswith("Probe")}
+        self.assertEqual(groups[10], "initializer-payload")
+        self.assertEqual(groups[20], "initializer-payload")
+        self.assertEqual(groups[30], "call-argument")
+        self.assertEqual(groups[0], "call-argument")
+        self.assertEqual(groups[40], "comparison-or-bound")
+        self.assertEqual(groups[0xff], "bitwise-or-packing")
+        self.assertEqual(groups[50], "arithmetic")
+        self.assertEqual([s for s in sites if s.proven], [])
+
     def test_consumer_rejects_missing_cl_driver_mode(self):
         _sites, errors = self._scan("int F() { return 0; }\n", flags=["/TP"])
         self.assertEqual(len(errors), 1)

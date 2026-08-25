@@ -31,8 +31,8 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_EXIT");
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(1);
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     Hide();
 }
 

@@ -10,9 +10,12 @@ context proves a semantic replacement:
   * integer equality whose other direct operand is an enum with one uniquely
     named value -> member
 
-Everything else remains a review row.  In particular, the scanner never calls
-an integer status, index, serialized width, mask, table payload, or arithmetic
-identity a boolean merely because its value is zero or one.
+Everything else remains a review row.  AST-derived review groups separate call
+arguments, bitwise/packing expressions, comparisons, arithmetic, array access,
+and initializer payloads without claiming a semantic replacement.  In
+particular, the scanner never calls an integer status, index, serialized width,
+mask, table payload, or arithmetic identity a boolean merely because its value
+is zero or one.
 
     gruntz verify constants             # census + derived TSV
     gruntz verify constants -v          # print every proven replacement
@@ -52,6 +55,8 @@ class Site:
     classification: str
     replacement: str
     context_type: str
+    review_group: str
+    review_context: str
     reason: str
 
     @property
@@ -276,6 +281,71 @@ def _classify(cidx, literal, stack, value, enum_values, null_available):
     return "numeric", "", "", "no uniquely typed semantic replacement"
 
 
+def _cursor_contains(outer, inner) -> bool:
+    outer_file = outer.location.file
+    inner_file = inner.location.file
+    if outer_file is None or inner_file is None or outer_file.name != inner_file.name:
+        return False
+    return outer.extent.start.offset <= inner.location.offset < outer.extent.end.offset
+
+
+def _call_argument_context(cidx, literal, stack):
+    for node in reversed(stack):
+        if node.kind != cidx.CursorKind.CALL_EXPR:
+            continue
+        args = list(node.get_arguments())
+        for index, arg in enumerate(args):
+            if not _cursor_contains(arg, literal):
+                continue
+            target = node.referenced
+            name = ""
+            if target is not None:
+                name = target.displayname or target.spelling
+            if not name:
+                name = node.displayname or node.spelling or "<indirect-call>"
+            return f"{name} argument {index + 1}"
+    return None
+
+
+def _nearest_expression_context(cidx, stack):
+    bitwise = {"&", "|", "^", "<<", ">>"}
+    comparison = {"==", "!=", "<", "<=", ">", ">="}
+    arithmetic = {"+", "-", "*", "/", "%"}
+    for node in reversed(stack):
+        if node.kind == cidx.CursorKind.ARRAY_SUBSCRIPT_EXPR:
+            return "array-index", "array subscript"
+        if node.kind != cidx.CursorKind.BINARY_OPERATOR:
+            continue
+        if node.spelling in bitwise:
+            return "bitwise-or-packing", f"operator {node.spelling}"
+        if node.spelling in comparison:
+            return "comparison-or-bound", f"operator {node.spelling}"
+        if node.spelling in arithmetic:
+            return "arithmetic", f"operator {node.spelling}"
+    return None
+
+
+def _review_group(cidx, literal, stack, scope, value, classification):
+    if classification in {"null-pointer", "boolean", "enum"}:
+        return "existing-symbol", classification
+    if scope == "named-enum-definition":
+        return "named-definition", "enumerator value"
+    if scope in {"data-initializer-or-extent", "field-or-class-extent"}:
+        return "data-or-extent", scope
+    if any(node.kind == cidx.CursorKind.INIT_LIST_EXPR for node in stack):
+        return "initializer-payload", "initializer list"
+
+    call = _call_argument_context(cidx, literal, stack)
+    if call is not None:
+        return "call-argument", call
+    if scope == "function-body" and value in (-1, 0, 1):
+        return "trivial-function-literal", str(value)
+    expression = _nearest_expression_context(cidx, stack)
+    if expression is not None:
+        return expression
+    return "unresolved", "no narrower AST context"
+
+
 def _scan_entry(payload):
     entry, repo_text = payload
     repo = Path(repo_text)
@@ -329,10 +399,12 @@ def _scan_entry(payload):
                     cls, repl, context, reason = _classify(
                         cidx, node, stack, value, enum_values,
                         site_null_available)
+                    review_group, review_context = _review_group(
+                        cidx, node, stack, scope, value, cls)
                     sites.append(Site(
                         str(rel), node.location.line, node.location.column,
                         node.location.offset, function, scope, spelling, value,
-                        cls, repl, context, reason))
+                        cls, repl, context, review_group, review_context, reason))
         for child in node.get_children():
             walk(child, stack + (node,))
 
@@ -385,7 +457,7 @@ def write_report(path: Path, sites: list[Site]) -> None:
     fields = list(asdict(sites[0]).keys()) if sites else [
         "file", "line", "column", "offset", "function", "scope",
         "spelling", "value", "classification", "replacement",
-        "context_type", "reason"]
+        "context_type", "review_group", "review_context", "reason"]
     lines = ["\t".join(fields)]
     for site in sites:
         row = asdict(site)
@@ -405,12 +477,22 @@ def summary(sites: list[Site]) -> str:
     classes = Counter(site.classification for site in sites)
     values = Counter(site.value for site in sites
                      if site.scope == "function-body")
+    nontrivial = [site for site in sites
+                  if site.scope == "function-body" and site.value not in (-1, 0, 1)]
+    nontrivial_groups = Counter(site.review_group for site in nontrivial)
     return (f"{len(sites)} bare numeric spelling(s): "
             f"{scopes['function-body']} function-body, "
             f"{scopes['data-initializer-or-extent']} data/extent, "
             f"{scopes['named-enum-definition']} named-enum, "
             f"{scopes['field-or-class-extent']} field/class; "
             f"function 0/1/-1={values[0]}/{values[1]}/{values[-1]}; "
+            f"nontrivial review={len(nontrivial)} "
+            f"(call {nontrivial_groups['call-argument']}, "
+            f"bitwise {nontrivial_groups['bitwise-or-packing']}, "
+            f"bound {nontrivial_groups['comparison-or-bound']}, "
+            f"arithmetic {nontrivial_groups['arithmetic']}, "
+            f"payload {nontrivial_groups['initializer-payload']}, "
+            f"unresolved {nontrivial_groups['unresolved']}); "
             f"proven replacements={sum(site.proven for site in sites)} "
             f"(NULL {classes['null-pointer']}, bool {classes['boolean']}, "
             f"enum {classes['enum']})")

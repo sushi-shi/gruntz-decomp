@@ -1516,7 +1516,8 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return 0;
     }
-    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+    CTileImageSet* set =
+        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
     *outLo = alignedX;
     *outHi = alignedX + set->m_width - 1;
     return 1;
@@ -1941,7 +1942,8 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
-    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+    CTileImageSet* set =
+        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
     return set->GetCollisionAt(subX, subY);
 }
 

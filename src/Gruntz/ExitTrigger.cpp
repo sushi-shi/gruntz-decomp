@@ -31,7 +31,7 @@ RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdSpriteObject* o = m_object;
@@ -48,9 +48,14 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     i32 focusY = m_object->m_screenY;
     slot->m_focusX = focusX;
     slot->m_focusY = focusY;
-    CGameObject* e =
-        g_gameReg->m_world->m_childGroup
-            ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
+    CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
+        0,
+        m_object->m_screenX,
+        m_object->m_screenY,
+        0,
+        "Warlord",
+        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+    );
     if (e != NULL) {
         e->m_smarts = m_object->m_smarts;
         e->m_logicRecord->m_dispatch(e);

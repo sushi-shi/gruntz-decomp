@@ -72,7 +72,7 @@ RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
 
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     SetImageSetByName("GAME_WORMHOLE");
     SwitchAnimationByName("GAME_WORMHOLE", 0);
     CWwdSpriteObject* o = m_object;
@@ -172,7 +172,7 @@ i32 CWormhole::SpawnPartners() {
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
     SetImageSetByName("GRUNTZ_GRUNTPUDDLE");
@@ -239,7 +239,7 @@ i32 CGruntPuddle::Remove() {
         i32 tx = m_tileX;
         i32 flags = grid->CellFlagsAt(tx, ty);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & 0x2) != 0) {
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
             POSITION pos = list.GetHeadPosition();
             while (pos != NULL) {
@@ -310,7 +310,7 @@ RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_armClock = 0;
     m_interval = 0;
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -480,11 +480,11 @@ i32 CTeleporter::Update() {
         CWwdSpriteObject* s = m_object;
         CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            s->m_powerup * 32 + 16,
-            s->m_damage * 32 + 16,
+            s->m_powerup * TILE_SIZE_PX + TILE_HALF_PX,
+            s->m_damage * TILE_SIZE_PX + TILE_HALF_PX,
             0,
             "Teleporter",
-            0x40003
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
         if (spawned != NULL) {
             spawned->m_smarts = IDX(TELEPORTER_SINGLE_USE);
@@ -497,11 +497,11 @@ i32 CTeleporter::Update() {
         CWwdSpriteObject* s = m_object;
         CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            s->m_speedX * 32 + 16,
-            s->m_speedY * 32 + 16,
+            s->m_speedX * TILE_SIZE_PX + TILE_HALF_PX,
+            s->m_speedY * TILE_SIZE_PX + TILE_HALF_PX,
             0,
             "Wormhole",
-            0x40003
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
         spawned->m_speedX = m_object->m_screenX;
         spawned->m_speedY = m_object->m_screenY;

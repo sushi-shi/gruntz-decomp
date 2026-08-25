@@ -13,6 +13,7 @@
 #include <Enums.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
+#include <Utils/MillisPer.h>
 #include <Wap32/Wap32.h>
 
 #include <dsound.h>
@@ -450,7 +451,7 @@ i32 SoundBuffer::SetFrequencyOffsetPercent(i32 percentOffset) {
 
 RVA(0x001359a0, 0x18)
 void SoundBuffer::UpdateDuration() {
-    m_durationMs = m_sampleCount * 1000 / m_sampleRate;
+    m_durationMs = m_sampleCount * MILLIS_PER_SECOND / m_sampleRate;
 }
 
 RVA(0x001359c0, 0x54)

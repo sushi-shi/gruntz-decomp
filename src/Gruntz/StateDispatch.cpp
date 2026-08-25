@@ -53,5 +53,5 @@ i32 DispatchLevelTimeLogic(CGameObject* obj) {
 
 RVA(0x0009b8b0, 0x18f)
 CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 }

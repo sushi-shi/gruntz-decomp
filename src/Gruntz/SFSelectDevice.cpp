@@ -3,6 +3,7 @@
 #include <Gruntz/SFSelectDevice.h>
 
 #include <Dsndmgr/SfManager.h>
+#include <Gruntz/PathBuffer.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundFontPath.h>
 #include <ProcAddr.h>
@@ -39,17 +40,17 @@ CSFMIDILocation g_sfMidiLocation;
 DATA(0x0024dad0)
 CSFBufferObject g_sfBufferObject;
 DATA(0x0024dae0)
-char g_sfMusic4[0x100];
+char g_sfMusic4[GRUNTZ_PATH_BUFFER_SIZE];
 DATA(0x0024dbe0)
 DWORD g_staticSampleBytes = 0;
 DATA(0x0024dc28)
-char g_sfLocal4[0x100];
+char g_sfLocal4[GRUNTZ_PATH_BUFFER_SIZE];
 DATA(0x0024dd28)
 u16 g_sfDeviceId = 0;
 DATA(0x0024dd30)
-char g_sfMusic[0x100];
+char g_sfMusic[GRUNTZ_PATH_BUFFER_SIZE];
 DATA(0x0024de30)
-char g_sfLocal[0x100];
+char g_sfLocal[GRUNTZ_PATH_BUFFER_SIZE];
 DATA(0x0024df30)
 CSFCapsObject g_sfCaps;
 DATA(0x0024df98)
@@ -57,7 +58,7 @@ u16 g_sfOpenAttemptsRemaining = 0;
 DATA(0x0024df9c)
 DWORD g_sfRouterId = 0;
 DATA(0x0024dfa0)
-char g_sfDir[0x100];
+char g_sfDir[GRUNTZ_PATH_BUFFER_SIZE];
 DATA(0x0024e0a0)
 DWORD g_sfVer = 0;
 DATA(0x0024e0a4)

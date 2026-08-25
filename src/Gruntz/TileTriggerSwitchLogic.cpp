@@ -209,7 +209,8 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
         return TILEKIND_PASSABLE;
     }
 
-    CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
+    CTileImageSet* set =
+        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
     return set->GetCollisionAt(0, 0);
 }
 
@@ -228,7 +229,8 @@ static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, 
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
-    CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
+    CTileImageSet* set =
+        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
     return set->GetCollisionAt(0, 0);
 }
 
@@ -347,8 +349,14 @@ i32 CTileTriggerLogic::Tick() {
         pt.y = sy;
         if (PtInRect(&g_gameReg->m_viewBounds, pt) && srcId != TILEKIND_REDPYRAMID_UP
             && srcId != TILEKIND_REDPYRAMID_DOWN) {
-            CGameObject* trig =
-                world->m_childGroup->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
+            CGameObject* trig = world->m_childGroup->CreateSprite(
+                0,
+                sx,
+                sy,
+                0,
+                "TileTriggerTransition",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             if (trig == NULL) {
                 return 0;
             }
@@ -363,7 +371,7 @@ i32 CTileTriggerLogic::Tick() {
     switch (srcId) {
         case TILEKIND_ARROW_UP_B: {
             if (trans != NULL) {
-                trans->SetObjectFlags(0x10000);
+                trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -376,7 +384,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case TILEKIND_ARROW_DOWN_B: {
             if (trans != NULL) {
-                trans->SetObjectFlags(0x10000);
+                trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -389,7 +397,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case TILEKIND_ARROW_LEFT_B: {
             if (trans != NULL) {
-                trans->SetObjectFlags(0x10000);
+                trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -402,7 +410,7 @@ i32 CTileTriggerLogic::Tick() {
         }
         case TILEKIND_ARROW_RIGHT_B: {
             if (trans != NULL) {
-                trans->SetObjectFlags(0x10000);
+                trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 trans = NULL;
             }
             i32 ty = m_tileY;
@@ -447,7 +455,7 @@ i32 CTileTriggerLogic::Tick() {
                                 pxY,
                                 0,
                                 "TileTriggerTransition",
-                                0x40003
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                             );
                             if (o == NULL) {
                                 return 0;
@@ -456,7 +464,7 @@ i32 CTileTriggerLogic::Tick() {
                             CTileTriggerTransition* lg =
                                 static_cast<CTileTriggerTransition*>(o->m_logicRecord->m_userLogic);
                             if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
-                                lg->SetObjectFlags(0x10000);
+                                lg->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             }
                         }
                     }
@@ -688,7 +696,7 @@ i32 CTileTriggerLogic::Tick() {
 
     if (trans != NULL) {
         if (trans->ApplyAnimation(PbStr(key), PbStr(anim)) == 0) {
-            trans->SetObjectFlags(0x10000);
+            trans->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
     }
     LoadBridgeMove(srcId);
@@ -829,9 +837,14 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 sx = ((i + m_tileX) << TILE_SHIFT_PX) - 0x10;
             i32 sy = ((j + m_tileY) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
-                CWwdSpriteObject* spr =
-                    gameMgr->m_childGroup
-                        ->CreateSprite(0, sx, sy, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+                CWwdSpriteObject* spr = gameMgr->m_childGroup->CreateSprite(
+                    0,
+                    sx,
+                    sy,
+                    SORTKEY_ACTOR_BEHIND,
+                    "Particlez",
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                );
                 if (spr != NULL) {
                     spr->SetImageSetByName("LEVEL_ROCKBREAK");
                     spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
@@ -846,8 +859,14 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
-        CGameObject* txt = g_gameReg->m_world->m_childGroup
-                               ->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
+        CGameObject* txt = g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            cx,
+            cy,
+            0x17318,
+            "InGameText",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+        );
         if (txt == NULL) {
             return 0;
         }
@@ -933,7 +952,8 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
         CGameObject* rec =
-            g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, px, py, 95000, "InGameText", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (rec == NULL) {
             return 0;
         }
@@ -1072,8 +1092,14 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (checkpointType != 0) {
-        CWwdSpriteObject* spr =
-            g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
+        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            px,
+            py,
+            0,
+            "BehindCandy",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPACE_SKIP_COLLISION
+        );
         if (!spr) {
             return 0;
         }
@@ -1376,9 +1402,14 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
-        CWwdSpriteObject* spr =
-            g_gameReg->m_world->m_childGroup
-                ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+        CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            px,
+            py,
+            SORTKEY_ACTOR_BEHIND,
+            "Particlez",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+        );
         if (spr != NULL) {
             spr->SetAnimationByName("GAME_BRICKBREAK", 0);
 

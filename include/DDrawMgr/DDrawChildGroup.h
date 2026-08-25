@@ -11,6 +11,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
+#include <Wwd/WwdGameObjectFlags.h>
 
 struct CLogicRecord;
 

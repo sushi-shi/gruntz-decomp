@@ -271,7 +271,7 @@ i32 CProjectile::LoadProjectileSprites(
         m_object->m_screenY,
         SORTKEY_ACTOR_BEHIND,
         "LightFx",
-        0x2040003
+        WWD_GAME_OBJECT_FLAGS_CULL_SOUND_WORLD_SPRITE
     ));
     if (m_shadow != NULL) {
         m_shadow->m_logicRecord->m_dispatch(m_shadow);
@@ -462,14 +462,14 @@ void CProjectile::AdvanceMotion() {
                                     m_targetPxY,
                                     SORTKEY_ACTOR_BEHIND,
                                     "Particlez",
-                                    0x40003
+                                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                 );
                                 if (fx != NULL) {
                                     fx->SetImageSetByName("LEVEL_DEATHSPLASH");
                                     fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
                                 }
                             }
-                            SetObjectFlags(0x10000);
+                            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             return;
                     }
                 }
@@ -482,14 +482,14 @@ void CProjectile::AdvanceMotion() {
                     m_targetPxY,
                     SORTKEY_ACTOR_BEHIND,
                     "Particlez",
-                    0x40003
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 if (fx != NULL) {
                     fx->SetImageSetByName("GAME_WATER");
                     fx->SetAnimationByName("GAME_WATER", 0);
                 }
             }
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
     }
@@ -505,7 +505,7 @@ void CProjectile::AdvanceMotion() {
             goto animate;
         }
     }
-    SetObjectFlags(0x10000);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return;
 
 animate:
@@ -527,7 +527,7 @@ i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 }
 
 // @early-stop
@@ -568,7 +568,8 @@ i32 CBoomerang::LoadProjectileSprites(
     m_dirY = originY - static_cast<double>(m_launchY);
     m_phase = 0.0;
     m_velScale = d;
-    CGrunt* g = g_gameReg->m_triggerMgr->m_units[15 * sourcePlayerIndex + sourceUnitIndex];
+    CGrunt* g =
+        g_gameReg->m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * sourcePlayerIndex + sourceUnitIndex];
     if (g != NULL) {
         g->m_holdWindowLo = static_cast<i32>(
             (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
@@ -601,7 +602,7 @@ void CBoomerang::AdvanceMotion() {
             m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             m_shadow = NULL;
         }
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
     ScanTargets(0);
@@ -700,7 +701,7 @@ void CProjectile::ScanTargets(i32 impact) {
             );
         }
         playerIndex++;
-        playerBase += 15;
+        playerBase += TM_UNITS_PER_PLAYER;
     }
 }
 
@@ -925,7 +926,7 @@ void CTimeBomb::RegisterActs() {
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE)
     SetImageSetByName("GAME_TIMEBOMB");
@@ -977,7 +978,7 @@ RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
     i32 cell = TBombGridCell(m_object);
     if ((cell & BRICKZ_BLOCKED_MASK) || (cell & 2)) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         TBombGridClear(m_object);
         return 0;
     }
@@ -990,7 +991,7 @@ i32 CTimeBomb::UpdateCountdown() {
             m_startTime = g_frameTime;
             m_fastPhase = 1;
         } else {
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             TBombGridClear(m_object);
             g_gameReg->m_triggerMgr->LoadExplosionSprites(
                 m_object->m_screenX,

@@ -124,7 +124,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SET_ANIMATION_ACT("A");
     SwitchAnimationByName("GAME_CYCLE100", 0);
 
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     SetupSprite(NULL);
 
     m_glitterSprite = NULL;
@@ -310,28 +310,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                SetObjectFlags(0x10000);
+                SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_W);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                SetObjectFlags(0x10000);
+                SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_A);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                SetObjectFlags(0x10000);
+                SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_R);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-                SetObjectFlags(0x10000);
+                SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_P);
@@ -383,7 +383,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             m_object->m_screenY,
             SORTKEY_INGAME_INFO_FX,
             "SimpleAnimation",
-            0x40003
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
         m_glitterSprite = fx;
         if (glitter == ICON_GLITTER_POWERUP_RED) {
@@ -396,7 +396,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (HandleInput() == 0) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
 
@@ -573,7 +573,7 @@ i32 CInGameIcon::PeekCycle() {
                 grid->m_rows[tileY][tileX].m_objectId = 0;
                 grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
             }
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
         return 0;
     }
@@ -647,7 +647,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             flag = 0;
         }
         sub = obj->m_faceDirection;
-        idx = playerIndex * 15 + unitIndex;
+        idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
         cell = reg->m_triggerMgr->m_units[idx];
         if (cell == NULL || cell->m_entranceCommitted == 0) {
             ok = 0;
@@ -676,7 +676,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
 
     sub = obj->m_faceDirection;
     cmd = static_cast<PickupType>(obj->m_smarts);
-    idx = playerIndex * 15 + unitIndex;
+    idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     cell = reg->m_triggerMgr->m_units[idx];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         ok = 0;
@@ -920,24 +920,24 @@ i32 CInGameIcon::SerializeDispatch(
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
     SET_ANIMATION_ACT("A");
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SetImageSetByName("GAME_HELPBOX");
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
     InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
     if (vis == INGAME_TEXT_EASY_ONLY) {
 
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
     } else if (vis == INGAME_TEXT_NORMAL_ONLY) {
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
     }

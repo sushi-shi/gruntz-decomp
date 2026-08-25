@@ -3,6 +3,7 @@
 #include <Gruntz/SoundFontPath.h>
 
 #include <Dsndmgr/SfManager.h>
+#include <Gruntz/PathBuffer.h>
 #include <Gruntz/SFSelectDevice.h>
 #include <Gruntz/SoundFont.h>
 
@@ -53,7 +54,7 @@ i32 BuildSoundFontPath(char drive) {
         return 0;
     }
 
-    GetCurrentDirectoryA(0xff, g_sfDir);
+    GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, g_sfDir);
     int len = static_cast<int>(strlen(g_sfDir));
     if (len > 0 && g_sfDir[len - 1] == '\\') {
         g_sfDir[len - 1] = '\0';

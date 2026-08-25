@@ -105,12 +105,12 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
             SetImageSetByName("GAME_FORTRESSFLAGZ_VIKING");
             break;
         default:
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
     }
     SET_ANIMATION_ACT("A");
     SwitchAnimationByName("GAME_CYCLE100", 0);
-    SetObjectFlags(3);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE);
     i32 idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdSpriteObject* spr = m_object;
@@ -260,7 +260,7 @@ i32 DispatchExplosionLogic(CGameObject* owner) {
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
     m_object->m_dirty.m_armed = 0;
@@ -296,7 +296,7 @@ RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_EXPLOSION");
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
     m_object->m_dirty.m_armed = 0;

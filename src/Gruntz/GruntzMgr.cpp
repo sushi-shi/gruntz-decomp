@@ -58,6 +58,7 @@
 #include <Gruntz/MovieEntryId.h>
 #include <Gruntz/MovieId.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/PathBuffer.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PortalPath.h>
 #include <Gruntz/QuestLevel.h>
@@ -1868,9 +1869,9 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
     }
 
     CString path;
-    char szDir[256];
+    char szDir[GRUNTZ_PATH_BUFFER_SIZE];
 
-    if (GetCurrentDirectoryA(0xff, szDir)) {
+    if (GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, szDir)) {
         path.Format("%s\\%s", szDir, static_cast<const char*>(name));
         if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
             path.Empty();
@@ -2542,8 +2543,8 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
 
 RVA(0x00091670, 0x2ac)
 i32 CGruntzMgr::MakeRezPath() {
-    char cwd[0x100];
-    if (!GetCurrentDirectoryA(0xff, cwd)) {
+    char cwd[GRUNTZ_PATH_BUFFER_SIZE];
+    if (!GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, cwd)) {
         return 0;
     }
 

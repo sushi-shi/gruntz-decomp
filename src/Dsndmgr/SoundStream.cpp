@@ -8,6 +8,7 @@
 #include <Dsndmgr/StreamVoice.h>
 #include <Dsndmgr/WaveFormatSdk.h>
 #include <Rez/RezMgr.h>
+#include <Utils/MillisPer.h>
 
 #include <dsound.h>
 #include <stdio.h>
@@ -136,7 +137,7 @@ i32 StreamVoice::Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i3
 
 RVA(0x00137590, 0x18)
 u32 StreamVoice::GetDurationMs() {
-    return m_feeder.m_windowLength * 1000 / m_sampleRate;
+    return m_feeder.m_windowLength * MILLIS_PER_SECOND / m_sampleRate;
 }
 
 RVA(0x001375b0, 0x77)

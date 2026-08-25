@@ -180,8 +180,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
                 slot = &p->m_coord;
                 g_coordPool.m_freeHead = p->m_next;
             }
-            slot->m_x = cur->m_screenX / 32;
-            slot->m_y = cur->m_screenY / 32;
+            slot->m_x = cur->m_screenX / TILE_SIZE_PX;
+            slot->m_y = cur->m_screenY / TILE_SIZE_PX;
             m_candArray.SetAtGrow(m_candArray.GetSize(), slot);
         }
     }
@@ -190,8 +190,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
-            m_marker.m_x = cur2->m_screenX / 32;
-            m_marker.m_y = cur2->m_screenY / 32;
+            m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
+            m_marker.m_y = cur2->m_screenY / TILE_SIZE_PX;
             break;
         }
     }
@@ -384,22 +384,22 @@ i32 CBattlezMapConfig::StepBoard() {
     i32 forced = 0;
     CGrunt* forcedUnit = NULL;
     if (m_repickTimer - m_repickLastFire > m_resourceCreationTime) {
-        i32 r = rand() % 15;
-        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * 15 + r];
+        i32 r = rand() % TM_UNITS_PER_PLAYER;
+        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r];
         forcedUnit = u;
         forced = 0;
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition == 0) {
             forced = 1;
         }
         if (!forced && rand() % 10 != 0) {
-            i32 r2 = rand() % 15;
-            CGrunt* u2 = m_triggerMgr->m_units[m_playerIndex * 15 + r2];
+            i32 r2 = rand() % TM_UNITS_PER_PLAYER;
+            CGrunt* u2 = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r2];
             if (u2 != NULL) {
                 ChooseIdleBehavior(u2);
             }
         } else {
-            for (i32 b = 0; b < 15; b++) {
-                CGrunt* unit = m_triggerMgr->m_units[m_playerIndex * 15 + b];
+            for (i32 b = 0; b < TM_UNITS_PER_PLAYER; b++) {
+                CGrunt* unit = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + b];
                 if (forced) {
                     unit = forcedUnit;
                 }
@@ -484,8 +484,8 @@ i32 CBattlezMapConfig::StepBoard() {
                     }
                 }
 
-                for (i32 c = 0; c < 15; c++) {
-                    CGrunt* mate = m_triggerMgr->m_units[m_playerIndex * 15 + c];
+                for (i32 c = 0; c < TM_UNITS_PER_PLAYER; c++) {
+                    CGrunt* mate = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + c];
                     if (mate != NULL && mate->m_defenderState == AISTATE_RETURN) {
                         i32 q = unit->m_defenderQueuePosition - 1;
                         if (q < 0) {
@@ -603,8 +603,8 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 
     i32 roll = rand() % 100;
     i32 freeCount = 0;
-    CGrunt** r2 = &m_triggerMgr->m_units[m_playerIndex * 15];
-    for (i32 k = 15; k != 0; k--) {
+    CGrunt** r2 = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
+    for (i32 k = TM_UNITS_PER_PLAYER; k != 0; k--) {
         CGrunt* g = *r2;
         if (g != NULL && g->m_battleState == BZTASK_UNASSIGNED) {
             freeCount++;
@@ -642,8 +642,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
     char eq;
     i32 cell;
     Coord scratch;
-    for (i32 i = 0; i < 15; i++) {
-        unit = m_triggerMgr->m_units[m_playerIndex * 15 + i];
+    for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
+        unit = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + i];
         if (unit != NULL) {
             if (unit->IsHoldPending()) {
                 return 1;
@@ -1007,10 +1007,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     if (!eq) {
                                                         for (i32 j = 0; j < 4; j++) {
                                                             if (j != m_playerIndex) {
-                                                                for (i32 k = 0; k < 15; k++) {
+                                                                for (i32 k = 0;
+                                                                     k < TM_UNITS_PER_PLAYER;
+                                                                     k++) {
                                                                     CGrunt* other =
-                                                                        m_triggerMgr
-                                                                            ->m_units[j * 15 + k];
+                                                                        m_triggerMgr->m_units
+                                                                            [j * TM_UNITS_PER_PLAYER
+                                                                             + k];
                                                                     if (other != NULL) {
                                                                         if (unit->RectContains(
                                                                                 other->m_object
@@ -1107,7 +1110,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     if (!eq) {
                                         eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
                                         if (!eq) {
-                                            if (static_cast<u32>(m_roundRobinTick) % 15
+                                            if (static_cast<u32>(m_roundRobinTick)
+                                                    % TM_UNITS_PER_PLAYER
                                                 == static_cast<u32>(i)) {
                                                 {
                                                     PickupType st3 = unit->m_entranceReason;
@@ -1132,11 +1136,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 (py >> TILE_SHIFT_PX) + r;
                                                             for (i32 j2 = 0; j2 < 4; j2++) {
                                                                 if (j2 != m_playerIndex) {
-                                                                    for (i32 k2 = 0; k2 < 15;
+                                                                    for (i32 k2 = 0;
+                                                                         k2 < TM_UNITS_PER_PLAYER;
                                                                          k2++) {
                                                                         CGrunt* o =
                                                                             m_triggerMgr->m_units
-                                                                                [j2 * 15 + k2];
+                                                                                [j2 * TM_UNITS_PER_PLAYER
+                                                                                 + k2];
                                                                         if (o != NULL) {
                                                                             POINT pt;
                                                                             pt.x = o->m_object
@@ -2072,8 +2078,8 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
         if (band == m_playerIndex) {
             continue;
         }
-        for (i32 i = 0; i < 15; i++) {
-            CGrunt* u = m_triggerMgr->m_units[band * 15 + i];
+        for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
+            CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
             if (u == NULL) {
                 continue;
             }
@@ -2122,13 +2128,13 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
         band++;
     }
     band = band % 4;
-    i32 cell = rand() % 15;
-    for (i32 i = 0; i < 15; i++) {
-        CGrunt* u = m_triggerMgr->m_units[band * 15 + i];
+    i32 cell = rand() % TM_UNITS_PER_PLAYER;
+    for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
+        CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
         if (u != NULL && u->m_entranceDropActive == 0) {
             return u;
         }
-        cell = (cell + 1) % 15;
+        cell = (cell + 1) % TM_UNITS_PER_PLAYER;
     }
     return NULL;
 }
@@ -2534,9 +2540,9 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
     m_claimTimer = 0;
     unit->m_defenderState = AISTATE_RETURN;
     unit->m_defenderPickupType = static_cast<PickupType>(value);
-    CGrunt** units = m_triggerMgr->m_units + m_playerIndex * 15;
+    CGrunt** units = m_triggerMgr->m_units + m_playerIndex * TM_UNITS_PER_PLAYER;
     i32 count = 0;
-    for (i32 k = 0; k < 15; k++) {
+    for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
         CGrunt* p = units[k];
         if (p != NULL && unit != p && p->m_defenderState == AISTATE_RETURN) {
             count++;
@@ -3474,8 +3480,8 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         if (band == m_playerIndex) {
             continue;
         }
-        for (i32 i = 0; i < 15; i++) {
-            CGrunt* u = m_triggerMgr->m_units[band * 15 + i];
+        for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
+            CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
             if (u == NULL) {
                 continue;
             }
@@ -3710,9 +3716,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
         return 0;
     }
 
-    i32 r = rand() % 15;
-    for (i32 scanned = 0; scanned < 15; scanned++) {
-        CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * 15 + r];
+    i32 r = rand() % TM_UNITS_PER_PLAYER;
+    for (i32 scanned = 0; scanned < TM_UNITS_PER_PLAYER; scanned++) {
+        CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r];
         if (cand != NULL) {
             CGameObject* lvl = cand->m_object;
             if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, cand) && cand->m_entranceCommitted != 0
@@ -3801,7 +3807,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 }
             }
         }
-        r = (r + 1) % 15;
+        r = (r + 1) % TM_UNITS_PER_PLAYER;
     }
     return 0;
 }
@@ -3999,8 +4005,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             if (nIdle >= 2) {
                 return 1;
             }
-            for (i32 b = 0; b < 15; b++) {
-                CGrunt* u = m_triggerMgr->m_units[m_playerIndex * 15 + b];
+            for (i32 b = 0; b < TM_UNITS_PER_PLAYER; b++) {
+                CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + b];
                 if (u == NULL) {
                     continue;
                 }
@@ -4277,7 +4283,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;
-    CGrunt** units = m_triggerMgr->m_units + m_playerIndex * 15;
+    CGrunt** units = m_triggerMgr->m_units + m_playerIndex * TM_UNITS_PER_PLAYER;
     for (;;) {
         CGrunt* unit = *units;
         if (unit != NULL && unit != selfUnit && unit->m_battleState != BZTASK_SEEK_SWITCH) {
@@ -4316,7 +4322,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
         }
         i++;
         units++;
-        if (i >= 15) {
+        if (i >= TM_UNITS_PER_PLAYER) {
             break;
         }
     }
@@ -4332,7 +4338,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (cellX == m_playerIndex) {
         return 1;
     }
-    CGrunt* src = m_triggerMgr->m_units[cellX * 15 + cellY];
+    CGrunt* src = m_triggerMgr->m_units[cellX * TM_UNITS_PER_PLAYER + cellY];
     if (src == NULL) {
         return 0;
     }
@@ -4344,8 +4350,8 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             return 0;
         }
     }
-    for (i32 i = 0; i < 15; i++) {
-        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * 15 + i];
+    for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
+        CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + i];
         if (u == NULL) {
             continue;
         }
@@ -4601,8 +4607,8 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
             i32 cell = m_playerIndex;
             Coord cand = *arr[r];
             i32 ok = 1;
-            for (i32 j = 0; j < 15; j++) {
-                CGrunt* u = grid->m_units[cell * 15 + j];
+            for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
+                CGrunt* u = grid->m_units[cell * TM_UNITS_PER_PLAYER + j];
                 if (u != NULL && u->CoordCount() != 0) {
                     Coord node = *(u->CoordTail()->m_coord);
                     if (node.m_x == cand.m_x && node.m_y == cand.m_y) {

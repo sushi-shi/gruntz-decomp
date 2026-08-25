@@ -136,7 +136,8 @@ i32 CTriggerMgr::PlaceObject(
         }
 
         CWwdSpriteObject* sprite =
-            m_world->m_childGroup->CreateSprite(0, x, y, z, "Grunt", 0x40003);
+            m_world->m_childGroup
+                ->CreateSprite(0, x, y, z, "Grunt", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (sprite == NULL) {
             goto fail;
         }
@@ -235,15 +236,16 @@ i32 CTriggerMgr::PlaceObject(
                     mode
                 )
                 == 0) {
-                logic->SetObjectFlags(0x10000);
+                logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return -1;
             }
 
             if (mode == GRUNT_ENTRANCE_WORMHOLE) {
                 CWwdSpriteObject* hole =
-                    m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
+                    m_world->m_childGroup
+                        ->CreateSprite(0, x, y, 0, "Wormhole", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
                 if (hole == NULL) {
-                    logic->SetObjectFlags(0x10000);
+                    logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     return -1;
                 }
                 hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
@@ -337,7 +339,7 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             CGrunt* unit = units[unitIndex];
             if (unit != NULL) {
-                unit->SetObjectFlags(0x10000);
+                unit->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 units[unitIndex] = NULL;
                 m_unitExited[playerIndex * TM_UNITS_PER_PLAYER + unitIndex] = 0;
             }
@@ -484,7 +486,9 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     if (raw == UNINIT_FILL || raw == -1) {
         tag = TILEKIND_PASSABLE;
     } else {
-        CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
+        CTileImageSet* ts = static_cast<CTileImageSet*>(
+            level->m_imageSets.GetAt(raw & WWD_TILE_IMAGE_SET_INDEX_MASK)
+        );
         tag = ts->GetCollisionAt(subX, subY);
     }
 
@@ -910,7 +914,9 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     if (attr == UNINIT_FILL || attr == -1) {
         kind = TILEKIND_PASSABLE;
     } else {
-        CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
+        CTileImageSet* ts = static_cast<CTileImageSet*>(
+            view->m_imageSets.GetAt(attr & WWD_TILE_IMAGE_SET_INDEX_MASK)
+        );
         kind = ts->GetCollisionAt(subX, subY);
     }
     switch (kind) {

@@ -398,7 +398,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             surf->BltEx(&dr, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &m_fillFx);                       \
         } else if (h_ != static_cast<u32>(TILE_CLEAR)) {                                           \
             CDDrawWorker* fr_ = ImageSetAt(h_ >> 16);                                              \
-            i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
+            i32 idx_ = static_cast<i32>(h_ & WWD_TILE_IMAGE_SET_INDEX_MASK);                       \
             CImage* e_ = fr_->GetAt(idx_);                                                         \
             surf->BltFast((xp), (yp), e_->m_surface, (srcp), e_->m_bltFastFlags);                  \
         }                                                                                          \
@@ -967,7 +967,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
                 }
                 continue;
             }
-            i32 tile = handle & 0xffff;
+            i32 tile = handle & WWD_TILE_IMAGE_SET_INDEX_MASK;
             CImage* resolved = frame->GetAt(tile);
             if (resolved == NULL) {
                 result = 0;

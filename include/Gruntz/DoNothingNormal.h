@@ -12,7 +12,7 @@ public:
     CDoNothingNormal() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
     CDoNothingNormal(CGameObject* owner) : CUserLogic(owner), CWapX(owner) {
-        SetObjectFlags(1);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     }
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x0000f7e0, 0x6)

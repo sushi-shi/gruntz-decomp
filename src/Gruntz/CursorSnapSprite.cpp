@@ -68,7 +68,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     SetImageSetByName("GAME_CURSORSNAPSPRITE");
     SwitchAnimationByName("GAME_SINGLEIMAGEANI", 0);
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     Hide();
 }
 

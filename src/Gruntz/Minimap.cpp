@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/Play.h>
@@ -165,8 +166,11 @@ i32 CMinimap::Refresh(i32 elapsedMs, i32 forceRefresh) {
 
             if (occupantId != -1) {
 
-                CGrunt* grunt =
-                    m_triggerMgr->m_units[(occupantId & 0xff) + ((occupantId >> 8) & 0xff) * 15];
+                CGrunt* grunt = m_triggerMgr->m_units
+                                    [(occupantId & GRUNT_IDENTITY_COMPONENT_MASK)
+                                     + ((occupantId >> GRUNT_IDENTITY_PLAYER_SHIFT)
+                                        & GRUNT_IDENTITY_COMPONENT_MASK)
+                                           * TM_UNITS_PER_PLAYER];
                 if (grunt == NULL) {
                     continue;
                 }
@@ -199,7 +203,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, i32 forceRefresh) {
                             *pixel = spriteRef->m_teamColor1;
                             break;
                     }
-                } else if (static_cast<u32>(g_period100CountdownMs) < 0x32) {
+                } else if (static_cast<u32>(g_period100CountdownMs)
+                           < MINIMAP_COMBAT_BLINK_PHASE_MS) {
 
                     i32 tileId = TileIdAt(m_mapMgr, x, y);
                     if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
@@ -253,8 +258,8 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         scale = scaleX;
     }
 
-    i32 cellScale = 3;
-    if (scale <= 3) {
+    i32 cellScale = MINIMAP_MAX_CELL_SCALE;
+    if (scale <= MINIMAP_MAX_CELL_SCALE) {
         cellScale = scale;
     }
     m_cellScale = cellScale;
@@ -265,7 +270,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     dstRect->top = drawTop;
     dstRect->right = m_surface->m_width * cellScale + drawLeft;
     dstRect->bottom = m_surface->m_height * cellScale + drawTop;
-    if (target->m_surface->BltEx(dstRect, m_surface, NULL, 0x1000000, NULL) != 0) {
+    if (target->m_surface->BltEx(dstRect, m_surface, NULL, DDBLT_WAIT, NULL) != 0) {
         return 0;
     }
 
@@ -289,7 +294,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     box.right += dstRect->left;
     box.top += dstRect->top;
     box.bottom += dstRect->top;
-    DrawBorder(&box, target, 0xffff);
+    DrawBorder(&box, target, MINIMAP_BORDER_COLOR_16);
     return 1;
 }
 
@@ -1339,13 +1344,16 @@ i32 CMinimap::BuildSpacePalette() {
 RVA(0x000a9480, 0x5c)
 i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
     i32 cell[2];
-    if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
+    if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
         return 0;
     }
 
     CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
     if (play != NULL) {
-        play->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
+        play->ResetGoals(
+            cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
+            cell[1] * TILE_SIZE_PX + TILE_HALF_PX
+        );
     }
     m_panActive = 1;
     return 1;
@@ -1370,12 +1378,12 @@ i32 CMinimap::IgnoreMinimapEvent(i32, i32, i32) {
 RVA(0x000a9550, 0x5b)
 i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     i32 cell[2];
-    if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
+    if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
         return 0;
     }
     g_gameReg->m_triggerMgr->HandleTargetSelection(
-        cell[0] * 32 + 16,
-        cell[1] * 32 + 16,
+        cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
+        cell[1] * TILE_SIZE_PX + TILE_HALF_PX,
         0,
         0,
         0,
@@ -1391,12 +1399,15 @@ i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
         return 0;
     }
     i32 cell[2];
-    if (!ScreenPointToCell(cursorX, cursorY, cell, 0x20)) {
+    if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
         return 0;
     }
     CPlay* play = static_cast<CPlay*>(m_gameMgr->m_curState);
     if (play != NULL) {
-        play->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
+        play->ResetGoals(
+            cell[0] * TILE_SIZE_PX + TILE_HALF_PX,
+            cell[1] * TILE_SIZE_PX + TILE_HALF_PX
+        );
     }
     return 1;
 }

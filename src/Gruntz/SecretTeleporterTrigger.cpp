@@ -99,12 +99,12 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
-        SetObjectFlags(2);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
         g_gameReg->m_gameStats->m_secretsAvailable++;
@@ -135,11 +135,11 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
-        SetObjectFlags(2);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
     } else {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
 }
 
@@ -180,7 +180,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (ok) {
             g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);
         }
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
 }
@@ -199,7 +199,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             (o->m_points << TILE_SHIFT_PX) + TILE_HALF_PX,
             0,
             "Teleporter",
-            0x40003
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
         if (spr) {
             spr->m_smarts = 2;
@@ -220,7 +220,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
                 g->m_voiceManager->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
 }

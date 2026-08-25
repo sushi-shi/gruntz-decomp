@@ -19,6 +19,13 @@ GZ_ENUM_CONST_BEGIN(MinimapTileColor)
     MINIMAP_TILE_COLOR_COUNT = 0x1f4
 GZ_ENUM_CONST_END(MinimapTileColor)
 
+GZ_ENUM_CONST_BEGIN(MinimapLayout)
+    MINIMAP_COMBAT_BLINK_PHASE_MS = 50,
+    MINIMAP_MAX_CELL_SCALE = 3,
+    MINIMAP_SNAP_MARGIN_PX = 32,
+    MINIMAP_BORDER_COLOR_16 = 0xffff
+GZ_ENUM_CONST_END(MinimapLayout)
+
 class CMinimap {
 public:
     CMinimap();

@@ -57,7 +57,7 @@ RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdSpriteObject* h = m_object;
@@ -111,7 +111,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     if (BeginLeg() == 0) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     } else {
         SET_ANIMATION_ACT("A");
         SwitchAnimationByName("GAME_CYCLE100", 0);
@@ -408,7 +408,8 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     SwitchAnimationByName("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CWwdSpriteObject* sl =
-            g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, sy, 0, "SpotLight", 0x40003);
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, sx, sy, 0, "SpotLight", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (sl != NULL) {
             sl->SetImageSetByName("LEVEL_SPOTLIGHT");
             CLogicRecord* sub = sl->m_logicRecord;

@@ -37,6 +37,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -422,7 +423,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -442,7 +443,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -462,7 +463,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -480,7 +481,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -500,7 +501,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -520,7 +521,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -532,7 +533,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y - 0x20,
                 0,
                 "RollingBall",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
             CLogicRecord* ni = n->m_logicRecord;
@@ -548,7 +549,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 0,
                 "RollingBall",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
             CLogicRecord* ei = e->m_logicRecord;
@@ -564,7 +565,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y + 0x20,
                 0,
                 "RollingBall",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
             CLogicRecord* si = s->m_logicRecord;
@@ -580,7 +581,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_y,
                 0,
                 "RollingBall",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
             CLogicRecord* wi = w->m_logicRecord;
@@ -625,7 +626,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         m_object->m_screenY,
         SORTKEY_ACTOR,
         "SingleAnimation",
-        0x40003
+        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
     spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s__LOSEITEM);
     spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s__LOSEITEM, 0);
@@ -820,7 +821,7 @@ i32 CGrunt::PathScan() {
                     co->m_y,
                     &s,
                     1,
-                    m_arrivalFlags | 0x20000000,
+                    m_arrivalFlags | BRICKZ_CELL_OCCUPIED,
                     m_passableMask
                 );
                 if (res != 0) {
@@ -918,7 +919,7 @@ i32 CGrunt::PathScan() {
 
                 i32 cf = grid->CellFlagsAt(cc, rr);
                 i32 mf = (m_arrivalFlags | 0x20040002) & cf;
-                if (mf & 0x20000000) {
+                if (mf & BRICKZ_CELL_OCCUPIED) {
                     continue;
                 }
                 if (mf != 0 && (m_passableMask & cf) == 0) {
@@ -1642,7 +1643,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     {
-        i32 flags = this->m_arrivalFlags | 0x20000000;
+        i32 flags = this->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
         CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         i32 nyt = newPos.m_y >> TILE_SHIFT_PX;
         i32 nxt = newPos.m_x >> TILE_SHIFT_PX;
@@ -1658,7 +1659,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
             BrickzCell* cell = &grid->m_rows[nyt][nxt];
             i32 t = flags & cell->m_flags;
-            if (t & 0x20000000) {
+            if (t & BRICKZ_CELL_OCCUPIED) {
                 return 1;
             }
             if (t != 0 && (cell->m_flags & (this->m_passableMask | 0x18000482)) == 0) {
@@ -1669,23 +1670,31 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
                 if (dxt > 0 && dyt > 0) {
-                    if (((ocell + 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
-                        || ((cell - 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
+                    if (((ocell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((ocell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
                         return 1;
                     }
                 } else if (dxt < 0 && dyt > 0) {
-                    if (((ocell - 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
-                        || ((cell + 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
+                    if (((ocell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((ocell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
                         return 1;
                     }
                 } else if (dxt > 0 && dyt < 0) {
-                    if (((ocell + 1)->m_flags & 0x2000) || ((ocell - w)->m_flags & 0x2000)
-                        || ((cell - 1)->m_flags & 0x2000) || ((cell + w)->m_flags & 0x2000)) {
+                    if (((ocell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((ocell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
                         return 1;
                     }
                 } else if (dxt < 0 && dyt < 0) {
-                    if (((ocell - 1)->m_flags & 0x2000) || ((ocell - w)->m_flags & 0x2000)
-                        || ((cell + 1)->m_flags & 0x2000) || ((cell + w)->m_flags & 0x2000)) {
+                    if (((ocell - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((ocell - w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)
+                        || ((cell + w)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {
                         return 1;
                     }
                 }
@@ -1703,7 +1712,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
         CMapMgr* newGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
         newGrid->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
-        newGrid->m_rows[nyt][nxt].m_occupantId = (this->m_playerIndex << 8) | this->m_unitIndex;
+        newGrid->m_rows[nyt][nxt].m_occupantId =
+            (this->m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | this->m_unitIndex;
 
         if (m_coordList.GetCount() != 0) {
             Coord* node = NULL;
@@ -2247,7 +2257,7 @@ void CGrunt::StepBehavior(char*) {
 
         if ((flags & 2) == 0 || m_wingzEnabled != 0) {
             i32 mask = m_arrivalFlags & flags;
-            if (!(mask & 0x20000000)) {
+            if (!(mask & BRICKZ_CELL_OCCUPIED)) {
                 if (mask == 0) {
                     goto tileKindDone;
                 }
@@ -2280,8 +2290,9 @@ void CGrunt::StepBehavior(char*) {
             if (raw == UNINIT_FILL || raw == -1) {
                 kind = TILEKIND_PASSABLE;
             } else {
-                CTileImageSet* ts =
-                    static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
+                CTileImageSet* ts = static_cast<CTileImageSet*>(
+                    level->m_imageSets.GetAt(raw & WWD_TILE_IMAGE_SET_INDEX_MASK)
+                );
                 kind = ts->GetCollisionAt(0, 0);
             }
 
@@ -2893,7 +2904,7 @@ void CGrunt::AdvanceMotion() {
             CoordNode* head = CoordHead();
             Coord* co = head->m_coord;
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
-            if (!(fl & 0x20000000) && !((m_arrivalFlags & fl) & 0x20000000)
+            if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
                 && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
                 Coord* tc = (CoordTail())->m_coord;
                 SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, tc->m_x, tc->m_y)
@@ -2906,7 +2917,7 @@ void CGrunt::AdvanceMotion() {
                     if (CoordCount() != 0) {
                         Coord* h3 = (CoordHead())->m_coord;
                         i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
-                        if (!(fl2 & 0x20000000)) {
+                        if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;
                             StepEntranceReinit();
                         }

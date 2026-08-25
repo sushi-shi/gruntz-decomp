@@ -28,6 +28,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 RVA(0x00075e90, 0x1400)
@@ -61,12 +62,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     if (cell == UNINIT_FILL || cell == -1) {
         cellType = TILEKIND_PASSABLE;
     } else {
-        CTileImageSet* tc = static_cast<CTileImageSet*>(grid->m_imageSets.GetAt(cell & 0xffff));
+        CTileImageSet* tc = static_cast<CTileImageSet*>(
+            grid->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
+        );
         cellType = tc->GetCollisionAt(0, 0);
     }
 
-    i32 px = tileX * 32 + 0x10;
-    i32 py = tileY * 32 + 0x10;
+    i32 px = tileX * TILE_SIZE_PX + TILE_HALF_PX;
+    i32 py = tileY * TILE_SIZE_PX + TILE_HALF_PX;
 
     switch (reason) {
         case PICKUP_SHOVEL:
@@ -78,9 +81,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.x = px;
                 pt.y = py;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CWwdSpriteObject* set =
-                        m_world->m_childGroup
-                            ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+                    CWwdSpriteObject* set = m_world->m_childGroup->CreateSprite(
+                        0,
+                        px,
+                        py,
+                        SORTKEY_ACTOR_BEHIND,
+                        "Particlez",
+                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    );
                     if (set != NULL) {
                         set->SetImageSetByName("LEVEL_DIRT");
                         set->SetAnimationByName("GAME_DIRT", 0);
@@ -200,9 +208,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 pt.x = px;
                 pt.y = py;
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
-                    CWwdSpriteObject* particle =
-                        m_world->m_childGroup
-                            ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+                    CWwdSpriteObject* particle = m_world->m_childGroup->CreateSprite(
+                        0,
+                        px,
+                        py,
+                        SORTKEY_ACTOR_BEHIND,
+                        "Particlez",
+                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    );
                     if (particle != NULL) {
                         particle->SetImageSetByName("LEVEL_ROCKBREAK");
                         particle->SetAnimationByName("LEVEL_ROCKBREAK", 0);
@@ -253,9 +266,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = topY * 0x20 + 0x10;
-                            CWwdSpriteObject* light =
-                                m_world->m_childGroup
-                                    ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
+                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
+                                0,
+                                fxX,
+                                fxY,
+                                1000000,
+                                "LightFx",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
@@ -297,7 +315,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 1000000,
                                                 "LightFx",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         light->m_logicRecord->m_dispatch(light);
                                         static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
@@ -314,7 +332,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 900000,
                                                 "ToyPeek",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
@@ -328,9 +346,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && playerIndex == g_curPlayer) {
                             i32 fxX = scanX * 0x20 + 0x10;
                             i32 fxY = bottomY * 0x20 + 0x10;
-                            CWwdSpriteObject* light =
-                                m_world->m_childGroup
-                                    ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
+                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
+                                0,
+                                fxX,
+                                fxY,
+                                1000000,
+                                "LightFx",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
@@ -371,7 +394,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 1000000,
                                                 "LightFx",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         light->m_logicRecord->m_dispatch(light);
                                         static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
@@ -388,7 +411,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 900000,
                                                 "ToyPeek",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
@@ -406,9 +429,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && g_curPlayer == playerIndex) {
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
-                            CWwdSpriteObject* light =
-                                m_world->m_childGroup
-                                    ->CreateSprite(0, fxX, fxY, 900000, "LightFx", 0x40003);
+                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
+                                0,
+                                fxX,
+                                fxY,
+                                900000,
+                                "LightFx",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
@@ -450,7 +478,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 1000000,
                                                 "LightFx",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         light->m_logicRecord->m_dispatch(light);
                                         static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
@@ -467,7 +495,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 1000000,
                                                 "ToyPeek",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
@@ -481,9 +509,14 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             && playerIndex == g_curPlayer) {
                             i32 fxX = rightX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
-                            CWwdSpriteObject* light =
-                                m_world->m_childGroup
-                                    ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
+                            CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
+                                0,
+                                fxX,
+                                fxY,
+                                1000000,
+                                "LightFx",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
@@ -524,7 +557,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 1000000,
                                                 "LightFx",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         light->m_logicRecord->m_dispatch(light);
                                         static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
@@ -541,7 +574,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 fxY,
                                                 1000000,
                                                 "ToyPeek",
-                                                0x40003
+                                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                             );
                                         if (peek != NULL) {
                                             peek->m_smarts = icon->m_object->m_points;
@@ -627,7 +660,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     waterY,
                     SORTKEY_ACTOR_BEHIND,
                     "Particlez",
-                    0x40003
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 if (splash != NULL) {
                     splash->SetImageSetByName("GAME_WATER");

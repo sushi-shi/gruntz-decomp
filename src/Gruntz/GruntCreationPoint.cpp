@@ -30,7 +30,7 @@ RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_CREATION) {
         o->m_sortKey = SORTKEY_GRUNT_CREATION;
@@ -45,7 +45,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
         if (g_gameReg->m_players[idx].m_active != 0) {
             idx = IDX(g_gameReg->m_players[idx].m_color);
         } else {
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
             AddrWord<CGameObject> handle;
             handle.m_addr = obj;

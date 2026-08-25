@@ -1002,8 +1002,9 @@ void* CTileTriggerContainer::DeserializeLogic(
                 tileKind = TILEKIND_PASSABLE;
             } else {
 
-                CTileImageSet* rec =
-                    static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
+                CTileImageSet* rec = static_cast<CTileImageSet*>(
+                    level->m_imageSets.GetData()[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]
+                );
                 tileKind = rec->GetCollisionAt(0, 0);
             }
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {

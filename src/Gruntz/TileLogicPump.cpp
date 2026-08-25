@@ -22,6 +22,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
@@ -220,11 +221,11 @@ i32 DispatchWarpStonePadLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CWarp
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         Hide();
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     SET_ANIMATION_ACT("A");
 }
@@ -255,8 +256,8 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
 
-    SetObjectFlags(2);
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 }
 
@@ -286,8 +287,8 @@ RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(2);
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -317,8 +318,8 @@ void CTileTrigger::RegisterActs() {
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(2);
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 
     i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
@@ -359,8 +360,8 @@ RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(2);
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
 
     CWwdSpriteObject* o = m_object;
     i32 zk = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
@@ -504,8 +505,8 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 ownerCol = (owner >> 8) & 0xff;
-    owner &= 0xff;
+    i32 ownerCol = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+    owner &= GRUNT_IDENTITY_COMPONENT_MASK;
     CGrunt* g = g_gameReg->m_triggerMgr->m_units[ownerCol * TM_UNITS_PER_PLAYER + owner];
     if (g == NULL) {
         return 0;
@@ -567,7 +568,7 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(0x1000000);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION));
 
     CGameObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, 0)

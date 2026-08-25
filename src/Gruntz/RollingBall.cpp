@@ -57,7 +57,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_explodeStart(0), m_explodeWindow(0) {
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_subX, m_subY)
     CWwdSpriteObject* snapped = m_object;
@@ -212,7 +212,11 @@ i32 CRollingBall::Update() {
             i32 raw = pl->m_tileHandles[pl->m_tileRowOffsets[tileY] + tileX];
             i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
-                act = VtblResolve(static_cast<CTileImageSet*>(lvl->m_imageSets[raw & 0xffff]));
+                act = VtblResolve(
+                    static_cast<CTileImageSet*>(
+                        lvl->m_imageSets[raw & WWD_TILE_IMAGE_SET_INDEX_MASK]
+                    )
+                );
             } else {
                 act = 0;
             }
@@ -248,7 +252,7 @@ i32 CRollingBall::Update() {
                                         py,
                                         SORTKEY_ACTOR_BEHIND,
                                         "Particlez",
-                                        0x40003
+                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                     );
                                 if (fx != NULL) {
                                     fx->SetImageSetByName("LEVEL_DEATHSPLASH");
@@ -355,7 +359,7 @@ i32 CRollingBall::Update() {
                             py,
                             SORTKEY_ACTOR_BEHIND,
                             "Particlez",
-                            0x40003
+                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                         );
                         if (fx != NULL) {
                             fx->SetImageSetByName("GAME_WATER");
@@ -418,7 +422,11 @@ i32 CRollingBall::Update() {
             i32 raw2 = pl2->m_tileHandles[pl2->m_tileRowOffsets[tileY2] + tileX2];
             i32 act2;
             if (raw2 != UNINIT_FILL && raw2 != -1) {
-                act2 = VtblResolve(static_cast<CTileImageSet*>(lvl2->m_imageSets[raw2 & 0xffff]));
+                act2 = VtblResolve(
+                    static_cast<CTileImageSet*>(
+                        lvl2->m_imageSets[raw2 & WWD_TILE_IMAGE_SET_INDEX_MASK]
+                    )
+                );
             } else {
                 act2 = 0;
             }

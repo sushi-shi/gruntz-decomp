@@ -65,7 +65,7 @@ i32 SaveScreenshot(
     srcRect.bottom = gameManager->GetModeSize().cy;
     dstRect.right = width;
     dstRect.bottom = height;
-    if (image->BltEx(&dstRect, src, &srcRect, 0x1000000, NULL)) {
+    if (image->BltEx(&dstRect, src, &srcRect, DDBLT_WAIT, NULL)) {
         manager->RemoveSurface(image);
         return 0;
     }

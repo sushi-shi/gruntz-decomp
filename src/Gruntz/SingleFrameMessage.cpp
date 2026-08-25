@@ -69,6 +69,6 @@ void CSingleFrameMessage::RegisterActs() {
 
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
-    SetObjectFlags(0x10000);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }

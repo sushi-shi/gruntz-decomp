@@ -94,7 +94,8 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
-    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+    CTileImageSet* set =
+        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
     return set->GetCollisionAt(0, 0);
 }
 

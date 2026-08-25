@@ -62,7 +62,7 @@ RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdSpriteObject* o = m_object;
@@ -73,7 +73,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     m_object->m_speedX = (m_object->m_speedX << TILE_SHIFT_PX) + TILE_HALF_PX;
     m_object->m_speedY = (m_object->m_speedY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (m_object->m_screenX == m_object->m_speedX && m_object->m_screenY == m_object->m_speedY) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
     m_object->m_extent.left =
@@ -113,7 +113,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
 
     m_stepMag = 0.0;
     if (LoadSprites() == 0) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     SET_ANIMATION_ACT("A");
     SwitchAnimationByName("GAME_CYCLE100", 0);
@@ -162,7 +162,7 @@ i32 CKitchenSlime::Tick() {
     CGameObject* lvl = Level();
     if (lvl->m_screenX == m_tilePosition.m_x && lvl->m_screenY == m_tilePosition.m_y
         && LoadSprites() == 0) {
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
 

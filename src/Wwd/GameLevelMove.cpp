@@ -106,7 +106,8 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
-                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                CTileImageSet* set =
+                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
                 result = set->GetCollisionAt(subX, subY);
             }
         }
@@ -188,7 +189,8 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
-                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                CTileImageSet* set =
+                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
                 result = set->GetCollisionAt(subX, subY);
             }
         }
@@ -270,7 +272,8 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
-                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                CTileImageSet* set =
+                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
                 result = set->GetCollisionAt(subX, subY);
             }
         }
@@ -352,7 +355,8 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
                 result = TILEKIND_PASSABLE;
             } else {
-                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                CTileImageSet* set =
+                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
                 result = set->GetCollisionAt(subX, subY);
             }
         }

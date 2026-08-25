@@ -13,6 +13,7 @@
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdFile.h>
+#include <Wwd/WwdTileHandle.h>
 
 class CFileMemBase;
 class CDDrawSurfacePair;
@@ -49,7 +50,8 @@ static const i32 TILE_CLEAR = -1;
         if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
-            CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
+            CTileImageSet* set_ =                                                                  \
+                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)
@@ -82,7 +84,8 @@ static const i32 TILE_CLEAR = -1;
         if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
-            CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
+            CTileImageSet* set_ =                                                                  \
+                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)

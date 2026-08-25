@@ -56,6 +56,7 @@
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
+#include <Utils/MillisPer.h>
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
@@ -249,7 +250,7 @@ i32 CGrunt::StepAttackFire() {
                     m_object->m_screenY,
                     0,
                     "Projectile",
-                    0x40003
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 spr->m_logicRecord->m_dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
@@ -263,7 +264,7 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->SetObjectFlags(0x10000);
+                    s->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 }
                 break;
             }
@@ -274,7 +275,7 @@ i32 CGrunt::StepAttackFire() {
                     m_object->m_screenY,
                     0,
                     "Boomerang",
-                    0x40003
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                 );
                 spr->m_logicRecord->m_dispatch(spr);
                 CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
@@ -288,15 +289,21 @@ i32 CGrunt::StepAttackFire() {
                         m_object->m_screenY
                     )
                     == 0) {
-                    s->SetObjectFlags(0x10000);
+                    s->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 }
                 break;
             }
             case GRUNT_TIMEBOMB: {
                 i32 pos[2];
                 EntranceTileOffset(pos);
-                CGameObject* spr = g_gameReg->m_world->m_childGroup
-                                       ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
+                CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                    0,
+                    pos[0],
+                    pos[1],
+                    0xf,
+                    "TimeBomb",
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                );
                 spr->m_damage = 0;
                 spr->m_logicRecord->m_dispatch(spr);
                 spr->m_smarts = m_playerIndex;
@@ -894,7 +901,7 @@ i32 CGrunt::StepEntranceReinit() {
     CMapMgr* tileGrid = g_gameReg->m_tileGrid;
     i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
     GruntDirectionCell cell;
-    if (!(targetCellFlags & 0x20000000)) {
+    if (!(targetCellFlags & BRICKZ_CELL_OCCUPIED)) {
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         cell = m_entranceCell;
@@ -934,7 +941,7 @@ i32 CGrunt::StepArrivalReroll() {
     if (elapsed <= 0x2710) {
         return 0;
     }
-    if (elapsed % 1000 != 0) {
+    if (elapsed % MILLIS_PER_SECOND != 0) {
         return 0;
     }
     i32 v;
@@ -1146,7 +1153,7 @@ i32 CGrunt::StepWarpExit() {
         if (m_cellRemovalNotified == 0) {
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 1);
         }
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
 }

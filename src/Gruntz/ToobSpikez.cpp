@@ -72,7 +72,7 @@ RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
     m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
     CWwdSpriteObject* o = m_object;

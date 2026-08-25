@@ -21,6 +21,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -105,7 +106,7 @@ static __inline i32 s_CanCommitToyMove(CGrunt* g, i32 moveX, i32 moveY, i32 sour
     i32 ty = sourceY >> TILE_SHIFT_PX;
     i32 mtx = moveX >> TILE_SHIFT_PX;
     i32 mty = moveY >> TILE_SHIFT_PX;
-    i32 arr = g->m_arrivalFlags | 0x20000000;
+    i32 arr = g->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
     if (tx != mtx || ty != mty) {
         if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
             || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
@@ -114,7 +115,7 @@ static __inline i32 s_CanCommitToyMove(CGrunt* g, i32 moveX, i32 moveY, i32 sour
         i32* tgt = &board->m_rowInts[mty][mtx * 7];
         i32 tflags = *tgt;
         i32 hit = arr & tflags;
-        if (hit & 0x20000000) {
+        if (hit & BRICKZ_CELL_OCCUPIED) {
             return 0;
         }
         if (hit != 0) {
@@ -135,26 +136,28 @@ static __inline i32 s_CanCommitToyMove(CGrunt* g, i32 moveX, i32 moveY, i32 sour
         char* tg = row.m_chars;
         if (dx > 0 && dy > 0) {
             if ((cur[0x1d] & 0x20) || (cur[board->m_width * 7 * 4 + 1] & 0x20)
-                || (TileFlags(tg - 0x1c) & 0x2000)
-                || (TileFlags(tg - board->m_width * 7 * 4) & 0x2000)) {
+                || (TileFlags(tg - 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         } else if (dx < 0 && dy > 0) {
             if ((cur[-0x1b] & 0x20) || (cur[board->m_width * 7 * 4 + 1] & 0x20)
-                || (TileFlags(tg + 0x1c) & 0x2000)
-                || (TileFlags(tg - board->m_width * 7 * 4) & 0x2000)) {
+                || (TileFlags(tg + 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         } else if (dx > 0 && dy < 0) {
-            if ((cur[0x1d] & 0x20) || (TileFlags(cur - board->m_width * 7 * 4) & 0x2000)
-                || (TileFlags(tg - 0x1c) & 0x2000)
-                || (TileFlags(tg + board->m_width * 7 * 4) & 0x2000)) {
+            if ((cur[0x1d] & 0x20)
+                || (TileFlags(cur - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         } else if (dx < 0 && dy < 0) {
-            if ((cur[-0x1b] & 0x20) || (TileFlags(cur - board->m_width * 7 * 4) & 0x2000)
-                || (TileFlags(tg + 0x1c) & 0x2000)
-                || (TileFlags(tg + board->m_width * 7 * 4) & 0x2000)) {
+            if ((cur[-0x1b] & 0x20)
+                || (TileFlags(cur - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         }
@@ -168,7 +171,7 @@ static __inline i32 s_CanCommitBagMove(CGrunt* g, i32 moveX, i32 moveY, i32 sour
     i32 ty = sourceY >> TILE_SHIFT_PX;
     i32 mtx = moveX >> TILE_SHIFT_PX;
     i32 mty = moveY >> TILE_SHIFT_PX;
-    i32 arr = g->m_arrivalFlags | 0x20000000;
+    i32 arr = g->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
     if (tx != mtx || ty != mty) {
         if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
             || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
@@ -177,7 +180,7 @@ static __inline i32 s_CanCommitBagMove(CGrunt* g, i32 moveX, i32 moveY, i32 sour
         i32* tgt = &board->m_rowInts[mty][mtx * 7];
         i32 tflags = *tgt;
         i32 hit = arr & tflags;
-        if (hit & 0x20000000) {
+        if (hit & BRICKZ_CELL_OCCUPIED) {
             return 0;
         }
         if (hit != 0) {
@@ -197,31 +200,31 @@ static __inline i32 s_CanCommitBagMove(CGrunt* g, i32 moveX, i32 moveY, i32 sour
         row.m_dwords = tgt;
         char* tg = row.m_chars;
         if (dx > 0 && dy > 0) {
-            if ((TileFlags(cur + 0x1c) & 0x2000)
-                || (TileFlags(cur + board->m_width * 7 * 4) & 0x2000)
-                || (TileFlags(tg - 0x1c) & 0x2000)
-                || (TileFlags(tg - board->m_width * 7 * 4) & 0x2000)) {
+            if ((TileFlags(cur + 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(cur + board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         } else if (dx < 0 && dy > 0) {
-            if ((TileFlags(cur - 0x1c) & 0x2000)
-                || (TileFlags(cur + board->m_width * 7 * 4) & 0x2000)
-                || (TileFlags(tg + 0x1c) & 0x2000)
-                || (TileFlags(tg - board->m_width * 7 * 4) & 0x2000)) {
+            if ((TileFlags(cur - 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(cur + board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         } else if (dx > 0 && dy < 0) {
-            if ((TileFlags(cur + 0x1c) & 0x2000)
-                || (TileFlags(cur - board->m_width * 7 * 4) & 0x2000)
-                || (TileFlags(tg - 0x1c) & 0x2000)
-                || (TileFlags(tg + board->m_width * 7 * 4) & 0x2000)) {
+            if ((TileFlags(cur + 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(cur - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg - 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         } else if (dx < 0 && dy < 0) {
-            if ((TileFlags(cur - 0x1c) & 0x2000)
-                || (TileFlags(cur - board->m_width * 7 * 4) & 0x2000)
-                || (TileFlags(tg + 0x1c) & 0x2000)
-                || (TileFlags(tg + board->m_width * 7 * 4) & 0x2000)) {
+            if ((TileFlags(cur - 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(cur - board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + 0x1c) & BRICKZ_CELL_ROUTE_MASKB)
+                || (TileFlags(tg + board->m_width * 7 * 4) & BRICKZ_CELL_ROUTE_MASKB)) {
                 return 0;
             }
         }
@@ -685,7 +688,7 @@ i32 CGrunt::StepCompassMove() {
         i32 mtx = moveX >> TILE_SHIFT_PX;
         i32 mty = moveY >> TILE_SHIFT_PX;
         i32 tflags = board->CellFlagsAt(mtx, mty);
-        if ((tflags & 0x20000000) && !(tflags & 0x80)) {
+        if ((tflags & BRICKZ_CELL_OCCUPIED) && !(tflags & 0x80)) {
 
             i32 owner;
             if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
@@ -694,8 +697,12 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = board->m_rowInts[mty][mtx * 7 + 1];
             }
-            m_triggerMgr
-                ->StartUnitDeath((owner >> 8) & 0xff, owner & 0xff, DEATH_SQUASH, m_playerIndex);
+            m_triggerMgr->StartUnitDeath(
+                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
+                owner & GRUNT_IDENTITY_COMPONENT_MASK,
+                DEATH_SQUASH,
+                m_playerIndex
+            );
         }
         goto commit;
     }
@@ -869,7 +876,7 @@ commit:
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> TILE_SHIFT_PX;
         i32 ny = moveY >> TILE_SHIFT_PX;
-        i32 owner = (m_playerIndex << 8) | m_unitIndex;
+        i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
         b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
         b->m_rowInts[ny][nx * 7 + 1] = owner;
     }
@@ -940,7 +947,7 @@ i32 CGrunt::ClaimSwitchTile() {
     gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
     CGruntzMapMgr* nb = g_gameReg->m_tileGrid;
-    i32 owner = (m_playerIndex << 8) | m_unitIndex;
+    i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
     nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
     nb->m_rowInts[ty][tx * 7 + 1] = owner;
 
@@ -1155,7 +1162,7 @@ applyTail:
             CGruntzMapMgr* board = g_gameReg->m_tileGrid;
             i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-            board->m_rowInts[gy][gx * 7] &= ~0x20000000;
+            board->m_rowInts[gy][gx * 7] &= BRICKZ_CELL_UNOCCUPIED_MASK;
             board->m_rowInts[gy][gx * 7 + 1] = -1;
             m_lastTilePx.m_x = -1;
             m_lastTilePx.m_y = -1;
@@ -1169,9 +1176,14 @@ applyTail:
             m_routePassableMask = 0;
         }
         if (spawnWormhole != 0) {
-            CWwdSpriteObject* spawned =
-                g_gameReg->m_world->m_childGroup
-                    ->CreateSprite(0, spawnPx, spawnPy, 0, "Wormhole", 0x40003);
+            CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
+                0,
+                spawnPx,
+                spawnPy,
+                0,
+                "Wormhole",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             if (spawned != NULL) {
                 if (useSecretColor != 0) {
                     spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);

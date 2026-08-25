@@ -65,8 +65,10 @@ i32 CDemo::CompleteLevel() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c070, 0x47)
 i32 CDemoSetup::SetupDemoActors() {
-    m_world->m_childGroup->CreateSprite(1, 0, 0, 0, "DemoMover", 0x40003);
-    m_world->m_childGroup->CreateSprite(1, 0, 0, 0x270f, "DemoSign", 0x40003);
+    m_world->m_childGroup
+        ->CreateSprite(1, 0, 0, 0, "DemoMover", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+    m_world->m_childGroup
+        ->CreateSprite(1, 0, 0, 0x270f, "DemoSign", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     return 1;
 }
 

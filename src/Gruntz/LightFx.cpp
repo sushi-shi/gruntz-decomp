@@ -134,7 +134,7 @@ void CLightFx::Activate(
         object->m_frameIndex = firstFrameIndex;
     }
     CAniElement* node = NULL;
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     m_shadeTableIndex = shadeTableIndex;
     m_deleteWhenComplete = deleteWhenComplete;
 

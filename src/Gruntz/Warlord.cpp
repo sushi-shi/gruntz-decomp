@@ -119,7 +119,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD)
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
     i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].m_color);
@@ -670,9 +670,14 @@ i32 CWarlord::BuildFortSplashParticles() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
-            CWwdSpriteObject* fx =
-                g_gameReg->m_world->m_childGroup
-                    ->CreateSprite(0, x - 30, y + 10, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+            CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+                0,
+                x - 30,
+                y + 10,
+                SORTKEY_ACTOR_BEHIND,
+                "Particlez",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             if (fx != NULL) {
                 fx->SetImageSetByName("LEVEL_FORTSPLASH");
                 fx->SetAnimationByName("LEVEL_FORTSPLASH", 0);
@@ -691,7 +696,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         if (slot != NULL) {
             slot->m_warlordObjectId = 0;
         }
-        SetObjectFlags(0x10000);
+        SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     }
     return 0;
 }

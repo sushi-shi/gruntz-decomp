@@ -133,7 +133,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_object->m_area.top = m_object->m_screenY - 7;
     m_object->m_area.bottom = m_object->m_area.top + 14;
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     m_object->m_animationCursor.m_consumeDraw = 0;
     m_object->m_smarts = IDX(g_areaHazardDeath);
     m_activeWindow = 0;

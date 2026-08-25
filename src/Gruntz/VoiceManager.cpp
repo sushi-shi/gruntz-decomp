@@ -80,8 +80,14 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
     i32 i = 0;
     CGruntVoice** slot = m_indicators;
     for (; i < 2; i++, slot++) {
-        CGameObject* spr =
-            m_world->m_childGroup->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
+        CGameObject* spr = m_world->m_childGroup->CreateSprite(
+            0,
+            0,
+            0,
+            0xdbba1,
+            "GruntVoice",
+            WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_WORLD_SPRITE
+        );
         spr->m_logicRecord->m_dispatch(spr);
         CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_logicRecord->m_userLogic);
         *slot = got;

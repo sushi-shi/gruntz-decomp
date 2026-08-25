@@ -207,7 +207,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_dropInterval = 0;
     SwitchAnimationByName("LEVEL_OBJECTDROPPER", 0);
     SET_ANIMATION_ACT("A");
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
     CWwdSpriteObject* o = m_object;
@@ -297,8 +297,14 @@ i32 CObjectDropper::Update() {
                         i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags = plane->CellFlagsAt(cx, cy);
                         if ((flags & 2) == 0) {
-                            g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
+                            g_gameReg->m_world->m_childGroup->CreateSprite(
+                                0,
+                                fx,
+                                fy,
+                                0,
+                                "DroppedObjectShadow",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
                             m_lastDropPlayerIndex = playerIndex;
                             m_lastDropUnitIndex = unitIndex;
                             m_dropInterval =
@@ -405,7 +411,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SetImageSetByName("LEVEL_OBJECTDROPPER_OBJECT");
     SwitchAnimationByName("LEVEL_DROPPEDOBJECT", 0);
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
@@ -457,13 +463,13 @@ i32 CDroppedObject::AdvanceFall() {
         if ((cell & 0x900) == 0) {
             if (cell & IDX(CELL_FLAG_SPECIAL)) {
                 if (cell == IDX(CELL_FLAG_REVEALED_POWERUP)) {
-                    SetObjectFlags(0x10000);
+                    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 } else {
                     switch (g_gameReg->m_curState->m_levelType) {
                         case AREA_HIGH_ON_SWEETZ:
                         case AREA_HIGH_ROLLERZ:
                         case AREA_GRUNTZ_IN_SPACE:
-                            SetObjectFlags(0x10000);
+                            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             // fall through
                         case AREA_MINIATURE_MASTERZ:
                         default:
@@ -475,7 +481,7 @@ i32 CDroppedObject::AdvanceFall() {
                                         m_landY,
                                         SORTKEY_ACTOR_BEHIND,
                                         "Particlez",
-                                        0x40003
+                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                     );
                                 if (s != NULL) {
                                     s->SetImageSetByName("LEVEL_DEATHSPLASH");
@@ -490,9 +496,14 @@ i32 CDroppedObject::AdvanceFall() {
             }
         } else {
             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                CWwdSpriteObject* s =
-                    g_gameReg->m_world->m_childGroup
-                        ->CreateSprite(0, x, m_landY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+                CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
+                    0,
+                    x,
+                    m_landY,
+                    SORTKEY_ACTOR_BEHIND,
+                    "Particlez",
+                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                );
                 if (s != NULL) {
                     s->SetImageSetByName("GAME_WATER");
                     s->SetAnimationByName("GAME_WATER", 0);
@@ -545,7 +556,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SetImageSetByName("LEVEL_OBJECTDROPPER_SHADOW");
     SwitchAnimationByName("LEVEL_DROPPEDOBJECTSHADOW", 0);
-    SetObjectFlags(0x2000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
     CWwdSpriteObject* draw = m_object;
     SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
@@ -572,8 +583,14 @@ RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         CWwdSpriteObject* o = m_object;
-        g_gameReg->m_world->m_childGroup
-            ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);
+        g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            o->m_screenX,
+            o->m_screenY,
+            0,
+            "DroppedObject",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+        );
     }
     MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
     return 0;

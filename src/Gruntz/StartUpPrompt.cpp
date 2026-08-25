@@ -7,6 +7,7 @@
 
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HeapDiag.h>
+#include <Gruntz/PathBuffer.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Utils/WinAPICdRom.h>
 
@@ -25,8 +26,8 @@ int StartUpPrompt(HWND hWnd) {
         return 1;
     }
 
-    char szDir[256];
-    if (!GetCurrentDirectoryA(0xff, szDir)) {
+    char szDir[GRUNTZ_PATH_BUFFER_SIZE];
+    if (!GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, szDir)) {
         return 0;
     }
 

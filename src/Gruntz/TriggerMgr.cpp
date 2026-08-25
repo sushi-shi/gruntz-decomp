@@ -396,7 +396,14 @@ i32 CTriggerMgr::LoadCameraSprite() {
     }
 
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdSpriteObject* spr = fac->CreateSprite(0, ax, cx, SORTKEY_OVERLAY, "DoNothing", 1);
+    CWwdSpriteObject* spr = fac->CreateSprite(
+        0,
+        ax,
+        cx,
+        SORTKEY_OVERLAY,
+        "DoNothing",
+        IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
+    );
     m_goal = spr;
     spr->m_logicRecord->m_dispatch(spr);
     m_goal->SetImageSetByName("GAME_CAMERASPRITE");
@@ -473,7 +480,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     TileCollisionKind collision;
     i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
-        CTileImageSet* tc = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(cval & 0xffff));
+        CTileImageSet* tc = static_cast<CTileImageSet*>(
+            level->m_imageSets.GetAt(cval & WWD_TILE_IMAGE_SET_INDEX_MASK)
+        );
         collision = tc->GetCollisionAt(0, 0);
     } else {
         collision = TILEKIND_PASSABLE;
@@ -765,8 +774,14 @@ i32 CTriggerMgr::HandleTargetSelection(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup
-                         ->CreateSprite(0, targetX, targetY, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup->CreateSprite(
+                0,
+                targetX,
+                targetY,
+                SORTKEY_OVERLAY,
+                "LightFx",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             sprite->m_logicRecord->m_dispatch(sprite);
             (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 2, 1);
@@ -793,8 +808,14 @@ i32 CTriggerMgr::HandleTargetSelection(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup
-                         ->CreateSprite(0, targetX, targetY, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup->CreateSprite(
+                0,
+                targetX,
+                targetY,
+                SORTKEY_OVERLAY,
+                "LightFx",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             sprite->m_logicRecord->m_dispatch(sprite);
             (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 1, 1);
@@ -836,8 +857,14 @@ i32 CTriggerMgr::HandleTargetSelection(
             if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup
-                         ->CreateSprite(0, targetX, targetY, SORTKEY_OVERLAY, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup->CreateSprite(
+                0,
+                targetX,
+                targetY,
+                SORTKEY_OVERLAY,
+                "LightFx",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             sprite->m_logicRecord->m_dispatch(sprite);
             (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 3, 1);
@@ -1089,7 +1116,8 @@ i32 CTriggerMgr::SpawnPuddle(
     i32 gaugePoints
 ) {
     CDDrawChildGroup* childGroup = m_world->m_childGroup;
-    CWwdSpriteObject* sprite = childGroup->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+    CWwdSpriteObject* sprite =
+        childGroup->CreateSprite(0, x, y, 0xa, "GruntPuddle", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (sprite == NULL) {
 
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x400);
@@ -1110,7 +1138,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 animatePlacement) {
         gaugePoints = 0x19;
     }
     if (puddle->Place(sprite->m_smarts, sprite->m_score, animatePlacement, gaugePoints) == 0) {
-        puddle->SetObjectFlags(0x10000);
+        puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
     }
@@ -1126,10 +1154,10 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 animatePlacement) {
         CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (existing->m_tileX == puddle->m_tileX && existing->m_tileY == puddle->m_tileY) {
             if (existing->m_pending != 0) {
-                puddle->SetObjectFlags(0x10000);
+                puddle->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return 0;
             }
-            existing->SetObjectFlags(0x10000);
+            existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             m_baseList.RemoveAt(cur);
             stop = 1;
             replacedExisting = 1;
@@ -1142,7 +1170,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 animatePlacement) {
             POSITION cur = pos;
             CGruntPuddle* existing = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
             if (existing->m_pending == 0) {
-                existing->SetObjectFlags(0x10000);
+                existing->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 m_baseList.RemoveAt(cur);
                 stop = 1;
             }
@@ -1171,7 +1199,8 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
         }
     }
 
-    CWwdSpriteObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    CWwdSpriteObject* spr =
+        fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (!spr) {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x402);
         return 0;
@@ -1198,7 +1227,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
         CGrunt** units = &m_units[firstPlayerIndex * TM_UNITS_PER_PLAYER];
         i32 playersRemaining = lastPlayerIndex - firstPlayerIndex + 1;
         do {
-            i32 unitsRemaining = 15;
+            i32 unitsRemaining = TM_UNITS_PER_PLAYER;
             do {
                 CGrunt* unit = *units;
                 if (unit != NULL && unit->m_deathAnimStarted == 0) {
@@ -1258,7 +1287,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     CGrunt** cell = m_units;
     i32 r = 4;
     do {
-        i32 c = 15;
+        i32 c = TM_UNITS_PER_PLAYER;
         do {
             CGrunt* g = *cell;
             i32 id = 0;
@@ -1595,7 +1624,8 @@ RVA(0x0007b330, 0xc6)
 
 i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdSpriteObject* spr = fac->CreateSprite(0, x, y, 0, "Explosion", 0x40003);
+    CWwdSpriteObject* spr =
+        fac->CreateSprite(0, x, y, 0, "Explosion", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (spr) {
         i32 v = kind;
         if (v == 0) {
@@ -1646,8 +1676,9 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (cell == UNINIT_FILL || cell == -1) {
                 type = TILEKIND_PASSABLE;
             } else {
-                CTileImageSet* o =
-                    static_cast<CTileImageSet*>(board->m_imageSets.GetAt(cell & 0xffff));
+                CTileImageSet* o = static_cast<CTileImageSet*>(
+                    board->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
+                );
                 type = o->GetCollisionAt(0, 0);
             }
 
@@ -1703,9 +1734,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
-            CWwdSpriteObject* spr =
-                m_world->m_childGroup
-                    ->CreateSprite(0, pxX, pxY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);
+            CWwdSpriteObject* spr = m_world->m_childGroup->CreateSprite(
+                0,
+                pxX,
+                pxY,
+                SORTKEY_ACTOR_BEHIND,
+                "Particlez",
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+            );
             if (spr == NULL) {
                 continue;
             }
@@ -1808,7 +1844,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                         gruntY,
                                         SORTKEY_OVERLAY,
                                         "LightFx",
-                                        0x40003
+                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                                     );
                                 placed = 1;
                                 flashObject->m_logicRecord->m_dispatch(flashObject);
@@ -1831,7 +1867,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                             gruntY,
                             SORTKEY_OVERLAY,
                             "LightFx",
-                            0x40003
+                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                         );
                         flashObject->m_logicRecord->m_dispatch(flashObject);
                         (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
@@ -1854,7 +1890,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                             gruntY,
                             SORTKEY_OVERLAY,
                             "LightFx",
-                            0x40003
+                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                         );
                         flashObject->m_logicRecord->m_dispatch(flashObject);
                         (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
@@ -1874,7 +1910,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                                 object->m_screenY,
                                 SORTKEY_OVERLAY,
                                 "LightFx",
-                                0x40003
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
                             );
                         flashObject->m_logicRecord->m_dispatch(flashObject);
                         (static_cast<CLightFx*>(flashObject->m_logicRecord->m_userLogic))
@@ -1981,7 +2017,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         if (ok) {
-            g->SetObjectFlags(0x10000);
+            g->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
 
             m_baseList.RemoveAt(cur);
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -1990,7 +2026,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
                 SORTKEY_OVERLAY,
                 "LightFx",
-                0x40003
+                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
@@ -2031,7 +2067,8 @@ i32 CTriggerMgr::SpawnGrunt(
     PickupType vis = src->m_vehiclePickupType;
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdSpriteObject* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    CWwdSpriteObject* sprite =
+        fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (sprite == NULL) {
         return 0;
     }
@@ -2054,7 +2091,7 @@ i32 CTriggerMgr::SpawnGrunt(
             GRUNT_ENTRANCE_NONE
         )
         == 0) {
-        logic->SetObjectFlags(0x10000);
+        logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
     m_units[dstBaseIndex + freeUnitIndex] = logic;
@@ -2331,7 +2368,8 @@ i32 CTriggerMgr::SpawnPowerupIcon(
             break;
         case PICKUP_COVEREDTIMEBOMB: {
             CGameObject* tb =
-                g_gameReg->m_world->m_childGroup->CreateSprite(0, x, y, 0xf, "TimeBomb", 0x40003);
+                g_gameReg->m_world->m_childGroup
+                    ->CreateSprite(0, x, y, 0xf, "TimeBomb", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
             if (tb) {
                 tb->m_damage = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -2342,7 +2380,8 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     }
 
     CWwdSpriteObject* spr =
-        g_gameReg->m_world->m_childGroup->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+        g_gameReg->m_world->m_childGroup
+            ->CreateSprite(0, x, y, 0x17318, "InGameIcon", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
     if (!spr) {
         return 0;
     }
@@ -2542,7 +2581,7 @@ void CTriggerMgr::ClearSelections() {
 RVA(0x0007d140, 0x61)
 i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
-    i32 unitsRemaining = 15;
+    i32 unitsRemaining = TM_UNITS_PER_PLAYER;
     do {
         CGrunt* unit = *units;
         if (unit != NULL && unit->m_deathAnimStarted == 0) {
@@ -2618,7 +2657,7 @@ void CTriggerMgr::DestroyAllAnims() {
     CGrunt** cell = m_units;
     i32 r = 4;
     do {
-        i32 i = 15;
+        i32 i = TM_UNITS_PER_PLAYER;
         do {
             CGrunt* g = *cell;
             if (g != NULL) {

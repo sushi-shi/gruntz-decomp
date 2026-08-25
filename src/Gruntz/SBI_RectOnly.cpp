@@ -2242,7 +2242,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 by17 = bx + 0x17;
                 i32 by52 = bx + 0x52;
                 i32 y = by + 0xd9;
-                for (i = 0; i < 15; i++) {
+                for (i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
                     bar = new CSBI_StatzTabGruntBar;
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
@@ -2291,7 +2291,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 arrowL = bx + aOff;
                 i32 arrowR = bx + cOff;
                 i32 y = by + 0xd9;
-                for (i = 0; i < 15; i++) {
+                for (i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
                     SbiCommandId id =
                         static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
                     arrow = new CSBI_StatzTabArrow;
@@ -2492,9 +2492,14 @@ i32 CStatusBarMgr::Activate() {
     if (m_barY > d - 9) {
         m_barY = d - 0x22;
     }
-    m_barSprite =
-        (m_world)
-            ->m_childGroup->CreateSprite(0, m_barX, m_barY, SORTKEY_OVERLAY, "StatusBarSprite", 1);
+    m_barSprite = (m_world)->m_childGroup->CreateSprite(
+        0,
+        m_barX,
+        m_barY,
+        SORTKEY_OVERLAY,
+        "StatusBarSprite",
+        IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION)
+    );
     return m_barSprite != NULL;
 }
 
@@ -2504,7 +2509,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         return 1;
     }
 
-    i32 slot = idx + 15 * g_curPlayer;
+    i32 slot = idx + STATUSBAR_GRUNT_SLOT_COUNT * g_curPlayer;
     if (g_gameReg->m_triggerMgr->m_units[slot] == NULL) {
         return 0;
     }
@@ -2615,7 +2620,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_chatBoxDisabled == 0) {
-        for (i32 i = 0; i < 15; i++) {
+        for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
             if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
                 CSBI_SideTab* p = m_hitRects[i];
                 i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect, x, y) : 0;
@@ -4149,7 +4154,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_statFlags;
-    for (i32 i = 0; i < 15; i++) {
+    for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
         s->Write(p, sizeof(*p));
         p += 1;
     }
@@ -4255,7 +4260,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_statFlags;
-    for (i32 i = 0; i < 15; i++) {
+    for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
         s->Read(p, sizeof(*p));
         p += 1;
     }

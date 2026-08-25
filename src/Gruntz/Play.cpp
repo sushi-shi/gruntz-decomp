@@ -103,6 +103,7 @@
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
+#include <Utils/MillisPer.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/EngStr.h>
 #include <Wap32/Object.h>
@@ -1487,9 +1488,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
         self->m_statusBar->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
-        CWwdSpriteObject* scrollSink =
-            self->m_world->m_childGroup
-                ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
+        CWwdSpriteObject* scrollSink = self->m_world->m_childGroup->CreateSprite(
+            0,
+            0,
+            0,
+            0x13880,
+            "CursorSnapSprite",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPACE_SKIP_COLLISION
+        );
         self->m_cursorSnapSprite = scrollSink;
         if (scrollSink != NULL) {
             self->m_world->m_childGroup->TickKillCues(0);
@@ -2943,7 +2949,7 @@ drag_box: {
             slot = NULL;
         } else {
             i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
-            slot = cg->m_units[sel[0] * 15 + sel[1]];
+            slot = cg->m_units[sel[0] * TM_UNITS_PER_PLAYER + sel[1]];
         }
         if (slot != NULL && slot->m_entranceCommitted != 0) {
             g_gameReg->m_voiceManager->PlayVoice(slot, 0x324, -1, 0, -1, -1);
@@ -4204,7 +4210,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
-            i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -4223,7 +4229,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorX > extent.cx - 0xc || (self->m_scrollEdgeLock & 4)) {
         if (self->m_scrollEdgeActive & 4) {
-            i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -4242,7 +4248,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
         if (self->m_scrollEdgeActive & 2) {
-            i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -4263,7 +4269,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     if (self->m_cursorY > extent.cy - 0xf || (self->m_scrollEdgeLock & 8)) {
         if (self->m_scrollEdgeActive & 8) {
-            i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
+            i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -4878,8 +4884,9 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
         return TILEKIND_PASSABLE;
     }
 
-    CUniformTileImageSet* tc =
-        static_cast<CUniformTileImageSet*>(level->m_imageSets.GetAt(cell & 0xffff));
+    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
+        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
+    );
     return tc->GetCollisionAt(subX, subY);
 }
 
@@ -4904,8 +4911,9 @@ static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i
         return TILEKIND_PASSABLE;
     }
 
-    CUniformTileImageSet* tc =
-        static_cast<CUniformTileImageSet*>(level->m_imageSets.GetAt(cell & 0xffff));
+    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
+        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
+    );
     return tc->GetCollisionAt(subX, subY);
 }
 
@@ -5687,7 +5695,9 @@ i32 CPlay::ScanBuildTiles() {
                 tile = TILEKIND_PASSABLE;
             } else {
 
-                tile = (static_cast<CUniformTileImageSet*>(ds->m_imageSets[cell & 0xffff]))
+                tile = (static_cast<CUniformTileImageSet*>(
+                            ds->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]
+                        ))
                            ->GetCollisionAt(subX, subY);
             }
             if (m_tileTriggers->AddLogic(

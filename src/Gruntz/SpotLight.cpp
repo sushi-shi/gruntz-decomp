@@ -53,7 +53,7 @@ RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->m_eventCode = ActFindId("A");
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
     i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 centerY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -62,9 +62,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_center.y = cy;
     i32 nx;
     if (m_object->m_smarts == 0) {
-        nx = ax - 0x20;
+        nx = ax - TILE_SIZE_PX;
     } else {
-        nx = ax - m_object->m_smarts * 32;
+        nx = ax - m_object->m_smarts * TILE_SIZE_PX;
     }
     m_object->m_screenX = nx;
     m_object->m_screenY = centerY;
@@ -222,7 +222,9 @@ int CSpotLight::Update() {
         m_position.y = m_center.y + m_position.y;
         m_angle = newAngle;
     }
-    if (g_gameReg->m_triggerMgr->m_units[m_targetUnitIndex + m_targetPlayerIndex * 15] == NULL) {
+    if (g_gameReg->m_triggerMgr
+            ->m_units[m_targetUnitIndex + m_targetPlayerIndex * TM_UNITS_PER_PLAYER]
+        == NULL) {
         m_previousAnimationActId = m_logicRecord->m_eventCode;
         m_logicRecord->m_eventCode = ActFindId("A");
     }

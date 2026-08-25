@@ -3,6 +3,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/TileGrid.h>
@@ -2196,8 +2197,8 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     if (attr == -1) {
         return NULL;
     }
-    i32 playerIndex = (attr >> 8) & 0xff;
-    i32 unitIndex = attr & 0xff;
+    i32 playerIndex = (attr >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+    i32 unitIndex = attr & GRUNT_IDENTITY_COMPONENT_MASK;
     CGrunt* cell = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         return NULL;
@@ -2246,10 +2247,10 @@ CGrunt* CTriggerMgr::FindGruntAt(
     } else {
         SetRect(
             &rc,
-            px - span->left * 32 - 7,
-            py - span->top * 32 - 7,
-            span->right * 32 + px + 7,
-            span->bottom * 32 + py + 7
+            px - span->left * TILE_SIZE_PX - 7,
+            py - span->top * TILE_SIZE_PX - 7,
+            span->right * TILE_SIZE_PX + px + 7,
+            span->bottom * TILE_SIZE_PX + py + 7
         );
     }
     i32 x = tcol - span->left - 1;
@@ -2276,8 +2277,9 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (val == -1) {
                     continue;
                 }
-                i32 playerIndex = (val >> 8) & 0xff;
-                i32 unitIndex = val & 0xff;
+                i32 playerIndex =
+                    (val >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+                i32 unitIndex = val & GRUNT_IDENTITY_COMPONENT_MASK;
                 CGrunt* g = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
                 if (!g) {
                     continue;

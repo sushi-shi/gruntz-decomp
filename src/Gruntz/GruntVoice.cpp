@@ -183,7 +183,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_stream = NULL;
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;
-    SetObjectFlags(0x4000002);
+    SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_KEEP_ACTIVE);
     Hide();
     m_priority = 0;
     SET_ANIMATION_ACT("A");
@@ -198,7 +198,7 @@ RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(2);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     Hide();
     SET_ANIMATION_ACT("A");
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -263,7 +263,7 @@ i32 CVoiceTrigger::Tick() {
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, hx, hy)) {
             if (g_gameReg->m_voiceManager
                     ->PlayVoice(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
-                SetObjectFlags(0x10000);
+                SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             }
         }
     }

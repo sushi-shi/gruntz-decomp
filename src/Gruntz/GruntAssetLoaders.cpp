@@ -114,7 +114,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
     SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
 
-    SetObjectFlags(1);
+    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     {
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
@@ -139,7 +139,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_DROP:
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-            SetObjectFlags(0x10000);
+            SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             goto tail;
 
         case DEATH_SINK:

@@ -221,7 +221,7 @@ void CTimer::SetTime(i32 minutes, i32 seconds) {
     if (clampedSeconds > 0x3b) {
         clampedSeconds = 0x3b;
     }
-    m_currentMs = static_cast<i32>(((clampedMinutes * 60 + clampedSeconds) * 1000));
+    m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
 }
 
 RVA(0x0009c0e0, 0xa3)
@@ -248,7 +248,7 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
     if (onClock + mins > 0x63) {
         mins = 0x63 - onClock - carry;
     }
-    u32 total = (secs + mins * 60) * 1000;
+    u32 total = (secs + mins * 60) * MILLIS_PER_SECOND;
     m_accum.m_v += total;
 }
 

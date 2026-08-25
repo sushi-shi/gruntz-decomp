@@ -14,6 +14,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdGameObjectFlags.h>
 
 struct CGameObject;
 struct SoundCue;

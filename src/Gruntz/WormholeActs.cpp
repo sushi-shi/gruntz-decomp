@@ -196,9 +196,14 @@ i32 CExitTrigger::AdvanceAnim() {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
                         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
-                            CWwdSpriteObject* fx =
-                                g_gameReg->m_world->m_childGroup
-                                    ->CreateSprite(0, x, y, SORTKEY_OVERLAY, "Explosion", 0x40003);
+                            CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
+                                0,
+                                x,
+                                y,
+                                SORTKEY_OVERLAY,
+                                "Explosion",
+                                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            );
                             if (fx != NULL) {
                                 fx->SetAnimationByName("GAME_EXPLOSION3", 0);
                                 fx->m_smarts = 0;
