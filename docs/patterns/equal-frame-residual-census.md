@@ -114,7 +114,7 @@ rows read by hand are unambiguous, and none is an arm result:
   residual is `eax`/`edx` swapped plus the copy that swap needs.
 
 Three of the sixteen that DO carry the signature were read too, and they are
-allocation as well: `?Draw@CChatBox@@...` 0x182f90 is a load-compare-keep whose
+allocation as well: `?DrawFocusCursors@CMenuTree@@...` 0x182f90 is a load-compare-keep whose
 compare operand retail puts in EAX; `?RebuildSelectionList@CTriggerMgr@@...`
 0x07cc60 is a whole-body `ebp`↔`ebx` rotation with the rotation's entry copy;
 `?LoadFinishLevelSprite@CTriggerMgr@@...` 0x07c3d0 is §-zero-carrier (retail

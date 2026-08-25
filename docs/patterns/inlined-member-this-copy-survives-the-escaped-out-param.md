@@ -103,8 +103,8 @@ STEERABLE. Measured 2026-08-20, all on the LeafCue play-cue transcription:
 `CSpotLight::Tick` 78.88 -> 79.33.
 
 The same transcription in the switch/chat cue bodies gives:
-`CChatBox::PlayFocusSound` 90.20 -> **100.00 EXACT**,
-`CChatBox::PlayActivationSound` 90.20 -> **100.00 EXACT**,
+`CMenuTree::PlayFocusSound` 90.20 -> **100.00 EXACT**,
+`CMenuTree::PlayActivationSound` 90.20 -> **100.00 EXACT**,
 `CGiantRockLogic::BuildRockBreakInGameText` 96.33 -> 99.46,
 `CTileTriggerSwitchLogic::SwitchDown` 89.46 -> 93.60, and
 `CTileTriggerSwitchLogic::SwitchUp` 90.15 -> 93.60.

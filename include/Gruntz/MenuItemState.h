@@ -4,8 +4,8 @@
 #include <Enums.h>
 
 // The state of a main-menu item (CMenuItem), named by retail's own members:
-// CMenuItem2::GetCurrentSprite switches on it and returns m_spriteNormal,
-// m_spriteSelected and m_spriteDisabled respectively.
+// CAnimatedMenuItem::GetStateAnimation switches on it and returns
+// m_normalAnimation, m_selectedAnimation and m_disabledAnimation respectively.
 //
 // Corroborated by the initialiser, which picks DISABLED or NORMAL off the item's
 // own flag bit (`m_state = (m_flags & 1) ? 3 : 1`), and by CMenuPage's focus

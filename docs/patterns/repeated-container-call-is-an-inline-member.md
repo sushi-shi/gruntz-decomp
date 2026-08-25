@@ -110,8 +110,9 @@ The deficit is `retail calls - our calls` and it is EXACTLY the ctor-call defici
 the reconstruction is otherwise complete (branch and `ret` counts already agree - check
 that first with `gruntz walls diagnose`). Then grep the caller for the statement it
 repeats once per object: a container `AddTail`/`AddHead`/`SetAt`, a two-field store, a
-one-line setter. `docs/patterns/inline-budget-emits-ool-comdat.md`'s `CMenuPage::AddSubItem2`
-closure is the same shape (header-visible `SetFrame` plus two one-store command setters,
+one-line setter. `docs/patterns/inline-budget-emits-ool-comdat.md`'s
+`CMenuPage::AddAnimatedItem` closure is the same shape (header-visible `SetFramePeriod` plus two
+one-store command setters,
 63.12 -> 100 EXACT).
 
 ## Follow-up 2026-08-16: the deficit is CANDIDATE SITES, and it is now measured
@@ -139,8 +140,9 @@ an inline call for the front end and emits nothing.
   ProbeSite(i32 v){return v;}` called as `(void)ProbeSite(0)`: K=2 gives retail's `{base 4}`
   and 99.72, K=1 and K=3 do not). The two missing sites were not unnameable - they are two
   ordinary one-store setters this class family is already known to have
-  (inline-budget-emits-ool-comdat.md closed `CMenuPage::AddSubItem2` 63.12 -> 100 on exactly
-  this shape, and `CMenuItem::SetCommandParam` / `SetSecondaryCommandId` / `CMenuItem2::SetFrame`
+  (inline-budget-emits-ool-comdat.md closed `CMenuPage::AddAnimatedItem` 63.12 -> 100 on exactly
+  this shape, and `CMenuItem::SetCommandParam` / `SetSecondaryCommandId` /
+  `CAnimatedMenuItem::SetFramePeriod`
   are the surviving in-tree examples):
 
   ```cpp

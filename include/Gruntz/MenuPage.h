@@ -6,118 +6,129 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/AnimatedMenuItem.h>
 #include <Gruntz/MenuItem.h>
-#include <Gruntz/MenuItem2.h>
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
 class CDDrawWorker;
-class CChatBox;
+class CMenuTree;
+class CAnimatedMenuItem;
 
 class CMenuPage {
 public:
     CMenuPage() {
-        m_owner = NULL;
-        m_host = NULL;
-        m_subPage = NULL;
-        m_focus = NULL;
+        m_world = NULL;
+        m_menuTree = NULL;
+        m_headerAnimation = NULL;
+        m_focusedItem = NULL;
         m_flags = 0;
     }
 
     RVA(0x00183250, 0x71)
     ~CMenuPage() {
-        InitDefaults();
+        Reset();
     }
-    CString GetKey();
+    CString GetPageKey();
 
-    i32
-    Configure(CChatBox* host, const char* label, const char* key, const char* parent, i32 flags);
-    void InitDefaults();
-    void Clear();
-    i32 ResolveSubPage(const char* key);
-    i32 Append(CMenuItem* item);
-
-    CMenuItem*
-    AddItem(const char* label, const char* spriteKey, i32 cmdId, const char* key, i32 flags);
-
-    CMenuItem* AddSubItem(
-        const char* label,
-        const char* spriteKey,
-        i32 cmdId,
-        i32 cmdParam,
-        i32 tag,
-        const char* key,
+    i32 Configure(
+        CMenuTree* menuTree,
+        const char* pageKey,
+        const char* headerAnimationKey,
+        const char* parentPageKey,
         i32 flags
     );
-    i32 ReleaseAll();
-    i32 RestoreFocus();
-    i32 SetFocus(CMenuItem* item, i32 notify);
-    i32 NotifyAll(u32 dt);
-    i32 Layout(CDDrawSurfacePair* target);
-    i32 FocusNext();
-    i32 FocusPrev();
-    i32 Activate();
-    i32 FocusAndSelect(i32 x, i32 y);
-    i32 Click(i32 x, i32 y);
-    CMenuItem* HitTest(i32 x, i32 y);
-    CMenuItem* FindByName(const char* s);
+    void Reset();
+    void ClearItems();
+    i32 ResolveHeaderAnimation(const char* animationKey);
+    i32 AppendItem(CMenuItem* item);
+
+    CMenuItem* AddItem(
+        const char* name,
+        const char* animationKey,
+        i32 commandId,
+        const char* targetPageKey,
+        i32 flags
+    );
+
+    CMenuItem* AddItem(
+        const char* name,
+        const char* animationKey,
+        i32 commandId,
+        i32 commandParam,
+        i32 secondaryCommandId,
+        const char* targetPageKey,
+        i32 flags
+    );
+    i32 PrepareForActivation();
+    i32 FocusInitialItem();
+    i32 SetFocusedItem(CMenuItem* item, i32 playFocusSound);
+    i32 UpdateItems(u32 deltaMs);
+    i32 Draw(CDDrawSurfacePair* target);
+    i32 MoveFocusUpSequential();
+    i32 MoveFocusDownSequential();
+    i32 ActivateFocusedItem();
+    i32 FocusItemAt(i32 screenX, i32 screenY);
+    i32 ClickAt(i32 screenX, i32 screenY);
+    CMenuItem* HitTest(i32 screenX, i32 screenY);
+    CMenuItem* FindItemByName(const char* name);
     i32 MoveFocusUp();
     i32 MoveFocusDown();
-    i32 LayoutOne(CDDrawSurfacePair* target);
+    i32 DrawMultiColumn(CDDrawSurfacePair* target);
 
-    CMenuItem2* AddItem2(
+    CAnimatedMenuItem* AddAnimatedItem(
         const char* name,
-        const char* spriteKey,
-        i32 cmdId,
-        const char* key,
+        const char* animationKey,
+        i32 commandId,
+        const char* targetPageKey,
         i32 flags,
-        i32 frame
+        i32 framePeriodMs
     );
 
-    CMenuItem2* AddSubItem2(
+    CAnimatedMenuItem* AddAnimatedItem(
         const char* name,
-        const char* spriteKey,
-        i32 cmdId,
-        i32 cmdParam,
-        i32 parentCtx,
-        const char* key,
+        const char* animationKey,
+        i32 commandId,
+        i32 commandParam,
+        i32 secondaryCommandId,
+        const char* targetPageKey,
         i32 flags,
-        i32 frame
+        i32 framePeriodMs
     );
-    i32 Switch(i32 refocus);
+    i32 ReturnToParentPage(i32 playActivationSound);
     i32 CanWrap();
     i32 MoveFocusRightColumn();
     i32 MoveFocusLeftColumn();
     i32 MoveFocusLeft();
     i32 MoveFocusRight();
 
-    CDDrawSurfaceMgr* m_owner;
-    CChatBox* m_host;
-    CString m_switchKey;
-    CString m_key;
-    CString m_focusName;
+    CDDrawSurfaceMgr* m_world;
+    CMenuTree* m_menuTree;
+    CString m_parentPageKey;
+    CString m_pageKey;
+    CString m_initialFocusItemName;
     CPtrList m_items;
 
-    CMenuItem* NextItem(POSITION& pos) {
-        return static_cast<CMenuItem*>(m_items.GetNext(pos));
+    CMenuItem* NextItem(POSITION& position) {
+        return static_cast<CMenuItem*>(m_items.GetNext(position));
     }
-    CMenuItem* PrevItem(POSITION& pos) {
-        return static_cast<CMenuItem*>(m_items.GetPrev(pos));
+    CMenuItem* PrevItem(POSITION& position) {
+        return static_cast<CMenuItem*>(m_items.GetPrev(position));
     }
     i32 m_flags;
-    RECT m_rect;
+    RECT m_bounds;
 
-    i32 m_headGap;
+    i32 m_headerGap;
     i32 m_rowSpacing;
-    i32 m_colWidth;
-    i32 m_rowsPerCol;
-    i32 m_colOffset;
-    i32 m_offsetX;
-    i32 m_offsetY;
-    CDDrawWorker* m_subPage;
+    i32 m_columnWidth;
+    i32 m_rowsPerColumn;
+    i32 m_columnOffsetX;
+    i32 m_contentOffsetX;
+    i32 m_contentOffsetY;
+    CDDrawWorker* m_headerAnimation;
 
-    CMenuItem* m_focus;
+    CMenuItem* m_focusedItem;
 };
 
 #endif // GRUNTZ_MENUPAGE_H

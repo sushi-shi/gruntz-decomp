@@ -113,7 +113,8 @@ tail-merges exits our spelling inlines. `b_ret == t_ret` = the gate spelling is 
 
 **Applying it where the counts already agree makes things WORSE.** Measured, all reverted:
 `CDDrawWorkerHost::CenterScrollA/B` 87.9 -> 72.8, `CGrunt::UpdateGruntStatus` 94.5 -> 77.1,
-`CChatBox::ScrollRow0/1` byte-identical (cl canonicalizes both spellings). In all four, retail's
+`CMenuTree::ConfigureLeftCursorAnimation`/`ConfigureRightCursorAnimation` byte-identical (cl
+canonicalizes both spellings). In all four, retail's
 miss handler is INLINE at the top *and* the pushes are still shrink-wrapped — i.e. the two halves
 are separable and cl5 will not give you the shrink-wrap from either gate spelling. Those are real
 walls; the layout lever is not the fix.

@@ -17,14 +17,14 @@ it and defines `~Class`. Each function is RVA-keyed, so the split is matching-ne
 
 ```toml
 [[unit]]                       # the frameless methods
-unit = "chatbox"
-source = "src/Gruntz/ChatBox.cpp"
+unit = "menutree"
+source = "src/Gruntz/MenuTree.cpp"
 flags = "base"
 [[unit]]                       # ONLY the /GX-needing destructor
-unit = "chatbox_eh"
-source = "src/Gruntz/ChatBoxDtor.cpp"
+unit = "menutree_eh"
+source = "src/Gruntz/MenuTreeDtor.cpp"
 flags = "eh"
 ```
-STEERABLE (TU split). Evidence: CChatBox — `~CChatBox` 44%→100% in the eh split while `Find`
+STEERABLE (TU split). Evidence: CMenuTree — `~CMenuTree` 44%→100% in the eh split while `FindPage`
 (frameless `CString key = node->GetKey()` + inline strcmp) stayed frameless under base; both
 green/banked in one wave.

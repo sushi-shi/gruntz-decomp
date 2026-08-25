@@ -5,7 +5,6 @@
 #include <Mfc.h>
 #include <MfcWin.h>
 
-#include <Gruntz/ChatBox.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -15,6 +14,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/MenuItemState.h>
 #include <Gruntz/MenuPage.h>
+#include <Gruntz/MenuTree.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Io/SaveGame.h>
@@ -179,40 +179,40 @@ DATA(0x00211aa0)
 static char s_MENU_MAINMENU_TITLE[] = "MENU_MAINMENU_TITLE";
 
 RVA(0x000a11d0, 0x180d)
-i32 BuildMainMenuTree(CChatBox* menu, i32) {
-    if (menu == NULL) {
+i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
+    if (menuTree == NULL) {
         return 0;
     }
 
     CMenuPage* page;
-    CMenuItem* it;
-    QuestLevel progress;
+    CMenuItem* item;
+    QuestLevel questProgress;
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_MAIN, s_MENU_MAINMENU_TITLE, NULL, 0) == 0) {
+    if (page->Configure(menuTree, s_MAIN, s_MENU_MAINMENU_TITLE, NULL, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddItem(s_SINGLEPLAYER, s_MENU_MAINMENU_SINGLEPLAYER, 0, s_SINGLEPLAYER, 0);
+    item = page->AddItem(s_SINGLEPLAYER, s_MENU_MAINMENU_SINGLEPLAYER, 0, s_SINGLEPLAYER, 0);
     if (g_cdPromptResult != 0) {
-        it->Disable(MENUSTATE_DISABLED);
+        item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem(s_MULTIPLAYER, s_MENU_MAINMENU_MULTIPLAYER, 0, s_MULTIPLAYER, 0);
     page->AddItem("OPTIONZ", s_MENU_MAINMENU_OPTIONZ, 0x80e2, NULL, 0);
-    it = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, 0);
+    item = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, 0);
     if (g_cdPromptResult != 0) {
-        it->Disable(MENUSTATE_DISABLED);
+        item->SetState(MENUSTATE_DISABLED);
     }
     // Retail pushes 0x5f11b0 here (`a137c: push 0x6111b0`), which is HelpState's
     // own `g_titleBuf` - there is no private "HELP" datum in this TU.
     page->AddItem(g_titleBuf, s_MENU_MAINMENU_HELP, 0x8035, NULL, 0);
     page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, NULL, 0);
-    if (menu->AddNode(page) == 0) {
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_SINGLEPLAYER, s_MENU_SINGLEPLAYER_TITLE, s_MAIN, 0) == 0) {
+    if (page->Configure(menuTree, s_SINGLEPLAYER, s_MENU_SINGLEPLAYER_TITLE, s_MAIN, 0) == 0) {
         delete page;
         return 0;
     }
@@ -222,50 +222,50 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     page->AddItem(s_LOADGAME, s_MENU_SINGLEPLAYER_LOADGAME, 0x80ce, NULL, 0);
     page->AddItem(s_CUSTOMLEVELZ, s_MENU_SINGLEPLAYER_CUSTOMLEVELZ, 0x8042, NULL, 0);
     page->AddItem("BACK", s_MENU_SINGLEPLAYER_BACK, 0, s_MAIN, 0);
-    if (menu->AddNode(page) == 0) {
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_MULTIPLAYER, s_MENU_MULTIPLAYER_TITLE, s_MAIN, 0) == 0) {
+    if (page->Configure(menuTree, s_MULTIPLAYER, s_MENU_MULTIPLAYER_TITLE, s_MAIN, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, NULL, 0);
+    item = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, NULL, 0);
     if (g_cdPromptResult != 0) {
-        it->Disable(MENUSTATE_DISABLED);
+        item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, NULL, 0);
     page->AddItem("BACK", s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
-    if (menu->AddNode(page) == 0) {
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0) == 0) {
+    if (page->Configure(menuTree, s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0) == 0) {
         delete page;
         return 0;
     }
     page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, NULL, 0);
     page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, NULL, 0);
-    it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, NULL, 0);
+    item = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, NULL, 0);
     if (g_gameReg->m_saveSink->CheckMagic() == 0) {
-        it->Disable(MENUSTATE_DISABLED);
+        item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem("CREDITZ", s_MENU_MOVIEZ_CREDITZ, 0x8021, NULL, 0);
     page->AddItem("BACK", s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
-    if (menu->AddNode(page) == 0) {
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_QUESTZ, s_MENU_QUESTZ_TITLE, s_SINGLEPLAYER, 0) == 0) {
+    if (page->Configure(menuTree, s_QUESTZ, s_MENU_QUESTZ_TITLE, s_SINGLEPLAYER, 0) == 0) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->CurrentLevel();
+    questProgress = g_gameReg->m_saveSink->CurrentLevel();
     page->AddItem("TRAINING", s_MENU_QUESTZ_TRAINING, 0, "TRAINING", 0);
-    page->AddSubItem(
+    page->AddItem(
         s_AREA1,
         s_MENU_QUESTZ_AREA1,
         IDX(CMD_SET_QUEST_AREA),
@@ -274,7 +274,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA1,
         0
     );
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA2,
         s_MENU_QUESTZ_AREA2,
         IDX(CMD_SET_QUEST_AREA),
@@ -283,10 +283,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA2,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA3,
         s_MENU_QUESTZ_AREA3,
         IDX(CMD_SET_QUEST_AREA),
@@ -295,10 +295,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA3,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA4,
         s_MENU_QUESTZ_AREA4,
         IDX(CMD_SET_QUEST_AREA),
@@ -307,10 +307,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA4,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA5,
         s_MENU_QUESTZ_AREA5,
         IDX(CMD_SET_QUEST_AREA),
@@ -319,10 +319,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA5,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA6,
         s_MENU_QUESTZ_AREA6,
         IDX(CMD_SET_QUEST_AREA),
@@ -331,10 +331,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA6,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA7,
         s_MENU_QUESTZ_AREA7,
         IDX(CMD_SET_QUEST_AREA),
@@ -343,10 +343,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA7,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_AREA8,
         s_MENU_QUESTZ_AREA8,
         IDX(CMD_SET_QUEST_AREA),
@@ -355,20 +355,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         s_AREA8,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem("BACK", s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
-    if (menu->AddNode(page) == 0) {
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, "TRAINING", s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, "TRAINING", s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    page->AddSubItem(
+    page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -377,7 +377,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    page->AddSubItem(
+    page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -386,7 +386,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    page->AddSubItem(
+    page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -395,7 +395,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    page->AddSubItem(
+    page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -405,16 +405,16 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         0
     );
     page->AddItem("BACK", s_MENU_AREAS_BACK, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    page->AddSubItem(
+    page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -423,7 +423,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -432,10 +432,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -444,10 +444,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -456,20 +456,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -478,10 +478,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA1_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -490,10 +490,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -502,10 +502,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -514,20 +514,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -536,10 +536,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA2_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -548,10 +548,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -560,10 +560,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -572,20 +572,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -594,10 +594,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA3_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -606,10 +606,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -618,10 +618,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -630,20 +630,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -652,10 +652,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA4_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -664,10 +664,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -676,10 +676,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -688,20 +688,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -710,10 +710,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA5_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -722,10 +722,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -734,10 +734,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -746,20 +746,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -768,10 +768,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA6_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -780,10 +780,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -792,10 +792,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -804,20 +804,20 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    if (menu->AddNode(page) == 0) {
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    if (menuTree->AddPage(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menuTree, s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
@@ -826,10 +826,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE4_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA7_STAGE4_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE2,
         s_MENU_AREAS_STAGE2,
         IDX(CMD_LOAD_WORLD),
@@ -838,10 +838,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE1_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA8_STAGE1_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE3,
         s_MENU_AREAS_STAGE3,
         IDX(CMD_LOAD_WORLD),
@@ -850,10 +850,10 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE2_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA8_STAGE2_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(
+    item = page->AddItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
@@ -862,9 +862,9 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         NULL,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE3_END) {
-        it->Disable(MENUSTATE_DISABLED);
+    if (questProgress > QUESTLEVEL_LAST || questProgress < QUESTLEVEL_AREA8_STAGE3_END) {
+        item->SetState(MENUSTATE_DISABLED);
     }
-    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
-    return menu->AddNode(page) != 0;
+    page->AddItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    return menuTree->AddPage(page) != 0;
 }

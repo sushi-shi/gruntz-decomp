@@ -286,7 +286,7 @@
 276	rezbufferobject	0x0017f130	0x0017f523	lib	Rez	4	position
 277	fadereffects	0x0017f530	0x00182935	lib	DDrawMgr	32	position
 278	scattersamples	0x00182940	0x00182aae	lib	Gruntz	2	position
-279	chatbox	0x00182ab0	0x00183246	lib	Gruntz	28	position
+279	menutree	0x00182ab0	0x00183246	lib	Gruntz	28	position
 280	menupage	0x001832d0	0x001848aa	lib	Gruntz	31	position
 281	rezcoll	0x001848b0	0x00184b5d	lib	Rez	12	position
 282	debugprintf	0x00184ba0	0x001851d3	lib	Rez	14	position,xcu:1493

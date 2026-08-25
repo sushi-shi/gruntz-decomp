@@ -267,7 +267,7 @@ Seam fns:
 **Verdict: split** at `0x1848b0` and `0x185460`:
 
 1. **MenuPage.cpp** `[0x1832d0 .. 0x1848b0)` — `CMenuPage` (34 fns) + a
-   trailing cluster of `CMenuItem`/`CMenuItem2` 32-B CString accessors, small
+   trailing cluster of `CMenuItem`/`CAnimatedMenuItem` 32-B CString accessors, small
    virtuals and dtors (`0x184610-0x184886`) = inline-in-header COMDAT-at-usage
    emissions of MenuItem classes inside MenuPage's obj (MenuPage news/deletes
    items). Not re-homes.
@@ -285,7 +285,7 @@ Seam fns:
    - `0x185320` zlib `uncompr.c` (library obj, vendor zlib-1.0.4);
    - `0x1853b0` `WapUncompress` (the engine wrapper — own obj or a rez-file tail).
 3. **MenuItem.cpp** `[0x185460 .. 0x185a0e]` — `CMenuItem` out-of-line
-   `Init`/virtuals + `CMenuItem2`.
+   `Init`/virtuals + `CAnimatedMenuItem`.
 
 Seam fns:
 - `0x00185510` — `?Dispatch0c@CMenuItem@@UAEXXZ` — menupage -> menuitem TU —
@@ -1013,7 +1013,7 @@ collapse already posited ("the original one-file-per-class SBI TUs"):
 sub-structure is now resolved (was "weak, resolution not required"):
 
 1. **`0x1848b0` (MenuPage | pocket) CONFIRMED.** The 0x184610-0x1848a6
-   CMenuItem/CMenuItem2 accessor/dtor cluster is MenuPage-obj COMDAT-at-usage
+   CMenuItem/CAnimatedMenuItem accessor/dtor cluster is MenuPage-obj COMDAT-at-usage
    content: ??_7CMenuItem@@6B@ (0x1f08c0) is first-stamped at 0x183510 (a
    CMenuPage::AddItem new-site) with all four ctor-side stamps in MenuPage's text,
    and the CRT ??_G__non_rtti_object COMDAT sits interleaved at 0x1847c0 - a

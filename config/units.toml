@@ -1063,8 +1063,8 @@ source = "src/Utils/WinAPICdRom.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "chatbox"
-source = "src/Gruntz/ChatBox.cpp"
+unit = "menutree"
+source = "src/Gruntz/MenuTree.cpp"
 flags = "cpp-rtti"
 
 

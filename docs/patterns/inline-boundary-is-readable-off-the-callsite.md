@@ -39,7 +39,8 @@ loses it.
   with `RVA_COMPGEN`.
 - **`CMenuItem::Reset`** — three of `CMenuPage`'s four new-sites carry its body
   between the six member `CString` ctors and the `Init` call, so it belongs in
-  `MenuItem.h`.  AddItem / AddSubItem / AddItem2 all went ~60 -> 100.00 EXACT.
+  `MenuItem.h`. The two `AddItem` overloads and the simple `AddAnimatedItem` overload all went
+  ~60 -> 100.00 EXACT.
   The fourth site (the largest caller) is where cl's inline budget ran out and
   retail emitted a real `call` - expect ONE sibling to read low, and check the
   budget story before believing a body is out-of-line.

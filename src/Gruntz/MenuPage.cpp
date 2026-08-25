@@ -7,9 +7,9 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
-#include <Gruntz/ChatBox.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuItemState.h>
+#include <Gruntz/MenuTree.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
 
@@ -17,60 +17,61 @@
 #include <stddef.h>
 
 RVA(0x001832d0, 0x20)
-CString CMenuPage::GetKey() {
-    return m_key;
+CString CMenuPage::GetPageKey() {
+    return m_pageKey;
 }
 
 static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
+    CObject* foundObject = NULL;
+    map.Lookup(name, foundObject);
+    return static_cast<CDDrawWorker*>(foundObject);
 }
 
-#define RESOLVE_MENU_SUB_PAGE(key, found)                                                          \
-    CDDrawWorker* found = LookupWorker(m_owner->m_imageRegistry->m_workersByName, key);            \
-    m_subPage = found;                                                                             \
-    return found != NULL
+#define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
+    CDDrawWorker* animation =                                                                      \
+        LookupWorker(m_world->m_imageRegistry->m_workersByName, animationKey);                     \
+    m_headerAnimation = animation;                                                                 \
+    return animation != NULL
 
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(
-    CChatBox* host,
-    const char* label,
-    const char* key,
-    const char* parent,
+    CMenuTree* menuTree,
+    const char* pageKey,
+    const char* headerAnimationKey,
+    const char* parentPageKey,
     i32 flags
 ) {
-    if (!host) {
+    if (!menuTree) {
         return 0;
     }
-    m_owner = host->m_page;
-    m_host = host;
-    m_key = label;
-    m_switchKey = parent;
-    m_rowSpacing = host->m_rowSpacing;
-    m_headGap = host->m_headGap;
+    m_world = menuTree->m_world;
+    m_menuTree = menuTree;
+    m_pageKey = pageKey;
+    m_parentPageKey = parentPageKey;
+    m_rowSpacing = menuTree->m_rowSpacing;
+    m_headerGap = menuTree->m_headerGap;
     m_flags = flags;
-    m_rect = host->m_rect8;
-    m_offsetX = 0;
-    m_offsetY = 0;
-    RESOLVE_MENU_SUB_PAGE(key, slot_ob);
+    m_bounds = menuTree->m_bounds;
+    m_contentOffsetX = 0;
+    m_contentOffsetY = 0;
+    RESOLVE_MENU_HEADER_ANIMATION(headerAnimationKey, headerAnimation);
 }
 
 RVA(0x001833a0, 0x1a)
-void CMenuPage::InitDefaults() {
-    Clear();
-    m_owner = NULL;
-    m_host = NULL;
-    m_subPage = NULL;
-    m_focus = NULL;
+void CMenuPage::Reset() {
+    ClearItems();
+    m_world = NULL;
+    m_menuTree = NULL;
+    m_headerAnimation = NULL;
+    m_focusedItem = NULL;
     m_flags = 0;
 }
 
 RVA(0x001833c0, 0x2b)
-void CMenuPage::Clear() {
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+void CMenuPage::ClearItems() {
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
             delete item;
         }
@@ -81,135 +82,135 @@ void CMenuPage::Clear() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001833f0, 0x38)
-i32 CMenuPage::ResolveSubPage(const char* key) {
-    RESOLVE_MENU_SUB_PAGE(key, found);
+i32 CMenuPage::ResolveHeaderAnimation(const char* animationKey) {
+    RESOLVE_MENU_HEADER_ANIMATION(animationKey, headerAnimation);
 }
 
 RVA(0x00183430, 0x24)
-i32 CMenuPage::Append(CMenuItem* item) {
+i32 CMenuPage::AppendItem(CMenuItem* item) {
     if (!item) {
         return 0;
     }
-    item->m_listPos = m_items.AddTail(item);
+    item->m_listPosition = m_items.AddTail(item);
     return 1;
 }
 
 RVA(0x00183460, 0x13d)
 CMenuItem* CMenuPage::AddItem(
-    const char* label,
-    const char* spriteKey,
-    i32 cmdId,
-    const char* key,
+    const char* name,
+    const char* animationKey,
+    i32 commandId,
+    const char* targetPageKey,
     i32 flags
 ) {
     CMenuItem* item = new CMenuItem();
 
-    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
+    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
         return NULL;
     }
-    return Append(item) ? item : NULL;
+    return AppendItem(item) ? item : NULL;
 }
 
 RVA(0x001835a0, 0x14b)
-CMenuItem* CMenuPage::AddSubItem(
-    const char* label,
-    const char* spriteKey,
-    i32 cmdId,
-    i32 cmdParam,
-    i32 tag,
-    const char* key,
+CMenuItem* CMenuPage::AddItem(
+    const char* name,
+    const char* animationKey,
+    i32 commandId,
+    i32 commandParam,
+    i32 secondaryCommandId,
+    const char* targetPageKey,
     i32 flags
 ) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
+    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
         return NULL;
     }
-    item->SetCommandParam(cmdParam);
-    item->SetSecondaryCommandId(tag);
-    return Append(item) ? item : NULL;
+    item->SetCommandParam(commandParam);
+    item->SetSecondaryCommandId(secondaryCommandId);
+    return AppendItem(item) ? item : NULL;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001836f0, 0x160)
-CMenuItem2* CMenuPage::AddItem2(
+CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* name,
-    const char* spriteKey,
-    i32 cmdId,
-    const char* key,
+    const char* animationKey,
+    i32 commandId,
+    const char* targetPageKey,
     i32 flags,
-    i32 frame
+    i32 framePeriodMs
 ) {
-    CMenuItem2* item = new CMenuItem2();
-    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
+    CAnimatedMenuItem* item = new CAnimatedMenuItem();
+    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
         return NULL;
     }
-    item->SetFrame(frame);
-    return Append(item) ? item : NULL;
+    item->SetFramePeriod(framePeriodMs);
+    return AppendItem(item) ? item : NULL;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00183850, 0x13b)
-CMenuItem2* CMenuPage::AddSubItem2(
+CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* name,
-    const char* spriteKey,
-    i32 cmdId,
-    i32 cmdParam,
-    i32 parentCtx,
-    const char* key,
+    const char* animationKey,
+    i32 commandId,
+    i32 commandParam,
+    i32 secondaryCommandId,
+    const char* targetPageKey,
     i32 flags,
-    i32 frame
+    i32 framePeriodMs
 ) {
-    CMenuItem2* item = new CMenuItem2();
-    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
+    CAnimatedMenuItem* item = new CAnimatedMenuItem();
+    if (item->Init(this, name, animationKey, commandId, targetPageKey, flags) == 0) {
         if (item) {
             delete item;
         }
         return NULL;
     }
-    item->SetFrame(frame);
-    item->SetCommandParam(cmdParam);
-    item->SetSecondaryCommandId(parentCtx);
-    return Append(item) ? item : NULL;
+    item->SetFramePeriod(framePeriodMs);
+    item->SetCommandParam(commandParam);
+    item->SetSecondaryCommandId(secondaryCommandId);
+    return AppendItem(item) ? item : NULL;
 }
 RVA(0x00183990, 0x38)
-i32 CMenuPage::ReleaseAll() {
-    if (m_focus) {
-        m_focus->Release();
-        m_focus = NULL;
+i32 CMenuPage::PrepareForActivation() {
+    if (m_focusedItem) {
+        m_focusedItem->Deselect();
+        m_focusedItem = NULL;
     }
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            item->Detach();
+            item->OnPageActivated();
         }
     }
     return 1;
 }
 
 RVA(0x001839d0, 0xff)
-i32 CMenuPage::RestoreFocus() {
-    if (!m_focusName.IsEmpty()) {
-        POSITION node = m_items.GetHeadPosition();
-        while (node) {
-            CMenuItem* item = NextItem(node);
+i32 CMenuPage::FocusInitialItem() {
+    if (!m_initialFocusItemName.IsEmpty()) {
+        POSITION position = m_items.GetHeadPosition();
+        while (position) {
+            CMenuItem* item = NextItem(position);
             if (item) {
-                bool match = item->GetName() == m_focusName;
-                if (match) {
-                    MenuItemState k = item->m_state;
-                    if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
-                        if (SetFocus(item, 0)) {
+                bool matches = item->GetItemName() == m_initialFocusItemName;
+                if (matches) {
+                    MenuItemState state = item->m_state;
+                    if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                        if (SetFocusedItem(item, 0)) {
                             return 1;
                         }
                     }
@@ -217,13 +218,13 @@ i32 CMenuPage::RestoreFocus() {
             }
         }
     }
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            MenuItemState k = item->m_state;
-            if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
-                if (SetFocus(item, 0)) {
+            MenuItemState state = item->m_state;
+            if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                if (SetFocusedItem(item, 0)) {
                     return 1;
                 }
             }
@@ -233,262 +234,264 @@ i32 CMenuPage::RestoreFocus() {
 }
 
 RVA(0x00183ad0, 0x57)
-i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
+i32 CMenuPage::SetFocusedItem(CMenuItem* item, i32 playFocusSound) {
     if (!item) {
         return 0;
     }
-    MenuItemState kind = item->m_state;
-    if (kind == MENUSTATE_SELECTED) {
+    MenuItemState state = item->m_state;
+    if (state == MENUSTATE_SELECTED) {
         return 1;
     }
-    if (kind != MENUSTATE_NORMAL) {
+    if (state != MENUSTATE_NORMAL) {
         return 0;
     }
-    if (m_focus) {
-        m_focus->Release();
+    if (m_focusedItem) {
+        m_focusedItem->Deselect();
     }
-    m_focus = item;
-    return item->Configure(notify) != 0;
+    m_focusedItem = item;
+    return item->Select(playFocusSound) != 0;
 }
 
 RVA(0x00183b30, 0x2c)
-i32 CMenuPage::NotifyAll(u32 dt) {
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+i32 CMenuPage::UpdateItems(u32 deltaMs) {
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            item->Notify(dt);
+            item->Update(deltaMs);
         }
     }
     return 1;
 }
 
 RVA(0x00183b60, 0xe8)
-i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
+i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     if (m_flags & 4) {
-        return LayoutOne(target);
+        return DrawMultiColumn(target);
     }
-    i32 x0 = m_rect.left;
-    i32 x1 = m_rect.right;
-    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
-    i32 y = m_offsetY + m_rect.top;
-    CDDrawWorker* sub = m_subPage;
-    if (sub) {
-        CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
-        if (head) {
-            y += head->m_anchorY;
-            head->RenderFrame(target, x, y, 0);
-            y += m_headGap + head->m_anchorY;
+    i32 left = m_bounds.left;
+    i32 right = m_bounds.right;
+    i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
+    i32 drawY = m_contentOffsetY + m_bounds.top;
+    CDDrawWorker* headerAnimation = m_headerAnimation;
+    if (headerAnimation) {
+        CImage* headerFrame =
+            static_cast<CImage*>(headerAnimation->m_items.GetAt(headerAnimation->m_minIndex));
+        if (headerFrame) {
+            drawY += headerFrame->m_anchorY;
+            headerFrame->RenderFrame(target, centerX, drawY, 0);
+            drawY += m_headerGap + headerFrame->m_anchorY;
         }
     }
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            y += item->GetWidth() / 2;
-            item->Place(target, x, y);
+            drawY += item->GetFrameHeight() / 2;
+            item->DrawAt(target, centerX, drawY);
             if (item->m_state == MENUSTATE_SELECTED && !(m_flags & 8)) {
-                m_host->Draw(target, item, x, y);
+                m_menuTree->DrawFocusCursors(target, item, centerX, drawY);
             }
-            y += item->GetWidth() / 2;
-            y += m_rowSpacing;
+            drawY += item->GetFrameHeight() / 2;
+            drawY += m_rowSpacing;
         }
     }
     return 1;
 }
 
 RVA(0x00183c50, 0xbc)
-i32 CMenuPage::FocusNext() {
-    if (!m_focus) {
+i32 CMenuPage::MoveFocusUpSequential() {
+    if (!m_focusedItem) {
         return 0;
     }
-    POSITION pos = m_focus->m_listPos;
-    if (!pos) {
+    POSITION currentPosition = m_focusedItem->m_listPosition;
+    if (!currentPosition) {
         return 0;
     }
-    CMenuItem* found = NULL;
-    POSITION node = pos;
+    CMenuItem* candidateItem = NULL;
+    POSITION scanPosition = currentPosition;
 
-    PrevItem(node);
-    while (node) {
-        found = PrevItem(node);
-        if (found) {
-            MenuItemState k = found->m_state;
-            if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
+    PrevItem(scanPosition);
+    while (scanPosition) {
+        candidateItem = PrevItem(scanPosition);
+        if (candidateItem) {
+            MenuItemState state = candidateItem->m_state;
+            if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
 
-                node = NULL;
+                scanPosition = NULL;
                 continue;
             }
         }
-        found = NULL;
+        candidateItem = NULL;
     }
-    if (!found) {
+    if (!candidateItem) {
 
         if (CanWrap()) {
-            POSITION cur = m_focus->m_listPos;
-            if (!cur) {
+            POSITION wrapStartPosition = m_focusedItem->m_listPosition;
+            if (!wrapStartPosition) {
                 return 0;
             }
-            POSITION n2 = cur;
+            POSITION wrapPosition = wrapStartPosition;
 
-            NextItem(n2);
-            while (n2) {
-                CMenuItem* it = NextItem(n2);
-                if (it) {
-                    MenuItemState k = it->m_state;
-                    if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
-                        found = it;
+            NextItem(wrapPosition);
+            while (wrapPosition) {
+                CMenuItem* wrapCandidate = NextItem(wrapPosition);
+                if (wrapCandidate) {
+                    MenuItemState state = wrapCandidate->m_state;
+                    if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                        candidateItem = wrapCandidate;
                     }
                 }
             }
         }
-        if (!found) {
+        if (!candidateItem) {
             return 0;
         }
     }
-    MenuItemState kind = found->m_state;
-    if (kind != MENUSTATE_NORMAL && kind != MENUSTATE_SELECTED) {
+    MenuItemState state = candidateItem->m_state;
+    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
         return 0;
     }
-    if (found == m_focus) {
+    if (candidateItem == m_focusedItem) {
         return 0;
     }
-    return SetFocus(found, 1) != 0;
+    return SetFocusedItem(candidateItem, 1) != 0;
 }
 
 RVA(0x00183d10, 0xbc)
-i32 CMenuPage::FocusPrev() {
-    if (!m_focus) {
+i32 CMenuPage::MoveFocusDownSequential() {
+    if (!m_focusedItem) {
         return 0;
     }
-    POSITION pos = m_focus->m_listPos;
-    if (!pos) {
+    POSITION currentPosition = m_focusedItem->m_listPosition;
+    if (!currentPosition) {
         return 0;
     }
-    CMenuItem* found = NULL;
-    POSITION node = pos;
+    CMenuItem* candidateItem = NULL;
+    POSITION scanPosition = currentPosition;
 
-    NextItem(node);
-    while (node) {
-        found = NextItem(node);
-        if (found) {
-            MenuItemState k = found->m_state;
-            if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
+    NextItem(scanPosition);
+    while (scanPosition) {
+        candidateItem = NextItem(scanPosition);
+        if (candidateItem) {
+            MenuItemState state = candidateItem->m_state;
+            if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
 
-                node = NULL;
+                scanPosition = NULL;
                 continue;
             }
         }
-        found = NULL;
+        candidateItem = NULL;
     }
-    if (!found) {
+    if (!candidateItem) {
 
         if (CanWrap()) {
-            POSITION cur = m_focus->m_listPos;
-            if (!cur) {
+            POSITION wrapStartPosition = m_focusedItem->m_listPosition;
+            if (!wrapStartPosition) {
                 return 0;
             }
-            POSITION n2 = cur;
+            POSITION wrapPosition = wrapStartPosition;
 
-            PrevItem(n2);
-            while (n2) {
-                CMenuItem* it = PrevItem(n2);
-                if (it) {
-                    MenuItemState k = it->m_state;
-                    if (k == MENUSTATE_NORMAL || k == MENUSTATE_SELECTED) {
-                        found = it;
+            PrevItem(wrapPosition);
+            while (wrapPosition) {
+                CMenuItem* wrapCandidate = PrevItem(wrapPosition);
+                if (wrapCandidate) {
+                    MenuItemState state = wrapCandidate->m_state;
+                    if (state == MENUSTATE_NORMAL || state == MENUSTATE_SELECTED) {
+                        candidateItem = wrapCandidate;
                     }
                 }
             }
         }
-        if (!found) {
+        if (!candidateItem) {
             return 0;
         }
     }
-    MenuItemState kind = found->m_state;
-    if (kind != MENUSTATE_NORMAL && kind != MENUSTATE_SELECTED) {
+    MenuItemState state = candidateItem->m_state;
+    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
         return 0;
     }
-    if (found == m_focus) {
+    if (candidateItem == m_focusedItem) {
         return 0;
     }
-    return SetFocus(found, 1) != 0;
+    return SetFocusedItem(candidateItem, 1) != 0;
 }
 
 RVA(0x00183dd0, 0x16)
-i32 CMenuPage::Activate() {
-    if (!m_focus) {
+i32 CMenuPage::ActivateFocusedItem() {
+    if (!m_focusedItem) {
         return 0;
     }
-    return m_focus->Trigger() != 0;
+    return m_focusedItem->Activate() != 0;
 }
 
 RVA(0x00183df0, 0x3d)
-i32 CMenuPage::Switch(i32 refocus) {
-    if (m_switchKey.GetLength() == 0) {
+i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
+    if (m_parentPageKey.GetLength() == 0) {
         return 0;
     }
-    if (!m_host->ReplaceNode(m_switchKey)) {
+    if (!m_menuTree->SetActivePageByKey(m_parentPageKey)) {
         return 0;
     }
-    if (refocus) {
-        m_host->PlayActivationSound();
+    if (playActivationSound) {
+        m_menuTree->PlayActivationSound();
     }
     return 1;
 }
 
 RVA(0x00183e30, 0x1f)
 i32 CMenuPage::CanWrap() {
-    i32 f = m_flags;
-    if (f & 2) {
+    i32 pageFlags = m_flags;
+    if (pageFlags & 2) {
         return 0;
     }
-    if (f & 1) {
+    if (pageFlags & 1) {
         return 1;
     }
-    i32 w = static_cast<char>(m_host->m_wrapFlag);
-    if (w & 1) {
+    i32 treeWrapFlags = static_cast<char>(m_menuTree->m_wrapFlags);
+    if (treeWrapFlags & 1) {
         return 1;
     }
     return 0;
 }
 
 RVA(0x00183e50, 0x11c)
-i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
-    i32 x0 = m_rect.left;
-    i32 x1 = m_rect.right;
-    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
-    i32 y = m_offsetY + m_rect.top;
-    CDDrawWorker* sub = m_subPage;
-    if (sub) {
-        CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
-        if (head) {
-            y += head->m_anchorY;
-            head->RenderFrame(target, x, y, 0);
-            y += m_headGap + head->m_anchorY;
+i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
+    i32 left = m_bounds.left;
+    i32 right = m_bounds.right;
+    i32 centerX = (((right - left + 1) / 2)) + m_contentOffsetX + left;
+    i32 drawY = m_contentOffsetY + m_bounds.top;
+    CDDrawWorker* headerAnimation = m_headerAnimation;
+    if (headerAnimation) {
+        CImage* headerFrame =
+            static_cast<CImage*>(headerAnimation->m_items.GetAt(headerAnimation->m_minIndex));
+        if (headerFrame) {
+            drawY += headerFrame->m_anchorY;
+            headerFrame->RenderFrame(target, centerX, drawY, 0);
+            drawY += m_headerGap + headerFrame->m_anchorY;
         }
     }
-    i32 col = ((m_colWidth / 2)) + m_rect.left + m_colOffset;
-    i32 ytop = y;
-    i32 row = 0;
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+    i32 columnX = ((m_columnWidth / 2)) + m_bounds.left + m_columnOffsetX;
+    i32 firstRowY = drawY;
+    i32 rowInColumn = 0;
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            y += item->GetWidth() / 2;
-            item->Place(target, col, y);
+            drawY += item->GetFrameHeight() / 2;
+            item->DrawAt(target, columnX, drawY);
             if (item->m_state == MENUSTATE_SELECTED && !(m_flags & 8)) {
-                m_host->Draw(target, item, col, y);
+                m_menuTree->DrawFocusCursors(target, item, columnX, drawY);
             }
-            y += item->GetWidth() / 2;
-            y += m_rowSpacing;
+            drawY += item->GetFrameHeight() / 2;
+            drawY += m_rowSpacing;
         }
-        if (++row < m_rowsPerCol) {
+        if (++rowInColumn < m_rowsPerColumn) {
 
         } else {
-            col += m_colWidth;
-            y = ytop;
-            row = 0;
+            columnX += m_columnWidth;
+            drawY = firstRowY;
+            rowInColumn = 0;
         }
     }
     return 1;
@@ -496,114 +499,114 @@ i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
 
 RVA(0x00183f70, 0x74)
 i32 CMenuPage::MoveFocusRightColumn() {
-    CMenuItem* cur = m_focus;
-    if (!cur) {
+    CMenuItem* currentItem = m_focusedItem;
+    if (!currentItem) {
         return 0;
     }
     if (!(m_flags & 4)) {
         return 0;
     }
 
-    POSITION pos = cur->m_listPos;
-    if (!pos) {
+    POSITION position = currentItem->m_listPosition;
+    if (!position) {
         return 0;
     }
-    i32 n = m_rowsPerCol;
-    CMenuItem* found = NULL;
-    if (n >= 0) {
-        n++;
+    i32 stepsRemaining = m_rowsPerColumn;
+    CMenuItem* candidateItem = NULL;
+    if (stepsRemaining >= 0) {
+        stepsRemaining++;
         do {
-            if (pos != NULL) {
-                found = static_cast<CMenuItem*>(m_items.GetNext(pos));
+            if (position != NULL) {
+                candidateItem = static_cast<CMenuItem*>(m_items.GetNext(position));
             } else {
-                found = NULL;
+                candidateItem = NULL;
             }
-        } while (--n);
+        } while (--stepsRemaining);
     }
-    if (!found) {
+    if (!candidateItem) {
         return 0;
     }
-    MenuItemState k = found->m_state;
-    if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
+    MenuItemState state = candidateItem->m_state;
+    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
         return 0;
     }
-    if (found == cur) {
+    if (candidateItem == currentItem) {
         return 0;
     }
-    return SetFocus(found, 1) != 0;
+    return SetFocusedItem(candidateItem, 1) != 0;
 }
 
 RVA(0x00183ff0, 0x75)
 i32 CMenuPage::MoveFocusLeftColumn() {
-    CMenuItem* cur = m_focus;
-    if (!cur) {
+    CMenuItem* currentItem = m_focusedItem;
+    if (!currentItem) {
         return 0;
     }
     if (!(m_flags & 4)) {
         return 0;
     }
 
-    POSITION pos = cur->m_listPos;
-    if (!pos) {
+    POSITION position = currentItem->m_listPosition;
+    if (!position) {
         return 0;
     }
-    i32 n = m_rowsPerCol;
-    CMenuItem* found = NULL;
-    if (n >= 0) {
-        n++;
+    i32 stepsRemaining = m_rowsPerColumn;
+    CMenuItem* candidateItem = NULL;
+    if (stepsRemaining >= 0) {
+        stepsRemaining++;
         do {
-            if (pos != NULL) {
-                found = static_cast<CMenuItem*>(m_items.GetPrev(pos));
+            if (position != NULL) {
+                candidateItem = static_cast<CMenuItem*>(m_items.GetPrev(position));
             } else {
-                found = NULL;
+                candidateItem = NULL;
             }
-        } while (--n);
+        } while (--stepsRemaining);
     }
-    if (!found) {
+    if (!candidateItem) {
         return 0;
     }
-    MenuItemState k = found->m_state;
-    if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
+    MenuItemState state = candidateItem->m_state;
+    if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
         return 0;
     }
-    if (found == cur) {
+    if (candidateItem == currentItem) {
         return 0;
     }
-    return SetFocus(found, 1) != 0;
+    return SetFocusedItem(candidateItem, 1) != 0;
 }
 
 RVA(0x00184070, 0x30)
-i32 CMenuPage::FocusAndSelect(i32 x, i32 y) {
-    CMenuItem* hit = HitTest(x, y);
-    if (!hit) {
+i32 CMenuPage::FocusItemAt(i32 screenX, i32 screenY) {
+    CMenuItem* hitItem = HitTest(screenX, screenY);
+    if (!hitItem) {
         return 0;
     }
-    return SetFocus(hit, 1) != 0;
+    return SetFocusedItem(hitItem, 1) != 0;
 }
 
 RVA(0x001840a0, 0x57)
-i32 CMenuPage::Click(i32 x, i32 y) {
-    CMenuItem* hit = HitTest(x, y);
-    if (!hit) {
+i32 CMenuPage::ClickAt(i32 screenX, i32 screenY) {
+    CMenuItem* hitItem = HitTest(screenX, screenY);
+    if (!hitItem) {
         return 0;
     }
-    if (!SetFocus(hit, 0)) {
+    if (!SetFocusedItem(hitItem, 0)) {
         return 0;
     }
-    if (!Activate()) {
+    if (!ActivateFocusedItem()) {
         return 0;
     }
-    FocusAndSelect(x, y);
+    FocusItemAt(screenX, screenY);
     return 1;
 }
 
 RVA(0x00184100, 0x4a)
-CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+CMenuItem* CMenuPage::HitTest(i32 screenX, i32 screenY) {
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            if (item->Hit(x, y)) {
+            if (item->HitTest(screenX, screenY)) {
                 return item;
             }
         }
@@ -612,17 +615,17 @@ CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
 }
 
 RVA(0x00184150, 0xe0)
-CMenuItem* CMenuPage::FindByName(const char* s) {
-    if (!s) {
+CMenuItem* CMenuPage::FindItemByName(const char* name) {
+    if (!name) {
         return NULL;
     }
-    CString key(s);
-    POSITION node = m_items.GetHeadPosition();
-    while (node) {
-        CMenuItem* item = NextItem(node);
+    CString requestedName(name);
+    POSITION position = m_items.GetHeadPosition();
+    while (position) {
+        CMenuItem* item = NextItem(position);
         if (item) {
-            bool match = strcmp(key, item->GetName()) == 0;
-            if (match) {
+            bool matches = strcmp(requestedName, item->GetItemName()) == 0;
+            if (matches) {
                 return item;
             }
         }
@@ -632,84 +635,84 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
 
 RVA(0x00184230, 0xd2)
 i32 CMenuPage::MoveFocusLeft() {
-    if (!m_focus) {
+    if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetLeftName());
+    CMenuItem* item = FindItemByName(m_focusedItem->GetLeftItemName());
     if (item) {
-        MenuItemState k = item->m_state;
-        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
+        MenuItemState state = item->m_state;
+        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
             return 0;
         }
-        if (item == m_focus) {
+        if (item == m_focusedItem) {
             return 0;
         }
-        return SetFocus(item, 1);
+        return SetFocusedItem(item, 1);
     }
     return MoveFocusLeftColumn();
 }
 
 RVA(0x00184310, 0xd2)
 i32 CMenuPage::MoveFocusRight() {
-    if (!m_focus) {
+    if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetRightName());
+    CMenuItem* item = FindItemByName(m_focusedItem->GetRightItemName());
     if (item) {
-        MenuItemState k = item->m_state;
-        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
+        MenuItemState state = item->m_state;
+        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
             return 0;
         }
-        if (item == m_focus) {
+        if (item == m_focusedItem) {
             return 0;
         }
-        return SetFocus(item, 1);
+        return SetFocusedItem(item, 1);
     }
     return MoveFocusRightColumn();
 }
 
 RVA(0x001843f0, 0xd2)
 i32 CMenuPage::MoveFocusUp() {
-    if (!m_focus) {
+    if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetUpName());
+    CMenuItem* item = FindItemByName(m_focusedItem->GetUpItemName());
     if (item) {
-        MenuItemState k = item->m_state;
-        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
+        MenuItemState state = item->m_state;
+        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
             return 0;
         }
-        if (item == m_focus) {
+        if (item == m_focusedItem) {
             return 0;
         }
-        return SetFocus(item, 1);
+        return SetFocusedItem(item, 1);
     }
-    return FocusNext();
+    return MoveFocusUpSequential();
 }
 
 RVA(0x001844d0, 0xd2)
 i32 CMenuPage::MoveFocusDown() {
-    if (!m_focus) {
+    if (!m_focusedItem) {
         return 0;
     }
-    CMenuItem* item = FindByName(m_focus->GetDownName());
+    CMenuItem* item = FindItemByName(m_focusedItem->GetDownItemName());
     if (item) {
-        MenuItemState k = item->m_state;
-        if (k != MENUSTATE_NORMAL && k != MENUSTATE_SELECTED) {
+        MenuItemState state = item->m_state;
+        if (state != MENUSTATE_NORMAL && state != MENUSTATE_SELECTED) {
             return 0;
         }
-        if (item == m_focus) {
+        if (item == m_focusedItem) {
             return 0;
         }
-        return SetFocus(item, 1);
+        return SetFocusedItem(item, 1);
     }
-    return FocusPrev();
+    return MoveFocusDownSequential();
 }
 
-// CMenuItem/CMenuItem2 header inlines this TU materializes: link.exe kept the
+// CMenuItem/CAnimatedMenuItem header inlines this TU materializes: link.exe kept the
 // tail group 0x1845b0-0x1848aa from menupage.obj (the first defining obj).
 RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
 RVA_COMPGEN(0x00184730, 0x41, ?Reset@CMenuItem@@UAEXXZ)
-RVA_COMPGEN(0x001847c0, 0x1e, ??_GCMenuItem2@@UAEPAXI@Z)
-RVA_COMPGEN(0x001847e0, 0xa6, ??1CMenuItem2@@UAE@XZ)
+RVA_COMPGEN(0x001847c0, 0x1e, ??_GCAnimatedMenuItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x001847e0, 0xa6, ??1CAnimatedMenuItem@@UAE@XZ)

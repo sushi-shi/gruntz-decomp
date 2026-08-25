@@ -10,12 +10,12 @@ confidence: 9/10
 
 ## The shape
 
-`CChatBox::PlayFocusSound` @0x183030, retail:
+`CMenuTree::PlayFocusSound` @0x183030, retail:
 
 ```asm
     push  ecx                 ; the one stack local
     mov   edx,[ecx+0x44]
-    mov   eax,[edx-0x8]       ; m_row0Key.GetLength()
+    mov   eax,[edx-0x8]       ; m_focusSoundKey.GetLength()
     test  eax,eax
     jne   0x18303f
     xor   eax,eax
@@ -40,29 +40,30 @@ The body after the guard was an **inlined helper**, and cl 5.0 emits the callee-
 top of the inlined REGION rather than in the prologue. Extract it:
 
 ```cpp
-static __inline i32 PlayChatCue(CDDrawSubMgrLeafScan* roster, const char* key) {
+static __inline i32 PlayMenuCue(CDDrawSubMgrLeafScan* soundRegistry, const char* cueKey) {
     /* ...the whole body... */
     return 0;
 }
 
-i32 CChatBox::PlayFocusSound() {
-    if (m_row0Key.GetLength() == 0) {
+i32 CMenuTree::PlayFocusSound() {
+    if (m_focusSoundKey.GetLength() == 0) {
         return 0;
     }
-    return PlayChatCue(m_page->m_soundRegistry, m_row0Key);
+    return PlayMenuCue(m_world->m_soundRegistry, m_focusSoundKey);
 }
 ```
 
 | function | before -> after |
 |---|---|
-| `CChatBox::PlayFocusSound` @0x183030 | 84.71 -> **100.00 EXACT** |
-| `CChatBox::PlayActivationSound` @0x1830b0 | 84.71 -> **100.00 EXACT** |
+| `CMenuTree::PlayFocusSound` @0x183030 | 84.71 -> **100.00 EXACT** |
+| `CMenuTree::PlayActivationSound` @0x1830b0 | 84.71 -> **100.00 EXACT** |
 | `CPlay::AdvanceCursorAnimation` @0xd0a60 | 66.67 -> **100.00 EXACT** |
 
 ## How to find the candidates
 
 Two of the three came free: `PlayFocusSound`/`PlayActivationSound` are the SAME body over
-`m_row0Key`/`m_row1Key`, which is the [inlined-ENTITY tell](shared-inline-transcribed-once-per-call-site.md).
+`m_focusSoundKey`/`m_activationSoundKey`, which is the
+[inlined-ENTITY tell](shared-inline-transcribed-once-per-call-site.md).
 `AdvanceCursorAnimation` had no twin — the disassembly alone said it, via the mechanical screen:
 
     retail: index of the first `ret` < index of the first `push esi|edi|ebx|ebp`

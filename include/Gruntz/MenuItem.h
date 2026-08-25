@@ -13,6 +13,7 @@ GZ_ENUM_FORWARD(MenuItemState);
 
 class CMenuPage;
 class CMenuItem;
+class CMenuTree;
 class CDDrawSurfacePair;
 
 class CDDrawSurfaceMgr;
@@ -25,88 +26,88 @@ public:
     virtual i32 Init(
         CMenuPage* page,
         const char* name,
-        const char* spriteKey,
-        i32 cmdId,
-        const char* key,
+        const char* animationKey,
+        i32 commandId,
+        const char* targetPageKey,
         i32 flags
     );
 
     virtual void Cleanup();
     virtual void Reset();
-    virtual i32 GetWidth();
+    virtual i32 GetFrameHeight();
     virtual i32 GetFrameWidth();
     RVA(0x00184650, 0xa)
-    virtual void Disable(MenuItemState mode) {
-        m_state = mode;
+    virtual void SetState(MenuItemState state) {
+        m_state = state;
     }
 
-    virtual i32 Detach();
+    virtual i32 OnPageActivated();
 
-    virtual i32 Notify(u32 dt);
-    virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y);
+    virtual i32 Update(u32 deltaMs);
+    virtual i32 DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY);
 
-    virtual i32 Configure(i32 notify);
-    virtual i32 Release();
-    virtual i32 Trigger();
+    virtual i32 Select(i32 playFocusSound);
+    virtual i32 Deselect();
+    virtual i32 Activate();
     RVA(0x00184660, 0x3)
-    virtual i32 OnInit() {
+    virtual i32 UsesStateAnimations() {
         return 0;
     }
 
     RVA(0x001845b0, 0x20)
-    CString GetName() {
-        return m_name;
+    CString GetItemName() {
+        return m_itemName;
     }
     RVA(0x001845d0, 0x20)
-    CString GetLeftName() {
-        return m_leftName;
+    CString GetLeftItemName() {
+        return m_leftItemName;
     }
     RVA(0x001845f0, 0x20)
-    CString GetRightName() {
-        return m_rightName;
+    CString GetRightItemName() {
+        return m_rightItemName;
     }
     RVA(0x00184610, 0x20)
-    CString GetUpName() {
-        return m_upName;
+    CString GetUpItemName() {
+        return m_upItemName;
     }
     RVA(0x00184630, 0x20)
-    CString GetDownName() {
-        return m_downName;
+    CString GetDownItemName() {
+        return m_downItemName;
     }
-    i32 NotifyCmd();
-    i32 Hit(i32 x, i32 y);
-    void SetCommandParam(i32 cmdParam) {
-        m_cmdParam = cmdParam;
+    i32 PostCommands();
+    i32 HitTest(i32 screenX, i32 screenY);
+    void SetCommandParam(i32 commandParam) {
+        m_commandParam = commandParam;
     }
-    void SetSecondaryCommandId(i32 secondaryCmdId) {
-        m_secondaryCmdId = secondaryCmdId;
+    void SetSecondaryCommandId(i32 secondaryCommandId) {
+        m_secondaryCommandId = secondaryCommandId;
     }
 
-    CDDrawSurfaceMgr* m_owner;
+    CDDrawSurfaceMgr* m_world;
 
-    class CChatBox* m_host;
-    CMenuPage* m_template;
-    CString m_name;
-    CString m_key;
-    i32 m_cmdId;
-    i32 m_secondaryCmdId;
+    CMenuTree* m_menuTree;
+    CMenuPage* m_page;
+    CString m_itemName;
+    CString m_targetPageKey;
+    i32 m_commandId;
+    i32 m_secondaryCommandId;
     i32 m_flags;
     MenuItemState m_state;
-    CObject* m_sprite;
+    CObject* m_animation;
 
-    POSITION m_listPos;
+    POSITION m_listPosition;
 
-    i32 m_cmdParam;
+    i32 m_commandParam;
     i32 m_hitLeft;
     i32 m_hitTop;
     i32 m_hitRight;
     i32 m_hitBottom;
-    i32 m_fixedX;
-    i32 m_fixedY;
-    CString m_leftName;
-    CString m_rightName;
-    CString m_upName;
-    CString m_downName;
+    i32 m_fixedCenterX;
+    i32 m_fixedCenterY;
+    CString m_leftItemName;
+    CString m_rightItemName;
+    CString m_upItemName;
+    CString m_downItemName;
 };
 
 inline CMenuItem::~CMenuItem() {
@@ -114,19 +115,20 @@ inline CMenuItem::~CMenuItem() {
 }
 
 // Retail expands Reset in three CMenuPage factories, then calls its COMDAT in
-// AddSubItem2 after the later inline setter sites exhaust that caller's budget.
+// the extended AddAnimatedItem overload after later inline setter sites exhaust that caller's
+// budget.
 inline void CMenuItem::Reset() {
-    m_host = NULL;
-    m_template = NULL;
-    m_sprite = NULL;
-    m_owner = NULL;
-    m_listPos = NULL;
+    m_menuTree = NULL;
+    m_page = NULL;
+    m_animation = NULL;
+    m_world = NULL;
+    m_listPosition = NULL;
     m_hitLeft = UNINIT_FILL;
-    m_fixedX = UNINIT_FILL;
-    m_leftName.Empty();
-    m_rightName.Empty();
-    m_upName.Empty();
-    m_downName.Empty();
+    m_fixedCenterX = UNINIT_FILL;
+    m_leftItemName.Empty();
+    m_rightItemName.Empty();
+    m_upItemName.Empty();
+    m_downItemName.Empty();
 }
 
 inline CMenuItem::CMenuItem() {

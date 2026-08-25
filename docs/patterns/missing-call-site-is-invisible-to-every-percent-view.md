@@ -72,7 +72,7 @@ A count deficit has three causes and only one is a defect:
    Behaviourally identical; do not "restore" anything.
 2. **Inline-budget divergence** — retail calls a header inline we expand, or the
    reverse (`CUserLogic::AttachToObject` in the logic ctors, `CMenuItem::Reset`
-   in `CMenuPage::AddSubItem2`, `zPTree::Reset` in
+   in the extended `CMenuPage::AddAnimatedItem` overload, `zPTree::Reset` in
    `CChatBoxOwner::HandleTextInputKey`, the `CFecFile`/`CArray` COMDATs in
    `CGruntzMgr::PlayMovieEntry`). Also benign.
 3. **A genuinely missing call** — the class above. Rare, and worth the whole

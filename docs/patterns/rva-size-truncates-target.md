@@ -22,9 +22,9 @@ Six were found tree-wide, every one an instant EXACT once resized:
 | function | size arg |
 |---|---|
 | `IsLoaded` (×3 sites) | `0x1a` → `0x1d` |
-| `CMenuItem2::Disable` | `0x14` → `0x17` |
+| `CAnimatedMenuItem::SetState` | `0x14` → `0x17` |
 | `GetFrameWidth` | `0xa` → `0xe` |
-| `GetWidth` | `0xa` → `0xe` |
+| `GetFrameHeight` | `0xa` → `0xe` |
 
 Because the symptom is a stable plateau, these are easy to mis-file as `@early-stop`
 codegen walls. Check the prefix property first — it costs one `llvm-objdump -dr` diff.

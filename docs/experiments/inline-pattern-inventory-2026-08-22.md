@@ -254,8 +254,8 @@ RVA     current  function                                         inlinees
 1544d0   99.828  CImage::BlitShadeFlipV                           CI
 154750   99.258  CImage::BlitShadeFlipH                           CI
 163670  100.000  CDDrawWorkerHost::ResolveColorKey                PK
-183030  100.000  CChatBox::PlayFocusSound                         LC
-1830b0  100.000  CChatBox::PlayActivationSound                    LC
+183030  100.000  CMenuTree::PlayFocusSound                        LC
+1830b0  100.000  CMenuTree::PlayActivationSound                   LC
 ```
 
 ## Population qualifications
@@ -448,7 +448,7 @@ survivors are not evidence of another missing inline boundary.
 New real inline abstractions retained by this pass:
 
 - `FlipFrontAndRestoreOverlay`: three identical page flip plus overlay-restore bodies
-  in both booty renderers and `CChatBox::Post`.
+  in both booty renderers and `CMenuTree::PresentFrame`.
 - `PurgeVoices`: thirteen guarded sound-stream purge bodies. A member declaration in
   the widely included `CDDrawSubMgrLeafScan` header produced eleven fresh regressions;
   the free inline in a narrow definition header retained the caller bodies and restored
@@ -527,7 +527,7 @@ open-coded. A semicolon-separated list means multiple expansion sites or source 
 | `CGameLevel::SyncToMainIndex` | 100.000% | first half of `VisitVisible` |
 | `CGameLevel::SyncAfterMainIndex` | 100.000% | second half of `VisitVisible` |
 | `CGameLevel::ResetMainPlane` | 100.000% | `CGameLevel::RemovePlane` |
-| `CChatBox::Init` | 100.000% | `CChatBox::Reset` |
+| `CMenuTree::InitializeMembers` | 100.000% | `CMenuTree::Reset` |
 | `GruntzPlayer::Clear` | 100.000% | `GruntzPlayer::Reset` |
 | `CDDrawWorker::AddFrameAt` | 100.000% | `InsertFrame`, `LoadFrame`, `CreateDescriptorFrame`, `CreateBlankFrame` |
 | `CGameLevel::ReleaseChildren` | 100.000% | `CGameLevel::Unload` |

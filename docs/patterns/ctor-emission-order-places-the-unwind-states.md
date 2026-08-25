@@ -58,9 +58,10 @@ which names the base directly, and the module's vtable set says how many classes
 are in the chain at all.
 
 A fourth state-flow shape has no member at all: **an extra state with a `call` right after it, at the end of
-a `new`-expression's protected region, is the constructor BODY.** `new CChatBox` stores state 3
-after the last CString and then calls `Init()`; that only happens if `CChatBox::CChatBox()` calls
-`Init()` itself. Writing `p = new CChatBox; p->Initialize();` puts the call outside the region and
+a `new`-expression's protected region, is the constructor BODY.** `new CMenuTree` stores state 3
+after the last CString and then calls `InitializeMembers()`; that only happens if
+`CMenuTree::CMenuTree()` calls `InitializeMembers()` itself. Writing
+`p = new CMenuTree; p->InitializeMembers();` puts the call outside the region and
 state 3 disappears (`CMenuState::LoadGameAssetNamespaces` 89.39 -> 95.14).
 
 ## How to read a row

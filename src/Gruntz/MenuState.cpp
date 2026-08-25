@@ -21,7 +21,6 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>
-#include <Gruntz/ChatBox.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
@@ -34,6 +33,7 @@
 #include <Gruntz/LeafCueInline.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
+#include <Gruntz/MenuTree.h>
 #include <Gruntz/MenuVersion.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
@@ -64,9 +64,9 @@ DATA(0x00251610)
 i32 g_versionMinor = 0;
 
 static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    LeafCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
+    LeafCue* foundCue = NULL;
+    MapLookup(cues, name, foundCue);
+    return foundCue;
 }
 
 RVA(0x0008ce60, 0x55)
@@ -90,21 +90,21 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     if (!m_world->m_imageRegistry->HasKeyEqual("MENU")) {
-        CSymTab* set = SymTab2c()->ResolvePath("IMAGEZ");
-        if (set == NULL) {
+        CSymTab* imageSymbols = SymTab2c()->ResolvePath("IMAGEZ");
+        if (imageSymbols == NULL) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_world->m_imageRegistry->InstallTree(set, "MENU", "_");
+        m_world->m_imageRegistry->InstallTree(imageSymbols, "MENU", "_");
         g_resourceInstallActive = 0;
     }
 
     if (!m_world->m_soundRegistry->HasKeyEqual("MENU")) {
-        CSymTab* set = SymTab2c()->ResolvePath("SOUNDZ");
-        if (set == NULL) {
+        CSymTab* soundSymbols = SymTab2c()->ResolvePath("SOUNDZ");
+        if (soundSymbols == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(set), "MENU", "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundSymbols), "MENU", "_");
     }
 
     if (!m_world->m_drawTarget->HasOverlay()) {
@@ -113,29 +113,29 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         }
     }
 
-    RECT rc;
-    rc.left = 0;
-    rc.top = 8;
-    rc.right = 0x27f;
-    rc.bottom = 0x1df;
-    m_menuTree = new CChatBox;
-    if (!m_menuTree->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    RECT menuBounds;
+    menuBounds.left = 0;
+    menuBounds.top = 8;
+    menuBounds.right = 0x27f;
+    menuBounds.bottom = 0x1df;
+    m_menuTree = new CMenuTree;
+    if (!m_menuTree->Configure(m_world, m_mgr->m_gameWnd->m_hwnd, &menuBounds, 0x14, 0xa, 1)) {
         return 0;
     }
 
-    CChatBox* ui = m_menuTree;
-    if (ui->ConfigureLeftCursorAnimation("MENU_CURSOR", 0x64, 0x20)) {
-        ui->ConfigureRightCursorAnimation("MENU_CURSOR", 0x64, 0x20);
+    CMenuTree* menuTree = m_menuTree;
+    if (menuTree->ConfigureLeftCursorAnimation("MENU_CURSOR", 0x64, 0x20)) {
+        menuTree->ConfigureRightCursorAnimation("MENU_CURSOR", 0x64, 0x20);
     }
-    ui = m_menuTree;
-    ui->m_row0Key = "MENU_SELECT";
-    ui->m_row1Key = "MENU_ACTIVATE";
+    menuTree = m_menuTree;
+    menuTree->m_focusSoundKey = "MENU_SELECT";
+    menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        LeafCue* e = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
-        if (e != NULL) {
-            e = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
-            m_activateCueDurationMs = e->m_sound->m_durationMs;
+        LeafCue* activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        if (activationCue != NULL) {
+            activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+            m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;
         }
@@ -145,17 +145,17 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    LeafCue* fm = LookupCue(
+    LeafCue* menuMusicCue = LookupCue(
         (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU"
     );
-    m_menuMusicCue = fm;
+    m_menuMusicCue = menuMusicCue;
     return 1;
 }
 
 RVA(0x000a0280, 0x2b)
-void CChatBox::Init() {
-    INIT_CHAT_BOX_MEMBERS;
+void CMenuTree::InitializeMembers() {
+    INITIALIZE_MENU_TREE_MEMBERS;
 }
 
 RVA(0x000a02c0, 0x7d)
@@ -165,23 +165,23 @@ void CMenuState::ReleaseResources() {
     m_world->m_soundRegistry->RemoveKeysEqual("MENU", "_");
     if (m_world) {
 
-        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
-        if (reg->m_soundStream) {
-            reg->m_soundStream->StopAllStreams();
+        CDDrawSubMgrLeafScan* soundRegistry = m_world->m_soundRegistry;
+        if (soundRegistry->m_soundStream) {
+            soundRegistry->m_soundStream->StopAllStreams();
         }
         m_world->m_workerList->ClearWorkers();
     }
 
-    CChatBox* ui = m_menuTree;
-    if (ui) {
-        delete ui;
+    CMenuTree* menuTree = m_menuTree;
+    if (menuTree) {
+        delete menuTree;
         m_menuTree = NULL;
     }
     CState::ReleaseResources();
 }
 
 RVA(0x000a0360, 0x64)
-CChatBox::~CChatBox() {
+CMenuTree::~CMenuTree() {
     Reset();
 }
 
@@ -298,13 +298,13 @@ i32 CMenuState::Render() {
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_pressedButtons) & 0x80000000) {
-            m_menuTree->MoveFocusUp();
+            m_menuTree->MoveFocusDown();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
         if (static_cast<u32>(L->m_items[c]->m_pressedButtons) & 0x40000000) {
-            m_menuTree->MoveFocusDown();
+            m_menuTree->MoveFocusUp();
             goto tail;
         }
     }
@@ -336,10 +336,10 @@ i32 CMenuState::Render() {
     }
 tail:
 
-    m_menuTree->Step(g_frameDelta);
-    m_menuTree->Pre();
+    m_menuTree->Update(g_frameDelta);
+    m_menuTree->DrawActivePage();
     BuildVersionString(g_versionRect);
-    m_menuTree->Post();
+    m_menuTree->PresentFrame();
     return 1;
 }
 

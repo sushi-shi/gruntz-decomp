@@ -234,4 +234,4 @@ rva	size	name	kind	note
 0x1f0870	0x14	??_7CFaderLight@@6B@	primary	
 0x1f0890	0x14	??_7CFaderShape@@6B@	primary	
 0x1f08c0	0x38	??_7CMenuItem@@6B@	primary	
-0x1f08f8	0x3c	??_7CMenuItem2@@6B@	primary	
+0x1f08f8	0x3c	??_7CAnimatedMenuItem@@6B@	primary	state-dependent animated menu item

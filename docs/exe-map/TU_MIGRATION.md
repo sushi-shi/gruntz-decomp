@@ -108,7 +108,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x09c650` | `?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z` | streamrecordloaders | `0x9c650` ? |
 | `0x09cab0` | `?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` | streamrecordloaders | `0x9cab0` ? |
 | `0x0a1190` | `?SetMenuTextRect@@YAXXZ` | mainmenubuilder | `0xa1190` ? |
-| `0x0a11d0` | `?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z` | mainmenubuilder | `0xa11d0` ? |
+| `0x0a11d0` | `?BuildMainMenuTree@@YAHPAVCMenuTree@@H@Z` | mainmenubuilder | `0xa11d0` ? |
 | `0x0ac1d0` | `??0CDoNothing@@QAE@PAUCGameObject@@@Z` | donothing | `0xabfa0` frontcandyani |
 | `0x0ac3f0` | `??0CBehindCandy@@QAE@PAUCGameObject@@@Z` | behindcandy | `0xabfa0` frontcandyani |
 | `0x0ac620` | `??0CEyeCandy@@QAE@PAUCGameObject@@@Z` | eyecandy | `0xabfa0` frontcandyani |
@@ -535,7 +535,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - gruntzsoundz (`cpp`) — src/Dsndmgr/MidiManager.cpp
 - winapimodule (`cpp`) — src/Utils/WinAPIModule.cpp
 - winapicdrom (`cpp`) — src/Utils/WinAPICdRom.cpp
-- chatbox (`cpp-rtti`) — src/Gruntz/ChatBox.cpp
+- menutree (`cpp-rtti`) — src/Gruntz/MenuTree.cpp
 - chatboxowner (`cpp-rtti`) — src/Gruntz/ChatBoxOwner.cpp
 - lightfx (`cpp-rtti`) — src/Gruntz/LightFx.cpp
 - lightfxrender (`cpp-rtti`) — src/Gruntz/LightFxRender.cpp

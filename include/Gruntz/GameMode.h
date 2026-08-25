@@ -9,11 +9,11 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>
-#include <Gruntz/ChatBox.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GlyphStringDraw.h>
+#include <Gruntz/MenuTree.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
 
@@ -61,7 +61,7 @@ public:
 
     i32 CommitState();
 
-    CChatBox* m_menuTree;
+    CMenuTree* m_menuTree;
     i32 m_activateCueDurationMs;
     LeafCue* m_menuMusicCue;
 

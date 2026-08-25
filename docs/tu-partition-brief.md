@@ -566,7 +566,7 @@ BeginWaitCursor/EndWaitCursor scope -> /GX exception frame.
 base -> eh (wave3-I: the 0x616e0 interval has 2 EH sites)
 
 ### donothing
-eh: ~CMenuState / ReleaseResources (operator delete + ~CChatBox) / BuildVersionString
+eh: ~CMenuState / ReleaseResources (operator delete + ~CMenuTree) / BuildVersionString
 (CString temp) carry the /GX SEH frame; the base dialog helpers are unwind-free (neutral).
 
 ### secretteleportertrigger

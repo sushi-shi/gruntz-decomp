@@ -16,7 +16,7 @@ and the delinked target naming something else at the same place:
 or, when the other side is a bare literal in some TU:
 
 ```
--- mainmenubuilder  ?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z
+-- mainmenubuilder  ?BuildMainMenuTree@@YAHPAVCMenuTree@@H@Z
      _s_BACK$S30550          base 13 target 0
      ??_C@_04FGAG@BACK?$AA@  base  0 target 13
 ```
@@ -65,7 +65,7 @@ Byte-neutral in the instruction stream; only the relocation's name changes.
 * 37 fabricated declarations removed over two passes (the `s_code*`/`g_sepSlash`
   family, the 14 `provisional-pooled-literal-alias` rows, and 23 statics
   duplicated across TUs). `3493 -> 3515` exact.
-* `?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z` 99.95 -> **100.00 EXACT** (13
+* `?BuildMainMenuTree@@YAHPAVCMenuTree@@H@Z` 99.95 -> **100.00 EXACT** (13
   references to one literal).
 * It also kills a banned construct: the eight `extern char s_codeX[];` in
   `Grunt.h` and `extern char g_nameFmt[];` in `PortalPath.h` existed only to share

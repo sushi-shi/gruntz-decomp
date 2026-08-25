@@ -92,18 +92,20 @@ The worst case in the tu_order_check report was:
 Walked through the mechanism, byte by byte (library band, so pull order):
 
     0x1832d0-0x1845a2  MenuPage.obj      33 out-of-line CMenuPage methods, ascending
-    0x1845b0-0x1848aa  MenuPage.obj      its KEPT-COMDAT tail: CMenuItem::GetName /
-                       (deferred-inline   GetLeftName / GetRightName (unpinned, found by
-                        emission tail)    prediction - see below) / GetUpName / GetDownName /
-                                          Disable / OnInit / ??_GCMenuItem / ??1CMenuItem /
-                                          Reset / CMenuItem2::Disable / SetFrame / OnInit /
-                                          ??_GCMenuItem2 / ??1CMenuItem2 / Reset
+    0x1845b0-0x1848aa  MenuPage.obj      its KEPT-COMDAT tail: CMenuItem::GetItemName /
+                       (deferred-inline   GetLeftItemName / GetRightItemName (unpinned, found by
+                        emission tail)    prediction - see below) / GetUpItemName /
+                                          GetDownItemName / SetState / UsesStateAnimations /
+                                          ??_GCMenuItem / ??1CMenuItem / Reset /
+                                          CAnimatedMenuItem::SetState / SetFramePeriod /
+                                          UsesStateAnimations /
+                                          ??_GCAnimatedMenuItem / ??1CAnimatedMenuItem / Reset
     0x1848b0-0x184b5d  RezColl.obj       CHash* - a real, separate TU
     0x184ba0-0x1851d3  DebugPrintf.obj   CRangeSet + CDebugConfig - real TU
     0x1851e0-0x185315  RezList.obj       CObjList/CRezList - real TU
     0x1853b0-0x185456  WapUncompress.obj real TU
     0x185460-0x185a0e  MenuItem.obj      the real MenuItem.cpp: Init, Cleanup,
-                                          GetFrameWidth ... NextFrame, ascending
+                                          GetFrameWidth ... AdvanceFrame, ascending
 
 Every body in the 0x1845b0-0x1848aa block is inline-shaped (32-byte CString
 getters, 3-10 byte setters/stubs, the dtor pair with its `??_G` adjacent) and
@@ -116,9 +118,9 @@ span over four innocent TUs.
 **Prediction check:** before disassembling, the mechanism predicted the three
 unpinned 32-byte bodies at 0x1845b0/0x1845d0/0x1845f0 and the unpinned
 0x184730/0x1847c0 would be more CMenuItem-family inline members. They are:
-`?GetName@CMenuItem@@QAE?AVCString@@XZ`, `GetLeftName`, `GetRightName`
+`?GetItemName@CMenuItem@@QAE?AVCString@@XZ`, `GetLeftItemName`, `GetRightItemName`
 (byte-identical shapes, `this+0x10/0x4c/0x50`), `?Reset@CMenuItem@@UAEXXZ`, and
-`??_GCMenuItem2@@UAEPAXI@Z`.
+`??_GCAnimatedMenuItem@@UAEPAXI@Z`.
 
 Verdict: the four "intruders" are **real retail TUs, correctly partitioned**;
 the defect was in the *invariant*, which treated MenuPage's kept-COMDAT tail as
@@ -153,7 +155,7 @@ holding all three CImageSet variants' inline members (21, the whole ImageSet
 tangle), DDrawSurfacePair's woven AniRecord view dtors (7 incl. span
 collapses), NetMgr's tail band (2), the compconai tail pocket 0x310f0-0x31314
 (3), FrontCandyAni's kept candy ctors (3), WwdFactoryObject's two stray inline
-bodies (4), MenuState's kept `~CChatBox` (1), Play's CImage accessor pocket
+bodies (4), MenuState's kept `~CMenuTree` (1), Play's CImage accessor pocket
 (1, partially - see below), GruntEntranceMove's tail seam trio (2).
 
 **(a) Partition defects — 24 pairs** (two units are one retail TU, or a body

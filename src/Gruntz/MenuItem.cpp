@@ -8,54 +8,54 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
-#include <Gruntz/ChatBox.h>
+#include <Gruntz/AnimatedMenuItem.h>
 #include <Gruntz/ChatBoxOwner.h>
-#include <Gruntz/MenuItem2.h>
 #include <Gruntz/MenuItemState.h>
 #include <Gruntz/MenuPage.h>
+#include <Gruntz/MenuTree.h>
 #include <Image/CImage.h>
 #include <Wap32/CoordUnset.h>
 
 #include <stdio.h>
 
 static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
+    CObject* foundObject = NULL;
+    map.Lookup(name, foundObject);
+    return static_cast<CDDrawWorker*>(foundObject);
 }
 
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(
     CMenuPage* page,
     const char* name,
-    const char* spriteKey,
-    i32 cmdId,
-    const char* key,
+    const char* animationKey,
+    i32 commandId,
+    const char* targetPageKey,
     i32 flags
 ) {
     if (!page) {
         return 0;
     }
     m_flags = flags;
-    m_owner = page->m_owner;
-    m_host = page->m_host;
-    m_template = page;
-    m_name = name;
-    m_key = key;
-    m_cmdId = cmdId;
-    m_secondaryCmdId = 0;
-    m_cmdParam = 0;
+    m_world = page->m_world;
+    m_menuTree = page->m_menuTree;
+    m_page = page;
+    m_itemName = name;
+    m_targetPageKey = targetPageKey;
+    m_commandId = commandId;
+    m_secondaryCommandId = 0;
+    m_commandParam = 0;
     if (m_flags & 1) {
         m_state = MENUSTATE_DISABLED;
     } else {
         m_state = MENUSTATE_NORMAL;
     }
-    if (!OnInit()) {
-        CObject* slot = NULL;
+    if (!UsesStateAnimations()) {
+        CObject* animationObject = NULL;
 
-        m_owner->m_imageRegistry->m_workersByName.Lookup(spriteKey, slot);
-        m_sprite = slot;
-        if (!slot) {
+        m_world->m_imageRegistry->m_workersByName.Lookup(animationKey, animationObject);
+        m_animation = animationObject;
+        if (!animationObject) {
             return 0;
         }
     }
@@ -68,232 +68,232 @@ void CMenuItem::Cleanup() {
 
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CDDrawWorker* s = static_cast<CDDrawWorker*>(m_sprite);
-    if (!s) {
+    CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
+    if (!animation) {
         return 0;
     }
-    CImage* f = s->GetAt(2);
-    if (!f) {
+    CImage* frame = animation->GetAt(2);
+    if (!frame) {
         return 0;
     }
-    return f->m_width;
+    return frame->m_width;
 }
 RVA(0x00185550, 0x2c)
-i32 CMenuItem::GetWidth() {
-    CDDrawWorker* s = static_cast<CDDrawWorker*>(m_sprite);
-    if (!s) {
+i32 CMenuItem::GetFrameHeight() {
+    CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
+    if (!animation) {
         return 0;
     }
-    CImage* f = s->GetAt(2);
-    if (!f) {
+    CImage* frame = animation->GetAt(2);
+    if (!frame) {
         return 0;
     }
-    return f->m_height;
+    return frame->m_height;
 }
 RVA(0x00185580, 0x4a)
-i32 CMenuItem::NotifyCmd() {
-    i32 id = m_cmdId;
-    if (!id) {
-        return id;
+i32 CMenuItem::PostCommands() {
+    i32 commandId = m_commandId;
+    if (!commandId) {
+        return commandId;
     }
-    HWND wnd = m_host->m_wnd;
-    if (wnd) {
-        PostMessageA(wnd, WM_COMMAND, id, m_cmdParam);
+    HWND windowHandle = m_menuTree->m_windowHandle;
+    if (windowHandle) {
+        PostMessageA(windowHandle, WM_COMMAND, commandId, m_commandParam);
     }
-    if (m_secondaryCmdId && wnd) {
-        PostMessageA(wnd, WM_COMMAND, m_secondaryCmdId, 0);
+    if (m_secondaryCommandId && windowHandle) {
+        PostMessageA(windowHandle, WM_COMMAND, m_secondaryCommandId, 0);
     }
     return 1;
 }
 
 RVA(0x001855d0, 0x6)
-i32 CMenuItem::Detach() {
+i32 CMenuItem::OnPageActivated() {
     return 1;
 }
 
 RVA(0x001855e0, 0x8)
-i32 CMenuItem::Notify(u32) {
+i32 CMenuItem::Update(u32) {
     return 1;
 }
 
 RVA(0x001855f0, 0x94)
-i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
-    CDDrawWorker* page = static_cast<CDDrawWorker*>(m_sprite);
-    if (!page) {
+i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
+    CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
+    if (!animation) {
         return 0;
     }
 
-    if (m_fixedX != UNINIT_FILL) {
-        x = m_fixedX;
-        y = m_fixedY;
+    if (m_fixedCenterX != UNINIT_FILL) {
+        centerX = m_fixedCenterX;
+        centerY = m_fixedCenterY;
     }
-    MenuItemState idx = m_state;
-    CImage* row = page->GetAt(IDX(idx));
-    if (!row) {
+    MenuItemState state = m_state;
+    CImage* frame = animation->GetAt(IDX(state));
+    if (!frame) {
         return 0;
     }
-    row->RenderFrame(target, x, y, 0);
-    m_hitLeft = x - row->m_anchorX;
-    m_hitRight = x + row->m_anchorX;
-    m_hitTop = y - row->m_anchorY;
-    m_hitBottom = y + row->m_anchorY;
+    frame->RenderFrame(target, centerX, centerY, 0);
+    m_hitLeft = centerX - frame->m_anchorX;
+    m_hitRight = centerX + frame->m_anchorX;
+    m_hitTop = centerY - frame->m_anchorY;
+    m_hitBottom = centerY + frame->m_anchorY;
     return 1;
 }
 RVA(0x00185690, 0x25)
-i32 CMenuItem::Configure(i32 notify) {
-    if (notify) {
-        m_host->PlayFocusSound();
+i32 CMenuItem::Select(i32 playFocusSound) {
+    if (playFocusSound) {
+        m_menuTree->PlayFocusSound();
     }
-    Disable(MENUSTATE_SELECTED);
+    SetState(MENUSTATE_SELECTED);
     return 1;
 }
 RVA(0x001856c0, 0xd)
-i32 CMenuItem::Release() {
-    Disable(MENUSTATE_NORMAL);
+i32 CMenuItem::Deselect() {
+    SetState(MENUSTATE_NORMAL);
     return 1;
 }
 
 RVA(0x001856d0, 0x25)
-i32 CMenuItem::Trigger() {
-    m_host->PlayActivationSound();
-    NotifyCmd();
-    m_host->ReplaceNode(m_key);
+i32 CMenuItem::Activate() {
+    m_menuTree->PlayActivationSound();
+    PostCommands();
+    m_menuTree->SetActivePageByKey(m_targetPageKey);
     return 1;
 }
 RVA(0x00185700, 0x4b)
-i32 CMenuItem::Hit(i32 x, i32 y) {
+i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
     if (m_hitLeft == UNINIT_FILL) {
         return 0;
     }
-    if (x < m_hitLeft) {
+    if (screenX < m_hitLeft) {
         return 0;
     }
-    if (x > m_hitRight) {
+    if (screenX > m_hitRight) {
         return 0;
     }
-    if (y < m_hitTop) {
+    if (screenY < m_hitTop) {
         return 0;
     }
-    return y <= m_hitBottom;
+    return screenY <= m_hitBottom;
 }
 
 RVA(0x00185750, 0x123)
-i32 CMenuItem2::Init(
+i32 CAnimatedMenuItem::Init(
     CMenuPage* page,
     const char* name,
-    const char* spriteKey,
-    i32 cmdId,
-    const char* key,
+    const char* animationKey,
+    i32 commandId,
+    const char* targetPageKey,
     i32 flags
 ) {
     if (!page) {
         return 0;
     }
-    if (!CMenuItem::Init(page, name, spriteKey, cmdId, key, flags)) {
+    if (!CMenuItem::Init(page, name, animationKey, commandId, targetPageKey, flags)) {
         return 0;
     }
-    m_frameIdx = 0;
-    m_frameCountdown = 0;
-    SET_MENU_ITEM2_FRAME_DELAY_INLINE(0x64);
+    m_frameIndex = 0;
+    m_frameTimerMs = 0;
+    SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(0x64);
 
-    char buf[0x80];
+    char animationName[0x80];
 
-    sprintf(buf, "%s_NORMAL", spriteKey);
-    m_spriteNormal = LookupWorker(m_owner->m_imageRegistry->m_workersByName, buf);
+    sprintf(animationName, "%s_NORMAL", animationKey);
+    m_normalAnimation = LookupWorker(m_world->m_imageRegistry->m_workersByName, animationName);
 
-    sprintf(buf, "%s_SELECTED", spriteKey);
-    m_spriteSelected = LookupWorker(m_owner->m_imageRegistry->m_workersByName, buf);
+    sprintf(animationName, "%s_SELECTED", animationKey);
+    m_selectedAnimation = LookupWorker(m_world->m_imageRegistry->m_workersByName, animationName);
 
-    sprintf(buf, "%s_DISABLED", spriteKey);
-    m_spriteDisabled = LookupWorker(m_owner->m_imageRegistry->m_workersByName, buf);
+    sprintf(animationName, "%s_DISABLED", animationKey);
+    m_disabledAnimation = LookupWorker(m_world->m_imageRegistry->m_workersByName, animationName);
 
     return 1;
 }
 RVA(0x00185880, 0xe)
-i32 CMenuItem2::GetFrameWidth() {
-    CImage* f = GetCurrentFrame();
-    if (!f) {
+i32 CAnimatedMenuItem::GetFrameWidth() {
+    CImage* frame = GetCurrentFrame();
+    if (!frame) {
         return 0;
     }
-    return f->m_width;
+    return frame->m_width;
 }
 
 RVA(0x00185890, 0xe)
-i32 CMenuItem2::GetWidth() {
-    CImage* f = GetCurrentFrame();
-    if (!f) {
+i32 CAnimatedMenuItem::GetFrameHeight() {
+    CImage* frame = GetCurrentFrame();
+    if (!frame) {
         return 0;
     }
-    return f->m_height;
+    return frame->m_height;
 }
 
 RVA(0x001858a0, 0x2b)
-i32 CMenuItem2::Notify(u32 a) {
-    if (a >= static_cast<u32>(m_frameCountdown)) {
-        m_frameCountdown = m_frameDelay;
-        NextFrame();
+i32 CAnimatedMenuItem::Update(u32 deltaMs) {
+    if (deltaMs >= static_cast<u32>(m_frameTimerMs)) {
+        m_frameTimerMs = m_framePeriodMs;
+        AdvanceFrame();
         return 1;
     }
-    m_frameCountdown = m_frameCountdown - a;
+    m_frameTimerMs = m_frameTimerMs - deltaMs;
     return 1;
 }
 
 RVA(0x001858d0, 0x72)
-i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
+i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
 
-    if (m_fixedX != UNINIT_FILL) {
-        x = m_fixedX;
-        y = m_fixedY;
+    if (m_fixedCenterX != UNINIT_FILL) {
+        centerX = m_fixedCenterX;
+        centerY = m_fixedCenterY;
     }
-    CImage* f = GetCurrentFrame();
-    if (!f) {
+    CImage* frame = GetCurrentFrame();
+    if (!frame) {
         return 0;
     }
-    f->RenderFrame(target, x, y, 0);
-    m_hitLeft = x - f->m_anchorX;
-    m_hitRight = x + f->m_anchorX;
-    m_hitTop = y - f->m_anchorY;
-    m_hitBottom = y + f->m_anchorY;
+    frame->RenderFrame(target, centerX, centerY, 0);
+    m_hitLeft = centerX - frame->m_anchorX;
+    m_hitRight = centerX + frame->m_anchorX;
+    m_hitTop = centerY - frame->m_anchorY;
+    m_hitBottom = centerY + frame->m_anchorY;
     return 1;
 }
 RVA(0x00185950, 0x1b)
-CDDrawWorker* CMenuItem2::GetCurrentSprite() {
+CDDrawWorker* CAnimatedMenuItem::GetStateAnimation() {
     switch (m_state) {
         case MENUSTATE_NORMAL:
-            return m_spriteNormal;
+            return m_normalAnimation;
         case MENUSTATE_SELECTED:
-            return m_spriteSelected;
+            return m_selectedAnimation;
         case MENUSTATE_DISABLED:
-            return m_spriteDisabled;
+            return m_disabledAnimation;
     }
     return NULL;
 }
 
 RVA(0x00185970, 0x4d)
-CImage* CMenuItem2::GetCurrentFrame() {
-    CDDrawWorker* s = GetCurrentSprite();
-    if (!s) {
+CImage* CAnimatedMenuItem::GetCurrentFrame() {
+    CDDrawWorker* animation = GetStateAnimation();
+    if (!animation) {
         return NULL;
     }
 
-    CImage* f = s->GetAt(m_frameIdx);
-    if (f == NULL) {
-        m_frameIdx = s->m_minIndex;
-        f = s->GetAt(m_frameIdx);
+    CImage* frame = animation->GetAt(m_frameIndex);
+    if (frame == NULL) {
+        m_frameIndex = animation->m_minIndex;
+        frame = animation->GetAt(m_frameIndex);
     }
-    return f;
+    return frame;
 }
 RVA(0x001859c0, 0x4e)
-i32 CMenuItem2::NextFrame() {
+i32 CAnimatedMenuItem::AdvanceFrame() {
     if (!GetCurrentFrame()) {
         return 0;
     }
-    m_frameIdx = m_frameIdx + 1;
+    m_frameIndex = m_frameIndex + 1;
     if (m_flags & 0x10000) {
-        CDDrawWorker* s = GetCurrentSprite();
-        if (s) {
-            if (m_frameIdx > s->m_maxIndex) {
-                m_frameIdx = m_frameIdx - 1;
+        CDDrawWorker* animation = GetStateAnimation();
+        if (animation) {
+            if (m_frameIndex > animation->m_maxIndex) {
+                m_frameIndex = m_frameIndex - 1;
                 return 1;
             }
         }

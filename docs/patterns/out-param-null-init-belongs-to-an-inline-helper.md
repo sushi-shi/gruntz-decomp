@@ -134,7 +134,7 @@ next to the call (`CSBI_MenuItem::ResolveFrame` 0xe81e0 92.45 -> **100.00**,
 `CSpriteRefTable::Add` 0xe2890 97.50 -> **100.00**). Shape (b) is right when the
 owner is ALREADY live in a register - a parameter, or a member the guard just
 tested - because (a) then hoists the finished map address to the top of the block
-and clobbers the owner: `CChatBox::ConfigureLeftCursorAnimation`/`Right` 0x182df0
+and clobbers the owner: `CMenuTree::ConfigureLeftCursorAnimation`/`Right` 0x182df0
 /0x182e60 both went 94.87 -> **100.00** under (b) and were WORSE under (a).
 Read which one retail used straight off the disassembly: `lea r,[&out]` before
 the receiver load means (b), after it means (a).
