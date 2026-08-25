@@ -159,19 +159,19 @@ Health/Toy −0x19, Stamina/ToyTime −0x20, WingzTime −0x26, Powerup/Selected
 
 ---
 
-## CNetMgr DirectPlay manager (unit `netmgr`)
+## CMulti multiplayer state (unit `multi`)
 
-4/4 byte-exact (OnMultiOptions@0x0badd0, OnMultiPause@0x0bad40, OnOutOfSync@0x0bae40,
+4/4 byte-exact (ShowMultiplayerOptionsDialog@0x0badd0, ShowMultiplayerPauseDialog@0x0bad40, OnOutOfSync@0x0bae40,
 ApplyCmdDelayDefaults@0x0b85a0). The higher-level state/message methods (no DirectPlay COM).
 
-**CNetMgr LAYOUT:** **+0x4** m_4 (→ HWND via +0x4→+0x4→+0x4), **+0x1c** WM_COMMAND wParam
+**CMulti LAYOUT:** **+0x4** m_4 (→ HWND via +0x4→+0x4→+0x4), **+0x1c** WM_COMMAND wParam
 posted on resync, **+0x574** OnOutOfSync per-instance reentrancy guard, **+0x584** state
 word cleared on handler entry, **+0x598** CString config value-name prefix, **+0x5a4/+0x5a8**
-_CmdDelay/_Resend command-timing values. Globals: `0x648d08` (OnMultiOptions guard),
-`0x648d04` (OnMultiPause guard), `0x648ce0` (shared flag cleared by all three). The
+_CmdDelay/_Resend command-timing values. Globals: `0x648d08` (ShowMultiplayerOptionsDialog guard),
+`0x648d04` (ShowMultiplayerPauseDialog guard), `0x648ce0` (message-edit HWND cleared by all three). The
 game-manager singleton @0x64556c holds a `RegistryHelper*` @+0x38. Multiplayer dispatcher
 @0x4bc250 (`__stdcall`); command callbacks @0x4bda70/0x4bd850/0x4bddd0; HandleVersionCheck
-@0xbd0b0, OnDropPlayer @0xbc110 byte-exact.
+@0xbd0b0, ShowDropPlayerDialog @0xbc110 byte-exact.
 
 ---
 

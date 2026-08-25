@@ -18,9 +18,9 @@ i32 g_wap32FrameDelta = 0;
 DATA(0x00253c78)
 i32 g_wap32ClockReset = 0;
 DATA(0x00253c7c)
-i32 g_wap32Run7c = 0;
+i32 g_gameAppTimerRemainingMs = 0;
 DATA(0x00253c80)
-i32 g_wap32Run80 = 0;
+i32 g_gameAppTimerPeriodMs = 0;
 
 #define FREE_GAME_MANAGER                                                                          \
     if (m_gameMgr) {                                                                               \
@@ -151,7 +151,7 @@ i32 CGameApp::Init(
     memset(&gi, 0, sizeof(gi));
     gi.hInstance = hInstance;
     gi.size = sizeof(GameInfo);
-    gi.windowClassFlags = windowClassFlags;
+    gi.windowClassFlags = static_cast<GameWindowFlags>(windowClassFlags);
     gi.windowWidth = windowWidth;
     gi.windowHeight = windowHeight;
     if (szWindowName) {
@@ -190,7 +190,7 @@ i32 CGameApp::RunMessageLoop() {
     }
 
     for (;;) {
-        if (PeekMessageA(&msg, NULL, 0, 0, 1)) {
+        if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
             do {
                 if (msg.message == WM_QUIT) {
                     return 1;
@@ -200,7 +200,7 @@ i32 CGameApp::RunMessageLoop() {
                 }
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);
-            } while (PeekMessageA(&msg, NULL, 0, 0, 1));
+            } while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE));
         }
         OnIdle();
     }
@@ -212,18 +212,18 @@ void CGameApp::InitializeDefaultWindowClass() {
     memset(&m_wc, 0, sizeof(m_wc));
 
     HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
-    if (m_gameInfo.windowClassFlags & 1) {
+    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         hCursor = LoadCursorA(NULL, IDC_ARROW);
     }
 
-    m_wc.style = 8;
+    m_wc.style = CS_DBLCLKS;
     m_wc.lpfnWndProc = GameWindowProc;
     m_wc.cbClsExtra = 0;
     m_wc.cbWndExtra = 0;
     m_wc.hInstance = m_hInstance;
     m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
     m_wc.hCursor = hCursor;
-    m_wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(4));
+    m_wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
     m_wc.lpszMenuName = NULL;
     m_wc.lpszClassName = m_gameInfo.szWindowClassName;
 }
@@ -235,12 +235,12 @@ void CGameApp::InitializeDefaultCreateStruct() {
     memset(&m_createStruct, 0, sizeof(m_createStruct));
 
     HMENU hMenu = NULL;
-    if (m_gameInfo.windowClassFlags & 1) {
+    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
     }
 
     i32 x, y;
-    if (m_gameInfo.windowClassFlags & 1) {
+    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         x = COORD_UNSET;
         y = COORD_UNSET;
     } else {
@@ -249,25 +249,25 @@ void CGameApp::InitializeDefaultCreateStruct() {
     }
 
     i32 cx, cy;
-    if (m_gameInfo.windowClassFlags & 1) {
+    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         cx = m_gameInfo.windowWidth;
         cy = m_gameInfo.windowHeight;
     } else {
-        cx = GetSystemMetrics(0);
-        cy = GetSystemMetrics(1);
+        cx = GetSystemMetrics(SM_CXSCREEN);
+        cy = GetSystemMetrics(SM_CYSCREEN);
     }
 
     i32 style;
     DWORD exStyle;
-    if (m_gameInfo.windowClassFlags & 1) {
-        style = 0xcf0000;
-        exStyle = 0x40000;
-        if (m_gameInfo.windowClassFlags & 2) {
-            style = 0xca0000;
+    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
+        style = WS_OVERLAPPEDWINDOW;
+        exStyle = WS_EX_APPWINDOW;
+        if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_FIXED_SIZE)) {
+            style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
         }
     } else {
-        style = 0x80080000;
-        exStyle = 0x40008;
+        style = WS_POPUP | WS_SYSMENU;
+        exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
     }
 
     m_createStruct.style = style;
@@ -357,8 +357,8 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_pacingGate = 0;
     InitTimeFields(1);
     InitializeTimeGlobal();
-    g_wap32Run80 = 0x64;
-    g_wap32Run7c = 0x64;
+    g_gameAppTimerPeriodMs = GAMEAPP_PERIODIC_TIMER_MS;
+    g_gameAppTimerRemainingMs = GAMEAPP_PERIODIC_TIMER_MS;
     return 1;
 }
 
@@ -375,13 +375,13 @@ i32 CGameMgr::PerFrameTick() {
     u32 delta = now - static_cast<u32>(g_wap32Now);
     g_wap32Now = now;
     g_wap32FrameDelta = delta;
-    u32 run7c = static_cast<u32>(g_wap32Run7c);
-    if (run7c == 0) {
-        g_wap32Run7c = g_wap32Run80;
-    } else if (delta >= run7c) {
-        g_wap32Run7c = 0;
+    u32 timerRemainingMs = static_cast<u32>(g_gameAppTimerRemainingMs);
+    if (timerRemainingMs == 0) {
+        g_gameAppTimerRemainingMs = g_gameAppTimerPeriodMs;
+    } else if (delta >= timerRemainingMs) {
+        g_gameAppTimerRemainingMs = 0;
     } else {
-        g_wap32Run7c = run7c - delta;
+        g_gameAppTimerRemainingMs = timerRemainingMs - delta;
     }
 
     if (m_pacingGate > 0) {
@@ -396,8 +396,9 @@ i32 CGameMgr::PerFrameTick() {
 
     u32 count = m_frameCounter + 1;
     m_frameCounter = count;
-    if (static_cast<u32>(g_wap32Now) - static_cast<u32>(m_windowStartTick) >= 0x7d0) {
-        m_fps = count >> 1;
+    if (static_cast<u32>(g_wap32Now) - static_cast<u32>(m_windowStartTick)
+        >= GAMEAPP_FPS_SAMPLE_INTERVAL_MS) {
+        m_fps = count / GAMEAPP_FPS_SAMPLE_SECONDS;
         InitTimeFields(0);
     }
     return 1;
@@ -408,7 +409,7 @@ void CGameMgr::InitTimeFields(i32 reset) {
     m_frameCounter = 0;
     m_windowStartTick = timeGetTime();
     if (reset) {
-        m_fps = -1;
+        m_fps = GAMEAPP_FPS_UNAVAILABLE;
     }
 }
 
@@ -435,7 +436,7 @@ RVA(0x0013dee0, 0x1b)
 void CGameMgr::SetFrameRate(i32 fps) {
     m_pacingGate = fps;
     if (fps > 0) {
-        m_frameBudgetMs = 1000 / fps;
+        m_frameBudgetMs = MILLIS_PER_SECOND / fps;
     }
 }
 
@@ -457,20 +458,20 @@ RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {
         SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;
-        while (!(static_cast<i32>(gaks(vk)) & 0x80000000))
+        while (!(static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN))
             ;
-        while (static_cast<i32>(gaks(vk)) & 0x80000000)
+        while (static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN)
             ;
     } else {
         DWORD(WINAPI * tgt)(void) = timeGetTime;
         u32 deadline = tgt() + timeoutMs;
         SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;
-        while (!(static_cast<i32>(gaks(vk)) & 0x80000000)) {
+        while (!(static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN)) {
             if (tgt() > deadline) {
                 return;
             }
         }
-        while (static_cast<i32>(gaks(vk)) & 0x80000000) {
+        while (static_cast<i32>(gaks(vk)) & ASYNC_KEYSTATE_DOWN) {
             if (tgt() > deadline) {
                 return;
             }

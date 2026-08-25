@@ -339,7 +339,7 @@ RVA(0x000dbc80, 0x309)
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
-        if (m_mgr->m_isBattlezLevel != 0) {
+        if (m_mgr->m_isBuiltInBattlezLevel != 0) {
             CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
             CRezArchiveEntry* node = m_gameResources->FindEntryByPath(key, REZ_TAG_WWD);
             if (node == NULL) {
@@ -348,7 +348,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             if (m_world->m_level->LoadFromSource(node) == 0) {
                 return 0;
             }
-        } else if (m_mgr->m_isMultiLevel != 0) {
+        } else if (m_mgr->m_isBuiltInMultiplayerLevel != 0) {
             CString key = "MULTI_" + m_mgr->GetWorldFileName();
             CRezArchiveEntry* node = m_gameResources->FindEntryByPath(key, REZ_TAG_WWD);
             if (node == NULL) {
@@ -679,7 +679,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             m_world->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_");
             g_resourceInstallActive = 0;
             if (finishGate != NULL) {
-                finishGate->AckJoinFailure();
+                finishGate->SendLobbyKeepAlive();
             }
         }
         if (m_world->m_soundRegistry->HasWithPrefix("GRUNTZ_" + name) == 0) {
@@ -706,7 +706,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (m_world->m_imageRegistry->HasWithPrefix("GRUNTZ_" + name)) {
         m_world->m_imageRegistry->RemoveWithPrefix("GRUNTZ_" + name, "_");
         if (finishGate != NULL) {
-            finishGate->AckJoinFailure();
+            finishGate->SendLobbyKeepAlive();
         }
     }
     if (m_world->m_soundRegistry->HasWithPrefix("GRUNTZ_" + name)) {
@@ -799,7 +799,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
@@ -810,7 +810,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
@@ -821,7 +821,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
@@ -832,7 +832,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
@@ -843,7 +843,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
@@ -854,7 +854,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
@@ -865,7 +865,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
         }
         self->m_world->m_imageRegistry->InstallTree(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     g_resourceInstallActive = 0;
@@ -911,7 +911,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
                 ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
@@ -922,7 +922,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
                 ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
@@ -933,7 +933,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
                 ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!(static_cast<SoundCueRegistry*>(self->m_world->m_soundRegistry))
@@ -944,7 +944,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
                 ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     return 1;
@@ -964,7 +964,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_DEATHZ")) {
@@ -975,7 +975,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_ENTRANCEZ")) {
@@ -986,7 +986,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_EXITZ")) {
@@ -997,7 +997,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_EXITZ", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_GRUNTPUDDLE")) {
@@ -1008,7 +1008,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_PICKUPS")) {
@@ -1019,7 +1019,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     if (!self->m_world->m_animRegistry->HasWithPrefix("GRUNTZ_BOMBGRUNT")) {
@@ -1030,7 +1030,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         self->m_world->m_animRegistry
             ->LoadFromTree(static_cast<CRezArchiveDir*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            notify->AckJoinFailure();
+            notify->SendLobbyKeepAlive();
         }
     }
     return 1;

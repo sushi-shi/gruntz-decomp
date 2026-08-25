@@ -7,8 +7,13 @@
 
 inline void FlipFrontAndRestoreOverlay(CDDrawSubMgrPages* pages) {
     pages->m_frontPair->m_surface->Flip(0);
-    pages->m_backPair->m_surface
-        ->BltFast(0, 0, pages->m_overlayPair->m_surface, &pages->m_overlayPair->m_srcRect, 0x10);
+    pages->m_backPair->m_surface->BltFast(
+        0,
+        0,
+        pages->m_overlayPair->m_surface,
+        &pages->m_overlayPair->m_srcRect,
+        DDBLTFAST_WAIT
+    );
 }
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGRPAGESINLINE_H

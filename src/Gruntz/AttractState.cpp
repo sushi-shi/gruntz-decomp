@@ -167,7 +167,7 @@ i32 CAttract::Render() {
 
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
-        if (g_actorList->m_items[i]->m_pressedButtons & 0x100) {
+        if (g_actorList->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
             PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         }

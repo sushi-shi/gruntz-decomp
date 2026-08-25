@@ -18,6 +18,7 @@ class CString;
 struct HWND__;
 struct tagMEASUREITEMSTRUCT;
 struct tagDRAWITEMSTRUCT;
+GZ_ENUM_FORWARD(CustomMapSelection);
 
 // Resource control ids of the player-slot dialog template, shared by the
 // Battlez setup dialog (CBattlezDlg) and the multiplayer start dialog
@@ -282,7 +283,7 @@ public:
 
     CLatencyList* m_latencyOptions;
     char m_pad64[8];
-    i32 m_customWorldFlag;
+    CustomMapSelection m_customMapSelection;
     CString m_worldName;
     CStringList m_reserved74;
 };

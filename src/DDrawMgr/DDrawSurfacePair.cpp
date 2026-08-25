@@ -63,7 +63,11 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
         CDDrawWorkerBase* child = static_cast<CDDrawWorkerBase*>(m_workers.GetNext(pos));
         child->RenderFrame(backBuffer, overlay);
         child->m_refCount--;
-        if ((overlay->m_surface != NULL && (overlay->m_flags & 0x20000) == 0)
+        if ((overlay->m_surface != NULL
+             && !HAS(
+                 static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
+                 SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
+             ))
             || child->m_refCount <= 0) {
             m_workers.RemoveAt(cur);
             if (child) {
@@ -94,7 +98,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
     if (w <= 0 || h <= 0) {
 
-        if (m_id == 1) {
+        if (m_id == IDX(DDRAW_PAGE_BACK)) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
                 OwnerMgr()->m_lastError = WORLDERR_FRONT_DIMENSIONS;
             }
@@ -105,7 +109,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    i32 kind = m_id;
+    DDrawPageKind kind = static_cast<DDrawPageKind>(m_id);
 
     m_width = w;
     m_height = h;
@@ -115,10 +119,12 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     rect->top = 0;
     rect->right = w;
     rect->bottom = h;
-    if (kind == 1) {
+    if (kind == DDRAW_PAGE_BACK) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface =
-            mgr->m_deviceManager->WrapAttachedSurface(mgr->m_drawTarget->m_frontPair->m_surface, 4);
+        m_surface = mgr->m_deviceManager->WrapAttachedSurface(
+            mgr->m_drawTarget->m_frontPair->m_surface,
+            DDSCAPS_BACKBUFFER
+        );
         if (m_surface == NULL) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
                 OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE_COPY;
@@ -126,8 +132,8 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
             return 0;
         }
     }
-    if (m_id != 1) {
-        if (m_flags & 0x10000) {
+    if (m_id != IDX(DDRAW_PAGE_BACK)) {
+        if (HAS(static_cast<DDrawSurfacePairFlags>(m_flags), SURFACEPAIR_SYSTEM_MEMORY)) {
             m_surface = OwnerMgr()->m_deviceManager->CreateOffscreenSurface(w, h, BPP_UNSET, 0, -1);
         } else {
             m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
@@ -341,7 +347,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
             DDSCAPS caps;
             if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
-                sysmem = 0x800 & caps.dwCaps;
+                sysmem = DDSCAPS_SYSTEMMEMORY & caps.dwCaps;
             } else {
                 sysmem = 0;
             }
@@ -352,13 +358,13 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = mgr->m_deviceManager->WrapAttachedSurface(
                 mgr->m_drawTarget->m_frontPair->m_surface,
-                4
+                DDSCAPS_BACKBUFFER
             );
             if (m_surface == NULL) {
                 return 0;
             }
         }
-        if (m_id != 1) {
+        if (m_id != IDX(DDRAW_PAGE_BACK)) {
             if (sysmem != 0) {
                 m_surface = OwnerMgr()->m_deviceManager->CreateOffscreenSurface(w, h, bpp, 0, -1);
             } else {
@@ -399,7 +405,7 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0xffffff);
-    DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
+    DrawTextA(hdc, buf, strlen(buf), rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     w->m_ddSurface->ReleaseDC(hdc);
 }
 
@@ -416,7 +422,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0xffffff);
-    DrawTextA(hdc, text, strlen(text), rc, 0x25);
+    DrawTextA(hdc, text, strlen(text), rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     w->m_ddSurface->ReleaseDC(hdc);
 }
 
@@ -433,12 +439,13 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     m_height = h;
     m_bpp = bpp;
     CDDrawDeviceManager* deviceManager = surfaceManager->m_deviceManager;
-    i32 mode = 0x11;
+    i32 mode = DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE;
     if (w <= 0x140) {
-        mode = 0x51;
+        mode |= DDSCL_ALLOWMODEX;
     }
     i32 hr;
-    if (surfaceManager->m_flags & 0x10) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(surfaceManager->m_flags),
+            SURFACEMGR_EMULATION_ONLY)) {
 
         // DirectDrawCreate takes its two emulation selectors AS the lpGUID.
         AddrWord<GUID> emulationOnly;
@@ -497,7 +504,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     }
     CDDrawSurfaceMgr* m2 = OwnerMgr();
     i32 amode = 1;
-    if (m2->m_flags & 2) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(m2->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         amode = 2;
     }
     CDDSurface* surf = deviceManager->Create24BitPrimarySurface(amode);
@@ -548,7 +555,7 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         return 0;
     }
     i32 amode = 1;
-    if (OwnerMgr()->m_flags & 2) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         amode = 2;
     }
     m_surface = manager->Create24BitPrimarySurface(amode);
@@ -1012,7 +1019,7 @@ i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 f
 RVA(0x00165620, 0x101)
 i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
     CFile fr;
-    if (fr.Open(filename, 0, NULL) == 0) {
+    if (fr.Open(filename, CFile::modeRead, NULL) == 0) {
         return 0;
     }
     u32 size = fr.GetLength();
@@ -1227,7 +1234,7 @@ i32 CFileMem::Open() {
 
     if (WantRead()) {
         CFile* io = &m_file;
-        if (!io->Open(m_name, 0, NULL)) {
+        if (!io->Open(m_name, CFile::modeRead, NULL)) {
             return 0;
         }
         m_length = io->GetLength();
@@ -1236,7 +1243,7 @@ i32 CFileMem::Open() {
     }
 
     CFile* out = &m_file;
-    if (!out->Open(m_name, 0x1001, NULL)) {
+    if (!out->Open(m_name, CFile::modeCreate | CFile::modeWrite, NULL)) {
         return 0;
     }
     m_length = 0;
@@ -1326,7 +1333,11 @@ i32 CDDrawWorkerB::ResolveFrame(const char* workerName, i32 frameIndex) {
 RVA(0x001660b0, 0x33)
 void CDDrawWorkerB::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     m_frame->RenderImage(this, backBuffer);
-    if (overlay->m_surface != NULL && (overlay->m_flags & 0x20000) == 0) {
+    if (overlay->m_surface != NULL
+        && !HAS(
+            static_cast<DDrawSurfacePairFlags>(overlay->m_flags),
+            SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER
+        )) {
         m_frame->RenderImage(this, overlay);
     }
 }

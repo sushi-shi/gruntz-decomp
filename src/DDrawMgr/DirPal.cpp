@@ -81,7 +81,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     Bmp256Info info;
     CFile file;
-    if (file.Open(filename, 0, NULL) == 0) {
+    if (file.Open(filename, CFile::modeRead, NULL) == 0) {
         return 0;
     }
     if (file.Read(&hdr, sizeof(hdr)) != sizeof(hdr)) {
@@ -108,10 +108,10 @@ i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
     CFile file;
-    if (file.Open(filename, 0, NULL) == 0) {
+    if (file.Open(filename, CFile::modeRead, NULL) == 0) {
         return 0;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
     if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
@@ -137,7 +137,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
     CFile file;
-    if (file.Open(filename, 0, NULL) == 0) {
+    if (file.Open(filename, CFile::modeRead, NULL) == 0) {
         return 0;
     }
     if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
@@ -530,7 +530,7 @@ i32 CDDPalette::CaptureSystemPalette() {
         i32 half = GetDeviceCaps(hdc, NUMRESERVED) / 2;
         LogPal256 lp;
         lp.palVersion = LOGICAL_PALETTE_VERSION;
-        lp.palNumEntries = 0x100;
+        lp.palNumEntries = PALETTE_ENTRY_COUNT;
         if (GetSystemPaletteEntries(hdc, 0, half, lp.palPalEntry)
             && GetSystemPaletteEntries(
                 hdc,
@@ -552,7 +552,7 @@ i32 CDDPalette::CaptureSystemPalette() {
                     dest[i].peGreen = lp.palPalEntry[i].peGreen;
                     dest[i].peBlue = lp.palPalEntry[i].peBlue;
                 }
-                i32 rc = SetAndNotify(0, 0x100, dest, 0);
+                i32 rc = SetAndNotify(0, PALETTE_ENTRY_COUNT, dest, 0);
                 if (rc == 0) {
                     return 1;
                 }
@@ -571,12 +571,12 @@ i32 BlackoutSystemPalette() {
     if (hdc != NULL) {
         LogPal256 lp;
         lp.palVersion = LOGICAL_PALETTE_VERSION;
-        lp.palNumEntries = 0x100;
+        lp.palNumEntries = PALETTE_ENTRY_COUNT;
         for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             lp.palPalEntry[i].peRed = 0;
             lp.palPalEntry[i].peGreen = 0;
             lp.palPalEntry[i].peBlue = 0;
-            lp.palPalEntry[i].peFlags = 4;
+            lp.palPalEntry[i].peFlags = PC_NOCOLLAPSE;
         }
         HPALETTE hpal = CreatePalette(&lp.m_lp);
         if (hpal != NULL) {

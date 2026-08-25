@@ -102,7 +102,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (static_cast<i64>(g_frameTime) - m_timerBase < m_timerWindow) {
             goto done;
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_pendingFx != NULL) {
+        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
             goto done;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
@@ -112,7 +112,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
     {
         CPlay* obj = static_cast<CPlay*>(g_gameReg->m_curState);
-        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
                 GruntzPlayer* lastSlot = pslot;
@@ -171,13 +171,13 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (m_overlay) {
             m_overlay->RefreshIfActive(deltaMs);
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
+        if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
             if (obj->m_winLoseBanner != 0 && m_unitCountByPlayer[g_curPlayer] == 0) {
                 LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
         }
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             if (m_unitCountByPlayer[g_curPlayer] != 0) {
                 goto done;
             }

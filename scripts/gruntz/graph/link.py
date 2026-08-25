@@ -83,7 +83,7 @@ ENTRY = "WinMainCRTStartup"
 #: the CRT/MFC code, which is what a LATER archive on the link line looks like.
 ENGINE_MODULES = {"DDrawMgr", "DinMgr2", "Dsndmgr", "Image", "Bute", "Rez",
                   "Wwd", "Utils", "Crypto", "Font"}
-ZLIB_UNITS = {"uncompr", "wapuncompress", "inflate", "deflate", "infblock",
+ZLIB_UNITS = {"uncompr", "wapcompress", "inflate", "deflate", "infblock",
               "adler32", "zutil", "trees", "inftrees", "infcodes", "infutil",
               "inffast"}
 TAIL_UNITS = {"bitarraystream", "butetree", "projactcache", "bitarray"}

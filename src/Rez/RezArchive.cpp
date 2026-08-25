@@ -738,6 +738,11 @@ i32 CRezArchiveDir::ReadDirectoryTree(
     return success;
 }
 
+GZ_ENUM_BEGIN(RezDirectoryRecordKind)
+    REZ_DIRECTORY_RECORD_RESOURCE = 0,
+    REZ_DIRECTORY_RECORD_SUBDIRECTORY = 1
+GZ_ENUM_END(RezDirectoryRecordKind)
+
 RVA(0x0013a640, 0x2f7)
 i32 CRezArchiveDir::ReadDirectoryBody(
     CRezItmBase* storage,
@@ -759,14 +764,16 @@ i32 CRezArchiveDir::ReadDirectoryBody(
     char* cursor = body;
     char* end = body + bodySize;
     while (cursor < end) {
-        if (ReadPackedI32(cursor) == 1) {
-            cursor += 4;
+        RezDirectoryRecordKind recordKind =
+            static_cast<RezDirectoryRecordKind>(ReadPackedI32(cursor));
+        if (recordKind == REZ_DIRECTORY_RECORD_SUBDIRECTORY) {
+            cursor += sizeof(i32);
             i32 childBodyOffset = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 childBodySize = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 childTime = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             char* name = cursor;
             cursor += strlen(name) + 1;
             CHashB* subdirectories = &m_subdirectories;
@@ -791,19 +798,19 @@ i32 CRezArchiveDir::ReadDirectoryBody(
             }
         } else {
 
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 dataOffset = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 size = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 time = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 resourceId = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 typeTag = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             i32 keyCount = ReadPackedI32(cursor);
-            cursor += 4;
+            cursor += sizeof(i32);
             char* name = cursor;
             cursor += strlen(name) + 1;
             CRezArchiveType* type = FindOrCreateType(typeTag);
@@ -826,7 +833,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
                 keys = new i32[keyCount];
                 for (u32 keyIndex = 0; keyIndex < static_cast<u32>(keyCount); keyIndex++) {
                     keys[keyIndex] = ReadPackedI32(cursor);
-                    cursor += 4;
+                    cursor += sizeof(i32);
                 }
             } else {
                 keys = NULL;
@@ -889,6 +896,21 @@ CRezArchiveType* CRezArchiveDir::FindOrCreateType(i32 typeTag) {
     return type;
 }
 
+GZ_ENUM_BEGIN(RezArchiveVersion)
+    REZ_ARCHIVE_VERSION_NONE = 0,
+    REZ_ARCHIVE_VERSION_1 = 1
+GZ_ENUM_END(RezArchiveVersion)
+
+GZ_ENUM_CONST_BEGIN(RezArchiveDefaults)
+    REZ_ARCHIVE_FIRST_GENERATED_RESOURCE_ID = 2000000000,
+    REZ_ARCHIVE_DEFAULT_MAX_OPEN_FILES = 3,
+    REZ_ARCHIVE_DEFAULT_RESOURCE_NAME_BUCKET_COUNT = 19,
+    REZ_ARCHIVE_DEFAULT_RESOURCE_ID_BUCKET_COUNT = 19,
+    REZ_ARCHIVE_DEFAULT_SUBDIRECTORY_BUCKET_COUNT = 5,
+    REZ_ARCHIVE_DEFAULT_TYPE_BUCKET_COUNT = 9,
+    REZ_ARCHIVE_DEFAULT_ENTRIES_PER_POOL_BLOCK = 100
+GZ_ENUM_CONST_END(RezArchiveDefaults)
+
 RVA(0x0013aa10, 0xdc)
 CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_isOpen = 0;
@@ -899,7 +921,7 @@ CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_rootDirectory = NULL;
     m_archiveTime = 0;
     m_isNewArchive = false;
-    m_version = 0;
+    m_version = REZ_ARCHIVE_VERSION_NONE;
     m_largestKeyArrayLength = 0;
     m_largestDirectoryNameSize = 0;
     m_largestResourceNameSize = 0;
@@ -908,16 +930,16 @@ CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_pathDelimiters = NULL;
     m_caseSensitive = 0;
     m_useIdIndex = 0;
-    m_resourceNameBucketCount = 0x13;
-    m_resourceIdBucketCount = 0x13;
+    m_resourceNameBucketCount = REZ_ARCHIVE_DEFAULT_RESOURCE_NAME_BUCKET_COUNT;
+    m_resourceIdBucketCount = REZ_ARCHIVE_DEFAULT_RESOURCE_ID_BUCKET_COUNT;
     m_reserved24 = 1;
-    m_nextGeneratedResourceId = 0x77359400;
+    m_nextGeneratedResourceId = REZ_ARCHIVE_FIRST_GENERATED_RESOURCE_ID;
     m_readOnly = 1;
     m_isDataContiguous = 1;
-    m_maxOpenFiles = 3;
-    m_subdirectoryBucketCount = 5;
-    m_typeBucketCount = 9;
-    m_entriesPerPoolBlock = 0x64;
+    m_maxOpenFiles = REZ_ARCHIVE_DEFAULT_MAX_OPEN_FILES;
+    m_subdirectoryBucketCount = REZ_ARCHIVE_DEFAULT_SUBDIRECTORY_BUCKET_COUNT;
+    m_typeBucketCount = REZ_ARCHIVE_DEFAULT_TYPE_BUCKET_COUNT;
+    m_entriesPerPoolBlock = REZ_ARCHIVE_DEFAULT_ENTRIES_PER_POOL_BLOCK;
 }
 
 // @dead-code
@@ -968,7 +990,7 @@ CRezArchive::~CRezArchive() {
     m_rootDirectory = NULL;
     m_archiveTime = 0;
     m_isNewArchive = false;
-    m_version = 1;
+    m_version = REZ_ARCHIVE_VERSION_1;
     m_largestKeyArrayLength = 0;
     m_largestDirectoryNameSize = 0;
     m_largestResourceNameSize = 0;
@@ -1065,7 +1087,7 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
     }
 
     RezArchiveHeader header;
-    storage->Read(0, 0, 0xa8, &header);
+    storage->Read(0, 0, sizeof(header), &header);
     m_version = header.m_version;
     m_rootDirectoryOffset = header.m_rootDirectoryOffset;
     m_rootDirectorySize = header.m_rootDirectorySize;
@@ -1088,7 +1110,7 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
     if (header.m_dosEndMarker != REZ_ARCHIVE_MAGIC_EOF) {
         return 0;
     }
-    if (header.m_version != 1) {
+    if (header.m_version != REZ_ARCHIVE_VERSION_1) {
         return 0;
     }
     CRezArchiveDir* rootDirectory = new CRezArchiveDir(
@@ -1150,7 +1172,7 @@ i32 CRezArchive::MergeArchive(char* path, i32 replaceExisting) {
     }
 
     RezArchiveHeader header;
-    storage->Read(0, 0, 0xa8, &header);
+    storage->Read(0, 0, sizeof(header), &header);
     u32 mergedMaximum;
     mergedMaximum = header.m_largestKeyArrayLength;
     if (mergedMaximum > m_largestKeyArrayLength) {

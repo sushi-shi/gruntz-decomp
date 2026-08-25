@@ -80,8 +80,12 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     Snapshot(static_cast<HWND>(window));
 
     if (mode->bpp == BPP_PALETTED_8) {
-        if (m_directDraw2
-                ->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, NULL)
+        if (m_directDraw2->CreatePalette(
+                DDPCAPS_8BIT,
+                static_cast<LPPALETTEENTRY>(m_palEntries),
+                &m_palette,
+                NULL
+            )
             != 0) {
             HandleError();
             return 0;
@@ -118,20 +122,20 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017c2a0, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
-    CString cls(AfxRegisterWndClass(3, NULL, NULL, NULL));
+    CString cls(AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, NULL, NULL, NULL));
     if (m_videoWnd != NULL) {
         return 0;
     }
     m_videoWnd = new CWnd;
     if (!m_videoWnd->CreateEx(
-            8,
+            WS_EX_TOPMOST,
             cls,
             "Smacker Video Window",
-            0x90000000,
+            WS_POPUP | WS_VISIBLE,
             0,
             0,
-            GetSystemMetrics(0),
-            GetSystemMetrics(1),
+            GetSystemMetrics(SM_CXSCREEN),
+            GetSystemMetrics(SM_CYSCREEN),
             NULL,
             NULL,
             NULL
@@ -416,7 +420,7 @@ RVA(0x0017ca10, 0x49)
 void CMoviePlayer::UploadPalette() {
     u8* src = m_smackHandle->Palette;
     u8* p = &m_palEntries[0].peGreen;
-    i32 n = 0x100;
+    i32 n = PALETTE_ENTRY_COUNT;
     do {
         p[-1] = *src++;
         p[0] = *src++;
@@ -486,7 +490,7 @@ afterLock:
 
 RVA(0x0017cbe0, 0x97)
 i32 CMoviePlayer::CheckGrid() {
-    memset(&m_srcDesc, 0, 0x6c);
+    memset(&m_srcDesc, 0, sizeof(m_srcDesc));
     m_srcDesc.dwSize = sizeof(m_srcDesc);
     m_srcDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     m_srcDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
@@ -522,14 +526,14 @@ void CMoviePlayer::HandleError() {
     if (m_primary) {
         DDBLTFX fx;
         memset(&fx, 0, sizeof(fx));
-        fx.dwSize = 0x64;
-        fx.dwROP = 0x42;
-        HRESULT rc = m_primary->Blt(NULL, NULL, NULL, 0x1020000, &fx);
+        fx.dwSize = sizeof(fx);
+        fx.dwROP = BLACKNESS;
+        HRESULT rc = m_primary->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_ROP, &fx);
         if (rc) {
             memset(&fx, 0, sizeof(fx));
-            fx.dwSize = 0x64;
+            fx.dwSize = sizeof(fx);
             fx.dwFillColor = 0;
-            m_primary->Blt(NULL, NULL, NULL, 0x1000400, &fx);
+            m_primary->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
         }
     }
     if (m_borrowedDisplayResources == 0) {
@@ -565,7 +569,7 @@ void CMoviePlayer::Snapshot(HWND hWnd) {
         m_palEntries[i].peRed = 0;
         m_palEntries[i].peBlue = 0;
         m_palEntries[i].peGreen = 0;
-        m_palEntries[i].peFlags = 4;
+        m_palEntries[i].peFlags = PC_NOCOLLAPSE;
     }
     ReleaseDC(hWnd, hdc);
 }
@@ -592,7 +596,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     for (;;) {
         i32 hr;
         if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == NULL) {
-            hr = m_primary->BltFast(dst.left, dst.top, m_srcSurf, &src, 0x10);
+            hr = m_primary->BltFast(dst.left, dst.top, m_srcSurf, &src, DDBLTFAST_WAIT);
             if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                 return hr;
             }
@@ -613,7 +617,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
                 }
             }
         } else {
-            hr = m_primary->Blt(&dst, m_srcSurf, &src, 0x1000000, NULL);
+            hr = m_primary->Blt(&dst, m_srcSurf, &src, DDBLT_WAIT, NULL);
             if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                 return hr;
             }
@@ -770,7 +774,7 @@ i32 CMoviePlayer::CheckMode16() {
     DDSURFACEDESC desc;
 
     memset(&desc, 0, sizeof(desc));
-    desc.dwSize = 0x6c;
+    desc.dwSize = sizeof(desc);
     if (m_directDraw2->GetDisplayMode(&desc) != 0) {
         return 0;
     }
@@ -944,15 +948,15 @@ MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
                 DDBLTFX fx;
                 memset(&fx, 0, sizeof(fx));
                 fx.dwSize = sizeof(fx);
-                fx.dwROP = 0x42;
+                fx.dwROP = BLACKNESS;
                 i32 hr = (static_cast<IDirectDrawSurface*>(m_primary))
-                             ->Blt(NULL, NULL, NULL, 0x1020000, &fx);
+                             ->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_ROP, &fx);
                 if (hr != 0) {
                     memset(&fx, 0, sizeof(fx));
                     fx.dwSize = sizeof(fx);
                     fx.dwFillColor = 0;
                     (static_cast<IDirectDrawSurface*>(m_primary))
-                        ->Blt(NULL, NULL, NULL, 0x1000400, &fx);
+                        ->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
                 }
             }
             CloseSmacker();

@@ -441,7 +441,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             } else {
                 if (m_moveKind == 0) {
                     i32 md = 3;
-                    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                         md = 6;
                     }
                     m_moveKind = GetRandom(1, md);
@@ -820,7 +820,7 @@ i32 CGrunt::ResolveEntranceArrival() {
     if (static_cast<i64>(g_frameTime) - m_idleTimer >= m_idleWindow) {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->m_gameMode;
-        if (mode != GAMEMODE_SINGLE) {
+        if (mode != GAMEMODE_QUESTZ) {
             GruntzPlayer* slot = &g->m_players[m_playerIndex];
             if (slot != NULL && slot->m_humanControlled != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == GAMEMODE_MULTIPLAYER
@@ -1533,7 +1533,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         m_moveVariant = variant;
         if (variant == 0) {
             i32 n = 3;
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                 n = 6;
             }
             m_moveVariant = GetRandom(1, n);

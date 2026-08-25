@@ -40,7 +40,7 @@ public:
     void Clear();
     i32 Reset();
 
-    i32 SwapChannel(ColorTint channel);
+    i32 TrySetColor(ColorTint color);
     i32 ClearRoundState();
     RVA(0x0001f450, 0x20)
     CString GetName() {
@@ -52,7 +52,7 @@ public:
 
     i32 m_playerIndex;
     CString m_name;
-    ColorTint m_colorIndex;
+    ColorTint m_color;
 
     i32 m_warlordObjectId;
     BattlezDifficulty m_difficulty;
@@ -65,7 +65,7 @@ public:
     i32 m_joined;
     i32 m_doneFlag;
 
-    i32 m_presenceCounted;
+    i32 m_optionsPresenceCounted;
     char m_pad034[0x38 - 0x34];
 
     CBattlezMapConfig m_battlezConfig;

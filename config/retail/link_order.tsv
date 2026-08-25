@@ -292,7 +292,7 @@
 282	debugprintf	0x00184ba0	0x001851d3	lib	Rez	14	position,xcu:1493
 283	rezlist	0x001851e0	0x00185315	lib	Rez	5	position
 284	uncompr	0x00185320	0x00185320	lib	vendor	1	position	extent-fallback
-285	wapuncompress	0x001853b0	0x00185456	lib	Wap32	1	position
+285	wapcompress	0x001853b0	0x00185456	lib	Wap32	1	position
 286	menuitem	0x00185460	0x00185a0e	lib	Gruntz	20	position
 287	inflate	0x00185a10	0x001860a0	lib	vendor	7	position	extent-fallback
 288	deflate	0x00186180	0x00187170	lib	vendor	17	position	extent-fallback

@@ -54,8 +54,8 @@ RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
     m_frontPair = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
-    m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
-    m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
+    m_backPair = new CDDrawSurfacePair(m_ownerCtx, IDX(DDRAW_PAGE_BACK), 0);
+    m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, IDX(DDRAW_PAGE_OVERLAY), 0);
 
     if (m_frontPair->SetGeometry(w, h, bpp) == BPP_UNSET) {
         if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
@@ -69,7 +69,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    if (!(flags & 1)) {
+    if (!HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SKIP_OVERLAY)) {
         if (m_overlayPair->Create(w, h, bpp, 0) == BPP_UNSET) {
             if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
                 OwnerMgr()->m_lastError = WORLDERR_OVERLAY_SURFACE;
@@ -235,7 +235,7 @@ void CDDrawSubMgrPages::ClearAllPages(u32 color) {
     m_frontPair->m_surface->Flip(NULL);
     m_backPair->m_surface->Fill(color);
     m_frontPair->m_surface->Flip(NULL);
-    if (OwnerMgr()->m_flags & 2) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         m_backPair->m_surface->Fill(color);
         m_frontPair->m_surface->Flip(NULL);
     }
@@ -262,7 +262,8 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
             }
         }
     }
-    if (ok && (OwnerMgr()->m_flags & 2)) {
+    if (ok
+        && HAS(static_cast<DDrawSurfaceMgrFlags>(OwnerMgr()->m_flags), SURFACEMGR_TRIPLE_BUFFER)) {
         m_frontPair->m_surface->Flip(NULL);
         CDDrawSurfacePair* a = m_backPair;
         CDDrawSurfaceChildA* b = m_frontPair;

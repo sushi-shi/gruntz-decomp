@@ -21,7 +21,8 @@ i32 CFileImageSurface::LoadKeyed(
     i32 colorKey
 ) {
 
-    if (CDDSurface::BlitSurf(manager, width, height, bitDepth, caps | 0x40) == BPP_UNSET) {
+    if (CDDSurface::BlitSurf(manager, width, height, bitDepth, caps | DDSCAPS_OFFSCREENPLAIN)
+        == BPP_UNSET) {
         return 0;
     }
     if (colorKey != -1) {
@@ -42,7 +43,7 @@ i32 CFileImageSurface::ResolveEx(
     if (dataSize == 0) {
         return 0;
     }
-    i32 adjustedCaps = surfaceCaps | 0x40;
+    i32 adjustedCaps = surfaceCaps | DDSCAPS_OFFSCREENPLAIN;
     switch (format) {
         case FMT_PID:
             if (!DecodePcxData(
@@ -91,7 +92,7 @@ i32 CFileImageSurface::LoadByExt(
     i32 surfaceCaps,
     i32 colorKey
 ) {
-    surfaceCaps |= 0x40;
+    surfaceCaps |= DDSCAPS_OFFSCREENPLAIN;
     i32 applyColorKey = 1;
     char* ext = strrchr(path, '.');
     if (ext != NULL && _strcmpi(ext, ".BMP") == 0) {
@@ -155,7 +156,7 @@ i32 CDDrawPrimarySurface::CreatePrimary(
 ) {
     memset(m_descWords, 0, sizeof(DDSURFACEDESC));
     m_descSize = sizeof(DDSURFACEDESC);
-    m_surfaceCaps = caps | 0x200;
+    m_surfaceCaps = caps | DDSCAPS_PRIMARYSURFACE;
     m_descFlags = descFlags;
     m_backBufferCount = backBufferCount;
     if (!CDDSurface::CreateFromDesc(manager, NULL)) {

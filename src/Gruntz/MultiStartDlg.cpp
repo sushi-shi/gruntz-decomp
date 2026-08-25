@@ -121,7 +121,7 @@ RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {
     m_gameManager = gameManager;
-    m_customWorldFlag = 0;
+    m_customMapSelection = CUSTOM_MAP_STANDARD;
     m_latencyOptions = NULL;
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
@@ -220,8 +220,9 @@ i32 CMultiStartDlg::RefreshWorldControls() {
         return 0;
     }
     ::SendMessageA(worldCombo->m_hWnd, CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
-    m_customWorldFlag = g_multiState->m_customLevel;
-    if (m_customWorldFlag != 0) {
+    m_customMapSelection =
+        g_multiState->m_usesCustomLevel != 0 ? CUSTOM_MAP_SELECTED : CUSTOM_MAP_STANDARD;
+    if (m_customMapSelection != CUSTOM_MAP_STANDARD) {
         worldEdit->SetWindowTextA(g_multiState->CustomLevelName());
     } else {
         CString currentName;
@@ -345,7 +346,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             char mapName[0x100];
             DWORD size = 0x100;
             reg->GetValueString("LastMultiMap", mapName, &size, "");
-            m_customWorldFlag = IDX(customFlag);
+            m_customMapSelection = customFlag;
             if (customFlag != CUSTOM_MAP_STANDARD) {
                 char path[0x100];
                 sprintf(path, "custom\\%s", mapName);
@@ -357,7 +358,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                         return;
                     }
                     child->SetWindowTextA(mapName);
-                    g_multiState->m_customLevel = 1;
+                    g_multiState->m_usesCustomLevel = 1;
                     g_multiState->m_customLevelName = mapName;
                     g_multiState->m_builtInLevelName = "";
                     fclose(file);
@@ -370,14 +371,14 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                     return;
                 }
                 child->SetWindowTextA(mapName);
-                g_multiState->m_customLevel = 0;
+                g_multiState->m_usesCustomLevel = 0;
                 g_multiState->m_customLevelName = "";
                 g_multiState->m_builtInLevelName = mapName;
             }
         }
         {
             CWnd* chatLog = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
-            g_sharedFlag = (chatLog == NULL) ? NULL : chatLog->m_hWnd;
+            g_netMessageEditHwnd = (chatLog == NULL) ? NULL : chatLog->m_hWnd;
         }
         g_multiState->m_netMgr->m_selectedPlayer = NULL;
         g_multiState->PollSession();
@@ -399,7 +400,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         child->GetWindowTextA(m_worldName);
         if (g_multiState->m_isHost != 0) {
             reg->SetValueString("LastMultiMap", m_worldName);
-            reg->SetValueDword("CustomMultiMap", m_customWorldFlag);
+            reg->SetValueDword("CustomMultiMap", IDX(m_customMapSelection));
         }
         GruntzPlayer* slots = m_gameManager->m_players;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
@@ -605,9 +606,9 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     LRESULT(WINAPI * sendMessage)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0) == 0) {
         if (player->m_humanControlled && player->m_active) {
-            g_multiState->DropChannelPlayer(player->m_playerIndex);
+            g_multiState->DropLobbyPlayer(player->m_playerIndex);
         } else if (!player->m_humanControlled && player->m_active) {
-            ChannelSlots_Set(IDX(player->m_colorIndex), 1);
+            SetPlayerColorAvailable(player->m_color, 1);
         }
         player->m_active = 0;
         player->m_ready = 0;
@@ -618,15 +619,15 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
             != MULTI_PLAYER_HUMAN) {
             if (player->m_humanControlled != 0) {
                 if (player->m_active != 0) {
-                    g_multiState->DropChannelPlayer(player->m_playerIndex);
+                    g_multiState->DropLobbyPlayer(player->m_playerIndex);
                 }
-                i32 freeColor = ChannelSlots_FindFree();
-                player->m_colorIndex = static_cast<ColorTint>(freeColor);
-                ChannelSlots_Set(freeColor, 0);
+                ColorTint freeColor = FindAvailablePlayerColor();
+                player->m_color = freeColor;
+                SetPlayerColorAvailable(freeColor, 0);
             } else if (player->m_active == 0) {
-                i32 freeColor = ChannelSlots_FindFree();
-                player->m_colorIndex = static_cast<ColorTint>(freeColor);
-                ChannelSlots_Set(freeColor, 0);
+                ColorTint freeColor = FindAvailablePlayerColor();
+                player->m_color = freeColor;
+                SetPlayerColorAvailable(freeColor, 0);
             }
             player->m_ready = 1;
             player->m_humanControlled = 0;
@@ -733,7 +734,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[0].m_colorIndex) {
+                switch (m_gameManager->m_players[0].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -794,7 +795,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[1].m_colorIndex) {
+                switch (m_gameManager->m_players[1].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -855,7 +856,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[2].m_colorIndex) {
+                switch (m_gameManager->m_players[2].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -916,7 +917,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[3].m_colorIndex) {
+                switch (m_gameManager->m_players[3].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -1070,11 +1071,11 @@ void CMultiStartDlg::OnCustomWorld() {
         }
         dlg.m_customName.MakeUpper();
         worldEdit->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
-        m_customWorldFlag = 1;
-        g_multiState->m_customLevel = 1;
+        m_customMapSelection = CUSTOM_MAP_SELECTED;
+        g_multiState->m_usesCustomLevel = 1;
         g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
         g_multiState->m_builtInLevelName = "";
-        g_multiState->SaveConfig(NULL);
+        g_multiState->SendGameConfig(NULL);
     }
 }
 
@@ -1088,12 +1089,12 @@ void CMultiStartDlg::CommitWorldSelection() {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
                 if (worldName.GetLength() != 0) {
-                    m_customWorldFlag = 0;
+                    m_customMapSelection = CUSTOM_MAP_STANDARD;
                 }
-                g_multiState->m_customLevel = 0;
+                g_multiState->m_usesCustomLevel = 0;
                 g_multiState->m_customLevelName = "";
                 g_multiState->m_builtInLevelName = static_cast<LPCTSTR>(worldName);
-                g_multiState->SaveConfig(NULL);
+                g_multiState->SendGameConfig(NULL);
             }
         }
     }
@@ -1122,10 +1123,10 @@ RVA(0x000c40b0, 0x42)
 void CMultiStartDlg::BroadcastPlayerSlotChanges() {
     CMulti* multi = g_multiState;
     if (multi->m_isHost != 0) {
-        multi->BroadcastChannelTable(NULL);
+        multi->BroadcastPlayerTable(NULL);
         RefreshPlayerControls(1);
     } else {
-        g_multiState->BroadcastOneChannel(
+        g_multiState->BroadcastPlayerUpdate(
             m_gameManager->FindPlayerByNetworkId(multi->m_localPlayerId)
         );
     }
@@ -1142,7 +1143,7 @@ i32 CMultiStartDlg::EnableChatControls() {
     control = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
     control->EnableWindow(1);
     CString s1;
-    if (g_multiState->m_customLevel == 0) {
+    if (g_multiState->m_usesCustomLevel == 0) {
         CString s2;
     }
     return 1;
@@ -1269,11 +1270,11 @@ void CMultiStartDlg::Watchdog() {
     g_multiState->ResolveLocalPlayer();
     if (g_netStatsTick == 0) {
         u32 timestamp = timeGetTime();
-        g_multiState->SendNetStat(NETMSG_STAT_REQUEST, static_cast<i32>(timestamp), 0);
+        g_multiState->BroadcastValueMessage(NETMSG_LATENCY_PROBE, static_cast<i32>(timestamp), 0);
     }
     if (g_multiState->m_isHost == 0) {
         if (g_netStatsTick == 0) {
-            g_multiState->ReportAckLatency();
+            g_multiState->ReportMaxAckLatency();
         }
         EnableWindow(0);
         i32 verificationResult =
@@ -1360,12 +1361,12 @@ void CMultiStartDlg::Watchdog() {
         ::KillTimer(m_hWnd, 1);
         errorMessage = "This version is not the same as the host computer's version of the game.";
     } else {
-        if (g_playerLeftFlag != 0) {
+        if (g_playerRosterChanged != 0) {
             RefreshPlayerControls(1);
             EnableChatControls();
             RefreshWorldControls();
             RefreshLatencyControl();
-            g_playerLeftFlag = 0;
+            g_playerRosterChanged = 0;
         }
         if (g_multiState->m_connectAccepted != 0) {
             EnableChatControls();
@@ -1394,15 +1395,15 @@ RVA(0x000c4b60, 0x77)
 i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
     GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (g_multiState->m_isHost != 0) {
-        i32 available = ChannelSlots_Get(IDX(color));
+        i32 available = IsPlayerColorAvailable(color);
         if (available == 0) {
             g_multiState->ReportVersionMsg("Someone has already selected that color.", available);
             return 0;
         }
-        ChannelSlots_Set(IDX(player->m_colorIndex), 1);
-        ChannelSlots_Set(IDX(color), 0);
+        SetPlayerColorAvailable(player->m_color, 1);
+        SetPlayerColorAvailable(color, 0);
     }
-    player->m_colorIndex = color;
+    player->m_color = color;
     return 1;
 }
 
@@ -1417,8 +1418,8 @@ void CMultiStartDlg::OnOK() {
     if (&CMulti::GetResendDelay == NULL) {
         return;
     }
-    g_multiState->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
-    i32 customLevel = g_multiState->m_customLevel;
+    g_multiState->BroadcastPlayerIdMessage(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
+    i32 customLevel = g_multiState->m_usesCustomLevel;
     i32 verificationToken = g_gameReg->ResolveLevelChecksum(
         0,
         0,
@@ -1521,7 +1522,7 @@ void CMultiStartDlg::CommitLatencySelection() {
         g_multiState->m_commandDelay = commandDelay;
         g_multiState->m_resendInterval = resendInterval;
         g_multiState->m_autoCommandDelay = 0;
-        g_multiState->SaveConfig(NULL);
+        g_multiState->SendGameConfig(NULL);
     } else {
         g_multiState->m_autoCommandDelay = 1;
     }
@@ -1544,13 +1545,13 @@ void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
         player->m_ready = 0;
     }
     if (g_multiState->m_isHost) {
-        g_multiState->BroadcastChannelTable(NULL);
+        g_multiState->BroadcastPlayerTable(NULL);
         RefreshPlayerControls(1);
         EnableChatControls();
         RefreshWorldControls();
         RefreshLatencyControl();
     } else {
-        g_multiState->BroadcastOneChannel(player);
+        g_multiState->BroadcastPlayerUpdate(player);
     }
 }
 

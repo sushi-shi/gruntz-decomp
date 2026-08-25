@@ -676,7 +676,7 @@
  },
  {
   "file": "src/Gruntz/Multi.cpp",
-  "name": "?OpenHostChannel@CMulti@@QAEHPAXHHHHHHH@Z",
+  "name": "?CreateHostPlayer@CMulti@@QAEHPAXHHHHHHH@Z",
   "rva": 772368,
   "demo_rva": 765168,
   "retail_dist": 16385,

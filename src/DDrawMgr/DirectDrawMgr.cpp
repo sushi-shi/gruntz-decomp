@@ -310,7 +310,7 @@ RVA(0x00141cc0, 0x84)
 CDDrawDeviceManager::CDDrawDeviceManager() : m_surfaces(0xa), m_palettes(0xa), m_displayModes() {
     m_device = NULL;
     m_directDraw1 = NULL;
-    m_bltCaps = 0;
+    m_bankSwitchedCaps = 0;
     m_displayColorDepth = BPP_UNSET;
     m_hasPalette = 0;
     m_paletteTag = 0;
@@ -376,7 +376,7 @@ i32 CDDrawDeviceManager::CreateDevice(
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DDRAWMGR_FILE, 0xad, hr);
     }
-    m_bltCaps = m_driverCaps.dwCaps & 0x8000000;
+    m_bankSwitchedCaps = m_driverCaps.dwCaps & DDCAPS_BANKSWITCHED;
     EnumerateDisplayModes();
 
     if (width > 0 && height > 0) {
@@ -450,7 +450,7 @@ void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
         m_directDraw1->Release();
         m_directDraw1 = NULL;
     }
-    m_bltCaps = 0;
+    m_bankSwitchedCaps = 0;
 }
 
 RVA(0x00142100, 0x18)
@@ -655,7 +655,12 @@ CDDSurface* CDDrawDeviceManager::CreatePrimarySurfaceFromDesc(const DDSURFACEDES
 RVA(0x00142b70, 0xce)
 CDDSurface* CDDrawDeviceManager::Create24BitPrimarySurface(i32 backBufferCount) {
     CDDrawPrimarySurface* item = new CDDrawPrimarySurface;
-    if (!item->CreatePrimary(this, 0x18, 0x21, backBufferCount)) {
+    if (!item->CreatePrimary(
+            this,
+            DDSCAPS_COMPLEX | DDSCAPS_FLIP,
+            DDSD_CAPS | DDSD_BACKBUFFERCOUNT,
+            backBufferCount
+        )) {
         delete item;
         return NULL;
     }
@@ -709,7 +714,13 @@ CDDSurface* CDDrawDeviceManager::CreateOffscreenSurface(
     i32 caps,
     i32 key
 ) {
-    return CreateKeyedSurface(width, height, bitDepth, caps | 0x840, key);
+    return CreateKeyedSurface(
+        width,
+        height,
+        bitDepth,
+        caps | DDSCAPS_SYSTEMMEMORY | DDSCAPS_OFFSCREENPLAIN,
+        key
+    );
 }
 
 // @dead-code
@@ -808,10 +819,10 @@ CDDPalette* CDDrawDeviceManager::CreatePaletteFromTrailingData(void* data, u32 s
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z) {
     CFile file;
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return NULL;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
     u8 buf[PALETTE_RGB_BYTE_COUNT];
     if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return NULL;
@@ -1163,10 +1174,10 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32
 RVA(0x00143a30, 0xe9)
 i32 CDDrawDeviceManager::LoadDisplayPaletteFromFile(const char* path, i32 z) {
     CFile file;
-    if (!file.Open(path, 0, NULL)) {
+    if (!file.Open(path, CFile::modeRead, NULL)) {
         return 0;
     }
-    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
     u8 buf[PALETTE_RGB_BYTE_COUNT];
     if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
@@ -1177,7 +1188,7 @@ i32 CDDrawDeviceManager::LoadDisplayPaletteFromFile(const char* path, i32 z) {
 RVA(0x00143b20, 0xfc)
 i32 CDDrawDeviceManager::ComputeColorMasks() {
     DDSURFACEDESC desc;
-    memset(&desc, 0, 0x6c);
+    memset(&desc, 0, sizeof(desc));
     desc.dwSize = sizeof(desc);
     i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {

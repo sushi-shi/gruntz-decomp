@@ -125,9 +125,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastDiff%d", i);
             g_battlezLastDifficulties[i] = reg->GetValueDword(key, 1);
             sprintf(key, "LastColour%d", i);
-            g_battlezLastColors[i] =
-                reg->GetValueDword(key, IDX(g_gameReg->m_players[i].m_colorIndex));
-            g_gameReg->m_players[i].m_colorIndex = static_cast<ColorTint>(g_battlezLastColors[i]);
+            g_battlezLastColors[i] = reg->GetValueDword(key, IDX(g_gameReg->m_players[i].m_color));
+            g_gameReg->m_players[i].m_color = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
         CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
@@ -374,7 +373,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 reg->SetValueDword(key, -1);
             }
             sprintf(key, "LastColour%d", i);
-            reg->SetValueDword(key, IDX(g_gameReg->m_players[i].m_colorIndex));
+            reg->SetValueDword(key, IDX(g_gameReg->m_players[i].m_color));
         }
         NetLobby::g_curDlg = NULL;
     }
@@ -639,7 +638,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[0].m_colorIndex) {
+                switch (m_gameManager->m_players[0].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -700,7 +699,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[1].m_colorIndex) {
+                switch (m_gameManager->m_players[1].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -761,7 +760,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[2].m_colorIndex) {
+                switch (m_gameManager->m_players[2].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -822,7 +821,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
-                switch (m_gameManager->m_players[3].m_colorIndex) {
+                switch (m_gameManager->m_players[3].m_color) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -1030,7 +1029,7 @@ i32 CBattlezDlg::UnusedMsgHandler() {
 
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetPlayerColor(i32 slot, ColorTint color) {
-    m_gameManager->m_players[slot].m_colorIndex = color;
+    m_gameManager->m_players[slot].m_color = color;
     return 1;
 }
 

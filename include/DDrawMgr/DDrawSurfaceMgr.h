@@ -49,6 +49,23 @@ typedef i32(__cdecl* HP_Callback)(CDDrawSurfaceMgr*, CFileMemBase*, SerialMode, 
 
 typedef i32(__cdecl* SurfaceRestoreFn)();
 
+// Options retained by CDDrawSurfaceMgr::Init and consumed by the renderer,
+// sound setup, animation cursor, and worker loader. The bit positions are
+// recovered from those consumers; 0x200 and above remain unenumerated because
+// no surface-manager consumer establishes their meaning.
+GZ_ENUM_FLAGS_BEGIN(DDrawSurfaceMgrFlags, i32)
+    SURFACEMGR_SKIP_OVERLAY = 0x01,
+    SURFACEMGR_TRIPLE_BUFFER = 0x02,
+    SURFACEMGR_DISABLE_SOUND = 0x04,
+    SURFACEMGR_REQUIRE_SOUND = 0x08,
+    SURFACEMGR_EMULATION_ONLY = 0x10,
+    SURFACEMGR_DIRECT_OBJECT_MOVEMENT = 0x20,
+    SURFACEMGR_CONSUME_ANIMATION_DRAW_VALUES = 0x40,
+    SURFACEMGR_SOUND_PRIORITY = 0x80,
+    SURFACEMGR_SINGLE_FRAME_WORKERS = 0x100
+GZ_ENUM_FLAGS_END(DDrawSurfaceMgrFlags, i32)
+GZ_ENUM_FLAGS_OPS(DDrawSurfaceMgrFlags)
+
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();

@@ -89,7 +89,7 @@ debug stream**, so ours must be derived from our own TU partition. They gate:
   landed the first drain — and see the correction at the top: ~98% of the remainder is
   COMDAT-pool placement, not a partition defect) (e.g. `Fader [0x17e450-0x182935]` interleaves
   `RezBufferObjectDtor`/`RecordFill`/`CircleShadeBlit`; `MenuItem [0x184610-0x185a0e]`
-  interleaves `RezColl`/`DebugPrintf`/`RezList`/`WapUncompress`).
+  interleaves `RezColl`/`DebugPrintf`/`RezList`/`WapCompress`).
 - Independent check (hull of each unit's labelled symbols per storage, **all-pairs**
   overlap): `.text` **134/259** unit hulls interleave. Data is no better once measured
   correctly: only **8 of 86** bands overlap no other band — rdata **2/15**, data

@@ -18,4 +18,4 @@ function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
 0x0013f740	0x00253c9e	*	?g_clut@@3PAGA	0xfffffffe	2	before-start pointer g_clut-2 (base obj ddsurface.obj stored=-0x2)
 0x0001a700	0x0020b978	0x0001ad6e	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x80	1	one-past-the-end loop bound equals the RECT[8] array end (base obj bootystateactivate.obj stored=+0x80)
 0x0001a040	0x0020b984	0x0001a57d	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x8c	1	one-past-the-end &rects[8].bottom loop bound (base obj bootystateactivate.obj stored=+0x8c)
-0x000db280	0x0024c434	0x000db292	?g_soundChannelInUse@@3PAHA	0x44	1	one-past-the-end loop bound equals the int[17] array end (base obj gruntzplayer.obj stored=+0x44)
+0x000db280	0x0024c434	0x000db292	?g_playerColorAvailable@@3PAHA	0x44	1	one-past-the-end loop bound equals the int[17] array end (base obj gruntzplayer.obj stored=+0x44)

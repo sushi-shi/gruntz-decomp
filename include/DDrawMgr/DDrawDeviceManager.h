@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/WorldInitError.h>
 #include <Ints.h>
 
@@ -163,11 +164,11 @@ public:
     CPtrList m_palettes;
     CPtrArray m_displayModes;
     DDSURFACEDESC m_surfaceDesc;
-    i32 m_bltCaps;
+    i32 m_bankSwitchedCaps;
 
     ColorDepth m_displayColorDepth;
 
-    PALETTEENTRY m_palette[0x100];
+    PALETTEENTRY m_palette[PALETTE_ENTRY_COUNT];
     i32 m_hasPalette;
     i32 m_paletteTag;
     DDrawDeviceError m_lastError;

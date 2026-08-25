@@ -55,16 +55,16 @@ delinker's guess rather than what the compiler really emitted. That is a fitted
 artifact, and it puts a lie in the source to buy hundredths.
 
 The converse matters too: do not invent or retain a neighbour merely because the
-delinker chose its address. `ChannelSlots_FindFree` walks
-`g_soundChannelInUse[17]`; cl emits the loop limit as
-`g_soundChannelInUse + 0x44`. A source claim for an otherwise unreferenced
+delinker chose its address. `FindAvailablePlayerColor` walks
+`g_playerColorAvailable[17]`; cl emits the loop limit as
+`g_playerColorAvailable + 0x44`. A source claim for an otherwise unreferenced
 `g_val_24c434` at that exact one-past address made the delinked target spell the
 same operand as `g_val_24c434 + 0`, leaving the function at 99.5%. The retail
 layout, source COFF relocation and declared array extent all say this is only the
 array limit followed by four bytes of alignment before the next 16-byte physical
 `GruntDirectionCell` contribution at `0x24c438`. Removing the unsupported datum,
 classifying `0x24c434..0x24c438` as `pad`, and recording cl's exact
-`g_soundChannelInUse + 0x44` spelling in
+`g_playerColorAvailable + 0x44` spelling in
 `config/retail/reloc_referents.tsv` restores the authentic relocation identity
 through strict delinking and makes the function exact. The referent row preserves
 the source COFF symbol/addend; it does not assert a datum at the resolved address.

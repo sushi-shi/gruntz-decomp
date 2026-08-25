@@ -52,7 +52,8 @@ namespace NetLobby {
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_RESUME) || wParam == IDCANCEL) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
+                    g_curMulti
+                        ->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
                     EndDialog(hWnd, IDX(IDC_NET_RESUME));
                     return 1;
                 }
@@ -78,7 +79,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             UpdateHostWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, NULL);
-            g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
+            g_netMessageEditHwnd = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -106,7 +107,7 @@ namespace NetLobby {
             case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateJoinWaitDialog(hWnd, g_curMulti);
-                if (g_activePlayerCount) {
+                if (g_playersInOptionsCount) {
                     return 1;
                 }
                 KillTimer(hWnd, 1);
@@ -121,7 +122,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             UpdateJoinWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, NULL);
-            g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
+            g_netMessageEditHwnd = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -171,7 +172,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             UpdateLobbyDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, NULL);
-            g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
+            g_netMessageEditHwnd = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -194,7 +195,7 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_RESTART)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     }
                     EndDialog(hWnd, IDX(IDC_NET_RESTART));
                     return 1;
@@ -202,7 +203,7 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_CONTINUE)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     }
                     EndDialog(hWnd, IDX(IDC_NET_CONTINUE));
                     return 1;
@@ -210,7 +211,7 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     }
                     EndDialog(hWnd, IDX(IDC_NET_ABORT));
                     return 1;
@@ -233,7 +234,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             UpdateSessionWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, NULL);
-            g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
+            g_netMessageEditHwnd = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -260,19 +261,19 @@ namespace NetLobby {
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_DROP_PLAYER)) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                    g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
                 if (wParam == IDX(IDC_NET_CONTINUE)) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                    g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
-                    g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                    g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     EndDialog(hWnd, wParam);
                     return 1;
                 }
@@ -310,7 +311,7 @@ namespace NetLobby {
             }
             UpdateDropWaitDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, NULL);
-            g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
+            g_netMessageEditHwnd = GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -367,7 +368,7 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_DROPIN_ACCEPT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     }
                     EndDialog(hWnd, IDX(IDC_NET_DROPIN_ACCEPT));
                     return 1;
@@ -375,7 +376,7 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_DROPIN_REJECT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     }
                     EndDialog(hWnd, IDX(IDC_NET_DROPIN_REJECT));
                     return 1;
@@ -383,7 +384,7 @@ namespace NetLobby {
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
                     if (g_curMulti->m_isHost) {
-                        g_curMulti->SendNetStat(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
+                        g_curMulti->BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, wParam, 1);
                     }
                     EndDialog(hWnd, IDX(IDC_NET_ABORT));
                     return 1;
@@ -413,7 +414,7 @@ namespace NetLobby {
             }
             UpdateDropInDialog(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, NULL);
-            g_sharedFlag = GetDlgItem(hWnd, 0x4b6);
+            g_netMessageEditHwnd = GetDlgItem(hWnd, 0x4b6);
         }
     }
 

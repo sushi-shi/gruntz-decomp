@@ -222,7 +222,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(2);
     SetObjectFlags(1);
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         Hide();
         SetObjectFlags(0x10000);
     }
@@ -452,7 +452,7 @@ i32 CCheckpointTrigger::Act() {
     if (play->m_levelTimer != NULL) {
         i32 minutes = m_object->m_score;
         i32 seconds = m_object->m_points;
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             seconds += seconds;
             minutes += minutes;
             if (seconds > 0x3b) {

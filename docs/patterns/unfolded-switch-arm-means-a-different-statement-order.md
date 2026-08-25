@@ -17,7 +17,7 @@ defeats it.
 ```cpp
 // GUNHAT (retail case 9): a full 186-byte body
 if (m_arrivalState == AI_DEFENDER) { m_defenderRadius = 1; }
-if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) { m_arrivalFlags |= 0x10; }
+if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) { m_arrivalFlags |= 0x10; }
 // NERFGUN / ROCK (cases 10, 11): the other order, and they fold into each other
 ```
 

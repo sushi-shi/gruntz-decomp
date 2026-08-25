@@ -35,7 +35,7 @@ the SPELLING dictates polarity + block layout —
 Rule: single non-zero or multi-way ⇒ `switch` (load-to-reg, case-at-tail); `==0`/`==4` ⇒ `if`
 (cmp-mem, success-inline). Evidence: CButeMgr Get{Int,Dword,Float,Double,String}[Def] getters.
 
-WALL→STEERABLE: a source spelling (`switch`) closes it. Evidence: CNetMgr::OnDropPlayer
+WALL→STEERABLE: a source spelling (`switch`) closes it. Evidence: CMulti::ShowDropPlayerDialog
 (0xbc110) went 47%→100% the instant the `if/else-if` dispatch on the MULTI_DROPPLAYER result
 (0x4cd/0x4ce/0x4ea) was rewritten as a `switch` — same handler bodies, only the dispatch
 lowering changed. (Watch also that each case's call receiver is the RIGHT object: there the

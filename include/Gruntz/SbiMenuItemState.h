@@ -24,7 +24,7 @@ GZ_ENUM_BEGIN(SbiMenuItemState)
     MENUITEM_NORMAL = 1,
     MENUITEM_HIGHLIGHT = 2,
     MENUITEM_SELECTED = 3,
-    // Greyed out. Set on the MULTIPLAYER tab when m_gameMode is GAMEMODE_SINGLE,
+    // Greyed out. Set on the MULTIPLAYER tab when m_gameMode is GAMEMODE_QUESTZ,
     // and the very next thing the code does is check the sprite actually has this
     // frame (`m_minIndex <= 4 && m_maxIndex >= 4`) - which is also the clue that
     // the state IS the sprite's frame index, not a parallel enum.

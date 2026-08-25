@@ -607,7 +607,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 return 1;
 
             case PICKUP_WARPSTONE:
-                if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                     if (pfk != 0) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     } else {
@@ -958,7 +958,7 @@ i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
 
 RVA(0x00079b80, 0x194)
 void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (m_groupInitialized != 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (m_groupInitialized != 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -997,7 +997,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
 
 RVA(0x00079d90, 0xc5)
 void CTriggerMgr::ResetSpawnState() {
-    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
     }
     if (m_groupInitialized == 0) {
@@ -1018,7 +1018,7 @@ void CTriggerMgr::ResetSpawnState() {
             world->m_statusBar->TryActivate();
         }
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         CWarlord* fx = m_pendingFx;
         if (fx != NULL) {
             fx->ResolveDeathAnimation();
@@ -1029,7 +1029,7 @@ void CTriggerMgr::ResetSpawnState() {
 
 RVA(0x00079ea0, 0xc2)
 i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         return 0;
     }
     CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
@@ -1087,7 +1087,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
             k = cell->m_toolId;
         }
         if (k == PICKUP_WARPSTONE) {
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 CWarlord* fx = m_pendingFx;
                 if (fx != NULL) {
                     fx->RaiseBattleAlert();
@@ -1940,7 +1940,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         i32 ok = 0;
         i32 radius = 0;
 
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             if (player->m_humanControlled == 0) {
                 aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
                 radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
@@ -2238,7 +2238,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
         case PICKUP_WARPSTONE:
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
 
                 CState* st = g_gameReg->m_curState;
                 CString lvl;

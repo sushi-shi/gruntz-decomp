@@ -6,7 +6,7 @@ shorter because it omits `push ebp`/`pop ebp`; retail keeps one call-crossing re
 EBP while the recompile reuses the now-dead `this` register for a later boolean
 confidence: 9/10 for recognizing the residue, 3/10 for steering it from source
 
-`CMulti::JoinAndRegisterChannel` (`0x000b8b10`) is the calibration case. Both sides
+`CMulti::CreateHostSessionAndPlayer` (`0x000b8b10`) is the calibration case. Both sides
 emit 11 calls, four branches, one return, and 22 relocations. Retail is 113
 instructions/`0x175` bytes and the recompile is 111 instructions/`0x173` bytes.
 
@@ -16,8 +16,8 @@ The values account for the whole delta:
 |---|---|---|
 | `this` | ESI | ESI |
 | group-enumeration result, live across later calls | EBP | EBX |
-| channel color, live across `GetName` | EDI | EDI |
-| `RegisterChannelFrom(...) == 0` | EBX | ESI after `this` dies |
+| player color, live across `GetName` | EDI | EDI |
+| `RegisterLocalPlayer(...) == 0` | EBX | ESI after `this` dies |
 
 Retail therefore saves EBP; the recompile coalesces the final failure flag onto ESI
 immediately after its last `this` use and needs no EBP. The remaining instructions are

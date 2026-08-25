@@ -1265,7 +1265,7 @@ STATIC cl 5.0 emits with no source spelling) was censused across every base obj:
 Scoreboard after: initialized 95.15% / `.bss` 91.72% reconstructable, fidelity
 100.00 both. The eligible-unenrolled remainder (the worklist, largest first):
 `dircellmethods` editor-buffer band (13.1 KB + 3.4 KB), `gameinfostring`
-(7.8 KB), `multi` (4.9 KB after `g_chatPacket` + 2×1,012 B after the
+(7.8 KB), `multi` (4.9 KB after `g_netChatPacket` + 2×1,012 B after the
 `g_chanStat42x` packets — retail pushes `sizeof=0xc`, so those are NOT struct
 tails but unreferenced siblings), `netcmdslot` pools (2.5 KB + 1.1 KB),
 NetLobby (1.3 KB + 2.3 KB), the `CActRegPool<T>::s_table` inter-band runs
@@ -1298,7 +1298,7 @@ game-named SDK GUIDs enrolled via `data_static_libs.tsv` → `library_data`.
 **Parked, with reasons** (the residue and why static evidence is exhausted):
 
 * `.bss` UNCLASSIFIED ~46.8 KB — zero-init buffers/dead statics NOTHING
-  references: the multi bands (4.9 KB after g_chatPacket; 2×1,012 B after the
+  references: the multi bands (4.9 KB after g_netChatPacket; 2×1,012 B after the
   g_chanStat42x packets — retail pushes sizeof=0xc, so NOT struct tails),
   netcmdslot pools, gameinfostring 7.8 KB, the dircellmethods editor band
   (13.1 KB + 3.4 KB). No reloc reaches them, no funclet constructs them, no

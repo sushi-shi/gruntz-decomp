@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Wap32/TileGeometry.h>
+#include <Utils/BitArrayWord.h>
 
 struct CVariantSlot;
 class istream;
@@ -61,16 +61,16 @@ public:
         if (idx >= static_cast<u32>(m_capacity)) {
             return 0;
         }
-        const u32* words = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
-        return (words[idx >> TILE_SHIFT_PX] & (1 << (idx & TILE_MASK_PX))) != 0;
+        const u32* words = static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS ? m_words : &m_inline;
+        return (words[idx >> BITARRAY_WORD_SHIFT] & (1 << (idx & BITARRAY_BIT_MASK))) != 0;
     }
 
     zBitVec* Set(u32 idx) {
         if (idx >= static_cast<u32>(m_capacity)) {
             return SetBit(idx);
         }
-        u32* words = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
-        words[idx >> TILE_SHIFT_PX] |= 1 << (idx & TILE_MASK_PX);
+        u32* words = static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS ? m_words : &m_inline;
+        words[idx >> BITARRAY_WORD_SHIFT] |= 1 << (idx & BITARRAY_BIT_MASK);
         return this;
     }
 };

@@ -82,18 +82,16 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
             }
             break;
         case WM_MOVE:
-            if (g_activeGameWnd->OnMove(
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
-                )) {
+            if (g_activeGameWnd
+                    ->OnMove(static_cast<i32>(LOWORD(lParam)), static_cast<i32>(HIWORD(lParam)))) {
                 return 0;
             }
             break;
         case WM_SIZE:
             if (g_activeGameWnd->OnSize(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -146,8 +144,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_LBUTTONDOWN:
             if (g_activeGameWnd->OnLButtonDown(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -155,8 +153,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_LBUTTONUP:
             if (g_activeGameWnd->OnLButtonUp(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -164,8 +162,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_RBUTTONDOWN:
             if (g_activeGameWnd->OnRButtonDown(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -173,8 +171,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_RBUTTONUP:
             if (g_activeGameWnd->OnRButtonUp(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -182,8 +180,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_MOUSEMOVE:
             if (g_activeGameWnd->OnMouseMove(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -191,8 +189,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_LBUTTONDBLCLK:
             if (g_activeGameWnd->OnLButtonDblClk(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -200,8 +198,8 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
         case WM_RBUTTONDBLCLK:
             if (g_activeGameWnd->OnRButtonDblClk(
                     wParam,
-                    static_cast<i32>((lParam & 0xffff)),
-                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                    static_cast<i32>(LOWORD(lParam)),
+                    static_cast<i32>(HIWORD(lParam))
                 )) {
                 return 0;
             }
@@ -218,8 +216,8 @@ i32 CGameWnd::OnCreate(LPARAM) {
 
 RVA(0x0013d3a0, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
-    i32 notifyCode = static_cast<i32>((wParam >> 16));
-    i32 cmdId = static_cast<i32>((wParam & 0xffff));
+    i32 notifyCode = static_cast<i32>(HIWORD(wParam));
+    i32 cmdId = static_cast<i32>(LOWORD(wParam));
 
     if (m_owner->HandleCommand(notifyCode, static_cast<GruntzCommandId>(cmdId), lParam)) {
         return 1;

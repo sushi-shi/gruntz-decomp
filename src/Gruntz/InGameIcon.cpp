@@ -312,28 +312,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_W);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_A);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(0x10000);
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_R);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(0x10000);
                 return;
             }
@@ -368,7 +368,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 
     PickupType pickup = static_cast<PickupType>(m_object->m_smarts);
-    if (pickup == PICKUP_WARPSTONE && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (pickup == PICKUP_WARPSTONE && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
         CString levelStr;
         levelStr.Format("Level%i", lvl->m_levelIndex);
@@ -430,7 +430,7 @@ i32 CInGameIcon::HandleInput() {
         if (sub < PICKUP_TOYZ_FIRST || sub > PICKUP_TOYZ_LAST) {
             return 0;
         }
-        i32 icon = IDX(g_gameReg->m_players[key].m_colorIndex);
+        i32 icon = IDX(g_gameReg->m_players[key].m_color);
         if (icon < 0 || icon >= TINT_COUNT) {
             icon = IDX(TINT_ORANGE);
         }
@@ -643,7 +643,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     i32 ok;
     PickupType pickup;
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_gameMode == GAMEMODE_SINGLE && playerIndex != g_curPlayer
+    if (reg->m_gameMode == GAMEMODE_QUESTZ && playerIndex != g_curPlayer
         && static_cast<PickupType>(m_object->m_smarts) != PICKUP_TOYBOX) {
         goto fail;
     }
@@ -943,12 +943,12 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
     if (vis == INGAME_TEXT_EASY_ONLY) {
 
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             SetObjectFlags(0x10000);
             return;
         }
     } else if (vis == INGAME_TEXT_NORMAL_ONLY) {
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             SetObjectFlags(0x10000);
             return;
         }

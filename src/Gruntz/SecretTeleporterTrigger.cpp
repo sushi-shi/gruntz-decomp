@@ -98,7 +98,7 @@ RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         SetObjectFlags(0x10000);
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -131,7 +131,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_isCustomLevel == 0) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == 0) {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdGameObjectA* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)

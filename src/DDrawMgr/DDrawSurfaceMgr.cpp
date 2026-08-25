@@ -112,7 +112,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    if (flags & 0x20) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_DIRECT_OBJECT_MOVEMENT)) {
         m_level->m_flags |= 4;
     }
     if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
@@ -123,20 +123,21 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     }
 
     i32 cooperativeLevel = 1;
-    if (flags & 0x80) {
+    if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SOUND_PRIORITY)) {
         cooperativeLevel = 2;
     }
     if (!m_soundStream->InitializeDevice(hWnd, cooperativeLevel)) {
         delete m_soundStream;
         m_soundStream = NULL;
-        if (flags & 8) {
+        if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_REQUIRE_SOUND)) {
             if (m_lastError == WORLDERR_NONE) {
                 m_lastError = WORLDERR_SOUND_OUTPUT;
             }
             return 0;
         }
     }
-    if (m_soundStream != NULL && (flags & 4)) {
+    if (m_soundStream != NULL
+        && HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_DISABLE_SOUND)) {
         delete m_soundStream;
         m_soundStream = NULL;
     }

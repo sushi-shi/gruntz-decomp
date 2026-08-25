@@ -7,16 +7,14 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef enum DinCreateFlags {
-    DIDF_ASYNC_KEYBOARD = 1,
-    DIDF_NO_MOUSE = 2,
-    DIDF_NO_KEYBOARD = 4,
-    DIDF_NO_JOYSTICKS = 8,
-} DinCreateFlags;
-
-typedef enum DinBufferSize {
-    STATE_BUFFER_SIZE = 0x100,
-} DinBufferSize;
+GZ_ENUM_CONST_BEGIN(DinInputConstants)
+    KEYBOARD_STATE_BUFFER_SIZE = 0x100,
+    DINPUT_STATE_PRESSED = 0x80,
+    ASYNC_KEY_PRESSED_SIGN_BIT = 0x80000000,
+    JOYSTICK_AXIS_MIN = -1000,
+    JOYSTICK_AXIS_MAX = 1000,
+    JOYSTICK_DEADZONE_50_PERCENT = 5000
+GZ_ENUM_CONST_END(DinInputConstants)
 
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
@@ -46,17 +44,17 @@ i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     m_owner = owner;
     m_hinst = hinst;
     m_flags = flags;
-    if ((flags & DIDF_NO_KEYBOARD) == 0) {
+    if (!HAS(static_cast<DirectInputCreateFlags>(flags), DIN_CREATE_NO_KEYBOARD)) {
         if (InitializeKeyboard(flags) == 0) {
             return 0;
         }
     }
-    if ((m_flags & DIDF_NO_MOUSE) == 0) {
+    if (!HAS(static_cast<DirectInputCreateFlags>(m_flags), DIN_CREATE_NO_MOUSE)) {
         if (InitializeMouse(flags) == 0) {
             return 0;
         }
     }
-    if ((m_flags & DIDF_NO_JOYSTICKS) == 0) {
+    if (!HAS(static_cast<DirectInputCreateFlags>(m_flags), DIN_CREATE_NO_JOYSTICKS)) {
         if (EnumerateJoysticks(flags) == 0) {
             return 0;
         }
@@ -453,12 +451,12 @@ i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
         return 0;
     }
     RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[STATE_BUFFER_SIZE];
+    state.m_bytes = new u8[KEYBOARD_STATE_BUFFER_SIZE];
     if (state.m_bytes == NULL) {
         return 0;
     }
     m_stateBuffer = state.m_rec;
-    m_stateBufferSize = STATE_BUFFER_SIZE;
+    m_stateBufferSize = KEYBOARD_STATE_BUFFER_SIZE;
     return 1;
 }
 
@@ -477,27 +475,27 @@ void CKeyboardDevice::ReleaseDevices() {
 RVA(0x00133c30, 0xc9)
 void CKeyboardDevice::ConfigureDefaultBindings() {
     m_keyBindings.Clear();
-    if (m_createFlags & DIDF_ASYNC_KEYBOARD) {
-        m_keyBindings[0] = 0x20;
-        m_keyBindings[1] = 0x11;
-        m_keyBindings[2] = 0x12;
-        m_keyBindings[3] = 0x10;
+    if (HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_SPACE;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = VK_CONTROL;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_MENU;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON3)] = VK_SHIFT;
     } else {
-        m_keyBindings[0] = 0x39;
-        m_keyBindings[1] = 0x1d;
-        m_keyBindings[2] = 0x38;
-        m_keyBindings[3] = 0x2a;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = DIK_SPACE;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = DIK_LCONTROL;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = DIK_LMENU;
+        m_keyBindings[IDX(INPUT_BINDING_BUTTON3)] = DIK_LSHIFT;
     }
-    if (m_createFlags & DIDF_ASYNC_KEYBOARD) {
-        m_keyBindings[0x1c] = 0x25;
-        m_keyBindings[0x1d] = 0x27;
-        m_keyBindings[0x1e] = 0x26;
-        m_keyBindings[0x1f] = 0x28;
+    if (HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
+        m_keyBindings[IDX(INPUT_BINDING_LEFT)] = VK_LEFT;
+        m_keyBindings[IDX(INPUT_BINDING_RIGHT)] = VK_RIGHT;
+        m_keyBindings[IDX(INPUT_BINDING_UP)] = VK_UP;
+        m_keyBindings[IDX(INPUT_BINDING_DOWN)] = VK_DOWN;
     } else {
-        m_keyBindings[0x1c] = 0xcb;
-        m_keyBindings[0x1d] = 0xcd;
-        m_keyBindings[0x1e] = 0xc8;
-        m_keyBindings[0x1f] = 0xd0;
+        m_keyBindings[IDX(INPUT_BINDING_LEFT)] = DIK_LEFT;
+        m_keyBindings[IDX(INPUT_BINDING_RIGHT)] = DIK_RIGHT;
+        m_keyBindings[IDX(INPUT_BINDING_UP)] = DIK_UP;
+        m_keyBindings[IDX(INPUT_BINDING_DOWN)] = DIK_DOWN;
     }
 }
 
@@ -505,167 +503,176 @@ RVA(0x00133d00, 0x55e)
 i32 CKeyboardDevice::Poll() {
     m_pressedButtons = 0;
     m_heldButtons = 0;
-    if ((m_createFlags & DIDF_ASYNC_KEYBOARD) == 0) {
+    if (!HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
         if (ReadState() == NULL) {
             return 0;
         }
     }
-    if (m_createFlags & DIDF_ASYNC_KEYBOARD) {
-        if (GetAsyncKeyState(m_keyBindings[0]) & 0x80000000) {
-            m_pressedButtons |= 1;
+    if (HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON0)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
-        if (GetAsyncKeyState(m_keyBindings[1]) & 0x80000000) {
-            m_pressedButtons |= 2;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON1)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON1);
         }
-        if (GetAsyncKeyState(m_keyBindings[2]) & 0x80000000) {
-            m_pressedButtons |= 4;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON2)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON2);
         }
-        if (GetAsyncKeyState(m_keyBindings[3]) & 0x80000000) {
-            m_pressedButtons |= 8;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON3)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON3);
         }
-        if (GetAsyncKeyState(m_keyBindings[4]) & 0x80000000) {
-            m_pressedButtons |= 0x10;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON4)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON4);
         }
-        if (GetAsyncKeyState(m_keyBindings[5]) & 0x80000000) {
-            m_pressedButtons |= 0x20;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON5)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON5);
         }
-        if (GetAsyncKeyState(m_keyBindings[6]) & 0x80000000) {
-            m_pressedButtons |= 0x40;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON6)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON6);
         }
-        if (GetAsyncKeyState(m_keyBindings[7]) & 0x80000000) {
-            m_pressedButtons |= 0x80;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON7)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_BUTTON7);
         }
-        if (GetAsyncKeyState(m_keyBindings[0x1c]) & 0x80000000) {
-            m_pressedButtons |= 0x10000000;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_LEFT)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_LEFT);
         }
-        if (GetAsyncKeyState(m_keyBindings[0x1d]) & 0x80000000) {
-            m_pressedButtons |= 0x20000000;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_RIGHT)])
+            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_RIGHT);
         }
-        if (GetAsyncKeyState(m_keyBindings[0x1e]) & 0x80000000) {
-            m_pressedButtons |= 0x40000000;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_UP)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_UP);
         }
-        if (GetAsyncKeyState(m_keyBindings[0x1f]) & 0x80000000) {
-            m_pressedButtons |= 0x80000000;
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_DOWN)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+            m_pressedButtons |= IDX(INPUT_DOWN);
         }
     } else {
         u8* buf = m_stateBuffer->keys;
-        if (buf[m_keyBindings[0]] & 0x80) {
-            m_pressedButtons |= 1;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON0)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
-        if (buf[m_keyBindings[1]] & 0x80) {
-            m_pressedButtons |= 2;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON1)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON1);
         }
-        if (buf[m_keyBindings[2]] & 0x80) {
-            m_pressedButtons |= 4;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON2)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON2);
         }
-        if (buf[m_keyBindings[3]] & 0x80) {
-            m_pressedButtons |= 8;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON3)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON3);
         }
-        if (buf[m_keyBindings[4]] & 0x80) {
-            m_pressedButtons |= 0x10;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON4)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON4);
         }
-        if (buf[m_keyBindings[5]] & 0x80) {
-            m_pressedButtons |= 0x20;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON5)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON5);
         }
-        if (buf[m_keyBindings[6]] & 0x80) {
-            m_pressedButtons |= 0x40;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON6)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON6);
         }
-        if (buf[m_keyBindings[7]] & 0x80) {
-            m_pressedButtons |= 0x80;
+        if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON7)]] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_BUTTON7);
         }
-        if (buf[0xcb] & 0x80) {
-            m_pressedButtons |= 0x10000000;
+        if (buf[DIK_LEFT] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_LEFT);
         }
-        if (buf[0xcd] & 0x80) {
-            m_pressedButtons |= 0x20000000;
+        if (buf[DIK_RIGHT] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_RIGHT);
         }
-        if (buf[0xc8] & 0x80) {
-            m_pressedButtons |= 0x40000000;
+        if (buf[DIK_UP] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_UP);
         }
-        if (buf[0xd0] & 0x80) {
-            m_pressedButtons |= 0x80000000;
+        if (buf[DIK_DOWN] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_DOWN);
         }
-        if (buf[0x4b] & 0x80) {
-            m_pressedButtons |= 0x10000000;
+        if (buf[DIK_NUMPAD4] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_LEFT);
         }
-        if (buf[0x4d] & 0x80) {
-            m_pressedButtons |= 0x20000000;
+        if (buf[DIK_NUMPAD6] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_RIGHT);
         }
-        if (buf[0x48] & 0x80) {
-            m_pressedButtons |= 0x40000000;
+        if (buf[DIK_NUMPAD8] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_UP);
         }
-        if (buf[0x50] & 0x80) {
-            m_pressedButtons |= 0x80000000;
+        if (buf[DIK_NUMPAD2] & DINPUT_STATE_PRESSED) {
+            m_pressedButtons |= IDX(INPUT_DOWN);
         }
     }
 
     m_heldButtons = m_pressedButtons;
-    if (m_heldButtons & 0x00000001) {
-        if (m_buttonLatch & 0x00000001) {
-            m_pressedButtons &= ~0x00000001;
+    if (m_heldButtons & IDX(INPUT_BUTTON0)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON0)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON0);
         } else {
-            m_buttonLatch |= 0x00000001;
+            m_buttonLatch |= IDX(INPUT_BUTTON0);
         }
     } else {
-        m_buttonLatch &= ~0x00000001;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON0);
     }
-    if (m_heldButtons & 0x00000002) {
-        if (m_buttonLatch & 0x00000002) {
-            m_pressedButtons &= ~0x00000002;
+    if (m_heldButtons & IDX(INPUT_BUTTON1)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON1)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON1);
         } else {
-            m_buttonLatch |= 0x00000002;
+            m_buttonLatch |= IDX(INPUT_BUTTON1);
         }
     } else {
-        m_buttonLatch &= ~0x00000002;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON1);
     }
-    if (m_heldButtons & 0x00000004) {
-        if (m_buttonLatch & 0x00000004) {
-            m_pressedButtons &= ~0x00000004;
+    if (m_heldButtons & IDX(INPUT_BUTTON2)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON2)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON2);
         } else {
-            m_buttonLatch |= 0x00000004;
+            m_buttonLatch |= IDX(INPUT_BUTTON2);
         }
     } else {
-        m_buttonLatch &= ~0x00000004;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON2);
     }
-    if (m_heldButtons & 0x00000008) {
-        if (m_buttonLatch & 0x00000008) {
-            m_pressedButtons &= ~0x00000008;
+    if (m_heldButtons & IDX(INPUT_BUTTON3)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON3)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON3);
         } else {
-            m_buttonLatch |= 0x00000008;
+            m_buttonLatch |= IDX(INPUT_BUTTON3);
         }
     } else {
-        m_buttonLatch &= ~0x00000008;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON3);
     }
-    if (m_heldButtons & 0x00000010) {
-        if (m_buttonLatch & 0x00000010) {
-            m_pressedButtons &= ~0x00000010;
+    if (m_heldButtons & IDX(INPUT_BUTTON4)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON4)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON4);
         } else {
-            m_buttonLatch |= 0x00000010;
+            m_buttonLatch |= IDX(INPUT_BUTTON4);
         }
     } else {
-        m_buttonLatch &= ~0x00000010;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON4);
     }
-    if (m_heldButtons & 0x00000020) {
-        if (m_buttonLatch & 0x00000020) {
-            m_pressedButtons &= ~0x00000020;
+    if (m_heldButtons & IDX(INPUT_BUTTON5)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON5)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON5);
         } else {
-            m_buttonLatch |= 0x00000020;
+            m_buttonLatch |= IDX(INPUT_BUTTON5);
         }
     } else {
-        m_buttonLatch &= ~0x00000020;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON5);
     }
-    if (m_heldButtons & 0x00000040) {
-        if (m_buttonLatch & 0x00000040) {
-            m_pressedButtons &= ~0x00000040;
+    if (m_heldButtons & IDX(INPUT_BUTTON6)) {
+        if (m_buttonLatch & IDX(INPUT_BUTTON6)) {
+            m_pressedButtons &= ~IDX(INPUT_BUTTON6);
         } else {
-            m_buttonLatch |= 0x00000040;
+            m_buttonLatch |= IDX(INPUT_BUTTON6);
         }
     } else {
-        m_buttonLatch &= ~0x00000040;
+        m_buttonLatch &= ~IDX(INPUT_BUTTON6);
     }
     {
 
-        u32 bit = 0x00000080;
+        u32 bit = IDX(INPUT_BUTTON7);
         if (m_heldButtons & bit) {
             if (m_buttonLatch & bit) {
                 m_pressedButtons &= ~bit;
@@ -676,41 +683,41 @@ i32 CKeyboardDevice::Poll() {
             m_buttonLatch &= ~bit;
         }
     }
-    if (m_heldButtons & 0x10000000) {
-        if (m_buttonLatch & 0x10000000) {
-            m_pressedButtons &= ~0x10000000;
+    if (m_heldButtons & IDX(INPUT_LEFT)) {
+        if (m_buttonLatch & IDX(INPUT_LEFT)) {
+            m_pressedButtons &= ~IDX(INPUT_LEFT);
         } else {
-            m_buttonLatch |= 0x10000000;
+            m_buttonLatch |= IDX(INPUT_LEFT);
         }
     } else {
-        m_buttonLatch &= ~0x10000000;
+        m_buttonLatch &= ~IDX(INPUT_LEFT);
     }
-    if (m_heldButtons & 0x20000000) {
-        if (m_buttonLatch & 0x20000000) {
-            m_pressedButtons &= ~0x20000000;
+    if (m_heldButtons & IDX(INPUT_RIGHT)) {
+        if (m_buttonLatch & IDX(INPUT_RIGHT)) {
+            m_pressedButtons &= ~IDX(INPUT_RIGHT);
         } else {
-            m_buttonLatch |= 0x20000000;
+            m_buttonLatch |= IDX(INPUT_RIGHT);
         }
     } else {
-        m_buttonLatch &= ~0x20000000;
+        m_buttonLatch &= ~IDX(INPUT_RIGHT);
     }
-    if (m_heldButtons & 0x40000000) {
-        if (m_buttonLatch & 0x40000000) {
-            m_pressedButtons &= ~0x40000000;
+    if (m_heldButtons & IDX(INPUT_UP)) {
+        if (m_buttonLatch & IDX(INPUT_UP)) {
+            m_pressedButtons &= ~IDX(INPUT_UP);
         } else {
-            m_buttonLatch |= 0x40000000;
+            m_buttonLatch |= IDX(INPUT_UP);
         }
     } else {
-        m_buttonLatch &= ~0x40000000;
+        m_buttonLatch &= ~IDX(INPUT_UP);
     }
-    if (m_heldButtons & 0x80000000) {
-        if (m_buttonLatch & 0x80000000) {
-            m_pressedButtons &= ~0x80000000;
+    if (m_heldButtons & IDX(INPUT_DOWN)) {
+        if (m_buttonLatch & IDX(INPUT_DOWN)) {
+            m_pressedButtons &= ~IDX(INPUT_DOWN);
         } else {
-            m_buttonLatch |= 0x80000000;
+            m_buttonLatch |= IDX(INPUT_DOWN);
         }
     } else {
-        m_buttonLatch &= ~0x80000000;
+        m_buttonLatch &= ~IDX(INPUT_DOWN);
     }
     return 1;
 }
@@ -751,12 +758,12 @@ i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, 
         return 0;
     }
     RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[0x10];
+    state.m_bytes = new u8[sizeof(DIMouseStateZ)];
     if (state.m_bytes == NULL) {
         return 0;
     }
     m_stateBuffer = state.m_rec;
-    m_stateBufferSize = 0x10;
+    m_stateBufferSize = sizeof(DIMouseStateZ);
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
@@ -779,27 +786,16 @@ i32 CMouseDevice::IsReady() {
     return m_device2 != NULL;
 }
 
-typedef enum InputButtonFlags {
-    INPUT_BUTTON0 = 0x00000001,
-    INPUT_BUTTON1 = 0x00000002,
-    INPUT_BUTTON2 = 0x00000004,
-    INPUT_BUTTON3 = 0x00000008,
-    INPUT_LEFT = 0x10000000,
-    INPUT_RIGHT = 0x20000000,
-    INPUT_UP = 0x40000000,
-    INPUT_DOWN = 0x80000000,
-} InputButtonFlags;
-
 #define UPDATE_BUTTON_EDGE(bit)                                                                    \
     do {                                                                                           \
-        if (m_heldButtons & (bit)) {                                                               \
-            if (m_buttonLatch & (bit)) {                                                           \
-                m_pressedButtons &= ~static_cast<u32>(bit);                                        \
+        if (m_heldButtons & IDX(bit)) {                                                            \
+            if (m_buttonLatch & IDX(bit)) {                                                        \
+                m_pressedButtons &= ~IDX(bit);                                                     \
             } else {                                                                               \
-                m_buttonLatch |= (bit);                                                            \
+                m_buttonLatch |= IDX(bit);                                                         \
             }                                                                                      \
         } else {                                                                                   \
-            m_buttonLatch &= ~static_cast<u32>(bit);                                               \
+            m_buttonLatch &= ~IDX(bit);                                                            \
         }                                                                                          \
     } while (0)
 
@@ -815,28 +811,28 @@ i32 CMouseDevice::Poll() {
         return 0;
     }
     if (ms->lX < 0) {
-        m_pressedButtons |= INPUT_LEFT;
+        m_pressedButtons |= IDX(INPUT_LEFT);
     }
     if (ms->lX > 0) {
-        m_pressedButtons |= INPUT_RIGHT;
+        m_pressedButtons |= IDX(INPUT_RIGHT);
     }
     if (ms->lY < 0) {
-        m_pressedButtons |= INPUT_UP;
+        m_pressedButtons |= IDX(INPUT_UP);
     }
     if (ms->lY > 0) {
-        m_pressedButtons |= INPUT_DOWN;
+        m_pressedButtons |= IDX(INPUT_DOWN);
     }
-    if (ms->rgbButtons[0] & 0x80) {
-        m_pressedButtons |= INPUT_BUTTON0;
+    if (ms->rgbButtons[0] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON0);
     }
-    if (ms->rgbButtons[1] & 0x80) {
-        m_pressedButtons |= INPUT_BUTTON1;
+    if (ms->rgbButtons[1] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON1);
     }
-    if (ms->rgbButtons[2] & 0x80) {
-        m_pressedButtons |= INPUT_BUTTON2;
+    if (ms->rgbButtons[2] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON2);
     }
-    if (ms->rgbButtons[3] & 0x80) {
-        m_pressedButtons |= INPUT_BUTTON3;
+    if (ms->rgbButtons[3] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON3);
     }
     m_heldButtons = m_pressedButtons;
     UPDATE_BUTTON_EDGE(INPUT_BUTTON0);
@@ -866,12 +862,12 @@ i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
         return 0;
     }
     RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[0x110];
+    state.m_bytes = new u8[sizeof(DIJoyState2Z)];
     if (state.m_bytes == NULL) {
         return 0;
     }
     m_stateBuffer = state.m_rec;
-    m_stateBufferSize = 0x110;
+    m_stateBufferSize = sizeof(DIJoyState2Z);
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
@@ -895,23 +891,25 @@ i32 CJoystickDevice::ConfigureAxes() {
         return 0;
     }
     DIPROPRANGE range;
-    range.diph.dwSize = 0x18;
-    range.diph.dwHeaderSize = 0x10;
-    range.diph.dwObj = 0;
-    range.diph.dwHow = 1;
-    range.lMin = -1000;
-    range.lMax = 1000;
+    range.diph.dwSize = sizeof(range);
+    range.diph.dwHeaderSize = sizeof(range.diph);
+    range.diph.dwObj = DIJOFS_X;
+    range.diph.dwHow = DIPH_BYOFFSET;
+    range.lMin = JOYSTICK_AXIS_MIN;
+    range.lMax = JOYSTICK_AXIS_MAX;
     if (SetProperty(DIPROP_RANGE, &range.diph) == 0) {
         return 0;
     }
-    range.diph.dwObj = 4;
+    range.diph.dwObj = DIJOFS_Y;
     if (SetProperty(DIPROP_RANGE, &range.diph) == 0) {
         return 0;
     }
-    if (SetPropertyDword(DIPROP_DEADZONE, 0, 1, 0x1388) == 0) {
+    if (SetPropertyDword(DIPROP_DEADZONE, DIJOFS_X, DIPH_BYOFFSET, JOYSTICK_DEADZONE_50_PERCENT)
+        == 0) {
         return 0;
     }
-    return SetPropertyDword(DIPROP_DEADZONE, 4, 1, 0x1388) != 0;
+    return SetPropertyDword(DIPROP_DEADZONE, DIJOFS_Y, DIPH_BYOFFSET, JOYSTICK_DEADZONE_50_PERCENT)
+           != 0;
 }
 
 RVA(0x001347d0, 0x40a)
@@ -929,58 +927,58 @@ i32 CJoystickDevice::Poll() {
         return 0;
     }
     if (js->lX < 0) {
-        m_pressedButtons |= INPUT_LEFT;
+        m_pressedButtons |= IDX(INPUT_LEFT);
     }
     if (js->lX > 0) {
-        m_pressedButtons |= INPUT_RIGHT;
+        m_pressedButtons |= IDX(INPUT_RIGHT);
     }
     if (js->lY < 0) {
-        m_pressedButtons |= INPUT_UP;
+        m_pressedButtons |= IDX(INPUT_UP);
     }
     if (js->lY > 0) {
-        m_pressedButtons |= INPUT_DOWN;
+        m_pressedButtons |= IDX(INPUT_DOWN);
     }
-    if (js->rgbButtons[0] & 0x80) {
-        m_pressedButtons |= 0x1;
+    if (js->rgbButtons[0] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON0);
     }
-    if (js->rgbButtons[1] & 0x80) {
-        m_pressedButtons |= 0x2;
+    if (js->rgbButtons[1] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON1);
     }
-    if (js->rgbButtons[2] & 0x80) {
-        m_pressedButtons |= 0x4;
+    if (js->rgbButtons[2] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON2);
     }
-    if (js->rgbButtons[3] & 0x80) {
-        m_pressedButtons |= 0x8;
+    if (js->rgbButtons[3] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON3);
     }
-    if (js->rgbButtons[4] & 0x80) {
-        m_pressedButtons |= 0x10;
+    if (js->rgbButtons[4] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON4);
     }
-    if (js->rgbButtons[5] & 0x80) {
-        m_pressedButtons |= 0x20;
+    if (js->rgbButtons[5] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON5);
     }
-    if (js->rgbButtons[6] & 0x80) {
-        m_pressedButtons |= 0x40;
+    if (js->rgbButtons[6] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON6);
     }
-    if (js->rgbButtons[7] & 0x80) {
-        m_pressedButtons |= 0x80;
+    if (js->rgbButtons[7] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON7);
     }
-    if (js->rgbButtons[8] & 0x80) {
-        m_pressedButtons |= 0x100;
+    if (js->rgbButtons[8] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON8);
     }
-    if (js->rgbButtons[9] & 0x80) {
-        m_pressedButtons |= 0x200;
+    if (js->rgbButtons[9] & DINPUT_STATE_PRESSED) {
+        m_pressedButtons |= IDX(INPUT_BUTTON9);
     }
     m_heldButtons = m_pressedButtons;
-    UPDATE_BUTTON_EDGE(0x1);
-    UPDATE_BUTTON_EDGE(0x2);
-    UPDATE_BUTTON_EDGE(0x4);
-    UPDATE_BUTTON_EDGE(0x8);
-    UPDATE_BUTTON_EDGE(0x10);
-    UPDATE_BUTTON_EDGE(0x20);
-    UPDATE_BUTTON_EDGE(0x40);
-    UPDATE_BUTTON_EDGE(0x80);
-    UPDATE_BUTTON_EDGE(0x100);
-    UPDATE_BUTTON_EDGE(0x200);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON0);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON1);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON2);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON3);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON4);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON5);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON6);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON7);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON8);
+    UPDATE_BUTTON_EDGE(INPUT_BUTTON9);
     UPDATE_BUTTON_EDGE(INPUT_LEFT);
     UPDATE_BUTTON_EDGE(INPUT_RIGHT);
     UPDATE_BUTTON_EDGE(INPUT_UP);

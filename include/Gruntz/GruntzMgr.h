@@ -85,7 +85,7 @@ public:
     i32 LaunchProcessInDir(char* exe, char* dir);
 
     void Post(i32 code);
-    i32 SaveGameAs();
+    i32 OpenBattlezSetup();
     // wParam is an ErrorStringId (a string-table resource id - ShowError feeds
     // it to LoadStringA); lParam is a bare per-call-site tag that ShowError
     // prints verbatim as "(%i)", so it has no domain. See ErrorStringId.h for
@@ -377,8 +377,8 @@ public:
 
     i32 m_scrollSpeed;
 
-    i32 m_isBattlezLevel;
-    i32 m_isMultiLevel;
+    i32 m_isBuiltInBattlezLevel;
+    i32 m_isBuiltInMultiplayerLevel;
     i32 m_isCustomLevel;
     GameModeId m_gameMode;
     i32 m_computerPlayerCount;
@@ -387,7 +387,7 @@ public:
     GruntzPlayer m_players[4];
 };
 
-extern i32 g_scoreTimeBase;
+extern i32 g_roundStartTimeMs;
 
 i32 PumpIdleFrame();
 
@@ -412,7 +412,7 @@ i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();
 i32 FileExists(const char* szPath);
-void ChannelSlots_InitAll();
+void ResetPlayerColorAvailability();
 
 BOOL CALLBACK SetSkillLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK WarpDialogProc(HWND, UINT, WPARAM, LPARAM);

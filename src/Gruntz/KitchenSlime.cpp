@@ -142,7 +142,7 @@ i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
+    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_QUESTZ) {
         CGameObject* lvl = Level();
         i32 playerIndex, unitIndex;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_triggerMgr->FindGruntAt(

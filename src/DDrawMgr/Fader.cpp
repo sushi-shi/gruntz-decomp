@@ -437,7 +437,7 @@ void CFaderMesh::RenderFrame(i32 frame) {
             &dstRect,
             m_sourceSurface,
             m_reverseOrder != 0 ? &srcRect : &boundRect,
-            0x1000000,
+            DDBLT_WAIT,
             NULL
         );
     }

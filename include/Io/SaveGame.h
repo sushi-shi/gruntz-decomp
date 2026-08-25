@@ -48,10 +48,7 @@ struct SaveSlot {
     };
     char m_levelName[0x83];
     i32 m_isCustom;
-    union {
-        i32 m_isWon;
-        i32 m_isBattlez;
-    };
+    i32 m_isBattlez;
 };
 
 class CSaveGame {

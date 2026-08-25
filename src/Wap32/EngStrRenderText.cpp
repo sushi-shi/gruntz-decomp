@@ -52,12 +52,12 @@ i32 EngStr_RenderText(
     CRect rect;
     if (shadow) {
         CopyRect(&rect, rc);
-        OffsetRect(&rect, 2, 3);
-        g_textObj.SetColor(0);
+        OffsetRect(&rect, ENGSTR_SHADOW_OFFSET_X_PX, ENGSTR_SHADOW_OFFSET_Y_PX);
+        g_textObj.SetColor(ENGSTR_SHADOW_COLOR);
 
         g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
     }
-    g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
+    g_textObj.SetColor(RGB(r, g, b));
     g_textObj.DrawWrapped(*str, drawSurface, *rc, 1, flag, 0);
     return 1;
 }

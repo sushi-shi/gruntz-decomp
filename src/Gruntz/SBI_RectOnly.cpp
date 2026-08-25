@@ -489,7 +489,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     SetTab(GAME_TAB_MENU, 0);
                     return 1;
                 case SBICMD_DESTRUCT:
-                    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                         break;
                     }
                     if (m_destructButtonLocked != 0) {
@@ -647,7 +647,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                         HiCueLookup();
                         g_gameReg->FinalizeLevelAndShowResults();
-                    } else if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+                    } else if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                         HiCueLookup();
                         HiPost(0x806b);
                     } else {
@@ -656,7 +656,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     }
                     return 1;
                 case SBICMD_DIALOG_SECONDARY:
-                    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+                    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
@@ -668,7 +668,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     }
                     return 1;
                 case SBICMD_DIALOG_YES:
-                    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+                    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                         if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
                             g_gameReg->CommitSinglePlayerProgress();
                         }
@@ -1008,7 +1008,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     AddTabItem(0, multiTab);
     m_tabSprite3 = multiTab;
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         multiTab->m_state = MENUITEM_DISABLED;
         CDDrawWorker* f = multiTab->m_record;
         if (f != NULL) {
@@ -1620,7 +1620,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
         AddTabItem(5, destruct);
         m_destructButtonImage = destruct;
-        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             destruct->SetEnabled(0);
             m_destructButtonFrame = DESTRUCT_FRAME_DISABLED;
             m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
@@ -1779,7 +1779,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     AddTabItem(2, set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_players[g_curPlayer].m_colorIndex),
+                        IDX(g_gameReg->m_players[g_curPlayer].m_color),
                         0
                     );
                     if (sel == NULL) {
@@ -2247,7 +2247,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
-                        sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_colorIndex), 0);
+                        sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_color), 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
                         }
@@ -2762,7 +2762,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && m_hlBusy == 0) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_hlBusy == 0) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -3793,7 +3793,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
             m_slots[i].m_value = kSlotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
         }
-    } else if (mode == GAMEMODE_REPLAY) {
+    } else if (mode == GAMEMODE_BATTLEZ) {
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Battlez", "StartingGruntz", 0); i++) {
             m_slots[i].m_value = kSlotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
@@ -3836,7 +3836,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
             Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
             result = static_cast<PickupType>(p->m_x);
@@ -4772,7 +4772,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         AddTabItem(6, rsn);
 
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             CSBI_MenuItem* next = new CSBI_MenuItem;
             if (!next->SetupImage(
                     this,
@@ -4859,7 +4859,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     AddTabItem(6, rsn);
 
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         CSBI_MenuItem* replay = new CSBI_MenuItem;
         if (!replay->SetupImage(
                 this,
@@ -4978,7 +4978,7 @@ void CStatusBarMgr::ExitMode() {
     m_tabSprite13 = NULL;
     m_tabSprite14 = NULL;
     m_hlBusy = 0;
-    if (wasQuitConfirmation == 0 && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (wasQuitConfirmation == 0 && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -5047,7 +5047,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != 0) {
         return;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         return;
     }
     if (m_position == STATUSBAR_HIDDEN) {

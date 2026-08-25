@@ -349,7 +349,7 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x10000, 0)) {
+    if (!t->Set(PALETTE_ENTRY_COUNT * PALETTE_ENTRY_COUNT, 0)) {
         return NULL;
     }
 
@@ -365,7 +365,7 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
             u8 g =
                 static_cast<u8>((pal[j].peGreen * wCol / 100 + pal[i].peGreen * wRow / 100) / div);
             u8 b = static_cast<u8>((pal[j].peBlue * wCol / 100 + pal[i].peBlue * wRow / 100) / div);
-            data[i * 0x100 + j] = static_cast<u8>(FindNearestColor(pal, r, g, b));
+            data[i * PALETTE_ENTRY_COUNT + j] = static_cast<u8>(FindNearestColor(pal, r, g, b));
         }
     }
     return t;
@@ -379,7 +379,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x200, 0)) {
+    if (!t->Set(PALETTE_ENTRY_COUNT * 2, 0)) {
         return NULL;
     }
 
@@ -392,11 +392,11 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         data[i] = static_cast<u8>(i);
     }
-    qsort(data, 0x100, 1, CompareLuma);
+    qsort(data, PALETTE_ENTRY_COUNT, sizeof(u8), CompareLuma);
     for (i32 c = 0; c < PALETTE_ENTRY_COUNT; c++) {
         for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
             if (data[j] == c) {
-                data[0x100 + c] = static_cast<u8>(j);
+                data[PALETTE_ENTRY_COUNT + c] = static_cast<u8>(j);
                 break;
             }
         }
@@ -435,7 +435,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x200, 0)) {
+    if (!t->Set(PALETTE_ENTRY_COUNT * 2, 0)) {
         return NULL;
     }
 
@@ -448,11 +448,11 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         data[i] = static_cast<u8>(i);
     }
-    qsort(data, 0x100, 1, CompareHue);
+    qsort(data, PALETTE_ENTRY_COUNT, sizeof(u8), CompareHue);
     for (i32 c = 0; c < PALETTE_ENTRY_COUNT; c++) {
         for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
             if (data[j] == c) {
-                data[0x100 + c] = static_cast<u8>(j);
+                data[PALETTE_ENTRY_COUNT + c] = static_cast<u8>(j);
                 break;
             }
         }
@@ -616,7 +616,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x200, 0)) {
+    if (!t->Set(PALETTE_ENTRY_COUNT * 2, 0)) {
         t->Reset();
         ::operator delete(t);
         return NULL;
@@ -628,7 +628,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
     PALETTEENTRY* p = pal;
-    for (i32 i = 0x100; i != 0; i--) {
+    for (i32 i = PALETTE_ENTRY_COUNT; i != 0; i--) {
         u16 v = static_cast<u16>(
             ((static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp)
              | (static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)

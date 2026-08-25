@@ -22,12 +22,12 @@ class CChatBoxOwner;
 class CWorldSoundSet;
 class CNetMgr;
 class CNetPlayerNode;
-struct CNetStatPacket;
-struct CNetVersionMsg;
-struct CNetChannelPacket;
-struct CNetOneChannelPacket;
-struct CNetChannelTablePacket;
-struct CNetConfigBlob;
+struct CNetValuePacket;
+struct CNetVersionPacket;
+struct CNetPlayerRegistrationPacket;
+struct CNetPlayerUpdatePacket;
+struct CNetPlayerTablePacket;
+struct CNetGameConfigPacket;
 class GruntzPlayer;
 struct CNetSession;
 
@@ -54,7 +54,7 @@ public:
         m_session = NULL;
         m_netMgr = NULL;
         m_savedEffectsEnabled = 1;
-        m_customLevel = 0;
+        m_usesCustomLevel = 0;
         m_autoCommandDelay = 1;
     }
     virtual ~CMulti() OVERRIDE;
@@ -125,16 +125,16 @@ public:
     void ReportNetError(i32 level);
     i32 JoinSession();
     i32 RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam);
-    void AckJoinFailure();
+    void SendLobbyKeepAlive();
 
     i32 Connect(i32 mode);
     i32 StartTitle();
     void CheckDropTimeout();
 
-    i32 OpenHostChannel(
+    i32 CreateHostPlayer(
         void* hostToken,
         const char* name,
-        i32 channelId,
+        ColorTint color,
         i32 cmdDelay,
         i32 resend,
         i32 unused6,
@@ -142,31 +142,31 @@ public:
         i32 unused8
     );
 
-    void SendStatFlag(NetMsgId code, i32 flag);
+    void BroadcastPlayerIdMessage(NetMsgId code, i32 flag);
 
-    void SendNetStat(NetMsgId id, u32 value, i32 flag);
+    void BroadcastValueMessage(NetMsgId id, u32 value, i32 flag);
 
-    i32 DropChannelPlayer(i32 slotIndex);
+    i32 DropLobbyPlayer(i32 slotIndex);
     i32 Poll(i32 token);
     i32 ResolveLocalPlayer();
-    void ReportAckLatency();
+    void ReportMaxAckLatency();
     i32 VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* localPlayer);
     i32 PollSession();
     i32 AutoTuneCmdDelay();
 
-    void OnDropPlayer();
+    void ShowDropPlayerDialog();
 
-    i32 BroadcastChannelTable(CNetPlayerNode* recipient);
-    i32 BroadcastOneChannel(GruntzPlayer* player);
+    i32 BroadcastPlayerTable(CNetPlayerNode* recipient);
+    i32 BroadcastPlayerUpdate(GruntzPlayer* player);
 
-    i32 RegisterChannelFrom(
+    i32 RegisterLocalPlayer(
         const char* name,
         ColorTint color,
         i32 preferredPlayerIndex,
         i32 networkPlayerId
     );
 
-    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd);
+    i32 BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally, HWND edit);
     i32 ReadGroupSel();
     i32 AdvanceGameFrame();
     void RenderGameFrame();
@@ -179,29 +179,29 @@ public:
     void ApplyCmdDelayDefaults();
 
     i32 ShowMultiStartDlg();
-    CNetSessionListNode* JoinAndRegisterChannel();
+    CNetSessionListNode* CreateHostSessionAndPlayer();
     i32 OnJoinConfirm(HWND hDlg);
 
     i32 PollSessionGated(i32 sessionGate, i32 pollGate);
-    i32 SendStatBuf(CNetStatPacket* packet, i32 flags);
-    i32 SendStatFrom(void* packet, i32 packetSize, i32 flags);
-    i32 SendStatPair(CNetPlayerNode* recipient, CNetStatPacket* packet, i32 flags);
-    i32 SendStatTo(CNetPlayerNode* recipient, NetMsgId messageId, i32 flags);
-    i32 SendStat3(i32 recipientId, NetMsgId messageId, i32 flags);
-    i32 SendNetStatTo(CNetPlayerNode* recipient, i32 messageId, u32 value, i32 flags);
-    i32 SendStatPairRaw(CNetPlayerNode* recipient, void* packet, i32 packetSize, i32 flags);
-    i32 SendStatValue(i32 recipientId, NetMsgId messageId, i32 value, i32 flags);
+    i32 BroadcastValuePacket(CNetValuePacket* packet, i32 flags);
+    i32 BroadcastPacket(void* packet, i32 packetSize, i32 flags);
+    i32 SendValuePacketTo(CNetPlayerNode* recipient, CNetValuePacket* packet, i32 flags);
+    i32 SendPlayerIdMessageTo(CNetPlayerNode* recipient, NetMsgId messageId, i32 flags);
+    i32 SendPlayerIdMessageToId(i32 recipientId, NetMsgId messageId, i32 flags);
+    i32 SendValueMessageTo(CNetPlayerNode* recipient, i32 messageId, u32 value, i32 flags);
+    i32 SendPacketTo(CNetPlayerNode* recipient, void* packet, i32 packetSize, i32 flags);
+    i32 SendValueMessageToId(i32 recipientId, NetMsgId messageId, i32 value, i32 flags);
     i32 DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize);
     i32 HandleSystemMessage(LPDPMSG_GENERIC message, i32 unusedMessageSize);
     i32 OnPlayerLeft(i32 playerId);
-    void AckDropPlayer(i32 playerId);
+    void ApplyPlayerDrop(i32 playerId);
     void WriteTag(const char*);
 
-    void RecordDropAcknowledgement(CNetPlayerNode* unusedPlayer, i32 playerId);
+    void RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId);
     i32 WaitForOtherPlayers();
     i32 HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message);
-    i32 ApplyChannelTable(CNetChannelTablePacket* packet);
-    i32 RegisterChannel(
+    i32 ApplyPlayerTable(CNetPlayerTablePacket* packet);
+    i32 RegisterPlayer(
         const char* name,
         ColorTint color,
         i32 humanControlled,
@@ -209,25 +209,25 @@ public:
         i32 preferredPlayerIndex,
         i32 networkPlayerId
     );
-    i32 RegisterChannelFromPacket(CNetChannelPacket* packet);
-    i32 RemoveChannel(i32 slotIndex);
-    i32 OnPauseChannel();
-    void OnMultiPause();
-    void OnMultiOptions();
-    i32 ApplyChannelUpdate(CNetOneChannelPacket* packet);
-    i32 BroadcastOptionsPresent();
-    i32 BroadcastOptionsAbsent();
+    i32 RegisterPlayerFromPacket(CNetPlayerRegistrationPacket* packet);
+    i32 DeactivatePlayer(i32 slotIndex);
+    i32 RequestMultiplayerPause();
+    void ShowMultiplayerPauseDialog();
+    void ShowMultiplayerOptionsDialog();
+    i32 ApplyPlayerUpdate(CNetPlayerUpdatePacket* packet);
+    i32 AnnounceOptionsOpened();
+    i32 AnnounceOptionsClosed();
     i32 CreateSession();
     u32 FrameSyncWait();
     i32 SetupTcpIpConfig();
     i32 CreateLocalPlayer();
     i32 WaitForConnect();
-    i32 SaveConfig(CNetPlayerNode* recipient);
-    i32 LoadConfig(CNetConfigBlob* config);
+    i32 SendGameConfig(CNetPlayerNode* recipient);
+    i32 ApplyGameConfig(CNetGameConfigPacket* config);
     i32 ResetPlayerCommands(i32 playerId);
     u32 GetMaxAckLatency();
-    void HandleVersionCheck(CNetVersionMsg* msg);
-    void AnnounceVersion(CNetPlayerNode* recipient);
+    void HandleVersionCheck(CNetVersionPacket* packet);
+    void SendVersionCheck(CNetPlayerNode* recipient);
 
     void SetGameName(CString s);
     void SetPlayerName(CString s);
@@ -262,7 +262,7 @@ public:
     i32 m_commandDelay;
     i32 m_resendInterval;
     i32 m_gameClosed;
-    i32 m_customLevel;
+    i32 m_usesCustomLevel;
     CString m_builtInLevelName;
     CString m_customLevelName;
     CNetPlayerNode* m_localPlayer;
@@ -278,7 +278,7 @@ public:
     i32 m_lastFrameSyncTime;
     i32 m_reserved5e8;
     i32 m_reserved5ec;
-    i32 m_channelLatency[4];
+    i32 m_playerLatencyMs[4];
     i32 m_autoCommandDelay;
 
     CDWordArray m_readyPlayerIds;
@@ -305,7 +305,7 @@ extern i32 g_serviceId;
 extern CMulti* g_connectRptMgr;
 void RefreshSessionSelection(HWND hDlg, HWND hList);
 
-extern HWND g_sharedFlag;
+extern HWND g_netMessageEditHwnd;
 
 extern char s_GameKey[];
 extern u32 g_ackThrottleDeadline;

@@ -48,17 +48,11 @@ union NetGuid {
 extern NetGuid g_dplayAppGuid;
 extern i32 g_cfgWord;
 
-struct CNetVersionMsg {
-    char m_pad0[0x18];
-    i32 m_remoteVersion;
-    i32 m_localVersion;
-};
-
 struct CNetVersionPacket {
     u8 m_flags;
     char m_pad1[3];
 
-    NetMsgId m_statId;
+    NetMsgId m_messageId;
     i32 m_butePos;
     i32 m_cfgWord;
     char m_pad10[8];
@@ -68,28 +62,28 @@ struct CNetVersionPacket {
 
 class CNetPlayerNode;
 
-struct CNetStatPacket {
+struct CNetValuePacket {
     u8 m_flags;
     char m_pad1[3];
-    NetMsgId m_statId;
+    NetMsgId m_messageId;
     i32 m_value;
     char m_padc[4];
 };
 
-struct CNetChannelStatPacket {
+struct CNetOptionsStatePacket {
     u8 m_flags;
     char m_pad1[3];
-    NetMsgId m_statId;
+    NetMsgId m_messageId;
     i32 m_value;
 };
 
 #pragma pack(push, 1)
-struct CNetChannelPacket {
+struct CNetPlayerRegistrationPacket {
     u8 m_flags;
     char m_pad01[3];
-    NetMsgId m_statId;
-    u8 m_present;
-    GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
+    NetMsgId m_messageId;
+    u8 m_active;
+    GZ_ENUM_STORAGE(ColorTint, u8) m_color;
     u8 m_humanControlled;
     GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
     u8 m_preferredPlayerIndex;
@@ -100,13 +94,13 @@ struct CNetChannelPacket {
     char m_name[0x28 - 0x14];
 };
 
-struct CNetOneChannelPacket {
+struct CNetPlayerUpdatePacket {
     u8 m_flags;
     char m_pad01[3];
-    NetMsgId m_statId;
+    NetMsgId m_messageId;
     i32 m_playerIndex;
-    u8 m_present;
-    GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
+    u8 m_active;
+    GZ_ENUM_STORAGE(ColorTint, u8) m_color;
     u8 m_humanControlled;
     GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
     char m_pad10[1];
@@ -117,9 +111,9 @@ struct CNetOneChannelPacket {
     char m_name[0x2c - 0x18];
 };
 
-struct CNetChannelRow {
+struct CNetPlayerRecord {
     u8 m_active;
-    GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
+    GZ_ENUM_STORAGE(ColorTint, u8) m_color;
     u8 m_humanControlled;
     GZ_ENUM_STORAGE(BattlezDifficulty, u8) m_difficulty;
     u8 m_pad04;
@@ -130,11 +124,11 @@ struct CNetChannelRow {
     char m_name[0x20 - 0x0c];
 };
 
-struct CNetChannelTablePacket {
+struct CNetPlayerTablePacket {
     u8 m_flags;
     char m_pad01[3];
-    NetMsgId m_statId;
-    CNetChannelRow m_rows[4];
+    NetMsgId m_messageId;
+    CNetPlayerRecord m_rows[4];
 };
 #pragma pack(pop)
 
@@ -204,7 +198,7 @@ struct GruntRec {
 class CGruntzCommand;
 struct CNetPacketPrefix;
 struct CNetMsg;
-struct CNetConfigBlob;
+struct CNetGameConfigPacket;
 
 union CNetWireMsg {
     char* m_bytes;
@@ -213,12 +207,12 @@ union CNetWireMsg {
     LPDPMSG_GENERIC m_system;
     LPDPMSG_CREATEPLAYERORGROUP m_playerCreated;
     LPDPMSG_DESTROYPLAYERORGROUP m_playerDestroyed;
-    CNetChannelPacket* m_chan;
-    CNetOneChannelPacket* m_oneChannel;
-    CNetChannelTablePacket* m_chanTable;
-    CNetVersionMsg* m_version;
+    CNetPlayerRegistrationPacket* m_playerRegistration;
+    CNetPlayerUpdatePacket* m_playerUpdate;
+    CNetPlayerTablePacket* m_playerTable;
+    CNetVersionPacket* m_versionCheck;
     CNetCmdHdr* m_cmdHdr;
-    CNetConfigBlob* m_config;
+    CNetGameConfigPacket* m_gameConfig;
 };
 
 GruntRec* AllocateGruntRecord(i32 clear);
@@ -352,21 +346,21 @@ class CFontConfig;
 
 extern char g_recvBuffer[];
 
-extern CNetChannelStatPacket g_optionsPresentPacket;
-extern CNetChannelStatPacket g_optionsAbsentPacket;
+extern CNetOptionsStatePacket g_optionsOpenedPacket;
+extern CNetOptionsStatePacket g_optionsClosedPacket;
 
-struct CChatPacket {
-    u8 m_flag;
+struct CNetChatPacket {
+    u8 m_flags;
     char m_pad1[3];
-    i32 m_id;
-    i32 m_val;
-    char m_buf[0x100]; // capacity unproven
+    NetMsgId m_messageId;
+    i32 m_value;
+    char m_text[0x100]; // capacity unproven
 };
 
-extern CChatPacket g_chatPacket;
+extern CNetChatPacket g_netChatPacket;
 
-extern i32 g_playerLeftFlag;
-extern i32 g_activePlayerCount;
+extern i32 g_playerRosterChanged;
+extern i32 g_playersInOptionsCount;
 
 struct CNetProviderNode;
 

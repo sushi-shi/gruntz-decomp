@@ -41,9 +41,9 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     SwitchGeometry("GAME_CYCLE100", 0);
 
     i32 idx = m_object->m_smarts;
-    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         if (g_gameReg->m_players[idx].m_active != 0) {
-            idx = IDX(g_gameReg->m_players[idx].m_colorIndex);
+            idx = IDX(g_gameReg->m_players[idx].m_color);
         } else {
             SetObjectFlags(0x10000);
 
@@ -76,11 +76,11 @@ i32 CGruntCreationPoint::SerializeMove(
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     if (mode != SERIAL_SAVE && mode == SERIAL_POSTLOAD) {
         i32 idx;
-        if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             if (g_gameReg->m_players[m_object->m_smarts].m_active != 0) {
-                idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_colorIndex);
+                idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
             } else {
-                idx = ChannelSlots_FindFree();
+                idx = IDX(FindAvailablePlayerColor());
             }
         } else {
             idx = m_object->m_smarts;

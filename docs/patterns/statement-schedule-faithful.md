@@ -8,7 +8,7 @@ Ten corollaries, all steerable or diagnostically bounded by source lifetime/posi
 
 - **A store emitted BETWEEN an arg push and its `call`** must be written *before* the call
   statement in source (moving it after the call shifts a byte). E.g. CNetMgr's shared-flag store
-  `g_sharedFlag=0` lands between the `sub` and the first `je` → write it right after the dispatch.
+  `g_netMessageEditHwnd=0` lands between the `sub` and the first `je` → write it right after the dispatch.
 - **Member inits emit in the optimizer's schedule order, not declaration order** in some ctors
   (CGameApp stores +0x10 before +0x0c) but flat-scalar ctors ARE declaration-order-faithful
   (CState ctor matched first try). Mirror the order you read from the dump.

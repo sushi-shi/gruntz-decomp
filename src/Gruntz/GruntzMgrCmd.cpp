@@ -66,7 +66,7 @@
     }
 #define WARP(N, ERR)                                                                               \
     {                                                                                              \
-        m_gameMode = GAMEMODE_SINGLE;                                                              \
+        m_gameMode = GAMEMODE_QUESTZ;                                                              \
         m_strWorldFile.Empty();                                                                    \
         if (!PassClickToPlayState((N), 0, 1))                                                      \
             ReportError(IDX(IDS_SET_GAME_STATE), (ERR));                                           \
@@ -181,33 +181,33 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
     switch (nID) {
         case CMD_NEW_GAME:
         case CMD_NEW_GAME_ALT:
-            m_gameMode = GAMEMODE_SINGLE;
+            m_gameMode = GAMEMODE_QUESTZ;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41e);
             }
             return 1;
         case CMD_LOAD_WORLD:
-            m_gameMode = GAMEMODE_SINGLE;
+            m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
             if (!PassClickToPlayState(lParam, 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
-            m_gameMode = GAMEMODE_SINGLE;
+            m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
             if (!PassClickToPlayState(IDX(m_saveGame->m_maxLevel), 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
-        case CMD_NEW_GAME_REPLAY:
-            m_gameMode = GAMEMODE_REPLAY;
+        case CMD_START_BATTLEZ_GAME:
+            m_gameMode = GAMEMODE_BATTLEZ;
             if (!PassClickToPlayState(1, 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x420);
             }
             return 1;
-        case CMD_SAVE_GAME_AS:
-            SaveGameAs();
+        case CMD_OPEN_BATTLEZ_SETUP:
+            OpenBattlezSetup();
             // fall through to default
         default:
             if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -632,22 +632,22 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             m_strWorldFile = tmp;
             static_cast<void>(notifyCode);
             if (tmp.GetLength()) {
-                if (si->m_isWon) {
+                if (si->m_isBattlez) {
                     if (si->m_isCustom) {
-                        m_isBattlezLevel = 0;
+                        m_isBuiltInBattlezLevel = 0;
                         m_isCustomLevel = 1;
-                        m_gameMode = GAMEMODE_REPLAY;
+                        m_gameMode = GAMEMODE_BATTLEZ;
                     } else {
-                        m_isBattlezLevel = 1;
+                        m_isBuiltInBattlezLevel = 1;
                         m_isCustomLevel = 0;
-                        m_gameMode = GAMEMODE_REPLAY;
+                        m_gameMode = GAMEMODE_BATTLEZ;
                     }
                 } else {
-                    m_gameMode = GAMEMODE_SINGLE;
+                    m_gameMode = GAMEMODE_QUESTZ;
                     m_isCustomLevel = 1;
                 }
             } else {
-                m_gameMode = GAMEMODE_SINGLE;
+                m_gameMode = GAMEMODE_QUESTZ;
                 m_isCustomLevel = 0;
             }
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {

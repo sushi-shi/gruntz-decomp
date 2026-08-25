@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/PaletteSize.h>
 #include <Ints.h>
 
 union LogPal256 {
@@ -12,13 +13,13 @@ union LogPal256 {
     struct {
         u16 palVersion;
         u16 palNumEntries;
-        PALETTEENTRY palPalEntry[256];
+        PALETTEENTRY palPalEntry[PALETTE_ENTRY_COUNT];
     };
 };
 
 union Palette256 {
-    u8 m_bytes[0x400];
-    PALETTEENTRY m_entries[256];
+    u8 m_bytes[PALETTE_ENTRY_COUNT * sizeof(PALETTEENTRY)];
+    PALETTEENTRY m_entries[PALETTE_ENTRY_COUNT];
 };
 
 extern HINSTANCE g_resModule;

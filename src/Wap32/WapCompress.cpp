@@ -1,12 +1,12 @@
 #include <rva.h>
 
-#include <Wap32/WapUncompress.h>
+#include <Wap32/WapCompress.h>
 
 #include <stddef.h>
 #include <zlib.h>
 
 RVA(0x001853b0, 0xa6)
-int WapUncompress(
+int WapCompress(
     unsigned char* dest,
     unsigned long* pDestLen,
     unsigned char* src,
@@ -21,14 +21,14 @@ int WapUncompress(
     s.zfree = NULL;
     s.opaque = NULL;
 
-    int err = deflateInit_(&s, -1, "1.0.4", sizeof(z_stream));
-    if (err != 0) {
+    int err = deflateInit_(&s, Z_DEFAULT_COMPRESSION, "1.0.4", sizeof(z_stream));
+    if (err != Z_OK) {
         return err;
     }
-    err = deflate(&s, 4);
-    if (err != 1) {
+    err = deflate(&s, Z_FINISH);
+    if (err != Z_STREAM_END) {
         deflateEnd(&s);
-        return err == 0 ? -5 : err;
+        return err == Z_OK ? Z_BUF_ERROR : err;
     }
     *pDestLen = s.total_out;
     err = deflateEnd(&s);

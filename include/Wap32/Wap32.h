@@ -130,9 +130,16 @@ public:
     i32 m_frameBudgetMs;
 };
 
+GZ_ENUM_FLAGS_BEGIN(GameWindowFlags, i32)
+    GAME_WINDOW_FLAGS_NONE = 0,
+    GAME_WINDOW_FLAG_WINDOWED = 0x1,
+    GAME_WINDOW_FLAG_FIXED_SIZE = 0x2
+GZ_ENUM_FLAGS_END(GameWindowFlags, i32)
+GZ_ENUM_FLAGS_OPS(GameWindowFlags)
+
 struct GameInfo {
     i32 size;
-    i32 windowClassFlags;
+    GameWindowFlags windowClassFlags;
     HINSTANCE hInstance;
     char szCmdLine[0x80];
     char szGameIdentifier[0x40];
@@ -167,7 +174,15 @@ public:
     );
     RVA(0x00080d20, 0x24)
     virtual i32 InitDefault(HINSTANCE hInstance, char* szName) {
-        return Init(hInstance, szName, szName, "", 0, COORD_UNSET, COORD_UNSET);
+        return Init(
+            hInstance,
+            szName,
+            szName,
+            "",
+            IDX(GAME_WINDOW_FLAGS_NONE),
+            COORD_UNSET,
+            COORD_UNSET
+        );
     }
     virtual void CloseResources();
 

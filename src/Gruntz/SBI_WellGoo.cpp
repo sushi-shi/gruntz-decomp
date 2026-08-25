@@ -66,7 +66,7 @@ i32 CSBI_WellGoo::Setup(
     if (m_gooSrc == NULL) {
         goto fail;
     }
-    sel = IDX(g_gameReg->m_players[g_curPlayer].m_colorIndex);
+    sel = IDX(g_gameReg->m_players[g_curPlayer].m_color);
     node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
     if (node == NULL) {
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
@@ -261,7 +261,7 @@ i32 CSBI_WellGoo::SerializeFields(
             if (m_gooSrc == NULL) {
                 return 0;
             }
-            i32 sel = IDX(g_gameReg->m_players[g_curPlayer].m_colorIndex);
+            i32 sel = IDX(g_gameReg->m_players[g_curPlayer].m_color);
             CShadeTable* node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
             if (node == NULL) {
                 node = g_gameReg->m_spriteFactory->GetSel(1, 0);

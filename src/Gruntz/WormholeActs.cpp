@@ -59,7 +59,7 @@ void CExitTrigger::RegisterActs() {
 RVA(0x0003f5f0, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdGameObjectA* trig = m_object;
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
@@ -126,7 +126,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_players[hitPlayerIndex].m_colorIndex),
+                        IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
                         0
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
@@ -149,7 +149,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        IDX(g_gameReg->m_players[hitPlayerIndex].m_colorIndex),
+                        IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
                         0
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);

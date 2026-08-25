@@ -4,15 +4,20 @@
 #include <rva.h>
 
 #include <AddrWord.h>
+#include <Enums.h>
 #include <Ints.h>
 #include <Wap32/zBitVec.h>
 
 struct CVariantSlot;
 
+GZ_ENUM_CONST_BEGIN(ZVecSentinel)
+    ZVEC_NO_SCRATCH_ADDRESS = 1
+GZ_ENUM_CONST_END(ZVecSentinel)
+
 inline char* ZVecNoScratch() {
 
     AddrWord<char> sentinel;
-    sentinel.m_word = 1;
+    sentinel.m_word = ZVEC_NO_SCRATCH_ADDRESS;
     return sentinel.m_addr;
 }
 

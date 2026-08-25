@@ -410,7 +410,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             dr.top = (yp);                                                                         \
             dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
-            surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                           \
+            surf->BltEx(&dr, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &m_bltFx);                        \
         } else if (h_ != static_cast<u32>(TILE_CLEAR)) {                                           \
             CDDrawWorker* fr_ = FrameSetAt(h_ >> 16);                                              \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \

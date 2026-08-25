@@ -51,9 +51,9 @@ RVA(0x0000b660, 0x2b)
 void CWorldSoundSet::Teardown() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
-        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != NULL) {
-            delete ch;
+        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+        if (sound != NULL) {
+            delete sound;
         }
     }
     m_list.RemoveAll();
@@ -223,9 +223,9 @@ void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
-        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != NULL) {
-            ch->ApplyMasterVolume(masterVolume);
+        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+        if (sound != NULL) {
+            sound->ApplyMasterVolume(masterVolume);
         }
     }
 }
@@ -237,10 +237,10 @@ void CWorldSoundSet::Stop() {
     }
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
-        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != NULL && ch->m_sound != NULL) {
-            ch->m_sound->StopAndRewind();
-            ch->m_isPlaying = 0;
+        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+        if (sound != NULL && sound->m_sound != NULL) {
+            sound->m_sound->StopAndRewind();
+            sound->m_isPlaying = 0;
         }
     }
 }
@@ -249,10 +249,10 @@ RVA(0x0000bcf0, 0x43)
 void CWorldSoundSet::Resume() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
-        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != NULL) {
-            ch->m_isPlaying = 0;
-            ch->Update(m_listenerX, m_listenerY, 1);
+        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+        if (sound != NULL) {
+            sound->m_isPlaying = 0;
+            sound->Update(m_listenerX, m_listenerY, 1);
         }
     }
 
@@ -265,9 +265,9 @@ void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
     m_listenerY = y;
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
-        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
-        if (ch != NULL) {
-            ch->Update(x, y, 0);
+        CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
+        if (sound != NULL) {
+            sound->Update(x, y, 0);
         }
     }
 

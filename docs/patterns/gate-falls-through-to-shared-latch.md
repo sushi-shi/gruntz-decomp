@@ -18,7 +18,7 @@ of the `if` into the shared block:
 if (count == 0) {
     goto ready;
 }
-SendStatFlag(0x3ed, 1);
+BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, 1);
 … big body …
 return 1;
 ready:
@@ -27,7 +27,7 @@ return 1;
 
 // after - the body is the fall-through, `ready:` stays at the bottom
 if (count != 0) {
-    SendStatFlag(0x3ed, 1);
+    BroadcastPlayerIdMessage(NETMSG_PLAYER_READY, 1);
     … big body …
     return 1;
 }

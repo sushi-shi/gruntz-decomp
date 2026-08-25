@@ -109,14 +109,14 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             switch (wParam) {
                 case IDCANCEL:
                     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
-                        (static_cast<CMulti*>(g_gameReg->m_curState))->BroadcastOptionsAbsent();
+                        (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsClosed();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case IDOK: {
                     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
-                        (static_cast<CMulti*>(g_gameReg->m_curState))->BroadcastOptionsAbsent();
+                        (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsClosed();
                     }
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
@@ -182,7 +182,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
             if (g_gameReg->m_curState->Update() != GAMESTATE_PLAY) {
                 if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
-                    (static_cast<CMulti*>(g_gameReg->m_curState))->BroadcastOptionsPresent();
+                    (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsOpened();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
                 }

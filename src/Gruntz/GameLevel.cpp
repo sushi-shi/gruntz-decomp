@@ -18,7 +18,7 @@
 #include <Rez/RezArchiveEntry.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
-#include <Wap32/WapUncompress.h>
+#include <Wap32/WapCompress.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdObjectType.h>
@@ -1688,7 +1688,7 @@ i32 __stdcall WwdFile_CompressMainBlock(
         return 0;
     }
     unsigned long outLen = destCap;
-    return WapUncompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
+    return WapCompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
 }
 
 // @dead-code

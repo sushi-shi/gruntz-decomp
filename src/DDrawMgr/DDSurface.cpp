@@ -109,9 +109,9 @@ i32 CDDSurface::BlitSurf(
     this->m_width = width;
     this->m_height = height;
     this->m_descSize = sizeof(DDSURFACEDESC);
-    this->m_descFlags = 7;
+    this->m_descFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     if (bitDepth != BPP_UNSET && bitDepth != manager->m_displayColorDepth) {
-        this->m_descFlags = 0x1007;
+        this->m_descFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
         this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
         this->m_srcBitDepth = bitDepth;
     }
@@ -373,9 +373,9 @@ i32 CDDSurface::Fill(u32 color) {
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
-    fx.m_words[0] = 0x64;
+    fx.m_words[0] = sizeof(DDBLTFX);
     fx.m_words[0x14] = static_cast<i32>(color);
-    i32 hr = this->BltEx(NULL, NULL, NULL, 0x1000400, &fx.m_fx);
+    i32 hr = this->BltEx(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx.m_fx);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(
             const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"),
@@ -408,7 +408,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     if (target != NULL) {
         tsurf = target->m_ddSurface;
     }
-    i32 hr = m_ddSurface->Flip(tsurf, 1);
+    i32 hr = m_ddSurface->Flip(tsurf, DDFLIP_WAIT);
     if (hr == 0) {
         return 0;
     }
@@ -416,7 +416,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
         if (RestoreLost() == 0) {
             return hr;
         }
-        hr = m_ddSurface->Flip(tsurf, 1);
+        hr = m_ddSurface->Flip(tsurf, DDFLIP_WAIT);
         if (hr == 0) {
             return 0;
         }
@@ -525,7 +525,7 @@ void CDDSurface::FillPalette(u32 key) {
     } else {
         this->m_hasColorKey = 0;
     }
-    this->SetColorKey(8, &ck);
+    this->SetColorKey(DDCKEY_SRCBLT, &ck);
 }
 
 // @dead-code
@@ -648,8 +648,8 @@ void CDDSurface::Clear(i32 white) {
     }
     fx.m_fx.dwSize = sizeof(fx.m_fx);
 
-    fx.m_fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42;
-    i32 hr = this->m_ddSurface->Blt(NULL, NULL, NULL, 0x1020000, &fx.m_fx);
+    fx.m_fx.dwROP = white ? WHITENESS : BLACKNESS;
+    i32 hr = this->m_ddSurface->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_ROP, &fx.m_fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);
@@ -671,10 +671,10 @@ RVA(0x0013ee60, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     LPRECT srcRect = &src->m_fullRect;
     LPRECT dstRect = &m_fullRect;
-    i32 hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, 0x1000000, NULL);
+    i32 hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, DDBLT_WAIT, NULL);
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost()) {
-            hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, 0x1000000, NULL);
+            hr = m_ddSurface->Blt(dstRect, src->m_ddSurface, srcRect, DDBLT_WAIT, NULL);
         } else {
             return static_cast<i32>(DDERR_SURFACELOST);
         }
@@ -1083,7 +1083,7 @@ i32 CDDSurface::RestoreLost() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f990, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
-    i32 dwTrans = 0x10 + (useColorKey != 0);
+    i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != 0);
     for (i32 y = 0; y < m_height; y += src->m_height) {
         for (i32 x = 0; x < m_width; x += src->m_width) {
             RECT rect;

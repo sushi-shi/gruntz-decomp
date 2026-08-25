@@ -16,6 +16,12 @@ class CDDSurface;
 class CDDrawSurfaceMgr;
 struct CRezArchiveEntry;
 
+GZ_ENUM_FLAGS_BEGIN(DDrawSurfacePairFlags, i32)
+    SURFACEPAIR_SYSTEM_MEMORY = 0x10000,
+    SURFACEPAIR_SKIP_OVERLAY_WORKER_RENDER = 0x20000
+GZ_ENUM_FLAGS_END(DDrawSurfacePairFlags, i32)
+GZ_ENUM_FLAGS_OPS(DDrawSurfacePairFlags)
+
 class CDDrawSurfacePair : public CDrawSubWorker {
 public:
     virtual i32 IsLoaded() OVERRIDE;
@@ -55,10 +61,10 @@ public:
 inline void CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {
     RECT rc;
     rc = MakeRect(pos[0], pos[1], pos[0] + size[0], pos[1] + size[1]);
-    m_surface->BltEx(&rc, other->m_surface, &rc, 0x1000000, NULL);
+    m_surface->BltEx(&rc, other->m_surface, &rc, DDBLT_WAIT, NULL);
 }
 
 #define BLT_SURFACE_PAIR_SELF(dst, src)                                                            \
-    (dst)->m_surface->BltFast(0, 0, (src)->m_surface, &(src)->m_srcRect, 0x10)
+    (dst)->m_surface->BltFast(0, 0, (src)->m_surface, &(src)->m_srcRect, DDBLTFAST_WAIT)
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

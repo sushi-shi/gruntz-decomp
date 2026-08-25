@@ -11,6 +11,14 @@
 
 GZ_ENUM_FORWARD(InputDeviceSel);
 
+GZ_ENUM_FLAGS_BEGIN(InputDirectionBits, u8)
+    INPUT_DIRECTION_LEFT = 0x1,
+    INPUT_DIRECTION_RIGHT = 0x2,
+    INPUT_DIRECTION_UP = 0x4,
+    INPUT_DIRECTION_DOWN = 0x8
+GZ_ENUM_FLAGS_END(InputDirectionBits, u8)
+GZ_ENUM_FLAGS_OPS(InputDirectionBits)
+
 class DirectInputMgr2;
 class CInputDevBase;
 struct CInputDeviceGroup;

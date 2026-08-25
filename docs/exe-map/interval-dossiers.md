@@ -284,7 +284,7 @@ Seam fns:
    - `0x1851e0-0x1852d8` rezlist (`CRezList`);
    - `0x1852e0` rezarchive (`?Remove@CObjList` — 1 fn, possibly COMDAT);
    - `0x185320` zlib `uncompr.c` (library obj, vendor zlib-1.0.4);
-   - `0x1853b0` `WapUncompress` (the engine wrapper — own obj or a rez-file tail).
+   - `0x1853b0` `WapCompress` (the engine wrapper — own obj or a rez-file tail).
 3. **MenuItem.cpp** `[0x185460 .. 0x185a0e]` — `CMenuItem` out-of-line
    `Init`/virtuals + `CAnimatedMenuItem`.
 
@@ -1037,7 +1037,7 @@ sub-structure is now resolved (was "weak, resolution not required"):
    - RezList.cpp `[0x1851e0..0x185315]` (CRezList + CObjList::Remove);
    - vendor zlib uncompr.obj @0x185320 (references zlib's shared 0x224f14 with the
      deflate/inflate band);
-   - WapUncompress.cpp @0x1853b0 (the engine wrapper; its 0x224f14 ref is use of
+   - WapCompress.cpp @0x1853b0 (the engine wrapper; its 0x224f14 ref is use of
      zlib's public cell, not a merge proof).
    No cross-binding between the three engine objs (zero weave, zero shared
    privates) -> held split per the conservative precedent (WormholeActs, #12).

@@ -28,11 +28,11 @@ i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
 RVA(0x00038340, 0x46)
 void CInputState::ConfigureGameplayKeys() {
     if (m_keyboard) {
-        m_keyboard->m_keyBindings[0] = 0x10;
-        m_keyboard->m_keyBindings[1] = 0xd;
-        m_keyboard->m_keyBindings[2] = 0x20;
-        m_keyboard->m_keyBindings[4] = 0x12;
-        m_keyboard->m_keyBindings[5] = 0x11;
+        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_SHIFT;
+        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = VK_RETURN;
+        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_SPACE;
+        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON4)] = VK_MENU;
+        m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON5)] = VK_CONTROL;
     }
 }
 
@@ -181,17 +181,17 @@ RVA(0x00038730, 0x2e)
 u8 CInputState::GetDirectionBits() {
     u32 k = m_heldButtons;
     u8 r = 0;
-    if (k & 0x10000000) {
-        r = 1;
+    if (k & IDX(INPUT_LEFT)) {
+        r = IDX(INPUT_DIRECTION_LEFT);
     }
-    if (k & 0x20000000) {
-        r |= 2;
+    if (k & IDX(INPUT_RIGHT)) {
+        r |= IDX(INPUT_DIRECTION_RIGHT);
     }
-    if (k & 0x40000000) {
-        r |= 4;
+    if (k & IDX(INPUT_UP)) {
+        r |= IDX(INPUT_DIRECTION_UP);
     }
-    if (k & 0x80000000) {
-        r |= 8;
+    if (k & IDX(INPUT_DOWN)) {
+        r |= IDX(INPUT_DIRECTION_DOWN);
     }
     return r;
 }
@@ -202,17 +202,17 @@ RVA(0x00038770, 0x40)
 i32 CInputState::SetDirectionBits(i32 flags) {
     m_heldButtons = 0;
     m_pressedButtons = 0;
-    if (flags & 1) {
-        m_heldButtons = 0x10000000;
+    if (flags & IDX(INPUT_DIRECTION_LEFT)) {
+        m_heldButtons = IDX(INPUT_LEFT);
     }
-    if (flags & 2) {
-        m_heldButtons |= 0x20000000;
+    if (flags & IDX(INPUT_DIRECTION_RIGHT)) {
+        m_heldButtons |= IDX(INPUT_RIGHT);
     }
-    if (flags & 4) {
-        m_heldButtons |= 0x40000000;
+    if (flags & IDX(INPUT_DIRECTION_UP)) {
+        m_heldButtons |= IDX(INPUT_UP);
     }
-    if (flags & 8) {
-        m_heldButtons |= 0x80000000;
+    if (flags & IDX(INPUT_DIRECTION_DOWN)) {
+        m_heldButtons |= IDX(INPUT_DOWN);
     }
     return 1;
 }

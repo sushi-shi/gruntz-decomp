@@ -183,7 +183,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x182940` | `?ScatterSamples@@YAXPAHHHH@Z` | scattersamples | `0x182940` ? |
 | `0x182a80` | `?IsPrime@@YAHH@Z` | scattersamples | `0x182a80` ? |
 | `0x185320` | `_uncompress` | uncompr | `0x184610` debugprintf |
-| `0x1853b0` | `?WapUncompress@@YAHPAEPAK0K@Z` | wapuncompress | `0x184610` debugprintf |
+| `0x1853b0` | `?WapCompress@@YAHPAEPAK0K@Z` | wapcompress | `0x184610` debugprintf |
 | `0x1882d0` | `_adler32` | adler32 | `0x1882d0` ? |
 | `0x188410` | `_zcalloc` | zutil | `0x188410` ? |
 | `0x188430` | `_zcfree` | zutil | `0x188430` ? |
@@ -606,7 +606,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - namerecord (`cpp-rtti`) — src/Gruntz/NameRecord.cpp
 - ddrawworkerhost (`cpp`) — src/DDrawMgr/DDrawWorkerHost.cpp
 - latencylist (`cpp`) — src/Net/LatencyList.cpp
-- wapuncompress (`cpp`) — src/Wap32/WapUncompress.cpp
+- wapcompress (`cpp`) — src/Wap32/WapCompress.cpp
 - customworlddialog (`cpp-rtti`) — src/Gruntz/CustomWorldDialog.cpp
 - timesplit (`cpp`) — src/Utils/TimeSplit.cpp
 - stringstaticpool (`cpp`) — src/Net/StringStaticPool.cpp

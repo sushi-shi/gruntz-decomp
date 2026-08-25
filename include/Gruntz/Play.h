@@ -405,10 +405,10 @@ public:
     i32 ScanShuffleQuads();
 };
 
-i32 ChannelSlots_FindFree();
-void ChannelSlots_Set(i32 slot, i32 value);
-i32 ChannelSlots_Get(i32 slot);
-void ChannelSlots_InitAll();
+ColorTint FindAvailablePlayerColor();
+void SetPlayerColorAvailable(ColorTint color, i32 available);
+i32 IsPlayerColorAvailable(ColorTint color);
+void ResetPlayerColorAvailability();
 
 // Per-world death cause for pit/liquid tiles, set from the AREA%i bank.
 extern GruntDeathType g_areaPitDeath;
@@ -416,7 +416,7 @@ extern GruntDeathType g_areaPitDeath;
 extern i32 g_playActive;
 extern i32 g_profAccA;
 extern i32 g_profAccB;
-extern i32 g_soundChannelInUse[TINT_COUNT];
+extern i32 g_playerColorAvailable[TINT_COUNT];
 
 extern i32 g_lastLevelNum;
 // Per-world death cause a StaticHazard inflicts; copied into the hazard

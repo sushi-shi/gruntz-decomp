@@ -6,19 +6,19 @@ confidence: 9/10
 cl5 strength-reduces `packet.rows[i].field` into ONE walking cursor plus disp8s, and it
 picks the cursor's BIAS (which byte of the record the register points at) from the *form*
 of the address expression, not from the field set. Three forms, three biases, all
-otherwise byte-identical: a named row pointer (`CNetChannelRow* rec = &pkt.rows[i];`)
+otherwise byte-identical: a named row pointer (`CNetPlayerRecord* rec = &pkt.rows[i];`)
 anchors at **rows+2**, a walking cursor (`rec++` per iteration) at **rows+0**, and
 plain subscripting at every field at **rows+1** — which is retail's.
 
 ```cpp
 // NO - `rec` biases the cursor to rows+2 (lea ebx,[esp+0x22])
-CNetChannelRow* rec = &packet.m_rows[i];
-rec->m_active = (u8)ch->m_active;
-rec->m_networkPlayerId  = ch->m_networkPlayerId;
+CNetPlayerRecord* rec = &packet.m_rows[i];
+rec->m_active = static_cast<u8>(player->m_active);
+rec->m_networkPlayerId = player->m_networkPlayerId;
 
 // YES - subscript each field; cursor lands at rows+1 (lea ebx,[esp+0x21])
-packet.m_rows[i].m_active = (u8)ch->m_active;
-packet.m_rows[i].m_networkPlayerId  = ch->m_networkPlayerId;
+packet.m_rows[i].m_active = static_cast<u8>(player->m_active);
+packet.m_rows[i].m_networkPlayerId = player->m_networkPlayerId;
 ```
 ```asm
 lea    ebx,[esp+0x21]               ; the BIASED cursor (record base + 1)
@@ -27,8 +27,8 @@ mov    BYTE PTR [ebx],al            ; rows+1
 mov    DWORD PTR [ebx+0x7],edx      ; rows+8
 add    ebx,0x20
 ```
-STEERABLE. CMulti::BroadcastChannelTable 0x0ba810 98.69 -> 100 EXACT and its inverse
-CMulti::ApplyChannelTable 0x0ba980 98.19 -> 100 EXACT — both had been filed
+STEERABLE. CMulti::BroadcastPlayerTable 0x0ba810 98.69 -> 100 EXACT and its inverse
+CMulti::ApplyPlayerTable 0x0ba980 98.19 -> 100 EXACT — both had been filed
 "retail anchors at rows+1, eight disp bytes, permute found nothing".
 
 ## The three forms do not span the bias space

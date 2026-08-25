@@ -127,13 +127,13 @@ class CImage;
     m_active = 0;                                                                                  \
     m_humanControlled = 1;                                                                         \
     m_name = "";                                                                                   \
-    m_colorIndex = TINT_ORANGE;                                                                    \
+    m_color = TINT_ORANGE;                                                                         \
     m_difficulty = BZDIFF_EASY;                                                                    \
     m_focusX = 0;                                                                                  \
     m_focusY = 0;                                                                                  \
     m_maxGruntz = 0xf;                                                                             \
     m_doneFlag = 0;                                                                                \
-    m_presenceCounted = 0;                                                                         \
+    m_optionsPresenceCounted = 0;                                                                  \
     m_latency.Clear()
 
 // The header-inline `~PlayerLatency() {}` (GruntzPlayer.h) emitted out of line:
@@ -149,13 +149,13 @@ GruntzPlayer::GruntzPlayer() {
     m_joined = 0;
     m_humanControlled = 1;
     m_name = "";
-    m_colorIndex = TINT_ORANGE;
+    m_color = TINT_ORANGE;
     m_difficulty = BZDIFF_EASY;
     m_focusX = 0;
     m_focusY = 0;
     m_maxGruntz = 0xf;
     m_doneFlag = 0;
-    m_presenceCounted = 0;
+    m_optionsPresenceCounted = 0;
     m_latency.Clear();
 }
 
@@ -168,13 +168,13 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_humanControlled = 1;
     m_name = "";
 
-    m_colorIndex = static_cast<ColorTint>(index);
+    m_color = static_cast<ColorTint>(index);
     m_difficulty = BZDIFF_EASY;
     m_focusX = 0;
     m_focusY = 0;
     m_maxGruntz = 0xf;
     m_doneFlag = 0;
-    m_presenceCounted = 0;
+    m_optionsPresenceCounted = 0;
     m_name = GetDefaultName(0);
     m_latency.Clear();
     return 1;
@@ -198,7 +198,7 @@ i32 GruntzPlayer::ClearRoundState() {
     m_active = 1;
     m_ready = 0;
     m_doneFlag = 0;
-    m_presenceCounted = 0;
+    m_optionsPresenceCounted = 0;
     m_latency.Clear();
     return 1;
 }
@@ -265,7 +265,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
         if (mode == SERIAL_LOAD) {
 
             ar->Read(&m_playerIndex, sizeof(m_playerIndex));
-            ar->Read(&m_colorIndex, sizeof(m_colorIndex));
+            ar->Read(&m_color, sizeof(m_color));
             ar->Read(&m_warlordObjectId, sizeof(m_warlordObjectId));
             ar->Read(&m_difficulty, sizeof(m_difficulty));
             ar->Read(&m_humanControlled, sizeof(m_humanControlled));
@@ -284,7 +284,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
     } else {
 
         ar->Write(&m_playerIndex, sizeof(m_playerIndex));
-        ar->Write(&m_colorIndex, sizeof(m_colorIndex));
+        ar->Write(&m_color, sizeof(m_color));
         ar->Write(&m_warlordObjectId, sizeof(m_warlordObjectId));
         ar->Write(&m_difficulty, sizeof(m_difficulty));
         ar->Write(&m_humanControlled, sizeof(m_humanControlled));
@@ -334,44 +334,44 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 }
 
 RVA(0x000db1d0, 0x14)
-void ChannelSlots_InitAll() {
+void ResetPlayerColorAvailability() {
     for (i32 i = 0; i < TINT_COUNT; i++) {
-        g_soundChannelInUse[i] = true;
+        g_playerColorAvailable[i] = true;
     }
 }
 
 RVA(0x000db200, 0x51)
-i32 GruntzPlayer::SwapChannel(ColorTint channel) {
-    if (m_colorIndex == channel) {
+i32 GruntzPlayer::TrySetColor(ColorTint color) {
+    if (m_color == color) {
         return 1;
     }
-    if (ChannelSlots_Get(IDX(channel))) {
-        ChannelSlots_Set(IDX(m_colorIndex), 1);
-        ChannelSlots_Set(IDX(channel), 0);
-        m_colorIndex = channel;
+    if (IsPlayerColorAvailable(color)) {
+        SetPlayerColorAvailable(m_color, 1);
+        SetPlayerColorAvailable(color, 0);
+        m_color = color;
         return 1;
     }
     return 0;
 }
 
 RVA(0x000db280, 0x1b)
-i32 ChannelSlots_FindFree() {
+ColorTint FindAvailablePlayerColor() {
     for (i32 i = 0; i < TINT_COUNT; i++) {
-        if (g_soundChannelInUse[i] != false) {
-            return i;
+        if (g_playerColorAvailable[i] != false) {
+            return static_cast<ColorTint>(i);
         }
     }
-    return 0;
+    return TINT_ORANGE;
 }
 
 RVA(0x000db2b0, 0x10)
-void ChannelSlots_Set(i32 i, i32 v) {
-    g_soundChannelInUse[i] = v;
+void SetPlayerColorAvailable(ColorTint color, i32 available) {
+    g_playerColorAvailable[IDX(color)] = available;
 }
 
 RVA(0x000db2d0, 0xc)
-i32 ChannelSlots_Get(i32 i) {
-    return g_soundChannelInUse[i];
+i32 IsPlayerColorAvailable(ColorTint color) {
+    return g_playerColorAvailable[IDX(color)];
 }
 
 // @dead-code

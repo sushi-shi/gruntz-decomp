@@ -6,13 +6,13 @@
 #include <Ints.h>
 #include <Net/NetMsgId.h>
 
-struct CNetConfigBlob {
+struct CNetGameConfigPacket {
     u8 m_flags;
     char m_pad1[3];
-    NetMsgId m_statId;
-    i32 m_customLevel;
-    char m_nameA[0x80];
-    char m_nameB[0x80];
+    NetMsgId m_messageId;
+    i32 m_usesCustomLevel;
+    char m_builtInLevelName[0x80];
+    char m_customLevelName[0x80];
     i32 m_commandDelay;
     i32 m_resendInterval;
     i32 m_autoCommandDelay;
@@ -22,7 +22,7 @@ struct CNetConfigBlob {
 struct CNetMsg {
     u8 m_flags;
     char m_pad1[3];
-    NetMsgId m_msgId;
+    NetMsgId m_messageId;
     i32 m_value;
     char m_payload[4];
 };

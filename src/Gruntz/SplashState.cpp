@@ -111,7 +111,7 @@ i32 CSplashState::Render() {
         i32 n = L->m_count;
         i32 j;
         for (j = 0; j < n; j++) {
-            if (L->m_items[j]->m_pressedButtons & 1) {
+            if (L->m_items[j]->m_pressedButtons & IDX(INPUT_BUTTON0)) {
                 goto post;
             }
         }

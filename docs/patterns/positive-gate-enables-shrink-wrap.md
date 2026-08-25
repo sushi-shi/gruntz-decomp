@@ -337,7 +337,7 @@ Same family: `CMulti::WaitForOtherPlayers` @0xbb700 4→3, 75.04 → **80.47**;
 `FindProcessByName` @0x118ce0 3→2, 86.14 → **93.54**;
 `CStatusBarMgr::ActivateSlot` @0x10b930 6→4, 71.11 → **83.63**;
 `CGruntVoice::UpdateIndicator` @0x11a8e0 6→4, 73.24 → **85.84**;
-`WapUncompress` @0x1853b0 3→2, 85.93 → **87.59**;
+`WapCompress` @0x1853b0 3→2, 85.93 → **87.59**;
 `CGameLevel::MoveHandlerA` @0x15e130 4→3, 64.96 → **70.04** (that one was a genuine
 control-flow bug the count exposed: retail runs the held-flag tail on the probe MISS of both
 arms, so it is not an `else`).

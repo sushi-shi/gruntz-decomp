@@ -4,7 +4,7 @@
 #include <Enums.h>
 
 // Which unit a Battlez roster slot spawns, as read from the level file's
-// GruntStartingPoint "Points" field while m_gameMode is GAMEMODE_SINGLE.
+// GruntStartingPoint "Points" field while m_gameMode is GAMEMODE_QUESTZ.
 //
 // This is a SECOND domain over the same storage as EnemyAiType, not a subset of
 // it. The two disagree at every value: slot 7 grants a Brick where AI_BOMBER

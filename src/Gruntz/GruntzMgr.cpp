@@ -250,8 +250,8 @@ CGruntzMgr::CGruntzMgr() {
     m_isInterlaced = 0;
     m_isEasyMode = 0;
     m_isCustomLevel = 0;
-    m_isBattlezLevel = 0;
-    m_isMultiLevel = 0;
+    m_isBuiltInBattlezLevel = 0;
+    m_isBuiltInMultiplayerLevel = 0;
     m_gameMode = GAMEMODE_NONE;
     m_isHighDetail = 1;
     m_isEffectsEnabled = 1;
@@ -462,7 +462,7 @@ RVA_COMPGEN(0x00086040, 0x49, ??1MidiManager@@QAE@XZ)
 
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::CommitSinglePlayerProgress() {
-    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
     }
     CState* currentState = g_gameReg->m_curState;
@@ -493,7 +493,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
 RVA(0x000861e0, 0xc5)
 void CGruntzMgr::FinalizeLevelAndShowResults() {
     CState* currentState = m_curState;
-    if (m_gameMode == GAMEMODE_SINGLE) {
+    if (m_gameMode == GAMEMODE_QUESTZ) {
         if (m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
             CommitSinglePlayerProgress();
         }
@@ -501,7 +501,7 @@ void CGruntzMgr::FinalizeLevelAndShowResults() {
         return;
     }
     g_gameReg->m_gameStats->SetLevelNumber(currentState->m_levelIndex);
-    if (m_gameMode == GAMEMODE_REPLAY) {
+    if (m_gameMode == GAMEMODE_BATTLEZ) {
 
         CTimer* levelTimer = (static_cast<CPlay*>(currentState))->m_levelTimer;
         i64 elapsedMs = static_cast<i64>(g_frameTime) - levelTimer->m_startStamp.m_v;
@@ -512,7 +512,7 @@ void CGruntzMgr::FinalizeLevelAndShowResults() {
     }
     CGameStats* gameStats = g_gameReg->m_gameStats;
     u32 now = timeGetTime();
-    gameStats->m_elapsedTimeMs += (now - g_scoreTimeBase);
+    gameStats->m_elapsedTimeMs += (now - g_roundStartTimeMs);
     TransitionState(GAMESTATE_MULTIBOOTY, 1, 0, 0);
 }
 
@@ -1251,7 +1251,7 @@ i32 CGruntzMgr::FinishLevel(i32 pauseGame, i32 pauseMusic) {
         if (activePlayers > 0) {
             m_frameGate = 1;
 
-            (static_cast<CMulti*>(m_curState))->OnPauseChannel();
+            (static_cast<CMulti*>(m_curState))->RequestMultiplayerPause();
             m_frameGate = 0;
             return 1;
         }
@@ -1593,8 +1593,8 @@ i32 CGruntzMgr::CaptureWorldFile() {
         return 0;
     }
     m_strWorldFile = name;
-    m_isMultiLevel = 0;
-    m_isBattlezLevel = 0;
+    m_isBuiltInMultiplayerLevel = 0;
+    m_isBuiltInBattlezLevel = 0;
     PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME), 0);
     return 1;
 }
@@ -3083,7 +3083,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
     }
 
     strcpy(dst->m_levelName, GetWorldFileName());
-    dst->m_isWon = (m_gameMode == GAMEMODE_REPLAY);
+    dst->m_isBattlez = (m_gameMode == GAMEMODE_BATTLEZ);
     dst->m_isCustom = m_isCustomLevel;
 
     m_saveGame->CopySlot(dst, &src->m_saveSlot);
@@ -3277,28 +3277,28 @@ void CGruntzMgr::DeactivateAllPlayers() {
 }
 
 RVA(0x00092f00, 0x1ef)
-i32 CGruntzMgr::SaveGameAs() {
+i32 CGruntzMgr::OpenBattlezSetup() {
     CBattlezDlg dlg(this, NULL);
     GameStateId st = m_curState->Update();
     if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY
         && st != GAMESTATE_DEMO) {
         return 0;
     }
-    ChannelSlots_InitAll();
+    ResetPlayerColorAvailability();
     if (ExitModalUI(&dlg, 1) != 1) {
         return 0;
     }
     if (dlg.m_customNameFlag != 0) {
-        m_isBattlezLevel = 0;
+        m_isBuiltInBattlezLevel = 0;
         m_strWorldFile = "custom\\" + dlg.m_worldName;
     } else {
-        m_isBattlezLevel = 1;
+        m_isBuiltInBattlezLevel = 1;
         m_strWorldFile = dlg.m_worldName;
     }
     if (m_strWorldFile.GetLength() == 0) {
         return 0;
     }
-    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEW_GAME_REPLAY), 0);
+    PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_START_BATTLEZ_GAME), 0);
     return 1;
 }
 
@@ -3437,8 +3437,8 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
 
     ar->Write(&m_loadingSaveGame, sizeof(m_loadingSaveGame));
     ar->Write(&m_soundVolume, sizeof(m_soundVolume));
-    ar->Write(&m_isBattlezLevel, sizeof(m_isBattlezLevel));
-    ar->Write(&m_isMultiLevel, sizeof(m_isMultiLevel));
+    ar->Write(&m_isBuiltInBattlezLevel, sizeof(m_isBuiltInBattlezLevel));
+    ar->Write(&m_isBuiltInMultiplayerLevel, sizeof(m_isBuiltInMultiplayerLevel));
     ar->Write(&m_isCustomLevel, sizeof(m_isCustomLevel));
     ar->Write(&m_gameMode, sizeof(m_gameMode));
     ar->Write(&m_computerPlayerCount, sizeof(m_computerPlayerCount));
@@ -3484,8 +3484,8 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
 
     ar->Read(&m_loadingSaveGame, sizeof(m_loadingSaveGame));
     ar->Read(&m_soundVolume, sizeof(m_soundVolume));
-    ar->Read(&m_isBattlezLevel, sizeof(m_isBattlezLevel));
-    ar->Read(&m_isMultiLevel, sizeof(m_isMultiLevel));
+    ar->Read(&m_isBuiltInBattlezLevel, sizeof(m_isBuiltInBattlezLevel));
+    ar->Read(&m_isBuiltInMultiplayerLevel, sizeof(m_isBuiltInMultiplayerLevel));
     ar->Read(&m_isCustomLevel, sizeof(m_isCustomLevel));
     ar->Read(&m_gameMode, sizeof(m_gameMode));
     ar->Read(&m_computerPlayerCount, sizeof(m_computerPlayerCount));

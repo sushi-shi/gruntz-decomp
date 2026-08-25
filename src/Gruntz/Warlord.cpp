@@ -123,7 +123,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
-    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].m_colorIndex);
+    i32 cfg = IDX(g_gameReg->m_players[IDX(owner)].m_color);
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
@@ -504,7 +504,7 @@ i32 CWarlord::SerializeMove(
         case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                IDX(g_gameReg->m_players[m_object->m_smarts].m_colorIndex),
+                IDX(g_gameReg->m_players[m_object->m_smarts].m_color),
                 0
             );
             if (sel == NULL) {
@@ -591,7 +591,7 @@ i32 CWarlord::LoadAttributes() {
     }
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_gameMode != GAMEMODE_SINGLE) {
+    if (reg->m_gameMode != GAMEMODE_QUESTZ) {
         CWwdGameObjectA* o = m_object;
         i32 dist = reg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
@@ -617,7 +617,7 @@ i32 CWarlord::LoadAttributes2() {
         return 0;
     }
 
-    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         CWwdGameObjectA* o = m_object;
         i32 dist = g_gameReg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
@@ -723,7 +723,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
     if (m_deathStarted == 0) {
         bool alreadyPanicking = ANIMATION_ACT_EQUALS("D");
         if (!alreadyPanicking) {
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
                 m_cooldownTimer.m_window = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
@@ -768,7 +768,7 @@ i32 CWarlord::ResolveDeathAnimation() {
     m_deathStarted = 1;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_SINGLE) {
+    if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -794,7 +794,7 @@ i32 CWarlord::RaiseBattleAlert() {
     }
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_SINGLE) {
+    if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
@@ -823,7 +823,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     i32 idx = rand() % 3 + 1;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_SINGLE) {
+    if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdGameObjectA* h = m_object;
 
         i32 cue = idx + 0x431;
@@ -856,7 +856,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     i32 idx = rand() % 3;
 
     CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_SINGLE) {
+    if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdGameObjectA* h = m_object;
         i32 cue = idx + 0x42e;
         i32 x = h->m_screenX;

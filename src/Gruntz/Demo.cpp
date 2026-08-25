@@ -95,7 +95,7 @@ i32 CDemo::Render() {
     CFixedPtrArray32* list = g_actorList;
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
-        if (list->m_items[i]->m_pressedButtons & 0x100) {
+        if (list->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
             PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }

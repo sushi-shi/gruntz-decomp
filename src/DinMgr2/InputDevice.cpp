@@ -155,7 +155,7 @@ i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwD
     prop.diph.dwHow = dwHow;
     prop.dwData = dwData;
     prop.diph.dwSize = sizeof(prop);
-    prop.diph.dwHeaderSize = 0x10;
+    prop.diph.dwHeaderSize = sizeof(prop.diph);
     return SetProperty(rguid, &prop.diph);
 }
 

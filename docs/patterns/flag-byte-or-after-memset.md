@@ -20,7 +20,7 @@ movl $0x416, 0x10(%esp)  ; (a neighbouring field, scheduled between)
 orb  $-0x80, %cl         ; |= 0x80
 movb %cl, 0xc(%esp)      ; store back
 ```
-Steerable (try-and-measure). CNetMgr::SaveConfig @0x000bccd0 jumped 89.9%→96.4% on
+Steerable (try-and-measure). CNetMgr::SendGameConfig @0x000bccd0 jumped 89.9%→96.4% on
 this one change (the residual after it is only EH-cookie + reloc-name). The tell is
 the `or` against a freshly-`rep stos`-zeroed slot — never a plain `mov imm` when
 retail shows an `or`. Context note: when the flag sits in a long block of adjacent

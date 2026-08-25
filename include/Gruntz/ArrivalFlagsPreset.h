@@ -13,7 +13,7 @@
 // picks all four by EnemyAiType:
 //
 //   AI_NONE           -> PLAYER, or PLAYER_SINGLE when m_gameMode is
-//                        GAMEMODE_SINGLE
+//                        GAMEMODE_QUESTZ
 //   AI_BATTLEZ_PATH   -> BATTLEZ
 //   anything else     -> ENEMY
 //

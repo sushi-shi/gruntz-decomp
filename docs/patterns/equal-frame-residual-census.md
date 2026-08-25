@@ -68,7 +68,7 @@ rows flagged. All fifteen resolve, and none is a defect:
 
 * **six are pure MOVES** - delete-and-insert of the SAME symbol, i.e. one global
   read scheduled at a different point (`LoadScrollSpeedOptions`,
-  `LoadGruntDecayConfig`, `AnnounceVersion`, `ApplyGameOptions`, and both
+  `LoadGruntDecayConfig`, `SendVersionCheck`, `ApplyGameOptions`, and both
   `CMinimap` palette builders on `g_rDown`);
 * **seven are already catalogued** - `BuildBootyWalkingGruntz` is §8's `$E`
   helper under two non-names plus §14's one-past-the-end addend, and the six

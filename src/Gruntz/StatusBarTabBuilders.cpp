@@ -94,8 +94,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (s == NULL) {
         goto fail;
     }
-    sel =
-        g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[g_curPlayer].m_colorIndex), 0);
+    sel = g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[g_curPlayer].m_color), 0);
     if (sel == NULL) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }

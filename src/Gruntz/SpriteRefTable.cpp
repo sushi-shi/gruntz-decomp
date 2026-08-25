@@ -295,7 +295,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
         return NULL;
     }
     CSpriteRef* node = new CSpriteRef;
-    if (node->Build(m_factory, alpha, kind) == TINT_ORANGE) {
+    if (node->Build(m_factory, alpha, kind) == 0) {
         if (node) {
             node->Free();
             ::operator delete(node);

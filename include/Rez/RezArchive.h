@@ -44,13 +44,15 @@ GZ_ENUM_CONST_BEGIN(RezArchiveMagic)
     REZ_ARCHIVE_MAGIC_EOF = 0x1a
 GZ_ENUM_CONST_END(RezArchiveMagic)
 
+GZ_ENUM_FORWARD(RezArchiveVersion);
+
 struct RezArchiveHeader {
     u8 m_initialCarriageReturn;
     char m_bannerBlock1[0x3f - 0x01];
     u8 m_firstBannerLineFeed;
     char m_bannerBlock2[0x7e - 0x40];
     u8 m_dosEndMarker;
-    i32 m_version;
+    RezArchiveVersion m_version;
     i32 m_rootDirectoryOffset;
     i32 m_rootDirectorySize;
     i32 m_rootDirectoryTime;
@@ -136,7 +138,7 @@ public:
     CRezArchiveDir* m_rootDirectory;
     i32 m_archiveTime;
     i32 m_isNewArchive;
-    i32 m_version;
+    RezArchiveVersion m_version;
 
     u32 m_largestKeyArrayLength;
     u32 m_largestDirectoryNameSize;

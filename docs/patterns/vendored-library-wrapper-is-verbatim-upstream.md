@@ -24,7 +24,7 @@ the way the original allocator saw it.
 
 ## Evidence
 
-`WapUncompress` @0x1853b0 (`src/Wap32/WapUncompress.cpp`) is zlib 1.0.4's `compress()`
+`WapCompress` @0x1853b0 (`src/Wap32/WapCompress.cpp`) is zlib 1.0.4's `compress()`
 character for character. It had been parked `@early-stop` as a *"regalloc register-choice
 wall — MSVC pins the long-lived pDestLen in ebx where retail uses edi… not
 source-steerable"*. It was not a regalloc wall at all.

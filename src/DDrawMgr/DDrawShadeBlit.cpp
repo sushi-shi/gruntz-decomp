@@ -187,7 +187,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
 RVA(0x00148fc0, 0x104)
 i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     CFile file;
-    if (!file.Open(name, 0x8000, NULL)) {
+    if (!file.Open(name, CFile::modeRead | CFile::typeBinary, NULL)) {
         return 0;
     }
     RecordBytes<PidHeader> fileData;
@@ -273,17 +273,17 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
 
 RVA(0x00149250, 0x158)
 i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
-    if (m_srcBpp != 1) {
+    if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }
 
     CFile file;
-    if (file.Open(path, 0x9001, NULL) == 0) {
+    if (file.Open(path, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary, NULL) == 0) {
         return 0;
     }
     file.Write(&header, sizeof(header));
     file.Write(m_rleData, m_rleLen);
-    if (header.flags & 0x80) {
+    if (HAS(static_cast<PidFlags>(header.flags), PID_EMBEDDED_PALETTE)) {
         if (m_palette == NULL) {
             return 0;
         }
@@ -309,7 +309,7 @@ i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
 RVA(0x001493b0, 0xfd)
 
 i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
-    if (m_srcBpp != 1) {
+    if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }
     PidWriteHeader header;
@@ -326,10 +326,10 @@ i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
     header.reserved1c = 0;
     if (m_colorKey != -1) {
         header.fill = static_cast<u8>(m_colorKey);
-        header.flags |= 0x100;
+        header.flags |= IDX(PID_FILL_IS_WORD);
     }
     if (m_palette != NULL) {
-        header.flags |= 0x80;
+        header.flags |= IDX(PID_EMBEDDED_PALETTE);
     }
     return WritePidFile(path, header);
 }
@@ -338,7 +338,7 @@ i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001494b0, 0x11a)
 i32 CDDrawShadeBlit::Decompress(u8* dest) {
-    if (m_srcBpp != 1) {
+    if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
     }
     if (dest == NULL) {
@@ -379,7 +379,7 @@ u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     {
         const PALETTEENTRY* pal = m_palette;
         u16* t = table;
-        for (i32 i = 0x100; i != 0; i--) {
+        for (i32 i = PALETTE_ENTRY_COUNT; i != 0; i--) {
             *t++ = static_cast<u16>(
                 ((static_cast<u16>(static_cast<u8>(pal->peGreen) >> g_gDown) << g_gUp)
                  | (static_cast<u16>(static_cast<u8>(pal->peRed) >> g_rDown) << g_rUp)
@@ -1145,8 +1145,8 @@ void CDDrawShadeBlit::BlitShadedForward(
                             memcpy(g_scratch, d, count);
                             u8* sc = g_scratch;
                             while (count-- > 0) {
-                                i32 sv = pal[*sc++ + 0x100];
-                                i32 dv = pal[*s + 0x100];
+                                i32 sv = pal[*sc++ + PALETTE_ENTRY_COUNT];
+                                i32 dv = pal[*s + PALETTE_ENTRY_COUNT];
                                 i32 t = (dv - sv) * m_light / 255 + sv;
                                 *d++ = pal[t];
                                 s++;
@@ -1709,8 +1709,8 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             memcpy(g_scratch, d - count - 1, count);
                             u8* sc = &g_scratch[count + 1];
                             while (count-- > 0) {
-                                i32 sv = cbase[*sc-- + 0x100];
-                                i32 dv = cbase[*s + 0x100];
+                                i32 sv = cbase[*sc-- + PALETTE_ENTRY_COUNT];
+                                i32 dv = cbase[*s + PALETTE_ENTRY_COUNT];
                                 i32 t = (dv - sv) * m_light / 255 + sv;
                                 *d-- = cbase[t];
                                 s++;
@@ -2065,8 +2065,8 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
-                i32 s = pal[*sc++ + 0x100];
-                i32 d = pal[*src + 0x100];
+                i32 s = pal[*sc++ + PALETTE_ENTRY_COUNT];
+                i32 d = pal[*src + PALETTE_ENTRY_COUNT];
                 i32 t = (d - s) * m_light / 255 + s;
                 *dst++ = pal[t];
                 src++;
@@ -2204,8 +2204,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             u8* sc = &g_scratch[count + 1];
             u8* ss = src;
             while (count-- > 0) {
-                i32 s = base[*sc-- + 0x100];
-                i32 d = base[*ss + 0x100];
+                i32 s = base[*sc-- + PALETTE_ENTRY_COUNT];
+                i32 d = base[*ss + PALETTE_ENTRY_COUNT];
                 i32 t = (d - s) * m_light / 255 + s;
                 *dst-- = base[t];
                 ss++;

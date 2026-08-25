@@ -1,7 +1,14 @@
 #ifndef GRUNTZ_WAP32_ENGSTR_H
 #define GRUNTZ_WAP32_ENGSTR_H
 
+#include <Enums.h>
 #include <Ints.h>
+
+GZ_ENUM_CONST_BEGIN(EngStrLayout)
+    ENGSTR_SHADOW_COLOR = 0,
+    ENGSTR_SHADOW_OFFSET_X_PX = 2,
+    ENGSTR_SHADOW_OFFSET_Y_PX = 3
+GZ_ENUM_CONST_END(EngStrLayout)
 
 class CDDrawSurfaceMgr;
 

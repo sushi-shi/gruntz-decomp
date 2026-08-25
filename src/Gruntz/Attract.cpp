@@ -149,8 +149,8 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
-    if (chan == NULL) {
+    CDDSurface* surface = m_resChain->m_drawTarget->m_frontPair->m_surface;
+    if (surface == NULL) {
         return 0;
     }
 
@@ -158,7 +158,7 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead
     t.m_clearMode = 1;
     t.m_centerX = centerX;
     t.m_centerY = centerY;
-    t.m_targetSurface = chan;
+    t.m_targetSurface = surface;
     t.m_sourceSurface = NULL;
     CFader* f = mgr->Add(FADERKIND_LIGHT, &t);
     if (f == NULL) {
@@ -344,15 +344,15 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     if (m_resChain->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
-    if (chan == NULL) {
+    CDDSurface* surface = m_resChain->m_drawTarget->m_frontPair->m_surface;
+    if (surface == NULL) {
         return 0;
     }
 
     CFxModeT3 t;
     t.m_clearToBlack = 1;
     t.m_intensityPercent = pct;
-    t.m_targetSurface = chan;
+    t.m_targetSurface = surface;
     t.m_sourceSurface = NULL;
     CFader* f = mgr->Add(FADERKIND_SINE, &t);
     if (f == NULL) {

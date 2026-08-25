@@ -49,6 +49,10 @@ GZ_ENUM_CONST_BEGIN(WapObjFlagMask)
     WAPOBJ_FLAG_SKIP_ACTIVE_PASSES = 0x04000000
 GZ_ENUM_CONST_END(WapObjFlagMask)
 
+GZ_ENUM_CONST_BEGIN(WapObjId)
+    WAPOBJ_ID_NONE = -1
+GZ_ENUM_CONST_END(WapObjId)
+
 class CDDrawSurfaceMgr;
 
 // ONE class, not two.  `??_7CLoadable@@6B@` was our name for the vtable at
@@ -81,7 +85,7 @@ public:
     // Retail's ??1CImage EH funclet CALLS it and ??_GCLoadable (=
     // ??_GCWapObj) tail-calls it, so the three-field reset is this class's own.
     virtual ~CWapObj() OVERRIDE {
-        m_id = -1;
+        m_id = WAPOBJ_ID_NONE;
         m_flags = 0;
         m_ownerCtx = NULL;
     }

@@ -1977,7 +1977,7 @@ i32 CGrunt::Place(
         }
     } else {
         m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             m_arrivalFlags = ARRIVAL_FLAGS_PLAYER_SINGLE;
         }
     }
@@ -2180,7 +2180,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2199,7 +2199,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2221,7 +2221,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2240,7 +2240,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2259,7 +2259,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2278,7 +2278,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2297,7 +2297,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2316,7 +2316,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2366,7 +2366,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x400;
@@ -2388,7 +2388,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2407,7 +2407,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2429,7 +2429,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2451,7 +2451,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2470,7 +2470,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2489,7 +2489,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x1000;
@@ -2508,7 +2508,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2527,7 +2527,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2546,7 +2546,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2566,7 +2566,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x100;
@@ -2585,7 +2585,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2620,7 +2620,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2642,7 +2642,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             if (m_arrivalState == AI_DEFENDER) {
@@ -2662,7 +2662,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2685,7 +2685,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2707,7 +2707,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2730,7 +2730,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2753,7 +2753,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2775,7 +2775,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2797,7 +2797,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2820,7 +2820,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_moveVariant = variant;
@@ -2843,7 +2843,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2865,7 +2865,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2916,7 +2916,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -2942,7 +2942,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
@@ -3106,7 +3106,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
             i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 secs += secs;
                 mins += mins;
                 if (secs > 0x3b) {

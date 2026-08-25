@@ -62,6 +62,10 @@
 #include <string.h>
 #include <strstrea.h>
 
+GZ_ENUM_CONST_BEGIN(GruntzGameTiming)
+    GRUNTZ_PERIODIC_TIMER_MS = 33
+GZ_ENUM_CONST_END(GruntzGameTiming)
+
 DATA(0x002455b4)
 i32 g_disableAudio = 0;
 DATA(0x002455bc)
@@ -123,7 +127,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     srand((timeGetTime() + GetTickCount()) >> 1);
-    g_wap32Run80 = 0x21;
+    g_gameAppTimerPeriodMs = GRUNTZ_PERIODIC_TIMER_MS;
     while (ShowCursor(0) >= 0) {
     }
 
@@ -385,7 +389,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_scrollSpeed = scrollSpeed;
 
     g_inputMgr = new DirectInputMgr2;
-    if (!g_inputMgr->Create(m_gameWnd->m_hwnd, m_owner->m_hInstance, 0xb)) {
+    if (!g_inputMgr->Create(
+            m_gameWnd->m_hwnd,
+            m_owner->m_hInstance,
+            IDX(DIN_CREATE_ASYNC_KEYBOARD | DIN_CREATE_NO_MOUSE | DIN_CREATE_NO_JOYSTICKS)
+        )) {
         if (g_inputMgr) {
             delete g_inputMgr;
             g_inputMgr = NULL;
@@ -411,11 +419,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     CKeyboardDevice* keyboard = g_inputMgr->m_keyboard;
     if (keyboard != NULL) {
-        keyboard->m_keyBindings[0] = VK_CONTROL;
-        keyboard->m_keyBindings[1] = 'X';
-        keyboard->m_keyBindings[2] = VK_SPACE;
-        keyboard->m_keyBindings[3] = VK_RETURN;
-        keyboard->m_keyBindings[8] = 0;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_CONTROL;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON1)] = 'X';
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON2)] = VK_SPACE;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON3)] = VK_RETURN;
+        keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON8)] = 0;
     }
 
     m_shadeCache = new CShadeTableCache;

@@ -1406,8 +1406,8 @@ source = "src/Net/LatencyList.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "wapuncompress"
-source = "src/Wap32/WapUncompress.cpp"
+unit = "wapcompress"
+source = "src/Wap32/WapCompress.cpp"
 flags = "cpp"
 [[unit]]
 unit = "customworlddialog"

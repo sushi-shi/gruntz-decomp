@@ -6,6 +6,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
 
 #include <Gruntz/FixedPtrArray32.h>
@@ -16,6 +17,57 @@ class CInputDevBase;
 class CJoystickDevice;
 class CKeyboardDevice;
 class CMouseDevice;
+
+// Options accepted by DirectInputMgr2::Create. The public call site combines
+// these bits; the u32 API type is retained because it is part of the proven
+// retail mangling.
+GZ_ENUM_FLAGS_BEGIN(DirectInputCreateFlags, u32)
+    DIN_CREATE_ASYNC_KEYBOARD = 0x01,
+    DIN_CREATE_NO_MOUSE = 0x02,
+    DIN_CREATE_NO_KEYBOARD = 0x04,
+    DIN_CREATE_NO_JOYSTICKS = 0x08
+GZ_ENUM_FLAGS_END(DirectInputCreateFlags, u32)
+GZ_ENUM_FLAGS_OPS(DirectInputCreateFlags)
+
+// Shared button/direction bit format emitted by the device implementations.
+GZ_ENUM_FLAGS_BEGIN(InputButtonFlags, u32)
+    INPUT_BUTTON0 = 0x00000001,
+    INPUT_BUTTON1 = 0x00000002,
+    INPUT_BUTTON2 = 0x00000004,
+    INPUT_BUTTON3 = 0x00000008,
+    INPUT_BUTTON4 = 0x00000010,
+    INPUT_BUTTON5 = 0x00000020,
+    INPUT_BUTTON6 = 0x00000040,
+    INPUT_BUTTON7 = 0x00000080,
+    INPUT_BUTTON8 = 0x00000100,
+    INPUT_BUTTON9 = 0x00000200,
+    INPUT_BUTTON_MASK = 0x00ffffff,
+    INPUT_LEFT = 0x10000000,
+    INPUT_RIGHT = 0x20000000,
+    INPUT_UP = 0x40000000,
+    INPUT_DOWN = 0x80000000
+GZ_ENUM_FLAGS_END(InputButtonFlags, u32)
+GZ_ENUM_FLAGS_OPS(InputButtonFlags)
+
+GZ_ENUM_BEGIN(InputBindingSlot)
+    INPUT_BINDING_BUTTON0 = 0,
+    INPUT_BINDING_BUTTON1 = 1,
+    INPUT_BINDING_BUTTON2 = 2,
+    INPUT_BINDING_BUTTON3 = 3,
+    INPUT_BINDING_BUTTON4 = 4,
+    INPUT_BINDING_BUTTON5 = 5,
+    INPUT_BINDING_BUTTON6 = 6,
+    INPUT_BINDING_BUTTON7 = 7,
+    INPUT_BINDING_BUTTON8 = 8,
+    INPUT_BINDING_LEFT = 0x1c,
+    INPUT_BINDING_RIGHT = 0x1d,
+    INPUT_BINDING_UP = 0x1e,
+    INPUT_BINDING_DOWN = 0x1f
+GZ_ENUM_END(InputBindingSlot)
+
+GZ_ENUM_CONST_BEGIN(InputBindingConstants)
+    INPUT_BINDING_COUNT = 0x20
+GZ_ENUM_CONST_END(InputBindingConstants)
 
 struct CInputDeviceGroup : public CFixedPtrArray32 {
     CInputDeviceGroup() {
@@ -168,7 +220,7 @@ public:
 class CKeyboardBindings {
 public:
     void Clear() {
-        for (i32 i = 0; i < 0x20; i++) {
+        for (i32 i = 0; i < INPUT_BINDING_COUNT; i++) {
             m_keys[i] = 0;
         }
     }
@@ -179,7 +231,7 @@ public:
         return m_keys[i];
     }
 
-    u32 m_keys[0x20];
+    u32 m_keys[INPUT_BINDING_COUNT];
 };
 
 class CKeyboardDevice : public CInputDevBase {

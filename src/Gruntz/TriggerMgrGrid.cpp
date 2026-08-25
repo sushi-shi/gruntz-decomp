@@ -144,10 +144,10 @@ i32 CTriggerMgr::PlaceObject(
         CGruntzMgr* game = g_gameReg;
 
         // NOT a PickupType local: the AI-type switch fills it with tool ids,
-        // but the player-slot path below overwrites it with m_colorIndex, so it
+        // but the player-slot path below overwrites it with m_color, so it
         // carries two domains. Converted explicitly where it enters Place().
         i32 kindId;
-        if (game->m_gameMode == GAMEMODE_SINGLE) {
+        if (game->m_gameMode == GAMEMODE_QUESTZ) {
             switch (aiType) {
                 case BZUNIT_BOMB:
                     kindId = IDX(PICKUP_BOMB);
@@ -216,8 +216,8 @@ i32 CTriggerMgr::PlaceObject(
         if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].m_maxGruntz) {
             if (game->m_players[playerIndex].m_active != 0
                 || (playerIndex != g_curPlayer
-                    && kindId == IDX(game->m_players[g_curPlayer].m_colorIndex))) {
-                kindId = IDX(game->m_players[playerIndex].m_colorIndex);
+                    && kindId == IDX(game->m_players[g_curPlayer].m_color))) {
+                kindId = IDX(game->m_players[playerIndex].m_color);
             }
             if (playerIndex == g_curPlayer && aiType != 0) {
                 aiType = 0;
@@ -821,7 +821,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         }
 
         case TILEKIND_CHECKPOINT:
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE || g == NULL
+            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ || g == NULL
                 || g->m_playerIndex != g_curPlayer) {
                 return 0;
             }
@@ -1041,7 +1041,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
         }
         case TILEKIND_CHECKPOINT_UP: {
 
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                 return 0;
             }
             if (g == NULL) {
@@ -1224,7 +1224,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
         case PICKUP_WINGZ:
             return cell->BeginAttack(bx, by) != 0;
         case PICKUP_WARPSTONE: {
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 return 0;
             }
             i32 flags = map->CellFlagsAt(argTileX, argTileY);
