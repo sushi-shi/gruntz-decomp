@@ -21,7 +21,6 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -50,6 +49,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
@@ -880,7 +880,7 @@ i32 CTriggerMgr::ResetGroup(
     }
 
 reportError:
-    g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x324, -1, 0, -1, -1);
+    g_gameReg->m_voiceManager->PlayVoice(cell, 0x324, -1, 0, -1, -1);
     return 0;
 }
 

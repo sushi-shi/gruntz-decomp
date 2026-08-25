@@ -30,7 +30,7 @@ the sole argument.
 
 `CGrunt::StepGooSuckerBehavior` at `0xf0e20` supplies the one-region form. In
 the blocked-voice arm, retail loads `g_gameReg` once, preserves that pointer
-across `CGameLevel::PointInBounds`, and then reads `m_cueSink` from the same
+across `CGameLevel::PointInBounds`, and then reads `m_voiceManager` from the same
 register. The reconstruction spelled the two chains independently and emitted
 two global relocations. A block-scoped `CGruntzMgr* game = g_gameReg` placed
 after the screen-coordinate loads removes the extra relocation (44 -> 43),

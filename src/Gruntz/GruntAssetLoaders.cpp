@@ -14,7 +14,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -24,6 +23,7 @@
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 
@@ -76,7 +76,7 @@ static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \
-            _g->m_cueSink->SpawnVoiceDriver(this, (tag), -1, 0, -1, -1);                           \
+            _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
         }                                                                                          \
     } while (0)
 
@@ -320,7 +320,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 if (CGameLevel::PointInRect(r, x, y)) {
-                    g->m_cueSink->LoadGruntSpawnConfig(this, 3, -1, -1, -1);
+                    g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
                 }
             }
 
@@ -340,7 +340,7 @@ pathA:
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 3, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
         }
     }
     deathType = DEATH_NORMAL;

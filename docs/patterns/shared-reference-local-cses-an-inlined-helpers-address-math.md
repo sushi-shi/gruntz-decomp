@@ -15,9 +15,9 @@ above the branch. Retail emits it inside each arm.
 CGruntzMgr* g = g_gameReg;
 const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
 if (pick > 0x19) {
-    if (CGameLevel::PointInRect(&r, xp, y)) { g->m_cueSink->SpawnVoiceDriver(...); }
+    if (CGameLevel::PointInRect(&r, xp, y)) { g->m_voiceManager->PlayVoice(...); }
 } else {
-    if (CGameLevel::PointInRect(&r, xp, y)) { g->m_cueSink->LoadGruntSpawnConfig(...); }
+    if (CGameLevel::PointInRect(&r, xp, y)) { g->m_voiceManager->PlayGruntVoiceCue(...); }
 }
 
 // 93.62, size now EXACT - the chain is spelled at each site

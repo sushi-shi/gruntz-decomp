@@ -20,7 +20,6 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -30,6 +29,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -176,7 +176,7 @@ i32 CGrunt::SeekTarget() {
                 this->m_object->m_screenY
             );
             if (r != 0) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
             }
             this->m_blockedVoicePending = 0;
             this->m_dwell = 0;
@@ -237,7 +237,7 @@ i32 CGrunt::SeekTarget() {
                     i32 bx = this->m_object->m_screenX;
                     CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                     if (CGameLevel::PointInRect(board, bx, by)) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                        g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }
             }

@@ -51,7 +51,6 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -90,6 +89,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/View.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/Warlord.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/WwdGameReg.h>
@@ -454,14 +454,14 @@ i32 CPlay::EnterState(GameStateId previousState) {
             m_mgr->m_worldSounds->Resume();
         }
         (static_cast<CTriggerMgr*>(m_mgr->m_cmdGrid))->DestroyAllAnims();
-        (static_cast<CGruntSpawnConfig*>(m_mgr->m_cueSink))->PauseAllVoices();
+        (static_cast<CVoiceManager*>(m_mgr->m_voiceManager))->PauseAllVoices();
     }
     return 1;
 }
 
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::LeaveState(GameStateId nextState) {
-    m_mgr->m_cueSink->PauseAllVoices();
+    m_mgr->m_voiceManager->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
@@ -562,7 +562,7 @@ i32 CPlay::Render() {
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
             if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
                 >= m_bootyTiming.m_interval.m_v) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x33e, -1, 1, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
                 m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
                 m_bootyTiming.m_interval.m_hi = 0;
                 m_bootyTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
@@ -1122,8 +1122,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     self->m_mgr->m_midi->ClearSequences();
     self->m_mgr->m_worldSounds->Teardown();
-    self->m_mgr->m_cueSink->PauseAllVoices();
-    self->m_mgr->m_cueSink->ClearSprites();
+    self->m_mgr->m_voiceManager->PauseAllVoices();
+    self->m_mgr->m_voiceManager->ClearVoiceIndicatorSlots();
     self->m_mgr->RestoreVideoMode(0);
 
     if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
@@ -1739,7 +1739,7 @@ void CPlay::FreeListTeardown() {
     }
     m_mgr->m_midi->ClearSequences();
     m_mgr->m_worldSounds->Teardown();
-    m_mgr->m_cueSink->ClearSprites();
+    m_mgr->m_voiceManager->ClearVoiceIndicatorSlots();
     g_gameReg->m_cmdGrid->DestroyAllAnims();
     m_world->m_level->ReleaseChildren();
     (m_world->m_childGroup)->PruneList();
@@ -2927,7 +2927,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 }
             }
             if (eventArg == 0) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x340, -1, 1, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
             m_dragInhibit1 = 0;
             m_guts->CommitSlot(eventArg);
@@ -3092,7 +3092,7 @@ drag_box: {
             slot = cg->m_units[sel[0] * 15 + sel[1]];
         }
         if (slot != NULL && slot->m_entranceCommitted != 0) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(slot, 0x324, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(slot, 0x324, -1, 0, -1, -1);
         }
     }
     LoadCursorSprites(0, 0);
@@ -3676,7 +3676,7 @@ i32 CPlay::CompleteLevel() {
         }
         m_mgr->m_midi->ClearSequences();
         m_mgr->m_worldSounds->Teardown();
-        m_mgr->m_cueSink->ClearSprites();
+        m_mgr->m_voiceManager->ClearVoiceIndicatorSlots();
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         return 1;
     }
@@ -3860,7 +3860,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         this->m_cursorOffset.m_y = 0;
         this->m_dragInhibit1 = 1;
         this->m_cursorTargetValid = 0;
-        g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x33e, -1, 1, -1, -1);
+        g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
         this->m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
         this->m_bootyTiming.m_interval.m_hi = 0;
         this->m_bootyTiming.m_start.m_lo = g_frameTime;
@@ -4649,14 +4649,14 @@ i32 CPlay::ExecuteCommand(
                     || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (player != static_cast<u32>(g_curPlayer) || g == NULL
                 || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
             return 1;
         }
 
@@ -4771,7 +4771,7 @@ i32 CPlay::ExecuteCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res == -1) {
@@ -4779,19 +4779,19 @@ i32 CPlay::ExecuteCommand(
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
             return 1;
         }
 
@@ -4828,7 +4828,7 @@ i32 CPlay::ExecuteCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res == -1) {
@@ -4836,7 +4836,7 @@ i32 CPlay::ExecuteCommand(
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
                 if (player != static_cast<u32>(g_curPlayer)
@@ -4844,7 +4844,7 @@ i32 CPlay::ExecuteCommand(
                     || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer)
@@ -4852,7 +4852,7 @@ i32 CPlay::ExecuteCommand(
                 || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
             return 1;
         }
 
@@ -4893,7 +4893,7 @@ i32 CPlay::ExecuteCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res == -1) {
@@ -4901,19 +4901,19 @@ i32 CPlay::ExecuteCommand(
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
             return 1;
         }
 
@@ -4950,7 +4950,7 @@ i32 CPlay::ExecuteCommand(
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (res == -1) {
@@ -4958,7 +4958,7 @@ i32 CPlay::ExecuteCommand(
                     if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                         return 0;
                     }
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
                 if (player != static_cast<u32>(g_curPlayer)
@@ -4966,7 +4966,7 @@ i32 CPlay::ExecuteCommand(
                     || g->m_entranceCommitted == 0) {
                     return 1;
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
             if (player != static_cast<u32>(g_curPlayer)
@@ -4974,7 +4974,7 @@ i32 CPlay::ExecuteCommand(
                 || g->m_entranceCommitted == 0) {
                 return 1;
             }
-            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
             return 1;
         }
 

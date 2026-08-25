@@ -34,7 +34,6 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -51,6 +50,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
@@ -129,7 +129,7 @@ i32 CGrunt::UpdateGruntStatus() {
             i32 x = m_object->m_screenX;
             const RECT& vr = g->m_world->m_level->m_mainPlane->m_viewRect;
             if (CGameLevel::PointInRect(&vr, x, y)) {
-                g->m_cueSink->LoadGruntSpawnConfig(this, 2, -1, -1, -1);
+                g->m_voiceManager->PlayGruntVoiceCue(this, 2, -1, -1, -1);
             }
             m_lowStaminaCued = 1;
         }
@@ -188,7 +188,7 @@ i32 CGrunt::RearmAttackAnim(i32 targetPlayerIndex, i32 targetUnitIndex) {
         i32 xx = h->m_screenX;
         const RECT* rect = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(rect, xx, yy)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 1, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 1, -1, -1, -1);
         }
     }
 
@@ -436,7 +436,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g->m_cueSink->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
+                    g->m_voiceManager->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             } else {
                 if (m_moveKind == 0) {
@@ -451,7 +451,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g->m_cueSink->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
+                    g->m_voiceManager->PlayVoice(this, tier, 0, -1, -1, -1);
                 }
             }
             return 0;
@@ -534,11 +534,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     if (sel == 0) {
         if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 0xa, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
         }
     } else {
         if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 0xb, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
         }
     }
     return 0;
@@ -587,7 +587,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         i32 x = h->m_screenX;
         const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(&r, x, y)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
         }
         return 0;
     }
@@ -661,7 +661,7 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 
 // @early-stop
 // g_gameReg is loaded once per PointInBounds BLOCK (the bounds test and the
-// LoadGruntSpawnConfig call in each block share ONE load; retail 0x6300d, 0x63041)
+// PlayGruntVoiceCue call in each block share ONE load; retail 0x6300d, 0x63041)
 // - `reloc_multiset` counts four loads in retail and six with a per-use spelling.
 // Two observed residues, both small and both regalloc-shaped:
 //  1. GetRandom(1, count)'s degenerate arm.  Retail selects with a branch between
@@ -671,7 +671,7 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 //     instructions shorter, so no source spelling of the shared <GameRand.h>
 //     inline reaches it.
 //  2. retail parks g_gameReg in EBP inside each PointInBounds block (0x6300d,
-//     0x63041) so the shared SpawnVoiceDriver tail is 3 instructions; ours holds
+//     0x63041) so the shared PlayVoice tail is 3 instructions; ours holds
 //     0 in EBP for the whole function and reloads ds:0x64556c per site, making
 //     that tail 8.
 // Block skeleton is otherwise aligned 59/59.
@@ -710,7 +710,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenY
                         )) {
 
-                        g->m_cueSink->LoadGruntSpawnConfig(this, 4, -1, -1, -1);
+                        g->m_voiceManager->PlayGruntVoiceCue(this, 4, -1, -1, -1);
                     }
                 } else if (focused || m_entranceReason != PICKUP_NONE) {
                     switch (idx) {
@@ -722,7 +722,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                                     m_object->m_screenY
                                 )) {
 
-                                g->m_cueSink->LoadGruntSpawnConfig(this, 5, -1, -1, -1);
+                                g->m_voiceManager->PlayGruntVoiceCue(this, 5, -1, -1, -1);
                             }
                             break;
                         }
@@ -734,7 +734,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                                     m_object->m_screenY
                                 )) {
 
-                                g->m_cueSink->LoadGruntSpawnConfig(this, 6, -1, -1, -1);
+                                g->m_voiceManager->PlayGruntVoiceCue(this, 6, -1, -1, -1);
                             }
                             break;
                         }
@@ -996,11 +996,11 @@ i32 CGrunt::StepArrivalReroll() {
     i32 xp = h->m_screenX;
     if (pick > 0x19) {
         if (CGameLevel::PointInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x15d, -1, 0, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(this, 0x15d, -1, 0, -1, -1);
         }
     } else {
         if (CGameLevel::PointInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) {
-            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 9, -1, -1, -1);
+            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 9, -1, -1, -1);
         }
     }
     return 0;
@@ -1048,7 +1048,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             i32 x = h->m_screenX;
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
             if (CGameLevel::PointInRect(&rect, x, y)) {
-                g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
+                g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopStruckSlotSound();
                 return 0;
             }
@@ -1065,7 +1065,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         i32 x = h->m_screenX;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(&rect, x, y)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 0xd, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 0xd, -1, -1, -1);
         }
     }
 
@@ -1133,7 +1133,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x384, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
         found = static_cast<CAniElement*>(
@@ -1145,7 +1145,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x385, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x385, -1, 0, -1, -1);
         }
     } else {
         found = static_cast<CAniElement*>(
@@ -1157,7 +1157,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x386, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x386, -1, 0, -1, -1);
         }
     }
 
@@ -1226,7 +1226,7 @@ i32 CGrunt::StepCombatReaction(
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_playerIndex,
@@ -1313,7 +1313,7 @@ i32 CGrunt::StepCombatReaction(
         }
     }
     if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
@@ -1404,7 +1404,7 @@ tail:
         i32 vy = h->m_screenY;
         const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(rect, vx, vy)) {
-            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 7, -1, -1, -1);
+            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 7, -1, -1, -1);
         }
     }
     return 0;
@@ -1502,7 +1502,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         CGruntzMgr* g = g_gameReg;
         const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInBounds(bounds, h->m_screenX, h->m_screenY)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
     }
 
@@ -1552,7 +1552,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         i32 y = h->m_screenY;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(&rect, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, cueId, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, cueId, -1, 0, -1, -1);
         }
 
         SET_ANIMATION_ACT("I");

@@ -18,7 +18,6 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -28,6 +27,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -91,7 +91,7 @@ i32 CGrunt::StepArrivalDefense() {
                 i32 vy = h->m_screenY;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInRect(rect, vx, vy)) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
             }
             return 1;
@@ -196,7 +196,7 @@ i32 CGrunt::StepArrivalDefense() {
                     if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
                         goto L_f318a;
                     }
-                    reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
             L_f318a:
                 m_dwell = 0;

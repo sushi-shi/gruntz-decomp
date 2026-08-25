@@ -23,7 +23,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
@@ -41,6 +40,7 @@
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WarpStonePad.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
@@ -524,7 +524,7 @@ i32 CCheckpointTrigger::Act() {
     if (sy < view->top) {
         return 0;
     }
-    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x334, -1, 0, -1, -1);
+    g_gameReg->m_voiceManager->PlayVoice(g, 0x334, -1, 0, -1, -1);
     return 0;
 }
 

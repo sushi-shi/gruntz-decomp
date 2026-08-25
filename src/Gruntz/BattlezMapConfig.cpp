@@ -32,7 +32,6 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
@@ -51,6 +50,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
@@ -3688,7 +3688,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
                         RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                         if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
+                            g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
                         // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
                         // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the

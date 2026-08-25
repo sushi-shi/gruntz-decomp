@@ -17,7 +17,6 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -27,6 +26,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -82,7 +82,7 @@ i32 CGrunt::StepPeerTracking() {
         i32 x = c->m_screenX;
         CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
         if (CGameLevel::PointInRect(&r->m_viewRect, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
     }
     m_blockedVoicePending = 0;

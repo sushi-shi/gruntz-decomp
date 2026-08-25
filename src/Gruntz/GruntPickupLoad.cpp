@@ -8,13 +8,13 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/ZVec.h>
 
@@ -447,7 +447,7 @@ i32 CGrunt::LoadPickupSprites(
         CGruntzMgr* g = g_gameReg;
         if ((CGameLevel::PointInRect(&g->m_viewBounds, hud->m_screenX, hud->m_screenY))
             || forced != 0) {
-            g->m_cueSink->SpawnVoiceDriver(this, id, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, id, -1, 0, -1, -1);
         }
     }
     m_entranceActive = 1;

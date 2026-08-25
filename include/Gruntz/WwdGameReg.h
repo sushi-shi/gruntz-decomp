@@ -7,7 +7,7 @@
 
 class CState;
 class CDDrawSurfaceMgr;
-class CGruntSpawnConfig;
+class CVoiceManager;
 
 class CGruntzMapMgr;
 class CSpriteRefTable;

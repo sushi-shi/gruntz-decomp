@@ -31,7 +31,7 @@ class CBattlezData;
 class CChatBoxOwner;
 class CFontConfig;
 class CWorldSoundSet;
-class CGruntSpawnConfig;
+class CVoiceManager;
 class CGruntzCmdMgr;
 class CTriggerMgr;
 class CStatusBarMgr;

@@ -508,8 +508,8 @@ reinterprets, delete local decl-only proximity hosts).
     ==== caller tree of 0x000e35f0 ?winapi_0e35f0_EndDialog@... [engine_label_stubs] ====
       <- jmp  0x0000103c winapi_0e4850_SetDlgItemTextA [ghidra]  (thunk-band)
         <- call 0x000e3a40 ?winapi_0e3a40_EndDialog@... [engine_label_stubs]
-          <- jmp  0x0000120d BuildVoiceList [ghidra]  (thunk-band)
-            <- call 0x0011adc0 ?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z [gruntspawnconfig]
+          <- jmp  0x0000120d BuildVoiceGroups [ghidra]  (thunk-band)
+            <- call 0x0011adc0 ?Init@CVoiceManager@@QAEHPAVCGruntzMgr@@@Z [gruntspawnconfig]
     # -> ancestry in one shot (default depth 4), thunks expanded automatically; the
     #    first NAMED class node up the chain is your attribution candidate.
     #    --depth N to widen/narrow; --depth 0 = unlimited (huge - only when needed).

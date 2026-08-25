@@ -24,14 +24,14 @@ the body is *wrapped* rather than the guard *returning* restores it:
 
 ```cpp
 // WRONG - frame 0x14, `s` gets its own slot
-m_mgr->m_cueSink->PauseAllVoices();          // a call ...
+m_mgr->m_voiceManager->PauseAllVoices();          // a call ...
 if (arg == GAMESTATE_HELP) { return 1; }     // ... plus an early return
 RECT r; CString s; s.LoadString(IDS_PLEASE_WAIT);
 ...
 return 1;
 
 // RIGHT - frame 0x10, `s` lands in the dead `arg` parameter's home
-m_mgr->m_cueSink->PauseAllVoices();
+m_mgr->m_voiceManager->PauseAllVoices();
 if (arg != GAMESTATE_HELP) {
     RECT r; CString s; s.LoadString(IDS_PLEASE_WAIT);
     ...

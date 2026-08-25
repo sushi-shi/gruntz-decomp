@@ -335,7 +335,7 @@ flags = "cpp-rtti"
 
 [[unit]]
 unit = "gruntspawnconfig"
-source = "src/Gruntz/GruntSpawnConfig.cpp"
+source = "src/Gruntz/VoiceManager.cpp"
 flags = "cpp-rtti"
 
 [[unit]]

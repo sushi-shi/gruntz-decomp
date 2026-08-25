@@ -41,7 +41,6 @@
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -68,6 +67,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <MakeRect.h>
 #include <Pix16.h>
@@ -1559,7 +1559,7 @@ label_4c6e4:
         i32 hudX = m_object->m_screenX;
         CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(rr, hudX, hudY)) {
-            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
+            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
         tgtPxX = beyondPxX;
         tgtPxY = beyondPxY;

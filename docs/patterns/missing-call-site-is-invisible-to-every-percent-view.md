@@ -64,7 +64,7 @@ A count deficit has three causes and only one is a defect:
 1. **cl cross-jumped two ARGUMENT-IDENTICAL call sites that retail kept apart.**
    This is the dominant class. `CGrunt::UpdateArrival` shows retail with one more
    each of `GruntInRadius`, `RectContains`, `ResetEntranceAnimation` and
-   `SpawnVoiceDriver`; the source has every one of those sites, textually
+   `PlayVoice`; the source has every one of those sites, textually
    identical in two arms, and cl merged each pair. Same for
    `CWwdSpatialMgr::Relocate` (four `m_mgr->RemoveAll(cur, obj)` sites → one),
    `CCheatMgr::LoadCheatConfig`, `CFaderShape::RenderFrame`,

@@ -95,8 +95,8 @@ real `i32` return type removed the fake `GruntTileSwitchImpl` alias.
 Command names are especially weak placeholder evidence. In
 `CGruntzMgr::BroadcastCmd`, the supposed `PrepCmd4`/`PrepCmd7` siblings resolve
 through distinct ILT entries to the already exact `SaveState`/`LoadState`
-methods, while the shared supposed `CGruntSpawnConfig::Tick` call resolves to
-`ClearSprites`. The complete fan-out proves the first argument is
+methods, while the shared supposed `CVoiceManager::Tick` call resolves to
+`ClearVoiceIndicatorSlots`. The complete fan-out proves the first argument is
 `CFileMemBase*`: the caller has just used its Read/Write virtual slots and every
 destination is an existing serializer. Retyping that boundary also exposes
 `CBattlezData::Command` as an alias for `CBattlezData::Serialize`. The argument
@@ -108,9 +108,9 @@ new API.
 
 Do not infer a free `__stdcall` function from a callee-cleaned return alone.
 The body at `0x11b7c0` ends in `ret 0x14`, but it first copies ECX to EDI and
-reads fields through EDI; its callers also load `CGameRegistry::m_cueSink` into
+reads fields through EDI; its callers also load `CGameRegistry::m_voiceManager` into
 ECX before calling ILT `0x33b4`. Those facts prove the five-stack-argument
-`CGruntSpawnConfig::SpawnVoiceDriver` member overload, not the former free
+`CVoiceManager::PlayVoice` member overload, not the former free
 `SpawnVoiceDriverStd` model. The same audit collapsed `Cue1` through ILT
 `0x1163` to `StopVoice`, `HiTabB` through ILT `0x20b8` to
 `PlaceCursorTarget`, and `ChipFinish` through ILT `0x3968` to `SetHlCell`.

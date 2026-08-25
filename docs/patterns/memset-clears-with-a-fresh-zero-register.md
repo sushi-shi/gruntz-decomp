@@ -45,7 +45,7 @@ a field assignment. `HeapStats` 0x118bf0 97.34 -> 100.00 EXACT (its sibling
 
 The same distinction applies to a small fixed member array even when the loop
 is fully unrolled and the instruction counts already agree. For two pointers at
-`this+8`, retail `CGruntSpawnConfig::ClearSprites` is:
+`this+8`, retail `CVoiceManager::ClearVoiceIndicatorSlots` is:
 
 ```asm
 add    ecx,8
@@ -61,10 +61,10 @@ post-increment, and indexed-pointer controls each scored 67.80. Restoring the
 single aggregate operation closed the function:
 
 ```cpp
-memset(m_voices, 0, sizeof(m_voices));
+memset(m_indicators, 0, sizeof(m_indicators));
 ```
 
-`CGruntSpawnConfig::ClearSprites` 0x11af90: 82.00 -> 100.00 EXACT. The detection
+`CVoiceManager::ClearVoiceIndicatorSlots` 0x11af90: 82.00 -> 100.00 EXACT. The detection
 signature is an already byte-complete clear whose only difference is that
 retail destructively biases `this` to the member-array base and then creates a
 fresh zero in the accumulator. Do not retain a pointer loop merely because its

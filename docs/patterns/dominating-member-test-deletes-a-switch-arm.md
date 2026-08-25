@@ -44,6 +44,6 @@ arm's shared `goto` tail is byte-invisible for the same reason.
 
 Evidence: `CGrunt::ChargeStep` 0x000ef6b0 (retail 465 insns vs 374; extra GruntInRadius +
 RectContains + a second ResetEntranceAnimation) and `CGrunt::UpdateArrival` 0x000f0130
-(retail 568 vs 449; extra GruntInRadius + RectContains + SpawnVoiceDriver +
+(retail 568 vs 449; extra GruntInRadius + RectContains + PlayVoice +
 ResetEntranceAnimation). Both arms are `if (m_poweredUp != 0)` under an outer
 `if (m_poweredUp != 0) { ... return 1; }`.

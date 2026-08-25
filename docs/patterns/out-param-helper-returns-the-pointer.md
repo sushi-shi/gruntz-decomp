@@ -53,7 +53,7 @@ materialises `mov eax,1` for a member store that could have used an immediate, i
 constant is CSE'd with `return 1`.
 
 **Both signals are required.** Tested and REJECTED in the same session:
-`CGrunt::ConsiderArrival` (82.37 -> 63.37) and `CGruntSpawnConfig::ClearSprites`
+`CGrunt::ConsiderArrival` (82.37 -> 63.37) and `CVoiceManager::ClearVoiceIndicatorSlots`
 (82.00 -> 62.00) — both end with a zero in eax, but that zero is a loop/NULL constant
 that merely survives to the `ret`, and neither shows the extra callee-saved push. A
 trailing `xor eax,eax` on its own proves nothing.

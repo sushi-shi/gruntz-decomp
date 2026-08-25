@@ -31,7 +31,6 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameText.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzDebugDialog.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -46,6 +45,7 @@
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Ints.h>
 #include <Io/SaveGame.h>
@@ -193,12 +193,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     i32 musicVolume = m_settings->GetValueDword("Music Volume", 0x64);
     i32 soundVolume = m_settings->GetValueDword("Sound Volume", 0x3c);
-    i32 vVoiVol = m_settings->GetValueDword("Voice Volume", 0x50);
-    i32 vScroll = m_settings->GetValueDword("Scroll Speed", 0x14);
+    i32 voiceVolume = m_settings->GetValueDword("Voice Volume", 0x50);
+    i32 scrollSpeed = m_settings->GetValueDword("Scroll Speed", 0x14);
     m_soundVolume = soundVolume;
-    m_voiceVolume = vVoiVol;
+    m_voiceVolume = voiceVolume;
 
-    m_scrollSpeed = vScroll;
+    m_scrollSpeed = scrollSpeed;
     m_numRuns = m_numRuns + 1;
     if (g_disableDirectVideo != 0) {
         g_disableFades = 1;
@@ -384,8 +384,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     SetSoundVolume(soundVolume);
 
-    SetVoiceVolume(vVoiVol);
-    m_scrollSpeed = vScroll;
+    SetVoiceVolume(voiceVolume);
+    m_scrollSpeed = scrollSpeed;
 
     g_inputMgr = new DirectInputMgr2;
     if (!g_inputMgr->Create(m_gameWnd->m_hwnd, m_owner->m_hInstance, 0xb)) {
@@ -575,12 +575,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_localVersion = static_cast<i32>(
         g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion))
     );
-    m_cueSink = new CGruntSpawnConfig;
-    if (!m_cueSink->Init(this)) {
+    m_voiceManager = new CVoiceManager;
+    if (!m_voiceManager->Init(this)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x45f);
         return 0;
     }
-    m_cueSink->m_voiceVolume = vScroll;
+    m_voiceManager->m_voiceVolume = voiceVolume;
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
     g_sndEnabled = vSound;

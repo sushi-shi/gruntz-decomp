@@ -48,7 +48,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -84,6 +83,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/View.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/Warlord.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/WwdGameReg.h>

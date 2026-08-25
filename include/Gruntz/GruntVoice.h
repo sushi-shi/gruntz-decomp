@@ -12,23 +12,25 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
-struct CVoiceSample {};
-
 struct StreamVoice;
+
+enum {
+    VOICE_INDICATOR_AT_LOGIC_OBJECT = 0,
+    VOICE_INDICATOR_AT_IMAGE_ORIGIN = 1
+};
 
 class CGruntVoice : public CUserLogic, public CWapX {
 public:
-public:
     CGruntVoice(CGameObject* obj);
 
-    virtual void FireActivation(i32 id) OVERRIDE;
-    i32 Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner);
-    void Reset();
+    virtual void FireActivation(i32 actionId) OVERRIDE;
+    i32 BeginPlayback(i32 sourceObjectId, StreamVoice* stream, i32 priority, i32 positionMode);
+    void ResetPlayback();
 
-    i32 IdleHidden();
-    i32 Update();
+    i32 HideIndicator();
+    i32 UpdateIndicator();
 
-    StreamVoice* m_sample;
+    StreamVoice* m_stream;
 
     union {
         Clock64 m_startStamp;
@@ -44,9 +46,9 @@ public:
             i32 m_durationHi;
         };
     };
-    i32 m_source;
-    i32 m_playFlags;
-    i32 m_owner;
+    i32 m_sourceObjectId;
+    i32 m_priority;
+    i32 m_positionMode;
     char m_pad74[0x78 - 0x74];
 };
 

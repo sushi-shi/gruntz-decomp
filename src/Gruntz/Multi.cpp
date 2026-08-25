@@ -30,7 +30,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -46,6 +45,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Io/FileStream.h>
 #include <MsgParam.h>
@@ -421,7 +421,7 @@ i32 CMulti::EnterState(GameStateId previousState) {
 
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::LeaveState(GameStateId nextState) {
-    m_mgr->m_cueSink->PauseAllVoices();
+    m_mgr->m_voiceManager->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
@@ -509,7 +509,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_outOfSync = 0;
     Mgr()->m_chatLog->FreeNodes();
     m_session->ResetRound();
-    Mgr()->m_cueSink->PauseAllVoices();
+    Mgr()->m_voiceManager->PauseAllVoices();
     return 1;
 }
 
@@ -2983,7 +2983,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     if (!Mgr()) {
         return 2;
     }
-    Mgr()->m_cueSink->PauseAllVoices();
+    Mgr()->m_voiceManager->PauseAllVoices();
     i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->m_hwnd);
     AckJoinFailure();

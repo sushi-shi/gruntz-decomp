@@ -40,7 +40,7 @@ after masking branch displacements). Cell B is the no-merge floor.
 
 The equal return value is essential. With different result arms, removing an
 explicit `else` can change the exit IL even when the C++ remains equivalent.
-`CGruntSpawnConfig::LoadGruntSpawnConfig` 0x11afb0 ends a successful
+`CVoiceManager::PlayGruntVoiceCue` 0x11afb0 ends a successful
 `SetSource && Configure` block with `if (Setup(...)) return 1; else return 0;`.
 Letting the failure fall through to the later `return 0` kept the same 241
 instructions, 23 calls, 34 branches, and one machine return, but changed

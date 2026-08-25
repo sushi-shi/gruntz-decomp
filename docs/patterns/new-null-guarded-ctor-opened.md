@@ -79,7 +79,7 @@ has member/base constructor calls followed by scalar stores inside the
 allocation guard, but the base `/Z7` block stops after the member/base calls,
 those stores belong to an explicit inline constructor even though there is no
 opened store block in the caller. This recovered `CCheatMgr`,
-`DirectInputMgr2`, `CFontConfig`, and `CGruntSpawnConfig`: their stores moved
+`DirectInputMgr2`, `CFontConfig`, and `CVoiceManager`: their stores moved
 onto the `new` source line and `CGruntzMgr::Run` rose from 85.2590% to 86.3292%.
 Check the complete guarded interval, not only source-visible `if (p)` blocks.
 

@@ -48,7 +48,6 @@
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
@@ -69,6 +68,7 @@
 #include <Gruntz/String.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Gruntz/WarpLetter.h>
 #include <Gruntz/WwdGameReg.h>
@@ -1338,8 +1338,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
+                    g_gameReg->m_voiceManager
+                        ->PlayVoice(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
                     m_walkStarted = 1;
                 } else {
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
@@ -1350,7 +1350,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     m_stepIndex++;
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x441, 0, 1, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(NULL, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                         m_stepIndex = 4;
                         return 1;
@@ -2208,7 +2208,7 @@ void CMultiBootyState::ReleaseResources() {
     }
     m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
 
-    m_mgr->m_cueSink->PauseAllVoices();
+    m_mgr->m_voiceManager->PauseAllVoices();
     CState::ReleaseResources();
 }
 

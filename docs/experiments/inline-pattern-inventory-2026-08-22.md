@@ -283,7 +283,7 @@ inlines rather than new candidates:
 - `GetRandomNumber`: 38 expansion sites in 20 functions. Current nonexact examples
   include `CRandomAmbientSound::InitCycleTiming` 75.692%, `CSpotLight::Tick`
   83.298%, `CInGameIcon::PeekCycle` 88.678%, both
-  `CGruntSpawnConfig::SpawnVoiceDriver` overloads at 90.104% and 92.473%, and
+  `CVoiceManager::PlayVoice` overloads at 90.104% and 92.473%, and
   `CFaderSine::RenderFrame` 88.888%.
 - `CDDrawWorker::GetAt`: `Refresh` 93.243%, `RenderCel` 75.636%,
   `CSBI_ImageSet::Render` 87.842%, `CSBI_GruntMachine::Render` 95.769%,
@@ -426,7 +426,7 @@ Collapsing both populations to direct reads regressed seven functions by 0.79 to
 5.57 points; restoring the copy inside the second macro restored all seven current
 fingerprints. See `docs/patterns/inline-macro-must-preserve-caller-local.md`.
 
-The one animation transition with an intervening `m_playFlags` store remains
+The one animation transition with an intervening `m_priority` store remains
 textual because combining it would reorder observable stores. Partial draw-fill
 updates likewise remain textual; the macros cover only complete adjacent field
 sets.
@@ -518,7 +518,7 @@ open-coded. A semicolon-separated list means multiple expansion sites or source 
 |---|---:|---|
 | `CDDrawWorkerHost::Build` | 100.000% | `CDDrawWorkerHost::Read`, `CDDrawWorkerHost::InitGeometry` |
 | `CTimer::Reset` | 100.000% | `CTimer::CTimer` |
-| `CGruntSpawnConfig::ClearSprites` | 100.000% | `CGruntSpawnConfig::Init` |
+| `CVoiceManager::ClearVoiceIndicatorSlots` | 100.000% | `CVoiceManager::Init` |
 | `CDDrawChildGroup::RemoveByPosition` | 100.000% | `CDDrawChildGroup::RemoveAll` |
 | `CDDrawSubMgrLeaf::AddEntry` | 100.000% | both `CreateAniEntry` variants |
 | `CDDrawSubMgrLeafScan::AddEntry` | 100.000% | `CreateEntry`, `CreateEntry2` |

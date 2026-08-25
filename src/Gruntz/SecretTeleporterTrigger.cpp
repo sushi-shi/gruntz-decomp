@@ -14,7 +14,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
@@ -23,6 +22,7 @@
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/VoiceManager.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -217,7 +217,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ex = eo->m_screenX;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
             if (CGameLevel::PointInRect(&rc->m_viewRect, ex, ey)) {
-                g->m_cueSink->SpawnVoiceDriver(hit, 0x3fc, -1, 0, -1, -1);
+                g->m_voiceManager->PlayVoice(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
         SetObjectFlags(0x10000);

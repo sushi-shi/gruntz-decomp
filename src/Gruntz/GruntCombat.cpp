@@ -40,7 +40,6 @@
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -66,6 +65,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WorkerHandler.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
@@ -643,7 +643,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     i32 x = m_object->m_screenX;
     CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_viewRect;
     if (CGameLevel::PointInRect(rc, x, y)) {
-        g->m_cueSink->LoadGruntSpawnConfig(this, 0xe, -1, -1, -1);
+        g->m_voiceManager->PlayGruntVoiceCue(this, 0xe, -1, -1, -1);
     }
 
     LoadGruntTypeTable(PICKUP_NONE, 1, 0, 1);
@@ -1040,14 +1040,14 @@ void CGrunt::OnStruck(i32 wasHit) {
             CGruntzMgr* g = g_gameReg;
             const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
             if (CGameLevel::PointInRect(vr, x, y)) {
-                g->m_cueSink->SpawnVoiceDriver(this, 0x370, -1, 0, -1, -1);
+                g->m_voiceManager->PlayVoice(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x371, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x371, -1, 0, -1, -1);
         }
         m_struckCount = 0;
         return;
@@ -1059,7 +1059,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x320, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x320, -1, 0, -1, -1);
         }
         return;
     }
@@ -1069,7 +1069,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x321, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x321, -1, 0, -1, -1);
         }
         return;
     }
@@ -1080,7 +1080,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x322, -1, 0, -1, -1);
+            g->m_voiceManager->PlayVoice(this, 0x322, -1, 0, -1, -1);
         }
     }
 }
@@ -2431,7 +2431,7 @@ void CGrunt::StepBehavior(char*) {
                 i32 sx = obj->m_screenX;
                 const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInRect(vr, sx, sy)) {
-                    reg3->m_cueSink->SpawnVoiceDriver(this, 0x348, -1, 0, -1, -1);
+                    reg3->m_voiceManager->PlayVoice(this, 0x348, -1, 0, -1, -1);
                 }
             }
             m_entranceSafeTimeLo = 0x3e8;

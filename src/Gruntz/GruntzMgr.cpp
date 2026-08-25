@@ -42,7 +42,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -75,6 +74,7 @@
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Image/CImage.h>
@@ -216,7 +216,7 @@ CGruntzMgr::CGruntzMgr() {
     m_worldSounds = NULL;
     m_saveSink = NULL;
     m_chatLog = NULL;
-    m_cueSink = NULL;
+    m_voiceManager = NULL;
     m_cmdGrid = NULL;
     m_cmdSubMgr = NULL;
     m_tileGrid = NULL;
@@ -308,8 +308,8 @@ void CGruntzMgr::Close() {
         if (m_midi) {
             m_settings->SetValueDword("Music Volume", m_midi->GetMasterVolume());
         }
-        if (m_cueSink) {
-            m_settings->SetValueDword("Voice Volume", m_cueSink->m_voiceVolume);
+        if (m_voiceManager) {
+            m_settings->SetValueDword("Voice Volume", m_voiceManager->m_voiceVolume);
         }
         if (m_world && m_world->m_soundRegistry) {
             m_settings->SetValueDword("Sound Volume", g_sndCueTag);
@@ -400,10 +400,10 @@ void CGruntzMgr::Close() {
         operator delete(m_chatLog);
         m_chatLog = NULL;
     }
-    if (m_cueSink) {
-        m_cueSink->~CGruntSpawnConfig();
-        operator delete(m_cueSink);
-        m_cueSink = NULL;
+    if (m_voiceManager) {
+        m_voiceManager->~CVoiceManager();
+        operator delete(m_voiceManager);
+        m_voiceManager = NULL;
     }
     if (m_world) {
         delete m_world;
@@ -1417,8 +1417,8 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     if (app == NULL) {
         return;
     }
-    if (m_cueSink) {
-        m_cueSink->PauseAllVoices();
+    if (m_voiceManager) {
+        m_voiceManager->PauseAllVoices();
     }
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
@@ -1963,8 +1963,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
     if (dlgProc == NULL) {
         return 0;
     }
-    if (m_cueSink) {
-        m_cueSink->PauseAllVoices();
+    if (m_voiceManager) {
+        m_voiceManager->PauseAllVoices();
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();
@@ -2016,8 +2016,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
 
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
-    if (m_cueSink) {
-        m_cueSink->PauseAllVoices();
+    if (m_voiceManager) {
+        m_voiceManager->PauseAllVoices();
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();
@@ -2668,7 +2668,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
 RVA(0x00091a10, 0x17)
 i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
-    CGruntSpawnConfig* timer = m_cueSink;
+    CVoiceManager* timer = m_voiceManager;
     if (timer) {
         timer->m_voiceVolume = v;
     }
@@ -3035,8 +3035,8 @@ i32 CGruntzMgr::Quicksave() {
     if (&(static_cast<CPlay*>(m_curState))->m_saveSlot == NULL) {
         return 0;
     }
-    if (m_cueSink) {
-        m_cueSink->PauseAllVoices();
+    if (m_voiceManager) {
+        m_voiceManager->PauseAllVoices();
     }
     FillSaveInfo(m_saveInfoRec, NULL);
 
@@ -3053,8 +3053,8 @@ i32 CGruntzMgr::Quickload() {
     if (m_saveSink == NULL) {
         return 0;
     }
-    if (m_cueSink) {
-        m_cueSink->PauseAllVoices();
+    if (m_voiceManager) {
+        m_voiceManager->PauseAllVoices();
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
 
@@ -3382,7 +3382,7 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, SerialMode cmd, LogicTypeId typeI
             if (LoadState(ar) == 0) {
                 return 0;
             }
-            m_cueSink->ClearSprites();
+            m_voiceManager->ClearVoiceIndicatorSlots();
             break;
     }
 

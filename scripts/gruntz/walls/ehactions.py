@@ -105,7 +105,7 @@ is ONE number or MANY - which is a different question about the parent:
                               lifetime, not a frame size
 
 and, across the 14 uniform parents, only TWO have a shift equal to the
-frame-size delta (`CGruntSpawnConfig::BuildVoiceSoundList` +0x4 against frame
+frame-size delta (`CVoiceManager::BuildVoiceGroup` +0x4 against frame
 -0x4, `CNetSession::BuildGruntzCrcInfo` +0x8 against -0x8). The other twelve
 shift by an amount the prologue does not explain -
 `CPlay::ValidateLevelTiles` moves its object -0xc while the frame grows only

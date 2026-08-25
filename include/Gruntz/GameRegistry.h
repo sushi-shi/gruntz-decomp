@@ -10,7 +10,7 @@ class CDDrawChildGroup;
 namespace Utils {
     class RegistryHelper;
 }
-class CGruntSpawnConfig;
+class CVoiceManager;
 
 class CState;
 class CWorldSoundSet;

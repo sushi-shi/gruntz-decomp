@@ -301,7 +301,7 @@ def mismatches(base, target, self_name: str | None = None) \
             # An aligned run's EDGE is where the pairing slips: the side with
             # an extra instruction walks the whole tail off by one, and the two
             # unrelated accesses that meet there read as one wrong member.
-            # Measured on three live rows (CGruntSpawnConfig::Clear,
+            # Measured on three live rows (CVoiceManager::Clear,
             # CInGameIcon::PlaceAt, CRollingBall's ctor), every one an extra
             # instruction on our side rather than a different field.
             if min(i - i1, i2 - 1 - i, j - j1, j2 - 1 - j) < EDGE:

@@ -23,7 +23,7 @@ public:
         OVERRIDE {
         SERIALIZE_USER_LOGIC_AND_CHAIN(ar, mode, typeId, object)
     }
-    virtual void FireActivation(i32 id) OVERRIDE;
+    virtual void FireActivation(i32 actionId) OVERRIDE;
     static void RegisterActs();
 
     i32 Tick();

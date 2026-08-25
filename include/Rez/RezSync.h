@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 
-class CGruntSpawnConfig;
+class CVoiceManager;
 
 void ButeParseErrorSink(const char* msg);
 

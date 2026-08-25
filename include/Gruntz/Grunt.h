@@ -57,7 +57,7 @@ class SoundBuffer;
 
 typedef struct tagRECT CCueRect;
 
-class CGruntSpawnConfig;
+class CVoiceManager;
 
 CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);

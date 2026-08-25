@@ -30,7 +30,7 @@ calls at all is **INLINE_CUT**: same object, and cl picks the cut per `new`-site
 is a wall (see the variant). The SAME ctor/dtor called a different NUMBER of times is
 **EXIT_MERGE**: cl gives every `if (...) return 0;` its own exit block but collapses all
 of them when a `||`/`&&` guard sends them to a common destination, and each surviving
-dtor copy carries its own state store — `CGruntSpawnConfig::SpawnVoiceDriver` calls
+dtor copy carries its own state store — `CVoiceManager::PlayVoice` calls
 `??1CString` twice for us and eight times in retail off one `&&`. That is
 the exit-merge lever, not this one. With frames on both sides and no ctor/dtor
 call delta, the tool now reports **STATE_FLOW**: ordinary calls, duplicated blocks,

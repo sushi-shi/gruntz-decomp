@@ -29,7 +29,7 @@ before. The census already says this; what follows is the part the census does n
 | `uniform`, other | 10 | 30 | the object sits at a different offset in an otherwise same-shaped frame |
 | `per-object` | 12 | 114 | the destructible objects moved relative to EACH OTHER - a local's storage or lifetime, not a frame size |
 
-Only **two** parents are a frame-size fact: `CGruntSpawnConfig::BuildVoiceSoundList` (+0x4
+Only **two** parents are a frame-size fact: `CVoiceManager::BuildVoiceGroup` (+0x4
 against frame -0x4) and `CNetSession::BuildGruntzCrcInfo` (+0x8 against -0x8). Everything else
 shifts by an amount the prologue does not explain - `CPlay::ValidateLevelTiles` moves its one
 `CString` -0xc while the frame grows +0x8, and `CButeMgr::SetInt` / `SetVector` /

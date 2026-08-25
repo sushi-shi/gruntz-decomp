@@ -109,7 +109,7 @@ near-clone `CGrunt::StepArrivalDefenseLean` 0xf8240 took the same edit 54.22 -> 
 ## In an EH (`/GX`) function, distinguish cleanup-call sites from full epilogues
 
 Repeated destructor CALL sites are still source-flow evidence. The two
-`CGruntSpawnConfig::SpawnVoiceDriver` overloads each began with two emitted
+`CVoiceManager::PlayVoice` overloads each began with two emitted
 `CString::~CString` calls against retail's seven because a positive-gate
 `SetSource(...) && Configure(...)` collapsed every failure onto one cleanup.
 Making all failures separate overshot to eight calls. Sending only the
@@ -122,11 +122,11 @@ destructor calls in the parent function before dismissing the residue as EH
 epilogue scheduling.
 
 The census can expose missing behavior before it exposes a spelling. In
-`CGruntSpawnConfig::LoadGruntSpawnConfig` 0x11afb0, retail calls `SetSource`,
+`CVoiceManager::PlayGruntVoiceCue` 0x11afb0, retail calls `SetSource`,
 conditionally calls `Configure`, tests the surviving return value, and reaches
-`CGruntVoice::Setup` only when both calls succeeded. The reconstruction called
+`CGruntVoice::BeginPlayback` only when both calls succeeded. The reconstruction called
 `Configure` conditionally but ignored both failure results and always ran
-`Setup`. Restoring the positive `SetSource(...) && Configure(...)` gate added
+`BeginPlayback`. Restoring the positive `SetSource(...) && Configure(...)` gate added
 the missing branch and moved 91.23 -> 91.78 (82.23 before the preceding
 structural repairs). Only then was the remaining 4-vs-6 CString-destructor
 census safe to classify as cleanup merging. A two-site failure label and a

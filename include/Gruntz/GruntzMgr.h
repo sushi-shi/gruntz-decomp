@@ -55,7 +55,7 @@ struct EngObj;
 class CFaderMgr;
 class CCheatMgr;
 class CShadeTableCache;
-class CGruntSpawnConfig;
+class CVoiceManager;
 class CGameLevel;
 class CLightFxMgr;
 
@@ -320,7 +320,7 @@ public:
     CSaveGame* m_saveSink;
 
     CFontConfig* m_chatLog;
-    CGruntSpawnConfig* m_cueSink;
+    CVoiceManager* m_voiceManager;
 
     i32 m_reserved64;
     CTriggerMgr* m_cmdGrid;

@@ -18,7 +18,6 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
@@ -32,6 +31,7 @@
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
@@ -614,7 +614,7 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
         if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
+            g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
             m_cooldownTimer.m_window = 0x7530;
             m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
         }
@@ -706,13 +706,13 @@ i32 CWarlord::NotifyFortUnderAttack() {
         bool alreadyPanicking = ANIMATION_ACT_EQUALS("D");
         if (!alreadyPanicking) {
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
                 m_cooldownTimer.m_window = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
                 if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start >= m_notifyTimer.m_window
                     && g_gameReg->m_cmdGrid->m_pendingFx == this) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x440, -1, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)
                     static CString s_alert("ALERT - Your Fort is under attack!");
@@ -755,10 +755,10 @@ i32 CWarlord::ResolveDeathAnimation() {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, m_ownerTag, -1, -1, -1);
+            g->m_voiceManager->PlayVoice(h->m_objectId, m_ownerTag, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, m_ownerTag, -1, -1, -1);
+        g->m_voiceManager->PlayVoice(m_object->m_objectId, m_ownerTag, -1, -1, -1);
     }
 
     SwitchAnimation(m_animDeath);
@@ -781,10 +781,10 @@ i32 CWarlord::RaiseBattleAlert() {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, 0x435, -1, -1, -1);
+            g->m_voiceManager->PlayVoice(h->m_objectId, 0x435, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x43f, -1, -1, -1);
+        g->m_voiceManager->PlayVoice(m_object->m_objectId, 0x43f, -1, -1, -1);
     }
 
     CAniElement* anim = m_animJoy;
@@ -812,10 +812,10 @@ i32 CWarlord::ResolveIdleAnimation() {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, cue, -1, -1, -1);
+            g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, idx + 0x43b, -1, -1, -1);
+        g->m_voiceManager->PlayVoice(m_object->m_objectId, idx + 0x43b, -1, -1, -1);
     }
 
     CAniElement* anim = m_idleAnims[idx];
@@ -844,10 +844,10 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_objectId, cue, -1, -1, -1);
+            g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, idx + 0x438, -1, -1, -1);
+        g->m_voiceManager->PlayVoice(m_object->m_objectId, idx + 0x438, -1, -1, -1);
     }
 
     CAniElement* anim = m_battlecryAnims[idx];

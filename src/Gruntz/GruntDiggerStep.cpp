@@ -18,7 +18,6 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -28,6 +27,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -139,7 +139,7 @@ i32 CGrunt::StepDiggerBehavior() {
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
             if (CGameLevel::PointInRect(board, x, y)) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
             }
             m_blockedVoicePending = 0;
         }

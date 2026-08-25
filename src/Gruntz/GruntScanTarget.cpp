@@ -19,7 +19,6 @@
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -29,6 +28,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -210,7 +210,7 @@ i32 CGrunt::ScanNearestTarget() {
                                     m_object->m_screenY
                                 )
                                 != 0) {
-                                reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                                reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }

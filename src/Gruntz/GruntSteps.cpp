@@ -23,7 +23,6 @@
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -40,6 +39,7 @@
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Pix16.h>
@@ -1021,7 +1021,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     if (eq) {
 
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_playerIndex,
@@ -1139,7 +1139,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
 idleReseed:
 
     if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {

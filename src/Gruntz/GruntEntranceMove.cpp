@@ -24,7 +24,6 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -39,6 +38,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
@@ -290,7 +290,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 s_GRUNTZ_ENTRANCEZ_ONE
             );
             if (onScreen) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x37a, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
@@ -299,7 +299,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 s_GRUNTZ_ENTRANCEZ_TWO
             );
             if (onScreen) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x37b, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else {
@@ -308,7 +308,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 s_GRUNTZ_ENTRANCEZ_THREE
             );
             if (onScreen) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x37c, -1, 0, -1, -1);
             }
             key = "GRUNTZ_ENTRANCEZ";
         }
@@ -409,7 +409,7 @@ i32 CGrunt::LoadEntranceConfig() {
         MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_GRUNTZ_ENTRANCEZ_DROP, found);
         if (cached == found) {
             if (m_playerIndex == g_curPlayer) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);
             }
             m_tileMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);
             m_entranceDropActive = 1;
@@ -517,7 +517,7 @@ i32 CGrunt::StartBombGruntRun() {
         i32 vy = h->m_screenY;
         const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(rect, vx, vy)) {
-            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
+            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
     }
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
@@ -579,7 +579,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32 x = m_object->m_screenX;
         CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(r, x, y)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
+            g->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
     } else {
         m_wingzEnabled = 0;
@@ -719,7 +719,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_playerIndex,
@@ -798,7 +798,7 @@ i32 CGrunt::StepArrivalCommit() {
 
 idleReseed:
     if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     {
@@ -893,7 +893,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             i32 vy = h->m_screenY;
             const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             if (CGameLevel::PointInRect(rect, vx, vy)) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x35c, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x35c, -1, 0, -1, -1);
             }
             m_freezeUnfrozen = 1;
             m_freezeDelayDone = 1;
@@ -1111,7 +1111,7 @@ i32 CGrunt::FinishActiveAction() {
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
-            g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+            g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_playerIndex,
@@ -1233,7 +1233,7 @@ i32 CGrunt::FinishActiveAction() {
         );
         if (found == cached) {
             if (m_playerIndex == g_curPlayer) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);
                 m_tileMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);
             }
             m_entranceDropActive = 1;
@@ -1256,7 +1256,7 @@ i32 CGrunt::FinishActiveAction() {
 
 idleReseed:
     if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
+        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {

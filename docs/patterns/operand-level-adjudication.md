@@ -45,7 +45,7 @@ exclusive immediates (0x1388, 0x366) and the store displacements 0x78/0x7c/
 ```cpp
     if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) == 0) {   // WRONG arm
     if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) != 0) {   // retail
-        ...  m_routeTimers[0].m_v = 0; ... SpawnVoiceDriver(unit, 0x366, ...)
+        ...  m_routeTimers[0].m_v = 0; ... PlayVoice(unit, 0x366, ...)
 ```
 Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2 - and we
 emitted six. Fixed in fd8706cd3.

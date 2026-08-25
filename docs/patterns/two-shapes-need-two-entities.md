@@ -73,8 +73,8 @@ each to its containing function:
 - an **expansion** is the same `add reg,0x40` followed directly by the compare block
 
 Then, inside a function that has one of each, discriminate by the neighbouring stores and
-the callee that follows the test (e.g. `push 0x8; call <LoadGruntSpawnConfig>` vs
-`push <cueId>; call <SpawnVoiceDriver>`). **Do not use RVA order** - /O2 reorders blocks, and
+the callee that follows the test (e.g. `push 0x8; call <PlayGruntVoiceCue>` vs
+`push <cueId>; call <PlayVoice>`). **Do not use RVA order** - /O2 reorders blocks, and
 in `CGrunt::UpdateArrival` (0xf0130) the expansion precedes the call in the image while the
 call precedes the expansion in the source.
 

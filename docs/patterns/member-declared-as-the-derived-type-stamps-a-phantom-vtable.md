@@ -69,7 +69,7 @@ Deleting the class outright - member to `CPtrList`, `NextData` respelled
 `GetNext`, the `RVA(0x29a30)` claim moved to `functions_static_libs.tsv` as an
 out-of-line MFC header inline - was measured and is WORSE: 19 fresh regressions
 instead of 10, because the eight call sites lose retail's out-of-line call
-(`CGruntSpawnConfig::PickWeighted` 100.00 -> 83.71 on its own) once cl expands the
+(`CVoiceManager::SelectVoiceVariant` 100.00 -> 83.71 on its own) once cl expands the
 tiny `CPtrList::GetNext` body. Reproducing that call honestly is an inline-budget
 question, not a spelling one: `<MfcNoInline.h>` cannot reach `afxcoll.inl`, because
 the canonical include order parses `<Mfc.h>` - and with it `<afxcoll.h>` - before

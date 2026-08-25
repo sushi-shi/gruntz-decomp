@@ -174,7 +174,7 @@ restore the disproved placeholder. The owner fold itself is documented in
 
 ELEVENTH FIRING (2026-07-23, command-role alias collapse): deleting seven fake
 member declarations from `GruntzMgr.h`, `GruntzCmdMgr.h`,
-`GruntSpawnConfig.h`, and `BattlezData.h` after their ILT targets proved to be
+`VoiceManager.h`, and `BattlezData.h` after their ILT targets proved to be
 existing methods recolored a wide shared-header closure. Retyping the archive
 fan-out from integer/`void*` placeholders to `CFileMemBase*` then removed the
 wrong receiver casts without changing that set. Eight unrelated,
@@ -196,7 +196,7 @@ search dimension and the per-function MAX must remain intact.
 
 The same batch then supplied a controlled second stage: removing the unused
 placeholder forward declaration `struct TimerObj;` (the +0x60 member was already
-proved to be `CGruntSpawnConfig*`) changed no executable statement, field, or
+proved to be `CVoiceManager*`) changed no executable statement, field, or
 function signature. Nevertheless, `CSBI_ImageSet::Render` newly moved
 98.5790→86.7368, `CSpriteRef::Build` 77.9927→74.7273, and
 `CGrunt::ArrivalScanA` 50.2333→50.2182; meanwhile
@@ -208,9 +208,9 @@ When reversing a similar dip, replay both member/API declaration deltas and
 apparently inert type-forward deltas in their original order.
 
 TWELFTH FIRING (2026-07-23, receiver/calling-convention correction): removing
-four fake declarations from `GruntSpawnConfig.h` and `StatusBarMgr.h`, while
+four fake declarations from `VoiceManager.h` and `StatusBarMgr.h`, while
 correcting `0x11b7c0` from a free `__stdcall` placeholder to the five-argument
-`CGruntSpawnConfig::SpawnVoiceDriver` member overload, introduced no new dips.
+`CVoiceManager::PlayVoice` member overload, introduced no new dips.
 Instead, two source-identical rows reversed earlier butterfly movement:
 `CGrunt::PhaseStep` recovered 38.5960→39.7717 and
 `CGrunt::ArrivalScanC` recovered 47.2280→47.2696 without body edits. Overall

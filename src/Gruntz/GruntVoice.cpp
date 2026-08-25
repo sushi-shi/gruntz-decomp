@@ -17,7 +17,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntVoiceActReg.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -30,6 +29,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Ufo.h>
+#include <Gruntz/VoiceManager.h>
 #include <Gruntz/VoiceTrigger.h>
 #include <Image/CImage.h>
 #include <Rez/RezSync.h>
@@ -180,15 +180,15 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     ApplyName("GAME_EXCLAMATION");
     CWwdGameObjectA* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE)
-    m_sample = NULL;
+    m_stream = NULL;
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;
     SetObjectFlags(0x4000002);
     Hide();
-    m_playFlags = 0;
+    m_priority = 0;
     SET_ANIMATION_ACT("A");
-    m_source = 0;
-    m_owner = 0;
+    m_sourceObjectId = 0;
+    m_positionMode = VOICE_INDICATOR_AT_LOGIC_OBJECT;
 }
 
 RVA_COMPGEN(0x00119ab0, 0x1e, ??_GCGruntVoice@@UAEPAXI@Z)
@@ -210,10 +210,10 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
 }
 
 RVA(0x00119e40, 0x102)
-void CGruntVoice::FireActivation(i32 coord) {
-    CActHandler* e = VActLookup(coord);
+void CGruntVoice::FireActivation(i32 actionId) {
+    CActHandler* e = VActLookup(actionId);
     if ((*e) != NULL) {
-        CActHandler* e2 = VActLookup(coord);
+        CActHandler* e2 = VActLookup(actionId);
         (this->*((*e2)))();
     }
 }
@@ -222,18 +222,18 @@ RVA(0x00119fa0, 0x2ac)
 void RegisterGruntVoiceActions() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CGruntVoice::IdleHidden);
+        static_cast<CActHandler>(&CGruntVoice::HideIndicator);
 
     ACT_NAME_ID(id2, "B")
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CGruntVoice::Update);
+        static_cast<CActHandler>(&CGruntVoice::UpdateIndicator);
 }
 
 RVA(0x0011a3a0, 0x102)
-void CVoiceTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
+void CVoiceTrigger::FireActivation(i32 actionId) {
+    CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
         (this->*((*e2)))();
     }
 }
@@ -261,8 +261,8 @@ i32 CVoiceTrigger::Tick() {
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, hx, hy)) {
-            if (g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
+            if (g_gameReg->m_voiceManager
+                    ->PlayVoice(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
                 SetObjectFlags(0x10000);
             }
         }
@@ -273,54 +273,63 @@ i32 CVoiceTrigger::Tick() {
 // @early-stop
 RVA(0x0011a7e0, 0x6e)
 
-i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner) {
-    if (sample == NULL) {
+i32 CGruntVoice::BeginPlayback(
+    i32 sourceObjectId,
+    StreamVoice* stream,
+    i32 priority,
+    i32 positionMode
+) {
+    if (stream == NULL) {
         return 0;
     }
-    m_source = source;
-    m_owner = owner;
-    m_sample = sample;
-    m_duration.m_v = sample->GetDurationMs();
+    m_sourceObjectId = sourceObjectId;
+    m_positionMode = positionMode;
+    m_stream = stream;
+    m_duration.m_v = stream->GetDurationMs();
     m_startStamp.m_v = g_frameTime;
-    // Retail loads playFlags into ECX at +0x27 (right after GetDurationMs) yet
+    // Retail loads priority into ECX at +0x27 (right after GetDurationMs) yet
     // stores it at +0x47, and defers the m_objAux read to +0x44. Swapping these
     // two statements moves the ECX load onto retail's slot but hoists the member
     // read to +0x2b (81.50); neither order reproduces both. Schedule coin.
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_playFlags = playFlags;
+    m_priority = priority;
     m_objAux->SetActKey(ActFindId("B"));
     return 1;
 }
 
 RVA(0x0011a870, 0x38)
-void CGruntVoice::Reset() {
-    m_sample = NULL;
+void CGruntVoice::ResetPlayback() {
+    m_stream = NULL;
     SET_ANIMATION_ACT("A");
-    m_playFlags = 0;
-    m_source = 0;
+    m_priority = 0;
+    m_sourceObjectId = 0;
 }
 
 RVA(0x0011a8c0, 0xf)
-i32 CGruntVoice::IdleHidden() {
+i32 CGruntVoice::HideIndicator() {
     m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 0;
 }
 
 RVA(0x0011a8e0, 0x198)
-i32 CGruntVoice::Update() {
-    if (m_sample == NULL || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
-        m_sample = NULL;
-        m_source = 0;
+i32 CGruntVoice::UpdateIndicator() {
+    if (m_stream == NULL || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
+        m_stream = NULL;
+        m_sourceObjectId = 0;
         m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
         SET_ANIMATION_ACT("A");
-        m_playFlags = 0;
+        m_priority = 0;
         return 0;
     }
-    if (m_owner == 0) {
+    if (m_positionMode == VOICE_INDICATOR_AT_LOGIC_OBJECT) {
         CGameObject* out = NULL;
-        i32 src = m_source;
+        i32 sourceObjectId = m_sourceObjectId;
         CGameObject* resolved;
-        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById, src, out)
+        if (MapLookupById(
+                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                sourceObjectId,
+                out
+            )
             == 0) {
             resolved = NULL;
         } else if (out == NULL) {
@@ -340,9 +349,13 @@ i32 CGruntVoice::Update() {
         m_object->m_screenY = logic->m_object->m_screenY - 0x32;
     } else {
         CGameObject* out = NULL;
-        i32 src = m_source;
+        i32 sourceObjectId = m_sourceObjectId;
         CGameObject* resolved;
-        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById, src, out)
+        if (MapLookupById(
+                g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                sourceObjectId,
+                out
+            )
             == 0) {
             resolved = NULL;
         } else if (out == NULL) {

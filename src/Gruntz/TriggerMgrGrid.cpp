@@ -17,7 +17,6 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -40,6 +39,7 @@
 #include <Gruntz/TriggerMgrRecords.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/VoiceManager.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
@@ -595,10 +595,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     i32 cueX = g->m_object->m_screenX;
                     i32 cueY = g->m_object->m_screenY;
                     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, cueX, cueY)) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x3f2, -1, 0, -1, -1);
+                        g_gameReg->m_voiceManager->PlayVoice(g, 0x3f2, -1, 0, -1, -1);
                     }
                 } else if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(NULL, 0x3f2, -1, 1, -1, -1);
+                    g_gameReg->m_voiceManager->PlayVoice(NULL, 0x3f2, -1, 1, -1, -1);
                 }
             }
             return 1;
@@ -850,7 +850,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     i32 gx = g->m_object->m_screenX;
                     i32 gy = g->m_object->m_screenY;
                     if (CGameLevel::PointInRect(view, gx, gy)) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x335, -1, 0, -1, -1);
+                        g_gameReg->m_voiceManager->PlayVoice(g, 0x335, -1, 0, -1, -1);
                     }
                 }
             }
@@ -1385,7 +1385,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
             i32 sx = obj->m_screenX;
             RECT* vr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             if (sx < vr->right && sx >= vr->left && sy < vr->bottom && sy >= vr->top) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x38e, -1, 0, -1, -1);
+                g_gameReg->m_voiceManager->PlayVoice(cell, 0x38e, -1, 0, -1, -1);
             }
         }
         return 1;

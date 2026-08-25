@@ -104,7 +104,7 @@ jumps *over* a block means that block is the fall-through arm — so it is the `
 | `CMoviePlayer::OpenHi` @0x017c630 | 70.73 -> **82.32** | same |
 | `CGrunt::CommitNeighbor` @0x005b050 | 94.72 -> **95.14** | assign-then-cancel on `m_19c == 1` |
 | `EnumSurfacesCallback` @0x013e9a0 | 87.45 -> **99.08** | block polarity; note had read "/GX ctor-in-flight EH state" |
-| `CGruntVoice::Update` @0x011a8e0 | 87.08 -> **100.00 EXACT** | block polarity on the last gate |
+| `CGruntVoice::UpdateIndicator` @0x011a8e0 | 87.08 -> **100.00 EXACT** | block polarity on the last gate |
 
 STEERABLE. Every one of these had been filed as a regalloc / scheduling / EH wall.
 

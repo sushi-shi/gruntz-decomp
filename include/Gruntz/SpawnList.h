@@ -39,7 +39,7 @@ public:
     void DeleteAllEntries();
     CSpawnEntry* FindEntry(CString name, i32 useHash);
     CSpawnEntry* FindByName(const CString& name);
-    void AddVoiceSound(CString s, i32 flag);
+    void AddVoiceSound(CString resourceName, i32 data);
 
     CPtrList m_list;
 
