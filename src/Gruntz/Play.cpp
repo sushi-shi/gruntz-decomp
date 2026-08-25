@@ -1147,9 +1147,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_engineFrameDelta = g_frameDelta;
 
     for (i32 t = 0; t < 4; ++t) {
-        CGruntzMgr* hostBase = self->m_mgr;
+        CGruntzMgr* mgr = self->m_mgr;
         gameReg = g_gameReg;
-        GruntzPlayer* team = &hostBase->m_options[t];
+        GruntzPlayer* team = &mgr->m_options[t];
         if (gameReg->m_gameMode == GAMEMODE_SINGLE) {
             team->SeedForSlot(t);
             if (t == 0) {
@@ -1185,15 +1185,15 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_returnToMenuOnComplete = 0;
     self->m_mgr->m_isCustomLevel = 0;
 
-    CGruntzMgr* host = self->m_mgr;
-    if (host->m_strWorldFile.GetLength() != 0) {
+    CGruntzMgr* mgr = self->m_mgr;
+    if (mgr->m_strWorldFile.GetLength() != 0) {
         CParseSource* ins;
         char* desc;
         char* p;
         char c;
-        if (host->m_isBattlezLevel != 0) {
+        if (mgr->m_isBattlezLevel != 0) {
 
-            bank = host->m_symParser->ResolvePath("GAME_BATTLEZ");
+            bank = mgr->m_symParser->ResolvePath("GAME_BATTLEZ");
             if (bank == NULL) {
                 goto fail0;
             }
@@ -1220,9 +1220,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
             level = atoi(p);
             ins->EndParse();
-        } else if (host->m_isMultiLevel != 0) {
+        } else if (mgr->m_isMultiLevel != 0) {
 
-            bank = host->m_symParser->ResolvePath("GAME_MULTI");
+            bank = mgr->m_symParser->ResolvePath("GAME_MULTI");
             if (bank == NULL) {
                 goto fail0;
             }
@@ -1323,9 +1323,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_stateBank = (self->m_levelBank);
         UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
 
-        host = self->m_mgr;
-        if (host->m_strWorldFile.GetLength() != 0) {
-            if (host->m_isBattlezLevel == 0 && host->m_isMultiLevel == 0) {
+        mgr = self->m_mgr;
+        if (mgr->m_strWorldFile.GetLength() != 0) {
+            if (mgr->m_isBattlezLevel == 0 && mgr->m_isMultiLevel == 0) {
                 sprintf(nameBuf, "CUSTOMLEVEL");
             }
         } else if (level > 0x24) {
@@ -1501,9 +1501,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->m_tileGrid->Reset();
 
     {
-        CDDrawWorkerHost* g5c = static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
-        CGruntzMapMgr* host70 = self->m_mgr->m_tileGrid;
-        if (!host70->LoadAttributes(g5c->m_gridW, g5c->m_gridH)) {
+        CDDrawWorkerHost* mainPlane =
+            static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
+        CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
+        if (!tileGrid->LoadAttributes(mainPlane->m_gridW, mainPlane->m_gridH)) {
             goto fail0;
         }
     }
@@ -1573,7 +1574,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             self->m_world->m_childGroup->TickKillCues(0);
             if (savedThis == NULL) {
 
-                CStatusBarMgr* tiles = self->m_guts;
+                CStatusBarMgr* statusBar = self->m_guts;
                 // Initialise to the docked-right origin and OVERWRITE, which is
                 // retail's shape (0xcacfd `mov eax,0x1a9` / `cmp [ecx],ebx` / `je` /
                 // `mov eax,0x249`).  A ternary compiles to cl's branchless select
@@ -1581,7 +1582,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 // status-bar width the two origins differ by, which is what named
                 // them.
                 i32 originX = TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX;
-                if (tiles->m_position != STATUSBAR_DOCK_RIGHT) {
+                if (statusBar->m_position != STATUSBAR_DOCK_RIGHT) {
                     originX = TIMER_ORIGIN_X_PX;
                 }
                 if (!self->m_frameMarker->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
@@ -2020,27 +2021,27 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    CGruntzMgr* host = this->m_mgr;
-    CStatusBarMgr* level = this->m_guts;
+    CGruntzMgr* mgr = this->m_mgr;
+    CStatusBarMgr* statusBar = this->m_guts;
 
-    if (level->m_levelOverlayActive != 0 || level->m_quitConfirmationActive != 0) {
-        if (level->m_quitConfirmationActive != 0) {
+    if (statusBar->m_levelOverlayActive != 0 || statusBar->m_quitConfirmationActive != 0) {
+        if (statusBar->m_quitConfirmationActive != 0) {
 
             if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+                    CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->UpdateScoreHud();
                     }
-                    PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                     return 1;
                 }
-                CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                host->AccrueScoreTime();
+                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->AccrueScoreTime();
                 return 1;
             }
             if (vk == 'N' || vk == VK_ESCAPE) {
-                CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
                 this->CloseLevelOverlay(0);
                 return 1;
             }
@@ -2049,21 +2050,21 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (vk == 'Q') {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+                    CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->UpdateScoreHud();
                     }
-                    PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                    PostMessageA(mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 }
                 return 1;
             }
 
             if (vk == 'S' && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                host->AccrueScoreTime();
+                CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
+                mgr->AccrueScoreTime();
             }
             if (vk == 'R') {
-                if (host->m_gameMode == GAMEMODE_SINGLE
+                if (mgr->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase != FINISH_STATE_VICTORY) {
                     // g_gameReg, not m_mgr: retail reads m_world off the global here
                     // (0xcbf65 `mov eax,[ecx+0x30]` with ecx = ds:0x64556c) while the
@@ -2076,15 +2077,15 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
             if (vk == 'N') {
-                if (host->m_gameMode == GAMEMODE_SINGLE
+                if (mgr->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
-                    host->AccrueScoreTime();
+                    mgr->AccrueScoreTime();
                 }
                 return 1;
             }
             if (vk == 'O') {
-                if (host->m_gameMode != GAMEMODE_SINGLE
+                if (mgr->m_gameMode != GAMEMODE_SINGLE
                     && this->m_guts->m_observerTabAvailable != 0) {
                     CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
                     this->CloseLevelOverlay(0);
@@ -2107,7 +2108,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_ESCAPE) {
-        CTriggerMgr* h68 = host->m_cmdGrid;
+        CTriggerMgr* h68 = mgr->m_cmdGrid;
         CWwdGameObjectA* n = h68->m_goal;
         if (n != NULL) {
             n->m_flags |= 0x10000;
@@ -2320,10 +2321,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'A') {
-        if (level->m_hitTestDisabled != 0) {
+        if (statusBar->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
         CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -2345,10 +2346,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             g_gameReg->SetSoundEnabled(g_gameReg->m_soundEnabled == 0);
             return 1;
         }
-        if (level->m_hitTestDisabled != 0) {
+        if (statusBar->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
         CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -2366,10 +2367,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'D') {
-        if (level->m_hitTestDisabled != 0) {
+        if (statusBar->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
         CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -2387,22 +2388,22 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == 'F') {
-        if (level->m_hitTestDisabled != 0) {
+        if (statusBar->m_hitTestDisabled != 0) {
             return 1;
         }
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
         this->m_guts->AdvanceTab(g_gameplayInput->m_heldButtons & 1);
         return 1;
     }
 
     if (vk == 'G') {
-        if (level->m_hitTestDisabled != 0) {
+        if (statusBar->m_hitTestDisabled != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+        CLEAR_TAB_HINT(mgr->m_world->m_soundRegistry);
         CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
@@ -2500,7 +2501,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             RECT* view = &g->m_viewRect;
             i32 by = view->top - q->m_planeCtx.top + my;
             i32 bx = view->left - q->m_planeCtx.left + mx;
-            host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
+            mgr->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
 
@@ -2526,7 +2527,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         i32 playerIndex;
         i32 unitIndex;
-        CGrunt* r = host->m_cmdGrid->ScreenToCell(
+        CGrunt* r = mgr->m_cmdGrid->ScreenToCell(
             this->m_cursorX,
             this->m_cursorY,
             &playerIndex,
@@ -2536,7 +2537,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (r == NULL) {
             return 1;
         }
-        host->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, -1);
+        mgr->m_cmdGrid->StartUnitDeath(playerIndex, unitIndex, DEATH_DROP, -1);
         return 1;
     }
 
@@ -2642,11 +2643,11 @@ recorder_place:
     }
     this->m_dragInhibit2 = 0;
     if (vk == VK_DELETE || vk == VK_DECIMAL) {
-        level->ReportTab(st);
+        statusBar->ReportTab(st);
         this->SetCursorFrame(0);
         return 1;
     }
-    level->EnterHlRow(0, st);
+    statusBar->EnterHlRow(0, st);
     this->SetCursorFrame(0);
     if (lvl == 0) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
@@ -3168,12 +3169,12 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
 
     if (m_guts->m_position == STATUSBAR_HIDDEN && m_guts->HitTestLayer(x, y)) {
-        SoundCueRegistry* set = m_mgr->m_world->m_soundRegistry;
-        if (set->m_silentMode == 0) {
-            SoundCue* e = NULL;
-            MapLookup(set->m_cues, "GAME_TABHIGHLIGHT1", e);
-            if (e != NULL) {
-                e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+        SoundCueRegistry* registry = m_mgr->m_world->m_soundRegistry;
+        if (registry->m_silentMode == 0) {
+            SoundCue* cue = NULL;
+            MapLookup(registry->m_cues, "GAME_TABHIGHLIGHT1", cue);
+            if (cue != NULL) {
+                cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
             }
         }
         m_guts->RestoreStatusBar();
@@ -3527,9 +3528,9 @@ void CPlay::DrawDebugStatsFull() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_backPair->m_surface;
     HDC hdc = NULL;
-    host->m_ddSurface->GetDC(&hdc);
+    surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return;
     }
@@ -3579,7 +3580,7 @@ void CPlay::DrawDebugStatsFull() {
             TextOutA(hdc, 0, 0x70, g_brickText8, g_brickText8.GetLength());
         }
     }
-    host->m_ddSurface->ReleaseDC(hdc);
+    surface->m_ddSurface->ReleaseDC(hdc);
 }
 
 RVA(0x000cf770, 0x35e)
@@ -3627,9 +3628,9 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* surface = m_world->m_drawTarget->m_backPair->m_surface;
     HDC hdc = NULL;
-    host->m_ddSurface->GetDC(&hdc);
+    surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return;
     }
@@ -3655,7 +3656,7 @@ void CPlay::DrawDebugStats() {
             TextOutA(hdc, 0, dr.top, buf, strlen(buf));
         }
     }
-    host->m_ddSurface->ReleaseDC(hdc);
+    surface->m_ddSurface->ReleaseDC(hdc);
 }
 
 RVA(0x000cfbb0, 0x8)
@@ -3711,12 +3712,12 @@ void CPlay::DrawCustomLevelBanner() {
         }
         sprintf(g_customLevelText, "Custom Level: %s", static_cast<const char*>(base));
     }
-    CDDSurface* host = m_world->m_drawTarget->m_frontPair->m_surface;
-    if (host == NULL) {
+    CDDSurface* surface = m_world->m_drawTarget->m_frontPair->m_surface;
+    if (surface == NULL) {
         return;
     }
     HDC hdc = NULL;
-    host->m_ddSurface->GetDC(&hdc);
+    surface->m_ddSurface->GetDC(&hdc);
     if (hdc == NULL) {
         return;
     }
@@ -3728,7 +3729,7 @@ void CPlay::DrawCustomLevelBanner() {
     rc.right = 0x27f;
     rc.bottom = 0x1d6;
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
-    host->m_ddSurface->ReleaseDC(hdc);
+    surface->m_ddSurface->ReleaseDC(hdc);
 }
 
 RVA(0x000cfef0, 0xbc)

@@ -15,8 +15,8 @@ DATA(0x00229930)
 i32 g_saveBuf[0x24];
 
 RVA(0x0000d170, 0x74)
-i32 SaveGame(CGruntzMgr* host, char* name) {
-    if (host == NULL) {
+i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
+    if (gameMgr == NULL) {
         return 0;
     }
     if (name == NULL) {
@@ -28,13 +28,13 @@ i32 SaveGame(CGruntzMgr* host, char* name) {
     g_serialCounter = 0;
     memset(g_saveBuf, 0, 0x90);
     g_saveBuf[0] = 1;
-    CDDrawSurfaceMgr* mgr = host->m_world;
-    if (mgr == NULL) {
+    CDDrawSurfaceMgr* world = gameMgr->m_world;
+    if (world == NULL) {
         return 0;
     }
     // Filter seeded with 0, NOT LOGIC_NONE(-1): a full save keeps every child,
     // and 0 is not a member of the LogicTypeId domain (same idiom as
     // CGameObject::WriteSnapshot's typeTag).
-    return mgr->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", LOGIC_UNSET)
+    return world->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", LOGIC_UNSET)
            != LOGIC_UNSET;
 }

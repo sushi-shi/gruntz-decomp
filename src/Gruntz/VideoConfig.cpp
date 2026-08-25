@@ -495,12 +495,12 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_silentMode) {
+        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+        if (registry->m_silentMode) {
             return;
         }
         SoundCue* found = NULL;
-        MapLookup(host->m_cues, "GAME_VOICE", found);
+        MapLookup(registry->m_cues, "GAME_VOICE", found);
         // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
         // a register across the m_lastPlayTimeMs store.
         SoundCue* cue = found;
@@ -523,12 +523,12 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_silentMode) {
+        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+        if (registry->m_silentMode) {
             return;
         }
         SoundCue* found = NULL;
-        MapLookup(host->m_cues, "GAME_CHIPFALLOUT", found);
+        MapLookup(registry->m_cues, "GAME_CHIPFALLOUT", found);
         // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
         // a register across the m_lastPlayTimeMs store.
         SoundCue* cue = found;

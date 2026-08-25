@@ -1731,22 +1731,22 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             spr->ApplyName("LEVEL_ROCKBREAK");
             spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
-            SoundCueRegistry* set = m_world->m_soundRegistry;
-            if (set->m_silentMode == 0) {
+            SoundCueRegistry* registry = m_world->m_soundRegistry;
+            if (registry->m_silentMode == 0) {
 
                 SoundCue* found = NULL;
-                MapLookup(set->m_cues, "LEVEL_ROCKBREAK", found);
+                MapLookup(registry->m_cues, "LEVEL_ROCKBREAK", found);
                 // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the
                 // cue in a register across the m_lastPlayTimeMs store.
-                SoundCue* e = found;
-                if (e != NULL) {
+                SoundCue* cue = found;
+                if (cue != NULL) {
                     i32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
                     if (soundEnabled != 0) {
                         u32 cueTimeMs = g_soundCueTimeMs;
-                        if (cueTimeMs - e->m_lastPlayTimeMs >= e->m_replayDelayMs) {
-                            e->m_lastPlayTimeMs = cueTimeMs;
-                            e->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        if (cueTimeMs - cue->m_lastPlayTimeMs >= cue->m_replayDelayMs) {
+                            cue->m_lastPlayTimeMs = cueTimeMs;
+                            cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }

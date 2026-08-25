@@ -116,7 +116,7 @@ RVA(0x0009d520, 0xfd)
 void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     CDDrawWorker* en =
         LookupWorker(m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName, spec);
-    g_gameReg->m_logicPump->Push(en, anchorA, SHADE_DST_BY_SRC_16);
+    g_gameReg->m_lightFxMgr->ApplyShadeTable(en, anchorA, SHADE_DST_BY_SRC_16);
     CWwdGameObjectA* o = m_wwdObject;
     if (en != NULL) {
 
@@ -160,9 +160,9 @@ i32 CLightFx::SerializeMove(
             break;
         case SERIAL_POSTLOAD:
             g_gameReg
-                ->m_logicPump
+                ->m_lightFxMgr
 
-                ->Push(m_wwdObject->m_frameSet, m_anchorA, SHADE_DST_BY_SRC_16);
+                ->ApplyShadeTable(m_wwdObject->m_frameSet, m_anchorA, SHADE_DST_BY_SRC_16);
             break;
     }
     return 1;

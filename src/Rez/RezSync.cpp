@@ -429,12 +429,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    m_logicPump = new CLightFxMgr;
-    if (!m_logicPump->Init(this, NULL)) {
-        if (m_logicPump) {
-            m_logicPump->Reset();
-            ::operator delete(m_logicPump);
-            m_logicPump = NULL;
+    m_lightFxMgr = new CLightFxMgr;
+    if (!m_lightFxMgr->Init(this, NULL)) {
+        if (m_lightFxMgr) {
+            m_lightFxMgr->Reset();
+            ::operator delete(m_lightFxMgr);
+            m_lightFxMgr = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x411);
         return 0;

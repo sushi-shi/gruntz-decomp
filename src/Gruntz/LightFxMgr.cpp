@@ -13,14 +13,14 @@
 struct CShadeTable;
 
 RVA(0x0009dad0, 0x14a)
-i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
-    if (!reg) {
+i32 CLightFxMgr::Init(CGruntzMgr* gameMgr, CGruntzMgr* owner) {
+    if (!gameMgr) {
         return 0;
     }
-    m_reg = reg;
+    m_gameMgr = gameMgr;
     m_owner = owner;
-    m_world = reg->m_world;
-    m_cache = reg->m_shadeCache;
+    m_world = gameMgr->m_world;
+    m_cache = gameMgr->m_shadeCache;
 
     if (!m_cache) {
         return 0;
@@ -75,7 +75,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
 
 RVA(0x0009dc80, 0x1d)
 void CLightFxMgr::Reset() {
-    m_reg = NULL;
+    m_gameMgr = NULL;
     m_world = NULL;
     m_cache = NULL;
     m_greyTable = NULL;
@@ -83,16 +83,16 @@ void CLightFxMgr::Reset() {
 }
 
 RVA(0x0009dcb0, 0x41)
-i32 CLightFxMgr::Push(CDDrawWorker* imgSet, i32 anchor, ShadeMode slot) {
-    if (!imgSet) {
+i32 CLightFxMgr::ApplyShadeTable(CDDrawWorker* imageSet, i32 tableIndex, ShadeMode mode) {
+    if (!imageSet) {
         return 0;
     }
-    if (anchor < 0 || anchor >= 10) {
-        anchor = 0;
+    if (tableIndex < 0 || tableIndex >= 10) {
+        tableIndex = 0;
     }
-    CShadeTable* table = m_tables[anchor];
-    imgSet->SetAllTypes(slot);
+    CShadeTable* table = m_tables[tableIndex];
+    imageSet->SetAllTypes(mode);
 
-    imgSet->SetAllFormats(table);
+    imageSet->SetAllFormats(table);
     return 1;
 }

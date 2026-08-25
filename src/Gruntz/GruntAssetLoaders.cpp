@@ -94,7 +94,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     }
 
     FinishActiveAction();
-    STOP_GRUNT_STRUCK_SOUNDS;
+    STOP_GRUNT_LOOP_SOUNDS;
 
     m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
     m_deathAnimStarted = 1;

@@ -679,89 +679,89 @@ i32 CGrunt::TryPowerupAtTile() {
 }
 
 RVA(0x00057b70, 0x77)
-void CGrunt::EnsureStruckSlot(const char* key) {
-    SoundBuffer*& sample = m_struckSlotSound;
-    if (sample != NULL) {
+void CGrunt::EnsureVehicleLoopSound(const char* key) {
+    SoundBuffer*& sound = m_vehicleLoopSound;
+    if (sound != NULL) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
-    SoundCue* entry = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, entry);
-    if (entry == NULL) {
+    SoundCue* cue = NULL;
+    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    if (cue == NULL) {
         return;
     }
-    if (entry->m_sound == NULL) {
+    if (cue->m_sound == NULL) {
         return;
     }
-    sample = static_cast<SoundBuffer*>(entry->m_sound->AcquireInstance());
-    if (sample == NULL) {
+    sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
+    if (sound == NULL) {
         return;
     }
-    sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
 }
 
 RVA(0x00057c10, 0x1e)
-void CGrunt::StopStruckSlotSound() {
-    SoundBuffer* p = m_struckSlotSound;
-    if (p) {
-        p->StopAndRewind();
-        m_struckSlotSound = NULL;
+void CGrunt::StopVehicleLoopSound() {
+    SoundBuffer* sound = m_vehicleLoopSound;
+    if (sound) {
+        sound->StopAndRewind();
+        m_vehicleLoopSound = NULL;
     }
 }
 
 RVA(0x00057c40, 0x71)
-void CGrunt::EnsureStruckVoice(const char* key) {
-    SoundBuffer*& sample = m_struckVoiceSound;
-    if (sample != NULL) {
+void CGrunt::EnsurePowerupLoopSound(const char* key) {
+    SoundBuffer*& sound = m_powerupLoopSound;
+    if (sound != NULL) {
         return;
     }
-    SoundCue* entry = NULL;
-    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, entry);
-    if (entry == NULL) {
+    SoundCue* cue = NULL;
+    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, cue);
+    if (cue == NULL) {
         return;
     }
-    if (entry->m_sound == NULL) {
+    if (cue->m_sound == NULL) {
         return;
     }
-    sample = static_cast<SoundBuffer*>(entry->m_sound->AcquireInstance());
-    if (sample == NULL) {
+    sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
+    if (sound == NULL) {
         return;
     }
-    sample->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
 }
 
 RVA(0x00057ce0, 0x1e)
-void CGrunt::StopStruckVoiceSound() {
-    SoundBuffer* p = m_struckVoiceSound;
-    if (p) {
-        p->StopAndRewind();
-        m_struckVoiceSound = NULL;
+void CGrunt::StopPowerupLoopSound() {
+    SoundBuffer* sound = m_powerupLoopSound;
+    if (sound) {
+        sound->StopAndRewind();
+        m_powerupLoopSound = NULL;
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00057d10, 0x4e)
-void CGrunt::ReapplyVoiceParams() {
+void CGrunt::ReapplyLoopSoundParams() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    SoundBuffer* a = m_struckSlotSound;
-    if (a != NULL) {
-        a->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    SoundBuffer* vehicleSound = m_vehicleLoopSound;
+    if (vehicleSound != NULL) {
+        vehicleSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
-    SoundBuffer* b = m_struckVoiceSound;
-    if (b != NULL) {
-        b->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    SoundBuffer* powerupSound = m_powerupLoopSound;
+    if (powerupSound != NULL) {
+        powerupSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
     }
 }
 
 RVA(0x00057d80, 0x11)
 void CGrunt::DestroyAnims() {
-    STOP_GRUNT_STRUCK_SOUNDS;
+    STOP_GRUNT_LOOP_SOUNDS;
 }
 
 // @early-stop
@@ -1318,12 +1318,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
             enemy->m_health = h;
 
-            SoundCueRegistry* host =
+            SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
-            if (host->m_silentMode == 0) {
-                SoundCue* cc = static_cast<SoundCue*>(host->Lookup(s_CONVERSIONHIT));
-                if (cc != NULL) {
-                    cc->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            if (registry->m_silentMode == 0) {
+                SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_CONVERSIONHIT));
+                if (cue != NULL) {
+                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
             return 0;
@@ -2824,24 +2824,24 @@ RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
-    if (m_struckSlotSound != NULL) {
+    if (m_vehicleLoopSound != NULL) {
         bool neL = ANIMATION_ACT_DIFFERS("L");
         if (neL) {
             bool neG = ANIMATION_ACT_DIFFERS("G");
             if (neG) {
-                StopStruckSlotSound();
+                StopVehicleLoopSound();
             }
         }
     }
-    if (m_struckVoiceSound != NULL) {
+    if (m_powerupLoopSound != NULL) {
         if (m_gruntKind == GRUNT_NORMAL) {
-            StopStruckVoiceSound();
+            StopPowerupLoopSound();
         } else {
             CGruntzMgr* g = g_gameReg;
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
             if (!CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
-                StopStruckVoiceSound();
+                StopPowerupLoopSound();
             }
         }
     }

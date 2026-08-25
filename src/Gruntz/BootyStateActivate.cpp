@@ -817,8 +817,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == NULL) {
         return 0;
     }
-    CLightFxMgr* pump = g_gameReg->m_logicPump;
-    CShadeTable* tint = pump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
+    CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
+    CShadeTable* tint = lightFxMgr->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_icons[7]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -996,10 +996,10 @@ i32 CBootyState::LevelMsgHudDriver() {
                     (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
 
-                    SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
-                    if (host->m_silentMode == 0) {
+                    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+                    if (registry->m_silentMode == 0) {
                         SoundCue* cue = NULL;
-                        MapLookup(host->m_cues, "GAME_EXPLOSION1", cue);
+                        MapLookup(registry->m_cues, "GAME_EXPLOSION1", cue);
                         if (cue != NULL) {
                             cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                         }
@@ -1065,10 +1065,10 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
-            SoundCueRegistry* host = g_gameReg->m_world->m_soundRegistry;
-            if (host->m_silentMode == 0) {
+            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
+            if (registry->m_silentMode == 0) {
                 SoundCue* found = NULL;
-                MapLookup(host->m_cues, "GAME_EXPLOSION1", found);
+                MapLookup(registry->m_cues, "GAME_EXPLOSION1", found);
                 SoundCue* cue = found;
                 if (cue != NULL) {
                     i32 soundEnabled = g_soundEnabled;

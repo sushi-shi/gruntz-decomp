@@ -389,7 +389,7 @@ i32 CGrunt::StepAttackFire() {
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
-        StopStruckSlotSound();
+        StopVehicleLoopSound();
         if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != 0) {
             CGrunt* occ =
                 m_tileMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
@@ -591,7 +591,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         }
         return 0;
     }
-    StopStruckSlotSound();
+    StopVehicleLoopSound();
     if (ready == 1) {
         UpdateArrival(0, 0);
     }
@@ -1049,11 +1049,11 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
             if (CGameLevel::PointInRect(&rect, x, y)) {
                 g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
-                StopStruckSlotSound();
+                StopVehicleLoopSound();
                 return 0;
             }
         }
-        StopStruckSlotSound();
+        StopVehicleLoopSound();
         return 0;
     }
 
@@ -1075,16 +1075,16 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     i32 hx = h2->m_screenX;
     if (CGameLevel::PointInRect(&g2->m_viewBounds, hx, hy)) {
         if (m_entranceReason == PICKUP_GOKART) {
-            EnsureStruckSlot(s_GRUNTZ_GOKARTGRUNT);
+            EnsureVehicleLoopSound(s_GRUNTZ_GOKARTGRUNT);
             return 0;
         }
         if (m_entranceReason == PICKUP_BIGWHEEL) {
-            EnsureStruckSlot(s_GRUNTZ_BIGWHEELGRUNT);
+            EnsureVehicleLoopSound(s_GRUNTZ_BIGWHEELGRUNT);
             return 0;
         }
         return 0;
     }
-    StopStruckSlotSound();
+    StopVehicleLoopSound();
     return 0;
 }
 
@@ -1098,7 +1098,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     FinishActiveAction();
-    STOP_GRUNT_STRUCK_SOUNDS;
+    STOP_GRUNT_LOOP_SOUNDS;
 
     m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
     m_entranceCommitted = 0;
@@ -1317,7 +1317,7 @@ i32 CGrunt::StepCombatReaction(
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
-    StopStruckSlotSound();
+    StopVehicleLoopSound();
 
 tail:
     CreateHealthSprite();

@@ -428,11 +428,11 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
         }
     }
 
-    CDDrawChildGroup* mgr = g_gameReg->m_world->m_childGroup;
-    mgr->m_walkCursor = mgr->m_list.GetHeadPosition();
+    CDDrawChildGroup* childGroup = g_gameReg->m_world->m_childGroup;
+    childGroup->m_walkCursor = childGroup->m_list.GetHeadPosition();
     CGameObject* obj;
-    if (mgr->m_walkCursor != NULL) {
-        obj = mgr->NextChild(mgr->m_walkCursor);
+    if (childGroup->m_walkCursor != NULL) {
+        obj = childGroup->NextChild(childGroup->m_walkCursor);
     } else {
         obj = NULL;
     }
@@ -469,9 +469,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             }
             m_arr.SetSize(0, -1);
         }
-        CDDrawChildGroup* nextMgr = g_gameReg->m_world->m_childGroup;
-        if (nextMgr->m_walkCursor != NULL) {
-            obj = nextMgr->NextChild(nextMgr->m_walkCursor);
+        CDDrawChildGroup* nextChildGroup = g_gameReg->m_world->m_childGroup;
+        if (nextChildGroup->m_walkCursor != NULL) {
+            obj = nextChildGroup->NextChild(nextChildGroup->m_walkCursor);
         } else {
             obj = NULL;
         }

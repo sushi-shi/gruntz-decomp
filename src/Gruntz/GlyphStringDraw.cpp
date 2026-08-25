@@ -52,8 +52,15 @@ i32 DrawGlyphString(
 }
 
 RVA(0x00115300, 0xf5)
-i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFront, i32 mode) {
-    if (!host) {
+i32 LayerBlitFrame(
+    CDDrawSurfaceMgr* surfaceMgr,
+    CImage* src,
+    i32 x,
+    i32 y,
+    i32 useFront,
+    i32 mode
+) {
+    if (!surfaceMgr) {
         return 0;
     }
     if (!src) {
@@ -62,12 +69,12 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
 
     CDrawSubWorker* node;
     if (useFront) {
-        node = host->m_drawTarget->m_frontPair;
+        node = surfaceMgr->m_drawTarget->m_frontPair;
         if (!node) {
             return 0;
         }
     } else {
-        node = host->m_drawTarget->m_backPair;
+        node = surfaceMgr->m_drawTarget->m_backPair;
         if (!node) {
             return 0;
         }

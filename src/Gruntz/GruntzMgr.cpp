@@ -222,7 +222,7 @@ CGruntzMgr::CGruntzMgr() {
     m_cmdSubMgr = NULL;
     m_tileGrid = NULL;
     m_spriteFactory = NULL;
-    m_logicPump = NULL;
+    m_lightFxMgr = NULL;
     m_lobbyResult = 0;
     m_lobbyProbed = 0;
     m_delayedQuitPending = 0;
@@ -432,10 +432,10 @@ void CGruntzMgr::Close() {
         delete m_saveSink;
         m_saveSink = NULL;
     }
-    if (m_logicPump) {
-        m_logicPump->Reset();
-        operator delete(m_logicPump);
-        m_logicPump = NULL;
+    if (m_lightFxMgr) {
+        m_lightFxMgr->Reset();
+        operator delete(m_lightFxMgr);
+        m_lightFxMgr = NULL;
     }
     CloseSoundFontDevice();
     if (m_lobby) {
@@ -2428,11 +2428,11 @@ void CGruntzMgr::CheatSkeletonToggle() {
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
-                    SoundCueRegistry* host = m_world->m_soundRegistry;
-                    if (host->m_silentMode == 0) {
+                    SoundCueRegistry* registry = m_world->m_soundRegistry;
+                    if (registry->m_silentMode == 0) {
 
                         SoundCue* found = NULL;
-                        MapLookup(host->m_cues, "GAME_MINORCHEAT", found);
+                        MapLookup(registry->m_cues, "GAME_MINORCHEAT", found);
                         // SoundCue::PlayIfElapsed inlined: the call's `this` copy
                         // holds the cue in a register across the store.
                         SoundCue* cue = found;
@@ -2480,11 +2480,11 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
-                    SoundCueRegistry* host = m_world->m_soundRegistry;
-                    if (host->m_silentMode == 0) {
+                    SoundCueRegistry* registry = m_world->m_soundRegistry;
+                    if (registry->m_silentMode == 0) {
 
                         SoundCue* found = NULL;
-                        MapLookup(host->m_cues, "GAME_MINORCHEAT", found);
+                        MapLookup(registry->m_cues, "GAME_MINORCHEAT", found);
                         // SoundCue::PlayIfElapsed inlined: the call's `this` copy
                         // holds the cue in a register across the store.
                         SoundCue* cue = found;

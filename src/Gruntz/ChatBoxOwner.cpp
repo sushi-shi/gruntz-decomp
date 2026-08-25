@@ -202,8 +202,8 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 1;
     }
 
-    CDDSurface* host = target->m_surface;
-    if (!host) {
+    CDDSurface* surface = target->m_surface;
+    if (!surface) {
         return 0;
     }
 
@@ -228,7 +228,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
 
     HDC hdc = NULL;
-    host->m_ddSurface->GetDC(&hdc);
+    surface->m_ddSurface->GetDC(&hdc);
     if (!hdc) {
         return 1;
     }
@@ -250,7 +250,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         rect.bottom = self->m_originY + 0x37;
         self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
     }
-    host->m_ddSurface->ReleaseDC(hdc);
+    surface->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }
 // Retail reproduces the whole 8-byte tagSIZE at every `.cy` use (an 8-byte frame slot

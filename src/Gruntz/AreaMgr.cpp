@@ -265,78 +265,81 @@ RVA_COMPGEN(0x0009a4a0, 0x5, ??1CSpawnEntry@@QAE@XZ)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a4c0, 0x3e)
-i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == NULL) {
+i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src) {
+    if (surfaceMgr == NULL) {
         return 0;
     }
-    LoadObjectImageResources(entry, src);
-    LoadObjectSoundResources(entry, src);
-    LoadObjectAnimResources(entry, src);
+    LoadObjectImageResources(surfaceMgr, src);
+    LoadObjectSoundResources(surfaceMgr, src);
+    LoadObjectAnimResources(surfaceMgr, src);
     return 1;
 }
 
 RVA(0x0009a510, 0x275)
-i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == NULL) {
+i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src) {
+    if (surfaceMgr == NULL) {
         return 0;
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToOb* srcMap = &entry->m_imageRegistry->m_workersByName;
-    if (srcMap == NULL) {
+    CMapStringToOb* registryMap = &surfaceMgr->m_imageRegistry->m_workersByName;
+    if (registryMap == NULL) {
         return 0;
     }
 
-    CPtrList toAdd;
-    POSITION pos = srcMap->GetStartPosition();
+    CPtrList toRemove;
+    POSITION pos = registryMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        CObject* val = NULL;
-        srcMap->GetNextAssoc(pos, key, val);
+        CObject* workerObject = NULL;
+        registryMap->GetNextAssoc(pos, key, workerObject);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
-            CSpawnEntry* found = m_spawnEntryList.FindByName(key);
-            if (found != NULL) {
-                found->m_flag = 1;
+            CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
+            if (spawnEntry != NULL) {
+                spawnEntry->m_flag = 1;
             } else {
-                toAdd.AddTail(val);
+                toRemove.AddTail(workerObject);
             }
         }
     }
 
-    pos = toAdd.GetHeadPosition();
+    pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
-        CDDrawWorker* obj = static_cast<CDDrawWorker*>(toAdd.GetNext(pos));
-        entry->m_imageRegistry->RemoveWorker(obj);
+        CDDrawWorker* worker = static_cast<CDDrawWorker*>(toRemove.GetNext(pos));
+        surfaceMgr->m_imageRegistry->RemoveWorker(worker);
     }
-    toAdd.RemoveAll();
+    toRemove.RemoveAll();
 
-    CSpawnList* b = &m_spawnEntryList;
-    b->m_cursor = b->m_list.GetHeadPosition();
-    CSpawnEntry* e;
-    if (b->m_cursor == NULL) {
-        e = NULL;
+    CSpawnList* spawnList = &m_spawnEntryList;
+    spawnList->m_cursor = spawnList->m_list.GetHeadPosition();
+    CSpawnEntry* spawnEntry;
+    if (spawnList->m_cursor == NULL) {
+        spawnEntry = NULL;
     } else {
-        e = b->NextEntry(b->m_cursor);
+        spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
     }
-    while (e != NULL) {
-        if (e->m_flag == 0) {
-            char buf[0x80];
+    while (spawnEntry != NULL) {
+        if (spawnEntry->m_flag == 0) {
+            char resourcePath[0x80];
             g_resourceInstallActive = 1;
-            sprintf(buf, "IMAGEZ_%s", static_cast<LPCTSTR>(e->GetTail()));
-            CSymTab* handle = src->ResolvePath(buf);
-            if (handle == NULL) {
+            sprintf(resourcePath, "IMAGEZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
+            CSymTab* resourceTree = src->ResolvePath(resourcePath);
+            if (resourceTree == NULL) {
                 return 0;
             }
-            entry->m_imageRegistry
-                ->InstallTree(handle, const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "_");
-            TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));
+            surfaceMgr->m_imageRegistry->InstallTree(
+                resourceTree,
+                const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
+                "_"
+            );
+            TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
             g_resourceInstallActive = 0;
-            e->m_flag = 1;
+            spawnEntry->m_flag = 1;
         }
-        if (b->m_cursor == NULL) {
-            e = NULL;
+        if (spawnList->m_cursor == NULL) {
+            spawnEntry = NULL;
         } else {
-            e = b->NextEntry(b->m_cursor);
+            spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
         }
     }
     return 1;
@@ -357,136 +360,136 @@ CString CSpawnEntry::GetTail() {
 }
 
 RVA(0x0009a910, 0x261)
-i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == NULL) {
+i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src) {
+    if (surfaceMgr == NULL) {
         return 0;
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* srcMap = &entry->m_soundRegistry->m_cues;
-    if (srcMap == NULL) {
+    CMapStringToPtr* registryMap = &surfaceMgr->m_soundRegistry->m_cues;
+    if (registryMap == NULL) {
         return 0;
     }
 
-    CPtrList toAdd;
-    POSITION pos = srcMap->GetStartPosition();
+    CPtrList toRemove;
+    POSITION pos = registryMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        SoundCue* value = NULL;
-        MapGetNext(*srcMap, pos, key, value);
+        SoundCue* cue = NULL;
+        MapGetNext(*registryMap, pos, key, cue);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
-            CSpawnEntry* found = m_spawnEntryList.FindByName(key);
-            if (found != NULL) {
-                found->m_flag = 1;
+            CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
+            if (spawnEntry != NULL) {
+                spawnEntry->m_flag = 1;
             } else {
-                toAdd.AddTail(value);
+                toRemove.AddTail(cue);
             }
         }
     }
 
-    pos = toAdd.GetHeadPosition();
+    pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
-        SoundCue* obj = static_cast<SoundCue*>(toAdd.GetNext(pos));
-        entry->m_soundRegistry->RemoveCue(obj);
+        SoundCue* cue = static_cast<SoundCue*>(toRemove.GetNext(pos));
+        surfaceMgr->m_soundRegistry->RemoveCue(cue);
     }
-    toAdd.RemoveAll();
+    toRemove.RemoveAll();
 
-    CSpawnList* b = &m_spawnEntryList;
-    b->m_cursor = b->m_list.GetHeadPosition();
-    CSpawnEntry* e;
-    if (b->m_cursor == NULL) {
-        e = NULL;
+    CSpawnList* spawnList = &m_spawnEntryList;
+    spawnList->m_cursor = spawnList->m_list.GetHeadPosition();
+    CSpawnEntry* spawnEntry;
+    if (spawnList->m_cursor == NULL) {
+        spawnEntry = NULL;
     } else {
-        e = b->NextEntry(b->m_cursor);
+        spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
     }
-    while (e != NULL) {
-        if (e->m_flag == 0) {
-            char buf[0x80];
-            sprintf(buf, "SOUNDZ_%s", static_cast<LPCTSTR>(e->GetTail()));
-            CSymTab* handle = src->ResolvePath(buf);
-            if (handle == NULL) {
+    while (spawnEntry != NULL) {
+        if (spawnEntry->m_flag == 0) {
+            char resourcePath[0x80];
+            sprintf(resourcePath, "SOUNDZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
+            CSymTab* resourceTree = src->ResolvePath(resourcePath);
+            if (resourceTree == NULL) {
                 return 0;
             }
-            entry->m_soundRegistry->LoadFromTree(
-                static_cast<CSymTab*>(handle),
-                const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
+            surfaceMgr->m_soundRegistry->LoadFromTree(
+                resourceTree,
+                const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
                 "_"
             );
-            TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));
-            e->m_flag = 1;
+            TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
+            spawnEntry->m_flag = 1;
         }
-        if (b->m_cursor == NULL) {
-            e = NULL;
+        if (spawnList->m_cursor == NULL) {
+            spawnEntry = NULL;
         } else {
-            e = b->NextEntry(b->m_cursor);
+            spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
         }
     }
     return 1;
 }
 
 RVA(0x0009ac20, 0x261)
-i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
-    if (entry == NULL) {
+i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src) {
+    if (surfaceMgr == NULL) {
         return 0;
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToPtr* srcMap = &entry->m_animRegistry->m_animations;
-    if (srcMap == NULL) {
+    CMapStringToPtr* registryMap = &surfaceMgr->m_animRegistry->m_animations;
+    if (registryMap == NULL) {
         return 0;
     }
 
-    CPtrList toAdd;
-    POSITION pos = srcMap->GetStartPosition();
+    CPtrList toRemove;
+    POSITION pos = registryMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        CAniElement* value = NULL;
-        MapGetNext(*srcMap, pos, key, value);
+        CAniElement* animation = NULL;
+        MapGetNext(*registryMap, pos, key, animation);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
-            CSpawnEntry* found = m_spawnEntryList.FindByName(key);
-            if (found != NULL) {
-                found->m_flag = 1;
+            CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
+            if (spawnEntry != NULL) {
+                spawnEntry->m_flag = 1;
             } else {
-                toAdd.AddTail(value);
+                toRemove.AddTail(animation);
             }
         }
     }
 
-    pos = toAdd.GetHeadPosition();
+    pos = toRemove.GetHeadPosition();
     while (pos != NULL) {
-        CAniElement* obj = static_cast<CAniElement*>(toAdd.GetNext(pos));
-        entry->m_animRegistry->RemoveAnimation(obj);
+        CAniElement* animation = static_cast<CAniElement*>(toRemove.GetNext(pos));
+        surfaceMgr->m_animRegistry->RemoveAnimation(animation);
     }
-    toAdd.RemoveAll();
+    toRemove.RemoveAll();
 
-    CSpawnList* b = &m_spawnEntryList;
-    b->m_cursor = b->m_list.GetHeadPosition();
-    CSpawnEntry* e;
-    if (b->m_cursor == NULL) {
-        e = NULL;
+    CSpawnList* spawnList = &m_spawnEntryList;
+    spawnList->m_cursor = spawnList->m_list.GetHeadPosition();
+    CSpawnEntry* spawnEntry;
+    if (spawnList->m_cursor == NULL) {
+        spawnEntry = NULL;
     } else {
-        e = b->NextEntry(b->m_cursor);
+        spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
     }
-    while (e != NULL) {
-        if (e->m_flag == 0) {
-            char buf[0x80];
-            sprintf(buf, "ANIZ_%s", static_cast<LPCTSTR>(e->GetTail()));
-            CSymTab* handle = src->ResolvePath(buf);
-            if (handle == NULL) {
+    while (spawnEntry != NULL) {
+        if (spawnEntry->m_flag == 0) {
+            char resourcePath[0x80];
+            sprintf(resourcePath, "ANIZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
+            CSymTab* resourceTree = src->ResolvePath(resourcePath);
+            if (resourceTree == NULL) {
                 return 0;
             }
-            entry->m_animRegistry->LoadFromTree(
-                static_cast<CSymTab*>(handle),
-                const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
+            surfaceMgr->m_animRegistry->LoadFromTree(
+                resourceTree,
+                const_cast<char*>(static_cast<LPCTSTR>(spawnEntry->GetName())),
                 "_"
             );
-            TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));
-            e->m_flag = 1;
+            TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
+            spawnEntry->m_flag = 1;
         }
-        if (b->m_cursor == NULL) {
-            e = NULL;
+        if (spawnList->m_cursor == NULL) {
+            spawnEntry = NULL;
         } else {
-            e = b->NextEntry(b->m_cursor);
+            spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
         }
     }
     return 1;

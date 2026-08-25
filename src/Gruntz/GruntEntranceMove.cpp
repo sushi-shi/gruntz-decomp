@@ -808,7 +808,7 @@ idleReseed:
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
-    StopStruckSlotSound();
+    StopVehicleLoopSound();
     goto finalize;
 
 modeDispatch: {
@@ -1266,7 +1266,7 @@ idleReseed:
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
-    StopStruckSlotSound();
+    StopVehicleLoopSound();
     return 1;
 
 modeDispatch: {

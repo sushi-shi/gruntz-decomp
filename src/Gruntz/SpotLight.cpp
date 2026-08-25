@@ -98,7 +98,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     } else {
         m_angle = 0;
     }
-    CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_powerup];
+    CShadeTable* looked = g_gameReg->m_lightFxMgr->m_tables[m_object->m_powerup];
     CWwdGameObjectA* d = m_object;
     d->m_drawActive = 1;
     d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
@@ -311,7 +311,7 @@ i32 CSpotLight::SerializeMove(
             break;
         case SERIAL_POSTLOAD: {
             CWwdGameObjectA* o = m_object;
-            CShadeTable* fill = reg->m_logicPump->m_tables[o->m_powerup];
+            CShadeTable* fill = reg->m_lightFxMgr->m_tables[o->m_powerup];
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = SHADE_DST_BY_SRC_16;

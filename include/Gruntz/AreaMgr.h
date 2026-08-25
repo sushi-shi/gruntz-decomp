@@ -21,10 +21,10 @@ public:
 
     ~CAreaMgr();
 
-    i32 LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src);
-    i32 LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src);
-    i32 LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src);
-    i32 LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src);
+    i32 LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
+    i32 LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
+    i32 LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
+    i32 LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CSymTab* src);
 
     i32 InitializeArea1Stage1();
     i32 InitializeArea1Stage2();

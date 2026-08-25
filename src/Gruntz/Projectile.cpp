@@ -123,10 +123,10 @@ CProjectile::~CProjectile() {
         m_sound = NULL;
     }
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
-        Coord* data = static_cast<Coord*>(m_hitList.GetNext(pos));
-        if (data != NULL) {
+        Coord* hitPoint = static_cast<Coord*>(m_hitList.GetNext(pos));
+        if (hitPoint != NULL) {
 
-            PushFreeNode(&g_coordPool, data);
+            PushFreeNode(&g_coordPool, hitPoint);
         }
     }
     m_hitList.RemoveAll();
@@ -1023,27 +1023,27 @@ i32 CTimeBomb::SerializeMove(
 
 RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
-    CGruntzMgr* reg;
+    CGruntzMgr* gameMgr;
     CDDrawSurfaceMgr* world;
-    SoundCue* entry;
+    SoundCue* cue;
     if (m_sound != NULL) {
         goto fail;
     }
-    reg = g_gameReg;
-    if (reg->m_soundEnabled == 0) {
+    gameMgr = g_gameReg;
+    if (gameMgr->m_soundEnabled == 0) {
         goto fail;
     }
-    world = reg->m_world;
-    entry = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, entry);
-    if (entry == NULL) {
+    world = gameMgr->m_world;
+    cue = NULL;
+    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    if (cue == NULL) {
         goto fail;
     }
-    if (entry->m_sound == NULL) {
+    if (cue->m_sound == NULL) {
         goto fail;
     }
 
-    m_sound = static_cast<SoundBuffer*>(entry->m_sound->AcquireInstance());
+    m_sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
     if (m_sound != NULL) {
         m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
         return 1;

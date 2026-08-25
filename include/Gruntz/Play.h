@@ -430,7 +430,7 @@ void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX
 CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
 
-i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero);
+i32 LayerBlitFrame(CDDrawSurfaceMgr* surfaceMgr, CImage* src, i32 x, i32 y, i32 useFront, i32 mode);
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);
 i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,

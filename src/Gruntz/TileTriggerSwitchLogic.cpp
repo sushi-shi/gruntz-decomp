@@ -245,8 +245,8 @@ static __inline char* PbStr(const CString& s) {
 RVA(0x00110860, 0x2e6)
 void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     i32 px, py;
-    CGruntzMgr* r;
-    SoundCueRegistry* set;
+    CGruntzMgr* gameMgr;
+    SoundCueRegistry* registry;
     switch (type) {
         // The retail byte index table starts at 15 (0x0f). The explicit goto
         // keeps all four empty cases on slot 0; break folds the last three into
@@ -272,13 +272,13 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
         case TILEKIND_PURPLEPYRAMID_UP:
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            r = g_gameReg;
-            if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                set = r->m_world->m_soundRegistry;
-                if (set->m_silentMode == 0) {
-                    SoundCue* e = static_cast<SoundCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
-                    if (e) {
-                        e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            gameMgr = g_gameReg;
+            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+                registry = gameMgr->m_world->m_soundRegistry;
+                if (registry->m_silentMode == 0) {
+                    SoundCue* cue = static_cast<SoundCue*>(registry->Lookup("GAME_PYRAMIDMOVE"));
+                    if (cue) {
+                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -287,13 +287,14 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
         case TILEKIND_WATERBRIDGE_UP:
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            r = g_gameReg;
-            if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                set = r->m_world->m_soundRegistry;
-                if (set->m_silentMode == 0) {
-                    SoundCue* e = static_cast<SoundCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
-                    if (e) {
-                        e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            gameMgr = g_gameReg;
+            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+                registry = gameMgr->m_world->m_soundRegistry;
+                if (registry->m_silentMode == 0) {
+                    SoundCue* cue =
+                        static_cast<SoundCue*>(registry->Lookup("LEVEL_WATERBRIDGEMOVE"));
+                    if (cue) {
+                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -302,36 +303,36 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
         case TILEKIND_TOGGLEWATERBRIDGE_UP:
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            r = g_gameReg;
-            if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
+            gameMgr = g_gameReg;
+            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
             }
             return;
         case TILEKIND_DEATHBRIDGE_DOWN:
         case TILEKIND_DEATHBRIDGE_UP:
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            r = g_gameReg;
-            if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
+            gameMgr = g_gameReg;
+            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_TOGGLEDEATHBRIDGE_DOWN:
         case TILEKIND_TOGGLEDEATHBRIDGE_UP:
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            r = g_gameReg;
-            if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
+            gameMgr = g_gameReg;
+            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
         case TILEKIND_CRUMBLEWATERBRIDGE:
         case TILEKIND_CRUMBLEDEATHBRIDGE:
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            r = g_gameReg;
-            if (CGameLevel::PointInRect(&r->m_viewBounds, px, py)) {
-                r->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_CRUMBLE");
+            gameMgr = g_gameReg;
+            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+                gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_CRUMBLE");
             }
             return;
     }

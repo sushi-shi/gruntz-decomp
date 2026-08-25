@@ -60,7 +60,7 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
     m_powerupId = powerupId;
-    CShadeTable* rec = g_gameReg->m_logicPump->m_tables[powerupId];
+    CShadeTable* rec = g_gameReg->m_lightFxMgr->m_tables[powerupId];
     CWwdGameObjectA* r = m_object;
     SET_DRAW_FILL(r, SHADE_DST_BY_SRC_16, rec);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
@@ -98,7 +98,7 @@ i32 CGruntPowerupSprite::SerializeMove(
             ar->Read(&m_powerupId, sizeof(m_powerupId));
             i32 id = m_powerupId;
             CWwdGameObjectA* r = m_object;
-            CShadeTable* v = g_gameReg->m_logicPump->m_tables[id];
+            CShadeTable* v = g_gameReg->m_lightFxMgr->m_tables[id];
             SET_DRAW_FILL_REVERSED(r, SHADE_DST_BY_SRC_16, v);
             break;
         }

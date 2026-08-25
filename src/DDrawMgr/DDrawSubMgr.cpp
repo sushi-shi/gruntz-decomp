@@ -492,10 +492,10 @@ void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     }
     POSITION pos = m_cues.GetStartPosition();
     CString key;
-    SoundCue* value = NULL;
+    SoundCue* mappedCue = NULL;
     while (pos != static_cast<POSITION>(0)) {
-        MapGetNext(m_cues, pos, key, value);
-        if (cue == value) {
+        MapGetNext(m_cues, pos, key, mappedCue);
+        if (cue == mappedCue) {
             m_cues.RemoveKey(key);
             delete cue;
             break;
@@ -507,12 +507,12 @@ RVA(0x00157bc0, 0xa2)
 void SoundCueRegistry::ClearCues() {
     POSITION pos = m_cues.GetStartPosition();
     CString key;
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     if (pos != NULL) {
         do {
-            MapGetNext(m_cues, pos, key, val);
-            if (val != NULL) {
-                delete val;
+            MapGetNext(m_cues, pos, key, cue);
+            if (cue != NULL) {
+                delete cue;
             }
         } while (pos != NULL);
     }
@@ -523,43 +523,43 @@ RVA(0x00157c70, 0xf8)
 i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
     CString match(prefix);
     match += separator;
-    i32 len = match.GetLength();
+    i32 prefixLength = match.GetLength();
     CString key;
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     POSITION pos = m_cues.GetStartPosition();
-    i32 n = 0;
+    i32 removedCount = 0;
     while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, val);
-        if (strncmp(key, match, len) == 0) {
+        MapGetNext(m_cues, pos, key, cue);
+        if (strncmp(key, match, prefixLength) == 0) {
             m_cues.RemoveKey(key);
-            if (val != NULL) {
-                delete val;
+            if (cue != NULL) {
+                delete cue;
             }
-            ++n;
+            ++removedCount;
         }
     }
-    return n;
+    return removedCount;
 }
 
-#define ADD_SOUND_CUE_ENTRY(elem, key)                                                             \
-    m_cues[key] = elem;                                                                            \
-    elem->m_replayDelayMs = m_defaultReplayDelayMs
+#define ADD_SOUND_CUE_ENTRY(cue, key)                                                              \
+    m_cues[key] = cue;                                                                             \
+    cue->m_replayDelayMs = m_defaultReplayDelayMs
 
 RVA(0x00157d70, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CParseSource* source) {
     if (m_silentMode != 0) {
         return NULL;
     }
-    SoundCue* e = new SoundCue(CueCount(), m_ownerCtx);
-    if (e == NULL) {
+    SoundCue* cue = new SoundCue(CueCount(), m_ownerCtx);
+    if (cue == NULL) {
         return NULL;
     }
-    if (e->LoadFromSource(source) == 0) {
-        delete e;
+    if (cue->LoadFromSource(source) == 0) {
+        delete cue;
         return NULL;
     }
-    ADD_SOUND_CUE_ENTRY(e, key);
-    return e;
+    ADD_SOUND_CUE_ENTRY(cue, key);
+    return cue;
 }
 
 // @dead-code
@@ -569,16 +569,16 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
     if (m_silentMode != 0) {
         return NULL;
     }
-    SoundCue* e = new SoundCue(CueCount(), m_ownerCtx);
-    if (e == NULL) {
+    SoundCue* cue = new SoundCue(CueCount(), m_ownerCtx);
+    if (cue == NULL) {
         return NULL;
     }
-    if (e->LoadFromFile(path) == 0) {
-        delete e;
+    if (cue->LoadFromFile(path) == 0) {
+        delete cue;
         return NULL;
     }
-    ADD_SOUND_CUE_ENTRY(e, key);
-    return e;
+    ADD_SOUND_CUE_ENTRY(cue, key);
+    return cue;
 }
 
 // @dead-code
@@ -607,47 +607,47 @@ i32 SoundCueRegistry::LoadFromTree(CSymTab* tree, const char* prefix, const char
         return 0;
     }
     i32 count = 0;
-    char* buf = new char[0x100];
-    if (buf == NULL) {
+    char* cueKey = new char[0x100];
+    if (cueKey == NULL) {
         return 0;
     }
-    buf[0] = 0;
+    cueKey[0] = 0;
     CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
-            sprintf(buf, "%s%s%s", prefix, separator, node->m_name);
+            sprintf(cueKey, "%s%s%s", prefix, separator, node->m_name);
         } else {
-            strcpy(buf, node->m_name);
+            strcpy(cueKey, node->m_name);
         }
-        count += LoadFromTree(node, buf, separator);
+        count += LoadFromTree(node, cueKey, separator);
         node = static_cast<CSymTab*>(tree->NextSub(node));
     }
 
     CSymRec* file = tree->FirstSym();
     if (file != NULL) {
         do {
-            CParseSource* fn = tree->NextSym2(file);
-            while (fn != NULL) {
-                if (fn->GetEntryTag() == PARSETAG_VAW) {
+            CParseSource* source = tree->NextSym2(file);
+            while (source != NULL) {
+                if (source->GetEntryTag() == PARSETAG_VAW) {
                     if (prefix != NULL && *prefix != 0) {
-                        sprintf(buf, "%s%s%s", prefix, separator, fn->m_name);
+                        sprintf(cueKey, "%s%s%s", prefix, separator, source->m_name);
                     } else {
-                        strcpy(buf, fn->m_name);
+                        strcpy(cueKey, source->m_name);
                     }
-                    SoundCue* val = NULL;
-                    MapLookup(m_cues, buf, val);
-                    if (val == NULL) {
-                        if (LoadCueFromSource(buf, fn) != NULL) {
+                    SoundCue* cue = NULL;
+                    MapLookup(m_cues, cueKey, cue);
+                    if (cue == NULL) {
+                        if (LoadCueFromSource(cueKey, source) != NULL) {
                             ++count;
                         }
                     }
                 }
-                fn = tree->NextSym3(fn);
+                source = tree->NextSym3(source);
             }
             file = tree->NextSym(file);
         } while (file != NULL);
     }
-    delete[] buf;
+    delete[] cueKey;
     return count;
 }
 
@@ -658,16 +658,16 @@ i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
     }
     POSITION pos = m_cues.GetStartPosition();
     i32 sum = 0;
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     CString key;
     while (pos != NULL) {
-        val = NULL;
-        MapGetNext(m_cues, pos, key, val);
-        if (val != NULL) {
+        cue = NULL;
+        MapGetNext(m_cues, pos, key, cue);
+        if (cue != NULL) {
             if (prefix == NULL || *prefix == 0) {
-                sum += val->m_sound->m_sampleCount;
+                sum += cue->m_sound->m_sampleCount;
             } else if (strncmp(key, prefix, strlen(prefix)) == 0) {
-                sum += val->m_sound->m_sampleCount;
+                sum += cue->m_sound->m_sampleCount;
             }
         }
     }
@@ -682,12 +682,12 @@ i32 SoundCueRegistry::PlaySpatializedCue(
     i32 maxPanOffsetPx,
     i32 fullPanOffsetPx
 ) {
-    CGameLevel* lvl = OwnerMgr()->m_level;
-    if (lvl != NULL && lvl->m_mainPlane != NULL && m_silentMode == 0) {
-        SoundCue* val = NULL;
-        MapLookup(m_cues, key, val);
-        if (val != NULL) {
-            return val->PlaySpatialized(sourceX, -1, maxPanOffsetPx, fullPanOffsetPx);
+    CGameLevel* level = OwnerMgr()->m_level;
+    if (level != NULL && level->m_mainPlane != NULL && m_silentMode == 0) {
+        SoundCue* cue = NULL;
+        MapLookup(m_cues, key, cue);
+        if (cue != NULL) {
+            return cue->PlaySpatialized(sourceX, -1, maxPanOffsetPx, fullPanOffsetPx);
         }
     }
     return 0;
@@ -702,10 +702,10 @@ SoundCue* SoundCueRegistry::GetFirstCue() {
     if (pos == NULL) {
         return NULL;
     }
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     CString key;
-    MapGetNext(m_cues, pos, key, val);
-    return val;
+    MapGetNext(m_cues, pos, key, cue);
+    return cue;
 }
 
 // @dead-code
@@ -722,17 +722,17 @@ SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
     if (pos == NULL) {
         return NULL;
     }
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     CString key;
     while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, val);
-        if (val == target) {
+        MapGetNext(m_cues, pos, key, cue);
+        if (cue == target) {
             if (pos == NULL) {
                 return NULL;
             }
-            val = NULL;
-            MapGetNext(m_cues, pos, key, val);
-            return val;
+            cue = NULL;
+            MapGetNext(m_cues, pos, key, cue);
+            return cue;
         }
     }
     return NULL;
@@ -740,13 +740,13 @@ SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
 
 RVA(0x001583c0, 0xdc)
 i32 SoundCueRegistry::HasWithPrefix(const char* prefix) {
-    i32 len = strlen(prefix);
+    i32 prefixLength = strlen(prefix);
     CString key;
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     POSITION pos = m_cues.GetStartPosition();
     while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, val);
-        if (strncmp(key, prefix, len) == 0) {
+        MapGetNext(m_cues, pos, key, cue);
+        if (strncmp(key, prefix, prefixLength) == 0) {
             return 1;
         }
     }
@@ -760,15 +760,15 @@ i32 SoundCueRegistry::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
     if (m_soundStream == NULL) {
         return 0;
     }
-    SoundCue* val = GetFirstCue();
-    if (val == NULL) {
+    SoundCue* cue = GetFirstCue();
+    if (cue == NULL) {
         return 0;
     }
 
-    if (val->m_sound == NULL) {
+    if (cue->m_sound == NULL) {
         return 0;
     }
-    return ConfigurePrimaryFromCue(val, startPrimary) != 0;
+    return ConfigurePrimaryFromCue(cue, startPrimary) != 0;
 }
 
 RVA(0x001584f0, 0x80)
@@ -801,11 +801,11 @@ CString SoundCueRegistry::FindCueKey(SoundCue* target) {
     if (target == NULL) {
         return key;
     }
-    SoundCue* val = NULL;
+    SoundCue* cue = NULL;
     POSITION pos = m_cues.GetStartPosition();
     while (pos != NULL) {
-        MapGetNext(m_cues, pos, key, val);
-        if (val == target) {
+        MapGetNext(m_cues, pos, key, cue);
+        if (cue == target) {
             return key;
         }
     }

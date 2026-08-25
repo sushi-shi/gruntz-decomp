@@ -1149,7 +1149,7 @@ idleReseed:
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
-    StopStruckSlotSound();
+    StopVehicleLoopSound();
 
 applyTail:
 

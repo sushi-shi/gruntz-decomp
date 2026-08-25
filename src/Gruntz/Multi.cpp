@@ -1757,16 +1757,16 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
                 ->AddItem(text, 0x30, IDX(player->m_colorIndex));
-            SoundCueRegistry* host = m_world->m_soundRegistry;
-            if (host->m_silentMode != 0) {
+            SoundCueRegistry* registry = m_world->m_soundRegistry;
+            if (registry->m_silentMode != 0) {
                 break;
             }
-            SoundCue* e = NULL;
-            MapLookup(host->m_cues, "GAME_CHAT", e);
-            if (e == NULL) {
+            SoundCue* cue = NULL;
+            MapLookup(registry->m_cues, "GAME_CHAT", cue);
+            if (cue == NULL) {
                 break;
             }
-            e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
             break;
         }
 
@@ -2141,21 +2141,22 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
                 AnnounceVersion(player);
             }
         }
-        SoundCueRegistry* host = m_world->m_soundRegistry;
-        if (host->m_silentMode == 0) {
+        SoundCueRegistry* registry = m_world->m_soundRegistry;
+        if (registry->m_silentMode == 0) {
             SoundCue* found = NULL;
-            MapLookup(host->m_cues, "GAME_MENUS_SELECT", found);
+            MapLookup(registry->m_cues, "GAME_MENUS_SELECT", found);
             // SoundCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
             // in a register across the m_lastPlayTimeMs store.
-            SoundCue* e = found;
-            if (e != NULL) {
+            SoundCue* cue = found;
+            if (cue != NULL) {
                 i32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
                 if (soundEnabled != 0) {
                     u32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - e->m_lastPlayTimeMs)) >= e->m_replayDelayMs) {
-                        e->m_lastPlayTimeMs = cueTimeMs;
-                        e->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                    if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
+                        >= cue->m_replayDelayMs) {
+                        cue->m_lastPlayTimeMs = cueTimeMs;
+                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }

@@ -10,7 +10,7 @@
 #include <Ints.h>
 
 class CGruntzMgr;
-i32 SaveGame(CGruntzMgr* host, char* name);
+i32 SaveGame(CGruntzMgr* gameMgr, char* name);
 
 extern i32 g_saveBuf[0x24];
 

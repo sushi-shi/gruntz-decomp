@@ -329,7 +329,7 @@ public:
 
     CSpriteRefTable* m_spriteFactory;
 
-    CLightFxMgr* m_logicPump;
+    CLightFxMgr* m_lightFxMgr;
 
     CBattlezData* m_scoreHud;
     i32 m_numRuns;

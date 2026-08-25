@@ -70,8 +70,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     char buf[SERIAL_NAME_LEN];
 
-    m_struckSlotSound = NULL;
-    m_struckVoiceSound = NULL;
+    m_vehicleLoopSound = NULL;
+    m_powerupLoopSound = NULL;
     m_struckCount = 0;
     m_struckClockLo = 0;
     m_struckTimerLo = 0;

@@ -526,8 +526,8 @@ public:
     i32 m_reserved418;
     u32 m_timePerTile;
     i32 m_tileClaimed;
-    SoundBuffer* m_struckSlotSound;
-    SoundBuffer* m_struckVoiceSound;
+    SoundBuffer* m_vehicleLoopSound;
+    SoundBuffer* m_powerupLoopSound;
     i32 m_reserved42c;
     i32 m_reserved430;
     i32 m_startingItemId;
@@ -802,20 +802,20 @@ public:
 
     void SetEntrancePos(i32 clearArrivalState, i32 recycleRoute);
 
-    void EnsureStruckSlot(const char* key);
+    void EnsureVehicleLoopSound(const char* key);
     i32 UpdateEntranceAnim();
     i32 Save(CFileMemBase* ar);
 
     i32 LoadStateRecord(CFileMemBase* ar);
     i32 CommitArrival();
-    void StopStruckSlotSound();
-    void StopStruckVoiceSound();
-    void ReapplyVoiceParams();
+    void StopVehicleLoopSound();
+    void StopPowerupLoopSound();
+    void ReapplyLoopSoundParams();
     void DestroyAnims();
 
     Coord GetTilePos();
 
-    void EnsureStruckVoice(const char* key);
+    void EnsurePowerupLoopSound(const char* key);
 
     i32 CanShowStamina();
     i32* EntranceTileOffset(i32* out);
@@ -977,8 +977,8 @@ bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
 static void GruntScratchTeardown();
 
-#define STOP_GRUNT_STRUCK_SOUNDS                                                                   \
-    StopStruckSlotSound();                                                                         \
-    StopStruckVoiceSound()
+#define STOP_GRUNT_LOOP_SOUNDS                                                                     \
+    StopVehicleLoopSound();                                                                        \
+    StopPowerupLoopSound()
 
 #endif // SRC_GRUNTZ_GRUNT_H

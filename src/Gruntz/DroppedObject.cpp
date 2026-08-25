@@ -247,7 +247,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_scrollMode = 1;
     }
-    CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
+    CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
     SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
     m_lastDropTime = 0;
     m_dropInterval = 0;
@@ -385,7 +385,7 @@ i32 CObjectDropper::SerializeMove(
             ar->Read(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_POSTLOAD: {
-            CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+            CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
             CWwdGameObjectA* o = m_object;
             SET_DRAW_FILL_REVERSED(o, SHADE_DST_BY_SRC_16, fill);
             break;
@@ -540,7 +540,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
     SwitchGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     SetObjectFlags(0x2000002);
-    CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+    CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
     CWwdGameObjectA* draw = m_object;
     SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
     CWwdGameObjectA* o = m_object;
@@ -582,7 +582,7 @@ i32 CDroppedObjectShadow::SerializeMove(
 ) {
     SERIALIZE_USER_LOGIC_AND_CHAIN_OR_RETURN(ar, mode, typeId, object)
     if (mode == SERIAL_POSTLOAD) {
-        CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+        CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
         CWwdGameObjectA* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, fill);
     }

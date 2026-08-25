@@ -367,8 +367,8 @@ CGrunt::CGrunt(CGameObject* owner)
     m_arrivalActive = 0;
     m_coordToggle = 0;
     m_wingzEnabled = 0;
-    m_struckSlotSound = NULL;
-    m_struckVoiceSound = NULL;
+    m_vehicleLoopSound = NULL;
+    m_powerupLoopSound = NULL;
     // Retail assigns each of the four rects as a WHOLE object: the values sit in
     // eax/ecx/edx/edi and go out through one `lea ebx,[esi+0x2a0]` base, first
     // store direct and the other three at [ebx+4/8/c] (0x47cd6..0x47d20). That is
@@ -2924,8 +2924,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_CONVERSIONLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_CONVERSIONLOOP");
             break;
         }
         case PICKUP_DEATHTOUCH: {
@@ -2955,8 +2955,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_DEATHTOUCHLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_DEATHTOUCHLOOP");
             break;
         }
         case PICKUP_GHOST: {
@@ -2972,8 +2972,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_GHOSTLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_GHOSTLOOP");
             return 1;
         }
         case PICKUP_INVULNERABILITY: {
@@ -2988,8 +2988,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_INVULNERABILITYLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_INVULNERABILITYLOOP");
             return 1;
         }
         case PICKUP_REACTIVEARMOR: {
@@ -3004,8 +3004,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_REACTIVEARMORLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_REACTIVEARMORLOOP");
             return 1;
         }
         case PICKUP_ROIDZ: {
@@ -3020,8 +3020,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_convertClockHi = 0;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_ROIDZLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_ROIDZLOOP");
             return 1;
         }
         case PICKUP_SUPERSPEED: {
@@ -3039,8 +3039,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ReadConfigFromButeMgr();
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
-            StopStruckVoiceSound();
-            EnsureStruckVoice("GAME_SUPERSPEEDLOOP");
+            StopPowerupLoopSound();
+            EnsurePowerupLoopSound("GAME_SUPERSPEEDLOOP");
             return 1;
         }
         case PICKUP_MEGAPHONE: {

@@ -22,14 +22,14 @@ class CLightFxMgr {
 public:
     CLightFxMgr();
 
-    i32 Init(class CGruntzMgr* reg, class CGruntzMgr* owner);
+    i32 Init(class CGruntzMgr* gameMgr, class CGruntzMgr* owner);
 
     void Reset();
 
-    i32 Push(CDDrawWorker* imgSet, i32 anchor, ShadeMode slot);
+    i32 ApplyShadeTable(CDDrawWorker* imageSet, i32 tableIndex, ShadeMode mode);
 
     class CGruntzMgr* m_owner;
-    class CGruntzMgr* m_reg;
+    class CGruntzMgr* m_gameMgr;
     CDDrawSurfaceMgr* m_world;
 
     CShadeTableCache* m_cache;
@@ -38,7 +38,7 @@ public:
 };
 
 inline CLightFxMgr::CLightFxMgr() {
-    m_reg = NULL;
+    m_gameMgr = NULL;
     m_world = NULL;
     m_cache = NULL;
     m_greyTable = NULL;

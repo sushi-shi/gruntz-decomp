@@ -241,7 +241,7 @@ i32 CRainCloud::Tick() {
         } else {
             m_strikeArmed = 0;
         }
-        CShadeTable* frame = g_gameReg->m_logicPump->m_tables[idx];
+        CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[idx];
         CWwdGameObjectA* spr = m_object;
         SET_DRAW_FILL_REVERSED(spr, SHADE_DST_BY_SRC_16, frame);
     }
@@ -262,7 +262,7 @@ i32 CPathHazard::SiblingTick() {
         } else {
             m_strikeArmed = 0;
         }
-        CShadeTable* frame = g_gameReg->m_logicPump->m_tables[sel];
+        CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[sel];
         CWwdGameObjectA* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
     }
@@ -302,7 +302,7 @@ i32 CPathHazard::SiblingTick() {
     CGruntzMgr* tableReg = g_gameReg;
     i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
     if (legElapsed >= m_leg.m_window) {
-        CShadeTable* frame = tableReg->m_logicPump->m_tables[5];
+        CShadeTable* frame = tableReg->m_lightFxMgr->m_tables[5];
         CWwdGameObjectA* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
         this->BeginLeg();
@@ -323,10 +323,10 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
-        SoundCueRegistry* host = reg->m_world->m_soundRegistry;
-        if (host->m_silentMode == 0) {
+        SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
+        if (registry->m_silentMode == 0) {
             SoundCue* found = NULL;
-            MapLookup(host->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
+            MapLookup(registry->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
             // SoundCue::PlayIfElapsed inlined: the call's `this` copy is what holds
             // the cue in a register across the m_lastPlayTimeMs store - reading the
             // escaped lookup out-param directly makes cl reload it from its home.
@@ -400,7 +400,7 @@ i32 CPathHazard::BeginLeg() {
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
-    CShadeTable* n = g_gameReg->m_logicPump->m_tables[5];
+    CShadeTable* n = g_gameReg->m_lightFxMgr->m_tables[5];
     SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, n);
     SwitchGeometry("LEVEL_RAINCLOUD", 0);
     SET_OBJECT_AREA(1)
@@ -467,7 +467,7 @@ i32 CRainCloud::SerializeMove(
         return 0;
     }
     if (mode == SERIAL_POSTLOAD) {
-        CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
+        CShadeTable* x = g_gameReg->m_lightFxMgr->m_tables[5];
         CWwdGameObjectA* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, x);
     }
