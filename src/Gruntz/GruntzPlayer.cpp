@@ -118,7 +118,7 @@ class CImage;
             LeafCue* found = NULL;                                                                 \
             MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
             if (found != NULL)                                                                     \
-                found->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                        \
+                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                               \
         }                                                                                          \
     } while (0)
 

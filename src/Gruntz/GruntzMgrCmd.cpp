@@ -41,7 +41,7 @@
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(TAG));                \
         if (_c)                                                                                    \
-            _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
+            _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                      \
     }
 #define PLAYCUE_MAP(TAG, VAR)                                                                      \
     {                                                                                              \
@@ -50,7 +50,7 @@
             VAR = 0;                                                                               \
             MapLookup(_reg->m_cues, TAG, VAR);                                                     \
             if (VAR)                                                                               \
-                VAR->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                          \
+                VAR->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                 \
         }                                                                                          \
     }
 #define ITEMCHEAT(N, MSG)                                                                          \
@@ -226,7 +226,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                                     ->Lookup("GAME_MINORCHEAT")
                             );
                             if (_c) {
-                                _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                                _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                             }
                         }
                         AppendChatMessage("Brian L. Goble is a programming God...");
@@ -604,7 +604,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             _c = NULL;
                             MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
                             if (_c) {
-                                PlayLeafCueIfElapsed(_c, g_sndCueTag, 0, 0, 0);
+                                PlayLeafCueIfElapsed(_c, g_soundVolumePercent, 0, 0, 0);
                             }
                         }
                         ShowToggleMessage("Explosionz", g_explosionz);
@@ -1052,7 +1052,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 }
             }
             m_soundEnabled ^= 1;
-            g_sndEnabled = m_soundEnabled;
+            g_soundEnabled = m_soundEnabled;
             i32 soundEnabled = m_soundEnabled;
             if (soundEnabled != 0) {
                 m_worldSounds->Resume();

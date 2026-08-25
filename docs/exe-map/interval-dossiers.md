@@ -829,11 +829,11 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   bodies may be real out-of-line definitions in a second file (1997 code often
   wrote 6-byte getters out-of-line), which no oracle here can exclude. The
   .data band 0x21ab14-0x21ab30 (g_wwdObjIdCounter / a shared symtab cell /
-  g_sndEnabled / g_sndCueTag / three Gap_15a210 cells) binds S2+E+G+H+I if its
+  g_soundEnabled / g_soundVolumePercent / three Gap_15a210 cells) binds S2+E+G+H+I if its
   cells are file-statics - but every one is plausibly extern, so not decisive.
 * **G internal sub-splits REFUTED.** #9 suggested ~0x157a80 and ~0x1588f0 as
   possible boundaries; the weave crosses both: leaf fns at 0x1577a0-0x1577e0 AND
-  0x157ae0/0x157bc0 (filemem pocket between); submgr's TriggerBlit@0x1587f0
+  0x157ae0/0x157bc0 (filemem pocket between); submgr's PlaySpatialized@0x1587f0
   between the leafscan block and the pages block; pages fns run 0x1588f0-0x158ee0
   continuously then subworker|pair|subworker|pair alternates 0x158f30-0x1591b0.
   G is internally woven -> one block.

@@ -463,7 +463,7 @@ i32 CCheckpointTrigger::Act() {
 
     CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
     if (cue != NULL) {
-        static_cast<LeafCue*>(cue)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+        static_cast<LeafCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
     }
     g_gameReg->OnCheckpointReached();
 

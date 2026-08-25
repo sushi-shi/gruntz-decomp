@@ -245,14 +245,14 @@ void CMenuState::StartMusic() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    i32 saved = g_sndEnabled;
+    i32 saved = g_soundEnabled;
     if (!saved) {
-        g_sndEnabled = 1;
+        g_soundEnabled = 1;
     }
     i32 item = g_gameReg->m_soundVolume;
     PlayLeafCueIfElapsed(m_menuMusicCue, item, 0, 0, 1);
     if (!saved) {
-        g_sndEnabled = saved;
+        g_soundEnabled = saved;
     }
 }
 

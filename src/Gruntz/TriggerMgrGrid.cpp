@@ -587,7 +587,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                         LeafCue* found = NULL;
                         MapLookup(set->m_cues, "GAME_SECRETSWITCH", found);
                         if (found != NULL) {
-                            found->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                            found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                         }
                     }
                 }

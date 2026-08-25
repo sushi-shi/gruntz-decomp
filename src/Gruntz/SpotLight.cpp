@@ -166,16 +166,17 @@ i32 CSpotLight::Tick() {
                 if (obj->m_emitGate == 0) {
                     LeafCue* found = obj->FindCue(name);
                     // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds
-                    // the cue in a register across the m_lastPlayTime store.
+                    // the cue in a register across the m_lastPlayTimeMs store.
                     LeafCue* cue = found;
                     if (cue != NULL) {
-                        i32 gate = g_sndEnabled;
-                        i32 item = g_sndCueTag;
-                        if (gate != 0) {
-                            u32 clk = g_killCueClock;
-                            if (clk - cue->m_lastPlayTime >= static_cast<u32>(cue->m_replayDelay)) {
-                                cue->m_lastPlayTime = clk;
-                                cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        i32 soundEnabled = g_soundEnabled;
+                        i32 volumePercent = g_soundVolumePercent;
+                        if (soundEnabled != 0) {
+                            u32 cueTimeMs = g_soundCueTimeMs;
+                            if (cueTimeMs - cue->m_lastPlayTimeMs
+                                >= static_cast<u32>(cue->m_replayDelayMs)) {
+                                cue->m_lastPlayTimeMs = cueTimeMs;
+                                cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                             }
                         }
                     }

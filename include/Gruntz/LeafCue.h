@@ -29,19 +29,19 @@ struct LeafCue : public CWapObj {
     i32 LoadSoundB(char* src);
     i32 Configure(CParseSource* src);
 
-    i32 PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop);
+    i32 PlayIfElapsed(i32 volumePercent, i32 panPercent, i32 frequencyOffsetPercent, i32 looping);
 
-    i32 TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2);
+    i32 PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
 
     SoundSample* m_sound;
-    i32 m_lastPlayTime;
-    i32 m_replayDelay;
+    i32 m_lastPlayTimeMs;
+    i32 m_replayDelayMs;
 };
 inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle)
     : CWapObj(handle, count, 0, CWapObj::NO_SEED) {
     m_sound = NULL;
-    m_replayDelay = 0;
-    m_lastPlayTime = 0;
+    m_replayDelayMs = 0;
+    m_lastPlayTimeMs = 0;
 }
 
 #endif // GRUNTZ_GRUNTZ_LEAFCUE_H

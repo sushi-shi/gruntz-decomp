@@ -16,14 +16,14 @@ call sites that lead to it all match:
     target 3 x ?PlayIfElapsed@LeafCue@@...      4 x ?Lookup@CMapStringToPtr@@...
 
 Each of our sites ends `je <shared-tail> ; jmp <shared-tail>` into one block that
-owns the only `push g_sndCueTag ; call PlayIfElapsed ; mov eax,1 ; jmp <epilogue>`.
+owns the only `push g_soundVolumePercent ; call PlayIfElapsed ; mov eax,1 ; jmp <epilogue>`.
 
 ## What it is (and is not)
 
 It is NOT a missing statement and NOT a wrong callee - the source is already correct.
 cl 5.0's flow optimizer cross-jumps identical block tails; retail's build did not, and
 retail additionally expanded `PlayIfElapsed`'s BODY at one of the four sites
-(`g_sndEnabled` / `g_killCueClock` / `SoundSample::AcquireAndPlay` appear inline
+(`g_soundEnabled` / `g_soundCueTimeMs` / `SoundSample::AcquireAndPlay` appear inline
 there), which is only possible if `LeafCue::PlayIfElapsed` was defined **in the class
 body** in retail's header, leaving cl free to inline it where the budget allowed.
 

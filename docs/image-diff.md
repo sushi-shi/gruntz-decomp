@@ -368,7 +368,7 @@ multiplicity-only regions**.
 
 A twelfth resolver defect treated printable bytes as stronger than a paired data
 symbol.  That mislabeled `g_levelMsgRectsB[0].top` (integer value 92) as the string
-`"\\"` and `g_sndCueTag` (100) as `"d"`.  Paired non-literal symbols now win over
+`"\\"` and `g_soundVolumePercent` (100) as `"d"`.  Paired non-literal symbols now win over
 content sniffing; compiler `??_C@` literals still compare by text.  This correction
 also exposed two previously hidden CRT identity differences: retail's
 `___lc_lctostr` and `___init_numeric` reach named `g_singleDot`, while our link reaches a

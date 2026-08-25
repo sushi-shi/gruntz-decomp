@@ -184,15 +184,15 @@ void CPreviewState::LoadLevelPreviewScreen() {
             LeafCue* found = NULL;
             MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", found);
             // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
-            // in a register across the m_lastPlayTime store.
+            // in a register across the m_lastPlayTimeMs store.
             LeafCue* p = found;
             if (p != NULL) {
-                i32 tag = g_sndCueTag;
-                if (g_sndEnabled != 0
-                    && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
-                           >= static_cast<u32>(p->m_replayDelay)) {
-                    p->m_lastPlayTime = g_killCueClock;
-                    p->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+                i32 volumePercent = g_soundVolumePercent;
+                if (g_soundEnabled != 0
+                    && static_cast<u32>((g_soundCueTimeMs - p->m_lastPlayTimeMs))
+                           >= static_cast<u32>(p->m_replayDelayMs)) {
+                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                 }
             }
         }

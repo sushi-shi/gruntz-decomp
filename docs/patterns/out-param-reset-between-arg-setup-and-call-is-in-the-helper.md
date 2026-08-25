@@ -14,7 +14,7 @@ confidence: 9/10
 ```cpp
 d = NULL;
 MapLookup(m_world->m_soundRegistry->m_cues, "GAME_PYRAMIDMOVE", d);
-if (d != NULL) { d->m_replayDelay = 100; }
+if (d != NULL) { d->m_replayDelayMs = 100; }
 ```
 
 `walls diagnose` shows a PERFECT skeleton (0x51b B, 401 insns, 32 calls, 32 branches,

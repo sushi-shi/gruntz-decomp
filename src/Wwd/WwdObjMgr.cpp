@@ -39,9 +39,9 @@
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
 DATA(0x0021ab20)
-i32 g_sndEnabled = 1;
+i32 g_soundEnabled = 1;
 DATA(0x0021ab24)
-i32 g_sndCueTag = 100;
+i32 g_soundVolumePercent = 100;
 
 // CMapStringToOb::Lookup leaves `out` untouched on a miss, so the clear belongs
 // with the lookup: as the inline body's first statement cl schedules it after the
@@ -302,9 +302,9 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 
     if (advance != 0) {
         u32 now = timeGetTime();
-        u32 delta = now - g_killCueClock;
+        u32 delta = now - g_soundCueTimeMs;
         g_engineFrameDelta = delta;
-        g_killCueClock = now;
+        g_soundCueTimeMs = now;
     }
 
     POSITION pos = m_list.GetHeadPosition();

@@ -625,7 +625,7 @@ i32 CMulti::AdvanceGameFrame() {
     g_frameDelta = 0x21;
     g_lastNow += 0x21;
     g_frameTime += 0x21;
-    g_killCueClock = g_lastNow;
+    g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
         if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
@@ -1278,17 +1278,17 @@ i32 CMulti::ShowMultiStartDlg() {
             LeafCue* found = NULL;
             MapLookup(reg->m_cues, s_GameKey, found);
             // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
-            // in a register across the m_lastPlayTime store.
+            // in a register across the m_lastPlayTimeMs store.
             LeafCue* rec = found;
             if (rec != NULL) {
-                i32 snd = g_sndEnabled;
-                i32 cue = g_sndCueTag;
-                if (snd != 0) {
-                    i32 clk = g_killCueClock;
-                    if (static_cast<u32>((clk - rec->m_lastPlayTime))
-                        >= static_cast<u32>(rec->m_replayDelay)) {
-                        rec->m_lastPlayTime = clk;
-                        rec->m_sound->AcquireAndPlay(cue, 0, 0, 0);
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
+                    i32 cueTimeMs = g_soundCueTimeMs;
+                    if (static_cast<u32>((cueTimeMs - rec->m_lastPlayTimeMs))
+                        >= static_cast<u32>(rec->m_replayDelayMs)) {
+                        rec->m_lastPlayTimeMs = cueTimeMs;
+                        rec->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -1765,7 +1765,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (e == NULL) {
                 break;
             }
-            e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
             break;
         }
 
@@ -2145,16 +2145,16 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
             LeafCue* found = NULL;
             MapLookup(host->m_cues, "GAME_MENUS_SELECT", found);
             // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue
-            // in a register across the m_lastPlayTime store.
+            // in a register across the m_lastPlayTimeMs store.
             LeafCue* e = found;
             if (e != NULL) {
-                i32 enabled = g_sndEnabled;
-                i32 tag = g_sndCueTag;
-                if (enabled != 0) {
-                    u32 now = g_killCueClock;
-                    if (static_cast<u32>((now - e->m_lastPlayTime)) >= e->m_replayDelay) {
-                        e->m_lastPlayTime = now;
-                        e->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
+                    u32 cueTimeMs = g_soundCueTimeMs;
+                    if (static_cast<u32>((cueTimeMs - e->m_lastPlayTimeMs)) >= e->m_replayDelayMs) {
+                        e->m_lastPlayTimeMs = cueTimeMs;
+                        e->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }

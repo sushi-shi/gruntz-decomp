@@ -335,7 +335,7 @@ static __inline void HiCueFind() {
     if (host->m_emitGate == 0) {
         CObject* obj = ((host))->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
-            static_cast<LeafCue*>(obj)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            static_cast<LeafCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
         }
     }
 }
@@ -346,7 +346,7 @@ static __inline void HiCueLookup() {
         LeafCue* out = NULL;
         MapLookup(host->m_cues, "GAME_TABHIGHLIGHT1", out);
         if (out) {
-            out->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            out->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
         }
     }
 }
@@ -357,14 +357,14 @@ static __inline void HiCueTimed() {
         LeafCue* found = NULL;
         MapLookup(host->m_cues, "GAME_TABHIGHLIGHT1", found);
         if (found) {
-            i32 gate = g_sndEnabled;
-            i32 item = g_sndCueTag;
-            if (gate != 0) {
+            i32 soundEnabled = g_soundEnabled;
+            i32 volumePercent = g_soundVolumePercent;
+            if (soundEnabled != 0) {
                 LeafCue* p = found;
-                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                    >= static_cast<u32>(p->m_replayDelay)) {
-                    p->m_lastPlayTime = g_killCueClock;
-                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                    >= static_cast<u32>(p->m_replayDelayMs)) {
+                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                 }
             }
         }
@@ -711,14 +711,14 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
             CMapStringToPtr* map = &host->m_cues;
             MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
             if (found) {
-                i32 gate = g_sndEnabled;
-                i32 item = g_sndCueTag;
-                if (gate != 0) {
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
                     LeafCue* p = found;
-                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                        >= static_cast<u32>(p->m_replayDelay)) {
-                        p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -2552,14 +2552,14 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_STATZTABTOGGLE", found);
                 if (found) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0) {
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
                         LeafCue* p = found;
-                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                            >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }
@@ -2585,14 +2585,14 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_STATZTABTOGGLE", found);
                 if (found) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0) {
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
                         LeafCue* p = found;
-                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                            >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }
@@ -2682,14 +2682,14 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                     CMapStringToPtr* map = &host->m_cues;
                     MapLookup(*map, "GAME_COOKINGCOMPLETE", found);
                     if (found) {
-                        i32 gate = g_sndEnabled;
-                        i32 item = g_sndCueTag;
-                        if (gate != 0) {
+                        i32 soundEnabled = g_soundEnabled;
+                        i32 volumePercent = g_soundVolumePercent;
+                        if (soundEnabled != 0) {
                             LeafCue* p = found;
-                            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                >= static_cast<u32>(p->m_replayDelay)) {
-                                p->m_lastPlayTime = g_killCueClock;
-                                p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                            if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                >= static_cast<u32>(p->m_replayDelayMs)) {
+                                p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                             }
                         }
                     }
@@ -2787,14 +2787,14 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
             CMapStringToPtr* map = &host->m_cues;
             MapLookup(*map, "GAME_GOOCOOKING1", found);
             if (found) {
-                i32 gate = g_sndEnabled;
-                i32 item = g_sndCueTag;
-                if (gate != 0) {
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
                     LeafCue* p = found;
-                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                        >= static_cast<u32>(p->m_replayDelay)) {
-                        p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -2960,14 +2960,14 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             LeafCue* found = NULL;
                             MapLookup(host->m_cues, "GAME_REZBELTRETURN", found);
                             if (found) {
-                                i32 gate = g_sndEnabled;
-                                i32 item = g_sndCueTag;
-                                if (gate != 0) {
+                                i32 soundEnabled = g_soundEnabled;
+                                i32 volumePercent = g_soundVolumePercent;
+                                if (soundEnabled != 0) {
                                     LeafCue* p = found;
-                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                        >= static_cast<u32>(p->m_replayDelay)) {
-                                        p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                     }
                                 }
                             }
@@ -2984,14 +2984,14 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             LeafCue* found = NULL;
                             MapLookup(host->m_cues, "GAME_REZBELTBACKUP", found);
                             if (found) {
-                                i32 gate = g_sndEnabled;
-                                i32 item = g_sndCueTag;
-                                if (gate != 0) {
+                                i32 soundEnabled = g_soundEnabled;
+                                i32 volumePercent = g_soundVolumePercent;
+                                if (soundEnabled != 0) {
                                     LeafCue* p = found;
-                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                        >= static_cast<u32>(p->m_replayDelay)) {
-                                        p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                     }
                                 }
                             }
@@ -3083,14 +3083,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             LeafCue* found = NULL;
                             MapLookup(host->m_cues, "GAME_REZMACHINE", found);
                             if (found) {
-                                i32 gate = g_sndEnabled;
-                                i32 item = g_sndCueTag;
-                                if (gate != 0) {
+                                i32 soundEnabled = g_soundEnabled;
+                                i32 volumePercent = g_soundVolumePercent;
+                                if (soundEnabled != 0) {
                                     LeafCue* p = found;
-                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                        >= static_cast<u32>(p->m_replayDelay)) {
-                                        p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                     }
                                 }
                             }
@@ -3149,14 +3149,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 LeafCue* fnd = NULL;
                                 MapLookup(host->m_cues, "GAME_REZBELTRETRACT", fnd);
                                 if (fnd) {
-                                    i32 gate = g_sndEnabled;
-                                    i32 item = g_sndCueTag;
-                                    if (gate != 0) {
+                                    i32 soundEnabled = g_soundEnabled;
+                                    i32 volumePercent = g_soundVolumePercent;
+                                    if (soundEnabled != 0) {
                                         LeafCue* p = fnd;
-                                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                            >= static_cast<u32>(p->m_replayDelay)) {
-                                            p->m_lastPlayTime = g_killCueClock;
-                                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                         }
                                     }
                                 }
@@ -3171,14 +3171,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                                 LeafCue* fnd = NULL;
                                 MapLookup(host->m_cues, "GAME_REZBELTDROP", fnd);
                                 if (fnd) {
-                                    i32 gate = g_sndEnabled;
-                                    i32 item = g_sndCueTag;
-                                    if (gate != 0) {
+                                    i32 soundEnabled = g_soundEnabled;
+                                    i32 volumePercent = g_soundVolumePercent;
+                                    if (soundEnabled != 0) {
                                         LeafCue* p = fnd;
-                                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                            >= static_cast<u32>(p->m_replayDelay)) {
-                                            p->m_lastPlayTime = g_killCueClock;
-                                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                         }
                                     }
                                 }
@@ -3399,7 +3399,7 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
 
 // @early-stop
 // Frame 0xc against retail's 0x10: the BELT_FALLING_OFF cue block spills its
-// g_sndCueTag copy and binds both replay-clock fields, where the two earlier
+// g_soundVolumePercent copy and binds both replay-clock fields, where the two earlier
 // copies of the same source keep them in registers - arm-local pressure.
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
@@ -3447,14 +3447,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_CHIPFALLOUT", found);
                         if (found) {
-                            i32 gate = g_sndEnabled;
-                            i32 item = g_sndCueTag;
-                            if (gate != 0) {
+                            i32 soundEnabled = g_soundEnabled;
+                            i32 volumePercent = g_soundVolumePercent;
+                            if (soundEnabled != 0) {
                                 LeafCue* p = found;
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                    >= static_cast<u32>(p->m_replayDelayMs)) {
+                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                 }
                             }
                         }
@@ -3483,14 +3483,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_CHIPLAND", found);
                         if (found) {
-                            i32 gate = g_sndEnabled;
-                            i32 item = g_sndCueTag;
-                            if (gate != 0) {
+                            i32 soundEnabled = g_soundEnabled;
+                            i32 volumePercent = g_soundVolumePercent;
+                            if (soundEnabled != 0) {
                                 LeafCue* p = found;
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                    >= static_cast<u32>(p->m_replayDelayMs)) {
+                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                 }
                             }
                         }
@@ -3570,14 +3570,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_CHIPLAND", found);
                         if (found) {
-                            i32 gate = g_sndEnabled;
-                            i32 item = g_sndCueTag;
-                            if (gate != 0) {
+                            i32 soundEnabled = g_soundEnabled;
+                            i32 volumePercent = g_soundVolumePercent;
+                            if (soundEnabled != 0) {
                                 LeafCue* p = found;
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                    >= static_cast<u32>(p->m_replayDelayMs)) {
+                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                 }
                             }
                         }
@@ -3668,14 +3668,14 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                         CMapStringToPtr* map = &host->m_cues;
                         MapLookup(*map, "GAME_REZGRINDING", found);
                         if (found) {
-                            i32 gate = g_sndEnabled;
-                            i32 item = g_sndCueTag;
-                            if (gate != 0) {
+                            i32 soundEnabled = g_soundEnabled;
+                            i32 volumePercent = g_soundVolumePercent;
+                            if (soundEnabled != 0) {
                                 LeafCue* p = found;
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                                    >= static_cast<u32>(p->m_replayDelayMs)) {
+                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                 }
                             }
                         }
@@ -4501,11 +4501,12 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
         MapLookup(h->m_cues, "GAME_WARPSTONEFLY", found);
         if (found) {
             LeafCue* fly = found;
-            i32 gate = g_sndEnabled;
-            i32 item = g_sndCueTag;
-            if (gate != 0 && g_killCueClock - fly->m_lastPlayTime >= fly->m_replayDelay) {
-                fly->m_lastPlayTime = g_killCueClock;
-                fly->m_sound->AcquireAndPlay(item, 0, 0, 0);
+            i32 soundEnabled = g_soundEnabled;
+            i32 volumePercent = g_soundVolumePercent;
+            if (soundEnabled != 0
+                && g_soundCueTimeMs - fly->m_lastPlayTimeMs >= fly->m_replayDelayMs) {
+                fly->m_lastPlayTimeMs = g_soundCueTimeMs;
+                fly->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
             }
         }
     }
@@ -5086,14 +5087,14 @@ i32 CStatusBarMgr::HlClickGroup0(StatusBarHighlightRow row) {
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0) {
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
                         LeafCue* p = found;
-                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                            >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }
@@ -5121,14 +5122,14 @@ i32 CStatusBarMgr::HlClickGroup1(StatusBarHighlightRow row) {
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0) {
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
                         LeafCue* p = found;
-                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                            >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }
@@ -5156,14 +5157,14 @@ i32 CStatusBarMgr::HlClickGroup2(StatusBarHighlightRow row) {
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0) {
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
                         LeafCue* p = found;
-                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                            >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }
@@ -5202,14 +5203,14 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             CMapStringToPtr* map = &host->m_cues;
             MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
             if (found) {
-                i32 gate = g_sndEnabled;
-                i32 item = g_sndCueTag;
-                if (gate != 0) {
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
                     LeafCue* p = found;
-                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                        >= static_cast<u32>(p->m_replayDelay)) {
-                        p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -5232,14 +5233,14 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
                 CMapStringToPtr* map = &host->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0) {
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
                         LeafCue* p = found;
-                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                            >= static_cast<u32>(p->m_replayDelay)) {
-                            p->m_lastPlayTime = g_killCueClock;
-                            p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                            >= static_cast<u32>(p->m_replayDelayMs)) {
+                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }

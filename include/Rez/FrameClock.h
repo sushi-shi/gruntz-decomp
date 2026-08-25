@@ -13,7 +13,7 @@ extern i32 g_timer200;
 extern i32 g_timer400;
 extern i32 g_timer500;
 extern u32 g_engineFrameDelta;
-extern u32 g_killCueClock;
+extern u32 g_soundCueTimeMs;
 extern i32 g_timer100;
 
 #endif // INCLUDE_REZ_FRAMECLOCK_H

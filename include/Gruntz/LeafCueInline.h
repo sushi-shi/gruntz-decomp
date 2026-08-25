@@ -22,16 +22,22 @@
 // REMOVAL CONDITION: model those callers accurately enough that cl 5.0 declines
 // the cue on its own budget where retail called; then one visible body in
 // LeafCue.h reproduces the split and both this header and the wrapper collapse.
-inline i32 PlayLeafCueIfElapsed(LeafCue* cue, i32 vol, i32 pan, i32 freqPct, i32 loop) {
-    if (g_sndEnabled == 0) {
+inline i32 PlayLeafCueIfElapsed(
+    LeafCue* cue,
+    i32 volumePercent,
+    i32 panPercent,
+    i32 frequencyOffsetPercent,
+    i32 looping
+) {
+    if (g_soundEnabled == 0) {
         return 0;
     }
-    if (g_killCueClock - static_cast<u32>(cue->m_lastPlayTime)
-        < static_cast<u32>(cue->m_replayDelay)) {
+    if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
+        < static_cast<u32>(cue->m_replayDelayMs)) {
         return 0;
     }
-    cue->m_lastPlayTime = g_killCueClock;
-    return cue->m_sound->AcquireAndPlay(vol, pan, freqPct, loop);
+    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+    return cue->m_sound->AcquireAndPlay(volumePercent, panPercent, frequencyOffsetPercent, looping);
 }
 
 #endif // GRUNTZ_LEAFCUEINLINE_H

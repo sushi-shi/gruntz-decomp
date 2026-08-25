@@ -168,7 +168,7 @@ GZ_ENUM_END(ToolCursorId)
             LeafCue* found = NULL;                                                                 \
             MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
             if (found != NULL)                                                                     \
-                found->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                       \
+                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                       \
         }                                                                                          \
     } while (0)
 
@@ -187,7 +187,7 @@ static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;
 DATA(0x002bf3c0)
-u32 g_killCueClock = 0;
+u32 g_soundCueTimeMs = 0;
 
 DATA(0x00212618)
 i32 g_lastLevelNum = -1;
@@ -502,7 +502,7 @@ i32 CPlay::Render() {
         LoadScrollSpeedOptions();
         m_world->m_level->ActivateVisibleObjectsOnMainPlane();
 
-        g_killCueClock = g_lastNow;
+        g_soundCueTimeMs = g_lastNow;
         g_engineFrameDelta = g_frameDelta;
 
         m_world->m_childGroup->TickKillCues(0);
@@ -881,7 +881,7 @@ void CPlay::DrawWorldFrame() {
             lvl->m_mainPlane->ActivateVisibleObjects();
         }
     }
-    g_killCueClock = g_lastNow;
+    g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_world->m_childGroup->TickKillCues(0);
     m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
@@ -1143,7 +1143,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_anchors[a].m_y = -1;
     }
 
-    g_killCueClock = g_lastNow;
+    g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
 
     for (i32 t = 0; t < 4; ++t) {
@@ -3173,7 +3173,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
             LeafCue* e = NULL;
             MapLookup(set->m_cues, "GAME_TABHIGHLIGHT1", e);
             if (e != NULL) {
-                e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
             }
         }
         m_guts->RestoreStatusBar();
@@ -4620,7 +4620,7 @@ i32 CPlay::ExecuteCommand(
                     LeafCue* cue =
                         static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup("GAME_BADSELECT"));
                     if (cue != NULL) {
-                        cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
                 return 0;

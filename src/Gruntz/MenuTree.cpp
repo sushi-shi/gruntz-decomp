@@ -297,13 +297,14 @@ static __inline i32 PlayMenuCue(CDDrawSubMgrLeafScan* soundRegistry, const char*
         MapLookup(soundRegistry->m_cues, cueKey, foundCue);
         LeafCue* cue = foundCue;
         if (cue != NULL) {
-            i32 soundEnabled = g_sndEnabled;
-            i32 volumePercent = g_sndCueTag;
+            i32 soundEnabled = g_soundEnabled;
+            i32 volumePercent = g_soundVolumePercent;
             if (soundEnabled != 0) {
-                i32 currentTime = g_killCueClock;
-                u32 elapsed = static_cast<u32>(currentTime) - static_cast<u32>(cue->m_lastPlayTime);
-                if (elapsed >= static_cast<u32>(cue->m_replayDelay)) {
-                    cue->m_lastPlayTime = currentTime;
+                i32 cueTimeMs = g_soundCueTimeMs;
+                u32 elapsedMs =
+                    static_cast<u32>(cueTimeMs) - static_cast<u32>(cue->m_lastPlayTimeMs);
+                if (elapsedMs >= static_cast<u32>(cue->m_replayDelayMs)) {
+                    cue->m_lastPlayTimeMs = cueTimeMs;
                     return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                 }
             }

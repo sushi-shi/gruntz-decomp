@@ -106,7 +106,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     MapLookup(menuRoot()->m_soundRegistry->m_cues, buf, found);
     m_host = found;
     if (found != NULL && m_activeFlag != 0) {
-        if (g_sndEnabled) {
+        if (g_soundEnabled) {
             m_host->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
         }
         m_idleTimer = m_host->m_sound->m_durationMs + 0x2710;

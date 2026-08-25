@@ -1737,16 +1737,16 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 LeafCue* found = NULL;
                 MapLookup(set->m_cues, "LEVEL_ROCKBREAK", found);
                 // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the
-                // cue in a register across the m_lastPlayTime store.
+                // cue in a register across the m_lastPlayTimeMs store.
                 LeafCue* e = found;
                 if (e != NULL) {
-                    i32 gate = g_sndEnabled;
-                    i32 tag = g_sndCueTag;
-                    if (gate != 0) {
-                        u32 now = g_killCueClock;
-                        if (now - e->m_lastPlayTime >= e->m_replayDelay) {
-                            e->m_lastPlayTime = now;
-                            e->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0) {
+                        u32 cueTimeMs = g_soundCueTimeMs;
+                        if (cueTimeMs - e->m_lastPlayTimeMs >= e->m_replayDelayMs) {
+                            e->m_lastPlayTimeMs = cueTimeMs;
+                            e->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }
@@ -2107,12 +2107,12 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                 if (m_world->m_soundRegistry->m_emitGate == 0) {
                     LeafCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {
-                        i32 tag = g_sndCueTag;
-                        if (g_sndEnabled != 0
-                            && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-                                   >= static_cast<u32>(cue->m_replayDelay)) {
-                            cue->m_lastPlayTime = g_killCueClock;
-                            cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+                        i32 volumePercent = g_soundVolumePercent;
+                        if (g_soundEnabled != 0
+                            && static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
+                                   >= static_cast<u32>(cue->m_replayDelayMs)) {
+                            cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+                            cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                         }
                     }
                 }

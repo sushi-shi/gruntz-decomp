@@ -583,7 +583,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_voiceManager->m_voiceVolume = voiceVolume;
     m_musicEnabled = vMusic;
     m_soundEnabled = vSound;
-    g_sndEnabled = vSound;
+    g_soundEnabled = vSound;
     m_isVoiceEnabled = vVoice;
     m_isAmbientEnabled = vAmbient;
     m_isInterlaced = vInterlaced;

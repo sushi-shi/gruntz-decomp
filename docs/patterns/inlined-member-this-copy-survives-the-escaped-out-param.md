@@ -39,10 +39,10 @@ have made:
 // NO - the store through the escaped out-param forces a reload
 LeafCue* cue = NULL;
 MapLookup(host->m_cues, "GAME_MINORCHEAT", cue);
-if (cue != NULL && g_sndEnabled) {
-    if (g_killCueClock - cue->m_lastPlayTime >= cue->m_replayDelay) {
-        cue->m_lastPlayTime = g_killCueClock;
-        cue->m_sound->AcquireAndPlay(g_sndCueTag, 0, 0, 0);
+if (cue != NULL && g_soundEnabled) {
+    if (g_soundCueTimeMs - cue->m_lastPlayTimeMs >= cue->m_replayDelayMs) {
+        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+        cue->m_sound->AcquireAndPlay(g_soundVolumePercent, 0, 0, 0);
     }
 }
 
@@ -50,7 +50,7 @@ if (cue != NULL && g_sndEnabled) {
 LeafCue* found = NULL;
 MapLookup(host->m_cues, "GAME_MINORCHEAT", found);
 LeafCue* cue = found;
-if (cue != NULL && g_sndEnabled) { ... }
+if (cue != NULL && g_soundEnabled) { ... }
 ```
 
 A file-local `static inline LeafCue* LookupCue(CMapStringToPtr&, LPCTSTR)` that
@@ -109,36 +109,36 @@ The same transcription in the switch/chat cue bodies gives:
 `CTileTriggerSwitchLogic::SwitchDown` 89.46 -> 93.60, and
 `CTileTriggerSwitchLogic::SwitchUp` 90.15 -> 93.60.
 
-## The second half of the same body: the gate and the tag are BOTH locals
+## The second half of the same body: enabled and volume are BOTH locals
 
 The `this` copy fixes the pointer. The play-cue body has a second, independent
 defect with the same cause — retail materialises **both** globals into registers
-before the gate test, so the tag is live across the elapsed comparison:
+before the enabled test, so the volume is live across the elapsed comparison:
 
 ```asm
-; retail 0xb1af0+0x1c1                  ; ours, tag read at the call
-mov  ecx,ds:g_sndEnabled                cmp  edi,ds:g_sndEnabled
-mov  edx,ds:g_sndCueTag                 je   skip
+; retail 0xb1af0+0x1c1                  ; ours, volume read at the call
+mov  ecx,ds:g_soundEnabled                cmp  edi,ds:g_soundEnabled
+mov  edx,ds:g_soundVolumePercent                 je   skip
 cmp  edi,ecx                            ...
 je   skip                               mov  [eax+0x14],ecx
-...                                     mov  ecx,ds:g_sndCueTag   ; <- LATE
+...                                     mov  ecx,ds:g_soundVolumePercent   ; <- LATE
 mov  [eax+0x14],ecx                     push edi
-push edx           ; the tag            push ecx
+push edx           ; volume             push ecx
 ```
 
 One extra long-lived value shifts the whole callee-saved rotation (R2), and in
 `CSpotLight::Tick` it also decided the exit shape. The null test has to be split
-out of the gate so the loads sit between them:
+out of the enabled test so the loads sit between them:
 
 ```cpp
 // NO
-if (cue != NULL && g_sndEnabled != 0) { ... AcquireAndPlay(g_sndCueTag, 0, 0, 0); }
+if (cue != NULL && g_soundEnabled != 0) { ... AcquireAndPlay(g_soundVolumePercent, 0, 0, 0); }
 
 // YES
 if (cue != NULL) {
-    i32 gate = g_sndEnabled;
-    i32 item = g_sndCueTag;
-    if (gate != 0) { ... AcquireAndPlay(item, 0, 0, 0); }
+    i32 soundEnabled = g_soundEnabled;
+    i32 volumePercent = g_soundVolumePercent;
+    if (soundEnabled != 0) { ... AcquireAndPlay(volumePercent, 0, 0, 0); }
 }
 ```
 
@@ -149,9 +149,9 @@ STEERABLE. Measured 2026-08-21: `CSpotLight::Tick` 79.33 -> **84.21**,
 `CBootyState::UpdateBootyWalkingGruntz` 95.24 -> 95.48.
 
 **Adjudicate per site.** `CGruntzMgr::CheatEclipseToggle` is EXACT with the
-tag-before-gate spelling and its body-sharing sibling `CheatSkeletonToggle`
+volume-before-enabled spelling and its body-sharing sibling `CheatSkeletonToggle`
 (99.25) must keep it; `CTriggerMgr::LoadFinishLevelSprite` is byte-flat under the
-change. Read the target's two `mov <reg>,ds:g_snd*` loads before editing.
+change. Read the target's two sound-state global loads before editing.
 
 ## Bounds
 

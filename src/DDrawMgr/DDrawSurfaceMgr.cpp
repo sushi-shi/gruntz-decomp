@@ -43,7 +43,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_flags = 0;
     m_lastError = WORLDERR_NONE;
     m_callback = NULL;
-    g_killCueClock = 0;
+    g_soundCueTimeMs = 0;
     g_engineFrameDelta = 0;
 }
 

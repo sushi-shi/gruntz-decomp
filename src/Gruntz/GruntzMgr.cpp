@@ -312,7 +312,7 @@ void CGruntzMgr::Close() {
             m_settings->SetValueDword("Voice Volume", m_voiceManager->m_voiceVolume);
         }
         if (m_world && m_world->m_soundRegistry) {
-            m_settings->SetValueDword("Sound Volume", g_sndCueTag);
+            m_settings->SetValueDword("Sound Volume", g_soundVolumePercent);
         }
         m_settings->SetValueDword("Scroll Speed", m_scrollSpeed);
         m_settings->SetValueDword("Easy Mode", m_isEasyMode);
@@ -1661,7 +1661,7 @@ void CGruntzMgr::RefreshGameClock() {
     InitializeTimeGlobal();
 
     if (m_world) {
-        g_killCueClock = timeGetTime();
+        g_soundCueTimeMs = timeGetTime();
         g_engineFrameDelta = 0;
     }
 
@@ -1722,7 +1722,7 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_lastNow = now;
     g_frameDelta = delta;
     g_frameTime = abs;
-    g_killCueClock = now;
+    g_soundCueTimeMs = now;
     g_engineFrameDelta = delta;
 }
 
@@ -2436,12 +2436,12 @@ void CGruntzMgr::CheatSkeletonToggle() {
                         // holds the cue in a register across the store.
                         LeafCue* cue = found;
                         if (cue) {
-                            i32 tag = g_sndCueTag;
-                            if (g_sndEnabled) {
-                                if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-                                    >= static_cast<u32>(cue->m_replayDelay)) {
-                                    cue->m_lastPlayTime = g_killCueClock;
-                                    cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+                            i32 volumePercent = g_soundVolumePercent;
+                            if (g_soundEnabled) {
+                                if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
+                                    >= static_cast<u32>(cue->m_replayDelayMs)) {
+                                    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                 }
                             }
                         }
@@ -2488,12 +2488,12 @@ void CGruntzMgr::CheatEclipseToggle() {
                         // holds the cue in a register across the store.
                         LeafCue* cue = found;
                         if (cue) {
-                            i32 tag = g_sndCueTag;
-                            if (g_sndEnabled) {
-                                if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-                                    >= static_cast<u32>(cue->m_replayDelay)) {
-                                    cue->m_lastPlayTime = g_killCueClock;
-                                    cue->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+                            i32 volumePercent = g_soundVolumePercent;
+                            if (g_soundEnabled) {
+                                if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
+                                    >= static_cast<u32>(cue->m_replayDelayMs)) {
+                                    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+                                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                                 }
                             }
                         }
@@ -2657,7 +2657,7 @@ RVA(0x000919d0, 0x30)
 void CGruntzMgr::SetSoundVolume(i32 v) {
     m_soundVolume = v;
     if (m_world && m_world->m_soundRegistry) {
-        g_sndCueTag = v;
+        g_soundVolumePercent = v;
     }
     CWorldSoundSet* in = m_worldSounds;
     if (in) {
@@ -2962,7 +2962,7 @@ void CGruntzMgr::SetSoundEnabled(i32 enabled) {
     }
 
     i32 soundEnabled = m_soundEnabled;
-    g_sndEnabled = soundEnabled;
+    g_soundEnabled = soundEnabled;
     if (m_soundEnabled) {
         m_worldSounds->Resume();
     } else {

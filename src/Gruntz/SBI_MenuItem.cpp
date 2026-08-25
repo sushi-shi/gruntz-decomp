@@ -144,14 +144,14 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
         if (mh->m_emitGate == 0) {
             LeafCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
-                i32 gate = g_sndEnabled;
-                i32 item = g_sndCueTag;
-                if (gate != 0) {
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
                     LeafCue* p = found;
-                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                        >= static_cast<u32>(p->m_replayDelay)) {
-                        p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
+                        >= static_cast<u32>(p->m_replayDelayMs)) {
+                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }

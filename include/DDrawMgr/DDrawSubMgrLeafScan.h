@@ -19,7 +19,7 @@ class CDDrawSubMgrLeafScan : public CWapObj {
 public:
     CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {
         m_soundStream = NULL;
-        m_replayDelay = 0;
+        m_defaultReplayDelayMs = 0;
     }
 
     RVA(0x00157530, 0x17)
@@ -46,7 +46,7 @@ public:
             LeafCue* found = NULL;
             MapLookup(m_cues, key, found);
             if (found != NULL) {
-                found->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
             }
         }
     }
@@ -79,7 +79,7 @@ public:
 
     virtual ~CDDrawSubMgrLeafScan() OVERRIDE;
 
-    i32 Fire(const char* key, i32 pos, i32 range1, i32 range2);
+    i32 PlaySpatializedCue(const char* key, i32 sourceX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
 
     i32 BindSoundStream(i32 force);
 
@@ -87,7 +87,7 @@ public:
     SoundStream* m_soundStream;
 
     i32 m_emitGate;
-    i32 m_replayDelay;
+    i32 m_defaultReplayDelayMs;
 };
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H

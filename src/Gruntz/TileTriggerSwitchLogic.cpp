@@ -120,15 +120,15 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
             MapLookup(h->m_cues, "GAME_SWITCHDOWN", found);
             LeafCue* spr = found;
             if (spr) {
-                i32 sndEnabled = g_sndEnabled;
-                i32 cueTag = g_sndCueTag;
-                if (sndEnabled != 0) {
-                    u32 now = g_killCueClock;
-                    u32 elapsed = now - static_cast<u32>(spr->m_lastPlayTime);
-                    u32 replayDelay = static_cast<u32>(spr->m_replayDelay);
-                    if (elapsed >= replayDelay) {
-                        spr->m_lastPlayTime = now;
-                        spr->m_sound->AcquireAndPlay(cueTag, 0, 0, 0);
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
+                    u32 cueTimeMs = g_soundCueTimeMs;
+                    u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
+                    u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
+                    if (elapsedMs >= replayDelayMs) {
+                        spr->m_lastPlayTimeMs = cueTimeMs;
+                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -160,15 +160,15 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
             MapLookup(h->m_cues, "GAME_SWITCHUP", found);
             LeafCue* spr = found;
             if (spr) {
-                i32 sndEnabled = g_sndEnabled;
-                i32 cueTag = g_sndCueTag;
-                if (sndEnabled != 0) {
-                    u32 now = g_killCueClock;
-                    u32 elapsed = now - static_cast<u32>(spr->m_lastPlayTime);
-                    u32 replayDelay = static_cast<u32>(spr->m_replayDelay);
-                    if (elapsed >= replayDelay) {
-                        spr->m_lastPlayTime = now;
-                        spr->m_sound->AcquireAndPlay(cueTag, 0, 0, 0);
+                i32 soundEnabled = g_soundEnabled;
+                i32 volumePercent = g_soundVolumePercent;
+                if (soundEnabled != 0) {
+                    u32 cueTimeMs = g_soundCueTimeMs;
+                    u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
+                    u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
+                    if (elapsedMs >= replayDelayMs) {
+                        spr->m_lastPlayTimeMs = cueTimeMs;
+                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -279,7 +279,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
                 if (set->m_emitGate == 0) {
                     LeafCue* e = static_cast<LeafCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
                     if (e) {
-                        e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                        e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -294,7 +294,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
                 if (set->m_emitGate == 0) {
                     LeafCue* e = static_cast<LeafCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
                     if (e) {
-                        e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                        e->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -878,13 +878,13 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
         LeafCue* out = found;
         if (out != NULL) {
-            i32 tag = g_sndCueTag;
-            if (g_sndEnabled != 0) {
-                i32 kc = g_killCueClock;
-                if (static_cast<u32>((kc - out->m_lastPlayTime))
-                    >= static_cast<u32>(out->m_replayDelay)) {
-                    out->m_lastPlayTime = kc;
-                    out->m_sound->AcquireAndPlay(tag, 0, 0, 0);
+            i32 volumePercent = g_soundVolumePercent;
+            if (g_soundEnabled != 0) {
+                i32 cueTimeMs = g_soundCueTimeMs;
+                if (static_cast<u32>((cueTimeMs - out->m_lastPlayTimeMs))
+                    >= static_cast<u32>(out->m_replayDelayMs)) {
+                    out->m_lastPlayTimeMs = cueTimeMs;
+                    out->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                 }
             }
         }
@@ -1381,7 +1381,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
                 );
                 if (snd != NULL) {
-                    snd->PlayIfElapsed(static_cast<i32>(g_sndCueTag), 0, 0, 0);
+                    snd->PlayIfElapsed(static_cast<i32>(g_soundVolumePercent), 0, 0, 0);
                 }
             }
             i32 slot = brick->m_playerIndex;
@@ -1906,17 +1906,17 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
     if (found == NULL) {
         return 0;
     }
-    i32 gate = g_sndEnabled;
-    i32 item = g_sndCueTag;
-    if (gate == 0) {
+    i32 soundEnabled = g_soundEnabled;
+    i32 volumePercent = g_soundVolumePercent;
+    if (soundEnabled == 0) {
         return 0;
     }
     LeafCue* cue = found;
 
-    if (g_killCueClock - static_cast<u32>(cue->m_lastPlayTime)
-        >= static_cast<u32>(cue->m_replayDelay)) {
-        cue->m_lastPlayTime = g_killCueClock;
-        return cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
+    if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
+        >= static_cast<u32>(cue->m_replayDelayMs)) {
+        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+        return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
     }
     return 0;
 }

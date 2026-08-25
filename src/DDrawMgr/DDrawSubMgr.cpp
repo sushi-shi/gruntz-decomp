@@ -26,6 +26,7 @@
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>
+#include <Dsndmgr/VolumeScale.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -51,7 +52,7 @@
 #include <string.h>
 
 DATA(0x001eff2c)
-const float g_sndPanScale = 0.009999999776482582f;
+const float c_volumePercentUnitScale = 0.009999999776482582f;
 
 // The pinned half of the CWapObj two-entity split; the tagged inline sibling
 // lives in Wap32/WapObj.h.
@@ -468,7 +469,7 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
         m_emitGate = 0;
     }
     m_soundStream = stream;
-    g_sndCueTag = SND_CUE_NEUTRAL;
+    g_soundVolumePercent = VOLUME_PCT_MAX;
     return 1;
 }
 
@@ -542,7 +543,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
 
 #define ADD_SOUND_CUE_ENTRY(elem, key)                                                             \
     m_cues[key] = elem;                                                                            \
-    elem->m_replayDelay = m_replayDelay
+    elem->m_replayDelayMs = m_defaultReplayDelayMs
 
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, CParseSource* src) {
@@ -675,13 +676,18 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001581b0, 0x5b)
-i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2) {
+i32 CDDrawSubMgrLeafScan::PlaySpatializedCue(
+    const char* key,
+    i32 sourceX,
+    i32 maxPanOffsetPx,
+    i32 fullPanOffsetPx
+) {
     CGameLevel* lvl = OwnerMgr()->m_level;
     if (lvl != NULL && lvl->m_mainPlane != NULL && m_emitGate == 0) {
         LeafCue* val = NULL;
         MapLookup(m_cues, key, val);
         if (val != NULL) {
-            return val->TriggerBlit(pos, -1, range1, range2);
+            return val->PlaySpatialized(sourceX, -1, maxPanOffsetPx, fullPanOffsetPx);
         }
     }
     return 0;
@@ -867,39 +873,40 @@ void LeafCue::Unload() {
 }
 
 RVA(0x001587f0, 0xf1)
-i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
-    if (g_sndEnabled == 0) {
+i32 LeafCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx) {
+    if (g_soundEnabled == 0) {
         return 0;
     }
-    if (center <= 0) {
-        center = OwnerMgr()->m_level->m_mainPlane->m_snappedX;
+    if (listenerX <= 0) {
+        listenerX = OwnerMgr()->m_level->m_mainPlane->m_snappedX;
     }
-    if (range1 <= 0) {
-        range1 = OwnerMgr()->m_drawTarget->m_frontPair->m_width << 2;
+    if (maxPanOffsetPx <= 0) {
+        maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontPair->m_width << 2;
     }
-    if (range2 <= 0) {
-        range2 = OwnerMgr()->m_drawTarget->m_frontPair->m_width / 3;
+    if (fullPanOffsetPx <= 0) {
+        fullPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontPair->m_width / 3;
     }
 
-    i32 pan = pos - center;
-    if (pan >= 0) {
+    i32 panOffsetPx = sourceX - listenerX;
+    if (panOffsetPx >= 0) {
 
-        if (pan >= range1 || pan >= range2) {
+        if (panOffsetPx >= maxPanOffsetPx || panOffsetPx >= fullPanOffsetPx) {
 
-            pan = range1 < range2 ? range1 : range2;
+            panOffsetPx = maxPanOffsetPx < fullPanOffsetPx ? maxPanOffsetPx : fullPanOffsetPx;
         }
     } else {
 
-        i32 ad = abs(pan);
-        if (ad >= range1 || ad >= range2) {
-            pan = -(range1 < range2 ? range1 : range2);
+        i32 absPanOffsetPx = abs(panOffsetPx);
+        if (absPanOffsetPx >= maxPanOffsetPx || absPanOffsetPx >= fullPanOffsetPx) {
+            panOffsetPx = -(maxPanOffsetPx < fullPanOffsetPx ? maxPanOffsetPx : fullPanOffsetPx);
         }
     }
-    i32 vol = (pan * 100) / range2;
+    i32 panPercent = (panOffsetPx * VOLUME_PCT_MAX) / fullPanOffsetPx;
 
-    i32 vscale = abs(SND_CUE_NEUTRAL);
-    if (g_sndCueTag != SND_CUE_NEUTRAL) {
-        vscale = static_cast<i32>(vscale * (g_sndCueTag * g_sndPanScale));
+    i32 volumePercent = abs(VOLUME_PCT_MAX);
+    if (g_soundVolumePercent != VOLUME_PCT_MAX) {
+        volumePercent =
+            static_cast<i32>(volumePercent * (g_soundVolumePercent * c_volumePercentUnitScale));
     }
-    return m_sound->AcquireAndPlay(vscale, vol, 0, 0);
+    return m_sound->AcquireAndPlay(volumePercent, panPercent, 0, 0);
 }

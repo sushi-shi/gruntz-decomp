@@ -418,7 +418,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
         if (sout != NULL) {
 
-            sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
         }
     }
 
@@ -1324,7 +1324,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             if (host->m_emitGate == 0) {
                 LeafCue* cc = static_cast<LeafCue*>(host->Lookup(s_CONVERSIONHIT));
                 if (cc != NULL) {
-                    cc->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    cc->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
             return 0;
@@ -1526,14 +1526,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
     L_cue:
 
         if (cue != NULL) {
-            i32 gate = g_sndEnabled;
-            i32 item = g_sndCueTag;
-            if (gate != 0) {
-                i32 clk = g_killCueClock;
-                if (static_cast<u32>((clk - cue->m_lastPlayTime))
-                    >= static_cast<u32>(cue->m_replayDelay)) {
-                    cue->m_lastPlayTime = clk;
-                    cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
+            i32 soundEnabled = g_soundEnabled;
+            i32 volumePercent = g_soundVolumePercent;
+            if (soundEnabled != 0) {
+                i32 cueTimeMs = g_soundCueTimeMs;
+                if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
+                    >= static_cast<u32>(cue->m_replayDelayMs)) {
+                    cue->m_lastPlayTimeMs = cueTimeMs;
+                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                 }
             }
         }

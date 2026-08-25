@@ -676,7 +676,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             o = m_object;
             if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-                m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 reg = g_gameReg;
             }
         }
@@ -708,7 +708,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             o = m_object;
             if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-                m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 reg = g_gameReg;
             }
         }
@@ -1022,7 +1022,7 @@ i32 CInGameText::Update() {
             if (set->m_emitGate == 0) {
                 LeafCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
-                    PlayLeafCueIfElapsed(res, g_sndCueTag, 0, 0, 0);
+                    PlayLeafCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
                 }
             }
         }

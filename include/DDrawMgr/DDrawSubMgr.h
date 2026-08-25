@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-extern const float g_sndPanScale;
+extern const float c_volumePercentUnitScale;
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGR_H

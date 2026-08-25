@@ -492,34 +492,34 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         CWwdGameObjectA* c = m_boundObject;
-        i32 fire = 1;
+        i32 shouldPlayCue = 1;
         if ((c->m_flags & 0x2000000) || (m_element->m_flags & 0x8)) {
             if (c->m_dirty.m_armed == -1) {
-                fire = 0;
+                shouldPlayCue = 0;
             }
         }
-        if (fire) {
+        if (shouldPlayCue) {
             CAniRecordView* dd = m_element;
             if (dd->m_flags & 0x4) {
-                i32 cue = c->m_screenX;
-                LeafCue* entry;
+                i32 sourceX = c->m_screenX;
+                LeafCue* soundCue;
                 if (dd->m_cueCount == 0) {
-                    entry = NULL;
+                    soundCue = NULL;
                 } else {
-                    entry = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
+                    soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
                 }
-                if (entry != NULL) {
-                    entry->TriggerBlit(cue, 0, 0, 0);
+                if (soundCue != NULL) {
+                    soundCue->PlaySpatialized(sourceX, 0, 0, 0);
                 }
             } else {
-                LeafCue* entry;
+                LeafCue* soundCue;
                 if (dd->m_cueCount == 0) {
-                    entry = NULL;
+                    soundCue = NULL;
                 } else {
-                    entry = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
+                    soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
                 }
-                if (entry != NULL) {
-                    entry->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                if (soundCue != NULL) {
+                    soundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
         }

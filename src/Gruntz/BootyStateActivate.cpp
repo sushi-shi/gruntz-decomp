@@ -1001,7 +1001,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                         LeafCue* cue = NULL;
                         MapLookup(host->m_cues, "GAME_EXPLOSION1", cue);
                         if (cue != NULL) {
-                            cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                            cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                         }
                     }
                     shown = 1;
@@ -1071,13 +1071,13 @@ i32 CBootyState::LevelMsgHudDriver() {
                 MapLookup(host->m_cues, "GAME_EXPLOSION1", found);
                 LeafCue* cue = found;
                 if (cue != NULL) {
-                    i32 gate = g_sndEnabled;
-                    i32 item = g_sndCueTag;
-                    if (gate != 0
-                        && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-                               >= static_cast<u32>(cue->m_replayDelay)) {
-                        cue->m_lastPlayTime = g_killCueClock;
-                        cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
+                    i32 soundEnabled = g_soundEnabled;
+                    i32 volumePercent = g_soundVolumePercent;
+                    if (soundEnabled != 0
+                        && static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
+                               >= static_cast<u32>(cue->m_replayDelayMs)) {
+                        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
                     }
                 }
             }
@@ -1283,7 +1283,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 LeafCue* res = NULL;
                 MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
                 if (res != NULL) {
-                    res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
         }
@@ -1328,7 +1328,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         LeafCue* res = NULL;
                         MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
                         if (res != NULL) {
-                            PlayLeafCueIfElapsed(res, g_sndCueTag, 0, 0, 0);
+                            PlayLeafCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
                         }
                     }
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_PICKUPS");
@@ -1463,7 +1463,7 @@ i32 CBootyState::Render() {
                 LeafCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_WARP", cue);
                 if (cue != NULL) {
-                    cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
         }
@@ -1479,7 +1479,7 @@ i32 CBootyState::Render() {
                 LeafCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_BOOM", cue);
                 if (cue != NULL) {
-                    cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                 }
             }
             if (m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0 && g_levelBias100 == 0) {
@@ -1706,7 +1706,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     LeafCue* res = NULL;
                     MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
                     if (res != NULL) {
-                        res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                        res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
                     }
                 }
                 if (g_gameReg->m_scoreHud->m_count < 0x24) {
@@ -2796,8 +2796,13 @@ i32 CMultiBootyState::OnKeyDown(i32, i32) {
 }
 
 RVA(0x0001f940, 0x4c)
-i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
-    return PlayLeafCueIfElapsed(this, vol, pan, freqPct, loop);
+i32 LeafCue::PlayIfElapsed(
+    i32 volumePercent,
+    i32 panPercent,
+    i32 frequencyOffsetPercent,
+    i32 looping
+) {
+    return PlayLeafCueIfElapsed(this, volumePercent, panPercent, frequencyOffsetPercent, looping);
 }
 
 RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)

@@ -500,19 +500,19 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         LeafCue* found = NULL;
         MapLookup(host->m_cues, "GAME_VOICE", found);
         // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
-        // a register across the m_lastPlayTime store.
+        // a register across the m_lastPlayTimeMs store.
         LeafCue* cue = found;
         if (!cue) {
             return;
         }
-        if (!g_sndEnabled) {
+        if (!g_soundEnabled) {
             return;
         }
-        if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-            < static_cast<u32>(cue->m_replayDelay)) {
+        if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
+            < static_cast<u32>(cue->m_replayDelayMs)) {
             return;
         }
-        cue->m_lastPlayTime = g_killCueClock;
+        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
         cue->m_sound->AcquireAndPlay(newpos, 0, 0, 0);
         return;
     }
@@ -528,22 +528,22 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         LeafCue* found = NULL;
         MapLookup(host->m_cues, "GAME_CHIPFALLOUT", found);
         // LeafCue::PlayIfElapsed inlined: the call's `this` copy holds the cue in
-        // a register across the m_lastPlayTime store.
+        // a register across the m_lastPlayTimeMs store.
         LeafCue* cue = found;
         if (!cue) {
             return;
         }
-        i32 gate = g_sndEnabled;
-        i32 item = g_sndCueTag;
-        if (!gate) {
+        i32 soundEnabled = g_soundEnabled;
+        i32 volumePercent = g_soundVolumePercent;
+        if (!soundEnabled) {
             return;
         }
-        if (static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
-            < static_cast<u32>(cue->m_replayDelay)) {
+        if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
+            < static_cast<u32>(cue->m_replayDelayMs)) {
             return;
         }
-        cue->m_lastPlayTime = g_killCueClock;
-        cue->m_sound->AcquireAndPlay(item, 0, 0, 0);
+        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
+        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
         return;
     }
 }
