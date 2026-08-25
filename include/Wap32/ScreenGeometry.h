@@ -13,12 +13,9 @@
 // `{0, 0, SCREEN_W_PX, SCREEN_H_PX}`, and the Booty screen's bars all run the
 // full width.
 //
-// The half size is pinned twice over, and independently of this header. The
-// save-game preview is written with `ChainForward(..., SCREEN_HALF_W_PX,
-// SCREEN_HALF_H_PX, path, 1)`, and the block the loader reads back for it is
-// 0x3843a bytes - which is 320 * 240 * 3 plus a BITMAPINFOHEADER, its 4-byte
-// tail and a 14-byte BITMAPFILEHEADER. Those two were reconstructed at
-// different times and did not know about each other.
+// The half size is pinned by the save-game preview block the loader reads back:
+// 0x3843a bytes is 320 * 240 * 3 plus a BITMAPINFOHEADER, its 4-byte tail and
+// a 14-byte BITMAPFILEHEADER.
 GZ_ENUM_CONST_BEGIN(ScreenGeometry)
     SCREEN_W_PX = 0x280,
     SCREEN_H_PX = 0x1e0,

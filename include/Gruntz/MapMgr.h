@@ -58,29 +58,45 @@ public:
     virtual i32 Save(CFileMemBase*);
     virtual i32 Load(CFileMemBase*);
 
-    virtual i32
-    Search(i32 x1, i32 y1, i32 x2, i32 y2, CPtrList* list, i32 maskA, i32 maskB, i32 maskC);
+    virtual i32 FindPath(
+        i32 startX,
+        i32 startY,
+        i32 goalX,
+        i32 goalY,
+        CPtrList* outPath,
+        i32 blockedMask,
+        i32 diagonalMask,
+        i32 passableMask
+    );
     virtual i32 IsCellClear(i32 x, i32 y);
 
     void Clip(const tagRECT* r);
-    void ComputeCellFlags(i32 x, i32 y, i32 id3);
+    void ComputeCellFlags(i32 x, i32 y, i32 tileId);
     i32 AllocGrid(i32 width, i32 height, void (*callback)());
-    i32
-    SearchEdge(i32 xA, i32 yA, i32 xB, i32 yB, CPtrList* list, i32 clearFlag, i32 maskA, i32 maskC);
+    i32 FindPathWithEndpointOverrides(
+        i32 startX,
+        i32 startY,
+        i32 goalX,
+        i32 goalY,
+        CPtrList* outPath,
+        i32 clearEndpointFlags,
+        i32 blockedMask,
+        i32 passableMask
+    );
     i32 UpdateDiagonals(CGruntzMgr* unused);
     i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1);
 
-    i32 Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag);
-    i32 Insert(BrickzNode* node);
-    BrickzNode* PopFront();
-    void CellPush(BrickzNode* node);
-    BrickzNode* Find(i32 key1, i32 key2);
-    BrickzNode* FindCellNode(i32 col, i32 row);
-    void Drain();
-    void Unlink(BrickzNode* node);
-    void CellPop(BrickzNode* node, i32 flag);
+    i32 ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diagonal);
+    i32 InsertOpenNode(BrickzNode* node);
+    BrickzNode* PopBestOpenNode();
+    void LinkClosedNode(BrickzNode* node);
+    BrickzNode* FindOpenNode(i32 col, i32 row);
+    BrickzNode* FindClosedNode(i32 col, i32 row);
+    void RecycleOpenNodes();
+    void UnlinkOpenNode(BrickzNode* node);
+    void UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode);
 
-    void ResetCells();
+    void RecycleClosedNodes();
 
     i32 CellFlagsAt(i32 x, i32 y);
 
@@ -103,9 +119,9 @@ public:
     CBrickzCellNodePool m_cellNodePool;
     void (*m_stepCb)();
     i32 m_edgeMask;
-    i32 m_maskA;
-    i32 m_maskC;
-    i32 m_maskB;
+    i32 m_blockedMask;
+    i32 m_passableMask;
+    i32 m_diagonalMask;
     i32 m_dirty;
 
     RECT m_bounds;

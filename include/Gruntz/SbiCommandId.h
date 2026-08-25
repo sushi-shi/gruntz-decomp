@@ -123,7 +123,7 @@ GZ_ENUM_BEGIN(SbiCommandId)
     //   same way every time: `>= PICKUP_BRICKZ_FIRST` picks 2, else
     //   `>= PICKUP_TOYZ_FIRST` picks 1, else 0. So the lanes are Toolz, Toyz,
     //   and Brickz - which is also the order they are drawn in, at
-    //   m_itemBaseX 0x1d, 0x45 and 0x6d.
+    //   m_machineItemTargetX 0x1d, 0x45 and 0x6d.
     //
     //   Each lane holds FOUR ids because the index the arm produces is fed to the
     //   matching Select*Resource(StatusBarHighlightRow) method. The four members

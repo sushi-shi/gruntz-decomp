@@ -83,10 +83,10 @@ Reading it only for the ORDER leaves half its value on the table. The entry at s
 set of bodies to the wrong labels reads out immediately.
 
 `CStatusBarMgr::ClearTabGroup` @0x100b00 (table 0x100c3c, `dec eax` so slot `k` is
-`m_activeTab == k+1`) had all five arms permuted: our source cleared `m_tabSprite5..10`
+`m_activeTab == k+1`) had all five arms permuted: our source cleared `m_gameResumePauseButton..10`
 on STATZ and `m_statObj` on GRUNTZ where retail clears `m_statObj` on STATZ,
 `m_slotNotify`+gauges on GRUNTZ, `m_conveyorSprites`/`m_resourceSlotSprites` on RESOURCE,
-`m_warlordHead` on MULTIPLAYER and `m_tabSprite5..10`+`m_destructButtonImage` on GAME — each
+`m_warlordHead` on MULTIPLAYER and `m_gameResumePauseButton..10`+`m_destructButtonImage` on GAME — each
 tab its own widgets. That is a behaviour bug the score barely moved on (75.85 →
 75.94), so ONLY the table catches it.
 

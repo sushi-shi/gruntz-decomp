@@ -4150,14 +4150,14 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     CDDSurface* savedPixels;
     RECT* screenRect;
     RECT* savedRect;
-    if (m_cursorSaveSlot == 0) {
-        screenRect = &m_cursorSaveDst0;
-        savedPixels = m_cursorSaveSurface0;
-        savedRect = &m_cursorSaveSrc0;
+    if (m_cursorBufferIndex == 0) {
+        screenRect = &m_cursorScreenRects[0];
+        savedPixels = m_cursorSavedSurfaces[0];
+        savedRect = &m_cursorSavedRects[0];
     } else {
-        screenRect = &m_cursorSaveDst1;
-        savedPixels = m_cursorSaveSurface1;
-        savedRect = &m_cursorSaveSrc1;
+        screenRect = &m_cursorScreenRects[1];
+        savedPixels = m_cursorSavedSurfaces[1];
+        savedRect = &m_cursorSavedRects[1];
     }
 
     screenRect->left = x - m_cursorImage->m_anchorX;
@@ -4215,7 +4215,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         inSysMem = 0;
     }
     if (inSysMem == 0) {
-        m_cursorSaveSlot = m_cursorSaveSlot == 0;
+        m_cursorBufferIndex = m_cursorBufferIndex == 0;
     }
     return 1;
 }
@@ -4334,26 +4334,26 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 
 RVA(0x000d11e0, 0x9b)
 i32 CPlay::RestoreCursorSaveUnder() {
-    if (m_cursorRestoreWarmup1 == 0) {
-        m_cursorRestoreWarmup1 = 1;
+    if (m_cursorSavedSurfaceValid[0] == 0) {
+        m_cursorSavedSurfaceValid[0] = 1;
         return 1;
     }
-    if (m_cursorRestoreWarmup2 == 0) {
-        m_cursorRestoreWarmup2 = 1;
+    if (m_cursorSavedSurfaceValid[1] == 0) {
+        m_cursorSavedSurfaceValid[1] = 1;
         return 1;
     }
 
     CDDSurface* savedPixels;
     RECT* screenRect;
     RECT* savedRect;
-    if (m_cursorSaveSlot == 0) {
-        savedPixels = m_cursorSaveSurface0;
-        screenRect = &m_cursorSaveDst0;
-        savedRect = &m_cursorSaveSrc0;
+    if (m_cursorBufferIndex == 0) {
+        savedPixels = m_cursorSavedSurfaces[0];
+        screenRect = &m_cursorScreenRects[0];
+        savedRect = &m_cursorSavedRects[0];
     } else {
-        savedPixels = m_cursorSaveSurface1;
-        screenRect = &m_cursorSaveDst1;
-        savedRect = &m_cursorSaveSrc1;
+        savedPixels = m_cursorSavedSurfaces[1];
+        screenRect = &m_cursorScreenRects[1];
+        savedRect = &m_cursorSavedRects[1];
     }
 
     CDDSurface* backSurface = m_world->m_drawTarget->m_backPair->m_surface;
@@ -6645,9 +6645,9 @@ finish:
         lvl->m_mainPlane->DeactivateDistantObjects();
     }
     m_mgr->RefreshGameClock();
-    m_cursorRestoreWarmup1 = 0;
-    m_cursorRestoreWarmup2 = 0;
-    m_cursorSaveSlot = 0;
+    m_cursorSavedSurfaceValid[0] = 0;
+    m_cursorSavedSurfaceValid[1] = 0;
+    m_cursorBufferIndex = 0;
     if (m_mgr->m_soundEnabled != 0 && mode != GAMESTATE_HELP) {
         m_mgr->m_worldSounds->Resume();
     }

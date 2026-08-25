@@ -121,7 +121,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
         if (!SaveGame(g_gameReg, screenshotPath)) {
             return 0;
         }
-        if (!ChainForward(
+        if (!SaveOverlayBufferShot(
                 g_gameReg->m_settings,
                 g_gameReg,
                 SCREEN_HALF_W_PX,

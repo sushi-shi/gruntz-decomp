@@ -962,7 +962,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     AddTabItem(0, statzTab);
-    m_tabSprite0 = statzTab;
+    m_statzTabButton = statzTab;
 
     CSBI_MenuItem* gruntzTab = new CSBI_MenuItem;
     if (!gruntzTab->SetupImage(
@@ -979,7 +979,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     AddTabItem(0, gruntzTab);
-    m_tabSprite2 = gruntzTab;
+    m_gruntzTabButton = gruntzTab;
 
     CSBI_MenuItem* resourceTab = new CSBI_MenuItem;
     if (!resourceTab->SetupImage(
@@ -996,7 +996,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     AddTabItem(0, resourceTab);
-    m_tabSprite1 = resourceTab;
+    m_resourceTabButton = resourceTab;
 
     CSBI_MenuItem* multiTab = new CSBI_MenuItem;
     if (!multiTab->SetupImage(
@@ -1013,7 +1013,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     AddTabItem(0, multiTab);
-    m_tabSprite3 = multiTab;
+    m_multiTabButton = multiTab;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         multiTab->m_state = MENUITEM_DISABLED;
         CDDrawWorker* f = multiTab->m_record;
@@ -1039,7 +1039,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         return 0;
     }
     AddTabItem(0, gameTab);
-    m_tabSprite4 = gameTab;
+    m_gameTabButton = gameTab;
 
     if (BuildSideTabs() == 0) {
         return 0;
@@ -1140,21 +1140,21 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
             m_barSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         }
     }
-    m_tabSprite0 = NULL;
-    m_tabSprite1 = NULL;
-    m_tabSprite2 = NULL;
-    m_tabSprite3 = NULL;
-    m_tabSprite4 = NULL;
-    m_tabSprite5 = NULL;
-    m_tabSprite6 = NULL;
-    m_tabSprite7 = NULL;
-    m_tabSprite8 = NULL;
-    m_tabSprite9 = NULL;
-    m_tabSprite10 = NULL;
-    m_tabSprite11 = NULL;
-    m_tabSprite12 = NULL;
-    m_tabSprite13 = NULL;
-    m_tabSprite14 = NULL;
+    m_statzTabButton = NULL;
+    m_resourceTabButton = NULL;
+    m_gruntzTabButton = NULL;
+    m_multiTabButton = NULL;
+    m_gameTabButton = NULL;
+    m_gameResumePauseButton = NULL;
+    m_gameLoadButton = NULL;
+    m_gameSaveButton = NULL;
+    m_gameSettingsButton = NULL;
+    m_gameHelpButton = NULL;
+    m_gameQuitButton = NULL;
+    m_endPrimaryButton = NULL;
+    m_endSecondaryButton = NULL;
+    m_confirmYesButton = NULL;
+    m_confirmNoButton = NULL;
     m_barSprite = NULL;
     i32 i;
     memset(m_hitRects, 0, sizeof(m_hitRects));
@@ -1163,16 +1163,16 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_warlordHead, 0, sizeof(m_warlordHead));
-    m_extraNotify0 = NULL;
-    m_extraNotify1 = NULL;
+    m_machineItemSprite = NULL;
+    m_fallingItemSprite = NULL;
     m_destructButtonImage = NULL;
-    m_notify0 = NULL;
-    m_notify2 = NULL;
-    m_notify3 = NULL;
-    m_notify1 = NULL;
+    m_resourceMainBackground = NULL;
+    m_resourceUpperBackground = NULL;
+    m_resourceWindowBackground = NULL;
+    m_resourceMachineFramework = NULL;
     m_machineDisplay = NULL;
-    m_gaugeNotify = NULL;
-    m_gaugeSink = NULL;
+    m_gruntWellBackground = NULL;
+    m_gruntWellGoo = NULL;
     m_tabsBuilt = 0;
 }
 
@@ -1190,12 +1190,12 @@ void CStatusBarMgr::ClearTabGroup() {
     m_tabLists[IDX(m_activeTab)].RemoveAll();
     switch (m_activeTab) {
         case TAB_GAME:
-            m_tabSprite5 = NULL;
-            m_tabSprite6 = NULL;
-            m_tabSprite7 = NULL;
-            m_tabSprite8 = NULL;
-            m_tabSprite9 = NULL;
-            m_tabSprite10 = NULL;
+            m_gameResumePauseButton = NULL;
+            m_gameLoadButton = NULL;
+            m_gameSaveButton = NULL;
+            m_gameSettingsButton = NULL;
+            m_gameHelpButton = NULL;
+            m_gameQuitButton = NULL;
             m_destructButtonImage = NULL;
             break;
         case TAB_STATZ:
@@ -1208,8 +1208,8 @@ void CStatusBarMgr::ClearTabGroup() {
         case TAB_GRUNTZ: {
 
             memset(m_slotNotify, 0, sizeof(m_slotNotify));
-            m_gaugeNotify = NULL;
-            m_gaugeSink = NULL;
+            m_gruntWellBackground = NULL;
+            m_gruntWellGoo = NULL;
             break;
         }
         case TAB_RESOURCE: {
@@ -1218,12 +1218,12 @@ void CStatusBarMgr::ClearTabGroup() {
             m_machineDisplay = NULL;
 
             memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
-            m_notify0 = NULL;
-            m_notify2 = NULL;
-            m_notify3 = NULL;
-            m_notify1 = NULL;
-            m_extraNotify0 = NULL;
-            m_extraNotify1 = NULL;
+            m_resourceMainBackground = NULL;
+            m_resourceUpperBackground = NULL;
+            m_resourceWindowBackground = NULL;
+            m_resourceMachineFramework = NULL;
+            m_machineItemSprite = NULL;
+            m_fallingItemSprite = NULL;
             break;
         }
     }
@@ -1264,8 +1264,8 @@ i32 CStatusBarMgr::Deactivate() {
 
 RVA(0x00100d70, 0x548)
 i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
-    if (m_tabSprite0 == NULL || m_tabSprite1 == NULL || m_tabSprite2 == NULL || m_tabSprite3 == NULL
-        || m_tabSprite4 == NULL) {
+    if (m_statzTabButton == NULL || m_resourceTabButton == NULL || m_gruntzTabButton == NULL
+        || m_multiTabButton == NULL || m_gameTabButton == NULL) {
         return 0;
     }
     switch (cmd) {
@@ -1273,143 +1273,143 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->SetState(state, 1);
-            m_tabSprite2->ProbeState(state);
-            m_tabSprite1->ProbeState(state);
-            m_tabSprite3->ProbeState(state);
-            m_tabSprite4->ProbeState(state);
+            m_statzTabButton->SetState(state, 1);
+            m_gruntzTabButton->ProbeState(state);
+            m_resourceTabButton->ProbeState(state);
+            m_multiTabButton->ProbeState(state);
+            m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_GRUNTZ:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->ProbeState(state);
-            m_tabSprite2->SetState(state, 1);
-            m_tabSprite1->ProbeState(state);
-            m_tabSprite3->ProbeState(state);
-            m_tabSprite4->ProbeState(state);
+            m_statzTabButton->ProbeState(state);
+            m_gruntzTabButton->SetState(state, 1);
+            m_resourceTabButton->ProbeState(state);
+            m_multiTabButton->ProbeState(state);
+            m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_RESOURCE:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->ProbeState(state);
-            m_tabSprite2->ProbeState(state);
-            m_tabSprite1->SetState(state, 1);
-            m_tabSprite3->ProbeState(state);
-            m_tabSprite4->ProbeState(state);
+            m_statzTabButton->ProbeState(state);
+            m_gruntzTabButton->ProbeState(state);
+            m_resourceTabButton->SetState(state, 1);
+            m_multiTabButton->ProbeState(state);
+            m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_MULTIPLAYER:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->ProbeState(state);
-            m_tabSprite2->ProbeState(state);
-            m_tabSprite1->ProbeState(state);
-            m_tabSprite3->SetState(state, 1);
-            m_tabSprite4->ProbeState(state);
+            m_statzTabButton->ProbeState(state);
+            m_gruntzTabButton->ProbeState(state);
+            m_resourceTabButton->ProbeState(state);
+            m_multiTabButton->SetState(state, 1);
+            m_gameTabButton->ProbeState(state);
             break;
         case SBICMD_TAB_GAME:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->ProbeState(state);
-            m_tabSprite2->ProbeState(state);
-            m_tabSprite1->ProbeState(state);
-            m_tabSprite3->ProbeState(state);
-            m_tabSprite4->SetState(state, 1);
+            m_statzTabButton->ProbeState(state);
+            m_gruntzTabButton->ProbeState(state);
+            m_resourceTabButton->ProbeState(state);
+            m_multiTabButton->ProbeState(state);
+            m_gameTabButton->SetState(state, 1);
             break;
         case SBICMD_PAUSE:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->SetState(state, 1);
-            m_tabSprite6->ProbeState(state);
-            m_tabSprite7->ProbeState(state);
-            m_tabSprite8->ProbeState(state);
-            m_tabSprite9->ProbeState(state);
-            m_tabSprite10->ProbeState(state);
+            m_gameResumePauseButton->SetState(state, 1);
+            m_gameLoadButton->ProbeState(state);
+            m_gameSaveButton->ProbeState(state);
+            m_gameSettingsButton->ProbeState(state);
+            m_gameHelpButton->ProbeState(state);
+            m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_LOAD_GAME:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->ProbeState(state);
-            m_tabSprite6->SetState(state, 1);
-            m_tabSprite7->ProbeState(state);
-            m_tabSprite8->ProbeState(state);
-            m_tabSprite9->ProbeState(state);
-            m_tabSprite10->ProbeState(state);
+            m_gameResumePauseButton->ProbeState(state);
+            m_gameLoadButton->SetState(state, 1);
+            m_gameSaveButton->ProbeState(state);
+            m_gameSettingsButton->ProbeState(state);
+            m_gameHelpButton->ProbeState(state);
+            m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_SAVE_GAME:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->ProbeState(state);
-            m_tabSprite6->ProbeState(state);
-            m_tabSprite7->SetState(state, 1);
-            m_tabSprite8->ProbeState(state);
-            m_tabSprite9->ProbeState(state);
-            m_tabSprite10->ProbeState(state);
+            m_gameResumePauseButton->ProbeState(state);
+            m_gameLoadButton->ProbeState(state);
+            m_gameSaveButton->SetState(state, 1);
+            m_gameSettingsButton->ProbeState(state);
+            m_gameHelpButton->ProbeState(state);
+            m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_SETTINGS:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->ProbeState(state);
-            m_tabSprite6->ProbeState(state);
-            m_tabSprite7->ProbeState(state);
-            m_tabSprite8->SetState(state, 1);
-            m_tabSprite9->ProbeState(state);
-            m_tabSprite10->ProbeState(state);
+            m_gameResumePauseButton->ProbeState(state);
+            m_gameLoadButton->ProbeState(state);
+            m_gameSaveButton->ProbeState(state);
+            m_gameSettingsButton->SetState(state, 1);
+            m_gameHelpButton->ProbeState(state);
+            m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_BOOTY_STATE:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->ProbeState(state);
-            m_tabSprite6->ProbeState(state);
-            m_tabSprite7->ProbeState(state);
-            m_tabSprite8->ProbeState(state);
-            m_tabSprite9->SetState(state, 1);
-            m_tabSprite10->ProbeState(state);
+            m_gameResumePauseButton->ProbeState(state);
+            m_gameLoadButton->ProbeState(state);
+            m_gameSaveButton->ProbeState(state);
+            m_gameSettingsButton->ProbeState(state);
+            m_gameHelpButton->SetState(state, 1);
+            m_gameQuitButton->ProbeState(state);
             break;
         case SBICMD_QUIT:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->ProbeState(state);
-            m_tabSprite6->ProbeState(state);
-            m_tabSprite7->ProbeState(state);
-            m_tabSprite8->ProbeState(state);
-            m_tabSprite9->ProbeState(state);
-            m_tabSprite10->SetState(state, 1);
+            m_gameResumePauseButton->ProbeState(state);
+            m_gameLoadButton->ProbeState(state);
+            m_gameSaveButton->ProbeState(state);
+            m_gameSettingsButton->ProbeState(state);
+            m_gameHelpButton->ProbeState(state);
+            m_gameQuitButton->SetState(state, 1);
             break;
         case SBICMD_GAME_TAB:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite10->SetState(state, 1);
+            m_gameQuitButton->SetState(state, 1);
             break;
         case SBICMD_DIALOG_PRIMARY:
-            if (m_tabSprite11) {
-                m_tabSprite11->SetState(state, 1);
+            if (m_endPrimaryButton) {
+                m_endPrimaryButton->SetState(state, 1);
             }
-            m_tabSprite12->ProbeState(state);
+            m_endSecondaryButton->ProbeState(state);
             break;
         case SBICMD_DIALOG_SECONDARY:
-            if (m_tabSprite11) {
-                m_tabSprite11->ProbeState(state);
+            if (m_endPrimaryButton) {
+                m_endPrimaryButton->ProbeState(state);
             }
-            m_tabSprite12->SetState(state, 1);
+            m_endSecondaryButton->SetState(state, 1);
             break;
         case SBICMD_DIALOG_YES:
-            m_tabSprite13->SetState(state, 1);
-            m_tabSprite14->ProbeState(state);
+            m_confirmYesButton->SetState(state, 1);
+            m_confirmNoButton->ProbeState(state);
             break;
         case SBICMD_DIALOG_NO:
-            m_tabSprite13->ProbeState(state);
-            m_tabSprite14->SetState(state, 1);
+            m_confirmYesButton->ProbeState(state);
+            m_confirmNoButton->SetState(state, 1);
             break;
     }
     return 1;
@@ -1418,54 +1418,54 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
 RVA(0x00101420, 0x110)
 i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
     if (idx == TAB_ALL || idx == TAB_CONTROLS) {
-        if (m_tabSprite0) {
-            m_tabSprite0->Blit();
+        if (m_statzTabButton) {
+            m_statzTabButton->Blit();
         }
-        if (m_tabSprite2) {
-            m_tabSprite2->Blit();
+        if (m_gruntzTabButton) {
+            m_gruntzTabButton->Blit();
         }
-        if (m_tabSprite1) {
-            m_tabSprite1->Blit();
+        if (m_resourceTabButton) {
+            m_resourceTabButton->Blit();
         }
-        if (m_tabSprite3) {
-            m_tabSprite3->Blit();
+        if (m_multiTabButton) {
+            m_multiTabButton->Blit();
         }
-        if (m_tabSprite4) {
-            m_tabSprite4->Blit();
+        if (m_gameTabButton) {
+            m_gameTabButton->Blit();
         }
     }
     if (idx == TAB_GAME || idx == TAB_ALL) {
-        if (m_tabSprite5) {
-            m_tabSprite5->Blit();
+        if (m_gameResumePauseButton) {
+            m_gameResumePauseButton->Blit();
         }
-        if (m_tabSprite6) {
-            m_tabSprite6->Blit();
+        if (m_gameLoadButton) {
+            m_gameLoadButton->Blit();
         }
-        if (m_tabSprite7) {
-            m_tabSprite7->Blit();
+        if (m_gameSaveButton) {
+            m_gameSaveButton->Blit();
         }
-        if (m_tabSprite8) {
-            m_tabSprite8->Blit();
+        if (m_gameSettingsButton) {
+            m_gameSettingsButton->Blit();
         }
-        if (m_tabSprite9) {
-            m_tabSprite9->Blit();
+        if (m_gameHelpButton) {
+            m_gameHelpButton->Blit();
         }
-        if (m_tabSprite10) {
-            m_tabSprite10->Blit();
+        if (m_gameQuitButton) {
+            m_gameQuitButton->Blit();
         }
     }
     if (idx == TAB_DIALOG || idx == TAB_ALL) {
-        if (m_tabSprite11) {
-            m_tabSprite11->Blit();
+        if (m_endPrimaryButton) {
+            m_endPrimaryButton->Blit();
         }
-        if (m_tabSprite12) {
-            m_tabSprite12->Blit();
+        if (m_endSecondaryButton) {
+            m_endSecondaryButton->Blit();
         }
-        if (m_tabSprite13) {
-            m_tabSprite13->Blit();
+        if (m_confirmYesButton) {
+            m_confirmYesButton->Blit();
         }
-        if (m_tabSprite14) {
-            m_tabSprite14->Blit();
+        if (m_confirmNoButton) {
+            m_confirmNoButton->Blit();
         }
     }
     return 1;
@@ -1496,7 +1496,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 return 0;
             }
             AddTabItem(5, resume);
-            m_tabSprite5 = resume;
+            m_gameResumePauseButton = resume;
         } else {
             CSBI_MenuItem* pause = new CSBI_MenuItem;
             if (!pause->SetupImage(
@@ -1513,7 +1513,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 return 0;
             }
             AddTabItem(5, pause);
-            m_tabSprite5 = pause;
+            m_gameResumePauseButton = pause;
         }
 
         CSBI_MenuItem* load = new CSBI_MenuItem;
@@ -1531,7 +1531,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
         AddTabItem(5, load);
-        m_tabSprite6 = load;
+        m_gameLoadButton = load;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             load->SetEnabled(0);
         }
@@ -1551,7 +1551,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
         AddTabItem(5, save);
-        m_tabSprite7 = save;
+        m_gameSaveButton = save;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             save->SetEnabled(0);
         }
@@ -1571,7 +1571,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
         AddTabItem(5, settings);
-        m_tabSprite8 = settings;
+        m_gameSettingsButton = settings;
 
         CSBI_MenuItem* help = new CSBI_MenuItem;
         if (!help->SetupImage(
@@ -1588,7 +1588,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
         AddTabItem(5, help);
-        m_tabSprite9 = help;
+        m_gameHelpButton = help;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             help->SetEnabled(0);
         }
@@ -1608,7 +1608,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
         AddTabItem(5, quit);
-        m_tabSprite10 = quit;
+        m_gameQuitButton = quit;
 
         CSBI_ImageSet* destruct = new CSBI_ImageSet;
         if (!destruct->SetupImage(
@@ -1686,12 +1686,12 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, i32 flag) {
         delete cur;
     }
     m_tabLists[5].RemoveAll();
-    m_tabSprite5 = NULL;
-    m_tabSprite6 = NULL;
-    m_tabSprite7 = NULL;
-    m_tabSprite8 = NULL;
-    m_tabSprite9 = NULL;
-    m_tabSprite10 = NULL;
+    m_gameResumePauseButton = NULL;
+    m_gameLoadButton = NULL;
+    m_gameSaveButton = NULL;
+    m_gameSettingsButton = NULL;
+    m_gameHelpButton = NULL;
+    m_gameQuitButton = NULL;
     m_itemKind = tab;
 
     if (!LoadTabSprites()) {
@@ -1710,20 +1710,20 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
     if (show && m_activeTab != TAB_GAME) {
         SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
     }
-    if (m_tabSprite5) {
-        m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
+    if (m_gameResumePauseButton) {
+        m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
         Deactivate();
-        m_tabSprite5->RequestRedraw();
+        m_gameResumePauseButton->RequestRedraw();
     }
     m_chatBoxDisabled = 1;
 }
 
 RVA(0x00102200, 0x37)
 void CStatusBarMgr::BuildGameTabPauseButton() {
-    if (m_tabSprite5) {
-        m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
+    if (m_gameResumePauseButton) {
+        m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         Deactivate();
-        m_tabSprite5->RequestRedraw();
+        m_gameResumePauseButton->RequestRedraw();
     }
     m_chatBoxDisabled = 0;
 }
@@ -1813,7 +1813,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(2, it);
-            m_gaugeNotify = it;
+            m_gruntWellBackground = it;
             it->SetEnabled(1);
             it = new CSBI_Image;
             if (!it->SetupImage(
@@ -1855,12 +1855,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     TAB_GRUNTZ,
                     SbGeom(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
-                    m_gauge
+                    m_gruntWellLevel
                 )) {
                 delete goo;
                 return 0;
             }
-            m_gaugeSink = goo;
+            m_gruntWellGoo = goo;
             AddTabItem(2, goo);
             return 1;
 
@@ -1895,7 +1895,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(3, it);
-            m_notify0 = it;
+            m_resourceMainBackground = it;
             it = new CSBI_Image;
             if (!it->SetupImage(
                     this,
@@ -1911,7 +1911,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(3, it);
-            m_notify2 = it;
+            m_resourceUpperBackground = it;
             it = new CSBI_Image;
             if (!it->SetupImage(
                     this,
@@ -1927,7 +1927,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(3, it);
-            m_notify3 = it;
+            m_resourceWindowBackground = it;
 
             imgSet = new CSBI_ImageSet;
             if (!imgSet->SetupImage(
@@ -1985,20 +1985,20 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SBICMD_RESOURCE_CURRENT_ITEM,
                     TAB_RESOURCE,
                     SbGeom(
-                        m_itemRect.left + bx,
-                        m_itemRect.top + by,
-                        m_itemRect.right + bx,
-                        m_itemRect.bottom + by
+                        m_machineItemRect.left + bx,
+                        m_machineItemRect.top + by,
+                        m_machineItemRect.right + bx,
+                        m_machineItemRect.bottom + by
                     ),
                     "GAME_INGAMEICONZ_GREYCHIPZ",
-                    m_extraNotifyArg0,
+                    m_machineItem,
                     0
                 )) {
                 delete imgSet;
                 return 0;
             }
             AddTabItem(3, imgSet);
-            m_extraNotify0 = imgSet;
+            m_machineItemSprite = imgSet;
             imgSet->SetEnabled(0);
 
             {
@@ -2068,8 +2068,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     TAB_RESOURCE,
                     SbGeom(bx, by + 0xc8, bx + 0x9f, by + 0xfa),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
-                    m_machineA.m_counter,
-                    m_machineB.m_counter
+                    m_leftMachine.m_counter,
+                    m_rightMachine.m_counter
                 )) {
                 delete mach;
                 return 0;
@@ -2095,7 +2095,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(3, it);
-            m_notify1 = it;
+            m_resourceMachineFramework = it;
 
             ani = new CSBI_ImageSetAni;
             if (!ani->Init(
@@ -2123,20 +2123,20 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SBICMD_RESOURCE_FALLING_ITEM,
                     TAB_RESOURCE,
                     SbGeom(
-                        m_fallRect.left + bx,
-                        m_fallRect.top + by,
-                        m_fallRect.right + bx,
-                        m_fallRect.bottom + by
+                        m_fallingItemRect.left + bx,
+                        m_fallingItemRect.top + by,
+                        m_fallingItemRect.right + bx,
+                        m_fallingItemRect.bottom + by
                     ),
                     "GAME_INGAMEICONZ_NORMCHIPZ",
-                    m_extraNotifyArg1,
+                    m_fallingItem,
                     0
                 )) {
                 delete imgSet;
                 return 0;
             }
             AddTabItem(3, imgSet);
-            m_extraNotify1 = imgSet;
+            m_fallingItemSprite = imgSet;
             imgSet->SetEnabled(0);
 
             ani = new CSBI_ImageSetAni;
@@ -2714,10 +2714,10 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 }
 
 RVA(0x00105480, 0x7d)
-void CStatusBarMgr::TickGauge() {
+void CStatusBarMgr::TickGruntWell() {
     i32 changed = 0;
-    i32 g = m_gauge;
-    i32 t = m_gaugeTarget;
+    i32 g = m_gruntWellLevel;
+    i32 t = m_gruntWellTargetLevel;
     if (g < t) {
         g++;
     } else if (g <= t) {
@@ -2725,20 +2725,20 @@ void CStatusBarMgr::TickGauge() {
     } else {
         g--;
     }
-    m_gauge = g;
+    m_gruntWellLevel = g;
     changed = 1;
 noChange:;
-    if (m_gauge == SBI_GAUGE_FULL) {
+    if (m_gruntWellLevel == GRUNT_WELL_FULL) {
         if (AnySlotActive()) {
             changed = 1;
-            SetGauge(SBI_GAUGE_EMPTY);
+            SetGruntWell(GRUNT_WELL_EMPTY);
         }
     }
     if (changed) {
-        if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->RequestRedraw();
-            i32 fill = m_gauge;
-            CSBI_WellGoo* sink = m_gaugeSink;
+        if (m_gruntWellGoo && m_gruntWellBackground) {
+            m_gruntWellBackground->RequestRedraw();
+            i32 fill = m_gruntWellLevel;
+            CSBI_WellGoo* sink = m_gruntWellGoo;
             sink->m_fillScale = fill;
             sink->RequestRedraw();
         }
@@ -2819,32 +2819,33 @@ i32 CStatusBarMgr::AnySlotActive() {
 }
 
 RVA(0x00105750, 0x1f)
-void CStatusBarMgr::AdvanceGauge(i32 delta) {
-    i32 v = m_gauge + delta;
-    if (v >= SBI_GAUGE_FULL) {
-        v = SBI_GAUGE_FULL;
+void CStatusBarMgr::AdvanceGruntWell(i32 delta) {
+    i32 v = m_gruntWellLevel + delta;
+    if (v >= GRUNT_WELL_FULL) {
+        v = GRUNT_WELL_FULL;
     }
-    m_gaugeTarget = v;
+    m_gruntWellTargetLevel = v;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00105780, 0x1f)
-void CStatusBarMgr::DrainGauge(i32 delta) {
-    m_gaugeTarget = m_gauge - delta > SBI_GAUGE_EMPTY ? m_gauge - delta : SBI_GAUGE_EMPTY;
+void CStatusBarMgr::DrainGruntWell(i32 delta) {
+    m_gruntWellTargetLevel =
+        m_gruntWellLevel - delta > GRUNT_WELL_EMPTY ? m_gruntWellLevel - delta : GRUNT_WELL_EMPTY;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001057b0, 0xd)
-void CStatusBarMgr::SetGaugeTarget(i32 value) {
-    m_gaugeTarget = value;
+void CStatusBarMgr::SetGruntWellTarget(i32 value) {
+    m_gruntWellTargetLevel = value;
 }
 
 RVA(0x001057d0, 0x13)
-void CStatusBarMgr::SetGauge(i32 value) {
-    m_gaugeTarget = value;
-    m_gauge = value;
+void CStatusBarMgr::SetGruntWell(i32 value) {
+    m_gruntWellTargetLevel = value;
+    m_gruntWellLevel = value;
 }
 
 // @early-stop
@@ -2878,7 +2879,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
 RVA(0x001058d0, 0x34)
 void CStatusBarMgr::UpdateStatusSystems() {
     UpdateGruntOvenStatusBar();
-    TickGauge();
+    TickGruntWell();
     UpdateRezConveyorStatusBar();
     LoadRezMachineConfig();
     LoadChipMachineConfig();
@@ -2889,8 +2890,8 @@ void CStatusBarMgr::UpdateStatusSystems() {
 RVA(0x00105920, 0x47)
 void CStatusBarMgr::Reset() {
     ResetSlots();
-    m_gaugeTarget = SBI_GAUGE_EMPTY;
-    m_gauge = SBI_GAUGE_EMPTY;
+    m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
+    m_gruntWellLevel = GRUNT_WELL_EMPTY;
     ResetConveyorBelts();
     UpdateRezMachineSnoozeStatusBar();
     InitTabRects();
@@ -2918,9 +2919,9 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
                         clock[0] = static_cast<u32>(g_frameTime);
                         UpdateFallingItemStatusBar(
-                            m_extraNotifyArg0,
-                            m_itemRect.left + 0xc,
-                            m_itemRect.top + 0xc
+                            m_machineItem,
+                            m_machineItemRect.left + 0xc,
+                            m_machineItemRect.top + 0xc
                         );
                         StartChipMachineCycle();
                     }
@@ -3014,56 +3015,56 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
-    CSbiHlRow* pA = &m_machineB;
-    CSbiHlRow* pB = &m_machineA;
-    switch (static_cast<SbiMachineState>(pA->m_state)) {
+    CSbiHlRow* rightMachine = &m_rightMachine;
+    CSbiHlRow* leftMachine = &m_leftMachine;
+    switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
-            if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
-                if (++pA->m_counter > 0x34) {
+            if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
+                if (++rightMachine->m_counter > 0x34) {
                     SetRightRezMachineAnimation(
                         0x2b,
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
                     );
                 } else {
-                    pA->m_interval =
+                    rightMachine->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d);
-                    pA->m_last = static_cast<u32>(g_frameTime);
+                    rightMachine->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_RIGHT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
-                if (++pA->m_counter > 0x44) {
+            if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
+                if (++rightMachine->m_counter > 0x44) {
                     SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
-                    pA->m_interval =
+                    rightMachine->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
-                    pA->m_last = static_cast<u32>(g_frameTime);
+                    rightMachine->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
     }
 
-    switch (static_cast<SbiMachineState>(pB->m_state)) {
+    switch (static_cast<SbiMachineState>(leftMachine->m_state)) {
         case MACHINE_SNOOZING:
-            if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
-                if (++pB->m_counter > 8) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+                if (++leftMachine->m_counter > 8) {
                     SetLeftRezMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
                     );
                 } else {
-                    pB->m_interval =
+                    leftMachine->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64);
-                    pB->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_WAKING:
-            if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
-                if (++pB->m_counter > 0x13) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+                if (++leftMachine->m_counter > 0x13) {
                     SetLeftRezMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
@@ -3102,34 +3103,34 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         }
                     }
                 } else {
-                    pB->m_interval =
+                    leftMachine->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineWakingDelay", 0x64);
-                    pB->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_TURNING_WHEEL:
-            if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
-                if (++pB->m_counter > 0x1d) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+                if (++leftMachine->m_counter > 0x1d) {
                     SetLeftRezMachineAnimation(
                         0x14,
                         MACHINE_TURNING_WHEEL,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
                 } else {
-                    pB->m_interval =
+                    leftMachine->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
-                    pB->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
         case MACHINE_LEVER:
-            if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
-                if (++pB->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
+            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+                if (++leftMachine->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
                     i32 found = 0;
                     i32 r = 3;
                     i32 col;
-                    PickupType which = static_cast<PickupType>(m_extraNotifyArg0);
+                    PickupType which = static_cast<PickupType>(m_machineItem);
                     if (which >= PICKUP_BRICKZ_FIRST) {
                         col = 2;
                     } else {
@@ -3196,23 +3197,23 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                 }
                 // Retail's `cmp eax,0x26 / jne 0x1063e8` skips ONLY the release block:
                 // the counter re-read and this if/else are common to both paths.
-                if (pB->m_counter > 0x2a) {
+                if (leftMachine->m_counter > 0x2a) {
                     SetLeftRezMachineAnimation(
                         1,
                         MACHINE_SNOOZING,
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
                     );
                 } else {
-                    pB->m_interval =
+                    leftMachine->m_interval =
                         g_buteMgr.GetDwordDef("StatusBar", "LeftMachineLeverDelay", 0x64);
-                    pB->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
     }
 
     if (m_machineDisplay) {
-        m_machineDisplay->SetFrames(pB->m_counter, pA->m_counter);
+        m_machineDisplay->SetFrames(leftMachine->m_counter, rightMachine->m_counter);
     }
 }
 
@@ -3236,7 +3237,7 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     );
     SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
     if (m_machineDisplay) {
-        m_machineDisplay->SetFrames(m_machineA.m_counter, m_machineB.m_counter);
+        m_machineDisplay->SetFrames(m_leftMachine.m_counter, m_rightMachine.m_counter);
     }
     m_rezActive = 0;
     m_rezTick = 0;
@@ -3248,9 +3249,9 @@ void CStatusBarMgr::SetLeftRezMachineAnimation(
     SbiMachineState state,
     i32 frameDelayMs
 ) {
-    i64* clock = &m_machineA.m_last;
-    m_machineA.m_counter = initialFrame;
-    m_machineA.m_state = IDX(state);
+    i64* clock = &m_leftMachine.m_last;
+    m_leftMachine.m_counter = initialFrame;
+    m_leftMachine.m_state = IDX(state);
     clock[1] = static_cast<u32>(frameDelayMs);
     clock[0] = g_frameTime;
 }
@@ -3261,9 +3262,9 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
     SbiMachineState state,
     i32 frameDelayMs
 ) {
-    i64* clock = &m_machineB.m_last;
-    m_machineB.m_counter = initialFrame;
-    m_machineB.m_state = IDX(state);
+    i64* clock = &m_rightMachine.m_last;
+    m_rightMachine.m_counter = initialFrame;
+    m_rightMachine.m_state = IDX(state);
     clock[1] = static_cast<u32>(frameDelayMs);
     clock[0] = g_frameTime;
 }
@@ -3321,11 +3322,11 @@ void CStatusBarMgr::InitTabRects() {
         ClearHlCell(2, row);
     }
     m_machinePhase = BELT_IDLE;
-    m_extraNotifyArg0 = 0;
+    m_machineItem = 0;
     m_fallActive = FALLING_ITEM_INACTIVE;
-    m_extraNotifyArg1 = 0;
-    SetRect(&m_fallRect, 0, 0, 1, 1);
-    SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
+    m_fallingItem = 0;
+    SetRect(&m_fallingItemRect, 0, 0, 1, 1);
+    SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
     m_pendingHlRow = STATUS_HL_ROW_NONE;
 }
 
@@ -3339,17 +3340,17 @@ void CStatusBarMgr::ClearHlCell(i32 group, StatusBarHighlightRow row) {
 
 RVA(0x00106a00, 0xbf)
 void CStatusBarMgr::NotifyAllSlots() {
-    if (m_notify0) {
-        m_notify0->RequestRedraw();
+    if (m_resourceMainBackground) {
+        m_resourceMainBackground->RequestRedraw();
     }
-    if (m_notify2) {
-        m_notify2->RequestRedraw();
+    if (m_resourceUpperBackground) {
+        m_resourceUpperBackground->RequestRedraw();
     }
-    if (m_notify3) {
-        m_notify3->RequestRedraw();
+    if (m_resourceWindowBackground) {
+        m_resourceWindowBackground->RequestRedraw();
     }
-    if (m_extraNotify0 && m_extraNotifyArg0) {
-        m_extraNotify0->Notify(m_extraNotifyArg0);
+    if (m_machineItemSprite && m_machineItem) {
+        m_machineItemSprite->Notify(m_machineItem);
     }
 
     CSBI_ImageSet** p = &m_resourceSlotSprites[4];
@@ -3368,11 +3369,11 @@ void CStatusBarMgr::NotifyAllSlots() {
         h += 6;
     }
 
-    if (m_notify1) {
-        m_notify1->RequestRedraw();
+    if (m_resourceMachineFramework) {
+        m_resourceMachineFramework->RequestRedraw();
     }
-    if (m_extraNotify1) {
-        m_extraNotify1->Notify(m_extraNotifyArg1);
+    if (m_fallingItemSprite) {
+        m_fallingItemSprite->Notify(m_fallingItem);
     }
 }
 
@@ -3414,15 +3415,15 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_itemRect.left += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_itemRect.right += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_machineItemRect.left += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_machineItemRect.right += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
-            if (m_itemRect.left >= 0x6d) {
-                m_itemRect.left = 0x6d;
-                m_itemRect.right = 0x84;
+            if (m_machineItemRect.left >= 0x6d) {
+                m_machineItemRect.left = 0x6d;
+                m_machineItemRect.right = 0x84;
                 rectFlag = 1;
                 m_machinePhase = BELT_SPEWING;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemInMachineTime", 0x7d0);
@@ -3471,15 +3472,15 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_FALLING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_machineItemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_machineItemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
-            if (m_itemRect.bottom >= 0x11c) {
-                m_itemRect.bottom = 0x11c;
-                m_itemRect.top = 0x104;
+            if (m_machineItemRect.bottom >= 0x11c) {
+                m_machineItemRect.bottom = 0x11c;
+                m_machineItemRect.top = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
@@ -3504,28 +3505,28 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_machinePhase = BELT_TRAVELLING;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
-                PickupType activeItem = static_cast<PickupType>(m_extraNotifyArg0);
+                PickupType activeItem = static_cast<PickupType>(m_machineItem);
                 if (activeItem >= PICKUP_BRICKZ_FIRST) {
-                    m_itemBaseX = 0x6d;
+                    m_machineItemTargetX = 0x6d;
                 } else if (activeItem >= PICKUP_TOYZ_FIRST) {
-                    m_itemBaseX = 0x45;
+                    m_machineItemTargetX = 0x45;
                 } else {
-                    m_itemBaseX = 0x1d;
+                    m_machineItemTargetX = 0x1d;
                 }
             }
             refreshFlag = 1;
             break;
         case BELT_TRAVELLING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_itemRect.left -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_itemRect.right -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_machineItemRect.left -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_machineItemRect.right -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
-            if (m_itemRect.left <= m_itemBaseX) {
-                m_itemRect.left = m_itemBaseX;
-                m_itemRect.right = m_itemBaseX + 0x17;
+            if (m_machineItemRect.left <= m_machineItemTargetX) {
+                m_machineItemRect.left = m_machineItemTargetX;
+                m_machineItemRect.right = m_machineItemTargetX + 0x17;
                 rectFlag = 1;
                 ResetConveyorBelts();
                 SetLeftRezMachineAnimation(
@@ -3539,18 +3540,19 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_FALLING_OFF: {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_machineItemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 // RETAIL'S TYPO, kept: the shipped EXE's string table carries both
                 // "(FallingItemSpeed" and "FallingItemSpeed" as separate strings, so
                 // this lookup always misses and takes the default. Correcting it would
                 // drop a string from .rdata and stop matching.
-                m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
+                m_machineItemRect.bottom +=
+                    g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
             i32 col;
-            PickupType item2 = static_cast<PickupType>(m_extraNotifyArg0);
+            PickupType item2 = static_cast<PickupType>(m_machineItem);
             if (item2 >= PICKUP_BRICKZ_FIRST) {
                 col = 2;
             } else {
@@ -3567,7 +3569,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     break;
                 }
             }
-            if (m_itemRect.top >= row * 0x20 + 0x13e) {
+            if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
                     if (registry->m_silentMode == 0) {
@@ -3588,7 +3590,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         }
                     }
                 }
-                SetHlCell(col, m_extraNotifyArg0, row);
+                SetHlCell(col, m_machineItem, row);
                 StartChipMachineCycle();
             }
             refreshFlag = 1;
@@ -3596,16 +3598,16 @@ void CStatusBarMgr::LoadChipMachineConfig() {
         }
     }
 
-    CSBI_ImageSet* w = m_extraNotify0;
+    CSBI_ImageSet* w = m_machineItemSprite;
     if (w) {
         if (rectFlag) {
             RECT rc;
             i32 x = m_barRect.left;
             i32 y = m_barRect.top;
-            rc.left = m_itemRect.left + x;
-            rc.top = m_itemRect.top + y;
-            rc.right = m_itemRect.right + x;
-            rc.bottom = m_itemRect.bottom + y;
+            rc.left = m_machineItemRect.left + x;
+            rc.top = m_machineItemRect.top + y;
+            rc.right = m_machineItemRect.right + x;
+            rc.bottom = m_machineItemRect.bottom + y;
             w->m_rect = rc;
         }
         if (refreshFlag) {
@@ -3620,20 +3622,20 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 // operand below the GetDwordDef call.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
-    m_extraNotifyArg1 = item;
+    m_fallingItem = item;
     m_fallActive = FALLING_ITEM_DESCENDING;
     i64* clock = &m_fallClock.m_last;
     clock[1] = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
     clock[0] = static_cast<u32>(g_frameTime);
-    CSBI_ImageSet* n = m_extraNotify1;
+    CSBI_ImageSet* n = m_fallingItemSprite;
     i32 l = x - 0xc;
     i32 t = y - 0xc;
     i32 rr = x + 0xc;
     i32 b = y + 0xc;
-    m_fallRect.left = l;
-    m_fallRect.top = t;
-    m_fallRect.right = rr;
-    m_fallRect.bottom = b;
+    m_fallingItemRect.left = l;
+    m_fallingItemRect.top = t;
+    m_fallingItemRect.right = rr;
+    m_fallingItemRect.bottom = b;
     if (n) {
 
         RECT rc;
@@ -3661,10 +3663,10 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         u32 delay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
         i32 speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 4);
 
-        if (m_fallRect.top >= 0x1c7) {
+        if (m_fallingItemRect.top >= 0x1c7) {
             m_fallActive = FALLING_ITEM_INACTIVE;
-            m_extraNotifyArg1 = 0;
-        } else if (m_fallRect.bottom >= 0x1bf) {
+            m_fallingItem = 0;
+        } else if (m_fallingItemRect.bottom >= 0x1bf) {
             if (m_fallActive != FALLING_ITEM_GRINDING) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
@@ -3695,17 +3697,17 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         i64* clock = &m_fallClock.m_last;
         i64 d = static_cast<i64>(g_frameTime) - clock[0];
         if (d >= clock[1]) {
-            m_fallRect.top += speed;
-            m_fallRect.bottom += speed;
-            CSBI_ImageSet* w = m_extraNotify1;
+            m_fallingItemRect.top += speed;
+            m_fallingItemRect.bottom += speed;
+            CSBI_ImageSet* w = m_fallingItemSprite;
             if (w) {
                 RECT rc;
                 i32 sy = m_barRect.top;
-                rc.bottom = sy + m_fallRect.bottom;
-                rc.top = sy + m_fallRect.top;
+                rc.bottom = sy + m_fallingItemRect.bottom;
+                rc.top = sy + m_fallingItemRect.top;
                 i32 sx = m_barRect.left;
-                rc.left = m_fallRect.left + sx;
-                rc.right = m_fallRect.right + sx;
+                rc.left = m_fallingItemRect.left + sx;
+                rc.right = m_fallingItemRect.right + sx;
                 w->m_rect = rc;
             }
             clock[1] = delay;
@@ -3717,7 +3719,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         stepped = 1;
     }
 
-    if (m_extraNotify1 != NULL && stepped) {
+    if (m_fallingItemSprite != NULL && stepped) {
         NotifyAllSlots();
     }
 }
@@ -3755,7 +3757,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
 RVA(0x00107a10, 0x62)
 i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     if (m_rezActive == 0) {
-        if (m_extraNotifyArg0 == 0) {
+        if (m_machineItem == 0) {
             return 0;
         }
         SetLeftRezMachineAnimation(
@@ -3852,8 +3854,8 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
             m_rewardQueue.RemoveAt(0, 1);
         } else {
             result = PICKUP_NONE;
-            if (m_extraNotify0) {
-                m_extraNotify0->Notify(0);
+            if (m_machineItemSprite) {
+                m_machineItemSprite->Notify(0);
             }
         }
     } else {
@@ -3936,18 +3938,18 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
             result = PICKUP_GAUNTLETZ;
         }
     }
-    m_extraNotifyArg0 = IDX(result);
+    m_machineItem = IDX(result);
     m_machinePhase = BELT_IDLE;
-    SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
-    if (m_extraNotify0) {
+    SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
+    if (m_machineItemSprite) {
         RECT rc;
         i32 x = m_barRect.left;
         i32 y = m_barRect.top;
-        rc.left = m_itemRect.left + x;
-        rc.top = m_itemRect.top + y;
-        rc.right = m_itemRect.right + x;
-        rc.bottom = m_itemRect.bottom + y;
-        m_extraNotify0->m_rect = rc;
+        rc.left = m_machineItemRect.left + x;
+        rc.top = m_machineItemRect.top + y;
+        rc.right = m_machineItemRect.right + x;
+        rc.bottom = m_machineItemRect.bottom + y;
+        m_machineItemSprite->m_rect = rc;
     }
     NotifyAllSlots();
     i32 c = m_rezTick;
@@ -4070,8 +4072,8 @@ i32 CStatusBarMgr::SerializeDispatch(
 
     SyncClockPair(s, mode, &m_beltClock.m_last);
     SyncClockPair(s, mode, &m_fallClock.m_last);
-    SyncClockPair(s, mode, &m_machineB.m_last);
-    SyncClockPair(s, mode, &m_machineA.m_last);
+    SyncClockPair(s, mode, &m_rightMachine.m_last);
+    SyncClockPair(s, mode, &m_leftMachine.m_last);
     SyncClockPair(s, mode, &m_destructWarningClock.m_last);
 
     CSbiSlot* p = m_slots;
@@ -4165,31 +4167,31 @@ i32 CStatusBarMgr::SerializeDispatch(
         } while (i < 4);
     }
 
-    SER(m_tabSprite0)
-    SER(m_tabSprite1)
-    SER(m_tabSprite2)
-    SER(m_tabSprite3)
-    SER(m_tabSprite4)
-    SER(m_tabSprite5)
-    SER(m_tabSprite6)
-    SER(m_tabSprite7)
-    SER(m_tabSprite8)
-    SER(m_tabSprite9)
-    SER(m_tabSprite10)
-    SER(m_tabSprite10)
-    SER(m_tabSprite11)
-    SER(m_tabSprite12)
-    SER(m_tabSprite13)
-    SER(m_tabSprite14)
-    SER(m_gaugeNotify)
-    SER(m_gaugeSink)
+    SER(m_statzTabButton)
+    SER(m_resourceTabButton)
+    SER(m_gruntzTabButton)
+    SER(m_multiTabButton)
+    SER(m_gameTabButton)
+    SER(m_gameResumePauseButton)
+    SER(m_gameLoadButton)
+    SER(m_gameSaveButton)
+    SER(m_gameSettingsButton)
+    SER(m_gameHelpButton)
+    SER(m_gameQuitButton)
+    SER(m_gameQuitButton)
+    SER(m_endPrimaryButton)
+    SER(m_endSecondaryButton)
+    SER(m_confirmYesButton)
+    SER(m_confirmNoButton)
+    SER(m_gruntWellBackground)
+    SER(m_gruntWellGoo)
     SER(m_machineDisplay)
-    SER(m_notify0)
-    SER(m_notify1)
-    SER(m_notify2)
-    SER(m_notify3)
-    SER(m_extraNotify0)
-    SER(m_extraNotify1)
+    SER(m_resourceMainBackground)
+    SER(m_resourceMachineFramework)
+    SER(m_resourceUpperBackground)
+    SER(m_resourceWindowBackground)
+    SER(m_machineItemSprite)
+    SER(m_fallingItemSprite)
     SER(m_destructButtonImage)
 #undef SER
 
@@ -4238,25 +4240,25 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_activeSlot, sizeof(m_activeSlot));
     s->Write(&m_pendingHlRow, sizeof(m_pendingHlRow));
     s->Write(&m_activeTab, sizeof(m_activeTab));
-    s->Write(&m_gauge, sizeof(m_gauge));
-    s->Write(&m_gaugeTarget, sizeof(m_gaugeTarget));
-    s->Write(&m_itemBaseX, sizeof(m_itemBaseX));
+    s->Write(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
+    s->Write(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
+    s->Write(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
     s->Write(&m_rezTick, sizeof(m_rezTick));
     s->Write(&m_rezActive, sizeof(m_rezActive));
     s->Write(&m_reserved544, sizeof(m_reserved544));
-    s->Write(&m_fallRect, sizeof(m_fallRect));
-    s->Write(&m_itemRect, sizeof(m_itemRect));
+    s->Write(&m_fallingItemRect, sizeof(m_fallingItemRect));
+    s->Write(&m_machineItemRect, sizeof(m_machineItemRect));
     s->Write(&m_hlBusy, sizeof(m_hlBusy));
     s->Write(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     s->Write(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     s->Write(&m_machinePhase, sizeof(m_machinePhase));
-    s->Write(&m_extraNotifyArg0, sizeof(m_extraNotifyArg0));
+    s->Write(&m_machineItem, sizeof(m_machineItem));
     s->Write(&m_fallActive, sizeof(m_fallActive));
-    s->Write(&m_extraNotifyArg1, sizeof(m_extraNotifyArg1));
-    s->Write(&m_machineB, 4);
-    s->Write(&m_machineB.m_value, sizeof(m_machineB.m_value));
-    s->Write(&m_machineA, 4);
-    s->Write(&m_machineA.m_value, sizeof(m_machineA.m_value));
+    s->Write(&m_fallingItem, sizeof(m_fallingItem));
+    s->Write(&m_rightMachine, 4);
+    s->Write(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
+    s->Write(&m_leftMachine, 4);
+    s->Write(&m_leftMachine.m_value, sizeof(m_leftMachine.m_value));
     s->Write(&m_destructWarningState, sizeof(m_destructWarningState));
     s->Write(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
     s->Write(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
@@ -4344,25 +4346,25 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_activeSlot, sizeof(m_activeSlot));
     s->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
     s->Read(&m_activeTab, sizeof(m_activeTab));
-    s->Read(&m_gauge, sizeof(m_gauge));
-    s->Read(&m_gaugeTarget, sizeof(m_gaugeTarget));
-    s->Read(&m_itemBaseX, sizeof(m_itemBaseX));
+    s->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
+    s->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
+    s->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
     s->Read(&m_rezTick, sizeof(m_rezTick));
     s->Read(&m_rezActive, sizeof(m_rezActive));
     s->Read(&m_reserved544, sizeof(m_reserved544));
-    s->Read(&m_fallRect, sizeof(m_fallRect));
-    s->Read(&m_itemRect, sizeof(m_itemRect));
+    s->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
+    s->Read(&m_machineItemRect, sizeof(m_machineItemRect));
     s->Read(&m_hlBusy, sizeof(m_hlBusy));
     s->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
     s->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
     s->Read(&m_machinePhase, sizeof(m_machinePhase));
-    s->Read(&m_extraNotifyArg0, sizeof(m_extraNotifyArg0));
+    s->Read(&m_machineItem, sizeof(m_machineItem));
     s->Read(&m_fallActive, sizeof(m_fallActive));
-    s->Read(&m_extraNotifyArg1, sizeof(m_extraNotifyArg1));
-    s->Read(&m_machineB, 4);
-    s->Read(&m_machineB.m_value, sizeof(m_machineB.m_value));
-    s->Read(&m_machineA, 4);
-    s->Read(&m_machineA.m_value, sizeof(m_machineA.m_value));
+    s->Read(&m_fallingItem, sizeof(m_fallingItem));
+    s->Read(&m_rightMachine, 4);
+    s->Read(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
+    s->Read(&m_leftMachine, 4);
+    s->Read(&m_leftMachine.m_value, sizeof(m_leftMachine.m_value));
     s->Read(&m_destructWarningState, sizeof(m_destructWarningState));
     s->Read(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
     s->Read(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
@@ -4711,7 +4713,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, yes);
-        m_tabSprite13 = yes;
+        m_confirmYesButton = yes;
 
         CSBI_MenuItem* no = new CSBI_MenuItem;
         if (!no->SetupImage(
@@ -4728,7 +4730,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, no);
-        m_tabSprite14 = no;
+        m_confirmNoButton = no;
         return 1;
     }
 
@@ -4804,7 +4806,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 return 0;
             }
             AddTabItem(6, next);
-            m_tabSprite11 = next;
+            m_endPrimaryButton = next;
 
             CSBI_MenuItem* quit = new CSBI_MenuItem;
             if (!quit->SetupImage(
@@ -4821,7 +4823,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 return 0;
             }
             AddTabItem(6, quit);
-            m_tabSprite12 = quit;
+            m_endSecondaryButton = quit;
         } else {
             CSBI_MenuItem* statz = new CSBI_MenuItem;
             if (!statz->SetupImage(
@@ -4838,7 +4840,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 return 0;
             }
             AddTabItem(6, statz);
-            m_tabSprite12 = statz;
+            m_endSecondaryButton = statz;
         }
         return 1;
     }
@@ -4891,7 +4893,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, replay);
-        m_tabSprite11 = replay;
+        m_endPrimaryButton = replay;
 
         CSBI_MenuItem* quit = new CSBI_MenuItem;
         if (!quit->SetupImage(
@@ -4908,7 +4910,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, quit);
-        m_tabSprite12 = quit;
+        m_endSecondaryButton = quit;
         return 1;
     }
 
@@ -4936,7 +4938,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, observe);
-        m_tabSprite11 = observe;
+        m_endPrimaryButton = observe;
         m_observerTabAvailable = 1;
 
         CSBI_MenuItem* statz = new CSBI_MenuItem;
@@ -4954,7 +4956,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, statz);
-        m_tabSprite12 = statz;
+        m_endSecondaryButton = statz;
     } else {
         m_observerTabAvailable = 0;
         CSBI_MenuItem* statz = new CSBI_MenuItem;
@@ -4972,7 +4974,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             return 0;
         }
         AddTabItem(6, statz);
-        m_tabSprite12 = statz;
+        m_endSecondaryButton = statz;
     }
     return 1;
 }
@@ -4989,10 +4991,10 @@ void CStatusBarMgr::ExitMode() {
     }
     m_tabLists[6].RemoveAll();
     i32 wasQuitConfirmation = m_quitConfirmationActive;
-    m_tabSprite11 = NULL;
-    m_tabSprite12 = NULL;
-    m_tabSprite13 = NULL;
-    m_tabSprite14 = NULL;
+    m_endPrimaryButton = NULL;
+    m_endSecondaryButton = NULL;
+    m_confirmYesButton = NULL;
+    m_confirmNoButton = NULL;
     m_hlBusy = 0;
     if (wasQuitConfirmation == 0 && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
@@ -5293,7 +5295,7 @@ void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
 RVA(0x0010bbe0, 0x34)
 i32 CStatusBarMgr::GetActiveValue() {
     if (m_rezActive == 0) {
-        return m_extraNotifyArg0;
+        return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
         return *static_cast<i32*>(m_rewardQueue.GetAt(m_rezTick));

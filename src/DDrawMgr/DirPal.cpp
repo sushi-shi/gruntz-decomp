@@ -17,12 +17,12 @@
 
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
-    m_cacheA = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    m_entries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        m_cacheA[i] = entries[i];
+        m_entries[i] = entries[i];
     }
-    m_cacheB = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+    m_readbackEntries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     i32 hr = dd->CreatePalette(flags, entries, &m_palette, NULL);
     if (hr == 0) {
         return 1;
@@ -60,13 +60,13 @@ void CDDPalette::Destroy() {
     if (m_palette != NULL) {
         m_palette = NULL;
     }
-    if (m_cacheA != NULL) {
-        delete[] m_cacheA;
-        m_cacheA = NULL;
+    if (m_entries != NULL) {
+        delete[] m_entries;
+        m_entries = NULL;
     }
-    if (m_cacheB != NULL) {
-        delete[] m_cacheB;
-        m_cacheB = NULL;
+    if (m_readbackEntries != NULL) {
+        delete[] m_readbackEntries;
+        m_readbackEntries = NULL;
     }
     if (m_sourcePalette != NULL) {
         delete[] m_sourcePalette;
@@ -171,7 +171,7 @@ RVA(0x00147aa0, 0x6a)
 i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused) {
 
     for (u32 i = start; i < start + count; i++) {
-        m_cacheA[i] = data[i - start];
+        m_entries[i] = data[i - start];
     }
     if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
@@ -219,13 +219,13 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147c30, 0x4d)
 void CDDPalette::GetEntries() {
-    if (m_cacheB == NULL) {
-        m_cacheB = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
-        if (m_cacheB == NULL) {
+    if (m_readbackEntries == NULL) {
+        m_readbackEntries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+        if (m_readbackEntries == NULL) {
             return;
         }
     }
-    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheB);
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_readbackEntries);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x265, hr);
     }
@@ -235,13 +235,13 @@ void CDDPalette::GetEntries() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147c80, 0x4d)
 void CDDPalette::Apply(i32 unused) {
-    PALETTEENTRY* readback = m_cacheB;
+    PALETTEENTRY* readback = m_readbackEntries;
     if (readback == NULL) {
         return;
     }
 
     for (u32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        m_cacheA[i] = readback[i];
+        m_entries[i] = readback[i];
     }
     if (g_DirectDrawMgr != NULL) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
@@ -253,11 +253,11 @@ void CDDPalette::Apply(i32 unused) {
 RVA(0x00147cd0, 0x78)
 i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
     for (i32 i = start; i < start + count; i++) {
-        m_cacheA[i].peRed = r;
-        m_cacheA[i].peGreen = g;
-        m_cacheA[i].peBlue = b;
+        m_entries[i].peRed = r;
+        m_entries[i].peGreen = g;
+        m_entries[i].peBlue = b;
     }
-    i32 hr = m_palette->SetEntries(flags, start, count, m_cacheA + start);
+    i32 hr = m_palette->SetEntries(flags, start, count, m_entries + start);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x2a3, hr);
     }
@@ -268,13 +268,13 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00147d50, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
-    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x2c0, hr);
     }
     PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        snapshot[i] = m_cacheA[i];
+        snapshot[i] = m_entries[i];
     }
     i32 t0 = timeGetTime();
     i32 prev = 9;
@@ -282,17 +282,17 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
         if (t != prev) {
             for (i32 j = start; j < start + count; j++) {
-                m_cacheA[j].peRed = static_cast<u8>(
+                m_entries[j].peRed = static_cast<u8>(
                     (((r & 0xff) - snapshot[j].peRed) * t / durationMs + snapshot[j].peRed)
                 );
-                m_cacheA[j].peGreen = static_cast<u8>(
+                m_entries[j].peGreen = static_cast<u8>(
                     (((g & 0xff) - snapshot[j].peGreen) * t / durationMs + snapshot[j].peGreen)
                 );
-                m_cacheA[j].peBlue = static_cast<u8>(
+                m_entries[j].peBlue = static_cast<u8>(
                     (((b & 0xff) - snapshot[j].peBlue) * t / durationMs + snapshot[j].peBlue)
                 );
             }
-            m_palette->SetEntries(0, start, count, m_cacheA + start);
+            m_palette->SetEntries(0, start, count, m_entries + start);
         }
         prev = t;
     }
@@ -307,7 +307,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     if (m_active) {
         Flush();
     }
-    i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
+    i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
     if (err) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x311, err);
     }
@@ -324,7 +324,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
         m_sourcePalette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     }
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        m_sourcePalette[i] = m_cacheA[i];
+        m_sourcePalette[i] = m_entries[i];
     }
     m_active = 1;
     Tick();
@@ -337,7 +337,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
     if (m_active) {
         Flush();
     }
-    i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
+    i32 err = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
     if (err) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x34b, err);
     }
@@ -351,7 +351,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
         m_sourcePalette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     }
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        m_sourcePalette[i] = m_cacheA[i];
+        m_sourcePalette[i] = m_entries[i];
     }
     m_active = 1;
     Tick();
@@ -372,74 +372,78 @@ i32 CDDPalette::Tick() {
             i32 i = m_firstColorIndex;
             if (i < m_firstColorIndex + m_colorCount) {
                 do {
-                    m_cacheA[i].peRed = static_cast<char>(
-                                            (static_cast<i32>(
-                                                 ((static_cast<u32>(m_targetPalette[i].peRed)
-                                                   - static_cast<u32>(m_sourcePalette[i].peRed))
-                                                  * dt)
-                                             )
-                                             / m_durationMs)
-                                        )
-                                        + m_sourcePalette[i].peRed;
-                    m_cacheA[i].peGreen = static_cast<char>(
-                                              (static_cast<i32>(
-                                                   ((static_cast<u32>(m_targetPalette[i].peGreen)
-                                                     - static_cast<u32>(m_sourcePalette[i].peGreen))
-                                                    * dt)
-                                               )
-                                               / m_durationMs)
-                                          )
-                                          + m_sourcePalette[i].peGreen;
-                    m_cacheA[i].peBlue = static_cast<char>(
+                    m_entries[i].peRed = static_cast<char>(
                                              (static_cast<i32>(
-                                                  ((static_cast<u32>(m_targetPalette[i].peBlue)
-                                                    - static_cast<u32>(m_sourcePalette[i].peBlue))
+                                                  ((static_cast<u32>(m_targetPalette[i].peRed)
+                                                    - static_cast<u32>(m_sourcePalette[i].peRed))
                                                    * dt)
                                               )
                                               / m_durationMs)
                                          )
-                                         + m_sourcePalette[i].peBlue;
+                                         + m_sourcePalette[i].peRed;
+                    m_entries[i].peGreen =
+                        static_cast<char>(
+                            (static_cast<i32>(
+                                 ((static_cast<u32>(m_targetPalette[i].peGreen)
+                                   - static_cast<u32>(m_sourcePalette[i].peGreen))
+                                  * dt)
+                             )
+                             / m_durationMs)
+                        )
+                        + m_sourcePalette[i].peGreen;
+                    m_entries[i].peBlue = static_cast<char>(
+                                              (static_cast<i32>(
+                                                   ((static_cast<u32>(m_targetPalette[i].peBlue)
+                                                     - static_cast<u32>(m_sourcePalette[i].peBlue))
+                                                    * dt)
+                                               )
+                                               / m_durationMs)
+                                          )
+                                          + m_sourcePalette[i].peBlue;
                     i++;
                 } while (i < m_firstColorIndex + m_colorCount);
             }
-            m_palette->SetEntries(0, m_firstColorIndex, m_colorCount, m_cacheA + m_firstColorIndex);
+            m_palette
+                ->SetEntries(0, m_firstColorIndex, m_colorCount, m_entries + m_firstColorIndex);
         }
     } else {
         if (dt != static_cast<u32>(m_lastElapsedMs)) {
             i32 i = m_firstColorIndex;
             if (i < m_firstColorIndex + m_colorCount) {
                 do {
-                    m_cacheA[i].peRed = static_cast<char>(
-                                            (static_cast<i32>(
-                                                 ((static_cast<u32>(m_fixedColor.peRed)
-                                                   - static_cast<u32>(m_sourcePalette[i].peRed))
-                                                  * dt)
-                                             )
-                                             / m_durationMs)
-                                        )
-                                        + m_sourcePalette[i].peRed;
-                    m_cacheA[i].peGreen = static_cast<char>(
-                                              (static_cast<i32>(
-                                                   ((static_cast<u32>(m_fixedColor.peGreen)
-                                                     - static_cast<u32>(m_sourcePalette[i].peGreen))
-                                                    * dt)
-                                               )
-                                               / m_durationMs)
-                                          )
-                                          + m_sourcePalette[i].peGreen;
-                    m_cacheA[i].peBlue = static_cast<char>(
+                    m_entries[i].peRed = static_cast<char>(
                                              (static_cast<i32>(
-                                                  ((static_cast<u32>(m_fixedColor.peBlue)
-                                                    - static_cast<u32>(m_sourcePalette[i].peBlue))
+                                                  ((static_cast<u32>(m_fixedColor.peRed)
+                                                    - static_cast<u32>(m_sourcePalette[i].peRed))
                                                    * dt)
                                               )
                                               / m_durationMs)
                                          )
-                                         + m_sourcePalette[i].peBlue;
+                                         + m_sourcePalette[i].peRed;
+                    m_entries[i].peGreen =
+                        static_cast<char>(
+                            (static_cast<i32>(
+                                 ((static_cast<u32>(m_fixedColor.peGreen)
+                                   - static_cast<u32>(m_sourcePalette[i].peGreen))
+                                  * dt)
+                             )
+                             / m_durationMs)
+                        )
+                        + m_sourcePalette[i].peGreen;
+                    m_entries[i].peBlue = static_cast<char>(
+                                              (static_cast<i32>(
+                                                   ((static_cast<u32>(m_fixedColor.peBlue)
+                                                     - static_cast<u32>(m_sourcePalette[i].peBlue))
+                                                    * dt)
+                                               )
+                                               / m_durationMs)
+                                          )
+                                          + m_sourcePalette[i].peBlue;
                     i++;
                 } while (i < m_firstColorIndex + m_colorCount);
             }
-            m_palette->SetEntries(0, m_firstColorIndex, m_colorCount, m_cacheA + m_firstColorIndex);
+            m_palette
+                ->SetEntries(0, m_firstColorIndex, m_colorCount, m_entries + m_firstColorIndex);
         }
     }
     m_lastElapsedMs = dt;
@@ -471,16 +475,16 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
     if (start < end) {
         i32 i = start;
         do {
-            m_cacheA[i].peRed =
-                static_cast<u8>(((r - m_cacheA[i].peRed) * pct / 100 + m_cacheA[i].peRed));
-            m_cacheA[i].peGreen =
-                static_cast<u8>(((g - m_cacheA[i].peGreen) * pct / 100 + m_cacheA[i].peGreen));
-            m_cacheA[i].peBlue =
-                static_cast<u8>(((b - m_cacheA[i].peBlue) * pct / 100 + m_cacheA[i].peBlue));
+            m_entries[i].peRed =
+                static_cast<u8>(((r - m_entries[i].peRed) * pct / 100 + m_entries[i].peRed));
+            m_entries[i].peGreen =
+                static_cast<u8>(((g - m_entries[i].peGreen) * pct / 100 + m_entries[i].peGreen));
+            m_entries[i].peBlue =
+                static_cast<u8>(((b - m_entries[i].peBlue) * pct / 100 + m_entries[i].peBlue));
             i++;
         } while (i < end);
     }
-    i32 hr = m_palette->SetEntries(0, start, count, m_cacheA + start);
+    i32 hr = m_palette->SetEntries(0, start, count, m_entries + start);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x406, hr);
     }
@@ -490,13 +494,13 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001483e0, 0x1c9)
 void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
-    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_cacheA);
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRPAL_FILE, 0x41f, hr);
     }
     PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        snapshot[i] = m_cacheA[i];
+        snapshot[i] = m_entries[i];
     }
     i32 t0 = timeGetTime();
     i32 prev = 9;
@@ -504,17 +508,17 @@ void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 d
     for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
         if (t != prev) {
             for (i32 i = start; i < start + count; i++) {
-                m_cacheA[i].peRed = static_cast<u8>(
+                m_entries[i].peRed = static_cast<u8>(
                     (target[i].peRed - snapshot[i].peRed) * t / durationMs + snapshot[i].peRed
                 );
-                m_cacheA[i].peGreen = static_cast<u8>(
+                m_entries[i].peGreen = static_cast<u8>(
                     (target[i].peGreen - snapshot[i].peGreen) * t / durationMs + snapshot[i].peGreen
                 );
-                m_cacheA[i].peBlue = static_cast<u8>(
+                m_entries[i].peBlue = static_cast<u8>(
                     (target[i].peBlue - snapshot[i].peBlue) * t / durationMs + snapshot[i].peBlue
                 );
             }
-            m_palette->SetEntries(0, start, count, m_cacheA + start);
+            m_palette->SetEntries(0, start, count, m_entries + start);
         }
         prev = t;
     }
@@ -539,7 +543,7 @@ i32 CDDPalette::CaptureSystemPalette() {
                 &lp.palPalEntry[lp.palNumEntries - half]
             )) {
             DeleteDC(hdc);
-            PALETTEENTRY* dest = m_cacheA;
+            PALETTEENTRY* dest = m_entries;
             if (dest) {
                 i32 i;
                 for (i = 0; i < half; i++) {

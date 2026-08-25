@@ -53,4 +53,4 @@ Read the rows in this order:
 Measured this run: CPlay::Render 71.84 -> 76.06 (three wrong callees + two
 more), CGrunt::UpdateArrival's tail (`SetEntrancePos` where retail calls
 `CTriggerMgr::UseEquippedToolAt`), CBattlezMapConfig::ResolveArrival 56.73 -> 82.34
-(the `+ SearchEdge / + TileSwitch / + AddTail` runs the counts exposed).
+(the `+ FindPathWithEndpointOverrides / + TileSwitch / + AddTail` runs the counts exposed).

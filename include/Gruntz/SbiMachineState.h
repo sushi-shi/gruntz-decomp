@@ -3,8 +3,8 @@
 
 #include <Enums.h>
 
-// The animation state of the status bar's GruntMachine widgets (m_machineA and
-// m_machineB). Named by RETAIL'S OWN bute keys - each state sets the frame
+// The animation state of the status bar's GruntMachine widgets (m_leftMachine and
+// m_rightMachine). Named by RETAIL'S OWN bute keys - each state sets the frame
 // interval it runs at by name, so the key names the state:
 //
 //   0                                                   stopped
@@ -18,7 +18,7 @@
 //
 // NOTE these share the CSbiHlRow storage with SbiHlRowState but are a DIFFERENT
 // machine: m_conveyorSlots run the rise/hold/fall highlight states, while
-// m_machineA and m_machineB run these. Two domains, one field, told apart by
+// m_leftMachine and m_rightMachine run these. Two domains, one field, told apart by
 // which instance is being stepped - which is why CSbiHlRow::m_state is not
 // typed with either.
 GZ_ENUM_BEGIN(SbiMachineState)

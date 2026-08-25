@@ -172,7 +172,7 @@ detector defects rather than source defects:
 - `CGruntzMgr::Run` scheduled `xor ebx,ebx` between `operator new` and its
   `add esp,4`. Caller cleanup identity now survives intervening register-only
   instructions instead of requiring adjacency.
-- `CMapMgr::Expand` used `lea reg,[dx+col]` on one side and
+- `CMapMgr::ExpandNeighbor` used `lea reg,[dx+col]` on one side and
   `lea reg,[dy+row]` on the other while the complementary sum used `add`.
   `lea` is address arithmetic, not a memory read, and no longer enters the
   scaled-dereference event channel.
@@ -191,9 +191,9 @@ MAX remained below 100, with 10,911 equal-callee call sites paired between the
 rebuilt and retail objects. Comparing symbolic pushed-value vectors found three
 more source defects:
 - two pursuit calls in `CBattlezMapConfig::Step` put `0xd87` in
-  `arrivalPhase`; retail puts it in `maskA`;
+  `arrivalPhase`; retail puts it in `blockedMask`;
 - `CGrunt::StepSmartChaserBehavior` put `m_arrivalFlags` in `arrivalPhase`; retail
-  puts it in `maskA`;
+  puts it in `blockedMask`;
 - a source-level coordinate-pair pass found `CGrunt::UpdateArrival` passing
   one `Coord` as `(y, x)` where retail passes `(x, y)`.
 The vector screen also produced useful negative controls. Cross-jumped branch
@@ -207,7 +207,7 @@ world coordinates as `(x, y)`.
 
 ## Independent re-sieve, 2026-08-23: outgoing call-order swaps are drained
 
-After the five fixes (FinishActiveAction, the two arrivalPhase/maskA pursuit
+After the five fixes (FinishActiveAction, the two arrivalPhase/blockedMask pursuit
 calls, GruntScanTarget, GruntArrivalUpdate's TileSwitch) a second, independently
 written sieve was run over **all 4,426 paired functions** and found **0**
 remaining swapped-order call sites. Script: `scratchpad/argswap.py` - it walks

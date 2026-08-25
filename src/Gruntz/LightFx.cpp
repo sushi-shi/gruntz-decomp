@@ -93,8 +93,8 @@ i32 DispatchLightFxLogic(CGameObject* obj) {
 // other diff rows are the `fs:0` reloc-masking artifact. FLAT across 24 TU states.
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_anchorA = 2;
-    m_anchorB = 1;
+    m_shadeTableIndex = 2;
+    m_deleteWhenComplete = 1;
 }
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
@@ -113,29 +113,36 @@ void CLightFx::RegisterActs() {
 
 // @early-stop
 RVA(0x0009d520, 0xfd)
-void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
-    CDDrawWorker* en =
-        LookupWorker(m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName, spec);
-    g_gameReg->m_lightFxMgr->ApplyShadeTable(en, anchorA, SHADE_DST_BY_SRC_16);
-    CWwdSpriteObject* o = m_wwdObject;
-    if (en != NULL) {
+void CLightFx::Activate(
+    const char* imageSetName,
+    const char* animationName,
+    i32 shadeTableIndex,
+    i32 deleteWhenComplete
+) {
+    CDDrawWorker* imageSet = LookupWorker(
+        m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName,
+        imageSetName
+    );
+    g_gameReg->m_lightFxMgr->ApplyShadeTable(imageSet, shadeTableIndex, SHADE_DST_BY_SRC_16);
+    CWwdSpriteObject* object = m_wwdObject;
+    if (imageSet != NULL) {
 
-        i32 key = en->m_minIndex;
+        i32 firstFrameIndex = imageSet->m_minIndex;
 
-        o->m_imageSet = en;
-        CImage* val = en->GetAt(key);
-        o->m_frameImage = val;
-        o->m_frameIndex = key;
+        object->m_imageSet = imageSet;
+        CImage* firstFrame = imageSet->GetAt(firstFrameIndex);
+        object->m_frameImage = firstFrame;
+        object->m_frameIndex = firstFrameIndex;
     }
     CAniElement* node = NULL;
     SetObjectFlags(2);
-    m_anchorA = anchorA;
-    m_anchorB = anchorB;
+    m_shadeTableIndex = shadeTableIndex;
+    m_deleteWhenComplete = deleteWhenComplete;
 
-    MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
+    MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName, node);
     if (node != NULL) {
         SwitchAnimation(
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect)
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName)
         );
         RebindNode();
     }
@@ -151,18 +158,18 @@ i32 CLightFx::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
-            (ar)->Write(&m_anchorA, sizeof(m_anchorA));
-            (ar)->Write(&m_anchorB, sizeof(m_anchorB));
+            (ar)->Write(&m_shadeTableIndex, sizeof(m_shadeTableIndex));
+            (ar)->Write(&m_deleteWhenComplete, sizeof(m_deleteWhenComplete));
             break;
         case SERIAL_LOAD:
-            (ar)->Read(&m_anchorA, sizeof(m_anchorA));
-            (ar)->Read(&m_anchorB, sizeof(m_anchorB));
+            (ar)->Read(&m_shadeTableIndex, sizeof(m_shadeTableIndex));
+            (ar)->Read(&m_deleteWhenComplete, sizeof(m_deleteWhenComplete));
             break;
         case SERIAL_POSTLOAD:
             g_gameReg
                 ->m_lightFxMgr
 
-                ->ApplyShadeTable(m_wwdObject->m_imageSet, m_anchorA, SHADE_DST_BY_SRC_16);
+                ->ApplyShadeTable(m_wwdObject->m_imageSet, m_shadeTableIndex, SHADE_DST_BY_SRC_16);
             break;
     }
     return 1;
@@ -177,6 +184,8 @@ i32 CLightFx::RebindNode() {
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor) && m_anchorB)
+    MARK_OBJECT_COMPLETE_IF(
+        IsAniCursorComplete(&m_wwdObject->m_animationCursor) && m_deleteWhenComplete
+    )
     return 0;
 }

@@ -190,7 +190,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
 
         if (static_cast<i64>(g_frameTime) - m_gooTimerBase >= m_gooInterval) {
-            obj->m_statusBar->AdvanceGauge(1);
+            obj->m_statusBar->AdvanceGruntWell(1);
             m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBase = g_frameTime;
         }

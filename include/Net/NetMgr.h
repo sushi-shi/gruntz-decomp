@@ -307,6 +307,8 @@ public:
     CString m_shortName;
     CString m_longName;
     DWORD m_flags;
+    // @identity-TODO: both slots are independently zeroed and deleted, but no
+    // surviving retail writer or reader proves what either buffer contains.
     char* m_ownedBufferB;
     char* m_ownedBufferA;
     i32 m_reserved1c;

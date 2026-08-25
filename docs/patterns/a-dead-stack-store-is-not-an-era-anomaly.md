@@ -41,7 +41,7 @@ field store issued before that load survives. This is what keeps `SaveScreenshot
 `srcRect.right = 0;` alive: `mgr = g_gameReg`.
 
 STEERABLE both ways. `CGrunt::RectContains` 0x51850 83.02 -> **100.00 EXACT** and
-`CGrunt::RectContainsGated` 0x51a20 82.53 -> **100.00 EXACT** on mechanism 1 (plus reading
+`CGrunt::VehicleContactContains` 0x51a20 82.53 -> **100.00 EXACT** on mechanism 1 (plus reading
 the tile delta before normalising the arguments, which is what puts x in esi and y in ebp).
 Controls, all with the local's address escaping to a real call: one rect / two rects,
 killed field-wise / by aggregate assign, zeros / member values — dead stores ELIMINATED in

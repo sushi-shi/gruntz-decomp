@@ -15,7 +15,7 @@
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00114f50, 0x3e)
-i32 ChainForward14(
+i32 SaveBackBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
     i32 width,
@@ -35,7 +35,7 @@ i32 ChainForward14(
 }
 
 RVA(0x00114fa0, 0x3e)
-i32 ChainForward(
+i32 SaveOverlayBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
     i32 width,

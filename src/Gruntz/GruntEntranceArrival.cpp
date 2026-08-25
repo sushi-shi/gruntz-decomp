@@ -400,7 +400,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 i32 innerX = inner->m_screenX;
                 i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                if (RectContainsGated(xMasked, yMasked) != 0) {
+                if (VehicleContactContains(xMasked, yMasked) != 0) {
                     m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, innerX, innerY);
                 }
             }

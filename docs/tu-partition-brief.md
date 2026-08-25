@@ -748,7 +748,7 @@ Traps hit: (1) blocks must be re-emitted DATA-first then ascending-RVA - the
 tu-order gate is per-TU and a plain source-order copy trips it; (2) an
 interleaved bare `RVA_COMPGEN` between a label and its body must stay GLUED to
 that block or the label orphans; (3) a global used by a moved fn needs its
-`extern` in the owner header (g_spawnCfg).
+`extern` in the owner header (g_battlezRouteBlockedMask).
 
 Still suffixed in the sidecar (uncertain, by design): the ghidra-region copies
 (3 - no TU exists to split; they need TUs carved for unreconstructed regions)

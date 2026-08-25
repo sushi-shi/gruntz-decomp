@@ -67,7 +67,7 @@ DATA(0x001e96ec)
 const float g_diffScale = 0.01f;
 
 DATA(0x0020ccc0)
-i32 g_spawnCfg = 0x98f;
+i32 g_battlezRouteBlockedMask = 0x98f;
 DATA(0x0022b6dc)
 i32 g_stepRun;
 DATA(0x0022b730)
@@ -666,7 +666,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 // @early-stop
 // Retail carries `this` in ecx across the outer loop and reloads it in the latch
 // where we reload it at the loop head, and its frame is two dwords larger.  The
-// CFG lead is the reroll/clamp tail: the four rowHit/colHit label blocks are
+// CFG lead is the reroll/clamp tail: the four perimeter-hit label blocks are
 // textually identical, cl cross-jumps all four into ONE `m_gridH` store + `ret`,
 // and retail keeps TWO (one on ebp, one on esi) - so retail's row pair and column
 // pair each merged on their own.
@@ -783,7 +783,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
-                                unit->m_routeMaskC = 0;
+                                unit->m_routePassableMask = 0;
                                 unit->m_defenderState = AISTATE_SEEK;
                             }
                         }
@@ -796,7 +796,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
-                                unit->m_routeMaskC = 0;
+                                unit->m_routePassableMask = 0;
                                 unit->m_defenderState = AISTATE_SEEK;
                             }
                         }
@@ -823,7 +823,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                 }
-                                unit->m_routeMaskC = 0;
+                                unit->m_routePassableMask = 0;
                                 unit->m_defenderState = AISTATE_SEEK;
                             }
                         }
@@ -1425,7 +1425,7 @@ perimSweep: {
         i32 rt = qa.m_y - 2;
         if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rt) < m_board->m_height) {
             if (unit->TileSwitch(col, rt, 0, 0x2000098b, 1, 0) != 0) {
-                goto rowHitA;
+                goto topRowProbeHit;
             }
         }
         Coord qc;
@@ -1433,7 +1433,7 @@ perimSweep: {
         i32 rb = qc.m_y + 2;
         if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rb) < m_board->m_height) {
             if (unit->TileSwitch(col, rb, 0, 0x2000098b, 1, 0) != 0) {
-                goto rowHitB;
+                goto bottomRowProbeHit;
             }
         }
         col++;
@@ -1451,7 +1451,7 @@ perimSweep: {
             if (static_cast<u32>(xl) < m_board->m_width
                 && static_cast<u32>(row) < m_board->m_height) {
                 if (unit->TileSwitch(xl, row, 0, 0x2000098b, 1, 0) != 0) {
-                    goto colHitA;
+                    goto firstColumnProbeHit;
                 }
             }
             Coord uc;
@@ -1462,7 +1462,7 @@ perimSweep: {
                 && static_cast<u32>(row) < m_board->m_height) {
 
                 if (unit->TileSwitch(xl, row, 0, 0x2000098b, 1, 0) != 0) {
-                    goto colHitB;
+                    goto secondColumnProbeHit;
                 }
             }
             row++;
@@ -1483,7 +1483,7 @@ perimSweep: {
     }
 }
 
-rowHitA: {
+topRowProbeHit: {
     unit->m_arrivalRerollLo = 0;
     unit->m_arrivalRerollWindowLo = 0;
     unit->m_arrivalRerollHi = 0;
@@ -1504,7 +1504,7 @@ rowHitA: {
     return 1;
 }
 
-rowHitB: {
+bottomRowProbeHit: {
     unit->m_arrivalRerollLo = 0;
     unit->m_arrivalRerollWindowLo = 0;
     unit->m_arrivalRerollHi = 0;
@@ -1575,7 +1575,7 @@ tailArm2: {
     return 1;
 }
 
-colHitA: {
+firstColumnProbeHit: {
     unit->m_arrivalRerollLo = 0;
     unit->m_arrivalRerollWindowLo = 0;
     unit->m_arrivalRerollHi = 0;
@@ -1596,7 +1596,7 @@ colHitA: {
     return 1;
 }
 
-colHitB: {
+secondColumnProbeHit: {
     unit->m_arrivalRerollLo = 0;
     unit->m_arrivalRerollWindowLo = 0;
     unit->m_arrivalRerollHi = 0;
@@ -1639,21 +1639,21 @@ i32 CGrunt::IsAtSavedScreenPos() {
 }
 
 RVA(0x00029af0, 0x3b)
-void CBattlezMapConfig::TileSwitch(
-    CGrunt* g,
+void CBattlezMapConfig::RerouteIdleUnit(
+    CGrunt* unit,
     i32 col,
     i32 row,
-    i32 burnRandA,
-    i32 burnRandB,
+    i32 burnFirstRandom,
+    i32 burnSecondRandom,
     i32 unused
 ) {
-    if (burnRandA) {
+    if (burnFirstRandom) {
         rand();
     }
-    if (burnRandB) {
+    if (burnSecondRandom) {
         rand();
     }
-    g->TileSwitch(col, row, 0, 0x9c7, 0, 0);
+    unit->TileSwitch(col, row, 0, 0x9c7, 0, 0);
 }
 
 // @early-stop
@@ -1696,16 +1696,17 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
 
-        BrickzCell scratchA;
-        const BrickzCell* srcA;
+        BrickzCell pathHeadCell;
+        const BrickzCell* pathHeadCellSource;
         CoordNode* head = MfcNodeFromPosition<CoordNode>(coordList->GetHeadPosition());
         Coord* firstCoord = head->m_coord;
         if (static_cast<u32>(firstCoord->m_x) < static_cast<u32>(m_board->m_width)
             && static_cast<u32>(firstCoord->m_y) < static_cast<u32>(m_board->m_height)) {
-            srcA = &(static_cast<BrickzCell*>(m_board->m_rows[firstCoord->m_y]))[firstCoord->m_x];
+            pathHeadCellSource =
+                &(static_cast<BrickzCell*>(m_board->m_rows[firstCoord->m_y]))[firstCoord->m_x];
         } else {
-            memset(&scratchA, 1, sizeof(scratchA));
-            srcA = &scratchA;
+            memset(&pathHeadCell, 1, sizeof(pathHeadCell));
+            pathHeadCellSource = &pathHeadCell;
         }
         if (coordList->GetCount() == 0) {
             goto returnZero;
@@ -1716,12 +1717,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         if (static_cast<u32>(cx) < static_cast<u32>(m_board->m_width)
             && static_cast<u32>(cy) < static_cast<u32>(m_board->m_height)) {
-            srcA = &(static_cast<BrickzCell*>(m_board->m_rows[cy]))[cx];
+            pathHeadCellSource = &(static_cast<BrickzCell*>(m_board->m_rows[cy]))[cx];
         } else {
-            memset(&scratchA, 1, sizeof(scratchA));
-            srcA = &scratchA;
+            memset(&pathHeadCell, 1, sizeof(pathHeadCell));
+            pathHeadCellSource = &pathHeadCell;
         }
-        scratchA = *srcA;
+        pathHeadCell = *pathHeadCellSource;
         PickupType prim = ArrivalPickup(unit);
 
         Coord pt2;
@@ -1729,18 +1730,18 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         i32 sgy = pt2.m_y;
         (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt));
         i32 sgx = pt.m_x;
-        BrickzCell scratchB;
-        const BrickzCell* srcB;
+        BrickzCell currentCell;
+        const BrickzCell* currentCellSource;
         if (static_cast<u32>(sgx) < static_cast<u32>(m_board->m_width)
             && static_cast<u32>(sgy) < static_cast<u32>(m_board->m_height)) {
-            srcB = &(static_cast<BrickzCell*>(m_board->m_rows[sgy]))[sgx];
+            currentCellSource = &(static_cast<BrickzCell*>(m_board->m_rows[sgy]))[sgx];
         } else {
-            memset(&scratchB, 1, sizeof(scratchB));
-            srcB = &scratchB;
+            memset(&currentCell, 1, sizeof(currentCell));
+            currentCellSource = &currentCell;
         }
-        scratchB = *srcB;
+        currentCell = *currentCellSource;
 
-        if ((scratchB.m_flags & 0x4) && unit->m_battleState != BZTASK_SEEK_SWITCH) {
+        if ((currentCell.m_flags & 0x4) && unit->m_battleState != BZTASK_SEEK_SWITCH) {
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt));
             i32 rx = pt.m_x;
             (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
@@ -1767,10 +1768,10 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 ay = ca->m_y;
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
-            i32 tB = m_board->CellFlagsAt(bx, by);
-            if (tB & 0x20) {
-                i32 tA2 = m_board->CellFlagsAt(ax, ay);
-                if (!(tA2 & 0x2)) {
+            i32 secondCellFlags = m_board->CellFlagsAt(bx, by);
+            if (secondCellFlags & 0x20) {
+                i32 firstCellFlags = m_board->CellFlagsAt(ax, ay);
+                if (!(firstCellFlags & 0x2)) {
                     m_triggerMgr->UseEquippedToolAt(
                         unit->m_playerIndex,
                         unit->m_unitIndex,
@@ -1782,11 +1783,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
 
-        if ((scratchB.m_flags & 0x8000) && unit->m_defenderState == AISTATE_RETURN) {
+        if ((currentCell.m_flags & 0x8000) && unit->m_defenderState == AISTATE_RETURN) {
             unit->m_defenderState = AISTATE_SEEK;
         }
-        i32 sA = scratchA.m_flags;
-        if ((sA & 0x8000) && prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
+        i32 pathHeadFlags = pathHeadCell.m_flags;
+        if ((pathHeadFlags & 0x8000) && prim == PICKUP_BRICK
+            && unit->m_battleState == BZTASK_CARRY_BRICK) {
             m_triggerMgr->UseEquippedToolAt(
                 unit->m_playerIndex,
                 unit->m_unitIndex,
@@ -1799,9 +1801,10 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
             return 0;
         }
-        // Retail re-tests `sA & 0x8000` here (the CSE'd `and` is re-`test`ed at
+        // Retail re-tests `pathHeadFlags & 0x8000` here (the CSE'd `and` is
+        // re-`test`ed at
         // 0x29fbb), so the two guards are separate statements, not one nesting.
-        if ((sA & 0x8000) && PathCrossesMarkedTile(unit) == 0
+        if ((pathHeadFlags & 0x8000) && PathCrossesMarkedTile(unit) == 0
             && unit->m_defenderState == AISTATE_BATTLEZ_FINAL_ROUTE) {
             CoordNode* head = unit->CoordHead();
             if (head != NULL) {
@@ -1820,15 +1823,15 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
 
-        if (sA & 0x200) {
+        if (pathHeadFlags & 0x200) {
             PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
         }
-        if (sA & 0x8) {
-            i32 hi = sA & 0x100;
-            if (hi) {
+        if (pathHeadFlags & 0x8) {
+            i32 wingzOrToobGate = pathHeadFlags & 0x100;
+            if (wingzOrToobGate) {
                 PickupType er = unit->m_entranceReason;
                 PickupType p = ArrivalPickupOf(unit, er);
                 if (p == PICKUP_WINGZ) {
@@ -1839,8 +1842,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     return 1;
                 }
             }
-            i32 lo2 = sA & 0x2;
-            if (lo2) {
+            i32 wingzGate = pathHeadFlags & 0x2;
+            if (wingzGate) {
                 PickupType p = ArrivalPickup(unit);
                 if (p == PICKUP_WINGZ) {
                     goto returnOne;
@@ -1849,18 +1852,18 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (PathToNearestGoal(unit, cx, cy) != 0) {
                 goto returnOne;
             }
-            i32 sB = scratchB.m_flags;
-            if ((sB & 0x200) || (sB & 0x8)) {
+            i32 currentCellFlags = currentCell.m_flags;
+            if ((currentCellFlags & 0x200) || (currentCellFlags & 0x8)) {
                 goto returnZero;
             }
-            if (hi && unit->m_defenderState != AISTATE_RETURN) {
+            if (wingzOrToobGate && unit->m_defenderState != AISTATE_RETURN) {
                 if (rand() % 5) {
                     EnterDefenderMode(unit, 0x12);
                 } else {
                     EnterDefenderMode(unit, 0x16);
                 }
             }
-            if (lo2) {
+            if (wingzGate) {
                 if (unit->m_defenderState == AISTATE_RETURN) {
                     goto returnZero;
                 }
@@ -1870,7 +1873,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             goto returnZero;
         }
 
-        if ((sA & 0x20) && prim != PICKUP_GAUNTLETZ && prim != PICKUP_TIMEBOMB
+        if ((pathHeadFlags & 0x20) && prim != PICKUP_GAUNTLETZ && prim != PICKUP_TIMEBOMB
             && prim != PICKUP_BOMB) {
             if (unit->m_defenderState == AISTATE_RETURN) {
                 goto returnZero;
@@ -1878,7 +1881,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             EnterDefenderMode(unit, 5);
             return 0;
         }
-        if (sA & 0x40) {
+        if (pathHeadFlags & 0x40) {
             PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 if (prim == PICKUP_SHOVEL) {
@@ -1891,13 +1894,13 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 return 0;
             }
         }
-        if (sA & 0x2) {
+        if (pathHeadFlags & 0x2) {
             PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
         }
-        if (sA & BRICKZ_CELL_OCCUPIED) {
+        if (pathHeadFlags & BRICKZ_CELL_OCCUPIED) {
             return RepathAroundBlockedTiles(unit);
         }
         PickupType pk = ArrivalPickup(unit);
@@ -2016,7 +2019,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         if (prim == PICKUP_SPRING) {
             flags = 0x1000;
         }
-        if (board->SearchEdge(
+        if (board->FindPathWithEndpointOverrides(
                 center.m_x,
                 center.m_y,
                 coord->m_x,
@@ -2233,7 +2236,8 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     i32 roll = rand() % 4;
     if (actor->m_vehiclePickupType != PICKUP_NONE && roll == 0) {
         CGameObject* ul = other->m_object;
-        if ((static_cast<CGrunt*>(actor))->RectContainsGated(ul->m_screenX, ul->m_screenY) != 0) {
+        if ((static_cast<CGrunt*>(actor))->VehicleContactContains(ul->m_screenX, ul->m_screenY)
+            != 0) {
             if (actor->m_vehiclePickupType == PICKUP_SCROLL) {
                 CGameObject* tl = actor->m_object;
                 m_triggerMgr->UseToyAt(
@@ -2917,7 +2921,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                         CPtrList path(0xa);
                         if (!(rowCell->m_flags & BRICKZ_CELL_OCCUPIED)) {
                             CGameObject* lvl = g->m_object;
-                            if (m_board->SearchEdge(
+                            if (m_board->FindPathWithEndpointOverrides(
                                     lvl->m_screenX >> TILE_SHIFT_PX,
                                     lvl->m_screenY >> TILE_SHIFT_PX,
                                     scanCol,
@@ -3215,7 +3219,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if (word & 0x8000) {
             CPtrList list(10);
             CGameObject* lvl = unit->m_object;
-            if ((m_board)->SearchEdge(
+            if ((m_board)->FindPathWithEndpointOverrides(
                     lvl->m_screenX >> TILE_SHIFT_PX,
                     lvl->m_screenY >> TILE_SHIFT_PX,
                     col,
@@ -3249,7 +3253,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
                     CPtrList list2(10);
                     CGameObject* lvl = unit->m_object;
-                    if ((m_board)->SearchEdge(
+                    if ((m_board)->FindPathWithEndpointOverrides(
                             lvl->m_screenX >> TILE_SHIFT_PX,
                             lvl->m_screenY >> TILE_SHIFT_PX,
                             col,
@@ -3299,7 +3303,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 if (special != 0) {
                     CPtrList list3(10);
                     CGameObject* lvl = unit->m_object;
-                    if ((m_board)->SearchEdge(
+                    if ((m_board)->FindPathWithEndpointOverrides(
                             lvl->m_screenX >> TILE_SHIFT_PX,
                             lvl->m_screenY >> TILE_SHIFT_PX,
                             col,
@@ -3537,24 +3541,24 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     i32 top;
     i32 left;
     {
-        // Each probe seeds cD's other axis before cD is itself probed: retail
+        // Each probe seeds leftProbe's other axis before leftProbe is itself probed: retail
         // stores the unused half of probes 1..3 into the slot probe 4 later
         // overwrites (the same idiom CGrunt::StepTimeBomberBehavior spells).
-        Coord cA;
-        Coord cB;
-        Coord cC;
-        Coord cD;
-        unit->GetScreenTile(&cA);
-        cD.m_x = cA.m_x;
-        bottom = cA.m_y;
-        unit->GetScreenTile(&cB);
-        cD.m_y = cB.m_y;
-        right = cB.m_x;
-        unit->GetScreenTile(&cC);
-        cD.m_x = cC.m_x;
-        top = cC.m_y;
-        unit->GetScreenTile(&cD);
-        left = cD.m_x;
+        Coord bottomProbe;
+        Coord rightProbe;
+        Coord topProbe;
+        Coord leftProbe;
+        unit->GetScreenTile(&bottomProbe);
+        leftProbe.m_x = bottomProbe.m_x;
+        bottom = bottomProbe.m_y;
+        unit->GetScreenTile(&rightProbe);
+        leftProbe.m_y = rightProbe.m_y;
+        right = rightProbe.m_x;
+        unit->GetScreenTile(&topProbe);
+        leftProbe.m_x = topProbe.m_x;
+        top = topProbe.m_y;
+        unit->GetScreenTile(&leftProbe);
+        left = leftProbe.m_x;
     }
     RECT box;
     box.left = left - 7;
@@ -3682,7 +3686,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) != 0) {
                 if (unit->m_defenderState != AISTATE_RETURN) {
                     unit->m_defenderState = AISTATE_SEEK;
-                    unit->m_routeMaskC = 0;
+                    unit->m_routePassableMask = 0;
                 }
                 if (unit->m_blockedVoicePending != 0) {
                     __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
@@ -3876,7 +3880,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                         CPtrList list(10);
                         Coord oc;
                         (static_cast<CUserLogic*>(unit))->GetScreenPos((&oc));
-                        if ((m_board)->SearchEdge(
+                        if ((m_board)->FindPathWithEndpointOverrides(
                                 oc.m_x >> TILE_SHIFT_PX,
                                 oc.m_y >> TILE_SHIFT_PX,
                                 cx,
@@ -4224,24 +4228,25 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 RVA(0x000300c0, 0x190)
 i32 CBattlezMapConfig::RouteUnitTo(
     CGrunt* unit,
-    i32 gx,
-    i32 gy,
-    i32 maskA,
-    i32 maskC,
-    i32 clearFlag
+    i32 goalCol,
+    i32 goalRow,
+    i32 blockedMask,
+    i32 passableMask,
+    i32 clearEndpointFlags
 ) {
     CPtrList list(10);
     CGameObject* lvl = unit->m_object;
-    if ((lvl->m_screenX >> TILE_SHIFT_PX) != gx || (lvl->m_screenY >> TILE_SHIFT_PX) != gy) {
-        if ((m_board)->SearchEdge(
+    if ((lvl->m_screenX >> TILE_SHIFT_PX) != goalCol
+        || (lvl->m_screenY >> TILE_SHIFT_PX) != goalRow) {
+        if ((m_board)->FindPathWithEndpointOverrides(
                 lvl->m_screenX >> TILE_SHIFT_PX,
                 lvl->m_screenY >> TILE_SHIFT_PX,
-                gx,
-                gy,
+                goalCol,
+                goalRow,
                 &list,
-                clearFlag,
-                maskA,
-                maskC
+                clearEndpointFlags,
+                blockedMask,
+                passableMask
             )
             != 0) {
             if (list.GetCount() != 0) {
@@ -4285,7 +4290,12 @@ i32 CBattlezMapConfig::RouteUnitTo(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000302c0, 0x1ec)
-i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 maskC) {
+i32 CBattlezMapConfig::RouteUnitToGoal(
+    CGrunt* unit,
+    Coord goal,
+    i32 blockedMask,
+    i32 passableMask
+) {
     CPtrList list(10);
     Coord cur;
     CoordNode* n;
@@ -4313,15 +4323,15 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 
         }
     }
 
-    if ((m_board)->SearchEdge(
+    if ((m_board)->FindPathWithEndpointOverrides(
             unit->m_object->m_screenX >> TILE_SHIFT_PX,
             unit->m_object->m_screenY >> TILE_SHIFT_PX,
             gx,
             gy,
             &list,
             0,
-            maskA,
-            maskC
+            blockedMask,
+            passableMask
         )
         == 0) {
         goto fail;
@@ -4511,8 +4521,8 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         u->m_battleState = BZTASK_ASSIGNED_TARGET;
         u->m_arrivalCell.m_y = cellY;
         u->m_defenderState = AISTATE_ATTACK;
-        u->m_routeMaskA = 0xd87;
-        u->m_routeMaskC = 0;
+        u->m_routeBlockedMask = 0xd87;
+        u->m_routePassableMask = 0;
     }
     return 1;
 }
@@ -4661,7 +4671,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
     }
     CGameObject* lvl2 = unit->m_object;
-    if ((m_board)->SearchEdge(
+    if ((m_board)->FindPathWithEndpointOverrides(
             lvl2->m_screenX >> TILE_SHIFT_PX,
             lvl2->m_screenY >> TILE_SHIFT_PX,
             bestX,

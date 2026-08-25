@@ -1232,7 +1232,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             if ((flags & 0x40939) != 0 || (flags & 2) != 0) {
                 return 0;
             }
-            LoadPowerupIconSprites(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
+            SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
             cell->FaceTowardPixel(bx, by);
             if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
                 RESET_GRUNT_POWERED_STATE(cell)
@@ -1280,7 +1280,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
     by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (cell->RectContainsGated(bx, by) == 0) {
+    if (cell->VehicleContactContains(bx, by) == 0) {
         goto bad;
     }
 

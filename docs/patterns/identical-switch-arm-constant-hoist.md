@@ -11,7 +11,7 @@ members were modelled as eight separate `i32`s instead of two 4-int aggregates.
 Retail's per-arm sequence is a *block copy of a fully-constant aggregate*:
 
 ```asm
-lea  ebx,[esi+0x2b0]   ; &m_toyRectA - a BASE REGISTER, because a 0x2b0 displacement
+lea  ebx,[esi+0x2b0]   ; &m_vehicleContactRect - a BASE REGISTER, because a 0x2b0 displacement
 or   eax,0xffffffff    ;               costs 6 bytes per store and [ebx+N] costs 2
 or   ecx,0xffffffff
 mov  edx,1
@@ -23,7 +23,7 @@ xor  ecx,ecx
 mov  [ebx+0x8],edx
 xor  edx,edx
 mov  [ebx+0xc],edi
-lea  ebx,[esi+0x2c0]   ; &m_toyRectB
+lea  ebx,[esi+0x2c0]   ; &m_vehicleContactExclusionRect
 xor  edi,edi
 mov  [ebx],eax
 mov  [ebx+0x4],ecx
@@ -38,14 +38,14 @@ assigned twice looks like - not four independent immediates.
 FIX - model the destination as a real 16-byte struct and assign it:
 
 ```cpp
-RECT m_toyRectA; // +0x2b0
-RECT m_toyRectB; // +0x2c0
+RECT m_vehicleContactRect; // +0x2b0
+RECT m_vehicleContactExclusionRect; // +0x2c0
 ...
 RECT a;
 a.left = -1; a.top = -1; a.right = 1; a.bottom = 1;
-m_toyRectA = a;
+m_vehicleContactRect = a;
 a.left = 0;  a.top = 0;  a.right = 0; a.bottom = 0;
-m_toyRectB = a;
+m_vehicleContactExclusionRect = a;
 ```
 
 Written as eight scalar stores, cl sees ten identical constant stores across ten
@@ -56,8 +56,8 @@ half of that function's gap was [[rva-extent-must-include-switch-tables]] - its
 declared span stopped at the last `ret`, excluding the switch's jump table).
 
 Corroboration that the members really are aggregates, not scalars: `Serialize`
-moves them as `Write(&m_toyRectA, 16)` / `Read(&m_toyRectA, 0x10)`, and
-`CGrunt::RectContainsGated` 0x51a20 builds a `CRect` out of each 4-int group.
+moves them as `Write(&m_vehicleContactRect, 16)` / `Read(&m_vehicleContactRect, 0x10)`, and
+`CGrunt::VehicleContactContains` 0x51a20 builds a `CRect` out of each 4-int group.
 
 General rule: **a `lea` of a member's address followed by short `[reg+0/4/8/c]`
 stores is the struct-copy signature.** If your source spells that member group as

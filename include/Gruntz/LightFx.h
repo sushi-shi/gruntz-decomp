@@ -26,12 +26,17 @@ public:
 
     i32 AdvanceAnim();
 
-    void Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB);
+    void Activate(
+        const char* imageSetName,
+        const char* animationName,
+        i32 shadeTableIndex,
+        i32 deleteWhenComplete
+    );
 
     i32 RebindNode();
 
-    i32 m_anchorA;
-    i32 m_anchorB;
+    i32 m_shadeTableIndex;
+    i32 m_deleteWhenComplete;
 };
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

@@ -1052,7 +1052,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
     if (owner == NULL) {
         return;
     }
-    PALETTEENTRY* pal = owner->m_palette->m_cacheA;
+    PALETTEENTRY* pal = owner->m_palette->m_entries;
     if (pal == NULL) {
         return;
     }

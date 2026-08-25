@@ -4,8 +4,9 @@
 #include <Enums.h>
 
 // Masks used while Battlez AI retries a route to an enemy base.  They are
-// presets over the pathfinder's raw cell-mask domain: CGrunt::m_routeMaskC is
-// also ORed with dynamic map state, so it is not itself a preset enum.
+// presets over the pathfinder's raw cell-mask domain:
+// CGrunt::m_routePassableMask is also ORed with dynamic map state, so it is not
+// itself a preset enum.
 //
 // The two base bits are distinguished by HandleUnitContact: 0x40 handles the
 // Wingz/Shovel route, while 0x20 handles Bomb, Gauntlet, Brick, Spy, and the

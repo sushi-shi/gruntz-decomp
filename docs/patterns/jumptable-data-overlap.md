@@ -10,4 +10,4 @@ every CODE byte (the switch dispatch, the index table, the case bodies) is ident
 raw byte-compare of the function code range; the diffs are confined to the jump-table operand
 slots + the table region. The function IS matched; the % undercounts it.
 
-WALL (scoring artifact). Evidence: LoadPowerupIconSprites (965B, 34% objdiff, code byte-exact); Stub_0633e0 (21-case two-level table).
+WALL (scoring artifact). Evidence: SpawnPowerupIcon (965B, 34% objdiff, code byte-exact); Stub_0633e0 (21-case two-level table).

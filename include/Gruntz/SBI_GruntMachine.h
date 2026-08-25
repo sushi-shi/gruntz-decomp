@@ -20,8 +20,8 @@ class CSBI_GruntMachine : public CStatusBarItem {
 public:
     CSBI_GruntMachine() {
         m_kind = SBI_KIND_GRUNT_MACHINE;
-        m_frameA = NULL;
-        m_frameB = NULL;
+        m_leftFrame = NULL;
+        m_rightFrame = NULL;
         m_standaloneFrame = NULL;
         m_config = NULL;
     }
@@ -41,17 +41,17 @@ public:
         StatusBarTab tab,
         RECT g,
         const char* key,
-        i32 idxA,
-        i32 idxB
+        i32 leftFrameIndex,
+        i32 rightFrameIndex
     );
 
-    void SetFrames(i32 idxA, i32 idxB);
+    void SetFrames(i32 leftFrameIndex, i32 rightFrameIndex);
 
     CDDrawWorker* m_config;
-    CImage* m_frameA;
-    i32 m_frameIdxA;
-    CImage* m_frameB;
-    i32 m_frameIdxB;
+    CImage* m_leftFrame;
+    i32 m_leftFrameIndex;
+    CImage* m_rightFrame;
+    i32 m_rightFrameIndex;
     CImage* m_standaloneFrame;
 };
 

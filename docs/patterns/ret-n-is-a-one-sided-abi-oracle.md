@@ -16,7 +16,7 @@ score - so it reaches every function, including the ones already at 100.00.
 
 This is the STACK complement of `walls thisscan`, which owns ECX. A dropped RECEIVER is
 invisible here by construction (`this` rides in ECX and is not part of `ret N`, which is
-exactly how `CBattlezMapConfig::TileSwitch` stayed wrong while exact); a dropped or added
+exactly how `CBattlezMapConfig::RerouteIdleUnit` stayed wrong while exact); a dropped or added
 stack ARGUMENT is invisible there. Run both.
 
 ## The five ABI rules (each was discovered by producing a uniform false hit)

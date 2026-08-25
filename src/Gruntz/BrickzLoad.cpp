@@ -23,69 +23,99 @@
 
 #include <stdlib.h>
 
-static __inline BrickTileId PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
-    i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
-    if (roll <= t1) {
+static __inline BrickTileId PickOneBrickStack(
+    i32 totalWeight,
+    i32 brownThreshold,
+    i32 redThreshold,
+    i32 blueThreshold,
+    i32 goldThreshold
+) {
+    i32 colorRoll = (totalWeight == 0) ? (rand() & 1) : (rand() % totalWeight + 1);
+    if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_1;
     }
-    if (roll <= t2) {
+    if (colorRoll <= redThreshold) {
         return BRICKTILE_RED_1;
     }
-    if (roll <= t3) {
+    if (colorRoll <= blueThreshold) {
         return BRICKTILE_BLUE_1;
     }
-    if (roll <= t4) {
+    if (colorRoll <= goldThreshold) {
         return BRICKTILE_GOLD_1;
     }
     return BRICKTILE_BLACK_1;
 }
-static __inline BrickTileId PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
-    i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
-    if (roll <= t1) {
+static __inline BrickTileId PickTwoBrickStack(
+    i32 totalWeight,
+    i32 brownThreshold,
+    i32 redThreshold,
+    i32 blueThreshold,
+    i32 goldThreshold
+) {
+    i32 colorRoll = (totalWeight == 0) ? (rand() & 1) : (rand() % totalWeight + 1);
+    if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_2;
     }
-    if (roll <= t2) {
-        return (rand() % 100 + 1 <= 0x32) ? BRICKTILE_RED_2_TOP : BRICKTILE_RED_2_LOW;
+    if (colorRoll <= redThreshold) {
+        return (rand() % BRICK_COLOR_ROLL_PERCENT_MAX + 1 <= BRICK_TWO_STACK_TOP_PERCENT)
+                   ? BRICKTILE_RED_2_TOP
+                   : BRICKTILE_RED_2_LOW;
     }
-    if (roll <= t3) {
-        return (rand() % 100 + 1 <= 0x32) ? BRICKTILE_BLUE_2_TOP : BRICKTILE_BLUE_2_LOW;
+    if (colorRoll <= blueThreshold) {
+        return (rand() % BRICK_COLOR_ROLL_PERCENT_MAX + 1 <= BRICK_TWO_STACK_TOP_PERCENT)
+                   ? BRICKTILE_BLUE_2_TOP
+                   : BRICKTILE_BLUE_2_LOW;
     }
-    if (roll <= t4) {
-        return (rand() % 100 + 1 <= 0x32) ? BRICKTILE_GOLD_2_TOP : BRICKTILE_GOLD_2_LOW;
+    if (colorRoll <= goldThreshold) {
+        return (rand() % BRICK_COLOR_ROLL_PERCENT_MAX + 1 <= BRICK_TWO_STACK_TOP_PERCENT)
+                   ? BRICKTILE_GOLD_2_TOP
+                   : BRICKTILE_GOLD_2_LOW;
     }
-    return (rand() % 100 + 1 <= 0x32) ? BRICKTILE_BLACK_2_TOP : BRICKTILE_BLACK_2_LOW;
+    return (rand() % BRICK_COLOR_ROLL_PERCENT_MAX + 1 <= BRICK_TWO_STACK_TOP_PERCENT)
+               ? BRICKTILE_BLACK_2_TOP
+               : BRICKTILE_BLACK_2_LOW;
 }
-static __inline BrickTileId PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
-    i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
-    if (roll <= t1) {
+static __inline BrickTileId PickThreeBrickStack(
+    i32 totalWeight,
+    i32 brownThreshold,
+    i32 redThreshold,
+    i32 blueThreshold,
+    i32 goldThreshold
+) {
+    i32 colorRoll = (totalWeight == 0) ? (rand() & 1) : (rand() % totalWeight + 1);
+    if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_3;
     }
-    if (roll <= t2) {
-        i32 r = rand() % 0x258 + 1;
-        if (r <= 0xc8) {
+    if (colorRoll <= redThreshold) {
+        i32 layerRoll = rand() % BRICK_THREE_STACK_LAYER_ROLL_MAX + 1;
+        if (layerRoll <= BRICK_THREE_STACK_LOW_ROLL_MAX) {
             return BRICKTILE_RED_3_LOW;
         }
-        return (r > 0x190) ? BRICKTILE_RED_3_TOP : BRICKTILE_RED_3_MID;
+        return (layerRoll > BRICK_THREE_STACK_MIDDLE_ROLL_MAX) ? BRICKTILE_RED_3_TOP
+                                                               : BRICKTILE_RED_3_MID;
     }
-    if (roll <= t3) {
-        i32 r = rand() % 0x258 + 1;
-        if (r <= 0xc8) {
+    if (colorRoll <= blueThreshold) {
+        i32 layerRoll = rand() % BRICK_THREE_STACK_LAYER_ROLL_MAX + 1;
+        if (layerRoll <= BRICK_THREE_STACK_LOW_ROLL_MAX) {
             return BRICKTILE_BLUE_3_LOW;
         }
-        return (r > 0x190) ? BRICKTILE_BLUE_3_TOP : BRICKTILE_BLUE_3_MID;
+        return (layerRoll > BRICK_THREE_STACK_MIDDLE_ROLL_MAX) ? BRICKTILE_BLUE_3_TOP
+                                                               : BRICKTILE_BLUE_3_MID;
     }
-    if (roll <= t4) {
-        i32 r = rand() % 0x258 + 1;
-        if (r <= 0xc8) {
+    if (colorRoll <= goldThreshold) {
+        i32 layerRoll = rand() % BRICK_THREE_STACK_LAYER_ROLL_MAX + 1;
+        if (layerRoll <= BRICK_THREE_STACK_LOW_ROLL_MAX) {
             return BRICKTILE_GOLD_3_LOW;
         }
-        return (r > 0x190) ? BRICKTILE_GOLD_3_TOP : BRICKTILE_GOLD_3_MID;
+        return (layerRoll > BRICK_THREE_STACK_MIDDLE_ROLL_MAX) ? BRICKTILE_GOLD_3_TOP
+                                                               : BRICKTILE_GOLD_3_MID;
     }
-    i32 r = rand() % 0x258 + 1;
-    if (r <= 0xc8) {
+    i32 layerRoll = rand() % BRICK_THREE_STACK_LAYER_ROLL_MAX + 1;
+    if (layerRoll <= BRICK_THREE_STACK_LOW_ROLL_MAX) {
         return BRICKTILE_BLACK_3_LOW;
     }
-    return (r > 0x190) ? BRICKTILE_BLACK_3_TOP : BRICKTILE_BLACK_3_MID;
+    return (layerRoll > BRICK_THREE_STACK_MIDDLE_ROLL_MAX) ? BRICKTILE_BLACK_3_TOP
+                                                           : BRICKTILE_BLACK_3_MID;
 }
 
 // @early-stop
@@ -103,15 +133,15 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     AllocGrid(width, height, NULL);
     m_reserved90 = 0;
 
-    i32 total = g_buteMgr.GetInt("Brickz", "Brown");
-    i32 t1 = total;
-    total += g_buteMgr.GetInt("Brickz", "Red");
-    i32 t2 = total;
-    total += g_buteMgr.GetInt("Brickz", "Blue");
-    i32 t3 = total;
-    total += g_buteMgr.GetInt("Brickz", "Gold");
-    i32 t4 = total;
-    total += g_buteMgr.GetInt("Brickz", "Black");
+    i32 totalWeight = g_buteMgr.GetInt("Brickz", "Brown");
+    i32 brownThreshold = totalWeight;
+    totalWeight += g_buteMgr.GetInt("Brickz", "Red");
+    i32 redThreshold = totalWeight;
+    totalWeight += g_buteMgr.GetInt("Brickz", "Blue");
+    i32 blueThreshold = totalWeight;
+    totalWeight += g_buteMgr.GetInt("Brickz", "Gold");
+    i32 goldThreshold = totalWeight;
+    totalWeight += g_buteMgr.GetInt("Brickz", "Black");
 
     BrickzCell* cell = m_cellPool;
     for (u32 tileY = 0; tileY < m_height; tileY++) {
@@ -143,7 +173,13 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     case BRICKTILE_BLUE_1:
                     case BRICKTILE_GOLD_1:
                     case BRICKTILE_BLACK_1:
-                        tileId = IDX(PickA(total, t1, t2, t3, t4));
+                        tileId = IDX(PickOneBrickStack(
+                            totalWeight,
+                            brownThreshold,
+                            redThreshold,
+                            blueThreshold,
+                            goldThreshold
+                        ));
                         break;
                     case BRICKTILE_BROWN_2:
                     case BRICKTILE_RED_2_LOW:
@@ -154,7 +190,13 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     case BRICKTILE_GOLD_2_TOP:
                     case BRICKTILE_BLACK_2_LOW:
                     case BRICKTILE_BLACK_2_TOP:
-                        tileId = IDX(PickB(total, t1, t2, t3, t4));
+                        tileId = IDX(PickTwoBrickStack(
+                            totalWeight,
+                            brownThreshold,
+                            redThreshold,
+                            blueThreshold,
+                            goldThreshold
+                        ));
                         break;
                     case BRICKTILE_BROWN_3:
                     case BRICKTILE_RED_3_LOW:
@@ -169,7 +211,13 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     case BRICKTILE_BLACK_3_LOW:
                     case BRICKTILE_BLACK_3_MID:
                     case BRICKTILE_BLACK_3_TOP:
-                        tileId = IDX(PickC(total, t1, t2, t3, t4));
+                        tileId = IDX(PickThreeBrickStack(
+                            totalWeight,
+                            brownThreshold,
+                            redThreshold,
+                            blueThreshold,
+                            goldThreshold
+                        ));
                         break;
                     default:
                         break;

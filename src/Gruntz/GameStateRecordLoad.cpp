@@ -146,8 +146,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_arrivalActive, sizeof(m_arrivalActive));
     ar->Read(&m_reachRect, sizeof(m_reachRect));
     ar->Read(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
-    ar->Read(&m_toyRectA, sizeof(m_toyRectA));
-    ar->Read(&m_toyRectB, sizeof(m_toyRectB));
+    ar->Read(&m_vehicleContactRect, sizeof(m_vehicleContactRect));
+    ar->Read(&m_vehicleContactExclusionRect, sizeof(m_vehicleContactExclusionRect));
     ar->Read(&m_health, sizeof(m_health));
     ar->Read(&m_stamina, sizeof(m_stamina));
     ar->Read(&m_toyTime, sizeof(m_toyTime));
@@ -196,8 +196,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_tileClaimed, sizeof(m_tileClaimed));
     ar->Read(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Read(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
-    ar->Read(&m_routeMaskA, sizeof(m_routeMaskA));
-    ar->Read(&m_routeMaskC, sizeof(m_routeMaskC));
+    ar->Read(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
+    ar->Read(&m_routePassableMask, sizeof(m_routePassableMask));
     ar->Read(&m_moveVariantOverride, sizeof(m_moveVariantOverride));
     ar->Read(&m_moveKind, sizeof(m_moveKind));
     ar->Read(&m_moveVariant, sizeof(m_moveVariant));
@@ -249,10 +249,15 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_coordList)->AddTail(item);
     }
 
-    // The count-guarded head term is spelled `== 0 ? NULL :` so the ternary's NULL
-    // arm falls through; the `!= 0 ?` spelling inverts the branch and costs a block.
-    while ((m_payloads.GetCount() == 0 ? NULL : m_payloads.GetHead()) != NULL
-           && m_payloads.GetCount() != 0) {
+    while (true) {
+        i32 n = m_payloads.GetCount();
+        i32* head = (n == 0) ? NULL : static_cast<i32*>(m_payloads.GetHead());
+        if (head == NULL) {
+            break;
+        }
+        if (n == 0) {
+            continue;
+        }
         i32* rem = static_cast<i32*>((&m_payloads)->RemoveHead());
         delete[] rem;
     }

@@ -9,7 +9,7 @@ namespace Utils {
     class RegistryHelper;
 }
 
-i32 ChainForward14(
+i32 SaveBackBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
     i32 width,
@@ -17,7 +17,7 @@ i32 ChainForward14(
     char* name,
     i32 saveFlag
 );
-i32 ChainForward(
+i32 SaveOverlayBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
     i32 width,

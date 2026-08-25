@@ -11,21 +11,21 @@
 RVA(0x000fa150, 0x74)
 void CState::ReleaseResources() {
     if (m_world != NULL) {
-        if (m_cursorSaveSurface0 != NULL) {
-            m_world->m_deviceManager->RemoveSurface(m_cursorSaveSurface0);
-            m_cursorSaveSurface0 = NULL;
+        if (m_cursorSavedSurfaces[0] != NULL) {
+            m_world->m_deviceManager->RemoveSurface(m_cursorSavedSurfaces[0]);
+            m_cursorSavedSurfaces[0] = NULL;
         }
-        if (m_cursorSaveSurface1 != NULL) {
-            m_world->m_deviceManager->RemoveSurface(m_cursorSaveSurface1);
-            m_cursorSaveSurface1 = NULL;
+        if (m_cursorSavedSurfaces[1] != NULL) {
+            m_world->m_deviceManager->RemoveSurface(m_cursorSavedSurfaces[1]);
+            m_cursorSavedSurfaces[1] = NULL;
         }
-        if (m_blitSurface0 != NULL) {
-            m_world->m_deviceManager->RemoveSurface(m_blitSurface0);
-            m_blitSurface0 = NULL;
+        if (m_ownedSurface0 != NULL) {
+            m_world->m_deviceManager->RemoveSurface(m_ownedSurface0);
+            m_ownedSurface0 = NULL;
         }
-        if (m_blitSurface1 != NULL) {
-            m_world->m_deviceManager->RemoveSurface(m_blitSurface1);
-            m_blitSurface1 = NULL;
+        if (m_ownedSurface1 != NULL) {
+            m_world->m_deviceManager->RemoveSurface(m_ownedSurface1);
+            m_ownedSurface1 = NULL;
         }
     }
     m_ready = 0;

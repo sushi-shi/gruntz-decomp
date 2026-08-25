@@ -211,7 +211,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     if (cfg->m_shadeTable == NULL) {
 
         CDDPalette* pal = cfg->m_palette;
-        m_table = m_cache.HueRampTable(pal->m_cacheA, 0x10, 0);
+        m_table = m_cache.HueRampTable(pal->m_entries, 0x10, 0);
         m_ownsTable = 1;
     } else {
         m_table = cfg->m_shadeTable;
@@ -575,7 +575,7 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     }
     if (m_spanCount > 0) {
         if (d->m_shadeTable == NULL) {
-            m_table = m_cache.HueRampTable(m_palette->m_cacheA, m_spanCount, 0);
+            m_table = m_cache.HueRampTable(m_palette->m_entries, m_spanCount, 0);
             m_ownsTable = 1;
             return 1;
         }
@@ -1203,7 +1203,13 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
             }
         } else {
             CDDPalette* pal = pInit->m_palette;
-            m_table = m_cache.FlashTable(pal->m_cacheA, 0x20, 0x20, 0x32, 0xc8);
+            m_table = m_cache.FlashTable(
+                pal->m_entries,
+                FLASH_SHADE_DARK_RAMP_STEPS,
+                FLASH_SHADE_BRIGHT_RAMP_STEPS,
+                FLASH_SHADE_START_PERCENT,
+                FLASH_SHADE_END_PERCENT
+            );
         }
 
         i32 m = m_halfWidth << 1;
@@ -1257,9 +1263,9 @@ void CFaderShape::RenderFrame(i32 frame) {
         seam = m_targetWidth / 2;
     }
     if (m_stripCopy == 0 && frame == 0) {
-        i32 pitchA = m_targetSurface->m_pitch;
-        i32 pitchB = m_sourceSurface->m_pitch;
-        i32 n = (pitchA < pitchB) ? pitchA : pitchB;
+        i32 targetPitch = m_targetSurface->m_pitch;
+        i32 sourcePitch = m_sourceSurface->m_pitch;
+        i32 n = (targetPitch < sourcePitch) ? targetPitch : sourcePitch;
         i32 row = 0;
         while (row < m_targetHeight) {
             u8* src = m_straightBase + m_sourceRowOffsets[row];
@@ -1576,7 +1582,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
 }
 
 // @early-stop
-// two frame slots swapped: rowBytes and the spilled rowSrcA get esp+0x34/0x30
+// two frame slots swapped: rowBytes and the spilled targetRow get esp+0x34/0x30
 // where retail assigns 0x30/0x34; six operand bytes total. Decl order/position,
 // source-entity splits, sum-inlining and the complete parser-state forest are inert - an
 // intra-function slot-coloring choice.
@@ -1606,33 +1612,33 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
         return;
     }
 
-    u8* srcA = m_dstBase + (col - x0) * bpp;
-    u8* srcB = m_gatherBase + (col - x0) * bpp;
+    u8* targetColumnBase = m_dstBase + (col - x0) * bpp;
+    u8* warpColumnBase = m_gatherBase + (col - x0) * bpp;
 
     for (i32 j = 0; j < m_targetHeight; j++) {
-        u8* rowSrcA = srcA + m_targetRowOffsets[j];
-        u8* rowSrcB = srcB + m_warpRowOffsets[j];
+        u8* targetRow = targetColumnBase + m_targetRowOffsets[j];
+        u8* warpRow = warpColumnBase + m_warpRowOffsets[j];
 
         if (m_useLut) {
             u8* lut = m_table->m_data;
             for (i32 k = 0; k < stride; k++) {
-                u8 b = rowSrcB[m_warpTable[k]];
+                u8 b = warpRow[m_warpTable[k]];
                 m_lineBuf[x0 + k] = lut[(b << 6) + m_shadeRamp[k]];
             }
         } else if (bpp == PIXEL8_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
-                m_lineBuf[x0 + k] = rowSrcB[m_warpTable[k]];
+                m_lineBuf[x0 + k] = warpRow[m_warpTable[k]];
             }
         } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
-                m_lineBuf[(x0 + k) * 2] = rowSrcB[m_warpTable[k] * 2];
-                m_lineBuf[(x0 + k) * 2 + 1] = rowSrcB[m_warpTable[k] * 2 + 1];
+                m_lineBuf[(x0 + k) * 2] = warpRow[m_warpTable[k] * 2];
+                m_lineBuf[(x0 + k) * 2 + 1] = warpRow[m_warpTable[k] * 2 + 1];
             }
         } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
-                m_lineBuf[(x0 + k) * 3] = rowSrcB[m_warpTable[k] * 3];
-                m_lineBuf[(x0 + k) * 3 + 1] = rowSrcB[m_warpTable[k] * 3 + 1];
-                m_lineBuf[(x0 + k) * 3 + 2] = rowSrcB[m_warpTable[k] * 3 + 2];
+                m_lineBuf[(x0 + k) * 3] = warpRow[m_warpTable[k] * 3];
+                m_lineBuf[(x0 + k) * 3 + 1] = warpRow[m_warpTable[k] * 3 + 1];
+                m_lineBuf[(x0 + k) * 3 + 2] = warpRow[m_warpTable[k] * 3 + 2];
             }
         }
 
@@ -1652,7 +1658,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
         }
 
         u8* s = m_lineBuf;
-        u8* d = rowSrcA;
+        u8* d = targetRow;
         i32 n = bpp * rowBytes;
         while (n-- > 0) {
             *d++ = *s++;

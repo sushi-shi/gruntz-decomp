@@ -16,14 +16,14 @@ namespace Utils {
             Close();
         }
         i32 Open(
-            char* szKeyName1,
-            char* szKeyName2,
-            char* szKeyName3,
-            char* szLastKey,
-            HKEY hKey,
-            char* szSubKey
+            char* vendorName,
+            char* productName,
+            char* versionName,
+            char* valueSubkeyName,
+            HKEY rootKey,
+            char* softwareSubkeyName
         );
-        i32 InitializeLastKey(char* szLastKey);
+        i32 InitializeLastKey(char* valueSubkeyName);
         char* GetValueString(
             char* szValueName,
             char* szValueBuffer,
@@ -44,17 +44,17 @@ namespace Utils {
         i32 SetValueDword(char* szValueName, DWORD value);
         i32 DeleteValue(char* szValueName);
         void Close();
-        i32 GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult);
+        i32 GetRegistryKey(HKEY parentKey, char* subkeyName, PHKEY resultKey);
 
         i32 m_open;
         HKEY m_baseKey;
-        HKEY m_key1;
-        HKEY m_key2;
-        HKEY m_key3;
-        HKEY m_key4;
+        HKEY m_softwareKey;
+        HKEY m_vendorKey;
+        HKEY m_productKey;
+        HKEY m_versionKey;
         HKEY m_valueKey;
-        char m_keyNameBuf[0x100];
-        char m_lastKeyBuf[0x100];
+        char m_productName[0x100];
+        char m_valueSubkeyName[0x100];
     };
 
 } // namespace Utils

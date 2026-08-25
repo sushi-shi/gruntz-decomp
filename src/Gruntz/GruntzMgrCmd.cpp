@@ -553,7 +553,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g->m_statusBar) {
                             return 0;
                         }
-                        (static_cast<CStatusBarMgr*>(_g->m_statusBar))->AdvanceGauge(0x64);
+                        (static_cast<CStatusBarMgr*>(_g->m_statusBar))
+                            ->AdvanceGruntWell(GRUNT_WELL_FULL);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("May your Wellz be full of Goo!");
                         return 1;

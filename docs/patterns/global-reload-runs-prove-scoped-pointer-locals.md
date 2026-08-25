@@ -14,7 +14,7 @@ start of each sibling arm names a new local lifetime.
 referenced `g_gameReg` ten times while retail referenced it seven times. Three
 scoped `CMapMgr*` entities explain the exact difference:
 
-- one nudge-region local spans the rock-neighbour reads, 3x3 save, `SearchEdge`,
+- one nudge-region local spans the rock-neighbour reads, 3x3 save, `FindPathWithEndpointOverrides`,
   and 3x3 restore, reducing four candidate loads to retail's two;
 - one local in each Bresenham arm is initialized immediately after that arm's
   `idiv`, preserving retail's separate two loads instead of letting cl hoist one

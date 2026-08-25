@@ -58,7 +58,7 @@ Binding the receiver through a `volatile` reference forces cl to emit the stores
 in source order and happens to reproduce retail's bytes:
 
 ```cpp
-volatile CSbiHlRow& r = m_machineA;
+volatile CSbiHlRow& r = m_leftMachine;
 r.m_counter = y0;
 r.m_state = IDX(x0);
 r.m_interval = static_cast<u32>(z);
@@ -72,7 +72,7 @@ observable concurrent/device access.
 
 ## Why a `volatile` member is not the answer either
 
-`volatile CSbiHlRow m_machineA;` is not legal C++ when the type has a user-declared
+`volatile CSbiHlRow m_leftMachine;` is not legal C++ when the type has a user-declared
 constructor - constructors cannot be cv-qualified, so the containing class could never
 construct it. `CSbiHlRow::CSbiHlRow` is a real retail function (0x000c86d0), so the
 declaration must be plain. With no independent access-site evidence, neither volatile

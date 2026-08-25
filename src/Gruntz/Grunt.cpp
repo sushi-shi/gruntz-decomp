@@ -389,8 +389,8 @@ CGrunt::CGrunt(CGameObject* owner)
     zero.right = 0;
     zero.bottom = 0;
     m_reachExclusionRect = zero;
-    m_toyRectA = zero;
-    m_toyRectB = zero;
+    m_vehicleContactRect = zero;
+    m_vehicleContactExclusionRect = zero;
 
     m_toyClockLo = 0;
     m_toyDurationLo = 0;
@@ -907,11 +907,25 @@ void CGrunt::ClearAllSprites() {
 }
 
 RVA(0x0004b320, 0x34)
-i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
+i32 CGrunt::TileSwitch(
+    i32 col,
+    i32 row,
+    i32 arrivalPhase,
+    i32 blockedMask,
+    i32 clearEndpointFlags,
+    i32 extraPassableMask
+) {
     Coord center;
     Coord* point =
         center.Set((col << TILE_SHIFT_PX) + TILE_HALF_PX, (row << TILE_SHIFT_PX) + TILE_HALF_PX);
-    return StepArrivalDrop(point->m_x, point->m_y, arrivalPhase, maskA, clearFlag, maskCIn);
+    return StepArrivalDrop(
+        point->m_x,
+        point->m_y,
+        arrivalPhase,
+        blockedMask,
+        clearEndpointFlags,
+        extraPassableMask
+    );
 }
 
 RVA(0x0004b370, 0xb30)
@@ -919,16 +933,16 @@ i32 CGrunt::StepArrivalDrop(
     i32 pxX,
     i32 pxY,
     i32 arrivalPhase,
-    i32 maskA,
-    i32 clearFlag,
-    i32 maskCIn
+    i32 blockedMask,
+    i32 clearEndpointFlags,
+    i32 extraPassableMask
 ) {
     CoordNode* n;
     CoordNode* cur;
     Coord* tail;
     POSITION pos;
     i32 lastX, lastY, tileX, tileY;
-    i32 maskC, cnt, headFlags, lastFlags, hit;
+    i32 passableMask, cnt, headFlags, lastFlags, hit;
     i32 reinit;
     i32 nudged;
     RockNeighborMask free4;
@@ -948,14 +962,22 @@ i32 CGrunt::StepArrivalDrop(
     lastY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     tileX = pxX >> TILE_SHIFT_PX;
     tileY = pxY >> TILE_SHIFT_PX;
-    if (maskA == -1) {
-        maskA = m_arrivalFlags;
+    if (blockedMask == -1) {
+        blockedMask = m_arrivalFlags;
     }
     m_arrivalTargetPx.m_x = pxX;
     m_arrivalTargetPx.m_y = pxY;
-    maskC = maskCIn | m_passableMask;
-    if (g_gameReg->m_tileGrid
-            ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
+    passableMask = extraPassableMask | m_passableMask;
+    if (g_gameReg->m_tileGrid->FindPathWithEndpointOverrides(
+            lastX,
+            lastY,
+            tileX,
+            tileY,
+            &m_coordList,
+            clearEndpointFlags,
+            blockedMask,
+            passableMask
+        )
         != 0) {
         if (CoordCount() != 0) {
             PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
@@ -973,12 +995,12 @@ i32 CGrunt::StepArrivalDrop(
             goto commitEntrance;
         }
         if ((headFlags & 0x20000000) == 0) {
-            hit = headFlags & maskA;
+            hit = headFlags & blockedMask;
             if ((hit & 0x20000000) == 0) {
                 if (hit == 0) {
                     goto commitEntrance;
                 }
-                if ((headFlags & maskC) != 0) {
+                if ((headFlags & passableMask) != 0) {
                     goto commitEntrance;
                 }
             }
@@ -999,15 +1021,15 @@ i32 CGrunt::StepArrivalDrop(
         {
 
             CPtrList probe(10);
-            if (g_gameReg->m_tileGrid->SearchEdge(
+            if (g_gameReg->m_tileGrid->FindPathWithEndpointOverrides(
                     lastX,
                     lastY,
                     tileX,
                     tileY,
                     &probe,
-                    clearFlag,
-                    maskA | 0x20000000,
-                    maskC
+                    clearEndpointFlags,
+                    blockedMask | 0x20000000,
+                    passableMask
                 ) != 0
                 && probe.GetCount() != 0) {
                 // Retail falls through into the splice arm and jumps away on
@@ -1104,7 +1126,16 @@ i32 CGrunt::StepArrivalDrop(
         }
     }
     grid = g_gameReg->m_tileGrid;
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) != 0
+    if (grid->FindPathWithEndpointOverrides(
+            lastX,
+            lastY,
+            tileX,
+            tileY,
+            &m_coordList,
+            clearEndpointFlags,
+            blockedMask,
+            passableMask
+        ) != 0
         && CoordCount() != 0) {
         PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
         if (CoordCount() != 0) {
@@ -1156,7 +1187,7 @@ nudgeDone:
             while (blocked == 0) {
                 sy = acc >> 16;
                 err = lineGrid->CellFlagsAt(sx, sy);
-                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
                     walkX = sx;
@@ -1169,7 +1200,7 @@ nudgeDone:
             while (blocked == 0) {
                 sy = acc >> 16;
                 err = lineGrid->CellFlagsAt(sx, sy);
-                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
                     walkX = sx;
@@ -1188,7 +1219,7 @@ nudgeDone:
             while (blocked == 0) {
                 sx = acc >> 16;
                 err = lineGrid->CellFlagsAt(sx, sy);
-                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
                     walkY = sy;
@@ -1201,7 +1232,7 @@ nudgeDone:
             while (blocked == 0) {
                 sx = acc >> 16;
                 err = lineGrid->CellFlagsAt(sx, sy);
-                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                if ((blockedMask & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
                     walkY = sy;
@@ -1226,9 +1257,17 @@ reCommit:
 reProbe:
     pxX = walkX * 32 + 0x10;
     pxY = walkY * 32 + 0x10;
-    clearFlag = 1;
-    if (g_gameReg->m_tileGrid
-            ->SearchEdge(lastX, lastY, walkX, walkY, &m_coordList, clearFlag, maskA, maskC)
+    clearEndpointFlags = 1;
+    if (g_gameReg->m_tileGrid->FindPathWithEndpointOverrides(
+            lastX,
+            lastY,
+            walkX,
+            walkY,
+            &m_coordList,
+            clearEndpointFlags,
+            blockedMask,
+            passableMask
+        )
         != 0) {
         if (CoordCount() != 0) {
             PushFreeNode(&g_coordPool, m_coordList.RemoveHead());

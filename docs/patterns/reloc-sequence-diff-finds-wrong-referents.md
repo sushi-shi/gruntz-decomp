@@ -44,7 +44,7 @@ in minutes:
 
 | function | found | before -> after |
 |---|---|---|
-| `CTriggerMgr::LoadPowerupIconSprites` | three powerup arms rotated by one | 98.93 -> **100 EXACT** |
+| `CTriggerMgr::SpawnPowerupIcon` | three powerup arms rotated by one | 98.93 -> **100 EXACT** |
 | `CGrunt::StepCompassMove` | `GetIntDef` should be `GetDwordDef`; the empty-bag `return` belongs inside the `CByteArray` scope (two dtor calls); the random-slot pick keeps its degenerate `count == 0` arm (two `rand()` calls) | 37.48 -> 53.25 |
 | `CTriggerMgr::ReinitGroup` | `GetInt` not `GetIntDef` and its two arguments swapped; `RefreshState` not `Reset`; `SetAtGrow(size, colour)` not `InsertAt(size, 0, 0)`; `Format` had one variadic argument too many; `EnsureSub(outR, outC, colour)` | 75.50 -> 83.06 |
 | `CTriggerMgr::ApplyGruntAreaEffect` | a missing `CGrunt::StepArrivalCommit()` call; `GetDwordDef` | 79.58 -> 85.54 |

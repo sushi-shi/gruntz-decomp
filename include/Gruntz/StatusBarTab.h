@@ -11,11 +11,11 @@
 // SetState and the other four ProbeState, and each sprite is the one built from
 // its own GAME_STATUSBAR_TABZ_* image:
 //
-//   1 -> m_tabSprite0  GAME_STATUSBAR_TABZ_STATZTAB
-//   2 -> m_tabSprite2  GAME_STATUSBAR_TABZ_GRUNTZTAB
-//   3 -> m_tabSprite1  GAME_STATUSBAR_TABZ_RESOURCETAB
-//   4 -> m_tabSprite3  GAME_STATUSBAR_TABZ_MULTIPLAYERTAB
-//   5 -> m_tabSprite4  GAME_STATUSBAR_TABZ_GAMETAB
+//   1 -> m_statzTabButton  GAME_STATUSBAR_TABZ_STATZTAB
+//   2 -> m_gruntzTabButton  GAME_STATUSBAR_TABZ_GRUNTZTAB
+//   3 -> m_resourceTabButton  GAME_STATUSBAR_TABZ_RESOURCETAB
+//   4 -> m_multiTabButton  GAME_STATUSBAR_TABZ_MULTIPLAYERTAB
+//   5 -> m_gameTabButton  GAME_STATUSBAR_TABZ_GAMETAB
 //
 // The sprite ORDER is not the tab order (tab 2 drives sprite 2 but tab 3 drives
 // sprite 1), which is why the mapping has to be read off the code rather than

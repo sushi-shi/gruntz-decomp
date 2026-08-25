@@ -82,7 +82,7 @@ than evidence against those locals.
 
 2026-08-13, two more refuted levers plus the retail edge map, one build each:
 
-- UN-NESTING region A (`if (SearchEdge(..) == 0) goto nudgeStart;` with A as
+- UN-NESTING region A (`if (FindPathWithEndpointOverrides(..) == 0) goto nudgeStart;` with A as
   top-level straight-line code, no if-block at all) still sinks A. The trigger
   is not the lexical region attached to the `if`.
 - Spelling the AI_NONE bail as a forward `goto arrivalBail` with the block at

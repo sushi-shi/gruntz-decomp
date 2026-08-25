@@ -16,7 +16,7 @@
 
 // @early-stop
 RVA(0x00077790, 0x4f0)
-void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
+void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 
     BrickzCell* cell = &m_rows[y][x];
     CGameLevel* level = m_attrMgr->m_level;
@@ -214,14 +214,14 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
             cell->m_flags = 0x400;
             break;
         default:
-            cell->m_flags = (id3 == -1) ? 2 : 0;
+            cell->m_flags = (tileId == -1) ? 2 : 0;
             break;
     }
     if (edgeBit != 0) {
         cell->m_flags |= 0x20000000;
     }
     cell->m_flags |= keep;
-    cell->m_tileId = id3;
+    cell->m_tileId = tileId;
     cell->m_typeCode = typeCode;
 
     for (i32 c = x - 1; c <= x + 1; c++) {

@@ -48,7 +48,7 @@ add    eax,esi
 or     DWORD PTR [eax],0x20000000
 ```
 
-`CMapMgr::SearchEdge` 0x81e10 83.13 -> 86.37 on the one site (the restore of
+`CMapMgr::FindPathWithEndpointOverrides` 0x81e10 83.13 -> 86.37 on the one site (the restore of
 `BRICKZ_CELL_OCCUPIED` at the tail).
 
 ## Per SITE, never tree-wide

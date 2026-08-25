@@ -9,52 +9,61 @@
 
 // @early-stop
 RVA(0x00081e10, 0x1a7)
-i32 CMapMgr::SearchEdge(
-    i32 xA,
-    i32 yA,
-    i32 xB,
-    i32 yB,
-    CPtrList* list,
-    i32 clearFlag,
-    i32 maskA,
-    i32 maskC
+i32 CMapMgr::FindPathWithEndpointOverrides(
+    i32 startX,
+    i32 startY,
+    i32 goalX,
+    i32 goalY,
+    CPtrList* outPath,
+    i32 clearEndpointFlags,
+    i32 blockedMask,
+    i32 passableMask
 ) {
     CMapMgr* self = this;
-    if (static_cast<u32>(xA) >= self->m_width || static_cast<u32>(yA) >= self->m_height
-        || static_cast<u32>(xB) >= self->m_width || static_cast<u32>(yB) >= self->m_height) {
+    if (static_cast<u32>(startX) >= self->m_width || static_cast<u32>(startY) >= self->m_height
+        || static_cast<u32>(goalX) >= self->m_width || static_cast<u32>(goalY) >= self->m_height) {
         return 0;
     }
-    BrickzCell* cellB = &self->m_rows[yB][xB];
-    BrickzCell* cellA = &self->m_rows[yA][xA];
-    i32 savedB0 = cellB->m_flags;
-    i32 savedA4 = cellA->m_occupantId;
-    i32 savedA0 = cellA->m_flags;
-    i32 wasOccupied = (static_cast<u32>(savedB0) >> 29) & 1;
-    i32 savedB4 = cellB->m_occupantId;
-    if (wasOccupied != 0) {
-        cellB->m_flags = savedB0 & BRICKZ_CELL_UNOCCUPIED_MASK;
+    BrickzCell* goalCell = &self->m_rows[goalY][goalX];
+    BrickzCell* startCell = &self->m_rows[startY][startX];
+    i32 savedGoalFlags = goalCell->m_flags;
+    i32 savedStartOccupantId = startCell->m_occupantId;
+    i32 savedStartFlags = startCell->m_flags;
+    i32 goalWasOccupied = (static_cast<u32>(savedGoalFlags) >> 29) & 1;
+    i32 savedGoalOccupantId = goalCell->m_occupantId;
+    if (goalWasOccupied != 0) {
+        goalCell->m_flags = savedGoalFlags & BRICKZ_CELL_UNOCCUPIED_MASK;
     }
 
-    m_rows[yA][xA].m_occupantId = -1;
-    m_rows[yB][xB].m_occupantId = -1;
-    m_edgeMask = maskA & BRICKZ_CELL_OCCUPIED;
-    if (clearFlag != 0) {
-        m_rows[yA][xA].m_flags = 0;
-        m_rows[yB][xB].m_flags = 0;
+    m_rows[startY][startX].m_occupantId = -1;
+    m_rows[goalY][goalX].m_occupantId = -1;
+    m_edgeMask = blockedMask & BRICKZ_CELL_OCCUPIED;
+    if (clearEndpointFlags != 0) {
+        m_rows[startY][startX].m_flags = 0;
+        m_rows[goalY][goalX].m_flags = 0;
     }
-    i32 ret = CMapMgr::Search(xA, yA, xB, yB, list, maskA, BRICKZ_CELL_ROUTE_MASKB, maskC);
+    i32 result = CMapMgr::FindPath(
+        startX,
+        startY,
+        goalX,
+        goalY,
+        outPath,
+        blockedMask,
+        BRICKZ_CELL_ROUTE_MASKB,
+        passableMask
+    );
     m_edgeMask = 0;
-    m_rows[yA][xA].m_occupantId = savedA4;
-    m_rows[yB][xB].m_occupantId = savedB4;
-    if (clearFlag != 0) {
-        m_rows[yA][xA].m_flags = savedA0;
-        m_rows[yB][xB].m_flags = savedB0;
+    m_rows[startY][startX].m_occupantId = savedStartOccupantId;
+    m_rows[goalY][goalX].m_occupantId = savedGoalOccupantId;
+    if (clearEndpointFlags != 0) {
+        m_rows[startY][startX].m_flags = savedStartFlags;
+        m_rows[goalY][goalX].m_flags = savedGoalFlags;
     }
-    if (wasOccupied != 0) {
-        BrickzCell* c = &m_rows[yB][xB];
-        c->m_flags |= BRICKZ_CELL_OCCUPIED;
+    if (goalWasOccupied != 0) {
+        BrickzCell* restoredGoalCell = &m_rows[goalY][goalX];
+        restoredGoalCell->m_flags |= BRICKZ_CELL_OCCUPIED;
     }
-    return ret;
+    return result;
 }
 
 // @early-stop

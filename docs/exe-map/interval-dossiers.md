@@ -412,7 +412,7 @@ Seam fns (all -> triggermgr TU by position; identities are placeholders,
   gruntresurrectradius.
 - `0x0007c3d0` — `?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z` —
   finishlevelsprite.
-- `0x0007c620` — `?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z` —
+- `0x0007c620` — `?SpawnPowerupIcon@EngineLabelBacklog@@QAEHHHHHHH@Z` —
   iconloaders.
 - `0x0007cf40` — `?CenterOnGroup@CGroupSel@@QAEHH@Z` — groupops — directly
   abuts `?CenterSelectionGroup@CTriggerMgr` @`0x7cd40`, same selection feature.

@@ -46,13 +46,13 @@ the single `return 1;` after the `switch` carry them closes it outright:
 // BEFORE - 88.53: each arm returns; cl cross-jumps arm1->arm2->arm4
     case SBICMD_TAB_STATZ:
         if (m_hlBusy) { return 1; }
-        m_tabSprite0->SetState(state, 1);
+        m_statzTabButton->SetState(state, 1);
         ...
         return 1;
 // AFTER - 100.00: each arm breaks; cl replicates the tiny epilogue per arm
     case SBICMD_TAB_STATZ:
         if (m_hlBusy) { return 1; }        // the GUARD keeps its own return
-        m_tabSprite0->SetState(state, 1);
+        m_statzTabButton->SetState(state, 1);
         ...
         break;
     }
@@ -135,7 +135,7 @@ cannot be the discriminator):
 
 * `CBattlezMapConfig::AdvanceToEnemyBase` 0x32060 - retail keeps TWO copies of a
   twelve-instruction tail that is four member stores (`m_defenderState=7`,
-  `m_routeMaskA=g_spawnCfg`, `m_routeMaskC=0x248`) plus `mov eax,1` and the
+  `m_routeBlockedMask=g_battlezRouteBlockedMask`, `m_routePassableMask=0x248`) plus `mov eax,1` and the
   epilogue; we cross-jump them. The accounting closes exactly: base 591 insns /
   65 branches against target 603 / 66, and 603-591 = the twelve, 66-65 = the
   `jmp` we emit instead. The two source sites are the `dist<=0x10` arm of the

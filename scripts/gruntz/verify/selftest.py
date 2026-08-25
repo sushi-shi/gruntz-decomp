@@ -712,6 +712,19 @@ class AllocSizeControls(unittest.TestCase):
 
 
 class LinkTierControls(unittest.TestCase):
+    def test_linked_image_only_admits_literal_100_percent_objects(self):
+        """The 99.995 navigation threshold rounds a tiny object-local residue
+        to EXACT, but the link audit must not relabel it as a link defect."""
+        from gruntz.verify import link_tier as lt
+        pct = {
+            ("play", "?DrawDebugStatsFull@CPlay@@QAEXXZ"): 99.99791,
+            ("play", "?DrawDebugStats@CPlay@@QAEXXZ"): 100.0,
+        }
+        self.assertEqual(
+            lt._byte_exact_symbols(pct),
+            {"?DrawDebugStats@CPlay@@QAEXXZ"},
+        )
+
     def test_unresolved_txt_content_fails(self):
         from gruntz.verify import link_tier as lt
         with tempfile.TemporaryDirectory() as td:

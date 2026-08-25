@@ -191,12 +191,12 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_world->m_drawTarget->m_frontSurface->m_surface;
-    if (chanA == NULL) {
+    CDDSurface* targetSurface = m_world->m_drawTarget->m_frontSurface->m_surface;
+    if (targetSurface == NULL) {
         return 0;
     }
-    CDDSurface* chanB = m_world->m_drawTarget->m_backPair->m_surface;
-    if (chanB == NULL) {
+    CDDSurface* sourceSurface = m_world->m_drawTarget->m_backPair->m_surface;
+    if (sourceSurface == NULL) {
         return 0;
     }
 
@@ -204,8 +204,8 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     t.m_centerX = centerX;
     t.m_clearMode = 0;
     t.m_centerY = centerY;
-    t.m_targetSurface = chanA;
-    t.m_sourceSurface = chanB;
+    t.m_targetSurface = targetSurface;
+    t.m_sourceSurface = sourceSurface;
     CFader* f = mgr->Add(FADERKIND_LIGHT, &t);
     if (f == NULL) {
         return 0;
@@ -214,7 +214,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(durationMs);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(sourceSurface);
     } else {
         f->RunFade(durationMs, leadMs, 0);
     }
@@ -259,20 +259,20 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_world->m_drawTarget->m_frontSurface->m_surface;
-    if (chanA == NULL) {
+    CDDSurface* targetSurface = m_world->m_drawTarget->m_frontSurface->m_surface;
+    if (targetSurface == NULL) {
         return 0;
     }
-    CDDSurface* chanB = m_world->m_drawTarget->m_backPair->m_surface;
-    if (chanB == NULL) {
+    CDDSurface* sourceSurface = m_world->m_drawTarget->m_backPair->m_surface;
+    if (sourceSurface == NULL) {
         return 0;
     }
 
     CSineFaderConfig t;
     t.m_clearToBlack = 0;
     t.m_intensityPercent = intensityPercent;
-    t.m_targetSurface = chanA;
-    t.m_sourceSurface = chanB;
+    t.m_targetSurface = targetSurface;
+    t.m_sourceSurface = sourceSurface;
     CFader* f = mgr->Add(FADERKIND_SINE, &t);
     if (f == NULL) {
         return 0;
@@ -281,7 +281,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     m_mgr->PauseMusicIfEnabled();
     if (g_disableFades != 0) {
         ActiveWait(durationMs);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(sourceSurface);
     } else {
         f->RunFade(durationMs, leadMs, 0);
     }
@@ -300,26 +300,26 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     if (m_world->m_deviceManager == NULL) {
         return 0;
     }
-    CDDSurface* chanA = m_world->m_drawTarget->m_frontSurface->m_surface;
-    if (chanA == NULL) {
+    CDDSurface* targetSurface = m_world->m_drawTarget->m_frontSurface->m_surface;
+    if (targetSurface == NULL) {
         return 0;
     }
-    CDDrawSurfacePair* holderB;
+    CDDrawSurfacePair* sourcePair;
     if (useOverlay != 0 && m_world->m_drawTarget->HasOverlay() != 0) {
-        holderB = m_world->m_drawTarget->m_overlayPair;
+        sourcePair = m_world->m_drawTarget->m_overlayPair;
     } else {
-        holderB = m_world->m_drawTarget->m_backPair;
+        sourcePair = m_world->m_drawTarget->m_backPair;
     }
-    CDDSurface* chanB = holderB->m_surface;
-    if (chanB == NULL) {
+    CDDSurface* sourceSurface = sourcePair->m_surface;
+    if (sourceSurface == NULL) {
         return 0;
     }
 
     CSineFaderConfig t;
     t.m_clearToBlack = 0;
     t.m_intensityPercent = pct;
-    t.m_targetSurface = chanA;
-    t.m_sourceSurface = chanB;
+    t.m_targetSurface = targetSurface;
+    t.m_sourceSurface = sourceSurface;
     CFader* f = mgr->Add(FADERKIND_SINE, &t);
     if (f == NULL) {
         return 0;
@@ -327,7 +327,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
 
     if (g_disableFades != 0) {
         ActiveWait(dur);
-        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(chanB);
+        m_world->m_drawTarget->m_frontSurface->m_surface->Blt(sourceSurface);
     } else {
         f->RunFade(dur, lead, 0);
     }
@@ -450,9 +450,9 @@ i32 CState::InputVirtual() {
     if (m_world->m_imageRegistry->LoadNamespace(path, "GAME", "_") == -1) {
         return 0;
     }
-    m_cursorRestoreWarmup1 = 0;
-    m_cursorRestoreWarmup2 = 1;
-    m_cursorSaveSlot = 0;
+    m_cursorSavedSurfaceValid[0] = 0;
+    m_cursorSavedSurfaceValid[1] = 1;
+    m_cursorBufferIndex = 0;
     return 1;
 }
 
@@ -522,13 +522,13 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_cursorY, sizeof(m_cursorY));
     ar->Write(&m_snapOriginX, sizeof(m_snapOriginX));
     ar->Write(&m_snapOriginY, sizeof(m_snapOriginY));
-    ar->Write(&m_cursorSaveSrc0, sizeof(m_cursorSaveSrc0));
-    ar->Write(&m_cursorSaveSrc1, sizeof(m_cursorSaveSrc1));
-    ar->Write(&m_cursorSaveDst0, sizeof(m_cursorSaveDst0));
-    ar->Write(&m_cursorSaveDst1, sizeof(m_cursorSaveDst1));
-    ar->Write(&m_cursorRestoreWarmup1, sizeof(m_cursorRestoreWarmup1));
-    ar->Write(&m_cursorRestoreWarmup2, sizeof(m_cursorRestoreWarmup2));
-    ar->Write(&m_cursorSaveSlot, sizeof(m_cursorSaveSlot));
+    ar->Write(&m_cursorSavedRects[0], sizeof(m_cursorSavedRects[0]));
+    ar->Write(&m_cursorSavedRects[1], sizeof(m_cursorSavedRects[1]));
+    ar->Write(&m_cursorScreenRects[0], sizeof(m_cursorScreenRects[0]));
+    ar->Write(&m_cursorScreenRects[1], sizeof(m_cursorScreenRects[1]));
+    ar->Write(&m_cursorSavedSurfaceValid[0], sizeof(m_cursorSavedSurfaceValid[0]));
+    ar->Write(&m_cursorSavedSurfaceValid[1], sizeof(m_cursorSavedSurfaceValid[1]));
+    ar->Write(&m_cursorBufferIndex, sizeof(m_cursorBufferIndex));
     return 1;
 }
 
@@ -554,12 +554,12 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_cursorY, sizeof(m_cursorY));
     ar->Read(&m_snapOriginX, sizeof(m_snapOriginX));
     ar->Read(&m_snapOriginY, sizeof(m_snapOriginY));
-    ar->Read(&m_cursorSaveSrc0, sizeof(m_cursorSaveSrc0));
-    ar->Read(&m_cursorSaveSrc1, sizeof(m_cursorSaveSrc1));
-    ar->Read(&m_cursorSaveDst0, sizeof(m_cursorSaveDst0));
-    ar->Read(&m_cursorSaveDst1, sizeof(m_cursorSaveDst1));
-    ar->Read(&m_cursorRestoreWarmup1, sizeof(m_cursorRestoreWarmup1));
-    ar->Read(&m_cursorRestoreWarmup2, sizeof(m_cursorRestoreWarmup2));
-    ar->Read(&m_cursorSaveSlot, sizeof(m_cursorSaveSlot));
+    ar->Read(&m_cursorSavedRects[0], sizeof(m_cursorSavedRects[0]));
+    ar->Read(&m_cursorSavedRects[1], sizeof(m_cursorSavedRects[1]));
+    ar->Read(&m_cursorScreenRects[0], sizeof(m_cursorScreenRects[0]));
+    ar->Read(&m_cursorScreenRects[1], sizeof(m_cursorScreenRects[1]));
+    ar->Read(&m_cursorSavedSurfaceValid[0], sizeof(m_cursorSavedSurfaceValid[0]));
+    ar->Read(&m_cursorSavedSurfaceValid[1], sizeof(m_cursorSavedSurfaceValid[1]));
+    ar->Read(&m_cursorBufferIndex, sizeof(m_cursorBufferIndex));
     return 1;
 }

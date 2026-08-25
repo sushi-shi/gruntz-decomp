@@ -159,8 +159,8 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x114120` | `?PlayCueIfElapsed@SoundCueRegistry@@QAEHPBD@Z` | ddrawsubmgrrefresh | `0x114120` ? |
 | `0x114ec0` | `?SaveFrontBufferShot@@YAXPAVRegistryHelper@Utils@@PAVCGruntz` | savefrontbuffershot | `0x114ec0` ? |
 | `0x114f00` | `?SaveFrontBufferShotImpl@@YAHPAVRegistryHelper@Utils@@PAVCGr` | savefrontbuffershot | `0x114f00` ? |
-| `0x114f50` | `?ChainForward14@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@` | chainforward | `0x114f50` ? |
-| `0x114fa0` | `?ChainForward@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HH` | chainforward | `0x114fa0` ? |
+| `0x114f50` | `?SaveBackBufferShot@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@` | chainforward | `0x114f50` ? |
+| `0x114fa0` | `?SaveOverlayBufferShot@@YAHPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HH` | chainforward | `0x114fa0` ? |
 | `0x114ff0` | `?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@` | savescreenshot | `0x114ff0` ? |
 | `0x115810` | `?InitializeFonts@@YAHXZ` | fonts | `0x115810` ? |
 | `0x1158f0` | `?FreeFontsMemory@@YAHXZ` | fonts | `0x1158f0` ? |

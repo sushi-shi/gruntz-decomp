@@ -40,8 +40,8 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     StatusBarTab tab,
     RECT g,
     const char* key,
-    i32 idxA,
-    i32 idxB
+    i32 leftFrameIndex,
+    i32 rightFrameIndex
 ) {
 
     CDDrawSurfaceMgr* h;
@@ -87,10 +87,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (cfg == NULL) {
         return 0;
     }
-    m_frameIdxA = idxA;
-    m_frameIdxB = idxB;
-    s = m_config->GetAt(idxA);
-    m_frameA = s;
+    m_leftFrameIndex = leftFrameIndex;
+    m_rightFrameIndex = rightFrameIndex;
+    s = m_config->GetAt(leftFrameIndex);
+    m_leftFrame = s;
     if (s == NULL) {
         goto fail;
     }
@@ -100,8 +100,8 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     m_config->SetAllTypes(SHADE_PAL_16);
     m_config->SetAllFormats(sel);
-    val = m_config->GetAt(m_frameIdxB);
-    m_frameB = val;
+    val = m_config->GetAt(m_rightFrameIndex);
+    m_rightFrame = val;
     return val != NULL;
 fail:
     return 0;
@@ -109,8 +109,8 @@ fail:
 
 RVA(0x000e8c70, 0xc)
 void CSBI_GruntMachine::Reset() {
-    m_frameA = NULL;
-    m_frameB = NULL;
+    m_leftFrame = NULL;
+    m_rightFrame = NULL;
     m_config = NULL;
 }
 
@@ -122,13 +122,13 @@ i32 CSBI_GruntMachine::Refresh(i32) {
 RVA(0x000e8cb0, 0xc4)
 i32 CSBI_GruntMachine::Render() {
     if (m_redrawFrames > 0) {
-        i32 idx = m_frameIdxA;
+        i32 idx = m_leftFrameIndex;
         m_redrawFrames--;
         CDDrawWorker* cfg = m_config;
 
-        m_frameA = cfg->GetAt(idx);
-        idx = m_frameIdxB;
-        m_frameB = cfg->GetAt(idx);
+        m_leftFrame = cfg->GetAt(idx);
+        idx = m_rightFrameIndex;
+        m_rightFrame = cfg->GetAt(idx);
 
         CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
 
@@ -136,11 +136,11 @@ i32 CSBI_GruntMachine::Render() {
         if (f) {
             f->RenderFrame(ctx, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
         }
-        f = m_frameB;
+        f = m_rightFrame;
         if (f) {
             f->RenderFrame(ctx, m_rect.left + f->m_anchorX + 0x2c, m_rect.top + f->m_anchorY, 0);
         }
-        f = m_frameA;
+        f = m_leftFrame;
         if (f) {
             f->RenderFrame(ctx, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
         }
@@ -149,12 +149,12 @@ i32 CSBI_GruntMachine::Render() {
 }
 
 RVA(0x000e8dc0, 0x22)
-void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
-    if (idxA != -1) {
-        m_frameIdxA = idxA;
+void CSBI_GruntMachine::SetFrames(i32 leftFrameIndex, i32 rightFrameIndex) {
+    if (leftFrameIndex != -1) {
+        m_leftFrameIndex = leftFrameIndex;
     }
-    if (idxB != -1) {
-        m_frameIdxB = idxB;
+    if (rightFrameIndex != -1) {
+        m_rightFrameIndex = rightFrameIndex;
     }
     m_redrawFrames = 2;
 }
@@ -188,23 +188,23 @@ i32 CSBI_GruntMachine::SerializeFields(
                 strcpy(buf, m_config->m_name);
             }
             s->Write(buf, SERIAL_NAME_LEN);
-            s->Write(&m_frameIdxA, sizeof(m_frameIdxA));
+            s->Write(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_frameA != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_frameA, buf, &v);
+            if (m_leftFrame != NULL) {
+                reg->m_imageRegistry->AnyValueMatches(m_leftFrame, buf, &v);
             }
             s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
-            s->Write(&m_frameIdxB, sizeof(m_frameIdxB));
+            s->Write(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             v = 0;
-            if (m_frameB != NULL) {
-                reg->m_imageRegistry->AnyValueMatches(m_frameB, buf, &v);
+            if (m_rightFrame != NULL) {
+                reg->m_imageRegistry->AnyValueMatches(m_rightFrame, buf, &v);
             }
             s->Write(buf, SERIAL_NAME_LEN);
             s->Write(&v, sizeof(v));
@@ -232,7 +232,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             } else {
                 m_config = NULL;
             }
-            s->Read(&m_frameIdxA, sizeof(m_frameIdxA));
+            s->Read(&m_leftFrameIndex, sizeof(m_leftFrameIndex));
 
             {
                 i32 idx;
@@ -250,12 +250,12 @@ i32 CSBI_GruntMachine::SerializeFields(
                     } else {
                         r = NULL;
                     }
-                    m_frameA = r;
+                    m_leftFrame = r;
                 } else {
-                    m_frameA = NULL;
+                    m_leftFrame = NULL;
                 }
             }
-            s->Read(&m_frameIdxB, sizeof(m_frameIdxB));
+            s->Read(&m_rightFrameIndex, sizeof(m_rightFrameIndex));
 
             {
                 i32 idx;
@@ -273,9 +273,9 @@ i32 CSBI_GruntMachine::SerializeFields(
                     } else {
                         r = NULL;
                     }
-                    m_frameB = r;
+                    m_rightFrame = r;
                 } else {
-                    m_frameB = NULL;
+                    m_rightFrame = NULL;
                 }
             }
 

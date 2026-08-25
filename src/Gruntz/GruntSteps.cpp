@@ -266,12 +266,12 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
         a.top = -1;                                                                                \
         a.right = 1;                                                                               \
         a.bottom = 1;                                                                              \
-        m_toyRectA = a;                                                                            \
+        m_vehicleContactRect = a;                                                                  \
         a.left = 0;                                                                                \
         a.top = 0;                                                                                 \
         a.right = 0;                                                                               \
         a.bottom = 0;                                                                              \
-        m_toyRectB = a;                                                                            \
+        m_vehicleContactExclusionRect = a;                                                         \
     } while (0)
     switch (kind) {
         case PICKUP_BABYWALKER:
@@ -531,14 +531,14 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 }
 
 RVA(0x00051a20, 0x17d)
-i32 CGrunt::RectContainsGated(i32 x, i32 y) {
+i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
     i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
     i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
 
-    RECT r1 = m_toyRectA;
-    RECT r2 = m_toyRectB;
+    RECT r1 = m_vehicleContactRect;
+    RECT r2 = m_vehicleContactExclusionRect;
     r1.left += dx;
     r1.top += dy;
     r1.right += dx;
@@ -1179,7 +1179,7 @@ applyTail:
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;
-            m_routeMaskC = 0;
+            m_routePassableMask = 0;
         }
         if (spawnWormhole != 0) {
             CWwdSpriteObject* spawned =
@@ -1535,8 +1535,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_arrivalActive, sizeof(m_arrivalActive));
     ar->Write(&m_reachRect, sizeof(m_reachRect));
     ar->Write(&m_reachExclusionRect, sizeof(m_reachExclusionRect));
-    ar->Write(&m_toyRectA, sizeof(m_toyRectA));
-    ar->Write(&m_toyRectB, sizeof(m_toyRectB));
+    ar->Write(&m_vehicleContactRect, sizeof(m_vehicleContactRect));
+    ar->Write(&m_vehicleContactExclusionRect, sizeof(m_vehicleContactExclusionRect));
     ar->Write(&m_health, sizeof(m_health));
     ar->Write(&m_stamina, sizeof(m_stamina));
     ar->Write(&m_toyTime, sizeof(m_toyTime));
@@ -1585,8 +1585,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_tileClaimed, sizeof(m_tileClaimed));
     ar->Write(&m_deathAnimStarted, sizeof(m_deathAnimStarted));
     ar->Write(&m_pendingTriggerPx, sizeof(m_pendingTriggerPx));
-    ar->Write(&m_routeMaskA, sizeof(m_routeMaskA));
-    ar->Write(&m_routeMaskC, sizeof(m_routeMaskC));
+    ar->Write(&m_routeBlockedMask, sizeof(m_routeBlockedMask));
+    ar->Write(&m_routePassableMask, sizeof(m_routePassableMask));
     ar->Write(&m_moveVariantOverride, sizeof(m_moveVariantOverride));
     ar->Write(&m_moveKind, sizeof(m_moveKind));
     ar->Write(&m_moveVariant, sizeof(m_moveVariant));

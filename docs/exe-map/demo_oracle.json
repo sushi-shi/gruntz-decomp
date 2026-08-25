@@ -523,7 +523,7 @@
  },
  {
   "file": "src/Gruntz/Brickz.cpp",
-  "name": "?SearchEdge@CBrickzGrid@@QAEHHHHHPAXHHH@Z",
+  "name": "?FindPathWithEndpointOverrides@CBrickzGrid@@QAEHHHHHPAXHHH@Z",
   "rva": 531984,
   "demo_rva": 525424,
   "retail_dist": 103978,

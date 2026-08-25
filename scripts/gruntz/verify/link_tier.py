@@ -158,6 +158,17 @@ def _rel32_offsets(blob: bytes, vma: int) -> list[int]:
     return out
 
 
+def _byte_exact_symbols(pct: dict[tuple[str, str], float]) -> set[str]:
+    """Symbols whose object score is literally 100%, not merely displayed
+    as exact by the 99.995% navigation threshold.
+
+    The linked-image audit isolates link-assigned placement and referents. A
+    below-100 object body already contains an object-local byte difference, so
+    admitting it here misreports that known compiler residue as a link defect.
+    """
+    return {sym for (_unit, sym), score in pct.items() if score == 100.0}
+
+
 def image_diff_findings(limit: int = 25) -> list[str]:
     """Exact-scored functions whose LINKED candidate bytes diverge from
     retail under reloc masking."""
@@ -181,7 +192,6 @@ def image_diff_findings(limit: int = 25) -> list[str]:
                 "re-run `gruntz link` before reading the linked-image diff"]
     from gruntz.core.pe import image
     from gruntz.model import resolve
-    from gruntz.verify import scores as sc
     from gruntz.walls.inventory import report_scores
     retail = image()
     cand = _candidate_pe()
@@ -189,7 +199,7 @@ def image_diff_findings(limit: int = 25) -> list[str]:
     rsites = _reloc_sites(retail)
     csites = _reloc_sites(cand)
     _p, pct = report_scores()
-    exact = {sym for (_u, sym), p in pct.items() if p >= sc.EXACT}
+    exact = _byte_exact_symbols(pct)
     out = []
     checked = 0
     for b in resolve().functions:

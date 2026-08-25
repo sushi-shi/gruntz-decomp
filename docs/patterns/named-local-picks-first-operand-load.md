@@ -51,16 +51,16 @@ mov ebx,[t+0x13c]`). Operand swapping changed nothing; the named local took all 
 ## The lever runs BOTH ways — removing a local can flip the operand order too
 
 The same knob decides which register a *derived* value ends up in, and therefore which way
-round a later commutative operator is written. `CStatusBarMgr::DrainGauge` @0x105780 is a
+round a later commutative operator is written. `CStatusBarMgr::DrainGruntWell` @0x105780 is a
 three-line clamp:
 
 ```cpp
 // NO  - the named difference lands in edx, cl emits `and edx,eax` / stores edx
-i32 v = m_gauge - delta;
-m_gaugeTarget = v > 0 ? v : 0;
+i32 v = m_gruntWellLevel - delta;
+m_gruntWellTargetLevel = v > 0 ? v : 0;
 
 // YES - written inline the value stays in eax: `and eax,edx` / stores eax  (retail)
-m_gaugeTarget = m_gauge - delta > 0 ? m_gauge - delta : 0;
+m_gruntWellTargetLevel = m_gruntWellLevel - delta > 0 ? m_gruntWellLevel - delta : 0;
 ```
 
 98.50 -> 100 EXACT. Inverting the ternary (`v <= 0 ? 0 : v`) was byte-identical, which is

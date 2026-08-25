@@ -53,7 +53,7 @@ Evidence, four instances, no callee's bytes moved in any of them:
 `CMultiStartDlg::CommitLatencySelection` 92.08 -> 100.00 EXACT
 (`CLatencyList::GetSelItemData`), `CRezArchive::ImportDirectoryTree` 99.67 -> 100.00
 EXACT (`CRezArchive::UnpackTag`), `CGameLevel::LoadWwd` 95.53 -> 96.24
-(`CGameLevel::InflateMainBlock`), and `CBattlezMapConfig::TileSwitch` 0x029af0 -
+(`CGameLevel::InflateMainBlock`), and `CBattlezMapConfig::RerouteIdleUnit` 0x029af0 -
 which the PAIRED screen structurally could not reach. It sat at 100.00 EXACT as
 `void __stdcall TileSwitch(CGrunt*, i32, i32, i32, i32, i32)`; retail's sole
 caller `CBattlezMapConfig::Step` does `mov ecx,edi` with `edi` the prologue's

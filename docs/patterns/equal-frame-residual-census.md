@@ -154,11 +154,11 @@ become one tuple, so a global bound to the wrong symbol reads as a rotation.
 `reg_key` keeps the `|ref` suffix; the control that caught this is in
 `gruntz verify selftest -k Residue`.
 
-**5. A negative addend into the PRECEDING array.** `&g_rasterVtxA[n - 1]`
-compiles to `lea edx,[ecx*4 + g_rasterVtxA - 0x1c]`; the delinker resolves the
+**5. A negative addend into the PRECEDING array.** `&g_rasterOddClipPassBuffer[n - 1]`
+compiles to `lea edx,[ecx*4 + g_rasterOddClipPassBuffer - 0x1c]`; the delinker resolves the
 same address against the array that CONTAINS it and reports
 `g_rasterEdgeR + 0x1bff4`. The code bytes are identical — check the arithmetic
-(`g_rasterVtxA - 0x1c == g_rasterEdgeR + 0x1bff4`, both 0x2a16ec) before
+(`g_rasterOddClipPassBuffer - 0x1c == g_rasterEdgeR + 0x1bff4`, both 0x2a16ec) before
 believing a referent row. `ImagePolyClipRect` 0x1461b0 is the standing example.
 
 **6. A pooled `.rdata` section hash.** `_kMsToSeconds$Sdata_rdata_<sha>` names
@@ -169,7 +169,7 @@ hash differently for the same float. Two `CFader` rows.
 `mov edx,[ebp+0x1c]; imul edx,[esp+N]` looks like a source term-order difference
 and is not: **cl 5.0 canonicalizes the operand order of a commutative binary op
 and the source spelling cannot reach it.** Measured on `imul`
-(`CMapMgr::ResetCells` 0x9f5d0 `m_height * m_width` -> `m_width * m_height`, and
+(`CMapMgr::RecycleClosedNodes` 0x9f5d0 `m_height * m_width` -> `m_width * m_height`, and
 `CNetSession::Tick` 0xbf9e0 `seq * m_period` -> `m_period * seq`) and on `fmul`
 (`CMovingLogic::AdvanceMotion` 0x16ea90, three spellings: `x * k`, `k * x` and
 `x *= k` all emit `fld <k>; fmul <x>`). Every one of the three swaps was

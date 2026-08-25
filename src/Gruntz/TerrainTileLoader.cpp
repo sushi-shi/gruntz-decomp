@@ -244,7 +244,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
                 if (removed != 0 && playerIndex == g_curPlayer) {
                     static_cast<CPlay*>(g_gameReg->m_curState)
-                        ->m_statusBar->AdvanceGauge(gaugePoints);
+                        ->m_statusBar->AdvanceGruntWell(gaugePoints);
                 }
             }
             return 1;

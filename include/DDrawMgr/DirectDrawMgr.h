@@ -26,8 +26,8 @@ public:
         m_palette = NULL;
         m_pos = NULL;
         m_reserved = 0;
-        m_cacheA = NULL;
-        m_cacheB = NULL;
+        m_entries = NULL;
+        m_readbackEntries = NULL;
         m_active = 0;
         m_sourcePalette = NULL;
         m_targetPalette = NULL;
@@ -71,8 +71,8 @@ public:
     IDirectDrawPalette* m_palette;
     i32 m_reserved;
 
-    PALETTEENTRY* m_cacheA;
-    PALETTEENTRY* m_cacheB;
+    PALETTEENTRY* m_entries;
+    PALETTEENTRY* m_readbackEntries;
     PALETTEENTRY* m_targetPalette;
     PALETTEENTRY* m_sourcePalette;
 

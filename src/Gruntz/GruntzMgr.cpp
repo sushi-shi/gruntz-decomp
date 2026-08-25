@@ -2274,16 +2274,16 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     if (e == NULL) {
         return 0;
     }
-    i32 geoA = e->m_width;
-    i32 geoB = e->m_height;
+    i32 monolithWidth = e->m_width;
+    i32 monolithHeight = e->m_height;
     CDDrawWorkerHost* found =
         static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
     if (found == NULL) {
         CDDrawWorkerHost* spr = m_world->m_level->ReadObjectPlane(
             0x20,
             0x20,
-            geoA,
-            geoB,
+            monolithWidth,
+            monolithHeight,
             -0x19,
             -0x19,
             const_cast<char*>("MONOLITH")
@@ -2869,6 +2869,8 @@ i32 CGruntzMgr::TickStateMgrs() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
+// @identity-TODO: the slot range and posted command ID are proven, but retail
+// has no command handler or resource label that identifies the operation.
 RVA(0x000920e0, 0x32)
 i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
@@ -2880,6 +2882,8 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
+// @identity-TODO: the slot range and posted command ID are proven, but retail
+// has no command handler or resource label that identifies the operation.
 RVA(0x00092130, 0x32)
 i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {

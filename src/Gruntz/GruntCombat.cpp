@@ -674,7 +674,7 @@ i32 CGrunt::TryPowerupAtTile() {
     if ((flags & BRICKZ_BLOCKED_MASK) || (flags & 2)) {
         return 0;
     }
-    m_triggerMgr->LoadPowerupIconSprites(reason, px, py, 0, 1, 0);
+    m_triggerMgr->SpawnPowerupIcon(reason, px, py, 0, 1, 0);
     return 1;
 }
 
@@ -822,7 +822,7 @@ i32 CGrunt::PathScan() {
                 || (co->m_x == target.m_x && co->m_y == target.m_y)) {
 
                 CPtrList s(0xa);
-                i32 res = grid->SearchEdge(
+                i32 res = grid->FindPathWithEndpointOverrides(
                     start.m_x,
                     start.m_y,
                     co->m_x,
@@ -934,7 +934,7 @@ i32 CGrunt::PathScan() {
                     continue;
                 }
                 CPtrList s(0xa);
-                i32 res = grid->SearchEdge(
+                i32 res = grid->FindPathWithEndpointOverrides(
                     start.m_x,
                     start.m_y,
                     cc,
@@ -979,7 +979,7 @@ i32 CGrunt::PathScan() {
                             }
                             s.RemoveAll();
 
-                            if (grid->SearchEdge(
+                            if (grid->FindPathWithEndpointOverrides(
                                     cc,
                                     rr,
                                     target.m_x,
@@ -1213,7 +1213,7 @@ i32 CGrunt::HandleCombatContact(
                 i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 applied;
                 if (phase == ARRIVAL_TAG_TRIGGER_B) {
-                    if (RectContainsGated(xMasked, yMasked) != 0) {
+                    if (VehicleContactContains(xMasked, yMasked) != 0) {
                         FinishActiveAction();
                     }
                     applied = m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, sx, sy);
@@ -2597,8 +2597,8 @@ afterTile:
 
 afterArrival:
     if (m_toyTime > 0) {
-        i64 remA = m_toyDuration - static_cast<i64>(g_frameTime);
-        i64 left = remA + m_toyClock;
+        i64 durationMinusNow = m_toyDuration - static_cast<i64>(g_frameTime);
+        i64 left = durationMinusNow + m_toyClock;
         m_toyTime = static_cast<i32>(
             static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
                 / static_cast<double>(static_cast<u32>(m_toyDurationLo)) * g_wingzScale
@@ -3091,10 +3091,10 @@ void CGrunt::AdvanceMotion() {
                             i32 lastY = other->m_lastTilePx.m_y;
                             i32 targetX = lastX;
                             i32 targetY = lastY;
-                            if (RectContainsGated(x, y) != 0) {
+                            if (VehicleContactContains(x, y) != 0) {
                                 targetX = otherPxX;
                                 targetY = otherPxY;
-                            } else if (RectContainsGated(lastX, lastY) != 0) {
+                            } else if (VehicleContactContains(lastX, lastY) != 0) {
                                 other->SnapToLastTile(0);
                             } else {
                                 targetX = m_arrivalTargetPx.m_x;

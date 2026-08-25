@@ -68,7 +68,8 @@ they overturned two conclusions that pure code reading had reached:
 
 * **"SnapshotChildren returned 0" was wrong.** Each `SlotN.sav` ends with a *complete*
   `0x3843a`-byte preview BMP (320x240x24, `bfSize` = 0x3843a = `SAVE_PREVIEW_BYTES`,
-  `bfOffBits` = 0x3a), appended by `ChainForward` -> `SaveScreenshot` -> `CDDSurface::SaveFile`
+  `bfOffBits` = 0x3a), appended by `SaveOverlayBufferShot` -> `SaveScreenshot` ->
+  `CDDSurface::SaveFile`
   *after* `SaveGame` has already written the snapshot. A complete preview therefore proves the
   whole `CSaveGame::Save` chain ran to the end and **that save succeeded**. An "ERROR - Cannot
   Save Game" alongside complete files means the error came from a *different* attempt.

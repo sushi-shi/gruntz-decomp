@@ -112,13 +112,18 @@ void CShadeTableCache::FreeNodes() {
 // five named-float-temp forms (two temps + a sum, one sum temp, a hoisted c, a hoisted
 // scale) all score 3-12 points WORSE - the temps defeat the ternary's own CSE instead.
 RVA(0x0014df40, 0x5f4)
-CShadeTable*
-CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
+CShadeTable* CShadeTableCache::FlashTable(
+    PALETTEENTRY* pal,
+    i32 darkRampSteps,
+    i32 brightRampSteps,
+    i32 startPct,
+    i32 endPct
+) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return NULL;
     }
-    i32 total = nA + nB;
+    i32 total = darkRampSteps + brightRampSteps;
     if (!t->Set(total << 8, 0)) {
         return NULL;
     }
@@ -172,8 +177,8 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         u8* ramp = &data[i * total];
 
-        for (i32 j = 0; j < nA; j++) {
-            float tt = static_cast<float>(j) / static_cast<float>(nA);
+        for (i32 j = 0; j < darkRampSteps; j++) {
+            float tt = static_cast<float>(j) / static_cast<float>(darkRampSteps);
             float inv = g_one - tt;
             u8 rn = static_cast<u8>(
                 (static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)) * inv
@@ -202,15 +207,19 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             ramp[j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
 
-        i32 br = static_cast<i32>(pal[i].peRed) + 0x10;
-        pal[i].peRed = static_cast<u8>((br < 0xff ? br : 0xff));
-        i32 bg = static_cast<i32>(pal[i].peGreen) + 0x10;
-        pal[i].peGreen = static_cast<u8>((bg < 0xff ? bg : 0xff));
-        i32 bb = static_cast<i32>(pal[i].peBlue) + 0x10;
-        pal[i].peBlue = static_cast<u8>((bb < 0xff ? bb : 0xff));
+        i32 br = static_cast<i32>(pal[i].peRed) + FLASH_SHADE_CHANNEL_BOOST;
+        pal[i].peRed =
+            static_cast<u8>((br < FLASH_SHADE_CHANNEL_MAX ? br : FLASH_SHADE_CHANNEL_MAX));
+        i32 bg = static_cast<i32>(pal[i].peGreen) + FLASH_SHADE_CHANNEL_BOOST;
+        pal[i].peGreen =
+            static_cast<u8>((bg < FLASH_SHADE_CHANNEL_MAX ? bg : FLASH_SHADE_CHANNEL_MAX));
+        i32 bb = static_cast<i32>(pal[i].peBlue) + FLASH_SHADE_CHANNEL_BOOST;
+        pal[i].peBlue =
+            static_cast<u8>((bb < FLASH_SHADE_CHANNEL_MAX ? bb : FLASH_SHADE_CHANNEL_MAX));
 
-        for (i32 k = nA; k < total; k++) {
-            float uu = static_cast<float>((k - nA)) / static_cast<float>(nB);
+        for (i32 k = darkRampSteps; k < total; k++) {
+            float uu =
+                static_cast<float>((k - darkRampSteps)) / static_cast<float>(brightRampSteps);
             float inv = g_one - uu;
             u8 rn = static_cast<u8>(
                 (static_cast<float>(pal[i].peRed) * inv

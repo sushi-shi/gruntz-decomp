@@ -99,7 +99,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
     if (mode->bpp == BPP_RGB_16) {
-        if (CheckMode16() == 0) {
+        if (SelectSmackBufferFormat16() == 0) {
             HandleError();
             return 0;
         }
@@ -176,7 +176,7 @@ i32 CMoviePlayer::InitMode(
         return 0;
     }
     if (bpp == BPP_RGB_16) {
-        if (!CheckMode16()) {
+        if (!SelectSmackBufferFormat16()) {
             HandleError();
             return 0;
         }
@@ -777,7 +777,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
 }
 
 RVA(0x0017d2b0, 0xe4)
-i32 CMoviePlayer::CheckMode16() {
+i32 CMoviePlayer::SelectSmackBufferFormat16() {
     i32 r = 0;
     i32 g = 0;
     i32 b = 0;

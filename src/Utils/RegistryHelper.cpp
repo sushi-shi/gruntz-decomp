@@ -10,30 +10,34 @@ namespace Utils {
 
     RVA(0x00139210, 0x11c)
     i32 RegistryHelper::Open(
-        char* szKeyName1,
-        char* szKeyName2,
-        char* szKeyName3,
-        char* szLastKey,
-        HKEY hKey,
-        char* szSubKey
+        char* vendorName,
+        char* productName,
+        char* versionName,
+        char* valueSubkeyName,
+        HKEY rootKey,
+        char* softwareSubkeyName
     ) {
-        strcpy(m_keyNameBuf, szKeyName2);
-        if (szLastKey) {
-            strcpy(m_lastKeyBuf, szLastKey);
+        strcpy(m_productName, productName);
+        if (valueSubkeyName) {
+            strcpy(m_valueSubkeyName, valueSubkeyName);
         } else {
-            m_lastKeyBuf[0] = 0;
+            m_valueSubkeyName[0] = 0;
         }
 
-        m_baseKey = hKey;
+        m_baseKey = rootKey;
 
-        char szSoftware[] = DATA_COMPGEN(0x0021a064, "Software");
+        char defaultSoftwareSubkey[] = DATA_COMPGEN(0x0021a064, "Software");
 
-        if (GetRegistryKey(hKey, szSubKey ? szSubKey : szSoftware, &m_key1)
-            && GetRegistryKey(m_key1, szKeyName1, &m_key2)
-            && GetRegistryKey(m_key2, szKeyName2, &m_key3)
-            && GetRegistryKey(m_key3, szKeyName3, &m_key4)) {
+        if (GetRegistryKey(
+                rootKey,
+                softwareSubkeyName ? softwareSubkeyName : defaultSoftwareSubkey,
+                &m_softwareKey
+            )
+            && GetRegistryKey(m_softwareKey, vendorName, &m_vendorKey)
+            && GetRegistryKey(m_vendorKey, productName, &m_productKey)
+            && GetRegistryKey(m_productKey, versionName, &m_versionKey)) {
             m_open = 1;
-            if (InitializeLastKey(szLastKey)) {
+            if (InitializeLastKey(valueSubkeyName)) {
                 return 1;
             }
             m_open = 0;
@@ -45,28 +49,28 @@ namespace Utils {
     void RegistryHelper::Close() {
         if (m_open) {
             m_open = 0;
-            RegCloseKey(m_key1);
-            RegCloseKey(m_key2);
-            RegCloseKey(m_key3);
-            if (m_key4 != m_valueKey) {
-                RegCloseKey(m_key4);
+            RegCloseKey(m_softwareKey);
+            RegCloseKey(m_vendorKey);
+            RegCloseKey(m_productKey);
+            if (m_versionKey != m_valueKey) {
+                RegCloseKey(m_versionKey);
             }
             RegCloseKey(m_valueKey);
         }
     }
 
     RVA(0x00139370, 0x37)
-    i32 RegistryHelper::InitializeLastKey(char* szLastKey) {
+    i32 RegistryHelper::InitializeLastKey(char* valueSubkeyName) {
         if (!m_open) {
             return 0;
         }
 
-        if (!szLastKey) {
-            m_valueKey = m_key4;
+        if (!valueSubkeyName) {
+            m_valueKey = m_versionKey;
             return 1;
         }
 
-        return GetRegistryKey(m_key4, szLastKey, &m_valueKey) != 0;
+        return GetRegistryKey(m_versionKey, valueSubkeyName, &m_valueKey) != 0;
     }
 
     RVA(0x001393b0, 0x58)
@@ -238,17 +242,17 @@ namespace Utils {
     }
 
     RVA(0x00139650, 0x32)
-    i32 RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult) {
+    i32 RegistryHelper::GetRegistryKey(HKEY parentKey, char* subkeyName, PHKEY resultKey) {
         DWORD dwDisposition;
         return RegCreateKeyExA(
-                   hKey,
-                   szSubKey,
+                   parentKey,
+                   subkeyName,
                    0,
                    "",
                    0,
                    KEY_ALL_ACCESS,
                    NULL,
-                   phKeyResult,
+                   resultKey,
                    &dwDisposition
                )
                == 0;

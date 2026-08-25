@@ -1050,7 +1050,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     i32 ty = y >> TILE_SHIFT_PX;
     i32 tile = grid->CellFlagsAt(tx, ty);
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
-        this->LoadPowerupIconSprites(
+        this->SpawnPowerupIcon(
             PICKUP_WARPSTONE,
             (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
             (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -1063,7 +1063,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
         i32 idx = anchorIndex - 1;
         CPlay::Anchor* rec = (idx < 0 || idx >= 4) ? NULL : &world->m_anchors[idx];
         if (rec != NULL) {
-            this->LoadPowerupIconSprites(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
+            this->SpawnPowerupIcon(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
         }
     }
     return 1;
@@ -2207,13 +2207,13 @@ Lab_56b:
 }
 
 RVA(0x0007c620, 0x500)
-i32 CTriggerMgr::LoadPowerupIconSprites(
+i32 CTriggerMgr::SpawnPowerupIcon(
     PickupType type,
-    i32 geoB,
-    i32 geoA,
-    i32 m130,
-    i32 warpIdx,
-    i32 m120
+    i32 x,
+    i32 y,
+    i32 faceDirection,
+    i32 warpstoneVariant,
+    i32 damage
 ) {
     if (type == PICKUP_NONE) {
         return 0;
@@ -2289,7 +2289,7 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
                     g_buteMgr.GetInt("WarpStone", static_cast<const char*>(lvl))
                 );
             } else {
-                name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);
+                name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpstoneVariant);
             }
             break;
         case PICKUP_WELDER:
@@ -2380,8 +2380,8 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
         case PICKUP_COVEREDTIMEBOMB: {
-            CGameObject* tb = g_gameReg->m_world->m_childGroup
-                                  ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+            CGameObject* tb =
+                g_gameReg->m_world->m_childGroup->CreateSprite(0, x, y, 0xf, "TimeBomb", 0x40003);
             if (tb) {
                 tb->m_damage = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -2391,20 +2391,20 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
             return 0;
     }
 
-    CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+    CWwdSpriteObject* spr =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }
     spr->SetImageSetByName(name);
-    spr->m_damage = m120;
+    spr->m_damage = damage;
     spr->m_score = 0;
     spr->m_points = 0;
     spr->m_smarts = 0;
     spr->m_powerup = 0;
     spr->m_health = 0;
     spr->m_direction = 0;
-    spr->m_faceDirection = m130;
+    spr->m_faceDirection = faceDirection;
     return 1;
 }
 

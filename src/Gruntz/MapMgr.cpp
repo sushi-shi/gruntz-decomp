@@ -141,8 +141,8 @@ CMapMgr::CMapMgr() {
     m_openList = NULL;
     m_reserved1c = 0;
     m_edgeMask = 0;
-    m_maskB = 0;
-    m_maskA = -1;
+    m_diagonalMask = 0;
+    m_blockedMask = -1;
     m_dirty = 1;
 }
 
@@ -223,41 +223,41 @@ void CMapMgr::Reset() {
 
 // @early-stop
 RVA(0x0009eca0, 0x2bd)
-i32 CMapMgr::Search(
-    i32 x1,
-    i32 y1,
-    i32 x2,
-    i32 y2,
-    CPtrList* list,
-    i32 maskA,
-    i32 maskB,
-    i32 maskC
+i32 CMapMgr::FindPath(
+    i32 startX,
+    i32 startY,
+    i32 goalX,
+    i32 goalY,
+    CPtrList* outPath,
+    i32 blockedMask,
+    i32 diagonalMask,
+    i32 passableMask
 ) {
-    i32 ox = m_bounds.left;
-    if (static_cast<u32>((x1 - ox)) >= static_cast<u32>(m_gridW)) {
+    i32 boundsX = m_bounds.left;
+    if (static_cast<u32>((startX - boundsX)) >= static_cast<u32>(m_gridW)) {
         return 0;
     }
-    i32 hgt = m_gridH;
-    i32 oy = m_bounds.top;
-    if (static_cast<u32>((y1 - oy)) >= static_cast<u32>(hgt)) {
+    i32 gridHeight = m_gridH;
+    i32 boundsY = m_bounds.top;
+    if (static_cast<u32>((startY - boundsY)) >= static_cast<u32>(gridHeight)) {
         return 0;
     }
-    if (static_cast<u32>((x2 - ox)) >= static_cast<u32>(m_gridW)) {
+    if (static_cast<u32>((goalX - boundsX)) >= static_cast<u32>(m_gridW)) {
         return 0;
     }
-    if (static_cast<u32>((y2 - oy)) >= static_cast<u32>(hgt)) {
+    if (static_cast<u32>((goalY - boundsY)) >= static_cast<u32>(gridHeight)) {
         return 0;
     }
-    m_maskC = maskC;
-    m_maskB = maskB;
-    m_maskA = maskA;
-    i32 flags = m_rows[y2][x2].m_flags;
-    // Retail 0x9ed26: `test ecx,eax` (maskA & flags) `je` continue, then
-    // `mov ecx,[esp+0x30]` (maskC) `test ecx,eax` `je 0x9eedc` -> return 0.  The
-    // SECOND test bails when maskC does NOT hit, i.e. the goal is blocked by maskA
-    // and the passable-override does not clear it - the same polarity CMapMgr::Expand
+    m_passableMask = passableMask;
+    m_diagonalMask = diagonalMask;
+    m_blockedMask = blockedMask;
+    i32 goalFlags = m_rows[goalY][goalX].m_flags;
+    // Retail 0x9ed26: `test ecx,eax` (blockedMask & flags) `je` continue, then
+    // `mov ecx,[esp+0x30]` (passableMask) `test ecx,eax` `je 0x9eedc` -> return 0. The
+    // SECOND test bails when passableMask does NOT hit, i.e. the goal is blocked
+    // and the passable-override does not clear it - the same polarity CMapMgr::ExpandNeighbor
     // uses at 0x9f0a2 for a neighbour.
-    if ((maskA & flags) != 0 && (maskC & flags) == 0) {
+    if ((blockedMask & goalFlags) != 0 && (passableMask & goalFlags) == 0) {
         return 0;
     }
 
@@ -266,22 +266,22 @@ i32 CMapMgr::Search(
     for (u32 i = 0; i < m_cellCount; i++) {
         m_cellPool[i].m_count = 0;
     }
-    if (x1 == x2 && y1 == y2) {
+    if (startX == goalX && startY == goalY) {
         return 1;
     }
-    m_goal.m_x = x2;
-    m_start.m_x = x1;
-    m_goal.m_y = y2;
-    m_start.m_y = y1;
+    m_goal.m_x = goalX;
+    m_start.m_x = startX;
+    m_goal.m_y = goalY;
+    m_start.m_y = startY;
 
     // Retail 0x9ed7d nulls the SEED, not the free list: `mov ecx,[esi+0x30]` /
     // `mov eax,[ecx+0x14]` / `cmp eax,edx` / `jne` -> `xor ecx,ecx` (seed = NULL).
     // The free-list head is only rewritten on the taken path (0x9ed8b).  That keeps
-    // the pool's last node as a permanent SENTINEL - the same invariant Expand
-    // (0x9f2b6) and CellPush (0x9f48d) enforce.  Nulling m_freeList instead left
-    // `seed` non-NULL, so the `seed == NULL` bail became dead: Search ran on the
-    // sentinel while m_nodePool.m_freeList was NULL, and the next Expand / Drain /
-    // ResetCells dereferenced that NULL head.
+    // the pool's last node as a permanent SENTINEL - the same invariant ExpandNeighbor
+    // (0x9f2b6) and LinkClosedNode (0x9f48d) enforce.  Nulling m_freeList instead left
+    // `seed` non-NULL, so the `seed == NULL` bail became dead: FindPath ran on the
+    // sentinel while m_nodePool.m_freeList was NULL, and the next ExpandNeighbor / RecycleOpenNodes /
+    // RecycleClosedNodes dereferenced that NULL head.
     BrickzNode* seed = m_nodePool.m_freeList;
     BrickzNode* slot = seed->m_openNext;
     if (slot == NULL) {
@@ -293,40 +293,40 @@ i32 CMapMgr::Search(
     if (seed == NULL) {
         return 0;
     }
-    seed->m_col = x1;
-    seed->m_row = y1;
+    seed->m_col = startX;
+    seed->m_row = startY;
     seed->m_gCost = 0;
-    i32 deltaY = abs(m_goal.m_y - y1);
-    i32 deltaX = abs(m_goal.m_x - x1);
+    i32 deltaY = abs(m_goal.m_y - startY);
+    i32 deltaX = abs(m_goal.m_x - startX);
     i32 h = (deltaY + deltaX) * 2;
     seed->m_hCost = h;
     seed->m_fCost = h;
     seed->m_openNext = NULL;
     seed->m_openPrev = NULL;
     seed->m_parent = NULL;
-    Insert(seed);
-    (&m_rows[y1][x1])->m_count++;
+    InsertOpenNode(seed);
+    (&m_rows[startY][startX])->m_count++;
     BrickzNode* node = NULL;
     while (m_openList != NULL) {
-        node = PopFront();
+        node = PopBestOpenNode();
         BrickzCell* cell = &m_rows[node->m_row][node->m_col];
         cell->m_count--;
         if (node->m_col == m_goal.m_x && node->m_row == m_goal.m_y) {
             goto reached;
         }
-        Expand(node, 0, 1, 2, 0);
-        Expand(node, 1, 0, 2, 0);
-        Expand(node, 0, -1, 2, 0);
-        Expand(node, -1, 0, 2, 0);
-        Expand(node, 1, 1, 3, 1);
-        Expand(node, 1, -1, 3, 1);
-        Expand(node, -1, -1, 3, 1);
-        Expand(node, -1, 1, 3, 1);
-        CellPush(node);
+        ExpandNeighbor(node, 0, 1, 2, 0);
+        ExpandNeighbor(node, 1, 0, 2, 0);
+        ExpandNeighbor(node, 0, -1, 2, 0);
+        ExpandNeighbor(node, -1, 0, 2, 0);
+        ExpandNeighbor(node, 1, 1, 3, 1);
+        ExpandNeighbor(node, 1, -1, 3, 1);
+        ExpandNeighbor(node, -1, -1, 3, 1);
+        ExpandNeighbor(node, -1, 1, 3, 1);
+        LinkClosedNode(node);
     }
     node = NULL;
-    Drain();
-    ResetCells();
+    RecycleOpenNodes();
+    RecycleClosedNodes();
     if (m_stepCb != NULL) {
         m_stepCb();
     }
@@ -348,7 +348,7 @@ reached:
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
 
-        list->AddHead(slot);
+        outPath->AddHead(slot);
         p = p->m_parent;
     }
     if (m_stepCb != NULL) {
@@ -358,13 +358,13 @@ reached:
     node->m_openNext = m_nodePool.m_freeList;
     m_nodePool.m_freeList->m_openPrev = node;
     m_nodePool.m_freeList = node;
-    Drain();
-    ResetCells();
+    RecycleOpenNodes();
+    RecycleClosedNodes();
     return 1;
 }
 
 RVA(0x0009f010, 0x2a1)
-i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
+i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diagonal) {
     i32 ng = node->m_gCost + cost;
     i32 ncol = node->m_col + dx;
     i32 nrow = node->m_row + dy;
@@ -380,27 +380,28 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     if ((m_edgeMask & nflags) != 0) {
         return 1;
     }
-    if ((m_maskA & nflags) != 0 && (m_maskC & nflags) == 0) {
+    if ((m_blockedMask & nflags) != 0 && (m_passableMask & nflags) == 0) {
         return 1;
     }
-    if (diag != 0 && m_maskB != 0) {
-        BrickzCell *cellA, *cellB;
+    if (diagonal != 0 && m_diagonalMask != 0) {
+        BrickzCell *horizontalNeighbor, *verticalNeighbor;
         if (dx > 0 && dy > 0) {
-            cellB = cell + m_width;
-            cellA = cell + 1;
+            verticalNeighbor = cell + m_width;
+            horizontalNeighbor = cell + 1;
         } else if (dx < 0 && dy > 0) {
-            cellB = cell + m_width;
-            cellA = cell - 1;
+            verticalNeighbor = cell + m_width;
+            horizontalNeighbor = cell - 1;
         } else if (dx > 0 && dy < 0) {
-            cellB = cell - m_width;
-            cellA = cell + 1;
+            verticalNeighbor = cell - m_width;
+            horizontalNeighbor = cell + 1;
         } else if (dx < 0 && dy < 0) {
-            cellB = cell - m_width;
-            cellA = cell - 1;
+            verticalNeighbor = cell - m_width;
+            horizontalNeighbor = cell - 1;
         } else {
             goto relax;
         }
-        if ((m_maskB & cellA->m_flags) != 0 || (m_maskB & cellB->m_flags) != 0) {
+        if ((m_diagonalMask & horizontalNeighbor->m_flags) != 0
+            || (m_diagonalMask & verticalNeighbor->m_flags) != 0) {
             return 1;
         }
     }
@@ -417,7 +418,7 @@ relax:
     }
     BrickzNode* open;
     if (ncell->m_count != 0) {
-        open = Find(ncol, nrow);
+        open = FindOpenNode(ncol, nrow);
     } else {
         open = NULL;
     }
@@ -426,26 +427,26 @@ relax:
     }
     if (open != NULL && ng < open->m_gCost) {
         if (closed != NULL) {
-            CellPop(closed, 1);
+            UnlinkClosedNode(closed, 1);
         }
-        Unlink(open);
+        UnlinkOpenNode(open);
         open->m_fCost = ng + open->m_hCost;
         open->m_parent = node;
         open->m_gCost = ng;
-        Insert(open);
+        InsertOpenNode(open);
         return 1;
     }
     if (closed != NULL && ng < closed->m_gCost) {
-        CellPop(closed, 0);
+        UnlinkClosedNode(closed, 0);
         closed->m_parent = node;
         closed->m_gCost = ng;
         closed->m_fCost = closed->m_hCost + ng;
-        Insert(closed);
+        InsertOpenNode(closed);
         ncell->m_count++;
         return 1;
     }
     if (closed != NULL) {
-        CellPop(closed, 1);
+        UnlinkClosedNode(closed, 1);
     }
     if (open != NULL) {
         return 1;
@@ -473,13 +474,13 @@ relax:
     rec->m_openNext = NULL;
     rec->m_openPrev = NULL;
     rec->m_cellLink = NULL;
-    Insert(rec);
+    InsertOpenNode(rec);
     ncell->m_count++;
     return 1;
 }
 
 RVA(0x0009f370, 0x8a)
-i32 CMapMgr::Insert(BrickzNode* node) {
+i32 CMapMgr::InsertOpenNode(BrickzNode* node) {
     BrickzNode* cur = m_openList;
     node->m_openPrev = NULL;
     node->m_openNext = NULL;
@@ -513,7 +514,7 @@ i32 CMapMgr::Insert(BrickzNode* node) {
 }
 
 RVA(0x0009f430, 0x2a)
-BrickzNode* CMapMgr::PopFront() {
+BrickzNode* CMapMgr::PopBestOpenNode() {
     BrickzNode* head = m_openList;
     if (head != NULL) {
         BrickzNode* next = head->m_openNext;
@@ -531,7 +532,7 @@ BrickzNode* CMapMgr::PopFront() {
 
 // @early-stop
 RVA(0x0009f470, 0x62)
-void CMapMgr::CellPush(BrickzNode* node) {
+void CMapMgr::LinkClosedNode(BrickzNode* node) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
     BrickzCellNode* slot = m_cellNodePool.m_freeList;
     BrickzCellNode* nx = slot->m_cellNext;
@@ -557,13 +558,13 @@ void CMapMgr::CellPush(BrickzNode* node) {
 }
 
 RVA(0x0009f500, 0x24)
-BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
+BrickzNode* CMapMgr::FindOpenNode(i32 col, i32 row) {
     BrickzNode* p = m_openList;
     if (p == NULL) {
         return NULL;
     }
     do {
-        if (p->m_col == key1 && p->m_row == key2) {
+        if (p->m_col == col && p->m_row == row) {
             return p;
         }
         p = p->m_openNext;
@@ -574,7 +575,7 @@ BrickzNode* CMapMgr::Find(i32 key1, i32 key2) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009f540, 0x40)
-BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
+BrickzNode* CMapMgr::FindClosedNode(i32 col, i32 row) {
     BrickzCellNode* n = m_rows[row][col].m_head;
     while (n != NULL) {
         BrickzNode* child = n->m_searchNode;
@@ -587,7 +588,7 @@ BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
 }
 
 RVA(0x0009f590, 0x2f)
-void CMapMgr::Drain() {
+void CMapMgr::RecycleOpenNodes() {
     BrickzNode* p = m_openList;
     if (p != NULL) {
         do {
@@ -604,7 +605,7 @@ void CMapMgr::Drain() {
 
 // @early-stop
 RVA(0x0009f5d0, 0x81)
-void CMapMgr::ResetCells() {
+void CMapMgr::RecycleClosedNodes() {
     BrickzCell* cell = m_cellPool;
     for (u32 i = 0; i < m_height * m_width; i++) {
         BrickzCellNode* node = cell->m_head;
@@ -628,7 +629,7 @@ void CMapMgr::ResetCells() {
 }
 
 RVA(0x0009f690, 0x5d)
-void CMapMgr::Unlink(BrickzNode* node) {
+void CMapMgr::UnlinkOpenNode(BrickzNode* node) {
     if (node->m_openPrev != NULL && node->m_openNext != NULL) {
         node->m_openPrev->m_openNext = node->m_openNext;
         node->m_openNext->m_openPrev = node->m_openPrev;
@@ -647,10 +648,10 @@ void CMapMgr::Unlink(BrickzNode* node) {
 }
 
 RVA(0x0009f710, 0xa7)
-void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
+void CMapMgr::UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
     BrickzCellNode* slot = node->m_cellLink;
-    // The same three-arm `&&` chain CMapMgr::Unlink uses, but with the arms in retail's
+    // The same three-arm `&&` chain CMapMgr::UnlinkOpenNode uses, but with the arms in retail's
     // emission order: the FIRST body retail lays down is `*head = NULL` (0x9f73e), then
     // the two-sided unlink (0x9f74e), then the head-advance (0x9f761).
     if (slot->m_cellPrev == NULL && slot->m_cellNext == NULL) {
@@ -675,7 +676,7 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     slot->m_cellPrev = NULL;
     m_cellNodePool.m_freeList->m_cellPrev = slot;
     m_cellNodePool.m_freeList = slot;
-    if (flag != 0) {
+    if (recycleSearchNode != 0) {
         node->m_openNext = m_nodePool.m_freeList;
         node->m_openPrev = NULL;
         m_nodePool.m_freeList->m_openPrev = node;
@@ -713,9 +714,9 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_cellCount, sizeof(m_cellCount));
     ar->Write(&m_start, sizeof(m_start));
     ar->Write(&m_goal, sizeof(m_goal));
-    ar->Write(&m_maskA, sizeof(m_maskA));
-    ar->Write(&m_maskC, sizeof(m_maskC));
-    ar->Write(&m_maskB, sizeof(m_maskB));
+    ar->Write(&m_blockedMask, sizeof(m_blockedMask));
+    ar->Write(&m_passableMask, sizeof(m_passableMask));
+    ar->Write(&m_diagonalMask, sizeof(m_diagonalMask));
     ar->Write(&m_dirty, sizeof(m_dirty));
     ar->Write(&m_bounds.left, sizeof(m_bounds));
     ar->Write(&m_gridW, sizeof(m_gridW));
@@ -738,9 +739,9 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_cellCount, sizeof(m_cellCount));
     ar->Read(&m_start, sizeof(m_start));
     ar->Read(&m_goal, sizeof(m_goal));
-    ar->Read(&m_maskA, sizeof(m_maskA));
-    ar->Read(&m_maskC, sizeof(m_maskC));
-    ar->Read(&m_maskB, sizeof(m_maskB));
+    ar->Read(&m_blockedMask, sizeof(m_blockedMask));
+    ar->Read(&m_passableMask, sizeof(m_passableMask));
+    ar->Read(&m_diagonalMask, sizeof(m_diagonalMask));
     ar->Read(&m_dirty, sizeof(m_dirty));
     ar->Read(&m_bounds.left, sizeof(m_bounds));
     ar->Read(&m_gridW, sizeof(m_gridW));

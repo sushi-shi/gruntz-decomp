@@ -34,7 +34,7 @@ asymmetry, and no caller-diff sieve can flag it — which is a statement about
 the rule, not about the code. The defect happily lives there: the callee scores
 100 under either model, and any caller can be at 100 too.
 
-Measured. `CBattlezMapConfig::TileSwitch` (0x029af0) scored **100.00 EXACT**
+Measured. `CBattlezMapConfig::RerouteIdleUnit` (0x029af0) scored **100.00 EXACT**
 modelled as `void __stdcall TileSwitch(CGrunt*, i32, i32, i32, i32, i32)`. It
 is a member — retail's sole caller, `CBattlezMapConfig::Step`, ends its
 argument pushes with

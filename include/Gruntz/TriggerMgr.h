@@ -259,8 +259,14 @@ public:
 
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
 
-    i32
-    LoadPowerupIconSprites(PickupType type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
+    i32 SpawnPowerupIcon(
+        PickupType type,
+        i32 x,
+        i32 y,
+        i32 faceDirection,
+        i32 warpstoneVariant,
+        i32 damage
+    );
 
     i32 SpawnTileFx(i32 x, i32 y, i32 anchorIndex);
 

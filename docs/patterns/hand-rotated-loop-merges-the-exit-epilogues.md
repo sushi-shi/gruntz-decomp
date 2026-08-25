@@ -98,7 +98,7 @@ already-EXACT sites do:
 **Retail's own programmers wrote the guarded `do/while`.** These are all **100.00 EXACT**
 carrying the exact shape this page's "Cause" section calls the bug:
 
-- `CMapMgr::Find` 0x9f500 — `if (p == NULL) return 0; do { ... } while (p != NULL); return 0;`
+- `CMapMgr::FindOpenNode` 0x9f500 — `if (p == NULL) return 0; do { ... } while (p != NULL); return 0;`
 - `CSpawnList::ClearFlags` 0x9a420, `CMenuState::StopMusicChain` 0xa0640 (both `void`)
 - `CWormhole::SpawnPartners` 0x403b0, `CAttract::LeaveState` 0x14340
 - `CDDrawChildGroup::RenderChildren` / `BltDirtyChildren` / `BltDirtyChildrenEx`,

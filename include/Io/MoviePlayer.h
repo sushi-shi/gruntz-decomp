@@ -106,7 +106,7 @@ public:
     }
 
     i32 Init(HWND window, DDModeInfo* mode, u32 coopFlags);
-    i32 CheckMode16();
+    i32 SelectSmackBufferFormat16();
     i32 AddToPlaylist(
         const char* src,
         i32 openArg,

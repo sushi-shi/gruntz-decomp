@@ -46,7 +46,7 @@ addressing shape had arrived, so it was the right BASE. Two further levers on
 top of the dip closed it: computing the two y-terms adjacently so cl consumes
 the shared `m_rect10.top` twice with `lea` (83.15 -> 93.64), and `rc.bottom`
 before `rc.top` to match retail's EBX/EBP binding (93.64 -> 97.36). A fourth,
-unrelated lever (`m_fallRect.top += speed`) took it to 100.00.
+unrelated lever (`m_fallingItemRect.top += speed`) took it to 100.00.
 
 Positive control carrying the property: the sibling
 `CStatusBarMgr::UpdateFallingItemStatusBar` 0x107590, whose source ALREADY

@@ -19,14 +19,14 @@ referent defect that hides inside the "regalloc" bucket.
 // WRONG - `it` is CSBI_Image*, so `SetupImage` resolves to CSBI_Image's slot 11 (+0x2c)
 CSBI_Image* it;
 it = new CSBI_WellGoo;
-if (!it->SetupImage(this, code, cmd, tab, rc, key, m_gauge, 0)) { ... }
+if (!it->SetupImage(this, code, cmd, tab, rc, key, m_gruntWellLevel, 0)) { ... }
 m_gaugeSink = static_cast<CSBI_WellGoo*>(it);
 ```
 ```cpp
 // RIGHT - CSBI_WellGoo overrides the 7-arg BASE `Setup`, slot 2 (+0x8), and takes no
 // `extra` argument; the downcast falls out with the type
 CSBI_WellGoo* goo = new CSBI_WellGoo;
-if (!goo->Setup(this, code, cmd, tab, rc, key, m_gauge)) { ... }
+if (!goo->Setup(this, code, cmd, tab, rc, key, m_gruntWellLevel)) { ... }
 m_gaugeSink = goo;
 ```
 ```asm

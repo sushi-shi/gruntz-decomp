@@ -22,7 +22,7 @@ each arm, which is retail's shape.
 // BASE: cl merges all 15 arms onto one epilogue - 88.53
 case SBICMD_TAB_STATZ:
     if (m_hlBusy) { return 1; }
-    m_tabSprite0->SetState(state, 1);
+    m_statzTabButton->SetState(state, 1);
     ...
     return 1;                      // <-- statement-identical in every arm
 ...
@@ -32,7 +32,7 @@ return 1;
 // TARGET shape: each arm carries its own `mov eax,1; pop...; ret 8` - 100.00 EXACT
 case SBICMD_TAB_STATZ:
     if (m_hlBusy) { return 1; }    // an early-exit guard INSIDE an arm keeps its return
-    m_tabSprite0->SetState(state, 1);
+    m_statzTabButton->SetState(state, 1);
     ...
     break;                         // <-- every arm
 ...

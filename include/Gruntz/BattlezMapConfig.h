@@ -44,9 +44,16 @@ public:
     i32 ForcePlaceFromReserve(CGrunt*);
     Coord* PickSpawnCoord(Coord*, CGrunt*, i32);
 
-    i32 RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC, i32 clearFlag);
+    i32 RouteUnitTo(
+        CGrunt* unit,
+        i32 goalCol,
+        i32 goalRow,
+        i32 blockedMask,
+        i32 passableMask,
+        i32 clearEndpointFlags
+    );
 
-    i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 maskC);
+    i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 blockedMask, i32 passableMask);
     i32 StepRowSpawn(i32 allowReserved);
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
@@ -54,7 +61,14 @@ public:
 
     // A member whose body never reads its receiver: `CBattlezMapConfig::Step`
     // hands it `this` in ECX (`mov ecx,edi`, dead) at the sole call site.
-    void TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused);
+    void RerouteIdleUnit(
+        CGrunt* unit,
+        i32 col,
+        i32 row,
+        i32 burnFirstRandom,
+        i32 burnSecondRandom,
+        i32 unused
+    );
 
     i32 ValidateUnitPath(CGrunt*);
 
@@ -217,7 +231,7 @@ public:
 
 extern const float g_diffScale;
 extern i32 g_stepRun;
-extern i32 g_spawnCfg;
+extern i32 g_battlezRouteBlockedMask;
 extern i32 g_stepCol;
 extern i32 g_stepRow;
 extern i32 g_diffTier;

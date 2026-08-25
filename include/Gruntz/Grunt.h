@@ -221,7 +221,7 @@ public:
 
     // By value, like EntrancePx. Every retail caller inlines it, and the frame
     // temp that carries the result is what leaves the unread half as a dead
-    // store (RectContains, RectContainsGated).
+    // store (RectContains, VehicleContactContains).
     Coord LastTilePx() {
         return m_lastTilePx;
     }
@@ -254,7 +254,7 @@ public:
     i32 RectContains(i32 x, i32 y);
 
     void RecycleCoords();
-    i32 RectContainsGated(i32 x, i32 y);
+    i32 VehicleContactContains(i32 x, i32 y);
     i32 CommitNeighbor(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
     CGrunt* FindGridNeighbor(i32 validate);
 
@@ -380,8 +380,8 @@ public:
     i32 m_resetApplied;
     i32 m_arrivalFlags;
     i32 m_passableMask;
-    i32 m_routeMaskA;
-    i32 m_routeMaskC;
+    i32 m_routeBlockedMask;
+    i32 m_routePassableMask;
     PickupType m_gruntKind;
     i32 m_entranceArmed;
 
@@ -427,8 +427,8 @@ public:
     RECT m_reachRect;
     RECT m_reachExclusionRect;
 
-    RECT m_toyRectA;
-    RECT m_toyRectB;
+    RECT m_vehicleContactRect;
+    RECT m_vehicleContactExclusionRect;
     EnemyAiType m_arrivalState;
     GruntAiState m_defenderState;
     BattlezTask m_battleState;
@@ -850,7 +850,14 @@ public:
 
     i32 UpdateArrival(i32 walking, i32 commit);
 
-    i32 StepArrivalDrop(i32 pxX, i32 pxY, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn);
+    i32 StepArrivalDrop(
+        i32 pxX,
+        i32 pxY,
+        i32 arrivalPhase,
+        i32 blockedMask,
+        i32 clearEndpointFlags,
+        i32 extraPassableMask
+    );
     i32 StepGruntMovement();
     i32 TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spawnWormhole);
 
@@ -916,7 +923,14 @@ public:
         PickupType attackerGruntKind
     );
 
-    i32 TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn);
+    i32 TileSwitch(
+        i32 col,
+        i32 row,
+        i32 arrivalPhase,
+        i32 blockedMask,
+        i32 clearEndpointFlags,
+        i32 extraPassableMask
+    );
 
     i32 LoadVehicleGruntSprites(PickupType kind);
 

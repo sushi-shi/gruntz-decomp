@@ -133,10 +133,10 @@ const i32 kActivateErrTag = 0x44b;
 
 const i32 kSetTabErrTag = 0x44a;
 
-GZ_ENUM_CONST_BEGIN(SbiGaugePct)
-    SBI_GAUGE_EMPTY = 0,
-    SBI_GAUGE_FULL = 100
-GZ_ENUM_CONST_END(SbiGaugePct)
+GZ_ENUM_CONST_BEGIN(GruntWellPct)
+    GRUNT_WELL_EMPTY = 0,
+    GRUNT_WELL_FULL = 100
+GZ_ENUM_CONST_END(GruntWellPct)
 
 class CStatusBarMgr {
 public:
@@ -157,10 +157,10 @@ public:
     void ResetSlots();
     void ArmSlot(i32 idx);
     i32 AnySlotActive();
-    void AdvanceGauge(i32 delta);
-    void DrainGauge(i32 delta);
-    void SetGaugeTarget(i32 value);
-    void SetGauge(i32 value);
+    void AdvanceGruntWell(i32 delta);
+    void DrainGruntWell(i32 delta);
+    void SetGruntWellTarget(i32 value);
+    void SetGruntWell(i32 value);
     void UpdateStatusSystems();
     void Reset();
     void ToggleStat(i32 idx);
@@ -200,7 +200,7 @@ public:
     i32 GetActiveValue();
     i32 LoadStatzTabToggleSprite(i32 idx, StatusSampleMode value);
     void UpdateGruntOvenStatusBar();
-    void TickGauge();
+    void TickGruntWell();
     void UpdateChipGrinderStatusBar();
     void NotifyAllSlots();
     void UpdateDestructWarningAnimation();
@@ -283,30 +283,30 @@ public:
     CSBI_SideTab* m_hitRects[15];
 
     CSBI_StatzTabArrow* m_statObj[15];
-    CSBI_MenuItem* m_tabSprite0;
-    CSBI_MenuItem* m_tabSprite1;
-    CSBI_MenuItem* m_tabSprite2;
-    CSBI_MenuItem* m_tabSprite3;
-    CSBI_MenuItem* m_tabSprite4;
-    CSBI_MenuItem* m_tabSprite5;
-    CSBI_MenuItem* m_tabSprite6;
-    CSBI_MenuItem* m_tabSprite7;
-    CSBI_MenuItem* m_tabSprite8;
-    CSBI_MenuItem* m_tabSprite9;
-    CSBI_MenuItem* m_tabSprite10;
-    CSBI_MenuItem* m_tabSprite11;
-    CSBI_MenuItem* m_tabSprite12;
-    CSBI_MenuItem* m_tabSprite13;
-    CSBI_MenuItem* m_tabSprite14;
+    CSBI_MenuItem* m_statzTabButton;
+    CSBI_MenuItem* m_resourceTabButton;
+    CSBI_MenuItem* m_gruntzTabButton;
+    CSBI_MenuItem* m_multiTabButton;
+    CSBI_MenuItem* m_gameTabButton;
+    CSBI_MenuItem* m_gameResumePauseButton;
+    CSBI_MenuItem* m_gameLoadButton;
+    CSBI_MenuItem* m_gameSaveButton;
+    CSBI_MenuItem* m_gameSettingsButton;
+    CSBI_MenuItem* m_gameHelpButton;
+    CSBI_MenuItem* m_gameQuitButton;
+    CSBI_MenuItem* m_endPrimaryButton;
+    CSBI_MenuItem* m_endSecondaryButton;
+    CSBI_MenuItem* m_confirmYesButton;
+    CSBI_MenuItem* m_confirmNoButton;
 
     CSBI_ImageSet* m_slotNotify[5];
-    CStatusBarItem* m_gaugeNotify;
-    CSBI_WellGoo* m_gaugeSink;
+    CStatusBarItem* m_gruntWellBackground;
+    CSBI_WellGoo* m_gruntWellGoo;
 
     CSbiSlot m_slots[5];
 
-    i32 m_gauge;
-    i32 m_gaugeTarget;
+    i32 m_gruntWellLevel;
+    i32 m_gruntWellTargetLevel;
 
     SbiClockPair m_reserved2a0;
     SbiClockPair m_reserved2b0;
@@ -315,8 +315,8 @@ public:
     CSBI_ImageSet* m_conveyorSprites[3];
     char m_pad314[0x318 - 0x314];
 
-    CSbiHlRow m_machineB;
-    CSbiHlRow m_machineA;
+    CSbiHlRow m_rightMachine;
+    CSbiHlRow m_leftMachine;
     CSBI_GruntMachine* m_machineDisplay;
     i32 m_reserved34c;
     i32 m_reserved350;
@@ -324,25 +324,25 @@ public:
     i32 m_tabsBuilt;
     i32 m_activeSlot;
     StatusBarHighlightRow m_pendingHlRow;
-    CStatusBarItem* m_notify0;
-    CStatusBarItem* m_notify1;
-    CStatusBarItem* m_notify2;
-    CStatusBarItem* m_notify3;
+    CStatusBarItem* m_resourceMainBackground;
+    CStatusBarItem* m_resourceMachineFramework;
+    CStatusBarItem* m_resourceUpperBackground;
+    CStatusBarItem* m_resourceWindowBackground;
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_machinePhase;
-    i32 m_extraNotifyArg0;
+    i32 m_machineItem;
     SbiClockPair m_beltClock;
-    CSBI_ImageSet* m_extraNotify0;
+    CSBI_ImageSet* m_machineItemSprite;
     char m_pad4e4[0x4e8 - 0x4e4];
     SbiFallingItemState m_fallActive;
-    i32 m_extraNotifyArg1;
+    i32 m_fallingItem;
     SbiClockPair m_fallClock;
-    CSBI_ImageSet* m_extraNotify1;
-    RECT m_fallRect;
-    RECT m_itemRect;
-    i32 m_itemBaseX;
+    CSBI_ImageSet* m_fallingItemSprite;
+    RECT m_fallingItemRect;
+    RECT m_machineItemRect;
+    i32 m_machineItemTargetX;
     i32 m_rezActive;
     i32 m_rezTick;
 
@@ -373,7 +373,7 @@ public:
 // setup, so they are mem-init-run stores and not body statements:
 //   0xc8046  m_reserved2a0 / m_reserved2b0, scheduled into the argument pushes of
 //            `??_H(m_conveyorSlots, 0x18, 3)`
-//   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_resourceSlots,0x18,12)`
+//   0xc808b  m_rightMachine / m_leftMachine clocks, into the pushes of `??_H(m_resourceSlots,0x18,12)`
 //   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_rewardQueue)`
 //   0xc8106  m_destructWarningClock, straight AFTER it
 // Body assignments land after every member ctor instead - measured, all six sat past
@@ -383,26 +383,26 @@ public:
 // The store ORDER (+0/+8/+4/+0xc, i.e. lastLo/intervalLo/lastHi/intervalHi) proves
 // that these three pairs are complete SbiClockPair objects like the four above them.
 inline CStatusBarMgr::CStatusBarMgr() {
-    // m_reserved2a0/2b0 and m_machineA/B zero themselves in the mem-init run, which is
+    // m_reserved2a0/2b0 and m_leftMachine/B zero themselves in the mem-init run, which is
     // where retail's stores are - between the m_slots[5] and m_conveyorSlots[3] ctor loops
     // and between m_conveyorSprites and m_machineDisplay. Writing them again here only
     // produced the same stores in the wrong PLACE and the wrong ORDER.
-    m_tabSprite0 = NULL;
-    m_tabSprite1 = NULL;
-    m_tabSprite2 = NULL;
-    m_tabSprite3 = NULL;
-    m_tabSprite4 = NULL;
-    m_tabSprite5 = NULL;
-    m_tabSprite6 = NULL;
-    m_tabSprite7 = NULL;
-    m_tabSprite8 = NULL;
-    m_tabSprite9 = NULL;
-    m_tabSprite10 = NULL;
+    m_statzTabButton = NULL;
+    m_resourceTabButton = NULL;
+    m_gruntzTabButton = NULL;
+    m_multiTabButton = NULL;
+    m_gameTabButton = NULL;
+    m_gameResumePauseButton = NULL;
+    m_gameLoadButton = NULL;
+    m_gameSaveButton = NULL;
+    m_gameSettingsButton = NULL;
+    m_gameHelpButton = NULL;
+    m_gameQuitButton = NULL;
     m_destructWarningSound = NULL;
-    m_tabSprite11 = NULL;
-    m_tabSprite12 = NULL;
-    m_tabSprite13 = NULL;
-    m_tabSprite14 = NULL;
+    m_endPrimaryButton = NULL;
+    m_endSecondaryButton = NULL;
+    m_confirmYesButton = NULL;
+    m_confirmNoButton = NULL;
     m_barSprite = NULL;
     m_world = NULL;
     m_redrawFrames = 0;
@@ -426,18 +426,18 @@ inline CStatusBarMgr::CStatusBarMgr() {
     memset(m_conveyorSprites, 0, sizeof(m_conveyorSprites));
     memset(m_resourceSlotSprites, 0, sizeof(m_resourceSlotSprites));
     memset(m_warlordHead, 0, sizeof(m_warlordHead));
-    m_notify0 = NULL;
-    m_notify2 = NULL;
-    m_notify3 = NULL;
-    m_notify1 = NULL;
-    m_extraNotify0 = NULL;
-    m_extraNotify1 = NULL;
+    m_resourceMainBackground = NULL;
+    m_resourceUpperBackground = NULL;
+    m_resourceWindowBackground = NULL;
+    m_resourceMachineFramework = NULL;
+    m_machineItemSprite = NULL;
+    m_fallingItemSprite = NULL;
     m_machineDisplay = NULL;
     m_destructButtonImage = NULL;
-    m_gaugeNotify = NULL;
-    m_gaugeSink = NULL;
-    m_gaugeTarget = SBI_GAUGE_EMPTY;
-    m_gauge = SBI_GAUGE_EMPTY;
+    m_gruntWellBackground = NULL;
+    m_gruntWellGoo = NULL;
+    m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
+    m_gruntWellLevel = GRUNT_WELL_EMPTY;
     m_reserved544 = 1;
     m_hlBusy = 0;
     m_retabNotify = NULL;

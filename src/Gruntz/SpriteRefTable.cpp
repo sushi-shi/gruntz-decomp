@@ -287,7 +287,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
         return NULL;
     }
 
-    PALETTEENTRY* entries = rec->m_palette->m_cacheA;
+    PALETTEENTRY* entries = rec->m_palette->m_entries;
     if (!entries) {
         return NULL;
     }

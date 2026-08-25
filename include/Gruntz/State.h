@@ -183,9 +183,9 @@ public:
     CDDrawSurfaceMgr* m_world;
     CFaderMgr* m_faderMgr;
 
-    CDDSurface* m_blitSurface0;
+    CDDSurface* m_ownedSurface0;
 
-    CDDSurface* m_blitSurface1;
+    CDDSurface* m_ownedSurface1;
     i32 m_levelIndex;
     LevelArea m_levelType;
 
@@ -214,17 +214,13 @@ public:
     i32 m_snapOriginX;
     i32 m_snapOriginY;
 
-    CDDSurface* m_cursorSaveSurface0;
-    CDDSurface* m_cursorSaveSurface1;
+    CDDSurface* m_cursorSavedSurfaces[2];
 
-    RECT m_cursorSaveSrc0;
-    RECT m_cursorSaveSrc1;
-    RECT m_cursorSaveDst0;
-    RECT m_cursorSaveDst1;
+    RECT m_cursorSavedRects[2];
+    RECT m_cursorScreenRects[2];
 
-    i32 m_cursorRestoreWarmup1;
-    i32 m_cursorRestoreWarmup2;
-    i32 m_cursorSaveSlot;
+    i32 m_cursorSavedSurfaceValid[2];
+    i32 m_cursorBufferIndex;
 };
 
 // retail copy 0x0008c750 (emitted by gruntzmgr; pin there)
@@ -234,30 +230,30 @@ inline CState::CState() {
     m_world = NULL;
     m_levelResources = NULL;
     m_stateResources = NULL;
-    m_blitSurface0 = NULL;
-    m_blitSurface1 = NULL;
+    m_ownedSurface0 = NULL;
+    m_ownedSurface1 = NULL;
     m_reserved38 = 0;
     m_ready = 0;
     m_versionString[0] = 0;
     m_previousStateId = GAMESTATE_NONE;
-    m_cursorSaveSurface0 = NULL;
-    m_cursorSaveSurface1 = NULL;
-    m_cursorSaveSrc0.left = 0;
-    m_cursorSaveSrc0.right = 0x40;
-    m_cursorSaveSrc0.top = 0;
-    m_cursorSaveSrc0.bottom = 0x40;
-    m_cursorSaveSrc1.left = 0;
-    m_cursorSaveSrc1.right = 0x40;
-    m_cursorSaveSrc1.top = 0;
-    m_cursorSaveSrc1.bottom = 0x40;
-    m_cursorSaveDst0.left = 0;
-    m_cursorSaveDst0.right = 0;
-    m_cursorSaveDst0.top = 0;
-    m_cursorSaveDst0.bottom = 0;
-    m_cursorSaveDst1.left = 0;
-    m_cursorSaveDst1.right = 0;
-    m_cursorSaveDst1.top = 0;
-    m_cursorSaveDst1.bottom = 0;
+    m_cursorSavedSurfaces[0] = NULL;
+    m_cursorSavedSurfaces[1] = NULL;
+    m_cursorSavedRects[0].left = 0;
+    m_cursorSavedRects[0].right = 0x40;
+    m_cursorSavedRects[0].top = 0;
+    m_cursorSavedRects[0].bottom = 0x40;
+    m_cursorSavedRects[1].left = 0;
+    m_cursorSavedRects[1].right = 0x40;
+    m_cursorSavedRects[1].top = 0;
+    m_cursorSavedRects[1].bottom = 0x40;
+    m_cursorScreenRects[0].left = 0;
+    m_cursorScreenRects[0].right = 0;
+    m_cursorScreenRects[0].top = 0;
+    m_cursorScreenRects[0].bottom = 0;
+    m_cursorScreenRects[1].left = 0;
+    m_cursorScreenRects[1].right = 0;
+    m_cursorScreenRects[1].top = 0;
+    m_cursorScreenRects[1].bottom = 0;
     m_cursorX = 0;
     m_cursorY = 0;
 }

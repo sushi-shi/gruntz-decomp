@@ -40,14 +40,14 @@ the guard is. Retail's shape is the nested positive form, with the failure work 
 
 ```cpp
 // NO - one return-0 copy per guard, each inline at the guard
-if (SearchEdge(...) == 0) { PathToNearestCandidate(unit, 1, bestX, bestY); return 0; }
+if (FindPathWithEndpointOverrides(...) == 0) { PathToNearestCandidate(unit, 1, bestX, bestY); return 0; }
 if (list.GetCount() == 0) { return 0; }
 head = list.RemoveHead(); ...
 if (list.GetCount() == 0) { return 0; }
 ... ; return 1;
 
 // YES - one return-0, and the else falls into it
-if (SearchEdge(...) != 0) {
+if (FindPathWithEndpointOverrides(...) != 0) {
     if (list.GetCount() != 0) {
         head = list.RemoveHead(); ...
         if (list.GetCount() != 0) {

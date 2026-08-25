@@ -10,6 +10,15 @@
 class CFile;
 class CString;
 
+GZ_ENUM_CONST_BEGIN(FlashShadeRampDefaults)
+    FLASH_SHADE_DARK_RAMP_STEPS = 32,
+    FLASH_SHADE_BRIGHT_RAMP_STEPS = 32,
+    FLASH_SHADE_START_PERCENT = 50,
+    FLASH_SHADE_END_PERCENT = 200,
+    FLASH_SHADE_CHANNEL_BOOST = 16,
+    FLASH_SHADE_CHANNEL_MAX = 255
+GZ_ENUM_CONST_END(FlashShadeRampDefaults)
+
 struct CShadeTable {
     i32 m_alloc;
     i32 m_size;
@@ -63,7 +72,8 @@ public:
     i32 Init();
     void FreeNodes();
 
-    CShadeTable* FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
+    CShadeTable*
+    FlashTable(PALETTEENTRY* pal, i32 darkRampSteps, i32 brightRampSteps, i32 startPct, i32 endPct);
     CShadeTable* HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg);
     CShadeTable* HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor);
     CShadeTable* GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol);

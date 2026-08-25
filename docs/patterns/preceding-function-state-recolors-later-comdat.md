@@ -90,7 +90,7 @@ dipped successor back toward its retail compiler state.
 Grunt movement instance: restoring the retail-backed 527-byte
 `CGrunt::IsDropReady` at `0x51510` changed two later, source-identical siblings in
 opposite directions. `RectContains` at `0x51850` improved from 55.2258% to
-61.6774%, while `RectContainsGated` at `0x51a20` moved from its 63.3543% MAX to
+61.6774%, while `VehicleContactContains` at `0x51a20` moved from its 63.3543% MAX to
 61.9764% current. The latter kept the same source fingerprint
 (`95c85ebdac20`) and the same rectangle-test CFG, constants, calls, and
 relocations; MSVC recolored its prologue, rectangle temporaries, and query

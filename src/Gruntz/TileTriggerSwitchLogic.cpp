@@ -855,7 +855,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     i32 cx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 cy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     g_gameReg->m_triggerMgr
-        ->LoadPowerupIconSprites(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
+        ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
         CGameObject* txt = g_gameReg->m_world->m_childGroup
@@ -943,14 +943,8 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     CGruntzMgr* reg = g_gameReg;
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    reg->m_triggerMgr->LoadPowerupIconSprites(
-        static_cast<PickupType>(m_dutyOnSpan),
-        px,
-        py,
-        m_dutyOffSpan,
-        1,
-        0
-    );
+    reg->m_triggerMgr
+        ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
         CGameObject* rec =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);

@@ -66,7 +66,7 @@ discard REGISTER/register verdicts, hand-reconstruct the structural ones.
 FindOrInsert (child-select) was closed this way (+0.32). Fresh structural
 targets identified: LoadAttributes (switch-jump-structure, likely C2), Run@
 CGruntzMgr (253v258 blocks), StepDefenderUnit / ExecuteCommand / ValidateLevelTiles
-(dossiered). NOTE: switch-heavy overbuilds (LoadAttributes' PickA/B/C dispatch)
+(dossiered). NOTE: switch-heavy overbuilds (BuildCellAttributes' brick-stack picker dispatch)
 are usually C2 jump-table-structure choices, not source-reachable - verify the
 divergence is NOT inside a switch before committing to a sitting.
 

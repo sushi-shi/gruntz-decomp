@@ -12,7 +12,7 @@
 //   3  "RightMachineSpewingDelay"   the right machine spews it out
 //   4  hands over to the fall, setting "FallingItemDelay"
 //   5  "FallingItemSpeed" downward  it falls to the belt
-//   7  "NextItemSpeed" leftward     it travels the belt to m_itemBaseX
+//   7  "NextItemSpeed" leftward     it travels the belt to m_machineItemTargetX
 //   8  "FallingItemSpeed" downward  it falls off the end, then back to idle
 //
 // The order is not guesswork: each arm assigns the next phase, so the chain

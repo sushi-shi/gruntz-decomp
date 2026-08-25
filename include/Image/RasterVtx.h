@@ -13,8 +13,8 @@ struct ClipVtx {
     i32 fx, fu, fv;
 };
 
-extern ClipVtx g_rasterVtxA[100];
-extern ClipVtx g_rasterVtxB[100];
+extern ClipVtx g_rasterOddClipPassBuffer[100];
+extern ClipVtx g_rasterEvenClipPassBuffer[100];
 extern ClipVtx g_rasterEdgeR[4096];
 extern ClipVtx g_rasterEdgeL[4096];
 extern i32 g_rasterVtxCount;
@@ -29,10 +29,10 @@ i32 RotateRasterize(
 
     i32 mode,
     i32 colorkey,
-    i32 clipFlag,
-    i32 clipB,
-    i32 clipC,
-    i32 clipD
+    i32 clipLeft,
+    i32 clipRight,
+    i32 clipTop,
+    i32 clipBottom
 );
 
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey);

@@ -74,18 +74,18 @@ StatusBar` 0x1076a0 allocates its whole frame with a bare **`push ecx`** - four 
 so nothing 16-byte-wide lives in it. Our reconstruction had
 
 ```cpp
-CSBI_ImageSet* w = m_extraNotify1;
+CSBI_ImageSet* w = m_fallingItemSprite;
 if (w) {
     RECT rc;                        // 16 bytes cl cannot elide: the aggregate
     i32 sx = m_rect10.left;         // assignment below reads it as a whole
-    rc.left = m_fallRect.left + sx;
+    rc.left = m_fallingItemRect.left + sx;
     ...
     w->m_rect14 = rc;
 }
 ```
 
 and paid `sub esp,0x14` for it. Storing the four coordinates through the owner —
-`w->m_rect14.left = m_fallRect.left + sx;` and so on — removed the frame and closed
+`w->m_rect14.left = m_fallingItemRect.left + sx;` and so on — removed the frame and closed
 the body: **83.15 -> 87.81**, instruction counts equal at 139, residue only the R4
 coin between the hoisted zero and a state literal.
 

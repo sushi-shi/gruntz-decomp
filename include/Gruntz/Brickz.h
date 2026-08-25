@@ -57,8 +57,8 @@ struct BrickzNode {
 //   CMapMgr::RecomputeCell   carries it across a tile-attribute recompute in
 //     the same breath as the 0x1bf40000 keep-mask: the tile kind decides every
 //     other bit, occupancy is not the tile's business.
-//   CMapMgr::SearchEdge      pulls it out of the caller's route mask
-//     (`m_edgeMask = maskA & BRICKZ_CELL_OCCUPIED`), which is how a caller asks
+//   CMapMgr::FindPathWithEndpointOverrides      pulls it out of the caller's route mask
+//     (`m_edgeMask = blockedMask & BRICKZ_CELL_OCCUPIED`), which is how a caller asks
 //     the pathfinder to route THROUGH occupied cells.
 //
 // It is deliberately NOT in BRICKZ_BLOCKED_MASK: occupancy blocks a path only
@@ -66,7 +66,8 @@ struct BrickzNode {
 // Bit 13. Two observed uses, and only two, so the name states the role both
 // agree on and claims nothing about the writer (which is not reconstructed):
 //
-//   CBrickz::SearchRoute       passes it as CMapMgr::Search's maskB.
+//   CMapMgr::FindPathWithEndpointOverrides passes it as CMapMgr::FindPath's
+//     diagonalMask.
 //   TmDeflectStep              requires it on BOTH orthogonal neighbours of a
 //     diagonal candidate before it will let a grunt cut that corner.
 GZ_ENUM_CONST_BEGIN(BrickzCellMask)
@@ -75,6 +76,14 @@ GZ_ENUM_CONST_BEGIN(BrickzCellMask)
     BRICKZ_CELL_OCCUPIED = 0x20000000,
     BRICKZ_CELL_UNOCCUPIED_MASK = ~0x20000000
 GZ_ENUM_CONST_END(BrickzCellMask)
+
+GZ_ENUM_CONST_BEGIN(BrickStackRandomization)
+    BRICK_COLOR_ROLL_PERCENT_MAX = 100,
+    BRICK_TWO_STACK_TOP_PERCENT = 50,
+    BRICK_THREE_STACK_LAYER_ROLL_MAX = 600,
+    BRICK_THREE_STACK_LOW_ROLL_MAX = 200,
+    BRICK_THREE_STACK_MIDDLE_ROLL_MAX = 400
+GZ_ENUM_CONST_END(BrickStackRandomization)
 
 struct BrickzCell {
 

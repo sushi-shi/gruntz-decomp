@@ -1115,7 +1115,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
     if (pal == NULL) {
         return 0;
     }
-    PALETTEENTRY* src = pal->m_cacheA;
+    PALETTEENTRY* src = pal->m_entries;
     if (src == NULL) {
         return 0;
     }
