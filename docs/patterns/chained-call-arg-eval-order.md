@@ -9,17 +9,17 @@ is its own statement; the sequence point makes MSVC schedule `f(a)` first (only 
 load+push `b` for `g`.
 
 ```cpp
-CWnd* w = GetCtrlB(index);   // inner call alone: push index; call
+CWnd* w = GetPlayerNameControl(index);   // inner call alone: push index; call
 w->SetWindowTextA(text);     // text loaded + pushed AFTER, then mov ecx,result; call
 ```
 ```asm
 mov eax,[esp+4]        ; index
 push eax
-call GetCtrlB
+call GetPlayerNameControl
 mov ecx,[esp+8]        ; text reloaded AFTER the call (not hoisted)
 push ecx
 mov ecx,eax            ; this = result
 call SetWindowTextA
 ```
-STEERABLE. Evidence: CBattlezDlg::SetCtrlBText 49→100% after splitting the chained
-`GetCtrlB(index)->SetWindowTextA(text)` into a temp.
+STEERABLE. Evidence: CBattlezDlg::SetPlayerName 49→100% after splitting the chained
+`GetPlayerNameControl(index)->SetWindowTextA(text)` into a temp.

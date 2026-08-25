@@ -33,10 +33,10 @@ const AFX_MSGMAP CBattlezDlg::messageMap = {
 DATA(0x001e88b8)
 const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
 
-    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0)
-        ON_CBN_SELCHANGE(0x50e, CBattlezDlg::ApplyOption1)
-            ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2)
-                ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CBattlezDlg::OnPlayerTypeSelection0)
+        ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CBattlezDlg::OnPlayerTypeSelection1)
+            ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CBattlezDlg::OnPlayerTypeSelection2)
+                ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE3, CBattlezDlg::OnPlayerTypeSelection3)
 
                     {WM_MEASUREITEM,
                      0,
@@ -46,14 +46,14 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
 
                      GZ_MFC_PMSG(&CBattlezDlg::OnMeasureItem)},
     {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlg::OnDrawItem)},
-    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CBattlezDlg::ApplyColorSlot0) ON_BN_CLICKED(
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CBattlezDlg::OnPlayerColor0) ON_BN_CLICKED(
         CTRL_PLAYER_COLOR1,
-        CBattlezDlg::ApplyColorSlot1
-    ) ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CBattlezDlg::ApplyColorSlot2)
-        ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CBattlezDlg::ApplyColorSlot3) ON_BN_CLICKED(
+        CBattlezDlg::OnPlayerColor1
+    ) ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CBattlezDlg::OnPlayerColor2)
+        ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CBattlezDlg::OnPlayerColor3) ON_BN_CLICKED(
             0x42b,
             CBattlezDlg::ShowCustomDlg
-        ) ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild)
+        ) ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::OnWorldSelectionChange)
 
             ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnPlayerNameKillFocus0)
                 ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnPlayerNameKillFocus1)
@@ -65,10 +65,13 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
                                         ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnPlayerNameChange3)
     // API-forced MFC message-map representation seam.
     {WM_PAINT, 0, 0, 0, AfxSig_vv, GZ_MFC_PMSG(&CBattlezDlg::OnPaint)},
-    ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0)
-        ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1)
-            ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2)
-                ON_CBN_SELCHANGE(0x522, CBattlezDlg::SaveOptionCombo3){0, 0, 0, 0, AfxSig_end, 0},
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ0, CBattlezDlg::OnMaxGruntzSelection0)
+        ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ1, CBattlezDlg::OnMaxGruntzSelection1)
+            ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ2, CBattlezDlg::OnMaxGruntzSelection2)
+                ON_CBN_SELCHANGE(
+                    CTRL_PLAYER_MAX_GRUNTZ3,
+                    CBattlezDlg::OnMaxGruntzSelection3
+                ){0, 0, 0, 0, AfxSig_end, 0},
 };
 DATA(0x00229c50)
 i32 g_battlezLastColors[4];
@@ -88,8 +91,8 @@ long CBattlezDlg::OnPaint() {
 }
 
 RVA(0x00014b30, 0x64)
-CBattlezDlg::CBattlezDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc0, pParent) {
-    m_slots = mgr;
+CBattlezDlg::CBattlezDlg(CGruntzMgr* gameManager, CWnd* pParent) : CDialog(0xc0, pParent) {
+    m_gameManager = gameManager;
     m_customNameFlag = 0;
 }
 
@@ -135,7 +138,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         comboChild->SetWindowTextA("");
 
         CWnd* combo = GetDlgItem(0x4ff);
-        CRezArchiveDir* worlds = m_slots->m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
+        CRezArchiveDir* worlds =
+            m_gameManager->m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
         if (worlds == NULL) {
             return;
         }
@@ -182,60 +186,62 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
 
         for (i = 0; i < 4; i++) {
             if (i != 0) {
-                GetCtrlA(i)->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
-                GetCtrlA(i)
+                GetPlayerTypeControl(i)
+                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
+                GetPlayerTypeControl(i)
                     ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (easy)"));
-                GetCtrlA(i)
+                GetPlayerTypeControl(i)
                     ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (normal)"));
-                GetCtrlA(i)->SendMessageA(
+                GetPlayerTypeControl(i)->SendMessageA(
                     CB_ADDSTRING,
                     0,
                     reinterpret_cast<LPARAM>("Computer (difficult)")
                 );
             } else {
-                GetCtrlA(i)->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
+                GetPlayerTypeControl(i)
+                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
             }
         }
-        SetCurSelA(0, 0);
-        SetCurSelA(1, 2);
-        SetCurSelA(2, 2);
-        SetCurSelA(3, 2);
+        SetPlayerTypeSelection(0, 0);
+        SetPlayerTypeSelection(1, 2);
+        SetPlayerTypeSelection(2, 2);
+        SetPlayerTypeSelection(3, 2);
 
         if (g_battlezResetOptions != 0) {
-            m_slots->m_options[1].m_configId = 1;
-            m_slots->m_options[2].m_configId = 1;
-            m_slots->m_options[3].m_configId = 1;
+            m_gameManager->m_options[1].m_configId = 1;
+            m_gameManager->m_options[2].m_configId = 1;
+            m_gameManager->m_options[3].m_configId = 1;
         } else {
             for (i = 1; i < 4; i++) {
                 if (g_battlezLastDifficulties[i] != -1) {
-                    SetCurSelA(i, g_battlezLastDifficulties[i] + 1);
-                    m_slots->m_options[i].m_configId = g_battlezLastDifficulties[i];
+                    SetPlayerTypeSelection(i, g_battlezLastDifficulties[i] + 1);
+                    m_gameManager->m_options[i].m_configId = g_battlezLastDifficulties[i];
                 } else {
-                    SetCurSelA(i, 0);
+                    SetPlayerTypeSelection(i, 0);
                 }
             }
         }
 
-        SetCtrlBText(0, "Player");
-        SetCtrlBText(1, "Zed");
-        SetCtrlBText(2, "Serra");
-        SetCtrlBText(3, "Jebediah");
-        SetCurSelC(0, defaultMax);
-        SetCurSelC(1, defaultMax);
-        SetCurSelC(2, defaultMax);
-        SetCurSelC(3, defaultMax);
+        SetPlayerName(0, "Player");
+        SetPlayerName(1, "Zed");
+        SetPlayerName(2, "Serra");
+        SetPlayerName(3, "Jebediah");
+        SetMaxGruntzSelection(0, defaultMax);
+        SetMaxGruntzSelection(1, defaultMax);
+        SetMaxGruntzSelection(2, defaultMax);
+        SetMaxGruntzSelection(3, defaultMax);
         for (i = 0; i < 4; i++) {
             if (g_battlezResetOptions == 0) {
-                SetCurSelC(i, g_battlezLastMaxGruntz[i]);
-                m_slots->m_options[i].m_comboSel = g_battlezLastMaxGruntz[i];
+                SetMaxGruntzSelection(i, g_battlezLastMaxGruntz[i]);
+                m_gameManager->m_options[i].m_comboSel = g_battlezLastMaxGruntz[i];
             }
-            GruntzPlayer* slot = &m_slots->m_options[i];
+            GruntzPlayer* slot = &m_gameManager->m_options[i];
             if (slot != NULL) {
                 slot->m_liveGate = 1;
             }
         }
         for (i = 0; i < 4; i++) {
-            CWnd* edit = GetCtrlB(i);
+            CWnd* edit = GetPlayerNameControl(i);
             if (edit != NULL) {
                 edit->SendMessageA(EM_LIMITTEXT, 9, 0);
             }
@@ -246,22 +252,22 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         GetDlgItem(IDOK)->EnableWindow(1);
         GetDlgItem(IDCANCEL)->EnableWindow(1);
         for (i = 0; i < 4; i++) {
-            CWnd* ctrlA = GetCtrlA(i);
-            CWnd* ctrlB = GetCtrlB(i);
-            CWnd* ctrlD = GetCtrlD(i);
-            CWnd* ctrlC = GetCtrlC(i);
-            ctrlB->EnableWindow(1);
-            ctrlB->SendMessageA(EM_SETREADONLY, 0, 0);
-            ctrlD->EnableWindow(1);
-            ctrlA->EnableWindow(1);
-            ctrlC->EnableWindow(1);
+            CWnd* typeControl = GetPlayerTypeControl(i);
+            CWnd* nameControl = GetPlayerNameControl(i);
+            CWnd* colorControl = GetPlayerColorControl(i);
+            CWnd* maxGruntzControl = GetMaxGruntzControl(i);
+            nameControl->EnableWindow(1);
+            nameControl->SendMessageA(EM_SETREADONLY, 0, 0);
+            colorControl->EnableWindow(1);
+            typeControl->EnableWindow(1);
+            maxGruntzControl->EnableWindow(1);
             if (GetPlayerTypeSelection(i) == 0) {
-                ctrlB->EnableWindow(0);
+                nameControl->EnableWindow(0);
                 if (i != 0) {
-                    ctrlD->EnableWindow(0);
+                    colorControl->EnableWindow(0);
                 }
                 if (i != 0) {
-                    ctrlC->EnableWindow(0);
+                    maxGruntzControl->EnableWindow(0);
                 }
             }
         }
@@ -304,20 +310,20 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             CString mapName;
             if (mapName.LoadStringA(0x81ab)) {
                 child->SetWindowTextA(mapName);
-                SetCurSelC(0, 15);
-                SetCurSelC(1, 1);
-                SetCurSelC(2, 1);
-                SetCurSelC(3, 1);
-                m_slots->m_options[0].m_comboSel = 15;
-                m_slots->m_options[1].m_comboSel = 1;
-                m_slots->m_options[2].m_comboSel = 1;
-                m_slots->m_options[3].m_comboSel = 1;
+                SetMaxGruntzSelection(0, 15);
+                SetMaxGruntzSelection(1, 1);
+                SetMaxGruntzSelection(2, 1);
+                SetMaxGruntzSelection(3, 1);
+                m_gameManager->m_options[0].m_comboSel = 15;
+                m_gameManager->m_options[1].m_comboSel = 1;
+                m_gameManager->m_options[2].m_comboSel = 1;
+                m_gameManager->m_options[3].m_comboSel = 1;
                 for (i = 1; i < 4; i++) {
-                    SetCurSelA(i, 1);
-                    GetCtrlB(i)->EnableWindow(1);
-                    GetCtrlA(i)->EnableWindow(1);
-                    GetCtrlD(i)->EnableWindow(1);
-                    GetCtrlC(i)->EnableWindow(1);
+                    SetPlayerTypeSelection(i, 1);
+                    GetPlayerNameControl(i)->EnableWindow(1);
+                    GetPlayerTypeControl(i)->EnableWindow(1);
+                    GetPlayerColorControl(i)->EnableWindow(1);
+                    GetMaxGruntzControl(i)->EnableWindow(1);
                 }
             }
             m_customNameFlag = 0;
@@ -332,23 +338,24 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         reg->SetValueDword("CustomMap", m_customNameFlag);
 
         for (i = 0; i < 4; i++) {
-            CWnd* edit = GetCtrlB(i);
+            CWnd* edit = GetPlayerNameControl(i);
             if (edit != NULL) {
                 CString name;
                 edit->GetWindowTextA(name);
-                m_slots->m_options[i].m_name = name;
+                m_gameManager->m_options[i].m_name = name;
             }
         }
         for (i = 0; i < 4; i++) {
             // Spelled out rather than through GetPlayerTypeSelection: retail
             // expands the combo query here and calls the accessor elsewhere.
-            i32 selection = static_cast<i32>(GetCtrlA(i)->SendMessageA(CB_GETCURSEL, 0, 0));
+            i32 selection =
+                static_cast<i32>(GetPlayerTypeControl(i)->SendMessageA(CB_GETCURSEL, 0, 0));
             if (selection != 0) {
-                m_slots->m_options[i].m_liveGate = 1;
-                m_slots->m_options[i].m_configId = selection - 1;
+                m_gameManager->m_options[i].m_liveGate = 1;
+                m_gameManager->m_options[i].m_configId = selection - 1;
             } else {
-                m_slots->m_options[i].m_liveGate = 0;
-                m_slots->m_options[i].m_configId = 1;
+                m_gameManager->m_options[i].m_liveGate = 0;
+                m_gameManager->m_options[i].m_configId = 1;
             }
         }
         if (g_battlezResetOptions != 0) {
@@ -359,8 +366,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastMaxGruntz%d", i);
             reg->SetValueDword(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
-            if (m_slots->m_options[i].m_liveGate != 0) {
-                reg->SetValueDword(key, m_slots->m_options[i].m_configId);
+            if (m_gameManager->m_options[i].m_liveGate != 0) {
+                reg->SetValueDword(key, m_gameManager->m_options[i].m_configId);
             } else {
                 reg->SetValueDword(key, -1);
             }
@@ -369,7 +376,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         }
         NetLobby::g_curDlg = NULL;
     }
-    FlashCtrlD();
+    PaintPlayerColorControls();
 }
 
 RVA(0x00015a10, 0x70)
@@ -391,9 +398,9 @@ const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
 }
 
 RVA(0x00015ac0, 0x60)
-CWnd* CBattlezDlg::GetCtrlA(i32 index) {
+CWnd* CBattlezDlg::GetPlayerTypeControl(i32 slot) {
     CWnd* result = NULL;
-    switch (static_cast<PlayerSlot>(index)) {
+    switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_TYPE0);
             break;
@@ -411,9 +418,9 @@ CWnd* CBattlezDlg::GetCtrlA(i32 index) {
 }
 
 RVA(0x00015b40, 0x60)
-CWnd* CBattlezDlg::GetCtrlB(i32 index) {
+CWnd* CBattlezDlg::GetPlayerNameControl(i32 slot) {
     CWnd* result = NULL;
-    switch (static_cast<PlayerSlot>(index)) {
+    switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_NAME0);
             break;
@@ -431,29 +438,29 @@ CWnd* CBattlezDlg::GetCtrlB(i32 index) {
 }
 
 RVA(0x00015bc0, 0x60)
-CWnd* CBattlezDlg::GetCtrlC(i32 index) {
+CWnd* CBattlezDlg::GetMaxGruntzControl(i32 slot) {
     CWnd* result = NULL;
-    switch (static_cast<PlayerSlot>(index)) {
+    switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
-            result = GetDlgItem(CTRL_PLAYER_COMBO_C0);
+            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ0);
             break;
         case PLAYER_SLOT_1:
-            result = GetDlgItem(CTRL_PLAYER_COMBO_C1);
+            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ1);
             break;
         case PLAYER_SLOT_2:
-            result = GetDlgItem(CTRL_PLAYER_COMBO_C2);
+            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ2);
             break;
         case PLAYER_SLOT_3:
-            result = GetDlgItem(CTRL_PLAYER_COMBO_C3);
+            result = GetDlgItem(CTRL_PLAYER_MAX_GRUNTZ3);
             break;
     }
     return result;
 }
 
 RVA(0x00015c40, 0x60)
-CWnd* CBattlezDlg::GetCtrlD(i32 index) {
+CWnd* CBattlezDlg::GetPlayerColorControl(i32 slot) {
     CWnd* result = NULL;
-    switch (static_cast<PlayerSlot>(index)) {
+    switch (static_cast<PlayerSlot>(slot)) {
         case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COLOR0);
             break;
@@ -471,38 +478,38 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
 }
 
 RVA(0x00015cc0, 0x23)
-i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
-    CWnd* c = GetCtrlA(id);
-    return ::SendMessageA(c->m_hWnd, CB_SETCURSEL, sel, 0);
+i32 CBattlezDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
+    CWnd* control = GetPlayerTypeControl(slot);
+    return ::SendMessageA(control->m_hWnd, CB_SETCURSEL, selection, 0);
 }
 
 RVA(0x00015d00, 0x20)
 i32 CBattlezDlg::GetPlayerTypeSelection(i32 slot) {
-    CWnd* c = GetCtrlA(slot);
-    return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0);
+    CWnd* control = GetPlayerTypeControl(slot);
+    return ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0);
 }
 
 RVA(0x00015d30, 0x21)
-i32 CBattlezDlg::GetMaxGruntzSelection(i32 id) {
-    CWnd* c = GetCtrlC(id);
-    return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
+i32 CBattlezDlg::GetMaxGruntzSelection(i32 slot) {
+    CWnd* control = GetMaxGruntzControl(slot);
+    return ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
 }
 
 RVA(0x00015d70, 0x24)
-i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
-    CWnd* c = GetCtrlC(id);
-    return ::SendMessageA(c->m_hWnd, CB_SETCURSEL, sel - 1, 0);
+i32 CBattlezDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
+    CWnd* control = GetMaxGruntzControl(slot);
+    return ::SendMessageA(control->m_hWnd, CB_SETCURSEL, count - 1, 0);
 }
 
 RVA(0x00015db0, 0x19)
-void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
-    CWnd* w = GetCtrlB(index);
-    w->SetWindowTextA(text);
+void CBattlezDlg::SetPlayerName(i32 slot, const char* name) {
+    CWnd* control = GetPlayerNameControl(slot);
+    control->SetWindowTextA(name);
 }
 RVA(0x00015de0, 0x5f)
-void CBattlezDlg::ApplyOption0() {
-    ToggleRow(0);
-    RefreshOptionState();
+void CBattlezDlg::OnPlayerTypeSelection0() {
+    UpdatePlayerSlotEnabled(0);
+    OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -511,9 +518,9 @@ void CBattlezDlg::ApplyOption0() {
 }
 
 RVA(0x00015e60, 0x5f)
-void CBattlezDlg::ApplyOption1() {
-    ToggleRow(1);
-    RefreshOptionState();
+void CBattlezDlg::OnPlayerTypeSelection1() {
+    UpdatePlayerSlotEnabled(1);
+    OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -522,9 +529,9 @@ void CBattlezDlg::ApplyOption1() {
 }
 
 RVA(0x00015ee0, 0x5f)
-void CBattlezDlg::ApplyOption2() {
-    ToggleRow(2);
-    RefreshOptionState();
+void CBattlezDlg::OnPlayerTypeSelection2() {
+    UpdatePlayerSlotEnabled(2);
+    OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -533,9 +540,9 @@ void CBattlezDlg::ApplyOption2() {
 }
 
 RVA(0x00015f60, 0x5f)
-void CBattlezDlg::ApplyOption3() {
-    ToggleRow(3);
-    RefreshOptionState();
+void CBattlezDlg::OnPlayerTypeSelection3() {
+    UpdatePlayerSlotEnabled(3);
+    OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
         GetDlgItem(1)->EnableWindow(1);
     } else {
@@ -544,26 +551,26 @@ void CBattlezDlg::ApplyOption3() {
 }
 
 RVA(0x00015fe0, 0xbe)
-void CBattlezDlg::ToggleRow(i32 row) {
-    CWnd* a = GetCtrlA(row);
-    CWnd* b = GetCtrlB(row);
-    CWnd* d = GetCtrlD(row);
-    CWnd* c = GetCtrlC(row);
-    if (row == 0) {
+void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
+    CWnd* typeControl = GetPlayerTypeControl(slot);
+    CWnd* nameControl = GetPlayerNameControl(slot);
+    CWnd* colorControl = GetPlayerColorControl(slot);
+    CWnd* maxGruntzControl = GetMaxGruntzControl(slot);
+    if (slot == 0) {
         return;
     }
-    GruntzPlayer* rec = &m_slots->m_options[row];
-    if (::SendMessageA(a->m_hWnd, CB_GETCURSEL, 0, 0) != 0) {
-        b->EnableWindow(1);
-        d->EnableWindow(1);
-        rec->m_liveGate = 1;
-        c->EnableWindow(1);
+    GruntzPlayer* player = &m_gameManager->m_options[slot];
+    if (::SendMessageA(typeControl->m_hWnd, CB_GETCURSEL, 0, 0) != 0) {
+        nameControl->EnableWindow(1);
+        colorControl->EnableWindow(1);
+        player->m_liveGate = 1;
+        maxGruntzControl->EnableWindow(1);
         return;
     }
-    b->EnableWindow(0);
-    d->EnableWindow(0);
-    rec->m_liveGate = 0;
-    c->EnableWindow(0);
+    nameControl->EnableWindow(0);
+    colorControl->EnableWindow(0);
+    player->m_liveGate = 0;
+    maxGruntzControl->EnableWindow(0);
 }
 
 RVA(0x000160d0, 0xb)
@@ -573,40 +580,40 @@ i32 CBattlezDlg::OnInitDialog() {
 }
 
 RVA(0x000160f0, 0x245)
-void CBattlezDlg::FlashCtrlD() {
+void CBattlezDlg::PaintPlayerColorControls() {
     CPaintDC dc(this);
-    BOOL(WINAPI * cts)(HWND, LPPOINT) = ::ClientToScreen;
-    BOOL(WINAPI * stc)(HWND, LPPOINT) = ::ScreenToClient;
+    BOOL(WINAPI * clientToScreen)(HWND, LPPOINT) = ::ClientToScreen;
+    BOOL(WINAPI * screenToClient)(HWND, LPPOINT) = ::ScreenToClient;
     for (i32 i = 0; i < 4; i++) {
-        CWnd* it = GetCtrlD(i);
-        if (it == NULL) {
+        CWnd* colorControl = GetPlayerColorControl(i);
+        if (colorControl == NULL) {
             continue;
         }
 
-        CRect rc;
-        ::GetClientRect(it->m_hWnd, &rc);
-        cts(it->m_hWnd, &rc.TopLeft());
-        cts(it->m_hWnd, &rc.BottomRight());
-        stc(m_hWnd, &rc.TopLeft());
-        stc(m_hWnd, &rc.BottomRight());
-        CBrush scratch;
+        CRect rect;
+        ::GetClientRect(colorControl->m_hWnd, &rect);
+        clientToScreen(colorControl->m_hWnd, &rect.TopLeft());
+        clientToScreen(colorControl->m_hWnd, &rect.BottomRight());
+        screenToClient(m_hWnd, &rect.TopLeft());
+        screenToClient(m_hWnd, &rect.BottomRight());
+        CBrush brush;
         // Two Attach sites, not one hoisted `color`: retail pushes the argument
         // INSIDE each arm and cross-jumps only the shared `call CreateSolidBrush`
         // (`push eax / jmp` against `push 0x808080`). Hoisting the colour into a
         // local is what parks 0 in ebx and costs ScreenToClient its register.
-        if (it->IsWindowEnabled()) {
+        if (colorControl->IsWindowEnabled()) {
             GetRandomNumber();
             GetRandomNumber();
-            i32 v = (GetRandomNumber() % 0xff) & 0xff;
-            scratch.Attach(CreateSolidBrush((v << 8 | v) << 8 | v));
+            i32 shade = (GetRandomNumber() % 0xff) & 0xff;
+            brush.Attach(CreateSolidBrush((shade << 8 | shade) << 8 | shade));
         } else {
-            scratch.Attach(CreateSolidBrush(0x808080));
+            brush.Attach(CreateSolidBrush(0x808080));
         }
-        rc.left += 2;
-        rc.top += 2;
-        rc.right -= 2;
-        rc.bottom -= 2;
-        FillRect(dc.m_hDC, &rc, scratch);
+        rect.left += 2;
+        rect.top += 2;
+        rect.right -= 2;
+        rect.bottom -= 2;
+        FillRect(dc.m_hDC, &rect, brush);
     }
 }
 
@@ -626,11 +633,11 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 RVA(0x000165a0, 0x5c0)
 void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
-    i32 bDraw = 0;
+    i32 shouldDraw = 0;
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
-            if (GetCtrlD(0)->IsWindowEnabled()) {
-                switch (m_slots->m_options[0].m_colorIndex) {
+            if (GetPlayerColorControl(0)->IsWindowEnabled()) {
+                switch (m_gameManager->m_options[0].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -687,11 +694,11 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            bDraw = 1;
+            shouldDraw = 1;
             break;
         case CTRL_PLAYER_COLOR1:
-            if (GetCtrlD(1)->IsWindowEnabled()) {
-                switch (m_slots->m_options[1].m_colorIndex) {
+            if (GetPlayerColorControl(1)->IsWindowEnabled()) {
+                switch (m_gameManager->m_options[1].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -748,11 +755,11 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            bDraw = 1;
+            shouldDraw = 1;
             break;
         case CTRL_PLAYER_COLOR2:
-            if (GetCtrlD(2)->IsWindowEnabled()) {
-                switch (m_slots->m_options[2].m_colorIndex) {
+            if (GetPlayerColorControl(2)->IsWindowEnabled()) {
+                switch (m_gameManager->m_options[2].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -809,11 +816,11 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            bDraw = 1;
+            shouldDraw = 1;
             break;
         case CTRL_PLAYER_COLOR3:
-            if (GetCtrlD(3)->IsWindowEnabled()) {
-                switch (m_slots->m_options[3].m_colorIndex) {
+            if (GetPlayerColorControl(3)->IsWindowEnabled()) {
+                switch (m_gameManager->m_options[3].m_colorIndex) {
                     case TINT_DKBLUE:
                         color = 0x800000;
                         break;
@@ -870,10 +877,10 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            bDraw = 1;
+            shouldDraw = 1;
             break;
     }
-    if (bDraw) {
+    if (shouldDraw) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         CBrush brush(color);
@@ -884,11 +891,11 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 }
 
 RVA(0x00016cd0, 0x98)
-void CBattlezDlg::ApplyColorSlot0() {
-    CBattlezDlgColors dlg(m_slots, 0, 0, NULL);
+void CBattlezDlg::OnPlayerColor0() {
+    CBattlezDlgColors dlg(m_gameManager, 0, 0, NULL);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
-            RefreshOptionState();
+        if (SetPlayerColor(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
+            OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, 1);
         }
     }
@@ -896,33 +903,33 @@ void CBattlezDlg::ApplyColorSlot0() {
 RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 
 RVA(0x00016dc0, 0x97)
-void CBattlezDlg::ApplyColorSlot1() {
-    CBattlezDlgColors dlg(m_slots, 1, 0, NULL);
+void CBattlezDlg::OnPlayerColor1() {
+    CBattlezDlgColors dlg(m_gameManager, 1, 0, NULL);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
-            RefreshOptionState();
+        if (SetPlayerColor(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
+            OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, 1);
         }
     }
 }
 
 RVA(0x00016e90, 0x98)
-void CBattlezDlg::ApplyColorSlot2() {
-    CBattlezDlgColors dlg(m_slots, 2, 0, NULL);
+void CBattlezDlg::OnPlayerColor2() {
+    CBattlezDlgColors dlg(m_gameManager, 2, 0, NULL);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
-            RefreshOptionState();
+        if (SetPlayerColor(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
+            OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, 1);
         }
     }
 }
 
 RVA(0x00016f60, 0x98)
-void CBattlezDlg::ApplyColorSlot3() {
-    CBattlezDlgColors dlg(m_slots, 3, 0, NULL);
+void CBattlezDlg::OnPlayerColor3() {
+    CBattlezDlgColors dlg(m_gameManager, 3, 0, NULL);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
-            RefreshOptionState();
+        if (SetPlayerColor(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
+            OnPlayerOptionsChanged();
             GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, 1);
         }
     }
@@ -947,22 +954,22 @@ void CBattlezDlg::ShowCustomDlg() {
 RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 
 RVA(0x000171b0, 0xca)
-void CBattlezDlg::CopyComboSelToChild() {
+void CBattlezDlg::OnWorldSelectionChange() {
     CWnd* combo = GetDlgItem(0x4ff);
     if (combo == NULL) {
         return;
     }
-    long sel = ::SendMessageA(combo->m_hWnd, CB_GETCURSEL, 0, 0);
-    if (sel == -1) {
+    long selection = ::SendMessageA(combo->m_hWnd, CB_GETCURSEL, 0, 0);
+    if (selection == -1) {
         return;
     }
-    CString s;
-    (static_cast<CComboBox*>(combo))->GetLBText(sel, s);
-    if (s.GetLength() != 0) {
+    CString worldName;
+    (static_cast<CComboBox*>(combo))->GetLBText(selection, worldName);
+    if (worldName.GetLength() != 0) {
         HWND owner = GetDlgItem(0x4ff)->m_hWnd;
         CWnd* child = CWnd::FromHandle(::GetWindow(owner, GW_CHILD));
         if (child != NULL) {
-            child->SetWindowTextA(s);
+            child->SetWindowTextA(worldName);
             m_customNameFlag = 0;
         }
     }
@@ -986,16 +993,16 @@ void CBattlezDlg::OnPlayerNameKillFocus3() {
 }
 
 RVA(0x00017340, 0x73)
-void CBattlezDlg::ReadPlayerName(i32 index) {
-    CString s;
-    GetCtrlB(index)->GetWindowText(s);
-    if (strlen(s) == 0) {
+void CBattlezDlg::ReadPlayerName(i32 slot) {
+    CString name;
+    GetPlayerNameControl(slot)->GetWindowText(name);
+    if (strlen(name) == 0) {
         return;
     }
 }
 
 RVA(0x000173e0, 0x1)
-void CBattlezDlg::RefreshOptionState() {}
+void CBattlezDlg::OnPlayerOptionsChanged() {}
 
 // @identity-TODO BattlezNoOp - Dialogs.cpp ownership follows from the adjacent
 // same-file claims and its incremental-link thunk. No caller, address-taker, or
@@ -1020,8 +1027,8 @@ i32 CBattlezDlg::UnusedMsgHandler() {
 }
 
 RVA(0x00017460, 0x22)
-i32 CBattlezDlg::SetSlotValue(i32 index, ColorTint val) {
-    m_slots->m_options[index].m_colorIndex = val;
+i32 CBattlezDlg::SetPlayerColor(i32 slot, ColorTint color) {
+    m_gameManager->m_options[slot].m_colorIndex = color;
     return 1;
 }
 
@@ -1050,30 +1057,30 @@ RVA(0x00017540, 0x3)
 void CBattlezDlg::HandlePlayerNameChange(i32) {}
 
 RVA(0x00017560, 0x28)
-i32 CBattlezDlg::SaveOptionCombo0() {
-    CWnd* c = GetCtrlC(0);
-    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[0].m_comboSel = v;
-    return v;
+i32 CBattlezDlg::OnMaxGruntzSelection0() {
+    CWnd* control = GetMaxGruntzControl(0);
+    i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_options[0].m_comboSel = count;
+    return count;
 }
 RVA(0x000175a0, 0x28)
-i32 CBattlezDlg::SaveOptionCombo1() {
-    CWnd* c = GetCtrlC(1);
-    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[1].m_comboSel = v;
-    return v;
+i32 CBattlezDlg::OnMaxGruntzSelection1() {
+    CWnd* control = GetMaxGruntzControl(1);
+    i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_options[1].m_comboSel = count;
+    return count;
 }
 RVA(0x000175e0, 0x28)
-i32 CBattlezDlg::SaveOptionCombo2() {
-    CWnd* c = GetCtrlC(2);
-    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[2].m_comboSel = v;
-    return v;
+i32 CBattlezDlg::OnMaxGruntzSelection2() {
+    CWnd* control = GetMaxGruntzControl(2);
+    i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_options[2].m_comboSel = count;
+    return count;
 }
 RVA(0x00017620, 0x28)
-i32 CBattlezDlg::SaveOptionCombo3() {
-    CWnd* c = GetCtrlC(3);
-    i32 v = ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
-    g_gameReg->m_options[3].m_comboSel = v;
-    return v;
+i32 CBattlezDlg::OnMaxGruntzSelection3() {
+    CWnd* control = GetMaxGruntzControl(3);
+    i32 count = ::SendMessageA(control->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
+    g_gameReg->m_options[3].m_comboSel = count;
+    return count;
 }

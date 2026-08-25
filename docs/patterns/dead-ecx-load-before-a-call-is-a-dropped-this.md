@@ -50,7 +50,7 @@ unreconstructed. See
 for the calibration and the measured noise floor.
 
 Evidence, four instances, no callee's bytes moved in any of them:
-`CMultiStartDlg::CommitLatencyOption` 92.08 -> 100.00 EXACT
+`CMultiStartDlg::CommitLatencySelection` 92.08 -> 100.00 EXACT
 (`CLatencyList::GetSelItemData`), `CRezArchive::ImportDirectoryTree` 99.67 -> 100.00
 EXACT (`CRezArchive::UnpackTag`), `CGameLevel::LoadWwd` 95.53 -> 96.24
 (`CGameLevel::InflateMainBlock`), and `CBattlezMapConfig::TileSwitch` 0x029af0 -

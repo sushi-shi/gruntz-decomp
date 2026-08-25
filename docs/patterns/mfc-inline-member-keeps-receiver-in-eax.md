@@ -28,7 +28,7 @@ push 0x0
 push ecx
 call [__imp__InvalidateRect@12]
 ```
-STEERABLE. `CMultiStartDlg::OnColorSlot0/1/2/3` 99.84 -> **100.00 EXACT** all four
+STEERABLE. `CMultiStartDlg::OnPlayerColor0/1/2/3` 99.84 -> **100.00 EXACT** all four
 (previously `@early-stop`'d as an "eax/ecx regalloc coin-flip"), and the identical
-fix earlier took `CBattlezDlg::ApplyColorSlot0..3` from 91.1 to exact — the same
+fix earlier took `CBattlezDlg::OnPlayerColor0..3` from 91.1 to exact — the same
 four-sibling shape appears wherever a dialog refreshes numbered swatch controls.

@@ -1380,7 +1380,7 @@ scan `.text` for `mov ecx,<static data addr>` followed within ~24 B by a
   objects surfaced this way (s_custom 0x229e44, buf 0x22af0c, s_alert
   0x2446fc), each previously a parked "unclaimed/high 4 B" access-map row.
 * **interior of an existing claim** -> benign when the claim is an ARRAY
-  (`g_levelMsgStrings`/`g_areaNames`/`g_gruntNames` construct elements at
+  (`g_levelMsgStrings`/`g_areaNames`/`g_defaultPlayerNames` construct elements at
   interior offsets); a defect only when the claim is a scalar, which is how
   TickKillCues read.
 * library-owned constructions (static `CWnd` family, `AFX_CLASSINIT`) stay

@@ -3,13 +3,13 @@ tags: cpp:call cpp:method cpp:inline | asm:push asm:mov asm:call | topic:codegen
 symptoms: every `SendMessage`/`GetWindow` site is 0 instructions off but the operand ORDER differs - retail evaluates the control-fetch call FIRST and loads `m_hWnd` before the `push`es, the recompile pushes the message/wParam/lParam literals first and fetches the control last; the import is `call *reg` in retail and `call *__imp__X` here
 confidence: 9/10
 
-`::SendMessageA(GetCtrlA(i)->m_hWnd, CB_ADDSTRING, 0, (LPARAM)"None")` and
-`GetCtrlA(i)->SendMessageA(CB_ADDSTRING, 0, (LPARAM)"None")` are the same four
+`::SendMessageA(GetPlayerTypeControl(i)->m_hWnd, CB_ADDSTRING, 0, (LPARAM)"None")` and
+`GetPlayerTypeControl(i)->SendMessageA(CB_ADDSTRING, 0, (LPARAM)"None")` are the same four
 arguments in the same order and produce the same relocations, so `insn_seq` and
 the masked diff both call them equal. They are NOT the same code.
 
 * **Free function.** `m_hWnd` is just argument 1, so MSVC5 pushes right-to-left -
-  lParam, wParam, message - and only then evaluates `GetCtrlA(i)` and loads
+  lParam, wParam, message - and only then evaluates `GetPlayerTypeControl(i)` and loads
   `m_hWnd`. The control fetch lands *after* the literal pushes.
 * **MFC member wrapper.** `CWnd::SendMessage` (AFXWIN2.INL:
   `{ return ::SendMessage(m_hWnd, message, wParam, lParam); }`) makes the control
@@ -20,7 +20,7 @@ the masked diff both call them equal. They are NOT the same code.
 ```asm
 ; retail - the member wrapper
 push edi                       ; i
-call ?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z
+call ?GetPlayerTypeControl@CBattlezDlg@@QAEPAVCWnd@@H@Z
 mov  eax,[eax+0x1c]            ; m_hWnd, BEFORE the pushes
 push offset ??_C@_04COF@None   ; lParam
 push 0                         ; wParam
@@ -33,7 +33,7 @@ push offset ??_C@_04COF@None
 push 0
 push 0x143
 push edi                       ; i
-call ?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z
+call ?GetPlayerTypeControl@CBattlezDlg@@QAEPAVCWnd@@H@Z
 mov  eax,[eax+0x1c]            ; m_hWnd, AFTER
 push eax
 call ebp

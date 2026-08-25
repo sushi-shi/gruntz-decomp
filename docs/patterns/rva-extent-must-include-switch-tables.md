@@ -57,7 +57,7 @@ next function symbol in that section), and `RVA()` is sometimes **indented** ins
 | 68.18 | `CDDrawWorkerHost::SerializeDispatch` |
 | 68.75 | `CDDrawShadeBlit::Select` |
 | 69.57 | `winapi_118b50_OutputDebugStringA` |
-| 70.59 | `CBattlezDlg::GetCtrlA..D`, `CMultiStartDlg::GetCtrlA..E` (9 fns) |
+| 70.59 | `CBattlezDlg::GetPlayerTypeControl..D`, `CMultiStartDlg::GetReadyControl..E` (9 fns) |
 | 73.39 | `CVoiceManager::ResolveGruntVoiceGroup` |
 | 79.31 | `CLatencyList::Dispatch` |
 | 89.36 | `CMultiBootyState::GetWarlordName` |

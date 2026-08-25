@@ -157,7 +157,7 @@ Seam fns (identity folds, all stay in this TU):
 
 Evidence:
 - The "world" unit's fns are `CMultiStartDlg`'s own methods
-  (`?SetupWorldCombo@CMultiStartDlg` @`0x0c1840`) + its free helpers
+  (`?InitializeWorldCombo@CMultiStartDlg` @`0x0c1840`) + its free helpers
   (`BuildNamedGruntTable` @`0x0c16b0`, `_WndProc_c1a10`) — same class, no
   second identity exists.
 - Init frags: multistartdlg 1@`0xc1410` + multistartdlgworld 1@`0xc1690`
@@ -167,10 +167,10 @@ Evidence:
   `0x0c296b`.
 
 Seam fns:
-- `0x000c1aa0` — `?UpdateColorItems@MultiColorDlg@m4@@QAEHXZ` — multicolordlg ->
-  this TU — 760-B fn compiled here by position; the color-dlg core lives in the
-  next interval, so either the devs defined this method here or the identity is
-  wrong (@identity-TODO, medium).
+- `0x000c1aa0` — `?RefreshWorldControls@CMultiStartDlg@@QAEHXZ` — this TU. Its
+  host/client branches enable or populate the world combo and custom-world
+  button; the old `MultiColorDlg::UpdateColorItems` identity was disproved by
+  its receiver, callers, and control IDs.
 
 ## 4b. `0x0b5380-0x0bd35d` multi + netmgrgame — ONE TU (strong)
 

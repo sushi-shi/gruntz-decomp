@@ -26,7 +26,7 @@ ja  default
 jmp [edx*4+tbl]        ; index in edx, not eax
 ```
 STEERABLE (closes the CODE; the inline jump-table data still reloc-masks, see
-[[jumptable-data-overlap]]). Evidence: CBattlezDlg::GetCtrlA/B/C/D 51→70% (code byte-exact, the
+[[jumptable-data-overlap]]). Evidence: CBattlezDlg::GetPlayerTypeControl/B/C/D 51→70% (code byte-exact, the
 residual is the jump-table-data artifact, not the dispatch).
 
 ## Measured (i32 member-call form, 2026-08-17)

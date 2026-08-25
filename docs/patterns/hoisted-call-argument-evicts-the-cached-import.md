@@ -75,7 +75,7 @@ the whole tell. A hoisted local pushes after the join.
 
 ## Measured
 
-`CBattlezDlg::FlashCtrlD` 0x160f0 (`dialogs`), 581 B: **93.56 -> 100.00 EXACT** on the
+`CBattlezDlg::PaintPlayerColorControls` 0x160f0 (`dialogs`), 581 B: **93.56 -> 100.00 EXACT** on the
 one edit. `?ScreenToClient@8` 2 -> 1, `cmp esi,ebx` -> `test esi,esi`, and the two
 `call [imp]` -> `mov ebx,<imp>` + `call ebx` twice, all in the same build.
 

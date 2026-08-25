@@ -40,7 +40,7 @@ Network()->BroadcastFrom(LocalPlayer(), 1, &g_chatPacket, packetLen);
 ; byte of the function identical
 ```
 
-STEERABLE. `CBattlezDlg::CopyComboSelToChild` 0x171b0 96.76 -> 100.00 EXACT,
+STEERABLE. `CBattlezDlg::OnWorldSelectionChange` 0x171b0 96.76 -> 100.00 EXACT,
 `CMulti::BroadcastChatLine` 0xbb190 95.68 -> 100.00 EXACT, one edit each.
 NEGATIVE CONTROL - do NOT apply it to a CLASS temporary: naming the result of a
 by-value class return (or binding it to a `const&`) moves its stack slot ahead

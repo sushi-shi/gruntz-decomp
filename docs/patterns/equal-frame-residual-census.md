@@ -399,8 +399,8 @@ worth double digits.
 
 ## Worked example: the one real defect the DISPLACEMENT bucket has produced
 
-`CMultiStartDlg::CommitLatencyOption` 0xc5020 read `displacement`: retail has
-`mov ecx,[ecx+0x60]` — `m_slotList` — that our obj never emits, immediately
+`CMultiStartDlg::CommitLatencySelection` 0xc5020 read `displacement`: retail has
+`mov ecx,[ecx+0x60]` — `m_latencyOptions` — that our obj never emits, immediately
 before a call, and never uses the value again. A dead load is not something
 cl 5.0 emits: it is the receiver of a **`__thiscall` member whose body reads
 no member**. 0x38220 takes its four arguments off the stack

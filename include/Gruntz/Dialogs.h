@@ -37,22 +37,22 @@ GZ_ENUM_CONST_BEGIN(DialogCtrlId)
     CTRL_PLAYER_TYPE1 = 0x50e,
     CTRL_PLAYER_TYPE2 = 0x50f,
     CTRL_PLAYER_TYPE3 = 0x510,
-    CTRL_PLAYER_COMBO_C0 = 0x51e,
-    CTRL_PLAYER_CTRL_A0 = 0x51f,
-    CTRL_PLAYER_COMBO_C1 = 0x520,
-    CTRL_PLAYER_COMBO_C2 = 0x521,
-    CTRL_PLAYER_COMBO_C3 = 0x522,
-    CTRL_PLAYER_CTRL_A1 = 0x523,
-    CTRL_PLAYER_CTRL_A2 = 0x524,
-    CTRL_PLAYER_CTRL_A3 = 0x525,
-    CTRL_PLAYER_LATENCY0 = 0x531,
-    CTRL_PLAYER_LATENCY1 = 0x532,
-    CTRL_PLAYER_LATENCY2 = 0x533,
-    CTRL_PLAYER_READY0 = 0x534,
-    CTRL_PLAYER_LATENCY3 = 0x535,
-    CTRL_PLAYER_READY1 = 0x536,
-    CTRL_PLAYER_READY2 = 0x537,
-    CTRL_PLAYER_READY3 = 0x538
+    CTRL_PLAYER_MAX_GRUNTZ0 = 0x51e,
+    CTRL_PLAYER_READY0 = 0x51f,
+    CTRL_PLAYER_MAX_GRUNTZ1 = 0x520,
+    CTRL_PLAYER_MAX_GRUNTZ2 = 0x521,
+    CTRL_PLAYER_MAX_GRUNTZ3 = 0x522,
+    CTRL_PLAYER_READY1 = 0x523,
+    CTRL_PLAYER_READY2 = 0x524,
+    CTRL_PLAYER_READY3 = 0x525,
+    CTRL_PLAYER_LATENCY_VALUE0 = 0x531,
+    CTRL_PLAYER_LATENCY_VALUE1 = 0x532,
+    CTRL_PLAYER_LATENCY_VALUE2 = 0x533,
+    CTRL_PLAYER_LATENCY_UNIT0 = 0x534,
+    CTRL_PLAYER_LATENCY_VALUE3 = 0x535,
+    CTRL_PLAYER_LATENCY_UNIT1 = 0x536,
+    CTRL_PLAYER_LATENCY_UNIT2 = 0x537,
+    CTRL_PLAYER_LATENCY_UNIT3 = 0x538
 GZ_ENUM_CONST_END(DialogCtrlId)
 
 // Resource control ids of the colour-picker dialog template (CBattlezDlgColors,
@@ -75,57 +75,57 @@ class CLatencyList;
 
 class CBattlezDlg : public CDialog {
 public:
-    CBattlezDlg(class CGruntzMgr* mgr, CWnd* pParent);
+    CBattlezDlg(class CGruntzMgr* gameManager, CWnd* pParent);
 
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
     virtual i32 OnInitDialog() OVERRIDE;
     virtual void OnOK() OVERRIDE;
 
-    class CGruntzMgr* m_slots;
+    class CGruntzMgr* m_gameManager;
     char m_pad60[8];
     i32 m_customNameFlag;
     CString m_worldName;
 
-    CWnd* GetCtrlA(i32 index);
-    CWnd* GetCtrlB(i32 index);
-    CWnd* GetCtrlC(i32 index);
-    CWnd* GetCtrlD(i32 index);
+    CWnd* GetPlayerTypeControl(i32 slot);
+    CWnd* GetPlayerNameControl(i32 slot);
+    CWnd* GetMaxGruntzControl(i32 slot);
+    CWnd* GetPlayerColorControl(i32 slot);
 
-    i32 SetCurSelA(i32 id, i32 sel);
+    i32 SetPlayerTypeSelection(i32 slot, i32 selection);
     i32 GetPlayerTypeSelection(i32 slot);
     i32 GetMaxGruntzSelection(i32 slot);
-    i32 SetCurSelC(i32 id, i32 sel);
+    i32 SetMaxGruntzSelection(i32 slot, i32 count);
 
-    i32 SaveOptionCombo0();
-    i32 SaveOptionCombo1();
-    i32 SaveOptionCombo2();
-    i32 SaveOptionCombo3();
+    i32 OnMaxGruntzSelection0();
+    i32 OnMaxGruntzSelection1();
+    i32 OnMaxGruntzSelection2();
+    i32 OnMaxGruntzSelection3();
 
-    void SetCtrlBText(i32 index, const char* text);
+    void SetPlayerName(i32 slot, const char* name);
 
-    i32 SetSlotValue(i32 index, ColorTint val);
+    i32 SetPlayerColor(i32 slot, ColorTint color);
 
-    void ReadPlayerName(i32 index);
+    void ReadPlayerName(i32 slot);
 
-    void FlashCtrlD();
+    void PaintPlayerColorControls();
 
     void ShowCustomDlg();
 
-    void ToggleRow(i32 option);
-    void RefreshOptionState();
+    void UpdatePlayerSlotEnabled(i32 slot);
+    void OnPlayerOptionsChanged();
 
-    void ApplyOption0();
-    void ApplyOption1();
-    void ApplyOption2();
-    void ApplyOption3();
+    void OnPlayerTypeSelection0();
+    void OnPlayerTypeSelection1();
+    void OnPlayerTypeSelection2();
+    void OnPlayerTypeSelection3();
 
-    void ApplyColorSlot0();
-    void ApplyColorSlot1();
-    void ApplyColorSlot2();
-    void ApplyColorSlot3();
+    void OnPlayerColor0();
+    void OnPlayerColor1();
+    void OnPlayerColor2();
+    void OnPlayerColor3();
 
-    void CopyComboSelToChild();
+    void OnWorldSelectionChange();
 
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
 
@@ -140,7 +140,7 @@ public:
     void OnPlayerNameChange2();
     void OnPlayerNameChange3();
 
-    void HandlePlayerNameChange(i32 index);
+    void HandlePlayerNameChange(i32 slot);
 
     void OnPlayerNameKillFocus0();
     void OnPlayerNameKillFocus1();
@@ -175,7 +175,7 @@ private:
 
 class CBattlezDlgColors : public CDialog {
 public:
-    CBattlezDlgColors(class CGruntzMgr* mgr, i32 slotIndex, i32 networked, CWnd* pParent);
+    CBattlezDlgColors(class CGruntzMgr* gameManager, i32 slotIndex, i32 networked, CWnd* pParent);
 
     static const AFX_MSGMAP messageMap;
     static const AFX_MSGMAP_ENTRY _messageEntries[];
@@ -186,7 +186,7 @@ public:
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
     void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
 
-    class CGruntzMgr* m_slots;
+    class CGruntzMgr* m_gameManager;
     i32 m_slotIndex;
     ColorTint m_pickedColor;
     i32 m_networked;
@@ -194,7 +194,7 @@ public:
 
 class CMultiStartDlg : public CDialog {
 public:
-    CMultiStartDlg(class CGruntzMgr* mgr, CWnd* pParent);
+    CMultiStartDlg(class CGruntzMgr* gameManager, CWnd* pParent);
 
     static const AFX_MSGMAP messageMap;
     static const AFX_MSGMAP_ENTRY _messageEntries[];
@@ -206,31 +206,31 @@ public:
 
     virtual void OnOK() OVERRIDE;
 
-    i32 BuildSlotList();
+    i32 BuildLatencyOptions();
 
-    i32 UpdateSlot();
+    i32 RefreshLatencyControl();
 
-    i32 GetSlotIndex();
+    i32 GetLocalPlayerSlotIndex();
 
-    i32 SetupWorldCombo();
+    i32 InitializeWorldCombo();
 
-    void CommitWorldHost();
+    void CommitWorldSelection();
 
-    void SetListCurSel(i32 id, i32 wParam);
-    void SetPlayerName(i32 index, const char* name);
-    void AppendChatLine(char* str);
-    i32 UpdatePlayers(i32 force);
-    void OnSlotSelect0();
-    void OnSlotSelect1();
-    void OnSlotSelect2();
-    void OnSlotSelect3();
-    void ToggleReady(i32 idx);
+    void SetMaxGruntzSelection(i32 slot, i32 count);
+    void SetPlayerName(i32 slot, const char* name);
+    void AppendChatLine(char* line);
+    i32 RefreshPlayerControls(i32 force);
+    void OnMaxGruntzSelection0();
+    void OnMaxGruntzSelection1();
+    void OnMaxGruntzSelection2();
+    void OnMaxGruntzSelection3();
+    void CommitReadySelection(i32 slot);
 
-    i32 SelectColor(i32 colorIndex, ColorTint playerColor);
-    void OnColorSlot0();
-    void OnColorSlot1();
-    void OnColorSlot2();
-    void OnColorSlot3();
+    i32 SetPlayerColor(i32 slot, ColorTint color);
+    void OnPlayerColor0();
+    void OnPlayerColor1();
+    void OnPlayerColor2();
+    void OnPlayerColor3();
 
     void OnCustomWorld();
 
@@ -240,7 +240,7 @@ public:
     void OnPlayerNameChange1();
     void OnPlayerNameChange2();
     void OnPlayerNameChange3();
-    void HandlePlayerNameChange(i32 index);
+    void HandlePlayerNameChange(i32 slot);
     void OnReadyToggle0();
     void OnReadyToggle1();
     void OnReadyToggle2();
@@ -248,43 +248,39 @@ public:
 
     void OnChatSend();
 
-    void CommitLatencyOption();
+    void CommitLatencySelection();
 
     void EchoLatencySettings();
 
-    void Drive();
-    i32 UpdateColorItems();
+    void BroadcastPlayerSlotChanges();
+    i32 RefreshWorldControls();
 
-    void SyncChannelSlot(i32 ch);
-    i32 EnableControls();
-    void ReconcileChannel0();
-    void ConnectStep();
+    void ApplyPlayerTypeSelection(i32 slot);
+    i32 EnableChatControls();
+    void OnPlayerTypeSelection0();
+    void OnPlayerTypeSelection1();
 
-    void ReconcileChannel2();
-    void ReconcileChannel3();
+    void OnPlayerTypeSelection2();
+    void OnPlayerTypeSelection3();
 
     void Watchdog();
 
-    CWnd* GetCtrlA(i32 index);
-    CWnd* GetCtrlB(i32 index);
-    CWnd* GetCtrlC(i32 index);
-    CWnd* GetCtrlD(i32 index);
-    CWnd* GetCtrlE(i32 index);
-    void SetComboSelE(i32 index, i32 sel);
-    i32 GetComboSelE(i32 index);
-    i32 GetComboSelC(i32 id);
+    CWnd* GetReadyControl(i32 slot);
+    CWnd* GetPlayerNameControl(i32 slot);
+    CWnd* GetMaxGruntzControl(i32 slot);
+    CWnd* GetPlayerColorControl(i32 slot);
+    CWnd* GetPlayerTypeControl(i32 slot);
+    void SetPlayerTypeSelection(i32 slot, i32 selection);
+    i32 GetPlayerTypeSelection(i32 slot);
+    i32 GetMaxGruntzSelection(i32 slot);
 
     void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
 
-    i32 FlashCtrlD();
+    i32 PaintPlayerColorControls();
 
-    HWND GetSafe1c() {
-        return this == NULL ? NULL : m_hWnd;
-    }
+    class CGruntzMgr* m_gameManager;
 
-    class CGruntzMgr* m_host;
-
-    CLatencyList* m_slotList;
+    CLatencyList* m_latencyOptions;
     char m_pad64[8];
     i32 m_customWorldFlag;
     CString m_worldName;
@@ -320,11 +316,11 @@ private:
     static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
 
-extern CString g_gruntNames[4];
+extern CString g_defaultPlayerNames[4];
 
-extern i32 g_watchBusy;
-extern i32 g_watchBlinkA;
-extern i32 g_watchBlinkB;
+extern i32 g_watchdogBusy;
+extern i32 g_netStatsTick;
+extern i32 g_latencyDisplayTick;
 
 LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

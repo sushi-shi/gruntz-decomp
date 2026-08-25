@@ -110,7 +110,7 @@ the dtor is implicit, cl reproduces exactly that placement, and the dedicated
 `??1CBattlezDlg` (0x14c90) and `??1CBattlezDlgCustom` (0x17140) — see src/Gruntz/Dialogs.cpp.
 
 **Do not confuse this with a real wall.** Three sites were `@early-stop`'d on this doc's old
-"unreachable restamp" story. One (`ApplyColorSlot0..3`) had **no restamp in its diff at all** —
+"unreachable restamp" story. One (`OnPlayerColor0..3`) had **no restamp in its diff at all** —
 the note was copied, not measured; its real residual was argument-evaluation order (the MFC
 inline `CWnd::InvalidateRect` member vs the global import), and it went 91.1% → **100%**.
 **Re-measure the diff before you inherit a wall's diagnosis.**

@@ -41,9 +41,14 @@ const AFX_MSGMAP_ENTRY CBattlezDlgColors::_messageEntries[] = {
 };
 
 RVA(0x00017930, 0x3a)
-CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* mgr, i32 slotIndex, i32 networked, CWnd* pParent)
+CBattlezDlgColors::CBattlezDlgColors(
+    CGruntzMgr* gameManager,
+    i32 slotIndex,
+    i32 networked,
+    CWnd* pParent
+)
     : CDialog(0xc2, pParent) {
-    m_slots = mgr;
+    m_gameManager = gameManager;
     m_slotIndex = slotIndex;
     m_pickedColor = TINT_ORANGE;
     m_networked = networked;
@@ -52,37 +57,37 @@ RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 
 RVA(0x000179b0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
-    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM);
+    LRESULT(WINAPI * sendMessage)(HWND, UINT, WPARAM, LPARAM);
     if (pDX->m_bSaveAndValidate) {
-        CWnd* lb = GetDlgItem(CTRL_COLOR_LIST);
-        pSend = ::SendMessageA;
-        long sel = pSend(lb->m_hWnd, LB_GETCURSEL, 0, 0);
-        long data = pSend(lb->m_hWnd, LB_GETITEMDATA, sel, 0);
-        m_pickedColor = static_cast<ColorTint>(data);
-        if (data >= TINT_COUNT) {
+        CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
+        sendMessage = ::SendMessageA;
+        long selection = sendMessage(colorList->m_hWnd, LB_GETCURSEL, 0, 0);
+        long color = sendMessage(colorList->m_hWnd, LB_GETITEMDATA, selection, 0);
+        m_pickedColor = static_cast<ColorTint>(color);
+        if (color >= TINT_COUNT) {
             m_pickedColor = TINT_WHITE;
         }
     } else {
-        CWnd* lb = GetDlgItem(CTRL_COLOR_LIST);
-        pSend = ::SendMessageA;
+        CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
+        sendMessage = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
-            i32 avail = 1;
-            GruntzPlayer* rec = m_slots->m_options;
+            i32 available = 1;
+            GruntzPlayer* player = m_gameManager->m_options;
             for (i32 j = 0; j < 4; j++) {
-                if (rec->m_liveGate != 0 && IDX(rec->m_colorIndex) == i) {
-                    avail = 0;
+                if (player->m_liveGate != 0 && IDX(player->m_colorIndex) == i) {
+                    available = 0;
                 }
-                rec++;
+                player++;
             }
-            if (avail) {
+            if (available) {
 
                 MsgParam name;
                 name.m_str = "Color";
-                long idx = pSend(lb->m_hWnd, LB_ADDSTRING, 0, name.m_lparam);
-                pSend(lb->m_hWnd, LB_SETITEMDATA, idx, i);
+                long itemIndex = sendMessage(colorList->m_hWnd, LB_ADDSTRING, 0, name.m_lparam);
+                sendMessage(colorList->m_hWnd, LB_SETITEMDATA, itemIndex, i);
             }
         }
-        pSend(lb->m_hWnd, LB_SETCURSEL, 0, 0);
+        sendMessage(colorList->m_hWnd, LB_SETCURSEL, 0, 0);
     }
 }
 
@@ -99,14 +104,14 @@ void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 }
 RVA(0x00017b10, 0x1b8)
 void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
-    CWnd* lb = GetDlgItem(CTRL_COLOR_LIST);
+    CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
     if (nIDCtl == CTRL_COLOR_LIST) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         COLORREF color;
-        switch (
-            static_cast<ColorTint>(::SendMessageA(lb->m_hWnd, LB_GETITEMDATA, lpdis->itemID, 0))
-        ) {
+        switch (static_cast<ColorTint>(
+            ::SendMessageA(colorList->m_hWnd, LB_GETITEMDATA, lpdis->itemID, 0)
+        )) {
             case TINT_DKBLUE:
                 color = 0x800000;
                 break;

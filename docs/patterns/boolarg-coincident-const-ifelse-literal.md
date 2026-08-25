@@ -26,5 +26,5 @@ if (A() || B() || C()) {
 ; true  branch:  6a 01            push 1        ; 6a 01  push 1 (nID)   -> two literals
 ; false branch:  50               push eax(=0)  ; 6a 01  push 1 (nID)   -> reused zero
 ```
-Steerable. Closed CBattlezDlg::ApplyOption0..3 (0x15de0/15e60/15ee0/15f60) 91.84% → 100%;
+Steerable. Closed CBattlezDlg::OnPlayerTypeSelection0..3 (0x15de0/15e60/15ee0/15f60) 91.84% → 100%;
 the inline-`||` form was both 3 bytes long AND size-mismatched on the true branch.

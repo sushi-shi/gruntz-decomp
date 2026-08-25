@@ -29,10 +29,12 @@ prototype.
 
 Two measured examples establish the pattern:
 
-- `GetCtrlE` at `0x000c2640` is the fifth `CMultiStartDlg` accessor beside `GetCtrlA..D`.
-  Callers load the dialog into `ecx`, and the function calls `CWnd::GetDlgItem` without setting
-  `ecx`. Restoring `CMultiStartDlg::GetCtrlE` removed the phantom `GetDlgItemThreaded`; the two
-  adjacent selector helpers became exact once restored as members too.
+- `GetPlayerTypeControl` at `0x000c2640` is the fifth `CMultiStartDlg`
+  accessor beside the four other player-row accessors. Callers load the dialog
+  into `ecx`, and the function calls `CWnd::GetDlgItem` without setting `ecx`.
+  Restoring `CMultiStartDlg::GetPlayerTypeControl` removed the phantom
+  `GetDlgItemThreaded`; the two adjacent selector helpers became exact once
+  restored as members too.
 - `SerializeDispatch` at `0x00163710` receives `CGameLevel::m_mainPlane` in `ecx` and directly
   calls `CDDrawWorkerHost::Save`/`Load`. Restoring it as a `CDDrawWorkerHost` member removed the
   phantom `PlaneSaveVia` and `PlaneLoadVia` aliases.

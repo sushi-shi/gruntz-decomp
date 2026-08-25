@@ -52,7 +52,7 @@ path fall through, losing retail's unconditional skip. The skip alone is likewis
 not enough: the nested form lets dominance remove the re-test. Both edges together
 identify the compound-first-condition / `else if` source structure.
 
-Measured on `CMultiStartDlg::SyncChannelSlot` (`0xc2ab0`). The nested reconstruction
+Measured on `CMultiStartDlg::ApplyPlayerTypeSelection` (`0xc2ab0`). The nested reconstruction
 emitted 10 branches against retail's 11. Separate sibling `if`s kept 10 total branches
 because one `jmp` became the re-test. The compound form emitted 11/11 branches with
 18/18 calls and 19/19 relocations, changing `gruntz walls diagnose` from CFG to

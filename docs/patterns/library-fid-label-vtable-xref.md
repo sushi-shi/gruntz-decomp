@@ -40,5 +40,5 @@ Evidence: 162 rows named `??_G__non_rtti_object@@UAEPAXI@Z` were audited. Of
 them, 155 are held by source-owned game vtables, six by known library vtables,
 and one has no vtable hit. The first 155 are proven library-category errors.
 Separately, `0x000c29f0` was labeled `CFormView::OnInitialUpdate`, but its xrefs
-and callees prove it is `CMultiStartDlg::ReconcileChannel0`, the channel-0 twin
+and callees prove it is `CMultiStartDlg::OnPlayerTypeSelection0`, the channel-0 twin
 of the adjacent channel-1/2/3 handlers.

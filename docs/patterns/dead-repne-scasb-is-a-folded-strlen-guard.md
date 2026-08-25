@@ -10,7 +10,7 @@ arms do exactly the same thing (destroy the locals and return).
 
 ```cpp
 CString s;
-GetCtrlB(index)->GetWindowText(s);
+GetPlayerNameControl(index)->GetWindowText(s);
 if (strlen(s) == 0) {      // `strlen(s);` alone is DELETED and matches nothing
     return;                // ... and the rest of the body is empty
 }
