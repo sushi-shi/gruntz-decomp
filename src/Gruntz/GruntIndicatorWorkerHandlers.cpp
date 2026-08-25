@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/AnimWorker.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntHealthSprite.h>
@@ -10,134 +9,135 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Gruntz/GruntWingzTimeSprite.h>
+#include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/UserLogic.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
-#define ANIM_WORKER_PUMP(LEAF)                                                                     \
-    AnimWorkerObj* rec = owner->m_animWorker;                                                      \
-    switch (rec->WorkerAct()) {                                                                    \
+#define LOGIC_RECORD_DISPATCH(LEAF)                                                                \
+    CLogicRecord* record = owner->m_logicRecord;                                                   \
+    switch (record->LogicEvent()) {                                                                \
         case ACT_UNINITIALISED: {                                                                  \
-            rec->SetWorkerAct(ACT_LIVE);                                                           \
+            record->SetLogicEvent(ACT_LIVE);                                                       \
             CUserLogic* sub = new LEAF(owner);                                                     \
             sub->Activate();                                                                       \
-            rec->m_logic = sub;                                                                    \
+            record->m_userLogic = sub;                                                             \
             break;                                                                                 \
         }                                                                                          \
         case ACT_OBJECT_REMOVED:                                                                   \
-            rec->m_logic->OnObjectRemoved();                                                       \
+            record->m_userLogic->OnObjectRemoved();                                                \
             break;                                                                                 \
         case ACT_LEAVE_ACTIVE_REGION:                                                              \
-            rec->m_logic->OnLeaveActiveRegion();                                                   \
+            record->m_userLogic->OnLeaveActiveRegion();                                            \
             break;                                                                                 \
         case ACT_PREPARE_SAVE:                                                                     \
-            rec->m_logic->PrepareSave();                                                           \
+            record->m_userLogic->PrepareSave();                                                    \
             break;                                                                                 \
         case ACT_AFTER_LOAD_REFERENCES:                                                            \
-            rec->m_logic->AfterLoadReferences();                                                   \
+            record->m_userLogic->AfterLoadReferences();                                            \
             break;                                                                                 \
         case ACT_AFTER_LOAD:                                                                       \
-            rec->m_logic->AfterLoad();                                                             \
+            record->m_userLogic->AfterLoad();                                                      \
             break;                                                                                 \
         case ACT_AFTER_SAVE:                                                                       \
-            rec->m_logic->AfterSave();                                                             \
+            record->m_userLogic->AfterSave();                                                      \
             break;                                                                                 \
         case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
-            Worker_DefaultPump(rec->m_logic);                                                      \
+            DispatchUnhandledLogicEvent(record->m_userLogic);                                      \
             break;                                                                                 \
     }                                                                                              \
     return 1;
 
 RVA(0x0007db20, 0xf1)
 i32 CreateGruntSelectedSprite(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CGruntSelectedSprite(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
 }
 
 RVA(0x0007dc60, 0xf1)
-i32 CreateGruntHealthSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntHealthSprite)}
+i32 CreateGruntHealthSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntHealthSprite)}
 
 RVA(0x0007dda0, 0xf1)
 i32 CreateGruntToySprite(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CGruntToySprite(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
 }
 
 RVA(0x0007dee0, 0xf1)
-i32 CreateGruntStaminaSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntStaminaSprite)}
+i32 CreateGruntStaminaSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntStaminaSprite)}
 
 RVA(0x0007e020, 0xf1)
-i32 CreateGruntToyTimeSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntToyTimeSprite)}
+i32 CreateGruntToyTimeSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntToyTimeSprite)}
 
 RVA(0x0007e160, 0xf1)
-i32 CreateGruntWingzTimeSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntWingzTimeSprite)}
+i32 CreateGruntWingzTimeSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntWingzTimeSprite)}
 
 RVA(0x0007e2a0, 0xf1)
 i32 CreateGruntPowerupSprite(CGameObject* owner) {
-    ANIM_WORKER_PUMP(CGruntPowerupSprite)
+    LOGIC_RECORD_DISPATCH(CGruntPowerupSprite)
 }

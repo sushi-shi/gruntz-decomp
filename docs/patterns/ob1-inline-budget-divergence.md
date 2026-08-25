@@ -31,7 +31,7 @@ drop is recorded by deleting its row from `config/retail/gruntz_functions.tsv`
 (committed); it is not repaired with scaffolding.
 
 This policy removed the former WWD placement switches in August 2026. The rebuild
-then showed that `CResolveNode`, `AnimWorkerObj`, and `CAniAdvanceCursor` are emitted
+then showed that `CResolveNode`, `CLogicRecord`, and `CAniAdvanceCursor` are emitted
 naturally by `LevelPlane.cpp`; their annotations moved there. `WwdDirtyRect`,
 `WwdGridNode`, `WwdRegion`, and `CGameObject` currently have no natural standalone
 emission and are intentionally unclaimed.
@@ -66,7 +66,7 @@ expands it for four others, and the eight are eight distinct classes:
 | child (by its `??_7` stamp) | retail |
 |---|---|
 | `CDDrawSubMgrPages` 0x1efe08, `CDDrawChildGroup` 0x1efdc0, `CDDrawWorkerList` 0x1efd88, `CDDrawWorkerMapSmall` 0x1efcc8 | **call** |
-| `CDDrawWorkerRegistry` 0x1efd28, `CDDrawWorkerCache` 0x1efd00, `SoundCueRegistry` 0x1efca0, `AnimationRegistry` 0x1efc78 | expand |
+| `CDDrawWorkerRegistry` 0x1efd28, `CLogicRecordRegistry` 0x1efd00, `SoundCueRegistry` 0x1efca0, `AnimationRegistry` 0x1efc78 | expand |
 
 Pinning `CLoadable(CDDrawSurfaceMgr*,i32,i32)` out of line in DDrawSubMgr.cpp and
 tagging the expansion sites `CLoadable(owner, a, b, CLoadable::NO_SEED)` measured
@@ -91,7 +91,7 @@ genuine budget residue, and they cost 10.50 and ~5 points respectively.
 `CreateContainerObject` (`0x1598d0`, WwdObjMgr.cpp) **calls** `CGameObject::CGameObject`
 while `CreateDotObject` (`0x159250`, same .cpp, 0x680 bytes earlier) **expands** it -
 two stores of `??_7CResolveNode`/`??_7CGameObject` inline plus the nested
-`new AnimWorkerObj`. One TU, one constructor, both shapes. So the constructor is
+`new CLogicRecord`. One TU, one constructor, both shapes. So the constructor is
 inline-in-header (a `.cpp`-out-of-line definition could produce only the call form),
 and the call/expand choice is pure accumulated budget.
 
@@ -99,9 +99,9 @@ The cut point is the *innermost* level reached, and it is not steerable from sou
 
 | site | retail cuts after | ours cuts after |
 |---|---|---|
-| `CreateDotObject` / `CreateDeferredObject` | CGameObject (level 2); calls `??0CResolveNode`, `WwdRegion`, `WwdDirtyRect`, `CString`, `??0AnimWorkerObj` | CLoadable (level 4); calls `??0CWapObj` |
+| `CreateDotObject` / `CreateDeferredObject` | CGameObject (level 2); calls `??0CResolveNode`, `WwdRegion`, `WwdDirtyRect`, `CString`, `??0CLogicRecord` | CLoadable (level 4); calls `??0CWapObj` |
 | `CreateSpriteObject` | CGameObject; calls `FUN_0055b2b0` (`WwdGridNode`) | inlines the whole chain |
-| `??0CGameObject` standalone `0x15b390` | nothing - expands CResolveNode, CLoadable, CWapObj, AnimWorkerObj | same |
+| `??0CGameObject` standalone `0x15b390` | nothing - expands CResolveNode, CLoadable, CWapObj, CLogicRecord | same |
 
 Because our cut lands one level deeper, cl materializes `??0CWapObj@@QAE@XZ` and with
 it `??_7CWapObj@@6B@`, which retail never emits - the `class_vtables` vtbl-absent
@@ -171,11 +171,11 @@ complete inline entity population is correct.
 ## A 4-of-5 control group, which is what makes the verdict cheap (2026-08-08)
 
 `CUserLogic::BuildLogicTypeTable` is expanded into exactly five derived constructors, and
-each expansion contains three `CDDrawWorkerCache::Find` sites. Retail calls all three in
+each expansion contains three `CLogicRecordRegistry::FindTemplate` sites. Retail calls all three in
 `CGuardPoint`, `CLevelTime` (twice - `leveltimedtor` and `statedispatch`) and `CWayPoint`,
 and in `CLightFx` alone it EXPANDS the first one, which is why that site reads
 `?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z` on the target side and
-`?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` on ours.
+`?Find@CLogicRecordRegistry@@QAEPAVCObject@@PBD@Z` on ours.
 
 Four identical siblings that already agree settle it in one command: the divergence is one
 site's budget, not the visibility of `Find`. Making `Find` an in-class inline to buy back

@@ -56,7 +56,7 @@ struct CUserBaseLink {
 class CUserLogic {
     ...
     CWwdGameObjectA* m_object;
-    AnimWorkerObj*   m_objAux;
+    CLogicRecord*   m_logicRecord;
     CUserBaseLink    m_link;      // <- one member, holding one member
     i32              m_gatedActKey;
 };
@@ -119,7 +119,7 @@ path** could tell the two apart — which is exactly what the funclets did.
 +#include <Wap32/zBitVec.h>
 
      CWwdGameObjectA* m_object;
-     AnimWorkerObj* m_objAux;
+     CLogicRecord* m_logicRecord;
 -    CUserBaseLink m_link;
 +    zBitVec m_actBits;
      i32 m_gatedActKey;

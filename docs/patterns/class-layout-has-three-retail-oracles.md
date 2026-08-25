@@ -23,7 +23,7 @@ elsewhere" is the wrong hypothesis to spend a build on.
 Both apparent contradictions the sweep produced along the way were TOOL bugs,
 caught before any header moved, and both are worth knowing if you extend it:
 fencing the forward scan at the next `new` named an object after whichever BASE
-vptr landed first (CWwdGameObjectC read as 0x17c, which is the `AnimWorkerObj`
+vptr landed first (CWwdGameObjectC read as 0x17c, which is the `CLogicRecord`
 allocated between it and its own stamp), and dropping that fence without ranking
 register-OWNED evidence first let `CGruntzMgr::Run` claim all eleven of its
 allocation sizes for one class. Proximity is not ownership; `mov <reg>,eax` is.

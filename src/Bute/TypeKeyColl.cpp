@@ -20,7 +20,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/TypeKeyCollStr.h>
 #include <Gruntz/MovingLogicSerial.h>
-#include <Gruntz/XferArchive.h>
+#include <Gruntz/LogicEventDispatch.h>
 #include <Wap32/ZVec.h>
 #include <Utils/BitArrayWord.h>
 
@@ -910,17 +910,17 @@ i32 FirstDiffBit(const char* a, const char* b) {
 
 RVA(0x0016e4c0, 0xf)
 i32 LogicHitFactory(CGameObject* obj) {
-    return obj->m_animWorker->m_logic->AdvanceAnimation();
+    return obj->m_logicRecord->m_userLogic->AdvanceAnimation();
 }
 
 RVA(0x0016e4d0, 0xf)
 i32 LogicAttackFactory(CGameObject* obj) {
-    return obj->m_animWorker->m_logic->StepAttackFire();
+    return obj->m_logicRecord->m_userLogic->StepAttackFire();
 }
 
 RVA(0x0016e4e0, 0xf)
 i32 LogicBumpFactory(CGameObject* obj) {
-    return obj->m_animWorker->m_logic->RecordFrameTick();
+    return obj->m_logicRecord->m_userLogic->RecordFrameTick();
 }
 
 static inline CString* TypeResolve(i32 key) {
@@ -949,13 +949,13 @@ static inline void FreeNodes() {
 }
 
 RVA(0x0016e4f0, 0x19b)
-i32 ProjTypeXfer(CUserLogic* ar) {
-    CString* entry = TypeResolve(ar->m_objAux->ActKey());
+i32 DispatchLogicEvent(CUserLogic* ar) {
+    CString* entry = TypeResolve(ar->m_logicRecord->EventCode());
     FreeNodes();
     ar->StepBehavior(entry->GetBuffer(0));
-    ar->FireActivation(ar->m_objAux->ActKey());
+    ar->FireActivation(ar->m_logicRecord->EventCode());
 
-    entry = TypeResolve(ar->m_objAux->ActKey());
+    entry = TypeResolve(ar->m_logicRecord->EventCode());
     FreeNodes();
     ar->FinalizeStep(entry->GetBuffer(0));
     return 1;

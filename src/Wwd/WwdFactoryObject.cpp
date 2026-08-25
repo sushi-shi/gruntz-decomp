@@ -5,11 +5,11 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/AniAdvance.h>
-#include <DDrawMgr/AnimWorkerObj.h>
-#include <DDrawMgr/AnimWorkerObjCtorInline.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgr.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/LogicRecord.h>
+#include <DDrawMgr/LogicRecordCtorInline.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
@@ -30,7 +30,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdAnimStepMode.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdObjMgr.h>
@@ -38,7 +38,7 @@
 #include <string.h>
 
 RVA(0x0015b340, 0x2b)
-i32 AnimWorkerObj::Consume(i32 amount) {
+i32 CLogicRecord::Consume(i32 amount) {
     i32 remaining = m_timeDelay;
     if (remaining == 0) {
         return remaining;
@@ -53,7 +53,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 
 RVA(0x0015b370, 0x1d)
 i32 CGameObject::IsLoaded() {
-    if (m_animWorker == NULL) {
+    if (m_logicRecord == NULL) {
         return 0;
     }
     if (m_ownerCtx != NULL && m_id != -1) {
@@ -89,13 +89,13 @@ void CGameObject::Notify(CGameObject* p) {
     if (m_flags & 0x8) {
         m_health -= p->m_damage;
         if (m_health <= 0) {
-            m_animWorker->SetWorkerAct(ACT_HEALTH_DEPLETED);
+            m_logicRecord->SetLogicEvent(ACT_HEALTH_DEPLETED);
         }
     } else {
-        AnimWorkerObj* h = m_hitWorker;
+        CLogicRecord* h = m_hitLogic;
         if (h != NULL) {
             m_hitSource = p;
-            h->m_notify(this);
+            h->m_dispatch(this);
         }
     }
 }
@@ -127,10 +127,10 @@ RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdGameObjectA@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdGameObjectA@@UAE@XZ)
 
 RVA(0x0015b940, 0x38)
-i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
+i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_soundCue = NULL;
     m_animCursor.Construct(this);
-    return CGameObject::Setup(x, y, sortKey, tmpl);
+    return CGameObject::Setup(x, y, sortKey, logicTemplate);
 }
 
 RVA(0x0015ba20, 0x1c)
@@ -142,7 +142,7 @@ void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
 
 RVA(0x0015ba40, 0x1d)
 i32 CWwdGameObjectF::IsLoaded() {
-    if (m_animWorker == NULL) {
+    if (m_logicRecord == NULL) {
         return 0;
     }
     if (m_ownerCtx != NULL && m_id != -1) {
@@ -175,13 +175,13 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 }
 
 RVA(0x0015bc30, 0x16)
-i32 CWwdGameObjectF::SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl) {
-    return CGameObject::Setup(0, 0, sortKey, tmpl);
+i32 CWwdGameObjectF::SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate) {
+    return CGameObject::Setup(0, 0, sortKey, logicTemplate);
 }
 
 RVA(0x0015bcd0, 0xb)
 i32 CWwdGameObject::IsLoaded() {
-    return m_animWorker != NULL;
+    return m_logicRecord != NULL;
 }
 
 RVA(0x0015bce0, 0x6)
@@ -222,7 +222,7 @@ i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
 
 RVA(0x0015c000, 0x1d)
 i32 CWwdGameObjectC::IsLoaded() {
-    if (m_animWorker == NULL) {
+    if (m_logicRecord == NULL) {
         return 0;
     }
     if (m_ownerCtx != NULL && m_id != -1) {
@@ -253,9 +253,15 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 }
 
 RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObjectC::SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl, i32 flag) {
+i32 CWwdGameObjectC::SetupFlagged(
+    i32 x,
+    i32 y,
+    i32 sortKey,
+    CLogicRecord* logicTemplate,
+    i32 flag
+) {
     m_dotColor = static_cast<u8>(flag);
-    return CGameObject::Setup(x, y, sortKey, tmpl);
+    return CGameObject::Setup(x, y, sortKey, logicTemplate);
 }
 
 // @early-stop

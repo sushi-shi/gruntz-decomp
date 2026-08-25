@@ -17,12 +17,12 @@ puts them back, and the stamp lands where retail has it with no other edit:
 
 ```cpp
 // WRONG - the trio become body statements; the ??_7 stamp is emitted first
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
+CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
     m_id = id; m_flags = flags; m_ownerCtx = owner;   // CLoadable's fields
     m_notify = 0; /* … */
 }
 // RIGHT
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CLoadable(id, flags, owner) {
     m_notify = 0; /* … */
 }
@@ -39,14 +39,14 @@ Two corollaries:
 
 **Argument ORDER of the base-ctor call is observable when the ctor is inlined.** cl5 materializes
 actual arguments RIGHT-TO-LEFT even for an inlined callee, so the rightmost argument's load is
-emitted first. `AnimWorkerObj`'s inline `(owner, id)` ctor inlined into
+emitted first. `CLogicRecord`'s inline `(owner, id)` ctor inlined into
 `CGameObject::EnsureWorker80/88/90` loads `this->m_id` before `this->m_ownerCtx`, which only
 happens with `: CLoadable(owner, id)` — the `(id, owner)` overload emits them the other way round
 and costs the last 0.8%. The order at the OUTER `new T(...)` call site does not matter; the base
 ctor call's does.
 
 Evidence (2026-07-28, all filed as different "walls" before):
-`AnimWorkerObj::AnimWorkerObj` @0x15b300 98.18 → **100** ("vptr-last wall … a real-virtual class
+`CLogicRecord::CLogicRecord` @0x15b300 98.18 → **100** ("vptr-last wall … a real-virtual class
 forces cl's implicit vptr-first store"), `CAniAdvanceCursor::CAniAdvanceCursor` @0x15b730 97.62 →
 **100** ("the 100% spelling needs the base ctor inline, which contradicts its proven out-of-line
 0x156cb0 body" — wrong: the inline overloads and the out-of-line `??0CLoadable` are *different

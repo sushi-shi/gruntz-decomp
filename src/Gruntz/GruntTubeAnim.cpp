@@ -40,7 +40,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         RESET_GRUNT_POWERED_STATE(this)
     }
 
-    CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());
+    CString* node = g_typeColl.ScratchResolve(m_logicRecord->EventCode());
     ActNameConstructGrownSlots();
 
     bool eq;

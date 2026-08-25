@@ -399,7 +399,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* spr = fac->CreateSprite(0, ax, cx, SORTKEY_OVERLAY, "DoNothing", 1);
     m_goal = spr;
-    spr->m_animWorker->m_notify(spr);
+    spr->m_logicRecord->m_dispatch(spr);
     m_goal->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
@@ -648,7 +648,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     CGameObject* occupant = NULL;
                     MapLookupById(*map, occupantId, occupant);
                     if (occupant != NULL) {
-                        CUserLogic* logic = occupant->m_animWorker->m_logic;
+                        CUserLogic* logic = occupant->m_logicRecord->m_userLogic;
                         if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                             world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                             return 1;
@@ -741,7 +741,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 // @early-stop
 // One block differs (B25, the TARGET_SELECTION_TOY arm): retail cross-jumps its
 // `Activate(...,3,1)` tail into the block the other two arms share; cl duplicates
-// it. NOT a merge-policy difference - cl hoisted the m_animWorker reload above the
+// it. NOT a merge-policy difference - cl hoisted the m_logicRecord reload above the
 // pushes in that ONE arm (`mov eax,[esi+0x7c]` / `mov ecx,[eax+0x18]`), so its tail
 // is not identical to the others and the suffix matcher correctly declines. The
 // other 45 blocks are byte-identical.
@@ -801,8 +801,8 @@ i32 CTriggerMgr::ResetGroup(
             }
             sprite =
                 m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
-            sprite->m_animWorker->m_notify(sprite);
-            (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
+            sprite->m_logicRecord->m_dispatch(sprite);
+            (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 2, 1);
             return 1;
         case TARGET_SELECTION_GRUNT:
@@ -829,8 +829,8 @@ i32 CTriggerMgr::ResetGroup(
             }
             sprite =
                 m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
-            sprite->m_animWorker->m_notify(sprite);
-            (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
+            sprite->m_logicRecord->m_dispatch(sprite);
+            (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 1, 1);
             return 1;
         case TARGET_SELECTION_TOY:
@@ -872,8 +872,8 @@ i32 CTriggerMgr::ResetGroup(
             }
             sprite =
                 m_world->m_childGroup->CreateSprite(0, x, y, SORTKEY_OVERLAY, "LightFx", 0x40003);
-            sprite->m_animWorker->m_notify(sprite);
-            (static_cast<CLightFx*>(sprite->m_animWorker->m_logic))
+            sprite->m_logicRecord->m_dispatch(sprite);
+            (static_cast<CLightFx*>(sprite->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", 3, 1);
             return 1;
         default:
@@ -1117,7 +1117,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x400);
         return 0;
     }
-    sprite->m_animWorker->m_notify(sprite);
+    sprite->m_logicRecord->m_dispatch(sprite);
     sprite->m_smarts = f124;
     sprite->m_score = f114;
     sprite->m_points = f118;
@@ -1126,7 +1126,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
-    CGruntPuddle* tgt = static_cast<CGruntPuddle*>(sprite->m_animWorker->m_logic);
+    CGruntPuddle* tgt = static_cast<CGruntPuddle*>(sprite->m_logicRecord->m_userLogic);
     i32 d = sprite->m_points;
     if (d == 0) {
         d = 0x19;
@@ -1183,7 +1183,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     POSITION pos = fac->m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = fac->NextChild(pos);
-        GameObjNotifyFn init = obj->m_animWorker->m_notify;
+        GameObjectLogicFn init = obj->m_logicRecord->m_dispatch;
         if (init == CreateInGameIcon || init == CreateInGameText) {
             i32 ox = obj->m_screenX >> TILE_SHIFT_PX;
             i32 oy = obj->m_screenY >> TILE_SHIFT_PX;
@@ -1407,7 +1407,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
                 if (found == NULL) {
                     return 0;
                 }
-                cell = static_cast<CGrunt*>(found->m_animWorker->m_logic);
+                cell = static_cast<CGrunt*>(found->m_logicRecord->m_userLogic);
                 if (cell == NULL) {
                     return 0;
                 }
@@ -1499,7 +1499,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             if (looked == NULL) {
                 return 0;
             }
-            CWarlord* obj = static_cast<CWarlord*>(looked->m_animWorker->m_logic);
+            CWarlord* obj = static_cast<CWarlord*>(looked->m_logicRecord->m_userLogic);
             m_pendingFx = obj;
             if (obj == NULL) {
                 return 0;
@@ -1526,7 +1526,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (looked == NULL) {
             return 0;
         }
-        CGruntPuddle* obj = static_cast<CGruntPuddle*>(looked->m_animWorker->m_logic);
+        CGruntPuddle* obj = static_cast<CGruntPuddle*>(looked->m_logicRecord->m_userLogic);
         if (obj == NULL) {
             return 0;
         }
@@ -1824,8 +1824,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                                     0x40003
                                 );
                                 done = 1;
-                                spr->m_animWorker->m_notify(spr);
-                                (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+                                spr->m_logicRecord->m_dispatch(spr);
+                                (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                                     ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
                             }
                         } while (done == 0);
@@ -1841,8 +1841,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
-                        spr->m_animWorker->m_notify(spr);
-                        (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+                        spr->m_logicRecord->m_dispatch(spr);
+                        (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                             ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
                         break;
                     }
@@ -1859,8 +1859,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
-                        spr->m_animWorker->m_notify(spr);
-                        (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+                        spr->m_logicRecord->m_dispatch(spr);
+                        (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                             ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
                         break;
                     }
@@ -1878,8 +1878,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                             "LightFx",
                             0x40003
                         );
-                        spr->m_animWorker->m_notify(spr);
-                        (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+                        spr->m_logicRecord->m_dispatch(spr);
+                        (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                             ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
                         break;
                     }
@@ -1993,8 +1993,8 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
         }
     }
@@ -2036,9 +2036,9 @@ i32 CTriggerMgr::SpawnGrunt(
     if (sprite == NULL) {
         return 0;
     }
-    sprite->m_animWorker->m_notify(sprite);
+    sprite->m_logicRecord->m_dispatch(sprite);
 
-    CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
+    CGrunt* logic = static_cast<CGrunt*>(sprite->m_logicRecord->m_userLogic);
 
     if (logic->Place(
             this,
@@ -2636,14 +2636,14 @@ void CTriggerMgr::DestroyAllAnims() {
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj != NULL) {
-            AnimWorkerObj* desc = obj->m_animWorker;
+            CLogicRecord* record = obj->m_logicRecord;
 
             NotifyWord slot;
             NotifyWord want;
-            slot.m_fn = desc->m_notify;
+            slot.m_fn = record->m_dispatch;
             want.m_fn = CreateProjectile;
             if (slot.m_bits == want.m_bits) {
-                (static_cast<CGrunt*>(desc->m_logic))->m_neighborPlayerIndex = 0;
+                (static_cast<CGrunt*>(record->m_userLogic))->m_neighborPlayerIndex = 0;
             }
         }
     }

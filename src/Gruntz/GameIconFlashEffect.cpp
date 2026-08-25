@@ -10,8 +10,8 @@
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
-    AnimWorkerObj* w = obj->m_animWorker;
-    GameIconFlashState state = static_cast<GameIconFlashState>(w->ActKey());
+    CLogicRecord* record = obj->m_logicRecord;
+    GameIconFlashState state = static_cast<GameIconFlashState>(record->EventCode());
     if (state != GAME_ICON_FLASH_IDLE) {
         if (state == GAME_ICON_FLASH_ACTIVE) {
             CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_animCursor;
@@ -25,6 +25,6 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     }
     obj->m_flags |= 1;
     static_cast<CWwdGameObjectA*>(obj)->ApplyLookupGeometry("GAME_ICONFLASH", 0);
-    w->SetActKey(IDX(GAME_ICON_FLASH_ACTIVE));
+    record->SetEventCode(IDX(GAME_ICON_FLASH_ACTIVE));
     return 1;
 }

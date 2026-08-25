@@ -88,7 +88,7 @@ i32 CUserLogic::SerializeMove(
             ar->Read(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
             m_logicObject = object;
             m_object = static_cast<CWwdGameObjectA*>(object);
-            m_objAux = object->m_animWorker;
+            m_logicRecord = object->m_logicRecord;
             m_deferredCallback = NULL;
             m_gatedCallback = NULL;
             m_gatedActKey = IDX(ACT_NONE);

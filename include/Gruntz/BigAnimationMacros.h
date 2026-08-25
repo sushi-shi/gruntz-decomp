@@ -11,9 +11,9 @@
         i32 bigH;                                                                                  \
         if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")                                      \
             || (bigH = heightLayer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {      \
-            if (m_object->m_animWorker != NULL) {                                                  \
-                m_object->m_animWorker->m_flags &= ~6;                                             \
-                m_object->m_animWorker->m_flags |= 1;                                              \
+            if (m_object->m_logicRecord != NULL) {                                                 \
+                m_object->m_logicRecord->m_flags &= ~6;                                            \
+                m_object->m_logicRecord->m_flags |= 1;                                             \
                 m_wwdObject->m_flags &= ~0x1000002;                                                \
                 m_wwdObject->m_flags |= 0x800000;                                                  \
             }                                                                                      \

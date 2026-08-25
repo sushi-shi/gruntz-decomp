@@ -232,7 +232,7 @@ def detail(token: str) -> None:
 #: that built this sieve.
 CONTROL = {
     "0x0009cf00": (True,
-                  "POSITIVE: CLightFx::CLightFx - retail expands CDDrawWorkerCache::Find "
+                  "POSITIVE: CLightFx::CLightFx - retail expands CLogicRecordRegistry::Find "
                   "at the FIRST of its three sites, so the inlined "
                   "`CObject* found = NULL` is materialized and its address goes "
                   "to CMapStringToOb::Lookup; we call the out-of-line Find at "

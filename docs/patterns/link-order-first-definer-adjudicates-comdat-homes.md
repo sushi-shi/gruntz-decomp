@@ -32,7 +32,7 @@ Retail calls at every site => the callers never saw an inline definition.
   never defined them => out-of-line definitions in the retail combat TU. Homed
   in GruntCombat.cpp; `??0CUserLogic` rebuilt to 100.00 there once the TU also
   carried MotionState.cpp's two .inl devices
-  (`DDrawWorkerCacheFindInline.h`, `LogicTypeTableInline.h`).
+  (`LogicRecordRegistryFindInline.h`, `LogicTypeTableInline.h`).
 * `?IndexToPtr@_zdvec@@QAEPADH@Z` / `_zvec` (0x310f0/0x312a0): converting them
   to ZVec.h header inlines made cl expand them at ~22 sites inside
   `RegisterGruntActions` (base 0x138d B / 156 calls vs target 0x9e5 B / 113

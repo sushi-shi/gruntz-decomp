@@ -168,7 +168,7 @@ rva	size	name	kind	note
 0x1efab8	0x2c	??_7CDDrawPrimarySurface@@6B@	primary	
 0x1efae8	0x28	??_7CDDrawZBufferSurface@@6B@	primary	
 0x1efb28	0x14	??_7CShadeTableArray@@6B@	primary	
-0x1efb80	0x28	??_7AnimWorkerObj@@6B@	primary	
+0x1efb80	0x28	??_7CLogicRecord@@6B@	primary	
 0x1efba8	0x14	??_7CAniElement@@6B@	primary	
 0x1efbc0	0x28	??_7CResolveNode@@6B@	primary	
 0x1efbe8	0x44	??_7CDDrawWorker@@6B@	primary	
@@ -177,7 +177,7 @@ rva	size	name	kind	note
 0x1efc78	0x24	??_7AnimationRegistry@@6B@	primary	animation registry
 0x1efca0	0x24	??_7SoundCueRegistry@@6B@	primary	sound-cue registry
 0x1efcc8	0x34	??_7CDDrawWorkerMapSmall@@6B@	primary	
-0x1efd00	0x28	??_7CDDrawWorkerCache@@6B@	primary	
+0x1efd00	0x28	??_7CLogicRecordRegistry@@6B@	primary	
 0x1efd28	0x5c	??_7CDDrawWorkerRegistry@@6B@	primary	
 0x1efd88	0x38	??_7CDDrawWorkerList@@6B@	primary	
 0x1efdc0	0x44	??_7CDDrawChildGroup@@6B@	primary	

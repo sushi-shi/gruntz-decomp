@@ -30,7 +30,7 @@ public:
     RVA(0x00013c70, 0x47)
     virtual void FinalizeStep(char*) OVERRIDE {
         if (m_deferredCallback != 0) {
-            if (m_gatedCallback != 0 && m_objAux->ActKey() == m_gatedActKey) {
+            if (m_gatedCallback != 0 && m_logicRecord->EventCode() == m_gatedActKey) {
                 (this->*m_gatedCallback)();
                 m_gatedCallback = 0;
             }
@@ -107,25 +107,25 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
 }
 
 inline void CMovingLogic::InitOwner(const double& timeScale) {
-    i32 lo0 = m_objAux->m_minX;
+    i32 lo0 = m_logicRecord->m_minX;
     if (lo0 == 0) {
         Motion()->m_minBounds.x = g_movingLogicMin;
     } else {
         Motion()->m_minBounds.x = static_cast<double>(lo0);
     }
-    i32 lo1 = m_objAux->m_minY;
+    i32 lo1 = m_logicRecord->m_minY;
     if (lo1 == 0) {
         Motion()->m_minBounds.y = g_movingLogicMin;
     } else {
         Motion()->m_minBounds.y = static_cast<double>(lo1);
     }
-    i32 hi0 = m_objAux->m_maxX;
+    i32 hi0 = m_logicRecord->m_maxX;
     if (hi0 == 0) {
         Motion()->m_maxBounds.x = g_movingLogicMax;
     } else {
         Motion()->m_maxBounds.x = static_cast<double>(hi0);
     }
-    i32 hi1 = m_objAux->m_maxY;
+    i32 hi1 = m_logicRecord->m_maxY;
     if (hi1 == 0) {
         Motion()->m_maxBounds.y = g_movingLogicMax;
     } else {

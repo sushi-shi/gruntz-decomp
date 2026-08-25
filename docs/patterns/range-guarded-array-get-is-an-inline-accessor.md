@@ -152,7 +152,7 @@ instruction count, try both directions of the local knob; the accessor form is w
 receiver a single-use expression.
 
 **The knob is a CANDIDATE, not a lever - refuted on the very next site.**
-`AnimWorkerObj::ResolveTarget` 0x1651b0 presents identically (99.3333, 31 instructions, a single
+`CLogicRecord::ResolveTarget` 0x1651b0 presents identically (99.3333, 31 instructions, a single
 `ecx`/`edx` swap, every count equal), and BOTH directions are sharply negative:
 
 | spelling | score |

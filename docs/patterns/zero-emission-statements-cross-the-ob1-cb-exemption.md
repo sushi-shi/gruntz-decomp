@@ -39,7 +39,7 @@ STEERABLE. Titrated on the pinned cl 5.0 with 30 sites in a minimal caller
 rejections; `((void)0)` x2 -> 8; one unused local -> 8; a dead branch -> 13; a
 redundant `if (!Lookup(...)) f = 0;` -> 11 but it emits a `test eax,eax` retail
 does not have, so the zero-emission forms are the only byte-safe ones. In-tree:
-one `ASSERT` in `CDDrawWorkerCache::Find` made `??0CWayPoint` / `??0CGuardPoint` /
+one `ASSERT` in `CLogicRecordRegistry::FindTemplate` made `??0CWayPoint` / `??0CGuardPoint` /
 `??0CLevelTime` go 0.00 -> 99.67 each and put 0x9cab0 at 100% emitted by
 `waypoint.obj` - i.e. by a caller that DECLINED it - with no per-TU visibility
 header at all. Diagnostic value first: an unexplained `call` to a helper cl always

@@ -181,21 +181,21 @@ never regalloc; it is one shape.
 
 Three instructions, nothing else. `jcc_sieve` buckets it `SIGNEDNESS`.
 
-**Cause.** `33e433fad` ("naked numbers: AnimWorkerAct — one dispatch, thirteen
-files, 190 labels") replaced `switch (static_cast<u32>(rec->ActKey()))` with a typed
-`AnimWorkerAct act = rec->WorkerAct(); switch (act)`. MSVC 5.0 types an `enum` as
+**Cause.** `33e433fad` ("naked numbers: LogicRecordEvent — one dispatch, thirteen
+files, 190 labels") replaced `switch (static_cast<u32>(rec->EventCode()))` with a typed
+`LogicRecordEvent act = rec->LogicEvent(); switch (act)`. MSVC 5.0 types an `enum` as
 `int`, so the switch ladder became signed. **The commit message itself records that
 the old spelling had the cast** — it was removed as incidental.
 
 **Fix**, keeping every bit of the naming the enum campaign bought:
 
 ```cpp
-switch (static_cast<u32>(rec->WorkerAct())) {
+switch (static_cast<u32>(rec->LogicEvent())) {
     case ACT_UNINITIALISED: ...
 ```
 
-21 call sites plus the shared `LOGIC_WORKER_PUMP` macro in
-`include/Gruntz/WorkerHandler.h`. Measured on this branch:
+21 call sites plus the shared `LOGIC_RECORD_DISPATCH` macro in
+`include/Gruntz/LogicRecordHandler.h`. Measured on this branch:
 
 | | before | after |
 |---|---:|---:|

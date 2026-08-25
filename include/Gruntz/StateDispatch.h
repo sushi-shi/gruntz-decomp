@@ -9,6 +9,6 @@
 
 class CUserLogic;
 
-i32 ProjTypeXfer(CUserLogic* logic);
+i32 DispatchLogicEvent(CUserLogic* logic);
 
 #endif // GRUNTZ_STATEDISPATCH_H

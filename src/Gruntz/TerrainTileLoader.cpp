@@ -3,8 +3,8 @@
 #include <Mfc.h>
 
 #include <AddrWord.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
@@ -263,8 +263,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             CWwdGameObjectA* light =
                                 m_world->m_childGroup
                                     ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
-                            light->m_animWorker->m_notify(light);
-                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                            light->m_logicRecord->m_dispatch(light);
+                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
                         }
 
@@ -290,7 +290,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 }
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -306,8 +306,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "LightFx",
                                                 0x40003
                                             );
-                                        light->m_animWorker->m_notify(light);
-                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                        light->m_logicRecord->m_dispatch(light);
+                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                             ->Activate(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
@@ -337,8 +337,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             CWwdGameObjectA* light =
                                 m_world->m_childGroup
                                     ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
-                            light->m_animWorker->m_notify(light);
-                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                            light->m_logicRecord->m_dispatch(light);
+                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
                         }
 
@@ -363,7 +363,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 }
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -379,8 +379,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "LightFx",
                                                 0x40003
                                             );
-                                        light->m_animWorker->m_notify(light);
-                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                        light->m_logicRecord->m_dispatch(light);
+                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                             ->Activate(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
@@ -414,8 +414,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             CWwdGameObjectA* light =
                                 m_world->m_childGroup
                                     ->CreateSprite(0, fxX, fxY, 900000, "LightFx", 0x40003);
-                            light->m_animWorker->m_notify(light);
-                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                            light->m_logicRecord->m_dispatch(light);
+                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
                         }
 
@@ -441,7 +441,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 }
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -457,8 +457,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "LightFx",
                                                 0x40003
                                             );
-                                        light->m_animWorker->m_notify(light);
-                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                        light->m_logicRecord->m_dispatch(light);
+                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                             ->Activate(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
@@ -488,8 +488,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             CWwdGameObjectA* light =
                                 m_world->m_childGroup
                                     ->CreateSprite(0, fxX, fxY, 1000000, "LightFx", 0x40003);
-                            light->m_animWorker->m_notify(light);
-                            static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                            light->m_logicRecord->m_dispatch(light);
+                            static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                 ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
                         }
 
@@ -514,7 +514,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 }
                             } else {
                                 CInGameIcon* icon =
-                                    static_cast<CInGameIcon*>(mapped->m_animWorker->m_logic);
+                                    static_cast<CInGameIcon*>(mapped->m_logicRecord->m_userLogic);
                                 if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
@@ -530,8 +530,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "LightFx",
                                                 0x40003
                                             );
-                                        light->m_animWorker->m_notify(light);
-                                        static_cast<CLightFx*>(light->m_animWorker->m_logic)
+                                        light->m_logicRecord->m_dispatch(light);
+                                        static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
                                             ->Activate(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",

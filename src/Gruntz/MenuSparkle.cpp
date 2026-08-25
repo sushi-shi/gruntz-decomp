@@ -31,7 +31,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj)
     ApplyName("MENU_SPARKLE");
     SwitchGeometry("MENU_FORWARD100", 0);
     SET_ANIMATION_ACT("A");
-    m_objAux->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
+    m_logicRecord->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
 }
 
 typedef i32 (CUserLogic::*CActHandler)();
@@ -86,12 +86,12 @@ i32 CMenuSparkle::SerializeMove(
 RVA(0x000ae2a0, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;
-    if (delta >= m_objAux->m_sparkleDelay) {
-        m_objAux->m_sparkleDelay = 0;
+    if (delta >= m_logicRecord->m_sparkleDelay) {
+        m_logicRecord->m_sparkleDelay = 0;
     } else {
-        m_objAux->m_sparkleDelay -= delta;
+        m_logicRecord->m_sparkleDelay -= delta;
     }
-    if (m_objAux->m_sparkleDelay == 0) {
+    if (m_logicRecord->m_sparkleDelay == 0) {
         m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
@@ -99,7 +99,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         if (anim != NULL) {
             anim->Recompute(1);
         }
-        m_animWorker->m_timeDelay = rand() % 0xfa1 + 0x3e8;
+        m_ownerLogicRecord->m_timeDelay = rand() % 0xfa1 + 0x3e8;
     }
     return 0;
 }

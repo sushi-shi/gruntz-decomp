@@ -82,7 +82,7 @@ something else, the conversion changes NOTHING and only costs header ripple. Thr
 measured negative controls, one build each:
 
 * `CUserLogic::SwapActKey(const char*)` for the 98-site pair
-  `m_prevAnimSetNode = m_objAux->m_actKey; m_objAux->m_actKey = ActFindId("A");` -
+  `m_prevAnimSetNode = m_logicRecord->m_eventCode; m_logicRecord->m_eventCode = ActFindId("A");` -
   the strongest repeated-one-line-member signature in the tree - converted at 12
   first-statement sites (CSpotLight, CDroppedObject(+Shadow), CSingleFrameMessage,
   CTileTrigger, CBrickz, CCheckpointTrigger, CEyeCandyAni, CFrontCandyAni,

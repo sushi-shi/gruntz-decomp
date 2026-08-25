@@ -85,7 +85,7 @@ one does not.
   families will surface at the top until they are added
 - MFC inline accessors (`GetAt`, `GetNext`, `CArray::SetSize`'s `max(4, n/8)` grow) — real
   inlines, but library; nothing to fix
-- a helper we ALREADY share (`zDArray::ResolveEntry`, `LOGIC_WORKER_PUMP`, `CMapMgr::CellFlagsAt`)
+- a helper we ALREADY share (`zDArray::ResolveEntry`, `LOGIC_RECORD_DISPATCH`, `CMapMgr::CellFlagsAt`)
   — a true positive for the detector needing no fix. These are the calibration points; a run that
   does not surface them is mis-tuned
 - genuine per-site duplication the devs wrote by hand — a cluster confined to ONE unit is usually

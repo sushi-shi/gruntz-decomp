@@ -159,10 +159,10 @@ i32 CWormhole::SpawnPartners() {
     do {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj != NULL) {
-            AnimWorkerObj* aux = obj->m_animWorker;
-            if (aux->m_notify == &CreateTeleporter && obj->m_screenX == tx && obj->m_screenY == ty
-                && aux->m_logic != NULL) {
-                static_cast<CTeleporter*>(aux->m_logic)->ReapplyConfig();
+            CLogicRecord* record = obj->m_logicRecord;
+            if (record->m_dispatch == &CreateTeleporter && obj->m_screenX == tx
+                && obj->m_screenY == ty && record->m_userLogic != NULL) {
+                static_cast<CTeleporter*>(record->m_userLogic)->ReapplyConfig();
             }
         }
     } while (pos != NULL);
@@ -425,7 +425,7 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_interval = static_cast<u32>(m_object->m_animWorker->m_speed);
+    m_interval = static_cast<u32>(m_object->m_logicRecord->m_speed);
     m_armClock = static_cast<u32>(g_frameTime);
     SwitchGeometry("GAME_TELEPORTER", 0);
     SET_ANIMATION_ACT("B");
@@ -461,11 +461,11 @@ i32 CTeleporter::Update() {
     }
 
     CWwdGameObjectA* o = m_object;
-    if (o->m_animWorker->m_speed != 0) {
+    if (o->m_logicRecord->m_speed != 0) {
         i64 delta = static_cast<i64>(g_frameTime) - m_armClock;
         if (delta >= m_interval) {
             SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
-            m_object->m_animWorker->m_speed = 0;
+            m_object->m_logicRecord->m_speed = 0;
             m_tickHandled = 1;
             return 0;
         }
@@ -497,7 +497,7 @@ i32 CTeleporter::Update() {
             spawned->m_health = m_object->m_health;
             spawned->m_speedX = m_object->m_score;
             spawned->m_speedY = m_object->m_points;
-            spawned->m_animWorker->m_speed = 0;
+            spawned->m_logicRecord->m_speed = 0;
         }
     } else {
         CWwdGameObjectA* s = m_object;

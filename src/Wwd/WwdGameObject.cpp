@@ -3,7 +3,6 @@
 #include <Mfc.h>
 
 #include <Bute/SymTab.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -11,9 +10,10 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorker.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/LogicRecord.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -35,7 +35,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
@@ -324,13 +324,13 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 
 // @early-stop
 RVA(0x00150d60, 0x14d)
-i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
+i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CResolveNode::SetPosition(x, y);
     m_screenX = x;
     m_screenY = y;
     m_sortKey = sortKey;
     m_spawnX = x;
-    AnimWorkerObj* w = m_animWorker;
+    CLogicRecord* record = m_logicRecord;
     m_spawnY = y;
     m_spawnSortKey = sortKey;
     m_strideX = 10;
@@ -348,12 +348,12 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_reservede0 = 0;
     m_reserved180 = 0;
 
-    if (w->Init(tmpl->m_notify, tmpl->m_flags) == 0) {
+    if (record->Init(logicTemplate->m_dispatch, logicTemplate->m_flags) == 0) {
         return 0;
     }
-    m_hitWorker = NULL;
-    m_attackWorker = NULL;
-    m_collideWorker = NULL;
+    m_hitLogic = NULL;
+    m_attackLogic = NULL;
+    m_collisionLogic = NULL;
     m_hitSource = NULL;
     m_attackTarget = NULL;
     m_hitOther = NULL;
@@ -367,92 +367,92 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_region.m_object = this;
     m_region.m_x = m_screenX;
     m_region.m_y = m_screenY;
-    i32 wf = m_animWorker->m_flags;
-    if (wf & 1) {
+    i32 logicFlags = m_logicRecord->m_flags;
+    if (logicFlags & 1) {
         m_flags |= 0x800000;
         return 1;
     }
-    if (wf & 2) {
+    if (logicFlags & 2) {
         m_flags |= 0x1000000;
     }
     return 1;
 }
 
 RVA(0x00150eb0, 0x98)
-i32 CGameObject::EnsureHitWorker(AnimWorkerObj* src) {
-    if (src == NULL) {
+i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
+    if (logicTemplate == NULL) {
         return 0;
     }
-    if (m_hitWorker != NULL) {
-        m_hitWorker->Unload();
+    if (m_hitLogic != NULL) {
+        m_hitLogic->Unload();
     } else {
-        m_hitWorker = new AnimWorkerObj(m_ownerCtx, m_id);
+        m_hitLogic = new CLogicRecord(m_ownerCtx, m_id);
     }
-    if (m_hitWorker == NULL) {
+    if (m_hitLogic == NULL) {
         return 0;
     }
 
-    return m_hitWorker->Init(src->m_notify, 0);
+    return m_hitLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-static inline AnimWorkerObj* LookupAnimWorker(CMapStringToOb& map, LPCTSTR name) {
+static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
     CObject* result = NULL;
     map.Lookup(name, result);
-    return static_cast<AnimWorkerObj*>(result);
+    return static_cast<CLogicRecord*>(result);
 }
 
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
-    EnsureHitWorker(LookupAnimWorker(OwnerMgr()->m_workerCache->m_workers, key));
+    EnsureHitLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 RVA(0x00150f90, 0x98)
-i32 CGameObject::EnsureAttackWorker(AnimWorkerObj* src) {
-    if (src == NULL) {
+i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
+    if (logicTemplate == NULL) {
         return 0;
     }
-    if (m_attackWorker != NULL) {
-        m_attackWorker->Unload();
+    if (m_attackLogic != NULL) {
+        m_attackLogic->Unload();
     } else {
-        m_attackWorker = new AnimWorkerObj(m_ownerCtx, m_id);
+        m_attackLogic = new CLogicRecord(m_ownerCtx, m_id);
     }
-    if (m_attackWorker == NULL) {
+    if (m_attackLogic == NULL) {
         return 0;
     }
 
-    return m_attackWorker->Init(src->m_notify, 0);
+    return m_attackLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
-    EnsureAttackWorker(LookupAnimWorker(OwnerMgr()->m_workerCache->m_workers, key));
+    EnsureAttackLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 RVA(0x00151070, 0x98)
-i32 CGameObject::EnsureBumpWorker(AnimWorkerObj* src) {
-    if (src == NULL) {
+i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
+    if (logicTemplate == NULL) {
         return 0;
     }
-    if (m_collideWorker != NULL) {
-        m_collideWorker->Unload();
+    if (m_collisionLogic != NULL) {
+        m_collisionLogic->Unload();
     } else {
-        m_collideWorker = new AnimWorkerObj(m_ownerCtx, m_id);
+        m_collisionLogic = new CLogicRecord(m_ownerCtx, m_id);
     }
-    if (m_collideWorker == NULL) {
+    if (m_collisionLogic == NULL) {
         return 0;
     }
 
-    return m_collideWorker->Init(src->m_notify, 0);
+    return m_collisionLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
-    EnsureBumpWorker(LookupAnimWorker(OwnerMgr()->m_workerCache->m_workers, key));
+    EnsureBumpLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 // @early-stop
-// Residue is the shared notify block: cl passes `&notifyWorker->m_actKey` across
-// the goto edge instead of the worker pointer, and binds notifySaved/notifyAct to
+// Residue is the shared notify block: cl passes `&notifyRecord->m_eventCode` across
+// the goto edge instead of the record pointer, and binds savedEvent/notifyEvent to
 // EBX/EDI there where the two inline arms (and retail everywhere) use EDI/EBX.
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* self) {
@@ -460,48 +460,48 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
         return 0;
     }
 
-    AnimWorkerObj* notifyWorker;
-    i32 notifySaved;
-    AnimWorkerAct notifyAct;
+    CLogicRecord* notifyRecord;
+    i32 savedEvent;
+    LogicRecordEvent notifyEvent;
     switch (mode) {
         case SERIAL_PRESAVE: {
             m_carrierId = 0;
             if (m_carrier != NULL) {
                 m_carrierId = m_carrier->m_objectId;
             }
-            notifyWorker = m_animWorker;
-            if (notifyWorker == NULL) {
+            notifyRecord = m_logicRecord;
+            if (notifyRecord == NULL) {
                 goto fail;
             }
-            notifySaved = notifyWorker->m_actKey;
-            notifyAct = ACT_PREPARE_SAVE;
-            notifyWorker->SetWorkerAct(notifyAct);
+            savedEvent = notifyRecord->m_eventCode;
+            notifyEvent = ACT_PREPARE_SAVE;
+            notifyRecord->SetLogicEvent(notifyEvent);
 
-            m_animWorker->m_notify(this);
-            notifyWorker = m_animWorker;
-            if (notifyWorker->WorkerAct() == notifyAct) {
-                notifyWorker->SetActKey(notifySaved);
+            m_logicRecord->m_dispatch(this);
+            notifyRecord = m_logicRecord;
+            if (notifyRecord->LogicEvent() == notifyEvent) {
+                notifyRecord->SetEventCode(savedEvent);
             }
         }
         default:
         dispatch:
-            return m_animWorker->Dispatch(ar, mode, typeId, self) != 0;
+            return m_logicRecord->Dispatch(ar, mode, typeId, self) != 0;
         case SERIAL_SAVE: {
             if (Serialize(ar) == 0) {
                 return 0;
             }
-            notifyWorker = m_animWorker;
-            if (notifyWorker == NULL) {
+            notifyRecord = m_logicRecord;
+            if (notifyRecord == NULL) {
                 goto fail;
             }
-            notifySaved = notifyWorker->m_actKey;
-            notifyAct = ACT_AFTER_SAVE;
-            notifyWorker->SetWorkerAct(notifyAct);
+            savedEvent = notifyRecord->m_eventCode;
+            notifyEvent = ACT_AFTER_SAVE;
+            notifyRecord->SetLogicEvent(notifyEvent);
 
-            m_animWorker->m_notify(this);
-            notifyWorker = m_animWorker;
-            if (notifyWorker->WorkerAct() == notifyAct) {
-                notifyWorker->SetActKey(notifySaved);
+            m_logicRecord->m_dispatch(this);
+            notifyRecord = m_logicRecord;
+            if (notifyRecord->LogicEvent() == notifyEvent) {
+                notifyRecord->SetEventCode(savedEvent);
             }
             goto dispatch;
         }
@@ -509,12 +509,12 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
             if (SerializeObjectState(ar) == 0) {
                 return 0;
             }
-            notifyWorker = m_animWorker;
-            if (notifyWorker == NULL) {
+            notifyRecord = m_logicRecord;
+            if (notifyRecord == NULL) {
                 goto fail;
             }
-            notifySaved = notifyWorker->m_actKey;
-            notifyAct = ACT_AFTER_LOAD;
+            savedEvent = notifyRecord->m_eventCode;
+            notifyEvent = ACT_AFTER_LOAD;
             goto notifyAfterLoad;
         }
         case SERIAL_POSTLOAD: {
@@ -536,21 +536,21 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGa
                 m_carrier = NULL;
             }
 
-            notifyWorker = m_animWorker;
-            if (notifyWorker != NULL) {
-                notifySaved = notifyWorker->m_actKey;
-                notifyAct = ACT_AFTER_LOAD_REFERENCES;
+            notifyRecord = m_logicRecord;
+            if (notifyRecord != NULL) {
+                savedEvent = notifyRecord->m_eventCode;
+                notifyEvent = ACT_AFTER_LOAD_REFERENCES;
                 goto notifyAfterLoad;
             }
             goto fail;
         }
 
         notifyAfterLoad:
-            notifyWorker->SetWorkerAct(notifyAct);
-            m_animWorker->m_notify(this);
-            notifyWorker = m_animWorker;
-            if (notifyWorker->WorkerAct() == notifyAct) {
-                notifyWorker->SetActKey(notifySaved);
+            notifyRecord->SetLogicEvent(notifyEvent);
+            m_logicRecord->m_dispatch(this);
+            notifyRecord = m_logicRecord;
+            if (notifyRecord->LogicEvent() == notifyEvent) {
+                notifyRecord->SetEventCode(savedEvent);
             }
             goto dispatch;
     }
@@ -632,20 +632,20 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_carrierId, sizeof(m_carrierId));
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_hitWorker != NULL) {
-        strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_hitWorker));
+    if (m_hitLogic != NULL) {
+        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_hitLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_attackWorker != NULL) {
-        strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_attackWorker));
+    if (m_attackLogic != NULL) {
+        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_attackLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
 
     memset(tmp, 0, sizeof(tmp));
-    if (m_collideWorker != NULL) {
-        strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_collideWorker));
+    if (m_collisionLogic != NULL) {
+        strcpy(tmp, OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_collisionLogic));
     }
     ar->Write(tmp, SERIAL_NAME_LEN);
     return 1;
@@ -712,8 +712,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
-        if (this->EnsureHitWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        if (this->EnsureHitLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
     }
@@ -721,8 +721,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
-        if (this->EnsureAttackWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        if (this->EnsureAttackLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
     }
@@ -730,8 +730,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
         CObject* found = NULL;
-        OwnerMgr()->m_workerCache->m_workers.Lookup(name, found);
-        if (this->EnsureBumpWorker(static_cast<AnimWorkerObj*>(found)) == 0) {
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(name, found);
+        if (this->EnsureBumpLogic(static_cast<CLogicRecord*>(found)) == 0) {
             return 0;
         }
     }
@@ -778,12 +778,12 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     if (ar == NULL) {
         return 0;
     }
-    AnimWorkerObj* w = m_animWorker;
-    if (w == NULL) {
+    CLogicRecord* record = m_logicRecord;
+    if (record == NULL) {
         return 0;
     }
-    if (w->m_actKey == 0) {
-        w->m_notify(this);
+    if (record->m_eventCode == 0) {
+        record->m_dispatch(this);
     }
 
     i32 serialTypeId = 0;
@@ -792,85 +792,88 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
         serialTypeId = static_cast<CWwdGameObjectSerial*>(this)->GetSerialTypeId();
     }
 
-    w = m_animWorker;
-    CUserLogic* logic = w->m_logic;
+    record = m_logicRecord;
+    CUserLogic* logic = record->m_userLogic;
     // Seeded with 0, NOT LOGIC_NONE(-1): retail writes 0 into the record when
-    // the worker has no logic, and 0 is not a member of this domain.
-    LogicTypeId typeTag = LOGIC_UNSET;
+    // the record has no user logic, and 0 is not a member of this domain.
+    LogicTypeId logicTypeId = LOGIC_UNSET;
     if (logic != NULL) {
-        typeTag = logic->GetTypeTag();
+        logicTypeId = logic->GetTypeTag();
     }
 
-    WwdSnapshot rec;
-    rec.m_id = m_id;
-    rec.m_classId = this->GetClassId();
-    rec.m_objectId = m_objectId;
-    rec.m_screenX = m_screenX;
-    rec.m_screenY = m_screenY;
-    rec.m_sortKey = m_sortKey;
-    rec.m_serialTypeId = serialTypeId;
-    rec.m_logicTypeId = typeTag;
+    WwdSnapshot snapshot;
+    snapshot.m_id = m_id;
+    snapshot.m_classId = this->GetClassId();
+    snapshot.m_objectId = m_objectId;
+    snapshot.m_screenX = m_screenX;
+    snapshot.m_screenY = m_screenY;
+    snapshot.m_sortKey = m_sortKey;
+    snapshot.m_serialTypeId = serialTypeId;
+    snapshot.m_logicTypeId = logicTypeId;
 
     {
-        strcpy(rec.m_workerName, OwnerMgr()->m_workerCache->FindKeyOfValue(m_animWorker));
+        strcpy(
+            snapshot.m_logicTypeName,
+            OwnerMgr()->m_logicRegistry->FindLogicTypeKey(m_logicRecord)
+        );
     }
-    ar->Write(&rec, sizeof(rec));
+    ar->Write(&snapshot, sizeof(snapshot));
     return 1;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151d20, 0x3a)
-i32 CGameObject::NotifyForActKey(i32 actKey) {
-    AnimWorkerObj* worker = m_animWorker;
-    if (!worker) {
+i32 CGameObject::NotifyForEventCode(i32 eventCode) {
+    CLogicRecord* record = m_logicRecord;
+    if (!record) {
         return 0;
     }
-    i32 savedActKey = worker->m_actKey;
-    worker->SetActKey(actKey);
-    m_animWorker->m_notify(this);
-    if (m_animWorker->m_actKey == actKey) {
-        m_animWorker->SetActKey(savedActKey);
+    i32 savedEventCode = record->m_eventCode;
+    record->SetEventCode(eventCode);
+    m_logicRecord->m_dispatch(this);
+    if (m_logicRecord->m_eventCode == eventCode) {
+        m_logicRecord->SetEventCode(savedEventCode);
     }
     return 1;
 }
 
 RVA(0x00151d60, 0xb)
-i32 AnimWorkerObj::IsLoaded() {
-    return m_notify != NULL;
+i32 CLogicRecord::IsLoaded() {
+    return m_dispatch != NULL;
 }
 
 RVA(0x00151d70, 0x6)
-LoadableClassId AnimWorkerObj::GetClassId() {
-    return CLASSID_ANIMWORKER;
+LoadableClassId CLogicRecord::GetClassId() {
+    return CLASSID_LOGICRECORD;
 }
 
-RVA_COMPGEN(0x00151d80, 0x1e, ??_GAnimWorkerObj@@UAEPAXI@Z)
+RVA_COMPGEN(0x00151d80, 0x1e, ??_GCLogicRecord@@UAEPAXI@Z)
 
 RVA(0x00151da0, 0x80)
-AnimWorkerObj::~AnimWorkerObj() {
-    m_notify = NULL;
+CLogicRecord::~CLogicRecord() {
+    m_dispatch = NULL;
     if (m_payload) {
         delete[] m_payload;
         m_payload = NULL;
         m_payloadSize = 0;
     }
-    if (m_logic) {
-        delete m_logic;
-        m_logic = NULL;
+    if (m_userLogic) {
+        delete m_userLogic;
+        m_userLogic = NULL;
     }
     m_target = NULL;
 }
 
 RVA(0x00151e20, 0x46)
-i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
-    if (callback == NULL) {
+i32 CLogicRecord::Init(GameObjectLogicFn dispatch, i32 flags) {
+    if (dispatch == NULL) {
         return 0;
     }
-    m_notify = callback;
-    m_flags = frame;
+    m_dispatch = dispatch;
+    m_flags = flags;
     m_payload = NULL;
-    m_logic = NULL;
+    m_userLogic = NULL;
     m_timeDelay = 0;
     m_frameDelay = 0;
     m_minX = 0;
@@ -884,16 +887,16 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
 }
 
 RVA(0x00151e70, 0x3b)
-void AnimWorkerObj::Unload() {
-    m_notify = NULL;
+void CLogicRecord::Unload() {
+    m_dispatch = NULL;
     if (m_payload) {
         delete[] m_payload;
         m_payload = NULL;
         m_payloadSize = 0;
     }
-    if (m_logic) {
-        delete m_logic;
-        m_logic = NULL;
+    if (m_userLogic) {
+        delete m_userLogic;
+        m_userLogic = NULL;
     }
     m_target = NULL;
 }

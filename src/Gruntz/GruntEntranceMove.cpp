@@ -620,7 +620,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE5);
     }
 
-    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
     ActNameConstructGrownSlots();
     bool eqWalk = (strcmp(*rec, "D") == 0);
     if (eqWalk) {
@@ -633,7 +633,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         return 1;
     }
 
-    CString* rec2 = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+    CString* rec2 = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
     ActNameConstructGrownSlots();
     bool eqIdle = (strcmp(*rec2, "A") == 0);
     if (eqIdle) {
@@ -786,7 +786,7 @@ i32 CGrunt::StepArrivalCommit() {
         goto finalize;
     }
     {
-        const char* prev = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+        const char* prev = *g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         eq = (strcmp(prev, "M") == 0);
         if (eq) {

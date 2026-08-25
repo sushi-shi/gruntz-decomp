@@ -5,7 +5,6 @@
 #include <Mfc.h>
 
 #include <AddrWord.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/AniRecord.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -13,7 +12,6 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerCtx.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
@@ -22,6 +20,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecord.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/LogicTypeId.h>
@@ -623,13 +622,13 @@ i32 CResolveNode::Init(
 // into retail's slot; the rest is the coupled coloring. Tail rows past the last
 // ret are the delinker jump-table artifact.
 RVA(0x00164830, 0xec)
-i32 AnimWorkerObj::Dispatch(
-    CFileMemBase* ar,
+i32 CLogicRecord::Dispatch(
+    CFileMemBase* archive,
     SerialMode mode,
     LogicTypeId typeId,
     CGameObject* object
 ) {
-    if (ar == NULL) {
+    if (archive == NULL) {
         return 0;
     }
     switch (mode) {
@@ -641,30 +640,30 @@ i32 AnimWorkerObj::Dispatch(
             break;
         case SERIAL_SAVE:
 
-            if (Save(ar) == 0) {
+            if (Save(archive) == 0) {
                 return 0;
             }
             break;
         case SERIAL_LOAD:
 
-            if (Load(ar) == 0) {
+            if (Load(archive) == 0) {
                 return 0;
             }
             break;
         case SERIAL_POSTLOAD:
             if (m_targetId) {
-                CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
-                CWwdGameObject* out = NULL;
-                if (MapLookupById(*res, m_targetId, out)) {
-                    m_target = out;
+                CMapPtrToPtr* objectsById = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
+                CWwdGameObject* target = NULL;
+                if (MapLookupById(*objectsById, m_targetId, target)) {
+                    m_target = target;
                 }
             }
             break;
         default:
             break;
     }
-    if (m_logic) {
-        if (m_logic->SerializeMove(ar, mode, typeId, object) == 0) {
+    if (m_userLogic) {
+        if (m_userLogic->SerializeMove(archive, mode, typeId, object) == 0) {
             return 0;
         }
     }
@@ -674,8 +673,8 @@ i32 AnimWorkerObj::Dispatch(
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00164920, 0x35)
-i32 AnimWorkerObj::CacheTargetId(void* a) {
-    if (a == NULL) {
+i32 CLogicRecord::CacheTargetId(void* context) {
+    if (context == NULL) {
         return 0;
     }
     m_targetId = 0;
@@ -686,11 +685,11 @@ i32 AnimWorkerObj::CacheTargetId(void* a) {
 }
 
 RVA(0x00164960, 0x41a)
-i32 AnimWorkerObj::Save(CFileMemBase* ar) {
+i32 CLogicRecord::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Write(&m_actKey, sizeof(m_actKey));
+    ar->Write(&m_eventCode, sizeof(m_eventCode));
     ar->Write(&m_timeDelay, sizeof(m_timeDelay));
     ar->Write(&m_frameDelay, sizeof(m_frameDelay));
     ar->Write(&m_userFlags, sizeof(m_userFlags));
@@ -765,11 +764,11 @@ i32 AnimWorkerObj::Save(CFileMemBase* ar) {
 }
 
 RVA(0x00164d80, 0x421)
-i32 AnimWorkerObj::Load(CFileMemBase* ar) {
+i32 CLogicRecord::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
     }
-    ar->Read(&m_actKey, sizeof(m_actKey));
+    ar->Read(&m_eventCode, sizeof(m_eventCode));
     ar->Read(&m_timeDelay, sizeof(m_timeDelay));
     ar->Read(&m_frameDelay, sizeof(m_frameDelay));
     ar->Read(&m_userFlags, sizeof(m_userFlags));
@@ -854,65 +853,63 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001651b0, 0x5d)
-i32 AnimWorkerObj::ResolveTarget(void* a) {
-    if (a == NULL) {
+i32 CLogicRecord::ResolveTarget(void* context) {
+    if (context == NULL) {
         return 0;
     }
     if (m_targetId) {
-        CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
-        CWwdGameObject* out = NULL;
-        if (!MapLookupById(*res, m_targetId, out)) {
+        CMapPtrToPtr* objectsById = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
+        CWwdGameObject* target = NULL;
+        if (!MapLookupById(*objectsById, m_targetId, target)) {
             m_target = NULL;
         } else {
-            m_target = out;
+            m_target = target;
         }
     }
     return 1;
 }
 
 RVA(0x00165210, 0xa2)
-void CDDrawWorkerCache::Unload() {
-    CObject* val = NULL;
-    POSITION pos = m_workers.GetStartPosition();
+void CLogicRecordRegistry::Unload() {
+    CObject* value = NULL;
+    POSITION pos = m_templatesByName.GetStartPosition();
     CString key;
     if (pos != NULL) {
         do {
-            m_workers.GetNextAssoc(pos, key, val);
-            if (val != NULL) {
-                delete (static_cast<CDDrawWorker*>(val));
+            m_templatesByName.GetNextAssoc(pos, key, value);
+            if (value != NULL) {
+                delete static_cast<CLogicRecord*>(value);
             }
         } while (pos != NULL);
     }
-    m_workers.RemoveAll();
+    m_templatesByName.RemoveAll();
 }
 
 RVA(0x001652c0, 0x92)
-AnimWorkerObj*
-CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags) {
+CLogicRecord*
+CLogicRecordRegistry::RegisterLogicType(GameObjectLogicFn dispatch, const char* key, i32 flags) {
 
-    AnimWorkerObj* w = new AnimWorkerObj(OwnerMgr(), m_workers.GetCount());
+    CLogicRecord* record = new CLogicRecord(OwnerMgr(), m_templatesByName.GetCount());
 
-    if (w->Init(factory, flags) == 0) {
-        if (w != NULL) {
-            delete w;
+    if (record->Init(dispatch, flags) == 0) {
+        if (record != NULL) {
+            delete record;
         }
         return NULL;
     }
-    m_workers[key] = static_cast<CObject*>(w);
-    return w;
+    m_templatesByName[key] = static_cast<CObject*>(record);
+    return record;
 }
 
 RVA(0x00165360, 0xf1)
-CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
-    CObject* val = NULL;
-    POSITION pos = m_workers.GetStartPosition();
+CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
+    CObject* value = NULL;
+    POSITION pos = m_templatesByName.GetStartPosition();
     CString key;
     while (pos != NULL) {
-        m_workers.GetNextAssoc(pos, key, val);
+        m_templatesByName.GetNextAssoc(pos, key, value);
 
-        if (val != NULL
-            && static_cast<AnimWorkerObj*>(val)->m_notify
-                   == static_cast<AnimWorkerObj*>(target)->m_notify) {
+        if (value != NULL && static_cast<CLogicRecord*>(value)->m_dispatch == record->m_dispatch) {
             return key;
         }
     }

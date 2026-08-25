@@ -3,13 +3,13 @@
 #include <Gruntz/CursorSnapSprite.h>
 
 #include <Bute/ButeTree.h>
-#include <Gruntz/AnimWorker.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(
@@ -26,37 +26,37 @@ RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
 RVA(0x0003a200, 0xf1)
 i32 CreateCursorSnapSprite(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CCursorSnapSprite(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;

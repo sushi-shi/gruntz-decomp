@@ -9,7 +9,7 @@
 #include <Gruntz/WwdGrid.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Wap32/Object.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
 RVA(0x001682f0, 0x4a)
@@ -73,9 +73,9 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
-        CGameObject* w = obj->m_object;
-        if ((w->m_flags & 0x2) || (w->m_animWorker->m_flags & 0x4)) {
-            m_mgr->InsertSorted(w, 1);
+        CGameObject* record = obj->m_object;
+        if ((record->m_flags & 0x2) || (record->m_logicRecord->m_flags & 0x4)) {
+            m_mgr->InsertSorted(record, 1);
             grid->Remove(obj);
             ++count;
         }
@@ -109,9 +109,9 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
             if (newX < m_bounds.left - 0x140 || newX > m_bounds.right + 0x140
                 || newY < m_bounds.top - 0xdc || newY > m_bounds.bottom + 0xdc) {
                 if (obj->m_flags & 0x80000) {
-                    AnimWorkerObj* w = obj->m_animWorker;
-                    w->SetWorkerAct(ACT_OBJECT_REMOVED);
-                    w->m_notify(obj);
+                    CLogicRecord* record = obj->m_logicRecord;
+                    record->SetLogicEvent(ACT_OBJECT_REMOVED);
+                    record->m_dispatch(obj);
                 }
                 m_mgr->RemoveAll(cur, obj);
                 if (obj != NULL) {
@@ -146,21 +146,21 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 0;
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
-                        AnimWorkerObj* w = obj->m_animWorker;
-                        w->SetWorkerAct(ACT_OBJECT_REMOVED);
-                        w->m_notify(obj);
+                        CLogicRecord* record = obj->m_logicRecord;
+                        record->SetLogicEvent(ACT_OBJECT_REMOVED);
+                        record->m_dispatch(obj);
                     }
                     m_mgr->RemoveAll(cur, obj);
                     delete obj;
                     result = 1;
                 } else {
                     if (flags & 0x100000) {
-                        AnimWorkerObj* w = obj->m_animWorker;
-                        i32 saved = w->ActKey();
-                        w->SetWorkerAct(ACT_LEAVE_ACTIVE_REGION);
-                        w->m_notify(obj);
-                        if (w->WorkerAct() == ACT_LEAVE_ACTIVE_REGION) {
-                            w->SetActKey(saved);
+                        CLogicRecord* record = obj->m_logicRecord;
+                        i32 saved = record->EventCode();
+                        record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
+                        record->m_dispatch(obj);
+                        if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
+                            record->SetEventCode(saved);
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -173,21 +173,21 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 0;
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
-                        AnimWorkerObj* w = obj->m_animWorker;
-                        w->SetWorkerAct(ACT_OBJECT_REMOVED);
-                        w->m_notify(obj);
+                        CLogicRecord* record = obj->m_logicRecord;
+                        record->SetLogicEvent(ACT_OBJECT_REMOVED);
+                        record->m_dispatch(obj);
                     }
                     m_mgr->RemoveAll(cur, obj);
                     delete obj;
                     result = 1;
                 } else {
                     if (flags & 0x100000) {
-                        AnimWorkerObj* w = obj->m_animWorker;
-                        i32 saved = w->ActKey();
-                        w->SetWorkerAct(ACT_LEAVE_ACTIVE_REGION);
-                        w->m_notify(obj);
-                        if (w->WorkerAct() == ACT_LEAVE_ACTIVE_REGION) {
-                            w->SetActKey(saved);
+                        CLogicRecord* record = obj->m_logicRecord;
+                        i32 saved = record->EventCode();
+                        record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
+                        record->m_dispatch(obj);
+                        if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
+                            record->SetEventCode(saved);
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -200,21 +200,21 @@ i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
                     result = 0;
                 } else if (flags & 0x20) {
                     if (flags & 0x80000) {
-                        AnimWorkerObj* w = obj->m_animWorker;
-                        w->SetWorkerAct(ACT_OBJECT_REMOVED);
-                        w->m_notify(obj);
+                        CLogicRecord* record = obj->m_logicRecord;
+                        record->SetLogicEvent(ACT_OBJECT_REMOVED);
+                        record->m_dispatch(obj);
                     }
                     m_mgr->RemoveAll(cur, obj);
                     delete obj;
                     result = 1;
                 } else {
                     if (flags & 0x100000) {
-                        AnimWorkerObj* w = obj->m_animWorker;
-                        i32 saved = w->ActKey();
-                        w->SetWorkerAct(ACT_LEAVE_ACTIVE_REGION);
-                        w->m_notify(obj);
-                        if (w->WorkerAct() == ACT_LEAVE_ACTIVE_REGION) {
-                            w->SetActKey(saved);
+                        CLogicRecord* record = obj->m_logicRecord;
+                        i32 saved = record->EventCode();
+                        record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
+                        record->m_dispatch(obj);
+                        if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
+                            record->SetEventCode(saved);
                         }
                     }
                     m_mgr->RemoveByPosition(cur, r->m_object);
@@ -274,8 +274,8 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != NULL; obj = it.GetNext()) {
-        CGameObject* w = obj->m_object;
-        m_mgr->InsertSorted(w, 1);
+        CGameObject* record = obj->m_object;
+        m_mgr->InsertSorted(record, 1);
         grid->Remove(obj);
         ++count;
     }

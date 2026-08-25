@@ -106,7 +106,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x09b770` | `_CreateLevelTime` | statedispatch | `0x9b770` ? |
 | `0x09b8b0` | `??0CLevelTime@@QAE@PAUCGameObject@@@Z` | statedispatch | `0x9b8b0` ? |
 | `0x09c650` | `?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z` | streamrecordloaders | `0x9c650` ? |
-| `0x09cab0` | `?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` | streamrecordloaders | `0x9cab0` ? |
+| `0x09cab0` | `?Find@CLogicRecordRegistry@@QAEPAVCObject@@PBD@Z` | streamrecordloaders | `0x9cab0` ? |
 | `0x0a1190` | `?SetMenuTextRect@@YAXXZ` | mainmenubuilder | `0xa1190` ? |
 | `0x0a11d0` | `?BuildMainMenuTree@@YAHPAVCMenuTree@@H@Z` | mainmenubuilder | `0xa11d0` ? |
 | `0x0ac1d0` | `??0CDoNothing@@QAE@PAUCGameObject@@@Z` | donothing | `0xabfa0` frontcandyani |

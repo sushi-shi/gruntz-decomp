@@ -84,12 +84,12 @@ is a REAL retail out-of-line method whose body is this same pair plus an optiona
 
 ## The boundary: the receiver must feed a CALL inside the expansion
 
-The sibling census is the negative control. `m_prevAnimSetNode = m_objAux->m_actKey;`
-followed by `m_objAux->m_actKey = ActFindId(name);` is an even stronger textual pattern -
+The sibling census is the negative control. `m_prevAnimSetNode = m_logicRecord->m_eventCode;`
+followed by `m_logicRecord->m_eventCode = ActFindId(name);` is an even stronger textual pattern -
 **108 of its 110 sites** - and `CPathHazard::Tick` shows exactly the same signature
 (`mov edx,[esi+0x14]` hoisted over the four `m_leg` i64 stores). Folding both statements
 into `CUserLogic::SwitchAct(const char*)` is **byte-IDENTICAL**: 97.5678 before and after,
-instruction for instruction. The difference is that `m_objAux` feeds only two memory
+instruction for instruction. The difference is that `m_logicRecord` feeds only two memory
 operands, never a call receiver, so the expansion pins no register and the scheduler is
 still free to hoist the load. Do not convert this pair - the census alone does not predict
 the lever.

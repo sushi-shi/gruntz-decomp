@@ -28,7 +28,7 @@ calls and loses every expansion.
 There is no inline BUDGET to exhaust: 60 expansions in one caller and cl still never
 declines. **NARROWED 2026-08-14** — that is a property of THESE callees, not of cl. A
 callee with `cb <= 0x28` is budget-EXEMPT, so no caller size can decline it and the
-60-site probe could never have rejected; `PointInRect` and `CDDrawWorkerCache::Find`
+60-site probe could never have rejected; `PointInRect` and `CLogicRecordRegistry::FindTemplate`
 are both under it. Content that emits NOTHING (a release `ASSERT`, an unused local)
 lifts `cb` over 0x28 with byte-identical output and the same callee then declines 8 of
 30 — so before concluding a split was per-TU visibility, titrate `cb`. See

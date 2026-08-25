@@ -438,7 +438,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     }
     while (obj != NULL) {
 
-        if (obj->m_animWorker->m_notify == &CreateExitTrigger) {
+        if (obj->m_logicRecord->m_dispatch == &CreateExitTrigger) {
             i32 tileX = obj->m_screenX / TILE_SIZE_PX;
             i32 tileY = obj->m_screenY / TILE_SIZE_PX;
             for (i32 xo = -1; xo < 2; xo++) {

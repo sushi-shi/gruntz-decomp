@@ -55,7 +55,7 @@ expanded *around* a called base.
 
 ## The ctors NESTED inside the pinned body: a TU split, not an inline
 
-0x15b390 also **expands** `??0CResolveNode@@QAE@...` and `??0AnimWorkerObj@@QAE@...`, while the
+0x15b390 also **expands** `??0CResolveNode@@QAE@...` and `??0CLogicRecord@@QAE@...`, while the
 three factories that expand `CGameObject`'s own body still **call** both. The obvious reading is
 an inline-depth rule and the obvious fix - make those two ctors `inline` in their own headers -
 is **wrong**: cl 5 then expands them at *every* site, both COMDATs vanish from every base obj
@@ -80,7 +80,7 @@ free call inside the shared body is not, and needs the TU split.**
 ## Two housekeeping consequences
 
 - **tu_order** measures a unit's span from its `RVA()` rows only, not its `RVA_COMPGEN` pins.
-  Homing `CResolveNode`/`AnimWorkerObj` at 0x15b2c0/0x15b300 into `wwdobjmgr` is free (its span
+  Homing `CResolveNode`/`CLogicRecord` at 0x15b2c0/0x15b300 into `wwdobjmgr` is free (its span
   already ends at 0x15b340); giving `??0CMotionState@@QAE@XZ` a real `RVA()` claim at 0x136d0 in
   `SerialObjectFactory.cpp` is not - it stretches that unit across the carved
   `SerializeSyncMarker` (0x13610) and adds an interleave pair.

@@ -11,7 +11,7 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
-struct AnimWorkerObj;
+struct CLogicRecord;
 
 struct CGameObject;
 
@@ -56,15 +56,28 @@ public:
         int x,
         int y,
         int sortKey,
-        AnimWorkerObj* tmpl,
+        CLogicRecord* logicTemplate,
         int dotColor,
         int stateFlags
     );
-    CWwdGameObjectF* CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
-    CWwdGameObjectA*
-    CreateSpriteObject(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
-    CWwdGameObject*
-    CreateContainerObject(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
+    CWwdGameObjectF*
+    CreateDeferredObject(int id, int sortKey, CLogicRecord* logicTemplate, int stateFlags);
+    CWwdGameObjectA* CreateSpriteObject(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        CLogicRecord* logicTemplate,
+        int stateFlags
+    );
+    CWwdGameObject* CreateContainerObject(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        CLogicRecord* logicTemplate,
+        int stateFlags
+    );
 
     CWwdGameObjectC* CreateNamedDotObject(
         int id,
@@ -106,7 +119,7 @@ public:
     i32 CheckSortOrder();
     CWwdGameObject* FindByType04(i32 type);
     CWwdGameObject* FindByTypeProbe(i32 type);
-    CWwdGameObject* FindByWorker(i32 type, AnimWorkerObj* key);
+    CWwdGameObject* FindByLogicRecord(i32 id, CLogicRecord* logicRecord);
     CWwdGameObject* FindByIdAndCollisionCategory(i32 id, u32 collisionCategory);
 
     CGameObject* Find(i32 id, const char* key);

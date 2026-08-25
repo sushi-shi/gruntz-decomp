@@ -28,14 +28,14 @@ a new statement.
 // NO - both arms end `...Setup(m_poseWalk);`, so cl sinks the whole run into the
 //      join: arms 4i/4i, join 27i  (retail: 22i/22i, join 10i)
 if (!(flag & 0x20000000)) {
-    m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_codeD);
+    m_prevAnimSetNode = m_logicRecord->m_eventCode;
+    m_logicRecord->m_eventCode = ActFindId(s_codeD);
     m_value            = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_poseWalk);
 } else {
     if (!(flag2 & 0x80)) { return 0; }
     m_entranceActive = 1;                       // arm-only, at the HEAD
-    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_prevAnimSetNode = m_logicRecord->m_eventCode;
     /* ...identical... */
     m_wwdObject->m_animCursor.Setup(m_poseWalk);
 }
@@ -83,7 +83,7 @@ Two things this settles:
 `CGrunt::StepEntranceReinit` 0x637a0, retail blocks B34 and B40 (22i each) share a
 **13-instruction byte-identical suffix** and retail does **not** cross-jump it —
 their first ~8 instructions differ only by register colouring (one arm already has
-`m_objAux` in `eax`). So identical machine tails alone do not trigger merging; the
+`m_logicRecord` in `eax`). So identical machine tails alone do not trigger merging; the
 statement list is what mechanism (1) reads.
 
 Measured 2026-08-08 on `CGrunt::StepEntranceReinit` 0x637a0:

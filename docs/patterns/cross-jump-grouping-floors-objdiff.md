@@ -29,11 +29,11 @@ restore a saved field:
 ```cpp
 case SERIAL_PRESAVE:
     ...
-    saved = w->m_actKey;
-    w->SetWorkerAct(ACT_PREPARE_SAVE);   // -> mov ebx, 0x50
-    m_animWorker->m_notify(this);
-    w = m_animWorker;
-    if (w->WorkerAct() == ACT_PREPARE_SAVE) { w->m_actKey = saved; }
+    saved = w->m_eventCode;
+    w->SetLogicEvent(ACT_PREPARE_SAVE);   // -> mov ebx, 0x50
+    m_logicRecord->m_notify(this);
+    w = m_logicRecord;
+    if (w->LogicEvent() == ACT_PREPARE_SAVE) { w->m_eventCode = saved; }
     break;
 ```
 

@@ -29,7 +29,7 @@ SIGNEDNESS  97.86%  logicworkerhandlersa 0x0aa1e0  @_CreateFrontCandy
 MSVC 5.0 gives an `enum` whose enumerators all fit in `int` the type `int`, so a
 `switch` on an enum-typed expression is a **signed** switch and cl builds the
 binary-search ladder out of `jg`/`jle`. Retail switched on an **unsigned** value
-(here `CDDrawWorker::ActKey()` read as `u32`), so its ladder is `ja`/`jbe`.
+(here `CDDrawWorker::EventCode()` read as `u32`), so its ladder is `ja`/`jbe`.
 
 Nothing else about the function changes: same arms, same order, same jump targets —
 only the condition family, which is why the diff is so small and so uniform.
@@ -40,7 +40,7 @@ Cast the **selector**, not the case labels or the member:
 
 ```cpp
 // keeps the named arms AND retail's unsigned ladder
-switch (static_cast<u32>(rec->WorkerAct())) {
+switch (static_cast<u32>(rec->LogicEvent())) {
     case ACT_UNINITIALISED: ...
 ```
 
@@ -51,13 +51,13 @@ mangled name.
 ## Why it matters beyond one function
 
 This is a **regression the enum-domain campaign introduced**. The retail-faithful
-source had been `switch (static_cast<u32>(rec->ActKey()))`; `33e433fad` ("naked
-numbers: AnimWorkerAct") replaced the raw key with a typed accessor and dropped the
+source had been `switch (static_cast<u32>(rec->EventCode()))`; `33e433fad` ("naked
+numbers: LogicRecordEvent") replaced the raw key with a typed accessor and dropped the
 cast, which cost **63 previously-EXACT functions** at once — the whole
-`_Create<Leaf>` worker-pump family plus `LOGIC_WORKER_PUMP`'s users.
+`_Create<Leaf>` worker-pump family plus `LOGIC_RECORD_DISPATCH`'s users.
 
 Measured, restoring the cast at 21 call sites plus the one shared macro in
-`include/Gruntz/WorkerHandler.h`:
+`include/Gruntz/LogicRecordHandler.h`:
 
 | | before | after |
 |---|---|---|

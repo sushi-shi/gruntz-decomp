@@ -101,7 +101,7 @@ grep as `||`.
 
 `ResetGroup` 0x79520 IS still a wall, but for a different reason than the entry
 above says: its unmerged arm's tail is genuinely **not identical** to the other
-two. cl hoisted the `m_animWorker` reload above the argument pushes in that one
+two. cl hoisted the `m_logicRecord` reload above the argument pushes in that one
 arm (`mov eax,[esi+0x7c]` / `mov ecx,[eax+0x18]` before `push 0x1; push 0x3`),
 where retail leaves the reload in the shared block. cl's suffix matcher then
 correctly declines. The failed cross-jump is a CONSEQUENCE of a scheduling

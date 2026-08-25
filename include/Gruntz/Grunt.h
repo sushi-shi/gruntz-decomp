@@ -948,7 +948,7 @@ public:
 };
 
 union NotifyWord {
-    GameObjNotifyFn m_fn;
+    GameObjectLogicFn m_fn;
     void (CGrunt::*m_method)();
     u32 m_bits;
 };
@@ -967,7 +967,7 @@ bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
 // The grunt ACT codes. A CGrunt's state IS its act name: code resolves
-// m_objAux->m_actKey through g_typeColl and strcmp()s the result.
+// m_logicRecord->m_eventCode through g_typeColl and strcmp()s the result.
 // RegisterGruntActions (GruntCombat.cpp) binds all nineteen, "A".."S", each to
 // the step method that runs while the grunt is in that act.
 //

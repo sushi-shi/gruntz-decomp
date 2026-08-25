@@ -48,7 +48,7 @@
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <string.h>
 
@@ -90,38 +90,38 @@ RVA_DYNINIT(0x0010fce0, 0x1f, CActRegPool<CTileTriggerTransition>::s_table)
 template<> DATA(0x0024e720)
 CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-#define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
-    AnimWorkerObj* ctl = obj->m_animWorker;                                                        \
-    switch (ctl->WorkerAct()) {                                                                    \
+#define TILE_LOGIC_RECORD_DISPATCH(LEAF)                                                           \
+    CLogicRecord* record = obj->m_logicRecord;                                                     \
+    switch (record->LogicEvent()) {                                                                \
         case ACT_UNINITIALISED: {                                                                  \
-            ctl->SetWorkerAct(ACT_LIVE);                                                           \
+            record->SetLogicEvent(ACT_LIVE);                                                       \
             LEAF* t = new LEAF(obj);                                                               \
             t->Activate();                                                                         \
-            ctl->m_logic = t;                                                                      \
+            record->m_userLogic = t;                                                               \
             break;                                                                                 \
         }                                                                                          \
         case ACT_OBJECT_REMOVED:                                                                   \
-            ctl->m_logic->OnObjectRemoved();                                                       \
+            record->m_userLogic->OnObjectRemoved();                                                \
             break;                                                                                 \
         case ACT_LEAVE_ACTIVE_REGION:                                                              \
-            ctl->m_logic->OnLeaveActiveRegion();                                                   \
+            record->m_userLogic->OnLeaveActiveRegion();                                            \
             break;                                                                                 \
         case ACT_PREPARE_SAVE:                                                                     \
-            ctl->m_logic->PrepareSave();                                                           \
+            record->m_userLogic->PrepareSave();                                                    \
             break;                                                                                 \
         case ACT_AFTER_SAVE:                                                                       \
-            ctl->m_logic->AfterSave();                                                             \
+            record->m_userLogic->AfterSave();                                                      \
             break;                                                                                 \
         case ACT_AFTER_LOAD:                                                                       \
-            ctl->m_logic->AfterLoad();                                                             \
+            record->m_userLogic->AfterLoad();                                                      \
             break;                                                                                 \
         case ACT_AFTER_LOAD_REFERENCES:                                                            \
-            ctl->m_logic->AfterLoadReferences();                                                   \
+            record->m_userLogic->AfterLoadReferences();                                            \
             break;                                                                                 \
         case ACT_LIVE:                                                                             \
             break;                                                                                 \
         default:                                                                                   \
-            ProjTypeXfer(ctl->m_logic);                                                            \
+            DispatchLogicEvent(record->m_userLogic);                                               \
             break;                                                                                 \
     }                                                                                              \
     return 1;
@@ -154,66 +154,68 @@ RVA_COMPGEN(0x000117c0, 0x1e, ??_GCTileTriggerTransition@@UAEPAXI@Z)
 RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
 RVA(0x0010cb10, 0xf1)
-i32 CreateTileTrigger(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTrigger)}
+i32 CreateTileTrigger(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CTileTrigger)}
 
 RVA(0x0010cc50, 0xf1)
-i32 CreateTileTriggerSwitch(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerSwitch)}
+i32 CreateTileTriggerSwitch(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CTileTriggerSwitch)}
 
 RVA(0x0010cd90, 0xf1)
-i32 CreateTileSecretTrigger(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileSecretTrigger)}
+i32 CreateTileSecretTrigger(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CTileSecretTrigger)}
 
 RVA(0x0010ced0, 0xf1)
-i32 CreateGiantRock(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CGiantRock)}
+i32 CreateGiantRock(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CGiantRock)}
 
 RVA(0x0010d010, 0xf1)
-i32 CreateCoveredPowerup(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)}
+i32 CreateCoveredPowerup(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CCoveredPowerup)}
 
 RVA(0x0010d150, 0xf1)
-i32 CreateTileTriggerTransition(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransition)}
+i32 CreateTileTriggerTransition(CGameObject* obj){
+    TILE_LOGIC_RECORD_DISPATCH(CTileTriggerTransition)
+}
 
 RVA(0x0010d290, 0xf4)
 i32 CreateCheckpointTrigger(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_animWorker;
-    switch (ctl->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            ctl->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);
             t->Activate();
-            ctl->m_logic = t;
+            record->m_userLogic = t;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            ctl->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            ctl->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            ctl->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            ctl->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            ctl->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            ctl->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(ctl->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
 }
 
 RVA(0x0010d3d0, 0xf1)
-i32 CreateBrickz(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
+i32 CreateBrickz(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CBrickz)}
 
 RVA(0x0010d510, 0xf1)
-i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
+i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CWarpStonePad)}
 
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj)

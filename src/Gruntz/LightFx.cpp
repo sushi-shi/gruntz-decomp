@@ -15,16 +15,16 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/XferArchive.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/ZVec.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <stddef.h>
 
@@ -52,38 +52,38 @@ RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
 RVA(0x0009cdc0, 0xf1)
 i32 CreateLightFx(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
-    switch (aux->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED:
-            aux->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             {
                 CLightFx* p = new CLightFx(obj);
                 (static_cast<CUserLogic*>(p))->Activate();
-                aux->m_logic = p;
+                record->m_userLogic = p;
             }
             break;
         case ACT_OBJECT_REMOVED:
-            aux->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            aux->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            aux->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            aux->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            aux->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            aux->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -115,7 +115,7 @@ void CLightFx::RegisterActs() {
 RVA(0x0009d520, 0xfd)
 void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     CDDrawWorker* en =
-        LookupWorker(m_animWorker->m_ownerCtx->m_imageRegistry->m_workersByName, spec);
+        LookupWorker(m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName, spec);
     g_gameReg->m_logicPump->Push(en, anchorA, SHADE_DST_BY_SRC_16);
     CWwdGameObjectA* o = m_wwdObject;
     if (en != NULL) {

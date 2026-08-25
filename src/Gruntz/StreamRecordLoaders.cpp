@@ -1,7 +1,7 @@
 #include <rva.h>
 
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -137,14 +137,14 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
-// The out-of-line half of Find's visibility split (the .inl view carries the
+// The out-of-line half of FindTemplate's visibility split (the .inl view carries the
 // same text).  The release ASSERT emits nothing here; it is what lifts the
 // inline copies' cb over the 0x28 exemption so the point-logic ctors decline
 // them (zero-emission-statements-cross-the-ob1-cb-exemption.md).
 RVA(0x0009cab0, 0x23)
-CObject* CDDrawWorkerCache::Find(const char* key) {
+CLogicRecord* CLogicRecordRegistry::FindTemplate(const char* key) {
     CObject* found = NULL;
     ASSERT(key != NULL);
-    m_workers.Lookup(key, found);
-    return found;
+    m_templatesByName.Lookup(key, found);
+    return static_cast<CLogicRecord*>(found);
 }

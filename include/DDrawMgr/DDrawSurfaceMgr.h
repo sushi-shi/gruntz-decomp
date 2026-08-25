@@ -34,7 +34,7 @@ class CDDrawSubMgrPages;
 class CDDrawWorkerList;
 class CDDrawChildGroup;
 class CDDrawWorkerRegistry;
-class CDDrawWorkerCache;
+class CLogicRecordRegistry;
 class CDDrawWorkerMapSmall;
 class SoundCueRegistry;
 class AnimationRegistry;
@@ -83,7 +83,7 @@ public:
     CDDrawWorkerList* m_workerList;
     CDDrawWorkerRegistry* m_imageRegistry;
 
-    CDDrawWorkerCache* m_workerCache;
+    CLogicRecordRegistry* m_logicRegistry;
     CDDrawWorkerMapSmall* m_workerMap;
     CDDrawDeviceManager* m_deviceManager;
     SoundStream* m_soundStream;

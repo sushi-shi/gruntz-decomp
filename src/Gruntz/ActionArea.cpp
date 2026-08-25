@@ -11,6 +11,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/HaznColl.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/SerialArchive.h>
@@ -21,7 +22,6 @@
 #include <Gruntz/TypeColl2.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/WorkerHandler.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <Wap32/zBitVec.h>
@@ -39,7 +39,7 @@ static inline CActHandler* R3Lookup(i32 coord) {
 }
 
 RVA(0x00007c60, 0xf1)
-i32 CreateActionArea(CGameObject* owner){LOGIC_WORKER_PUMP(CActionArea)}
+i32 CreateActionArea(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
 
 // @early-stop
 RVA(0x00007da0, 0x17e)

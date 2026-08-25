@@ -203,7 +203,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         );
         if (spr) {
             spr->m_smarts = 2;
-            spr->m_animWorker->m_speed = m_object->m_animWorker->m_speed;
+            spr->m_logicRecord->m_speed = m_object->m_logicRecord->m_speed;
             spr->m_speedX = m_object->m_speedX;
             spr->m_speedY = m_object->m_speedY;
             spr->m_powerup = m_object->m_powerup;

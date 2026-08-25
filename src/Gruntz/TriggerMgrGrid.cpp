@@ -139,8 +139,8 @@ i32 CTriggerMgr::PlaceObject(
         if (sprite == NULL) {
             goto fail;
         }
-        sprite->m_animWorker->m_notify(sprite);
-        CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
+        sprite->m_logicRecord->m_dispatch(sprite);
+        CGrunt* logic = static_cast<CGrunt*>(sprite->m_logicRecord->m_userLogic);
         CGruntzMgr* game = g_gameReg;
 
         // NOT a PickupType local: the AI-type switch fills it with tool ids,
@@ -1303,7 +1303,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
             return 0;
         }
 
-        char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_actKey);
+        char* name = *g_typeColl.GetNameRecord(cell->m_logicRecord->m_eventCode);
         bool isI = (strcmp(name, "I") == 0);
         if (isI) {
             LoadTileArrivalFx(
@@ -1356,7 +1356,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 playerIndex, i32 unitIndex, i32 worldX, i32 w
         RESET_GRUNT_POWERED_STATE(cell)
     }
 
-    typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
+    typeRec = g_typeColl.ScratchResolve(cell->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     grown = g_typeColl.m_grown;
     while (grown--) {
@@ -1427,7 +1427,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell->m_entranceActive != 0) {
         return 0;
     }
-    CString* typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
+    CString* typeRec = g_typeColl.ScratchResolve(cell->m_logicRecord->m_eventCode);
     CString* p = g_typeColl.Slots();
     i32 n = g_typeColl.m_grown;
     while (n--) {
@@ -1465,7 +1465,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    const char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_actKey);
+    const char* name = *g_typeColl.GetNameRecord(cell->m_logicRecord->m_eventCode);
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;

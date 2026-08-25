@@ -49,8 +49,8 @@ The lever is the stack BUFFER, not the name. `CWwdSpatialMgr::Relocate` 0x168500
 three `else if` arms whose `flags & 0x20` sub-branch is byte-identical
 (`RemoveAll; mov edx,[esi]; push 1; mov ecx,esi; call [edx+4]; jmp <join>`), retail
 emits all three in FULL (`?RemoveAll@CDDrawChildGroup` base 2 / target 4) and cl
-cross-jumps them. Each arm already declares its own `AnimWorkerObj* w =
-obj->m_animWorker;` in its own block scope; renaming them `w1`/`w2`/`w0` changed
+cross-jumps them. Each arm already declares its own `CLogicRecord* w =
+obj->m_logicRecord;` in its own block scope; renaming them `w1`/`w2`/`w0` changed
 NOTHING - 86.8795 before and after, referent count still 2 against retail's 4. So cl 5.0
 compares the arms' EXPRESSIONS, and a pointer that never reaches a stack slot leaves no
 expression to differ. Do not reach for this lever when the arm's only local is a

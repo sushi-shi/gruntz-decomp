@@ -610,12 +610,12 @@ i32 CreateGlobalAmbientSound(CGameObject* obj) {
 
 RVA(0x0000c840, 0x13d)
 i32 CreateAmbientSound(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
+    CLogicRecord* record = obj->m_logicRecord;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
-    if (aux->m_actKey == 0) {
+    if (record->m_eventCode == 0) {
         obj->m_flags |= 1;
         obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        if (aux->m_notify == CreateGlobalAmbientSound) {
+        if (record->m_dispatch == CreateGlobalAmbientSound) {
             obj->m_flags |= 2;
         } else {
             obj->m_flags &= ~2;
@@ -624,8 +624,8 @@ i32 CreateAmbientSound(CGameObject* obj) {
         if (layer && g_gameReg) {
             RECT rc;
             CopyRect(&rc, &obj->m_area);
-            if (aux->m_minX > 0 || aux->m_maxX > 0) {
-                SetRect(&rc, aux->m_minX, aux->m_minY, aux->m_maxX, aux->m_maxY);
+            if (record->m_minX > 0 || record->m_maxX > 0) {
+                SetRect(&rc, record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
             }
             if (g_gameReg->m_worldSounds) {
                 CAmbientSound* placed;
@@ -652,7 +652,7 @@ i32 CreateAmbientSound(CGameObject* obj) {
             }
         }
         obj->m_flags |= 0x10000;
-        aux->SetActKey(5);
+        record->SetEventCode(5);
     }
     return 1;
 }
@@ -665,14 +665,14 @@ i32 CreateAmbientPosSound(CGameObject* obj) {
 
 RVA(0x0000ca00, 0xf0)
 i32 CreateSpotAmbientSound(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
+    CLogicRecord* record = obj->m_logicRecord;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
-    i32 state = aux->m_actKey;
+    i32 state = record->m_eventCode;
     if (state != 0) {
         if (state != AMBIENT_SOUND_ACTIVE) {
             return 1;
         }
-        CAmbientPosSound* sound = aux->m_positionedSound;
+        CAmbientPosSound* sound = record->m_positionedSound;
         if (sound == NULL) {
             return 1;
         }
@@ -686,14 +686,14 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
             set->m_list.RemoveAt(sound->m_listNode);
             delete sound;
         }
-        aux->m_positionedSound = NULL;
-        aux->SetActKey(0);
+        record->m_positionedSound = NULL;
+        record->SetEventCode(0);
         return 1;
     }
 
     obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
     obj->m_flags = (obj->m_flags & ~2) | 0x100001;
-    aux->m_positionedSound = NULL;
+    record->m_positionedSound = NULL;
     SoundCue* layer = sprite->m_soundCue;
     if (layer != NULL && g_gameReg != NULL) {
 
@@ -706,11 +706,11 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
             CAmbientPosSound* v =
                 set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);
             if (v != NULL) {
-                aux->m_positionedSound = v;
+                record->m_positionedSound = v;
             }
         }
     }
-    aux->SetActKey(5);
+    record->SetEventCode(5);
     return 1;
 }
 

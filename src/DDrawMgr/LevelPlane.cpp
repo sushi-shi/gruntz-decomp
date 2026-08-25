@@ -6,13 +6,13 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerHostBuildInline.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
@@ -615,7 +615,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 
 // @early-stop
 // cl tail-merges our three identical early-exit arms (xy-range, empty-logic,
-// tmpl-null) into ONE `delete obj; return used` block; retail kept TWO copies
+// logicTemplate-null) into ONE `delete obj; return used` block; retail kept TWO copies
 // (0x162dc3 shared by the logic pair via jump-threading, 0x163281 for xy) whose
 // schedules differ only in the vtbl-load slot. Guarded-lookup restructures drop
 // 110 B (arm dedup goes further) and ptrdiff/delete-first respellings are inert
@@ -694,26 +694,29 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return used;
     }
 
-    AnimWorkerObj* tmpl;
+    CLogicRecord* logicTemplate;
     {
         CObject* foundOb = NULL;
-        OwnerMgr()->m_workerCache->m_workers.Lookup(static_cast<const char*>(logic), foundOb);
-        tmpl = static_cast<AnimWorkerObj*>(foundOb);
+        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(
+            static_cast<const char*>(logic),
+            foundOb
+        );
+        logicTemplate = static_cast<CLogicRecord*>(foundOb);
     }
-    if (tmpl == NULL) {
+    if (logicTemplate == NULL) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
         return used;
     }
 
-    if (obj->Setup(x, y, z, tmpl) == 0) {
+    if (obj->Setup(x, y, z, logicTemplate) == 0) {
         delete obj;
         return 0;
     }
 
     obj->m_flags |= 0x40000;
 
-    AnimWorkerObj* anim = obj->m_animWorker;
+    CLogicRecord* anim = obj->m_logicRecord;
     if (anim == NULL) {
         delete obj;
         return 0;

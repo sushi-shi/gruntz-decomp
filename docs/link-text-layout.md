@@ -200,10 +200,10 @@ frozen in the tu-order ratchet baseline):
   `CUserBaseLink`), or does the z-band split into >1 obj around it? Deciding
   evidence: whether any z-band TU includes UserLogic.h, or an initializer/
   private-static cut inside 0x16d190-0x16ea11.
-* **DDrawSurfacePair × LogicRecord (1)** — the AnimWorkerObj block
+* **DDrawSurfacePair × LogicRecord (1)** — the CLogicRecord block
   0x164830-0x16520d (real 0x400-byte bodies) inside the surface-pair run: one
   multi-class TU (merge) or header-heavy record class kept as COMDATs
-  (ledger)? Deciding evidence: whether retail duplicates any AnimWorkerObj
+  (ledger)? Deciding evidence: whether retail duplicates any CLogicRecord
   body's shape elsewhere (multi-emission ⇒ inline), or a seam/dossier cut.
 
 The 7 TUs with intra-order violations (GruntzMgr 22, GameLevel 10,

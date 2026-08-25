@@ -486,17 +486,17 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                 i32 cTop = t->m_extent.bottom + candY;
                 if (cLeft <= oRight && cRight >= oLeft && cBot <= oTop && cTop >= oBot) {
                     i32 fire;
-                    if (t->m_collideWorker != NULL) {
+                    if (t->m_collisionLogic != NULL) {
                         t->m_hitOther = obj;
-                        fire = t->m_collideWorker->m_notify(t);
+                        fire = t->m_collisionLogic->m_dispatch(t);
                     } else {
                         fire = 1;
                     }
                     if (fire != 0) {
                         if (t->m_collMask & obj->m_objectType) {
-                            if (obj->m_collideWorker != NULL) {
+                            if (obj->m_collisionLogic != NULL) {
                                 obj->m_hitOther = t;
-                                obj->m_collideWorker->m_notify(obj);
+                                obj->m_collisionLogic->m_dispatch(obj);
                             }
                         }
                         return 1;

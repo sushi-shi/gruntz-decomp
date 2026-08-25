@@ -753,7 +753,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 // @early-stop
 // Block skeleton is now identical to retail (70/70, every edge `==`).  The
 // residue is a register PERMUTATION at six of the seven act probes: retail
-// takes the m_objAux temp in edx, sets ecx to &g_typeColl BEFORE the argument
+// takes the m_logicRecord temp in edx, sets ecx to &g_typeColl BEFORE the argument
 // load, and pushes from eax; cl takes the temp in eax, leaves the argument in
 // ecx and therefore has to reload ecx with the receiver after the push.  The
 // first probe ("F") colours retail's way on both sides, so it is an
@@ -1501,7 +1501,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = 1;
     } else {
-        CString* r = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+        CString* r = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool ne;
         ne = (strcmp(*r, "L") != 0);
@@ -1761,10 +1761,10 @@ i32 CGrunt::CreateHealthSprite() {
         "GruntHealthSprite",
         0x40003
     );
-    m_healthSprite->m_animWorker->m_notify(m_healthSprite);
+    m_healthSprite->m_logicRecord->m_dispatch(m_healthSprite);
 
-    AnimWorkerObj* inner = m_healthSprite->m_animWorker;
-    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
+    CLogicRecord* inner = m_healthSprite->m_logicRecord;
+    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_health)) {
         reg->SetObjectFlags(0x10000);
         m_healthSprite = NULL;
@@ -1775,7 +1775,7 @@ i32 CGrunt::CreateHealthSprite() {
 
 // @early-stop
 // 2-arg sibling of the BindToGrunt family: retail pushes m_unitIndex,
-// THEN computes reg=inner->m_logic, THEN loads m_playerIndex into the register
+// THEN computes reg=inner->m_userLogic, THEN loads m_playerIndex into the register
 // inner has just vacated; cl loads m_playerIndex into edx up front and pushes
 // both arguments together. Refuted in an isolated harness that reproduces this
 // body byte-for-byte: ten tail spellings (inner/reg folded, either argument as
@@ -1796,9 +1796,9 @@ i32 CGrunt::CreateToySprite() {
         "GruntToySprite",
         0x40003
     );
-    m_toySprite->m_animWorker->m_notify(m_toySprite);
+    m_toySprite->m_logicRecord->m_dispatch(m_toySprite);
 
-    CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_animWorker->m_logic);
+    CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_logicRecord->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(0x10000);
         m_toySprite = NULL;
@@ -1822,10 +1822,10 @@ i32 CGrunt::CreateStaminaSprite() {
         "GruntStaminaSprite",
         0x40003
     );
-    m_staminaSprite->m_animWorker->m_notify(m_staminaSprite);
+    m_staminaSprite->m_logicRecord->m_dispatch(m_staminaSprite);
 
-    AnimWorkerObj* inner = m_staminaSprite->m_animWorker;
-    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
+    CLogicRecord* inner = m_staminaSprite->m_logicRecord;
+    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_stamina)) {
         reg->SetObjectFlags(0x10000);
         m_staminaSprite = NULL;
@@ -1855,10 +1855,10 @@ i32 CGrunt::CreateToyTimeSprite() {
         "GruntToyTimeSprite",
         0x40003
     );
-    m_toyTimeSprite->m_animWorker->m_notify(m_toyTimeSprite);
+    m_toyTimeSprite->m_logicRecord->m_dispatch(m_toyTimeSprite);
 
-    AnimWorkerObj* inner = m_toyTimeSprite->m_animWorker;
-    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
+    CLogicRecord* inner = m_toyTimeSprite->m_logicRecord;
+    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_toyTime)) {
         reg->SetObjectFlags(0x10000);
         m_toyTimeSprite = NULL;
@@ -1884,10 +1884,10 @@ i32 CGrunt::CreateWingzTimeSprite() {
         "GruntWingzTimeSprite",
         0x40003
     );
-    m_wingzTimeSprite->m_animWorker->m_notify(m_wingzTimeSprite);
+    m_wingzTimeSprite->m_logicRecord->m_dispatch(m_wingzTimeSprite);
 
-    AnimWorkerObj* inner = m_wingzTimeSprite->m_animWorker;
-    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_logic);
+    CLogicRecord* inner = m_wingzTimeSprite->m_logicRecord;
+    CGruntHealthSprite* reg = static_cast<CGruntHealthSprite*>(inner->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, m_wingzTime)) {
         reg->SetObjectFlags(0x10000);
         m_wingzTimeSprite = NULL;
@@ -1912,10 +1912,10 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
         "GruntPowerupSprite",
         0x40003
     );
-    m_powerupSprite->m_animWorker->m_notify(m_powerupSprite);
+    m_powerupSprite->m_logicRecord->m_dispatch(m_powerupSprite);
 
-    AnimWorkerObj* inner = m_powerupSprite->m_animWorker;
-    CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->m_logic);
+    CLogicRecord* inner = m_powerupSprite->m_logicRecord;
+    CGruntPowerupSprite* reg = static_cast<CGruntPowerupSprite*>(inner->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex, powerupId)) {
         reg->SetObjectFlags(0x10000);
         m_powerupSprite = NULL;
@@ -1926,7 +1926,7 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
 
 // @early-stop
 // Same wall as CreateToySprite and its sole residue: retail loads
-// m_playerIndex into eax after reg=inner->m_logic has freed it, we take edx.
+// m_playerIndex into eax after reg=inner->m_userLogic has freed it, we take edx.
 RVA(0x0004d730, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {
@@ -1941,10 +1941,10 @@ i32 CGrunt::CreateSelectedSprite() {
         "GruntSelectedSprite",
         0x40003
     );
-    m_selectedSprite->m_animWorker->m_notify(m_selectedSprite);
+    m_selectedSprite->m_logicRecord->m_dispatch(m_selectedSprite);
 
     CGruntSelectedSprite* reg =
-        static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_animWorker->m_logic);
+        static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_logicRecord->m_userLogic);
     if (!reg->BindToGrunt(m_playerIndex, m_unitIndex)) {
         reg->SetObjectFlags(0x10000);
         m_selectedSprite = NULL;
@@ -2118,9 +2118,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (m_entranceActive != 0) {
             goto fail;
         }
-        eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "A") != 0);
+        eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "A") != 0);
         if (eq) {
-            eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "D") != 0);
+            eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "D") != 0);
             if (eq) {
                 goto fail;
             }
@@ -2666,7 +2666,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2689,7 +2689,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2711,7 +2711,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2734,7 +2734,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2757,7 +2757,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2779,7 +2779,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2801,7 +2801,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2825,7 +2825,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2847,7 +2847,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -2869,7 +2869,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
@@ -3140,7 +3140,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     if (fresh == 0) {
         CString* rec;
         {
-            i32 key = m_objAux->ActKey();
+            i32 key = m_logicRecord->EventCode();
             g_typeColl.m_grown = 0;
             if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
                 rec = g_typeColl.Elem(key);
@@ -3173,7 +3173,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             CString* rec2;
             {
-                i32 key2 = m_objAux->ActKey();
+                i32 key2 = m_logicRecord->EventCode();
                 g_typeColl.m_grown = 0;
                 if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
                     rec2 = g_typeColl.Elem(key2);

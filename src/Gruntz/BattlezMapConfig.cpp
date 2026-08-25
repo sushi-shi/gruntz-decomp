@@ -186,7 +186,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficul
 
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != NULL;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur->m_animWorker->m_notify == &CreateGruntCreationPoint
+        if (cur->m_logicRecord->m_dispatch == &CreateGruntCreationPoint
             && cur->m_smarts == playerIndex) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             Coord* slot = NULL;
@@ -202,7 +202,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficul
 
     for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != NULL;
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur2->m_animWorker->m_notify == &CreateExitTrigger && cur2->m_smarts == playerIndex) {
+        if (cur2->m_logicRecord->m_dispatch == &CreateExitTrigger
+            && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenX / 32;
             m_marker.m_y = cur2->m_screenY / 32;
             break;
@@ -211,7 +212,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, i32 difficul
 
     for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != NULL;
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur3->m_animWorker->m_notify == &CreateWayPoint && cur3->m_smarts == playerIndex) {
+        if (cur3->m_logicRecord->m_dispatch == &CreateWayPoint && cur3->m_smarts == playerIndex) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             Coord* slot = NULL;
             if (p->m_next != NULL) {
@@ -1226,8 +1227,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 eq =
                                                                     (strcmp(
                                                                          (*g_typeColl.GetNameRecord(
-                                                                             unit->m_objAux
-                                                                                 ->m_actKey
+                                                                             unit->m_logicRecord
+                                                                                 ->m_eventCode
                                                                          )),
                                                                          "P"
                                                                      )
@@ -1235,22 +1236,20 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 if (!eq) {
                                                                     eq =
                                                                         (strcmp(
-                                                                             (*g_typeColl
-                                                                                   .GetNameRecord(
-                                                                                       unit->m_objAux
-                                                                                           ->m_actKey
-                                                                                   )),
+                                                                             (*g_typeColl.GetNameRecord(
+                                                                                 unit->m_logicRecord
+                                                                                     ->m_eventCode
+                                                                             )),
                                                                              "J"
                                                                          )
                                                                          == 0);
                                                                     if (!eq) {
                                                                         eq =
                                                                             (strcmp(
-                                                                                 (*g_typeColl
-                                                                                       .GetNameRecord(
-                                                                                           unit->m_objAux
-                                                                                               ->m_actKey
-                                                                                       )),
+                                                                                 (*g_typeColl.GetNameRecord(
+                                                                                     unit->m_logicRecord
+                                                                                         ->m_eventCode
+                                                                                 )),
                                                                                  "C"
                                                                              )
                                                                              == 0);
@@ -1258,8 +1257,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                             eq =
                                                                                 (strcmp(
                                                                                      (*g_typeColl.GetNameRecord(
-                                                                                         unit->m_objAux
-                                                                                             ->m_actKey
+                                                                                         unit->m_logicRecord
+                                                                                             ->m_eventCode
                                                                                      )),
                                                                                      "R"
                                                                                  )
@@ -2668,7 +2667,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     coll->m_scanCursor = coll->m_list.GetHeadPosition();
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != NULL) {
-        if (g->m_animWorker->m_notify == &CreateInGameIcon
+        if (g->m_logicRecord->m_dispatch == &CreateInGameIcon
             && !HAS(g->m_stateFlags, SPRITE_STATE_HIDDEN)) {
             i32 special = 0;
 
@@ -3943,7 +3942,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -3957,7 +3956,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -3971,7 +3970,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -3985,7 +3984,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -3999,7 +3998,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -4013,7 +4012,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {

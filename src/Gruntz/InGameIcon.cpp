@@ -633,7 +633,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     CWwdGameObjectA* rend;
     CGrunt* cell;
     CGrunt* placed;
-    AnimWorkerObj* aux;
+    CLogicRecord* logicRecord;
     PickupType cmd;
     PickupType toyboxPickup;
     i32 matchActive;
@@ -716,7 +716,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         owner = m_wwdObject;
         if (owner->m_damage > 0) {
             owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
-            aux = m_objAux;
+            logicRecord = m_logicRecord;
             SET_ANIMATION_ACT("B");
             owner = m_wwdObject;
             m_driftPos.m_lo = g_frameTime;
@@ -820,12 +820,14 @@ i32 CInGameIcon::SerializeMove(
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
-            m_animWorker = obj->m_animWorker;
+            m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
-                m_value =
-                    LookupAni(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, aniName);
+                m_value = LookupAni(
+                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
+                    aniName
+                );
             }
             break;
         }
@@ -835,7 +837,7 @@ i32 CInGameIcon::SerializeMove(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }
@@ -879,7 +881,7 @@ i32 CInGameIcon::SerializeMove(
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue)
+                        m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->FindCueKey(m_cue)
                     )
                 );
             }
@@ -896,7 +898,7 @@ i32 CInGameIcon::SerializeMove(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = LookupCue(m_animWorker->m_ownerCtx->m_soundRegistry->m_cues, name);
+                m_cue = LookupCue(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues, name);
             } else {
                 m_cue = NULL;
             }
@@ -904,7 +906,7 @@ i32 CInGameIcon::SerializeMove(
             i32 id;
             ar->Read(&id, sizeof(id));
             CWwdGameObjectA* sprite = LookupSerialRef(
-                m_animWorker->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                m_ownerLogicRecord->m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
                 id
             );
             m_glitterSprite = sprite;
@@ -994,7 +996,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CString* node = g_typeColl.ScratchResolve(found->m_objAux->ActKey());
+        CString* node = g_typeColl.ScratchResolve(found->m_logicRecord->EventCode());
 
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;

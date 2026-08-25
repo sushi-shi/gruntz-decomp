@@ -281,8 +281,8 @@ i32 CProjectile::LoadProjectileSprites(
         0x2040003
     ));
     if (m_shadow != NULL) {
-        m_shadow->m_animWorker->m_notify(m_shadow);
-        (static_cast<CLightFx*>(m_shadow->m_animWorker->m_logic))
+        m_shadow->m_logicRecord->m_dispatch(m_shadow);
+        (static_cast<CLightFx*>(m_shadow->m_logicRecord->m_userLogic))
             ->Activate(
                 static_cast<const char*>(key + "_SHADOW"),
                 static_cast<const char*>(key + "1"),
@@ -836,19 +836,22 @@ i32 CProjectile::SerializeMove(
             CGameObject* obj = object;
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
-            m_animWorker = obj->m_animWorker;
+            m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(buf) == 0) {
                 m_value = NULL;
                 return 1;
             }
-            m_value = LookupAnim(m_animWorker->m_ownerCtx->m_animRegistry->m_animations, buf);
+            m_value = LookupAnim(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations, buf);
             return 1;
         }
         case SERIAL_SAVE: {
             char blob[SERIAL_NAME_LEN];
             memset(blob, 0, sizeof(blob));
             if (m_value != NULL) {
-                strcpy(blob, m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value));
+                strcpy(
+                    blob,
+                    m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                );
             }
             s->Write(blob, SERIAL_NAME_LEN);
             s->Write(m_blob, 0x10);

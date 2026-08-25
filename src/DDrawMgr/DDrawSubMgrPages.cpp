@@ -14,13 +14,13 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorker.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerNode.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>

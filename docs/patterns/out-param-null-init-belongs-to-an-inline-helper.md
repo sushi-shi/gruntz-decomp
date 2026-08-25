@@ -35,7 +35,7 @@ static inline T* LookupObj(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<T*>(result);
 }
 ...
-EnsureHitWorker(LookupObj(OwnerMgr()->m_workerCache->m_workers, key));
+EnsureHitLogic(LookupObj(OwnerMgr()->m_workerCache->m_workers, key));
 ```
 
 Retail's own source clearly used such helpers: in `WwdGameObject.cpp` the two

@@ -6,7 +6,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LevelTime.h>
 #include <Gruntz/LogicTypeTableInline.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 class CUserLogic;
 
@@ -21,37 +21,37 @@ RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 
 RVA(0x0009b770, 0xf1)
 i32 CreateLevelTime(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
-    switch (aux->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            aux->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CLevelTime* h = new CLevelTime(obj);
             h->Activate();
-            aux->m_logic = h;
+            record->m_userLogic = h;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            aux->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            aux->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            aux->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            aux->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            aux->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            aux->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;

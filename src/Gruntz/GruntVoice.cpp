@@ -37,7 +37,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 RVA_DYNINIT(0x00119350, 0x5, s_gruntDirNorth)
 RVA_DYNINIT(0x00119370, 0x1a, s_gruntDirNorth)
@@ -98,37 +98,37 @@ void ButeParseErrorSink(const char* msg) {
 
 RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_animWorker;
-    switch (ctl->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            ctl->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CGruntVoice* t = new CGruntVoice(obj);
             t->Activate();
-            ctl->m_logic = t;
+            record->m_userLogic = t;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            ctl->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            ctl->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            ctl->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            ctl->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            ctl->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            ctl->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(ctl->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -136,37 +136,37 @@ i32 CreateGruntVoice(CGameObject* obj) {
 
 RVA(0x00119760, 0xf1)
 i32 CreateVoiceTrigger(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_animWorker;
-    switch (ctl->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            ctl->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CVoiceTrigger* t = new CVoiceTrigger(obj);
             t->Activate();
-            ctl->m_logic = t;
+            record->m_userLogic = t;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            ctl->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            ctl->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            ctl->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            ctl->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            ctl->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            ctl->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(ctl->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -288,12 +288,12 @@ i32 CGruntVoice::BeginPlayback(
     m_duration.m_v = stream->GetDurationMs();
     m_startStamp.m_v = g_frameTime;
     // Retail loads priority into ECX at +0x27 (right after GetDurationMs) yet
-    // stores it at +0x47, and defers the m_objAux read to +0x44. Swapping these
+    // stores it at +0x47, and defers the m_logicRecord read to +0x44. Swapping these
     // two statements moves the ECX load onto retail's slot but hoists the member
     // read to +0x2b (81.50); neither order reproduces both. Schedule coin.
-    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_prevAnimSetNode = m_logicRecord->m_eventCode;
     m_priority = priority;
-    m_objAux->SetActKey(ActFindId("B"));
+    m_logicRecord->SetEventCode(ActFindId("B"));
     return 1;
 }
 
@@ -340,7 +340,7 @@ i32 CGruntVoice::UpdateIndicator() {
         if (resolved == NULL) {
             goto stopped;
         }
-        CUserLogic* logic = resolved->m_animWorker->m_logic;
+        CUserLogic* logic = resolved->m_logicRecord->m_userLogic;
         if (logic == NULL) {
             goto stopped;
         }

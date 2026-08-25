@@ -2,12 +2,12 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/LogicRecord.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
@@ -126,9 +126,9 @@ void CWwdGameObjectC::BltDirtyRegions(
     m_children.RemoveAll()
 
 RVA(0x001665e0, 0x55)
-i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
+i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CLEAR_WWD_GAME_OBJECT_CHILDREN;
-    return CGameObject::Setup(x, y, sortKey, tmpl) != 0;
+    return CGameObject::Setup(x, y, sortKey, logicTemplate) != 0;
 }
 
 // @early-stop
@@ -143,14 +143,14 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     int x,
     int y,
     int sortKey,
-    AnimWorkerObj* tmpl,
+    CLogicRecord* logicTemplate,
     int stateFlags
 ) {
     CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CWapObj::NO_SEED);
     if (result == NULL) {
         return NULL;
     }
-    if (result->Setup(x, y, sortKey, tmpl) == 0) {
+    if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         delete result;
         return NULL;
     }
@@ -161,15 +161,15 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     }
     result->m_posCache = node;
     if (result->m_flags & 0x200000) {
-        result->m_animWorker->m_notify(result);
+        result->m_logicRecord->m_dispatch(result);
     }
     return static_cast<CWwdGameObject*>(result);
 }
 
-static inline AnimWorkerObj* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
     CObject* found = NULL;
     map.Lookup(name, found);
-    return static_cast<AnimWorkerObj*>(found);
+    return static_cast<CLogicRecord*>(found);
 }
 
 // @dead-code
@@ -177,11 +177,12 @@ static inline AnimWorkerObj* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
-    AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
-    if (tmpl == NULL) {
+    CLogicRecord* logicTemplate =
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+    if (logicTemplate == NULL) {
         return NULL;
     }
-    return CreateObject(id, x, y, sortKey, tmpl, stateFlags);
+    return CreateObject(id, x, y, sortKey, logicTemplate, stateFlags);
 }
 
 // @dead-code
@@ -227,7 +228,7 @@ i32 CWwdGameObject::WalkChildWorkers() {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* o = static_cast<CGameObject*>(m_children.GetNext(pos));
-        o->m_animWorker->m_notify(o);
+        o->m_logicRecord->m_dispatch(o);
         count++;
     }
     return count;

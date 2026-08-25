@@ -801,7 +801,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   names were views of CDDrawWorker slots). ??_7AnimWorkerObj (0x1efb80) is
   first-stamped by the userbaselink EnsureWorker fns and its slot bodies are the
   0x151d60-0x151e70 run; ??1CLogicRecord (0x151da0) re-stamps it => our
-  "CLogicRecord" IS AnimWorkerObj (identity note, not renamed this wave).
+  "CLogicRecord" IS CLogicRecord (identity note, not renamed this wave).
 * **S2 (ONE obj).** A-B-A: registry helpers (0x152640-0x1527d0) | animation
   loaders (0x1528d0-0x152ad0) | registry helpers (0x152c50-0x152d30).
   ??1CAniElement@0x152e30 directly after = the element class the animation
@@ -880,8 +880,8 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   I -> `src/Wwd/WwdFactoryObject.cpp` (NEW unit); T -> `src/DDrawMgr/DDrawSurfacePair.cpp`;
   R holding file -> `src/Wwd/WwdGameObjectRender.cpp` (NEW unit). 22 units dissolved, 2 added.
   Shared class hierarchies hoisted to headers so split method sets can live in their objs:
-  WwdGameObjectFamily.h, WwdGameObjCtor.h, WwdFactoryObject.h, ResolveNode.h, AnimWorkerObj.h,
-  DDrawWorkerCache.h, DDrawWorkerList.h, DDrawWorkerMapSmall.h, AnimationRegistry.h, AniAdvance.h.
+  WwdGameObjectFamily.h, WwdGameObjCtor.h, WwdFactoryObject.h, ResolveNode.h, CLogicRecord.h,
+  LogicRecordRegistry.h, DDrawWorkerList.h, DDrawWorkerMapSmall.h, AnimationRegistry.h, AniAdvance.h.
 * **Held correct-partials (documented, NOT merged):** DDrawSurfaceMgrSerialize.cpp stays a
   separate F-block file (its CFileMem/CDDrawSurfaceMgr/CDDrawSubMgrPages local views clash with
   F's; fold deferred); WwdSpatialMgr.cpp keeps the 0x163a40 dtor (co-located with FreeGrids);
@@ -893,7 +893,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   home in E is a deferred identity-pass item.
 * **Recovered in verification:** four previously-100% fns dropped by the shuffle were restored
   (CResolveNode::Init@0x1647e0, CDDrawWorkerRegistry::DestroyAll@0x165210 +
-  FindKeyOfValue@0x165360 -> ddrawsurfacepair; CDDrawChildGroup::IsReady@0x1575e0 -> ddrawsubmgr);
+  FindLogicTypeKey@0x165360 -> ddrawsurfacepair; CDDrawChildGroup::IsReady@0x1575e0 -> ddrawsubmgr);
   all back at 100%. CImageSet::CreateFrame30's stale size annotation fixed (0xdc -> 0xa4, retail 164 B).
 
 ## 16. waveM-judgment - the final three merge groups (customworld / sbi-items / menu-tail)

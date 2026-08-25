@@ -14,13 +14,13 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorker.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerNode.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>
@@ -389,10 +389,10 @@ i32 CDDrawChildGroup::IsReady() {
     return 1;
 }
 
-RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157700, 0x1e, ??_GCLogicRecordRegistry@@UAEPAXI@Z)
 
 RVA(0x00157720, 0x68)
-CDDrawWorkerCache::~CDDrawWorkerCache() {
+CLogicRecordRegistry::~CLogicRecordRegistry() {
     Unload();
 }
 

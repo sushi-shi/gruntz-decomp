@@ -10,7 +10,7 @@
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCacheFindInline.h>
+#include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
@@ -45,6 +45,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -65,14 +66,13 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
-#include <Gruntz/WorkerHandler.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <math.h>
@@ -411,7 +411,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     SoundCueRegistry* slot =
-        (static_cast<CDDrawSurfaceMgr*>(m_animWorker->m_ownerCtx))->m_soundRegistry;
+        (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
     if (slot->m_silentMode == 0) {
         SoundCue* sout = NULL;
         MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
@@ -431,8 +431,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
@@ -451,8 +451,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
@@ -471,8 +471,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
             return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
@@ -489,8 +489,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
@@ -509,8 +509,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
@@ -529,8 +529,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "LightFx",
                 0x40003
             );
-            spr->m_animWorker->m_notify(spr);
-            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+            spr->m_logicRecord->m_dispatch(spr);
+            (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
                 ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, 1);
 
             CWwdGameObjectA* n = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -542,7 +542,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
-            AnimWorkerObj* ni = n->m_animWorker;
+            CLogicRecord* ni = n->m_logicRecord;
             ni->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             n->m_smarts = 0;
@@ -558,7 +558,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
-            AnimWorkerObj* ei = e->m_animWorker;
+            CLogicRecord* ei = e->m_logicRecord;
             ei->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             e->m_smarts = 0;
@@ -574,7 +574,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
-            AnimWorkerObj* si = s->m_animWorker;
+            CLogicRecord* si = s->m_logicRecord;
             si->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             s->m_smarts = 0;
@@ -590,7 +590,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 0x40003
             );
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
-            AnimWorkerObj* wi = w->m_animWorker;
+            CLogicRecord* wi = w->m_logicRecord;
             wi->m_speed =
                 static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             w->m_smarts = 0;
@@ -1242,11 +1242,11 @@ i32 CGrunt::HandleCombatContact(
         // ebx,eax` / 0x59420 `mov eax,[ebx]`).  Dereferencing before the call reads
         // a pointer the reconstruction can replace - and it is also what the two
         // sibling sites below already do.
-        char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
+        char** rec0 = g_typeColl.GetNameRecordRaw(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool neH = (strcmp(*rec0, "H") != 0);
         if (neH) {
-            i32 keyF = m_objAux->m_actKey;
+            i32 keyF = m_logicRecord->m_eventCode;
             g_typeColl.m_grown = 0;
             CString* recF;
             if (keyF < g_typeColl.m_lo || keyF > g_typeColl.m_hi) {
@@ -1262,7 +1262,7 @@ i32 CGrunt::HandleCombatContact(
             ActNameConstructGrownSlots();
             bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, "F")) != 0);
             if (neF) {
-                i32 keyO = m_objAux->m_actKey;
+                i32 keyO = m_logicRecord->m_eventCode;
                 g_typeColl.m_grown = 0;
                 CString* recO;
                 if (keyO < g_typeColl.m_lo || keyO > g_typeColl.m_hi) {
@@ -1319,7 +1319,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             enemy->m_health = h;
 
             SoundCueRegistry* host =
-                (static_cast<CDDrawSurfaceMgr*>(m_animWorker->m_ownerCtx))->m_soundRegistry;
+                (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
             if (host->m_silentMode == 0) {
                 SoundCue* cc = static_cast<SoundCue*>(host->Lookup(s_CONVERSIONHIT));
                 if (cc != NULL) {
@@ -1555,7 +1555,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    CString* typeRec = g_typeColl.ScratchResolve(this->m_objAux->m_actKey);
+    CString* typeRec = g_typeColl.ScratchResolve(this->m_logicRecord->m_eventCode);
     if (g_typeColl.m_grown != 0) {
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;
@@ -1890,7 +1890,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != 0) {
 
-        CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool eq = (strcmp(*rec, "F") == 0);
         if (!eq) {
@@ -1957,37 +1957,37 @@ CObject* SoundCueRegistry::Lookup(const char* key) {
 
 RVA(0x0005baf0, 0xf4)
 i32 CreateGrunt(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CGrunt(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -2232,7 +2232,7 @@ void CGrunt::StepBehavior(char*) {
                 }
             } else {
 
-                CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_animWorker->m_logic);
+                CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_logicRecord->m_userLogic);
                 icon->PlaceAt(m_playerIndex, m_unitIndex);
             }
         }
@@ -2439,7 +2439,7 @@ void CGrunt::StepBehavior(char*) {
             m_entranceClockHi = 0;
         } else if (flags & 0x2000000) {
             if (m_entranceReason == PICKUP_TOOB) {
-                CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
@@ -2645,7 +2645,7 @@ afterArrival:
         if (m_poweredUp != 0 && m_stamina >= STAMINA_FULL) {
             bool eq;
             {
-                CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
@@ -2657,7 +2657,7 @@ afterArrival:
                 eq = (strcmp(*node, "E") == 0);
             }
             if (!eq) {
-                CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
                 CString* slot = g_typeColl.Slots();
                 i32 n = g_typeColl.m_grown;
                 while (n-- != 0) {
@@ -2902,7 +2902,7 @@ void CGrunt::FinalizeStep(char* name) {
         return;
     }
 
-    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
     ActNameConstructGrownSlots();
     bool eqPos = (strcmp(*rec, "S") == 0);
     if (eqPos) {
@@ -2975,19 +2975,19 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    CString* code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+    CString* code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
     ActNameConstructGrownSlots();
     bool different = strcmp(*code, "D");
     if (different) {
-        code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+        code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         different = strcmp(*code, "N");
         if (different) {
-            code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
             ActNameConstructGrownSlots();
             different = strcmp(*code, "L");
             if (different) {
-                code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
                 ActNameConstructGrownSlots();
                 different = strcmp(*code, "M");
                 if (different) {
@@ -3121,13 +3121,13 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        CString* rec = ActNameLookupCallReport(m_objAux->m_actKey);
+        CString* rec = ActNameLookupCallReport(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool hit = (strcmp(*rec, "N") == 0);
         if (hit) {
             return;
         }
-        rec = ActNameLookupCallReport(m_objAux->m_actKey);
+        rec = ActNameLookupCallReport(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         hit = (strcmp(*rec, "L") == 0);
         if (hit) {
@@ -3137,7 +3137,7 @@ void CGrunt::AdvanceMotion() {
             m_toyDuration = 0;
             return;
         }
-        rec = ActNameLookupCallReport(m_objAux->m_actKey);
+        rec = ActNameLookupCallReport(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         hit = (strcmp(*rec, "M") == 0);
         if (hit) {

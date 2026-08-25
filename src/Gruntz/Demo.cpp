@@ -7,7 +7,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/AnimWorker.h>
 #include <Gruntz/DemoHelpers.h>
 #include <Gruntz/DemoMoverState.h>
 #include <Gruntz/ExitTrigger.h>
@@ -22,6 +21,7 @@
 #include <Gruntz/GruntStartingPoint.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
@@ -34,7 +34,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/RezTypeTag.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <fstream.h>
 #include <stdlib.h>
@@ -114,8 +114,8 @@ i32 CDemo::Render() {
 // @early-stop
 RVA(0x0003c300, 0x183)
 i32 CreateDemoMover(CGameObject* owner) {
-    AnimWorkerObj* st = owner->m_animWorker;
-    switch (static_cast<DemoMoverState>(st->ActKey())) {
+    CLogicRecord* st = owner->m_logicRecord;
+    switch (static_cast<DemoMoverState>(st->EventCode())) {
         case DEMO_MOVER_SCROLL_TO_TARGET: {
 
             CGameLevel* gh = st->m_ownerCtx->m_level;
@@ -145,7 +145,7 @@ i32 CreateDemoMover(CGameObject* owner) {
             }
 
             if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
-                st->SetActKey(IDX(DEMO_MOVER_CHOOSE_TARGET));
+                st->SetEventCode(IDX(DEMO_MOVER_CHOOSE_TARGET));
             }
             return 1;
         }
@@ -155,7 +155,7 @@ i32 CreateDemoMover(CGameObject* owner) {
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
             i32 ry = st->m_ownerCtx->m_level->m_mainPlane->m_wrapH;
             st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
-            st->SetActKey(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
+            st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }
     }

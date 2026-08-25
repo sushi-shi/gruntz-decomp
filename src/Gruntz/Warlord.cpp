@@ -234,11 +234,12 @@ i32 CWarlord::SerializeMove(
             ar->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
-            m_animWorker = obj->m_animWorker;
+            m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(hdr) == 0) {
                 m_value = NULL;
             } else {
-                CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
+                CMapStringToPtr* map =
+                    &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
                 CAniElement* v = NULL;
                 MapLookup(*map, hdr, v);
                 m_value = v;
@@ -251,7 +252,7 @@ i32 CWarlord::SerializeMove(
                 strcpy(
                     buf,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }
@@ -263,7 +264,7 @@ i32 CWarlord::SerializeMove(
 
     switch (mode) {
         case SERIAL_SAVE: {
-            CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
+            CDDrawSurfaceMgr* world = m_ownerLogicRecord->m_ownerCtx;
             if (world == NULL) {
                 goto fail;
             }
@@ -389,7 +390,7 @@ i32 CWarlord::SerializeMove(
             break;
         }
         case SERIAL_LOAD: {
-            CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
+            CDDrawSurfaceMgr* world = m_ownerLogicRecord->m_ownerCtx;
             if (world == NULL) {
                 return 0;
             }

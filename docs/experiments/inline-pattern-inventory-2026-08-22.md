@@ -292,7 +292,7 @@ inlines rather than new candidates:
 - `CGameLevel::PointInBounds`/`PointInRect`: 28 functions across 18 TUs.
 - `CMapMgr::CellFlagsAt` and related `m_rows[y][x]` accessors: numerous
   register/schedule variants across at least 23 functions and 12 TUs.
-- `LOGIC_WORKER_PUMP`: 68 functions across 17 TUs.
+- `LOGIC_RECORD_DISPATCH`: 68 functions across 17 TUs.
 - Act-name registrar/grow machinery: 65 functions across 43 TUs.
 - `PROBE_TILE`: 26 functions.
 - MFC `CArray::SetSize`, list traversal/GetNext, CString comparisons,

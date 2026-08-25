@@ -203,10 +203,10 @@ by a real record walk) as the one logic name with neither a `C<name>` class nor 
 
 ```cpp
 // src/Gruntz/GameObjectFactory.cpp, RVA 0x0000a3b0
-ctx->m_workerCache->CreateWorker(CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
-ctx->m_workerCache->CreateWorker(CreateAmbientSound,       "AmbientSound",       1);
-ctx->m_workerCache->CreateWorker(CreateAmbientPosSound,    "AmbientPosSound",    0);
-ctx->m_workerCache->CreateWorker(CreateSpotAmbientSound,   "SpotAmbientSound",   0);
+ctx->m_workerCache->RegisterLogicType(CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
+ctx->m_workerCache->RegisterLogicType(CreateAmbientSound,       "AmbientSound",       1);
+ctx->m_workerCache->RegisterLogicType(CreateAmbientPosSound,    "AmbientPosSound",    0);
+ctx->m_workerCache->RegisterLogicType(CreateSpotAmbientSound,   "SpotAmbientSound",   0);
 ```
 
 The WWD `logic` field names a **worker**, not a class, and the four sound

@@ -8,10 +8,10 @@
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerMapSmall.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -33,7 +33,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_childGroup = NULL;
     m_workerList = NULL;
     m_imageRegistry = NULL;
-    m_workerCache = NULL;
+    m_logicRegistry = NULL;
     m_workerMap = NULL;
     m_deviceManager = NULL;
     m_soundStream = NULL;
@@ -62,7 +62,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_childGroup = new CDDrawChildGroup(this);
     m_workerList = new CDDrawWorkerList(this);
     m_imageRegistry = new CDDrawWorkerRegistry(this);
-    m_workerCache = new CDDrawWorkerCache(this);
+    m_logicRegistry = new CLogicRecordRegistry(this);
     m_workerMap = new CDDrawWorkerMapSmall(this);
     m_level = new CGameLevel(this, 0, 0);
     m_soundRegistry = new SoundCueRegistry(this);
@@ -88,7 +88,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         }
         return 0;
     }
-    if (!m_workerCache->IsReady()) {
+    if (!m_logicRegistry->IsReady()) {
         if (m_lastError == WORLDERR_NONE) {
             m_lastError = WORLDERR_WORKER_CACHE;
         }
@@ -179,9 +179,9 @@ void CDDrawSurfaceMgr::Cleanup() {
         delete m_imageRegistry;
         m_imageRegistry = NULL;
     }
-    if (m_workerCache) {
-        delete m_workerCache;
-        m_workerCache = NULL;
+    if (m_logicRegistry) {
+        delete m_logicRegistry;
+        m_logicRegistry = NULL;
     }
     if (m_workerMap) {
         delete m_workerMap;
@@ -214,7 +214,7 @@ i32 CDDrawSurfaceMgr::IsReady() {
     if (m_imageRegistry == NULL) {
         goto fail;
     }
-    if (m_workerCache == NULL) {
+    if (m_logicRegistry == NULL) {
         goto fail;
     }
     if (first->IsLoaded() == 0) {

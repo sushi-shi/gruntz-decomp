@@ -116,7 +116,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     i32 cnt;
     i32 ci;
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -130,7 +130,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -144,7 +144,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
+    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
@@ -158,7 +158,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         goto fail;
     }
 
-    ci = unit->m_objAux->ActKey();
+    ci = unit->m_logicRecord->EventCode();
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
         sel = g_typeColl.Elem(ci);

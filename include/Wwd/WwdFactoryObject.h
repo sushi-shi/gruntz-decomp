@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/ResolveNode.h>
 #include <Ints.h>
 

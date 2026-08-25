@@ -26,7 +26,7 @@ When a reconstruction macro exists purely as shorthand (ours introduced
 WORKER_FREE; nothing proves retail had it), write the statements plainly:
 
 ```cpp
-if (m_animWorker) { delete m_animWorker; m_animWorker = 0; }   // not WORKER_FREE(p)
+if (m_logicRecord) { delete m_logicRecord; m_logicRecord = 0; }   // not WORKER_FREE(p)
 ```
 
 The standalone body's bytes cannot adjudicate the spelling - only the CALLERS'

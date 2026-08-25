@@ -113,7 +113,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     )) {
                     warlordObj = found;
                 }
-                CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_animWorker->m_logic);
+                CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
                 if (wl != NULL) {
                     wl->RaiseBattleAlert();
                 }
@@ -122,7 +122,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                if (cur->m_animWorker->m_notify == CreateGruntCreationPoint
+                if (cur->m_logicRecord->m_dispatch == CreateGruntCreationPoint
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -145,7 +145,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         marks.SetAtGrow(marks.GetSize(), mark);
                     }
                 }
-                if (cur->m_animWorker->m_notify == CreateFortressFlag
+                if (cur->m_logicRecord->m_dispatch == CreateFortressFlag
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -189,7 +189,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                GameObjNotifyFn who = cur->m_animWorker->m_notify;
+                GameObjectLogicFn who = cur->m_logicRecord->m_dispatch;
                 if (who == CreateGruntCreationPoint || who == CreateFortressFlag) {
                     if (cur->m_smarts == m_object->m_smarts) {
                         i32 x = cur->m_screenX;

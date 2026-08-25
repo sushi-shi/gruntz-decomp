@@ -720,8 +720,8 @@ i32 CPlay::Render() {
                         )) {
                         object = out;
                     }
-                    if (object != NULL && object->m_animWorker->m_logic != NULL) {
-                        static_cast<CWarlord*>(object->m_animWorker->m_logic)
+                    if (object != NULL && object->m_logicRecord->m_userLogic != NULL) {
+                        static_cast<CWarlord*>(object->m_logicRecord->m_userLogic)
                             ->ResolveDeathAnimation();
                     }
                 }
@@ -5124,10 +5124,10 @@ b32 CPlay::PlaceStartGruntz() {
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj != NULL) {
-            AnimWorkerObj* aux = obj->m_animWorker;
+            CLogicRecord* record = obj->m_logicRecord;
 
-            GameObjNotifyFn who = aux->m_notify;
-            if (who == CreateGruntStartingPoint) {
+            GameObjectLogicFn dispatch = record->m_dispatch;
+            if (dispatch == CreateGruntStartingPoint) {
                 i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 idx = m_mgr->m_cmdGrid->PlaceObject(
@@ -5141,8 +5141,8 @@ b32 CPlay::PlaceStartGruntz() {
                     obj->m_damage,
                     obj->m_points,
                     obj->m_direction,
-                    aux->m_minX,
-                    aux->m_maxX,
+                    record->m_minX,
+                    record->m_maxX,
                     &obj->m_extent
                 );
                 if (idx == -1) {
@@ -5152,8 +5152,8 @@ b32 CPlay::PlaceStartGruntz() {
                     return false;
                 }
                 obj->m_flags |= 0x10000;
-            } else if (g_gameReg->m_gameMode != GAMEMODE_SINGLE && who == CreateGruntCreationPoint
-                       && obj->m_smarts == g_curPlayer) {
+            } else if (g_gameReg->m_gameMode != GAMEMODE_SINGLE
+                       && dispatch == CreateGruntCreationPoint && obj->m_smarts == g_curPlayer) {
 
                 GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
                 if (e != NULL && counter < e->m_comboSel) {
@@ -5202,9 +5202,9 @@ i32 CPlay::ValidateLevelTiles() {
             continue;
         }
 
-        GameObjNotifyFn who = obj->m_animWorker->m_notify;
+        GameObjectLogicFn dispatch = obj->m_logicRecord->m_dispatch;
 
-        if (who == CreateTileTriggerSwitch) {
+        if (dispatch == CreateTileTriggerSwitch) {
             TileCollisionKind type =
                 LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
@@ -5281,8 +5281,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_MULTI_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -5306,8 +5306,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_EXCLUSIVE_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -5342,8 +5342,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_SECRET_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -5371,8 +5371,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_TIME_SWITCH_UP,
                             obj->m_damage,
                             0
@@ -5396,8 +5396,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_CHECKPOINT_UP,
                             obj->m_damage,
                             obj->m_smarts
@@ -5425,8 +5425,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
                                 || type == TILEKIND_SWITCH_C_UP
                                 || type == TILEKIND_SECRET_SWITCH_UP,
@@ -5456,8 +5456,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
                                 || type == TILEKIND_SWITCH_C_UP
                                 || type == TILEKIND_SECRET_SWITCH_UP,
@@ -5483,8 +5483,8 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_area,
                             obj->m_switchRect,
                             obj->m_clip,
-                            obj->m_animWorker->m_userRect1,
-                            obj->m_animWorker->m_userRect2,
+                            obj->m_logicRecord->m_userRect1,
+                            obj->m_logicRecord->m_userRect2,
                             type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
                                 || type == TILEKIND_SWITCH_C_UP
                                 || type == TILEKIND_SECRET_SWITCH_UP,
@@ -5514,7 +5514,7 @@ i32 CPlay::ValidateLevelTiles() {
                     return 0;
                 }
             }
-        } else if (who == CreateTileTrigger) {
+        } else if (dispatch == CreateTileTrigger) {
             TileCollisionKind type =
                 LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
@@ -5589,8 +5589,8 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_area,
                         obj->m_switchRect,
                         obj->m_clip,
-                        obj->m_animWorker->m_userRect1,
-                        obj->m_animWorker->m_userRect2,
+                        obj->m_logicRecord->m_userRect1,
+                        obj->m_logicRecord->m_userRect2,
                         0,
                         obj->m_damage,
                         obj->m_points,
@@ -5618,8 +5618,8 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_area,
                         obj->m_switchRect,
                         obj->m_clip,
-                        obj->m_animWorker->m_userRect1,
-                        obj->m_animWorker->m_userRect2,
+                        obj->m_logicRecord->m_userRect1,
+                        obj->m_logicRecord->m_userRect2,
                         obj->m_smarts,
                         obj->m_damage,
                         obj->m_points,
@@ -5633,7 +5633,7 @@ i32 CPlay::ValidateLevelTiles() {
                 validCount++;
                 obj->m_flags |= 0x10000;
             }
-        } else if (who == CreateTileSecretTrigger) {
+        } else if (dispatch == CreateTileSecretTrigger) {
             TileCollisionKind type =
                 LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (!m_beginMarker->AddLogic(
@@ -5646,8 +5646,8 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_area,
                     obj->m_switchRect,
                     obj->m_clip,
-                    obj->m_animWorker->m_userRect1,
-                    obj->m_animWorker->m_userRect2,
+                    obj->m_logicRecord->m_userRect1,
+                    obj->m_logicRecord->m_userRect2,
                     obj->m_smarts,
                     obj->m_damage,
                     obj->m_points,
@@ -5660,7 +5660,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
             validCount++;
             obj->m_flags |= 0x10000;
-        } else if (who == CreateLevelTime) {
+        } else if (dispatch == CreateLevelTime) {
 
             if (m_frameMarker != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
                 && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
@@ -5675,12 +5675,12 @@ i32 CPlay::ValidateLevelTiles() {
                 m_frameMarker->SetTime(minutes, seconds);
             }
             obj->m_flags |= 0x10000;
-        } else if (who == CreateInGameIcon) {
+        } else if (dispatch == CreateInGameIcon) {
             if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
 
                 m_guts->QueuePickupReward(obj->m_points, obj->m_score);
             }
-        } else if (who == CreateGruntCreationPoint) {
+        } else if (dispatch == CreateGruntCreationPoint) {
             if (obj->m_smarts == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 Coord* slot = NULL;
@@ -5692,7 +5692,7 @@ i32 CPlay::ValidateLevelTiles() {
                 slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
             }
-        } else if (who == CreateBrickz) {
+        } else if (dispatch == CreateBrickz) {
 
             CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
             i32 tile = pl->m_tileGrid[pl->m_rowOffsets[obj->m_speedY] + obj->m_speedX];
@@ -5718,10 +5718,10 @@ i32 CPlay::ValidateLevelTiles() {
                 g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                 return 0;
             }
-        } else if (who == CreateGruntPuddle) {
+        } else if (dispatch == CreateGruntPuddle) {
 
             m_mgr->m_cmdGrid->PlacePuddle(obj, 0);
-        } else if (who == CreateGuardPoint) {
+        } else if (dispatch == CreateGuardPoint) {
 
             i32 col = obj->m_screenX >> TILE_SHIFT_PX;
             i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
@@ -5770,14 +5770,14 @@ i32 CPlay::ValidateLevelTiles() {
                     cellRow[ebp] |= bit;
                 }
             }
-        } else if (who == CreateToobSpikez) {
+        } else if (dispatch == CreateToobSpikez) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
             i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
             if (static_cast<u32>(tileX) < gg->m_width && static_cast<u32>(tileY) < gg->m_height) {
                 gg->m_rowInts[tileY][tileX * 7] |= 0x2000000;
             }
-        } else if (who == CreateWarpStonePad) {
+        } else if (dispatch == CreateWarpStonePad) {
             if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 Coord* slot = NULL;
@@ -5832,7 +5832,7 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_clip.left == COORD_UNSET) {
             p->m_clip.left = 0;
         }
-        GameObjNotifyFn vf = p->m_animWorker->m_notify;
+        GameObjectLogicFn vf = p->m_logicRecord->m_dispatch;
         if (vf == CreateGiantRock) {
             i32 buf[9];
             buf[0] = p->m_extent.left;
@@ -5910,8 +5910,8 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_area,
                     p->m_switchRect,
                     p->m_clip,
-                    p->m_animWorker->m_userRect1,
-                    p->m_animWorker->m_userRect2,
+                    p->m_logicRecord->m_userRect1,
+                    p->m_logicRecord->m_userRect2,
                     p->m_smarts,
                     p->m_powerup,
                     p->m_points,
@@ -5952,7 +5952,7 @@ i32 CPlay::AddLevelGruntz() {
         if (g == NULL) {
             continue;
         }
-        if (g->m_animWorker->m_notify != CreateGruntStartingPoint) {
+        if (g->m_logicRecord->m_dispatch != CreateGruntStartingPoint) {
             continue;
         }
         if (g->m_smarts == g_curPlayer) {
@@ -5972,8 +5972,8 @@ i32 CPlay::AddLevelGruntz() {
             g->m_damage,
             g->m_points,
             g->m_direction,
-            g->m_animWorker->m_minX,
-            g->m_animWorker->m_maxX,
+            g->m_logicRecord->m_minX,
+            g->m_logicRecord->m_maxX,
             &g->m_extent
         );
         if (r == -1) {
@@ -6330,7 +6330,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(head->GetNext(pos));
         if (obj) {
-            GameObjNotifyFn marker = obj->m_animWorker->m_notify;
+            GameObjectLogicFn marker = obj->m_logicRecord->m_dispatch;
             if (marker == CreateGruntStartingPoint) {
                 i32 v = obj->m_powerup;
                 if (v) {
@@ -7393,7 +7393,7 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (pos != NULL) {
         CGameObject* o = NEXT_CHILD_FROM_LIST(chain, pos);
-        GameObjNotifyFn id = o->m_animWorker->m_notify;
+        GameObjectLogicFn id = o->m_logicRecord->m_dispatch;
         if (id == CreateGrunt || id == CreateInGameIcon || id == CreateGruntPuddle
             || id == CreateGruntToySprite || id == CreateGruntStaminaSprite
             || id == CreateGruntToyTimeSprite || id == CreateGruntWingzTimeSprite
@@ -7492,7 +7492,7 @@ i32 CPlay::ScanShuffleQuads() {
         if (p == NULL) {
             continue;
         }
-        GameObjNotifyFn vf = p->m_animWorker->m_notify;
+        GameObjectLogicFn vf = p->m_logicRecord->m_dispatch;
         if (vf == CreateGruntCreationPoint || vf == CreateExitTrigger || vf == CreateFortressFlag
             || vf == CreateWayPoint || vf == CreateGuardPoint) {
             p->m_smarts = perm[p->m_smarts];

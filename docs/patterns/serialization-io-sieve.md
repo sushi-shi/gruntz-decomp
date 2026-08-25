@@ -89,7 +89,7 @@ never chained".
 A clean sieve converts "the save subsystem is broken somewhere" into "the bytes are right;
 the failure is a runtime-state guard". On the restore path those guards are few and each is
 a *lookup* predicate, not a format one — `LoadObjects` (worker name not in the cache,
-duplicate object id, `m_animWorker == NULL`, factory declined), `Deserialize` (id not in
+duplicate object id, `m_logicRecord == NULL`, factory declined), `Deserialize` (id not in
 `m_map48`), `CTriggerMgr::Load` (grid id not in `m_map48`, or the object has no logic).
 
 ### Worked narrowing: from a register dump to three named guards
@@ -110,8 +110,8 @@ reason other than `ar == NULL`:
     CWwdGameObjectA::Play      CAniAdvanceCursor::Find/Deserialize   -- ar only
                                SerializeSpriteName                   -- ar only
     CGameObject::Play          SerializeObjectState                  -- THREE real guards
-                               m_animWorker == NULL
-    AnimWorkerObj::Dispatch    Load                                  -- ar only
+                               m_logicRecord == NULL
+    CLogicRecord::Dispatch    Load                                  -- ar only
     CGrunt::SerializeMove      CUserLogic::SerializeMove / CWapX::Chain -- ar only
                                LoadStateRecord -> SERIALREF x7       -- checked, all resolve
 
@@ -120,8 +120,8 @@ the block sits at key+0x6ce, followed by the three `READCSTR` name fields
 `NORMALGRUNT`/``/`GRUNTZ_NORMALGRUNT_DEATH`) and every non-zero id resolves to a real table
 entry, so `LoadStateRecord` is excluded.
 
-**What survives is `CGameObject::SerializeObjectState`'s `EnsureHitWorker` /
-`EnsureAttackWorker` / `EnsureBumpWorker`** — the three `LogicHit`/`LogicAttack`/`LogicBump`
+**What survives is `CGameObject::SerializeObjectState`'s `EnsureHitLogic` /
+`EnsureAttackLogic` / `EnsureBumpLogic`** — the three `LogicHit`/`LogicAttack`/`LogicBump`
 name resolutions — and they run *before* `CWapX::Chain`, which is precisely why the victim's
 `m_wwdObject` is still the zero `operator new` left. Each `Ensure*Worker` returns 0 exactly
 when its `m_workerCache->m_workers.Lookup(name, found)` missed, so the question is whether

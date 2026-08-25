@@ -53,9 +53,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
             ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != NULL) {
         e->m_smarts = m_object->m_smarts;
-        e->m_animWorker->m_notify(e);
+        e->m_logicRecord->m_dispatch(e);
 
-        m_warlordLogic = static_cast<CWarlord*>(e->m_animWorker->m_logic);
+        m_warlordLogic = static_cast<CWarlord*>(e->m_logicRecord->m_userLogic);
         if (m_object->m_smarts == g_curPlayer) {
             g_gameReg->m_cmdGrid->m_pendingFx = m_warlordLogic;
         }
@@ -95,7 +95,7 @@ i32 CExitTrigger::SerializeMove(
                 if (MapLookupById(holder->m_childGroup->m_registeredGameObjectsById, key, found)) {
                     obj = found;
                 }
-                m_warlordLogic = static_cast<CWarlord*>(obj->m_animWorker->m_logic);
+                m_warlordLogic = static_cast<CWarlord*>(obj->m_logicRecord->m_userLogic);
                 if (m_warlordLogic == NULL) {
                     return 0;
                 }

@@ -5,7 +5,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/AnimWorker.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/DemoHelpers.h>
 #include <Gruntz/DemoMoverState.h>
@@ -21,6 +20,7 @@
 #include <Gruntz/GruntStartingPoint.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
@@ -33,7 +33,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/RezTypeTag.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <fstream.h>
 #include <stdlib.h>
@@ -252,37 +252,37 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 RVA(0x0003d2b0, 0xf1)
 i32 CreateGruntStartingPoint(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CGruntStartingPoint(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -290,37 +290,37 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
 
 RVA(0x0003d3f0, 0xf1)
 i32 CreateExitTrigger(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CExitTrigger(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -328,37 +328,37 @@ i32 CreateExitTrigger(CGameObject* owner) {
 
 RVA(0x0003d530, 0xf1)
 i32 CreateGruntCreationPoint(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CGruntCreationPoint(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -366,37 +366,37 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
 
 RVA(0x0003d670, 0xf1)
 i32 CreateWormhole(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CWormhole(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -404,37 +404,37 @@ i32 CreateWormhole(CGameObject* owner) {
 
 RVA(0x0003d7b0, 0xf1)
 i32 CreateGruntPuddle(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CGruntPuddle(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -442,37 +442,37 @@ i32 CreateGruntPuddle(CGameObject* owner) {
 
 RVA(0x0003d8f0, 0xf1)
 i32 CreateTeleporter(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CTeleporter(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -480,37 +480,37 @@ i32 CreateTeleporter(CGameObject* owner) {
 
 RVA(0x0003da30, 0xf1)
 i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CSecretTeleporterTrigger(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -518,37 +518,37 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
 
 RVA(0x0003db70, 0xf4)
 i32 CreateWarlord(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CWarlord(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -556,37 +556,37 @@ i32 CreateWarlord(CGameObject* owner) {
 
 RVA(0x0003dcb0, 0xf1)
 i32 CreateFortressFlag(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CFortressFlag(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -594,37 +594,37 @@ i32 CreateFortressFlag(CGameObject* owner) {
 
 RVA(0x0003ddf0, 0xf1)
 i32 CreateSecretLevelTrigger(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CSecretLevelTrigger(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;

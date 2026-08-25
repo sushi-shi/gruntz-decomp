@@ -15,7 +15,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <stddef.h>
 
@@ -31,37 +31,37 @@ RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
 RVA(0x0010c0f0, 0xf1)
 i32 CreateStatusBarSprite(CGameObject* obj) {
-    AnimWorkerObj* ctl = obj->m_animWorker;
-    switch (ctl->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            ctl->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CStatusBarSprite* t = new CStatusBarSprite(obj);
             t->Activate();
-            ctl->m_logic = t;
+            record->m_userLogic = t;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            ctl->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            ctl->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            ctl->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            ctl->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            ctl->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            ctl->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(ctl->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;

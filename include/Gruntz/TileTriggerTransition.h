@@ -3,10 +3,10 @@
 
 #include <rva.h>
 
+#include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/XferArchive.h>
 #include <Ints.h>
 
 class CTileTriggerTransition : public CUserLogic, public CWapX {

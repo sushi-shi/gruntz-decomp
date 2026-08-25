@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/LogicRecord.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/CoordNode.h>
@@ -122,7 +122,7 @@ public:
 
     CWwdGameObjectA* m_object;
 
-    AnimWorkerObj* m_objAux;
+    CLogicRecord* m_logicRecord;
     zBitVec m_actBits;
     i32 m_gatedActKey;
     i32 m_reserved2c;
@@ -131,18 +131,20 @@ public:
 };
 
 #define SET_ANIMATION_ACT(key)                                                                     \
-    m_prevAnimSetNode = m_objAux->m_actKey;                                                        \
-    m_objAux->m_actKey = ActFindId(key)
+    m_prevAnimSetNode = m_logicRecord->m_eventCode;                                                \
+    m_logicRecord->m_eventCode = ActFindId(key)
 
-#define ANIMATION_ACT_EQUALS(key) (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), key) == 0)
+#define ANIMATION_ACT_EQUALS(key)                                                                  \
+    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), key) == 0)
 
-#define ANIMATION_ACT_DIFFERS(key) (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), key) != 0)
+#define ANIMATION_ACT_DIFFERS(key)                                                                 \
+    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), key) != 0)
 
 #define ANIMATION_ACT_EQUALS_FOR(logic, key)                                                       \
-    (strcmp(*g_typeColl.GetNameRecord(logic->m_objAux->m_actKey), key) == 0)
+    (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) == 0)
 
 #define ANIMATION_ACT_DIFFERS_FOR(logic, key)                                                      \
-    (strcmp(*g_typeColl.GetNameRecord(logic->m_objAux->m_actKey), key) != 0)
+    (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) != 0)
 
 #define APPLY_NAME_INLINE(name) m_wwdObject->ApplyName(name)
 
@@ -251,7 +253,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 #define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                            \
     m_logicObject = (obj);                                                                         \
     m_object = static_cast<CWwdGameObjectA*>(obj);                                                 \
-    m_objAux = (obj)->m_animWorker;                                                                \
+    m_logicRecord = (obj)->m_logicRecord;                                                          \
     {                                                                                              \
         zBitVec tmp("", 0);                                                                        \
         m_actBits = tmp;                                                                           \
@@ -279,7 +281,7 @@ public:
     CWapX(CGameObject* obj) {
         m_gameObject = obj;
         m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
-        m_animWorker = obj->m_animWorker;
+        m_ownerLogicRecord = obj->m_logicRecord;
     }
     RVA(0x00008be0, 0x1)
     ~CWapX() {}
@@ -291,7 +293,7 @@ public:
     CGameObject* m_gameObject;
     CWwdGameObjectA* m_wwdObject;
 
-    AnimWorkerObj* m_animWorker;
+    CLogicRecord* m_ownerLogicRecord;
 
     class CAniElement* m_value;
     char m_blob[0x10];

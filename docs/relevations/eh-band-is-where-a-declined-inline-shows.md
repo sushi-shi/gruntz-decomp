@@ -43,12 +43,12 @@ b8: 8b 7c 24 3c           movl  0x3c(%esp), %edi        ; obj
 bc: c7 06 ..              movl  $0x0, (%esi)            ; ??_7CUserLogic@@6B@
 c2: 89 7e 0c              movl  %edi, 0xc(%esi)         ; m_logicObject = obj
 c5: 89 7e 10              movl  %edi, 0x10(%esi)        ; m_object      = obj
-c8: 8b 47 7c              movl  0x7c(%edi), %eax        ; obj->m_animWorker
+c8: 8b 47 7c              movl  0x7c(%edi), %eax        ; obj->m_logicRecord
 cb: 55                    pushl %ebp                    ; 0
 cc: 68 ..                 pushl $??_C@_00A@?$AA@        ; ""
 d1: 8d 4c 24 24           leal  0x24(%esp), %ecx        ; &tmp        <-- A STACK TEMP
 d5: c6 44 24 3c 01        movb  $0x1, 0x3c(%esp)        ; EH state := 1
-da: 89 46 14              movl  %eax, 0x14(%esi)        ; m_objAux
+da: 89 46 14              movl  %eax, 0x14(%esi)        ; m_logicRecord
 dd: e8 ..                 calll ??0zBitVec@@QAE@PBDH@Z  ; zBitVec tmp("", 0)
 e2: 8d 4c 24 1c           leal  0x1c(%esp), %ecx
 e6: c6 44 24 34 02        movb  $0x2, 0x34(%esp)        ; EH state := 2
@@ -107,11 +107,11 @@ expand at **every** site is a textual macro:
 -inline void CUserLogic::AttachToObject(CGameObject* obj) {
 -    m_logicObject = obj;
 -    m_object = static_cast<CWwdGameObjectA*>(obj);
--    m_objAux = obj->m_animWorker;
+-    m_logicRecord = obj->m_logicRecord;
 +#define USERLOGIC_ATTACH_TO_OBJECT(obj)                                        \
 +    m_logicObject = (obj);                                                     \
 +    m_object = static_cast<CWwdGameObjectA*>(obj);                             \
-+    m_objAux = (obj)->m_animWorker;                                            \
++    m_logicRecord = (obj)->m_logicRecord;                                            \
      {                                                                          \
          zBitVec tmp("", 0);                                                    \
          m_actBits = tmp;                                                       \

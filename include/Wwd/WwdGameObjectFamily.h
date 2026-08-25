@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/LogicRecord.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/LogicTypeId.h>
@@ -59,28 +59,28 @@ public:
 
     RVA(0x0015b5d0, 0x7c)
     virtual void Unload() OVERRIDE {
-        if (m_animWorker) {
-            delete m_animWorker;
-            m_animWorker = NULL;
+        if (m_logicRecord) {
+            delete m_logicRecord;
+            m_logicRecord = NULL;
         }
-        if (m_hitWorker) {
-            delete m_hitWorker;
-            m_hitWorker = NULL;
+        if (m_hitLogic) {
+            delete m_hitLogic;
+            m_hitLogic = NULL;
         }
-        if (m_attackWorker) {
-            delete m_attackWorker;
-            m_attackWorker = NULL;
+        if (m_attackLogic) {
+            delete m_attackLogic;
+            m_attackLogic = NULL;
         }
-        if (m_collideWorker) {
-            delete m_collideWorker;
-            m_collideWorker = NULL;
+        if (m_collisionLogic) {
+            delete m_collisionLogic;
+            m_collisionLogic = NULL;
         }
         m_shadow.Reset();
         m_screenX = COORD_UNSET;
         m_dirty.Reset();
     }
 
-    virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl);
+    virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate);
 
     virtual void Render(CDDrawSurfacePair* ctx) = 0;
     virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) = 0;
@@ -102,13 +102,13 @@ public:
     i32 SerializeObjectState(CFileMemBase* ar);
     i32 ResolveLinkedObject(i32 gate);
 
-    i32 EnsureHitWorker(AnimWorkerObj* src);
-    i32 EnsureAttackWorker(AnimWorkerObj* src);
-    i32 EnsureBumpWorker(AnimWorkerObj* src);
+    i32 EnsureHitLogic(CLogicRecord* logicTemplate);
+    i32 EnsureAttackLogic(CLogicRecord* logicTemplate);
+    i32 EnsureBumpLogic(CLogicRecord* logicTemplate);
     void AddLogicHit(char* key);
     void AddLogicAttack(char* key);
     void AddLogicBump(char* key);
-    i32 NotifyForActKey(i32 actKey);
+    i32 NotifyForEventCode(i32 eventCode);
 
     void AttachToOwner(CDDrawSurfaceMgr* owner, i32 id);
 
@@ -116,12 +116,12 @@ public:
 
     POSITION m_posCache;
 
-    AnimWorkerObj* m_animWorker;
-    AnimWorkerObj* m_hitWorker;
+    CLogicRecord* m_logicRecord;
+    CLogicRecord* m_hitLogic;
     CGameObject* m_hitSource;
-    AnimWorkerObj* m_attackWorker;
+    CLogicRecord* m_attackLogic;
     CGameObject* m_attackTarget;
-    AnimWorkerObj* m_collideWorker;
+    CLogicRecord* m_collisionLogic;
     CGameObject* m_hitOther;
 
     CGameObject* m_carrier;
@@ -181,11 +181,11 @@ public:
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
     m_screenX = COORD_UNSET;
     m_posCache = NULL;
-    m_animWorker = new AnimWorkerObj(owner, id, 0);
+    m_logicRecord = new CLogicRecord(owner, id, 0);
     m_carrier = NULL;
-    m_hitWorker = NULL;
-    m_attackWorker = NULL;
-    m_collideWorker = NULL;
+    m_hitLogic = NULL;
+    m_attackLogic = NULL;
+    m_collisionLogic = NULL;
     m_objectId = g_wwdObjIdCounter;
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
@@ -249,7 +249,7 @@ public:
         CGameObject::Unload();
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
-    virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE;
+    virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
     virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
     virtual void
@@ -301,7 +301,7 @@ public:
     }
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE;
+    virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) OVERRIDE;
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;
     virtual void BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) OVERRIDE;
     virtual void
@@ -316,7 +316,7 @@ public:
     i32 WalkChildWorkers();
 
     CWwdGameObject*
-    CreateObject(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
+    CreateObject(int id, int x, int y, int sortKey, CLogicRecord* logicTemplate, int stateFlags);
     CWwdGameObject*
     CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags);
 
@@ -346,7 +346,7 @@ public:
     BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
 
-    virtual i32 SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl);
+    virtual i32 SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate);
 };
 
 class CWwdGameObjectC : public CGameObject {
@@ -373,7 +373,7 @@ public:
     BltDirtyRegions(CDDrawSurfacePair* dst, CDDrawSurfacePair* src, CDDrawSurfacePair* restoreSrc)
         OVERRIDE;
 
-    virtual i32 SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl, i32 flag);
+    virtual i32 SetupFlagged(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate, i32 flag);
     virtual u8 GetDotColor();
     virtual void SetDotColor(u8 c8);
 

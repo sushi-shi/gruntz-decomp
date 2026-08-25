@@ -10,7 +10,7 @@ emitted **standalone** (an out-of-line copy in its owning TU), `B` IS expanded i
 So a single inline source body legitimately produces **two different instruction streams**, and
 the reconstruction needs both:
 
-* the header carries the source as written - `if (!cache->Find(key)) cache->CreateWorker(...)`,
+* the header carries the source as written - `if (!cache->Find(key)) cache->RegisterLogicType(...)`,
 * the standalone `.cpp` copy carries the same body with `Find` **already expanded**
   (its `CObject* found = 0; m_workers.Lookup(key, found);` inlined in place).
 
@@ -20,7 +20,7 @@ Do not "reconcile" them. A comment claiming they must be byte-for-byte identical
 tests expanded (`mov ecx,[eax+0x14]; add ecx,0x10; call <CMapStringToOb::Lookup>` with the
 2-arg out-param and a stack local per test). Inlined into `CWayPoint::CWayPoint` (`0xae3f0`),
 `CGuardPoint::CGuardPoint` (`0xae5f0`) and `CLevelTime::CLevelTime` (`0x9b8b0`) all three tests
-are `mov ecx,[edx+0x14]; call <CDDrawWorkerCache::Find>` - one arg, result in `eax`, no `+0x10`,
+are `mov ecx,[edx+0x14]; call <CLogicRecordRegistry::FindTemplate>` - one arg, result in `eax`, no `+0x10`,
 no stack local. Rewriting the shared header from the expanded shape to the `Find()` spelling took
 those three ctors from **0 / 0 / 35.1% to 99.7%** each and `CLightFx::CLightFx` from 0 to 94.9%.
 

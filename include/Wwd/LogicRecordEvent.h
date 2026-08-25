@@ -1,9 +1,9 @@
-#ifndef GRUNTZ_WWD_ANIMWORKERACT_H
-#define GRUNTZ_WWD_ANIMWORKERACT_H
+#ifndef GRUNTZ_WWD_LOGICRECORDEVENT_H
+#define GRUNTZ_WWD_LOGICRECORDEVENT_H
 
 #include <Enums.h>
 
-// The act code an animation worker dispatches on (CDDrawWorker::ActKey()).
+// The lifecycle event a logic record dispatches on (CLogicRecord::LogicEvent()).
 //
 // Every value is named by the handler its arm calls, so nothing is inferred -
 // the dispatch tables across thirteen files all forward to the same six
@@ -20,16 +20,16 @@
 // pumps dispatches with `ja`, not `jg` (0x0a9a40 and family), and a probe under
 // cl 5.0 /O2 shows the two spellings differ in exactly those three branch bytes.
 // So the domain is stored and returned as u32; only the comparison form moves.
-GZ_ENUM_BEGIN_SPLIT(AnimWorkerAct, u32)
-// The worker has no logic yet. Its arm is the same in all thirteen files:
-// construct the CUserLogic subclass, Activate() it, hang it on m_logic, and
+GZ_ENUM_BEGIN_SPLIT(LogicRecordEvent, u32)
+// The record has no user logic yet. Its arm is the same in all thirteen files:
+// construct the CUserLogic subclass, Activate() it, hang it on m_userLogic, and
 // set the act key to ACT_LIVE.
     ACT_UNINITIALISED = 0,
     // The logic exists and is running; the arm is empty everywhere.
     ACT_LIVE = 0x3e8,
-    // One past ACT_LIVE, and no worker ever holds it: the disarmed value of
+    // One past ACT_LIVE, and no record ever holds it: the disarmed value of
     // CUserLogic::m_gatedActKey, which is only ever compared against
-    // m_objAux->ActKey().  Storing it means the gated callback can never fire.
+    // m_logicRecord->EventCode().  Storing it means the gated callback can never fire.
     // Written by all 58 logic ctors, by both FinalizeStep overloads and by the
     // CMovingLogic load path; retail has no other use of the value.
     ACT_NONE = 0x3e9,
@@ -45,6 +45,6 @@ GZ_ENUM_BEGIN_SPLIT(AnimWorkerAct, u32)
     ACT_AFTER_SAVE = 0x51,
     ACT_AFTER_LOAD = 0x52,
     ACT_AFTER_LOAD_REFERENCES = 0x53
-GZ_ENUM_END_SPLIT(AnimWorkerAct, u32)
+GZ_ENUM_END_SPLIT(LogicRecordEvent, u32)
 
-#endif // GRUNTZ_WWD_ANIMWORKERACT_H
+#endif // GRUNTZ_WWD_LOGICRECORDEVENT_H

@@ -21,7 +21,7 @@ mov  DWORD PTR [esi],??_7CTileTriggerSwitch@@6B@
 
 so cl5 hoisting past the stamp is normal and retail agrees with it. The correlate is
 **which member the body reads first**: the ctors that match read `[esi+0x14]`
-(`m_objAux`, CUserLogic's own member); every ctor that misses reads `[esi+0x38]`
+(`m_logicRecord`, CUserLogic's own member); every ctor that misses reads `[esi+0x38]`
 (`m_wwdObject`, the SECOND base CWapX's member, which the inlined base ctor
 stored four instructions earlier). Retail's scheduler declines to move that load
 closer to its producing store; ours moves it.

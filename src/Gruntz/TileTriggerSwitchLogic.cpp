@@ -363,8 +363,8 @@ i32 CTileTriggerLogic::Tick() {
             if (trig == NULL) {
                 return 0;
             }
-            trig->m_animWorker->m_notify(trig);
-            trans = static_cast<CTileTriggerTransition*>(trig->m_animWorker->m_logic);
+            trig->m_logicRecord->m_dispatch(trig);
+            trans = static_cast<CTileTriggerTransition*>(trig->m_logicRecord->m_userLogic);
         }
     }
 
@@ -463,9 +463,9 @@ i32 CTileTriggerLogic::Tick() {
                             if (o == NULL) {
                                 return 0;
                             }
-                            o->m_animWorker->m_notify(o);
+                            o->m_logicRecord->m_dispatch(o);
                             CTileTriggerTransition* lg =
-                                static_cast<CTileTriggerTransition*>(o->m_animWorker->m_logic);
+                                static_cast<CTileTriggerTransition*>(o->m_logicRecord->m_userLogic);
                             if (lg->ApplyAnimation("GAME_REDPYRAMIDZ", PbStr(anim)) == 0) {
                                 lg->SetObjectFlags(0x10000);
                             }
@@ -1098,7 +1098,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         if (!spr) {
             return 0;
         }
-        spr->m_animWorker->m_notify(spr);
+        spr->m_logicRecord->m_dispatch(spr);
         spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
         if (spr->m_layer == NULL) {
             return 0;

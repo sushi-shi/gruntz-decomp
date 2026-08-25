@@ -1097,7 +1097,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     goto applyTail;
                 }
                 {
-                    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
                     ActNameConstructGrownSlots();
                     eq = (strcmp(*rec, "N") == 0);
                 }
@@ -1123,7 +1123,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     goto applyTail;
                 }
                 {
-                    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
                     ActNameConstructGrownSlots();
                     eq = (strcmp(*rec, "M") == 0);
                 }
@@ -1255,7 +1255,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         return 0;
     }
 
-    CDDrawSurfaceMgr* world = m_animWorker->m_ownerCtx;
+    CDDrawSurfaceMgr* world = m_ownerLogicRecord->m_ownerCtx;
     if (!world) {
         return 0;
     }

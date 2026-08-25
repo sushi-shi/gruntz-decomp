@@ -24,6 +24,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxMgr.h>
+#include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ObjectDropper.h>
@@ -35,14 +36,13 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/XferArchive.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <string.h>
 
@@ -87,37 +87,37 @@ RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
 i32 CreateObjectDropper(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
-    switch (aux->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            aux->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CObjectDropper* h = new CObjectDropper(obj);
             h->Activate();
-            aux->m_logic = h;
+            record->m_userLogic = h;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            aux->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            aux->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            aux->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            aux->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            aux->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            aux->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -125,37 +125,37 @@ i32 CreateObjectDropper(CGameObject* obj) {
 
 RVA(0x000c5770, 0xf1)
 i32 CreateDroppedObject(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
-    switch (aux->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            aux->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CDroppedObject* h = new CDroppedObject(obj);
             h->Activate();
-            aux->m_logic = h;
+            record->m_userLogic = h;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            aux->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            aux->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            aux->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            aux->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            aux->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            aux->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -163,37 +163,37 @@ i32 CreateDroppedObject(CGameObject* obj) {
 
 RVA(0x000c58b0, 0xf1)
 i32 CreateDroppedObjectShadow(CGameObject* obj) {
-    AnimWorkerObj* aux = obj->m_animWorker;
-    switch (aux->WorkerAct()) {
+    CLogicRecord* record = obj->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            aux->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
             h->Activate();
-            aux->m_logic = h;
+            record->m_userLogic = h;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            aux->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            aux->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            aux->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_SAVE:
-            aux->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_AFTER_LOAD:
-            aux->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            aux->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_LIVE:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            DispatchLogicEvent(record->m_userLogic);
             break;
     }
     return 1;

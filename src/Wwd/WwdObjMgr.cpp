@@ -5,14 +5,14 @@
 #include <Mfc.h>
 
 #include <AddrWord.h>
-#include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/LogicRecord.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameLevel.h>
@@ -29,7 +29,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdFactoryObject.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -46,10 +46,10 @@ i32 g_soundVolumePercent = 100;
 // CMapStringToOb::Lookup leaves `out` untouched on a miss, so the clear belongs
 // with the lookup: as the inline body's first statement cl schedules it after the
 // caller's argument setup, which is retail's order.
-inline AnimWorkerObj* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
     CObject* ob = NULL;
     map.Lookup(name, ob);
-    return static_cast<AnimWorkerObj*>(ob);
+    return static_cast<CLogicRecord*>(ob);
 }
 
 inline void* WwdKey(CGameObject* o) {
@@ -92,12 +92,12 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     int x,
     int y,
     int sortKey,
-    AnimWorkerObj* tmpl,
+    CLogicRecord* logicTemplate,
     int dotColor,
     int stateFlags
 ) {
     CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, stateFlags);
-    if (result->SetupFlagged(x, y, sortKey, tmpl, dotColor) == 0) {
+    if (result->SetupFlagged(x, y, sortKey, logicTemplate, dotColor) == 0) {
         if (result != NULL) {
             delete result;
         }
@@ -106,7 +106,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
 
-        result->m_animWorker->m_notify(result);
+        result->m_logicRecord->m_dispatch(result);
     }
     return result;
 }
@@ -128,17 +128,21 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
         x,
         y,
         sortKey,
-        LookupWorker(OwnerMgr()->m_workerCache->m_workers, name),
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name),
         dotColor,
         stateFlags
     );
 }
 
 RVA(0x00159440, 0x170)
-CWwdGameObjectF*
-CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
+CWwdGameObjectF* CDDrawChildGroup::CreateDeferredObject(
+    int id,
+    int sortKey,
+    CLogicRecord* logicTemplate,
+    int stateFlags
+) {
     CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, stateFlags);
-    if (result->SetupDeferred(sortKey, tmpl) == 0) {
+    if (result->SetupDeferred(sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
         }
@@ -146,7 +150,7 @@ CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl,
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        result->m_animWorker->m_notify(result);
+        result->m_logicRecord->m_dispatch(result);
     }
     return result;
 }
@@ -159,7 +163,7 @@ CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* nam
     return CreateDeferredObject(
         id,
         sortKey,
-        LookupWorker(OwnerMgr()->m_workerCache->m_workers, name),
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name),
         stateFlags
     );
 }
@@ -170,12 +174,12 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     i32 x,
     i32 y,
     i32 sortKey,
-    AnimWorkerObj* tmpl,
+    CLogicRecord* logicTemplate,
     i32 stateFlags
 ) {
     CWwdGameObjectA* result =
         new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CGameObject::INLINE_BASE);
-    if (result->Setup(x, y, sortKey, tmpl) == 0) {
+    if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
         }
@@ -183,7 +187,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        result->m_animWorker->m_notify(result);
+        result->m_logicRecord->m_dispatch(result);
     }
     return result;
 }
@@ -197,12 +201,13 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     const char* name,
     i32 stateFlags
 ) {
-    AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
-    if (!tmpl) {
+    CLogicRecord* logicTemplate =
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+    if (!logicTemplate) {
         return NULL;
     }
 
-    return CreateSpriteObject(id, x, y, sortKey, tmpl, stateFlags);
+    return CreateSpriteObject(id, x, y, sortKey, logicTemplate, stateFlags);
 }
 
 // @dead-code
@@ -228,19 +233,20 @@ i32 CDDrawChildGroup::AttachSprite(
     if (!obj) {
         return 0;
     }
-    AnimWorkerObj* tmpl = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
-    if (!tmpl) {
+    CLogicRecord* logicTemplate =
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+    if (!logicTemplate) {
         return 0;
     }
     obj->m_flags = stateFlags;
-    if (!obj->Setup(x, y, sortKey, tmpl)) {
+    if (!obj->Setup(x, y, sortKey, logicTemplate)) {
         return 0;
     }
 
     this->InsertSorted(obj, 1);
     if (stateFlags & 0x200000) {
 
-        obj->m_animWorker->m_notify(static_cast<CGameObject*>(obj));
+        obj->m_logicRecord->m_dispatch(static_cast<CGameObject*>(obj));
     }
     return 1;
 }
@@ -251,11 +257,11 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int x,
     int y,
     int sortKey,
-    AnimWorkerObj* tmpl,
+    CLogicRecord* logicTemplate,
     int stateFlags
 ) {
     CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, stateFlags);
-    if (result->Setup(x, y, sortKey, tmpl) == 0) {
+    if (result->Setup(x, y, sortKey, logicTemplate) == 0) {
         if (result != NULL) {
             delete result;
         }
@@ -263,7 +269,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     }
     InsertSorted(result, 1);
     if (stateFlags & 0x200000) {
-        result->m_animWorker->m_notify(result);
+        result->m_logicRecord->m_dispatch(result);
     }
     return result;
 }
@@ -279,11 +285,12 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     const char* name,
     int stateFlags
 ) {
-    AnimWorkerObj* val = LookupWorker(OwnerMgr()->m_workerCache->m_workers, name);
-    if (val == NULL) {
+    CLogicRecord* logicTemplate =
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+    if (logicTemplate == NULL) {
         return NULL;
     }
-    return CreateContainerObject(id, x, y, sortKey, val, stateFlags);
+    return CreateContainerObject(id, x, y, sortKey, logicTemplate, stateFlags);
 }
 
 // @early-stop
@@ -310,13 +317,13 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        AnimWorkerObj* rec = obj->m_animWorker;
-        if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
-            i32* refc = &rec->m_frameDelay;
+        CLogicRecord* record = obj->m_logicRecord;
+        if (record->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
+            i32* refc = &record->m_frameDelay;
             if (*refc != 0) {
                 --*refc;
             } else {
-                rec->m_notify(static_cast<CGameObject*>(obj));
+                record->m_dispatch(static_cast<CGameObject*>(obj));
             }
         }
         i32 flags = obj->m_flags;
@@ -331,9 +338,9 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     for (i = 0; i < killQueue.GetSize(); i++) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
         if (obj->m_flags & 0x80000) {
-            AnimWorkerObj* rec = obj->m_animWorker;
-            rec->SetWorkerAct(ACT_OBJECT_REMOVED);
-            rec->m_notify(static_cast<CGameObject*>(obj));
+            CLogicRecord* record = obj->m_logicRecord;
+            record->SetLogicEvent(ACT_OBJECT_REMOVED);
+            record->m_dispatch(static_cast<CGameObject*>(obj));
         }
         if (obj->m_flags & 0x800) {
             if (obj != NULL) {
@@ -524,11 +531,11 @@ void CDDrawChildGroup::CollideBroadcast() {
                         }
                         if (overlap) {
                             if (mask2) {
-                                AnimWorkerObj* nf = oj->m_attackWorker;
-                                if (nf != NULL) {
+                                CLogicRecord* attackLogic = oj->m_attackLogic;
+                                if (attackLogic != NULL) {
                                     oj->m_attackTarget = oi;
 
-                                    nf->m_notify(oj);
+                                    attackLogic->m_dispatch(oj);
                                 }
                             }
                             if (mask1) {
@@ -537,13 +544,13 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     oi->m_health = v;
                                     if (v <= 0) {
 
-                                        oi->m_animWorker->SetWorkerAct(ACT_HEALTH_DEPLETED);
+                                        oi->m_logicRecord->SetLogicEvent(ACT_HEALTH_DEPLETED);
                                     }
                                 } else {
-                                    AnimWorkerObj* nf = oi->m_hitWorker;
-                                    if (nf != NULL) {
+                                    CLogicRecord* hitLogic = oi->m_hitLogic;
+                                    if (hitLogic != NULL) {
                                         oi->m_hitSource = oj;
-                                        nf->m_notify(oi);
+                                        hitLogic->m_dispatch(oi);
                                     }
                                 }
                             }
@@ -561,10 +568,10 @@ void CDDrawChildGroup::CollideBroadcast() {
                 i32 mask2b = static_cast<i32>(oj->m_objectType) & oi->m_attackTypeMask;
                 if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
                     if (mask2b) {
-                        AnimWorkerObj* nf = oi->m_attackWorker;
-                        if (nf != NULL) {
+                        CLogicRecord* attackLogic = oi->m_attackLogic;
+                        if (attackLogic != NULL) {
                             oi->m_attackTarget = oj;
-                            nf->m_notify(oi);
+                            attackLogic->m_dispatch(oi);
                         }
                     }
                     if (mask1b) {
@@ -913,14 +920,14 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a860, 0x57)
-CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
+CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicRecord) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
+        if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == id) {
 
-            AnimWorkerObj* worker = obj->m_animWorker;
-            if (worker->m_notify == key->m_notify) {
+            CLogicRecord* record = obj->m_logicRecord;
+            if (record->m_dispatch == logicRecord->m_dispatch) {
                 return obj;
             }
         }
@@ -932,13 +939,14 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, AnimWorkerObj* key) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a8c0, 0x7d)
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
-    AnimWorkerObj* fp = LookupWorker(OwnerMgr()->m_workerCache->m_workers, key);
+    CLogicRecord* logicTemplate =
+        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* obj = NextChild(pos);
         LoadableClassId tag = obj->GetClassId();
         if (tag == CLASSID_WWDOBJA && obj->m_id == id
-            && obj->m_animWorker->m_notify == fp->m_notify) {
+            && obj->m_logicRecord->m_dispatch == logicTemplate->m_dispatch) {
             return obj;
         }
     }
@@ -1164,7 +1172,10 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 createdObj = CreateDeferredObject(
                     id,
                     sortKey,
-                    LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName),
+                    LookupLogicTemplate(
+                        OwnerMgr()->m_logicRegistry->m_templatesByName,
+                        desc.m_logicTypeName
+                    ),
                     0
                 );
                 break;
@@ -1174,12 +1185,14 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 i32 y = desc.m_screenY;
                 i32 x = desc.m_screenX;
                 i32 id = desc.m_id;
-                AnimWorkerObj* worker =
-                    LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName);
-                if (worker == NULL) {
+                CLogicRecord* logicTemplate = LookupLogicTemplate(
+                    OwnerMgr()->m_logicRegistry->m_templatesByName,
+                    desc.m_logicTypeName
+                );
+                if (logicTemplate == NULL) {
                     createdObj = NULL;
                 } else {
-                    createdObj = CreateSpriteObject(id, x, y, sortKey, worker, 0);
+                    createdObj = CreateSpriteObject(id, x, y, sortKey, logicTemplate, 0);
                 }
                 break;
             }
@@ -1188,12 +1201,14 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 i32 y = desc.m_screenY;
                 i32 x = desc.m_screenX;
                 i32 id = desc.m_id;
-                AnimWorkerObj* worker =
-                    LookupWorker(OwnerMgr()->m_workerCache->m_workers, desc.m_workerName);
-                if (worker == NULL) {
+                CLogicRecord* logicTemplate = LookupLogicTemplate(
+                    OwnerMgr()->m_logicRegistry->m_templatesByName,
+                    desc.m_logicTypeName
+                );
+                if (logicTemplate == NULL) {
                     createdObj = NULL;
                 } else {
-                    createdObj = CreateContainerObject(id, x, y, sortKey, worker, 0);
+                    createdObj = CreateContainerObject(id, x, y, sortKey, logicTemplate, 0);
                 }
                 break;
             }
@@ -1221,7 +1236,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                         desc.m_screenX,
                         desc.m_screenY,
                         desc.m_sortKey,
-                        desc.m_workerName,
+                        desc.m_logicTypeName,
                         0
                     )
                     == 0) {
@@ -1238,7 +1253,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         if (createdObj == NULL) {
             return 0;
         }
-        if (createdObj->m_animWorker == NULL) {
+        if (createdObj->m_logicRecord == NULL) {
             return 0;
         }
         if (desc.m_logicTypeId != LOGIC_UNSET) {
@@ -1257,7 +1272,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 return 0;
             }
 
-            createdObj->m_animWorker->m_logic = child;
+            createdObj->m_logicRecord->m_userLogic = child;
         }
     }
     return 1;
@@ -1307,7 +1322,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
         if (obj == NULL) {
             return 0;
         }
-        if (obj->m_animWorker == NULL) {
+        if (obj->m_logicRecord == NULL) {
             return 0;
         }
         // Release-dead TRACE (`1 ? (void)0 : ::AfxTrace`). Only "one CString
@@ -1377,8 +1392,8 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
 
 // The three creators above call both three-argument ctors; these are the
 // out-of-line homes.  CGameObject's 0x15b390 (WwdFactoryObject.cpp) expands
-// CResolveNode's seed via the tagged inline sibling and AnimWorkerObj's via
-// the opt-in <DDrawMgr/AnimWorkerObjCtorInline.h> view (see the docs/patterns/comdat-home-adjudicates-inline-spelling.md
+// CResolveNode's seed via the tagged inline sibling and CLogicRecord's via
+// the opt-in <DDrawMgr/LogicRecordCtorInline.h> view (see the docs/patterns/comdat-home-adjudicates-inline-spelling.md
 // dossier: the creators' budget slices refute a single visible body for both).
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
@@ -1390,7 +1405,7 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 RVA(0x0015b300, 0x40)
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CWapObj(owner, id, stateFlags, CWapObj::NO_SEED) {
-    ResetWorkerFields();
+    ResetLogicFields();
 }

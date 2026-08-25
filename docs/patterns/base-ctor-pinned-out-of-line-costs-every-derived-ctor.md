@@ -83,7 +83,7 @@ deletion committed) is the accepted cost, and it is one row against sixty-five.
 The rule is about the ctor the family *expands*, not about every ctor in the chain. In a
 chain `CLoadable -> CResolveNode -> CGameObject -> CWwdGameObjectA/C/F` retail expands
 `CGameObject::CGameObject` (0x15b390) into every `Create*Object` new-site and, inside that
-expansion, **calls** `CResolveNode::CResolveNode` (0x15b2c0), `AnimWorkerObj::AnimWorkerObj`
+expansion, **calls** `CResolveNode::CResolveNode` (0x15b2c0), `CLogicRecord::CLogicRecord`
 (0x15b300) and `CAniAdvanceCursor::CAniAdvanceCursor` (0x15b730) out-of-line. Three
 configurations, measured whole-tree on the same worktree:
 

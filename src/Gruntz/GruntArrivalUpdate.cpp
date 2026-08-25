@@ -49,7 +49,7 @@
 // keep the second arm's guards (local-guard-member-retest-blocks-fold).
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
-    char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
+    char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
     // POLARITY: retail's `sete cl` (0xf0184) leaves the body on the strcmp!=0 path -
     // the arrival AI is SKIPPED for act "I". We had `!=`, which ran it only for "I".
     // Same spelling as CBattlezMapConfig::ChooseIdleBehavior's four name gates.

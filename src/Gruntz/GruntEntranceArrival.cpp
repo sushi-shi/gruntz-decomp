@@ -256,8 +256,8 @@ i32 CGrunt::StepAttackFire() {
                     "Projectile",
                     0x40003
                 );
-                spr->m_animWorker->m_notify(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
+                spr->m_logicRecord->m_dispatch(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_playerIndex,
@@ -281,8 +281,8 @@ i32 CGrunt::StepAttackFire() {
                     "Boomerang",
                     0x40003
                 );
-                spr->m_animWorker->m_notify(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
+                spr->m_logicRecord->m_dispatch(spr);
+                CProjectile* s = static_cast<CProjectile*>(spr->m_logicRecord->m_userLogic);
                 if (s->LoadProjectileSprites(
                         m_entranceReason,
                         m_playerIndex,
@@ -303,7 +303,7 @@ i32 CGrunt::StepAttackFire() {
                 CGameObject* spr = g_gameReg->m_world->m_childGroup
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_damage = 0;
-                spr->m_animWorker->m_notify(spr);
+                spr->m_logicRecord->m_dispatch(spr);
                 spr->m_smarts = m_playerIndex;
                 break;
             }
@@ -1340,7 +1340,7 @@ tail:
     }
 
     {
-        CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         eq = (strcmp(*rec, "F") == 0);
         if (eq) {
@@ -1351,7 +1351,7 @@ tail:
     }
     m_entranceActive = 1;
     {
-        CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         ne = (strcmp(*rec, "O") != 0);
         if (ne) {
@@ -1691,7 +1691,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         }
         return 0;
     }
-    CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_animWorker->m_logic);
+    CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_logicRecord->m_userLogic);
     icon->PlaceAt(m_playerIndex, m_unitIndex);
     return 0;
 }

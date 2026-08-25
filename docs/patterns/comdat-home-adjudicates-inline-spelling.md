@@ -15,7 +15,7 @@ emits the COMDAT) or craters the calling TU (cl expands what retail called)
    emitted it as a plain out-of-line definition. An in-class/inline spelling
    CANNOT reproduce that copy - a TU that merely sees an inline definition and
    never references it emits nothing.
-   * `?Find@CDDrawWorkerCache` 0x9cab0: last function of streamrecordloaders
+   * `?Find@CLogicRecordRegistry` 0x9cab0: last function of streamrecordloaders
      (seq 107), zero intra-band referrers -> strong OOL def in
      StreamRecordLoaders.cpp. Measured confirmation: with the body in-class,
      the four point-logic ctors' declined nested sites left `U ?Find@...` in
@@ -44,8 +44,8 @@ at shallow inline depth. Both cells measured today on real TUs:
 
 | declined site | depth | COMDAT emitted? |
 |---|---|---|
-| `??0AnimWorkerObj@..HH@Z` inside the creators' expansion of `??0CGameObject(.., EInlineBase)` (wwdobjmgr) | 2 | **yes** - `T` in wwdobjmgr.obj, homed exactly where retail keeps 0x15b300 |
-| `?Find@CDDrawWorkerCache` inside ctor -> RegisterLogicTypesOnce -> BuildLogicTypeTable (statedispatch/waypoint/guardpoint/lightfx) | 3 | **no** - `U`, call planted, nothing emitted |
+| `??0CLogicRecord@..HH@Z` inside the creators' expansion of `??0CGameObject(.., EInlineBase)` (wwdobjmgr) | 2 | **yes** - `T` in wwdobjmgr.obj, homed exactly where retail keeps 0x15b300 |
+| `?Find@CLogicRecordRegistry` inside ctor -> RegisterLogicTypesOnce -> BuildLogicTypeTable (statedispatch/waypoint/guardpoint/lightfx) | 3 | **no** - `U`, call planted, nothing emitted |
 
 Corrections this measurement forces:
 * zero-emission-statements-cross-the-ob1-cb-exemption.md's in-tree note ("one
@@ -59,20 +59,20 @@ Corrections this measurement forces:
   OOL-at-keeper, which the depth-3 rule reaches too).
 * nested-ctor-call-vs-expansion-is-a-tu-visibility-split.md's "making them
   inline makes ... their COMDATs vanish from every base obj" is not universal:
-  wwdobjmgr's depth-2 decline of the visible `??0AnimWorkerObj` DID emit and
+  wwdobjmgr's depth-2 decline of the visible `??0CLogicRecord` DID emit and
   home the COMDAT correctly.  And its "a base sub-object ... is not
   [steerable]" is refuted by the CResolveNode row below - a TAGGED base-ctor
   overload in the pinned body's mem-init list steers a base sub-object fine;
   what stays unsteerable is a site inside the SHARED helper text
-  (AttachToOwner's `new AnimWorkerObj`).
+  (AttachToOwner's `new CLogicRecord`).
 
 ## Budget slices at sibling ctor sites are COUPLED - a rejected site spends nothing
 
 Inside one expansion, rejecting site A frees A's cb for the sites after it.
 Measured on the creators (wwdobjmgr), natural cb: `??0CResolveNode` 84-90,
-`??0AnimWorkerObj` 56-58 (both via `inline-model --measure-cb`):
+`??0CLogicRecord` 56-58 (both via `inline-model --measure-cb`):
 
-| CResolveNode spelling | CResolveNode outcome | AnimWorkerObj outcome |
+| CResolveNode spelling | CResolveNode outcome | CLogicRecord outcome |
 |---|---|---|
 | visible, natural cb | expanded (spends ~87) | declined + emitted (retail's call shape) |
 | visible, +1..2 ASSERT (cb ~93-96) | still expanded | declined |
@@ -100,24 +100,24 @@ bigger than a plausible compiled-out statement, the body was not visible.
   WwdFactoryObject.h (a header only the two Wwd TUs include), used by
   0x15b390's init list. two-shapes ctor recipe; byte-exact on both sides.
 * SURVIVORS as of 2026-08-15 (the justifications below are SUPERSEDED - see the
-  2026-08-22 audit section): `AnimWorkerObjCtorInline.h`,
-  `DDrawWorkerCacheFindInline.h`, `LogicTypeTableInline.h`.
+  2026-08-22 audit section): `LogicRecordCtorInline.h`,
+  `LogicRecordRegistryFindInline.h`, `LogicTypeTableInline.h`.
 
 ## NEGATIVE CONTROL 2026-08-21: LightFx must NOT opt into the Find inline
 
-`DDrawWorkerCacheFindInline.h`'s own header comment reads as if `CLightFx`'s
+`LogicRecordRegistryFindInline.h`'s own header comment reads as if `CLightFx`'s
 constructor is the intended consumer ("is why CLightFx's ctor can afford
 exactly ONE of its three sites"). It is not - the ctor is the WITNESS for the
 mixed shape, not a TU that should include the header.
 
 The byte evidence that invites the change is real: a whole-image screen of
-`?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` against
+`?Find@CLogicRecordRegistry@@QAEPAVCObject@@PBD@Z` against
 `?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z` finds exactly ONE unit where
 the counts disagree - `lightfx`, base 3 Find / 1 Lookup against retail's
 2 Find / 2 Lookup - and `walls semdiff` names it as a referent REPLACE, which
 normally means a wrong callee.
 
-Adding `#include <DDrawMgr/DDrawWorkerCacheFindInline.h>` to `src/Gruntz/LightFx.cpp`
+Adding `#include <DDrawMgr/LogicRecordRegistryFindInline.h>` to `src/Gruntz/LightFx.cpp`
 does flip that site to `Lookup`, and takes `??0CLightFx@@QAE@PAUCGameObject@@@Z`
 from 96.46 to **0.00**: with the body visible cl 5.0 stops emitting the
 constructor's COMDAT at all. Same failure mode as the depth-3 no-emission
@@ -131,10 +131,10 @@ adjudicated by which COMDATs each obj still HOMES - never by the call alone.
 
 The user challenged the opt-in-inline device on principle ("we shouldn't have
 an opt-in variant; this is usually the inline limit in the function itself").
-Tested directly on the smallest instance - `CDDrawWorkerCache::Find` collapsed
-to ONE entity: an in-class body in `DDrawWorkerCache.h` carrying
+Tested directly on the smallest instance - `CLogicRecordRegistry::FindTemplate` collapsed
+to ONE entity: an in-class body in `LogicRecordRegistry.h` carrying
 `RVA(0x0009cab0, 0x23)`, the out-of-line definition in StreamRecordLoaders.cpp
-deleted, both `DDrawWorkerCacheFindInline.h` includes removed.
+deleted, both `LogicRecordRegistryFindInline.h` includes removed.
 
 Result: **0x9cab0 was still emitted - by `guardpoint.obj` - and still scored
 100.00 EXACT.** So a TU that declines the expansion DOES emit the COMDAT, and
@@ -196,7 +196,7 @@ REMOVAL CONDITION in its own header:
 
 | kept | pinned RVA under collapse | the cost |
 |---|---|---|
-| `AnimWorkerObjCtorInline.h` | 0x15b300 loses every emitter (unique-names FATAL) | the three wwdobjmgr creators expand it: 100.00 -> 86.14 / 84.92 / 83.04 plus ten unwind funclets |
+| `LogicRecordCtorInline.h` | 0x15b300 loses every emitter (unique-names FATAL) | the three wwdobjmgr creators expand it: 100.00 -> 86.14 / 84.92 / 83.04 plus ten unwind funclets |
 | `LogicTypeTableInline.h` | homed by actionarea | ~11 point-logic ctors expand it: CBehindCandy 99.83 -> 66.44, CTileTriggerTransition 100.00 -> 44.76 (-676) |
 | `SoundCueInline.h` | rehomed, 100.00 EXACT | ~15 callers expand it: CRezImage::FillRectAt 100.00 -> 66.44, CSBI_MenuItem::Render -> 74.04 (-221, -12 exact) |
 | `AniElementInline.h` | 0x6b270 loses every emitter | CAniAdvanceCursor::Advance 92.75 -> 77.28 (-118, -2 exact) |
@@ -204,7 +204,7 @@ REMOVAL CONDITION in its own header:
 | `FreeNodePoolInline.h` | 0x311b0 loses every emitter | ~20 grunt/battlez steps drop 1-10 points (-175) |
 | `AniAdvanceCursorInline.h` | no retail entity exists | -31.55, -3 exact of pure /O2 ripple; blocked by the LEDGER, not the bytes (see below) |
 
-**COUPLING.** `LogicTypeTableInline.h` and `DDrawWorkerCacheFindInline.h` hide
+**COUPLING.** `LogicTypeTableInline.h` and `LogicRecordRegistryFindInline.h` hide
 the same body from the same TUs at two depths. Collapsed together, both pinned
 RVAs land at 100.00 EXACT in earlier units, but ??0CLightFx goes 94.87 -> 0.00
 and the point-logic ctors drop further (-815 total). Neither can be adjudicated

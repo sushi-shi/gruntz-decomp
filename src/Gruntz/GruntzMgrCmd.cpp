@@ -383,7 +383,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                                     _dr
                                 )
                                 && _dr) {
-                                CWarlord* _d = static_cast<CWarlord*>(_dr->m_animWorker->m_logic);
+                                CWarlord* _d =
+                                    static_cast<CWarlord*>(_dr->m_logicRecord->m_userLogic);
                                 if (_d) {
                                     _d->ResolveDeathAnimation();
                                 }

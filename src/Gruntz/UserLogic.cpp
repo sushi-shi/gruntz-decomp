@@ -5,8 +5,8 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
-#include <DDrawMgr/DDrawWorkerCacheFindInline.h>
+#include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -21,14 +21,14 @@
 
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
-    if (!obj->OwnerMgr()->m_workerCache->Find("LogicHit")) {
-        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
+    if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicHit")) {
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(LogicHitFactory, "LogicHit", 2);
     }
-    if (!obj->OwnerMgr()->m_workerCache->Find("LogicAttack")) {
-        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
+    if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicAttack")) {
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(LogicAttackFactory, "LogicAttack", 2);
     }
-    if (!obj->OwnerMgr()->m_workerCache->Find("LogicBump")) {
-        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
+    if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicBump")) {
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(LogicBumpFactory, "LogicBump", 2);
     }
 }
 
@@ -43,7 +43,7 @@ void CUserLogic::FinalizeStep(char*) {
     if (m_deferredCallback == NULL) {
         return;
     }
-    if (m_gatedCallback != NULL && m_objAux->ActKey() == m_gatedActKey) {
+    if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedActKey) {
         (this->*m_gatedCallback)();
         m_gatedCallback = NULL;
     }
@@ -69,11 +69,12 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
             arc->Read(m_blob, 0x10);
             m_gameObject = obj;
             m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
-            m_animWorker = obj->m_animWorker;
+            m_ownerLogicRecord = obj->m_logicRecord;
             if (strlen(name) == 0) {
                 m_value = NULL;
             } else {
-                CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
+                CMapStringToPtr* map =
+                    &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
                 CAniElement* value = NULL;
                 MapLookup(*map, name, value);
                 m_value = value;
@@ -87,7 +88,7 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
                 strcpy(
                     name,
                     static_cast<const char*>(
-                        m_animWorker->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
+                        m_ownerLogicRecord->m_ownerCtx->m_animRegistry->FindAnimationKey(m_value)
                     )
                 );
             }

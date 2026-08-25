@@ -7,7 +7,7 @@ In a `CUserLogic` + `CWapX` leaf constructor the most-derived vptr is stamped be
 base-ctor store and the body's first statement:
 
 ```asm
-mov  [esi+0x3c],eax          ; CWapX::m_animWorker - last base store
+mov  [esi+0x3c],eax          ; CWapX::m_logicRecord - last base store
 mov  [esi],<??_7CWayPoint>   ; retail stamps HERE
 mov  eax,[esi+0x38]          ; body: m_wwdObject
 ```

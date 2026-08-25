@@ -9,12 +9,12 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/AnimWorker.h>
 #include <Gruntz/Explosion.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
@@ -29,7 +29,7 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
-#include <Wwd/AnimWorkerAct.h>
+#include <Wwd/LogicRecordEvent.h>
 
 #include <stddef.h>
 
@@ -184,37 +184,37 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
 
 RVA(0x00046850, 0xf1)
 i32 CreateParticlez(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CParticlez(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;
@@ -222,37 +222,37 @@ i32 CreateParticlez(CGameObject* owner) {
 
 RVA(0x00046990, 0xf1)
 i32 CreateExplosion(CGameObject* owner) {
-    AnimWorkerObj* rec = owner->m_animWorker;
-    switch (rec->WorkerAct()) {
+    CLogicRecord* record = owner->m_logicRecord;
+    switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
-            rec->SetWorkerAct(ACT_LIVE);
+            record->SetLogicEvent(ACT_LIVE);
             CUserLogic* sub = new CExplosion(owner);
             sub->Activate();
-            rec->m_logic = sub;
+            record->m_userLogic = sub;
             break;
         }
         case ACT_OBJECT_REMOVED:
-            rec->m_logic->OnObjectRemoved();
+            record->m_userLogic->OnObjectRemoved();
             break;
         case ACT_LEAVE_ACTIVE_REGION:
-            rec->m_logic->OnLeaveActiveRegion();
+            record->m_userLogic->OnLeaveActiveRegion();
             break;
         case ACT_PREPARE_SAVE:
-            rec->m_logic->PrepareSave();
+            record->m_userLogic->PrepareSave();
             break;
         case ACT_AFTER_LOAD_REFERENCES:
-            rec->m_logic->AfterLoadReferences();
+            record->m_userLogic->AfterLoadReferences();
             break;
         case ACT_AFTER_LOAD:
-            rec->m_logic->AfterLoad();
+            record->m_userLogic->AfterLoad();
             break;
         case ACT_AFTER_SAVE:
-            rec->m_logic->AfterSave();
+            record->m_userLogic->AfterSave();
             break;
         case ACT_LIVE:
             break;
         default:
-            Worker_DefaultPump(rec->m_logic);
+            DispatchUnhandledLogicEvent(record->m_userLogic);
             break;
     }
     return 1;

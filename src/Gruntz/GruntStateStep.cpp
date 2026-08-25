@@ -143,31 +143,45 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     if (g->m_poweredUp != 0) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "I") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "I")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "G") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "G")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "L") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "L")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "P") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "P")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "J") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "J")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "C") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "C")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }
-                    eq = (strcmp(*g_typeColl.GetNameRecord(g->m_objAux->ActKey()), "R") == 0);
+                    eq =
+                        (strcmp(*g_typeColl.GetNameRecord(g->m_logicRecord->EventCode()), "R")
+                         == 0);
                     if (eq) {
                         goto seek;
                     }

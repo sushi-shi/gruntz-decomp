@@ -308,7 +308,7 @@ map. Selected rows (offsets proven by the store sequence at 0x162e9c onward):
 | 0x24 | `flags_add` | **nothing** | **U** |
 | 0x28 | `flags_dynamic` | OR-ed into `CGameObject::m_flags` | **P** |
 | 0x2c | `flags_draw` | `CGameObject::m_stateFlags` | **P** |
-| 0x30 | `flags_user` | `AnimWorkerObj::m_userFlags` | **P** |
+| 0x30 | `flags_user` | `CLogicRecord::m_userFlags` | **P** |
 | 0x34..0x48 | score, points, powerup, damage, smarts, health | **`CGameObject` +0x114..+0x128** | **P** |
 | 0x4c..0x8b | extent, area, switch, clip rects | `m_extent`/`m_area`/`m_switchRect`/`m_clip`; an all-zero l/r pair becomes `COORD_UNSET` | **P** |
 | 0x10c | `object_type` | `CGameObject::m_objectType` | **P** |

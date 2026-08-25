@@ -5,7 +5,7 @@
 
 #include <Mfc.h>
 
-#include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
@@ -21,7 +21,7 @@ struct WwdSnapshot {
     LoadableClassId m_classId;
     i32 m_serialTypeId;
     LogicTypeId m_logicTypeId;
-    char m_workerName[0x80];
+    char m_logicTypeName[0x80];
     i32 m_screenX;
     i32 m_screenY;
     i32 m_sortKey;
